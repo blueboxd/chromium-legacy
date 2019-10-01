@@ -65,13 +65,13 @@ class HintsFetcher {
   // HintsFetcherHostsSuccessfullyFetched dictionary pref.
   static void ClearHostsSuccessfullyFetched(PrefService* pref_service);
 
-  // Record whether the host was covered by a hints fetch and any returned
-  // hints would not have expired.
-  static void RecordHintsFetcherCoverage(PrefService* pref_service,
-                                         const std::string& host,
-                                         const base::Clock* clock);
-  static void RecordHintsFetcherCoverage(PrefService* pref_service,
-                                         const std::string& host);
+  // Return whether the host was covered by a hints fetch and any returned hints
+  // would not have expired.
+  static bool WasHostCoveredByFetch(PrefService* pref_service,
+                                    const std::string& host);
+  static bool WasHostCoveredByFetch(PrefService* pref_service,
+                                    const std::string& host,
+                                    const base::Clock* clock);
 
  private:
   // URL loader completion callback.

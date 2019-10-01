@@ -55,20 +55,20 @@ public class AwQuotaManagerBridgeTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         deleteAllData();
         if (mWebServer != null) {
             mWebServer.shutdown();
         }
     }
 
-    private void deleteAllData() throws Exception {
+    private void deleteAllData() {
         final AwQuotaManagerBridge bridge =
                 mActivityTestRule.getAwBrowserContext().getQuotaManagerBridge();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> bridge.deleteAllData());
     }
 
-    private void deleteOrigin(final String origin) throws Exception {
+    private void deleteOrigin(final String origin) {
         final AwQuotaManagerBridge bridge =
                 mActivityTestRule.getAwBrowserContext().getQuotaManagerBridge();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(

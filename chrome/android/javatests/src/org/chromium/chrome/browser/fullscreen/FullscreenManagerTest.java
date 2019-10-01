@@ -139,7 +139,7 @@ public class FullscreenManagerTest {
                     + "</html>");
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> TabStateBrowserControlsVisibilityDelegate.disablePageLoadDelayForTests());
     }
@@ -147,7 +147,7 @@ public class FullscreenManagerTest {
     @Test
     @MediumTest
     @Feature({"Fullscreen"})
-    public void testTogglePersistentFullscreen() throws InterruptedException {
+    public void testTogglePersistentFullscreen() {
         mActivityTestRule.startMainActivityWithURL(LONG_HTML_TEST_PAGE);
 
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
@@ -198,7 +198,7 @@ public class FullscreenManagerTest {
     @Test
     @LargeTest
     @Feature({"Fullscreen"})
-    public void testExitPersistentFullscreenAllowsManualFullscreen() throws InterruptedException {
+    public void testExitPersistentFullscreenAllowsManualFullscreen() {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_FULLSCREEN_API_HTML_TEST_PAGE);
 
@@ -230,7 +230,7 @@ public class FullscreenManagerTest {
     //@LargeTest
     //@Feature({"Fullscreen"})
     @DisabledTest(message = "crbug.com/901280")
-    public void testManualHidingShowingBrowserControls() throws InterruptedException {
+    public void testManualHidingShowingBrowserControls() {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_HTML_TEST_PAGE);
 
@@ -251,7 +251,7 @@ public class FullscreenManagerTest {
     //@LargeTest
     //@RetryOnFailure
     @DisabledTest(message = "crbug.com/901280")
-    public void testHideBrowserControlsAfterFlingBoosting() throws InterruptedException {
+    public void testHideBrowserControlsAfterFlingBoosting() {
         // Test that fling boosting doesn't break the scroll state management
         // that's used by the FullscreenManager to dispatch URL bar based
         // resizes to the renderer.
@@ -348,8 +348,7 @@ public class FullscreenManagerTest {
     @LargeTest
     @Feature({"Fullscreen"})
     @Features.DisableFeatures({ChromeFeatureList.OFFLINE_INDICATOR})
-    public void testHidingBrowserControlsRemovesSurfaceFlingerOverlay()
-            throws InterruptedException {
+    public void testHidingBrowserControlsRemovesSurfaceFlingerOverlay() {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_HTML_TEST_PAGE);
 
@@ -405,7 +404,7 @@ public class FullscreenManagerTest {
     @LargeTest
     @Feature({"Fullscreen"})
     @DisabledTest(message = "Flaky. crbug.com/936252")
-    public void testManualFullscreenDisabledForChromePages() throws InterruptedException {
+    public void testManualFullscreenDisabledForChromePages() {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         // The credits page was chosen as it is a chrome:// page that is long and would support
         // manual fullscreen if it were supported.
@@ -433,7 +432,7 @@ public class FullscreenManagerTest {
     @Test
     @LargeTest
     @Feature({"Fullscreen"})
-    public void testControlsShownOnUnresponsiveRenderer() throws InterruptedException {
+    public void testControlsShownOnUnresponsiveRenderer() {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_HTML_TEST_PAGE);
 
@@ -494,8 +493,7 @@ public class FullscreenManagerTest {
      */
     @Test
     @DisabledTest(message = "crbug.com/698413")
-    public void testBrowserControlsShownWhenInputIsFocused()
-            throws InterruptedException, TimeoutException {
+    public void testBrowserControlsShownWhenInputIsFocused() throws TimeoutException {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_HTML_WITH_AUTO_FOCUS_INPUT_TEST_PAGE);
 
@@ -528,7 +526,7 @@ public class FullscreenManagerTest {
     @LargeTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
     @Feature({"Fullscreen"})
-    public void testPersistentFullscreenWithOptions() throws InterruptedException {
+    public void testPersistentFullscreenWithOptions() {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_FULLSCREEN_API_HTML_WITH_OPTIONS_TEST_PAGE);
 

@@ -520,7 +520,7 @@ TEST_F(GCMDriverTest, SendFailed) {
   EXPECT_EQ(GCMClient::GCM_DISABLED, send_result());
 }
 
-TEST_F(GCMDriverTest, GCMClientNotReadyBeforeRegistration) {
+TEST_F(GCMDriverTest, DISABLED_GCMClientNotReadyBeforeRegistration) {
   CreateDriver();
   PumpIOLoop();
   PumpUILoop();
@@ -607,7 +607,7 @@ void GCMDriverFunctionalTest::SetUp() {
   PumpUILoop();
 }
 
-TEST_F(GCMDriverFunctionalTest, Register) {
+TEST_F(GCMDriverFunctionalTest, DISABLED_Register) {
   std::vector<std::string> sender_ids;
   sender_ids.push_back("sender1");
   Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
@@ -728,7 +728,7 @@ TEST_F(GCMDriverFunctionalTest, UnregisterRemovesEncryptionInfo) {
   EXPECT_NE(app_auth_secret, auth_secret());
 }
 
-TEST_F(GCMDriverFunctionalTest, UnregisterWhenAsyncOperationPending) {
+TEST_F(GCMDriverFunctionalTest, DISABLED_UnregisterWhenAsyncOperationPending) {
   std::vector<std::string> sender_ids;
   sender_ids.push_back("sender1");
   // First start registration without waiting for it to complete.
@@ -1306,7 +1306,7 @@ TEST_F(GCMDriverInstanceIDTest, GCMClientNotReadyBeforeInstanceIDData) {
   EXPECT_EQ("Bar", extra_data());
 }
 
-TEST_F(GCMDriverInstanceIDTest, GetToken) {
+TEST_F(GCMDriverInstanceIDTest, DISABLED_GetToken) {
   GetReady();
 
   const std::string expected_token =

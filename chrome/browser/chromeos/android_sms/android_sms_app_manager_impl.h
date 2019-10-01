@@ -13,13 +13,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_app_manager.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "url/gurl.h"
 
 class PrefRegistrySimple;
 class PrefService;
+class Profile;
 
 namespace app_list {
 class AppListSyncableService;
@@ -56,7 +57,8 @@ class AndroidSmsAppManagerImpl : public AndroidSmsAppManager {
    public:
     PwaDelegate();
     virtual ~PwaDelegate();
-    virtual content::WebContents* OpenApp(const AppLaunchParams& params);
+    virtual content::WebContents* OpenApp(Profile* profile,
+                                          const apps::AppLaunchParams& params);
     virtual bool TransferItemAttributes(
         const std::string& from_app_id,
         const std::string& to_app_id,

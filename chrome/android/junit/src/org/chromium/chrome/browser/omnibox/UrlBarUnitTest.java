@@ -51,7 +51,7 @@ public class UrlBarUnitTest {
     @SmallTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
     @Feature("Omnibox")
-    public void testAutofillStructureReceivesFullURL() throws InterruptedException {
+    public void testAutofillStructureReceivesFullURL() {
         mUrlBar.setTextForAutofillServices("https://www.google.com");
         mUrlBar.setText("www.google.com");
         mUrlBar.onProvideAutofillStructure(mViewStructure, 0);

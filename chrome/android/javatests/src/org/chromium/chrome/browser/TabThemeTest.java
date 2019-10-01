@@ -102,8 +102,7 @@ public class TabThemeTest {
     @MediumTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @RetryOnFailure
-    public void testThemeColorIsCorrect()
-            throws ExecutionException, InterruptedException, TimeoutException {
+    public void testThemeColorIsCorrect() throws ExecutionException, TimeoutException {
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 

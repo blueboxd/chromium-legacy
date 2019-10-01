@@ -57,7 +57,7 @@ public class ChromeActionModeCallbackTest {
     private TestChromeActionModeCallback mActionModeCallback;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         RecordUserAction.setDisabledForTests(true);
 

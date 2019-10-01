@@ -51,11 +51,10 @@ public class ContextMenuUtils {
      * @param tab                   The tab to open a context menu for.
      * @param openerDOMNodeId       The DOM node to long press to open the context menu for.
      * @return                      The {@link ContextMenu} that was opened.
-     * @throws InterruptedException
      * @throws TimeoutException
      */
     public static ContextMenu openContextMenu(Tab tab, String openerDOMNodeId)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         String jsCode = "document.getElementById('" + openerDOMNodeId + "')";
         return openContextMenuByJs(tab, jsCode);
     }
@@ -66,11 +65,9 @@ public class ContextMenuUtils {
      * @param jsCode                The javascript to get the DOM node to long press to
      *                              open the context menu for.
      * @return                      The {@link ContextMenu} that was opened.
-     * @throws InterruptedException
      * @throws TimeoutException
      */
-    public static ContextMenu openContextMenuByJs(Tab tab, String jsCode)
-            throws InterruptedException, TimeoutException {
+    public static ContextMenu openContextMenuByJs(Tab tab, String jsCode) throws TimeoutException {
         final OnContextMenuShownHelper helper = new OnContextMenuShownHelper();
         tab.addObserver(new EmptyTabObserver() {
             @Override
@@ -93,12 +90,11 @@ public class ContextMenuUtils {
      * @param tab                   The tab to open a context menu for.
      * @param openerDOMNodeId       The DOM node to long press to open the context menu for.
      * @param itemId                The context menu item ID to select.
-     * @throws InterruptedException
      * @throws TimeoutException
      */
     public static void selectContextMenuItem(Instrumentation instrumentation,
             Activity expectedActivity, Tab tab, String openerDOMNodeId, final int itemId)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         String jsCode = "document.getElementById('" + openerDOMNodeId + "')";
         selectContextMenuItemByJs(instrumentation, expectedActivity, tab, jsCode, itemId,
                 /* expectedIntentPackage= */ null);
@@ -115,12 +111,11 @@ public class ContextMenuUtils {
      * @param itemId                The context menu item ID to select.
      * @param expectedIntentPackage If firing an external intent the expected package name of the
      *         target.
-     * @throws InterruptedException
      * @throws TimeoutException
      */
     public static void selectContextMenuItemWithExpectedIntent(Instrumentation instrumentation,
             Activity expectedActivity, Tab tab, String openerDOMNodeId, final int itemId,
-            String expectedIntentPackage) throws InterruptedException, TimeoutException {
+            String expectedIntentPackage) throws TimeoutException {
         String jsCode = "document.getElementById('" + openerDOMNodeId + "')";
         selectContextMenuItemByJs(
                 instrumentation, expectedActivity, tab, jsCode, itemId, expectedIntentPackage);
@@ -134,12 +129,11 @@ public class ContextMenuUtils {
      * @param jsCode                The javascript to get the DOM node to long press
      *                              to open the context menu for.
      * @param itemId                The context menu item ID to select.
-     * @throws InterruptedException
      * @throws TimeoutException
      */
     public static void selectContextMenuItemByJs(Instrumentation instrumentation,
             Activity expectedActivity, Tab tab, String jsCode, final int itemId)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         selectContextMenuItemByJs(instrumentation, expectedActivity, tab, jsCode, itemId,
                 /*expectedIntentPackage=*/null);
     }
@@ -153,12 +147,11 @@ public class ContextMenuUtils {
      *                              to open the context menu for.
      * @param itemId                The context menu item ID to select.
      * @param expectedIntentPackage If expecting an external intent the expected package name.
-     * @throws InterruptedException
      * @throws TimeoutException
      */
     public static void selectContextMenuItemByJs(Instrumentation instrumentation,
             Activity expectedActivity, Tab tab, String jsCode, final int itemId,
-            String expectedIntentPackage) throws InterruptedException, TimeoutException {
+            String expectedIntentPackage) throws TimeoutException {
         ContextMenu menu = openContextMenuByJs(tab, jsCode);
         Assert.assertNotNull("Failed to open context menu", menu);
 
@@ -174,12 +167,11 @@ public class ContextMenuUtils {
      * @param openerDOMNodeId       The DOM node to long press to open the context menu for.
      * @param itemTitle             The title of the context menu item to select.
      * @param expectedIntentPackage If expecting an external intent the expected package name.
-     * @throws InterruptedException
      * @throws TimeoutException
      */
     public static void selectContextMenuItemByTitle(Instrumentation instrumentation,
             Activity expectedActivity, Tab tab, String openerDOMNodeId, String itemTitle)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         ContextMenu menu = openContextMenu(tab, openerDOMNodeId);
         Assert.assertNotNull("Failed to open context menu", menu);
 

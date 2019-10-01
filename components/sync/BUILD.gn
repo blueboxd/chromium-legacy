@@ -323,6 +323,8 @@ jumbo_static_library("rest_of_sync") {
     "nigori/nigori_local_change_processor.h",
     "nigori/nigori_model_type_processor.cc",
     "nigori/nigori_model_type_processor.h",
+    "nigori/nigori_state.cc",
+    "nigori/nigori_state.h",
     "nigori/nigori_storage.h",
     "nigori/nigori_storage_impl.cc",
     "nigori/nigori_storage_impl.h",

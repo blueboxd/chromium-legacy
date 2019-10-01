@@ -16,7 +16,7 @@ struct XrView;
 namespace device {
 
 class OpenXrApiWrapper;
-class OpenXrGamepadHelper;
+class OpenXRInputHelper;
 
 class OpenXrRenderLoop : public XRCompositorCommon {
  public:
@@ -46,7 +46,7 @@ class OpenXrRenderLoop : public XRCompositorCommon {
   bool UpdateStageParameters();
 
   std::unique_ptr<OpenXrApiWrapper> openxr_;
-  std::unique_ptr<OpenXrGamepadHelper> gamepad_helper_;
+  std::unique_ptr<OpenXRInputHelper> input_helper_;
 
   base::RepeatingCallback<void(mojom::VRDisplayInfoPtr)>
       on_display_info_changed_;

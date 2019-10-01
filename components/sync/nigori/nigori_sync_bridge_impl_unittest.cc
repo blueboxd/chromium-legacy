@@ -193,6 +193,7 @@ sync_pb::NigoriSpecifics BuildKeystoreNigoriSpecifics(
       specifics.mutable_keystore_decryptor_token()));
 
   specifics.set_passphrase_type(sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
+  specifics.set_keystore_migration_time(TimeToProtoTime(base::Time::Now()));
   return specifics;
 }
 
@@ -394,6 +395,7 @@ TEST_F(NigoriSyncBridgeImplTest,
                                NotNull(), /*has_pending_keys=*/false));
   EXPECT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
               Eq(base::nullopt));
+  EXPECT_THAT(bridge()->GetKeystoreMigrationTime(), Not(NullTime()));
 
   const Cryptographer& cryptographer = bridge()->GetCryptographerForTesting();
   EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams));
@@ -497,12 +499,13 @@ TEST_F(NigoriSyncBridgeImplTest,
   EXPECT_THAT(bridge()->MergeSyncData(std::move(default_entity_data)),
               Eq(base::nullopt));
   EXPECT_THAT(bridge()->GetData(), HasKeystoreNigori());
+  EXPECT_THAT(bridge()->GetKeystoreMigrationTime(), Not(NullTime()));
+  EXPECT_EQ(bridge()->GetPassphraseTypeForTesting(),
+            sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
 
   const Cryptographer& cryptographer = bridge()->GetCryptographerForTesting();
   EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams));
   EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kKeystoreKeyParams));
-  // TODO(crbug.com/922900): verify that passphrase type is equal to
-  // KeystorePassphrase once passphrase type support is implemented.
 }
 
 // Tests that we can perform initial sync with custom passphrase Nigori.

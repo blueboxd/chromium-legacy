@@ -21,6 +21,10 @@ namespace storage {
 
 namespace {
 
+// IOError message returned whenever a call is made on a DomStorageDatabase
+// which has been invalidated (e.g. by a failed |RewriteDB()| operation).
+const char kInvalidDatabaseMessage[] = "DomStorageDatabase no longer valid.";
+
 class DomStorageDatabaseEnv : public leveldb_env::ChromiumEnv {
  public:
   DomStorageDatabaseEnv() : ChromiumEnv("ChromiumEnv.StorageService") {}
@@ -167,11 +171,11 @@ DomStorageDatabase::DomStorageDatabase(
       env_(std::move(env)),
       options_(AddEnvToOptions(options,
                                env_ ? env_.get() : GetDomStorageDatabaseEnv())),
+      memory_dump_id_(memory_dump_id),
       db_(TryOpenDB(options_,
                     name,
                     std::move(callback_task_runner),
-                    std::move(callback))),
-      memory_dump_id_(memory_dump_id) {
+                    std::move(callback))) {
   base::trace_event::MemoryDumpManager::GetInstance()
       ->RegisterDumpProviderWithSequencedTaskRunner(
           this, "MojoLevelDB", base::SequencedTaskRunnerHandle::Get(),
@@ -258,6 +262,8 @@ void DomStorageDatabase::Destroy(
 DomStorageDatabase::Status DomStorageDatabase::Get(KeyView key,
                                                    Value* out_value) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!db_)
+    return Status::IOError(kInvalidDatabaseMessage);
   std::string value;
   Status status = db_->Get(leveldb::ReadOptions(), MakeSlice(key), &value);
   *out_value = Value(value.begin(), value.end());
@@ -267,11 +273,15 @@ DomStorageDatabase::Status DomStorageDatabase::Get(KeyView key,
 DomStorageDatabase::Status DomStorageDatabase::Put(KeyView key,
                                                    ValueView value) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!db_)
+    return Status::IOError(kInvalidDatabaseMessage);
   return db_->Put(leveldb::WriteOptions(), MakeSlice(key), MakeSlice(value));
 }
 
 DomStorageDatabase::Status DomStorageDatabase::Delete(KeyView key) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!db_)
+    return Status::IOError(kInvalidDatabaseMessage);
   return db_->Delete(leveldb::WriteOptions(), MakeSlice(key));
 }
 
@@ -279,6 +289,8 @@ DomStorageDatabase::Status DomStorageDatabase::GetPrefixed(
     KeyView prefix,
     std::vector<KeyValuePair>* entries) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!db_)
+    return Status::IOError(kInvalidDatabaseMessage);
   return ForEachWithPrefix(
       db_.get(), prefix,
       [&](const leveldb::Slice& key, const leveldb::Slice& value) {
@@ -287,24 +299,26 @@ DomStorageDatabase::Status DomStorageDatabase::GetPrefixed(
 }
 
 DomStorageDatabase::Status DomStorageDatabase::DeletePrefixed(
-    KeyView prefix) const {
+    KeyView prefix,
+    leveldb::WriteBatch* batch) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  leveldb::WriteBatch batch;
+  if (!db_)
+    return Status::IOError(kInvalidDatabaseMessage);
   Status status = ForEachWithPrefix(
       db_.get(), prefix,
       [&](const leveldb::Slice& key, const leveldb::Slice& value) {
-        batch.Delete(key);
+        batch->Delete(key);
       });
-  if (!status.ok())
-    return status;
-  return db_->Write(leveldb::WriteOptions(), &batch);
+  return status;
 }
 
 DomStorageDatabase::Status DomStorageDatabase::CopyPrefixed(
     KeyView prefix,
-    KeyView new_prefix) const {
+    KeyView new_prefix,
+    leveldb::WriteBatch* batch) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  leveldb::WriteBatch batch;
+  if (!db_)
+    return Status::IOError(kInvalidDatabaseMessage);
   Key new_key(new_prefix.begin(), new_prefix.end());
   Status status = ForEachWithPrefix(
       db_.get(), prefix,
@@ -314,11 +328,25 @@ DomStorageDatabase::Status DomStorageDatabase::CopyPrefixed(
         new_key.resize(new_prefix.size() + suffix_length);
         std::copy(key.data() + prefix.size(), key.data() + key.size(),
                   new_key.begin() + new_prefix.size());
-        batch.Put(MakeSlice(new_key), value);
+        batch->Put(MakeSlice(new_key), value);
       });
+  return status;
+}
+
+DomStorageDatabase::Status DomStorageDatabase::Commit(
+    leveldb::WriteBatch* batch) const {
+  if (!db_)
+    return Status::IOError(kInvalidDatabaseMessage);
+  return db_->Write(leveldb::WriteOptions(), batch);
+}
+
+DomStorageDatabase::Status DomStorageDatabase::RewriteDB() {
+  if (!db_)
+    return Status::IOError(kInvalidDatabaseMessage);
+  Status status = leveldb_env::RewriteDB(options_, name_, &db_);
   if (!status.ok())
-    return status;
-  return db_->Write(leveldb::WriteOptions(), &batch);
+    db_.reset();
+  return status;
 }
 
 bool DomStorageDatabase::OnMemoryDump(

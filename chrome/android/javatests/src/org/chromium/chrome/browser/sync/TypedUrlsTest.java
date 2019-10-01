@@ -124,7 +124,7 @@ public class TypedUrlsTest {
         });
     }
 
-    private void addServerTypedUrl(String url) throws InterruptedException {
+    private void addServerTypedUrl(String url) {
         EntitySpecifics specifics =
                 EntitySpecifics.newBuilder()
                         .setTypedUrl(TypedUrlSpecifics.newBuilder()

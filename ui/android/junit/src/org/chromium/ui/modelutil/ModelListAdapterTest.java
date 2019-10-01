@@ -99,7 +99,7 @@ public class ModelListAdapterTest {
     }
 
     @Test
-    public void testNullConvertView() throws TimeoutException, InterruptedException {
+    public void testNullConvertView() throws TimeoutException {
         // Set a property to test that it gets bound.
         mModel.set(BOOLEAN_PROPERTY, true);
 
@@ -117,7 +117,7 @@ public class ModelListAdapterTest {
     }
 
     @Test
-    public void testNullTypeConvertView() throws TimeoutException, InterruptedException {
+    public void testNullTypeConvertView() throws TimeoutException {
         // Set a property to test that it gets bound.
         mModel.set(BOOLEAN_PROPERTY, true);
 
@@ -130,8 +130,7 @@ public class ModelListAdapterTest {
     }
 
     @Test
-    public void testSameTypeConvertView_SameProperties()
-            throws TimeoutException, InterruptedException {
+    public void testSameTypeConvertView_SameProperties() throws TimeoutException {
         // Construct a test model for the convertView.
         PropertyModel convertViewModel =
                 new PropertyModel(BOOLEAN_PROPERTY, FLOAT_PROPERTY, INT_PROPERTY, OBJECT_PROPERTY);
@@ -174,8 +173,7 @@ public class ModelListAdapterTest {
     }
 
     @Test
-    public void testSameTypeConvertView_DifferentProperties()
-            throws TimeoutException, InterruptedException {
+    public void testSameTypeConvertView_DifferentProperties() throws TimeoutException {
         // Construct a test model for the convertView.
         PropertyModel convertViewModel =
                 new PropertyModel(BOOLEAN_PROPERTY, FLOAT_PROPERTY, INT_PROPERTY, OBJECT_PROPERTY);
@@ -195,7 +193,7 @@ public class ModelListAdapterTest {
     }
 
     @Test
-    public void testDifferentTypeConvertView() throws TimeoutException, InterruptedException {
+    public void testDifferentTypeConvertView() throws TimeoutException {
         // Construct a test model for the convertView.
         PropertyModel convertViewModel =
                 new PropertyModel(BOOLEAN_PROPERTY, FLOAT_PROPERTY, INT_PROPERTY, OBJECT_PROPERTY);
@@ -216,8 +214,7 @@ public class ModelListAdapterTest {
     }
 
     @Test
-    public void testBindNewModel_NullOldModel_SetPropertyValues()
-            throws TimeoutException, InterruptedException {
+    public void testBindNewModel_NullOldModel_SetPropertyValues() throws TimeoutException {
         mModel.set(BOOLEAN_PROPERTY, true);
         mModel.set(FLOAT_PROPERTY, 1.2f);
         mModel.set(INT_PROPERTY, 3);
@@ -275,8 +272,7 @@ public class ModelListAdapterTest {
     }
 
     @Test
-    public void testBindNewModel_NonNullOldModel_DifferentPropertyValues()
-            throws TimeoutException, InterruptedException {
+    public void testBindNewModel_NonNullOldModel_DifferentPropertyValues() throws TimeoutException {
         PropertyModel oldModel =
                 new PropertyModel(BOOLEAN_PROPERTY, FLOAT_PROPERTY, INT_PROPERTY, OBJECT_PROPERTY);
 
@@ -299,8 +295,7 @@ public class ModelListAdapterTest {
     }
 
     @Test
-    public void testBindNewModel_NonNullOldModel_UnsetPropertyValues()
-            throws TimeoutException, InterruptedException {
+    public void testBindNewModel_NonNullOldModel_UnsetPropertyValues() throws TimeoutException {
         PropertyModel oldModel =
                 new PropertyModel(BOOLEAN_PROPERTY, FLOAT_PROPERTY, INT_PROPERTY, OBJECT_PROPERTY);
 

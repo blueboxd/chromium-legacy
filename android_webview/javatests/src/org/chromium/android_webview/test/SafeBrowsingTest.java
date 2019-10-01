@@ -342,7 +342,7 @@ public class SafeBrowsingTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mContentsClient = new SafeBrowsingContentsClient();
         mContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(
                 mContentsClient, false, new SafeBrowsingDependencyFactory());
@@ -357,7 +357,7 @@ public class SafeBrowsingTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
@@ -394,7 +394,7 @@ public class SafeBrowsingTest {
         return helper.getValue();
     }
 
-    private void waitForInterstitialDomToLoad() throws Exception {
+    private void waitForInterstitialDomToLoad() {
         final String script = "document.readyState;";
         final String expected = "\"complete\"";
 
@@ -445,21 +445,21 @@ public class SafeBrowsingTest {
                         mAwContents, mContainerView)));
     }
 
-    private void assertGreenPageShowing() throws Exception {
+    private void assertGreenPageShowing() {
         Assert.assertEquals("Original page should be showing",
                 colorToString(GREEN_PAGE_BACKGROUND_COLOR),
                 colorToString(GraphicsTestUtils.getPixelColorAtCenterOfView(
                         mAwContents, mContainerView)));
     }
 
-    private void assertGreenPageNotShowing() throws Exception {
+    private void assertGreenPageNotShowing() {
         assertNotEquals("Original page should not be showing",
                 colorToString(GREEN_PAGE_BACKGROUND_COLOR),
                 colorToString(GraphicsTestUtils.getPixelColorAtCenterOfView(
                         mAwContents, mContainerView)));
     }
 
-    private void assertTargetPageNotShowing(int pageColor) throws Exception {
+    private void assertTargetPageNotShowing(int pageColor) {
         assertNotEquals("Target page should not be showing", colorToString(pageColor),
                 colorToString(GraphicsTestUtils.getPixelColorAtCenterOfView(
                         mAwContents, mContainerView)));
@@ -1225,7 +1225,7 @@ public class SafeBrowsingTest {
         // As long as we've reached this line without crashing, there should be no bug.
     }
 
-    private void destroyOnMainSync() throws Exception {
+    private void destroyOnMainSync() {
         // The AwActivityTestRule method invokes AwContents#destroy() on the main thread, but
         // Awcontents#destroy() posts an asynchronous task itself to destroy natives. Therefore, we
         // still need to wait for the real work to actually finish.

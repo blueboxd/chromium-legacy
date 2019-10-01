@@ -48,13 +48,12 @@ public class LocationBarModelTest {
     /**
      * After closing all {@link Tab}s, the {@link LocationBarModel} should know that it is not
      * showing any {@link Tab}.
-     * @throws InterruptedException
      */
     @Test
     @Feature({"Android-Toolbar"})
     @MediumTest
     @RetryOnFailure
-    public void testClosingLastTabReflectedInModel() throws InterruptedException {
+    public void testClosingLastTabReflectedInModel() {
         Assert.assertNotSame("No current tab", Tab.INVALID_TAB_ID,
                 getCurrentTabId(mActivityTestRule.getActivity()));
         ChromeTabUtils.closeCurrentTab(
@@ -67,7 +66,7 @@ public class LocationBarModelTest {
 
     @Test
     @SmallTest
-    public void testDisplayAndEditText() throws Exception {
+    public void testDisplayAndEditText() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TestLocationBarModel model = new TestLocationBarModel();
             model.mUrl = UrlConstants.NTP_URL;

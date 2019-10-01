@@ -123,7 +123,7 @@ public class TrustedWebActivityClientTest {
     }
 
     @Before
-    public void setUp() throws TimeoutException, RemoteException, InterruptedException {
+    public void setUp() throws TimeoutException, RemoteException {
         RecordHistogram.setDisabledForTests(true);
         mTargetContext = InstrumentationRegistry.getTargetContext();
         mBuilder = new StandardNotificationBuilder(mTargetContext);
@@ -162,8 +162,7 @@ public class TrustedWebActivityClientTest {
      */
     @Test
     @SmallTest
-    public void clientCommunicatesWithServiceCorrectly()
-            throws TimeoutException, InterruptedException {
+    public void clientCommunicatesWithServiceCorrectly() throws TimeoutException {
         postNotification();
 
         Assert.assertTrue(mResponseHandler.mGetSmallIconId.getCallCount() >= 1);
@@ -176,9 +175,7 @@ public class TrustedWebActivityClientTest {
                         R.string.notification_category_group_general));
     }
 
-
-    private void postNotification()
-            throws TimeoutException, InterruptedException {
+    private void postNotification() throws TimeoutException {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             mClient.notifyNotification(SCOPE, NOTIFICATION_TAG, NOTIFICATION_ID, mBuilder,
                     NotificationUmaTracker.getInstance());
@@ -193,7 +190,7 @@ public class TrustedWebActivityClientTest {
      */
     @Test
     @SmallTest
-    public void testCancelNotification() throws TimeoutException, InterruptedException {
+    public void testCancelNotification() throws TimeoutException {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                 () -> mClient.cancelNotification(SCOPE, NOTIFICATION_TAG, NOTIFICATION_ID));
 
@@ -202,5 +199,4 @@ public class TrustedWebActivityClientTest {
         Assert.assertEquals(mResponseHandler.mNotificationTag, NOTIFICATION_TAG);
         Assert.assertEquals(mResponseHandler.mNotificationId, NOTIFICATION_ID);
     }
-
 }

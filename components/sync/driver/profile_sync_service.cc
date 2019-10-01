@@ -1652,10 +1652,10 @@ void ProfileSyncService::GetAllNodesForDebugging(
             &GetAllNodesRequestHelper::OnReceivedNodesForType, helper));
       }
     } else {
-      // Control Types.
-      helper->OnReceivedNodesForType(
-          type, DirectoryDataTypeController::GetAllNodesForTypeFromDirectory(
-                    type, GetUserShare()->directory.get()));
+      // We should have no data type controller only for Nigori.
+      DCHECK_EQ(type, NIGORI);
+      engine_->GetNigoriNodeForDebugging(base::BindOnce(
+          &GetAllNodesRequestHelper::OnReceivedNodesForType, helper));
     }
   }
 }

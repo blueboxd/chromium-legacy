@@ -26,7 +26,7 @@ goog.require('__crWeb.common');
  */
 var getResponseForLinkElement = function(element) {
   return {
-    href: element.href,
+    href: getElementHref_(element),
     referrerPolicy: getReferrerPolicy_(element),
     innerText: element.innerText
   };
@@ -327,6 +327,21 @@ var getReferrerPolicy_ = function(opt_linkElement) {
     }
   }
   return 'default';
+};
+
+ /**
+  * Returns the href of the given element. Handles standard <a> links as well as
+  * xlink:href links as used within <svg> tags.
+  * @param {HTMLElement} element The link triggering the navigation.
+  * @return {string} The href of the given element.
+  * @private
+  */
+var getElementHref_ = function(element) {
+  var href = element.href;
+  if (href instanceof SVGAnimatedString) {
+    return href.animVal
+  }
+  return href
 };
 
 /**

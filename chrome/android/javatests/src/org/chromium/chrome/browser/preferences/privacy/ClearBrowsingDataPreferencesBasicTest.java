@@ -59,7 +59,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
         SigninTestUtil.tearDownAuthForTest();
     }
@@ -105,7 +105,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
      */
     @Test
     @SmallTest
-    public void testCheckBoxTextNonsigned() throws Exception {
+    public void testCheckBoxTextNonsigned() {
         final Preferences preferences = mActivityTestRule.startPreferences(
                 ClearBrowsingDataPreferencesBasic.class.getName());
 
@@ -133,7 +133,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
      */
     @Test
     @SmallTest
-    public void testCheckBoxTextSigned() throws Exception {
+    public void testCheckBoxTextSigned() {
         SigninTestUtil.addAndSignInTestAccount();
         setSyncable(false);
 
@@ -164,7 +164,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
      */
     @Test
     @SmallTest
-    public void testCheckBoxTextSignedAndSynced() throws Exception {
+    public void testCheckBoxTextSignedAndSynced() {
         SigninTestUtil.addAndSignInTestAccount();
         setSyncable(true);
 

@@ -12,7 +12,7 @@
 #include "media/base/supported_types.h"
 #include "media/filters/stream_parser_factory.h"
 #include "media/mojo/mojom/media_types.mojom-blink.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -775,14 +775,14 @@ bool MediaCapabilities::EnsureService(ExecutionContext* execution_context) {
   if (decode_history_service_)
     return true;
 
-  if (!execution_context || !execution_context->GetInterfaceProvider())
+  if (!execution_context)
     return false;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       execution_context->GetTaskRunner(TaskType::kMediaElementEvent);
 
-  execution_context->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&decode_history_service_, task_runner));
+  execution_context->GetBrowserInterfaceBroker().GetInterface(
+      decode_history_service_.BindNewPipeAndPassReceiver(task_runner));
   return true;
 }
 

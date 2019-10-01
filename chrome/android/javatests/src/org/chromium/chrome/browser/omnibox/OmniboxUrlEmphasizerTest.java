@@ -48,7 +48,7 @@ public class OmniboxUrlEmphasizerTest {
     private Resources mResources;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mProfile = Profile.getLastUsedProfile().getOriginalProfile();
             mResources =
@@ -145,7 +145,7 @@ public class OmniboxUrlEmphasizerTest {
     @MediumTest
     @UiThreadTest
     @Feature({"Browser", "Main"})
-    public void testShortSecureHTTPSUrl() throws Throwable {
+    public void testShortSecureHTTPSUrl() {
         Spannable url = new SpannableStringBuilder("https://www.google.com/");
         OmniboxUrlEmphasizer.emphasizeUrl(
                 url, mResources, mProfile, ConnectionSecurityLevel.SECURE, false, true, true);
@@ -173,7 +173,7 @@ public class OmniboxUrlEmphasizerTest {
     @MediumTest
     @UiThreadTest
     @Feature({"Browser", "Main"})
-    public void testShortSecureHTTPSUrlWithLightColors() throws Throwable {
+    public void testShortSecureHTTPSUrlWithLightColors() {
         Spannable url = new SpannableStringBuilder("https://www.google.com/");
         OmniboxUrlEmphasizer.emphasizeUrl(
                 url, mResources, mProfile, ConnectionSecurityLevel.SECURE, false, false, false);
@@ -202,7 +202,7 @@ public class OmniboxUrlEmphasizerTest {
     @MediumTest
     @UiThreadTest
     @Feature({"Browser", "Main"})
-    public void testLongInsecureHTTPSUrl() throws Throwable {
+    public void testLongInsecureHTTPSUrl() {
         Spannable url =
                 new SpannableStringBuilder("https://www.google.com/q?query=abc123&results=1");
         OmniboxUrlEmphasizer.emphasizeUrl(
@@ -232,7 +232,7 @@ public class OmniboxUrlEmphasizerTest {
     @MediumTest
     @UiThreadTest
     @Feature({"Browser", "Main"})
-    public void testVeryShortHTTPWarningUrl() throws Throwable {
+    public void testVeryShortHTTPWarningUrl() {
         Spannable url = new SpannableStringBuilder("m.w.co/p");
         OmniboxUrlEmphasizer.emphasizeUrl(
                 url, mResources, mProfile, ConnectionSecurityLevel.WARNING, false, true, false);
@@ -255,7 +255,7 @@ public class OmniboxUrlEmphasizerTest {
     @MediumTest
     @UiThreadTest
     @Feature({"Browser", "Main"})
-    public void testAboutPageUrl() throws Throwable {
+    public void testAboutPageUrl() {
         Spannable url = new SpannableStringBuilder("about:blank");
         OmniboxUrlEmphasizer.emphasizeUrl(
                 url, mResources, mProfile, ConnectionSecurityLevel.NONE, true, true, true);
@@ -281,7 +281,7 @@ public class OmniboxUrlEmphasizerTest {
     @MediumTest
     @UiThreadTest
     @Feature({"Browser", "Main"})
-    public void testDataUrl() throws Throwable {
+    public void testDataUrl() {
         Spannable url =
                 new SpannableStringBuilder("data:text/plain;charset=utf-8;base64,VGVzdCBVUkw=");
         OmniboxUrlEmphasizer.emphasizeUrl(
@@ -304,7 +304,7 @@ public class OmniboxUrlEmphasizerTest {
     @MediumTest
     @UiThreadTest
     @Feature({"Browser", "Main"})
-    public void testInternalChromePageUrl() throws Throwable {
+    public void testInternalChromePageUrl() {
         Spannable url = new SpannableStringBuilder("chrome://bookmarks");
         OmniboxUrlEmphasizer.emphasizeUrl(
                 url, mResources, mProfile, ConnectionSecurityLevel.NONE, true, true, true);
@@ -330,7 +330,7 @@ public class OmniboxUrlEmphasizerTest {
     @MediumTest
     @UiThreadTest
     @Feature({"Browser", "Main"})
-    public void testInternalChromeNativePageUrl() throws Throwable {
+    public void testInternalChromeNativePageUrl() {
         Spannable url = new SpannableStringBuilder("chrome-native://bookmarks");
         OmniboxUrlEmphasizer.emphasizeUrl(
                 url, mResources, mProfile, ConnectionSecurityLevel.NONE, true, true, true);
@@ -356,7 +356,7 @@ public class OmniboxUrlEmphasizerTest {
     @MediumTest
     @UiThreadTest
     @Feature({"Browser", "Main"})
-    public void testInvalidUrl() throws Throwable {
+    public void testInvalidUrl() {
         Spannable url = new SpannableStringBuilder("invalidurl");
         OmniboxUrlEmphasizer.emphasizeUrl(
                 url, mResources, mProfile, ConnectionSecurityLevel.NONE, true, true, true);
@@ -376,7 +376,7 @@ public class OmniboxUrlEmphasizerTest {
     @MediumTest
     @UiThreadTest
     @Feature({"Browser", "Main"})
-    public void testEmptyUrl() throws Throwable {
+    public void testEmptyUrl() {
         Spannable url = new SpannableStringBuilder("");
         OmniboxUrlEmphasizer.emphasizeUrl(
                 url, mResources, mProfile, ConnectionSecurityLevel.NONE, false, true, true);
@@ -393,7 +393,7 @@ public class OmniboxUrlEmphasizerTest {
     @MediumTest
     @UiThreadTest
     @Feature({"Browser", "Main"})
-    public void testHTTPAndHTTPSUrlsOriginEndIndex() throws Throwable {
+    public void testHTTPAndHTTPSUrlsOriginEndIndex() {
         String url;
 
         url = "http://www.google.com/";
@@ -425,7 +425,7 @@ public class OmniboxUrlEmphasizerTest {
     @MediumTest
     @UiThreadTest
     @Feature({"Browser", "Main"})
-    public void testDataUrlsOriginEndIndex() throws Throwable {
+    public void testDataUrlsOriginEndIndex() {
         String url;
 
         // Data URLs have no origin.
@@ -450,7 +450,7 @@ public class OmniboxUrlEmphasizerTest {
     @MediumTest
     @UiThreadTest
     @Feature({"Browser", "Main"})
-    public void testOtherUrlsOriginEndIndex() throws Throwable {
+    public void testOtherUrlsOriginEndIndex() {
         String url;
 
         // In non-HTTP/HTTPS/data URLs, the whole URL is considered the origin.

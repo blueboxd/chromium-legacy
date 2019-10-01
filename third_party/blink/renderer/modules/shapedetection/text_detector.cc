@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
@@ -25,12 +25,10 @@ TextDetector* TextDetector::Create(ExecutionContext* context) {
 TextDetector::TextDetector(ExecutionContext* context) : ShapeDetector() {
   // See https://bit.ly/2S0zRAS for task types.
   auto task_runner = context->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  auto request = mojo::MakeRequest(&text_service_, task_runner);
-  if (auto* interface_provider = context->GetInterfaceProvider()) {
-    interface_provider->GetInterface(std::move(request));
-  }
+  context->GetBrowserInterfaceBroker().GetInterface(
+      text_service_.BindNewPipeAndPassReceiver(task_runner));
 
-  text_service_.set_connection_error_handler(WTF::Bind(
+  text_service_.set_disconnect_handler(WTF::Bind(
       &TextDetector::OnTextServiceConnectionError, WrapWeakPersistent(this)));
 }
 

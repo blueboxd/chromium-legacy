@@ -77,7 +77,7 @@ public class ExploreSitesCategoryCardViewTest {
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     private Pair<ExploreSitesCategoryCardView, ExploreSitesCategory> initializeCategoryAndView(
-            int numSitesTotal, int numBlacklisted) throws Exception {
+            int numSitesTotal, int numBlacklisted) {
         ExploreSitesCategory category = createSyntheticCategory(numSitesTotal, numBlacklisted);
 
         ArrayList<ExploreSitesCategory> catalog = new ArrayList<>();
@@ -104,7 +104,7 @@ public class ExploreSitesCategoryCardViewTest {
 
     // package-private helper for running a tile quantity render tests.
     void runTileQuantityTest(int numSitesTotal, int numBlacklisted, boolean incompleteAllowed,
-            int expectedMaxRows, int expectedTilesToDisplay) throws Exception {
+            int expectedMaxRows, int expectedTilesToDisplay) {
         Pair<ExploreSitesCategoryCardView, ExploreSitesCategory> categoryState =
                 initializeCategoryAndView(numSitesTotal, numBlacklisted);
 
@@ -125,72 +125,72 @@ public class ExploreSitesCategoryCardViewTest {
     // Covers: IS_DENSE=false, MAX_ROWS=2, MAX_COLUMNS=4, numSites=MAX_COLUMNS, numBlacklisted=0
     @Test
     @SmallTest
-    @CommandLineFlags.Add({"enable-features=ExploreSites<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/Enabled",
+    @CommandLineFlags.
+    Add({"enable-features=ExploreSites<FakeStudyName", "force-fieldtrials=FakeStudyName/Enabled",
             "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile/"
                     + "denseVariation/original"})
     public void
-    testTileQuantityOriginalPerfectRow() throws Exception {
+    testTileQuantityOriginalPerfectRow() {
         runTileQuantityTest(4, 0, false, 1, 4);
     }
 
     // Covers: IS_DENSE=false, MAX_ROWS=2, MAX_COLUMNS=4, numSites>MAX_COLUMNS, numBlacklisted=0
     @Test
     @SmallTest
-    @CommandLineFlags.Add({"enable-features=ExploreSites<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/Enabled",
+    @CommandLineFlags.
+    Add({"enable-features=ExploreSites<FakeStudyName", "force-fieldtrials=FakeStudyName/Enabled",
             "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile/"
                     + "denseVariation/original"})
     public void
-    testTileQuantityOriginalImperfectRow() throws Exception {
+    testTileQuantityOriginalImperfectRow() {
         runTileQuantityTest(5, 0, false, 1, 4);
     }
 
     // Covers: IS_DENSE=false, MAX_ROWS=2, MAX_COLUMNS=4, numSites=MAX_COLUMNS, numBlacklisted>0
     @Test
     @SmallTest
-    @CommandLineFlags.Add({"enable-features=ExploreSites<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/Enabled",
+    @CommandLineFlags.
+    Add({"enable-features=ExploreSites<FakeStudyName", "force-fieldtrials=FakeStudyName/Enabled",
             "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile/"
                     + "denseVariation/original"})
     public void
-    testTileQuantityOriginalPerfectRowAfterBlacklisted() throws Exception {
+    testTileQuantityOriginalPerfectRowAfterBlacklisted() {
         runTileQuantityTest(5, 1, false, 1, 4);
     }
 
     // Covers: IS_DENSE=false, MAX_ROWS=2, MAX_COLUMNS=4, numSites>MAX_COLUMNS, numBlacklisted>0
     @Test
     @SmallTest
-    @CommandLineFlags.Add({"enable-features=ExploreSites<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/Enabled",
+    @CommandLineFlags.
+    Add({"enable-features=ExploreSites<FakeStudyName", "force-fieldtrials=FakeStudyName/Enabled",
             "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile/"
                     + "denseVariation/original"})
     public void
-    testTileQuantityOriginalImperfectRowAfterBlacklisted() throws Exception {
+    testTileQuantityOriginalImperfectRowAfterBlacklisted() {
         runTileQuantityTest(8, 2, false, 2, 6);
     }
 
     // Covers: IS_DENSE=true, MAX_ROWS=2, MAX_COLUMNS=4, numSites<MAX_COLUMNS, numBlacklisted>0
     @Test
     @SmallTest
-    @CommandLineFlags.Add({"enable-features=ExploreSites<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/Enabled",
+    @CommandLineFlags.
+    Add({"enable-features=ExploreSites<FakeStudyName", "force-fieldtrials=FakeStudyName/Enabled",
             "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile/"
                     + "denseVariation/original"})
     public void
-    testTileQuantityOriginalTooFewTilesAfterBlacklisted() throws Exception {
+    testTileQuantityOriginalTooFewTilesAfterBlacklisted() {
         runTileQuantityTest(5, 4, false, 1, 1);
     }
 
     // Covers: IS_DENSE=true, MAX_ROWS=2, MAX_COLUMNS=4, numSites>MAX_TILE_COUNT, numBlacklisted=0
     @Test
     @SmallTest
-    @CommandLineFlags.Add({"enable-features=ExploreSites<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/Enabled",
+    @CommandLineFlags.
+    Add({"enable-features=ExploreSites<FakeStudyName", "force-fieldtrials=FakeStudyName/Enabled",
             "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile/"
                     + "denseVariation/original"})
     public void
-    testTileQuantityOriginalTooManyTiles() throws Exception {
+    testTileQuantityOriginalTooManyTiles() {
         runTileQuantityTest(15, 0, false, 2, 8);
     }
 }

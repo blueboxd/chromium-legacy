@@ -52,7 +52,7 @@ void ConvertExtensionStatusToDictionary(
     // Join with human readable extension name.
     const extensions::Extension* extension =
         extension_registry->GetExtensionById(
-            extension_id, extensions::ExtensionRegistry::COMPATIBILITY);
+            extension_id, extensions::ExtensionRegistry::EVERYTHING);
     if (!extension)
       continue;
 

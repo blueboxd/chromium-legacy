@@ -13,7 +13,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/shape_detection/face_detection_impl_win.h"
 #include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
 
@@ -26,11 +27,12 @@ class FaceDetectionProviderWin
   ~FaceDetectionProviderWin() override;
 
   static void Create(
-      shape_detection::mojom::FaceDetectionProviderRequest request) {
+      mojo::PendingReceiver<shape_detection::mojom::FaceDetectionProvider>
+          receiver) {
     auto provider = std::make_unique<FaceDetectionProviderWin>();
     auto* provider_ptr = provider.get();
-    provider_ptr->binding_ =
-        mojo::MakeStrongBinding(std::move(provider), std::move(request));
+    provider_ptr->receiver_ =
+        mojo::MakeSelfOwnedReceiver(std::move(provider), std::move(receiver));
   }
 
   void CreateFaceDetection(
@@ -44,7 +46,7 @@ class FaceDetectionProviderWin
       Microsoft::WRL::ComPtr<ABI::Windows::Media::FaceAnalysis::IFaceDetector>
           face_detector);
 
-  mojo::StrongBindingPtr<mojom::FaceDetectionProvider> binding_;
+  mojo::SelfOwnedReceiverRef<mojom::FaceDetectionProvider> receiver_;
   base::WeakPtrFactory<FaceDetectionProviderWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FaceDetectionProviderWin);

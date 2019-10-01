@@ -239,11 +239,10 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest,
   EXPECT_TRUE(extension);
 
   apps::LaunchService::Get(browser()->profile())
-      ->OpenApplication(
-          AppLaunchParams(browser()->profile(), extension->id(),
-                          apps::mojom::LaunchContainer::kLaunchContainerNone,
-                          WindowOpenDisposition::NEW_WINDOW,
-                          apps::mojom::AppLaunchSource::kSourceTest));
+      ->OpenApplication(apps::AppLaunchParams(
+          extension->id(), apps::mojom::LaunchContainer::kLaunchContainerNone,
+          WindowOpenDisposition::NEW_WINDOW,
+          apps::mojom::AppLaunchSource::kSourceTest));
 
   ExtensionTestMessageListener geometry_listener("ListenGeometryChange", true);
 

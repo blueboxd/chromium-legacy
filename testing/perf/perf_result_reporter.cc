@@ -52,6 +52,15 @@ void PerfResultReporter::AddResult(const std::string& metric_suffix,
               iter->second.units, iter->second.important);
 }
 
+void PerfResultReporter::AddResultList(const std::string& metric_suffix,
+                                       const std::string& values) {
+  auto iter = metric_map_.find(metric_suffix);
+  CHECK(iter != metric_map_.end());
+
+  PrintResultList(metric_basename_, metric_suffix, story_name_, values,
+                  iter->second.units, iter->second.important);
+}
+
 bool PerfResultReporter::GetMetricInfo(const std::string& metric_suffix,
                                        MetricInfo* out) {
   auto iter = metric_map_.find(metric_suffix);

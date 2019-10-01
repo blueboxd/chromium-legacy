@@ -437,7 +437,7 @@ cursors.Cursor.prototype = {
 
   /**
    * Returns the deepest equivalent cursor.
-   * @return {cursors.Cursor}
+   * @return {!cursors.Cursor}
    */
   get deepEquivalent() {
     var newNode = this.node;

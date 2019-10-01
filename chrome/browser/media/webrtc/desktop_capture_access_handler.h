@@ -7,6 +7,7 @@
 
 #include <list>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/containers/flat_map.h"

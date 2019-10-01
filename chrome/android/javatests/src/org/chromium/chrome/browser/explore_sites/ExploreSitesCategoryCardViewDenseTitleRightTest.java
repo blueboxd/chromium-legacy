@@ -40,49 +40,49 @@ public class ExploreSitesCategoryCardViewDenseTitleRightTest
     // Covers: IS_DENSE=true, MAX_ROWS=3, MAX_COLUMNS=3, numSites=MAX_COLUMNS, numBlacklisted=0
     @Test
     @SmallTest
-    public void testTileQuantityDenseRightPerfectRow() throws Exception {
+    public void testTileQuantityDenseRightPerfectRow() {
         runTileQuantityTest(3, 0, false, 1, 3);
     }
 
     // Covers: IS_DENSE=true, MAX_ROWS=3, MAX_COLUMNS=3, numSites>MAX_COLUMNS, numBlacklisted=0
     @Test
     @SmallTest
-    public void testTileQuantityDenseRightImperfectRow() throws Exception {
+    public void testTileQuantityDenseRightImperfectRow() {
         runTileQuantityTest(5, 0, true, 2, 5);
     }
 
     // Covers: IS_DENSE=true, MAX_ROWS=3, MAX_COLUMNS=3, numSites=MAX_COLUMNS, numBlacklisted=0
     @Test
     @SmallTest
-    public void testTileQuantityDenseRightOneTileRow() throws Exception {
+    public void testTileQuantityDenseRightOneTileRow() {
         runTileQuantityTest(4, 0, false, 1, 3);
     }
 
     // Covers: IS_DENSE=true, MAX_ROWS=3, MAX_COLUMNS=3, numSites>MAX_COLUMNS, numBlacklisted>0
     @Test
     @SmallTest
-    public void testTileQuantityDenseRightOneTileRowAfterBlacklisted() throws Exception {
+    public void testTileQuantityDenseRightOneTileRowAfterBlacklisted() {
         runTileQuantityTest(5, 1, true, 2, 4);
     }
 
     // Covers: IS_DENSE=true, MAX_ROWS=3, MAX_COLUMNS=3, numSites=MAX_COLUMNS, numBlacklisted>0
     @Test
     @SmallTest
-    public void testTileQuantityDenseRightPerfectRowAfterBlacklisted() throws Exception {
+    public void testTileQuantityDenseRightPerfectRowAfterBlacklisted() {
         runTileQuantityTest(4, 1, false, 1, 3);
     }
 
     // Covers: IS_DENSE=true, MAX_ROWS=3, MAX_COLUMNS=3, numSites<MAX_COLUMNS, numBlacklisted>0
     @Test
     @SmallTest
-    public void testTileQuantityDenseRightTooFewTiles() throws Exception {
+    public void testTileQuantityDenseRightTooFewTiles() {
         runTileQuantityTest(4, 3, true, 1, 1);
     }
 
     // Covers: IS_DENSE=true, MAX_ROWS=3, MAX_COLUMNS=3, numSites>MAX_TILE_COUNT, numBlacklisted=0
     @Test
     @SmallTest
-    public void testTileQuantityDenseRightTooManyTiles() throws Exception {
+    public void testTileQuantityDenseRightTooManyTiles() {
         runTileQuantityTest(15, 0, false, 3, 9);
     }
 }

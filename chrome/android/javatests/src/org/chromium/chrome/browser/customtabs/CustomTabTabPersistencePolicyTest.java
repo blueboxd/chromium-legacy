@@ -68,7 +68,7 @@ public class CustomTabTabPersistencePolicyTest {
     public UiThreadTestRule mRule = new UiThreadTestRule();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // CustomTabsConnection needs a true context, not the mock context set below.
         CustomTabsConnection.getInstance();
 
@@ -84,7 +84,7 @@ public class CustomTabTabPersistencePolicyTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mMockDirectory.tearDown();
 
         for (Activity activity : ApplicationStatus.getRunningActivities()) {

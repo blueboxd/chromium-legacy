@@ -57,7 +57,7 @@ public class WarmupManagerTest {
                            .getApplicationContext();
         TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
-            public Void call() throws Exception {
+            public Void call() {
                 ChromeBrowserInitializer.getInstance(mContext).handleSynchronousStartup();
                 mWarmupManager = WarmupManager.getInstance();
                 return null;
@@ -66,7 +66,7 @@ public class WarmupManagerTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> mWarmupManager.destroySpareWebContents());
     }
 
@@ -109,7 +109,7 @@ public class WarmupManagerTest {
     @Test
     @SmallTest
     @UiThreadTest
-    public void testTakeSpareWebContents() throws Throwable {
+    public void testTakeSpareWebContents() {
         mWarmupManager.createSpareWebContents(!WarmupManager.FOR_CCT);
         WebContents webContents =
                 mWarmupManager.takeSpareWebContents(false, false, !WarmupManager.FOR_CCT);
@@ -121,7 +121,7 @@ public class WarmupManagerTest {
     @Test
     @SmallTest
     @UiThreadTest
-    public void testTakeSpareWebContentsChecksArguments() throws Throwable {
+    public void testTakeSpareWebContentsChecksArguments() {
         mWarmupManager.createSpareWebContents(!WarmupManager.FOR_CCT);
         Assert.assertNull(mWarmupManager.takeSpareWebContents(true, false, !WarmupManager.FOR_CCT));
         Assert.assertNull(mWarmupManager.takeSpareWebContents(true, true, !WarmupManager.FOR_CCT));
@@ -134,7 +134,7 @@ public class WarmupManagerTest {
     @Test
     @SmallTest
     @UiThreadTest
-    public void testClearsDeadWebContents() throws Throwable {
+    public void testClearsDeadWebContents() {
         mWarmupManager.createSpareWebContents(!WarmupManager.FOR_CCT);
         WebContentsUtils.simulateRendererKilled(mWarmupManager.mSpareWebContents, false);
         Assert.assertNull(
@@ -144,7 +144,7 @@ public class WarmupManagerTest {
     @Test
     @SmallTest
     @UiThreadTest
-    public void testRecordWebContentsStatus() throws Throwable {
+    public void testRecordWebContentsStatus() {
         String name = WarmupManager.WEBCONTENTS_STATUS_HISTOGRAM;
         MetricsUtils.HistogramDelta createdDelta =
                 new MetricsUtils.HistogramDelta(name, WarmupManager.WebContentsStatus.CREATED);
@@ -199,7 +199,7 @@ public class WarmupManagerTest {
     @Test
     @SmallTest
     @UiThreadTest
-    public void testInflateLayout() throws Throwable {
+    public void testInflateLayout() {
         int layoutId = R.layout.custom_tabs_control_container;
         int toolbarId = R.layout.custom_tabs_toolbar;
         mWarmupManager.initializeViewHierarchy(mContext, layoutId, toolbarId);

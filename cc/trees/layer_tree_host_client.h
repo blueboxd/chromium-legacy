@@ -162,6 +162,17 @@ class LayerTreeHostClient {
   virtual ~LayerTreeHostClient() {}
 };
 
+// LayerTreeHost->WebThreadScheduler callback interface. Instances of this class
+// must be safe to use on both the compositor and main threads.
+class LayerTreeHostSchedulingClient {
+ public:
+  // Indicates that the compositor thread scheduled a BeginMainFrame to run on
+  // the main thread.
+  virtual void DidScheduleBeginMainFrame() = 0;
+  // Called unconditionally when BeginMainFrame runs on the main thread.
+  virtual void DidRunBeginMainFrame() = 0;
+};
+
 }  // namespace cc
 
 #endif  // CC_TREES_LAYER_TREE_HOST_CLIENT_H_

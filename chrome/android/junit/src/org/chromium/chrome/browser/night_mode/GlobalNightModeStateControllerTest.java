@@ -89,7 +89,7 @@ public class GlobalNightModeStateControllerTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         ChromePreferenceManager.getInstance().removeKey(UI_THEME_SETTING_KEY);
     }
 

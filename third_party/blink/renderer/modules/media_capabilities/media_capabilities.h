@@ -7,6 +7,7 @@
 
 #include "media/base/video_codecs.h"  // for media::VideoCodecProfile
 #include "media/mojo/mojom/video_decode_perf_history.mojom-blink.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
@@ -52,7 +53,8 @@ class MODULES_EXPORT MediaCapabilities final : public ScriptWrappable {
                   bool is_smooth,
                   bool is_power_efficient);
 
-  media::mojom::blink::VideoDecodePerfHistoryPtr decode_history_service_;
+  mojo::Remote<media::mojom::blink::VideoDecodePerfHistory>
+      decode_history_service_;
 };
 
 }  // namespace blink

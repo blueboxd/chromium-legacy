@@ -64,7 +64,6 @@ public class UndoIntegrationTest {
 
     /**
      * Test that a tab that is closing can't open other windows.
-     * @throws InterruptedException
      * @throws TimeoutException
      */
     @Test
@@ -72,7 +71,7 @@ public class UndoIntegrationTest {
     @LargeTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
-    public void testAddNewContentsFromClosingTab() throws InterruptedException, TimeoutException {
+    public void testAddNewContentsFromClosingTab() throws TimeoutException {
         mActivityTestRule.loadUrl(WINDOW_OPEN_BUTTON_URL);
 
         final TabModel model =

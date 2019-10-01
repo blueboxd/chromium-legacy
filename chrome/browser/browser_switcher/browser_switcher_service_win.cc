@@ -21,10 +21,12 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/win/registry.h"
+#include "chrome/browser/browser_switcher/browser_switcher_policy_migrator.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
 #include "chrome/browser/browser_switcher/ieem_sitelist_parser.h"
 #include "chrome/browser/profiles/profile.h"
+#include "extensions/browser/extension_registry.h"
 
 namespace browser_switcher {
 
@@ -140,6 +142,13 @@ base::Optional<std::string>* IeemSitelistUrlForTesting() {
   return ieem_sitelist_url_for_testing.get();
 }
 
+bool IsLBSExtensionEnabled(Profile* profile) {
+  auto* reg = extensions::ExtensionRegistry::Get(profile);
+  DCHECK(reg);
+  return reg->GetExtensionById(kLBSExtensionId,
+                               extensions::ExtensionRegistry::ENABLED);
+}
+
 }  // namespace
 
 BrowserSwitcherServiceWin::BrowserSwitcherServiceWin(Profile* profile)
@@ -148,14 +157,7 @@ BrowserSwitcherServiceWin::BrowserSwitcherServiceWin(Profile* profile)
           {base::ThreadPool(), base::MayBlock(),
            base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
-  if (prefs().IsEnabled())
-    SavePrefsToFile();
-  else
-    DeletePrefsFile();
-
-  // Clean up sitelistcache.dat from the extension, or from a previous Chrome
-  // version.
-  DeleteSitelistCacheFile();
+  UpdateAllCacheFiles();
 }
 
 BrowserSwitcherServiceWin::~BrowserSwitcherServiceWin() = default;
@@ -165,10 +167,7 @@ void BrowserSwitcherServiceWin::OnBrowserSwitcherPrefsChanged(
     const std::vector<std::string>& changed_prefs) {
   BrowserSwitcherService::OnBrowserSwitcherPrefsChanged(prefs, changed_prefs);
 
-  if (prefs->IsEnabled())
-    SavePrefsToFile();
-  else
-    DeletePrefsFile();
+  UpdateAllCacheFiles();
 }
 
 // static
@@ -239,21 +238,36 @@ void BrowserSwitcherServiceWin::OnIeemSitelistParsed(ParsedXml xml) {
 }
 
 void BrowserSwitcherServiceWin::SavePrefsToFile() {
+  DCHECK(prefs().IsEnabled());
   sequenced_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SaveDataToFile, SerializeCacheFile(prefs(), sitelist()),
                      "cache.dat"));
 }
 
-void BrowserSwitcherServiceWin::DeletePrefsFile() const {
+void BrowserSwitcherServiceWin::DeletePrefsFile() {
   sequenced_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&DoRemoveFileFromCacheDir, "cache.dat"));
 }
 
-void BrowserSwitcherServiceWin::DeleteSitelistCacheFile() const {
+void BrowserSwitcherServiceWin::DeleteSitelistCacheFile() {
   sequenced_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&DoRemoveFileFromCacheDir, "sitelistcache.dat"));
+}
+
+void BrowserSwitcherServiceWin::UpdateAllCacheFiles() {
+  const bool has_extension = IsLBSExtensionEnabled(profile());
+
+  if (prefs().IsEnabled())
+    SavePrefsToFile();
+  else if (!has_extension)
+    DeletePrefsFile();
+
+  // Clean up sitelistcache.dat from the extension, or from a previous Chrome
+  // version.
+  if (!has_extension)
+    DeleteSitelistCacheFile();
 }
 
 }  // namespace browser_switcher

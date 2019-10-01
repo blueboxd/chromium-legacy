@@ -13440,10 +13440,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Verify the feature where hidden tabs with crashed subframes are marked for
 // reload.  This avoids showing crashed subframes if a hidden tab is eventually
 // shown.  See https://crbug.com/841572.
-
-// TODO(crbug.com/1005049) Disabled due to test flake
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       DISABLED_ReloadHiddenTabWithCrashedSubframe) {
+                       ReloadHiddenTabWithCrashedSubframe) {
   base::test::ScopedFeatureList feature_list_;
   feature_list_.InitAndEnableFeature(
       features::kReloadHiddenTabsWithCrashedSubframes);
@@ -13471,6 +13469,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Kill the b.com subframe's process.  This should mark the hidden
   // WebContents for reload.
   {
+    SCOPED_TRACE("In-viewport sad frame on a hidden tab");
     base::HistogramTester histograms;
     crash_process(root->child_at(0));
     histograms.ExpectUniqueSample(
@@ -13496,10 +13495,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL out_of_view_url(
       embedded_test_server()->GetURL("a.com", "/iframe_out_of_view.html"));
   EXPECT_TRUE(NavigateToURL(shell(), out_of_view_url));
+  EXPECT_EQ("LOADED", EvalJsWithManualReply(shell(), "notifyWhenLoaded();"));
   NavigateIframeToURL(web_contents(), "test_iframe",
                       embedded_test_server()->GetURL("b.com", "/title1.html"));
   web_contents()->UpdateWebContentsVisibility(Visibility::HIDDEN);
   {
+    SCOPED_TRACE("Out-of-viewport sad frame on a hidden tab");
     base::HistogramTester histograms;
     crash_process(root->child_at(0));
     histograms.ExpectUniqueSample(
@@ -13530,6 +13531,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   web_contents()->UpdateWebContentsVisibility(Visibility::HIDDEN);
   {
+    SCOPED_TRACE("display:none sad frame on a hidden tab");
     base::HistogramTester histograms;
     crash_process(root->child_at(0));
     histograms.ExpectUniqueSample(
@@ -13545,6 +13547,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(Visibility::VISIBLE, web_contents()->GetVisibility());
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   {
+    SCOPED_TRACE("Visible sad frame on a visible tab");
     base::HistogramTester histograms;
     crash_process(root->child_at(0));
     histograms.ExpectUniqueSample(

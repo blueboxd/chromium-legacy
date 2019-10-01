@@ -38,7 +38,7 @@ public class PaymentRequestShowPromiseDigitalGoodsTest implements MainActivitySt
             new PaymentRequestTestRule("show_promise/digital_goods.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {}
+    public void onMainActivityStarted() {}
 
     // The initial total in digital_goods.js is 99.99 while the final total is 1.00. Transaction
     // amount metrics must record the final total rather than the initial one. The final total falls
@@ -48,7 +48,7 @@ public class PaymentRequestShowPromiseDigitalGoodsTest implements MainActivitySt
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testDigitalGoodsFastApp() throws InterruptedException, TimeoutException {
+    public void testDigitalGoodsFastApp() throws TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.IMMEDIATE_RESPONSE);
         mRule.openPage();
@@ -71,7 +71,7 @@ public class PaymentRequestShowPromiseDigitalGoodsTest implements MainActivitySt
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testDigitalGoodsSlowApp() throws InterruptedException, TimeoutException {
+    public void testDigitalGoodsSlowApp() throws TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.DELAYED_RESPONSE, PaymentRequestTestRule.DELAYED_CREATION);
         mRule.openPage();
@@ -94,7 +94,7 @@ public class PaymentRequestShowPromiseDigitalGoodsTest implements MainActivitySt
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testSkipUIFastApp() throws InterruptedException, TimeoutException {
+    public void testSkipUIFastApp() throws TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.IMMEDIATE_RESPONSE);
         mRule.openPage();
@@ -109,7 +109,7 @@ public class PaymentRequestShowPromiseDigitalGoodsTest implements MainActivitySt
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testSkipUISlowApp() throws InterruptedException, TimeoutException {
+    public void testSkipUISlowApp() throws TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.DELAYED_RESPONSE, PaymentRequestTestRule.DELAYED_CREATION);
         mRule.openPage();

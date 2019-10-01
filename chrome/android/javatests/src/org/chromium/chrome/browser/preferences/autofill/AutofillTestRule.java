@@ -36,8 +36,7 @@ class AutofillTestRule extends ChromeBrowserTestRule implements EditorObserverFo
         AutofillProfilesFragment.setObserverForTest(AutofillTestRule.this);
     }
 
-    protected void setTextInEditorAndWait(final String[] values)
-            throws InterruptedException, TimeoutException {
+    protected void setTextInEditorAndWait(final String[] values) throws TimeoutException {
         int callCount = mEditorTextUpdate.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             List<EditText> fields = mEditorDialog.getEditableTextFieldsForTest();
@@ -48,8 +47,7 @@ class AutofillTestRule extends ChromeBrowserTestRule implements EditorObserverFo
         mEditorTextUpdate.waitForCallback(callCount);
     }
 
-    protected void clickInEditorAndWait(final int resourceId)
-            throws InterruptedException, TimeoutException {
+    protected void clickInEditorAndWait(final int resourceId) throws TimeoutException {
         int callCount = mClickUpdate.getCallCount();
         TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> mEditorDialog.findViewById(resourceId).performClick());
@@ -57,15 +55,15 @@ class AutofillTestRule extends ChromeBrowserTestRule implements EditorObserverFo
     }
 
     protected void clickInEditorAndWaitForValidationError(final int resourceId)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         int callCount = mValidationUpdate.getCallCount();
         TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> mEditorDialog.findViewById(resourceId).performClick());
         mValidationUpdate.waitForCallback(callCount);
     }
 
-    protected void sendKeycodeToTextFieldInEditorAndWait(final int keycode,
-            final int textFieldIndex) throws InterruptedException, TimeoutException {
+    protected void sendKeycodeToTextFieldInEditorAndWait(
+            final int keycode, final int textFieldIndex) throws TimeoutException {
         int callCount = mClickUpdate.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             List<EditText> fields = mEditorDialog.getEditableTextFieldsForTest();
@@ -76,13 +74,12 @@ class AutofillTestRule extends ChromeBrowserTestRule implements EditorObserverFo
         mClickUpdate.waitForCallback(callCount);
     }
 
-    protected void waitForThePreferenceUpdate() throws InterruptedException, TimeoutException {
+    protected void waitForThePreferenceUpdate() throws TimeoutException {
         int callCount = mPreferenceUpdate.getCallCount();
         mPreferenceUpdate.waitForCallback(callCount);
     }
 
-    protected void setEditorDialogAndWait(EditorDialog editorDialog)
-            throws TimeoutException, InterruptedException {
+    protected void setEditorDialogAndWait(EditorDialog editorDialog) throws TimeoutException {
         int callCount = mClickUpdate.getCallCount();
         mEditorDialog = editorDialog;
         mClickUpdate.waitForCallback(callCount);

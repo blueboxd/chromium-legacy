@@ -34,7 +34,7 @@ public class FontSizePrefsTest {
     private FontSizePrefs mFontSizePrefs;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         resetSharedPrefs();
         Context context = InstrumentationRegistry.getTargetContext();
         mFontSizePrefs = getFontSizePrefs(context);

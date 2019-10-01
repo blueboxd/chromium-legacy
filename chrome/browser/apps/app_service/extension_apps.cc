@@ -97,6 +97,8 @@ ash::ShelfLaunchSource ConvertLaunchSource(
       return ash::LAUNCH_FROM_APP_LIST_SEARCH;
     case apps::mojom::LaunchSource::kFromShelf:
       return ash::LAUNCH_FROM_SHELF;
+    case apps::mojom::LaunchSource::kFromFileManager:
+      return ash::LAUNCH_FROM_UNKNOWN;
   }
 }
 }  // namespace
@@ -267,6 +269,7 @@ void ExtensionApps::Launch(const std::string& app_id,
       break;
     case apps::mojom::LaunchSource::kFromAppListRecommendation:
     case apps::mojom::LaunchSource::kFromShelf:
+    case apps::mojom::LaunchSource::kFromFileManager:
       break;
   }
 
@@ -692,32 +695,9 @@ apps::mojom::InstallSource GetInstallSource(
 void ExtensionApps::PopulateIntentFilters(
     const base::Optional<GURL>& app_scope,
     std::vector<mojom::IntentFilterPtr>* target) {
-  if (app_scope) {
-    auto intent_filter = apps::mojom::IntentFilter::New();
-
-    std::vector<apps::mojom::ConditionValuePtr> scheme_condition_values;
-    scheme_condition_values.push_back(apps_util::MakeConditionValue(
-        app_scope->scheme(), apps::mojom::PatternMatchType::kNone));
-    auto scheme_condition =
-        apps_util::MakeCondition(apps::mojom::ConditionType::kScheme,
-                                 std::move(scheme_condition_values));
-    intent_filter->conditions.push_back(std::move(scheme_condition));
-
-    std::vector<apps::mojom::ConditionValuePtr> host_condition_values;
-    host_condition_values.push_back(apps_util::MakeConditionValue(
-        app_scope->host(), apps::mojom::PatternMatchType::kNone));
-    auto host_condition = apps_util::MakeCondition(
-        apps::mojom::ConditionType::kHost, std::move(host_condition_values));
-    intent_filter->conditions.push_back(std::move(host_condition));
-
-    std::vector<apps::mojom::ConditionValuePtr> path_condition_values;
-    path_condition_values.push_back(apps_util::MakeConditionValue(
-        app_scope->path(), apps::mojom::PatternMatchType::kPrefix));
-    auto path_condition = apps_util::MakeCondition(
-        apps::mojom::ConditionType::kPattern, std::move(path_condition_values));
-    intent_filter->conditions.push_back(std::move(path_condition));
-
-    target->push_back(std::move(intent_filter));
+  if (app_scope != base::nullopt) {
+    target->push_back(
+        apps_util::CreateIntentFilterForUrlScope(app_scope.value()));
   }
 }
 

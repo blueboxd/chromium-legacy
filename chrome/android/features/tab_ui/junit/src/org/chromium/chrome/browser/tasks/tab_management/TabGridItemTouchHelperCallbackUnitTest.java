@@ -707,22 +707,6 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
-    public void onDragTab_Ungroup_LastTab() {
-        initAndAssertAllProperties();
-        setupItemTouchHelperCallback(true);
-
-        // Assume that there is only one tab in the group.
-        doReturn(1).when(mAdapter).getItemCount();
-
-        // Simulate dragging the only tab down to the ungroup bar.
-        mItemTouchHelperCallback.onChildDraw(mCanvas, mRecyclerView, mDummyViewHolder1, 0, 8,
-                ItemTouchHelper.ACTION_STATE_DRAG, true);
-
-        verify(mTabGridDialogHandler, never())
-                .updateUngroupBarStatus(TabGridDialogParent.UngroupBarStatus.HOVERED);
-    }
-
-    @Test
     public void onDragTab_AfterRelease() {
         initAndAssertAllProperties();
         setupItemTouchHelperCallback(true);

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/shape_detection/barcode_detection_impl_mac_vision_api.h"
 #include "services/shape_detection/public/mojom/barcodedetection.mojom.h"
 #include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
@@ -27,9 +28,10 @@ class BarcodeDetectionProviderMac
   explicit BarcodeDetectionProviderMac(std::unique_ptr<VisionAPIInterface>);
   ~BarcodeDetectionProviderMac() override;
 
-  // Binds BarcodeDetection provider request to the implementation of
+  // Binds BarcodeDetection provider receiver to the implementation of
   // mojom::BarcodeDetectionProvider.
-  static void Create(mojom::BarcodeDetectionProviderRequest request);
+  static void Create(
+      mojo::PendingReceiver<mojom::BarcodeDetectionProvider> receiver);
 
   void CreateBarcodeDetection(
       mojo::PendingReceiver<mojom::BarcodeDetection> receiver,

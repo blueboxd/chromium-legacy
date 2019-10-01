@@ -490,9 +490,10 @@ service_manager::Connector* OobeUI::GetLoggedInUserMojoConnector() {
 }
 
 void OobeUI::BindMultiDeviceSetup(
-    multidevice_setup::mojom::MultiDeviceSetupRequest request) {
-  GetLoggedInUserMojoConnector()->BindInterface(
-      multidevice_setup::mojom::kServiceName, std::move(request));
+    mojo::PendingReceiver<multidevice_setup::mojom::MultiDeviceSetup>
+        receiver) {
+  GetLoggedInUserMojoConnector()->Connect(
+      multidevice_setup::mojom::kServiceName, std::move(receiver));
 }
 
 void OobeUI::BindPrivilegedHostDeviceSetter(

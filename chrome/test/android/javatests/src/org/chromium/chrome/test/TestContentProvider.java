@@ -20,7 +20,6 @@ import android.util.Log;
 import org.chromium.base.annotations.MainDex;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URLConnection;
 import java.util.HashMap;
@@ -105,7 +104,7 @@ public class TestContentProvider extends ContentProvider {
     }
 
     @Override
-    public ParcelFileDescriptor openFile(final Uri uri, String mode) throws FileNotFoundException {
+    public ParcelFileDescriptor openFile(final Uri uri, String mode) {
         String resource = uri.getLastPathSegment();
         synchronized (mLock) {
             if (mResourceRequestCount.containsKey(resource)) {

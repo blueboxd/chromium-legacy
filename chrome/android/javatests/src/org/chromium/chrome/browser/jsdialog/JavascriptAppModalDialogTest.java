@@ -63,7 +63,7 @@ public class JavascriptAppModalDialogTest {
             + "};</script></head></html>");
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         mActivityTestRule.startMainActivityWithURL(EMPTY_PAGE);
     }
 
@@ -74,8 +74,7 @@ public class JavascriptAppModalDialogTest {
     @Test
     @MediumTest
     @Feature({"Browser", "Main"})
-    public void testBeforeUnloadDialog()
-            throws InterruptedException, TimeoutException, ExecutionException {
+    public void testBeforeUnloadDialog() throws TimeoutException, ExecutionException {
         mActivityTestRule.loadUrl(BEFORE_UNLOAD_URL);
         // JavaScript onbeforeunload dialogs require a user gesture.
         tapViewAndWait();
@@ -110,8 +109,7 @@ public class JavascriptAppModalDialogTest {
     @Test
     @MediumTest
     @Feature({"Browser", "Main"})
-    public void testBeforeUnloadOnReloadDialog()
-            throws InterruptedException, TimeoutException, ExecutionException {
+    public void testBeforeUnloadOnReloadDialog() throws TimeoutException, ExecutionException {
         mActivityTestRule.loadUrl(BEFORE_UNLOAD_URL);
         // JavaScript onbeforeunload dialogs require a user gesture.
         tapViewAndWait();
@@ -131,8 +129,7 @@ public class JavascriptAppModalDialogTest {
     @Test
     @MediumTest
     @Feature({"Browser", "Main"})
-    public void testDisableRepeatedDialogs()
-            throws InterruptedException, TimeoutException, ExecutionException {
+    public void testDisableRepeatedDialogs() throws TimeoutException, ExecutionException {
         mActivityTestRule.loadUrl(BEFORE_UNLOAD_URL);
         // JavaScript onbeforeunload dialogs require a user gesture.
         tapViewAndWait();
@@ -173,8 +170,7 @@ public class JavascriptAppModalDialogTest {
     @Test
     @MediumTest
     @Feature({"Browser", "Main"})
-    public void testDialogDismissedAfterClosingTab()
-            throws InterruptedException, TimeoutException, ExecutionException {
+    public void testDialogDismissedAfterClosingTab() throws TimeoutException {
         mActivityTestRule.loadUrl(BEFORE_UNLOAD_URL);
         // JavaScript onbeforeunload dialogs require a user gesture.
         tapViewAndWait();
@@ -193,7 +189,7 @@ public class JavascriptAppModalDialogTest {
     /**
      * Taps on a view and waits for a callback.
      */
-    private void tapViewAndWait() throws InterruptedException, TimeoutException {
+    private void tapViewAndWait() throws TimeoutException {
         final TapGestureStateListener tapGestureStateListener = new TapGestureStateListener();
         int callCount = tapGestureStateListener.getCallCount();
         WebContentsUtils.getGestureListenerManager(mActivityTestRule.getWebContents())
@@ -240,7 +236,7 @@ public class JavascriptAppModalDialogTest {
             return mCallbackHelper.getCallCount();
         }
 
-        public void waitForTap(int currentCallCount) throws InterruptedException, TimeoutException {
+        public void waitForTap(int currentCallCount) throws TimeoutException {
             mCallbackHelper.waitForCallback(currentCallCount);
         }
 

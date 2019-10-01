@@ -15,6 +15,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.EventOffsetHandler;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
 /**

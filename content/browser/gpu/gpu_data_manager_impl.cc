@@ -35,10 +35,11 @@ bool GpuDataManagerImpl::GpuAccessAllowed(std::string* reason) {
   return private_->GpuAccessAllowed(reason);
 }
 
-void GpuDataManagerImpl::RequestCompleteGpuInfoIfNeeded(GpuInfoRequest request,
-                                                        bool delayed) {
+void GpuDataManagerImpl::RequestDxdiagDx12VulkanGpuInfoIfNeeded(
+    GpuInfoRequest request,
+    bool delayed) {
   base::AutoLock auto_lock(lock_);
-  private_->RequestCompleteGpuInfoIfNeeded(request, delayed);
+  private_->RequestDxdiagDx12VulkanGpuInfoIfNeeded(request, delayed);
 }
 
 bool GpuDataManagerImpl::IsEssentialGpuInfoAvailable() {

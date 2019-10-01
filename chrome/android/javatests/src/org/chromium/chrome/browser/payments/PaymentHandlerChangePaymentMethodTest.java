@@ -59,7 +59,7 @@ public class PaymentHandlerChangePaymentMethodTest {
     }
 
     @After
-    public void tearDown() throws Throwable {
+    public void tearDown() {
         mServer.stopAndDestroyServer();
     }
 

@@ -38,6 +38,15 @@ bool TestWebClient::IsAppSpecificURL(const GURL& url) const {
          url.SchemeIs(kTestAppSpecificScheme);
 }
 
+bool TestWebClient::ShouldBlockUrlDuringRestore(const GURL& url,
+                                                WebState* web_state) const {
+  return false;
+}
+
+void TestWebClient::AddSerializableData(
+    web::SerializableUserDataManager* user_data_manager,
+    web::WebState* web_state) {}
+
 base::string16 TestWebClient::GetPluginNotSupportedText() const {
   return plugin_not_supported_text_;
 }

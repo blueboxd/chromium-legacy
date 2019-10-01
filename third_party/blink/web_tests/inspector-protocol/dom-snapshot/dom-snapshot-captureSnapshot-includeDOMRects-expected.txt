@@ -3,6 +3,7 @@ Tests DOMSnapshot.getSnapshot reports offset, scroll, and client rects of each n
   "documents": [
     {
       "documentURL": 0,
+      "title": -1,
       "baseURL": 0,
       "contentLanguage": -1,
       "encodingName": 1,
@@ -116,7 +117,9 @@ Tests DOMSnapshot.getSnapshot reports offset, scroll, and client rects of each n
       },
       "textBoxes": "<object>",
       "scrollOffsetX": 0,
-      "scrollOffsetY": 0
+      "scrollOffsetY": 0,
+      "contentWidth": 800,
+      "contentHeight": 600
     }
   ],
   "strings": "<object>"

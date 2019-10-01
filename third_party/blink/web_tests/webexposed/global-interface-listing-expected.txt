@@ -7542,6 +7542,7 @@ interface Scheduler
 interface Scheduling
     attribute @@toStringTag
     method constructor
+    method isFramePending
     method isInputPending
 interface Screen
     attribute @@toStringTag

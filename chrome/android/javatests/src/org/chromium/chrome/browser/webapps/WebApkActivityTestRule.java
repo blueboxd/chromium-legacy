@@ -31,7 +31,7 @@ public class WebApkActivityTestRule extends ChromeActivityTestRule<WebApkActivit
      * Launches WebApkActivity and waits for the page to have finished loading and for the splash
      * screen to be hidden.
      */
-    public WebApkActivity startWebApkActivity(WebApkInfo webApkInfo) throws InterruptedException {
+    public WebApkActivity startWebApkActivity(WebApkInfo webApkInfo) {
         Intent intent = createIntent(webApkInfo);
 
         WebappActivity.addWebappInfo(webApkInfo.id(), webApkInfo);

@@ -342,6 +342,10 @@ class NET_EXPORT HostResolver {
  protected:
   HostResolver();
 
+  // Utility to create a request implementation that always fails with |error|
+  // immediately on start.
+  static std::unique_ptr<ResolveHostRequest> CreateFailingRequest(int error);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(HostResolver);
 };

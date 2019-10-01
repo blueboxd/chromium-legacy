@@ -106,7 +106,7 @@ public class FullscreenManagerTestUtils {
      * @param tab The current activity tab.
      */
     public static void waitForBrowserControlsToBeMoveable(
-            ChromeActivityTestRule testRule, final Tab tab) throws InterruptedException {
+            ChromeActivityTestRule testRule, final Tab tab) {
         waitForBrowserControlsPosition(testRule, 0);
 
         final CallbackHelper contentMovedCallback = new CallbackHelper();

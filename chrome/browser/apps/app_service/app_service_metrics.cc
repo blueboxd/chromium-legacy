@@ -44,6 +44,10 @@ void RecordDefaultAppLaunch(DefaultAppName default_app_name,
       UMA_HISTOGRAM_ENUMERATION("Apps.DefaultAppLaunch.FromShelf",
                                 default_app_name);
       break;
+    case apps::mojom::LaunchSource::kFromFileManager:
+      UMA_HISTOGRAM_ENUMERATION("Apps.DefaultAppLaunch.FromFileManager",
+                                default_app_name);
+      break;
   }
 }
 

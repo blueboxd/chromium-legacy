@@ -84,6 +84,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   // Properties of absolute axes.
   int32_t GetAbsMinimum(unsigned int code) const;
   int32_t GetAbsMaximum(unsigned int code) const;
+  int32_t GetAbsResolution(unsigned int code) const;
   int32_t GetAbsValue(unsigned int code) const;
   input_absinfo GetAbsInfoByCode(unsigned int code) const;
   uint32_t GetAbsMtSlotCount() const;

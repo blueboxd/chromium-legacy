@@ -190,6 +190,7 @@ namespace {
 const char* g_base_url_origin_a = "http://example.test:0/";
 const char* g_base_url_origin_sub_a = "http://subdomain.example.test:0/";
 const char* g_base_url_origin_secure_a = "https://example.test:0/";
+const char* g_base_url_sandbox_origin_a = "http://sandbox.example.test:0/";
 const char* g_base_url_origin_b = "http://not-example.test:0/";
 const char* g_empty_file = "first_party/empty.html";
 const char* g_nested_data = "first_party/nested-data.html";
@@ -217,6 +218,10 @@ KURL ToOriginSubA(const char* file) {
 
 KURL ToOriginSecureA(const char* file) {
   return ToKURL(std::string(g_base_url_origin_secure_a) + file);
+}
+
+KURL ToOriginSandboxA(const char* file) {
+  return ToKURL(std::string(g_base_url_sandbox_origin_a) + file);
 }
 
 KURL ToOriginB(const char* file) {
@@ -261,6 +266,17 @@ void WebDocumentFirstPartyTest::SetUpTestCase() {
   RegisterMockedURLLoad(ToOriginSubA(g_empty_file), g_empty_file);
   RegisterMockedURLLoad(ToOriginSecureA(g_empty_file), g_empty_file);
 
+  WebURLResponse response(ToOriginSandboxA(g_empty_file));
+  response.SetMimeType(WebString::FromUTF8("text/html"));
+  response.SetHttpHeaderField(http_names::kContentType,
+                              WebString::FromUTF8("text/html"));
+  response.SetHttpHeaderField(http_names::kContentSecurityPolicy,
+                              WebString::FromUTF8("sandbox"));
+  response.SetHttpStatusCode(200);
+  url_test_helpers::RegisterMockedURLLoadWithCustomResponse(
+      ToOriginSandboxA(g_empty_file), test::CoreTestDataPath(g_empty_file),
+      response);
+
   RegisterMockedURLLoad(ToOriginB(g_empty_file), g_empty_file);
   RegisterMockedURLLoad(ToOriginB(g_nested_origin_a), g_nested_origin_a);
   RegisterMockedURLLoad(ToOriginB(g_nested_origin_b), g_nested_origin_b);
@@ -299,15 +315,29 @@ bool OriginsEqual(const char* path,
 TEST_F(WebDocumentFirstPartyTest, Empty) {
   Load(g_empty_file);
 
-  ASSERT_EQ(ToOriginA(g_empty_file), TopDocument()->SiteForCookies());
+  ASSERT_TRUE(OriginsEqual(
+      g_empty_file, SecurityOrigin::Create(TopDocument()->SiteForCookies())));
   ASSERT_TRUE(OriginsEqual(g_empty_file, TopDocument()->TopFrameOrigin()));
+}
+
+TEST_F(WebDocumentFirstPartyTest, EmptySandbox) {
+  web_view_helper_.InitializeAndLoad(std::string(g_base_url_sandbox_origin_a) +
+                                     g_empty_file);
+
+  ASSERT_TRUE(TopDocument()->TopFrameOrigin()->IsOpaque())
+      << TopDocument()->TopFrameOrigin()->ToUrlOrigin().GetDebugString();
+  ASSERT_EQ(NullURL(), TopDocument()->SiteForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedOriginA) {
   Load(g_nested_origin_a);
 
-  ASSERT_EQ(ToOriginA(g_nested_origin_a), TopDocument()->SiteForCookies());
-  ASSERT_EQ(ToOriginA(g_nested_origin_a), NestedDocument()->SiteForCookies());
+  ASSERT_TRUE(
+      OriginsEqual(g_nested_origin_a,
+                   SecurityOrigin::Create(TopDocument()->SiteForCookies())));
+  ASSERT_TRUE(
+      OriginsEqual(g_nested_origin_a,
+                   SecurityOrigin::Create(NestedDocument()->SiteForCookies())));
 
   ASSERT_TRUE(OriginsEqual(g_nested_origin_a, TopDocument()->TopFrameOrigin()));
   ASSERT_TRUE(
@@ -317,9 +347,12 @@ TEST_F(WebDocumentFirstPartyTest, NestedOriginA) {
 TEST_F(WebDocumentFirstPartyTest, NestedOriginSubA) {
   Load(g_nested_origin_sub_a);
 
-  ASSERT_EQ(ToOriginA(g_nested_origin_sub_a), TopDocument()->SiteForCookies());
-  ASSERT_EQ(ToOriginA(g_nested_origin_sub_a),
-            NestedDocument()->SiteForCookies());
+  ASSERT_TRUE(
+      OriginsEqual(g_nested_origin_sub_a,
+                   SecurityOrigin::Create(TopDocument()->SiteForCookies())));
+  ASSERT_TRUE(
+      OriginsEqual(g_nested_origin_sub_a,
+                   SecurityOrigin::Create(NestedDocument()->SiteForCookies())));
 
   ASSERT_TRUE(
       OriginsEqual(g_nested_origin_sub_a, TopDocument()->TopFrameOrigin()));
@@ -330,10 +363,12 @@ TEST_F(WebDocumentFirstPartyTest, NestedOriginSubA) {
 TEST_F(WebDocumentFirstPartyTest, NestedOriginSecureA) {
   Load(g_nested_origin_secure_a);
 
-  ASSERT_EQ(ToOriginA(g_nested_origin_secure_a),
-            TopDocument()->SiteForCookies());
-  ASSERT_EQ(ToOriginA(g_nested_origin_secure_a),
-            NestedDocument()->SiteForCookies());
+  ASSERT_TRUE(
+      OriginsEqual(g_nested_origin_secure_a,
+                   SecurityOrigin::Create(TopDocument()->SiteForCookies())));
+  ASSERT_TRUE(
+      OriginsEqual(g_nested_origin_secure_a,
+                   SecurityOrigin::Create(NestedDocument()->SiteForCookies())));
 
   ASSERT_TRUE(
       OriginsEqual(g_nested_origin_secure_a, TopDocument()->TopFrameOrigin()));
@@ -344,12 +379,15 @@ TEST_F(WebDocumentFirstPartyTest, NestedOriginSecureA) {
 TEST_F(WebDocumentFirstPartyTest, NestedOriginAInOriginA) {
   Load(g_nested_origin_a_in_origin_a);
 
-  ASSERT_EQ(ToOriginA(g_nested_origin_a_in_origin_a),
-            TopDocument()->SiteForCookies());
-  ASSERT_EQ(ToOriginA(g_nested_origin_a_in_origin_a),
-            NestedDocument()->SiteForCookies());
-  ASSERT_EQ(ToOriginA(g_nested_origin_a_in_origin_a),
-            NestedNestedDocument()->SiteForCookies());
+  ASSERT_TRUE(
+      OriginsEqual(g_nested_origin_a_in_origin_a,
+                   SecurityOrigin::Create(TopDocument()->SiteForCookies())));
+  ASSERT_TRUE(
+      OriginsEqual(g_nested_origin_a_in_origin_a,
+                   SecurityOrigin::Create(NestedDocument()->SiteForCookies())));
+  ASSERT_TRUE(OriginsEqual(
+      g_nested_origin_a_in_origin_a,
+      SecurityOrigin::Create(NestedNestedDocument()->SiteForCookies())));
 
   ASSERT_TRUE(OriginsEqual(g_nested_origin_a_in_origin_a,
                            TopDocument()->TopFrameOrigin()));
@@ -360,8 +398,9 @@ TEST_F(WebDocumentFirstPartyTest, NestedOriginAInOriginA) {
 TEST_F(WebDocumentFirstPartyTest, NestedOriginAInOriginB) {
   Load(g_nested_origin_a_in_origin_b);
 
-  ASSERT_EQ(ToOriginA(g_nested_origin_a_in_origin_b),
-            TopDocument()->SiteForCookies());
+  ASSERT_TRUE(
+      OriginsEqual(g_nested_origin_a_in_origin_b,
+                   SecurityOrigin::Create(TopDocument()->SiteForCookies())));
   ASSERT_EQ(NullURL(), NestedDocument()->SiteForCookies());
   ASSERT_EQ(NullURL(), NestedNestedDocument()->SiteForCookies());
 
@@ -376,7 +415,9 @@ TEST_F(WebDocumentFirstPartyTest, NestedOriginAInOriginB) {
 TEST_F(WebDocumentFirstPartyTest, NestedOriginB) {
   Load(g_nested_origin_b);
 
-  ASSERT_EQ(ToOriginA(g_nested_origin_b), TopDocument()->SiteForCookies());
+  ASSERT_TRUE(
+      OriginsEqual(g_nested_origin_b,
+                   SecurityOrigin::Create(TopDocument()->SiteForCookies())));
   ASSERT_EQ(NullURL(), NestedDocument()->SiteForCookies());
 
   ASSERT_TRUE(OriginsEqual(g_nested_origin_b, TopDocument()->TopFrameOrigin()));
@@ -387,10 +428,12 @@ TEST_F(WebDocumentFirstPartyTest, NestedOriginB) {
 TEST_F(WebDocumentFirstPartyTest, NestedOriginBInOriginA) {
   Load(g_nested_origin_b_in_origin_a);
 
-  ASSERT_EQ(ToOriginA(g_nested_origin_b_in_origin_a),
-            TopDocument()->SiteForCookies());
-  ASSERT_EQ(ToOriginA(g_nested_origin_b_in_origin_a),
-            NestedDocument()->SiteForCookies());
+  ASSERT_TRUE(
+      OriginsEqual(g_nested_origin_b_in_origin_a,
+                   SecurityOrigin::Create(TopDocument()->SiteForCookies())));
+  ASSERT_TRUE(
+      OriginsEqual(g_nested_origin_b_in_origin_a,
+                   SecurityOrigin::Create(NestedDocument()->SiteForCookies())));
   ASSERT_EQ(NullURL(), NestedNestedDocument()->SiteForCookies());
 
   ASSERT_TRUE(OriginsEqual(g_nested_origin_b_in_origin_a,
@@ -404,8 +447,9 @@ TEST_F(WebDocumentFirstPartyTest, NestedOriginBInOriginA) {
 TEST_F(WebDocumentFirstPartyTest, NestedOriginBInOriginB) {
   Load(g_nested_origin_b_in_origin_b);
 
-  ASSERT_EQ(ToOriginA(g_nested_origin_b_in_origin_b),
-            TopDocument()->SiteForCookies());
+  ASSERT_TRUE(
+      OriginsEqual(g_nested_origin_b_in_origin_b,
+                   SecurityOrigin::Create(TopDocument()->SiteForCookies())));
   ASSERT_EQ(NullURL(), NestedDocument()->SiteForCookies());
   ASSERT_EQ(NullURL(), NestedNestedDocument()->SiteForCookies());
 
@@ -420,8 +464,12 @@ TEST_F(WebDocumentFirstPartyTest, NestedOriginBInOriginB) {
 TEST_F(WebDocumentFirstPartyTest, NestedSrcdoc) {
   Load(g_nested_src_doc);
 
-  ASSERT_EQ(ToOriginA(g_nested_src_doc), TopDocument()->SiteForCookies());
-  ASSERT_EQ(ToOriginA(g_nested_src_doc), NestedDocument()->SiteForCookies());
+  ASSERT_TRUE(
+      OriginsEqual(g_nested_src_doc,
+                   SecurityOrigin::Create(TopDocument()->SiteForCookies())));
+  ASSERT_TRUE(
+      OriginsEqual(g_nested_src_doc,
+                   SecurityOrigin::Create(NestedDocument()->SiteForCookies())));
 
   ASSERT_TRUE(OriginsEqual(g_nested_src_doc, TopDocument()->TopFrameOrigin()));
   ASSERT_TRUE(
@@ -431,7 +479,8 @@ TEST_F(WebDocumentFirstPartyTest, NestedSrcdoc) {
 TEST_F(WebDocumentFirstPartyTest, NestedData) {
   Load(g_nested_data);
 
-  ASSERT_EQ(ToOriginA(g_nested_data), TopDocument()->SiteForCookies());
+  ASSERT_TRUE(OriginsEqual(
+      g_nested_data, SecurityOrigin::Create(TopDocument()->SiteForCookies())));
   ASSERT_EQ(NullURL(), NestedDocument()->SiteForCookies());
 
   ASSERT_TRUE(OriginsEqual(g_nested_data, TopDocument()->TopFrameOrigin()));
@@ -444,12 +493,15 @@ TEST_F(WebDocumentFirstPartyTest,
 
   SchemeRegistry::RegisterURLSchemeAsFirstPartyWhenTopLevel("http");
 
-  ASSERT_EQ(ToOriginA(g_nested_origin_a_in_origin_b),
-            TopDocument()->SiteForCookies());
-  ASSERT_EQ(ToOriginA(g_nested_origin_a_in_origin_b),
-            NestedDocument()->SiteForCookies());
-  ASSERT_EQ(ToOriginA(g_nested_origin_a_in_origin_b),
-            NestedNestedDocument()->SiteForCookies());
+  ASSERT_TRUE(
+      OriginsEqual(g_nested_origin_a_in_origin_b,
+                   SecurityOrigin::Create(TopDocument()->SiteForCookies())));
+  ASSERT_TRUE(
+      OriginsEqual(g_nested_origin_a_in_origin_b,
+                   SecurityOrigin::Create(NestedDocument()->SiteForCookies())));
+  ASSERT_TRUE(OriginsEqual(
+      g_nested_origin_a_in_origin_b,
+      SecurityOrigin::Create(NestedNestedDocument()->SiteForCookies())));
 
   ASSERT_TRUE(OriginsEqual(g_nested_origin_a_in_origin_b,
                            TopDocument()->TopFrameOrigin()));

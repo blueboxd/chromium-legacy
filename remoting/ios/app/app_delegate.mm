@@ -26,6 +26,7 @@
 
 #include "base/logging.h"
 #include "remoting/base/string_resources.h"
+#include "remoting/ios/app/notification_presenter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -125,6 +126,7 @@ static NSString* const kPrivacyPolicyUrl =
   self.window.rootViewController = _appViewController;
   [self.window makeKeyAndVisible];
   [UserStatusPresenter.instance start];
+  remoting::NotificationPresenter::GetInstance()->Start();
 }
 
 - (void)presentOnTopPresentingVC:(UIViewController*)viewController {

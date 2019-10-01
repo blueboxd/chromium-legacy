@@ -35,12 +35,12 @@ public class PaymentRequestShowPromiseInvalidDetailsTest implements MainActivity
             new PaymentRequestTestRule("show_promise/invalid_details.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {}
+    public void onMainActivityStarted() {}
 
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testReject() throws InterruptedException, TimeoutException {
+    public void testReject() throws TimeoutException {
         mRule.openPageAndClickNodeAndWait("buy", mRule.getDismissed());
         mRule.expectResultContains(new String[] {"Total amount value should be non-negative"});
     }

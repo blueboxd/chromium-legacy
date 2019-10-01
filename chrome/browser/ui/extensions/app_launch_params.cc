@@ -17,7 +17,7 @@
 
 using extensions::ExtensionPrefs;
 
-AppLaunchParams CreateAppLaunchParamsUserContainer(
+apps::AppLaunchParams CreateAppLaunchParamsUserContainer(
     Profile* profile,
     const extensions::Extension* extension,
     WindowOpenDisposition disposition,
@@ -26,11 +26,10 @@ AppLaunchParams CreateAppLaunchParamsUserContainer(
   // is to launch as a regular tab.
   apps::mojom::LaunchContainer container =
       extensions::GetLaunchContainer(ExtensionPrefs::Get(profile), extension);
-  return AppLaunchParams(profile, extension->id(), container, disposition,
-                         source);
+  return apps::AppLaunchParams(extension->id(), container, disposition, source);
 }
 
-AppLaunchParams CreateAppLaunchParamsWithEventFlags(
+apps::AppLaunchParams CreateAppLaunchParamsWithEventFlags(
     Profile* profile,
     const extensions::Extension* extension,
     int event_flags,
@@ -55,6 +54,6 @@ AppLaunchParams CreateAppLaunchParamsWithEventFlags(
         extensions::GetLaunchContainer(ExtensionPrefs::Get(profile), extension);
     disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   }
-  return AppLaunchParams(profile, extension->id(), container, disposition,
-                         source, display_id);
+  return apps::AppLaunchParams(extension->id(), container, disposition, source,
+                               display_id);
 }

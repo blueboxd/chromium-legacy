@@ -59,7 +59,7 @@ class LocalSiteCharacteristicsWebContentsObserver::GraphObserver
  private:
   static void DispatchNonPersistentNotificationCreated(
       WebContentsProxy contents_proxy,
-      int64_t navigation_id);
+      const url::Origin& origin);
 
   // Binds to the task runner where the object is constructed.
   scoped_refptr<base::SequencedTaskRunner> destination_task_runner_;
@@ -314,9 +314,10 @@ void LocalSiteCharacteristicsWebContentsObserver::GraphObserver::
   const performance_manager::PageNode* page_node = frame_node->GetPageNode();
   destination_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&GraphObserver::DispatchNonPersistentNotificationCreated,
-                     page_node->GetContentsProxy(),
-                     page_node->GetNavigationID()));
+      base::BindOnce(
+          &GraphObserver::DispatchNonPersistentNotificationCreated,
+          page_node->GetContentsProxy(),
+          url::Origin::Create(page_node->GetMainFrameUrl().GetOrigin())));
 }
 
 namespace {
@@ -324,15 +325,12 @@ namespace {
 // Return the WCO if notification is not late, and it's available.
 LocalSiteCharacteristicsWebContentsObserver* MaybeGetWCO(
     performance_manager::WebContentsProxy contents_proxy,
-    int64_t navigation_id) {
-  // Bail if this is a late notification.
-  if (contents_proxy.LastNavigationId() != navigation_id)
-    return nullptr;
-
-  // The proxy is guaranteed to dereference if the navigation ID above was
-  // valid.
+    const url::Origin& origin) {
   content::WebContents* web_contents = contents_proxy.Get();
-  DCHECK(web_contents);
+  // The WC may be dead by the time the task posted from the PM sequence arrives
+  // on the UI thread.
+  if (!web_contents)
+    return nullptr;
 
   // The L41r is not itself WebContentsUserData, but rather stored on
   // the RC TabHelper, so retrieve that first - if available.
@@ -341,7 +339,11 @@ LocalSiteCharacteristicsWebContentsObserver* MaybeGetWCO(
   if (!rc_th)
     return nullptr;
 
-  return rc_th->local_site_characteristics_wc_observer();
+  auto* wco = rc_th->local_site_characteristics_wc_observer();
+  if (wco->writer_origin() != origin)
+    return nullptr;
+
+  return wco;
 }
 
 }  // namespace
@@ -349,8 +351,8 @@ LocalSiteCharacteristicsWebContentsObserver* MaybeGetWCO(
 // static
 void LocalSiteCharacteristicsWebContentsObserver::GraphObserver::
     DispatchNonPersistentNotificationCreated(WebContentsProxy contents_proxy,
-                                             int64_t navigation_id) {
-  if (auto* wco = MaybeGetWCO(contents_proxy, navigation_id))
+                                             const url::Origin& origin) {
+  if (auto* wco = MaybeGetWCO(contents_proxy, origin))
     wco->OnNonPersistentNotificationCreated();
 }
 

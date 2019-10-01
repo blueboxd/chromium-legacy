@@ -27,9 +27,7 @@ class BackgroundTaskCoordinatorHelper {
       NotificationBackgroundTaskScheduler* background_task,
       const SchedulerConfig* config,
       base::Clock* clock)
-      : background_task_(background_task),
-        config_(config),
-        clock_(clock) {}
+      : background_task_(background_task), config_(config), clock_(clock) {}
   ~BackgroundTaskCoordinatorHelper() = default;
 
   void ScheduleBackgroundTask(
@@ -40,6 +38,45 @@ class BackgroundTaskCoordinatorHelper {
       return;
     }
 
+    BackgroundTaskCoordinator::Notifications unthrottled_notifications;
+    BackgroundTaskCoordinator::Notifications throttled_notifications;
+    for (auto& pair : notifications) {
+      for (auto* notification : pair.second) {
+        auto type = pair.first;
+        if (notification->schedule_params.priority ==
+            ScheduleParams::Priority::kNoThrottle) {
+          unthrottled_notifications[type].emplace_back(std::move(notification));
+        } else {
+          throttled_notifications[type].emplace_back(std::move(notification));
+        }
+      }
+    }
+    ProcessUnthrottledNotifications(std::move(unthrottled_notifications));
+    ProcessThrottledNotifications(std::move(throttled_notifications),
+                                  std::move(client_states));
+    ScheduleBackgroundTaskInternal();
+  }
+
+ private:
+  void ProcessUnthrottledNotifications(
+      BackgroundTaskCoordinator::Notifications notifications) {
+    for (const auto& pair : notifications) {
+      for (const auto* entry : pair.second) {
+        DCHECK_EQ(entry->schedule_params.priority,
+                  ScheduleParams::Priority::kNoThrottle);
+        if (!entry->schedule_params.deliver_time_start.has_value()) {
+          continue;
+        }
+        base::Time deliver_time_start =
+            entry->schedule_params.deliver_time_start.value();
+        MaybeUpdateBackgroundTaskTime(deliver_time_start);
+      }
+    }
+  }
+
+  void ProcessThrottledNotifications(
+      BackgroundTaskCoordinator::Notifications notifications,
+      BackgroundTaskCoordinator::ClientStates client_states) {
     base::Time tomorrow;
     base::Time now = clock_->Now();
     bool success = ToLocalHour(0, now, 1 /*day_delta*/, &tomorrow);
@@ -64,6 +101,8 @@ class BackgroundTaskCoordinatorHelper {
 
       // Find the eariliest notification to launch the background task.
       for (const auto* entry : pair.second) {
+        DCHECK_NE(entry->schedule_params.priority,
+                  ScheduleParams::Priority::kNoThrottle);
         // Currently only support deliver time window.
         if (!entry->schedule_params.deliver_time_start.has_value()) {
           continue;
@@ -94,11 +133,8 @@ class BackgroundTaskCoordinatorHelper {
         MaybeUpdateBackgroundTaskTime(deliver_time_start);
       }
     }
-
-    ScheduleBackgroundTaskInternal();
   }
 
- private:
   void MaybeUpdateBackgroundTaskTime(const base::Time& time) {
     if (!background_task_time_.has_value() ||
         time < background_task_time_.value())

@@ -245,14 +245,10 @@ namespace autofillPrivate {
   };
 
   interface Events {
-    // Fired when the address list has changed, meaning that an entry has been
-    // added, removed, or changed.
-    // |entries| The updated list of entries.
-    static void onAddressListChanged(AddressEntry[] entries);
-
-    // Fired when the credit card list has changed, meaning that an entry has
+    // Fired when the personal data has changed, meaning that an entry has
     // been added, removed, or changed.
     // |entries| The updated list of entries.
-    static void onCreditCardListChanged(CreditCardEntry[] entries);
+    static void onPersonalDataChanged(AddressEntry[] addressEntries,
+        CreditCardEntry[] creditCardEntries);
   };
 };

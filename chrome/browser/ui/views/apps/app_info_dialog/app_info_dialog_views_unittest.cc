@@ -136,8 +136,9 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
 
   void ShowAppInfoForProfile(const std::string& app_id, Profile* profile) {
     const extensions::Extension* extension =
-        extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
-            app_id, extensions::ExtensionRegistry::COMPATIBILITY);
+        extensions::ExtensionRegistry::Get(profile)
+            ->enabled_extensions()
+            .GetByID(app_id);
     DCHECK(extension);
 
     DCHECK(!widget_);

@@ -61,7 +61,7 @@ public class ExternalPrerenderHandlerTest {
 
         final Callable<Profile> profileCallable = new Callable<Profile>() {
             @Override
-            public Profile call() throws Exception {
+            public Profile call() {
                 return Profile.getLastUsedProfile();
             }
         };
@@ -73,7 +73,7 @@ public class ExternalPrerenderHandlerTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mExternalPrerenderHandler.cancelCurrentPrerender());
         mTestServer.stopAndDestroyServer();
@@ -139,8 +139,9 @@ public class ExternalPrerenderHandlerTest {
             public boolean isSatisfied() {
                 boolean has_prefetched =
                         ExternalPrerenderHandler.hasRecentlyPrefetchedUrlForTesting(mProfile, url);
-                if (has_prefetched)
+                if (has_prefetched) {
                     ExternalPrerenderHandler.clearPrefetchInformationForTesting(mProfile);
+                }
                 return has_prefetched;
             }
         }, ENSURE_COMPLETED_PRERENDER_TIMEOUT_MS, PRERENDER_DELAY_MS);

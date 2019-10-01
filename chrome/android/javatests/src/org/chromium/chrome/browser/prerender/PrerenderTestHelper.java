@@ -70,7 +70,7 @@ public class PrerenderTestHelper {
                 TestThreadUtils.runOnUiThreadBlockingNoException(
                         new Callable<ExternalPrerenderHandler>() {
                             @Override
-                            public ExternalPrerenderHandler call() throws Exception {
+                            public ExternalPrerenderHandler call() {
                                 ExternalPrerenderHandler prerenderHandler =
                                         new ExternalPrerenderHandler();
                                 Rect bounds = new Rect(0, 0, coord.getContentWidthPixInt(),

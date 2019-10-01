@@ -49,14 +49,14 @@ public class ClientOnReceivedError2Test {
             "http://id.be.really.surprised.if.this.address.existed/a.html";
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mContentsClient = new VerifyOnReceivedError2CallClient();
         mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = mTestContainerView.getAwContents();
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         if (mWebServer != null) mWebServer.shutdown();
     }
 
@@ -64,7 +64,7 @@ public class ClientOnReceivedError2Test {
         mWebServer = TestWebServer.start();
     }
 
-    private void useDefaultTestAwContentsClient() throws Exception {
+    private void useDefaultTestAwContentsClient() {
         mContentsClient.enableBypass();
     }
 

@@ -51,6 +51,10 @@ void GamepadDataFetcher::ResetVibration(
                        mojom::GamepadHapticsResult::GamepadHapticsResultError);
 }
 
+bool GamepadDataFetcher::DisconnectUnrecognizedGamepad(int source_id) {
+  return false;
+}
+
 // static
 int64_t GamepadDataFetcher::TimeInMicroseconds(base::TimeTicks update_time) {
   return update_time.since_origin().InMicroseconds();

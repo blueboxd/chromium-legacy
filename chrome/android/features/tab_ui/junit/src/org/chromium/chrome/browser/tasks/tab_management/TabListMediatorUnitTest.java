@@ -457,8 +457,9 @@ public class TabListMediatorUnitTest {
     @Test
     @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
             ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
-    public void
-    sendsUngroupSignalCorrectly() {
+    // clang-format off
+    public void sendsUngroupSignalCorrectly() {
+        // clang-format on
         initAndAssertAllProperties();
         setUpForTabGroupOperation();
         FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
@@ -470,6 +471,7 @@ public class TabListMediatorUnitTest {
 
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
         doReturn(mAdapter).when(mRecyclerView).getAdapter();
+        doReturn(1).when(mAdapter).getItemCount();
 
         // Simulate the ungroup action.
         itemTouchHelperCallback.onSelectedChanged(
@@ -799,6 +801,24 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    public void tabMoveOutOfGroup_GTS_LastTab() {
+        setUpForTabGroupOperation();
+        // Assume that tab1 is a single tab.
+        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1));
+        mMediator.resetWithListOfTabs(tabs, false, false);
+        doReturn(1).when(mTabGroupModelFilter).getCount();
+        doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
+        doReturn(tabs).when(mTabGroupModelFilter).getRelatedTabList(TAB1_ID);
+
+        // Ungroup the single tab.
+        mTabGroupModelFilterObserverCaptor.getValue().didMoveTabOutOfGroup(mTab1, POSITION1);
+
+        assertThat(mModel.size(), equalTo(1));
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(0).model.get(TabProperties.TITLE), equalTo(TAB1_TITLE));
+    }
+
+    @Test
     public void tabMoveOutOfGroup_Dialog() {
         setUpForTabGroupOperation();
 
@@ -821,6 +841,27 @@ public class TabListMediatorUnitTest {
         assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB2_ID));
         assertThat(mModel.get(0).model.get(TabProperties.TITLE), equalTo(TAB2_TITLE));
         verify(mTabGridDialogHandler).updateDialogContent(TAB2_ID);
+    }
+
+    @Test
+    public void tabMoveOutOfGroup_Dialog_LastTab() {
+        setUpForTabGroupOperation();
+
+        // Setup the mediator with a DialogHandler.
+        mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,
+                mTabContentManager::getTabThumbnailWithCallback, null, mTabListFaviconProvider,
+                false, null, null, null, mTabGridDialogHandler, getClass().getSimpleName(), 0);
+        // Assume that tab1 is a single tab.
+        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1));
+        mMediator.resetWithListOfTabs(tabs, false, false);
+        doReturn(1).when(mTabGroupModelFilter).getCount();
+        doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
+        doReturn(tabs).when(mTabGroupModelFilter).getRelatedTabList(TAB1_ID);
+
+        // Ungroup the single tab.
+        mTabGroupModelFilterObserverCaptor.getValue().didMoveTabOutOfGroup(mTab1, POSITION1);
+
+        verify(mTabGridDialogHandler).updateDialogContent(Tab.INVALID_TAB_ID);
     }
 
     @Test

@@ -19,7 +19,6 @@
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/test/fake_leveldb_database_error_on_write.h"
-#include "content/browser/dom_storage/test/fake_leveldb_service.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_usage_info.h"
@@ -43,7 +42,6 @@ using leveldb::Uint8VectorToStdString;
 namespace content {
 
 namespace {
-using test::FakeLevelDBService;
 using test::FakeLevelDBDatabaseErrorOnWrite;
 
 void GetStorageUsageCallback(const base::RepeatingClosure& callback,
@@ -106,9 +104,7 @@ class TestLevelDBObserver : public blink::mojom::StorageAreaObserver {
 class LocalStorageContextMojoTest : public testing::Test {
  public:
   LocalStorageContextMojoTest()
-      : db_(&mock_data_),
-        db_receiver_(&db_),
-        task_runner_(new MockDOMStorageTaskRunner(
+      : task_runner_(new MockDOMStorageTaskRunner(
             base::ThreadTaskRunnerHandle::Get().get())),
         mock_special_storage_policy_(new MockSpecialStoragePolicy()) {
     EXPECT_TRUE(temp_path_.CreateUniqueTempDir());
@@ -128,12 +124,12 @@ class LocalStorageContextMojoTest : public testing::Test {
           task_runner_, temp_path_.GetPath(),
           base::FilePath(FILE_PATH_LITERAL("leveldb")),
           special_storage_policy());
-      mojo::AssociatedRemote<leveldb::mojom::LevelDBDatabase> database_remote;
-      auto receiver =
-          database_remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
-      context_->SetDatabaseForTesting(database_remote.Unbind());
-      db_receiver_.Bind(std::move(receiver));
+      context_->SetDatabaseFactoryForTesting(base::BindLambdaForTesting(
+          [&]() -> std::unique_ptr<leveldb::mojom::LevelDBDatabase> {
+            return std::make_unique<FakeLevelDBDatabase>(&mock_data_);
+          }));
     }
+
     return context_;
   }
 
@@ -180,8 +176,6 @@ class LocalStorageContextMojoTest : public testing::Test {
     return success ? base::Optional<std::vector<uint8_t>>(result)
                    : base::nullopt;
   }
-
-  void CloseBinding() { db_receiver_.reset(); }
 
   const base::FilePath& temp_path() const { return temp_path_.GetPath(); }
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
@@ -250,8 +244,6 @@ class LocalStorageContextMojoTest : public testing::Test {
   BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_path_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
-  FakeLevelDBDatabase db_;
-  mojo::AssociatedReceiver<leveldb::mojom::LevelDBDatabase> db_receiver_;
 
   scoped_refptr<MockDOMStorageTaskRunner> task_runner_;
 
@@ -369,7 +361,6 @@ TEST_F(LocalStorageContextMojoTest, ValidVersion) {
 TEST_F(LocalStorageContextMojoTest, InvalidVersion) {
   set_mock_data("VERSION", "foobar");
   set_mock_data(std::string("_http://foobar.com") + '\x00' + "key", "value");
-
   EXPECT_EQ(base::nullopt, DoTestGet(StdStringToUint8Vector("key")));
 }
 
@@ -404,25 +395,12 @@ TEST_F(LocalStorageContextMojoTest, GetStorageUsage_Data) {
   area->Put(key2, value, base::nullopt, "source", base::DoNothing());
   area.reset();
 
-  // GetStorageUsage only includes committed data, but still returns all origins
-  // that used localstorage with zero size.
-  std::vector<StorageUsageInfo> info = GetStorageUsageSync();
-  ASSERT_EQ(2u, info.size());
-  if (info[0].origin == origin2)
-    std::swap(info[0], info[1]);
-  EXPECT_EQ(origin1, info[0].origin);
-  EXPECT_EQ(origin2, info[1].origin);
-  EXPECT_LE(before_write, info[0].last_modified);
-  EXPECT_LE(before_write, info[1].last_modified);
-  EXPECT_EQ(0u, info[0].total_size_bytes);
-  EXPECT_EQ(0u, info[1].total_size_bytes);
-
   // Make sure all data gets committed to disk.
   base::RunLoop().RunUntilIdle();
 
   base::Time after_write = base::Time::Now();
 
-  info = GetStorageUsageSync();
+  std::vector<StorageUsageInfo> info = GetStorageUsageSync();
   ASSERT_EQ(2u, info.size());
   if (info[0].origin == origin2)
     std::swap(info[0], info[1]);
@@ -500,36 +478,6 @@ TEST_F(LocalStorageContextMojoTest, MetaDataClearedOnDeleteAll) {
     EXPECT_NE(std::string::npos,
               Uint8VectorToStdString(it.first).find(origin2.Serialize()));
   }
-}
-
-TEST_F(LocalStorageContextMojoTest, MojoConnectionDisconnects) {
-  url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
-  auto key = StdStringToUint8Vector("key");
-  auto value = StdStringToUint8Vector("value");
-
-  {
-    mojo::Remote<blink::mojom::StorageArea> area;
-    context()->OpenLocalStorage(origin1, area.BindNewPipeAndPassReceiver());
-    area->Put(key, value, base::nullopt, "source", base::DoNothing());
-    area.reset();
-  }
-  EXPECT_EQ(value, DoTestGet(key));
-
-  // Close the database connection.
-  CloseBinding();
-  base::RunLoop().RunUntilIdle();
-
-  // We can't access the data anymore.
-  EXPECT_EQ(base::nullopt, DoTestGet(key));
-
-  // Check that local storage still works without a database.
-  {
-    mojo::Remote<blink::mojom::StorageArea> area;
-    context()->OpenLocalStorage(origin1, area.BindNewPipeAndPassReceiver());
-    area->Put(key, value, base::nullopt, "source", base::DoNothing());
-    area.reset();
-  }
-  EXPECT_EQ(value, DoTestGet(key));
 }
 
 TEST_F(LocalStorageContextMojoTest, DeleteStorage) {
@@ -1024,30 +972,42 @@ TEST_F(LocalStorageContextMojoTest, RecreateOnCommitFailure) {
       temp_path(), base::ThreadTaskRunnerHandle::Get(), nullptr,
       base::FilePath(), test_path, nullptr);
 
-  FakeLevelDBService mock_leveldb_service;
-  context->OverrideLevelDBBinderForTesting(
-      base::BindRepeating(&test::FakeLevelDBService::Bind,
-                          base::Unretained(&mock_leveldb_service)));
+  base::Optional<base::RunLoop> open_loop;
+  base::Optional<base::RunLoop> destruction_loop;
+  bool first_database_destroyed = false;
+  size_t num_database_open_requests = 0;
+  context->SetDatabaseFactoryForTesting(base::BindLambdaForTesting(
+      [&]() -> std::unique_ptr<leveldb::mojom::LevelDBDatabase> {
+        ++num_database_open_requests;
+        auto db = std::make_unique<FakeLevelDBDatabaseErrorOnWrite>(&test_data);
+        db->SetDestructionCallback(base::BindLambdaForTesting([&] {
+          first_database_destroyed = true;
+          if (destruction_loop)
+            destruction_loop->Quit();
+        }));
+        if (open_loop)
+          open_loop->Quit();
+        return db;
+      }));
 
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
+
+  open_loop.emplace();
 
   // Open three connections to the database. Two to the same origin, and a third
   // to a different origin.
   mojo::Remote<blink::mojom::StorageArea> area1;
   mojo::Remote<blink::mojom::StorageArea> area2;
   mojo::Remote<blink::mojom::StorageArea> area3;
-  {
-    base::RunLoop loop;
-    mock_leveldb_service.SetOnOpenCallback(loop.QuitClosure());
-    context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                              area1.BindNewPipeAndPassReceiver());
-    context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                              area2.BindNewPipeAndPassReceiver());
-    context->OpenLocalStorage(url::Origin::Create(GURL("http://example.com")),
-                              area3.BindNewPipeAndPassReceiver());
-    loop.Run();
-  }
+
+  context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
+                            area1.BindNewPipeAndPassReceiver());
+  context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
+                            area2.BindNewPipeAndPassReceiver());
+  context->OpenLocalStorage(url::Origin::Create(GURL("http://example.com")),
+                            area3.BindNewPipeAndPassReceiver());
+  open_loop->Run();
 
   // Add observers to the first two connections.
   TestLevelDBObserver observer1;
@@ -1055,26 +1015,29 @@ TEST_F(LocalStorageContextMojoTest, RecreateOnCommitFailure) {
   TestLevelDBObserver observer2;
   area2->AddObserver(observer2.Bind());
 
-  // Verify one attempt was made to open the database, and connect that request
-  // with a database implementation that always fails on write.
-  ASSERT_EQ(1u, mock_leveldb_service.open_requests().size());
-  auto& open_request = mock_leveldb_service.open_requests()[0];
-  auto mock_db = mojo::MakeSelfOwnedAssociatedReceiver(
-      std::make_unique<FakeLevelDBDatabaseErrorOnWrite>(&test_data),
-      std::move(open_request.receiver));
-  std::move(open_request.callback).Run(leveldb::mojom::DatabaseError::OK);
-  mock_leveldb_service.open_requests().clear();
+  // Verify one attempt was made to open the database.
+  ASSERT_EQ(1u, num_database_open_requests);
 
-  // Setup a RunLoop so we can wait until LocalStorageContextMojo tries to
-  // reconnect to the database, which should happen after several commit
-  // errors.
-  base::RunLoop reopen_loop;
-  mock_leveldb_service.SetOnOpenCallback(reopen_loop.QuitClosure());
+  // This loop will be Quit if and when the current database instance is
+  // destroyed, which should happen after many commit failures.
+  destruction_loop.emplace();
+
+  // Also prepare for another database connection, next time providing a
+  // functioning database.
+  open_loop.emplace();
+  num_database_open_requests = 0;
+  context->SetDatabaseFactoryForTesting(base::BindLambdaForTesting(
+      [&]() -> std::unique_ptr<leveldb::mojom::LevelDBDatabase> {
+        ++num_database_open_requests;
+        auto db = std::make_unique<FakeLevelDBDatabase>(&test_data);
+        if (open_loop)
+          open_loop->Quit();
+        return db;
+      }));
 
   // Start a put operation on the third connection before starting to commit
   // a lot of data on the first origin. This put operation should result in a
-  // pending commit that will get cancelled when the database connection is
-  // closed.
+  // pending commit that will get cancelled when the database is destroyed.
   area3->Put(key, value, base::nullopt, "source",
              base::BindOnce([](bool success) { EXPECT_TRUE(success); }));
 
@@ -1089,9 +1052,9 @@ TEST_F(LocalStorageContextMojoTest, RecreateOnCommitFailure) {
     area1->Put(key, value, base::nullopt, "source",
                base::BindLambdaForTesting([&](bool success) {
                  EXPECT_TRUE(success);
+                 values_written++;
                }));
     put_loop.RunUntilIdle();
-    values_written++;
     // And we need to flush after every change. Otherwise changes get batched up
     // and only one commit is done some time later.
     context->FlushOriginForTesting(
@@ -1099,23 +1062,17 @@ TEST_F(LocalStorageContextMojoTest, RecreateOnCommitFailure) {
   }
   area1.reset();
 
-  // Make sure all messages to the DB have been processed (Flush above merely
-  // schedules a commit, but there is no guarantee about those having been
-  // processed yet).
-  mock_leveldb_service.FlushBindingsForTesting();
-  if (mock_db)
-    mock_db->FlushForTesting();
-  // At this point enough commit failures should have happened to cause the
-  // connection to the database to have been severed.
-  EXPECT_FALSE(mock_db);
+  // Wait for LocalStorageContextMojo to try to reconnect to the database, and
+  // Enough commit failures should happen during this loop to cause the database
+  // to be destroyed.
+  destruction_loop->Run();
+  EXPECT_TRUE(first_database_destroyed);
 
-  // The connection to the second area should have closed as well.
+  // The connection to the second area should end up closed as well.
+  area2.FlushForTesting();
   EXPECT_FALSE(area2.is_connected());
 
-  // And the old database should have been destroyed.
-  EXPECT_EQ(1u, mock_leveldb_service.destroy_requests().size());
-
-  // Reconnect area1 to the database, and try to read a value.
+  // Reconnect |area1| to the database, and try to read a value.
   context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
                             area1.BindNewPipeAndPassReceiver());
   base::RunLoop delete_loop;
@@ -1128,16 +1085,9 @@ TEST_F(LocalStorageContextMojoTest, RecreateOnCommitFailure) {
                   delete_loop.Quit();
                 }));
 
-  // Wait for LocalStorageContextMojo to try to reconnect to the database, and
-  // connect that new request to a properly functioning database.
-  reopen_loop.Run();
-  ASSERT_EQ(1u, mock_leveldb_service.open_requests().size());
-  auto& reopen_request = mock_leveldb_service.open_requests()[0];
-  mock_db = mojo::MakeSelfOwnedAssociatedReceiver(
-      std::make_unique<FakeLevelDBDatabase>(&test_data),
-      std::move(reopen_request.receiver));
-  std::move(reopen_request.callback).Run(leveldb::mojom::DatabaseError::OK);
-  mock_leveldb_service.open_requests().clear();
+  // The new database should be ready to go.
+  open_loop->Run();
+  ASSERT_EQ(1u, num_database_open_requests);
 
   // And deleting the value from the new area should have failed (as the
   // database is empty).
@@ -1173,39 +1123,38 @@ TEST_F(LocalStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
       temp_path(), base::ThreadTaskRunnerHandle::Get(), nullptr,
       base::FilePath(), test_path, nullptr);
 
-  FakeLevelDBService mock_leveldb_service;
-  context->OverrideLevelDBBinderForTesting(
-      base::BindRepeating(&test::FakeLevelDBService::Bind,
-                          base::Unretained(&mock_leveldb_service)));
+  // Ensure that the opened database always fails on write.
+  base::Optional<base::RunLoop> open_loop;
+  size_t num_database_open_requests = 0;
+  size_t num_databases_destroyed = 0;
+  context->SetDatabaseFactoryForTesting(base::BindLambdaForTesting(
+      [&]() -> std::unique_ptr<leveldb::mojom::LevelDBDatabase> {
+        ++num_database_open_requests;
+        auto db = std::make_unique<FakeLevelDBDatabaseErrorOnWrite>(&test_data);
+        db->SetDestructionCallback(
+            base::BindLambdaForTesting([&] { ++num_databases_destroyed; }));
+        if (open_loop)
+          open_loop->Quit();
+        return db;
+      }));
+  open_loop.emplace();
 
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
   // Open a connection to the database.
   mojo::Remote<blink::mojom::StorageArea> area;
-  {
-    base::RunLoop loop;
-    mock_leveldb_service.SetOnOpenCallback(loop.QuitClosure());
-    context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                              area.BindNewPipeAndPassReceiver());
-    loop.Run();
-  }
+  context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
+                            area.BindNewPipeAndPassReceiver());
+  open_loop->Run();
 
-  // Verify one attempt was made to open the database, and connect that request
-  // with a database implementation that always fails on write.
-  ASSERT_EQ(1u, mock_leveldb_service.open_requests().size());
-  auto& open_request = mock_leveldb_service.open_requests()[0];
-  auto mock_db = mojo::MakeSelfOwnedAssociatedReceiver(
-      std::make_unique<FakeLevelDBDatabaseErrorOnWrite>(&test_data),
-      std::move(open_request.receiver));
-  std::move(open_request.callback).Run(leveldb::mojom::DatabaseError::OK);
-  mock_leveldb_service.open_requests().clear();
+  // Verify one attempt was made to open the database.
+  ASSERT_EQ(1u, num_database_open_requests);
 
-  // Setup a RunLoop so we can wait until LocalStorageContextMojo tries to
+  // Setup a new RunLoop so we can wait until LocalStorageContextMojo tries to
   // reconnect to the database, which should happen after several commit
   // errors.
-  base::RunLoop reopen_loop;
-  mock_leveldb_service.SetOnOpenCallback(reopen_loop.QuitClosure());
+  open_loop.emplace();
 
   // Repeatedly write data to the database, to trigger enough commit errors.
   base::Optional<std::vector<uint8_t>> old_value;
@@ -1229,29 +1178,12 @@ TEST_F(LocalStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   }
   area.reset();
 
-  // Make sure all messages to the DB have been processed (Flush above merely
-  // schedules a commit, but there is no guarantee about those having been
-  // processed yet).
-  if (mock_db)
-    mock_db->FlushForTesting();
-  // At this point enough commit failures should have happened to cause the
-  // connection to the database to have been severed.
-  EXPECT_FALSE(mock_db);
-
   // Wait for LocalStorageContextMojo to try to reconnect to the database, and
   // connect that new request with a database implementation that always fails
   // on write.
-  reopen_loop.Run();
-  ASSERT_EQ(1u, mock_leveldb_service.open_requests().size());
-  auto& reopen_request = mock_leveldb_service.open_requests()[0];
-  mock_db = mojo::MakeSelfOwnedAssociatedReceiver(
-      std::make_unique<FakeLevelDBDatabaseErrorOnWrite>(&test_data),
-      std::move(reopen_request.receiver));
-  std::move(reopen_request.callback).Run(leveldb::mojom::DatabaseError::OK);
-  mock_leveldb_service.open_requests().clear();
-
-  // The old database should also have been destroyed.
-  EXPECT_EQ(1u, mock_leveldb_service.destroy_requests().size());
+  open_loop->Run();
+  EXPECT_EQ(2u, num_database_open_requests);
+  EXPECT_EQ(1u, num_databases_destroyed);
 
   // Reconnect a area to the database, and repeatedly write data to it again.
   // This time all should just keep getting written, and commit errors are
@@ -1277,12 +1209,9 @@ TEST_F(LocalStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
     context->FlushOriginForTesting(
         url::Origin::Create(GURL("http://foobar.com")));
   }
-  // Make sure all messages to the DB have been processed (Flush above merely
-  // schedules a commit, but there is no guarantee about those having been
-  // processed yet).
-  if (mock_db)
-    mock_db->FlushForTesting();
-  EXPECT_TRUE(mock_db);
+
+  // Should still be connected after all that.
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(area.is_connected());
 }
 

@@ -49,8 +49,8 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void BlacklistWebGLForTesting() override;
   gpu::GPUInfo GetGPUInfo() override;
   bool GpuAccessAllowed(std::string* reason) override;
-  void RequestCompleteGpuInfoIfNeeded(GpuInfoRequest request,
-                                      bool delayed) override;
+  void RequestDxdiagDx12VulkanGpuInfoIfNeeded(GpuInfoRequest request,
+                                              bool delayed) override;
   bool IsEssentialGpuInfoAvailable() override;
   void RequestVideoMemoryUsageStatsUpdate(
       VideoMemoryUsageStatsCallback callback) override;

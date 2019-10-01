@@ -324,6 +324,7 @@ void InspectorDOMSnapshotAgent::VisitDocument(Document* document) {
               AddString(InspectorDOMAgent::DocumentURLString(document)))
           .setBaseURL(
               AddString(InspectorDOMAgent::DocumentBaseURLString(document)))
+          .setTitle(AddString(document->title()))
           .setContentLanguage(AddString(document->ContentLanguage()))
           .setEncodingName(AddString(document->EncodingName()))
           .setFrameId(
@@ -373,6 +374,9 @@ void InspectorDOMSnapshotAgent::VisitDocument(Document* document) {
     auto offset = document->View()->LayoutViewport()->GetScrollOffset();
     document_->setScrollOffsetX(offset.Width());
     document_->setScrollOffsetY(offset.Height());
+    auto contents_size = document->View()->LayoutViewport()->ContentsSize();
+    document_->setContentWidth(contents_size.Width());
+    document_->setContentHeight(contents_size.Height());
   }
 
   if (paint_order_map_) {

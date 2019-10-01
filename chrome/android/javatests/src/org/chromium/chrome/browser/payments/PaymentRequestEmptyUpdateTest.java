@@ -41,7 +41,7 @@ public class PaymentRequestEmptyUpdateTest implements MainActivityStartCallback 
             new PaymentRequestTestRule("payment_request_empty_update_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // The user has a shipping address on disk.
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",

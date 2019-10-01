@@ -490,7 +490,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Retrieves the restored bounds for the window.
   gfx::Rect GetRestoredBounds() const;
 
-  // Retrieves the current workspace for the window.
+  // Retrieves the current workspace for the window. (On macOS: an opaque
+  // binary blob that encodes the workspace and other window state.)
   std::string GetWorkspace() const;
 
   // Sizes and/or places the widget to the specified bounds, size or position.

@@ -57,7 +57,7 @@ public class PartnerDisableIncognitoModeIntegrationTest {
     private void assertIncognitoMenuItemEnabled(boolean enabled) throws ExecutionException {
         Menu menu = TestThreadUtils.runOnUiThreadBlocking(new Callable<Menu>() {
             @Override
-            public Menu call() throws Exception {
+            public Menu call() {
                 // PopupMenu is a convenient way of building a temp menu.
                 PopupMenu tempMenu = new PopupMenu(mActivityTestRule.getActivity(),
                         mActivityTestRule.getActivity().findViewById(R.id.menu_anchor_stub));

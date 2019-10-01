@@ -9,27 +9,52 @@
 #include <tuple>
 #include <vector>
 
-#include "base/trace_event/memory_dump_provider.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequence_bound.h"
 #include "base/unguessable_token.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "third_party/leveldatabase/src/include/leveldb/cache.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 namespace leveldb {
 
-// The backing to a database object that we pass to our called.
-class LevelDBDatabaseImpl : public mojom::LevelDBDatabase,
-                            public base::trace_event::MemoryDumpProvider {
+// A temporary wrapper around the Storage Service's DomStorageDatabase class,
+// implemented behind the mojom interface facade consumed by
+// LocalStorageContextMojo, SessionStorageContextMojo, and related classes. Note
+// that this is never used through an actual message pipe, but always via direct
+// method calls.
+//
+// TODO(https://crbug.com/1000959): Delete this class.
+class LevelDBDatabaseImpl : public mojom::LevelDBDatabase {
  public:
-  LevelDBDatabaseImpl(std::unique_ptr<leveldb::Env> environment,
-                      std::unique_ptr<leveldb::DB> db,
-                      std::unique_ptr<leveldb::Cache> cache,
-                      const leveldb_env::Options& options,
-                      const std::string& name,
-                      base::Optional<base::trace_event::MemoryAllocatorDumpGuid>
-                          memory_dump_id);
+  using OpenCallback = base::OnceCallback<void(mojom::DatabaseError)>;
+
   ~LevelDBDatabaseImpl() override;
+
+  static std::unique_ptr<LevelDBDatabaseImpl> OpenDirectory(
+      const leveldb_env::Options& options,
+      const base::FilePath& directory,
+      const std::string& dbname,
+      const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
+          memory_dump_id,
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+      OpenCallback callback);
+
+  static std::unique_ptr<LevelDBDatabaseImpl> OpenInMemory(
+      const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
+          memory_dump_id,
+      const std::string& tracking_name,
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+      OpenCallback callback);
+
+  base::SequenceBound<storage::DomStorageDatabase>& database() {
+    return database_;
+  }
+  const base::SequenceBound<storage::DomStorageDatabase>& database() const {
+    return database_;
+  }
 
   // Overridden from LevelDBDatabase:
   void Put(const std::vector<uint8_t>& key,
@@ -50,74 +75,48 @@ class LevelDBDatabaseImpl : public mojom::LevelDBDatabase,
   void CopyPrefixed(const std::vector<uint8_t>& source_key_prefix,
                     const std::vector<uint8_t>& destination_key_prefix,
                     CopyPrefixedCallback callback) override;
-  void GetSnapshot(GetSnapshotCallback callback) override;
-  void ReleaseSnapshot(const base::UnguessableToken& snapshot) override;
-  void GetFromSnapshot(const base::UnguessableToken& snapshot,
-                       const std::vector<uint8_t>& key,
-                       GetCallback callback) override;
-  void NewIterator(NewIteratorCallback callback) override;
-  void NewIteratorFromSnapshot(
-      const base::UnguessableToken& snapshot,
-      NewIteratorFromSnapshotCallback callback) override;
-  void ReleaseIterator(const base::UnguessableToken& iterator) override;
-  void IteratorSeekToFirst(const base::UnguessableToken& iterator,
-                           IteratorSeekToFirstCallback callback) override;
-  void IteratorSeekToLast(const base::UnguessableToken& iterator,
-                          IteratorSeekToLastCallback callback) override;
-  void IteratorSeek(const base::UnguessableToken& iterator,
-                    const std::vector<uint8_t>& target,
-                    IteratorSeekToLastCallback callback) override;
-  void IteratorNext(const base::UnguessableToken& iterator,
-                    IteratorNextCallback callback) override;
-  void IteratorPrev(const base::UnguessableToken& iterator,
-                    IteratorPrevCallback callback) override;
-
-  // base::trace_event::MemoryDumpProvider implementation.
-  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd) override;
-
-  // Set a closure that will close the mojo connection to this object.
-  // The closure will be called if this database becomes unusable e.g.
-  // due to a failed rewrite attempt.
-  void SetCloseBindingClosure(base::OnceClosure close_binding);
 
  private:
   using StatusAndKeyValues =
       std::tuple<Status, std::vector<mojom::KeyValuePtr>>;
 
-  // Returns the state of |it| to a caller. Note: This assumes that all the
-  // iterator movement methods have the same callback signature. We don't
-  // directly reference the underlying type in case of bindings change.
-  void ReplyToIteratorMessage(leveldb::Iterator* it,
-                              IteratorSeekToFirstCallback callback);
+  void OnDatabaseOpened(
+      OpenCallback callback,
+      base::SequenceBound<storage::DomStorageDatabase> database,
+      leveldb::Status status);
 
-  StatusAndKeyValues GetPrefixedHelper(const std::vector<uint8_t>& key_prefix);
+  explicit LevelDBDatabaseImpl();
 
-  leveldb::Status DeletePrefixedHelper(const leveldb::Slice& key_prefix,
-                                       leveldb::WriteBatch* batch);
+  template <typename ResultType>
+  void RunDatabaseTask(
+      base::OnceCallback<ResultType(const storage::DomStorageDatabase&)> task,
+      base::OnceCallback<void(ResultType)> callback) {
+    auto wrapped_task = base::BindOnce(
+        [](base::OnceCallback<ResultType(const storage::DomStorageDatabase&)>
+               task,
+           base::OnceCallback<void(ResultType)> callback,
+           scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
+           const storage::DomStorageDatabase& db) {
+          callback_task_runner->PostTask(
+              FROM_HERE,
+              base::BindOnce(std::move(callback), std::move(task).Run(db)));
+        },
+        std::move(task), std::move(callback),
+        base::SequencedTaskRunnerHandle::Get());
+    if (database_) {
+      database_.PostTaskWithThisObject(FROM_HERE, std::move(wrapped_task));
+    } else {
+      tasks_to_run_on_open_.push_back(std::move(wrapped_task));
+    }
+  }
 
-  leveldb::Status CopyPrefixedHelper(
-      const std::vector<uint8_t>& source_key_prefix,
-      const std::vector<uint8_t>& destination_key_prefix,
-      leveldb::WriteBatch* batch);
+  base::SequenceBound<storage::DomStorageDatabase> database_;
 
-  std::unique_ptr<leveldb::Env> environment_;
-  std::unique_ptr<leveldb::Cache> cache_;
-  std::unique_ptr<leveldb::DB> db_;
-  leveldb_env::Options options_;
-  std::string name_;
-  base::Optional<base::trace_event::MemoryAllocatorDumpGuid> memory_dump_id_;
+  using DatabaseTask =
+      base::OnceCallback<void(const storage::DomStorageDatabase&)>;
+  std::vector<DatabaseTask> tasks_to_run_on_open_;
 
-  std::map<base::UnguessableToken, const Snapshot*> snapshot_map_;
-
-  // TODO(erg): If we have an existing iterator which depends on a snapshot,
-  // and delete the snapshot from the client side, that shouldn't delete the
-  // snapshot maybe? At worse it's a DDoS if there's multiple users of the
-  // system, but this maybe should be fixed...
-
-  std::map<base::UnguessableToken, Iterator*> iterator_map_;
-
-  base::OnceClosure close_binding_;
+  base::WeakPtrFactory<LevelDBDatabaseImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBDatabaseImpl);
 };

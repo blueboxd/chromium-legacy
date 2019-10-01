@@ -102,7 +102,7 @@ public class ExploreSitesPageTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ExploreSitesBridge.setCatalogForTesting(getTestingCatalog());
         mActivityTestRule.startMainActivityWithURL("about:blank");
 
@@ -116,7 +116,7 @@ public class ExploreSitesPageTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         ExploreSitesBridge.setCatalogForTesting(null);
     }
 
@@ -224,7 +224,7 @@ public class ExploreSitesPageTest {
     @SmallTest
     @Feature({"ExploreSites"})
     @Features.EnableFeatures(ChromeFeatureList.EXPLORE_SITES)
-    public void testRecordTimestamp() throws Exception {
+    public void testRecordTimestamp() {
         int histogramCount =
                 RecordHistogram.getHistogramTotalCountForTesting("ExploreSites.NavBackTime");
 

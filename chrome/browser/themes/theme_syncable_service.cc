@@ -226,7 +226,7 @@ void ThemeSyncableService::SetCurrentThemeFromThemeSpecifics(
     CHECK(extension_registry);
     const extensions::Extension* extension =
         extension_registry->GetExtensionById(
-            id, extensions::ExtensionRegistry::COMPATIBILITY);
+            id, extensions::ExtensionRegistry::EVERYTHING);
     if (extension) {
       if (!extension->is_theme()) {
         DVLOG(1) << "Extension " << id << " is not a theme; aborting";
@@ -273,9 +273,9 @@ bool ThemeSyncableService::GetThemeSpecificsFromCurrentTheme(
   const extensions::Extension* current_extension =
       theme_service_->UsingExtensionTheme() &&
               !theme_service_->UsingDefaultTheme()
-          ? extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
-                theme_service_->GetThemeID(),
-                extensions::ExtensionRegistry::ENABLED)
+          ? extensions::ExtensionRegistry::Get(profile_)
+                ->enabled_extensions()
+                .GetByID(theme_service_->GetThemeID())
           : nullptr;
   if (current_extension &&
       !extensions::sync_helper::IsSyncable(current_extension)) {

@@ -23,7 +23,7 @@ async_test((t) => {
   async function runTest() {
     const target = document.getElementById("target");
     await setInvisibleActivatable(target);
-    t.step(() => assert_true(target.displayLock.locked));
+    t.step(() => assert_equals(target.renderSubtree, "invisible activatable"));
 
     target.addEventListener("beforeactivate", () => commit(target));
     target.scrollIntoView();

@@ -676,7 +676,6 @@ void Tab::SetGroup(base::Optional<TabGroupId> group) {
   if (group_ == group)
     return;
   group_ = group;
-  SchedulePaint();
 }
 
 base::Optional<SkColor> Tab::GetGroupColor() const {

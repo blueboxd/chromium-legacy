@@ -45,18 +45,18 @@ public class UkmTest {
      * Closes the current tab.
      * @param incognito Whether to close an incognito or non-incognito tab.
      */
-    protected void closeCurrentTab(final boolean incognito) throws InterruptedException {
+    protected void closeCurrentTab(final boolean incognito) {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getTabModelSelector().selectModel(incognito));
         ChromeTabUtils.closeCurrentTab(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
     }
 
-    protected void closeRegularTab() throws InterruptedException {
+    protected void closeRegularTab() {
         closeCurrentTab(false);
     }
 
-    protected void closeIncognitoTab() throws InterruptedException {
+    protected void closeIncognitoTab() {
         closeCurrentTab(true);
     }
 
@@ -111,7 +111,7 @@ public class UkmTest {
 
     @Test
     @SmallTest
-    public void testIncognitoPlusRegularCheck() throws Exception {
+    public void testIncognitoPlusRegularCheck() {
         // Keep in sync with UkmBrowserTest.IncognitoPlusRegularCheck in
         // chrome/browser/metrics/ukm_browsertest.cc.
 

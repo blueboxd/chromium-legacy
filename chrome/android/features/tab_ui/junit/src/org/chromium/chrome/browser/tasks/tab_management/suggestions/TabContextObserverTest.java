@@ -63,7 +63,7 @@ public class TabContextObserverTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         doReturn(mTabModelFitlerProvider).when(mTabModelSelector).getTabModelFilterProvider();
         doNothing()
@@ -73,7 +73,7 @@ public class TabContextObserverTest {
     }
 
     @Test
-    public void testAddTab() throws Exception {
+    public void testAddTab() {
         TabContextObserverTestHelper tabContextObserverTestHelper =
                 new TabContextObserverTestHelper(mTabModelSelector);
         tabContextObserverTestHelper.mTabModelObserver.didAddTab(null, 0);
@@ -82,7 +82,7 @@ public class TabContextObserverTest {
     }
 
     @Test
-    public void testMoveTab() throws Exception {
+    public void testMoveTab() {
         TabContextObserverTestHelper tabContextObserverTestHelper =
                 new TabContextObserverTestHelper(mTabModelSelector);
         tabContextObserverTestHelper.mTabModelObserver.didMoveTab(null, 0, 0);
@@ -91,7 +91,7 @@ public class TabContextObserverTest {
     }
 
     @Test
-    public void testCloseTab() throws Exception {
+    public void testCloseTab() {
         TabContextObserverTestHelper tabContextObserverTestHelper =
                 new TabContextObserverTestHelper(mTabModelSelector);
         tabContextObserverTestHelper.mTabModelObserver.didCloseTab(0, false);
@@ -100,7 +100,7 @@ public class TabContextObserverTest {
     }
 
     @Test
-    public void testDidFirstVisuallyNonEmptyPaint() throws Exception {
+    public void testDidFirstVisuallyNonEmptyPaint() {
         TabContextObserverTestHelper tabContextObserverTestHelper =
                 new TabContextObserverTestHelper(mTabModelSelector);
         tabContextObserverTestHelper.mTabModelSelectorTabObserver.didFirstVisuallyNonEmptyPaint(
@@ -111,7 +111,7 @@ public class TabContextObserverTest {
     }
 
     @Test
-    public void testDestroy() throws Exception {
+    public void testDestroy() {
         TabContextObserverTestHelper tabContextObserverTestHelper =
                 new TabContextObserverTestHelper(mTabModelSelector);
         tabContextObserverTestHelper.mTabModelSelectorTabObserver = mTabModelSelectorTabObserver;

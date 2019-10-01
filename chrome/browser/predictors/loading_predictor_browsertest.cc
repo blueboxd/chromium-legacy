@@ -1118,8 +1118,9 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
 // Checks the opposite of the above test - tests that even when a redirect is
 // predicted, preconnects are still made to the original origin using the
 // correct NetworkIsolationKey.
+// TODO(crbug.com/1006637). Flaky on all platforms.
 IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
-                       LoadingPredictorWithRedirects2) {
+                       DISABLED_LoadingPredictorWithRedirects2) {
   // Cache the redirect, so the only connections to the tracked server created
   // during navigations should be for preconnects.
   GURL destination_url = preconnecting_test_server()->GetURL("/cachetime");

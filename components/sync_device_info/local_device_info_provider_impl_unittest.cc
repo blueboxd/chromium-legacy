@@ -17,6 +17,12 @@ namespace {
 const char kLocalDeviceGuid[] = "foo";
 const char kLocalDeviceSessionName[] = "bar";
 
+const char kSharingFCMToken[] = "test_fcm_token";
+const char kSharingP256dh[] = "test_p256_dh";
+const char kSharingAuthSecret[] = "test_auth_secret";
+const sync_pb::SharingSpecificFields::EnabledFeatures
+    kSharingEnabledFeatures[] = {sync_pb::SharingSpecificFields::CLICK_TO_CALL};
+
 using testing::NotNull;
 using testing::Return;
 
@@ -27,6 +33,8 @@ class MockDeviceInfoSyncClient : public DeviceInfoSyncClient {
 
   MOCK_CONST_METHOD0(GetSigninScopedDeviceId, std::string());
   MOCK_CONST_METHOD0(GetSendTabToSelfReceivingEnabled, bool());
+  MOCK_CONST_METHOD0(GetLocalSharingInfo,
+                     base::Optional<DeviceInfo::SharingInfo>());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDeviceInfoSyncClient);
@@ -102,6 +110,34 @@ TEST_F(LocalDeviceInfoProviderImplTest, SendTabToSelfReceivingEnabled) {
   ASSERT_THAT(provider_->GetLocalDeviceInfo(), NotNull());
   EXPECT_FALSE(
       provider_->GetLocalDeviceInfo()->send_tab_to_self_receiving_enabled());
+}
+
+TEST_F(LocalDeviceInfoProviderImplTest, SharingInfo) {
+  ON_CALL(device_info_sync_client_, GetLocalSharingInfo())
+      .WillByDefault(Return(base::nullopt));
+
+  InitializeProvider();
+
+  ASSERT_THAT(provider_->GetLocalDeviceInfo(), NotNull());
+  EXPECT_FALSE(provider_->GetLocalDeviceInfo()->sharing_info());
+
+  std::set<sync_pb::SharingSpecificFields::EnabledFeatures> enabled_features(
+      std::begin(kSharingEnabledFeatures), std::end(kSharingEnabledFeatures));
+  base::Optional<DeviceInfo::SharingInfo> sharing_info =
+      base::make_optional<DeviceInfo::SharingInfo>(
+          kSharingFCMToken, kSharingP256dh, kSharingAuthSecret,
+          enabled_features);
+  ON_CALL(device_info_sync_client_, GetLocalSharingInfo())
+      .WillByDefault(Return(sharing_info));
+
+  ASSERT_THAT(provider_->GetLocalDeviceInfo(), NotNull());
+  const base::Optional<DeviceInfo::SharingInfo>& local_sharing_info =
+      provider_->GetLocalDeviceInfo()->sharing_info();
+  EXPECT_TRUE(local_sharing_info);
+  EXPECT_EQ(kSharingFCMToken, local_sharing_info->fcm_token);
+  EXPECT_EQ(kSharingP256dh, local_sharing_info->p256dh);
+  EXPECT_EQ(kSharingAuthSecret, local_sharing_info->auth_secret);
+  EXPECT_EQ(enabled_features, local_sharing_info->enabled_features);
 }
 
 }  // namespace

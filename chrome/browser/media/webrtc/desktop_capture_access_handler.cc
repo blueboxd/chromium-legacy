@@ -494,8 +494,8 @@ void DesktopCaptureAccessHandler::ProcessQueuedAccessRequest(
   auto source_lists = picker_factory_->CreateMediaList(media_types);
 
   DesktopMediaPicker::DoneCallback done_callback =
-      base::BindRepeating(&DesktopCaptureAccessHandler::OnPickerDialogResults,
-                          base::Unretained(this), web_contents);
+      base::BindOnce(&DesktopCaptureAccessHandler::OnPickerDialogResults,
+                     base::Unretained(this), web_contents);
   DesktopMediaPicker::Params picker_params;
   picker_params.web_contents = web_contents;
   gfx::NativeWindow parent_window = web_contents->GetTopLevelNativeWindow();
@@ -509,7 +509,7 @@ void DesktopCaptureAccessHandler::ProcessQueuedAccessRequest(
                                     ? false
                                     : true;
   pending_request.picker->Show(picker_params, std::move(source_lists),
-                               done_callback);
+                               std::move(done_callback));
 
   // Focus on the tab with the picker for easy access.
   if (auto* delegate = web_contents->GetDelegate())

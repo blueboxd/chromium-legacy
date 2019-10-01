@@ -2196,10 +2196,10 @@ class PackagedAppTest : public extensions::ExtensionBrowserTest {
     const extensions::Extension* extension = LoadExtension(app_dir);
     ASSERT_TRUE(extension);
 
-    AppLaunchParams params(browser()->profile(), extension->id(),
-                           apps::mojom::LaunchContainer::kLaunchContainerNone,
-                           WindowOpenDisposition::NEW_WINDOW,
-                           apps::mojom::AppLaunchSource::kSourceTest);
+    apps::AppLaunchParams params(
+        extension->id(), apps::mojom::LaunchContainer::kLaunchContainerNone,
+        WindowOpenDisposition::NEW_WINDOW,
+        apps::mojom::AppLaunchSource::kSourceTest);
     params.command_line = *base::CommandLine::ForCurrentProcess();
     apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
   }

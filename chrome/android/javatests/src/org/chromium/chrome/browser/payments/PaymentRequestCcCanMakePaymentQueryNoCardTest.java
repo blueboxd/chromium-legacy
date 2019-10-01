@@ -34,7 +34,7 @@ public class PaymentRequestCcCanMakePaymentQueryNoCardTest implements MainActivi
             new PaymentRequestTestRule("payment_request_can_make_payment_query_cc_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         // The user has an incomplete credit card on file. This is not sufficient for
         // canMakePayment() to return true.
         new AutofillTestHelper().setCreditCard(
@@ -46,7 +46,7 @@ public class PaymentRequestCcCanMakePaymentQueryNoCardTest implements MainActivi
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanMakePayment() throws InterruptedException, TimeoutException {
+    public void testCanMakePayment() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
         mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
@@ -55,7 +55,7 @@ public class PaymentRequestCcCanMakePaymentQueryNoCardTest implements MainActivi
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testHasEnrolledInstrument() throws InterruptedException, TimeoutException {
+    public void testHasEnrolledInstrument() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickNodeAndWait("has-enrolled-instrument-visa",
                 mPaymentRequestTestRule.getHasEnrolledInstrumentQueryResponded());
         mPaymentRequestTestRule.expectResultContains(new String[] {"false"});

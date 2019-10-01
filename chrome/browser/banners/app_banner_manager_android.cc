@@ -27,8 +27,8 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
 
-using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertJavaStringToUTF16;
+using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 
@@ -71,14 +71,6 @@ AppBannerManagerAndroid::~AppBannerManagerAndroid() {
 const base::android::ScopedJavaLocalRef<jobject>
 AppBannerManagerAndroid::GetJavaBannerManager() const {
   return base::android::ScopedJavaLocalRef<jobject>(java_banner_manager_);
-}
-
-base::android::ScopedJavaLocalRef<jobject>
-AppBannerManagerAndroid::GetAddToHomescreenDialogForTesting(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jobj) {
-  return ui_delegate_ ? ui_delegate_->GetAddToHomescreenDialogForTesting()
-                      : nullptr;
 }
 
 bool AppBannerManagerAndroid::IsRunningForTesting(
@@ -447,16 +439,13 @@ void JNI_AppBannerManager_SetDaysAfterDismissAndIgnoreToTrigger(
 }
 
 // static
-void JNI_AppBannerManager_SetTimeDeltaForTesting(
-    JNIEnv* env,
-    jint days) {
+void JNI_AppBannerManager_SetTimeDeltaForTesting(JNIEnv* env, jint days) {
   AppBannerManager::SetTimeDeltaForTesting(days);
 }
 
 // static
-void JNI_AppBannerManager_SetTotalEngagementToTrigger(
-    JNIEnv* env,
-    jdouble engagement) {
+void JNI_AppBannerManager_SetTotalEngagementToTrigger(JNIEnv* env,
+                                                      jdouble engagement) {
   AppBannerSettingsHelper::SetTotalEngagementToTrigger(engagement);
 }
 

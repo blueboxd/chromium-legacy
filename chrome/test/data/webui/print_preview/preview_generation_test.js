@@ -151,10 +151,10 @@ cr.define('preview_generation_test', function() {
     /** Validate changing the margins updates the preview. */
     test(assert(TestNames.Margins), function() {
       return testSimpleSetting(
-          'margins', print_preview.ticket_items.MarginsTypeValue.DEFAULT,
-          print_preview.ticket_items.MarginsTypeValue.MINIMUM, 'marginsType',
-          print_preview.ticket_items.MarginsTypeValue.DEFAULT,
-          print_preview.ticket_items.MarginsTypeValue.MINIMUM);
+          'margins', print_preview.MarginsTypeValue.DEFAULT,
+          print_preview.MarginsTypeValue.MINIMUM, 'marginsType',
+          print_preview.MarginsTypeValue.DEFAULT,
+          print_preview.MarginsTypeValue.MINIMUM);
     });
 
     /**
@@ -166,15 +166,14 @@ cr.define('preview_generation_test', function() {
           .then(function(args) {
             const originalTicket = JSON.parse(args.printTicket);
             assertEquals(
-                print_preview.ticket_items.MarginsTypeValue.DEFAULT,
+                print_preview.MarginsTypeValue.DEFAULT,
                 originalTicket.marginsType);
             // Custom margins should not be set in the ticket.
             assertEquals(undefined, originalTicket.marginsCustom);
             assertEquals(0, originalTicket.requestID);
 
             // This should do nothing.
-            page.setSetting(
-                'margins', print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+            page.setSetting('margins', print_preview.MarginsTypeValue.CUSTOM);
             // Sets only 1 side, not valid.
             page.setSetting('customMargins', {marginTop: 25});
             // 2 sides, still not valid.
@@ -192,19 +191,16 @@ cr.define('preview_generation_test', function() {
           .then(function(args) {
             const ticket = JSON.parse(args.printTicket);
             assertEquals(
-                print_preview.ticket_items.MarginsTypeValue.CUSTOM,
-                ticket.marginsType);
+                print_preview.MarginsTypeValue.CUSTOM, ticket.marginsType);
             assertEquals(25, ticket.marginsCustom.marginTop);
             assertEquals(40, ticket.marginsCustom.marginRight);
             assertEquals(20, ticket.marginsCustom.marginBottom);
             assertEquals(50, ticket.marginsCustom.marginLeft);
             assertEquals(1, ticket.requestID);
-            page.setSetting(
-                'margins', print_preview.ticket_items.MarginsTypeValue.DEFAULT);
+            page.setSetting('margins', print_preview.MarginsTypeValue.DEFAULT);
             // Set setting to something invalid and then set margins to CUSTOM.
             page.setSetting('customMargins', {marginTop: 25, marginRight: 40});
-            page.setSetting(
-                'margins', print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+            page.setSetting('margins', print_preview.MarginsTypeValue.CUSTOM);
             nativeLayer.resetResolver('getPreview');
             page.setSetting('customMargins', {
               marginTop: 25,
@@ -217,8 +213,7 @@ cr.define('preview_generation_test', function() {
           .then(function(args) {
             const ticket = JSON.parse(args.printTicket);
             assertEquals(
-                print_preview.ticket_items.MarginsTypeValue.CUSTOM,
-                ticket.marginsType);
+                print_preview.MarginsTypeValue.CUSTOM, ticket.marginsType);
             assertEquals(25, ticket.marginsCustom.marginTop);
             assertEquals(40, ticket.marginsCustom.marginRight);
             assertEquals(20, ticket.marginsCustom.marginBottom);
@@ -232,10 +227,10 @@ cr.define('preview_generation_test', function() {
 
     /**
      * Validate changing the pages per sheet updates the preview, and resets
-     * margins to print_preview.ticket_items.MarginsTypeValue.DEFAULT.
+     * margins to print_preview.MarginsTypeValue.DEFAULT.
      */
     test(assert(TestNames.ChangeMarginsByPagesPerSheet), function() {
-      const MarginsTypeEnum = print_preview.ticket_items.MarginsTypeValue;
+      const MarginsTypeEnum = print_preview.MarginsTypeValue;
       return initialize()
           .then(function(args) {
             const originalTicket = JSON.parse(args.printTicket);
@@ -471,7 +466,7 @@ cr.define('preview_generation_test', function() {
       /**
        * @param {Object} ticket The parsed print ticket
        * @param {number} expectedId The expected ticket request ID
-       * @param {!print_preview.ticket_items.MarginsTypeValue} expectedMargins
+       * @param {!print_preview.MarginsTypeValue} expectedMargins
        *     The expected ticket margins type
        * @param {boolean} expectedHeaderFooter The expected ticket
        *     header/footer value
@@ -496,7 +491,7 @@ cr.define('preview_generation_test', function() {
         printableAreaHeight: 792,
       });
 
-      const MarginsTypeEnum = print_preview.ticket_items.MarginsTypeValue;
+      const MarginsTypeEnum = print_preview.MarginsTypeValue;
       let previewArgs = await initialize();
       let ticket = JSON.parse(previewArgs.printTicket);
 

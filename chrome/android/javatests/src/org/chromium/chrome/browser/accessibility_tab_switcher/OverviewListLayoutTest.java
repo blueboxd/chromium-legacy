@@ -110,7 +110,7 @@ public class OverviewListLayoutTest {
     }
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_ACCESSIBILITY_TAB_SWITCHER);
         mActivityTestRule.startMainActivityFromLauncher();
     }
@@ -124,7 +124,7 @@ public class OverviewListLayoutTest {
         return (ListView) getContainer().findViewById(R.id.list_view);
     }
 
-    private void setupTabs() throws InterruptedException {
+    private void setupTabs() {
         ChromeTabUtils.newTabsFromMenu(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity(), 3);
 
@@ -153,7 +153,7 @@ public class OverviewListLayoutTest {
         return childTextView.getText();
     }
 
-    private void toggleTabSwitcher(final boolean expectVisible) throws Exception {
+    private void toggleTabSwitcher(final boolean expectVisible) {
         TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button));
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -198,7 +198,7 @@ public class OverviewListLayoutTest {
     @MediumTest
     @Feature({"Accessibility"})
     @RetryOnFailure
-    public void testCanCloseWithCloseButton() throws InterruptedException, TimeoutException {
+    public void testCanCloseWithCloseButton() throws TimeoutException {
         setupTabs();
 
         AccessibilityTabModelListItem item = getListItemAndDisableAnimations(0);
@@ -226,7 +226,7 @@ public class OverviewListLayoutTest {
     @MediumTest
     @Feature({"Accessibility"})
     @RetryOnFailure
-    public void testCanSwipeClosed() throws InterruptedException, TimeoutException {
+    public void testCanSwipeClosed() throws TimeoutException {
         setupTabs();
 
         AccessibilityTabModelListItem item = getListItemAndDisableAnimations(1);
@@ -259,7 +259,7 @@ public class OverviewListLayoutTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
-    public void testResetSwipe() throws InterruptedException {
+    public void testResetSwipe() {
         setupTabs();
 
         AccessibilityTabModelListItem item = getListItemAndDisableAnimations(0);
@@ -279,7 +279,7 @@ public class OverviewListLayoutTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
-    public void testCloseAndUndo() throws InterruptedException, TimeoutException {
+    public void testCloseAndUndo() throws TimeoutException {
         setupTabs();
 
         final AccessibilityTabModelListItem item = getListItem(0);
@@ -312,7 +312,7 @@ public class OverviewListLayoutTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
-    public void testCloseAll() throws InterruptedException {
+    public void testCloseAll() {
         setupTabs();
 
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
@@ -332,7 +332,7 @@ public class OverviewListLayoutTest {
     @MediumTest
     @Feature({"Accessibility"})
     @RetryOnFailure
-    public void testCloseAllIncognito() throws InterruptedException {
+    public void testCloseAllIncognito() {
         setupTabs();
         mActivityTestRule.newIncognitoTabsFromMenu(2);
         TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
@@ -364,7 +364,7 @@ public class OverviewListLayoutTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
-    public void testModelSwitcherVisibility() throws InterruptedException {
+    public void testModelSwitcherVisibility() {
         setupTabs();
 
         View switcherButtons = getContainer().findViewById(R.id.tab_wrapper);
@@ -385,7 +385,7 @@ public class OverviewListLayoutTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
-    public void testModelSwitcherFunctionality() throws InterruptedException {
+    public void testModelSwitcherFunctionality() {
         mActivityTestRule.newIncognitoTabsFromMenu(2);
 
         ChromeTabUtils.newTabsFromMenu(
@@ -446,7 +446,7 @@ public class OverviewListLayoutTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @MediumTest
     @Feature({"Accessibility"})
-    public void testCloseTabThroughTabStrip() throws InterruptedException, TimeoutException {
+    public void testCloseTabThroughTabStrip() throws TimeoutException {
         setupTabs();
 
         getListItemAndDisableAnimations(0);

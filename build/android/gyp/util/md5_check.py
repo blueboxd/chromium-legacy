@@ -106,19 +106,20 @@ class Changes(object):
 
   def HasChanges(self):
     """Returns whether any changes exist."""
-    return (self.force or
-            not self.old_metadata or
-            self.old_metadata.StringsMd5() != self.new_metadata.StringsMd5() or
-            self.old_metadata.FilesMd5() != self.new_metadata.FilesMd5())
+    return (self.HasStringChanges()
+            or self.old_metadata.FilesMd5() != self.new_metadata.FilesMd5())
+
+  def HasStringChanges(self):
+    """Returns whether string metadata changed."""
+    return (self.force or not self.old_metadata
+            or self.old_metadata.StringsMd5() != self.new_metadata.StringsMd5())
 
   def AddedOrModifiedOnly(self):
     """Returns whether the only changes were from added or modified (sub)files.
 
     No missing outputs, no removed paths/subpaths.
     """
-    if (self.force or
-        not self.old_metadata or
-        self.old_metadata.StringsMd5() != self.new_metadata.StringsMd5()):
+    if self.HasStringChanges():
       return False
     if any(self.IterRemovedPaths()):
       return False

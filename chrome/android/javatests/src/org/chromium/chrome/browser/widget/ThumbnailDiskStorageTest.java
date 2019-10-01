@@ -157,7 +157,7 @@ public class ThumbnailDiskStorageTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         RecordHistogram.setDisabledForTests(true);
         mTestThumbnailStorageDelegate = new TestThumbnailStorageDelegate();
         mTestThumbnailGenerator = new TestThumbnailGenerator();
@@ -177,7 +177,7 @@ public class ThumbnailDiskStorageTest {
      */
     @Test
     @SmallTest
-    public void testCanInsertAndGet() throws Throwable {
+    public void testCanInsertAndGet() {
         mTestThumbnailDiskStorage.addToDisk(CONTENT_ID1, BITMAP1, ICON_WIDTH1);
         Assert.assertEquals(1, mTestThumbnailDiskStorage.getCacheCount());
 
@@ -200,7 +200,7 @@ public class ThumbnailDiskStorageTest {
      */
     @Test
     @SmallTest
-    public void testRepeatedInsertShouldBeUpdated() throws Throwable {
+    public void testRepeatedInsertShouldBeUpdated() {
         mTestThumbnailDiskStorage.addToDisk(CONTENT_ID1, BITMAP1, ICON_WIDTH1);
         mTestThumbnailDiskStorage.addToDisk(CONTENT_ID1, BITMAP2, ICON_WIDTH1);
 
@@ -219,7 +219,7 @@ public class ThumbnailDiskStorageTest {
      */
     @Test
     @SmallTest
-    public void testRetrieveThumbnailShouldMakeEntryMostRecent() throws Throwable {
+    public void testRetrieveThumbnailShouldMakeEntryMostRecent() {
         mTestThumbnailDiskStorage.addToDisk(CONTENT_ID1, BITMAP1, ICON_WIDTH1);
         mTestThumbnailDiskStorage.addToDisk(CONTENT_ID2, BITMAP1, ICON_WIDTH1);
         mTestThumbnailDiskStorage.addToDisk(CONTENT_ID3, BITMAP1, ICON_WIDTH1);
@@ -250,7 +250,7 @@ public class ThumbnailDiskStorageTest {
      */
     @Test
     @SmallTest
-    public void testExceedLimitShouldTrim() throws Throwable {
+    public void testExceedLimitShouldTrim() {
         // Add thumbnails up to cache limit to get 1 entry trimmed
         int count = 0;
         while (mTestThumbnailDiskStorage.removeCount.get() == 0) {
@@ -277,7 +277,7 @@ public class ThumbnailDiskStorageTest {
      */
     @Test
     @SmallTest
-    public void testRemoveAllThumbnailsWithSameContentId() throws Throwable {
+    public void testRemoveAllThumbnailsWithSameContentId() {
         mTestThumbnailDiskStorage.addToDisk(CONTENT_ID1, BITMAP1, ICON_WIDTH1);
         mTestThumbnailDiskStorage.addToDisk(CONTENT_ID1, BITMAP1, ICON_WIDTH2);
         Assert.assertEquals(2, mTestThumbnailDiskStorage.getCacheCount());
@@ -309,8 +309,7 @@ public class ThumbnailDiskStorageTest {
     /**
      * Retrieve thumbnail and assert that {@link ThumbnailStorageDelegate} has received it.
      */
-    private void retrieveThumbnailAndAssertRetrieved(final TestThumbnailRequest request)
-            throws Exception {
+    private void retrieveThumbnailAndAssertRetrieved(final TestThumbnailRequest request) {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mTestThumbnailDiskStorage.retrieveThumbnail(request); });
 
@@ -322,7 +321,7 @@ public class ThumbnailDiskStorageTest {
         }, TIMEOUT_MS, INTERVAL_MS);
     }
 
-    private void assertInitialized() throws Exception {
+    private void assertInitialized() {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

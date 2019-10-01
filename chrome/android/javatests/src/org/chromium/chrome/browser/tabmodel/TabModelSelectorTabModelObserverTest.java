@@ -46,7 +46,7 @@ public class TabModelSelectorTabModelObserverTest {
 
     @Test
     @SmallTest
-    public void testAlreadyInitializedSelector() throws InterruptedException, TimeoutException {
+    public void testAlreadyInitializedSelector() throws TimeoutException {
         final CallbackHelper registrationCompleteCallback = new CallbackHelper();
         TabModelSelectorTabModelObserver observer =
                 TestThreadUtils.runOnUiThreadBlockingNoException(
@@ -63,7 +63,7 @@ public class TabModelSelectorTabModelObserverTest {
     @Test
     @UiThreadTest
     @SmallTest
-    public void testUninitializedSelector() throws InterruptedException, TimeoutException {
+    public void testUninitializedSelector() throws TimeoutException {
         mSelector = new TabModelSelectorBase(null, false) {
             @Override
             public Tab openNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent,

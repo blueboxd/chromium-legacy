@@ -11,7 +11,6 @@
 
 #include "chromeos/services/multidevice_setup/multidevice_setup_base.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -139,8 +138,6 @@ class FakeMultiDeviceSetup : public MultiDeviceSetupBase {
       std::pair<std::string,
                 mojom::PrivilegedHostDeviceSetter::SetHostDeviceCallback>>
       set_host_without_auth_args_;
-
-  mojo::BindingSet<mojom::MultiDeviceSetup> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeMultiDeviceSetup);
 };

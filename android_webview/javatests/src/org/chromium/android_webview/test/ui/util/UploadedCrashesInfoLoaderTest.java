@@ -153,7 +153,7 @@ public class UploadedCrashesInfoLoaderTest {
 
     @Test
     @SmallTest
-    public void testParseNonExistFile() throws IOException {
+    public void testParseNonExistFile() {
         mLogFile.delete();
         UploadedCrashesInfoLoader crashesInfoLoader = new UploadedCrashesInfoLoader(mLogFile);
         List<CrashInfo> infoList = crashesInfoLoader.loadCrashesInfo();

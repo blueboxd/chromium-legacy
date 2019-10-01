@@ -34,14 +34,14 @@ cr.define('pages_per_sheet_settings_test', function() {
     // Tests that setting the pages per sheet setting resets margins to DEFAULT.
     test('resets margins setting', async () => {
       pagesPerSheetSection.setSetting(
-          'margins', print_preview.ticket_items.MarginsTypeValue.NO_MARGINS);
+          'margins', print_preview.MarginsTypeValue.NO_MARGINS);
       assertEquals(1, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
       pagesPerSheetSection.setSetting('pagesPerSheet', 4);
       await test_util.eventToPromise(
           'process-select-change', pagesPerSheetSection);
       assertEquals(4, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
       assertEquals(
-          print_preview.ticket_items.MarginsTypeValue.DEFAULT,
+          print_preview.MarginsTypeValue.DEFAULT,
           pagesPerSheetSection.getSettingValue('margins'));
     });
 

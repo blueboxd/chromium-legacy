@@ -63,7 +63,7 @@ public class EarlyTraceEventTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         EarlyTraceEvent.resetForTesting();
     }

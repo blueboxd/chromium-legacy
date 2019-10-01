@@ -123,7 +123,7 @@ public abstract class XrTestFramework {
         try {
             return JavaScriptUtils.executeJavaScriptAndWaitForResult(
                     webContents, js, timeout, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException | TimeoutException e) {
+        } catch (TimeoutException e) {
             Assert.fail("Fatal interruption or timeout running JavaScript '" + js
                     + "': " + e.toString());
         }
@@ -160,7 +160,7 @@ public abstract class XrTestFramework {
                 try {
                     result = JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
                             boolExpression, POLL_CHECK_INTERVAL_SHORT_MS, TimeUnit.MILLISECONDS);
-                } catch (InterruptedException | TimeoutException e) {
+                } catch (TimeoutException e) {
                     // Expected to happen regularly, do nothing
                 }
                 return Boolean.parseBoolean(result);
@@ -395,8 +395,7 @@ public abstract class XrTestFramework {
      * @param timeoutSec The timeout of the page load in seconds.
      * @return The return value of ChromeActivityTestRule.loadUrl().
      */
-    public int loadUrlAndAwaitInitialization(String url, int timeoutSec)
-            throws InterruptedException {
+    public int loadUrlAndAwaitInitialization(String url, int timeoutSec) {
         int result = mRule.loadUrl(url, timeoutSec);
         Assert.assertTrue("Timed out waiting for JavaScript test initialization",
                 pollJavaScriptBoolean("isInitializationComplete()", POLL_TIMEOUT_LONG_MS,

@@ -35,7 +35,7 @@
 
 @interface PrimaryToolbarCoordinator () <PrimaryToolbarViewControllerDelegate> {
   // Observer that updates |toolbarViewController| for fullscreen events.
-  std::unique_ptr<FullscreenControllerObserver> _fullscreenObserver;
+  std::unique_ptr<FullscreenUIUpdater> _fullscreenUIUpdater;
 }
 
 // Whether the coordinator is started.
@@ -87,11 +87,9 @@
   self.orchestrator.editViewAnimatee =
       [self.locationBarCoordinator editViewAnimatee];
 
-  _fullscreenObserver =
-      std::make_unique<FullscreenUIUpdater>(self.viewController);
-  FullscreenControllerFactory::GetInstance()
-      ->GetForBrowserState(self.browserState)
-      ->AddObserver(_fullscreenObserver.get());
+  _fullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(
+      FullscreenControllerFactory::GetForBrowserState(self.browserState),
+      self.viewController);
 
   [super start];
   self.started = YES;
@@ -103,10 +101,7 @@
   [super stop];
   [self.commandDispatcher stopDispatchingToTarget:self];
   [self.locationBarCoordinator stop];
-  FullscreenControllerFactory::GetInstance()
-      ->GetForBrowserState(self.browserState)
-      ->RemoveObserver(_fullscreenObserver.get());
-  _fullscreenObserver = nullptr;
+  _fullscreenUIUpdater = nullptr;
   self.started = NO;
 }
 

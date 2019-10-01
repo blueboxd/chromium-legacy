@@ -44,7 +44,7 @@ public class ArchiveTest {
     private AwTestContainerView mTestContainerView;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
     }
 

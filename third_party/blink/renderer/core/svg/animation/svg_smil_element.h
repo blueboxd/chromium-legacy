@@ -86,6 +86,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime SimpleDuration() const;
 
   bool CurrentIntervalIsActive(SMILTime elapsed);
+  void DiscardOrRevalidateCurrentInterval(SMILTime presentation_time);
   // Check if the current interval is still current, and if not compute the
   // next interval.
   void CheckAndUpdateInterval(SMILTime elapsed);
@@ -178,7 +179,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime RepeatingDuration() const;
   const SMILInterval& GetActiveInterval(SMILTime elapsed) const;
 
-  void InstanceListChanged(BeginOrEnd);
+  void InstanceListChanged();
 
   // This represents conditions on elements begin or end list that need to be
   // resolved on runtime, for example

@@ -107,7 +107,7 @@ public class ChromeBackgroundServiceTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         RecordHistogram.setDisabledForTests(true);
         mSnippetsLauncher = SnippetsLauncher.create();
         mTaskService = new MockTaskService();
@@ -115,7 +115,7 @@ public class ChromeBackgroundServiceTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         RecordHistogram.setDisabledForTests(false);
     }
 

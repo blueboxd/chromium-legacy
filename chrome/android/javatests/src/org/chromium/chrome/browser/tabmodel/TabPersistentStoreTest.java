@@ -293,7 +293,7 @@ public class TabPersistentStoreTest {
     private SharedPreferences mPreferences;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mChromeActivity = new ChromeActivity() {
                 @Override
@@ -330,7 +330,7 @@ public class TabPersistentStoreTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TabWindowManager.getInstance().onActivityStateChange(
                     mChromeActivity, ActivityState.DESTROYED);
@@ -343,7 +343,7 @@ public class TabPersistentStoreTest {
             final TabPersistentStoreObserver observer) {
         return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<TabPersistentStore>() {
             @Override
-            public TabPersistentStore call() throws Exception {
+            public TabPersistentStore call() {
                 return new TabPersistentStore(persistencePolicy, modelSelector, creatorManager,
                         observer);
             }

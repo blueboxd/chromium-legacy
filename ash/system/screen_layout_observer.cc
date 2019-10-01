@@ -11,6 +11,7 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -442,10 +443,19 @@ void ScreenLayoutObserver::OnDisplayConfigurationChanged() {
 
   base::string16 message;
   base::string16 additional_message;
-  if (GetDisplayMessageForNotification(old_info,
-                                       should_notify_has_unassociated_display,
-                                       &message, &additional_message))
-    CreateOrUpdateNotification(message, additional_message);
+  if (!GetDisplayMessageForNotification(old_info,
+                                        should_notify_has_unassociated_display,
+                                        &message, &additional_message))
+    return;
+
+  if (features::IsReduceDisplayNotificationsEnabled() &&
+      !should_notify_has_unassociated_display) {
+    // If display notifications should be suppressed and the notification is not
+    // to alert the user of an unassociated display, do not show a notification.
+    return;
+  }
+
+  CreateOrUpdateNotification(message, additional_message);
 }
 
 bool ScreenLayoutObserver::GetExitMirrorModeMessage(

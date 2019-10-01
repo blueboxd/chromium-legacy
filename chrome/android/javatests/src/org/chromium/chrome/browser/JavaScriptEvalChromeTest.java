@@ -49,7 +49,7 @@ public class JavaScriptEvalChromeTest {
             + "<body><button id=\"test\">Test button</button></body></html>");
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         mActivityTestRule.startMainActivityWithURL(JSTEST_URL);
     }
 
@@ -61,8 +61,7 @@ public class JavaScriptEvalChromeTest {
     @LargeTest
     @Feature({"Browser"})
     @RetryOnFailure
-    public void testJavaScriptEvalIsCorrectlyOrderedWithinOneTab()
-            throws InterruptedException, TimeoutException {
+    public void testJavaScriptEvalIsCorrectlyOrderedWithinOneTab() throws TimeoutException {
         Tab tab1 = mActivityTestRule.getActivity().getActivityTab();
         Tab tab2;
         ChromeTabUtils.newTabFromMenu(

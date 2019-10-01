@@ -91,7 +91,7 @@ public class SearchWidgetProviderTest {
         }
     }
 
-    private final static class TestContext extends AdvancedMockContext {
+    private static final class TestContext extends AdvancedMockContext {
         public TestContext() {
             super(InstrumentationRegistry.getInstrumentation()
                             .getTargetContext()
@@ -107,7 +107,7 @@ public class SearchWidgetProviderTest {
     private TestDelegate mDelegate;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ApplicationTestUtils.setUp(InstrumentationRegistry.getTargetContext());
         SearchActivity.setDelegateForTests(new TestSearchDelegate());
 
@@ -117,7 +117,7 @@ public class SearchWidgetProviderTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         ApplicationTestUtils.tearDown(InstrumentationRegistry.getTargetContext());
     }
 
@@ -168,7 +168,7 @@ public class SearchWidgetProviderTest {
     public void testUpdateCachedEngineNameBeforeFirstRun() throws ExecutionException {
         Assert.assertFalse(TestThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
             @Override
-            public Boolean call() throws Exception {
+            public Boolean call() {
                 return SearchWidgetProvider.shouldShowFullString();
             }
         }));

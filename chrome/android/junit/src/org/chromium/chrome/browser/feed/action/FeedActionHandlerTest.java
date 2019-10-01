@@ -109,7 +109,7 @@ public class FeedActionHandlerTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         mActionHandler = new FeedActionHandler(mDelegate, mSuggestionConsumedObserver,
                 mOfflineIndicator, mOfflinePageBridge, mLoggingBridge);

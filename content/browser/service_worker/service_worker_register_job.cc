@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -38,7 +40,7 @@ namespace content {
 typedef ServiceWorkerRegisterJobBase::RegistrationJobType RegistrationJobType;
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
-    base::WeakPtr<ServiceWorkerContextCore> context,
+    ServiceWorkerContextCore* context,
     const GURL& script_url,
     const blink::mojom::ServiceWorkerRegistrationOptions& options)
     : context_(context),
@@ -48,14 +50,17 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       worker_script_type_(options.type),
       update_via_cache_(options.update_via_cache),
       phase_(INITIAL),
+      is_shutting_down_(false),
       is_promise_resolved_(false),
       should_uninstall_on_failure_(false),
       force_bypass_cache_(false),
       skip_script_comparison_(false),
-      promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk) {}
+      promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk) {
+  DCHECK(context_);
+}
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
-    base::WeakPtr<ServiceWorkerContextCore> context,
+    ServiceWorkerContextCore* context,
     ServiceWorkerRegistration* registration,
     bool force_bypass_cache,
     bool skip_script_comparison)
@@ -64,17 +69,19 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       scope_(registration->scope()),
       update_via_cache_(registration->update_via_cache()),
       phase_(INITIAL),
+      is_shutting_down_(false),
       is_promise_resolved_(false),
       should_uninstall_on_failure_(false),
       force_bypass_cache_(force_bypass_cache),
       skip_script_comparison_(skip_script_comparison),
       promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk) {
+  DCHECK(context_);
   internal_.registration = registration;
 }
 
 ServiceWorkerRegisterJob::~ServiceWorkerRegisterJob() {
-  DCHECK(!context_ ||
-         phase_ == INITIAL || phase_ == COMPLETE || phase_ == ABORT)
+  DCHECK(is_shutting_down_ || phase_ == INITIAL || phase_ == COMPLETE ||
+         phase_ == ABORT)
       << "Jobs should only be interrupted during shutdown.";
 }
 
@@ -133,6 +140,10 @@ void ServiceWorkerRegisterJob::Abort() {
   CompleteInternal(blink::ServiceWorkerStatusCode::kErrorAbort, std::string());
   // Don't have to call FinishJob() because the caller takes care of removing
   // the jobs from the queue.
+}
+
+void ServiceWorkerRegisterJob::WillShutDown() {
+  is_shutting_down_ = true;
 }
 
 bool ServiceWorkerRegisterJob::Equals(ServiceWorkerRegisterJobBase* job) const {
@@ -340,8 +351,7 @@ void ServiceWorkerRegisterJob::TriggerUpdateCheckInBrowser(
   update_checker_ = std::make_unique<ServiceWorkerUpdateChecker>(
       std::move(resources), script_url_, script_resource_id, version_to_update,
       std::move(loader_factory), force_bypass_cache_,
-      registration()->update_via_cache(), time_since_last_check,
-      context_.get());
+      registration()->update_via_cache(), time_since_last_check, context_);
   update_checker_->Start(
       base::BindOnce(&ServiceWorkerRegisterJob::OnUpdateCheckFinished,
                      weak_factory_.GetWeakPtr()));
@@ -404,8 +414,8 @@ void ServiceWorkerRegisterJob::RegisterAndContinue() {
 
   blink::mojom::ServiceWorkerRegistrationOptions options(
       scope_, worker_script_type_, update_via_cache_);
-  set_registration(
-      new ServiceWorkerRegistration(options, registration_id, context_));
+  set_registration(new ServiceWorkerRegistration(options, registration_id,
+                                                 context_->AsWeakPtr()));
   AddRegistrationToMatchingProviderHosts(registration());
   UpdateAndContinue();
 }
@@ -473,8 +483,9 @@ void ServiceWorkerRegisterJob::StartWorkerForUpdate() {
   }
 
   // "Let worker be a new ServiceWorker object..." and start the worker.
-  set_new_version(new ServiceWorkerVersion(
-      registration(), script_url_, worker_script_type_, version_id, context_));
+  set_new_version(new ServiceWorkerVersion(registration(), script_url_,
+                                           worker_script_type_, version_id,
+                                           context_->AsWeakPtr()));
   new_version()->set_force_bypass_cache_for_scripts(force_bypass_cache_);
 
   if (need_to_pause_after_download) {

@@ -12,7 +12,6 @@
 #include "base/strings/string16.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_export.h"
-#include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_position.h"
 #include "ui/accessibility/ax_tree.h"
 
@@ -27,7 +26,7 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
 
   static AXPositionInstance CreatePosition(AXTreeID tree_id,
                                            const AXNode& node,
-                                           int32_t offset,
+                                           int offset,
                                            ax::mojom::TextAffinity affinity);
 
   static void SetTree(AXTree* tree) { tree_ = tree; }
@@ -48,20 +47,20 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
   AXNodePosition(const AXNodePosition& other) = default;
   void AnchorChild(int child_index,
                    AXTreeID* tree_id,
-                   int32_t* child_id) const override;
+                   AXNode::AXID* child_id) const override;
   int AnchorChildCount() const override;
   int AnchorIndexInParent() const override;
   base::stack<AXNode*> GetAncestorAnchors() const override;
-  void AnchorParent(AXTreeID* tree_id, int32_t* parent_id) const override;
-  AXNode* GetNodeInTree(AXTreeID tree_id, int32_t node_id) const override;
+  void AnchorParent(AXTreeID* tree_id, AXNode::AXID* parent_id) const override;
+  AXNode* GetNodeInTree(AXTreeID tree_id, AXNode::AXID node_id) const override;
 
   bool IsInLineBreakingObject() const override;
   ax::mojom::Role GetRole() const override;
   AXNodeTextStyles GetTextStyles() const override;
   std::vector<int32_t> GetWordStartOffsets() const override;
   std::vector<int32_t> GetWordEndOffsets() const override;
-  int32_t GetNextOnLineID(int32_t node_id) const override;
-  int32_t GetPreviousOnLineID(int32_t node_id) const override;
+  AXNode::AXID GetNextOnLineID(AXNode::AXID node_id) const override;
+  AXNode::AXID GetPreviousOnLineID(AXNode::AXID node_id) const override;
 
  private:
   static AXTree* tree_;
@@ -72,7 +71,7 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
   static AXNode* GetParent(AXNode* child,
                            AXTreeID child_tree_id,
                            AXTreeID* parent_tree_id,
-                           int32_t* parent_id);
+                           AXNode::AXID* parent_id);
 
   AXPositionInstance CreateUnignoredPositionFromLeafTextPosition(
       AdjustmentBehavior adjustment_behavior) const;

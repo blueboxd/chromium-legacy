@@ -275,7 +275,7 @@ void LauncherControllerHelper::LaunchApp(const ash::ShelfID& id,
   }
 
   // The app will be created for the currently active profile.
-  AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
+  apps::AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
       profile_, extension, event_flags,
       apps::mojom::AppLaunchSource::kSourceAppLauncher, display_id);
   if ((source == ash::LAUNCH_FROM_APP_LIST ||

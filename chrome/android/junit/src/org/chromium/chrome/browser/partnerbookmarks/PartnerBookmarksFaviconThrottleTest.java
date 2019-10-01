@@ -29,12 +29,12 @@ public class PartnerBookmarksFaviconThrottleTest {
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mFaviconThrottle = new PartnerBookmarksFaviconThrottle(TEST_PREFERENCES_NAME);
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mFaviconThrottle.clearEntries();
     }
 

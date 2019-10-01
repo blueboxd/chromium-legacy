@@ -38,6 +38,12 @@ class DeviceInfoSyncClient : public syncer::DeviceInfoSyncClient {
   // syncer::DeviceInfoSyncClient:
   bool GetSendTabToSelfReceivingEnabled() const override { return false; }
 
+  // syncer::DeviceInfoSyncClient:
+  base::Optional<syncer::DeviceInfo::SharingInfo> GetLocalSharingInfo()
+      const override {
+    return base::nullopt;
+  }
+
  private:
   PrefService* const prefs_;
 };

@@ -27,14 +27,14 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 @Config(manifest = Config.NONE)
 public class NotificationSystemStatusUtilUnitTest {
     @Test
-    public void testAppNotificationStatusEnabled() throws Exception {
+    public void testAppNotificationStatusEnabled() {
         getShadowNotificationManager().setNotificationsEnabled(true);
         assertThat(NotificationSystemStatusUtil.getAppNotificationStatus(),
                 is(NotificationSystemStatusUtil.APP_NOTIFICATIONS_STATUS_ENABLED));
     }
 
     @Test
-    public void testAppNotificationStatusDisabled() throws Exception {
+    public void testAppNotificationStatusDisabled() {
         getShadowNotificationManager().setNotificationsEnabled(false);
         assertThat(NotificationSystemStatusUtil.getAppNotificationStatus(),
                 is(NotificationSystemStatusUtil.APP_NOTIFICATIONS_STATUS_DISABLED));

@@ -25,6 +25,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
+#include "media/mojo/mojom/video_decode_perf_history.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -421,6 +422,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // committed.
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag
   bool is_execution_ready() const;
+
+  // For service worker execution contexts. Forwards |receiver| to the process
+  // host on the UI thread.
+  void BindVideoDecodePerfHistory(
+      mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver);
 
   // For service worker execution contexts. Forwards |receiver| to the process
   // host on the UI thread.

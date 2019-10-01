@@ -1077,6 +1077,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
 #if !defined(OS_ANDROID)
   void GetHidService(mojo::PendingReceiver<blink::mojom::HidService> receiver);
+
+  void BindSerialService(
+      mojo::PendingReceiver<blink::mojom::SerialService> receiver);
 #endif
 
   void GetIdleManager(
@@ -1618,8 +1621,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnMediaInterfaceFactoryConnectionError();
 
 #if !defined(OS_ANDROID)
-  void BindSerialServiceReceiver(
-      mojo::PendingReceiver<blink::mojom::SerialService> receiver);
   void BindAuthenticatorRequest(
       mojo::PendingReceiver<blink::mojom::Authenticator> receiver);
 #endif

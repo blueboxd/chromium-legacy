@@ -106,8 +106,7 @@ public class ToolbarProgressBarTest extends DummyUiActivityTestCase {
     @Test
     @Feature({"Android-Progress-Bar"})
     @SmallTest
-    public void testProgressBarCompletion_indeterminateAnimation()
-            throws InterruptedException, TimeoutException {
+    public void testProgressBarCompletion_indeterminateAnimation() throws TimeoutException {
         Animator progressAnimator = mProgressBar.getIndeterminateAnimatorForTesting();
 
         int currentVisibilityCallCount = mProgressVisibilityHelper.getCallCount();
@@ -160,8 +159,7 @@ public class ToolbarProgressBarTest extends DummyUiActivityTestCase {
     @Test
     @Feature({"Android-Progress-Bar"})
     @SmallTest
-    public void testProgressBarCompletion_noAnimation()
-            throws InterruptedException, TimeoutException {
+    public void testProgressBarCompletion_noAnimation() throws TimeoutException {
         int currentVisibilityCallCount = mProgressVisibilityHelper.getCallCount();
         int currentProgressCallCount = mProgressUpdateHelper.getCallCount();
 
@@ -202,8 +200,7 @@ public class ToolbarProgressBarTest extends DummyUiActivityTestCase {
     @Test
     @Feature({"Android-Progress-Bar"})
     @SmallTest
-    public void testProgressBarCompletion_indeterminateAnimation_noDelay()
-            throws InterruptedException, TimeoutException {
+    public void testProgressBarCompletion_indeterminateAnimation_noDelay() throws TimeoutException {
         Animator progressAnimator = mProgressBar.getIndeterminateAnimatorForTesting();
 
         int currentVisibilityCallCount = mProgressVisibilityHelper.getCallCount();
@@ -245,8 +242,7 @@ public class ToolbarProgressBarTest extends DummyUiActivityTestCase {
     @Test
     @Feature({"Android-Progress-Bar"})
     @SmallTest
-    public void testProgressBarReset_indeterminateAnimation()
-            throws InterruptedException, TimeoutException {
+    public void testProgressBarReset_indeterminateAnimation() throws TimeoutException {
         Animator progressAnimator = mProgressBar.getIndeterminateAnimatorForTesting();
 
         int currentVisibilityCallCount = mProgressVisibilityHelper.getCallCount();

@@ -14,7 +14,6 @@ java_binary("java_bytecode_rewriter") {
     "java/org/chromium/bytecode/ConstantPoolReferenceReader.java",
     "java/org/chromium/bytecode/CustomClassLoaderClassWriter.java",
     "java/org/chromium/bytecode/CustomResourcesClassAdapter.java",
-    "java/org/chromium/bytecode/SplitCompatClassAdapter.java",
     "java/org/chromium/bytecode/ThreadAssertionClassAdapter.java",
     "java/org/chromium/bytecode/TypeUtils.java",
   ]

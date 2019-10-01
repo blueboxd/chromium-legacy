@@ -405,6 +405,15 @@ void DedicatedWorkerHost::BindFileSystemManager(
   worker_process_host->BindFileSystemManager(GetOrigin(), std::move(receiver));
 }
 
+void DedicatedWorkerHost::BindVideoDecodePerfHistory(
+    mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderProcessHost* worker_process_host = GetProcessHost();
+  if (!worker_process_host)
+    return;
+  worker_process_host->BindVideoDecodePerfHistory(std::move(receiver));
+}
+
 void DedicatedWorkerHost::CreateIdleManager(
     mojo::PendingReceiver<blink::mojom::IdleManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -447,6 +456,22 @@ void DedicatedWorkerHost::BindSmsReceiverReceiver(
 
   ancestor_render_frame_host->BindSmsReceiverReceiver(std::move(receiver));
 }
+
+#if !defined(OS_ANDROID)
+void DedicatedWorkerHost::BindSerialService(
+    mojo::PendingReceiver<blink::mojom::SerialService> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderFrameHostImpl* ancestor_render_frame_host =
+      GetAncestorRenderFrameHost();
+  if (!ancestor_render_frame_host) {
+    // The ancestor frame may have already been closed. In that case, the worker
+    // will soon be terminated too, so abort the connection.
+    return;
+  }
+
+  ancestor_render_frame_host->BindSerialService(std::move(receiver));
+}
+#endif
 
 void DedicatedWorkerHost::ObserveNetworkServiceCrash(
     StoragePartitionImpl* storage_partition_impl) {

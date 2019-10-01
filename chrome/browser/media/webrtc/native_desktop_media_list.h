@@ -32,10 +32,11 @@ class NativeDesktopMediaList : public DesktopMediaListBase {
   friend class Worker;
 
   // Refresh() posts a task for the |worker_| to update list of windows, get
-  // thumbnails and schedule next refresh.
-  void Refresh() override;
+  // thumbnails and schedules next refresh.
+  void Refresh(bool update_thumnails) override;
 
-  void RefreshForAuraWindows(std::vector<SourceDescription> sources);
+  void RefreshForAuraWindows(std::vector<SourceDescription> sources,
+                             bool update_thumnails);
   void UpdateNativeThumbnailsFinished();
 
 #if defined(USE_AURA)

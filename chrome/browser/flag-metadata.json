@@ -793,11 +793,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "download-home-v2",
-    "owners": [ "shaktisahu", "xingliu", "dtrainor" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "download-rename",
     "owners": [ "hesen", "dtrainor" ],
     "expiry_milestone": 79
@@ -2916,6 +2911,10 @@
     "name": "reader-mode-heuristics",
     "owners": [ "mdjones" ],
     "expiry_milestone": 78
+  },
+  { "name": "reduce-display-notifications",
+    "owners": [ "baileyberro", "zentaro" ],
+    "expiry_milestone": 82
   },
   {
     "name": "reduced-referrer-granularity",

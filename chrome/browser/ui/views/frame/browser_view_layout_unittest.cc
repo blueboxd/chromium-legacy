@@ -171,8 +171,8 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
     layout_ = std::make_unique<BrowserViewLayout>(
         std::unique_ptr<BrowserViewLayoutDelegate>(delegate_), browser(),
         nullptr,  // BrowserView.
-        top_container_, tab_strip_region_view, tab_strip_, nullptr, nullptr,
-        toolbar_, infobar_container_, contents_container_,
+        top_container_, tab_strip_region_view, tab_strip_, nullptr, toolbar_,
+        infobar_container_, contents_container_,
         immersive_mode_controller_.get(), nullptr);
   }
 

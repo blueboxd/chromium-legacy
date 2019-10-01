@@ -69,7 +69,7 @@ public class VrBrowserNativeUiTest {
             VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mVrBrowserTestFramework = new VrBrowserTestFramework(mVrTestRule);
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
     }
@@ -79,8 +79,7 @@ public class VrBrowserNativeUiTest {
      */
     @Test
     @MediumTest
-    public void testUrlOnNativeUi()
-            throws IllegalArgumentException, InterruptedException, TimeoutException {
+    public void testUrlOnNativeUi() throws IllegalArgumentException {
         for (String url : NATIVE_URLS_OF_INTEREST) {
             mVrTestRule.loadUrl(url, PAGE_LOAD_TIMEOUT_S);
             Assert.assertFalse("URL is being shown for native page " + url,
@@ -93,8 +92,7 @@ public class VrBrowserNativeUiTest {
      */
     @Test
     @MediumTest
-    public void testUrlOnNonNativeUi()
-            throws IllegalArgumentException, InterruptedException, TimeoutException {
+    public void testUrlOnNonNativeUi() throws IllegalArgumentException {
         mVrTestRule.loadUrl(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue("URL is not being show for non-native page",
                 TestVrShellDelegate.isDisplayingUrlForTesting());
@@ -106,7 +104,7 @@ public class VrBrowserNativeUiTest {
      */
     @Test
     @MediumTest
-    public void testPaymentRequest() throws InterruptedException {
+    public void testPaymentRequest() {
         // We can't request payment on file:// URLs, so use a local server.
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
                 mVrBrowserTestFramework.getEmbeddedServerUrlForHtmlTestFile("test_payment_request"),
@@ -307,8 +305,7 @@ public class VrBrowserNativeUiTest {
     @Test
     @LargeTest
     @Feature({"Browser", "RenderTest"})
-    public void testKeyboardAppearsOnUrlBarClick()
-            throws InterruptedException, TimeoutException, IOException {
+    public void testKeyboardAppearsOnUrlBarClick() throws InterruptedException, IOException {
         NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
         // For whatever reason, the laser has a lot of random noise (not visible to an actual user)
         // when the keyboard is present on certain OS/hardware configurations (currently known to
@@ -336,8 +333,7 @@ public class VrBrowserNativeUiTest {
     @Test
     @LargeTest
     @Feature({"Browser", "RenderTest"})
-    public void testOverflowMenuAppears()
-            throws InterruptedException, TimeoutException, IOException {
+    public void testOverflowMenuAppears() throws InterruptedException, IOException {
         // TODO(https://crbug.com/930840): Remove this when the weird gradient behavior is fixed.
         mRenderTestRule.setPixelDiffThreshold(2);
         NativeUiUtils.clickElementAndWaitForUiQuiescence(
@@ -407,7 +403,7 @@ public class VrBrowserNativeUiTest {
     @Test
     @LargeTest
     @Feature({"Browser", "RenderTest"})
-    public void testUrlBarHovering() throws InterruptedException, TimeoutException, IOException {
+    public void testUrlBarHovering() throws InterruptedException, IOException {
         testUrlBarHoveringImpl(false);
     }
 
@@ -418,14 +414,13 @@ public class VrBrowserNativeUiTest {
     @Test
     @LargeTest
     @Feature({"Browser", "RenderTest"})
-    public void testUrlBarHoveringIncognito()
-            throws InterruptedException, TimeoutException, IOException {
+    public void testUrlBarHoveringIncognito() throws InterruptedException, IOException {
         mVrBrowserTestFramework.openIncognitoTab("about:blank");
         testUrlBarHoveringImpl(true);
     }
 
     private void testUrlBarHoveringImpl(boolean incognito)
-            throws InterruptedException, TimeoutException, IOException {
+            throws InterruptedException, IOException {
         // Back button hovering doesn't do anything unless the back button is actually active. so
         // navigate to do that.
         mVrTestRule.loadUrl("chrome://version/", PAGE_LOAD_TIMEOUT_S);
@@ -457,8 +452,7 @@ public class VrBrowserNativeUiTest {
     @Test
     @LargeTest
     @Feature({"Browser", "RenderTest"})
-    public void testOverflowMenuHovering()
-            throws InterruptedException, TimeoutException, IOException {
+    public void testOverflowMenuHovering() throws InterruptedException, IOException {
         testOverflowMenuHoveringImpl(false);
     }
 
@@ -469,14 +463,13 @@ public class VrBrowserNativeUiTest {
     @Test
     @LargeTest
     @Feature({"Browser", "RenderTest"})
-    public void testOverflowMenuHoveringIncognito()
-            throws InterruptedException, TimeoutException, IOException {
+    public void testOverflowMenuHoveringIncognito() throws InterruptedException, IOException {
         mVrBrowserTestFramework.openIncognitoTab("about:blank");
         testOverflowMenuHoveringImpl(true);
     }
 
     private void testOverflowMenuHoveringImpl(boolean incognito)
-            throws InterruptedException, TimeoutException, IOException {
+            throws InterruptedException, IOException {
         // TODO(https://crbug.com/930840): Remove this when the weird gradient behavior is fixed.
         mRenderTestRule.setPixelDiffThreshold(2);
         // The forward button only has a hover state if the button is actually active, so navigate
@@ -527,8 +520,7 @@ public class VrBrowserNativeUiTest {
     @Test
     @MediumTest
     @Feature({"Browser", "RenderTest"})
-    public void testSuggestionHovering()
-            throws InterruptedException, TimeoutException, IOException {
+    public void testSuggestionHovering() throws InterruptedException, IOException {
         // Input some text to get suggestions.
         NativeUiUtils.enableMockedKeyboard();
         NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
@@ -602,7 +594,7 @@ public class VrBrowserNativeUiTest {
     @Test
     @MediumTest
     @Feature({"Browser", "RenderTest"})
-    public void testScrollResizing() throws InterruptedException, TimeoutException, IOException {
+    public void testScrollResizing() throws InterruptedException, IOException {
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile(
                         "test_content_resizing_does_not_affect_webpage"),
@@ -653,8 +645,7 @@ public class VrBrowserNativeUiTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({"enable-features=WebXR"})
-    public void testRAFsFireWhileRepositioning()
-            throws InterruptedException, TimeoutException, IOException {
+    public void testRAFsFireWhileRepositioning() {
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile(
                         "test_rafs_fire_while_repositioning"),
@@ -671,7 +662,7 @@ public class VrBrowserNativeUiTest {
     @MediumTest
     @Feature({"Browser", "RenderTest"})
     public void testRepositionBarDoesNotAppearWithPermissionPromptVisible()
-            throws InterruptedException, TimeoutException, IOException {
+            throws InterruptedException, IOException {
         // We don't need to actually accept the prompt, so we don't need to use the local server.
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("2d_permission_page"),

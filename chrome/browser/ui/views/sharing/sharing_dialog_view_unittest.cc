@@ -96,8 +96,9 @@ class SharingDialogViewTest : public ChromeViewsTestBase {
           base::StrCat({"device_guid_", base::NumberToString(i)}),
           base::StrCat({"device", base::NumberToString(i)}), "chrome_version",
           "user_agent", sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
-          /* last_updated_timestamp= */ base::Time::Now(),
-          /* send_tab_to_self_receiving_enabled= */ false));
+          /*last_updated_timestamp=*/base::Time::Now(),
+          /*send_tab_to_self_receiving_enabled=*/false,
+          /*sharing_info=*/base::nullopt));
     }
     return devices;
   }
@@ -140,8 +141,9 @@ TEST_F(SharingDialogViewTest, DevicePressed) {
   syncer::DeviceInfo device_info(
       "device_guid_1", "device1", "chrome_version", "user_agent",
       sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
-      /* last_updated_timestamp= */ base::Time::Now(),
-      /* send_tab_to_self_receiving_enabled= */ false);
+      /*last_updated_timestamp=*/base::Time::Now(),
+      /*send_tab_to_self_receiving_enabled=*/false,
+      /*sharing_info=*/base::nullopt);
   EXPECT_CALL(*controller_.get(), OnDeviceChosen(DeviceEquals(&device_info)));
 
   auto dialog = CreateDialogView(/*devices=*/3, /*apps=*/2);

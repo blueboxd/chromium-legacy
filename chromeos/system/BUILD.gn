@@ -26,6 +26,8 @@ component("system") {
     "fake_statistics_provider.h",
     "name_value_pairs_parser.cc",
     "name_value_pairs_parser.h",
+    "scheduler_configuration_manager_base.cc",
+    "scheduler_configuration_manager_base.h",
     "statistics_provider.cc",
     "statistics_provider.h",
   ]

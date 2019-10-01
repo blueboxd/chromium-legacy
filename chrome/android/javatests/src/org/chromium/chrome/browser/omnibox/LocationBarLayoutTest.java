@@ -121,7 +121,7 @@ public class LocationBarLayoutTest {
         setupTabForTests(false);
     }
 
-    private void setupTabForTests(boolean isIncognito) throws InterruptedException {
+    private void setupTabForTests(boolean isIncognito) {
         if (isIncognito) mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL, isIncognito);
         mTestLocationBarModel = new TestLocationBarModel();
         mTestLocationBarModel.setTab(mActivityTestRule.getActivity().getActivityTab(), isIncognito);
@@ -162,8 +162,7 @@ public class LocationBarLayoutTest {
         return mActivityTestRule.getActivity().findViewById(R.id.security_button);
     }
 
-    private void setUrlBarTextAndFocus(String text)
-            throws ExecutionException, InterruptedException {
+    private void setUrlBarTextAndFocus(String text) throws ExecutionException {
         TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
             public Void call() throws InterruptedException {
@@ -177,8 +176,7 @@ public class LocationBarLayoutTest {
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testNotShowingVoiceSearchButtonIfUrlBarContainsText()
-            throws ExecutionException, InterruptedException {
+    public void testNotShowingVoiceSearchButtonIfUrlBarContainsText() throws ExecutionException {
         setUrlBarTextAndFocus("testing");
 
         Assert.assertEquals(getDeleteButton().getVisibility(), VISIBLE);
@@ -188,8 +186,7 @@ public class LocationBarLayoutTest {
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testShowingVoiceSearchButtonIfUrlBarIsEmpty()
-            throws ExecutionException, InterruptedException {
+    public void testShowingVoiceSearchButtonIfUrlBarIsEmpty() throws ExecutionException {
         setUrlBarTextAndFocus("");
 
         Assert.assertNotEquals(getDeleteButton().getVisibility(), VISIBLE);
@@ -244,7 +241,7 @@ public class LocationBarLayoutTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
     @Feature({"OmniboxSearchEngineLogo"})
-    public void testOmniboxSearchEngineLogo_goneWhenIncognito() throws Exception {
+    public void testOmniboxSearchEngineLogo_goneWhenIncognito() {
         final LocationBarLayout locationBar = getLocationBar();
         final View iconView = locationBar.getSecurityIconView();
         onView(withId(R.id.location_bar_status))

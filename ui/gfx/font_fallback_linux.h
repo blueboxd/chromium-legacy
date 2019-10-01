@@ -6,12 +6,20 @@
 #define UI_GFX_FONT_FALLBACK_LINUX_H_
 
 #include <string>
+#include <vector>
 
+#include "base/containers/mru_cache.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/font_fallback.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
+
+// The fallback cache is a mapping from a font family name to its potential
+// fallback fonts.
+using FallbackFontsCache = base::MRUCache<std::string, std::vector<Font>>;
+GFX_EXPORT FallbackFontsCache* GetFallbackFontsCacheInstance();
 
 // Return a font family which provides a glyph for the Unicode code point
 // specified by character.
@@ -25,6 +33,8 @@ namespace gfx {
 // Previously blink::WebFontInfo::fallbackFontForChar.
 struct FallbackFontData {
   std::string name;
+  // TODO(etienneb): This field should be a base::FilePath and renamed
+  // |filepath|.
   std::string filename;
   int ttc_index = 0;
   bool is_bold = false;

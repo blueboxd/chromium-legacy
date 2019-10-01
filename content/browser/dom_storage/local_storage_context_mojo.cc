@@ -24,9 +24,10 @@
 #include "base/task/post_task.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
-#include "components/services/leveldb/leveldb_service_impl.h"
+#include "components/services/leveldb/leveldb_database_impl.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
+#include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/local_storage_database.pb.h"
@@ -92,6 +93,7 @@ std::vector<uint8_t> CreateMetaDataKey(const url::Origin& origin) {
 void SuccessResponse(base::OnceClosure callback, bool success) {
   std::move(callback).Run();
 }
+
 void DatabaseErrorResponse(base::OnceClosure callback,
                            leveldb::mojom::DatabaseError error) {
   std::move(callback).Run();
@@ -205,7 +207,7 @@ class LocalStorageContextMojo::StorageAreaHolder final
     }
 #endif
     area_ = std::make_unique<StorageAreaImpl>(
-        context_->database_ ? context_->database_.get() : nullptr,
+        context_->database_.get(),
         kDataPrefix + origin_.Serialize() + kOriginSeparator, this, options);
     area_ptr_ = area_.get();
   }
@@ -600,15 +602,6 @@ void LocalStorageContextMojo::PurgeUnusedAreasIfNeeded() {
   RecordCachePurgedHistogram(purge_reason, purged_size_kib);
 }
 
-void LocalStorageContextMojo::SetDatabaseForTesting(
-    mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database) {
-  DCHECK_EQ(connection_state_, NO_CONNECTION);
-  connection_state_ = CONNECTION_IN_PROGRESS;
-  database_.reset();
-  database_.Bind(std::move(database));
-  OnDatabaseOpened(true, leveldb::mojom::DatabaseError::OK);
-}
-
 bool LocalStorageContextMojo::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
@@ -708,27 +701,15 @@ void LocalStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {
 void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
   DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
 
-  leveldb_service_.reset();
-  database_.reset();
-  if (leveldb_binder_override_) {
-    leveldb_binder_override_.Run(leveldb_service_.BindNewPipeAndPassReceiver());
-  } else {
-    // Spawn and connect to a new LevelDBServiceImpl running on the background
-    // thread pool.
-    leveldb_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            [](mojo::PendingReceiver<leveldb::mojom::LevelDBService> receiver) {
-              mojo::MakeSelfOwnedReceiver(
-                  std::make_unique<leveldb::LevelDBServiceImpl>(),
-                  std::move(receiver));
-            },
-            leveldb_service_.BindNewPipeAndPassReceiver()));
+  if (database_factory_for_testing_) {
+    in_memory_ = true;
+    database_ = database_factory_for_testing_.Run();
+    OnDatabaseOpened(leveldb::mojom::DatabaseError::OK);
+    return;
   }
 
-  if (!directory_.empty() && !in_memory_only) {
+  if (!directory_.empty() && directory_.IsAbsolute() && !in_memory_only) {
     // We were given a subdirectory to write to, so use a disk-backed database.
-
     leveldb_env::Options options;
     options.create_if_missing = true;
     options.max_open_files = 0;  // use minimum
@@ -737,42 +718,30 @@ void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
     options.write_buffer_size = 64 * 1024;
     options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
 
-    leveldb_service_->OpenWithOptions(
+    in_memory_ = false;
+    database_ = leveldb::LevelDBDatabaseImpl::OpenDirectory(
         std::move(options), directory_, "leveldb", memory_dump_id_,
-        database_.BindNewEndpointAndPassReceiver(),
+        leveldb_task_runner_,
         base::BindOnce(&LocalStorageContextMojo::OnDatabaseOpened,
-                       weak_ptr_factory_.GetWeakPtr(), false));
-  } else {
-    // We were not given a subdirectory. Use a memory backed database.
-    leveldb_service_->OpenInMemory(
-        memory_dump_id_, "local-storage",
-        database_.BindNewEndpointAndPassReceiver(),
-        base::BindOnce(&LocalStorageContextMojo::OnDatabaseOpened,
-                       weak_ptr_factory_.GetWeakPtr(), true));
+                       weak_ptr_factory_.GetWeakPtr()));
+    return;
   }
-}
 
-void LocalStorageContextMojo::OnMojoConnectionDestroyed() {
-  UMA_HISTOGRAM_BOOLEAN("LocalStorageContext.OnConnectionDestroyed", true);
-  LOG(ERROR) << "Lost connection to database";
-  // We're about to set database_ to null, so delete the StorageAreaImpls
-  // that might still be using the old database.
-  for (const auto& it : areas_)
-    it.second->storage_area()->CancelAllPendingRequests();
-  areas_.clear();
-  database_.reset();
-  // TODO(dullweber): Should we try to recover? E.g. try to reopen and if this
-  // fails, call DeleteAndRecreateDatabase().
+  // We were not given a subdirectory. Use a memory backed database.
+  in_memory_ = true;
+  database_ = leveldb::LevelDBDatabaseImpl::OpenInMemory(
+      memory_dump_id_, "local-storage", leveldb_task_runner_,
+      base::BindOnce(&LocalStorageContextMojo::OnDatabaseOpened,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void LocalStorageContextMojo::OnDatabaseOpened(
-    bool in_memory,
     leveldb::mojom::DatabaseError status) {
   if (status != leveldb::mojom::DatabaseError::OK) {
     UMA_HISTOGRAM_ENUMERATION("LocalStorageContext.DatabaseOpenError",
                               leveldb::GetLevelDBStatusUMAValue(status),
                               leveldb_env::LEVELDB_STATUS_MAX);
-    if (in_memory) {
+    if (in_memory_) {
       UMA_HISTOGRAM_ENUMERATION("LocalStorageContext.DatabaseOpenError.Memory",
                                 leveldb::GetLevelDBStatusUMAValue(status),
                                 leveldb_env::LEVELDB_STATUS_MAX);
@@ -790,9 +759,6 @@ void LocalStorageContextMojo::OnDatabaseOpened(
 
   // Verify DB schema version.
   if (database_) {
-    database_.set_disconnect_handler(
-        base::BindOnce(&LocalStorageContextMojo::OnMojoConnectionDestroyed,
-                       weak_ptr_factory_.GetWeakPtr()));
     database_->Get(
         leveldb::StdStringToUint8Vector(kVersionKey),
         base::BindOnce(&LocalStorageContextMojo::OnGotDatabaseVersion,
@@ -840,9 +806,6 @@ void LocalStorageContextMojo::OnGotDatabaseVersion(
 
 void LocalStorageContextMojo::OnConnectionFinished() {
   DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
-  if (!database_)
-    leveldb_service_.reset();
-
   // If connection was opened successfully, reset tried_to_recreate_during_open_
   // to enable recreating the database on future errors.
   if (database_)
@@ -878,7 +841,7 @@ void LocalStorageContextMojo::DeleteAndRecreateDatabase(
 
   // If tried to recreate database on disk already, try again but this time
   // in memory.
-  if (tried_to_recreate_during_open_ && !directory_.empty()) {
+  if (tried_to_recreate_during_open_ && !in_memory_) {
     recreate_in_memory = true;
   } else if (tried_to_recreate_during_open_) {
     // Give up completely, run without any database.
@@ -889,9 +852,9 @@ void LocalStorageContextMojo::DeleteAndRecreateDatabase(
   tried_to_recreate_during_open_ = true;
 
   // Destroy database, and try again.
-  if (!directory_.empty() && leveldb_service_.is_bound()) {
-    leveldb_service_->Destroy(
-        directory_, "leveldb",
+  if (!in_memory_) {
+    storage::DomStorageDatabase::Destroy(
+        directory_, "leveldb", leveldb_task_runner_,
         base::BindOnce(&LocalStorageContextMojo::OnDBDestroyed,
                        weak_ptr_factory_.GetWeakPtr(), recreate_in_memory));
   } else {
@@ -901,11 +864,10 @@ void LocalStorageContextMojo::DeleteAndRecreateDatabase(
   }
 }
 
-void LocalStorageContextMojo::OnDBDestroyed(
-    bool recreate_in_memory,
-    leveldb::mojom::DatabaseError status) {
+void LocalStorageContextMojo::OnDBDestroyed(bool recreate_in_memory,
+                                            leveldb::Status status) {
   UMA_HISTOGRAM_ENUMERATION("LocalStorageContext.DestroyDBResult",
-                            leveldb::GetLevelDBStatusUMAValue(status),
+                            leveldb_env::GetLevelDBStatusUMAValue(status),
                             leveldb_env::LEVELDB_STATUS_MAX);
   // We're essentially ignoring the status here. Even if destroying failed we
   // still want to go ahead and try to recreate.

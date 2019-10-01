@@ -385,6 +385,9 @@ void DWriteFontLookupTableBuilder::PrepareFontUniqueNameTable() {
         FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     outstanding_family_results_ = collection_->GetFontFamilyCount();
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "DirectWrite.Fonts.Proxy.FamilyCountIndexingStart",
+        outstanding_family_results_, 1, 5000, 50);
   }
   for (UINT32 family_index = 0; family_index < outstanding_family_results_;
        ++family_index) {

@@ -157,7 +157,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
     @Test
     @LargeTest
-    public void testAddItemsWithNoIcons() throws Throwable {
+    public void testAddItemsWithNoIcons() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
@@ -185,7 +185,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
     @Test
     @LargeTest
-    public void testAddItemsWithIcons() throws Throwable {
+    public void testAddItemsWithIcons() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
@@ -221,7 +221,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
     @Test
     @LargeTest
-    public void testAddItemWithIconAfterItemWithNoIcon() throws Throwable {
+    public void testAddItemWithIconAfterItemWithNoIcon() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
@@ -252,7 +252,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
     @Test
     @LargeTest
-    public void testAddItemWithNoIconAfterItemWithIcon() throws Throwable {
+    public void testAddItemWithNoIconAfterItemWithIcon() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
@@ -283,7 +283,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
     @Test
     @LargeTest
-    public void testRemoveItemWithIconNoItemsWithIconsLeft() throws Throwable {
+    public void testRemoveItemWithIconNoItemsWithIconsLeft() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
@@ -320,7 +320,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
     @Test
     @LargeTest
-    public void testRemoveItemWithIconOneItemWithIconLeft() throws Throwable {
+    public void testRemoveItemWithIconOneItemWithIconLeft() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
@@ -370,7 +370,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
     @Test
     @LargeTest
-    public void testUpdateItemWithIconToNoIcon() throws Throwable {
+    public void testUpdateItemWithIconToNoIcon() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
@@ -404,7 +404,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
     @Test
     @LargeTest
-    public void testUpdateItemWithNoIconToIcon() throws Throwable {
+    public void testUpdateItemWithNoIconToIcon() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
@@ -438,7 +438,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
     @Test
     @LargeTest
-    public void testUpdateItemIcon() throws Throwable {
+    public void testUpdateItemIcon() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
@@ -638,7 +638,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
     @Test
     @LargeTest
-    public void testUpdateItemAndRemoveItemFromList() throws Throwable {
+    public void testUpdateItemAndRemoveItemFromList() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
@@ -690,7 +690,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
     @Test
     @LargeTest
-    public void testAddItemAndRemoveItemFromList() throws Throwable {
+    public void testAddItemAndRemoveItemFromList() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
@@ -762,7 +762,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
     @Test
     @LargeTest
-    public void testAddItemWithSameNameToListAndRemoveItemFromList() throws Throwable {
+    public void testAddItemWithSameNameToListAndRemoveItemFromList() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());

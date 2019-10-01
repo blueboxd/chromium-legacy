@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/webrtc/display_media_access_handler.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -158,8 +159,8 @@ void DisplayMediaAccessHandler::ProcessQueuedAccessRequest(
   auto source_lists = picker_factory_->CreateMediaList(media_types);
 
   DesktopMediaPicker::DoneCallback done_callback =
-      base::BindRepeating(&DisplayMediaAccessHandler::OnPickerDialogResults,
-                          base::Unretained(this), web_contents);
+      base::BindOnce(&DisplayMediaAccessHandler::OnPickerDialogResults,
+                     base::Unretained(this), web_contents);
   DesktopMediaPicker::Params picker_params;
   picker_params.web_contents = web_contents;
   gfx::NativeWindow parent_window = web_contents->GetTopLevelNativeWindow();
@@ -174,7 +175,7 @@ void DisplayMediaAccessHandler::ProcessQueuedAccessRequest(
       blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE;
   picker_params.approve_audio_by_default = false;
   pending_request.picker->Show(picker_params, std::move(source_lists),
-                               done_callback);
+                               std::move(done_callback));
 }
 
 void DisplayMediaAccessHandler::OnPickerDialogResults(

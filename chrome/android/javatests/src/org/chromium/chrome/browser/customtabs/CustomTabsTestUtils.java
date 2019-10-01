@@ -77,7 +77,7 @@ public class CustomTabsTestUtils {
     }
 
     public static ClientAndSession bindWithCallback(final CustomTabsCallback callback)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         final AtomicReference<CustomTabsSession> sessionReference = new AtomicReference<>();
         final AtomicReference<CustomTabsClient> clientReference = new AtomicReference<>();
         final CallbackHelper waitForConnection = new CallbackHelper();
@@ -100,8 +100,7 @@ public class CustomTabsTestUtils {
     }
 
     /** Calls warmup() and waits for all the tasks to complete. Fails the test otherwise. */
-    public static CustomTabsConnection warmUpAndWait()
-            throws InterruptedException, TimeoutException {
+    public static CustomTabsConnection warmUpAndWait() throws TimeoutException {
         CustomTabsConnection connection = setUpConnection();
         final CallbackHelper startupCallbackHelper = new CallbackHelper();
         CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
@@ -128,7 +127,7 @@ public class CustomTabsTestUtils {
     }
 
     public static void setHideCctTopBarOnModuleManagedUrls(Intent intent, boolean hideCctTopBar)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         CustomTabsConnection connection = warmUpAndWait();
         CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         connection.newSession(token);

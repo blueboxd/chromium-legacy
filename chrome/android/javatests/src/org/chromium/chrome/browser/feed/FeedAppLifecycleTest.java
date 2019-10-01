@@ -134,8 +134,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"Feed"})
-    public void testActivityStateChangesIncrementStateCounters()
-            throws InterruptedException, TimeoutException {
+    public void testActivityStateChangesIncrementStateCounters() throws TimeoutException {
         verifyHistogram(mHistogramAppLifecycleEvents, AppLifecycleEvent.ENTER_BACKGROUND, 0);
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
         signalActivityStop(mActivity);
@@ -151,7 +150,7 @@ public class FeedAppLifecycleTest {
     @SmallTest
     @Feature({"Feed"})
     @EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS})
-    public void testNtpOpeningTriggersInitializeOnlyOnce() throws InterruptedException {
+    public void testNtpOpeningTriggersInitializeOnlyOnce() {
         // We open to about:blank initially so we shouldn't have called initialize() yet.
         verify(mAppLifecycleListener, times(0)).initialize();
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
@@ -256,8 +255,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"Feed"})
-    public void testSecondWindowDoesNotTriggerForegroundOrBackground()
-            throws InterruptedException, TimeoutException {
+    public void testSecondWindowDoesNotTriggerForegroundOrBackground() throws TimeoutException {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
 
         MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(true);
@@ -282,7 +280,7 @@ public class FeedAppLifecycleTest {
     @SmallTest
     @Feature({"Feed"})
     @EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS})
-    public void testMultiWindowDoesNotCauseMultipleInitialize() throws InterruptedException {
+    public void testMultiWindowDoesNotCauseMultipleInitialize() {
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         verify(mAppLifecycleListener, times(1)).initialize();
 
@@ -296,8 +294,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"Feed"})
-    public void testResumeTriggersSchedulerForegrounded()
-            throws InterruptedException, TimeoutException {
+    public void testResumeTriggersSchedulerForegrounded() throws TimeoutException {
         verify(mFeedScheduler, times(1)).onForegrounded();
         signalActivityResume(mActivity);
         verify(mFeedScheduler, times(2)).onForegrounded();
@@ -364,23 +361,20 @@ public class FeedAppLifecycleTest {
         verify(mAppLifecycleListener, times(0)).initialize();
     }
 
-    private void signalActivityStart(Activity activity)
-            throws InterruptedException, TimeoutException {
+    private void signalActivityStart(Activity activity) throws TimeoutException {
         signalActivityState(activity, ActivityState.STARTED);
     }
 
-    private void signalActivityResume(Activity activity)
-            throws InterruptedException, TimeoutException {
+    private void signalActivityResume(Activity activity) throws TimeoutException {
         signalActivityState(activity, ActivityState.RESUMED);
     }
 
-    private void signalActivityStop(Activity activity)
-            throws InterruptedException, TimeoutException {
+    private void signalActivityStop(Activity activity) throws TimeoutException {
         signalActivityState(activity, ActivityState.STOPPED);
     }
 
     private void signalActivityState(final Activity activity,
-            final @ActivityState int activityState) throws InterruptedException, TimeoutException {
+            final @ActivityState int activityState) throws TimeoutException {
         final CallbackHelper waitForStateChangeHelper = new CallbackHelper();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             ApplicationStatus.onStateChangeForTesting(activity, activityState);

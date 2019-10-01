@@ -41,13 +41,13 @@ public class MemoryMetricsLoggerTest {
     }
 
     @After
-    public void tearDown() throws Exception {}
+    public void tearDown() {}
 
     @Test
     @Feature({"AndroidWebView"})
     @OnlyRunIn(MULTI_PROCESS)
     @SmallTest
-    public void testMultiProcessHistograms() throws Throwable {
+    public void testMultiProcessHistograms() {
         Assert.assertNotEquals(0,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         "Memory.Browser.PrivateMemoryFootprint"));
@@ -60,7 +60,7 @@ public class MemoryMetricsLoggerTest {
     @Feature({"AndroidWebView"})
     @OnlyRunIn(SINGLE_PROCESS)
     @SmallTest
-    public void testSingleProcessHistograms() throws Throwable {
+    public void testSingleProcessHistograms() {
         Assert.assertNotEquals(0,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         "Memory.Browser.PrivateMemoryFootprint"));

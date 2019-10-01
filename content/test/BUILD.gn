@@ -1598,8 +1598,6 @@ test("content_unittests") {
     "../browser/dom_storage/storage_area_impl_unittest.cc",
     "../browser/dom_storage/test/fake_leveldb_database_error_on_write.cc",
     "../browser/dom_storage/test/fake_leveldb_database_error_on_write.h",
-    "../browser/dom_storage/test/fake_leveldb_service.cc",
-    "../browser/dom_storage/test/fake_leveldb_service.h",
     "../browser/dom_storage/test/storage_area_test_util.cc",
     "../browser/dom_storage/test/storage_area_test_util.h",
     "../browser/download/download_manager_impl_unittest.cc",

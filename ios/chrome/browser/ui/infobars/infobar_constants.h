@@ -15,6 +15,9 @@ extern NSString* const kConfirmInfobarButton2AccessibilityIdentifier;
 
 // The duration in seconds that the InfobarCoordinator banner will be presented
 // for.
-extern const NSTimeInterval kInfobarBannerPresentationDurationInSeconds;
+extern const NSTimeInterval kInfobarBannerDefaultPresentationDurationInSeconds;
+// The duration in seconds that a high priority presentation InfobarCoordinator
+// banner will be presented for.
+extern const NSTimeInterval kInfobarBannerLongPresentationDurationInSeconds;
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_CONSTANTS_H_

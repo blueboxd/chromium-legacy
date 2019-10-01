@@ -65,7 +65,7 @@ public class LocaleManagerReferralTest {
 
     @SmallTest
     @Test
-    public void testYandexReferralId() throws InterruptedException, TimeoutException {
+    public void testYandexReferralId() throws TimeoutException {
         final CallbackHelper templateUrlServiceLoaded = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TemplateUrlService templateUrlService = TemplateUrlServiceFactory.get();

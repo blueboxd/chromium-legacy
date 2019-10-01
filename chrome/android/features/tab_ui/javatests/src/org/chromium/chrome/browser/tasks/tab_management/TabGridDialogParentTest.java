@@ -78,7 +78,7 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @UiThreadTest
-    public void testUpdateDialogWithOrientation() throws Exception {
+    public void testUpdateDialogWithOrientation() {
         mockDialogStatus(false);
 
         mTabGridDialogParent.updateDialogWithOrientation(
@@ -119,7 +119,7 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @UiThreadTest
-    public void testResetDialog() throws Exception {
+    public void testResetDialog() {
         mTabGridDialogContainer.removeAllViews();
         View toolbarView = new View(getActivity());
         View recyclerView = new View(getActivity());
@@ -140,7 +140,7 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
-    public void testUpdateUngroupBar() throws Exception {
+    public void testUpdateUngroupBar() {
         mTabGridDialogContainer.removeAllViews();
         View toolbarView = new View(getActivity());
         View recyclerView = new View(getActivity());
@@ -249,7 +249,7 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
-    public void testDialog_ZoomInZoomOut() throws Exception {
+    public void testDialog_ZoomInZoomOut() {
         // Setup the animation with a dummy animation params.
         TabGridDialogParent.AnimationParams params = new TabGridDialogParent.AnimationParams(
                 new Rect(3, 3, 3, 3), new View(getActivity()));
@@ -306,7 +306,7 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
-    public void testDialog_ZoomInFadeOut() throws Exception {
+    public void testDialog_ZoomInFadeOut() {
         // Setup the animation with a dummy animation params.
         TabGridDialogParent.AnimationParams params = new TabGridDialogParent.AnimationParams(
                 new Rect(3, 3, 3, 3), new View(getActivity()));
@@ -337,7 +337,7 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
-    public void testDialog_FadeInFadeOut() throws Exception {
+    public void testDialog_FadeInFadeOut() {
         // Setup the the basic fade-in and fade-out animation.
         mTabGridDialogParent.setupDialogAnimation(null);
 

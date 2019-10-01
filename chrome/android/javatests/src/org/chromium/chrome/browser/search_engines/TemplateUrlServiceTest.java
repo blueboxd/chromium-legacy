@@ -62,7 +62,7 @@ public class TemplateUrlServiceTest {
 
         Assert.assertTrue(TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
-            public Boolean call() throws Exception {
+            public Boolean call() {
                 return TemplateUrlServiceFactory.get().isLoaded();
             }
         }));
@@ -79,7 +79,7 @@ public class TemplateUrlServiceTest {
             throws ExecutionException {
         String result = TestThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
             @Override
-            public String call() throws Exception {
+            public String call() {
                 return TemplateUrlServiceFactory.get().getUrlForContextualSearchQuery(
                         query, alternative, prefetch, protocolVersion);
             }
@@ -106,7 +106,7 @@ public class TemplateUrlServiceTest {
 
         Assert.assertTrue(TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
-            public Boolean call() throws Exception {
+            public Boolean call() {
                 return TemplateUrlServiceFactory.get().isLoaded();
             }
         }));
@@ -141,7 +141,7 @@ public class TemplateUrlServiceTest {
         List<TemplateUrl> searchEngines =
                 TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
                     @Override
-                    public List<TemplateUrl> call() throws Exception {
+                    public List<TemplateUrl> call() {
                         return templateUrlService.getTemplateUrls();
                     }
                 });
@@ -149,7 +149,7 @@ public class TemplateUrlServiceTest {
         TemplateUrl defaultSearchEngine =
                 TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
                     @Override
-                    public TemplateUrl call() throws Exception {
+                    public TemplateUrl call() {
                         return templateUrlService.getDefaultSearchEngineTemplateUrl();
                     }
                 });
@@ -165,7 +165,7 @@ public class TemplateUrlServiceTest {
         defaultSearchEngine =
                 TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
                     @Override
-                    public TemplateUrl call() throws Exception {
+                    public TemplateUrl call() {
                         return templateUrlService.getDefaultSearchEngineTemplateUrl();
                     }
                 });
@@ -185,7 +185,7 @@ public class TemplateUrlServiceTest {
         TemplateUrl defaultSearchEngine =
                 TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
                     @Override
-                    public TemplateUrl call() throws Exception {
+                    public TemplateUrl call() {
                         return templateUrlService.getDefaultSearchEngineTemplateUrl();
                     }
                 });
@@ -195,7 +195,7 @@ public class TemplateUrlServiceTest {
         List<TemplateUrl> customSearchEngines =
                 TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
                     @Override
-                    public List<TemplateUrl> call() throws Exception {
+                    public List<TemplateUrl> call() {
                         templateUrlService.addSearchEngineForTesting("keyword1", 0);
                         templateUrlService.addSearchEngineForTesting("keyword2", 0);
                         templateUrlService.addSearchEngineForTesting("keyword3", 3);
@@ -214,7 +214,7 @@ public class TemplateUrlServiceTest {
         customSearchEngines =
                 TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
                     @Override
-                    public List<TemplateUrl> call() throws Exception {
+                    public List<TemplateUrl> call() {
                         templateUrlService.addSearchEngineForTesting("keyword4", 0);
                         templateUrlService.addSearchEngineForTesting("keyword5", 0);
                         List<TemplateUrl> searchEngines = templateUrlService.getTemplateUrls();
@@ -232,7 +232,7 @@ public class TemplateUrlServiceTest {
         customSearchEngines =
                 TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
                     @Override
-                    public List<TemplateUrl> call() throws Exception {
+                    public List<TemplateUrl> call() {
                         templateUrlService.updateLastVisitedForTesting("keyword3");
                         List<TemplateUrl> searchEngines = templateUrlService.getTemplateUrls();
                         SearchEngineAdapter.sortAndFilterUnnecessaryTemplateUrl(
@@ -250,7 +250,7 @@ public class TemplateUrlServiceTest {
         customSearchEngines =
                 TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
                     @Override
-                    public List<TemplateUrl> call() throws Exception {
+                    public List<TemplateUrl> call() {
                         templateUrlService.setSearchEngine("keyword4");
                         List<TemplateUrl> searchEngines = templateUrlService.getTemplateUrls();
                         TemplateUrl newDefaultSearchEngine =
@@ -299,7 +299,7 @@ public class TemplateUrlServiceTest {
         TemplateUrl defaultSearchEngine =
                 TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
                     @Override
-                    public TemplateUrl call() throws Exception {
+                    public TemplateUrl call() {
                         return templateUrlService.getDefaultSearchEngineTemplateUrl();
                     }
                 });
@@ -319,7 +319,7 @@ public class TemplateUrlServiceTest {
         defaultSearchEngine =
                 TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
                     @Override
-                    public TemplateUrl call() throws Exception {
+                    public TemplateUrl call() {
                         return templateUrlService.getDefaultSearchEngineTemplateUrl();
                     }
                 });
@@ -329,7 +329,7 @@ public class TemplateUrlServiceTest {
     private int getSearchEngineCount(final TemplateUrlService templateUrlService) {
         return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
             @Override
-            public Integer call() throws Exception {
+            public Integer call() {
                 return templateUrlService.getTemplateUrls().size();
             }
         });

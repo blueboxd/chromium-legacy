@@ -54,8 +54,9 @@ chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(int render_frame_id) {
   if (!helper)
     return nullptr;
 
-  auto* canceler = new chrome::mojom::PrerenderCancelerPtr;
-  render_frame->GetRemoteInterfaces()->GetInterface(canceler);
+  auto* canceler = new mojo::Remote<chrome::mojom::PrerenderCanceler>;
+  render_frame->GetRemoteInterfaces()->GetInterface(
+      canceler->BindNewPipeAndPassReceiver());
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, canceler);
   return canceler->get();
 }

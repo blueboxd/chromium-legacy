@@ -54,12 +54,12 @@ public class FirstRunIntegrationTest {
     private Activity mActivity;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         FirstRunActivity.setObserverForTest(mTestObserver);
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         if (mActivity != null) mActivity.finish();
     }
 

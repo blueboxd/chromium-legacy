@@ -118,7 +118,7 @@ public class VrInstallUpdateInfoBarTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testInfoBarNotPresentWhenVrServicesCurrent() throws InterruptedException {
+    public void testInfoBarNotPresentWhenVrServicesCurrent() {
         infoBarTestHelper(VrCoreCompatibility.VR_READY);
     }
 
@@ -130,7 +130,7 @@ public class VrInstallUpdateInfoBarTest {
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA,
             XrActivityRestriction.SupportedActivity.CCT})
     public void
-    testInfoBarPresentWhenVrServicesOutdated() throws InterruptedException {
+    testInfoBarPresentWhenVrServicesOutdated() {
         infoBarTestHelper(VrCoreCompatibility.VR_OUT_OF_DATE);
     }
 
@@ -142,7 +142,7 @@ public class VrInstallUpdateInfoBarTest {
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA,
             XrActivityRestriction.SupportedActivity.CCT})
     public void
-    testInfoBarPresentWhenVrServicesMissing() throws InterruptedException {
+    testInfoBarPresentWhenVrServicesMissing() {
         infoBarTestHelper(VrCoreCompatibility.VR_NOT_AVAILABLE);
     }
 
@@ -153,7 +153,7 @@ public class VrInstallUpdateInfoBarTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testInfoBarNotPresentWhenVrServicesNotSupported() throws InterruptedException {
+    public void testInfoBarNotPresentWhenVrServicesNotSupported() {
         infoBarTestHelper(VrCoreCompatibility.VR_NOT_SUPPORTED);
     }
 
@@ -164,7 +164,7 @@ public class VrInstallUpdateInfoBarTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-    public void testKeyboardInstallUpgradePromptUrlBar() throws InterruptedException {
+    public void testKeyboardInstallUpgradePromptUrlBar() {
         testKeyboardInstallUpgradeImpl(UserFriendlyElementName.URL);
     }
 
@@ -175,12 +175,11 @@ public class VrInstallUpdateInfoBarTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-    public void testKeyboardInstallUpgradePromptWebInput() throws InterruptedException {
+    public void testKeyboardInstallUpgradePromptWebInput() {
         testKeyboardInstallUpgradeImpl(UserFriendlyElementName.CONTENT_QUAD);
     }
 
-    private void testKeyboardInstallUpgradeImpl(final int uiElementToClick)
-            throws InterruptedException {
+    private void testKeyboardInstallUpgradeImpl(final int uiElementToClick) {
         mVrTestRule.loadUrl(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_web_input_editing"),
                 PAGE_LOAD_TIMEOUT_S);

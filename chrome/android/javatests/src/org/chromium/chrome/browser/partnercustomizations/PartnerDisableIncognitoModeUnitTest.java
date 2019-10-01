@@ -45,7 +45,7 @@ public class PartnerDisableIncognitoModeUnitTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         PartnerBrowserCustomizations.ignoreBrowserProviderSystemPackageCheckForTests(true);
     }
 

@@ -11,7 +11,6 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "components/sync_device_info/device_info.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -57,12 +56,6 @@ void SharedClipboardUiController::DoUpdateApps(UpdateAppsCallback callback) {
   std::move(callback).Run(std::vector<SharingApp>());
 }
 
-// Error message dialog.
-SharingDialog* SharedClipboardUiController::DoShowDialog(
-    BrowserWindow* window) {
-  return window->ShowSharingDialog(web_contents(), this);
-}
-
 void SharedClipboardUiController::OnDeviceChosen(
     const syncer::DeviceInfo& device) {
   chrome_browser_sharing::SharingMessage sharing_message;
@@ -99,7 +92,7 @@ base::string16 SharedClipboardUiController::GetErrorDialogText() const {
 }
 
 const gfx::VectorIcon& SharedClipboardUiController::GetVectorIcon() const {
-  return kSendTabToSelfIcon;
+  return kCopyIcon;
 }
 
 base::string16 SharedClipboardUiController::GetTextForTooltipAndAccessibleName()

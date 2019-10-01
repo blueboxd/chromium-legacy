@@ -112,7 +112,7 @@ public class WebsitePermissionsFetcherTest {
 
     @Test
     @SmallTest
-    public void testNullsCanBeHandled() throws Exception {
+    public void testNullsCanBeHandled() {
         // This is a smoke test to ensure that nulls do not cause crashes.
         WebsitePermissionsFetcher.OriginAndEmbedder nullBoth =
                 new WebsitePermissionsFetcher.OriginAndEmbedder(null, null);
@@ -260,7 +260,7 @@ public class WebsitePermissionsFetcherTest {
 
     @Test
     @SmallTest
-    public void testFetchAllPreferencesForSingleOrigin() throws Exception {
+    public void testFetchAllPreferencesForSingleOrigin() {
         WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
         FakeWebsitePreferenceBridge websitePreferenceBridge = new FakeWebsitePreferenceBridge();
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);
@@ -390,7 +390,7 @@ public class WebsitePermissionsFetcherTest {
 
     @Test
     @SmallTest
-    public void testFetchAllPreferencesForMultipleOrigins() throws Exception {
+    public void testFetchAllPreferencesForMultipleOrigins() {
         WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
         FakeWebsitePreferenceBridge websitePreferenceBridge = new FakeWebsitePreferenceBridge();
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);
@@ -471,7 +471,7 @@ public class WebsitePermissionsFetcherTest {
 
     @Test
     @SmallTest
-    public void testFetchPreferencesForCategoryPermissionInfoTypes() throws Exception {
+    public void testFetchPreferencesForCategoryPermissionInfoTypes() {
         WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
         FakeWebsitePreferenceBridge websitePreferenceBridge = new FakeWebsitePreferenceBridge();
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);
@@ -502,7 +502,7 @@ public class WebsitePermissionsFetcherTest {
 
     @Test
     @SmallTest
-    public void testFetchPreferencesForCategoryContentSettingExceptionTypes() throws Exception {
+    public void testFetchPreferencesForCategoryContentSettingExceptionTypes() {
         WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
         FakeWebsitePreferenceBridge websitePreferenceBridge = new FakeWebsitePreferenceBridge();
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);
@@ -557,7 +557,7 @@ public class WebsitePermissionsFetcherTest {
 
     @Test
     @SmallTest
-    public void testFetchPreferencesForCategoryStorageInfo() throws Exception {
+    public void testFetchPreferencesForCategoryStorageInfo() {
         WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
         FakeWebsitePreferenceBridge websitePreferenceBridge = new FakeWebsitePreferenceBridge();
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);
@@ -633,7 +633,7 @@ public class WebsitePermissionsFetcherTest {
 
     @Test
     @SmallTest
-    public void testFetchPreferencesForCategoryChooserDataTypes() throws Exception {
+    public void testFetchPreferencesForCategoryChooserDataTypes() {
         WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
         FakeWebsitePreferenceBridge websitePreferenceBridge = new FakeWebsitePreferenceBridge();
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);

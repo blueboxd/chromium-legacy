@@ -54,12 +54,6 @@ class AppBannerManagerAndroid
   // Returns a reference to the Java-side AppBannerManager owned by this object.
   const base::android::ScopedJavaLocalRef<jobject> GetJavaBannerManager() const;
 
-  // Returns a reference to the Java-side AddToHomescreenDialog owned by
-  // |ui_delegate_|, or null if it does not exist.
-  base::android::ScopedJavaLocalRef<jobject> GetAddToHomescreenDialogForTesting(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jobj);
-
   // Returns true if the banner pipeline is currently running.
   bool IsRunningForTesting(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& jobj);

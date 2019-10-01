@@ -5,11 +5,7 @@
 package org.chromium.webapk.shell_apk;
 
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -19,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 
@@ -43,7 +38,7 @@ public final class MainActivityTest {
     @Before
     public void setUp() {
         mPackageManager = RuntimeEnvironment.application.getPackageManager();
-        installBrowser(BROWSER_PACKAGE_NAME);
+        new TestBrowserInstaller().installModernBrowser(BROWSER_PACKAGE_NAME);
     }
 
     /**
@@ -239,7 +234,7 @@ public final class MainActivityTest {
      * launch intent are in fact propagated.
      */
     @Test
-    public void testPropagatedDeepLinkExtras() throws Exception {
+    public void testPropagatedDeepLinkExtras() {
         final String startUrl = "https://www.google.com/";
 
         Bundle extrasToPropagate = new Bundle();
@@ -279,30 +274,5 @@ public final class MainActivityTest {
         Assert.assertEquals(BROWSER_PACKAGE_NAME, intent.getPackage());
         Assert.assertEquals(HostBrowserLauncher.ACTION_START_WEBAPK, intent.getAction());
         Assert.assertEquals(expectedStartUrl, intent.getStringExtra(WebApkConstants.EXTRA_URL));
-    }
-
-    private void installBrowser(String browserPackageName) {
-        Intent intent = WebApkUtils.getQueryInstalledBrowsersIntent();
-        Shadows.shadowOf(RuntimeEnvironment.application.getPackageManager())
-                .addResolveInfoForIntent(intent, newResolveInfo(browserPackageName));
-        Shadows.shadowOf(RuntimeEnvironment.application.getPackageManager())
-                .addPackage(newPackageInfo(browserPackageName));
-    }
-
-    private static ResolveInfo newResolveInfo(String packageName) {
-        ActivityInfo activityInfo = new ActivityInfo();
-        activityInfo.packageName = packageName;
-        ResolveInfo resolveInfo = new ResolveInfo();
-        resolveInfo.activityInfo = activityInfo;
-        return resolveInfo;
-    }
-
-    private static PackageInfo newPackageInfo(String packageName) {
-        PackageInfo packageInfo = new PackageInfo();
-        packageInfo.packageName = packageName;
-        packageInfo.versionName = "10000.0.0.0";
-        packageInfo.applicationInfo = new ApplicationInfo();
-        packageInfo.applicationInfo.enabled = true;
-        return packageInfo;
     }
 }

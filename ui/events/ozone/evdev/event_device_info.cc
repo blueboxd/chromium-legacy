@@ -340,6 +340,10 @@ int32_t EventDeviceInfo::GetAbsMaximum(unsigned int code) const {
   return abs_info_[code].maximum;
 }
 
+int32_t EventDeviceInfo::GetAbsResolution(unsigned int code) const {
+  return abs_info_[code].resolution;
+}
+
 int32_t EventDeviceInfo::GetAbsValue(unsigned int code) const {
   return abs_info_[code].value;
 }

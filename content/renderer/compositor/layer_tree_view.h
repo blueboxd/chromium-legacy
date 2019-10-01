@@ -39,9 +39,9 @@ class UkmRecorderFactory;
 namespace content {
 class LayerTreeViewDelegate;
 
-class CONTENT_EXPORT LayerTreeView
-    : public cc::LayerTreeHostClient,
-      public cc::LayerTreeHostSingleThreadClient {
+class CONTENT_EXPORT LayerTreeView : public cc::LayerTreeHostClient,
+                                     public cc::LayerTreeHostSingleThreadClient,
+                                     public cc::LayerTreeHostSchedulingClient {
  public:
   // The |main_thread| is the task runner that the compositor will use for the
   // main thread (where it is constructed). The |compositor_thread| is the task
@@ -100,6 +100,10 @@ class CONTENT_EXPORT LayerTreeView
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
   void DidLoseLayerTreeFrameSink() override;
+
+  // cc::LayerTreeHostSchedulingClient implementation.
+  void DidScheduleBeginMainFrame() override;
+  void DidRunBeginMainFrame() override;
 
   void AddPresentationCallback(
       uint32_t frame_token,

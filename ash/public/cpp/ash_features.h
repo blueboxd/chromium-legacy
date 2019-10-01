@@ -75,6 +75,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kNotificationScrollBar;
 // Enables rounded corners for the Picture-in-picture window.
 ASH_PUBLIC_EXPORT extern const base::Feature kPipRoundedCorners;
 
+// Enables suppression of Displays notifications other than resolution change.
+ASH_PUBLIC_EXPORT extern const base::Feature kReduceDisplayNotifications;
+
 // Enables displaying separate network icons for different networks types.
 // https://crbug.com/902409
 ASH_PUBLIC_EXPORT extern const base::Feature kSeparateNetworkIcons;
@@ -172,6 +175,8 @@ ASH_PUBLIC_EXPORT bool IsBackgroundBlurEnabled();
 ASH_PUBLIC_EXPORT bool IsSwipingFromLeftEdgeToGoBackEnabled();
 
 ASH_PUBLIC_EXPORT bool IsDragFromShelfToHomeOrOverviewEnabled();
+
+ASH_PUBLIC_EXPORT bool IsReduceDisplayNotificationsEnabled();
 
 }  // namespace features
 }  // namespace ash

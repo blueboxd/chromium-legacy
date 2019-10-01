@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/single_thread_task_runner.h"
 
 namespace base {
 class Value;
@@ -28,7 +29,8 @@ class NotificationClient final {
   using NotificationCallback =
       base::OnceCallback<void(base::Optional<NotificationMessage>)>;
 
-  NotificationClient();
+  explicit NotificationClient(
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
   ~NotificationClient();
 
   // Fetches notifications from the server and calls |callback| with the

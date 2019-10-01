@@ -1,4 +1,4 @@
 include_rules = [
-  "+mojo/public",
+  "+components/services/storage/dom_storage",
   "+third_party/leveldatabase",
 ]

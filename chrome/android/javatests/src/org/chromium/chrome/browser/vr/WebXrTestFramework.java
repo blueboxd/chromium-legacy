@@ -55,7 +55,7 @@ public abstract class WebXrTestFramework extends XrTestFramework {
     public void enterSessionWithUserGesture(WebContents webContents) {
         try {
             DOMUtils.clickNode(webContents, "webgl-canvas", false /* goThroughRootAndroidView */);
-        } catch (InterruptedException | TimeoutException e) {
+        } catch (TimeoutException e) {
             Assert.fail("Failed to click canvas to enter session: " + e.toString());
         }
     }
@@ -139,7 +139,7 @@ public abstract class WebXrTestFramework extends XrTestFramework {
      *
      * @param sessionType The session type to pass to JavaScript defined in webxr_boilerplate.js,
      *     e.g. sessionTypes.AR
-     * @param webCointents The WebContents to check in.
+     * @param webContents The WebContents to check in.
      * @return True if the given session type is expected to trigger the consent dialog, otherwise
      *     false.
      */

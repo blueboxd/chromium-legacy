@@ -2116,11 +2116,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedApp) {
   TestAddAppWindowObserver add_window_observer(
       extensions::AppWindowRegistry::Get(browser()->profile()));
   apps::LaunchService::Get(browser()->profile())
-      ->OpenApplication(
-          AppLaunchParams(browser()->profile(), extension->id(),
-                          apps::mojom::LaunchContainer::kLaunchContainerNone,
-                          WindowOpenDisposition::NEW_WINDOW,
-                          apps::mojom::AppLaunchSource::kSourceTest));
+      ->OpenApplication(apps::AppLaunchParams(
+          extension->id(), apps::mojom::LaunchContainer::kLaunchContainerNone,
+          WindowOpenDisposition::NEW_WINDOW,
+          apps::mojom::AppLaunchSource::kSourceTest));
   extensions::AppWindow* window = add_window_observer.WaitForAppWindow();
   ASSERT_TRUE(window);
 

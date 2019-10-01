@@ -60,8 +60,8 @@ class GpuDataManager {
   virtual bool GpuAccessAllowed(std::string* reason) = 0;
 
   // Requests complete GPU info if it has not already been requested
-  virtual void RequestCompleteGpuInfoIfNeeded(GpuInfoRequest request,
-                                              bool delayed) = 0;
+  virtual void RequestDxdiagDx12VulkanGpuInfoIfNeeded(GpuInfoRequest request,
+                                                      bool delayed) = 0;
 
   // Check if basic and context GPU info have been collected.
   virtual bool IsEssentialGpuInfoAvailable() = 0;

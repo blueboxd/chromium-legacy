@@ -21,6 +21,7 @@
 #include "components/sync/nigori/cryptographer_impl.h"
 #include "components/sync/nigori/keystore_keys_handler.h"
 #include "components/sync/nigori/nigori_local_change_processor.h"
+#include "components/sync/nigori/nigori_state.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
 
 namespace sync_pb {
@@ -130,32 +131,7 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // decryption/decoding errors.
   const sync_pb::NigoriKey explicit_passphrase_key_;
 
-  // Base64 encoded keystore keys. The last element is the current keystore
-  // key. These keys are not a part of Nigori node and are persisted
-  // separately. Should be encrypted with OSCrypt before persisting.
-  std::vector<std::string> keystore_keys_;
-
-  std::unique_ptr<CryptographerImpl> cryptographer_;
-
-  // Pending keys represent a remote update that contained a keybag that cannot
-  // be decrypted (e.g. user needs to enter a custom passphrase). If pending
-  // keys are present, |*cryptographer_| does not have a default encryption key
-  // set and instead the should-be default encryption key is determined by the
-  // key in |pending_keys_|.
-  base::Optional<sync_pb::EncryptedData> pending_keys_;
-
-  // TODO(mmoskvitin): Consider adopting the C++ enum PassphraseType here and
-  // if so remove function ProtoPassphraseInt32ToProtoEnum() from
-  // passphrase_enums.h.
-  sync_pb::NigoriSpecifics::PassphraseType passphrase_type_;
-  bool encrypt_everything_;
-  base::Time custom_passphrase_time_;
-  base::Time keystore_migration_time_;
-
-  // The key derivation params we are using for the custom passphrase. Set iff
-  // |passphrase_type_| is CUSTOM_PASSPHRASE, otherwise key derivation method
-  // is always PBKDF2.
-  base::Optional<KeyDerivationParams> custom_passphrase_key_derivation_params_;
+  syncer::NigoriState state_;
 
   // TODO(crbug/922900): consider using checked ObserverList once
   // SyncEncryptionHandlerImpl is no longer needed or consider refactoring old

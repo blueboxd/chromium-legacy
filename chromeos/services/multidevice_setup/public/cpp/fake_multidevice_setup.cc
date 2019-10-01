@@ -6,6 +6,7 @@
 
 #include "base/containers/flat_map.h"
 #include "chromeos/components/multidevice/remote_device.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace chromeos {
 
@@ -63,7 +64,8 @@ FakeMultiDeviceSetup::~FakeMultiDeviceSetup() {
 }
 
 void FakeMultiDeviceSetup::BindHandle(mojo::ScopedMessagePipeHandle handle) {
-  BindRequest(mojom::MultiDeviceSetupRequest(std::move(handle)));
+  BindReceiver(
+      mojo::PendingReceiver<mojom::MultiDeviceSetup>(std::move(handle)));
 }
 
 void FakeMultiDeviceSetup::FlushForTesting() {

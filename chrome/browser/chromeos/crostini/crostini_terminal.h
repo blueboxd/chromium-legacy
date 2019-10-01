@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 
 class GURL;
 class Browser;
@@ -22,15 +22,17 @@ GURL GenerateVshInCroshUrl(Profile* profile,
                            const std::vector<std::string>& terminal_args);
 
 // Generate AppLaunchParams for the Crostini terminal application.
-AppLaunchParams GenerateTerminalAppLaunchParams(Profile* profile);
+apps::AppLaunchParams GenerateTerminalAppLaunchParams();
 
 // Create the crosh-in-a-window that displays a shell in an container on a VM.
-Browser* CreateContainerTerminal(const AppLaunchParams& launch_params,
+Browser* CreateContainerTerminal(Profile* profile,
+                                 const apps::AppLaunchParams& launch_params,
                                  const GURL& vsh_in_crosh_url);
 
 // Shows the already created crosh-in-a-window that displays a shell in an
 // already running container on a VM.
-void ShowContainerTerminal(const AppLaunchParams& launch_params,
+void ShowContainerTerminal(Profile* profile,
+                           const apps::AppLaunchParams& launch_params,
                            const GURL& vsh_in_crosh_url,
                            Browser* browser);
 

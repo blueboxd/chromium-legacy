@@ -48,8 +48,7 @@ public class LocaleManagerTest {
     @Policies.Add({ @Policies.Item(key = "DefaultSearchProviderEnabled", string = "false") })
     @SmallTest
     @Test
-    public void testShowSearchEnginePromoDseDisabled()
-            throws InterruptedException, TimeoutException {
+    public void testShowSearchEnginePromoDseDisabled() throws TimeoutException {
         final CallbackHelper getShowTypeCallback = new CallbackHelper();
         LocaleManager.setInstanceForTest(new LocaleManager() {
             @Override

@@ -316,8 +316,7 @@ public class OfflinePageSavePageLaterEvaluationTest {
      * @param url The url to be saved.
      * @param namespace The namespace this request belongs to.
      */
-    private void savePageLater(final String url, final String namespace)
-            throws InterruptedException {
+    private void savePageLater(final String url, final String namespace) {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                 () -> { mBridge.savePageLater(url, namespace, mIsUserRequested); });
     }
@@ -342,8 +341,7 @@ public class OfflinePageSavePageLaterEvaluationTest {
         log(TAG_PROGRESS, "Urls processing DONE.");
     }
 
-    private void getUrlListFromInputFile(String inputFilePath)
-            throws IOException, InterruptedException {
+    private void getUrlListFromInputFile(String inputFilePath) throws IOException {
         mUrls = new ArrayList<String>();
         try {
             BufferedReader bufferedReader = getInputStream(inputFilePath);
@@ -396,7 +394,7 @@ public class OfflinePageSavePageLaterEvaluationTest {
     /**
      * Get saved offline pages and align them with the metadata we got from testing.
      */
-    private void loadSavedPages() throws TimeoutException, InterruptedException {
+    private void loadSavedPages() throws TimeoutException {
         for (OfflinePageItem page : OfflineTestUtil.getAllPages()) {
             mRequestMetadata.get(page.getOfflineId()).mPage = page;
         }
@@ -434,7 +432,7 @@ public class OfflinePageSavePageLaterEvaluationTest {
      * At the end of the file there will be a summary:
      * Total requested URLs: XX, Completed: XX, Failed: XX, Failure Rate: XX.XX%
      */
-    private void writeResults() throws IOException, InterruptedException {
+    private void writeResults() throws IOException {
         loadSavedPages();
         OutputStreamWriter output = getOutputStream(RESULT_OUTPUT_FILE_PATH);
         try {

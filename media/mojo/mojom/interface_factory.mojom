@@ -63,12 +63,13 @@ interface InterfaceFactory {
   CreateCdm(string key_system, ContentDecryptionModule& cdm);
 
   // Creates a Decryptor associated with the |cdm_id|.
-  CreateDecryptor(int32 cdm_id, Decryptor& decryptor);
+  CreateDecryptor(int32 cdm_id, pending_receiver<Decryptor> decryptor);
 
   // Creates a CdmProxy that proxies part of CDM functionalities to a different
   // entity, e.g. hardware CDM modules. The created |cdm_proxy| must match the
   // type of the CDM, identified by |cdm_guid|.
   // TODO(crbug.com/676224): Conditionally enable this when EnabledIf attribute
   // is supported in mojom files.
-  CreateCdmProxy(mojo_base.mojom.Token cdm_guid, CdmProxy& cdm_proxy);
+  CreateCdmProxy(mojo_base.mojom.Token cdm_guid,
+                 pending_receiver<CdmProxy> cdm_proxy);
 };

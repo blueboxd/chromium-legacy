@@ -74,8 +74,7 @@ void HttpStreamFactory::ProcessAlternativeServices(
       net::ProcessAlternativeServices(
           alternative_service_vector, session->params().enable_http2,
           session->params().enable_quic,
-          session->params().quic_params.supported_versions,
-          session->params().quic_params.support_ietf_format_quic_altsvc));
+          session->params().quic_params.supported_versions));
 }
 
 url::SchemeHostPort HttpStreamFactory::RewriteHost(

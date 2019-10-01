@@ -87,7 +87,7 @@ public class FeedTooltipTest {
     private RecyclerView.Adapter mRecyclerViewAdapter;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mActivityTestRule.startMainActivityWithURL("about:blank");
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();

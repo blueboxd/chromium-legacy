@@ -95,6 +95,17 @@ cr.define('print_preview', function() {
   let VendorCapabilitySelectOption;
 
   /**
+   * Same as cloud_devices::printer::TypedValueVendorCapability::ValueType.
+   * @enum {string}
+   */
+  const VendorCapabilityValueType = {
+    BOOLEAN: 'BOOLEAN',
+    FLOAT: 'FLOAT',
+    INTEGER: 'INTEGER',
+    STRING: 'STRING',
+  };
+
+  /**
    * Specifies a custom vendor capability.
    * @typedef {{
    *   id: (string),
@@ -106,6 +117,7 @@ cr.define('print_preview', function() {
    *   }|undefined),
    *   typed_value_cap: ({
    *     default: (number | string | boolean | undefined),
+   *     value_type: (print_preview.VendorCapabilityValueType | undefined),
    *   }|undefined),
    *   range_cap: ({
    *     default: (number),
@@ -966,6 +978,7 @@ cr.define('print_preview', function() {
     makeRecentDestination: makeRecentDestination,
     RecentDestination: RecentDestination,
     VendorCapabilitySelectOption: VendorCapabilitySelectOption,
+    VendorCapabilityValueType: VendorCapabilityValueType,
     VendorCapability: VendorCapability,
 
     // <if expr="chromeos">

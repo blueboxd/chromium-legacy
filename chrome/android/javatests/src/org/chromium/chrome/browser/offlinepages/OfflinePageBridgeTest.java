@@ -144,7 +144,7 @@ public class OfflinePageBridgeTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
@@ -515,7 +515,7 @@ public class OfflinePageBridgeTest {
     }
 
     private Set<String> getUrlsExistOfflineFromSet(final Set<String> query)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         final Set<String> result = new HashSet<>();
         final List<OfflinePageItem> pages = OfflineTestUtil.getAllPages();
         for (String url : query) {

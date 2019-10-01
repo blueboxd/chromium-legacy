@@ -746,7 +746,8 @@ class LocalAndDriveFileSystemExtensionApiTest
 // LocalFileSystemExtensionApiTests.
 //
 
-IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest, FileSystemOperations) {
+IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest,
+                       DISABLED_FileSystemOperations) {
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/filesystem_operations_test",
       FILE_PATH_LITERAL("manifest.json"),

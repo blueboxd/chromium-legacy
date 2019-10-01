@@ -251,7 +251,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       TaskGraphRunner* task_graph_runner,
       std::unique_ptr<MutatorHost> mutator_host,
       int id,
-      scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner,
+      LayerTreeHostSchedulingClient* scheduling_client);
   LayerTreeHostImpl(const LayerTreeHostImpl&) = delete;
   ~LayerTreeHostImpl() override;
 
@@ -336,7 +337,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
     return viewport_damage_rect_;
   }
 
-  virtual void WillSendBeginMainFrame() {}
+  virtual void WillSendBeginMainFrame();
   virtual void DidSendBeginMainFrame(const viz::BeginFrameArgs& args);
   virtual void BeginMainFrameAborted(
       CommitEarlyOutReason reason,
@@ -818,7 +819,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       TaskGraphRunner* task_graph_runner,
       std::unique_ptr<MutatorHost> mutator_host,
       int id,
-      scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner,
+      LayerTreeHostSchedulingClient* scheduling_client);
 
   // Virtual for testing.
   virtual bool AnimateLayers(base::TimeTicks monotonic_time,
@@ -832,6 +834,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   static void RemoveRenderPasses(FrameData* frame);
 
   LayerTreeHostImplClient* const client_;
+  LayerTreeHostSchedulingClient* const scheduling_client_;
   TaskRunnerProvider* const task_runner_provider_;
 
   BeginFrameTracker current_begin_frame_tracker_;

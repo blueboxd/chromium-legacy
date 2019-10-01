@@ -16,7 +16,7 @@ promise_test((t) => {
 
 promise_test(async (t) => {
   let interceptor =
-      new MojoInterfaceInterceptor(blink.mojom.SerialService.name);
+      new MojoInterfaceInterceptor(blink.mojom.SerialService.name, "context", true);
   interceptor.oninterfacerequest = e => e.handle.close();
   interceptor.start();
 

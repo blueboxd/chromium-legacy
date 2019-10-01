@@ -30,11 +30,24 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 
-/***
- * This view is used by a ContentView to render its content.
- * Call {@link #setCurrentWebContents(WebContents)} with the webContents that should be
- * managing the content.
- * Note that only one WebContents can be shown at a time.
+/**
+ * This class manages the chromium compositor and the Surface that is used by
+ * the chromium compositor. Note it can be used to display only one WebContents.
+ * This allows switching between SurfaceView and TextureView as the source of
+ * the Surface used by chromium compositor, and attempts to make the switch
+ * visually seamless. The rough steps for a switch are:
+ * 1) Allocate new view, and insert it into view hierarchy below the existing
+ *    view, so it is not yet showing.
+ * 2) When Surface is allocated by new View, swap chromium compositor to the
+ *    new Surface. Note at this point the existing view should is still visible.
+ * 3) After chromium compositor swaps a frame in the new surface, detach the
+ *    existing view.
+ * Here are some more details.
+ * * New view is added at index 0, ie below all other children.
+ * * SurfaceView that uses SurfaceControl will need to retain the underlying
+ *   EGLSurface to avoid desotrying the Surface.
+ * * Use postOnAnimation to manipulate view tree as it is not safe to modify
+ *   the view tree inside layout or draw.
  */
 @JNINamespace("weblayer")
 public class ContentViewRenderView extends FrameLayout {
@@ -47,7 +60,9 @@ public class ContentViewRenderView extends FrameLayout {
     // This is mode that is requested by client.
     private SurfaceData mRequested;
     // This is the mode that last supplied the Surface to the compositor.
+    // This should generally be equal to |mRequested| except during transitions.
     private SurfaceData mCurrent;
+    private final ArrayList<SurfaceData> mMarkedForDestroySurfaces = new ArrayList<>();
 
     // The native side of this object.
     private long mNativeContentViewRenderView;
@@ -64,7 +79,8 @@ public class ContentViewRenderView extends FrameLayout {
         void surfaceCreated();
         void surfaceChanged(
                 Surface surface, boolean canBeUsedWithSurfaceControl, int width, int height);
-        void surfaceDestroyed();
+        // |cacheBackBuffer| will delay destroying the EGLSurface until after the next swap.
+        void surfaceDestroyed(boolean cacheBackBuffer);
     }
 
     // Non-static implementation of SurfaceEventListener that forward calls to native Compositor.
@@ -84,11 +100,11 @@ public class ContentViewRenderView extends FrameLayout {
                     || mSurfaceData == ContentViewRenderView.this.mCurrent;
             if (ContentViewRenderView.this.mCurrent != null
                     && ContentViewRenderView.this.mCurrent != mSurfaceData) {
-                ContentViewRenderView.this.mCurrent.destroy();
+                ContentViewRenderView.this.mCurrent.markForDestroy(
+                        mMarkedForDestroySurfaces, true /* hasNextSurface */);
             }
             ContentViewRenderView.this.mCurrent = mSurfaceData;
-            ContentViewRenderViewJni.get().surfaceCreated(
-                    mNativeContentViewRenderView, ContentViewRenderView.this);
+            ContentViewRenderViewJni.get().surfaceCreated(mNativeContentViewRenderView);
         }
 
         @Override
@@ -97,21 +113,19 @@ public class ContentViewRenderView extends FrameLayout {
             assert mNativeContentViewRenderView != 0;
             assert mSurfaceData == ContentViewRenderView.this.mCurrent;
             ContentViewRenderViewJni.get().surfaceChanged(mNativeContentViewRenderView,
-                    ContentViewRenderView.this, canBeUsedWithSurfaceControl, width, height,
-                    surface);
+                    canBeUsedWithSurfaceControl, width, height, surface);
             if (mWebContents != null) {
                 ContentViewRenderViewJni.get().onPhysicalBackingSizeChanged(
-                        mNativeContentViewRenderView, ContentViewRenderView.this, mWebContents,
-                        width, height);
+                        mNativeContentViewRenderView, mWebContents, width, height);
             }
         }
 
         @Override
-        public void surfaceDestroyed() {
+        public void surfaceDestroyed(boolean cacheBackBuffer) {
             assert mNativeContentViewRenderView != 0;
             assert mSurfaceData == ContentViewRenderView.this.mCurrent;
             ContentViewRenderViewJni.get().surfaceDestroyed(
-                    mNativeContentViewRenderView, ContentViewRenderView.this);
+                    mNativeContentViewRenderView, cacheBackBuffer);
         }
     }
 
@@ -124,7 +138,9 @@ public class ContentViewRenderView extends FrameLayout {
         private final FrameLayout mParent;
 
         private boolean mCreated;
-        private boolean mDestroyed;
+        private boolean mMarkedForDestroy;
+
+        private boolean mNeedsOnSurfaceDestroyed;
 
         private final SurfaceHolderCallback mSurfaceCallback;
         private final SurfaceView mSurfaceView;
@@ -146,10 +162,6 @@ public class ContentViewRenderView extends FrameLayout {
 
                 mSurfaceCallback = new SurfaceHolderCallback(this);
                 mSurfaceView.getHolder().addCallback(mSurfaceCallback);
-
-                parent.addView(mSurfaceView,
-                        new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
-                                FrameLayout.LayoutParams.MATCH_PARENT));
                 mSurfaceView.setVisibility(View.VISIBLE);
 
                 mTextureView = null;
@@ -158,18 +170,25 @@ public class ContentViewRenderView extends FrameLayout {
                 mTextureView = new TextureView(parent.getContext());
                 mSurfaceTextureListener = new TextureViewSurfaceTextureListener(this);
                 mTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
-
                 mTextureView.setVisibility(VISIBLE);
-                parent.addView(mTextureView,
-                        new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
-                                FrameLayout.LayoutParams.MATCH_PARENT));
 
                 mSurfaceView = null;
                 mSurfaceCallback = null;
             } else {
                 throw new RuntimeException("Illegal mode: " + mode);
             }
-            parent.postInvalidateOnAnimation();
+
+            parent.postOnAnimation(() -> {
+                if (mMarkedForDestroy) return;
+                View view = (mMode == MODE_SURFACE_VIEW) ? mSurfaceView : mTextureView;
+                assert view != null;
+                // Always insert view for new surface below the existing view to avoid artifacts
+                // during surface swaps. Index 0 is the lowest child.
+                mParent.addView(view, 0,
+                        new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+                                FrameLayout.LayoutParams.MATCH_PARENT));
+                mParent.invalidate();
+            });
         }
 
         public @Mode int getMode() {
@@ -177,29 +196,50 @@ public class ContentViewRenderView extends FrameLayout {
         }
 
         public void addCallback(ValueCallback<Boolean> callback) {
-            assert !mDestroyed;
+            assert !mMarkedForDestroy;
             mModeCallbacks.add(callback);
             if (mCreated) runCallbacks();
         }
 
-        public void destroy() {
-            if (mDestroyed) return;
-            mDestroyed = true;
+        // Tearing down is separated into markForDestroy and destroy. After markForDestroy
+        // this class will is guaranteed to not issue any calls to its SurfaceEventListener.
+        public void markForDestroy(ArrayList<SurfaceData> pendingDestroy, boolean hasNextSurface) {
+            if (mMarkedForDestroy) return;
+            mMarkedForDestroy = true;
+
+            if (mNeedsOnSurfaceDestroyed) {
+                mListener.surfaceDestroyed(hasNextSurface && mMode == MODE_SURFACE_VIEW);
+                mNeedsOnSurfaceDestroyed = false;
+            }
+
             if (mMode == MODE_SURFACE_VIEW) {
-                mParent.removeView(mSurfaceView);
                 mSurfaceView.getHolder().removeCallback(mSurfaceCallback);
             } else if (mMode == MODE_TEXTURE_VIEW) {
-                mParent.removeView(mTextureView);
                 mTextureView.setSurfaceTextureListener(null);
             } else {
                 assert false;
             }
 
-            runCallbacks();
+            pendingDestroy.add(this);
+        }
+
+        // Remove view from parent hierarchy.
+        public void destroy() {
+            assert mMarkedForDestroy;
+            mParent.postOnAnimation(() -> {
+                if (mMode == MODE_SURFACE_VIEW) {
+                    mParent.removeView(mSurfaceView);
+                } else if (mMode == MODE_TEXTURE_VIEW) {
+                    mParent.removeView(mTextureView);
+                } else {
+                    assert false;
+                }
+                runCallbacks();
+            });
         }
 
         public void setBackgroundColor(int color) {
-            assert !mDestroyed;
+            assert !mMarkedForDestroy;
             if (mMode == MODE_SURFACE_VIEW) {
                 mSurfaceView.setBackgroundColor(color);
             }
@@ -218,7 +258,7 @@ public class ContentViewRenderView extends FrameLayout {
 
         @Override
         public void surfaceCreated() {
-            if (mDestroyed) return;
+            if (mMarkedForDestroy) return;
 
             if (!mCreated) {
                 mCreated = true;
@@ -234,30 +274,33 @@ public class ContentViewRenderView extends FrameLayout {
                 mSurfaceView.setVisibility(mSurfaceView.getVisibility());
             }
             mListener.surfaceCreated();
+            mNeedsOnSurfaceDestroyed = true;
         }
 
         @Override
         public void surfaceChanged(
                 Surface surface, boolean canBeUsedWithSurfaceControl, int width, int height) {
-            if (mDestroyed) return;
+            if (mMarkedForDestroy) return;
             mListener.surfaceChanged(surface, canBeUsedWithSurfaceControl, width, height);
         }
 
         @Override
-        public void surfaceDestroyed() {
-            if (mDestroyed) return;
-            mListener.surfaceDestroyed();
+        public void surfaceDestroyed(boolean cacheBackBuffer) {
+            if (mMarkedForDestroy) return;
+            assert mNeedsOnSurfaceDestroyed;
+            mListener.surfaceDestroyed(cacheBackBuffer);
+            mNeedsOnSurfaceDestroyed = false;
         }
 
         private void runCallbacks() {
-            assert mCreated;
+            assert mCreated || mMarkedForDestroy;
             // PostTask to avoid possible reentrancy problems with embedder code.
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
                 ArrayList<ValueCallback<Boolean>> clone =
                         (ArrayList<ValueCallback<Boolean>>) mModeCallbacks.clone();
                 mModeCallbacks.clear();
                 for (ValueCallback<Boolean> run : clone) {
-                    run.onReceiveValue(!mDestroyed);
+                    run.onReceiveValue(!mMarkedForDestroy);
                 }
             });
         }
@@ -283,7 +326,7 @@ public class ContentViewRenderView extends FrameLayout {
 
         @Override
         public void surfaceDestroyed(SurfaceHolder holder) {
-            mListener.surfaceDestroyed();
+            mListener.surfaceDestroyed(false /* cacheBackBuffer */);
         }
     }
 
@@ -308,7 +351,7 @@ public class ContentViewRenderView extends FrameLayout {
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
-            mListener.surfaceDestroyed();
+            mListener.surfaceDestroyed(false /* cacheBackBuffer */);
             return true;
         }
 
@@ -356,7 +399,10 @@ public class ContentViewRenderView extends FrameLayout {
         assert mode == MODE_SURFACE_VIEW || mode == MODE_TEXTURE_VIEW;
         assert callback != null;
         if (mRequested != null && mRequested.getMode() != mode) {
-            if (mRequested != mCurrent) mRequested.destroy();
+            if (mRequested != mCurrent) {
+                mRequested.markForDestroy(mMarkedForDestroySurfaces, false /* hasNextSurface */);
+                mRequested.destroy();
+            }
             mRequested = null;
         }
 
@@ -416,16 +462,17 @@ public class ContentViewRenderView extends FrameLayout {
      */
     public void destroy() {
         if (mRequested != null) {
-            mRequested.destroy();
+            mRequested.markForDestroy(mMarkedForDestroySurfaces, false /* hasNextSurface */);
             if (mCurrent != null && mCurrent != mRequested) {
-                mCurrent.destroy();
+                mCurrent.markForDestroy(mMarkedForDestroySurfaces, false /* hasNextSurface */);
             }
         }
         mRequested = null;
         mCurrent = null;
+        runPendingSurfaceDestroy();
+
         mWindowAndroid = null;
-        ContentViewRenderViewJni.get().destroy(
-                mNativeContentViewRenderView, ContentViewRenderView.this);
+        ContentViewRenderViewJni.get().destroy(mNativeContentViewRenderView);
         mNativeContentViewRenderView = 0;
     }
 
@@ -436,22 +483,28 @@ public class ContentViewRenderView extends FrameLayout {
         if (webContents != null) {
             webContents.setSize(mWidth, mHeight);
             ContentViewRenderViewJni.get().onPhysicalBackingSizeChanged(
-                    mNativeContentViewRenderView, ContentViewRenderView.this, webContents, mWidth,
-                    mHeight);
+                    mNativeContentViewRenderView, webContents, mWidth, mHeight);
         }
         ContentViewRenderViewJni.get().setCurrentWebContents(
-                mNativeContentViewRenderView, ContentViewRenderView.this, webContents);
+                mNativeContentViewRenderView, webContents);
     }
 
     public ResourceManager getResourceManager() {
-        return ContentViewRenderViewJni.get().getResourceManager(
-                mNativeContentViewRenderView, ContentViewRenderView.this);
+        return ContentViewRenderViewJni.get().getResourceManager(mNativeContentViewRenderView);
     }
 
     @CalledByNative
     private void didSwapFrame() {
         assert mCurrent != null;
         mCurrent.didSwapFrame();
+        runPendingSurfaceDestroy();
+    }
+
+    private void runPendingSurfaceDestroy() {
+        for (SurfaceData surface : mMarkedForDestroySurfaces) {
+            surface.destroy();
+        }
+        mMarkedForDestroySurfaces.clear();
     }
 
     public long getNativeHandle() {
@@ -461,16 +514,14 @@ public class ContentViewRenderView extends FrameLayout {
     @NativeMethods
     interface Natives {
         long init(ContentViewRenderView caller, WindowAndroid rootWindow);
-        void destroy(long nativeContentViewRenderView, ContentViewRenderView caller);
-        void setCurrentWebContents(long nativeContentViewRenderView, ContentViewRenderView caller,
-                WebContents webContents);
-        void onPhysicalBackingSizeChanged(long nativeContentViewRenderView,
-                ContentViewRenderView caller, WebContents webContents, int width, int height);
-        void surfaceCreated(long nativeContentViewRenderView, ContentViewRenderView caller);
-        void surfaceDestroyed(long nativeContentViewRenderView, ContentViewRenderView caller);
-        void surfaceChanged(long nativeContentViewRenderView, ContentViewRenderView caller,
-                boolean canBeUsedWithSurfaceControl, int width, int height, Surface surface);
-        ResourceManager getResourceManager(
-                long nativeContentViewRenderView, ContentViewRenderView caller);
+        void destroy(long nativeContentViewRenderView);
+        void setCurrentWebContents(long nativeContentViewRenderView, WebContents webContents);
+        void onPhysicalBackingSizeChanged(
+                long nativeContentViewRenderView, WebContents webContents, int width, int height);
+        void surfaceCreated(long nativeContentViewRenderView);
+        void surfaceDestroyed(long nativeContentViewRenderView, boolean cacheBackBuffer);
+        void surfaceChanged(long nativeContentViewRenderView, boolean canBeUsedWithSurfaceControl,
+                int width, int height, Surface surface);
+        ResourceManager getResourceManager(long nativeContentViewRenderView);
     }
 }

@@ -93,10 +93,7 @@ window.onload = () => {
 
     y += SCROLL_DELTA;
     await mouseMoveTo(x, y);
-    // TODO(arakeri): There is currently a 1 px difference when dragging the thumb on the compositor thread
-    // vs dragging the thumb on the main thread. Hence, we will use assert_approx_equals for now and investigate
-    // this anomaly in crbug.com/959559.
-    assert_approx_equals(window.scrollY, 183, 1, "Vertical thumb drag downwards did not scroll as expected.");
+    assert_equals(window.scrollY, 183, 1, "Vertical thumb drag downwards did not scroll as expected.");
 
     y -= SCROLL_DELTA;
     await mouseMoveTo(x, y);
@@ -121,7 +118,7 @@ window.onload = () => {
 
     x += SCROLL_DELTA;
     await mouseMoveTo(x, y);
-    assert_approx_equals(window.scrollX, 133, 1, "Horizontal thumb drag towards the right did not scroll as expected.");
+    assert_equals(window.scrollX, 133, 1, "Horizontal thumb drag towards the right did not scroll as expected.");
 
     x -= SCROLL_DELTA;
     await mouseMoveTo(x, y);

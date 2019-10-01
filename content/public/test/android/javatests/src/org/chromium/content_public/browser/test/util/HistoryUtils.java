@@ -54,7 +54,7 @@ public class HistoryUtils {
         return InstrumentationUtils.runOnMainSyncAndGetResult(
                 instrumentation, new Callable<Boolean>() {
                     @Override
-                    public Boolean call() throws Exception {
+                    public Boolean call() {
                         return webContents.getNavigationController().canGoToOffset(offset);
                     }
                 });
@@ -84,10 +84,9 @@ public class HistoryUtils {
      *
      * @param instrumentation an Instrumentation instance.
      * @param webContents a WebContents instance.
-     * @throws Throwable
      */
     public static void clearHistoryOnUiThread(
-            Instrumentation instrumentation, final WebContents webContents) throws Throwable {
+            Instrumentation instrumentation, final WebContents webContents) {
         instrumentation.runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -109,7 +108,7 @@ public class HistoryUtils {
         return InstrumentationUtils.runOnMainSyncAndGetResult(
                 instrumentation, new Callable<String>() {
                     @Override
-                    public String call() throws Exception {
+                    public String call() {
                         return webContents.getLastCommittedUrl();
                     }
                 });

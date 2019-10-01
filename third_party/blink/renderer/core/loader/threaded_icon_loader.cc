@@ -152,10 +152,16 @@ void ThreadedIconLoader::DecodeAndResizeImageOnBackgroundThread(
   // Use the RESIZE_GOOD quality allowing the implementation to pick an
   // appropriate method for the resize. Can be increased to RESIZE_BETTER
   // or RESIZE_BEST if the quality looks poor.
-  decoded_icon_ = skia::ImageOperations::Resize(
+  SkBitmap resized_icon = skia::ImageOperations::Resize(
       decoded_icon_, skia::ImageOperations::RESIZE_GOOD, resized_width,
       resized_height);
 
+  if (resized_icon.isNull()) {
+    notify_complete(1.0);
+    return;
+  }
+
+  decoded_icon_ = std::move(resized_icon);
   notify_complete(scale);
 }
 

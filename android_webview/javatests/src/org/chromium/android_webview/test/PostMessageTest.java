@@ -65,7 +65,7 @@ public class PostMessageTest {
         }
 
         @JavascriptInterface
-        public void setMessageParams(String message, String origin, int[] ports) throws Exception {
+        public void setMessageParams(String message, String origin, int[] ports) {
             mQueue.add(new Data(message, origin, ports));
         }
 
@@ -147,7 +147,7 @@ public class PostMessageTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mWebServer.shutdown();
     }
 
@@ -196,7 +196,7 @@ public class PostMessageTest {
             + "</body></html>";
 
     // Call on non-UI thread.
-    private void expectTitle(String title) throws Throwable {
+    private void expectTitle(String title) {
         CriteriaHelper.pollUiThread(Criteria.equals(title, () -> mAwContents.getTitle()));
     }
 

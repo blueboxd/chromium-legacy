@@ -135,7 +135,6 @@ BrowserViewLayout::BrowserViewLayout(
     views::View* tab_strip_region_view,
     TabStrip* tab_strip,
     views::View* webui_tab_strip,
-    views::View* webui_tab_strip_caption_buttons,
     views::View* toolbar,
     InfoBarContainerView* infobar_container,
     views::View* contents_container,
@@ -147,7 +146,6 @@ BrowserViewLayout::BrowserViewLayout(
       top_container_(top_container),
       tab_strip_region_view_(tab_strip_region_view),
       webui_tab_strip_(webui_tab_strip),
-      webui_tab_strip_caption_buttons_(webui_tab_strip_caption_buttons),
       toolbar_(toolbar),
       infobar_container_(infobar_container),
       contents_container_(contents_container),
@@ -413,7 +411,7 @@ int BrowserViewLayout::LayoutTabStripRegion(int top) {
 int BrowserViewLayout::LayoutWebUITabStrip(int top) {
   if (!webui_tab_strip_ || !webui_tab_strip_->GetVisible())
     return top;
-  constexpr int kWebUiTabStripHeightDp = 262;
+  constexpr int kWebUiTabStripHeightDp = 248;
   webui_tab_strip_->SetBounds(vertical_layout_rect_.x(), top,
                               vertical_layout_rect_.width(),
                               kWebUiTabStripHeightDp);
@@ -425,15 +423,6 @@ int BrowserViewLayout::LayoutToolbar(int top) {
   bool toolbar_visible = delegate_->IsToolbarVisible();
   int height = toolbar_visible ? toolbar_->GetPreferredSize().height() : 0;
   toolbar_->SetVisible(toolbar_visible);
-  if (webui_tab_strip_caption_buttons_) {
-    webui_tab_strip_caption_buttons_->SetVisible(toolbar_visible);
-    const int preferred_webui_tab_strip_caption_buttons_width =
-        webui_tab_strip_caption_buttons_->GetPreferredSize().width();
-    browser_view_width -= preferred_webui_tab_strip_caption_buttons_width;
-    webui_tab_strip_caption_buttons_->SetBounds(
-        vertical_layout_rect_.x() + browser_view_width, top,
-        preferred_webui_tab_strip_caption_buttons_width, height);
-  }
   toolbar_->SetBounds(vertical_layout_rect_.x(), top, browser_view_width,
                       height);
   return toolbar_->bounds().bottom();

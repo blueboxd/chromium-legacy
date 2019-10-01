@@ -54,7 +54,7 @@ public class ContentSuggestionsTest {
     @Test
     @SmallTest
     @Feature("Suggestions")
-    public void testRemoteSuggestionsEnabled() throws InterruptedException {
+    public void testRemoteSuggestionsEnabled() {
         NewTabPage ntp = loadNTPWithSearchSuggestState(true);
         SuggestionsUiDelegate uiDelegate = ntp.getManagerForTesting();
         Assert.assertTrue(
@@ -64,7 +64,7 @@ public class ContentSuggestionsTest {
     @Test
     @SmallTest
     @Feature("Suggestions")
-    public void testRemoteSuggestionsDisabled() throws InterruptedException {
+    public void testRemoteSuggestionsDisabled() {
         NewTabPage ntp = loadNTPWithSearchSuggestState(false);
         SuggestionsUiDelegate uiDelegate = ntp.getManagerForTesting();
         // Since header is expandable, category should still be enabled.
@@ -72,8 +72,7 @@ public class ContentSuggestionsTest {
                 isCategoryEnabled(uiDelegate.getSuggestionsSource(), KnownCategories.ARTICLES));
     }
 
-    private NewTabPage loadNTPWithSearchSuggestState(final boolean enabled)
-            throws InterruptedException {
+    private NewTabPage loadNTPWithSearchSuggestState(final boolean enabled) {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> PrefServiceBridge.getInstance().setSearchSuggestEnabled(enabled));

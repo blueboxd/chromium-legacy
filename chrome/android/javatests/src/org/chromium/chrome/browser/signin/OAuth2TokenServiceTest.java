@@ -70,7 +70,7 @@ public class OAuth2TokenServiceTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mContext = new AdvancedMockContext(InstrumentationRegistry.getTargetContext());
     }
 

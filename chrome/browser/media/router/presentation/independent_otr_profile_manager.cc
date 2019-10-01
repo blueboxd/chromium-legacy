@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 
 using content::BrowserThread;
@@ -58,6 +59,12 @@ IndependentOTRProfileManager::CreateFromOriginalProfile(
       callbacks_map_.emplace(otr_profile, std::move(callback));
   DCHECK(entry.second);
   DCHECK(callback_entry.second);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PROFILE_CREATED,
+      content::Source<Profile>(otr_profile),
+      content::NotificationService::NoDetails());
+
   return base::WrapUnique(new OTRProfileRegistration(this, otr_profile));
 }
 

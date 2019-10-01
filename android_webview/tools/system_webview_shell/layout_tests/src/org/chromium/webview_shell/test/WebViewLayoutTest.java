@@ -82,7 +82,7 @@ public class WebViewLayoutTest {
             new ActivityTestRule<>(WebViewLayoutTestActivity.class, false, false);
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mTestActivity = mActivityTestRule.launchActivity(new Intent());
         Bundle arguments = InstrumentationRegistry.getArguments();
         if (arguments != null) {
@@ -92,7 +92,7 @@ public class WebViewLayoutTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestActivity.finish();
     }
 

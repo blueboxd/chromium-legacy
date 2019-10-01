@@ -98,13 +98,12 @@ public class InfoBarContainerTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
     // Adds an infobar to the currrent tab. Blocks until the infobar has been added.
-    private TestListener addInfoBarToCurrentTab(final boolean expires)
-            throws InterruptedException, TimeoutException {
+    private TestListener addInfoBarToCurrentTab(final boolean expires) throws TimeoutException {
         List<InfoBar> infoBars = mActivityTestRule.getInfoBars();
         int previousCount = infoBars.size();
 

@@ -43,7 +43,7 @@ public class ExecutorFactoryTest {
      * @see MojoTestCase#setUp()
      */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mExecutor = ExecutorFactory.getExecutorForCurrentThread(CoreImpl.getInstance());
         mThreadContainer = new ArrayList<Thread>();
     }

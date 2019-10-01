@@ -154,7 +154,7 @@ public class FeedContentStorageTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         mContentStorage = new FeedContentStorage(mBridge);
     }

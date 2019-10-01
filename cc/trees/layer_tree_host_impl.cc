@@ -244,11 +244,12 @@ std::unique_ptr<LayerTreeHostImpl> LayerTreeHostImpl::Create(
     TaskGraphRunner* task_graph_runner,
     std::unique_ptr<MutatorHost> mutator_host,
     int id,
-    scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner,
+    LayerTreeHostSchedulingClient* scheduling_client) {
   return base::WrapUnique(new LayerTreeHostImpl(
       settings, client, task_runner_provider, rendering_stats_instrumentation,
       task_graph_runner, std::move(mutator_host), id,
-      std::move(image_worker_task_runner)));
+      std::move(image_worker_task_runner), scheduling_client));
 }
 
 LayerTreeHostImpl::LayerTreeHostImpl(
@@ -259,8 +260,10 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     TaskGraphRunner* task_graph_runner,
     std::unique_ptr<MutatorHost> mutator_host,
     int id,
-    scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner,
+    LayerTreeHostSchedulingClient* scheduling_client)
     : client_(client),
+      scheduling_client_(scheduling_client),
       task_runner_provider_(task_runner_provider),
       current_begin_frame_tracker_(BEGINFRAMETRACKER_FROM_HERE),
       compositor_frame_reporting_controller_(
@@ -366,6 +369,11 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
 
   mutator_host_->ClearMutators();
   mutator_host_->SetMutatorHostClient(nullptr);
+}
+
+void LayerTreeHostImpl::WillSendBeginMainFrame() {
+  if (scheduling_client_)
+    scheduling_client_->DidScheduleBeginMainFrame();
 }
 
 void LayerTreeHostImpl::DidSendBeginMainFrame(const viz::BeginFrameArgs& args) {

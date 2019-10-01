@@ -26,7 +26,7 @@ public class JavaScriptUtils {
      * Returns the result of its execution in JSON format.
      */
     public static String executeJavaScriptAndWaitForResult(WebContents webContents, String code)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         return executeJavaScriptAndWaitForResult(
                 webContents, code, EVALUATION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
@@ -38,7 +38,7 @@ public class JavaScriptUtils {
      */
     public static String executeJavaScriptAndWaitForResult(final WebContents webContents,
             final String code, final long timeout, final TimeUnit timeoutUnits)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         final OnEvaluateJavaScriptResultHelper helper = new OnEvaluateJavaScriptResultHelper();
         // Calling this from the UI thread causes it to time-out: the UI thread being blocked won't
         // have a chance to process the JavaScript eval response).
@@ -58,7 +58,7 @@ public class JavaScriptUtils {
      * domAutomationController.send() in JSON format.
      */
     public static String runJavascriptWithAsyncResult(WebContents webContents, String code)
-            throws TimeoutException, InterruptedException {
+            throws TimeoutException {
         DomAutomationController controller = new DomAutomationController();
         controller.inject(webContents);
         executeJavaScript(webContents, code);

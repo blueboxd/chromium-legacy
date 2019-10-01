@@ -42,7 +42,7 @@ public class TracingControllerAndroidImplTest {
     @MediumTest
     @Feature({"GPU"})
     @DisableIf.Build(sdk_is_less_than = 21, message = "crbug.com/899894")
-    public void testTraceFileCreation() throws Exception {
+    public void testTraceFileCreation() {
         ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl("about:blank");
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
 

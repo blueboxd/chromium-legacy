@@ -6,9 +6,11 @@
 
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/metrics/call_stack_profile_builder.h"
+#include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
@@ -67,13 +69,13 @@ TEST_F(HeapProfilerControllerTest, ProfileCollectionsScheduler) {
       controller.reset();
   };
 
-  base::SamplingHeapProfiler::Init();
-  auto* profiler = base::SamplingHeapProfiler::Get();
-  profiler->SetSamplingInterval(1024);
-  profiler->Start();
-
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      metrics::CallStackProfileMetricsProvider::kHeapProfilerReporting);
   metrics::CallStackProfileBuilder::SetBrowserProcessReceiverCallback(
       base::BindLambdaForTesting(check_profile));
+  base::SamplingHeapProfiler::Get()->SetSamplingInterval(1024);
+
   controller->Start();
 
   auto* sampler = base::PoissonAllocationSampler::Get();

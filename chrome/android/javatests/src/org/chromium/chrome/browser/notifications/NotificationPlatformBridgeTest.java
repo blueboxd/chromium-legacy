@@ -79,14 +79,14 @@ public class NotificationPlatformBridgeTest {
     private static final int TITLE_UPDATE_TIMEOUT_SECONDS = (int) 5L;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         SiteEngagementService.setParamValuesForTesting();
         mNotificationTestRule.loadUrl(mPermissionTestRule.getURL(NOTIFICATION_TEST_PAGE));
         mPermissionTestRule.setActivity(mNotificationTestRule.getActivity());
     }
 
     @SuppressWarnings("MissingFail")
-    private void waitForTitle(String expectedTitle) throws InterruptedException {
+    private void waitForTitle(String expectedTitle) {
         Tab tab = mNotificationTestRule.getActivity().getActivityTab();
         TabTitleObserver titleObserver = new TabTitleObserver(tab, expectedTitle);
         try {
@@ -112,7 +112,7 @@ public class NotificationPlatformBridgeTest {
         try {
             return TestThreadUtils.runOnUiThreadBlocking(new Callable<Double>() {
                 @Override
-                public Double call() throws Exception {
+                public Double call() {
                     return SiteEngagementService.getForProfile(Profile.getLastUsedProfile())
                             .getScore(mPermissionTestRule.getOrigin());
                 }
@@ -838,19 +838,18 @@ public class NotificationPlatformBridgeTest {
      * @return The Android Notification object, as shown in the framework.
      */
     private Notification showAndGetNotification(String title, String options)
-            throws TimeoutException, InterruptedException {
+            throws TimeoutException {
         showNotification(title, options);
         return mNotificationTestRule.waitForNotification().notification;
     }
 
-    private void showNotification(String title, String options)
-            throws TimeoutException, InterruptedException {
+    private void showNotification(String title, String options) throws TimeoutException {
         runJavaScript("GetActivatedServiceWorkerForTest()"
                 + ".then(reg => reg.showNotification('" + title + "', " + options + "))"
                 + ".catch(sendToTest)");
     }
 
-    private String runJavaScript(String code) throws TimeoutException, InterruptedException {
+    private String runJavaScript(String code) throws TimeoutException {
         return mNotificationTestRule.runJavaScriptCodeInCurrentTab(code);
     }
 

@@ -30,8 +30,8 @@ constexpr char kIppJobAttributes[] = "job-creation-attributes";  // PWG 5100.11
 
 constexpr char kPinEncryptionNone[] = "none";
 
-constexpr char kOptionFalse[] = "no";
-constexpr char kOptionTrue[] = "yes";
+constexpr char kOptionFalse[] = "false";
+constexpr char kOptionTrue[] = "true";
 
 #endif  // defined(OS_CHROMEOS)
 

@@ -58,6 +58,9 @@ const base::Feature kNotificationScrollBar{"NotificationScrollBar",
 const base::Feature kPipRoundedCorners{"PipRoundedCorners",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kReduceDisplayNotifications{
+    "ReduceDisplayNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kSeparateNetworkIcons{"SeparateNetworkIcons",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -186,6 +189,10 @@ bool IsSwipingFromLeftEdgeToGoBackEnabled() {
 
 bool IsDragFromShelfToHomeOrOverviewEnabled() {
   return base::FeatureList::IsEnabled(kDragFromShelfToHomeOrOverview);
+}
+
+bool IsReduceDisplayNotificationsEnabled() {
+  return base::FeatureList::IsEnabled(kReduceDisplayNotifications);
 }
 
 }  // namespace features

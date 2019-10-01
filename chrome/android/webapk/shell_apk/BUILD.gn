@@ -332,6 +332,7 @@ junit_binary("webapk_shell_apk_junit_tests") {
     "junit/src/org/chromium/webapk/shell_apk/HostBrowserLauncherParamsTest.java",
     "junit/src/org/chromium/webapk/shell_apk/HostBrowserUtilsTest.java",
     "junit/src/org/chromium/webapk/shell_apk/MainActivityTest.java",
+    "junit/src/org/chromium/webapk/shell_apk/TestBrowserInstaller.java",
     "junit/src/org/chromium/webapk/shell_apk/WebApkServiceImplWrapperTest.java",
     "junit/src/org/chromium/webapk/shell_apk/WebApkUtilsTest.java",
   ]
@@ -346,6 +347,7 @@ junit_binary("webapk_shell_apk_junit_tests") {
 junit_binary("webapk_shell_apk_h2o_junit_tests") {
   java_files = [
     "junit/src/org/chromium/webapk/shell_apk/CustomAndroidOsShadowAsyncTask.java",
+    "junit/src/org/chromium/webapk/shell_apk/TestBrowserInstaller.java",
     "junit/src/org/chromium/webapk/shell_apk/h2o/LaunchTest.java",
     "junit/src/org/chromium/webapk/shell_apk/h2o/SplashActivityTest.java",
   ]

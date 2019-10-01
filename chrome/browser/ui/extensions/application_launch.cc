@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
@@ -108,10 +108,11 @@ class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
   DISALLOW_COPY_AND_ASSIGN(EnableViaDialogFlow);
 };
 
-const Extension* GetExtension(const AppLaunchParams& params) {
+const Extension* GetExtension(Profile* profile,
+                              const apps::AppLaunchParams& params) {
   if (params.app_id.empty())
     return NULL;
-  ExtensionRegistry* registry = ExtensionRegistry::Get(params.profile);
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
   return registry->GetExtensionById(
       params.app_id, ExtensionRegistry::ENABLED | ExtensionRegistry::DISABLED |
                          ExtensionRegistry::TERMINATED);
@@ -185,11 +186,11 @@ ui::WindowShowState DetermineWindowShowState(
   return ui::SHOW_STATE_DEFAULT;
 }
 
-WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
+WebContents* OpenApplicationTab(Profile* profile,
+                                const apps::AppLaunchParams& launch_params,
                                 const GURL& url) {
-  const Extension* extension = GetExtension(launch_params);
+  const Extension* extension = GetExtension(profile, launch_params);
   CHECK(extension);
-  Profile* const profile = launch_params.profile;
   WindowOpenDisposition disposition = launch_params.disposition;
 
   Browser* browser =
@@ -277,18 +278,19 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
   return contents;
 }
 
-WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
-  const Extension* extension = GetExtension(params);
+WebContents* OpenEnabledApplication(Profile* profile,
+                                    const apps::AppLaunchParams& params) {
+  const Extension* extension = GetExtension(profile, params);
   if (!extension)
     return NULL;
 
   WebContents* tab = NULL;
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(params.profile);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
   prefs->SetActiveBit(extension->id(), true);
 
   if (CanLaunchViaEvent(extension)) {
     apps::LaunchPlatformAppWithCommandLineAndLaunchId(
-        params.profile, extension, params.launch_id, params.command_line,
+        profile, extension, params.launch_id, params.command_line,
         params.current_directory, params.source);
     return NULL;
   }
@@ -310,10 +312,10 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
     // Panels are deprecated. Launch a normal window instead.
     case extensions::LaunchContainer::kLaunchContainerPanelDeprecated:
     case extensions::LaunchContainer::kLaunchContainerWindow:
-      tab = OpenApplicationWindow(params, url);
+      tab = OpenApplicationWindow(profile, params, url);
       break;
     case extensions::LaunchContainer::kLaunchContainerTab: {
-      tab = OpenApplicationTab(params, url);
+      tab = OpenApplicationTab(profile, params, url);
       break;
     }
     default:
@@ -329,7 +331,7 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
 
     // Record the launch time in the site engagement service. A recent bookmark
     // app launch will provide an engagement boost to the origin.
-    SiteEngagementService* service = SiteEngagementService::Get(params.profile);
+    SiteEngagementService* service = SiteEngagementService::Get(profile);
     service->SetLastShortcutLaunchTime(tab, url);
 
     // Refresh the app banner added to homescreen event. The user may have
@@ -345,14 +347,15 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
 
 }  // namespace
 
-WebContents* OpenApplication(const AppLaunchParams& params) {
-  return OpenEnabledApplication(params);
+WebContents* OpenApplication(Profile* profile,
+                             const apps::AppLaunchParams& params) {
+  return OpenEnabledApplication(profile, params);
 }
 
-Browser* CreateApplicationWindow(const AppLaunchParams& params,
+Browser* CreateApplicationWindow(Profile* profile,
+                                 const apps::AppLaunchParams& params,
                                  const GURL& url) {
-  Profile* const profile = params.profile;
-  const Extension* const extension = GetExtension(params);
+  const Extension* const extension = GetExtension(profile, params);
 
   std::string app_name;
   if (!params.override_app_name.empty())
@@ -383,11 +386,12 @@ Browser* CreateApplicationWindow(const AppLaunchParams& params,
   return new Browser(browser_params);
 }
 
-WebContents* ShowApplicationWindow(const AppLaunchParams& params,
+WebContents* ShowApplicationWindow(Profile* profile,
+                                   const apps::AppLaunchParams& params,
                                    const GURL& url,
                                    Browser* browser,
                                    WindowOpenDisposition disposition) {
-  const Extension* const extension = GetExtension(params);
+  const Extension* const extension = GetExtension(profile, params);
   ui::PageTransition transition =
       (extension ? ui::PAGE_TRANSITION_AUTO_BOOKMARK
                  : ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
@@ -419,18 +423,19 @@ WebContents* ShowApplicationWindow(const AppLaunchParams& params,
   return web_contents;
 }
 
-WebContents* OpenApplicationWindow(const AppLaunchParams& params,
+WebContents* OpenApplicationWindow(Profile* profile,
+                                   const apps::AppLaunchParams& params,
                                    const GURL& url) {
-  Browser* browser = CreateApplicationWindow(params, url);
-  return ShowApplicationWindow(params, url, browser,
+  Browser* browser = CreateApplicationWindow(profile, params, url);
+  return ShowApplicationWindow(profile, params, url, browser,
                                WindowOpenDisposition::NEW_FOREGROUND_TAB);
 }
 
-void OpenApplicationWithReenablePrompt(const AppLaunchParams& params) {
-  const Extension* extension = GetExtension(params);
+void OpenApplicationWithReenablePrompt(Profile* profile,
+                                       const apps::AppLaunchParams& params) {
+  const Extension* extension = GetExtension(profile, params);
   if (!extension)
     return;
-  Profile* profile = params.profile;
 
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
@@ -443,25 +448,25 @@ void OpenApplicationWithReenablePrompt(const AppLaunchParams& params) {
     // the "enable application" dialog in Athena.
     (new EnableViaDialogFlow(
          service, registry, profile, extension->id(),
-         base::Bind(base::IgnoreResult(OpenEnabledApplication), params)))
+         base::Bind(base::IgnoreResult(OpenEnabledApplication), profile,
+                    params)))
         ->Run();
     return;
   }
 
-  OpenEnabledApplication(params);
+  OpenEnabledApplication(profile, params);
 }
 
 WebContents* OpenAppShortcutWindow(Profile* profile,
                                    const GURL& url) {
-  AppLaunchParams launch_params(
-      profile,
+  apps::AppLaunchParams launch_params(
       std::string(),  // this is a URL app. No app id.
       extensions::LaunchContainer::kLaunchContainerWindow,
       WindowOpenDisposition::NEW_WINDOW,
       extensions::AppLaunchSource::kSourceCommandLine);
   launch_params.override_url = url;
 
-  WebContents* tab = OpenApplicationWindow(launch_params, url);
+  WebContents* tab = OpenApplicationWindow(profile, launch_params, url);
 
   if (!tab)
     return NULL;

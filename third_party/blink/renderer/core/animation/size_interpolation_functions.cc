@@ -56,48 +56,6 @@ class CSSSizeNonInterpolableValue : public NonInterpolableValue {
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSSizeNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSSizeNonInterpolableValue);
 
-// TODO(xiaochengh): Clean up. With |InterpolableLength| introduced and
-// |LengthNonInterpolableValue| removed, the following no longer makes sense.
-//
-// A wrapper for the UnderlyingValue passed to
-// SizeInterpolationFunctions::Composite which can be forwarded to
-// LengthInterpolationFunctions::Composite.
-//
-// If LengthInterpolationFunctions::Composite calls SetNonInterpolableValue with
-// a new NonInterpolableValue, this class wraps it in a new
-// CSSSizeNonInterpolableValue before being set on the inner UnderlyingValue.
-class UnderlyingSizeAsLengthValue : public UnderlyingValue {
-  STACK_ALLOCATED();
-
- public:
-  UnderlyingSizeAsLengthValue(UnderlyingValue& inner_underlying_value)
-      : inner_underlying_value_(inner_underlying_value) {}
-
-  InterpolableValue& MutableInterpolableValue() final {
-    return inner_underlying_value_.MutableInterpolableValue();
-  }
-
-  void SetInterpolableValue(
-      std::unique_ptr<InterpolableValue> interpolable_value) final {
-    inner_underlying_value_.SetInterpolableValue(std::move(interpolable_value));
-  }
-
-  const NonInterpolableValue* GetNonInterpolableValue() const final {
-    const auto& size_non_interpolable_value = ToCSSSizeNonInterpolableValue(
-        *inner_underlying_value_.GetNonInterpolableValue());
-    return size_non_interpolable_value.LengthNonInterpolableValue();
-  }
-
-  void SetNonInterpolableValue(
-      scoped_refptr<const NonInterpolableValue> non_interpolable_value) final {
-    inner_underlying_value_.SetNonInterpolableValue(
-        CSSSizeNonInterpolableValue::Create(std::move(non_interpolable_value)));
-  }
-
- private:
-  UnderlyingValue& inner_underlying_value_;
-};
-
 static InterpolationValue ConvertKeyword(CSSValueID keyword) {
   return InterpolationValue(std::make_unique<InterpolableList>(0),
                             CSSSizeNonInterpolableValue::Create(keyword));
@@ -204,9 +162,8 @@ void SizeInterpolationFunctions::Composite(
       ToCSSSizeNonInterpolableValue(*non_interpolable_value);
   if (size_non_interpolable_value.IsKeyword())
     return;
-  UnderlyingSizeAsLengthValue underlying_size_as_length(underlying_value);
-  underlying_size_as_length.MutableInterpolableValue().ScaleAndAdd(
-      underlying_fraction, interpolable_value);
+  underlying_value.MutableInterpolableValue().ScaleAndAdd(underlying_fraction,
+                                                          interpolable_value);
 }
 
 static Length CreateLength(

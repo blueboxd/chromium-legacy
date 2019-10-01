@@ -61,8 +61,9 @@ void SharingUiController::ShowNewDialog() {
   if (!window)
     return;
 
-  dialog_ = DoShowDialog(window);
+  dialog_ = window->ShowSharingDialog(web_contents(), this);
   UpdateIcon();
+  OnDialogShown(!devices_.empty(), !apps_.empty());
 }
 
 void SharingUiController::UpdateIcon() {
@@ -204,4 +205,9 @@ bool SharingUiController::HasSendFailed() const {
 void SharingUiController::OnHelpTextClicked(SharingDialogType dialog_type) {
   ShowSingletonTab(chrome::FindBrowserWithWebContents(web_contents()),
                    GURL(chrome::kSyncLearnMoreURL));
+}
+
+void SharingUiController::OnDialogShown(bool has_devices, bool has_apps) {
+  if (on_dialog_shown_closure_for_testing_)
+    std::move(on_dialog_shown_closure_for_testing_).Run();
 }

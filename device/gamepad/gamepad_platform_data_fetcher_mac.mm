@@ -102,9 +102,8 @@ void GamepadPlatformDataFetcherMac::PauseHint(bool pause) {
 
 GamepadPlatformDataFetcherMac::~GamepadPlatformDataFetcherMac() {
   UnregisterFromNotifications();
-  for (size_t slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
-    if (devices_[slot] != nullptr)
-      devices_[slot]->Shutdown();
+  for (auto& iter : devices_) {
+    iter.second->Shutdown();
   }
 }
 
@@ -134,31 +133,15 @@ void GamepadPlatformDataFetcherMac::ValueChangedCallback(void* context,
   InstanceFromContext(context)->ValueChanged(ref);
 }
 
-size_t GamepadPlatformDataFetcherMac::GetEmptySlot() {
-  // Find a free slot for this device.
-  for (size_t slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
-    if (devices_[slot] == nullptr)
-      return slot;
+GamepadDeviceMac* GamepadPlatformDataFetcherMac::GetGamepadFromHidDevice(
+    IOHIDDeviceRef device) {
+  for (auto& iter : devices_) {
+    if (iter.second->IsSameDevice(device)) {
+      return iter.second.get();
+    }
   }
-  return Gamepads::kItemsLengthCap;
-}
 
-size_t GamepadPlatformDataFetcherMac::GetSlotForDevice(IOHIDDeviceRef device) {
-  for (size_t slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
-    // If we already have this device, and it's already connected, don't do
-    // anything now.
-    if (devices_[slot] != nullptr && devices_[slot]->IsSameDevice(device))
-      return Gamepads::kItemsLengthCap;
-  }
-  return GetEmptySlot();
-}
-
-size_t GamepadPlatformDataFetcherMac::GetSlotForLocation(int location_id) {
-  for (size_t slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
-    if (devices_[slot] && devices_[slot]->GetLocationId() == location_id)
-      return slot;
-  }
-  return Gamepads::kItemsLengthCap;
+  return nullptr;
 }
 
 void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
@@ -171,9 +154,6 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   NSNumber* location_id = CFToNSCast(CFCastStrict<CFNumberRef>(
       IOHIDDeviceGetProperty(device, CFSTR(kIOHIDLocationIDKey))));
   int location_int = [location_id intValue];
-
-  // Find an index for this device.
-  size_t slot = GetSlotForDevice(device);
 
   NSNumber* vendor_id = CFToNSCast(CFCastStrict<CFNumberRef>(
       IOHIDDeviceGetProperty(device, CFSTR(kIOHIDVendorIDKey))));
@@ -201,21 +181,23 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   const auto& gamepad_id_list = GamepadIdList::Get();
   DCHECK_EQ(kXInputTypeNone,
             gamepad_id_list.GetXInputType(vendor_int, product_int));
-  RecordConnectedGamepad(vendor_int, product_int);
 
-  // We can't handle this many connected devices.
-  if (slot == Gamepads::kItemsLengthCap)
+  if (devices_.find(location_int) != devices_.end())
     return;
 
+  RecordConnectedGamepad(vendor_int, product_int);
+
   // The SteelSeries Nimbus and other Made for iOS gamepads should be handled
-  // through the GameController interface. Blacklist it here so it doesn't
-  // take up an additional gamepad slot.
+  // through the GameController interface.
   if (gamepad_id_list.GetGamepadId(vendor_int, product_int) ==
       GamepadId::kSteelSeriesProduct1420) {
     return;
   }
 
-  PadState* state = GetPadState(location_int);
+  bool is_recognized = gamepad_id_list.GetGamepadId(vendor_int, product_int) !=
+                       GamepadId::kUnknownGamepad;
+
+  PadState* state = GetPadState(location_int, is_recognized);
   if (!state)
     return;  // No available slot for this device
 
@@ -232,34 +214,42 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   state->data.mapping =
       state->mapper ? GamepadMapping::kStandard : GamepadMapping::kNone;
 
-  devices_[slot] = std::make_unique<GamepadDeviceMac>(location_int, device,
-                                                      vendor_int, product_int);
-  if (!devices_[slot]->AddButtonsAndAxes(&state->data)) {
-    devices_[slot]->Shutdown();
-    devices_[slot] = nullptr;
+  auto new_device = std::make_unique<GamepadDeviceMac>(location_int, device,
+                                                       vendor_int, product_int);
+  if (!new_device->AddButtonsAndAxes(&state->data)) {
+    new_device->Shutdown();
     return;
   }
 
   state->data.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
-  state->data.vibration_actuator.not_null = devices_[slot]->SupportsVibration();
+  state->data.vibration_actuator.not_null = new_device->SupportsVibration();
 
   state->data.connected = true;
+
+  devices_.emplace(location_int, std::move(new_device));
+}
+
+bool GamepadPlatformDataFetcherMac::DisconnectUnrecognizedGamepad(
+    int source_id) {
+  auto gamepad_iter = devices_.find(source_id);
+  if (gamepad_iter == devices_.end())
+    return false;
+  gamepad_iter->second->Shutdown();
+  devices_.erase(gamepad_iter);
+  return true;
 }
 
 void GamepadPlatformDataFetcherMac::DeviceRemove(IOHIDDeviceRef device) {
   if (!enabled_)
     return;
 
-  // Find the index for this device.
-  size_t slot;
-  for (slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
-    if (devices_[slot] != nullptr && devices_[slot]->IsSameDevice(device))
-      break;
-  }
-  if (slot < Gamepads::kItemsLengthCap) {
-    devices_[slot]->Shutdown();
-    devices_[slot] = nullptr;
-  }
+  GamepadDeviceMac* gamepad_device = GetGamepadFromHidDevice(device);
+
+  if (!gamepad_device)
+    return;
+
+  gamepad_device->Shutdown();
+  devices_.erase(gamepad_device->GetLocationId());
 }
 
 void GamepadPlatformDataFetcherMac::ValueChanged(IOHIDValueRef value) {
@@ -269,20 +259,16 @@ void GamepadPlatformDataFetcherMac::ValueChanged(IOHIDValueRef value) {
   IOHIDElementRef element = IOHIDValueGetElement(value);
   IOHIDDeviceRef device = IOHIDElementGetDevice(element);
 
-  // Find device slot.
-  size_t slot;
-  for (slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
-    if (devices_[slot] != nullptr && devices_[slot]->IsSameDevice(device))
-      break;
-  }
-  if (slot == Gamepads::kItemsLengthCap)
+  GamepadDeviceMac* gamepad_device = GetGamepadFromHidDevice(device);
+
+  if (!gamepad_device)
     return;
 
-  PadState* state = GetPadState(devices_[slot]->GetLocationId());
+  PadState* state = GetPadState(gamepad_device->GetLocationId());
   if (!state)
     return;
 
-  devices_[slot]->UpdateGamepadForValue(value, &state->data);
+  gamepad_device->UpdateGamepadForValue(value, &state->data);
 }
 
 void GamepadPlatformDataFetcherMac::GetGamepadData(bool) {
@@ -290,9 +276,8 @@ void GamepadPlatformDataFetcherMac::GetGamepadData(bool) {
     return;
 
   // Loop through and GetPadState to indicate the devices are still connected.
-  for (size_t slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
-    if (devices_[slot])
-      GetPadState(devices_[slot]->GetLocationId());
+  for (const auto& iter : devices_) {
+    GetPadState(iter.first);
   }
 }
 
@@ -302,8 +287,8 @@ void GamepadPlatformDataFetcherMac::PlayEffect(
     mojom::GamepadEffectParametersPtr params,
     mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback,
     scoped_refptr<base::SequencedTaskRunner> callback_runner) {
-  size_t slot = GetSlotForLocation(source_id);
-  if (slot == Gamepads::kItemsLengthCap) {
+  auto device_iter = devices_.find(source_id);
+  if (device_iter == devices_.end()) {
     // No connected gamepad with this location. Probably the effect was issued
     // while the gamepad was still connected, so handle this as if it were
     // preempted by a disconnect.
@@ -312,16 +297,16 @@ void GamepadPlatformDataFetcherMac::PlayEffect(
         mojom::GamepadHapticsResult::GamepadHapticsResultPreempted);
     return;
   }
-  devices_[slot]->PlayEffect(type, std::move(params), std::move(callback),
-                             std::move(callback_runner));
+  device_iter->second->PlayEffect(type, std::move(params), std::move(callback),
+                                  std::move(callback_runner));
 }
 
 void GamepadPlatformDataFetcherMac::ResetVibration(
     int source_id,
     mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback,
     scoped_refptr<base::SequencedTaskRunner> callback_runner) {
-  size_t slot = GetSlotForLocation(source_id);
-  if (slot == Gamepads::kItemsLengthCap) {
+  auto device_iter = devices_.find(source_id);
+  if (device_iter == devices_.end()) {
     // No connected gamepad with this location. Since the gamepad is already
     // disconnected, allow the reset to report success.
     RunVibrationCallback(
@@ -329,8 +314,8 @@ void GamepadPlatformDataFetcherMac::ResetVibration(
         mojom::GamepadHapticsResult::GamepadHapticsResultComplete);
     return;
   }
-  devices_[slot]->ResetVibration(std::move(callback),
-                                 std::move(callback_runner));
+  device_iter->second->ResetVibration(std::move(callback),
+                                      std::move(callback_runner));
 }
 
 }  // namespace device

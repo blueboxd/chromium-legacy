@@ -64,13 +64,13 @@ public class TracingPreferencesTest {
     private MockNotificationManagerProxy mMockNotificationManager;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mMockNotificationManager = new MockNotificationManagerProxy();
         TracingNotificationManager.overrideNotificationManagerForTesting(mMockNotificationManager);
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         TracingNotificationManager.overrideNotificationManagerForTesting(null);
     }
 

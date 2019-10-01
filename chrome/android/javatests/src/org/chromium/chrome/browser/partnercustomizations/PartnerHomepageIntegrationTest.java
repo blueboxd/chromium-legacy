@@ -57,7 +57,7 @@ public class PartnerHomepageIntegrationTest {
     private static final String TEST_PAGE = "/chrome/test/data/android/about.html";
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         mActivityTestRule.startMainActivityFromLauncher();
     }
 
@@ -144,7 +144,7 @@ public class PartnerHomepageIntegrationTest {
     @MediumTest
     @Feature({"Homepage"})
     @RetryOnFailure
-    public void testPreferenceCustomUriFixup() throws InterruptedException {
+    public void testPreferenceCustomUriFixup() {
         // Change home page custom URI on hompage edit screen.
         final Preferences editHomepagePreferenceActivity =
                 mActivityTestRule.startPreferences(HomepageEditor.class.getName());
@@ -178,7 +178,7 @@ public class PartnerHomepageIntegrationTest {
     @MediumTest
     @Feature({"Homepage"})
     @RetryOnFailure
-    public void testLastTabClosed() throws InterruptedException {
+    public void testLastTabClosed() {
         ChromeTabUtils.closeCurrentTab(InstrumentationRegistry.getInstrumentation(),
                 (ChromeTabbedActivity) mActivityTestRule.getActivity());
         Assert.assertTrue("Activity was not closed.",
@@ -192,7 +192,7 @@ public class PartnerHomepageIntegrationTest {
     @Test
     @MediumTest
     @Feature({"Homepage"})
-    public void testCloseAllTabs() throws InterruptedException {
+    public void testCloseAllTabs() {
         final CallbackHelper tabClosed = new CallbackHelper();
         final TabModel tabModel = mActivityTestRule.getActivity().getCurrentTabModel();
         mActivityTestRule.getActivity().getCurrentTabModel().addObserver(

@@ -131,6 +131,11 @@ class PLATFORM_EXPORT ThreadScheduler {
     return scheduler::PendingUserInputInfo();
   }
 
+  // Indicates that a BeginMainFrame task has been scheduled to run on the main
+  // thread. Note that this is inherently racy, as it will be affected by code
+  // running on the compositor thread.
+  virtual bool IsBeginMainFrameScheduled() const { return false; }
+
   // Associates |isolate| to the scheduler.
   virtual void SetV8Isolate(v8::Isolate* isolate) = 0;
 

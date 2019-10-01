@@ -244,9 +244,6 @@ import org.chromium.ui.modelutil.PropertyModel;
     public void onSheetClosed(@StateChangeReason int reason) {}
 
     @Override
-    public void onSheetReleased() {}
-
-    @Override
     public void onLoadUrl(String url) {}
 
     @Override

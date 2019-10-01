@@ -414,7 +414,9 @@ class Profile : public content::BrowserContext {
   // ProfileDestroyer, but in tests, some are not.
   void MaybeSendDestroyedNotification();
 
-  // Creates an OffTheRecordProfile which points to this Profile.
+  // Creates an OffTheRecordProfile which points to this Profile. The caller is
+  // responsible for sending a NOTIFICATION_PROFILE_CREATED when the profile is
+  // correctly assigned to its owner.
   Profile* CreateOffTheRecordProfile();
 
 #if !defined(OS_ANDROID)

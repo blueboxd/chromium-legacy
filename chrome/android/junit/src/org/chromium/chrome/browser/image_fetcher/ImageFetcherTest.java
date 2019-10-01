@@ -62,19 +62,19 @@ public class ImageFetcherTest {
     private ImageFetcherForTest mImageFetcher;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         mImageFetcher = Mockito.spy(new ImageFetcherForTest());
     }
 
     @Test
-    public void testResize() throws Exception {
+    public void testResize() {
         Bitmap result = ImageFetcher.tryToResizeImage(mBitmap, WIDTH_PX / 2, HEIGHT_PX / 2);
         assertNotEquals(result, mBitmap);
     }
 
     @Test
-    public void testResizeBailsOutIfSizeIsZeroOrLess() throws Exception {
+    public void testResizeBailsOutIfSizeIsZeroOrLess() {
         Bitmap result = ImageFetcher.tryToResizeImage(mBitmap, WIDTH_PX - 1, HEIGHT_PX - 1);
         assertNotEquals(result, mBitmap);
 

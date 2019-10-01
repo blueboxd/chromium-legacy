@@ -1879,7 +1879,7 @@ TEST_F(TouchEventConverterEvdevTest, FingerSizeWithResolution) {
       {time, EV_ABS, ABS_MT_POSITION_Y, 5559},
       {time, EV_ABS, ABS_MT_PRESSURE, 217},
       {time, EV_ABS, ABS_MT_TOUCH_MAJOR, 14},
-      {time, EV_ABS, ABS_MT_TOUCH_MINOR, 14},
+      {time, EV_ABS, ABS_MT_TOUCH_MINOR, 11},
       {time, EV_KEY, BTN_TOUCH, 1},
       {time, EV_ABS, ABS_X, 1795},
       {time, EV_ABS, ABS_Y, 5559},
@@ -1905,5 +1905,9 @@ TEST_F(TouchEventConverterEvdevTest, FingerSizeWithResolution) {
   EXPECT_EQ(EventPointerType::POINTER_TYPE_TOUCH,
             event.pointer_details.pointer_type);
   EXPECT_FLOAT_EQ(280.f, event.pointer_details.radius_x);
+  EXPECT_FLOAT_EQ(220.f, event.pointer_details.radius_y);
+  const ui::InProgressTouchEvdev& in_progress_event = dev->event(0);
+  EXPECT_FLOAT_EQ(14.f, in_progress_event.major);
+  EXPECT_FLOAT_EQ(11.f, in_progress_event.minor);
 }
 }  // namespace ui

@@ -27,7 +27,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -46,13 +45,10 @@ public class VrBrowserCompositorViewHolderTest {
     /**
      * Verify that resizing the CompositorViewHolder does not cause the current tab to resize while
      * the CompositorViewHolder is detached from the TabModelSelector. See crbug.com/680240.
-     * @throws InterruptedException
-     * @throws TimeoutException
      */
     @Test
     @MediumTest
-    public void testResizeWithCompositorViewHolderDetached()
-            throws InterruptedException, TimeoutException {
+    public void testResizeWithCompositorViewHolderDetached() {
         final AtomicInteger oldWidth = new AtomicInteger();
         final AtomicInteger oldHeight = new AtomicInteger();
         final int testWidth = 123;

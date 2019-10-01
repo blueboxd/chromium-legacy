@@ -38,6 +38,7 @@ namespace web {
 
 class BrowserState;
 class BrowserURLRewriter;
+class SerializableUserDataManager;
 class WebClient;
 class WebMainParts;
 class WebState;
@@ -85,6 +86,14 @@ class WebClient {
   // browser would return true for "chrome://about" URL.
   virtual bool IsAppSpecificURL(const GURL& url) const;
 
+  // Returns true if URL should not be restored.
+  virtual bool ShouldBlockUrlDuringRestore(const GURL& url,
+                                           WebState* web_state) const;
+
+  // Allow embedder to inject data.
+  virtual void AddSerializableData(
+      web::SerializableUserDataManager* user_data_manager,
+      web::WebState* web_state);
   // Returns text to be displayed for an unsupported plugin.
   virtual base::string16 GetPluginNotSupportedText() const;
 

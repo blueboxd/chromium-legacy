@@ -67,7 +67,7 @@ public class SiteSettingsPreferencesTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
@@ -94,7 +94,7 @@ public class SiteSettingsPreferencesTest {
         return TestThreadUtils.runOnUiThreadBlockingNoException(
                 new Callable<InfoBarTestAnimationListener>() {
                     @Override
-                    public InfoBarTestAnimationListener call() throws Exception {
+                    public InfoBarTestAnimationListener call() {
                         InfoBarContainer container = mActivityTestRule.getInfoBarContainer();
                         InfoBarTestAnimationListener listener = new InfoBarTestAnimationListener();
                         container.addAnimationListener(listener);
@@ -133,7 +133,7 @@ public class SiteSettingsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     @DisabledTest(message = "Modals are now enabled and test needs to be reworked crbug.com/935900")
-    public void testSetAllowLocationNotEnabled() throws Exception {
+    public void testSetAllowLocationNotEnabled() {
         setAllowLocation(false);
 
         // Launch a page that uses geolocation.
@@ -263,12 +263,11 @@ public class SiteSettingsPreferencesTest {
 
     /**
      * Tests that disabling cookies turns off the third-party cookie toggle.
-     * @throws Exception
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    public void testThirdPartyCookieToggleGetsDisabled() throws Exception {
+    public void testThirdPartyCookieToggleGetsDisabled() {
         Preferences preferenceActivity =
                 SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
         setCookiesEnabled(preferenceActivity, true);
@@ -390,12 +389,11 @@ public class SiteSettingsPreferencesTest {
 
     /**
      * Sets Allow Popups Enabled to be false and make sure it is set correctly.
-     * @throws Exception
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    public void testPopupsBlocked() throws Exception {
+    public void testPopupsBlocked() {
         setEnablePopups(false);
 
         // Test that the popup doesn't open.
@@ -407,12 +405,11 @@ public class SiteSettingsPreferencesTest {
 
     /**
      * Sets Allow Popups Enabled to be true and make sure it is set correctly.
-     * @throws Exception
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    public void testPopupsNotBlocked() throws Exception {
+    public void testPopupsNotBlocked() {
         setEnablePopups(true);
 
         // Test that a popup opens.
@@ -424,24 +421,22 @@ public class SiteSettingsPreferencesTest {
 
     /**
      * Test that showing the Site Settings menu doesn't crash (crbug.com/610576).
-     * @throws Exception
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    public void testSiteSettingsMenu() throws Exception {
+    public void testSiteSettingsMenu() {
         final Preferences preferenceActivity = SiteSettingsTestUtils.startSiteSettingsMenu("");
         preferenceActivity.finish();
     }
 
     /**
      * Test the Media Menu.
-     * @throws Exception
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    public void testMediaMenu() throws Exception {
+    public void testMediaMenu() {
         final Preferences preferenceActivity =
                 SiteSettingsTestUtils.startSiteSettingsMenu(SiteSettingsPreferences.MEDIA_KEY);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -468,12 +463,11 @@ public class SiteSettingsPreferencesTest {
 
     /**
      * Tests that only expected Preferences are shown for a category.
-     * @throws Exception
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    public void testOnlyExpectedPreferencesShown() throws Exception {
+    public void testOnlyExpectedPreferencesShown() {
         // If you add a category in the SiteSettings UI, please add a test for it below.
         Assert.assertEquals(19, SiteSettingsCategory.Type.NUM_ENTRIES);
 
@@ -544,12 +538,11 @@ public class SiteSettingsPreferencesTest {
     /**
      * Tests that {@link SingleWebsitePreferences#resetSite} doesn't crash
      * (see e.g. the crash on host names in issue 600232).
-     * @throws Exception
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    public void testResetDoesntCrash() throws Exception {
+    public void testResetDoesntCrash() {
         WebsiteAddress address = WebsiteAddress.create("example.com");
         resetSite(address);
     }

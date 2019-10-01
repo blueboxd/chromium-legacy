@@ -340,9 +340,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
       extensions::ScopedTestDialogAutoConfirm::ACCEPT);
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(browser()->profile());
-  EXPECT_TRUE(
-      registry->GetExtensionById(extension_ids_["enabled_extension"],
-                                 extensions::ExtensionRegistry::ENABLED));
+  EXPECT_TRUE(registry->enabled_extensions().GetByID(
+      extension_ids_["enabled_extension"]));
 
   // Ensure that all actions are allowed.
   extensions::ExtensionSystem::Get(
@@ -353,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
   // The last thing the test does is uninstall the "enabled_extension".
   EXPECT_FALSE(
       registry->GetExtensionById(extension_ids_["enabled_extension"],
-                                 extensions::ExtensionRegistry::COMPATIBILITY));
+                                 extensions::ExtensionRegistry::EVERYTHING));
 }
 
 // Fails often on Windows dbg bots. http://crbug.com/177163
@@ -368,9 +367,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
   LoadExtensions();
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(browser()->profile());
-  EXPECT_TRUE(
-      registry->GetExtensionById(extension_ids_["enabled_extension"],
-                                 extensions::ExtensionRegistry::ENABLED));
+  EXPECT_TRUE(registry->enabled_extensions().GetByID(
+      extension_ids_["enabled_extension"]));
 
   // Prohibit status changes.
   extensions::ManagementPolicy* policy = extensions::ExtensionSystem::Get(
@@ -410,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   UninstallExtension(app_id);
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
   ASSERT_FALSE(registry->GetExtensionById(
-      app_id, extensions::ExtensionRegistry::COMPATIBILITY));
+      app_id, extensions::ExtensionRegistry::EVERYTHING));
 
   // Set a pref indicating that the user wants to launch in a regular tab.
   // This should be ignored, because panel apps always load in a popup.
@@ -468,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_LaunchTabApp) {
   UninstallExtension(app_id);
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
   ASSERT_FALSE(registry->GetExtensionById(
-      app_id, extensions::ExtensionRegistry::COMPATIBILITY));
+      app_id, extensions::ExtensionRegistry::EVERYTHING));
 
   // Set a pref indicating that the user wants to launch in a window.
   extensions::SetLaunchType(browser()->profile(), app_id,

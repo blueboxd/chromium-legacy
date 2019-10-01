@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/base/address_list.h"
@@ -22,6 +23,49 @@
 #include "net/dns/mapped_host_resolver.h"
 
 namespace net {
+
+namespace {
+
+class FailingRequestImpl : public HostResolver::ResolveHostRequest {
+ public:
+  explicit FailingRequestImpl(int error) : error_(error) {}
+  ~FailingRequestImpl() override = default;
+
+  int Start(CompletionOnceCallback callback) override { return error_; }
+
+  const base::Optional<AddressList>& GetAddressResults() const override {
+    static base::NoDestructor<base::Optional<AddressList>> nullopt_result;
+    return *nullopt_result;
+  }
+
+  const base::Optional<std::vector<std::string>>& GetTextResults()
+      const override {
+    static const base::NoDestructor<base::Optional<std::vector<std::string>>>
+        nullopt_result;
+    return *nullopt_result;
+  }
+
+  const base::Optional<std::vector<HostPortPair>>& GetHostnameResults()
+      const override {
+    static const base::NoDestructor<base::Optional<std::vector<HostPortPair>>>
+        nullopt_result;
+    return *nullopt_result;
+  }
+
+  const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
+      const override {
+    static const base::NoDestructor<base::Optional<HostCache::EntryStaleness>>
+        nullopt_result;
+    return *nullopt_result;
+  }
+
+ private:
+  const int error_;
+
+  DISALLOW_COPY_AND_ASSIGN(FailingRequestImpl);
+};
+
+}  // namespace
 
 const size_t HostResolver::ManagerOptions::kDefaultRetryAttempts =
     static_cast<size_t>(-1);
@@ -170,5 +214,11 @@ HostResolverFlags HostResolver::ParametersToHostResolverFlags(
 }
 
 HostResolver::HostResolver() = default;
+
+// static
+std::unique_ptr<HostResolver::ResolveHostRequest>
+HostResolver::CreateFailingRequest(int error) {
+  return std::make_unique<FailingRequestImpl>(error);
+}
 
 }  // namespace net

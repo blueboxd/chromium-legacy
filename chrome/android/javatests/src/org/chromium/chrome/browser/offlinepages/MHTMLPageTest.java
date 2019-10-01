@@ -99,13 +99,13 @@ public class MHTMLPageTest implements CustomMainActivityStart {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         deleteTestFiles();
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
         deleteTestFiles();
     }
@@ -160,7 +160,7 @@ public class MHTMLPageTest implements CustomMainActivityStart {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testLoadMultipartRelatedPageFromLocalFile() throws Exception {
+    public void testLoadMultipartRelatedPageFromLocalFile() {
         // .mhtml file is mapped to "multipart/related" by the test server.
         String url = UrlUtils.getIsolatedTestFileUrl("chrome/test/data/android/hello.mhtml");
         mDownloadTestRule.loadUrl(url);
@@ -169,7 +169,7 @@ public class MHTMLPageTest implements CustomMainActivityStart {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testLoadMessageRfc822PageFromLocalFile() throws Exception {
+    public void testLoadMessageRfc822PageFromLocalFile() {
         // .mht file is mapped to "message/rfc822" by the test server.
         String url = UrlUtils.getIsolatedTestFileUrl("chrome/test/data/android/test.mht");
         mDownloadTestRule.loadUrl(url);

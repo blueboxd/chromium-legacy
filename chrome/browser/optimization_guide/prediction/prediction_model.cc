@@ -12,6 +12,10 @@ std::unique_ptr<PredictionModel> PredictionModel::Create(
     std::unique_ptr<optimization_guide::proto::PredictionModel>
         prediction_model,
     const base::flat_set<std::string>& host_model_features) {
+  // TODO(crbug/1009123): Add a histogram to record if the provided model is
+  // constructed successfully or not.
+  // TODO(crbug/1009123): Adding timing metrics around initialization due to
+  // potential validation overhead.
   if (!prediction_model->has_model())
     return nullptr;
 
@@ -44,13 +48,21 @@ std::unique_ptr<PredictionModel> PredictionModel::Create(
       return nullptr;
   }
 
+  std::unique_ptr<PredictionModel> model;
   // The Decision Tree model type is currently the only supported model type.
-  if (prediction_model->model_info().supported_model_types(0) ==
+  if (prediction_model->model_info().supported_model_types(0) !=
       optimization_guide::proto::ModelType::MODEL_TYPE_DECISION_TREE) {
-    return std::make_unique<DecisionTreePredictionModel>(
-        std::move(prediction_model), host_model_features);
+    return nullptr;
   }
-  return nullptr;
+  model = std::make_unique<DecisionTreePredictionModel>(
+      std::move(prediction_model), host_model_features);
+
+  // Any constructed model must be validated for correctness according to its
+  // model type before being returned.
+  if (!model->ValidatePredictionModel())
+    return nullptr;
+
+  return model;
 }
 
 PredictionModel::PredictionModel(
@@ -70,6 +82,8 @@ PredictionModel::PredictionModel(
   // Insert all the host model features for the owned |model_|.
   for (const auto& host_model_feature : host_model_features)
     model_features_.emplace(host_model_feature);
+  model_ = std::make_unique<optimization_guide::proto::Model>(
+      prediction_model->model());
 }
 
 int64_t PredictionModel::GetVersion() const {

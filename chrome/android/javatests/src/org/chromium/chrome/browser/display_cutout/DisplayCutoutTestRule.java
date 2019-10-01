@@ -163,7 +163,7 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
         }, description);
     }
 
-    protected String getTestURL() throws Exception {
+    protected String getTestURL() {
         if (mTestServer == null) {
             mTestServer = EmbeddedTestServer.createAndStartServer(
                     InstrumentationRegistry.getInstrumentation().getContext());
@@ -171,7 +171,7 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
         return mTestServer.getURL(DEFAULT_TEST_PAGE);
     }
 
-    protected void setUp() throws Exception {
+    protected void setUp() {
         mTab = getActivity().getActivityTab();
         mTestController = new TestDisplayCutoutController(mTab);
         TestThreadUtils.runOnUiThreadBlocking(
@@ -182,7 +182,7 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
         mTab.addObserver(observer);
     }
 
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
@@ -202,12 +202,12 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
     }
 
     /** Enter fullscreen and wait for the tab to go fullscreen. */
-    public void enterFullscreen() throws InterruptedException, TimeoutException {
+    public void enterFullscreen() throws TimeoutException {
         enterFullscreenUsingButton("fullscreen");
     }
 
     /** Exit fullscreen and wait for the tab to exit fullscreen. */
-    public void exitFullscreen() throws InterruptedException, TimeoutException {
+    public void exitFullscreen() {
         JavaScriptUtils.executeJavaScript(mTab.getWebContents(), "document.webkitExitFullscreen()");
 
         CriteriaHelper.pollUiThread(Criteria.equals(false, () -> mIsTabFullscreen), TEST_TIMEOUT,
@@ -236,22 +236,22 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
     }
 
     /** Enter fullscreen on the subframe and wait for the tab to go fullscreen. */
-    public void enterFullscreenOnSubframe() throws InterruptedException, TimeoutException {
+    public void enterFullscreenOnSubframe() throws TimeoutException {
         enterFullscreenUsingButton("subframefull");
     }
 
     /** Get the applied safe areas from the main frame. */
-    public Rect getAppliedSafeArea() throws InterruptedException, TimeoutException {
+    public Rect getAppliedSafeArea() throws TimeoutException {
         return getSafeAreaUsingJavaScript("getSafeAreas()");
     }
 
     /** Get the applied safe areas from the child frame. */
-    public Rect getAppliedSafeAreaOnSubframe() throws InterruptedException, TimeoutException {
+    public Rect getAppliedSafeAreaOnSubframe() throws TimeoutException {
         return getSafeAreaUsingJavaScript("frameWindow.getSafeAreas()");
     }
 
     /** Set the viewport-fit meta tag on the main frame. */
-    public void setViewportFit(String value) throws InterruptedException, TimeoutException {
+    public void setViewportFit(String value) throws TimeoutException {
         JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 mTab.getWebContents(), "setViewportFit('" + value + "')");
     }
@@ -262,8 +262,7 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
     }
 
     /** Get the safe area using JS and parse the JSON result to a Rect. */
-    private Rect getSafeAreaUsingJavaScript(String code)
-            throws InterruptedException, TimeoutException {
+    private Rect getSafeAreaUsingJavaScript(String code) throws TimeoutException {
         try {
             String result =
                     JavaScriptUtils.executeJavaScriptAndWaitForResult(mTab.getWebContents(), code);
@@ -280,8 +279,7 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
     /**
      * Enter fullscreen by clicking on the supplied button and wait for the tab to go fullscreen.
      */
-    private void enterFullscreenUsingButton(String id)
-            throws InterruptedException, TimeoutException {
+    private void enterFullscreenUsingButton(String id) throws TimeoutException {
         Assert.assertTrue(DOMUtils.clickNode(mTab.getWebContents(), id));
 
         CriteriaHelper.pollUiThread(Criteria.equals(true, () -> mIsTabFullscreen), TEST_TIMEOUT,

@@ -20,7 +20,6 @@
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_settings_manager_impl.h"
 #include "chromeos/services/assistant/chromium_api_delegate.h"
-#include "chromeos/services/assistant/platform_api_impl.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/public/conversation_state_listener.h"
@@ -53,7 +52,9 @@ namespace chromeos {
 namespace assistant {
 
 class AssistantMediaSession;
+class CrosPlatformApi;
 class ServiceContext;
+class AssistantManagerServiceDelegate;
 
 // Enumeration of Assistant query response type, also recorded in histograms.
 // These values are persisted to logs. Entries should not be renumbered and
@@ -83,7 +84,7 @@ enum class AssistantQueryResponseType {
 // Since LibAssistant is a standalone library, all callbacks come from it
 // running on threads not owned by Chrome. Thus we need to post the callbacks
 // onto the main thread.
-class AssistantManagerServiceImpl
+class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
     : public AssistantManagerService,
       public ::chromeos::assistant::action::AssistantActionObserver,
       public AssistantEventObserver,
@@ -97,8 +98,8 @@ class AssistantManagerServiceImpl
   // |service| owns this class and must outlive this class.
   AssistantManagerServiceImpl(
       mojom::Client* client,
-      mojo::PendingRemote<device::mojom::BatteryMonitor> battery_monitor,
       ServiceContext* context,
+      std::unique_ptr<AssistantManagerServiceDelegate> delegate,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           url_loader_factory_info,
       bool is_signed_out_mode);
@@ -222,6 +223,10 @@ class AssistantManagerServiceImpl
   void UpdateInternalMediaPlayerStatus(
       media_session::mojom::MediaSessionAction action);
 
+  // The start runs in the background. This will wait until the background
+  // thread is finished.
+  void WaitUntilStartIsFinishedForTesting();
+
  private:
   void StartAssistantInternal(const base::Optional<std::string>& access_token);
   void PostInitAssistant(base::OnceClosure post_init_callback);
@@ -309,10 +314,13 @@ class AssistantManagerServiceImpl
   mojom::DeviceActions* device_actions();
   scoped_refptr<base::SequencedTaskRunner> main_task_runner();
 
+  bool HasStartFinished() const;
+  void SetStartFinished();
+
   mojom::Client* const client_;
   State state_ = State::STOPPED;
   std::unique_ptr<AssistantMediaSession> media_session_;
-  std::unique_ptr<PlatformApiImpl> platform_api_;
+  std::unique_ptr<CrosPlatformApi> platform_api_;
   std::unique_ptr<action::CrosActionModule> action_module_;
   ChromiumApiDelegate chromium_api_delegate_;
   // NOTE: |display_connection_| is used by |assistant_manager_| and must be
@@ -324,11 +332,14 @@ class AssistantManagerServiceImpl
   std::unique_ptr<CrosDisplayConnection> new_display_connection_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;
   std::unique_ptr<AssistantSettingsManagerImpl> assistant_settings_manager_;
-  // |new_asssistant_manager_| is created on |background_thread_| then posted to
+  // |new_assistant_manager_| is created on |background_thread_| then posted to
   // main thread to finish initialization then move to |assistant_manager_|.
   std::unique_ptr<assistant_client::AssistantManager> new_assistant_manager_;
+  // Same ownership as |new_assistant_manager_|.
+  assistant_client::AssistantManagerInternal* new_assistant_manager_internal_ =
+      nullptr;
   base::Lock new_assistant_manager_lock_;
-  // same ownership as assistant_manager_.
+  // same ownership as |assistant_manager_|.
   assistant_client::AssistantManagerInternal* assistant_manager_internal_ =
       nullptr;
   mojo::RemoteSet<mojom::AssistantInteractionSubscriber>
@@ -337,6 +348,8 @@ class AssistantManagerServiceImpl
 
   // Owned by the parent |Service| which will destroy |this| before |context_|.
   ServiceContext* const context_;
+
+  std::unique_ptr<AssistantManagerServiceDelegate> delegate_;
 
   bool spoken_feedback_enabled_ = false;
 
@@ -371,8 +384,6 @@ class AssistantManagerServiceImpl
 
   base::UnguessableToken media_session_audio_focus_id_ =
       base::UnguessableToken::Null();
-
-  bool start_finished_ = false;
 
   mojo::Binding<mojom::AppListEventSubscriber> app_list_subscriber_binding_;
 

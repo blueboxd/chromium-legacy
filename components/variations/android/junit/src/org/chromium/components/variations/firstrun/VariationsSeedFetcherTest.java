@@ -143,7 +143,7 @@ public class VariationsSeedFetcherTest {
      * Test method for {@link VariationsSeedFetcher#getConnectionString()} has URl params.
      */
     @Test
-    public void testGetConnectionString_HasParams() throws IOException {
+    public void testGetConnectionString_HasParams() {
         String urlString = mFetcher.getConnectionString(
                 VariationsSeedFetcher.VariationsPlatform.ANDROID, sRestrict, sMilestone, sChannel);
 

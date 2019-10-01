@@ -71,12 +71,12 @@ public class CustomTabFromChromeExternalNavigationTest {
         });
     }
 
-    private void startCustomTabFromChrome(String url) throws InterruptedException {
+    private void startCustomTabFromChrome(String url) {
         Intent intent = getCustomTabFromChromeIntent(url, true);
         mActivityRule.startCustomTabActivityWithIntent(intent);
     }
 
-    private void startPaymentRequestUIFromChrome(String url) throws InterruptedException {
+    private void startPaymentRequestUIFromChrome(String url) {
         Intent intent = getCustomTabFromChromeIntent(url, false);
         CustomTabIntentDataProvider.addPaymentRequestUIExtras(intent);
 
@@ -87,7 +87,7 @@ public class CustomTabFromChromeExternalNavigationTest {
     @Test
     @Feature("CustomTabFromChrome")
     @MediumTest
-    public void testUsingStandardExternalNavigationHandler() throws Exception {
+    public void testUsingStandardExternalNavigationHandler() {
         startCustomTabFromChrome("about:blank");
 
         Tab tab = mActivityRule.getActivity().getActivityTab();
@@ -105,7 +105,7 @@ public class CustomTabFromChromeExternalNavigationTest {
     @DisableIf.Build(message = "Flaky on K, https://crbug.com/962974",
             sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     public void
-    testIntentWithRedirectToApp() throws Exception {
+    testIntentWithRedirectToApp() {
         final String redirectUrl = "https://maps.google.com/maps?q=1600+amphitheatre+parkway";
         final String initialUrl =
                 mServerRule.getServer().getURL("/chrome/test/data/android/redirect/js_redirect.html"

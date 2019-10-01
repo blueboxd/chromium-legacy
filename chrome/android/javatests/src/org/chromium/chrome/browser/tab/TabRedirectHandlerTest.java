@@ -53,7 +53,7 @@ public class TabRedirectHandlerTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         CommandLine.init(new String[0]);
         ContextUtils.initApplicationContextForTests(new TestContext());
     }

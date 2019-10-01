@@ -60,7 +60,7 @@ import java.util.concurrent.TimeoutException;
 
     @Test
     @SmallTest
-    public void testPasswordSheetIsAvailable() throws InterruptedException {
+    public void testPasswordSheetIsAvailable() {
         mHelper.loadTestPage(false);
 
         CriteriaHelper.pollUiThread(() -> {
@@ -71,8 +71,7 @@ import java.util.concurrent.TimeoutException;
     @Test
     @SmallTest
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/958631")
-    public void testPasswordSheetDisplaysProvidedItems()
-            throws InterruptedException, TimeoutException {
+    public void testPasswordSheetDisplaysProvidedItems() throws TimeoutException {
         mHelper.loadTestPage(false);
         mHelper.cacheCredentials("mayapark@gmail.com", "SomeHiddenPassword");
 
@@ -88,7 +87,7 @@ import java.util.concurrent.TimeoutException;
 
     @Test
     @SmallTest
-    public void testPasswordSheetDisplaysOptions() throws InterruptedException, TimeoutException {
+    public void testPasswordSheetDisplaysOptions() throws TimeoutException {
         mHelper.loadTestPage(false);
 
         // Focus the field to bring up the accessory.
@@ -103,7 +102,7 @@ import java.util.concurrent.TimeoutException;
 
     @Test
     @SmallTest
-    public void testFillsPasswordOnTap() throws InterruptedException, TimeoutException {
+    public void testFillsPasswordOnTap() throws TimeoutException {
         mHelper.loadTestPage(false);
         mHelper.cacheCredentials("mpark@abc.com", "ShorterPassword");
 
@@ -123,8 +122,7 @@ import java.util.concurrent.TimeoutException;
 
     @Test
     @SmallTest
-    public void testDisplaysEmptyStateMessageWithoutSavedPasswords()
-            throws InterruptedException, TimeoutException {
+    public void testDisplaysEmptyStateMessageWithoutSavedPasswords() throws TimeoutException {
         mHelper.loadTestPage(false);
 
         // Focus the field to bring up the accessory.

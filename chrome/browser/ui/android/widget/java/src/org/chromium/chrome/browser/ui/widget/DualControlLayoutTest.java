@@ -49,7 +49,7 @@ public class DualControlLayoutTest {
     public UiThreadTestRule mRule = new UiThreadTestRule();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mContext = InstrumentationRegistry.getTargetContext();
         mTinyControlWidth = INFOBAR_WIDTH / 4;
     }

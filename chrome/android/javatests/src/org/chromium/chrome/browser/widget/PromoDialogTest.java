@@ -49,7 +49,7 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
             mDialogParams = dialogParams;
             dialog = TestThreadUtils.runOnUiThreadBlocking(new Callable<PromoDialog>() {
                 @Override
-                public PromoDialog call() throws Exception {
+                public PromoDialog call() {
                     PromoDialog dialog = new PromoDialog(activity) {
                         @Override
                         public DialogParams getDialogParams() {
@@ -74,7 +74,7 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
             });
             dialogLayout = TestThreadUtils.runOnUiThreadBlocking(new Callable<PromoDialogLayout>() {
                 @Override
-                public PromoDialogLayout call() throws Exception {
+                public PromoDialogLayout call() {
                     PromoDialogLayout promoDialogLayout =
                             (PromoDialogLayout) dialog.getWindow().getDecorView().findViewById(
                                     R.id.promo_dialog_layout);

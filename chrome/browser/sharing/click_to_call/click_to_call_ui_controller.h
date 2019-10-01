@@ -54,12 +54,12 @@ class ClickToCallUiController
   int GetHeaderImageId() const override;
   std::unique_ptr<views::StyledLabel> GetHelpTextLabel(
       views::StyledLabelListener* listener) override;
+  void OnDialogShown(bool has_devices, bool has_apps) override;
 
  protected:
   explicit ClickToCallUiController(content::WebContents* web_contents);
 
   // Overridden from SharingUiController:
-  SharingDialog* DoShowDialog(BrowserWindow* window) override;
   void DoUpdateApps(UpdateAppsCallback callback) override;
 
  private:

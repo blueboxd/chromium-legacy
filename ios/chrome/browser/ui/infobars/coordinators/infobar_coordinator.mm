@@ -134,6 +134,9 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
                    weakSelf.bannerWasPresented = YES;
                    weakSelf.infobarBannerState =
                        InfobarBannerPresentationState::Presented;
+                   [weakSelf.badgeDelegate
+                       infobarBannerWasPresented:self.infobarType
+                                     forWebState:self.webState];
                    [weakSelf infobarBannerWasPresented];
                    if (completion)
                      completion();

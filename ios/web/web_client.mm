@@ -44,6 +44,15 @@ bool WebClient::IsAppSpecificURL(const GURL& url) const {
   return false;
 }
 
+bool WebClient::ShouldBlockUrlDuringRestore(const GURL& url,
+                                            WebState* web_state) const {
+  return false;
+}
+
+void WebClient::AddSerializableData(
+    web::SerializableUserDataManager* user_data_manager,
+    web::WebState* web_state) {}
+
 base::string16 WebClient::GetPluginNotSupportedText() const {
   return base::string16();
 }

@@ -224,7 +224,7 @@ source_set("webp_decoder_unit_test") {
     "//media:test_support",
     "//media/parsers",
     "//testing/gtest",
-    "//third_party/libwebp:libwebp_webp",
+    "//third_party/libwebp",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
   ]

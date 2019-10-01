@@ -180,7 +180,7 @@ public class PrefetchBackgroundTaskTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mScheduler = new TestBackgroundTaskScheduler();
             BackgroundTaskSchedulerFactory.setSchedulerForTesting(mScheduler);

@@ -75,7 +75,7 @@ public class AddressAccessoryIntegrationTest {
     }
 
     private void loadTestPage(ChromeWindow.KeyboardVisibilityDelegateFactory keyboardDelegate)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         mHelper.loadTestPage("/chrome/test/data/autofill/autofill_test_form.html", false, false,
                 keyboardDelegate);
         new AutofillTestHelper().setProfile(new AutofillProfile("", "https://www.example.com",
@@ -87,7 +87,7 @@ public class AddressAccessoryIntegrationTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
-    public void testAddressSheetIsAvailable() throws InterruptedException {
+    public void testAddressSheetIsAvailable() {
         mHelper.loadTestPage(false);
 
         CriteriaHelper.pollUiThread(() -> {
@@ -98,7 +98,7 @@ public class AddressAccessoryIntegrationTest {
     @Test
     @SmallTest
     @DisableFeatures({ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
-    public void testAddressSheetUnavailableWithoutFeature() throws InterruptedException {
+    public void testAddressSheetUnavailableWithoutFeature() {
         mHelper.loadTestPage(false);
 
         Assert.assertNull("Address sheet should not have been created.",
@@ -108,8 +108,7 @@ public class AddressAccessoryIntegrationTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
-    public void testDisplaysEmptyStateMessageWithoutSavedPasswords()
-            throws InterruptedException, TimeoutException {
+    public void testDisplaysEmptyStateMessageWithoutSavedPasswords() throws TimeoutException {
         mHelper.loadTestPage(false);
 
         // Focus the field to bring up the accessory.
@@ -128,7 +127,7 @@ public class AddressAccessoryIntegrationTest {
     @Test
     @MediumTest
     @EnableFeatures({ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
-    public void testFillsSuggestionOnClick() throws InterruptedException, TimeoutException {
+    public void testFillsSuggestionOnClick() throws TimeoutException {
         loadTestPage(FakeKeyboard::new);
         mHelper.clickNodeAndShowKeyboard("NAME_FIRST");
         mHelper.waitForKeyboardAccessoryToBeShown(true);

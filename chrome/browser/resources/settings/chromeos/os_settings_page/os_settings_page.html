@@ -136,14 +136,14 @@
           <settings-bluetooth-page prefs="{{prefs}}">
           </settings-bluetooth-page>
         </settings-section>
-        <template is="dom-if" if="[[!isGuestMode_]]">
+        <template is="dom-if" if="[[!isGuestMode_]]" restamp>
           <settings-section page-title="$i18n{multidevicePageTitle}"
               section="multidevice">
             <settings-multidevice-page prefs="{{prefs}}">
             </settings-multidevice-page>
           </settings-section>
         </template>
-        <template is="dom-if" if="[[!isGuestMode_]]">
+        <template is="dom-if" if="[[!isGuestMode_]]" restamp>
           <settings-section page-title="$i18n{peoplePageTitle}"
               section="people">
             <os-settings-people-page prefs="{{prefs}}"
@@ -157,7 +157,7 @@
               show-crostini="[[showCrostini]]">
           </settings-device-page>
         </settings-section>
-        <template is="dom-if" if="[[!isGuestMode_]]">
+        <template is="dom-if" if="[[!isGuestMode_]]" restamp>
           <settings-section page-title="$i18n{personalizationPageTitle}"
               section="personalization">
             <settings-personalization-page></settings-personalization-page>

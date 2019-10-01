@@ -14,10 +14,6 @@ class WebContents;
 
 namespace send_tab_to_self {
 
-// Returns true if the send-tab-to-self' and 'send-tab-to-self-show-sending-ui'
-// flags are enabled.
-bool IsSendingEnabled();
-
 // Returns true if the SendTabToSelf sync datatype is active.
 bool IsUserSyncTypeActive(Profile* profile);
 
@@ -28,7 +24,7 @@ bool HasValidTargetDevice(Profile* profile);
 //  User is viewing an HTTP or HTTPS page.
 //  User is not on a native page.
 //  User is not in Incongnito mode.
-bool IsContentRequirementsMet(const GURL& gurl, Profile* profile);
+bool AreContentRequirementsMet(const GURL& gurl, Profile* profile);
 
 // Returns true if the feature should be offered in menus.
 bool ShouldOfferFeature(content::WebContents* web_contents);

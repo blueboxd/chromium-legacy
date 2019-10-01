@@ -119,7 +119,7 @@ ServiceWorkerStorage::~ServiceWorkerStorage() {
 // static
 std::unique_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
     const base::FilePath& user_data_directory,
-    const base::WeakPtr<ServiceWorkerContextCore>& context,
+    ServiceWorkerContextCore* context,
     scoped_refptr<base::SequencedTaskRunner> database_task_runner,
     storage::QuotaManagerProxy* quota_manager_proxy,
     storage::SpecialStoragePolicy* special_storage_policy) {
@@ -130,7 +130,7 @@ std::unique_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
 
 // static
 std::unique_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
-    const base::WeakPtr<ServiceWorkerContextCore>& context,
+    ServiceWorkerContextCore* context,
     ServiceWorkerStorage* old_storage) {
   return base::WrapUnique(
       new ServiceWorkerStorage(old_storage->user_data_directory_, context,
@@ -1148,7 +1148,7 @@ void ServiceWorkerStorage::PurgeResources(const ResourceList& resources) {
 
 ServiceWorkerStorage::ServiceWorkerStorage(
     const base::FilePath& user_data_directory,
-    base::WeakPtr<ServiceWorkerContextCore> context,
+    ServiceWorkerContextCore* context,
     scoped_refptr<base::SequencedTaskRunner> database_task_runner,
     storage::QuotaManagerProxy* quota_manager_proxy,
     storage::SpecialStoragePolicy* special_storage_policy)
@@ -1636,8 +1636,8 @@ ServiceWorkerStorage::GetOrCreateRegistration(
 
   blink::mojom::ServiceWorkerRegistrationOptions options(
       data.scope, data.script_type, data.update_via_cache);
-  registration =
-      new ServiceWorkerRegistration(options, data.registration_id, context_);
+  registration = new ServiceWorkerRegistration(options, data.registration_id,
+                                               context_->AsWeakPtr());
   registration->set_resources_total_size_bytes(data.resources_total_size_bytes);
   registration->set_last_update_check(data.last_update_check);
   DCHECK(uninstalling_registrations_.find(data.registration_id) ==
@@ -1648,7 +1648,7 @@ ServiceWorkerStorage::GetOrCreateRegistration(
   if (!version) {
     version = base::MakeRefCounted<ServiceWorkerVersion>(
         registration.get(), data.script, data.script_type, data.version_id,
-        context_);
+        context_->AsWeakPtr());
     version->set_fetch_handler_existence(
         data.has_fetch_handler
             ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS

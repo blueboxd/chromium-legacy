@@ -43,7 +43,7 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest implements MainActi
             "payment_request_can_make_payment_query_bobpay_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {}
+    public void onMainActivityStarted() {}
 
     @Before
     public void setUp() {
@@ -71,7 +71,7 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest implements MainActi
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNoInstrumentsInFastBobPay() throws InterruptedException, TimeoutException {
+    public void testNoInstrumentsInFastBobPay() throws TimeoutException {
         mPaymentRequestTestRule.installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
 
         // canMakePayment returns true for BobPay and false for AlicePay.
@@ -89,7 +89,7 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest implements MainActi
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNoInstrumentsInSlowBobPay() throws InterruptedException, TimeoutException {
+    public void testNoInstrumentsInSlowBobPay() throws TimeoutException {
         // Install BobPay.
         mPaymentRequestTestRule.installPaymentApp(NO_INSTRUMENTS, DELAYED_RESPONSE);
 
@@ -108,7 +108,7 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest implements MainActi
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPayViaFastBobPay() throws InterruptedException, TimeoutException {
+    public void testPayViaFastBobPay() throws TimeoutException {
         // Install BobPay.
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
 
@@ -126,7 +126,7 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest implements MainActi
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPayViaSlowBobPay() throws InterruptedException, TimeoutException {
+    public void testPayViaSlowBobPay() throws TimeoutException {
         // Install BobPay.
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, DELAYED_RESPONSE);
 

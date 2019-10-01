@@ -45,7 +45,7 @@ public class RouterTest {
      * @see MojoTestCase#setUp()
      */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         Core core = CoreImpl.getInstance();
         Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
         mHandle = handles.first;

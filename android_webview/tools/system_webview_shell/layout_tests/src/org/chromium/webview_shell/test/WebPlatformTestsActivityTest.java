@@ -52,7 +52,7 @@ public class WebPlatformTestsActivityTest {
             new ActivityTestRule<>(WebPlatformTestsActivity.class, false, true);
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mTestActivity = mActivityTestRule.getActivity();
     }
 

@@ -450,6 +450,7 @@
     "location": "policy",
     "platforms": ["chromeos"],
     "whitelist": [
+      "7FE4A999359A456C4B0FB7B7AD85CEA29CA50519",  // Login screen APIs test extension
       "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE",  // Imprivata (login screen)
       "4DBFC1C52D6660DD90791976DF7FEF7B3D360509",  // Imprivata (login screen) DEV
       "A24DE1B21A67E25FB62AC8491642038FE25DA75B",  // Imprivata (in session)
@@ -474,7 +475,7 @@
     "location": "policy",
     "platforms": ["chromeos"],
     "whitelist": [
-      "7FE4A999359A456C4B0FB7B7AD85CEA29CA50519", // chrome.loginScreenUi test extension
+      "7FE4A999359A456C4B0FB7B7AD85CEA29CA50519", // Login screen APIs test extension
       "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE", // Imprivata (login screen)
       "4DBFC1C52D6660DD90791976DF7FEF7B3D360509"  // Imprivata (login screen) DEV
     ]

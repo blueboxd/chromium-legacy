@@ -63,10 +63,10 @@ class NativeAppWindowCocoaBrowserTest : public PlatformAppBrowserTest {
           content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
           content::NotificationService::AllSources());
       apps::LaunchService::Get(profile())->OpenApplication(
-          AppLaunchParams(profile(), app_->id(),
-                          apps::mojom::LaunchContainer::kLaunchContainerNone,
-                          WindowOpenDisposition::NEW_WINDOW,
-                          apps::mojom::AppLaunchSource::kSourceTest));
+          apps::AppLaunchParams(
+              app_->id(), apps::mojom::LaunchContainer::kLaunchContainerNone,
+              WindowOpenDisposition::NEW_WINDOW,
+              apps::mojom::AppLaunchSource::kSourceTest));
       app_loaded_observer.Wait();
     }
   }

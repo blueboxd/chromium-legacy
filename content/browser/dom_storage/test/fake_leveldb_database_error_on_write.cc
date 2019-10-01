@@ -5,6 +5,7 @@
 #include "content/browser/dom_storage/test/fake_leveldb_database_error_on_write.h"
 
 #include "base/callback.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 
 namespace content {
 namespace test {
@@ -18,7 +19,9 @@ FakeLevelDBDatabaseErrorOnWrite::~FakeLevelDBDatabaseErrorOnWrite() = default;
 void FakeLevelDBDatabaseErrorOnWrite::Write(
     std::vector<leveldb::mojom::BatchedOperationPtr> operations,
     WriteCallback callback) {
-  std::move(callback).Run(leveldb::mojom::DatabaseError::IO_ERROR);
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                leveldb::mojom::DatabaseError::IO_ERROR));
 }
 
 }  // namespace test

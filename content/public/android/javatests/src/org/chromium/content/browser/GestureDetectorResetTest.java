@@ -75,7 +75,7 @@ public class GestureDetectorResetTest {
     }
 
     private void verifyClicksAreRegistered(String disambiguation, WebContents webContents)
-            throws InterruptedException, Exception, Throwable {
+            throws Exception, Throwable {
         // Initially the text on the page should say "not clicked".
         CriteriaHelper.pollInstrumentationThread(
                 new NodeContentsIsEqualToCriteria("The page contents is invalid " + disambiguation,

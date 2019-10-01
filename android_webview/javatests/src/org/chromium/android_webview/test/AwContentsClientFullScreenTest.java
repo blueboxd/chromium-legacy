@@ -61,7 +61,7 @@ public class AwContentsClientFullScreenTest {
     private AwTestContainerView mTestContainerView;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mContentsClient = new FullScreenVideoTestAwContentsClient(
                 mActivityTestRule.getActivity(), mActivityTestRule.isHardwareAcceleratedTest());
         mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
@@ -345,7 +345,7 @@ public class AwContentsClientFullScreenTest {
                 mTestContainerView.getWebContents(), CUSTOM_PLAY_CONTROL_ID);
     }
 
-    private void waitUntilHaveEnoughDataForPlay() throws Exception {
+    private void waitUntilHaveEnoughDataForPlay() {
         // crbug.com/936757: you are expected to wait before media playback is ready.
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
@@ -392,7 +392,7 @@ public class AwContentsClientFullScreenTest {
                     return getKeepScreenOnOnInstrumentationThread(view) == expected
                             && DOMUtils.isMediaPaused(getWebContentsOnUiThread(), VIDEO_ID)
                             != expected;
-                } catch (InterruptedException | TimeoutException e) {
+                } catch (TimeoutException e) {
                     Assert.fail(e.getMessage());
                     return false;
                 }
@@ -446,7 +446,7 @@ public class AwContentsClientFullScreenTest {
             public boolean isSatisfied() {
                 try {
                     return DOMUtils.isFullscreen(getWebContentsOnUiThread());
-                } catch (InterruptedException | TimeoutException e) {
+                } catch (TimeoutException e) {
                     Assert.fail(e.getMessage());
                     return false;
                 }
@@ -461,7 +461,7 @@ public class AwContentsClientFullScreenTest {
             public boolean isSatisfied() {
                 try {
                     return !DOMUtils.isFullscreen(getWebContentsOnUiThread());
-                } catch (InterruptedException | TimeoutException e) {
+                } catch (TimeoutException e) {
                     Assert.fail(e.getMessage());
                     return false;
                 }
@@ -470,7 +470,7 @@ public class AwContentsClientFullScreenTest {
         // TODO: Test that inline video is actually displayed.
     }
 
-    private JavascriptEventObserver registerObserver(final String observerName) throws Throwable {
+    private JavascriptEventObserver registerObserver(final String observerName) {
         final JavascriptEventObserver observer = new JavascriptEventObserver();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
                 () -> observer.register(mTestContainerView.getWebContents(), observerName));

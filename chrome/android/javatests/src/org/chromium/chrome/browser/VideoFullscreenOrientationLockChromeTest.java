@@ -50,8 +50,7 @@ public class VideoFullscreenOrientationLockChromeTest {
         return mActivityTestRule.getActivity().getCurrentWebContents();
     }
 
-    private void waitForContentsFullscreenState(boolean fullscreenValue)
-            throws InterruptedException {
+    private void waitForContentsFullscreenState(boolean fullscreenValue) {
         CriteriaHelper.pollInstrumentationThread(
                 Criteria.equals(fullscreenValue, () -> DOMUtils.isFullscreen(getWebContents())));
     }
@@ -61,7 +60,7 @@ public class VideoFullscreenOrientationLockChromeTest {
                 != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
     }
 
-    private boolean isScreenOrientationLandscape() throws InterruptedException, TimeoutException {
+    private boolean isScreenOrientationLandscape() throws TimeoutException {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
         sb.append("  return  screen.orientation.type.startsWith('landscape');");
@@ -71,14 +70,12 @@ public class VideoFullscreenOrientationLockChromeTest {
                 .equals("true");
     }
 
-    private void waitUntilLockedToLandscape() throws InterruptedException {
+    private void waitUntilLockedToLandscape() {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
                     return isScreenOrientationLocked() && isScreenOrientationLandscape();
-                } catch (InterruptedException e) {
-                    return false;
                 } catch (TimeoutException e) {
                     return false;
                 }
@@ -86,7 +83,7 @@ public class VideoFullscreenOrientationLockChromeTest {
         });
     }
 
-    private void waitUntilUnlocked() throws InterruptedException {
+    private void waitUntilUnlocked() {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -96,7 +93,7 @@ public class VideoFullscreenOrientationLockChromeTest {
     }
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         mActivityTestRule.startMainActivityWithURL(UrlUtils.getIsolatedTestFileUrl(TEST_URL));
     }
 

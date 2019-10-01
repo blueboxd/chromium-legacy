@@ -47,7 +47,7 @@ public class UkmTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> UmaSessionStats.unSetMetricsAndCrashReportingForTesting());
     }

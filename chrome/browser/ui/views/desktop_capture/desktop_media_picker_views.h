@@ -20,6 +20,8 @@ class TabbedPane;
 class DesktopMediaPickerViews;
 
 // Dialog view used for DesktopMediaPickerViews.
+//
+// TODO(crbug.com/987001): Consider renaming this class.
 class DesktopMediaPickerDialogView : public views::DialogDelegateView,
                                      public views::TabbedPaneListener {
  public:
@@ -83,6 +85,10 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
 };
 
 // Implementation of DesktopMediaPicker for Views.
+//
+// TODO(crbug.com/987001): Rename this class.  Consider merging with
+// DesktopMediaPickerController and naming the merged class just
+// DesktopMediaPicker.
 class DesktopMediaPickerViews : public DesktopMediaPicker {
  public:
   DesktopMediaPickerViews();
@@ -93,7 +99,7 @@ class DesktopMediaPickerViews : public DesktopMediaPicker {
   // DesktopMediaPicker:
   void Show(const DesktopMediaPicker::Params& params,
             std::vector<std::unique_ptr<DesktopMediaList>> source_lists,
-            const DoneCallback& done_callback) override;
+            DoneCallback done_callback) override;
 
   DesktopMediaPickerDialogView* GetDialogViewForTesting() const {
     return dialog_;

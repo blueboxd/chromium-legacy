@@ -507,6 +507,21 @@ CommandHandler.onCommand = function(command) {
       skipSync = true;
       pred = AutomationPredicate.group;
       break;
+    case 'previousSimilarItem':
+      dir = Dir.BACKWARD;
+      // Falls through.
+    case 'nextSimilarItem':
+      skipSync = true;
+      var node = current.start.node;
+      var originalNode = node;
+
+      // Scan upwards until we get a role we don't want to ignore.
+      while (node && AutomationPredicate.ignoreDuringJump(node))
+        node = node.parent;
+
+      var useNode = node || originalNode;
+      pred = AutomationPredicate.roles([node.role]);
+      break;
     case 'jumpToTop':
       var node = AutomationUtil.findNodePost(
           current.start.node.root, Dir.FORWARD, AutomationPredicate.object);

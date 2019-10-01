@@ -51,7 +51,7 @@ public class InterstitialPageTest {
             return TestThreadUtils
                     .runOnUiThreadBlocking(new Callable<Boolean>() {
                         @Override
-                        public Boolean call() throws Exception {
+                        public Boolean call() {
                             return mInterstitialShowing;
                         }
                     })
@@ -70,7 +70,7 @@ public class InterstitialPageTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl(URL);
         Assert.assertNotNull(activity);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
@@ -119,7 +119,7 @@ public class InterstitialPageTest {
         TestWebContentsObserver observer =
                 TestThreadUtils.runOnUiThreadBlocking(new Callable<TestWebContentsObserver>() {
                     @Override
-                    public TestWebContentsObserver call() throws Exception {
+                    public TestWebContentsObserver call() {
                         delegate.showInterstitialPage(URL, mActivityTestRule.getWebContents());
                         return new TestWebContentsObserver(mActivityTestRule.getWebContents());
                     }

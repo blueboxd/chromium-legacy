@@ -565,11 +565,10 @@ void DemoSession::OnExtensionInstalled(content::BrowserContext* browser_context,
     return;
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
-  apps::LaunchService::Get(profile)->OpenApplication(
-      AppLaunchParams(profile, extension->id(),
-                      apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                      WindowOpenDisposition::NEW_WINDOW,
-                      apps::mojom::AppLaunchSource::kSourceChromeInternal));
+  apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
+      extension->id(), apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_WINDOW,
+      apps::mojom::AppLaunchSource::kSourceChromeInternal));
 }
 
 void DemoSession::OnAppWindowActivated(extensions::AppWindow* app_window) {

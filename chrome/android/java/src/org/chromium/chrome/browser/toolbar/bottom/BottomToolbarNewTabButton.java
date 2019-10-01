@@ -70,7 +70,11 @@ class BottomToolbarNewTabButton extends ChromeImageButton
     public void setWrapperView(ViewGroup wrapper) {
         mWrapper = wrapper;
         mLabel = mWrapper.findViewById(R.id.new_tab_button_label);
-        if (FeatureUtilities.isLabeledBottomToolbarEnabled()) mLabel.setVisibility(View.VISIBLE);
+        if (FeatureUtilities.isLabeledBottomToolbarEnabled()) {
+            mLabel.setVisibility(View.VISIBLE);
+        } else {
+            mWrapper.setBackground(null);
+        }
     }
 
     @Override

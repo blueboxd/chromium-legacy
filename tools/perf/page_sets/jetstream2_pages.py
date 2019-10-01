@@ -14,6 +14,11 @@ class Jetstream2Story(press_story.PressStory):
 
   def ExecuteTest(self, action_runner):
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+    # Wait till the elements with selector "#results>.benchmark" are available
+    # as they are required for running "JetStream.start()"
+    action_runner.WaitForJavaScriptCondition("""
+        document.querySelectorAll("#results>.benchmark").length > 0
+        """, timeout=5)
     action_runner.EvaluateJavaScript('JetStream.start()')
 
   def ParseTestResults(self, action_runner):

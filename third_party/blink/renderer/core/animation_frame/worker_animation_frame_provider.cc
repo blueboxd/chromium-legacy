@@ -36,23 +36,36 @@ void WorkerAnimationFrameProvider::CancelCallback(int id) {
   callback_collection_.CancelFrameCallback(id);
 }
 
-void WorkerAnimationFrameProvider::BeginFrame(
-    const base::TimeTicks& frame_time) {
-  TRACE_EVENT0("blink", "WorkerAnimationFrameProvider::BeginFrame");
-
-  double time = (frame_time - base::TimeTicks()).InMillisecondsF();
+void WorkerAnimationFrameProvider::BeginFrame(const viz::BeginFrameArgs& args) {
+  TRACE_EVENT_WITH_FLOW0("blink", "WorkerAnimationFrameProvider::BeginFrame",
+                         TRACE_ID_GLOBAL(args.trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   Microtask::EnqueueMicrotask(WTF::Bind(
-      [](base::WeakPtr<WorkerAnimationFrameProvider> provider, double time) {
-        TRACE_EVENT0("blink",
-                     "WorkerAnimationFrameProvider::RequestAnimationFrame");
-        provider->callback_collection_.ExecuteFrameCallbacks(time, time);
+      [](base::WeakPtr<WorkerAnimationFrameProvider> provider,
+         const viz::BeginFrameArgs& args) {
+        if (!provider)
+          return;
+        TRACE_EVENT_WITH_FLOW0(
+            "blink", "WorkerAnimationFrameProvider::RequestAnimationFrame",
+            TRACE_ID_GLOBAL(args.trace_id), TRACE_EVENT_FLAG_FLOW_IN);
+        {
+          OffscreenCanvas::ScopedInsideWorkerRAF inside_raf_scope(args);
+          for (auto& offscreen_canvas : provider->offscreen_canvases_) {
+            // If one of the OffscreenCanvas has too many pending frames,
+            // we abort the whole process.
+            if (!inside_raf_scope.AddOffscreenCanvas(offscreen_canvas)) {
+              provider->begin_frame_provider_->FinishBeginFrame(args);
+              return;
+            }
+          }
 
-        for (auto& offscreen_canvas : provider->offscreen_canvases_) {
-          offscreen_canvas->PushFrameIfNeeded();
+          double time = (args.frame_time - base::TimeTicks()).InMillisecondsF();
+          provider->callback_collection_.ExecuteFrameCallbacks(time, time);
         }
+        provider->begin_frame_provider_->FinishBeginFrame(args);
       },
-      weak_factory_.GetWeakPtr(), time));
+      weak_factory_.GetWeakPtr(), args));
 }
 
 void WorkerAnimationFrameProvider::RegisterOffscreenCanvas(

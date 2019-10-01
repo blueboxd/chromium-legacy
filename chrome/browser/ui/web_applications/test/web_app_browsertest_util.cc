@@ -43,8 +43,8 @@ AppId InstallWebApp(Profile* profile,
 
 Browser* LaunchWebAppBrowser(Profile* profile, const AppId& app_id) {
   EXPECT_TRUE(
-      apps::LaunchService::Get(profile)->OpenApplication(AppLaunchParams(
-          profile, app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
+          app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
           WindowOpenDisposition::CURRENT_TAB,
           apps::mojom::AppLaunchSource::kSourceTest)));
 
@@ -58,8 +58,8 @@ Browser* LaunchWebAppBrowser(Profile* profile, const AppId& app_id) {
 
 Browser* LaunchBrowserForWebAppInTab(Profile* profile, const AppId& app_id) {
   content::WebContents* web_contents =
-      apps::LaunchService::Get(profile)->OpenApplication(AppLaunchParams(
-          profile, app_id, apps::mojom::LaunchContainer::kLaunchContainerTab,
+      apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
+          app_id, apps::mojom::LaunchContainer::kLaunchContainerTab,
           WindowOpenDisposition::NEW_FOREGROUND_TAB,
           apps::mojom::AppLaunchSource::kSourceTest));
   DCHECK(web_contents);

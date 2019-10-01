@@ -58,7 +58,7 @@ public class AwContentsGarbageCollectionTest {
     private TestDependencyFactory mOverridenFactory;
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mOverridenFactory = null;
     }
 
@@ -99,7 +99,7 @@ public class AwContentsGarbageCollectionTest {
     @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testCreateAndGcOneTime() throws Throwable {
+    public void testCreateAndGcOneTime() {
         gcAndCheckAllAwContentsDestroyed();
 
         TestAwContentsClient client = new TestAwContentsClient();
@@ -158,7 +158,7 @@ public class AwContentsGarbageCollectionTest {
     @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testAccessibility() throws Throwable {
+    public void testAccessibility() {
         gcAndCheckAllAwContentsDestroyed();
 
         TestAwContentsClient client = new TestAwContentsClient();
@@ -193,7 +193,7 @@ public class AwContentsGarbageCollectionTest {
     @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testReferenceFromClient() throws Throwable {
+    public void testReferenceFromClient() {
         gcAndCheckAllAwContentsDestroyed();
 
         AwTestContainerView containerViews[] = new AwTestContainerView[MAX_IDLE_INSTANCES + 1];
@@ -216,7 +216,7 @@ public class AwContentsGarbageCollectionTest {
     @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testReferenceFromContext() throws Throwable {
+    public void testReferenceFromContext() {
         gcAndCheckAllAwContentsDestroyed();
 
         TestAwContentsClient client = new TestAwContentsClient();
@@ -243,7 +243,7 @@ public class AwContentsGarbageCollectionTest {
     @DisableHardwareAccelerationForTest
     @LargeTest
     @Feature({"AndroidWebView"})
-    public void testCreateAndGcManyTimes() throws Throwable {
+    public void testCreateAndGcManyTimes() {
         gcAndCheckAllAwContentsDestroyed();
 
         final int concurrentInstances = 4;
@@ -321,7 +321,7 @@ public class AwContentsGarbageCollectionTest {
         gcAndCheckAllAwContentsDestroyed();
     }
 
-    private void removeAllViews() throws Throwable {
+    private void removeAllViews() {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
                 () -> mActivityTestRule.getActivity().removeAllViews());
     }

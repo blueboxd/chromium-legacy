@@ -394,7 +394,7 @@ public class ChildProcessConnectionTest {
     }
 
     @Test
-    public void testBindingStateCounts() throws RemoteException {
+    public void testBindingStateCounts() {
         ChildProcessConnection.resetBindingStateCountsForTesting();
         ChildProcessConnection connection0 = createDefaultTestConnection();
         ChildServiceConnectionMock connectionMock0 = mFirstServiceConnection;

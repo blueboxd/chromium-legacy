@@ -17,17 +17,26 @@
 
 namespace chromeos {
 
-class SchedulerConfigurationManagerTest : public testing::Test {
+class SchedulerConfigurationManagerTest
+    : public testing::Test,
+      public SchedulerConfigurationManagerBase::Observer {
  public:
   SchedulerConfigurationManagerTest() {
     SchedulerConfigurationManager::RegisterLocalStatePrefs(
         local_state_.registry());
   }
 
+  // SchedulerConfigurationManagerBase::Observer:
+  void OnConfigurationSet(bool success, size_t num_cores_disabled) override {
+    ++configuration_set_count_;
+  }
+
   base::test::TaskEnvironment task_environment_;
 
   FakeDebugDaemonClient debug_daemon_client_;
   TestingPrefServiceSimple local_state_;
+
+  size_t configuration_set_count_ = 0;
 };
 
 TEST_F(SchedulerConfigurationManagerTest, Startup) {
@@ -36,49 +45,61 @@ TEST_F(SchedulerConfigurationManagerTest, Startup) {
 
   // Manager waits on initialization for service to be available.
   SchedulerConfigurationManager manager(&debug_daemon_client_, &local_state_);
+  manager.AddObserver(this);
+
   task_environment_.RunUntilIdle();
   EXPECT_EQ("", debug_daemon_client_.scheduler_configuration_name());
+  EXPECT_EQ(0u, configuration_set_count_);
 
   // Config changes don't lead to updates while debugd isn't ready.
   local_state_.SetString(prefs::kSchedulerConfiguration, "config");
   task_environment_.RunUntilIdle();
   EXPECT_EQ("", debug_daemon_client_.scheduler_configuration_name());
+  EXPECT_EQ(0u, configuration_set_count_);
 
   // Once the debugd service becomes available, the config gets set.
   debug_daemon_client_.SetServiceIsAvailable(true);
   task_environment_.RunUntilIdle();
   EXPECT_EQ("config", debug_daemon_client_.scheduler_configuration_name());
+  EXPECT_EQ(1u, configuration_set_count_);
 }
 
 TEST_F(SchedulerConfigurationManagerTest, ConfigChange) {
   // Correct default is used when there is no configured value.
   SchedulerConfigurationManager manager(&debug_daemon_client_, &local_state_);
+  manager.AddObserver(this);
+
   task_environment_.RunUntilIdle();
   EXPECT_EQ(debugd::scheduler_configuration::kConservativeScheduler,
             debug_daemon_client_.scheduler_configuration_name());
+  EXPECT_EQ(1u, configuration_set_count_);
 
   // Change user pref, which should trigger a config change.
   local_state_.SetUserPref(prefs::kSchedulerConfiguration,
                            std::make_unique<base::Value>("user"));
   task_environment_.RunUntilIdle();
   EXPECT_EQ("user", debug_daemon_client_.scheduler_configuration_name());
+  EXPECT_EQ(2u, configuration_set_count_);
 
   // Set a policy, which should override the user setting
   local_state_.SetManagedPref(prefs::kSchedulerConfiguration,
                               std::make_unique<base::Value>("policy"));
   task_environment_.RunUntilIdle();
   EXPECT_EQ("policy", debug_daemon_client_.scheduler_configuration_name());
+  EXPECT_EQ(3u, configuration_set_count_);
 
   // Dropping the user pref doesn't change anything.
   local_state_.RemoveUserPref(prefs::kSchedulerConfiguration);
   task_environment_.RunUntilIdle();
   EXPECT_EQ("policy", debug_daemon_client_.scheduler_configuration_name());
+  EXPECT_EQ(4u, configuration_set_count_);
 
   // Dropping the policy as well reverts to the default configuration.
   local_state_.RemoveManagedPref(prefs::kSchedulerConfiguration);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(debugd::scheduler_configuration::kConservativeScheduler,
             debug_daemon_client_.scheduler_configuration_name());
+  EXPECT_EQ(5u, configuration_set_count_);
 }
 
 TEST_F(SchedulerConfigurationManagerTest, FinchDefault) {

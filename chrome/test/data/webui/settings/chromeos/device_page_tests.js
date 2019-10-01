@@ -907,9 +907,12 @@ cr.define('device_page_tests', function() {
       await fakeSystemDisplay.getLayoutCalled.promise;
       expectEquals(1, displayPage.displays.length);
 
-      // Night Light is off, so advanced controls are hidden.
-      expectFalse(!!displayPage.$$('#nightLightTemperatureDiv'));
-      expectFalse(!!displayPage.$$('#nightLightScheduleTypeDropDown'));
+      const temperature = displayPage.$$('#nightLightTemperatureDiv');
+      const schedule = displayPage.$$('#nightLightScheduleTypeDropDown');
+
+      // Night Light is off, so temperature is hidden. Schedule is always shown.
+      expectTrue(temperature.hidden);
+      expectFalse(schedule.hidden);
 
       // Enable Night Light. Use an atomic update of |displayPage.prefs| so
       // Polymer notices the change.
@@ -918,9 +921,9 @@ cr.define('device_page_tests', function() {
       displayPage.prefs = newPrefs;
       Polymer.dom.flush();
 
-      // Advanced Night Light controls are available.
-      expectTrue(!!displayPage.$$('#nightLightTemperatureDiv'));
-      expectTrue(!!displayPage.$$('#nightLightScheduleTypeDropDown'));
+      // Night Light is on, so temperature is visible.
+      expectFalse(temperature.hidden);
+      expectFalse(schedule.hidden);
     });
 
     suite(assert(TestNames.Power), function() {

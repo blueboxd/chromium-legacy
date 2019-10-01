@@ -72,6 +72,12 @@ class ProfilePolicyConnector final {
   // higher-level provider.
   bool IsProfilePolicy(const char* policy_key) const;
 
+#if defined(OS_CHROMEOS)
+  // Triggers the time out handling of waiting for the proxied primary user
+  // policies to propagate. May be only called form tests.
+  void TriggerProxiedPoliciesWaitTimeoutForTesting();
+#endif  // defined(OS_CHROMEOS)
+
  private:
   // Returns the policy store which is actually used.
   const CloudPolicyStore* GetActualPolicyStore() const;

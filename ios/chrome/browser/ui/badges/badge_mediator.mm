@@ -145,7 +145,7 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
       [[NSMutableArray alloc] init];
   // Get all non-fullscreen badges.
   for (id<BadgeItem> item in self.badges) {
-    if (![item isFullScreen]) {
+    if (!item.fullScreen) {
       [popupMenuBadges addObject:item];
     }
   }
@@ -181,26 +181,43 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
 // Gets the last fullscreen and non-fullscreen badges.
 // This assumes that there is only ever one fullscreen badge, so the last badge
 // in |badges| should be the only one.
-// TODO(crbug.com/976901): This is an arbitrary choice for non-fullscreen
-// badges, though. This will be replaced by showing either one badge or the
-// badge for the popup menu.
 - (void)updateBadgesShown {
+  // The badge to be displayed alongside the fullscreen badge. Logic below
+  // currently assigns it to the last non-fullscreen badge in the list, since it
+  // works if there is only one non-fullscreen badge. Otherwise, where there are
+  // multiple non-fullscreen badges, additional logic below determines what
+  // badge will be shown.
   id<BadgeItem> displayedBadge;
+  // The fullscreen badge to show. There currently should only be one fullscreen
+  // badge at a given time.
   id<BadgeItem> fullScreenBadge;
+  // The badge that is current displaying its banner. This will be set as the
+  // displayedBadge if there are multiple badges.
+  id<BadgeItem> presentingBadge;
   for (id<BadgeItem> item in self.badges) {
-    if ([item isFullScreen]) {
+    if (item.fullScreen) {
       fullScreenBadge = item;
     } else {
+      if (item.badgeState == BadgeStatePresented) {
+        presentingBadge = item;
+      }
       displayedBadge = item;
     }
   }
+
+  // Figure out what displayedBadge should be showing if there are multiple
+  // non-Fullscreen badges.
   NSInteger count = [self.badges count];
   if (fullScreenBadge) {
     count -= kNumberOfFullScrenBadges;
   }
   if (count >= kMinimumNonFullScreenBadgesForOverflow) {
-    displayedBadge = [[BadgeTappableItem alloc]
-        initWithBadgeType:BadgeType::kBadgeTypeOverflow];
+    // If a badge's banner is being presented, then show that badge as the
+    // displayed badge. Otherwise, show the overflow badge.
+    displayedBadge = presentingBadge
+                         ? presentingBadge
+                         : [[BadgeTappableItem alloc]
+                               initWithBadgeType:BadgeType::kBadgeTypeOverflow];
   }
   [self.consumer updateDisplayedBadge:displayedBadge
                       fullScreenBadge:fullScreenBadge];

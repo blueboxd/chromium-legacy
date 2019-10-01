@@ -83,7 +83,7 @@ public final class FeedJournalStorageConformanceTest extends JournalStorageConfo
     public final ChromeBrowserTestRule mRule = new ChromeBrowserTestRule();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // journalStorage is declared and tested in JournalStorageConformanceTest.
             journalStorage = new JournalStorageWrapper(Profile.getLastUsedProfile());

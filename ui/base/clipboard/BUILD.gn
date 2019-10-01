@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("///ui/ozone/ozone.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 
@@ -91,6 +92,7 @@ jumbo_component("clipboard") {
           "clipboard_ozone.cc",
           "clipboard_ozone.h",
         ]
+        deps += [ "//ui/base" ]
       } else if (use_x11) {
         sources += [
           "clipboard_x11.cc",
@@ -104,6 +106,16 @@ jumbo_component("clipboard") {
           "//ui/gfx/x",
         ]
       }
+    } else if (is_chromeos && ozone_platform_x11) {
+      # linux-chromeos uses aura clipboard by default, but supports ozone x11
+      # with flag --use-system-clipbboard.
+      sources += [
+        "clipboard_aura.cc",
+        "clipboard_aura.h",
+        "clipboard_ozone.cc",
+        "clipboard_ozone.h",
+      ]
+      deps += [ "//ui/base" ]
     } else if (!is_win) {
       # This file is used for all non-X11, non-Windows aura Builds.
       sources += [

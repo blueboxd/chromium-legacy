@@ -20,9 +20,7 @@
 
 std::unique_ptr<infobars::InfoBar> CreateConfirmInfoBar(
     std::unique_ptr<ConfirmInfoBarDelegate> delegate) {
-  // TODO(crbug.com/961343): Temporarily disabling the use of
-  // InfobarConfirmCoordinator until multiple message support has been added.
-  if (IsInfobarUIRebootEnabled() && NO) {
+  if (IsConfirmInfobarMessagesUIEnabled()) {
     // TODO(crbug.com/927064): Coordinators shouldn't be created at this level,
     // we should probably send only the delegate and have the presenting
     // Coordinator create the right Coordinator using that delegate.
@@ -36,4 +34,18 @@ std::unique_ptr<infobars::InfoBar> CreateConfirmInfoBar(
         initWithInfoBarDelegate:delegate.get()];
     return std::make_unique<InfoBarIOS>(controller, std::move(delegate));
   }
+}
+
+std::unique_ptr<infobars::InfoBar> CreateHighPriorityConfirmInfoBar(
+    std::unique_ptr<ConfirmInfoBarDelegate> delegate) {
+  DCHECK(IsInfobarUIRebootEnabled());
+  // TODO(crbug.com/927064): Coordinators shouldn't be created at this level,
+  // we should probably send only the delegate and have the presenting
+  // Coordinator create the right Coordinator using that delegate.
+  InfobarConfirmCoordinator* coordinator = [[InfobarConfirmCoordinator alloc]
+      initWithInfoBarDelegate:delegate.get()
+                 badgeSupport:NO
+                         type:InfobarType::kInfobarTypeConfirm];
+  coordinator.highPriorityPresentation = YES;
+  return std::make_unique<InfoBarIOS>(coordinator, std::move(delegate));
 }

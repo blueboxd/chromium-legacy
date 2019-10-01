@@ -173,7 +173,7 @@ bool SupportsRegistryValidation() {
 
 // A base fixture designed such that implementations do two things:
 //  1) Override all three pure-virtual methods below to setup, attack, and
-//     verify preferenes throughout the tests provided by this fixture.
+//     verify preferences throughout the tests provided by this fixture.
 //  2) Instantiate their test via the PREF_HASH_BROWSER_TEST macro above.
 // Based on top of ExtensionBrowserTest to allow easy interaction with the
 // ExtensionRegistry.
@@ -541,8 +541,7 @@ class PrefHashBrowserTestUnchangedCustom
     EXPECT_EQ("http://example.com",
               profile()->GetPrefs()->GetString(prefs::kHomePage));
 
-    EXPECT_TRUE(extension_registry()->GetExtensionById(
-        kGoodCrxId, extensions::ExtensionRegistry::ENABLED));
+    EXPECT_TRUE(extension_registry()->enabled_extensions().GetByID(kGoodCrxId));
 
     // Reaction should be identical to unattacked default prefs.
     PrefHashBrowserTestUnchangedDefault::VerifyReactionToPrefAttack();
@@ -925,10 +924,10 @@ class PrefHashBrowserTestChangedSplitPref : public PrefHashBrowserTestBase {
                   user_prefs::tracked::kTrackedPrefHistogramReset,
                   BEGIN_ALLOW_SINGLE_BUCKET + 5));
 
-    EXPECT_EQ(protection_level_ < PROTECTION_ENABLED_EXTENSIONS,
-              extension_registry()->GetExtensionById(
-                  kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY) !=
-                  nullptr);
+    EXPECT_EQ(
+        protection_level_ < PROTECTION_ENABLED_EXTENSIONS,
+        extension_registry()->GetExtensionById(
+            kGoodCrxId, extensions::ExtensionRegistry::EVERYTHING) != nullptr);
 
     // Nothing else should have triggered.
     EXPECT_EQ(

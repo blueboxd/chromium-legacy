@@ -61,7 +61,7 @@ crbug.com/887140 hdr/video-canvas-alpha.html [ Failure ]
 # issues (e.g. missing OOPIF support in the test harness).
 # TODO(lukasza, alexmos): Burn down this list.
 crbug.com/645641 external/wpt/html/syntax/parsing/html5lib_tests19.html [ Crash Failure ]
-crbug.com/665058 http/tests/local/drag-over-remote-content.html [ Crash ]
+crbug.com/665058 http/tests/local/drag-over-remote-content.html [ Crash Timeout ]
 crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
@@ -2387,6 +2387,7 @@ crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-024.html [ Fail
 crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-025.html [ Failure ]
 crbug.com/965137 external/wpt/css/css-overflow/webkit-line-clamp-026.html [ Failure ]
 crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-027.html [ Failure ]
+crbug.com/1007065 external/wpt/css/css-overflow/overflow-codependent-scrollbars.html [ Failure ]
 
 crbug.com/424365 external/wpt/css/css-shapes/shape-outside/shape-image/shape-image-024.html [ Failure ]
 crbug.com/441840 [ Win ] external/wpt/css/css-shapes/shape-outside/values/shape-margin-001.html [ Failure ]
@@ -6136,6 +6137,7 @@ crbug.com/999209 virtual/lazyload-image/http/tests/lazyload/style-dimension.html
 
 # These tests are missing test automation
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-getDirectory.tentative.https.manual.window.html [ Skip ]
+crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-getEntries.tentative.https.manual.window.html [ Skip ]
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-getFile.tentative.https.manual.window.html [ Skip ]
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-removeEntry.tentative.https.manual.window.html [ Skip ]
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemWriter.tentative.https.manual.window.html [ Skip ]
@@ -6226,3 +6228,8 @@ crbug.com/1008257 external/wpt/service-workers/service-worker/worker-interceptio
 
 # Sheriff 2019-09-27
 crbug.com/1008826 [ Mac10.13 ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Pass Failure ]
+
+# Sheriff 2019-09-30
+crbug.com/1009016 [ Win10 ] http/tests/devtools/portals/portals-elements-nesting-after-adoption.js [ Pass Failure ]
+crbug.com/1003715 [ Win10 ] http/tests/notifications/serviceworker-notification-properties.html [ Pass Failure ]
+

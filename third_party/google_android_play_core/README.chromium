@@ -1,13 +1,13 @@
 Name: Play Core Library
 Short Name: Play Core
 URL: https://developer.android.com/guide/app-bundle/playcore
-Version: 1.6.2
+Version: 1.6.4
 License: Android Software Development Kit License
 License File: LICENSE
 Security Critical: yes
 
 Description:
-- Built from @264816199
+- Built from @272011728
 
 Local Modifications:
 - Unproguarded verification API.

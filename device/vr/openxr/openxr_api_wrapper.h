@@ -26,7 +26,7 @@ class Transform;
 
 namespace device {
 
-class OpenXrGamepadHelper;
+class OpenXRInputHelper;
 class VRTestHook;
 class ServiceTestHook;
 
@@ -46,7 +46,7 @@ class OpenXrApiWrapper {
   bool session_ended() const { return session_ended_; }
 
   XrResult InitSession(const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device,
-                       std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper);
+                       std::unique_ptr<OpenXRInputHelper>* input_helper);
 
   XrResult BeginFrame(Microsoft::WRL::ComPtr<ID3D11Texture2D>* texture);
   XrResult EndFrame();
@@ -79,7 +79,7 @@ class OpenXrApiWrapper {
   XrResult CreateSwapchain();
   XrResult CreateSpace(XrReferenceSpaceType type, XrSpace* space);
   XrResult CreateGamepadHelper(
-      std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper);
+      std::unique_ptr<OpenXRInputHelper>* input_helper);
 
   XrResult BeginSession();
   XrResult UpdateProjectionLayers();

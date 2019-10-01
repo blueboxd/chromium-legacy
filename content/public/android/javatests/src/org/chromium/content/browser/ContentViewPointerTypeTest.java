@@ -58,7 +58,7 @@ public class ContentViewPointerTypeTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ContentShellActivity activity =
                 mActivityTestRule.launchContentShellWithUrlSync(CURSOR_PAGE);
         if (activity != null) {

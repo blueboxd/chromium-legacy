@@ -143,7 +143,7 @@ public final class WebApkActivityTest {
     @Test
     @LargeTest
     @Feature({"WebApk"})
-    public void testLaunchIntervalHistogramNotRecordedOnFirstLaunch() throws Exception {
+    public void testLaunchIntervalHistogramNotRecordedOnFirstLaunch() {
         android.util.Log.e("ABCD", "Start");
         final String histogramName = "WebApk.LaunchInterval";
         WebApkActivity webApkActivity = mActivityTestRule.startWebApkActivity(createWebApkInfo(
@@ -198,7 +198,7 @@ public final class WebApkActivityTest {
      */
     @LargeTest
     @Test
-    public void testActivateWebApkLPlus() throws Exception {
+    public void testActivateWebApkLPlus() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
         // Launch WebAPK.

@@ -24,7 +24,6 @@
 class BrowserProcessImpl;
 class ChromeBrowserMainExtraParts;
 class StartupData;
-class HeapProfilerController;
 class PrefService;
 class Profile;
 class StartupBrowserCreator;
@@ -153,10 +152,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Vector of additional ChromeBrowserMainExtraParts.
   // Parts are deleted in the inverse order they are added.
   std::vector<ChromeBrowserMainExtraParts*> chrome_extra_parts_;
-
-  // The controller schedules UMA heap profiles collections and forwarding down
-  // the reporting pipeline.
-  std::unique_ptr<HeapProfilerController> heap_profiler_controller_;
 
   // The system monitor instance, used by some subsystems to collect the system
   // metrics they need.

@@ -59,7 +59,7 @@ public class VrBrowserControllerInputTest {
     private VrBrowserTestFramework mVrBrowserTestFramework;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // Ensure that all frame updates are delivered to the browser so we can monitor for
         // scroll changes.
         WebContentsUtils.reportAllFrameSubmissions(mVrTestRule.getWebContents(), true);
@@ -323,7 +323,7 @@ public class VrBrowserControllerInputTest {
      */
     @Test
     @MediumTest
-    public void testControllerClicksRegisterOnWebpage() throws InterruptedException {
+    public void testControllerClicksRegisterOnWebpage() {
         mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile(
                                     "test_controller_clicks_register_on_webpage"),
                 PAGE_LOAD_TIMEOUT_S);
@@ -341,7 +341,7 @@ public class VrBrowserControllerInputTest {
      */
     @Test
     @MediumTest
-    public void testControllerClicksRegisterOnIframe() throws InterruptedException {
+    public void testControllerClicksRegisterOnIframe() {
         mVrTestRule.loadUrl(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_iframe_clicks_outer"));
         NativeUiUtils.clickElement(UserFriendlyElementName.CONTENT_QUAD, new PointF());
@@ -411,7 +411,7 @@ public class VrBrowserControllerInputTest {
      */
     @Test
     @MediumTest
-    public void testAppButtonExitsFullscreen() throws InterruptedException, TimeoutException {
+    public void testAppButtonExitsFullscreen() throws TimeoutException {
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),
                 PAGE_LOAD_TIMEOUT_S);
@@ -429,7 +429,7 @@ public class VrBrowserControllerInputTest {
                     try {
                         return !DOMUtils.isFullscreen(
                                 mVrBrowserTestFramework.getCurrentWebContents());
-                    } catch (InterruptedException | TimeoutException e) {
+                    } catch (TimeoutException e) {
                         return false;
                     }
                 },
@@ -444,7 +444,7 @@ public class VrBrowserControllerInputTest {
      */
     @Test
     @MediumTest
-    public void testDragRefresh() throws InterruptedException, TimeoutException {
+    public void testDragRefresh() {
         mVrTestRule.loadUrl(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
                 PAGE_LOAD_TIMEOUT_S);

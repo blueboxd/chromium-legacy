@@ -26,29 +26,29 @@ using TestPositionRange = AXRange<AXPosition<AXNodePosition, AXNode>>;
 
 namespace {
 
-constexpr int32_t ROOT_ID = 1;
-constexpr int32_t DIV1_ID = 2;
-constexpr int32_t BUTTON_ID = 3;
-constexpr int32_t DIV2_ID = 4;
-constexpr int32_t CHECK_BOX1_ID = 5;
-constexpr int32_t CHECK_BOX2_ID = 6;
-constexpr int32_t TEXT_FIELD_ID = 7;
-constexpr int32_t STATIC_TEXT1_ID = 8;
-constexpr int32_t INLINE_BOX1_ID = 9;
-constexpr int32_t LINE_BREAK1_ID = 10;
-constexpr int32_t STATIC_TEXT2_ID = 11;
-constexpr int32_t INLINE_BOX2_ID = 12;
-constexpr int32_t LINE_BREAK2_ID = 13;
-constexpr int32_t PARAGRAPH_ID = 14;
-constexpr int32_t STATIC_TEXT3_ID = 15;
-constexpr int32_t INLINE_BOX3_ID = 16;
+constexpr AXNode::AXID ROOT_ID = 1;
+constexpr AXNode::AXID DIV1_ID = 2;
+constexpr AXNode::AXID BUTTON_ID = 3;
+constexpr AXNode::AXID DIV2_ID = 4;
+constexpr AXNode::AXID CHECK_BOX1_ID = 5;
+constexpr AXNode::AXID CHECK_BOX2_ID = 6;
+constexpr AXNode::AXID TEXT_FIELD_ID = 7;
+constexpr AXNode::AXID STATIC_TEXT1_ID = 8;
+constexpr AXNode::AXID INLINE_BOX1_ID = 9;
+constexpr AXNode::AXID LINE_BREAK1_ID = 10;
+constexpr AXNode::AXID STATIC_TEXT2_ID = 11;
+constexpr AXNode::AXID INLINE_BOX2_ID = 12;
+constexpr AXNode::AXID LINE_BREAK2_ID = 13;
+constexpr AXNode::AXID PARAGRAPH_ID = 14;
+constexpr AXNode::AXID STATIC_TEXT3_ID = 15;
+constexpr AXNode::AXID INLINE_BOX3_ID = 16;
 
 class TestAXRangeScreenRectDelegate : public AXRangeScreenRectDelegate {
  public:
   TestAXRangeScreenRectDelegate(AXTree* tree) : tree_(tree) {}
 
   gfx::Rect GetInnerTextRangeBoundsRect(AXTreeID tree_id,
-                                        int32_t node_id,
+                                        AXNode::AXID node_id,
                                         int start_offset,
                                         int end_offset) override {
     if (tree_->data().tree_id != tree_id)
@@ -66,7 +66,7 @@ class TestAXRangeScreenRectDelegate : public AXRangeScreenRectDelegate {
         ui::AXClippingBehavior::kClipped, &ignore_offscreen_result);
   }
 
-  gfx::Rect GetBoundsRect(AXTreeID tree_id, int32_t node_id) override {
+  gfx::Rect GetBoundsRect(AXTreeID tree_id, AXNode::AXID node_id) override {
     if (tree_->data().tree_id != tree_id)
       return gfx::Rect();
 
@@ -109,7 +109,7 @@ class AXRangeTest : public testing::Test, public AXTreeManager {
 
   // AXTreeManager implementation.
   AXNode* GetNodeFromTree(const AXTreeID tree_id,
-                          const int32_t node_id) const override;
+                          const AXNode::AXID node_id) const override;
   AXTreeID GetTreeID() const override;
   AXTreeID GetParentTreeID() const override;
   AXNode* GetRootAsAXNode() const override;
@@ -323,7 +323,7 @@ void AXRangeTest::TearDown() {
 }
 
 AXNode* AXRangeTest::GetNodeFromTree(const AXTreeID tree_id,
-                                     const int32_t node_id) const {
+                                     const AXNode::AXID node_id) const {
   if (GetTreeID() == tree_id)
     return tree_->GetFromId(node_id);
 

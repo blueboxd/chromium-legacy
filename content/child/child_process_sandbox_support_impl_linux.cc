@@ -47,10 +47,8 @@ void WebSandboxSupportLinux::GetFallbackFontForCharacter(
   std::string family_name;
   if (!font_loader_->FallbackFontForCharacter(character, preferred_locale,
                                               &font_identity, &family_name,
-                                              &is_bold, &is_italic)) {
-    LOG(ERROR) << "FontService fallback request does not receive a response.";
+                                              &is_bold, &is_italic))
     return;
-  }
 
   // TODO(drott): Perhaps take OutOfProcessFont out of the picture here and pass
   // mojo FontIdentityPtr directly?

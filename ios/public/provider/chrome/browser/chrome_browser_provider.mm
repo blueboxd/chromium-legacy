@@ -68,6 +68,16 @@ std::string ChromeBrowserProvider::GetRiskData() {
   return std::string();
 }
 
+void ChromeBrowserProvider::AddSerializableData(
+    web::SerializableUserDataManager* user_data_manager,
+    web::WebState* web_state) {}
+
+bool ChromeBrowserProvider::ShouldBlockUrlDuringRestore(
+    const GURL& url,
+    web::WebState* web_state) {
+  return false;
+}
+
 UITextField* ChromeBrowserProvider::CreateStyledTextField() const {
   return nil;
 }

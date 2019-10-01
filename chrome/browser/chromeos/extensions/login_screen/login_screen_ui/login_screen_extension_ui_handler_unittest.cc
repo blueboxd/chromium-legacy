@@ -37,7 +37,7 @@ const bool kCanBeClosedByUser = false;
 const char kUrl[] = "test.html";
 
 const char kWhitelistedExtensionID1[] =
-    "oclffehlkdgibkainkilopaalpdobkan";  // chrome.loginScreenUi test extension
+    "oclffehlkdgibkainkilopaalpdobkan";  // Login screen APIs test extension
 const char kWhitelistedExtensionID2[] =
     "lpimkpkllnkdlcigdbgmabfplniahkgm";  // Imprivata (login screen)
 const char kPermissionName[] = "loginScreenUi";

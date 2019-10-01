@@ -78,7 +78,7 @@ public class WebViewCrashLogParserTest {
 
     @Test
     @MediumTest
-    public void testParseNonExistDir() throws Exception {
+    public void testParseNonExistDir() {
         List<CrashInfo> crashInfoList =
                 new WebViewCrashLogParser(new File("non_exsiting_dir")).loadCrashesInfo();
         Assert.assertThat(crashInfoList, empty());

@@ -129,16 +129,6 @@ public class SendTabToSelfAndroidBridge {
     }
 
     /**
-     * Return whether the sending component of the feature is available. One of the uses of this
-     * function is to determine whether the bottom sheet should be initialized on startup.
-     *
-     * @return Whether the sending component is available.
-     */
-    public static boolean isSendingEnabled() {
-        return SendTabToSelfAndroidBridgeJni.get().isSendingEnabled();
-    }
-
-    /**
      * Shows an infobar for the webcontents passed in.
      *
      * @param entry Contains the URL to open when the user taps on the infobar.
@@ -191,8 +181,6 @@ public class SendTabToSelfAndroidBridge {
         SendTabToSelfEntry getEntryByGUID(Profile profile, String guid);
 
         boolean isFeatureAvailable(WebContents webContents);
-
-        boolean isSendingEnabled();
 
         void showInfoBar(
                 WebContents webContents, String guid, String url, String targetDeviceSyncCacheGuid);

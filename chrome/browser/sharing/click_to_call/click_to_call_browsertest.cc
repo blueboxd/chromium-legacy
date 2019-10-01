@@ -16,6 +16,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/features.h"
@@ -26,15 +27,20 @@
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/sync/driver/profile_sync_service.h"
+#include "components/sync/test/fake_server/fake_server.h"
+#include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/sync_device_info/device_info_sync_service.h"
 #include "components/sync_device_info/fake_device_info_tracker.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "url/gurl.h"
 
@@ -57,7 +63,10 @@ class ClickToCallBrowserTest : public SyncTest {
 
   ~ClickToCallBrowserTest() override {}
 
-  void SetUpOnMainThread() override { SyncTest::SetUpOnMainThread(); }
+  void SetUpOnMainThread() override {
+    SyncTest::SetUpOnMainThread();
+    host_resolver()->AddRule("mock.http", "127.0.0.1");
+  }
 
   void Init(const std::vector<base::Feature>& enabled_features,
             const std::vector<base::Feature>& disabled_features) {
@@ -65,8 +74,16 @@ class ClickToCallBrowserTest : public SyncTest {
 
     ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-    sessions_helper::OpenTab(0, GURL("http://www.google.com/"));
+    ASSERT_TRUE(embedded_test_server()->Start());
+    GURL url = embedded_test_server()->GetURL("mock.http", "/sharing/tel.html");
+    ASSERT_TRUE(sessions_helper::OpenTab(0, url));
+
     web_contents_ = GetBrowser(0)->tab_strip_model()->GetWebContentsAt(0);
+
+    // Ensure that the test page has loaded.
+    const base::string16 title = base::ASCIIToUTF16("Tel");
+    content::TitleWatcher watcher(web_contents_, title);
+    EXPECT_EQ(title, watcher.WaitAndGetTitle());
 
     gcm_service_ = static_cast<gcm::FakeGCMProfileService*>(
         gcm::GCMProfileServiceFactory::GetForProfile(GetProfile(0)));
@@ -110,7 +127,8 @@ class ClickToCallBrowserTest : public SyncTest {
               device->chrome_version(), device->sync_user_agent(),
               device->device_type(), device->signin_scoped_device_id(),
               device->last_updated_timestamp(),
-              device->send_tab_to_self_receiving_enabled());
+              device->send_tab_to_self_receiving_enabled(),
+              device->sharing_info());
       fake_device_info_tracker_.Add(fake_device.get());
       device_infos_.push_back(std::move(fake_device));
     }
@@ -163,6 +181,8 @@ class ClickToCallBrowserTest : public SyncTest {
   }
 
   SharingService* sharing_service() const { return sharing_service_; }
+
+  content::WebContents* web_contents() const { return web_contents_; }
 
  private:
   gcm::GCMProfileServiceFactory::ScopedTestingFactoryInstaller
@@ -393,4 +413,24 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_UKM) {
   EXPECT_EQ(static_cast<int64_t>(SharingClickToCallSelection::kDevice),
             *selection);
   // TODO(knollr): mock apps and verify |has_apps| here too.
+}
+
+IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, CloseTabWithBubble) {
+  Init({kSharingDeviceRegistration, kClickToCallUI}, {});
+  SetUpDevices(/*count=*/1);
+
+  base::RunLoop run_loop;
+  ClickToCallUiController::GetOrCreateFromWebContents(web_contents())
+      ->set_on_dialog_shown_closure_for_testing(run_loop.QuitClosure());
+
+  // Click on the tel link to trigger the bubble view.
+  web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("document.querySelector('a').click();"),
+      base::NullCallback());
+  // Wait until the bubble is visible.
+  run_loop.Run();
+
+  // Close the tab while the bubble is opened.
+  // Regression test for http://crbug.com/1000934.
+  sessions_helper::CloseTab(/*browser_index=*/0, /*tab_index=*/0);
 }

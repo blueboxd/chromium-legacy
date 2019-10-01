@@ -120,6 +120,10 @@ const char kCollectionsCardPresentationStyleDescription[] =
     "When enabled collections are presented using the new iOS13 card "
     "style.";
 
+const char kConfirmInfobarMessagesUIName[] = "Confirm Infobars Messages UI";
+const char kConfirmInfobarMessagesUIDescription[] =
+    "When enabled Confirm Infobars use the new Messages UI.";
+
 const char kCopiedContentBehaviorName[] =
     "Enable differentiating between copied urls, text, and images";
 const char kCopiedContentBehaviorDescription[] =
@@ -145,6 +149,11 @@ const char kDetectMainThreadFreezeDescription[] =
 
 const char kDragAndDropName[] = "Drag and Drop";
 const char kDragAndDropDescription[] = "Enable support for drag and drop.";
+
+const char kEmbedderBlockRestoreUrlName[] =
+    "Allow embedders to prevent certain URLs from restoring.";
+const char kEmbedderBlockRestoreUrlDescription[] =
+    "Embedders can prevent URLs from restoring.";
 
 const char kEnableAutofillCreditCardUploadEditableCardholderNameName[] =
     "Make cardholder name editable in dialog during credit card upload";
@@ -297,13 +306,6 @@ const char kSendTabToSelfBroadcastName[] = "Send tab to self broadcast";
 const char kSendTabToSelfBroadcastDescription[] =
     "Allows users to broadcast the tab they send to all of their devices "
     "instead of targetting only one device.";
-
-const char kSendTabToSelfShowSendingUIName[] =
-    "Send tab to self show sending UI";
-const char kSendTabToSelfShowSendingUIDescription[] =
-    "Allows users to push tabs from this device to another of their synced "
-    "devices, in order to easily transition tabs between them. Requires the "
-    "Send tab to self flag to also be enabled.";
 
 const char kSendUmaOverAnyNetwork[] =
     "Send UMA data over any network available.";

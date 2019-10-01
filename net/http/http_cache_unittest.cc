@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -390,11 +391,13 @@ class RangeTransactionServer {
     not_modified_ = false;
     modified_ = false;
     bad_200_ = false;
+    length_ = 80;
   }
   ~RangeTransactionServer() {
     not_modified_ = false;
     modified_ = false;
     bad_200_ = false;
+    length_ = 80;
   }
 
   // Returns only 416 or 304 when set.
@@ -405,6 +408,9 @@ class RangeTransactionServer {
 
   // Returns 200 instead of 206 (a malformed response overall).
   void set_bad_200(bool value) { bad_200_ = value; }
+
+  // Sets how long the resource is. (Default is 80)
+  void set_length(int64_t length) { length_ = length; }
 
   // Other than regular range related behavior (and the flags mentioned above),
   // the server reacts to requests headers like so:
@@ -422,11 +428,13 @@ class RangeTransactionServer {
   static bool not_modified_;
   static bool modified_;
   static bool bad_200_;
+  static int64_t length_;
   DISALLOW_COPY_AND_ASSIGN(RangeTransactionServer);
 };
 bool RangeTransactionServer::not_modified_ = false;
 bool RangeTransactionServer::modified_ = false;
 bool RangeTransactionServer::bad_200_ = false;
+int64_t RangeTransactionServer::length_ = 80;
 
 // A dummy extra header that must be preserved on a given request.
 
@@ -492,20 +500,21 @@ void RangeTransactionServer::RangeHandler(const HttpRequestInfo* request,
     byte_range.set_last_byte_position(49);
   }
 
-  if (byte_range.first_byte_position() > 79) {
+  if (byte_range.first_byte_position() >= length_) {
     response_status->assign("HTTP/1.1 416 Requested Range Not Satisfiable");
     response_data->clear();
     return;
   }
 
-  EXPECT_TRUE(byte_range.ComputeBounds(80));
-  int start = static_cast<int>(byte_range.first_byte_position());
-  int end = static_cast<int>(byte_range.last_byte_position());
+  EXPECT_TRUE(byte_range.ComputeBounds(length_));
+  int64_t start = byte_range.first_byte_position();
+  int64_t end = byte_range.last_byte_position();
 
-  EXPECT_LT(end, 80);
+  EXPECT_LT(end, length_);
 
-  std::string content_range = base::StringPrintf(
-      "Content-Range: bytes %d-%d/80\n", start, end);
+  std::string content_range = base::StringPrintf("Content-Range: bytes %" PRId64
+                                                 "-%" PRId64 "/%" PRId64 "\n",
+                                                 start, end, length_);
   response_headers->append(content_range);
 
   if (!request->extra_headers.HasHeader("If-None-Match") || modified_) {
@@ -515,18 +524,18 @@ void RangeTransactionServer::RangeHandler(const HttpRequestInfo* request,
       data = "r";
     } else {
       EXPECT_EQ(9, (end - start) % 10);
-      for (int block_start = start; block_start < end; block_start += 10) {
-        base::StringAppendF(&data, "rg: %02d-%02d ",
-                            block_start, block_start + 9);
+      for (int64_t block_start = start; block_start < end; block_start += 10) {
+        base::StringAppendF(&data, "rg: %02" PRId64 "-%02" PRId64 " ",
+                            block_start % 100, (block_start + 9) % 100);
       }
     }
     *response_data = data;
 
     if (end - start != 9) {
       // We also have to fix content-length.
-      int len = end - start + 1;
-      std::string content_length = base::StringPrintf("Content-Length: %d\n",
-                                                      len);
+      int64_t len = end - start + 1;
+      std::string content_length =
+          base::StringPrintf("Content-Length: %" PRId64 "\n", len);
       response_headers->replace(response_headers->find("Content-Length:"),
                                 content_length.size(), content_length);
     }
@@ -2877,6 +2886,71 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelValidationNoMatch) {
   EXPECT_EQ(5, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(5, cache.disk_cache()->create_count());
+}
+
+TEST_F(HttpCacheTest, RangeGET_Enormous) {
+  // Test for how blockfile's limit on range namespace interacts with
+  // HttpCache::Transaction.
+  // See https://crbug.com/770694
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  auto backend_factory = std::make_unique<HttpCache::DefaultBackend>(
+      DISK_CACHE, CACHE_BACKEND_BLOCKFILE, temp_dir.GetPath(), 1024 * 1024);
+  MockHttpCache cache(std::move(backend_factory));
+
+  RangeTransactionServer handler;
+  handler.set_length(2305843009213693962);
+
+  // Prime with a range it can store.
+  {
+    ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+    transaction.request_headers = "Range: bytes = 0-9\r\n" EXTRA_HEADER;
+    transaction.data = "rg: 00-09 ";
+    MockHttpRequest request(transaction);
+
+    HttpResponseInfo response;
+    RunTransactionTestWithRequest(cache.http_cache(), transaction, request,
+                                  &response);
+    ASSERT_TRUE(response.headers != nullptr);
+    EXPECT_EQ(206, response.headers->response_code());
+    EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  }
+
+  // Try with a range it can't. Should still work.
+  {
+    ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+    transaction.request_headers =
+        "Range: bytes = "
+        "2305843009213693952-2305843009213693961\r\n" EXTRA_HEADER;
+    transaction.data = "rg: 52-61 ";
+    MockHttpRequest request(transaction);
+
+    HttpResponseInfo response;
+    RunTransactionTestWithRequest(cache.http_cache(), transaction, request,
+                                  &response);
+    ASSERT_TRUE(response.headers != nullptr);
+    EXPECT_EQ(206, response.headers->response_code());
+    EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  }
+
+  // Can't actually cache it due to backend limitations. If the network
+  // transaction count is 2, this test isn't covering what it needs to.
+  {
+    ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+    transaction.request_headers =
+        "Range: bytes = "
+        "2305843009213693952-2305843009213693961\r\n" EXTRA_HEADER;
+    transaction.data = "rg: 52-61 ";
+    MockHttpRequest request(transaction);
+
+    HttpResponseInfo response;
+    RunTransactionTestWithRequest(cache.http_cache(), transaction, request,
+                                  &response);
+    ASSERT_TRUE(response.headers != nullptr);
+    EXPECT_EQ(206, response.headers->response_code());
+    EXPECT_EQ(3, cache.network_layer()->transaction_count());
+  }
 }
 
 // Parallel validation results in 200 for 1 transaction and validation matches

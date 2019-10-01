@@ -230,8 +230,6 @@ public abstract class ChromeFeatureList {
             "DarkenWebsitesCheckboxInThemesSetting";
     public static final String DIRECT_ACTIONS = "DirectActions";
     public static final String DOWNLOAD_FILE_PROVIDER = "DownloadFileProvider";
-    public static final String DOWNLOAD_HOME_SHOW_STORAGE_INFO = "DownloadHomeShowStorageInfo";
-    public static final String DOWNLOAD_HOME_V2 = "DownloadHomeV2";
     public static final String DOWNLOAD_LOCATION_SHOW_IMAGE_IN_GALLERY =
             "DownloadLocationShowImageInGallery";
     public static final String DOWNLOAD_NOTIFICATION_BADGE = "DownloadNotificationBadge";

@@ -36,7 +36,7 @@ public class SystemDownloadNotifierTest {
     private MockDownloadNotificationService mMockDownloadNotificationService;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         Looper.prepare();
         mMockDownloadNotificationService = new MockDownloadNotificationService();
         mSystemDownloadNotifier.setDownloadNotificationService(mMockDownloadNotificationService);

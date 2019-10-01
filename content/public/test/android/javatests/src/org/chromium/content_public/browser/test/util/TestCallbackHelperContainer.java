@@ -153,8 +153,7 @@ public class TestCallbackHelperContainer {
          * Waits till the JavaScript evaluation finishes and returns true if a value was returned,
          * false if it timed-out.
          */
-        public boolean waitUntilHasValue(long timeout, TimeUnit unit)
-                throws InterruptedException, TimeoutException {
+        public boolean waitUntilHasValue(long timeout, TimeUnit unit) throws TimeoutException {
             int count = getCallCount();
             // Reads and writes are atomic for reference variables in java, this is thread safe
             if (hasValue()) return true;
@@ -162,7 +161,7 @@ public class TestCallbackHelperContainer {
             return hasValue();
         }
 
-        public boolean waitUntilHasValue() throws InterruptedException, TimeoutException {
+        public boolean waitUntilHasValue() throws TimeoutException {
             return waitUntilHasValue(CallbackHelper.WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         }
 

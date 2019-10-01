@@ -75,7 +75,7 @@ public class PrintingControllerTest {
     private static final long TEST_TIMEOUT = 20000L;
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         // Do nothing.
     }
 
@@ -102,7 +102,7 @@ public class PrintingControllerTest {
     }
 
     private static class WaitForOnWriteHelper extends CallbackHelper {
-        public void waitForCallback(String msg) throws InterruptedException, TimeoutException {
+        public void waitForCallback(String msg) throws TimeoutException {
             waitForFirst(msg, TEST_TIMEOUT, TimeUnit.MILLISECONDS);
         }
     }
@@ -232,7 +232,7 @@ public class PrintingControllerTest {
     @TargetApi(Build.VERSION_CODES.KITKAT)
     @MediumTest
     @Feature({"Printing"})
-    public void testPrintCloseWindowBeforeStart() throws Throwable {
+    public void testPrintCloseWindowBeforeStart() {
         if (!(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)) return;
 
         mActivityTestRule.startMainActivityWithURL(URL);
@@ -386,7 +386,7 @@ public class PrintingControllerTest {
     @Test
     @SmallTest
     @Feature({"Printing"})
-    public void testPdfWritingDoneCalledWithoutInitailizePrintingTask() throws Throwable {
+    public void testPdfWritingDoneCalledWithoutInitailizePrintingTask() {
         if (!(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)) return;
 
         mActivityTestRule.startMainActivityWithURL(URL);

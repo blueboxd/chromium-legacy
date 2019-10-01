@@ -40,7 +40,7 @@ public class PaymentRequestShippingAddressChangeTest implements MainActivityStar
             new PaymentRequestTestRule("payment_request_shipping_address_change_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // The user has a shipping address on disk.
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
@@ -58,8 +58,7 @@ public class PaymentRequestShippingAddressChangeTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testAddressRedactionInShippingAddressChange()
-            throws InterruptedException, TimeoutException {
+    public void testAddressRedactionInShippingAddressChange() throws TimeoutException {
         // Select a shipping address and cancel out.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(

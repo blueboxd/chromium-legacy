@@ -212,7 +212,7 @@ public class TouchCommon {
         try {
             View view = TestThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
                 @Override
-                public View call() throws Exception {
+                public View call() {
                     return activity.findViewById(android.R.id.content).getRootView();
                 }
             });

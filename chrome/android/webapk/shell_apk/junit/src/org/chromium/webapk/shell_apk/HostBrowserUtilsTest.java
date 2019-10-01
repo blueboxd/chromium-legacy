@@ -5,11 +5,7 @@
 package org.chromium.webapk.shell_apk;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 
 import androidx.annotation.IntDef;
@@ -21,9 +17,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.ParameterizedRobolectricTestRunner;
 import org.robolectric.ParameterizedRobolectricTestRunner.Parameters;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowPackageManager;
 
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
@@ -34,9 +28,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /** Tests for HostBrowserUtils. */
 @RunWith(ParameterizedRobolectricTestRunner.class)
@@ -66,10 +58,8 @@ public class HostBrowserUtilsTest {
                     BROWSERS_SUPPORTING_WEBAPKS, BROWSERS_NOT_SUPPORTING_WEBAPKS);
 
     private Context mContext;
-    private ShadowPackageManager mPackageManager;
     private SharedPreferences mSharedPrefs;
-
-    private Set<String> mInstalledBrowsers = new HashSet<String>();
+    private TestBrowserInstaller mBrowserInstaller = new TestBrowserInstaller();
 
     // Whether we are testing with bound WebAPKs.
     private boolean mIsBoundWebApk;
@@ -87,7 +77,6 @@ public class HostBrowserUtilsTest {
     public void setUp() {
         mContext = RuntimeEnvironment.application;
 
-        mPackageManager = Shadows.shadowOf(mContext.getPackageManager());
         mSharedPrefs = WebApkSharedPreferences.getPrefs(mContext);
 
         HostBrowserUtils.resetCachedHostPackageForTesting();
@@ -252,7 +241,7 @@ public class HostBrowserUtilsTest {
         Assert.assertEquals(sharedPrefBrowserSupportingWebApks,
                 HostBrowserUtils.computeHostBrowserPackageClearCachedDataOnChange(mContext));
 
-        uninstallBrowser(sharedPrefBrowserSupportingWebApks);
+        mBrowserInstaller.uninstallBrowser(sharedPrefBrowserSupportingWebApks);
         Assert.assertNotEquals(sharedPrefBrowserSupportingWebApks,
                 HostBrowserUtils.getCachedHostBrowserPackage(mContext));
         Assert.assertNotEquals(sharedPrefBrowserSupportingWebApks,
@@ -280,7 +269,7 @@ public class HostBrowserUtilsTest {
                 HostBrowserUtils.computeHostBrowserPackageClearCachedDataOnChange(mContext));
         Assert.assertEquals("random", mSharedPrefs.getString(sharedPrefToTest, null));
 
-        uninstallBrowser(sharedPrefBrowserSupportingWebApks);
+        mBrowserInstaller.uninstallBrowser(sharedPrefBrowserSupportingWebApks);
         Assert.assertNull(
                 HostBrowserUtils.computeHostBrowserPackageClearCachedDataOnChange(mContext));
 
@@ -310,7 +299,7 @@ public class HostBrowserUtilsTest {
         Assert.assertEquals(sharedPrefBrowserSupportingWebApks,
                 HostBrowserUtils.getCachedHostBrowserPackage(mContext));
 
-        uninstallBrowser(sharedPrefBrowserSupportingWebApks);
+        mBrowserInstaller.uninstallBrowser(sharedPrefBrowserSupportingWebApks);
         Assert.assertNull(HostBrowserUtils.getCachedHostBrowserPackage(mContext));
 
         // SharedPreferences should be unaffected.
@@ -335,61 +324,10 @@ public class HostBrowserUtilsTest {
     private void setInstalledBrowsersAndClearedCachedData(
             @DefaultBrowserWebApkSupport int defaultBrowser, String[] newPackages) {
         HostBrowserUtils.resetCachedHostPackageForTesting();
-
-        while (!mInstalledBrowsers.isEmpty()) {
-            uninstallBrowser(mInstalledBrowsers.iterator().next());
-        }
-
         String defaultPackage = (defaultBrowser == DefaultBrowserWebApkSupport.YES)
                 ? DEFAULT_BROWSER_SUPPORTING_WEBAPKS
                 : DEFAULT_BROWSER_NOT_SUPPORTING_WEBAPKS;
-        installBrowser(defaultPackage);
-        if (newPackages != null) {
-            for (String newPackage : newPackages) {
-                installBrowser(newPackage);
-            }
-        }
-    }
-
-    private void installBrowser(String packageName) {
-        if (mInstalledBrowsers.contains(packageName)) return;
-
-        Intent intent = null;
-        try {
-            intent = WebApkUtils.getQueryInstalledBrowsersIntent();
-        } catch (Exception e) {
-            Assert.fail();
-            return;
-        }
-        mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(packageName));
-        mPackageManager.addPackage(packageName);
-        mInstalledBrowsers.add(packageName);
-    }
-
-    /**
-     * Uninstall a browser. Note: this function only works for uninstalling the non default browser.
-     */
-    private void uninstallBrowser(String packageName) {
-        Intent intent = null;
-        try {
-            intent = WebApkUtils.getQueryInstalledBrowsersIntent();
-        } catch (Exception e) {
-            Assert.fail();
-            return;
-        }
-        mPackageManager.removeResolveInfosForIntent(intent, packageName);
-        mPackageManager.removePackage(packageName);
-        mInstalledBrowsers.remove(packageName);
-    }
-
-    private static ResolveInfo newResolveInfo(String packageName) {
-        ActivityInfo activityInfo = new ActivityInfo();
-        activityInfo.packageName = packageName;
-        activityInfo.applicationInfo = new ApplicationInfo();
-        activityInfo.applicationInfo.enabled = true;
-        ResolveInfo resolveInfo = new ResolveInfo();
-        resolveInfo.activityInfo = activityInfo;
-        return resolveInfo;
+        mBrowserInstaller.setInstalledModernBrowsers(defaultPackage, newPackages);
     }
 
     private String getHostBrowserFromSharedPreferences() {

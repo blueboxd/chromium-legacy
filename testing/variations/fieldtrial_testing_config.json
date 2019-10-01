@@ -6151,6 +6151,26 @@
             ]
         }
     ],
+    "TranslateDesktopRefresh": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledTab",
+                    "params": {
+                        "translate_ui_bubble_style": "tab"
+                    },
+                    "enable_features": [
+                        "UseButtonTranslateBubbleUI"
+                    ]
+                }
+            ]
+        }
+    ],
     "TranslateRankerModel": [
         {
             "platforms": [

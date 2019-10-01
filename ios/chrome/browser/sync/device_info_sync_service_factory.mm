@@ -44,6 +44,12 @@ class DeviceInfoSyncClient : public syncer::DeviceInfoSyncClient {
     return send_tab_to_self::IsReceivingEnabledByUserOnThisDevice(prefs_);
   }
 
+  // syncer::DeviceInfoSyncClient:
+  base::Optional<syncer::DeviceInfo::SharingInfo> GetLocalSharingInfo()
+      const override {
+    return base::nullopt;
+  }
+
  private:
   PrefService* const prefs_;
 };

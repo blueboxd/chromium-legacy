@@ -101,7 +101,7 @@ public class MainIntentBehaviorMetricsIntegrationTest {
                                 TabLaunchType.FROM_RESTORE, null));
         CriteriaHelper.pollUiThread(Criteria.equals(2, new Callable<Integer>() {
             @Override
-            public Integer call() throws Exception {
+            public Integer call() {
                 return mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount();
             }
         }));
@@ -198,7 +198,7 @@ public class MainIntentBehaviorMetricsIntegrationTest {
 
     @MediumTest
     @Test
-    public void testLaunch_Duration_MoreThan_1Day() throws Exception {
+    public void testLaunch_Duration_MoreThan_1Day() {
         long timestamp = System.currentTimeMillis() - 25 * HOURS_IN_MS;
         ContextUtils.getAppSharedPreferences()
                 .edit()
@@ -226,7 +226,7 @@ public class MainIntentBehaviorMetricsIntegrationTest {
 
     @MediumTest
     @Test
-    public void testLaunch_Duration_LessThan_1Day() throws Exception {
+    public void testLaunch_Duration_LessThan_1Day() {
         long timestamp = System.currentTimeMillis() - 12 * HOURS_IN_MS;
         ContextUtils.getAppSharedPreferences()
                 .edit()
@@ -254,7 +254,7 @@ public class MainIntentBehaviorMetricsIntegrationTest {
     @MediumTest
     @DisabledTest(message = "crbug.com/879165")
     @Test
-    public void testLaunch_From_InAppActivities() throws Exception {
+    public void testLaunch_From_InAppActivities() {
         try {
             MainIntentBehaviorMetrics.setTimeoutDurationMsForTesting(0);
             long timestamp = System.currentTimeMillis() - 12 * HOURS_IN_MS;
@@ -349,7 +349,7 @@ public class MainIntentBehaviorMetricsIntegrationTest {
     private void assertMainIntentBehavior(Integer expected) {
         CriteriaHelper.pollUiThread(Criteria.equals(expected, new Callable<Integer>() {
             @Override
-            public Integer call() throws Exception {
+            public Integer call() {
                 MainIntentBehaviorMetrics behaviorMetrics =
                         mActivityTestRule.getActivity().getMainIntentBehaviorMetricsForTesting();
                 Integer actual = behaviorMetrics.getLastMainIntentBehaviorForTesting();

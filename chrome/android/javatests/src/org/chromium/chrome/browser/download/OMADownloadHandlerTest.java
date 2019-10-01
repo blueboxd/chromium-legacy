@@ -358,7 +358,7 @@ public class OMADownloadHandlerTest {
     @Test
     @MediumTest
     @Feature({"Download"})
-    public void testEnqueueOMADownloads() throws InterruptedException {
+    public void testEnqueueOMADownloads() {
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         Context context = getTestContext();

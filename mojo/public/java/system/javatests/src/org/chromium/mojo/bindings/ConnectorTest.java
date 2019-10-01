@@ -48,7 +48,7 @@ public class ConnectorTest {
      * @see MojoTestCase#setUp()
      */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         Core core = CoreImpl.getInstance();
         Pair<MessagePipeHandle, MessagePipeHandle> handles =
                 core.createMessagePipe(new MessagePipeHandle.CreateOptions());
@@ -68,7 +68,7 @@ public class ConnectorTest {
      * @see MojoTestCase#tearDown()
      */
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mConnector.close();
         mHandle.close();
     }

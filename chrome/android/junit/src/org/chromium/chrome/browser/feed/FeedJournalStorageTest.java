@@ -155,7 +155,7 @@ public class FeedJournalStorageTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         mJournalStorage = new FeedJournalStorage(mBridge);
     }

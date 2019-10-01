@@ -24,6 +24,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
+#include "chromeos/services/assistant/assistant_manager_service_delegate_impl.h"
 #include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
@@ -314,6 +315,7 @@ void Service::UpdateAssistantManagerState() {
         DVLOG(1) << "Request Assistant start";
       }
       break;
+    case AssistantManagerService::State::STARTING:
     case AssistantManagerService::State::STARTED:
       // Wait if |assistant_manager_service_| is not at a stable state.
       update_assistant_manager_callback_.Cancel();
@@ -435,10 +437,13 @@ void Service::CreateAssistantManagerService() {
   client_->RequestBatteryMonitor(
       battery_monitor.InitWithNewPipeAndPassReceiver());
 
+  auto delegate = std::make_unique<AssistantManagerServiceDelegateImpl>(
+      std::move(battery_monitor), client_.get(), context());
+
   // |assistant_manager_service_| is only created once.
   DCHECK(url_loader_factory_info_);
   assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
-      client_.get(), std::move(battery_monitor), context(),
+      client_.get(), context(), std::move(delegate),
       std::move(url_loader_factory_info_), is_signed_out_mode_);
 #else
   assistant_manager_service_ =
@@ -450,9 +455,10 @@ void Service::CreateAssistantManagerService() {
 
 void Service::FinalizeAssistantManagerService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   DCHECK(assistant_manager_service_->GetState() ==
-         AssistantManagerService::State::RUNNING);
+             AssistantManagerService::STARTED ||
+         assistant_manager_service_->GetState() ==
+             AssistantManagerService::RUNNING);
 
   // Using session_observer_binding_ as a flag to control onetime initialization
   if (!observing_ash_session_) {

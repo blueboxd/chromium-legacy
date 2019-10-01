@@ -35,7 +35,7 @@ public class MultiInstanceMigrationTest {
     private Context mAppContext;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mAppContext = new AdvancedMockContext(InstrumentationRegistry.getInstrumentation()
                                                       .getTargetContext()
                                                       .getApplicationContext());
@@ -48,9 +48,7 @@ public class MultiInstanceMigrationTest {
     }
 
     @After
-    public void tearDown() throws Exception {
-
-    }
+    public void tearDown() {}
 
     private void buildPersistentStoreAndWaitForMigration() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {

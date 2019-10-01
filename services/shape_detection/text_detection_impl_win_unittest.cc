@@ -15,7 +15,7 @@
 #include "base/test/task_environment.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/shape_detection/public/mojom/textdetection.mojom.h"
 #include "services/shape_detection/text_detection_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,9 +58,8 @@ TEST_F(TextDetectionImplWinTest, ScanOnce) {
   if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
-  mojom::TextDetectionPtr text_service;
-  auto request = mojo::MakeRequest(&text_service);
-  TextDetectionImpl::Create(std::move(request));
+  mojo::Remote<mojom::TextDetection> text_service;
+  TextDetectionImpl::Create(text_service.BindNewPipeAndPassReceiver());
 
   // Load image data from test directory.
   base::FilePath image_path;

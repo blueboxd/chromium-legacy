@@ -13,7 +13,7 @@ import org.chromium.base.metrics.RecordHistogram;
  */
 public class DisableHistogramsRule extends ExternalResource {
     @Override
-    protected void before() throws Throwable {
+    protected void before() {
         RecordHistogram.setDisabledForTests(true);
     }
 

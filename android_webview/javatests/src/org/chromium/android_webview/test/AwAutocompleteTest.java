@@ -52,7 +52,7 @@ public class AwAutocompleteTest {
                 new MetricsUtils.HistogramDelta("Autofill.AutocompleteEnabled", 0 /*false*/);
     }
 
-    private void verifyUmaAutocompleteEnabled(final boolean enabled) throws Throwable {
+    private void verifyUmaAutocompleteEnabled(final boolean enabled) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             if (enabled) {
                 assertEquals(1, mAutocompleteEnabled.getDelta());
@@ -64,7 +64,7 @@ public class AwAutocompleteTest {
         });
     }
 
-    private void verifyUmaNotRecorded() throws Throwable {
+    private void verifyUmaNotRecorded() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             assertEquals(0, mAutocompleteEnabled.getDelta());
             assertEquals(0, mAutocompleteDisabled.getDelta());
@@ -113,7 +113,7 @@ public class AwAutocompleteTest {
         dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
     }
 
-    private void disableAwAutocomplete() throws Throwable {
+    private void disableAwAutocomplete() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mAwContents.getSettings().setSaveFormData(false));
     }
@@ -129,7 +129,7 @@ public class AwAutocompleteTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mWebServer.shutdown();
     }
 

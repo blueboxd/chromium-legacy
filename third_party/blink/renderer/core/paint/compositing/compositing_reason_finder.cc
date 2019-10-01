@@ -70,12 +70,6 @@ CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
   reasons |= CompositingReasonsForAnimation(style);
   reasons |= CompositingReasonsForWillChange(style);
 
-  if (style.UsedTransformStyle3D() == ETransformStyle3D::kPreserve3d)
-    reasons |= CompositingReason::kPreserve3DWith3DDescendants;
-
-  if (style.HasPerspective())
-    reasons |= CompositingReason::kPerspectiveWith3DDescendants;
-
   // If the implementation of CreatesGroup changes, we need to be aware of that
   // in this part of code.
   DCHECK((style.HasOpacity() || layout_object.HasMask() ||
@@ -124,7 +118,9 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
 
   auto* layer = ToLayoutBoxModelObject(object).Layer();
   if (layer->Has3DTransformedDescendant()) {
-    if (style.HasPerspective())
+    // Perspective (specified either by perspective or transform properties)
+    // with 3d descendants need a render surface for flattening purposes.
+    if (style.HasPerspective() || style.Transform().HasPerspective())
       reasons |= CompositingReason::kPerspectiveWith3DDescendants;
     if (style.Preserves3D())
       reasons |= CompositingReason::kPreserve3DWith3DDescendants;
@@ -151,7 +147,7 @@ bool CompositingReasonFinder::RequiresCompositingFor3DTransform(
   // may have transforms, but the layoutObject may be an inline that doesn't
   // support them.
   return layout_object.HasTransformRelatedProperty() &&
-         layout_object.StyleRef().Has3DTransform() &&
+         layout_object.StyleRef().Has3DTransformOperation() &&
          // Don't composite "trivial" 3D transforms such as translateZ(0) on
          // low-end devices. These devices are much more sensitive to memory
          // and per-composited-layer commit overhead.

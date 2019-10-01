@@ -542,7 +542,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
 // Note: this is flaky on multiple platforms (crbug.com/1003598). Temporarily
 // enabled to find flakiness cause.
 IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
-                       WebRequestAuthRequiredAsync) {
+                       DISABLED_WebRequestAuthRequiredAsync) {
   CancelLoginDialog login_dialog_helper;
 
   ASSERT_TRUE(StartEmbeddedTestServer());

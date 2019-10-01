@@ -219,7 +219,7 @@ public class GCMMessageTest {
      * filled byte array when data has been provided.
      */
     @Test
-    public void testRawDataSerializationToJSON() throws JSONException {
+    public void testRawDataSerializationToJSON() {
         Bundle extras = new Bundle();
         extras.putString("subtype", "MyAppId");
 
@@ -259,7 +259,7 @@ public class GCMMessageTest {
      * Tests that getOriginalPriority returns Priority.NONE if it was not set in the bundle.
      */
     @Test
-    public void testNullOriginalPriority() throws JSONException {
+    public void testNullOriginalPriority() {
         Bundle extras = new Bundle();
 
         // Compose a simple message that lacks all optional fields.

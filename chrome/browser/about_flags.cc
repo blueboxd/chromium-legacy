@@ -3127,12 +3127,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
-    {"download-home-v2", flag_descriptions::kDownloadHomeV2Name,
-     flag_descriptions::kDownloadHomeV2Description, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kDownloadHomeV2)},
-#endif
-
-#if defined(OS_ANDROID)
     {"download-auto-resumption-native",
      flag_descriptions::kDownloadAutoResumptionNativeName,
      flag_descriptions::kDownloadAutoResumptionNativeDescription, kOsAndroid,
@@ -3801,11 +3795,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(features::kEnableAmbientAuthenticationInGuestSession)},
 
-    {"enable-send-tab-to-self-show-sending-ui",
-     flag_descriptions::kSendTabToSelfShowSendingUIName,
-     flag_descriptions::kSendTabToSelfShowSendingUIDescription, kOsAll,
-     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfShowSendingUI)},
-
     {"enable-send-tab-to-self-when-signed-in",
      flag_descriptions::kSendTabToSelfWhenSignedInName,
      flag_descriptions::kSendTabToSelfWhenSignedInDescription, kOsAll,
@@ -4139,6 +4128,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCupsPrintersUiOverhaulName,
      flag_descriptions::kCupsPrintersUiOverhaulDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kCupsPrintersUiOverhaul)},
+
+    {"reduce-display-notifications",
+     flag_descriptions::kReduceDisplayNotificationsName,
+     flag_descriptions::kReduceDisplayNotificationsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kReduceDisplayNotifications)},
 
     {"use-search-click-for-right-click",
      flag_descriptions::kUseSearchClickForRightClickName,

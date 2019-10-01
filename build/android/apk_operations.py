@@ -18,7 +18,6 @@ import posixpath
 import random
 import re
 import shlex
-import shutil
 import sys
 import tempfile
 import textwrap
@@ -129,8 +128,6 @@ def _GenerateBundleApks(info,
 
 def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
                    modules, fake_modules):
-  # Path to push fake modules for Chrome to pick up.
-  MODULES_SRC_DIRECTORY_PATH = '/data/local/tmp/modules'
   # Path Chrome creates after validating fake modules. This needs to be cleared
   # for pushed fake modules to be picked up.
   SPLITCOMPAT_PATH = '/data/data/' + package_name + '/files/splitcompat'
@@ -151,88 +148,24 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
     else:
       logging.info('Skipped removing nonexistent %s', SPLITCOMPAT_PATH)
 
-  def InstallFakeModules(device):
-    try:
-      temp_path = tempfile.mkdtemp()
-
-      if not fake_modules:
-        # Push empty temp_path to clear folder on device and update the cache.
-        device.PushChangedFiles([(temp_path, MODULES_SRC_DIRECTORY_PATH)],
-                                delete_device_stale=True)
-        return
-
-      # Device-spec JSON is needed, so create that first.
-      device_spec_filename = os.path.join(temp_path, 'device_spec.json')
-      get_device_spec_cmd_args = [
-          'get-device-spec', '--adb=' + adb_wrapper.AdbWrapper.GetAdbPath(),
-          '--device-id=' + device.serial, '--output=' + device_spec_filename
-      ]
-      bundletool.RunBundleTool(get_device_spec_cmd_args)
-
-      # Extract fake modules to temp directory. For now, installation
-      # requires running 'bundletool extract-apks'. Unfortunately, this leads
-      # to unneeded compression of module files.
-      extract_apks_cmd_args = [
-          'extract-apks', '--apks=' + bundle_apks,
-          '--device-spec=' + device_spec_filename,
-          '--modules=' + ','.join(fake_modules), '--output-dir=' + temp_path
-      ]
-      bundletool.RunBundleTool(extract_apks_cmd_args)
-
-      # Push fake modules, with renames.
-      fake_module_apks = set()
-      for fake_module in fake_modules:
-        found_master = False
-
-        for filename in os.listdir(temp_path):
-          # If file matches expected format, rename it to follow conventions
-          # required by splitcompatting.
-          match = re.match(r'%s-([a-z_0-9]+)\.apk' % fake_module, filename)
-          local_path = os.path.join(temp_path, filename)
-
-          if not match:
-            continue
-
-          module_suffix = match.group(1)
-          remote = os.path.join(
-              temp_path, '%s.config.%s.apk' % (fake_module, module_suffix))
-          # Check if filename matches a master apk.
-          if 'master' in module_suffix:
-            if found_master:
-              raise Exception('Expect 1 master apk file for %s' % fake_module)
-            found_master = True
-            remote = os.path.join(temp_path, '%s.apk' % fake_module)
-
-          os.rename(local_path, remote)
-          fake_module_apks.add(os.path.basename(remote))
-
-      # Files that weren't renamed should not be pushed, remove from temp_path.
-      for filename in os.listdir(temp_path):
-        if filename not in fake_module_apks:
-          os.remove(os.path.join(temp_path, filename))
-
-      device.PushChangedFiles([(temp_path, MODULES_SRC_DIRECTORY_PATH)],
-                              delete_device_stale=True)
-
-    finally:
-      shutil.rmtree(temp_path, ignore_errors=True)
-
   def Install(device):
     ClearFakeModules(device)
-    if fake_modules:
+    if fake_modules and ShouldWarnFakeFeatureModuleInstallFlag(device):
       # Print warning if command line is not set up for fake modules.
-      if ShouldWarnFakeFeatureModuleInstallFlag(device):
-        msg = ('Command line has no %s: Fake modules will be ignored.' %
-               FAKE_FEATURE_MODULE_INSTALL)
-        print(_Colorize(msg, colorama.Fore.YELLOW + colorama.Style.BRIGHT))
+      msg = ('Command line has no %s: Fake modules will be ignored.' %
+             FAKE_FEATURE_MODULE_INSTALL)
+      print(_Colorize(msg, colorama.Fore.YELLOW + colorama.Style.BRIGHT))
 
-    InstallFakeModules(device)
-    device.Install(bundle_apks, modules=modules, allow_downgrade=True)
+    device.Install(
+        bundle_apks,
+        modules=modules,
+        fake_modules=fake_modules,
+        allow_downgrade=True)
 
   # Basic checks for |modules| and |fake_modules|.
   # * |fake_modules| cannot include 'base'.
   # * If |fake_modules| is given, ensure |modules| includes 'base'.
-  # * They must be disjoint.
+  # * They must be disjoint (checked by device.Install).
   modules_set = set(modules) if modules else set()
   fake_modules_set = set(fake_modules) if fake_modules else set()
   if BASE_MODULE in fake_modules_set:
@@ -240,8 +173,6 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
   if fake_modules_set and BASE_MODULE not in modules_set:
     raise Exception(
         '\'-f FAKE\' must be accompanied by \'-m {}\''.format(BASE_MODULE))
-  if fake_modules_set.intersection(modules_set):
-    raise Exception('\'-m\' and \'-f\' entries must be disjoint.')
 
   logging.info('Installing bundle.')
   device_utils.DeviceUtils.parallel(devices).pMap(Install)

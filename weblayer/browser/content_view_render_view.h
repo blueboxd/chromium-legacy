@@ -37,30 +37,23 @@ class ContentViewRenderView : public content::CompositorClient {
   }
 
   // Methods called from Java via JNI -----------------------------------------
-  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Destroy(JNIEnv* env);
   void SetCurrentWebContents(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& jweb_contents);
   void OnPhysicalBackingSizeChanged(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& jweb_contents,
       jint width,
       jint height);
-  void SurfaceCreated(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& obj);
-  void SurfaceDestroyed(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj);
+  void SurfaceCreated(JNIEnv* env);
+  void SurfaceDestroyed(JNIEnv* env, jboolean cache_back_buffer);
   void SurfaceChanged(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& obj,
                       jboolean can_be_used_with_surface_control,
                       jint width,
                       jint height,
                       const base::android::JavaParamRef<jobject>& surface);
-  base::android::ScopedJavaLocalRef<jobject> GetResourceManager(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jobj);
+  base::android::ScopedJavaLocalRef<jobject> GetResourceManager(JNIEnv* env);
 
   // CompositorClient implementation
   void UpdateLayerTreeHost() override;
@@ -80,6 +73,8 @@ class ContentViewRenderView : public content::CompositorClient {
   // Set as the root-layer of the compositor. Contains |web_contents_layer_|.
   scoped_refptr<cc::Layer> root_container_layer_;
   scoped_refptr<cc::Layer> web_contents_layer_;
+
+  bool evict_back_buffer_on_next_swap_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewRenderView);
 };

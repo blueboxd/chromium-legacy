@@ -48,7 +48,7 @@ public class BookmarkBridgeTest {
     private BookmarkId mDesktopNode;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Profile profile = Profile.getLastUsedProfile();
             mBookmarkBridge = new BookmarkBridge(profile);
@@ -67,7 +67,7 @@ public class BookmarkBridgeTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Bookmark"})
-    public void testAddBookmarksAndFolders() throws Throwable {
+    public void testAddBookmarksAndFolders() {
         BookmarkId bookmarkA = mBookmarkBridge.addBookmark(mDesktopNode, 0, "a", "http://a.com");
         verifyBookmark(bookmarkA, "a", "http://a.com/", false, mDesktopNode);
         BookmarkId bookmarkB = mBookmarkBridge.addBookmark(mOtherNode, 0, "b", "http://b.com");
@@ -100,7 +100,7 @@ public class BookmarkBridgeTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Bookmark"})
-    public void testGetAllFoldersWithDepths() throws Throwable {
+    public void testGetAllFoldersWithDepths() {
         BookmarkId folderA = mBookmarkBridge.addFolder(mMobileNode, 0, "a");
         BookmarkId folderB = mBookmarkBridge.addFolder(mDesktopNode, 0, "b");
         BookmarkId folderC = mBookmarkBridge.addFolder(mOtherNode, 0, "c");
@@ -137,7 +137,7 @@ public class BookmarkBridgeTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Bookmark"})
-    public void testGetMoveDestinations() throws Throwable {
+    public void testGetMoveDestinations() {
         BookmarkId folderA = mBookmarkBridge.addFolder(mMobileNode, 0, "a");
         BookmarkId folderB = mBookmarkBridge.addFolder(mDesktopNode, 0, "b");
         BookmarkId folderC = mBookmarkBridge.addFolder(mOtherNode, 0, "c");

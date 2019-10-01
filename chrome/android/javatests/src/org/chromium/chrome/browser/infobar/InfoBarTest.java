@@ -135,7 +135,7 @@ public class InfoBarTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         if (mTestServer != null) {
             mTestServer.stopAndDestroyServer();
         }
@@ -228,7 +228,7 @@ public class InfoBarTest {
     @MediumTest
     @Feature({"Browser", "Main"})
     @DisabledTest(message = "crbug.com/593003")
-    public void testInfoBarForPopUp() throws InterruptedException, TimeoutException {
+    public void testInfoBarForPopUp() throws TimeoutException {
         mActivityTestRule.loadUrl(mTestServer.getURL(POPUP_PAGE));
         mListener.addInfoBarAnimationFinished("InfoBar not added");
 
@@ -253,8 +253,7 @@ public class InfoBarTest {
     @MediumTest
     @Feature({"Browser"})
     @RetryOnFailure
-    public void testInfoBarForGeolocationDisappearsOnBack()
-            throws InterruptedException, TimeoutException {
+    public void testInfoBarForGeolocationDisappearsOnBack() throws TimeoutException {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         mActivityTestRule.loadUrl(HELLO_WORLD_URL);
         mActivityTestRule.loadUrl(mTestServer.getURL(POPUP_PAGE));
@@ -458,7 +457,7 @@ public class InfoBarTest {
     @MediumTest
     @Feature({"Browser", "Main"})
     @RetryOnFailure
-    public void testInfoBarForHungRenderer() throws InterruptedException, TimeoutException {
+    public void testInfoBarForHungRenderer() throws TimeoutException {
         mActivityTestRule.loadUrl(HELLO_WORLD_URL);
 
         // Fake an unresponsive renderer signal.
@@ -495,8 +494,7 @@ public class InfoBarTest {
     @MediumTest
     @Feature({"Browser", "Main"})
     @RetryOnFailure
-    public void testInfoBarForHungRendererCanKillRenderer()
-            throws InterruptedException, TimeoutException {
+    public void testInfoBarForHungRendererCanKillRenderer() throws TimeoutException {
         mActivityTestRule.loadUrl(HELLO_WORLD_URL);
 
         // Fake an unresponsive renderer signal.
@@ -537,8 +535,7 @@ public class InfoBarTest {
     @MediumTest
     @Feature({"Browser", "Main"})
     @RetryOnFailure
-    public void testInfoBarContainerSwapsWebContents()
-            throws InterruptedException, TimeoutException {
+    public void testInfoBarContainerSwapsWebContents() throws TimeoutException {
         // Add an infobar.
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         mActivityTestRule.loadUrl(mTestServer.getURL(POPUP_PAGE));

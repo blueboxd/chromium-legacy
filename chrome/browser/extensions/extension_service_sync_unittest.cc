@@ -364,8 +364,7 @@ TEST_F(ExtensionServiceSyncTest, DisableExtensionFromSync) {
   ASSERT_EQ(3u, loaded_.size());
 
   // We start enabled.
-  const Extension* extension =
-      registry()->GetExtensionById(good0, ExtensionRegistry::COMPATIBILITY);
+  const Extension* extension = registry()->enabled_extensions().GetByID(good0);
   ASSERT_TRUE(extension);
   ASSERT_TRUE(service()->IsExtensionEnabled(good0));
 
@@ -564,10 +563,9 @@ TEST_F(ExtensionServiceSyncTest, IgnoreSyncChangesWhenLocalStateIsMoreRecent) {
                               extensions::disable_reason::DISABLE_USER_ACTION);
   ASSERT_FALSE(service()->IsExtensionEnabled(good2));
 
-  const Extension* extension0 =
-      registry()->GetExtensionById(good0, ExtensionRegistry::COMPATIBILITY);
+  const Extension* extension0 = registry()->enabled_extensions().GetByID(good0);
   const Extension* extension2 =
-      registry()->GetExtensionById(good2, ExtensionRegistry::COMPATIBILITY);
+      registry()->disabled_extensions().GetByID(good2);
   ASSERT_TRUE(extensions::sync_helper::IsSyncable(extension0));
   ASSERT_TRUE(extensions::sync_helper::IsSyncable(extension2));
 
@@ -626,7 +624,7 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
 
   {
     const Extension* extension =
-        registry()->GetExtensionById(good0, ExtensionRegistry::COMPATIBILITY);
+        registry()->enabled_extensions().GetByID(good0);
     ASSERT_TRUE(extension);
 
     // Disable the extension.
@@ -642,7 +640,7 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
 
   {
     const Extension* extension =
-        registry()->GetExtensionById(good0, ExtensionRegistry::COMPATIBILITY);
+        registry()->disabled_extensions().GetByID(good0);
     ASSERT_TRUE(extension);
 
     // Set incognito enabled to true.
@@ -658,7 +656,7 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
 
   {
     const Extension* extension =
-        registry()->GetExtensionById(good0, ExtensionRegistry::COMPATIBILITY);
+        registry()->disabled_extensions().GetByID(good0);
     ASSERT_TRUE(extension);
 
     // Add another disable reason.
@@ -676,7 +674,7 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
 
   {
     const Extension* extension =
-        registry()->GetExtensionById(good0, ExtensionRegistry::COMPATIBILITY);
+        registry()->disabled_extensions().GetByID(good0);
     ASSERT_TRUE(extension);
 
     // Uninstall the extension.
@@ -1084,23 +1082,22 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataUninstall) {
   // Should do nothing.
   extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
   EXPECT_FALSE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::COMPATIBILITY));
+      registry()->GetExtensionById(good_crx, ExtensionRegistry::EVERYTHING));
 
   // Install the extension.
   base::FilePath extension_path = data_dir().AppendASCII("good.crx");
   InstallCRX(extension_path, INSTALL_NEW);
-  EXPECT_TRUE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::COMPATIBILITY));
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
 
   // Should uninstall the extension.
   extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
   EXPECT_FALSE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::COMPATIBILITY));
+      registry()->GetExtensionById(good_crx, ExtensionRegistry::EVERYTHING));
 
   // Should again do nothing.
   extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
   EXPECT_FALSE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::COMPATIBILITY));
+      registry()->GetExtensionById(good_crx, ExtensionRegistry::EVERYTHING));
 }
 
 TEST_F(ExtensionServiceSyncTest, ProcessSyncDataWrongType) {
@@ -1111,8 +1108,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataWrongType) {
   // Install the extension.
   base::FilePath extension_path = data_dir().AppendASCII("good.crx");
   InstallCRX(extension_path, INSTALL_NEW);
-  EXPECT_TRUE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::COMPATIBILITY));
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
 
   sync_pb::EntitySpecifics specifics;
   sync_pb::AppSpecifics* app_specifics = specifics.mutable_app();
@@ -1130,8 +1126,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataWrongType) {
 
     // Should do nothing
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
-    EXPECT_TRUE(registry()->GetExtensionById(good_crx,
-                                             ExtensionRegistry::COMPATIBILITY));
+    EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
   }
 
   {
@@ -1142,8 +1137,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataWrongType) {
 
     // Should again do nothing.
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
-    EXPECT_TRUE(
-        registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
+    EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
   }
 }
 

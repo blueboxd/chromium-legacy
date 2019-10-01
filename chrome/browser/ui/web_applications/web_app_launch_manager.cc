@@ -47,7 +47,7 @@ void SetWebAppPrefsForWebContents(content::WebContents* web_contents) {
 }
 
 content::WebContents* ShowWebApplicationWindow(
-    const ::AppLaunchParams& params,
+    const apps::AppLaunchParams& params,
     const std::string& app_id,
     const GURL& launch_url,
     Browser* browser,
@@ -90,11 +90,11 @@ WebAppLaunchManager::WebAppLaunchManager(Profile* profile)
 WebAppLaunchManager::~WebAppLaunchManager() = default;
 
 content::WebContents* WebAppLaunchManager::OpenApplication(
-    const AppLaunchParams& params) {
+    const apps::AppLaunchParams& params) {
   if (!provider_->registrar().IsInstalled(params.app_id))
     return nullptr;
 
-  Browser* browser = CreateWebApplicationWindow(params.profile, params.app_id);
+  Browser* browser = CreateWebApplicationWindow(profile(), params.app_id);
 
   return ShowWebApplicationWindow(
       params, params.app_id,
@@ -111,10 +111,10 @@ bool WebAppLaunchManager::OpenApplicationWindow(
   if (!provider_)
     return false;
 
-  ::AppLaunchParams params(profile(), app_id,
-                           apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                           WindowOpenDisposition::NEW_WINDOW,
-                           apps::mojom::AppLaunchSource::kSourceCommandLine);
+  apps::AppLaunchParams params(
+      app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_WINDOW,
+      apps::mojom::AppLaunchSource::kSourceCommandLine);
   params.command_line = command_line;
   params.current_directory = current_directory;
 
@@ -129,10 +129,10 @@ bool WebAppLaunchManager::OpenApplicationTab(const std::string& app_id) {
   if (!provider_)
     return false;
 
-  ::AppLaunchParams params(profile(), app_id,
-                           apps::mojom::LaunchContainer::kLaunchContainerTab,
-                           WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                           apps::mojom::AppLaunchSource::kSourceCommandLine);
+  apps::AppLaunchParams params(
+      app_id, apps::mojom::LaunchContainer::kLaunchContainerTab,
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      apps::mojom::AppLaunchSource::kSourceCommandLine);
 
   // Wait for the web applications database to load.
   // If the profile and WebAppLaunchManager are destroyed,
@@ -143,7 +143,8 @@ bool WebAppLaunchManager::OpenApplicationTab(const std::string& app_id) {
   return true;
 }
 
-void WebAppLaunchManager::OpenWebApplication(const ::AppLaunchParams& params) {
+void WebAppLaunchManager::OpenWebApplication(
+    const apps::AppLaunchParams& params) {
   OpenApplication(params);
 }
 

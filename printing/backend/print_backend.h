@@ -58,9 +58,6 @@ struct PRINTING_EXPORT AdvancedCapabilityValue {
 
   // Localized name for the value.
   std::string display_name;
-
-  // True iff this is default value.
-  bool is_default = false;
 };
 
 struct PRINTING_EXPORT AdvancedCapability {
@@ -73,6 +70,12 @@ struct PRINTING_EXPORT AdvancedCapability {
 
   // Localized name for the attribute.
   std::string display_name;
+
+  // Attribute type.
+  base::Value::Type type;
+
+  // Default value.
+  std::string default_value;
 
   // Values for enumerated attributes.
   std::vector<AdvancedCapabilityValue> values;

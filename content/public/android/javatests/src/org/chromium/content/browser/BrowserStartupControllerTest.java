@@ -117,7 +117,7 @@ public class BrowserStartupControllerTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mController = new TestBrowserStartupController();
         RecordHistogram.setDisabledForTests(true);
         // Setting the static singleton instance field enables more correct testing, since it is

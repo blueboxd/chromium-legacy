@@ -1416,7 +1416,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     // The default is to delay the secondary GPU process for 120 seconds.
     bool delayed = !parsed_command_line_.HasSwitch(
         switches::kNoDelayForDX12VulkanInfoCollection);
-    GpuDataManagerImpl::GetInstance()->RequestCompleteGpuInfoIfNeeded(
+    GpuDataManagerImpl::GetInstance()->RequestDxdiagDx12VulkanGpuInfoIfNeeded(
         kGpuInfoRequestDx12Vulkan, delayed);
   }
 

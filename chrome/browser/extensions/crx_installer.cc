@@ -544,7 +544,7 @@ void CrxInstaller::CheckInstall() {
     ExtensionRegistry* registry = ExtensionRegistry::Get(service->profile());
     for (const auto& import : imports) {
       const Extension* imported_module = registry->GetExtensionById(
-          import.extension_id, ExtensionRegistry::COMPATIBILITY);
+          import.extension_id, ExtensionRegistry::EVERYTHING);
       if (!imported_module)
         continue;
 

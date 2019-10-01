@@ -52,7 +52,7 @@ public class WebApkIntegrationTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         WebApkUpdateManager.setUpdatesEnabledForTesting(false);
         mActivityTestRule.getEmbeddedTestServerRule().setServerUsesHttps(true);
         Uri mapToUri =

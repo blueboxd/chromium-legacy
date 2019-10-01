@@ -102,7 +102,7 @@ class SampleForTests {
     // call ClearException() and act as appropriate.
     // See more details at the "@CalledByNativeUnchecked" annotation.
     @CalledByNativeUnchecked
-    void methodThatThrowsException() throws Exception {}
+    void methodThatThrowsException() {}
 
     // The generator is not confused by inline comments:
     // @CalledByNative void thisShouldNotAppearInTheOutput();

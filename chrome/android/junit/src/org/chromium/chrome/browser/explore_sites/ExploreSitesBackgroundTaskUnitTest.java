@@ -184,7 +184,7 @@ public class ExploreSitesBackgroundTaskUnitTest {
     }
 
     @Test
-    public void testNoNetwork() throws Exception {
+    public void testNoNetwork() {
         initDeviceConditions(ConnectionType.CONNECTION_NONE);
         TaskParameters params = TaskParameters.create(TaskIds.EXPLORE_SITES_REFRESH_JOB_ID).build();
 
@@ -196,7 +196,7 @@ public class ExploreSitesBackgroundTaskUnitTest {
     }
 
     @Test
-    public void testRemovesDeprecatedJobId() throws Exception {
+    public void testRemovesDeprecatedJobId() {
         TaskInfo.Builder deprecatedTaskInfoBuilder =
                 TaskInfo.createPeriodicTask(TaskIds.DEPRECATED_EXPLORE_SITES_REFRESH_JOB_ID,
                                 ExploreSitesBackgroundTask.class, TimeUnit.HOURS.toMillis(4),
@@ -221,7 +221,7 @@ public class ExploreSitesBackgroundTaskUnitTest {
     }
 
     @Test
-    public void testRemovesTaskIfFeatureIsDisabled() throws Exception {
+    public void testRemovesTaskIfFeatureIsDisabled() {
         disableExploreSites();
 
         TaskInfo.Builder taskInfoBuilder =
@@ -247,7 +247,7 @@ public class ExploreSitesBackgroundTaskUnitTest {
     }
 
     @Test
-    public void testDoesNotRemoveTaskIfFeatureIsEnabled() throws Exception {
+    public void testDoesNotRemoveTaskIfFeatureIsEnabled() {
         TaskInfo.Builder taskInfoBuilder =
                 TaskInfo.createPeriodicTask(TaskIds.EXPLORE_SITES_REFRESH_JOB_ID,
                                 ExploreSitesBackgroundTask.class, TimeUnit.HOURS.toMillis(4),

@@ -27,6 +27,7 @@ class TracingSamplerProfiler;
 }
 
 class ChromeContentBrowserClient;
+class HeapProfilerController;
 
 // Chrome implementation of ContentMainDelegate.
 class ChromeMainDelegate : public content::ContentMainDelegate {
@@ -88,6 +89,10 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 #endif
 
   std::unique_ptr<tracing::TracingSamplerProfiler> tracing_sampler_profiler_;
+
+  // The controller schedules UMA heap profiles collections and forwarding down
+  // the reporting pipeline.
+  std::unique_ptr<HeapProfilerController> heap_profiler_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMainDelegate);
 };

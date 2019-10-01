@@ -106,7 +106,7 @@ public class UrlBarIntegrationTest {
     @SmallTest
     @Feature({"Omnibox"})
     @RetryOnFailure
-    public void testCopyHuge() throws InterruptedException {
+    public void testCopyHuge() {
         mActivityTestRule.startMainActivityWithURL(HUGE_URL);
         OmniboxTestUtils.toggleUrlBarFocus(getUrlBar(), true);
         Assert.assertEquals(HUGE_URL, copyUrlToClipboard(android.R.id.copy));
@@ -116,7 +116,7 @@ public class UrlBarIntegrationTest {
     @SmallTest
     @Feature({"Omnibox"})
     @RetryOnFailure
-    public void testCutHuge() throws InterruptedException {
+    public void testCutHuge() {
         mActivityTestRule.startMainActivityWithURL(HUGE_URL);
         OmniboxTestUtils.toggleUrlBarFocus(getUrlBar(), true);
         Assert.assertEquals(HUGE_URL, copyUrlToClipboard(android.R.id.cut));
@@ -151,7 +151,7 @@ public class UrlBarIntegrationTest {
     @SmallTest
     @Feature({"Omnibox"})
     @RetryOnFailure
-    public void testLongPress() throws InterruptedException {
+    public void testLongPress() {
         // This is a more realistic test than HUGE_URL because ita's full of separator characters
         // which have historically been known to trigger odd behavior with long-pressing.
         final String longPressUrl = "data:text/plain,hi.hi.hi.hi.hi.hi.hi.hi.hi.hi/hi/hi/hi/hi/hi/";

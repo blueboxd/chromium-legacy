@@ -70,11 +70,6 @@ class AppBannerUiDelegateAndroid {
   void AddToHomescreen(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj);
 
-  // Returns a reference to the Java-side AddToHomescreenDialog owned by this
-  // object, or null if it does not exist.
-  const base::android::ScopedJavaLocalRef<jobject>
-  GetAddToHomescreenDialogForTesting() const;
-
   // Installs the app referenced by the data in this object. Returns |true| if
   // the installation UI should be dismissed.
   bool InstallApp(content::WebContents* web_contents);
@@ -101,9 +96,9 @@ class AppBannerUiDelegateAndroid {
   bool ShowDialog();
 
   // Called by the UI layer to display the details for a native app.
-  void ShowNativeAppDetails();
+  bool ShowNativeAppDetails();
 
-  void ShowNativeAppDetails(JNIEnv* env,
+  bool ShowNativeAppDetails(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj);
 
  private:

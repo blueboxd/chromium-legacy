@@ -27,6 +27,7 @@
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/window_factory.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -133,7 +134,8 @@ class TrayBackground : public views::Background {
         Shell::Get()->tablet_mode_controller() &&
         Shell::Get()->tablet_mode_controller()->InTabletMode();
     background_flags.setColor(
-        tablet_mode && ShelfConfig::Get()->is_in_app()
+        (chromeos::switches::ShouldShowShelfHotseat() && tablet_mode &&
+         ShelfConfig::Get()->is_in_app())
             ? SK_ColorTRANSPARENT
             : ShelfConfig::Get()
                   ->shelf_control_permanent_highlight_background());

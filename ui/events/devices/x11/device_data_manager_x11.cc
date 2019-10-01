@@ -154,7 +154,7 @@ void DeviceDataManagerX11::CreateInstance() {
 
   // TODO(bruthig): Replace the DeleteInstance callbacks with explicit calls.
   base::AtExitManager::RegisterTask(
-      base::Bind(DeviceDataManager::DeleteInstance));
+      base::BindOnce(DeviceDataManager::DeleteInstance));
 }
 
 // static

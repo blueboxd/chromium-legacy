@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "base/single_thread_task_runner.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "remoting/client/notification/json_fetcher.h"
 #include "url/gurl.h"
@@ -22,7 +23,8 @@ class URLRequestContextGetter;
 class GstaticJsonFetcher final : public JsonFetcher,
                                  public net::URLFetcherDelegate {
  public:
-  GstaticJsonFetcher();
+  explicit GstaticJsonFetcher(
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
   ~GstaticJsonFetcher() override;
 
   // JsonFetcher implementation.

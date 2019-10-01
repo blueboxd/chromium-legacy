@@ -189,7 +189,7 @@ public class NewTabPageTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
         if (mInterestFeedEnabled) {
             FeedProcessScopeFactory.setTestNetworkClient(null);
@@ -330,9 +330,10 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/593007")
-    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
-    public void testSearchFromFakebox(boolean interestFeedEnabled) throws InterruptedException {
+    @DisableIf
+            .Build(sdk_is_greater_than = 22, message = "crbug.com/593007")
+            @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+            public void testSearchFromFakebox(boolean interestFeedEnabled) {
         TouchCommon.singleClickView(mFakebox);
         waitForFakeboxFocusAnimationComplete(mNtp);
         final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
@@ -359,7 +360,7 @@ public class NewTabPageTest {
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
-    public void testClickMostVisitedItem(boolean interestFeedEnabled) throws InterruptedException {
+    public void testClickMostVisitedItem(boolean interestFeedEnabled) {
         ChromeTabUtils.waitForTabPageLoaded(mTab, mSiteSuggestions.get(0).url, new Runnable() {
             @Override
             public void run() {
@@ -379,7 +380,7 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testOpenMostVisitedItemInNewTab(boolean interestFeedEnabled)
-            throws InterruptedException, ExecutionException {
+            throws ExecutionException {
         ChromeTabUtils.invokeContextMenuAndOpenInANewTab(mActivityTestRule,
                 mTileGridLayout.getChildAt(0), ContextMenuManager.ContextMenuItemId.OPEN_IN_NEW_TAB,
                 false, mSiteSuggestions.get(0).url);
@@ -393,7 +394,7 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testOpenMostVisitedItemInIncognitoTab(boolean interestFeedEnabled)
-            throws InterruptedException, ExecutionException {
+            throws ExecutionException {
         ChromeTabUtils.invokeContextMenuAndOpenInANewTab(mActivityTestRule,
                 mTileGridLayout.getChildAt(0),
                 ContextMenuManager.ContextMenuItemId.OPEN_IN_INCOGNITO_TAB, true,
@@ -426,8 +427,7 @@ public class NewTabPageTest {
     @MediumTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
-    public void testUrlFocusAnimationsDisabledOnLoad(boolean interestFeedEnabled)
-            throws InterruptedException {
+    public void testUrlFocusAnimationsDisabledOnLoad(boolean interestFeedEnabled) {
         Assert.assertFalse(getUrlFocusAnimationsDisabled());
         ChromeTabUtils.waitForTabPageLoaded(mTab, mTestServer.getURL(TEST_PAGE), new Runnable() {
             @Override
@@ -688,7 +688,7 @@ public class NewTabPageTest {
     private boolean getUrlFocusAnimationsDisabled() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
-            public Boolean call() throws Exception {
+            public Boolean call() {
                 return mNtp.getNewTabPageLayout().urlFocusAnimationsDisabled();
             }
         });
@@ -757,7 +757,7 @@ public class NewTabPageTest {
         }));
     }
 
-    private SuggestionsSection getArticleSectionOnNewTab() throws Exception {
+    private SuggestionsSection getArticleSectionOnNewTab() {
         Tab tab = mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);
         NewTabPage ntp = (NewTabPage) tab.getNativePage();
         NewTabPageAdapter adapter =

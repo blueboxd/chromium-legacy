@@ -4,6 +4,8 @@
 
 #include "ash/assistant/util/assistant_util.h"
 
+#include <string>
+
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
@@ -44,8 +46,8 @@ bool IsFinishingSession(AssistantVisibility new_visibility) {
 bool IsVoiceEntryPoint(AssistantEntryPoint entry_point, bool prefer_voice) {
   switch (entry_point) {
     case AssistantEntryPoint::kHotword:
-    case AssistantEntryPoint::kLauncherSearchBoxMic:
       return true;
+    case AssistantEntryPoint::kLauncherSearchBoxMic:
     case AssistantEntryPoint::kHotkey:
     case AssistantEntryPoint::kLauncherSearchBox:
     case AssistantEntryPoint::kLongPressLauncher:

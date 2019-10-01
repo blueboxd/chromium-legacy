@@ -76,7 +76,7 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
   display::ManagedDisplayInfo info =
       GetDisplayManager()->GetDisplayInfo(display.id());
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
-  ash_host->SetCursorConfig(display, info.GetActiveRotation());
+  ash_host->SetCursorConfig(display, info.GetLogicalActiveRotation());
   std::unique_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(host->window(), display));
   ash_host->SetRootWindowTransformer(std::move(transformer));

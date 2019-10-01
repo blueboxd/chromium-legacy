@@ -57,11 +57,10 @@ void LaunchDialogForProfile(Profile* profile) {
   if (!extension)
     return;
 
-  apps::LaunchService::Get(profile)->OpenApplication(
-      AppLaunchParams(profile, extension->id(),
-                      apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                      WindowOpenDisposition::NEW_WINDOW,
-                      apps::mojom::AppLaunchSource::kSourceChromeInternal));
+  apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
+      extension->id(), apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_WINDOW,
+      apps::mojom::AppLaunchSource::kSourceChromeInternal));
   profile->GetPrefs()->SetBoolean(prefs::kFirstRunTutorialShown, true);
 }
 

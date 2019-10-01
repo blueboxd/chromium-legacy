@@ -17,7 +17,7 @@ public class BookmarkTestUtil {
      * Waits until the bookmark model is loaded, i.e. until
      * {@link BookmarkModel#isBookmarkModelLoaded()} is true.
      */
-    public static void waitForBookmarkModelLoaded() throws InterruptedException {
+    public static void waitForBookmarkModelLoaded() {
         final BookmarkModel bookmarkModel =
                 TestThreadUtils.runOnUiThreadBlockingNoException(BookmarkModel::new);
 

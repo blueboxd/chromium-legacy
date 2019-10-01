@@ -56,7 +56,7 @@ public class NewTabPageUiCaptureTest {
     private NewTabPage mNtp;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
         // TODO(aberent): this sequence or similar is used in a number of tests, extract to common
         // test method?

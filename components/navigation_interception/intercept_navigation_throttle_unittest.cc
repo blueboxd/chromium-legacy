@@ -122,7 +122,7 @@ class InterceptNavigationThrottleTest
 };
 
 TEST_P(InterceptNavigationThrottleTest,
-       RequestCompletesIfNavigationNotIgnored) {
+       DISABLED_RequestCompletesIfNavigationNotIgnored) {
   ON_CALL(*mock_callback_receiver_, ShouldIgnoreNavigation(_, _))
       .WillByDefault(Return(false));
   EXPECT_CALL(

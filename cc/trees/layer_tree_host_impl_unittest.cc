@@ -275,7 +275,7 @@ class LayerTreeHostImplTest : public testing::Test,
         settings, this, &task_runner_provider_, &stats_instrumentation_,
         &task_graph_runner_,
         AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0,
-        image_worker_ ? image_worker_->task_runner() : nullptr);
+        image_worker_ ? image_worker_->task_runner() : nullptr, nullptr);
     layer_tree_frame_sink_ = std::move(layer_tree_frame_sink);
     host_impl_->SetVisible(true);
     bool init = host_impl_->InitializeFrameSink(layer_tree_frame_sink_.get());
@@ -3401,6 +3401,7 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
                           task_graph_runner,
                           AnimationHost::CreateForTesting(ThreadInstance::IMPL),
                           0,
+                          nullptr,
                           nullptr) {}
 
   viz::BeginFrameArgs CurrentBeginFrameArgs() const override {
@@ -8601,7 +8602,8 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
       LayerTreeHostImpl::Create(
           settings, this, &task_runner_provider_, &stats_instrumentation_,
           &task_graph_runner_,
-          AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0, nullptr);
+          AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0, nullptr,
+          nullptr);
   layer_tree_host_impl->SetVisible(true);
   layer_tree_host_impl->InitializeFrameSink(layer_tree_frame_sink.get());
   layer_tree_host_impl->WillBeginImplFrame(
@@ -9015,7 +9017,8 @@ TEST_F(LayerTreeHostImplTest, MemoryLimits) {
   host_impl_ = LayerTreeHostImpl::Create(
       settings, this, &task_runner_provider_, &stats_instrumentation_,
       &task_graph_runner_,
-      AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0, nullptr);
+      AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0, nullptr,
+      nullptr);
 
   // Gpu compositing.
   layer_tree_frame_sink_ = FakeLayerTreeFrameSink::Create3d();
@@ -12204,7 +12207,8 @@ TEST_F(LayerTreeHostImplTest, RecomputeGpuRasterOnLayerTreeFrameSinkChange) {
   host_impl_ = LayerTreeHostImpl::Create(
       settings, this, &task_runner_provider_, &stats_instrumentation_,
       &task_graph_runner_,
-      AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0, nullptr);
+      AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0, nullptr,
+      nullptr);
   host_impl_->SetVisible(true);
 
   // InitializeFrameSink with a gpu-raster enabled output surface.

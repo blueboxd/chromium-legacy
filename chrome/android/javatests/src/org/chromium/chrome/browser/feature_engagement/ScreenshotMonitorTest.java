@@ -49,7 +49,7 @@ public class ScreenshotMonitorTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mTestScreenshotMonitorDelegate = new TestScreenshotMonitorDelegate();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -66,7 +66,7 @@ public class ScreenshotMonitorTest {
     @Test
     @SmallTest
     @Feature({"FeatureEngagement", "Screenshot"})
-    public void testDelegateCalledOnEvent() throws Throwable {
+    public void testDelegateCalledOnEvent() {
         startMonitoringOnUiThreadBlocking();
         Assert.assertEquals(0, mTestScreenshotMonitorDelegate.screenshotShowUiCount.get());
 
@@ -82,7 +82,7 @@ public class ScreenshotMonitorTest {
     @Test
     @SmallTest
     @Feature({"FeatureEngagement", "Screenshot"})
-    public void testRestartShouldTriggerDelegate() throws Throwable {
+    public void testRestartShouldTriggerDelegate() {
         startMonitoringOnUiThreadBlocking();
         Assert.assertEquals(0, mTestScreenshotMonitorDelegate.screenshotShowUiCount.get());
 
@@ -105,7 +105,7 @@ public class ScreenshotMonitorTest {
     @Test
     @SmallTest
     @Feature({"FeatureEngagement", "Screenshot"})
-    public void testStopMonitoringShouldNotTriggerDelegate() throws Throwable {
+    public void testStopMonitoringShouldNotTriggerDelegate() {
         startMonitoringOnUiThreadBlocking();
         Assert.assertEquals(0, mTestScreenshotMonitorDelegate.screenshotShowUiCount.get());
 
@@ -121,7 +121,7 @@ public class ScreenshotMonitorTest {
     @Test
     @SmallTest
     @Feature({"FeatureEngagement", "Screenshot"})
-    public void testNoMonitoringShouldNotTriggerDelegate() throws Throwable {
+    public void testNoMonitoringShouldNotTriggerDelegate() {
         Assert.assertEquals(0, mTestScreenshotMonitorDelegate.screenshotShowUiCount.get());
 
         mContentObserver.onChange(true, TEST_URI);

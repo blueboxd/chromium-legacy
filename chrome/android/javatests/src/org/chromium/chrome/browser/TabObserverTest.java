@@ -64,7 +64,7 @@ public class TabObserverTest {
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testTabInteractable_tabSwitcher() throws InterruptedException, TimeoutException {
+    public void testTabInteractable_tabSwitcher() throws TimeoutException {
         final LayoutManagerChrome layoutManager = mActivity.getLayoutManager();
         CallbackHelper interactabilityHelper = mTabObserver.mInteractabilityHelper;
 
@@ -88,7 +88,7 @@ public class TabObserverTest {
 
     @Test
     @SmallTest
-    public void testTabInteractable_multipleTabs() throws InterruptedException, TimeoutException {
+    public void testTabInteractable_multipleTabs() throws TimeoutException {
         CallbackHelper interactabilityHelper = mTabObserver.mInteractabilityHelper;
 
         assertTrue("Tab should be interactable.", mTab.isUserInteractable());

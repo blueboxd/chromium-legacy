@@ -148,7 +148,7 @@ public class AndroidScrollIntegrationTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         if (mWebServer != null) {
             mWebServer.shutdown();
         }
@@ -258,8 +258,7 @@ public class AndroidScrollIntegrationTest {
     }
 
     private void assertScrollInJs(final AwContents awContents,
-            final TestAwContentsClient contentsClient, final double xCss, final double yCss)
-            throws Exception {
+            final TestAwContentsClient contentsClient, final double xCss, final double yCss) {
         AwActivityTestRule.pollInstrumentationThread(() -> {
             String x = mActivityTestRule.executeJavaScriptAndWaitForResult(
                     awContents, contentsClient, "window.scrollX");
@@ -273,8 +272,8 @@ public class AndroidScrollIntegrationTest {
         });
     }
 
-    private void assertScrolledToBottomInJs(final AwContents awContents,
-            final TestAwContentsClient contentsClient) throws Exception {
+    private void assertScrolledToBottomInJs(
+            final AwContents awContents, final TestAwContentsClient contentsClient) {
         final String isBottomScript = "window.scrollY == "
                 + "(window.document.documentElement.scrollHeight - window.innerHeight)";
         AwActivityTestRule.pollInstrumentationThread(() -> {

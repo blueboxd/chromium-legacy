@@ -28,12 +28,6 @@ public interface BottomSheetObserver {
     void onSheetClosed(@StateChangeReason int reason);
 
     /**
-     * A notification that the bottom sheet is no longer being dragged by the user and is instead
-     * animating to its final state.
-     */
-    void onSheetReleased();
-
-    /**
      * A notification that the sheet has begun loading a URL.
      *
      * @param url The URL being loaded.

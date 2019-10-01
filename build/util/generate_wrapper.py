@@ -101,7 +101,7 @@ def Wrap(args):
     template = SCRIPT_TEMPLATES[args.script_language]
     wrapper_script.write(template.format(
         script=py_contents))
-  os.chmod(args.wrapper_script, 0750)
+  os.chmod(args.wrapper_script, 0o750)
 
   return 0
 

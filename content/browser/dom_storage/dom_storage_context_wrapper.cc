@@ -431,16 +431,17 @@ void DOMStorageContextWrapper::OpenSessionStorage(
                      std::move(receiver)));
 }
 
-void DOMStorageContextWrapper::SetLocalStorageDatabaseForTesting(
-    mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database) {
+void DOMStorageContextWrapper::SetLocalStorageDatabaseFactoryForTesting(
+    base::RepeatingCallback<std::unique_ptr<leveldb::mojom::LevelDBDatabase>()>
+        factory) {
   // base::Unretained is safe here, because the mojo_state_ won't be deleted
   // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
   // as soon as that task is posted, mojo_state_ is set to null, preventing
   // further tasks from being queued.
   mojo_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&LocalStorageContextMojo::SetDatabaseForTesting,
-                     base::Unretained(mojo_state_), std::move(database)));
+      base::BindOnce(&LocalStorageContextMojo::SetDatabaseFactoryForTesting,
+                     base::Unretained(mojo_state_), std::move(factory)));
 }
 
 scoped_refptr<SessionStorageNamespaceImpl>

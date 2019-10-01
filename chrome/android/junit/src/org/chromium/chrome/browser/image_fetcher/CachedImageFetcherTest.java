@@ -57,7 +57,7 @@ public class CachedImageFetcherTest {
     ArgumentCaptor<Callback<Bitmap>> mCallbackCaptor;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         ImageFetcherBridge.setupForTesting(mImageFetcherBridge);
         mCachedImageFetcher = Mockito.spy(new CachedImageFetcher(mImageFetcherBridge));
@@ -72,7 +72,7 @@ public class CachedImageFetcherTest {
     }
 
     @Test
-    public void testFetchImageWithDimensionsFoundOnDisk() throws Exception {
+    public void testFetchImageWithDimensionsFoundOnDisk() {
         mCachedImageFetcher.continueFetchImageAfterDisk(URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX,
                 (Bitmap bitmap) -> { assertEquals(bitmap, mBitmap); }, mBitmap, START_TIME);
 
@@ -86,7 +86,7 @@ public class CachedImageFetcherTest {
     }
 
     @Test
-    public void testFetchImageWithDimensionsCallToNative() throws Exception {
+    public void testFetchImageWithDimensionsCallToNative() {
         mCachedImageFetcher.continueFetchImageAfterDisk(URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX,
                 (Bitmap bitmap) -> { assertEquals(bitmap, mBitmap); }, null, START_TIME);
 
@@ -96,7 +96,7 @@ public class CachedImageFetcherTest {
     }
 
     @Test
-    public void testFetchTwoClients() throws Exception {
+    public void testFetchTwoClients() {
         Mockito.doReturn(null).when(mCachedImageFetcher).tryToLoadImageFromDisk(anyObject());
         mCachedImageFetcher.continueFetchImageAfterDisk(URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX,
                 (Bitmap bitmap) -> { assertEquals(bitmap, mBitmap); }, null, START_TIME);
@@ -111,7 +111,7 @@ public class CachedImageFetcherTest {
     }
 
     @Test
-    public void testFetchGifFoundOnDisk() throws Exception {
+    public void testFetchGifFoundOnDisk() {
         mCachedImageFetcher.continueFetchGifAfterDisk(URL, UMA_CLIENT_NAME,
                 (BaseGifImage gif) -> { assertEquals(gif, mGif); }, mGif, START_TIME);
 
@@ -125,7 +125,7 @@ public class CachedImageFetcherTest {
     }
 
     @Test
-    public void testFetchGifCallToNative() throws Exception {
+    public void testFetchGifCallToNative() {
         mCachedImageFetcher.continueFetchGifAfterDisk(URL, UMA_CLIENT_NAME,
                 (BaseGifImage gif) -> { assertEquals(gif, mGif); }, null, START_TIME);
 

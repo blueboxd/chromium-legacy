@@ -71,7 +71,7 @@ public class SendTabToSelfShareActivityTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         mocker.mock(SendTabToSelfAndroidBridgeJni.TEST_HOOKS, mNativeMock);
         RecordHistogram.setDisabledForTests(true);

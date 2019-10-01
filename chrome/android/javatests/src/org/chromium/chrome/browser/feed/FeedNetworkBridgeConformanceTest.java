@@ -109,7 +109,7 @@ public final class FeedNetworkBridgeConformanceTest extends NetworkClientConform
         networkClient = null;
     }
 
-    private void createAndStartTestServer() throws InterruptedException {
+    private void createAndStartTestServer() {
         Context c = InstrumentationRegistry.getContext();
         mTestServer = EmbeddedTestServer.createAndStartServer(c);
     }
@@ -120,7 +120,7 @@ public final class FeedNetworkBridgeConformanceTest extends NetworkClientConform
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         createAndStartTestServer();
         TestThreadUtils.runOnUiThreadBlocking(() -> createNetworkClient());
     }

@@ -73,7 +73,7 @@ public class IncognitoNotificationServiceTest {
 
         CriteriaHelper.pollUiThread(Criteria.equals(2, new Callable<Integer>() {
             @Override
-            public Integer call() throws Exception {
+            public Integer call() {
                 return mActivityTestRule.getActivity()
                         .getTabModelSelector()
                         .getModel(true)
@@ -84,7 +84,7 @@ public class IncognitoNotificationServiceTest {
         final Profile incognitoProfile =
                 TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Profile>() {
                     @Override
-                    public Profile call() throws Exception {
+                    public Profile call() {
                         return mActivityTestRule.getActivity()
                                 .getTabModelSelector()
                                 .getModel(true)
@@ -100,7 +100,7 @@ public class IncognitoNotificationServiceTest {
 
         CriteriaHelper.pollUiThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
-            public Integer call() throws Exception {
+            public Integer call() {
                 return mActivityTestRule.getActivity()
                         .getTabModelSelector()
                         .getModel(true)
@@ -163,7 +163,7 @@ public class IncognitoNotificationServiceTest {
 
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
-            public Integer call() throws Exception {
+            public Integer call() {
                 File[] tabbedModeFiles = tabbedModeDirectory.getDataDirectory().listFiles();
                 if (tabbedModeFiles == null) return 0;
                 int incognitoCount = 0;
@@ -178,7 +178,7 @@ public class IncognitoNotificationServiceTest {
 
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(2, new Callable<Integer>() {
             @Override
-            public Integer call() throws Exception {
+            public Integer call() {
                 File[] tabbedModeFiles = tabbedModeDirectory.getDataDirectory().listFiles();
                 if (tabbedModeFiles == null) return 0;
                 int normalCount = 0;

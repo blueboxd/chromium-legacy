@@ -250,6 +250,39 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   static void UnrefResources(base::WeakPtr<SurfaceClient> surface_client,
                              const std::vector<ReturnedResource>& resources);
 
+  // De-Jelly Effect:
+  // HandleDeJelly applies a de-jelly transform to quads in the root render
+  // pass.
+  void HandleDeJelly(Surface* surface);
+  // CreateDeJellyRenderPassQuads promotes skewed quads from the root render
+  // pass into |render_pass|. Skew is applied when |render_pass| is drawn.
+  void CreateDeJellyRenderPassQuads(
+      cc::ListContainer<DrawQuad>::Iterator* quad_iterator,
+      const cc::ListContainer<DrawQuad>::Iterator& end,
+      const gfx::Rect& jelly_clip,
+      float skew,
+      RenderPass* render_pass);
+  // Appends quads directly to |root_pass|, applying |skew|.
+  void CreateDeJellyNormalQuads(
+      cc::ListContainer<DrawQuad>::Iterator* quad_iterator,
+      const cc::ListContainer<DrawQuad>::Iterator& end,
+      RenderPass* root_pass,
+      float skew);
+  // Appends |render_pass| to |root_pass|, applying |skew|, |jelly_clip|,
+  // |opacity|, and |blend_mode|.
+  void AppendDeJellyRenderPass(float skew,
+                               const gfx::Rect& jelly_clip,
+                               float opacity,
+                               SkBlendMode blend_mode,
+                               RenderPass* root_pass,
+                               std::unique_ptr<RenderPass> render_pass);
+  // Appends quads from |quad_iterator| to |render_pass| for |state|.
+  void AppendDeJellyQuadsForSharedQuadState(
+      cc::ListContainer<DrawQuad>::Iterator* quad_iterator,
+      const cc::ListContainer<DrawQuad>::Iterator& end,
+      RenderPass* render_pass,
+      const SharedQuadState* state);
+
   SurfaceManager* manager_;
   DisplayResourceProvider* provider_;
 

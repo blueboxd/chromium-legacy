@@ -45,6 +45,8 @@ class PerfResultReporter {
   void AddResult(const std::string& metric_suffix, size_t value);
   void AddResult(const std::string& metric_suffix, double value);
   void AddResult(const std::string& metric_suffix, const std::string& value);
+  void AddResultList(const std::string& metric_suffix,
+                     const std::string& values);
 
   // Returns true and fills the pointer if the metric is registered, otherwise
   // returns false.

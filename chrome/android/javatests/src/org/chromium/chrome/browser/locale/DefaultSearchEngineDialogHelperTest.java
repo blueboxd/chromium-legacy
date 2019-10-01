@@ -115,7 +115,7 @@ public class DefaultSearchEngineDialogHelperTest {
     private @SearchEnginePromoType int mDialogType;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mContext = InstrumentationRegistry.getTargetContext();
 
         mTemplateUrls.clear();

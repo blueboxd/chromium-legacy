@@ -47,7 +47,7 @@ public class PaymentRequestUseStatsTest implements MainActivityStartCallback {
     String mCreditCardId;
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         mHelper = new AutofillTestHelper();
         // The user has a shipping address and a credit card associated with that address on disk.
         mBillingAddressId = mHelper.setProfile(new AutofillProfile("", "https://example.com",
@@ -65,7 +65,7 @@ public class PaymentRequestUseStatsTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testLogProfileAndCreditCardUse() throws InterruptedException, TimeoutException {
+    public void testLogProfileAndCreditCardUse() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Get the current date value just before the start of the Payment Request.

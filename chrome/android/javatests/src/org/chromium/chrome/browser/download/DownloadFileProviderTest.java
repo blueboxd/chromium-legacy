@@ -51,7 +51,7 @@ public class DownloadFileProviderTest {
     private DownloadDirectoryProvider.Delegate mMockDirectoryDelegate;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         doReturn(new File(PRIMARY_STORAGE_DOWNLOAD_DIRECTORY_PATH))
                 .when(mMockDirectoryDelegate)
@@ -63,9 +63,8 @@ public class DownloadFileProviderTest {
      * Verifies content URI generation. The URI result in the callback should match expected output.
      * @param filePath The file path of a file.
      * @param expected The expected content URI.
-     * @throws Exception
      */
-    private void verifyContentUri(String filePath, Uri expected) throws Exception {
+    private void verifyContentUri(String filePath, Uri expected) {
         Assert.assertEquals(
                 expected, DownloadFileProvider.createContentUri(filePath, mMockDirectoryDelegate));
     }
@@ -83,7 +82,7 @@ public class DownloadFileProviderTest {
     @Test
     @MediumTest
     @Feature({"Download"})
-    public void testGenerateContentUri() throws Exception {
+    public void testGenerateContentUri() {
         String packageName = ContextUtils.getApplicationContext().getPackageName();
         verifyContentUri(PRIMARY_STORAGE_DOWNLOAD_PATH,
                 Uri.parse("content://" + packageName

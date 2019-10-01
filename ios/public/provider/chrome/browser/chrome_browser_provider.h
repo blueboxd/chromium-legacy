@@ -32,9 +32,11 @@ class CommandLine;
 }
 
 namespace web {
+class SerializableUserDataManager;
 class WebState;
 }
 
+class GURL;
 @protocol LogoVendor;
 @class TabModel;
 @class UITextField;
@@ -108,6 +110,13 @@ class ChromeBrowserProvider {
   virtual std::string GetRiskData();
   // Creates and returns a new styled text field.
   virtual UITextField* CreateStyledTextField() const NS_RETURNS_RETAINED;
+  // Allow embedders to inject data.
+  virtual void AddSerializableData(
+      web::SerializableUserDataManager* user_data_manager,
+      web::WebState* web_state);
+  // Allow embedders to block a specific URL.
+  virtual bool ShouldBlockUrlDuringRestore(const GURL& url,
+                                           web::WebState* web_state);
 
   // Initializes the cast service.  Should be called soon after the given
   // |main_tab_model| is created.

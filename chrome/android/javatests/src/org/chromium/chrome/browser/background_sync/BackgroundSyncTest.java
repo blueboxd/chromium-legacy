@@ -100,7 +100,7 @@ public final class BackgroundSyncTest {
     }
 
     @After
-    public void tearDown() throws TimeoutException {
+    public void tearDown() {
         if (mTestServer != null) mTestServer.stopAndDestroyServer();
     }
 
@@ -173,12 +173,12 @@ public final class BackgroundSyncTest {
     /**
      * Helper methods.
      */
-    private String runJavaScript(String code) throws TimeoutException, InterruptedException {
+    private String runJavaScript(String code) throws TimeoutException {
         return mActivityTestRule.runJavaScriptCodeInCurrentTab(code);
     }
 
     @SuppressWarnings("MissingFail")
-    private void assertTitleBecomes(String expectedTitle) throws InterruptedException {
+    private void assertTitleBecomes(String expectedTitle) {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         TabTitleObserver titleObserver = new TabTitleObserver(tab, expectedTitle);
         try {

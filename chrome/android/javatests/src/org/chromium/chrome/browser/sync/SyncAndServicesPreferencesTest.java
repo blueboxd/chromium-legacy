@@ -40,7 +40,7 @@ public class SyncAndServicesPreferencesTest {
     private Preferences mPreferences;
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
     }
 

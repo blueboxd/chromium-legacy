@@ -1030,6 +1030,14 @@ void XRSession::LogGetPose() const {
   }
 }
 
+bool XRSession::CanReportPoses() {
+  // The spec has a few requirements for if poses can be reported.
+  // If we have a session, then user intent is understood. Therefore, (due to
+  // the way visibility state is updatd), the rest of the steps really just
+  // boil down to whether or not the XRVisibilityState is Visible.
+  return visibility_state_ == XRVisibilityState::VISIBLE;
+}
+
 XRFrame* XRSession::CreatePresentationFrame() {
   DVLOG(2) << __func__;
 

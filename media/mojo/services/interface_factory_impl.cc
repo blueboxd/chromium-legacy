@@ -191,8 +191,9 @@ void InterfaceFactoryImpl::CreateCdm(
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 }
 
-void InterfaceFactoryImpl::CreateDecryptor(int cdm_id,
-                                           mojom::DecryptorRequest request) {
+void InterfaceFactoryImpl::CreateDecryptor(
+    int cdm_id,
+    mojo::PendingReceiver<mojom::Decryptor> receiver) {
   DVLOG(2) << __func__;
   auto mojo_decryptor_service =
       MojoDecryptorService::Create(cdm_id, &cdm_service_context_);
@@ -201,12 +202,13 @@ void InterfaceFactoryImpl::CreateDecryptor(int cdm_id,
     return;
   }
 
-  decryptor_bindings_.AddBinding(std::move(mojo_decryptor_service),
-                                 std::move(request));
+  decryptor_receivers_.Add(std::move(mojo_decryptor_service),
+                           std::move(receiver));
 }
 
-void InterfaceFactoryImpl::CreateCdmProxy(const base::Token& cdm_guid,
-                                          mojom::CdmProxyRequest request) {
+void InterfaceFactoryImpl::CreateCdmProxy(
+    const base::Token& cdm_guid,
+    mojo::PendingReceiver<mojom::CdmProxy> receiver) {
   DVLOG(2) << __func__;
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   auto cdm_proxy = mojo_media_client_->CreateCdmProxy(cdm_guid);
@@ -215,10 +217,9 @@ void InterfaceFactoryImpl::CreateCdmProxy(const base::Token& cdm_guid,
     return;
   }
 
-  cdm_proxy_bindings_.AddBinding(
-      std::make_unique<MojoCdmProxyService>(std::move(cdm_proxy),
-                                            &cdm_service_context_),
-      std::move(request));
+  cdm_proxy_receivers_.Add(std::make_unique<MojoCdmProxyService>(
+                               std::move(cdm_proxy), &cdm_service_context_),
+                           std::move(receiver));
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 }
 
@@ -252,19 +253,19 @@ bool InterfaceFactoryImpl::IsEmpty() {
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  if (!cdm_proxy_bindings_.empty())
+  if (!cdm_proxy_receivers_.empty())
     return false;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-  if (!decryptor_bindings_.empty())
+  if (!decryptor_receivers_.empty())
     return false;
 
   return true;
 }
 
 void InterfaceFactoryImpl::SetBindingConnectionErrorHandler() {
-  // base::Unretained is safe because all bindings are owned by |this|. If
-  // |this| is destructed, the bindings will be destructed as well and the
+  // base::Unretained is safe because all receivers are owned by |this|. If
+  // |this| is destructed, the receivers will be destructed as well and the
   // connection error handler should never be called.
   auto connection_error_cb = base::BindRepeating(
       &InterfaceFactoryImpl::OnBindingConnectionError, base::Unretained(this));
@@ -286,10 +287,10 @@ void InterfaceFactoryImpl::SetBindingConnectionErrorHandler() {
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  cdm_proxy_bindings_.set_connection_error_handler(connection_error_cb);
+  cdm_proxy_receivers_.set_disconnect_handler(connection_error_cb);
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-  decryptor_bindings_.set_connection_error_handler(connection_error_cb);
+  decryptor_receivers_.set_disconnect_handler(connection_error_cb);
 }
 
 void InterfaceFactoryImpl::OnBindingConnectionError() {

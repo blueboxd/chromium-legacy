@@ -112,7 +112,8 @@ XrResult xrCreateActionSpace(XrSession session,
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
   RETURN_IF_XR_FAILED(
       g_test_helper.ValidateActionSpaceCreateInfo(*create_info));
-  *space = g_test_helper.CreateActionSpace();
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateAction(create_info->action));
+  *space = g_test_helper.CreateActionSpace(create_info->action);
 
   return XR_SUCCESS;
 }
@@ -169,17 +170,7 @@ XrResult xrCreateReferenceSpace(XrSession session,
   RETURN_IF_XR_FAILED(g_test_helper.ValidateXrPosefIsIdentity(
       create_info->poseInReferenceSpace));
 
-  switch (create_info->referenceSpaceType) {
-    case XR_REFERENCE_SPACE_TYPE_LOCAL:
-      *space = g_test_helper.CreateLocalSpace();
-      break;
-    case XR_REFERENCE_SPACE_TYPE_VIEW:
-      *space = g_test_helper.CreateViewSpace();
-      break;
-    default:
-      RETURN_IF_FALSE(false, XR_ERROR_VALIDATION_FAILURE,
-                      "XrReferenceSpaceCreateInfo referenceSpaceType invalid");
-  }
+  *space = g_test_helper.CreateReferenceSpace(create_info->referenceSpaceType);
 
   return XR_SUCCESS;
 }
@@ -449,6 +440,26 @@ XrResult xrGetD3D11GraphicsRequirementsKHR(
                   "Unable to create query DXGI Adapter");
 }
 
+XrResult xrGetActionStateFloat(XrSession session,
+                               const XrActionStateGetInfo* get_info,
+                               XrActionStateFloat* state) {
+  DLOG(INFO) << __FUNCTION__;
+  XrResult xr_result;
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
+  RETURN_IF(get_info->type != XR_TYPE_ACTION_STATE_GET_INFO,
+            XR_ERROR_VALIDATION_FAILURE,
+            "xrGetActionStateFloat get_info has wrong type");
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateAction(get_info->action));
+  RETURN_IF(get_info->subactionPath != XR_NULL_PATH,
+            XR_ERROR_VALIDATION_FAILURE,
+            "xrGetActionStateFloat has subactionPath != nullptr which is not "
+            "supported by current version of test.");
+  RETURN_IF_XR_FAILED(
+      g_test_helper.GetActionStateFloat(get_info->action, state));
+
+  return XR_SUCCESS;
+}
+
 XrResult xrGetActionStateBoolean(XrSession session,
                                  const XrActionStateGetInfo* get_info,
                                  XrActionStateBoolean* state) {
@@ -561,7 +572,7 @@ XrResult xrLocateSpace(XrSpace space,
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSpace(baseSpace));
   RETURN_IF_XR_FAILED(g_test_helper.ValidatePredictedDisplayTime(time));
 
-  g_test_helper.GetPose(&(location->pose));
+  g_test_helper.LocateSpace(space, &(location->pose));
 
   location->locationFlags = XR_SPACE_LOCATION_ORIENTATION_VALID_BIT |
                             XR_SPACE_LOCATION_POSITION_VALID_BIT;

@@ -10,6 +10,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/payments/core/error_strings.h"
 #include "components/payments/core/native_error_strings.h"
+#include "components/payments/core/payment_address.h"
+#include "components/payments/core/payments_validators.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_background_services_context.h"
@@ -34,6 +36,16 @@ content::DevToolsBackgroundServicesContext* GetDevTools(
                           content::DevToolsBackgroundService::kPaymentHandler)
              ? dev_tools
              : nullptr;
+}
+
+// Generates a PaymentResponse with the given error, then runs the provided
+// callback.
+void RunCallbackWithError(const std::string& error,
+                          ChangePaymentRequestDetailsCallback callback) {
+  mojom::PaymentMethodChangeResponsePtr response =
+      mojom::PaymentMethodChangeResponse::New();
+  response->error = error;
+  std::move(callback).Run(std::move(response));
 }
 
 }  // namespace
@@ -61,7 +73,7 @@ mojo::PendingRemote<mojom::PaymentHandlerHost> PaymentHandlerHost::Bind() {
 
 void PaymentHandlerHost::UpdateWith(
     mojom::PaymentMethodChangeResponsePtr response) {
-  if (!change_payment_method_callback_)
+  if (!change_payment_request_details_callback_)
     return;
 
   auto* dev_tools =
@@ -77,6 +89,29 @@ void PaymentHandlerHost::UpdateWith(
     if (response->stringified_payment_method_errors) {
       data["Payment Method Errors"] =
           *response->stringified_payment_method_errors;
+    }
+
+    if (response->shipping_address_errors) {
+      data["Shipping Address Address Line Error"] =
+          response->shipping_address_errors->address_line;
+      data["Shipping Address City Error"] =
+          response->shipping_address_errors->city;
+      data["Shipping Address Country Error"] =
+          response->shipping_address_errors->country;
+      data["Shipping Address Dependent Locality Error"] =
+          response->shipping_address_errors->dependent_locality;
+      data["Shipping Address Organization Error"] =
+          response->shipping_address_errors->organization;
+      data["Shipping Address Phone Error"] =
+          response->shipping_address_errors->phone;
+      data["Shipping Address Postal Code Error"] =
+          response->shipping_address_errors->postal_code;
+      data["Shipping Address Recipient Error"] =
+          response->shipping_address_errors->recipient;
+      data["Shipping Address Region Error"] =
+          response->shipping_address_errors->region;
+      data["Shipping Address Sorting Code Error"] =
+          response->shipping_address_errors->sorting_code;
     }
 
     if (response->modifiers) {
@@ -97,20 +132,35 @@ void PaymentHandlerHost::UpdateWith(
       }
     }
 
+    if (response->shipping_options) {
+      for (size_t i = 0; i < response->shipping_options->size(); ++i) {
+        std::string prefix =
+            "Shipping Option" + (response->shipping_options->size() == 1
+                                     ? ""
+                                     : " #" + base::NumberToString(i));
+        const auto& option = response->shipping_options->at(i);
+        data.emplace(prefix + " Id", option->id);
+        data.emplace(prefix + " Label", option->label);
+        data.emplace(prefix + " Amount Currency", option->amount->currency);
+        data.emplace(prefix + " Amount Value", option->amount->value);
+        data.emplace(prefix + " Selected", option->selected ? "true" : "false");
+      }
+    }
+
     dev_tools->LogBackgroundServiceEvent(
         registration_id_for_logs_, sw_origin_for_logs_,
         content::DevToolsBackgroundService::kPaymentHandler, "Update with",
         /*instance_id=*/payment_request_id_for_logs_, data);
   }
 
-  std::move(change_payment_method_callback_).Run(std::move(response));
+  std::move(change_payment_request_details_callback_).Run(std::move(response));
 }
 
 void PaymentHandlerHost::NoUpdatedPaymentDetails() {
-  if (!change_payment_method_callback_)
+  if (!change_payment_request_details_callback_)
     return;
 
-  std::move(change_payment_method_callback_)
+  std::move(change_payment_request_details_callback_)
       .Run(mojom::PaymentMethodChangeResponse::New());
 }
 
@@ -124,31 +174,22 @@ base::WeakPtr<PaymentHandlerHost> PaymentHandlerHost::AsWeakPtr() {
 
 void PaymentHandlerHost::ChangePaymentMethod(
     mojom::PaymentHandlerMethodDataPtr method_data,
-    mojom::PaymentHandlerHost::ChangePaymentMethodCallback callback) {
+    ChangePaymentRequestDetailsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!method_data) {
-    mojom::PaymentMethodChangeResponsePtr response =
-        mojom::PaymentMethodChangeResponse::New();
-    response->error = errors::kMethodDataRequired;
-    std::move(callback).Run(std::move(response));
+    RunCallbackWithError(errors::kMethodDataRequired, std::move(callback));
     return;
   }
 
   if (method_data->method_name.empty()) {
-    mojom::PaymentMethodChangeResponsePtr response =
-        mojom::PaymentMethodChangeResponse::New();
-    response->error = errors::kMethodNameRequired;
-    std::move(callback).Run(std::move(response));
+    RunCallbackWithError(errors::kMethodNameRequired, std::move(callback));
     return;
   }
 
   if (!delegate_->ChangePaymentMethod(method_data->method_name,
                                       method_data->stringified_data)) {
-    mojom::PaymentMethodChangeResponsePtr response =
-        mojom::PaymentMethodChangeResponse::New();
-    response->error = errors::kInvalidState;
-    std::move(callback).Run(std::move(response));
+    RunCallbackWithError(errors::kInvalidState, std::move(callback));
     return;
   }
 
@@ -164,7 +205,88 @@ void PaymentHandlerHost::ChangePaymentMethod(
          {"Method Data", method_data->stringified_data}});
   }
 
-  change_payment_method_callback_ = std::move(callback);
+  change_payment_request_details_callback_ = std::move(callback);
+}
+
+void PaymentHandlerHost::ChangeShippingOption(
+    const std::string& shipping_option_id,
+    ChangePaymentRequestDetailsCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (shipping_option_id.empty()) {
+    RunCallbackWithError(errors::kShippingOptionIdRequired,
+                         std::move(callback));
+    return;
+  }
+
+  if (!delegate_->ChangeShippingOption(shipping_option_id)) {
+    RunCallbackWithError(errors::kInvalidState, std::move(callback));
+    return;
+  }
+
+  auto* dev_tools =
+      GetDevTools(web_contents_->GetBrowserContext(), sw_origin_for_logs_);
+  if (dev_tools) {
+    dev_tools->LogBackgroundServiceEvent(
+        registration_id_for_logs_, sw_origin_for_logs_,
+        content::DevToolsBackgroundService::kPaymentHandler,
+        "Change shipping option",
+        /*instance_id=*/payment_request_id_for_logs_,
+        {{"Shipping Option Id", shipping_option_id}});
+  }
+
+  change_payment_request_details_callback_ = std::move(callback);
+}
+
+void PaymentHandlerHost::ChangeShippingAddress(
+    mojom::PaymentAddressPtr shipping_address,
+    ChangePaymentRequestDetailsCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!shipping_address || !PaymentsValidators::IsValidCountryCodeFormat(
+                               shipping_address->country, nullptr)) {
+    RunCallbackWithError(errors::kShippingAddressInvalid, std::move(callback));
+    return;
+  }
+
+  if (!delegate_->ChangeShippingAddress(shipping_address.Clone())) {
+    RunCallbackWithError(errors::kInvalidState, std::move(callback));
+    return;
+  }
+
+  auto* dev_tools =
+      GetDevTools(web_contents_->GetBrowserContext(), sw_origin_for_logs_);
+  if (dev_tools) {
+    std::map<std::string, std::string> shipping_address_map;
+    shipping_address_map.emplace("Country", shipping_address->country);
+    for (size_t i = 0; i < shipping_address->address_line.size(); ++i) {
+      std::string key =
+          "Address Line" + (shipping_address->address_line.size() == 1
+                                ? ""
+                                : " #" + base::NumberToString(i));
+      shipping_address_map.emplace(key, shipping_address->address_line[i]);
+    }
+
+    shipping_address_map.emplace("Region", shipping_address->region);
+    shipping_address_map.emplace("City", shipping_address->city);
+    shipping_address_map.emplace("Dependent Locality",
+                                 shipping_address->dependent_locality);
+    shipping_address_map.emplace("Postal Code", shipping_address->postal_code);
+    shipping_address_map.emplace("Sorting Code",
+                                 shipping_address->sorting_code);
+    shipping_address_map.emplace("Organization",
+                                 shipping_address->organization);
+    shipping_address_map.emplace("Recipient", shipping_address->recipient);
+    shipping_address_map.emplace("Phone", shipping_address->phone);
+
+    dev_tools->LogBackgroundServiceEvent(
+        registration_id_for_logs_, sw_origin_for_logs_,
+        content::DevToolsBackgroundService::kPaymentHandler,
+        "Change shipping address",
+        /*instance_id=*/payment_request_id_for_logs_, shipping_address_map);
+  }
+
+  change_payment_request_details_callback_ = std::move(callback);
 }
 
 }  // namespace payments

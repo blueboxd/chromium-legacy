@@ -50,6 +50,22 @@ public class TabGroupModelFilter extends TabModelFilter {
      */
     public interface Observer {
         /**
+         * This method is called before a tab is moved to form a group or moved into an existed
+         * group.
+         * @param movedTab The {@link Tab} which will be moved. If a group will be merged to a tab
+         *                 or another group, this is the last tab of the merged group.
+         */
+        void willMergeTabToGroup(Tab movedTab);
+
+        /**
+         * This method is called before a tab within a group is moved out of the group.
+         *
+         * @param movedTab   The tab which will be moved.
+         * @param newRootId  The new root id of the group from which {@code movedTab} is moved out.
+         */
+        void willMoveTabOutOfGroup(Tab movedTab, int newRootId);
+
+        /**
          * This method is called after a tab is moved to form a group or moved into an existed
          * group.
          * @param movedTab The {@link Tab} which has been moved. If a group is merged to a tab or
@@ -281,6 +297,9 @@ public class TabGroupModelFilter extends TabModelFilter {
         int destinationIndexInTabModel = getTabModelDestinationIndex(destinationTab);
 
         if (!needToUpdateTabModel(tabsToMerge, destinationIndexInTabModel)) {
+            for (Observer observer : mGroupFilterObserver) {
+                observer.willMergeTabToGroup(tabsToMerge.get(tabsToMerge.size() - 1));
+            }
             for (int i = 0; i < tabsToMerge.size(); i++) {
                 Tab tab = tabsToMerge.get(i);
                 tab.setRootId(destinationGroupId);
@@ -320,6 +339,12 @@ public class TabGroupModelFilter extends TabModelFilter {
 
         for (int i = 0; i < tabs.size(); i++) {
             Tab tab = tabs.get(i);
+            // When merging tabs are in the same group, only make one willMergeTabToGroup call.
+            if (!isSameGroup || i == tabs.size() - 1) {
+                for (Observer observer : mGroupFilterObserver) {
+                    observer.willMergeTabToGroup(tab);
+                }
+            }
             int index = TabModelUtils.getTabIndexById(getTabModel(), tab.getId());
             assert index != TabModel.INVALID_TAB_INDEX;
             originalIndexes.add(index);
@@ -354,12 +379,17 @@ public class TabGroupModelFilter extends TabModelFilter {
                 sourceTabGroup.getTabIdForIndex(sourceTabGroup.getTabIdList().size() - 1));
         int targetIndex = tabModel.indexOf(lastTabInSourceGroup);
         assert targetIndex != TabModel.INVALID_TAB_INDEX;
-        assert sourceTabGroup.size() > 1;
 
         int prevFilterIndex = mGroupIdToGroupIndexMap.get(sourceTab.getRootId());
+        if (sourceTabGroup.size() == 1) {
+            for (Observer observer : mGroupFilterObserver) {
+                observer.didMoveTabOutOfGroup(sourceTab, prevFilterIndex);
+            }
+            return;
+        }
+        int newRootId = sourceTab.getRootId();
         if (sourceTab.getId() == sourceTab.getRootId()) {
             // If moving tab's id is the root id of the group, find a new root id.
-            int newRootId = Tab.INVALID_TAB_ID;
             if (sourceIndex != 0
                     && tabModel.getTabAt(sourceIndex - 1).getRootId() == sourceTab.getRootId()) {
                 newRootId = tabModel.getTabAt(sourceIndex - 1).getId();
@@ -367,9 +397,13 @@ public class TabGroupModelFilter extends TabModelFilter {
                     && tabModel.getTabAt(sourceIndex + 1).getRootId() == sourceTab.getRootId()) {
                 newRootId = tabModel.getTabAt(sourceIndex + 1).getId();
             }
+        }
+        assert newRootId != Tab.INVALID_TAB_ID;
 
-            assert newRootId != Tab.INVALID_TAB_ID;
-
+        for (Observer observer : mGroupFilterObserver) {
+            observer.willMoveTabOutOfGroup(sourceTab, newRootId);
+        }
+        if (sourceTab.getId() == sourceTab.getRootId()) {
             for (int tabId : sourceTabGroup.getTabIdList()) {
                 TabModelUtils.getTabById(tabModel, tabId).setRootId(newRootId);
             }
@@ -456,6 +490,19 @@ public class TabGroupModelFilter extends TabModelFilter {
 
         int groupId = tab.getRootId();
         TabGroup group = mGroupIdToGroupMap.get(groupId);
+        if (group == null) return super.getRelatedTabList(TabModel.INVALID_TAB_INDEX);
+        return getRelatedTabList(group.getTabIdList());
+    }
+
+    /**
+     * This method returns all tabs in a tab group with reference to {@code tabRootId} as group id.
+     *
+     * @param tabRootId The tab root id that is used to find the related group.
+     * @return An unmodifiable list of {@link Tab} that relate with the given tab root id.
+     */
+    public List<Tab> getRelatedTabListForRootId(int tabRootId) {
+        if (tabRootId == Tab.INVALID_TAB_ID) return super.getRelatedTabList(tabRootId);
+        TabGroup group = mGroupIdToGroupMap.get(tabRootId);
         if (group == null) return super.getRelatedTabList(TabModel.INVALID_TAB_INDEX);
         return getRelatedTabList(group.getTabIdList());
     }

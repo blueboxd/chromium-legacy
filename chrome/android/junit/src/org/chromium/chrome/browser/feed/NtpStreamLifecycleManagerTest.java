@@ -59,7 +59,7 @@ public class NtpStreamLifecycleManagerTest {
     private NtpStreamLifecycleManager mNtpStreamLifecycleManager;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
 
         // Initialize a test instance for PrefServiceBridge.

@@ -87,7 +87,7 @@ public class PaymentRequestMultiplePaymentInstrumentsTest implements MainActivit
     private int[] mDatesToSet;
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
 
         // The user has a complete autofill profile.
@@ -96,8 +96,9 @@ public class PaymentRequestMultiplePaymentInstrumentsTest implements MainActivit
         ArrayList<String> guids = new ArrayList<>();
         for (int i = 0; i < mCreditCardsToAdd.length; i++) {
             // CREDIT_CARDS[0] has no billing address.
-            if (mCreditCardsToAdd[i] != CREDIT_CARDS[0])
+            if (mCreditCardsToAdd[i] != CREDIT_CARDS[0]) {
                 mCreditCardsToAdd[i].setBillingAddressId(billingAddressId);
+            }
             String creditCardId = helper.setCreditCard(mCreditCardsToAdd[i]);
             guids.add(creditCardId);
         }
@@ -116,7 +117,7 @@ public class PaymentRequestMultiplePaymentInstrumentsTest implements MainActivit
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCreditCardSuggestionOrdering() throws InterruptedException, TimeoutException {
+    public void testCreditCardSuggestionOrdering() throws TimeoutException {
         mCreditCardsToAdd = new CreditCard[] {CREDIT_CARDS[0], CREDIT_CARDS[3], CREDIT_CARDS[2],
                 CREDIT_CARDS[1], CREDIT_CARDS[4]};
         mCountsToSet = new int[] {20, 15, 10, 25, 30};
@@ -155,7 +156,7 @@ public class PaymentRequestMultiplePaymentInstrumentsTest implements MainActivit
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testMissingNameFieldRecorded() throws InterruptedException, TimeoutException {
+    public void testMissingNameFieldRecorded() throws TimeoutException {
         // Add a card with invalid billing address and another one with missing name.
         mCreditCardsToAdd = new CreditCard[] {CREDIT_CARDS[4], CREDIT_CARDS[0]};
         mCountsToSet = new int[] {5, 5};
@@ -180,8 +181,7 @@ public class PaymentRequestMultiplePaymentInstrumentsTest implements MainActivit
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testMissingBillingAddressFieldRecorded()
-            throws InterruptedException, TimeoutException {
+    public void testMissingBillingAddressFieldRecorded() throws TimeoutException {
         // Add a card with invalid billing address.
         mCreditCardsToAdd = new CreditCard[] {CREDIT_CARDS[0]};
         mCountsToSet = new int[] {5};
@@ -206,7 +206,7 @@ public class PaymentRequestMultiplePaymentInstrumentsTest implements MainActivit
     @MediumTest
     @Feature({"Payments"})
     @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
-    public void testAllMissingFieldsRecorded() throws InterruptedException, TimeoutException {
+    public void testAllMissingFieldsRecorded() throws TimeoutException {
         // Don't add any cards
         mCreditCardsToAdd = new CreditCard[] {};
         mCountsToSet = new int[] {};

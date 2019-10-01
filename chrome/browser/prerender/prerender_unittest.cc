@@ -152,7 +152,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
   // From KeyedService, via PrererenderManager:
   void Shutdown() override {
     if (next_prerender_contents())
-      next_prerender_contents_->Destroy(FINAL_STATUS_MANAGER_SHUTDOWN);
+      next_prerender_contents_->Destroy(FINAL_STATUS_PROFILE_DESTROYED);
     PrerenderManager::Shutdown();
   }
 
@@ -464,7 +464,7 @@ TEST_F(PrerenderTest, NoStatePrefetchMode) {
 
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
-          url, FINAL_STATUS_MANAGER_SHUTDOWN);
+          url, FINAL_STATUS_PROFILE_DESTROYED);
   EXPECT_TRUE(AddSimplePrerender(url));
   EXPECT_EQ(PREFETCH_ONLY, prerender_contents->prerender_mode());
 }
@@ -488,7 +488,7 @@ TEST_F(PrerenderTest, GWSPrefetchHoldbackNonGWSSReferrer) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kGWSPrefetchHoldback);
   prerender_manager()->CreateNextPrerenderContents(
-      url, FINAL_STATUS_MANAGER_SHUTDOWN);
+      url, FINAL_STATUS_PROFILE_DESTROYED);
 
   EXPECT_TRUE(AddSimplePrerender(url));
 }
@@ -504,7 +504,7 @@ TEST_F(PrerenderTest, GWSPrefetchHoldbackGWSReferrer) {
   scoped_feature_list.InitAndEnableFeature(kGWSPrefetchHoldback);
   prerender_manager()->CreateNextPrerenderContents(
       url, url::Origin::Create(GURL("www.google.com")), ORIGIN_GWS_PRERENDER,
-      FINAL_STATUS_MANAGER_SHUTDOWN);
+      FINAL_STATUS_PROFILE_DESTROYED);
 
   EXPECT_FALSE(AddSimpleGWSPrerender(url));
 }
@@ -519,7 +519,7 @@ TEST_F(PrerenderTest, GWSPrefetchHoldbackOffNonGWSReferrer) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(kGWSPrefetchHoldback);
   prerender_manager()->CreateNextPrerenderContents(
-      url, FINAL_STATUS_MANAGER_SHUTDOWN);
+      url, FINAL_STATUS_PROFILE_DESTROYED);
 
   EXPECT_TRUE(AddSimplePrerender(url));
 }
@@ -535,7 +535,7 @@ TEST_F(PrerenderTest, GWSPrefetchHoldbackOffGWSReferrer) {
   scoped_feature_list.InitAndDisableFeature(kGWSPrefetchHoldback);
   prerender_manager()->CreateNextPrerenderContents(
       url, url::Origin::Create(GURL("www.google.com")), ORIGIN_GWS_PRERENDER,
-      FINAL_STATUS_MANAGER_SHUTDOWN);
+      FINAL_STATUS_PROFILE_DESTROYED);
 
   EXPECT_TRUE(AddSimpleGWSPrerender(url));
 }
@@ -552,7 +552,7 @@ TEST_F(PrerenderTest, PredictorPrefetchHoldbackNonPredictorReferrer) {
       kNavigationPredictorPrefetchHoldback);
   prerender_manager()->CreateNextPrerenderContents(
       url, url::Origin::Create(GURL("www.notgoogle.com")),
-      ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, FINAL_STATUS_MANAGER_SHUTDOWN);
+      ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, FINAL_STATUS_PROFILE_DESTROYED);
 
   EXPECT_TRUE(AddSimplePrerender(url));
 }
@@ -569,7 +569,7 @@ TEST_F(PrerenderTest, PredictorPrefetchHoldbackPredictorReferrer) {
       kNavigationPredictorPrefetchHoldback);
   prerender_manager()->CreateNextPrerenderContents(
       url, base::nullopt, ORIGIN_NAVIGATION_PREDICTOR,
-      FINAL_STATUS_MANAGER_SHUTDOWN);
+      FINAL_STATUS_PROFILE_DESTROYED);
   EXPECT_EQ(nullptr, prerender_manager()->AddPrerenderFromNavigationPredictor(
                          url, nullptr, gfx::Size()));
 }
@@ -586,7 +586,7 @@ TEST_F(PrerenderTest, PredictorPrefetchHoldbackOffNonPredictorReferrer) {
       kNavigationPredictorPrefetchHoldback);
   prerender_manager()->CreateNextPrerenderContents(
       url, url::Origin::Create(GURL("www.notgoogle.com")),
-      ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, FINAL_STATUS_MANAGER_SHUTDOWN);
+      ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, FINAL_STATUS_PROFILE_DESTROYED);
 
   EXPECT_TRUE(AddSimplePrerender(url));
 }
@@ -603,7 +603,7 @@ TEST_F(PrerenderTest, PredictorPrefetchHoldbackOffPredictorReferrer) {
       kNavigationPredictorPrefetchHoldback);
   prerender_manager()->CreateNextPrerenderContents(
       url, base::nullopt, ORIGIN_NAVIGATION_PREDICTOR,
-      FINAL_STATUS_MANAGER_SHUTDOWN);
+      FINAL_STATUS_PROFILE_DESTROYED);
 
   EXPECT_NE(nullptr, prerender_manager()->AddPrerenderFromNavigationPredictor(
                          url, nullptr, gfx::Size()));
@@ -673,7 +673,7 @@ TEST_F(PrerenderTest, DuplicateTest_NoStatePrefetch) {
 
   DummyPrerenderContents* prerender_contents1 =
       prerender_manager()->CreateNextPrerenderContents(
-          url, FINAL_STATUS_MANAGER_SHUTDOWN);
+          url, FINAL_STATUS_PROFILE_DESTROYED);
   EXPECT_TRUE(AddSimplePrerender(url));
   EXPECT_EQ(prerender_contents1,
             prerender_manager()->next_prerender_contents());
@@ -814,7 +814,7 @@ TEST_F(PrerenderTest, LinkManagerNavigateAwayLaunchAnother) {
   GURL second_url("http://example2.com");
   DummyPrerenderContents* second_prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
-          second_url, FINAL_STATUS_MANAGER_SHUTDOWN);
+          second_url, FINAL_STATUS_PROFILE_DESTROYED);
   EXPECT_TRUE(AddSimplePrerender(second_url));
   EXPECT_EQ(second_prerender_contents,
             prerender_manager()->FindEntry(second_url));
@@ -846,7 +846,7 @@ TEST_F(PrerenderTest, NoStatePrefetchDuplicate) {
   prerender_manager()->CancelAllPrerenders();
 
   prerender_manager()->CreateNextPrerenderContents(
-      kUrl, base::nullopt, ORIGIN_OMNIBOX, FINAL_STATUS_MANAGER_SHUTDOWN);
+      kUrl, base::nullopt, ORIGIN_OMNIBOX, FINAL_STATUS_PROFILE_DESTROYED);
 
   // Prefetching again before time_to_live aborts, because it is a duplicate.
   tick_clock()->Advance(base::TimeDelta::FromSeconds(1));
@@ -1118,8 +1118,7 @@ TEST_F(PrerenderTest, CancelPendingPrerenderTest) {
 TEST_F(PrerenderTest, SourceRenderViewClosed) {
   GURL url("http://www.google.com/");
   prerender_manager()->CreateNextPrerenderContents(
-      url,
-      FINAL_STATUS_MANAGER_SHUTDOWN);
+      url, FINAL_STATUS_PROFILE_DESTROYED);
   prerender_link_manager()->OnAddPrerender(
       100, GetNextPrerenderID(), url, kDefaultRelTypes, Referrer(),
       url::Origin::Create(url), kSize, 200);
@@ -1222,7 +1221,7 @@ TEST_F(PrerenderTest, OmniboxAllowedWhenNotDisabled) {
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
           GURL("http://www.example.com"), base::nullopt, ORIGIN_OMNIBOX,
-          FINAL_STATUS_MANAGER_SHUTDOWN);
+          FINAL_STATUS_PROFILE_DESTROYED);
 
   EXPECT_TRUE(prerender_manager()->AddPrerenderFromOmnibox(
       GURL("http://www.example.com"), nullptr, gfx::Size()));
@@ -1325,7 +1324,7 @@ TEST_F(PrerenderTest, PrerenderNotAllowedOnCellularWithExternalOrigin) {
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
           url, base::nullopt, ORIGIN_EXTERNAL_REQUEST,
-          FINAL_STATUS_MANAGER_SHUTDOWN);
+          FINAL_STATUS_PROFILE_DESTROYED);
   std::unique_ptr<PrerenderHandle> prerender_handle(
       prerender_manager()->AddPrerenderFromExternalRequest(
           url, content::Referrer(), nullptr, gfx::Rect(kSize)));
@@ -1691,7 +1690,7 @@ TEST_F(PrerenderTest, LinkManagerCancelThenAddAgain) {
   // A cancelled NoStatePrefetch is counted as a prefetch recently happened. A
   // new attempt to prefetch should return as duplicate.
   prerender_manager()->CreateNextPrerenderContents(
-      url, FINAL_STATUS_MANAGER_SHUTDOWN);
+      url, FINAL_STATUS_PROFILE_DESTROYED);
   EXPECT_FALSE(AddSimplePrerender(url));
   EXPECT_FALSE(prerender_manager()->FindEntry(url));
 }
@@ -1923,7 +1922,7 @@ TEST_F(PrerenderTest, PrerenderContentsIncrementsByteCount) {
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
           url, base::nullopt, ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER,
-          FINAL_STATUS_MANAGER_SHUTDOWN);
+          FINAL_STATUS_PROFILE_DESTROYED);
   std::unique_ptr<PrerenderHandle> prerender_handle =
       prerender_manager()->AddForcedPrerenderFromExternalRequest(
           url, content::Referrer(), nullptr, gfx::Rect(kSize));

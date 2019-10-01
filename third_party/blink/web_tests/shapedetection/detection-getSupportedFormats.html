@@ -9,7 +9,7 @@
 promise_test(async t => {
   // Disable built-in support for barcode detection to test fallback handling.
   const interceptor = new MojoInterfaceInterceptor(
-          shapeDetection.mojom.BarcodeDetectionProvider.name);
+          shapeDetection.mojom.BarcodeDetectionProvider.name, "context", true);
   interceptor.oninterfacerequest = e => e.handle.close();
   interceptor.start();
 

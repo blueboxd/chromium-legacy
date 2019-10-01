@@ -3,10 +3,15 @@
 // found in the LICENSE file.
 
 // https://w3c.github.io/payment-handler/#dom-paymentmethodchangeresponse
+// Todo(sahel): Change the link to the updated spec. crbug.com/984694
+// Todo(sahel): Rename PaymentMethodChangeResponse to
+// PaymentRequestDetailsUpdate which is a more generic name. crbug.com/984694
 
 dictionary PaymentMethodChangeResponse {
   DOMString error;
   PaymentCurrencyAmount total;
   FrozenArray<PaymentDetailsModifier> modifiers;
+  FrozenArray<PaymentShippingOption> shippingOptions;
   object paymentMethodErrors;
+  AddressErrors shippingAddressErrors;
 };

@@ -27,6 +27,10 @@ class ChromeWebClient : public web::WebClient {
   void AddAdditionalSchemes(Schemes* schemes) const override;
   std::string GetApplicationLocale() const override;
   bool IsAppSpecificURL(const GURL& url) const override;
+  bool ShouldBlockUrlDuringRestore(const GURL& url,
+                                   web::WebState* web_state) const override;
+  void AddSerializableData(web::SerializableUserDataManager* user_data_manager,
+                           web::WebState* web_state) override;
   base::string16 GetPluginNotSupportedText() const override;
   std::string GetUserAgent(web::UserAgentType type) const override;
   base::string16 GetLocalizedString(int message_id) const override;

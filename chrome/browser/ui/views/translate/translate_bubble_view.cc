@@ -46,6 +46,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
@@ -903,6 +904,8 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
   tab_translate_options_button->SetInkDropMode(views::Button::InkDropMode::ON);
   tab_translate_options_button->SetID(BUTTON_ID_OPTIONS_MENU_TAB);
   tab_translate_options_button->SetFocusForPlatform();
+  tab_translate_options_button->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
   tab_translate_options_button->set_request_focus_on_press(true);
 
   // Close button
@@ -921,6 +924,7 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
   close_button->set_ink_drop_base_color(gfx::kChromeIconGrey);
   close_button->SetFocusForPlatform();
   close_button->SetID(BUTTON_ID_CLOSE);
+  close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
 
   constexpr int kColumnSetId = 0;
   views::ColumnSet* cs = layout->AddColumnSet(kColumnSetId);
@@ -996,6 +1000,7 @@ std::unique_ptr<views::View> TranslateBubbleView::GM2CreateView(
       gfx::CreateVectorIcon(*close_icon_id, 16, close_icon_color));
   close_button->set_ink_drop_base_color(gfx::kChromeIconGrey);
   close_button->SetID(BUTTON_ID_CLOSE);
+  close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
 
   // Initialize a columnset
   views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_TITLE);
@@ -1564,6 +1569,7 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
   close_button->set_ink_drop_base_color(gfx::kChromeIconGrey);
   close_button->SetFocusForPlatform();
   close_button->SetID(BUTTON_ID_CLOSE);
+  close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
 
   auto view = std::make_unique<AdvancedViewContainer>();
   views::GridLayout* layout =
@@ -1701,7 +1707,13 @@ void TranslateBubbleView::SwitchTabForViewState(
   if ((view_state == TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE ||
        view_state == TranslateBubbleModel::VIEW_STATE_TRANSLATING) &&
       tabbed_pane_->GetSelectedTabIndex() != 1) {
+    // When switching to "after" or "during" translate view from something other
+    // than user interaction, |this| needs to unregister from listening to the
+    // tabbed pane events otherwise it'll trigger an additional translation as
+    // if the user had clicked the tabs.
+    tabbed_pane_->set_listener(nullptr);
     tabbed_pane_->SelectTabAt(1);
+    tabbed_pane_->set_listener(this);
   } else if (view_state == TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE &&
              tabbed_pane_->GetSelectedTabIndex() != 0) {
     tabbed_pane_->SelectTabAt(0);

@@ -257,11 +257,8 @@ class ChromePasswordManagerClient
 
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
 
-// Key events are triggered by Ime text committed event on Android.
-#if !defined(OS_ANDROID)
   // content::RenderWidgetHost::InputEventObserver overrides.
   void OnInputEvent(const blink::WebInputEvent&) override;
-#endif
 
   // Given |bounds| in the renderers coordinate system, return the same bounds
   // in the screens coordinate system.

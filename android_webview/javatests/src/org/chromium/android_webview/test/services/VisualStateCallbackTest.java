@@ -140,7 +140,7 @@ public class VisualStateCallbackTest {
     private RenderProcessGoneHelper mHelper;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         RenderProcessGoneTestAwContentsClient contentsClient =
                 new RenderProcessGoneTestAwContentsClient();
         AwTestContainerView testView = mActivityTestRule.createAwTestContainerViewOnMainSync(

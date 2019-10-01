@@ -5,13 +5,8 @@
 #include "components/printing/browser/print_media_l10n.h"
 
 #include <map>
-#include <vector>
 
-#include "base/logging.h"
 #include "base/no_destructor.h"
-#include "base/strings/string_piece.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -162,45 +157,17 @@ int VendorIdToTranslatedId(const std::string& vendor_id) {
   return it != media_map->end() ? it->second : -1;
 }
 
-std::string SplitMediaName(const base::StringPiece& vendor_id) {
-  // <name>_<width>x<height>{in,mm}
-  // e.g. na_letter_8.5x11in, iso_a4_210x297mm
-  std::vector<base::StringPiece> pieces = base::SplitStringPiece(
-      vendor_id, "_", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  if (pieces.size() < 2)
-    return std::string();
-
-  // Append all tokens split out of the vendor ID. The last token is
-  // usually the <width>x<height> token, so skip it.
-  pieces.pop_back();
-  return base::JoinString(pieces, " ");
-}
-
 }  // namespace
 
 std::string LocalizePaperDisplayName(const std::string& vendor_id) {
-  std::string localized;
   // We can't do anything without a vendor ID.
   if (vendor_id.empty()) {
-    return localized;
+    return std::string();
   }
 
   int translation_id = VendorIdToTranslatedId(vendor_id);
-  // If we can't get a localized media name, we do our best to parse it
-  // on our own.
-  if (translation_id < 0) {
-    localized = SplitMediaName(base::StringPiece(vendor_id));
-  } else {
-    localized = l10n_util::GetStringUTF8(translation_id);
-  }
-
-  // If we still don't have a sane display name, fall back on showing
-  // the vendor ID.
-  if (localized.empty()) {
-    VLOG(1) << "No display name for " << vendor_id;
-    localized = vendor_id;
-  }
-  return localized;
+  return translation_id < 0 ? std::string()
+                            : l10n_util::GetStringUTF8(translation_id);
 }
 
 }  // namespace printing

@@ -26,6 +26,9 @@ const char kNonAnimationFrame[] =
 
 const char kSessionMismatch[] = "XRSpace and XRFrame sessions do not match.";
 
+const char kCannotReportPoses[] =
+    "Poses cannot be given out for the current state.";
+
 }  // namespace
 
 XRFrame::XRFrame(XRSession* session, XRWorldInformation* world_information)
@@ -53,6 +56,11 @@ XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space,
   if (reference_space->session() != session_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kSessionMismatch);
+    return nullptr;
+  }
+
+  if (!session_->CanReportPoses()) {
+    exception_state.ThrowSecurityError(kCannotReportPoses);
     return nullptr;
   }
 
@@ -100,6 +108,11 @@ XRPose* XRFrame::getPose(XRSpace* space_A,
   if (space_B->session() != session_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kSessionMismatch);
+    return nullptr;
+  }
+
+  if (!session_->CanReportPoses()) {
+    exception_state.ThrowSecurityError(kCannotReportPoses);
     return nullptr;
   }
 

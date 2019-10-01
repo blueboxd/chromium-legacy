@@ -34,22 +34,22 @@ public class NotificationTestRule extends ChromeTabbedActivityTestRule {
 
     private MockNotificationManagerProxy mMockNotificationManager;
 
-    private void setUp() throws Exception {
+    private void setUp() {
         // The NotificationPlatformBridge must be overriden prior to the browser process starting.
         mMockNotificationManager = new MockNotificationManagerProxy();
         NotificationPlatformBridge.overrideNotificationManagerForTesting(mMockNotificationManager);
         startMainActivityFromLauncher();
     }
 
-    private void tearDown() throws Exception {
+    private void tearDown() {
         NotificationPlatformBridge.overrideNotificationManagerForTesting(null);
     }
 
     /**
      * Sets the permission to use Web Notifications for the test HTTP server's origin to |setting|.
      */
-    public void setNotificationContentSettingForOrigin(final @ContentSettingValues int setting,
-            String origin) throws InterruptedException, TimeoutException {
+    public void setNotificationContentSettingForOrigin(
+            final @ContentSettingValues int setting, String origin) throws TimeoutException {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // The notification content setting does not consider the embedder origin.
             PermissionInfo notificationInfo =

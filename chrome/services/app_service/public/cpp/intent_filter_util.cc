@@ -25,4 +25,31 @@ apps::mojom::ConditionPtr MakeCondition(
 
   return condition;
 }
+
+apps::mojom::IntentFilterPtr CreateIntentFilterForUrlScope(const GURL& url) {
+  auto intent_filter = apps::mojom::IntentFilter::New();
+
+  std::vector<apps::mojom::ConditionValuePtr> scheme_condition_values;
+  scheme_condition_values.push_back(apps_util::MakeConditionValue(
+      url.scheme(), apps::mojom::PatternMatchType::kNone));
+  auto scheme_condition = apps_util::MakeCondition(
+      apps::mojom::ConditionType::kScheme, std::move(scheme_condition_values));
+  intent_filter->conditions.push_back(std::move(scheme_condition));
+
+  std::vector<apps::mojom::ConditionValuePtr> host_condition_values;
+  host_condition_values.push_back(apps_util::MakeConditionValue(
+      url.host(), apps::mojom::PatternMatchType::kNone));
+  auto host_condition = apps_util::MakeCondition(
+      apps::mojom::ConditionType::kHost, std::move(host_condition_values));
+  intent_filter->conditions.push_back(std::move(host_condition));
+
+  std::vector<apps::mojom::ConditionValuePtr> path_condition_values;
+  path_condition_values.push_back(apps_util::MakeConditionValue(
+      url.path(), apps::mojom::PatternMatchType::kPrefix));
+  auto path_condition = apps_util::MakeCondition(
+      apps::mojom::ConditionType::kPattern, std::move(path_condition_values));
+  intent_filter->conditions.push_back(std::move(path_condition));
+
+  return intent_filter;
+}
 }  // namespace apps_util

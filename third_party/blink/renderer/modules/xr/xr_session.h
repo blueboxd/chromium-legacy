@@ -223,6 +223,8 @@ class XRSession final
   // ScriptWrappable
   bool HasPendingActivity() const override;
 
+  bool CanReportPoses();
+
   // Creates presentation frame based on current state of the session.
   // State currently used in XRFrame creation is mojo_from_viewer_ and
   // world_information_. The created XRFrame also stores a reference to this

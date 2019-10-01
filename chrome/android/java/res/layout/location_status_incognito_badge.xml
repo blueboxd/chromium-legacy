@@ -11,4 +11,4 @@
     android:layout_gravity="center_vertical"
     android:visibility="gone"
     android:contentDescription="@string/accessibility_incognito_badge"
-    app:srcCompat="@drawable/ic_location_bar_incognito_badge" />
+    app:srcCompat="@drawable/location_bar_incognito_badge" />

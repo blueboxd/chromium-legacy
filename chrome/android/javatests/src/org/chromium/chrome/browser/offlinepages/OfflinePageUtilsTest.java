@@ -127,7 +127,7 @@ public class OfflinePageUtilsTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         turnOffServer();
     }
 
@@ -138,7 +138,7 @@ public class OfflinePageUtilsTest {
     /** We must turn off the server only once, since stopAndDestroyServer() assumes the server is
      * on, and will wait indefinitely for it, timing out the unit test otherwise.
      */
-    public void turnOffServer() throws Exception {
+    public void turnOffServer() {
         if (mServerTurnedOn) {
             mTestServer.stopAndDestroyServer();
             mServerTurnedOn = false;
@@ -323,7 +323,7 @@ public class OfflinePageUtilsTest {
 
     @Test
     @MediumTest
-    public void testIsOfflinePageSharable() throws Exception {
+    public void testIsOfflinePageSharable() {
         // This test needs the sharing command line flag turned on. so we do not override the
         // default.
         final String privatePath = activity().getApplicationContext().getCacheDir().getPath();
@@ -370,7 +370,7 @@ public class OfflinePageUtilsTest {
      */
     @Test
     @SmallTest
-    public void testMhtmlPropertiesFromRenderer() throws Exception {
+    public void testMhtmlPropertiesFromRenderer() {
         String testUrl = UrlUtils.getTestFileUrl("offline_pages/hello.mhtml");
         mActivityTestRule.loadUrl(testUrl);
 
@@ -409,7 +409,7 @@ public class OfflinePageUtilsTest {
      */
     @Test
     @SmallTest
-    public void testInvalidMhtmlMainResourceMimeType() throws Exception {
+    public void testInvalidMhtmlMainResourceMimeType() {
         HistogramDelta histogramDelta = new HistogramDelta(
                 MHTML_LOAD_RESULT_UMA_NAME_UNTRUSTED, MhtmlLoadResult.MISSING_MAIN_RESOURCE);
         String testUrl = UrlUtils.getTestFileUrl("offline_pages/invalid_main_resource.mhtml");
@@ -433,7 +433,7 @@ public class OfflinePageUtilsTest {
      */
     @Test
     @SmallTest
-    public void testEmptyMhtml() throws Exception {
+    public void testEmptyMhtml() {
         HistogramDelta histogramDelta = new HistogramDelta(
                 MHTML_LOAD_RESULT_UMA_NAME_UNTRUSTED, MhtmlLoadResult.EMPTY_FILE);
         String testUrl = UrlUtils.getTestFileUrl("offline_pages/empty.mhtml");
@@ -455,7 +455,7 @@ public class OfflinePageUtilsTest {
      */
     @Test
     @SmallTest
-    public void testMhtmlWithNoResources() throws Exception {
+    public void testMhtmlWithNoResources() {
         HistogramDelta histogramDelta = new HistogramDelta(
                 MHTML_LOAD_RESULT_UMA_NAME_UNTRUSTED, MhtmlLoadResult.INVALID_ARCHIVE);
         String testUrl = UrlUtils.getTestFileUrl("offline_pages/no_resources.mhtml");

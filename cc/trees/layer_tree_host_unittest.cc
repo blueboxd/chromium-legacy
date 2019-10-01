@@ -255,6 +255,32 @@ class LayerTreeHostTestRequestedMainFrame : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestRequestedMainFrame);
 
+class LayerTreeHostTestSchedulingClient : public LayerTreeHostTest {
+ public:
+  void BeginTest() override {
+    PostSetNeedsCommitToMainThread();
+    EXPECT_EQ(0, main_frame_scheduled_count_);
+    EXPECT_EQ(0, main_frame_run_count_);
+  }
+
+  void DidScheduleBeginMainFrame() override { main_frame_scheduled_count_++; }
+  void DidRunBeginMainFrame() override { main_frame_run_count_++; }
+
+  void DidBeginMainFrame() override {
+    EXPECT_EQ(1, main_frame_scheduled_count_);
+    EXPECT_EQ(1, main_frame_run_count_);
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+ private:
+  int main_frame_scheduled_count_ = 0;
+  int main_frame_run_count_ = 0;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestSchedulingClient);
+
 class LayerTreeHostTestSetNeedsUpdateInsideLayout : public LayerTreeHostTest {
  protected:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }

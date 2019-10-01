@@ -87,6 +87,9 @@ HotseatWidget::DelegateView::~DelegateView() {
 void HotseatWidget::DelegateView::Init(
     ScrollableShelfView* scrollable_shelf_view,
     ui::Layer* parent_layer) {
+  if (!chromeos::switches::ShouldShowScrollableShelf())
+    return;
+
   if (wallpaper_controller_)
     wallpaper_controller_->AddObserver(this);
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -145,6 +148,9 @@ bool HotseatWidget::DelegateView::CanActivate() const {
 }
 
 void HotseatWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
+  if (!chromeos::switches::ShouldShowScrollableShelf())
+    return;
+
   views::View::ReorderChildLayers(parent_layer);
   parent_layer->StackAtBottom(&opaque_background_);
 }

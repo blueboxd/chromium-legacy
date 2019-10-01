@@ -107,6 +107,17 @@ void RawInputDataFetcher::StopMonitor() {
   window_.reset();
 }
 
+bool RawInputDataFetcher::DisconnectUnrecognizedGamepad(int source_id) {
+  for (auto it = controllers_.begin(); it != controllers_.end(); ++it) {
+    if (it->second->GetSourceId() == source_id) {
+      it->second->Shutdown();
+      controllers_.erase(it);
+      return true;
+    }
+  }
+  return false;
+}
+
 void RawInputDataFetcher::ClearControllers() {
   for (const auto& entry : controllers_)
     entry.second->Shutdown();
@@ -179,6 +190,10 @@ void RawInputDataFetcher::EnumerateDevices() {
           continue;
         }
 
+        bool is_recognized =
+            GamepadId::kUnknownGamepad !=
+            GamepadIdList::Get().GetGamepadId(vendor_int, product_int);
+
         // Record gamepad metrics before excluding XInput devices. This allows
         // us to recognize XInput devices even though the XInput API masks
         // the vendor and product IDs.
@@ -194,7 +209,7 @@ void RawInputDataFetcher::EnumerateDevices() {
           continue;
         }
 
-        PadState* state = GetPadState(source_id);
+        PadState* state = GetPadState(source_id, is_recognized);
         if (!state) {
           new_device->Shutdown();
           continue;  // No slot available for this gamepad.

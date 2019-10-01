@@ -36,13 +36,13 @@ public class TabStateTest {
     private TestTabModelDirectory mTestTabModelDirectory;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mTestTabModelDirectory = new TestTabModelDirectory(
                 InstrumentationRegistry.getTargetContext(), "TabStateTest", null);
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         TabState.setChannelNameOverrideForTest(null);
         mTestTabModelDirectory.tearDown();
     }
@@ -92,7 +92,7 @@ public class TabStateTest {
 
     @Test
     @SmallTest
-    public void testSaveLoadThroughBundle() throws Exception {
+    public void testSaveLoadThroughBundle() {
         TabState tabState = new TabState();
         byte[] bytes = {'A', 'B', 'C'};
         tabState.contentsState = new WebContentsState(ByteBuffer.allocateDirect(bytes.length));

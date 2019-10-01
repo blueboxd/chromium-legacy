@@ -64,7 +64,7 @@ public class WebappDisplayCutoutTestRule extends DisplayCutoutTestRule<WebappAct
         };
     }
 
-    private void startWebappActivity(@WebDisplayMode int displayMode) throws Exception {
+    private void startWebappActivity(@WebDisplayMode int displayMode) {
         Intent intent =
                 new Intent(InstrumentationRegistry.getTargetContext(), WebappActivity0.class);
         intent.setData(Uri.parse(WebappActivity0.WEBAPP_SCHEME + "://" + WEBAPP_ID));

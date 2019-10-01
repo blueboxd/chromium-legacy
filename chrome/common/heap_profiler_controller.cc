@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/process/process_metrics.h"
 #include "base/rand_util.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
@@ -41,15 +43,16 @@ HeapProfilerController::~HeapProfilerController() {
 }
 
 void HeapProfilerController::Start() {
-  if (base::FeatureList::IsEnabled(
+  if (!base::FeatureList::IsEnabled(
           metrics::CallStackProfileMetricsProvider::kHeapProfilerReporting)) {
-    int sampling_rate = base::GetFieldTrialParamByFeatureAsInt(
-        metrics::CallStackProfileMetricsProvider::kHeapProfilerReporting,
-        kHeapProfilerSamplingRate, 0);
-    if (sampling_rate > 0)
-      base::SamplingHeapProfiler::Get()->SetSamplingInterval(sampling_rate);
-    base::SamplingHeapProfiler::Get()->Start();
+    return;
   }
+  int sampling_rate = base::GetFieldTrialParamByFeatureAsInt(
+      metrics::CallStackProfileMetricsProvider::kHeapProfilerReporting,
+      kHeapProfilerSamplingRate, 0);
+  if (sampling_rate > 0)
+    base::SamplingHeapProfiler::Get()->SetSamplingInterval(sampling_rate);
+  base::SamplingHeapProfiler::Get()->Start();
   ScheduleNextSnapshot(stopped_);
 }
 
@@ -77,6 +80,12 @@ void HeapProfilerController::RetrieveAndSendSnapshot() {
       base::SamplingHeapProfiler::Get()->GetSamples(0);
   if (samples.empty())
     return;
+
+  size_t malloc_usage =
+      base::ProcessMetrics::CreateCurrentProcessMetrics()->GetMallocUsage();
+  int malloc_usage_mb = static_cast<int>(malloc_usage >> 20);
+  base::UmaHistogramMemoryLargeMB("Memory.HeapProfiler.Browser.Malloc",
+                                  malloc_usage_mb);
 
   base::ModuleCache module_cache;
   metrics::CallStackProfileParams params(

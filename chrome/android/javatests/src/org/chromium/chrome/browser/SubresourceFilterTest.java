@@ -84,7 +84,7 @@ public final class SubresourceFilterTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
         MockSafeBrowsingApiHandler.clearMockResponses();
     }

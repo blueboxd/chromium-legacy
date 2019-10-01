@@ -24,6 +24,7 @@
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/ozone/buildflags.h"
 
 namespace ui {
 
@@ -410,10 +411,14 @@ class ClipboardDataBuilder {
 
 ClipboardData* ClipboardDataBuilder::current_data_ = nullptr;
 
+// linux-chromeos uses aura clipboard by default, but supports ozone x11
+// with flag --use-system-clipbboard.
+#if !defined(OS_CHROMEOS) || !BUILDFLAG(OZONE_PLATFORM_X11)
 // Clipboard factory method.
 Clipboard* Clipboard::Create() {
   return new ClipboardAura;
 }
+#endif
 
 // ClipboardAura implementation.
 ClipboardAura::ClipboardAura()

@@ -51,7 +51,7 @@ public class StandardNotificationBuilderTest {
     public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // Not initializing the browser process is safe because GetDomainAndRegistry() is
         // stand-alone.
         mActivityTestRule.loadNativeLibraryNoBrowserProcess();

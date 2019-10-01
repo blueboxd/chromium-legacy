@@ -46,7 +46,7 @@ public class PaymentRequestDontHaveDebitTest implements MainActivityStartCallbac
             new PaymentRequestTestRule("payment_request_debit_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
                 true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
@@ -69,8 +69,7 @@ public class PaymentRequestDontHaveDebitTest implements MainActivityStartCallbac
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testUnknownCardTypeIsNotPreselectedButAvailable()
-            throws InterruptedException, TimeoutException {
+    public void testUnknownCardTypeIsNotPreselectedButAvailable() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
 
         Assert.assertTrue(
@@ -95,8 +94,7 @@ public class PaymentRequestDontHaveDebitTest implements MainActivityStartCallbac
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanMakePaymentWithUnknownCardType()
-            throws InterruptedException, TimeoutException {
+    public void testCanMakePaymentWithUnknownCardType() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
                 "canMakePayment", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
         mPaymentRequestTestRule.expectResultContains(new String[] {"true"});

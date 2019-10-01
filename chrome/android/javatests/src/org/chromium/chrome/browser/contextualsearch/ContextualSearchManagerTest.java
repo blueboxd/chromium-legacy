@@ -239,7 +239,7 @@ public class ContextualSearchManagerTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
     }
@@ -254,11 +254,8 @@ public class ContextualSearchManagerTest {
     /**
      * Sets the online status and reloads the current Tab with our test URL.
      * @param isOnline Whether to go online.
-     * @throws InterruptedException
-     * @throws TimeoutException
      */
-    private void setOnlineStatusAndReload(boolean isOnline)
-            throws InterruptedException, TimeoutException {
+    private void setOnlineStatusAndReload(boolean isOnline) {
         mFakeServer.setIsOnline(isOnline);
         final String testUrl = mTestServer.getURL(TEST_PAGE);
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
@@ -275,8 +272,7 @@ public class ContextualSearchManagerTest {
      * Simulates a long-press on the given node without waiting for the panel to respond.
      * @param nodeId A string containing the node ID.
      */
-    public void longPressNodeWithoutWaiting(String nodeId)
-            throws InterruptedException, TimeoutException {
+    public void longPressNodeWithoutWaiting(String nodeId) throws TimeoutException {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         DOMUtils.longPressNode(tab.getWebContents(), nodeId);
     }
@@ -285,7 +281,7 @@ public class ContextualSearchManagerTest {
      * Simulates a long-press on the given node and waits for the panel to peek.
      * @param nodeId A string containing the node ID.
      */
-    public void longPressNode(String nodeId) throws InterruptedException, TimeoutException {
+    public void longPressNode(String nodeId) throws TimeoutException {
         longPressNodeWithoutWaiting(nodeId);
         waitForPanelToPeek();
     }
@@ -294,7 +290,7 @@ public class ContextualSearchManagerTest {
      * Simulates a click on the given node.
      * @param nodeId A string containing the node ID.
      */
-    public void clickNode(String nodeId) throws InterruptedException, TimeoutException {
+    public void clickNode(String nodeId) throws TimeoutException {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         DOMUtils.clickNode(tab.getWebContents(), nodeId);
     }
@@ -569,7 +565,7 @@ public class ContextualSearchManagerTest {
      * Waits for the bar to peek.
      * @param nodeId A string containing the node ID.
      */
-    private void clickWordNode(String nodeId) throws InterruptedException, TimeoutException {
+    private void clickWordNode(String nodeId) throws TimeoutException {
         clickNode(nodeId);
         waitForPanelToPeek();
     }
@@ -714,33 +710,29 @@ public class ContextualSearchManagerTest {
     /**
      * Waits for the Search Panel (the Search Bar) to peek up from the bottom, and asserts that it
      * did peek.
-     * @throws InterruptedException
      */
-    private void waitForPanelToPeek() throws InterruptedException {
+    private void waitForPanelToPeek() {
         waitForPanelToEnterState(PanelState.PEEKED);
     }
 
     /**
      * Waits for the Search Panel to expand, and asserts that it did expand.
-     * @throws InterruptedException
      */
-    private void waitForPanelToExpand() throws InterruptedException {
+    private void waitForPanelToExpand() {
         waitForPanelToEnterState(PanelState.EXPANDED);
     }
 
     /**
      * Waits for the Search Panel to maximize, and asserts that it did maximize.
-     * @throws InterruptedException
      */
-    private void waitForPanelToMaximize() throws InterruptedException {
+    private void waitForPanelToMaximize() {
         waitForPanelToEnterState(PanelState.MAXIMIZED);
     }
 
     /**
      * Waits for the Search Panel to close, and asserts that it did close.
-     * @throws InterruptedException
      */
-    private void waitForPanelToClose() throws InterruptedException {
+    private void waitForPanelToClose() {
         waitForPanelToEnterState(PanelState.CLOSED);
     }
 
@@ -789,9 +781,8 @@ public class ContextualSearchManagerTest {
      * 1) Waits for gesture processing,
      * 2) Waits for the panel to close,
      * 3) Asserts that there is no selection and that the panel closed.
-     * @throws InterruptedException
      */
-    private void waitForGestureToClosePanelAndAssertNoSelection() throws InterruptedException {
+    private void waitForGestureToClosePanelAndAssertNoSelection() {
         waitForPanelToClose();
         assertPanelClosedOrUndefined();
         Assert.assertTrue(TextUtils.isEmpty(getSelectedText()));
@@ -816,7 +807,7 @@ public class ContextualSearchManagerTest {
     /**
      * Waits for the panel to close and then waits for the selection to dissolve.
      */
-    private void waitForPanelToCloseAndSelectionEmpty() throws InterruptedException {
+    private void waitForPanelToCloseAndSelectionEmpty() {
         waitForPanelToClose();
         waitForSelectionEmpty();
     }
@@ -910,7 +901,7 @@ public class ContextualSearchManagerTest {
     /**
      * Taps the base page near the top.
      */
-    private void tapBasePageToClosePanel() throws InterruptedException {
+    private void tapBasePageToClosePanel() {
         // TODO(pedrosimonetti): This is not reliable. Find a better approach.
         // This taps on the panel in an area that will be selected if the "intelligence" node has
         // been tap-selected, and that will cause it to be long-press selected.
@@ -942,7 +933,7 @@ public class ContextualSearchManagerTest {
     /**
      * Click various places to cause the panel to show, expand, then close.
      */
-    private void clickToExpandAndClosePanel() throws InterruptedException, TimeoutException {
+    private void clickToExpandAndClosePanel() throws TimeoutException {
         clickWordNode("states");
         tapBarToExpandAndClosePanel();
         waitForSelectionEmpty();
@@ -951,7 +942,7 @@ public class ContextualSearchManagerTest {
     /**
      * Tap on the peeking Bar to expand the panel, then close it.
      */
-    private void tapBarToExpandAndClosePanel() throws InterruptedException {
+    private void tapBarToExpandAndClosePanel() {
         tapPeekingBarToExpandAndAssert();
         closePanel();
     }
@@ -971,7 +962,7 @@ public class ContextualSearchManagerTest {
     /**
      * Taps the peeking bar to expand the panel
      */
-    private void tapPeekingBarToExpandAndAssert() throws InterruptedException {
+    private void tapPeekingBarToExpandAndAssert() {
         clickPanelBar();
         waitForPanelToExpand();
     }
@@ -992,7 +983,7 @@ public class ContextualSearchManagerTest {
     /**
      * Simple sequence to click, resolve, and prefetch.  Verifies a prefetch occurred.
      */
-    private void clickToResolveAndAssertPrefetch() throws InterruptedException, TimeoutException {
+    private void clickToResolveAndAssertPrefetch() throws TimeoutException {
         clickWordNode("states");
         assertLoadedNoUrl();
         assertSearchTermRequested();
@@ -1019,9 +1010,8 @@ public class ContextualSearchManagerTest {
 
     /**
      * Force the Panel to handle a click on open-in-a-new-tab icon.
-     * @throws InterruptedException
      */
-    private void forceOpenTabIconClick() throws InterruptedException {
+    private void forceOpenTabIconClick() {
         assert ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT);
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             mPanel.handleBarClick(mPanel.getOpenTabIconX() + mPanel.getOpenTabIconDimension() / 2,
@@ -1031,9 +1021,8 @@ public class ContextualSearchManagerTest {
 
     /**
      * Force the Panel to handle a click in the Bar.
-     * @throws InterruptedException
      */
-    private void forcePanelToHandleBarClick() throws InterruptedException {
+    private void forcePanelToHandleBarClick() {
         assert !ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT);
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
@@ -1046,9 +1035,8 @@ public class ContextualSearchManagerTest {
 
     /**
      * Force the Panel to close.
-     * @throws InterruptedException
      */
-    private void closePanel() throws InterruptedException {
+    private void closePanel() {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -1060,7 +1048,7 @@ public class ContextualSearchManagerTest {
     /**
      * Waits for the Action Bar to be visible in response to a selection.
      */
-    private void waitForSelectActionBarVisible() throws InterruptedException {
+    private void waitForSelectActionBarVisible() {
         assertWaitForSelectActionBarVisible(true);
     }
 
@@ -1107,7 +1095,7 @@ public class ContextualSearchManagerTest {
     //@Feature({"ContextualSearch"})
     @Test
     @DisabledTest
-    public void testHidesWhenOmniboxFocused() throws InterruptedException, TimeoutException {
+    public void testHidesWhenOmniboxFocused() throws TimeoutException {
         clickWordNode("intelligence");
 
         Assert.assertEquals("Intelligence", mFakeServer.getSearchTermRequested());
@@ -1187,7 +1175,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testLongPress() throws InterruptedException, TimeoutException {
+    public void testLongPress() throws TimeoutException {
         longPressNode("states");
 
         Assert.assertNull(mFakeServer.getSearchTermRequested());
@@ -1204,7 +1192,7 @@ public class ContextualSearchManagerTest {
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/765403")
-    public void testSwipeExpand() throws InterruptedException, TimeoutException {
+    public void testSwipeExpand() throws TimeoutException {
         assertNoSearchesLoaded();
         clickWordNode("intelligence");
         assertNoSearchesLoaded();
@@ -1255,7 +1243,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testTapCausesOneLowPriorityRequest() throws InterruptedException, TimeoutException {
+    public void testTapCausesOneLowPriorityRequest() throws TimeoutException {
         mFakeServer.reset();
         clickWordNode("states");
 
@@ -1284,8 +1272,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testPrefetchFailoverRequestMadeAfterOpen()
-            throws InterruptedException, TimeoutException {
+    public void testPrefetchFailoverRequestMadeAfterOpen() throws TimeoutException {
         mFakeServer.reset();
         clickWordNode("states");
 
@@ -1346,7 +1333,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testTapDisablePreload() throws InterruptedException, TimeoutException {
+    public void testTapDisablePreload() throws TimeoutException {
         clickWordNode("intelligence");
 
         assertSearchTermRequested();
@@ -1362,7 +1349,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testLongPressGestureSelects() throws InterruptedException, TimeoutException {
+    public void testLongPressGestureSelects() throws TimeoutException {
         longPressNode("intelligence");
         Assert.assertEquals("Intelligence", getSelectedText());
         fakeResponse(false, 200, "Intelligence", "Intelligence", "alternate-term", false);
@@ -1381,7 +1368,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testTapGestureSelects() throws InterruptedException, TimeoutException {
+    public void testTapGestureSelects() throws TimeoutException {
         clickWordNode("intelligence");
         Assert.assertEquals("Intelligence", getSelectedText());
         fakeResponse(false, 200, "Intelligence", "Intelligence", "alternate-term", false);
@@ -1399,8 +1386,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testTapGestureOnSpecialCharacterDoesntSelect()
-            throws InterruptedException, TimeoutException {
+    public void testTapGestureOnSpecialCharacterDoesntSelect() throws TimeoutException {
         clickNode("question-mark");
         Assert.assertNull(getSelectedText());
         assertPanelClosedOrUndefined();
@@ -1415,8 +1401,7 @@ public class ContextualSearchManagerTest {
     Build(sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/841017")
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testTapGestureFollowedByScrollClearsSelection()
-            throws InterruptedException, TimeoutException {
+    public void testTapGestureFollowedByScrollClearsSelection() throws TimeoutException {
         clickWordNode("intelligence");
         fakeResponse(false, 200, "Intelligence", "Intelligence", "alternate-term", false);
         assertContainsParameters("Intelligence", "alternate-term");
@@ -1433,8 +1418,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testTapGestureFollowedByInvalidTextTapCloses()
-            throws InterruptedException, TimeoutException {
+    public void testTapGestureFollowedByInvalidTextTapCloses() throws TimeoutException {
         clickWordNode("states-far");
         waitForPanelToPeek();
         clickNode("question-mark");
@@ -1450,7 +1434,7 @@ public class ContextualSearchManagerTest {
      */
     @Test
     @DisabledTest
-    public void testTapGestureFollowedByNonTextTap() throws InterruptedException, TimeoutException {
+    public void testTapGestureFollowedByNonTextTap() throws TimeoutException {
         clickWordNode("states-far");
         waitForPanelToPeek();
         clickNode("button");
@@ -1463,8 +1447,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testTapGestureFarAwayTogglesSelecting()
-            throws InterruptedException, TimeoutException {
+    public void testTapGestureFarAwayTogglesSelecting() throws TimeoutException {
         clickWordNode("states");
         Assert.assertEquals("States", getSelectedText());
         waitForPanelToPeek();
@@ -1513,8 +1496,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Features.DisableFeatures({ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE})
-    public void testLongPressGestureFollowedByScrollMaintainsSelection()
-            throws InterruptedException, TimeoutException {
+    public void testLongPressGestureFollowedByScrollMaintainsSelection() throws TimeoutException {
         longPressNode("intelligence");
         waitForPanelToPeek();
         scrollBasePage();
@@ -1531,8 +1513,7 @@ public class ContextualSearchManagerTest {
     @Feature({"ContextualSearch"})
     @DisabledTest(message = "See https://crbug.com/837998")
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testLongPressGestureFollowedByTapDoesntSelect()
-            throws InterruptedException, TimeoutException {
+    public void testLongPressGestureFollowedByTapDoesntSelect() throws TimeoutException {
         longPressNode("intelligence");
         waitForPanelToPeek();
         clickWordNode("states-far");
@@ -1547,8 +1528,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @DisabledTest
-    public void testContextualSearchDismissedOnForegroundTabCrash()
-            throws InterruptedException, TimeoutException {
+    public void testContextualSearchDismissedOnForegroundTabCrash() throws TimeoutException {
         clickWordNode("states");
         Assert.assertEquals("States", getSelectedText());
         waitForPanelToPeek();
@@ -1577,8 +1557,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testContextualSearchNotDismissedOnBackgroundTabCrash()
-            throws InterruptedException, TimeoutException {
+    public void testContextualSearchNotDismissedOnBackgroundTabCrash() throws TimeoutException {
         ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
                 (ChromeTabbedActivity) mActivityTestRule.getActivity());
         final Tab tab2 =
@@ -1703,8 +1682,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testExpandBeforeSearchTermResolution()
-            throws InterruptedException, TimeoutException {
+    public void testExpandBeforeSearchTermResolution() throws TimeoutException {
         clickWordNode("states");
         assertNoWebContents();
 
@@ -1728,7 +1706,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/765403")
-    public void testSearchTermResolutionError() throws InterruptedException, TimeoutException {
+    public void testSearchTermResolutionError() throws TimeoutException {
         clickWordNode("states");
         assertSearchTermRequested();
         fakeResponse(false, 403, "", "", "", false);
@@ -1747,7 +1725,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testHttpsBeforeAcceptForOptOut() throws InterruptedException, TimeoutException {
+    public void testHttpsBeforeAcceptForOptOut() throws TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
         mFakeServer.setShouldUseHttps(true);
 
@@ -1762,7 +1740,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testHttpsAfterAcceptForOptOut() throws InterruptedException, TimeoutException {
+    public void testHttpsAfterAcceptForOptOut() throws TimeoutException {
         mPolicy.overrideDecidedStateForTesting(true);
         mFakeServer.setShouldUseHttps(true);
 
@@ -1775,7 +1753,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testHttpBeforeAcceptForOptOut() throws InterruptedException, TimeoutException {
+    public void testHttpBeforeAcceptForOptOut() throws TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
 
         clickToResolveAndAssertPrefetch();
@@ -1787,7 +1765,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testHttpAfterAcceptForOptOut() throws InterruptedException, TimeoutException {
+    public void testHttpAfterAcceptForOptOut() throws TimeoutException {
         mPolicy.overrideDecidedStateForTesting(true);
 
         clickToResolveAndAssertPrefetch();
@@ -1829,7 +1807,7 @@ public class ContextualSearchManagerTest {
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/596533")
-    public void testAppMenuSuppressedWhenExpanded() throws InterruptedException, TimeoutException {
+    public void testAppMenuSuppressedWhenExpanded() throws TimeoutException {
         clickWordNode("states");
         tapPeekingBarToExpandAndAssert();
 
@@ -1848,7 +1826,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testAppMenuSuppressedWhenMaximized() throws InterruptedException, TimeoutException {
+    public void testAppMenuSuppressedWhenMaximized() throws TimeoutException {
         clickWordNode("states");
         flingPanelUpToTop();
         waitForPanelToMaximize();
@@ -1906,7 +1884,7 @@ public class ContextualSearchManagerTest {
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/596533")
-    public void testPromoOpenCountForDecided() throws InterruptedException, TimeoutException {
+    public void testPromoOpenCountForDecided() throws TimeoutException {
         mPolicy.overrideDecidedStateForTesting(true);
 
         // An open should not count for decided users.
@@ -2013,7 +1991,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testNotifyObserversAfterLongPress() throws InterruptedException, TimeoutException {
+    public void testNotifyObserversAfterLongPress() throws TimeoutException {
         TestContextualSearchObserver observer = new TestContextualSearchObserver();
         mManager.addObserver(observer);
         longPressNode("states");
@@ -2034,8 +2012,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testNotifyObserversAfterLongPressWithoutSurroundings()
-            throws InterruptedException, TimeoutException {
+    public void testNotifyObserversAfterLongPressWithoutSurroundings() throws TimeoutException {
         // Mark the user undecided so we won't allow sending surroundings.
         mPolicy.overrideDecidedStateForTesting(false);
         TestContextualSearchObserver observer = new TestContextualSearchObserver();
@@ -2060,7 +2037,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testNotifyObserversAfterTap() throws InterruptedException, TimeoutException {
+    public void testNotifyObserversAfterTap() throws TimeoutException {
         TestContextualSearchObserver observer = new TestContextualSearchObserver();
         mManager.addObserver(observer);
         clickWordNode("states");
@@ -2076,10 +2053,8 @@ public class ContextualSearchManagerTest {
     /**
      * Asserts that the action bar does or does not become visible in response to a selection.
      * @param visible Whether the Action Bar must become visible or not.
-     * @throws InterruptedException
      */
-    private void assertWaitForSelectActionBarVisible(final boolean visible)
-            throws InterruptedException {
+    private void assertWaitForSelectActionBarVisible(final boolean visible) {
         CriteriaHelper.pollUiThread(Criteria.equals(visible, new Callable<Boolean>() {
             @Override
             public Boolean call() {
@@ -2099,8 +2074,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testNotifyObserversOnClearSelectionAfterTap()
-            throws InterruptedException, TimeoutException {
+    public void testNotifyObserversOnClearSelectionAfterTap() throws TimeoutException {
         TestContextualSearchObserver observer = new TestContextualSearchObserver();
         mManager.addObserver(observer);
         longPressNode("states");
@@ -2252,8 +2226,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testSelectionExpansionOnSearchTermResolution()
-            throws InterruptedException, TimeoutException {
+    public void testSelectionExpansionOnSearchTermResolution() throws TimeoutException {
         mFakeServer.reset();
         clickWordNode("intelligence");
         waitForPanelToPeek();
@@ -2796,8 +2769,7 @@ public class ContextualSearchManagerTest {
     // @Feature({"ContextualSearch"})
     // // NOTE: Remove the flag so we will run just this test with onLine detection enabled.
     // @CommandLineFlags.Remove(ContextualSearchFieldTrial.ONLINE_DETECTION_DISABLED)
-    public void testNetworkDisconnectedDeactivatesSearch()
-            throws InterruptedException, TimeoutException {
+    public void testNetworkDisconnectedDeactivatesSearch() throws TimeoutException {
         setOnlineStatusAndReload(false);
         longPressNodeWithoutWaiting("states");
         waitForSelectActionBarVisible();
@@ -2964,7 +2936,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testAccesibilityMode() throws InterruptedException, TimeoutException {
+    public void testAccesibilityMode() throws TimeoutException {
         mManager.onAccessibilityModeChanged(true);
 
         // Simulate a tap that resolves to show the Bar.
@@ -3094,7 +3066,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testSecondTap() throws InterruptedException, TimeoutException {
+    public void testSecondTap() throws TimeoutException {
         TestContextualSearchObserver observer = new TestContextualSearchObserver();
         mManager.addObserver(observer);
 
@@ -3123,7 +3095,7 @@ public class ContextualSearchManagerTest {
     @Feature({"ContextualSearch"})
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_TAB_MERGING_FOR_TESTING)
     @MinAndroidSdkLevel(Build.VERSION_CODES.N)
-    public void testTabReparenting() throws InterruptedException, TimeoutException {
+    public void testTabReparenting() throws TimeoutException {
         // Move our "tap_test" tab to another activity.
         final ChromeActivity ca = mActivityTestRule.getActivity();
         int testTabId = ca.getActivityTab().getId();
@@ -3180,8 +3152,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Features.EnableFeatures("ContextualSearchLongpressResolve")
-    public void testTapIsIgnoredWithLongpressResolveEnabled()
-            throws InterruptedException, TimeoutException {
+    public void testTapIsIgnoredWithLongpressResolveEnabled() throws TimeoutException {
         clickNode("states");
         Assert.assertNull(getSelectedText());
         assertPanelClosedOrUndefined();
@@ -3196,8 +3167,7 @@ public class ContextualSearchManagerTest {
             "force-fieldtrial-params=FakeStudyName.FakeGroup:longpress_resolve_variation/"
                     + ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PRESERVE_TAP})
     public void
-    testTapNotIgnoredWithLongpressResolveEnabledAndVariationPreserveTap()
-            throws InterruptedException, TimeoutException {
+    testTapNotIgnoredWithLongpressResolveEnabledAndVariationPreserveTap() throws TimeoutException {
         clickWordNode("states");
         Assert.assertEquals("States", getSelectedText());
         waitForPanelToPeek();
@@ -3212,7 +3182,7 @@ public class ContextualSearchManagerTest {
                     + ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PRIVACY_AGGRESSIVE})
     public void
     testLongpressResolvesWithLongpressResolveEnabledAndVariationPrivacyAggressive()
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
         mFakeServer.setShouldUseHttps(true);
         longPressNode("states");

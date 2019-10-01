@@ -19,7 +19,6 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.signin.AccountManagerDelegate;
-import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.AuthException;
@@ -123,7 +122,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     @Override
-    public Account[] getAccountsSync() throws AccountManagerDelegateException {
+    public Account[] getAccountsSync() {
         // Blocks thread that's trying to get accounts from the delegate.
         try {
             mBlockGetAccounts.await();

@@ -179,6 +179,51 @@ class CORE_EXPORT OffscreenCanvas final
 
   void Trace(blink::Visitor*) override;
 
+  class ScopedInsideWorkerRAF {
+    STACK_ALLOCATED();
+
+   public:
+    ScopedInsideWorkerRAF(const viz::BeginFrameArgs& args)
+        : abort_raf_(false), begin_frame_args_(args) {}
+
+    bool AddOffscreenCanvas(OffscreenCanvas* canvas) {
+      DCHECK(!abort_raf_);
+      DCHECK(!canvas->inside_worker_raf_);
+      if (canvas->GetOrCreateResourceDispatcher()) {
+        // If we are blocked with too many frames, we must stop.
+        if (canvas->GetOrCreateResourceDispatcher()
+                ->HasTooManyPendingFrames()) {
+          abort_raf_ = true;
+          return false;
+        }
+      }
+
+      canvas->inside_worker_raf_ = true;
+      canvases_.push_back(canvas);
+      return true;
+    }
+
+    ~ScopedInsideWorkerRAF() {
+      for (auto canvas : canvases_) {
+        DCHECK(canvas->inside_worker_raf_);
+        canvas->inside_worker_raf_ = false;
+        // If we have skipped raf, don't push frames.
+        if (abort_raf_)
+          continue;
+        if (canvas->GetOrCreateResourceDispatcher()) {
+          canvas->GetOrCreateResourceDispatcher()->ReplaceBeginFrameAck(
+              begin_frame_args_);
+        }
+        canvas->PushFrameIfNeeded();
+      }
+    }
+
+   private:
+    bool abort_raf_;
+    const viz::BeginFrameArgs& begin_frame_args_;
+    HeapVector<Member<OffscreenCanvas>> canvases_;
+  };
+
  private:
   int32_t memory_usage_ = 0;
 
@@ -195,7 +240,6 @@ class CORE_EXPORT OffscreenCanvas final
 
   IntSize size_;
   bool is_neutered_ = false;
-
   bool origin_clean_ = true;
   bool disable_reading_from_canvas_ = false;
 
@@ -205,6 +249,7 @@ class CORE_EXPORT OffscreenCanvas final
 
   bool needs_matrix_clip_restore_ = false;
   bool needs_push_frame_ = false;
+  bool inside_worker_raf_ = false;
 
   SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
 

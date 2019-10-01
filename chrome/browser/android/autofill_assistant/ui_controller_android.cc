@@ -953,34 +953,26 @@ void UiControllerAndroid::OnDetailsChanged(const Details* details) {
     return;
   }
 
-  const DetailsProto& proto = details->details_proto();
-  const DetailsChangesProto& changes = details->changes();
-
   auto jdetails = Java_AssistantDetails_create(
-      env, base::android::ConvertUTF8ToJavaString(env, proto.title()),
-      base::android::ConvertUTF8ToJavaString(env, proto.image_url()),
-      proto.image_clickthrough_data().allow_clickthrough(),
-      base::android::ConvertUTF8ToJavaString(
-          env, proto.image_clickthrough_data().description()),
-      base::android::ConvertUTF8ToJavaString(
-          env, proto.image_clickthrough_data().positive_text()),
-      base::android::ConvertUTF8ToJavaString(
-          env, proto.image_clickthrough_data().negative_text()),
-      base::android::ConvertUTF8ToJavaString(
-          env, proto.image_clickthrough_data().clickthrough_url()),
-      proto.show_image_placeholder(),
-      base::android::ConvertUTF8ToJavaString(env, proto.total_price_label()),
-      base::android::ConvertUTF8ToJavaString(env, proto.total_price()),
-      base::android::ConvertUTF8ToJavaString(env, details->datetime()),
-      proto.datetime().date().year(), proto.datetime().date().month(),
-      proto.datetime().date().day(), proto.datetime().time().hour(),
-      proto.datetime().time().minute(), proto.datetime().time().second(),
-      base::android::ConvertUTF8ToJavaString(env, proto.description_line_1()),
-      base::android::ConvertUTF8ToJavaString(env, proto.description_line_2()),
-      base::android::ConvertUTF8ToJavaString(env, proto.description_line_3()),
-      changes.user_approval_required(), changes.highlight_title(),
-      changes.highlight_line1(), changes.highlight_line2(),
-      changes.highlight_line3(), proto.animate_placeholders());
+      env, base::android::ConvertUTF8ToJavaString(env, details->title()),
+      details->titleMaxLines(),
+      base::android::ConvertUTF8ToJavaString(env, details->imageUrl()),
+      details->imageAllowClickthrough(),
+      base::android::ConvertUTF8ToJavaString(env, details->imageDescription()),
+      base::android::ConvertUTF8ToJavaString(env, details->imagePositiveText()),
+      base::android::ConvertUTF8ToJavaString(env, details->imageNegativeText()),
+      base::android::ConvertUTF8ToJavaString(env,
+                                             details->imageClickthroughUrl()),
+      details->showImagePlaceholder(),
+      base::android::ConvertUTF8ToJavaString(env, details->totalPriceLabel()),
+      base::android::ConvertUTF8ToJavaString(env, details->totalPrice()),
+      base::android::ConvertUTF8ToJavaString(env, details->descriptionLine1()),
+      base::android::ConvertUTF8ToJavaString(env, details->descriptionLine2()),
+      base::android::ConvertUTF8ToJavaString(env, details->descriptionLine3()),
+      base::android::ConvertUTF8ToJavaString(env, details->priceAttribution()),
+      details->userApprovalRequired(), details->highlightTitle(),
+      details->highlightLine1(), details->highlightLine2(),
+      details->highlightLine3(), details->animatePlaceholders());
   Java_AssistantDetailsModel_setDetails(env, jmodel, jdetails);
 }
 

@@ -116,12 +116,11 @@ public class TrustedWebActivityPreferencesUiTest {
     /**
      * Tests that registered sites show 'Managed by' in the title when viewing the details for a
      * single website.
-     * @throws Exception
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    public void testWebsitePreferencesManagedBy() throws Exception {
+    public void testWebsitePreferencesManagedBy() {
         final String site = "http://example.com";
         final Origin origin = new Origin(site);
 

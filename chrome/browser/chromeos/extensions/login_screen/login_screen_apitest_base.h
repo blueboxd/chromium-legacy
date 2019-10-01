@@ -17,6 +17,7 @@ namespace chromeos {
 // screen extension" and is also whitelisted for the following APIs:
 // * loginScreenUi
 // * storage
+// * login
 // The extension's code can be found in
 // chrome/test/data/extensions/api_test/login_screen_apis/
 class LoginScreenApitestBase
@@ -26,6 +27,9 @@ class LoginScreenApitestBase
   ~LoginScreenApitestBase() override;
 
   void SetUpExtensionAndRunTest(const std::string& testName);
+
+  void SetUpExtensionAndRunTest(const std::string& testName,
+                                bool assert_test_succeed);
 
  protected:
   const std::string extension_id_;

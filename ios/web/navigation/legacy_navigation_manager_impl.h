@@ -57,6 +57,7 @@ class LegacyNavigationManagerImpl : public NavigationManagerImpl {
                                    NSString* state_object,
                                    ui::PageTransition transition) override;
   bool IsRestoreSessionInProgress() const override;
+  bool ShouldBlockUrlDuringRestore(const GURL& url) override;
   void SetPendingItemIndex(int index) override;
 
   // NavigationManager:

@@ -32,8 +32,8 @@ bool HasValidTargetDevice(ios::ChromeBrowserState* browser_state);
 //  User is viewing an HTTP or HTTPS page.
 //  User is not on a native page.
 //  User is not in Incongnito mode.
-bool IsContentRequirementsMet(const GURL& gurl,
-                              ios::ChromeBrowserState* browser_state);
+bool AreContentRequirementsMet(const GURL& gurl,
+                               ios::ChromeBrowserState* browser_state);
 
 // Returns true if all conditions are true and shows the option onto the menu.
 bool ShouldOfferFeature(ios::ChromeBrowserState* browser_state,

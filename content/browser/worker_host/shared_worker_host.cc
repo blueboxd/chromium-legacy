@@ -333,6 +333,15 @@ void SharedWorkerHost::AllowCacheStorage(
           GetRenderFrameIDsForWorker()));
 }
 
+void SharedWorkerHost::BindVideoDecodePerfHistory(
+    mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderProcessHost* worker_process_host = GetProcessHost();
+  if (!worker_process_host)
+    return;
+  worker_process_host->BindVideoDecodePerfHistory(std::move(receiver));
+}
+
 void SharedWorkerHost::CreateAppCacheBackend(
     mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

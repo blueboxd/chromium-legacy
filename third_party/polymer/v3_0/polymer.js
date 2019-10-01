@@ -22,4 +22,5 @@ export {OptionalMutableDataBehavior} from './lib/legacy/mutable-data-behavior.js
 export {Polymer} from './lib/legacy/polymer-fn.js';
 export {PolymerElement} from './polymer-element.js';
 export {TemplateInstanceBase, templatize} from './lib/utils/templatize.js';
+export {Templatizer} from './lib/legacy/templatizer-behavior.js';
 export {useShadow} from './lib/utils/settings.js';

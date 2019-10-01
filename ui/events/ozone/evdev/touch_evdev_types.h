@@ -25,6 +25,9 @@ struct EVENTS_OZONE_EVDEV_EXPORT InProgressTouchEvdev {
   // Current touch major of this slot.
   int major = 0;
 
+  // Current touch minor of this slot.
+  int minor = 0;
+
   // Current tool type of this slot.
   int tool_type = 0;
 

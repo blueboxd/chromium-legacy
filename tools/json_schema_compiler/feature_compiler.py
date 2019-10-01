@@ -678,7 +678,7 @@ class FeatureCompiler(object):
     else:
       no_parent = 'noparent' in feature_value
     sep = feature_name.rfind('.')
-    if sep is -1 or no_parent:
+    if sep == -1 or no_parent:
       return None
 
     parent_name = feature_name[:sep]

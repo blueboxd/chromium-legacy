@@ -60,7 +60,7 @@ public class IncognitoToggleTabLayout extends TabLayout implements TabCountObser
         mStandardButtonIcon.setContentDescription(
                 getResources().getString(R.string.accessibility_tab_switcher_standard_stack));
         mIncognitoButtonIcon = new ChromeImageView(getContext());
-        mIncognitoButtonIcon.setImageResource(R.drawable.incognito_small);
+        mIncognitoButtonIcon.setImageResource(R.drawable.incognito_simple);
         mIncognitoButtonIcon.setContentDescription(
                 getResources().getString(R.string.accessibility_tab_switcher_incognito_stack));
 

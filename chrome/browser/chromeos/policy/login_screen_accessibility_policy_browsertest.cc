@@ -751,4 +751,161 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
   accessibility_manager->EnableMonoAudio(false);
   EXPECT_FALSE(accessibility_manager->IsMonoAudioEnabled());
 }
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenAutoclickEnabled) {
+  // Verifies that the state of the autoclick accessibility feature on
+  // the login screen can be controlled through device policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
+
+  // Manually enable the autoclick.
+  accessibility_manager->EnableAutoclick(true);
+  EXPECT_TRUE(accessibility_manager->IsAutoclickEnabled());
+
+  // Disable the autoclick through device policy and wait for the change
+  // to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()->set_login_screen_autoclick_enabled(
+      false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityAutoclickEnabled);
+
+  // Verify that the pref which controls the autoclick in the login
+  // profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityAutoclickEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityAutoclickEnabled));
+
+  // Verify that the autoclick cannot be enabled manually anymore.
+  accessibility_manager->EnableAutoclick(true);
+  EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
+
+  // Enable the autoclick through device policy as a recommended value and wait
+  // for the change to take effect.
+  proto.mutable_accessibility_settings()->set_login_screen_autoclick_enabled(
+      true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_autoclick_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityAutoclickEnabled);
+
+  // Verify that the pref which controls the autoclick in the login
+  // profile is being applied as recommended by the policy.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityAutoclickEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilityAutoclickEnabled));
+
+  // Verify that the autoclick can be enabled manually again.
+  accessibility_manager->EnableAutoclick(false);
+  EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenStickyKeysEnabled) {
+  // Verifies that the state of the sticky keys accessibility feature on
+  // the login screen can be controlled through device policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsStickyKeysEnabled());
+
+  // Manually enable the sticky keys.
+  accessibility_manager->EnableStickyKeys(true);
+  EXPECT_TRUE(accessibility_manager->IsStickyKeysEnabled());
+
+  // Disable the sticky keys through device policy and wait for the change
+  // to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()->set_login_screen_sticky_keys_enabled(
+      false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityStickyKeysEnabled);
+
+  // Verify that the pref which controls the sticky keys in the login
+  // profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityStickyKeysEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityStickyKeysEnabled));
+
+  // Verify that the sticky keys cannot be enabled manually anymore.
+  accessibility_manager->EnableStickyKeys(true);
+  EXPECT_FALSE(accessibility_manager->IsStickyKeysEnabled());
+
+  // Enable the sticky keys through device policy as a recommended value and
+  // wait for the change to take effect.
+  proto.mutable_accessibility_settings()->set_login_screen_sticky_keys_enabled(
+      true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_sticky_keys_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityStickyKeysEnabled);
+
+  // Verify that the pref which controls the sticky keys in the login
+  // profile is being applied as recommended by the policy.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityStickyKeysEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilityStickyKeysEnabled));
+
+  // Verify that the sticky keys can be enabled manually again.
+  accessibility_manager->EnableStickyKeys(false);
+  EXPECT_FALSE(accessibility_manager->IsStickyKeysEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenKeyboardFocusHighlightEnabled) {
+  // Verifies that the state of the keyboard focus highlight accessibility
+  // feature on the login screen can be controlled through device policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
+
+  // Manually enable the keyboard focus highlight.
+  accessibility_manager->SetFocusHighlightEnabled(true);
+  EXPECT_TRUE(accessibility_manager->IsFocusHighlightEnabled());
+
+  // Disable the keyboard focus highlight through device policy and wait for the
+  // change to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_keyboard_focus_highlight_enabled(false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityFocusHighlightEnabled);
+
+  // Verify that the pref which controls the keyboard focus highlight in the
+  // login profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityFocusHighlightEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityFocusHighlightEnabled));
+
+  // Verify that the keyboard focus highlight cannot be enabled manually
+  // anymore.
+  accessibility_manager->SetFocusHighlightEnabled(true);
+  EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
+
+  // Enable the keyboard focus highlight through device policy as a recommended
+  // value and wait for the change to take effect.
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_keyboard_focus_highlight_enabled(true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_keyboard_focus_highlight_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityFocusHighlightEnabled);
+
+  // Verify that the pref which controls the keyboard focus highlight in the
+  // login profile is being applied as recommended by the policy.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityFocusHighlightEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilityFocusHighlightEnabled));
+
+  // Verify that the keyboard focus highlight can be enabled manually again.
+  accessibility_manager->SetFocusHighlightEnabled(false);
+  EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
+}
 }  // namespace policy

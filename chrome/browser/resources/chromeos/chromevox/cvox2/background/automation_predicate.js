@@ -663,4 +663,15 @@ AutomationPredicate.menuItem = AutomationPredicate.roles(
  */
 AutomationPredicate.text = AutomationPredicate.roles(
     [Role.STATIC_TEXT, Role.INLINE_TEXT_BOX, Role.LINE_BREAK]);
+
+/**
+ * Matches against nodes we should ignore in a jump command.
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.ignoreDuringJump = function(node) {
+  return node.role == Role.GENERIC_CONTAINER || node.role == Role.STATIC_TEXT ||
+      node.role == Role.INLINE_TEXT_BOX;
+};
+
 });  // goog.scope

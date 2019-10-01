@@ -40,7 +40,6 @@ import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.StringWriter;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Integration tests for MediaRouter.
@@ -95,7 +94,7 @@ public class MediaRouterIntegrationTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         // Temporary until support library is updated, see http://crbug.com/576393.
         TestThreadUtils.runOnUiThreadBlocking(() -> { StrictMode.setThreadPolicy(mOldPolicy); });
         mTestServer.stopAndDestroyServer();
@@ -203,7 +202,7 @@ public class MediaRouterIntegrationTest {
     @Feature({"MediaRouter"})
     @LargeTest
     @RetryOnFailure
-    public void testBasic() throws InterruptedException, TimeoutException {
+    public void testBasic() {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = mActivityTestRule.getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
@@ -225,7 +224,7 @@ public class MediaRouterIntegrationTest {
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
-    public void testSendAndOnMessage() throws InterruptedException, TimeoutException {
+    public void testSendAndOnMessage() {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = mActivityTestRule.getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
@@ -246,7 +245,7 @@ public class MediaRouterIntegrationTest {
     @Feature({"MediaRouter"})
     @LargeTest
     @RetryOnFailure
-    public void testOnClose() throws InterruptedException, TimeoutException {
+    public void testOnClose() {
         MockMediaRouteProvider.Factory.sProvider.setCloseRouteWithErrorOnSend(true);
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = mActivityTestRule.getWebContents();
@@ -267,7 +266,7 @@ public class MediaRouterIntegrationTest {
     @Feature({"MediaRouter"})
     @LargeTest
     @RetryOnFailure
-    public void testFailNoProvider() throws InterruptedException, TimeoutException {
+    public void testFailNoProvider() {
         MockMediaRouteProvider.Factory.sProvider.setIsSupportsSource(false);
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = mActivityTestRule.getWebContents();
@@ -286,7 +285,7 @@ public class MediaRouterIntegrationTest {
     @Feature({"MediaRouter"})
     @LargeTest
     @RetryOnFailure
-    public void testFailCreateRoute() throws InterruptedException, TimeoutException {
+    public void testFailCreateRoute() {
         MockMediaRouteProvider.Factory.sProvider.setCreateRouteErrorMessage("Unknown sink");
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = mActivityTestRule.getWebContents();
@@ -304,7 +303,7 @@ public class MediaRouterIntegrationTest {
     @Feature({"MediaRouter"})
     @LargeTest
     @RetryOnFailure
-    public void testReconnectSession() throws InterruptedException, TimeoutException {
+    public void testReconnectSession() {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = mActivityTestRule.getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
@@ -331,7 +330,7 @@ public class MediaRouterIntegrationTest {
     @Feature({"MediaRouter"})
     @LargeTest
     @RetryOnFailure
-    public void testFailReconnectSession() throws InterruptedException, TimeoutException {
+    public void testFailReconnectSession() {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = mActivityTestRule.getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
@@ -356,7 +355,7 @@ public class MediaRouterIntegrationTest {
     @Feature({"MediaRouter"})
     @LargeTest
     @RetryOnFailure
-    public void testFailStartCancelled() throws InterruptedException, TimeoutException {
+    public void testFailStartCancelled() {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = mActivityTestRule.getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);

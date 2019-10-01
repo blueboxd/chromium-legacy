@@ -772,6 +772,9 @@ bool PasswordAutofillAgent::TryToShowTouchToFill(
                    !base::Contains(password_to_username_, *element))) {
     return false;
   }
+  if (was_touch_to_fill_ui_shown_)
+    return false;
+  was_touch_to_fill_ui_shown_ = true;
 
   GetPasswordManagerDriver()->ShowTouchToFill();
   return true;
@@ -1340,6 +1343,7 @@ void PasswordAutofillAgent::CleanupOnDocumentShutdown() {
   autofilled_elements_cache_.clear();
   last_updated_field_renderer_id_ = FormData::kNotSetFormRendererId;
   last_updated_form_renderer_id_ = FormData::kNotSetFormRendererId;
+  was_touch_to_fill_ui_shown_ = false;
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   page_passwords_analyser_.Reset();
 #endif

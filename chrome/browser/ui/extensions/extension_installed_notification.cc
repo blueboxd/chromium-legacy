@@ -72,7 +72,7 @@ void ExtensionInstalledNotification::Click(
   if (!extension)
     return;
 
-  AppLaunchParams params = CreateAppLaunchParamsUserContainer(
+  apps::AppLaunchParams params = CreateAppLaunchParamsUserContainer(
       profile_, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       apps::mojom::AppLaunchSource::kSourceInstalledNotification);
   apps::LaunchService::Get(profile_)->OpenApplication(params);

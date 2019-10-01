@@ -50,7 +50,7 @@ public class NotificationTriggerSchedulerTest {
     private NotificationTriggerScheduler mTriggerScheduler;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mTaskScheduler);
         mocker.mock(NotificationTriggerSchedulerJni.TEST_HOOKS, mNativeMock);

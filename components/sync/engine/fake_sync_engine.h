@@ -88,7 +88,7 @@ class FakeSyncEngine : public SyncEngine {
                           bool empty_jar,
                           const base::Closure& callback) override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
-
+  void GetNigoriNodeForDebugging(AllNodesCallback callback) override;
   void set_fail_initial_download(bool should_fail);
 
  private:

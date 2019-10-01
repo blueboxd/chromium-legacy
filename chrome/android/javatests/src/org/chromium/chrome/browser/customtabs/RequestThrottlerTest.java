@@ -36,13 +36,13 @@ public class RequestThrottlerTest {
     public UiThreadTestRule mRule = new UiThreadTestRule();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mContext = InstrumentationRegistry.getTargetContext();
         RequestThrottler.purgeAllEntriesForTesting();
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         RequestThrottler.purgeAllEntriesForTesting();
     }
 

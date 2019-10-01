@@ -66,27 +66,16 @@ gfx::Image CreateDeviceIcon(const sync_pb::SyncEnums::DeviceType device_type) {
   return gfx::Image(gfx::CreateVectorIcon(icon, kDeviceIconSize, color));
 }
 
-// Adds remote devices to |picker_entries| and returns the new list. The devices
-// are added to the beginning of the list.
-std::vector<apps::IntentPickerAppInfo> MaybeAddDevices(
-    const GURL& url,
-    WebContents* web_contents,
+// Adds |devices| to |picker_entries| and returns the new list. The devices are
+// added to the beginning of the list.
+std::vector<apps::IntentPickerAppInfo> AddDevices(
+    const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices,
     std::vector<apps::IntentPickerAppInfo> picker_entries) {
-  if (!ShouldOfferClickToCallForURL(web_contents->GetBrowserContext(), url))
-    return picker_entries;
-
-  ClickToCallUiController* controller =
-      ClickToCallUiController::GetOrCreateFromWebContents(web_contents);
-  if (!controller)
-    return picker_entries;
-
-  controller->UpdateDevices();
-  if (controller->devices().empty())
-    return picker_entries;
+  DCHECK(!devices.empty());
 
   // First add all devices to the list.
   std::vector<apps::IntentPickerAppInfo> all_entries;
-  for (const auto& device : controller->devices()) {
+  for (const auto& device : devices) {
     all_entries.emplace_back(apps::PickerEntryType::kDevice,
                              CreateDeviceIcon(device->device_type()),
                              device->guid(), device->client_name());
@@ -113,21 +102,35 @@ bool MaybeAddDevicesAndShowPicker(
   if (!browser)
     return false;
 
-  std::vector<apps::IntentPickerAppInfo> all_apps =
-      MaybeAddDevices(url, web_contents, std::move(app_info));
+  bool has_apps = !app_info.empty();
+  bool has_devices = false;
 
-  if (all_apps.empty())
+  PageActionIconType icon_type = PageActionIconType::kIntentPicker;
+  ClickToCallUiController* controller = nullptr;
+
+  if (ShouldOfferClickToCallForURL(web_contents->GetBrowserContext(), url)) {
+    icon_type = PageActionIconType::kClickToCall;
+    controller =
+        ClickToCallUiController::GetOrCreateFromWebContents(web_contents);
+    controller->UpdateDevices();
+
+    const auto& devices = controller->devices();
+    has_devices = !devices.empty();
+    if (has_devices)
+      app_info = AddDevices(devices, std::move(app_info));
+  }
+
+  if (app_info.empty())
     return false;
 
-  PageActionIconType icon_type =
-      ShouldOfferClickToCallForURL(web_contents->GetBrowserContext(), url)
-          ? PageActionIconType::kClickToCall
-          : PageActionIconType::kIntentPicker;
   IntentPickerTabHelper::SetShouldShowIcon(
       web_contents, icon_type == PageActionIconType::kIntentPicker);
-  browser->window()->ShowIntentPickerBubble(std::move(all_apps), stay_in_chrome,
-                                            show_remember_selection, icon_type,
-                                            std::move(callback));
+  browser->window()->ShowIntentPickerBubble(
+      std::move(app_info), stay_in_chrome, show_remember_selection, icon_type,
+      base::BindOnce(std::move(callback)));
+
+  if (controller)
+    controller->OnDialogShown(has_devices, has_apps);
 
   return true;
 }

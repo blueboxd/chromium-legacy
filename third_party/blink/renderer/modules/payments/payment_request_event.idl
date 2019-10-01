@@ -22,4 +22,6 @@
     [CallWith=ScriptState] Promise<WindowClient?> openWindow(USVString url);
     [CallWith=ScriptState, RaisesException, RuntimeEnabled=PaymentHandlerChangePaymentMethod] Promise<PaymentMethodChangeResponse?> changePaymentMethod(DOMString methodName, optional object? methodDetails = null);
     [CallWith=ScriptState, RaisesException] void respondWith(Promise<PaymentResponse> response);
+    [CallWith=ScriptState, RuntimeEnabled=PaymentHandlerHandlesShippingAndContact] Promise<PaymentMethodChangeResponse?> changeShippingAddress(PaymentAddressInit shippingAddress);
+    [CallWith=ScriptState, RuntimeEnabled=PaymentHandlerHandlesShippingAndContact] Promise<PaymentMethodChangeResponse?> changeShippingOption(DOMString shippingOption);
 };

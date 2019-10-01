@@ -176,7 +176,8 @@ class DeepScanningDialogDelegate : public TabModalConfirmDialogDelegate {
 
   // Adds required fields to |request| before sending it to the binary upload
   // service.
-  void PrepareRequest(BinaryUploadService::Request* request);
+  void PrepareRequest(DlpDeepScanningClientRequest::ContentSource trigger,
+                      BinaryUploadService::Request* request);
 
   // Fills the arrays in |result_| with the given boolean status.
   void FillAllResultsWith(bool status);

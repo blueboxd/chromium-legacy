@@ -5,9 +5,11 @@
 package org.chromium.chrome.browser.externalnav;
 
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 
+import androidx.annotation.NonNull;
+
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebappScopePolicy;
@@ -20,11 +22,9 @@ import java.util.List;
  */
 interface ExternalNavigationDelegate {
     /**
-     * Get the list of component name of activities which can resolve |intent|.  If the request
-     * fails, null will be returned.
-     *
-     * See {@link PackageManager#queryIntentActivities(Intent, int)}
+     * See {@link PackageManagerUtils#queryIntentActivities(Intent, int)}
      */
+    @NonNull
     List<ResolveInfo> queryIntentActivities(Intent intent);
 
     /**

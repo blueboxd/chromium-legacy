@@ -101,6 +101,10 @@
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
 #endif
 
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+#include "chrome/browser/ui/views/frame/webui_tab_strip_container_view.h"
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+
 using base::UserMetricsAction;
 using content::WebContents;
 
@@ -311,6 +315,15 @@ void ToolbarView::Init() {
   // |kAutofillEnableToolbarStatusChip| is fully launched.
   if (avatar)
     avatar_ = AddChildView(std::move(avatar));
+
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (browser_view_->webui_tab_strip()) {
+    webui_new_tab_button_ =
+        AddChildView(browser_view_->webui_tab_strip()->CreateNewTabButton());
+    webui_toggle_button_ =
+        AddChildView(browser_view_->webui_tab_strip()->CreateToggleButton());
+  }
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
   app_menu_button_ = AddChildView(std::move(app_menu_button));
 
@@ -928,6 +941,15 @@ void ToolbarView::LoadImages() {
 
   if (media_button_)
     media_button_->UpdateIcon();
+
+  if (webui_new_tab_button_) {
+    webui_new_tab_button_->SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(kAddIcon, normal_color));
+    webui_toggle_button_->SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(kCaretUpIcon, normal_color));
+  }
 
   if (avatar_)
     avatar_->UpdateIcon();

@@ -82,7 +82,7 @@ void FakeDeepScanningDialogDelegate::UploadFileForDeepScanning(
     std::unique_ptr<BinaryUploadService::Request> request) {
   DCHECK(!path.empty());
   DCHECK_EQ(
-      DlpDeepScanningClientRequest::WEB_CONTENT_UPLOAD,
+      DlpDeepScanningClientRequest::FILE_UPLOAD,
       request->deep_scanning_request().dlp_scan_request().content_source());
   DCHECK_EQ(dm_token_, request->deep_scanning_request().dm_token());
 

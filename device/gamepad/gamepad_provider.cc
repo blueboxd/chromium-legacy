@@ -43,12 +43,7 @@ GamepadProvider::ClosureAndThread::~ClosureAndThread() = default;
 GamepadProvider::GamepadProvider(
     GamepadConnectionChangeClient* connection_change_client,
     std::unique_ptr<service_manager::Connector> service_manager_connector)
-    : is_paused_(true),
-      have_scheduled_do_poll_(false),
-      devices_changed_(true),
-      ever_had_user_gesture_(false),
-      sanitize_(true),
-      gamepad_shared_buffer_(std::make_unique<GamepadSharedBuffer>()),
+    : gamepad_shared_buffer_(std::make_unique<GamepadSharedBuffer>()),
       connection_change_client_(connection_change_client),
       service_manager_connector_(std::move(service_manager_connector)) {
   Initialize(std::unique_ptr<GamepadDataFetcher>());
@@ -59,12 +54,7 @@ GamepadProvider::GamepadProvider(
     std::unique_ptr<service_manager::Connector> service_manager_connector,
     std::unique_ptr<GamepadDataFetcher> fetcher,
     std::unique_ptr<base::Thread> polling_thread)
-    : is_paused_(true),
-      have_scheduled_do_poll_(false),
-      devices_changed_(true),
-      ever_had_user_gesture_(false),
-      sanitize_(true),
-      gamepad_shared_buffer_(std::make_unique<GamepadSharedBuffer>()),
+    : gamepad_shared_buffer_(std::make_unique<GamepadSharedBuffer>()),
       polling_thread_(std::move(polling_thread)),
       connection_change_client_(connection_change_client),
       service_manager_connector_(std::move(service_manager_connector)) {
@@ -393,6 +383,17 @@ void GamepadProvider::DoPoll() {
 
   // Schedule our next interval of polling.
   ScheduleDoPoll();
+}
+
+void GamepadProvider::DisconnectUnrecognizedGamepad(GamepadSource source,
+                                                    int source_id) {
+  for (auto& fetcher : data_fetchers_) {
+    if (fetcher->source() == source) {
+      bool disconnected = fetcher->DisconnectUnrecognizedGamepad(source_id);
+      DCHECK(disconnected);
+      return;
+    }
+  }
 }
 
 void GamepadProvider::ScheduleDoPoll() {

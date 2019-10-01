@@ -843,8 +843,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   EXPECT_EQ(std::string("The first extension that I made."),
             loaded_[0]->description());
   EXPECT_EQ(Manifest::INTERNAL, loaded_[0]->location());
-  EXPECT_TRUE(registry()->GetExtensionById(loaded_[0]->id(),
-                                           ExtensionRegistry::ENABLED));
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(loaded_[0]->id()));
   EXPECT_EQ(expected_num_extensions, registry()->enabled_extensions().size());
 
   ValidatePrefKeyCount(3);
@@ -1216,7 +1215,7 @@ TEST_F(ExtensionServiceTest, InstallingExternalExtensionWithFlags) {
   WaitForExternalExtensionInstalled();
 
   const Extension* extension =
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED);
+      registry()->enabled_extensions().GetByID(good_crx);
   ASSERT_TRUE(extension);
   ASSERT_TRUE(extension->from_bookmark());
   ASSERT_TRUE(ValidateBooleanPref(good_crx, kPrefFromBookmark, true));
@@ -1225,8 +1224,7 @@ TEST_F(ExtensionServiceTest, InstallingExternalExtensionWithFlags) {
   path = data_dir().AppendASCII("good2.crx");
   UpdateExtension(good_crx, path, ENABLED);
   ASSERT_TRUE(ValidateBooleanPref(good_crx, kPrefFromBookmark, true));
-  extension =
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED);
+  extension = registry()->enabled_extensions().GetByID(good_crx);
   ASSERT_TRUE(extension);
   ASSERT_TRUE(extension->from_bookmark());
 }
@@ -1247,8 +1245,7 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
   provider->UpdateOrAddExtension(std::move(info));
   WaitForExternalExtensionInstalled();
 
-  ASSERT_TRUE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
+  ASSERT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
 
   // Uninstall it and check that its killbit gets set.
   UninstallExtension(good_crx);
@@ -1260,8 +1257,7 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
                                  Manifest::EXTERNAL_PREF, Extension::NO_FLAGS);
   provider->UpdateOrAddExtension(std::move(info));
   content::RunAllTasksUntilIdle();
-  ASSERT_FALSE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
+  ASSERT_FALSE(registry()->enabled_extensions().GetByID(good_crx));
   EXPECT_TRUE(prefs->IsExternalExtensionUninstalled(good_crx));
 
   std::string newer_version = "1.0.0.1";
@@ -1271,8 +1267,7 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
                                  Manifest::EXTERNAL_PREF, Extension::NO_FLAGS);
   provider->UpdateOrAddExtension(std::move(info));
   content::RunAllTasksUntilIdle();
-  ASSERT_FALSE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
+  ASSERT_FALSE(registry()->enabled_extensions().GetByID(good_crx));
   EXPECT_TRUE(prefs->IsExternalExtensionUninstalled(good_crx));
 
   // Try adding the same extension from an external update URL.
@@ -1346,16 +1341,14 @@ TEST_F(ExtensionServiceTest, FailOnWrongId) {
                               Manifest::EXTERNAL_PREF, Extension::NO_FLAGS);
   provider->UpdateOrAddExtension(std::move(info));
   WaitForExternalExtensionInstalled();
-  ASSERT_FALSE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
+  ASSERT_FALSE(registry()->enabled_extensions().GetByID(good_crx));
 
   // Try again with the right ID. Expect success.
   info = CreateExternalExtension(correct_id, version_str, path,
                                  Manifest::EXTERNAL_PREF, Extension::NO_FLAGS);
   provider->UpdateOrAddExtension(std::move(info));
   WaitForExternalExtensionInstalled();
-  ASSERT_TRUE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
+  ASSERT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
 }
 
 // Test that external extensions with incorrect versions are not installed.
@@ -1373,8 +1366,7 @@ TEST_F(ExtensionServiceTest, FailOnWrongVersion) {
                               Manifest::EXTERNAL_PREF, Extension::NO_FLAGS);
   provider->UpdateOrAddExtension(std::move(wrong_info));
   WaitForExternalExtensionInstalled();
-  ASSERT_FALSE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
+  ASSERT_FALSE(registry()->enabled_extensions().GetByID(good_crx));
 
   // Try again with the right version. Expect success.
   service()->pending_extension_manager()->Remove(good_crx);
@@ -1383,8 +1375,7 @@ TEST_F(ExtensionServiceTest, FailOnWrongVersion) {
                               Manifest::EXTERNAL_PREF, Extension::NO_FLAGS);
   provider->UpdateOrAddExtension(std::move(correct_info));
   WaitForExternalExtensionInstalled();
-  ASSERT_TRUE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
+  ASSERT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
 }
 
 // Install a user script (they get converted automatically to an extension)
@@ -1410,8 +1401,7 @@ TEST_F(ExtensionServiceTest, InstallUserScript) {
   EXPECT_EQ(0u, errors.size())
       << "There were errors: "
       << base::JoinString(errors, base::ASCIIToUTF16(","));
-  EXPECT_TRUE(registry()->GetExtensionById(loaded_[0]->id(),
-                                           ExtensionRegistry::ENABLED))
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(loaded_[0]->id()))
       << path.value();
 
   installed_ = NULL;
@@ -2474,11 +2464,9 @@ TEST_F(ExtensionServiceTest, UpdateApps) {
   UpdateExtension(id,
                   extensions_path.AppendASCII("v2.crx"),
                   ENABLED);
-  ASSERT_EQ(std::string("2"),
-            registry()
-                ->GetExtensionById(id, ExtensionRegistry::ENABLED)
-                ->version()
-                .GetString());
+  ASSERT_EQ(
+      std::string("2"),
+      registry()->enabled_extensions().GetByID(id)->version().GetString());
 }
 
 // Verifies that the NTP page and launch ordinals are kept when updating apps.
@@ -2505,11 +2493,9 @@ TEST_F(ExtensionServiceTest, UpdateAppsRetainOrdinals) {
 
   // Now try updating to v2.
   UpdateExtension(id, extensions_path.AppendASCII("v2.crx"), ENABLED);
-  ASSERT_EQ(std::string("2"),
-            registry()
-                ->GetExtensionById(id, ExtensionRegistry::ENABLED)
-                ->version()
-                .GetString());
+  ASSERT_EQ(
+      std::string("2"),
+      registry()->enabled_extensions().GetByID(id)->version().GetString());
 
   // Verify that the ordinals match.
   ASSERT_TRUE(new_page_ordinal.Equals(sorting->GetPageOrdinal(id)));
@@ -2660,7 +2646,7 @@ TEST_F(ExtensionServiceTest, FromWebStore) {
 
   // Reload so extension gets reinitialized with new value.
   service()->ReloadExtensionsForTest();
-  extension = registry()->GetExtensionById(id, ExtensionRegistry::ENABLED);
+  extension = registry()->enabled_extensions().GetByID(id);
   ASSERT_TRUE(extension->from_webstore());
 
   // Upgrade to version 2.0
@@ -2685,7 +2671,7 @@ TEST_F(ExtensionServiceTest, UpgradeSignedGood) {
   // Also test that the extension's old and new title are correctly retrieved.
   path = data_dir().AppendASCII("good2.crx");
   InstallCRX(path, INSTALL_UPDATED, Extension::NO_FLAGS, "My extension 1");
-  extension = registry()->GetExtensionById(id, ExtensionRegistry::ENABLED);
+  extension = registry()->enabled_extensions().GetByID(id);
 
   ASSERT_EQ("1.0.0.1", extension->version().GetString());
   ASSERT_EQ("My updated extension 1", extension->name());
@@ -2717,11 +2703,11 @@ TEST_F(ExtensionServiceTest, UpdateExtension) {
 
   path = data_dir().AppendASCII("good2.crx");
   UpdateExtension(good_crx, path, ENABLED);
-  ASSERT_EQ("1.0.0.1",
-            registry()
-                ->GetExtensionById(good_crx, ExtensionRegistry::ENABLED)
-                ->version()
-                .GetString());
+  ASSERT_EQ("1.0.0.1", registry()
+                           ->enabled_extensions()
+                           .GetByID(good_crx)
+                           ->version()
+                           .GetString());
 }
 
 // Extensions should not be updated during browser shutdown.
@@ -2741,11 +2727,11 @@ TEST_F(ExtensionServiceTest, UpdateExtensionDuringShutdown) {
   bool updated = service()->UpdateExtension(
       CRXFileInfo(good_crx, GetTestVerifierFormat(), path), true, NULL);
   ASSERT_FALSE(updated);
-  ASSERT_EQ("1.0.0.0",
-            registry()
-                ->GetExtensionById(good_crx, ExtensionRegistry::ENABLED)
-                ->version()
-                .GetString());
+  ASSERT_EQ("1.0.0.0", registry()
+                           ->enabled_extensions()
+                           .GetByID(good_crx)
+                           ->version()
+                           .GetString());
 }
 
 // Test updating a not-already-installed extension - this should fail
@@ -2774,11 +2760,11 @@ TEST_F(ExtensionServiceTest, UpdateWillNotDowngrade) {
   // Change path from good2.crx -> good.crx
   path = data_dir().AppendASCII("good.crx");
   UpdateExtension(good_crx, path, FAILED);
-  ASSERT_EQ("1.0.0.1",
-            registry()
-                ->GetExtensionById(good_crx, ExtensionRegistry::ENABLED)
-                ->version()
-                .GetString());
+  ASSERT_EQ("1.0.0.1", registry()
+                           ->enabled_extensions()
+                           .GetByID(good_crx)
+                           ->version()
+                           .GetString());
 }
 
 // Make sure calling update with an identical version does nothing
@@ -2810,8 +2796,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesState) {
   path = data_dir().AppendASCII("good2.crx");
   UpdateExtension(good_crx, path, INSTALLED);
   ASSERT_EQ(1u, registry()->disabled_extensions().size());
-  const Extension* good2 =
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::COMPATIBILITY);
+  const Extension* good2 = registry()->disabled_extensions().GetByID(good_crx);
   ASSERT_EQ("1.0.0.1", good2->version().GetString());
   EXPECT_TRUE(util::IsIncognitoEnabled(good2->id(), profile()));
   EXPECT_EQ(disable_reason::DISABLE_USER_ACTION,
@@ -2831,8 +2816,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesLocation) {
 
   path = data_dir().AppendASCII("good2.crx");
   UpdateExtension(good_crx, path, ENABLED);
-  const Extension* good2 =
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED);
+  const Extension* good2 = registry()->enabled_extensions().GetByID(good_crx);
   ASSERT_EQ("1.0.0.1", good2->version().GetString());
   EXPECT_EQ(good2->location(), Manifest::EXTERNAL_PREF);
 }
@@ -2964,7 +2948,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtension) {
   EXPECT_FALSE(service()->pending_extension_manager()->IsIdPending(kGoodId));
 
   const Extension* extension =
-      registry()->GetExtensionById(kGoodId, ExtensionRegistry::COMPATIBILITY);
+      registry()->enabled_extensions().GetByID(kGoodId);
   EXPECT_TRUE(extension);
 }
 
@@ -2994,7 +2978,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionWrongVersion) {
   EXPECT_FALSE(service()->pending_extension_manager()->IsIdPending(kGoodId));
 
   const Extension* extension =
-      registry()->GetExtensionById(kGoodId, ExtensionRegistry::COMPATIBILITY);
+      registry()->disabled_extensions().GetByID(kGoodId);
   EXPECT_TRUE(extension);
 }
 
@@ -3019,7 +3003,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingTheme) {
   EXPECT_FALSE(service()->pending_extension_manager()->IsIdPending(theme_crx));
 
   const Extension* extension =
-      registry()->GetExtensionById(theme_crx, ExtensionRegistry::COMPATIBILITY);
+      registry()->enabled_extensions().GetByID(theme_crx);
   ASSERT_TRUE(extension);
 
   EXPECT_FALSE(
@@ -3048,7 +3032,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrx) {
   EXPECT_FALSE(service()->pending_extension_manager()->IsIdPending(theme_crx));
 
   const Extension* extension =
-      registry()->GetExtensionById(theme_crx, ExtensionRegistry::COMPATIBILITY);
+      registry()->enabled_extensions().GetByID(theme_crx);
   ASSERT_TRUE(extension);
 
   EXPECT_FALSE(
@@ -3126,7 +3110,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingCrxThemeMismatch) {
   EXPECT_FALSE(service()->pending_extension_manager()->IsIdPending(theme_crx));
 
   const Extension* extension =
-      registry()->GetExtensionById(theme_crx, ExtensionRegistry::COMPATIBILITY);
+      registry()->GetExtensionById(theme_crx, ExtensionRegistry::EVERYTHING);
   ASSERT_FALSE(extension);
 }
 
@@ -3821,12 +3805,12 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
 
   // Extension should be installed despite blacklist.
   ASSERT_EQ(1u, registry()->enabled_extensions().size());
-  EXPECT_TRUE(registry()->GetExtensionById(good0, ExtensionRegistry::ENABLED));
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(good0));
 
   // Poke external providers and make sure the extension is still present.
   service()->CheckForExternalUpdates();
   ASSERT_EQ(1u, registry()->enabled_extensions().size());
-  EXPECT_TRUE(registry()->GetExtensionById(good0, ExtensionRegistry::ENABLED));
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(good0));
 
   // Extension should not be uninstalled on blacklist changes.
   {
@@ -3835,7 +3819,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
   }
   content::RunAllTasksUntilIdle();
   ASSERT_EQ(1u, registry()->enabled_extensions().size());
-  EXPECT_TRUE(registry()->GetExtensionById(good0, ExtensionRegistry::ENABLED));
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(good0));
 }
 
 // Tests that active permissions are not revoked from component extensions
@@ -3857,7 +3841,8 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelistedPermission) {
 
   // Extension should have the "tabs" permission.
   EXPECT_TRUE(registry()
-                  ->GetExtensionById(good0, ExtensionRegistry::ENABLED)
+                  ->enabled_extensions()
+                  .GetByID(good0)
                   ->permissions_data()
                   ->active_permissions()
                   .HasAPIPermission(APIPermission::kTab));
@@ -3871,7 +3856,8 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelistedPermission) {
   service()->OnExtensionManagementSettingsChanged();
   content::RunAllTasksUntilIdle();
   EXPECT_TRUE(registry()
-                  ->GetExtensionById(good0, ExtensionRegistry::ENABLED)
+                  ->enabled_extensions()
+                  .GetByID(good0)
                   ->permissions_data()
                   ->active_permissions()
                   .HasAPIPermission(APIPermission::kTab));
@@ -3902,8 +3888,7 @@ TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
 
   // Extension should be installed despite blacklist.
   ASSERT_EQ(1u, registry()->enabled_extensions().size());
-  EXPECT_TRUE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
 
   // Blacklist update should not uninstall the extension.
   {
@@ -3912,8 +3897,7 @@ TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
   }
   content::RunAllTasksUntilIdle();
   ASSERT_EQ(1u, registry()->enabled_extensions().size());
-  EXPECT_TRUE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
 }
 
 // Tests that extensions cannot be installed if the policy provider prohibits
@@ -3986,8 +3970,7 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsDisable) {
   service()->DisableExtension(good_crx, disable_reason::DISABLE_USER_ACTION);
 
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
-  EXPECT_TRUE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
   EXPECT_EQ(0u, registry()->disabled_extensions().size());
   EXPECT_EQ(disable_reason::DISABLE_NONE,
             ExtensionPrefs::Get(profile())->GetDisableReasons(good_crx));
@@ -3999,10 +3982,8 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsDisable) {
 
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
   EXPECT_EQ(1u, registry()->disabled_extensions().size());
-  EXPECT_TRUE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::COMPATIBILITY));
-  EXPECT_FALSE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
+  EXPECT_TRUE(registry()->disabled_extensions().GetByID(good_crx));
+  EXPECT_FALSE(registry()->enabled_extensions().GetByID(good_crx));
   EXPECT_EQ(disable_reason::DISABLE_CORRUPTED,
             ExtensionPrefs::Get(profile())->GetDisableReasons(good_crx));
 }
@@ -4025,8 +4006,7 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsUninstall) {
       good_crx, UNINSTALL_REASON_FOR_TESTING, NULL));
 
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
-  EXPECT_TRUE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
 }
 
 // Tests that previously installed extensions that are now prohibited from
@@ -4228,8 +4208,7 @@ TEST_F(ExtensionServiceTest, PolicyBlockedPermissionExtensionUpdate) {
   PackAndInstallCRX(path2, pem_path, INSTALL_FAILED);
 
   // Verify that the old version is still enabled.
-  updated = registry()->GetExtensionById(permissions_blocklist,
-                                         ExtensionRegistry::ENABLED);
+  updated = registry()->enabled_extensions().GetByID(permissions_blocklist);
   ASSERT_TRUE(updated);
   EXPECT_EQ(old_version, updated->VersionString());
 }
@@ -4337,10 +4316,8 @@ TEST_F(ExtensionServiceTest, MAYBE_ExternalExtensionAutoAcknowledgement) {
   observer.Wait();
 
   ASSERT_EQ(2u, registry()->enabled_extensions().size());
-  EXPECT_TRUE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
-  EXPECT_TRUE(
-      registry()->GetExtensionById(page_action, ExtensionRegistry::ENABLED));
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(page_action));
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   ASSERT_TRUE(!prefs->IsExternalExtensionAcknowledged(good_crx));
   ASSERT_TRUE(prefs->IsExternalExtensionAcknowledged(page_action));
@@ -4518,10 +4495,9 @@ TEST_F(ExtensionServiceTest, DefaultAppsInstall) {
   WaitForExternalExtensionInstalled();
 
   ASSERT_EQ(1u, registry()->enabled_extensions().size());
-  EXPECT_TRUE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
   const Extension* extension =
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED);
+      registry()->enabled_extensions().GetByID(good_crx);
   EXPECT_TRUE(extension->from_webstore());
   EXPECT_TRUE(extension->was_installed_by_default());
 }
@@ -4561,7 +4537,7 @@ TEST_F(ExtensionServiceTest, MAYBE_UpdatingPendingExternalExtensionWithFlags) {
   UpdateExtension(good_crx, path, ENABLED);
   ASSERT_TRUE(ValidateBooleanPref(good_crx, kPrefFromBookmark, true));
   const Extension* extension =
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED);
+      registry()->enabled_extensions().GetByID(good_crx);
   ASSERT_TRUE(extension);
   ASSERT_TRUE(extension->from_bookmark());
 }
@@ -4571,10 +4547,7 @@ TEST_F(ExtensionServiceTest, DisableExtension) {
   InitializeEmptyExtensionService();
 
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
-  EXPECT_TRUE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::COMPATIBILITY));
-  EXPECT_TRUE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
 
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_EQ(0u, registry()->disabled_extensions().size());
@@ -4584,10 +4557,8 @@ TEST_F(ExtensionServiceTest, DisableExtension) {
   // Disable it.
   service()->DisableExtension(good_crx, disable_reason::DISABLE_USER_ACTION);
 
-  EXPECT_TRUE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::COMPATIBILITY));
-  EXPECT_FALSE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
+  EXPECT_TRUE(registry()->disabled_extensions().GetByID(good_crx));
+  EXPECT_FALSE(registry()->enabled_extensions().GetByID(good_crx));
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
   EXPECT_EQ(1u, registry()->disabled_extensions().size());
   EXPECT_EQ(0u, registry()->terminated_extensions().size());
@@ -4616,16 +4587,13 @@ TEST_F(ExtensionServiceTest, DisableTerminatedExtension) {
 
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   TerminateExtension(good_crx);
-  EXPECT_TRUE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::TERMINATED));
+  EXPECT_TRUE(registry()->terminated_extensions().GetByID(good_crx));
 
   // Disable it.
   service()->DisableExtension(good_crx, disable_reason::DISABLE_USER_ACTION);
 
-  EXPECT_FALSE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::TERMINATED));
-  EXPECT_TRUE(
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::COMPATIBILITY));
+  EXPECT_FALSE(registry()->terminated_extensions().GetByID(good_crx));
+  EXPECT_TRUE(registry()->disabled_extensions().GetByID(good_crx));
 
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
   EXPECT_EQ(1u, registry()->disabled_extensions().size());
@@ -4672,7 +4640,7 @@ TEST_F(ExtensionServiceTest, ReloadExtensions) {
 
   // The creation flags should not change when reloading the extension.
   const Extension* extension =
-      registry()->GetExtensionById(good_crx, ExtensionRegistry::COMPATIBILITY);
+      registry()->disabled_extensions().GetByID(good_crx);
   EXPECT_TRUE(extension->from_webstore());
   EXPECT_TRUE(extension->was_installed_by_default());
   EXPECT_FALSE(extension->from_bookmark());
@@ -6430,7 +6398,7 @@ class ExtensionSourcePriorityTest : public ExtensionServiceTest {
   // Is an extension installed?
   bool IsCrxInstalled() {
     return (registry()->GetExtensionById(
-                crx_id_, ExtensionRegistry::COMPATIBILITY) != nullptr);
+                crx_id_, ExtensionRegistry::EVERYTHING) != nullptr);
   }
 
  protected:

@@ -42,27 +42,27 @@ import java.util.concurrent.TimeoutException;
  * related with CCT dynamic module testing.
  */
 public class CustomTabsDynamicModuleTestUtils {
-    /* package */ final static String FAKE_MODULE_PACKAGE_NAME =
+    /* package */ static final String FAKE_MODULE_PACKAGE_NAME =
             InstrumentationRegistry.getInstrumentation().getContext().getPackageName();
-    /* package */ final static String FAKE_MODULE_CLASS_NAME = FakeCCTDynamicModule.class.getName();
-    /* package */ final static ComponentName FAKE_MODULE_COMPONENT_NAME = new ComponentName(
-            FAKE_MODULE_PACKAGE_NAME, FAKE_MODULE_CLASS_NAME);
+    /* package */ static final String FAKE_MODULE_CLASS_NAME = FakeCCTDynamicModule.class.getName();
+    /* package */ static final ComponentName FAKE_MODULE_COMPONENT_NAME =
+            new ComponentName(FAKE_MODULE_PACKAGE_NAME, FAKE_MODULE_CLASS_NAME);
 
     /**
      * A asset name used to load {@link #FAKE_MODULE_DEX}.
      */
-    /* package */ final static String FAKE_MODULE_DEX_ASSET_NAME = "R.strings.forty_two";
+    /* package */ static final String FAKE_MODULE_DEX_ASSET_NAME = "R.strings.forty_two";
 
     /**
      * A fake "dex file" that consists of couple of bytes.
      */
-    /* package */ final static byte[] FAKE_MODULE_DEX = new byte[] {42, 42};
+    /* package */ static final byte[] FAKE_MODULE_DEX = new byte[] {42, 42};
 
     /**
      * A fake {@link ModuleLoader.DexClassLoaderProvider} that provides the {@link ClassLoader} of
      * {@link FakeCCTDynamicModule} which guarantees that it can always load the entry module.
      */
-    /* package */ final static ModuleLoader.DexClassLoaderProvider FAKE_CLASS_LOADER_PROVIDER =
+    /* package */ static final ModuleLoader.DexClassLoaderProvider FAKE_CLASS_LOADER_PROVIDER =
             dexFile -> FakeCCTDynamicModule.class.getClassLoader();
 
     private static int sModuleVersion = 1;
@@ -223,7 +223,7 @@ public class CustomTabsDynamicModuleTestUtils {
          * Waits for expected number of navigation events happen.
          */
         /* package */ void waitForNavigationEvent(int navigationEvent, int currentCallCount,
-                int numberOfCallsToWaitFor) throws TimeoutException, InterruptedException {
+                int numberOfCallsToWaitFor) throws TimeoutException {
             if (sModuleVersion < ON_NAVIGATION_EVENT_MODULE_API_VERSION) return;
 
             if (navigationEvent == CustomTabsCallback.NAVIGATION_STARTED) {
@@ -233,8 +233,8 @@ public class CustomTabsDynamicModuleTestUtils {
             }
         }
 
-        /* package */ void waitForFirstContentfulPaint(int currentCallCount,
-                int numberOfCallsToWaitFor) throws TimeoutException, InterruptedException {
+        /* package */ void waitForFirstContentfulPaint(
+                int currentCallCount, int numberOfCallsToWaitFor) throws TimeoutException {
             if (sModuleVersion < ON_PAGE_LOAD_METRIC_API_VERSION) return;
 
             mOnFirstContentfulPaint.waitForCallback(currentCallCount, numberOfCallsToWaitFor);

@@ -13,7 +13,8 @@
 #include "base/win/post_async_results.h"
 #include "base/win/scoped_hstring.h"
 #include "base/win/windows_version.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace shape_detection {
 
@@ -111,7 +112,7 @@ void FaceDetectionProviderWin::CreateFaceDetection(
   // the message pipe, then the callback OnFaceDetectorCreated will be not
   // called. This prevents this object from being destroyed before the
   // AsyncOperation completes.
-  binding_->PauseIncomingMethodCallProcessing();
+  receiver_->PauseIncomingMethodCallProcessing();
 }
 
 FaceDetectionProviderWin::FaceDetectionProviderWin() {}
@@ -122,7 +123,7 @@ void FaceDetectionProviderWin::OnFaceDetectorCreated(
     mojo::PendingReceiver<shape_detection::mojom::FaceDetection> receiver,
     BitmapPixelFormat pixel_format,
     ComPtr<IFaceDetector> face_detector) {
-  binding_->ResumeIncomingMethodCallProcessing();
+  receiver_->ResumeIncomingMethodCallProcessing();
 
   if (!face_detector)
     return;
@@ -140,10 +141,8 @@ void FaceDetectionProviderWin::OnFaceDetectorCreated(
   auto impl = std::make_unique<FaceDetectionImplWin>(
       std::move(face_detector), std::move(bitmap_factory), pixel_format);
   auto* impl_ptr = impl.get();
-  impl_ptr->SetBinding(mojo::MakeStrongBinding(
-      std::move(impl),
-      mojo::InterfaceRequest<shape_detection::mojom::FaceDetection>(
-          std::move(receiver))));
+  impl_ptr->SetReceiver(
+      mojo::MakeSelfOwnedReceiver(std::move(impl), std::move(receiver)));
 }
 
 }  // namespace shape_detection

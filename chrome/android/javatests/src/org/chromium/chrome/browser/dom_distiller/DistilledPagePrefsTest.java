@@ -41,7 +41,7 @@ public class DistilledPagePrefsTest {
     private static final double EPSILON = 1e-5;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         getDistilledPagePrefs();
     }
 
@@ -57,7 +57,7 @@ public class DistilledPagePrefsTest {
     @SmallTest
     @UiThreadTest
     @Feature({"DomDistiller"})
-    public void testGetAndSetTheme() throws Throwable {
+    public void testGetAndSetTheme() {
         // Check the default theme.
         Assert.assertEquals(Theme.LIGHT, mDistilledPagePrefs.getTheme());
         // Check that theme can be correctly set.
@@ -112,7 +112,7 @@ public class DistilledPagePrefsTest {
     @SmallTest
     @UiThreadTest
     @Feature({"DomDistiller"})
-    public void testGetAndSetFontFamily() throws Throwable {
+    public void testGetAndSetFontFamily() {
         // Check the default font family.
         Assert.assertEquals(FontFamily.SANS_SERIF, mDistilledPagePrefs.getFontFamily());
         // Check that font family can be correctly set.
@@ -163,7 +163,7 @@ public class DistilledPagePrefsTest {
     @SmallTest
     @UiThreadTest
     @Feature({"DomDistiller"})
-    public void testGetAndSetFontScaling() throws Throwable {
+    public void testGetAndSetFontScaling() {
         // Check the default font scaling.
         Assert.assertEquals(1.0, mDistilledPagePrefs.getFontScaling(), EPSILON);
         // Check that font scaling can be correctly set.
@@ -213,7 +213,7 @@ public class DistilledPagePrefsTest {
     @Test
     @SmallTest
     @Feature({"DomDistiller"})
-    public void testRepeatedAddAndDeleteObserver() throws InterruptedException {
+    public void testRepeatedAddAndDeleteObserver() {
         TestingObserver test = new TestingObserver();
 
         // Should successfully add the observer the first time.

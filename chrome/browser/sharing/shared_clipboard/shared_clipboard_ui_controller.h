@@ -51,7 +51,6 @@ class SharedClipboardUiController
   explicit SharedClipboardUiController(content::WebContents* web_contents);
 
   // Overridden from SharingUiController:
-  SharingDialog* DoShowDialog(BrowserWindow* window) override;
   void DoUpdateApps(UpdateAppsCallback callback) override;
 
  private:

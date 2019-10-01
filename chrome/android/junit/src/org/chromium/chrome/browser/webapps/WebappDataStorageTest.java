@@ -59,7 +59,7 @@ public class WebappDataStorageTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mSharedPreferences = ContextUtils.getApplicationContext().getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "test", Context.MODE_PRIVATE);
 
@@ -90,7 +90,7 @@ public class WebappDataStorageTest {
 
     @Test
     @Feature({"Webapp"})
-    public void testLastUsedRetrieval() throws Exception {
+    public void testLastUsedRetrieval() {
         long lastUsed = 100;
         mSharedPreferences.edit().putLong(WebappDataStorage.KEY_LAST_USED, lastUsed).apply();
         assertEquals(lastUsed, new WebappDataStorage("test").getLastUsedTimeMs());
@@ -137,7 +137,7 @@ public class WebappDataStorageTest {
 
     @Test
     @Feature({"Webapp"})
-    public void testScopeRetrieval() throws Exception {
+    public void testScopeRetrieval() {
         String scope = "http://drive.google.com";
         mSharedPreferences.edit().putString(WebappDataStorage.KEY_SCOPE, scope).apply();
         assertEquals(scope, new WebappDataStorage("test").getScope());
@@ -145,7 +145,7 @@ public class WebappDataStorageTest {
 
     @Test
     @Feature({"Webapp"})
-    public void testUrlRetrieval() throws Exception {
+    public void testUrlRetrieval() {
         String url = "https://www.google.com";
         mSharedPreferences.edit().putString(WebappDataStorage.KEY_URL, url).apply();
         assertEquals(url, new WebappDataStorage("test").getUrl());
@@ -153,7 +153,7 @@ public class WebappDataStorageTest {
 
     @Test
     @Feature({"Webapp"})
-    public void testWasLaunchedRecently() throws Exception {
+    public void testWasLaunchedRecently() {
         // Opening a data storage doesn't count as a launch.
         WebappDataStorage storage = WebappDataStorage.open("test");
         assertTrue(!storage.wasUsedRecently());
@@ -198,7 +198,7 @@ public class WebappDataStorageTest {
 
     @Test
     @Feature({"Webapp"})
-    public void testWebappInfoUpdate() throws Exception {
+    public void testWebappInfoUpdate() {
         final String id = "id";
         final String url = "url";
         final String scope = "scope";
@@ -294,7 +294,7 @@ public class WebappDataStorageTest {
      */
     @Test
     @Feature({"Webapp"})
-    public void testWebApkInfoUpdate() throws Exception {
+    public void testWebApkInfoUpdate() {
         String webApkPackageName = "org.chromium.webapk.random123";
         String url = "url";
         String scopeUrl = "scope";

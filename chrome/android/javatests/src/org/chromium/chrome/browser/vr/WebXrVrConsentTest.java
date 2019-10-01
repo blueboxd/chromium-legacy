@@ -57,7 +57,7 @@ public class WebXrVrConsentTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mWebXrVrConsentTestFramework = new WebXrVrConsentTestFramework(mTestRule);
     }
 
@@ -67,7 +67,7 @@ public class WebXrVrConsentTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testConsentCancelFailsSessionCreation() throws InterruptedException {
+    public void testConsentCancelFailsSessionCreation() {
         mWebXrVrConsentTestFramework.setConsentDialogAction(
                 WebXrVrTestFramework.CONSENT_DIALOG_ACTION_DENY);
         mWebXrVrConsentTestFramework.setConsentDialogExpected(true);
@@ -91,7 +91,7 @@ public class WebXrVrConsentTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testConsentPersistsSameLevel() throws InterruptedException {
+    public void testConsentPersistsSameLevel() {
         mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
                 PAGE_LOAD_TIMEOUT_S);
@@ -113,7 +113,7 @@ public class WebXrVrConsentTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testConsentNotNeededForInline() throws InterruptedException {
+    public void testConsentNotNeededForInline() {
         mWebXrVrConsentTestFramework.setConsentDialogExpected(false);
 
         mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
@@ -133,7 +133,7 @@ public class WebXrVrConsentTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testConsentPersistsLowerLevel() throws InterruptedException {
+    public void testConsentPersistsLowerLevel() {
         mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_consent"),
                 PAGE_LOAD_TIMEOUT_S);
@@ -161,7 +161,7 @@ public class WebXrVrConsentTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testConsentRepromptsHigherLevel() throws InterruptedException {
+    public void testConsentRepromptsHigherLevel() {
         mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_consent"),
                 PAGE_LOAD_TIMEOUT_S);
@@ -188,7 +188,7 @@ public class WebXrVrConsentTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testConsentRepromptsAfterReload() throws InterruptedException {
+    public void testConsentRepromptsAfterReload() {
         mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
                 PAGE_LOAD_TIMEOUT_S);

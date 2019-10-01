@@ -2909,12 +2909,10 @@ if (enable_java_templates) {
           deps += _deps + [ ":$_compile_resources_target" ]
           proguard_mapping_path = _proguard_mapping_path
         } else {
-          input_jars = [ _lib_dex_path ]
-          input_dex_classpath =
-              "${_rebased_build_config}:final_dex:dependency_dex_files"
+          input_dex_jars = [ _lib_dex_path ]
+          input_dex_filearg = "@FileArg(${_rebased_build_config}:final_dex:dependency_dex_files)"
           if (_enable_main_dex_list) {
-            input_jar_classpath =
-                "${_rebased_build_config}:deps_info:java_runtime_classpath"
+            main_dex_list_input_classes_filearg = "@FileArg(${_rebased_build_config}:deps_info:java_runtime_classpath)"
           }
         }
 
@@ -4117,10 +4115,6 @@ if (enable_java_templates) {
   #   extract_native_libraries: Whether to extract .so files found in the .aar.
   #       If the file contains .so, either extract_native_libraries or
   #       ignore_native_libraries must be set.
-  #   split_compat_class_names: Names of the classes that will have their
-  #       bytecode rewritten to inject the call to SplitCompat.install().
-  #       Used to make dependencies compatible with SplitCompat to immediately
-  #       access resources brought in by the modules.
   #   create_srcjar: If false, does not create an R.java file.
   #   TODO(jbudorick@): remove this arguments after crbug.com/522043 is fixed.
   #   requires_android: Whether this target can only be used for compiling
@@ -4317,7 +4311,6 @@ if (enable_java_templates) {
                                  "jar_included_patterns",
                                  "proguard_configs",
                                  "requires_android",
-                                 "split_compat_class_names",
                                  "testonly",
                                ])
         if (!defined(deps)) {

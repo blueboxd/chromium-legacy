@@ -51,16 +51,11 @@ public class EmbeddedTestServerRule extends TestWatcher {
     public EmbeddedTestServer getServer() {
         synchronized (mLock) {
             if (mServer == null) {
-                try {
-                    Context context = InstrumentationRegistry.getContext();
-                    mServer = mUseHttps
-                            ? EmbeddedTestServer.createAndStartHTTPSServerWithPort(
-                                    context, mCertificateType, mServerPort)
-                            : EmbeddedTestServer.createAndStartServerWithPort(context, mServerPort);
-                } catch (InterruptedException e) {
-                    throw new EmbeddedTestServer.EmbeddedTestServerFailure(
-                            "Test server didn't start");
-                }
+                Context context = InstrumentationRegistry.getContext();
+                mServer = mUseHttps
+                        ? EmbeddedTestServer.createAndStartHTTPSServerWithPort(
+                                context, mCertificateType, mServerPort)
+                        : EmbeddedTestServer.createAndStartServerWithPort(context, mServerPort);
             }
             return mServer;
         }

@@ -64,7 +64,7 @@ public class MenuDirectActionHandlerTest {
     @Test
     @MediumTest
     @Feature({"DirectActions"})
-    public void testPerformDirectActionThroughActivity() throws Exception {
+    public void testPerformDirectActionThroughActivity() {
         mHandler.allowAllActions();
 
         List<Bundle> results = new ArrayList<>();
@@ -84,7 +84,7 @@ public class MenuDirectActionHandlerTest {
     @Test
     @SmallTest
     @Feature({"DirectActions"})
-    public void testReportAvailableActions() throws Exception {
+    public void testReportAvailableActions() {
         mHandler.allowAllActions();
 
         assertThat(getDirectActions(),
@@ -103,7 +103,7 @@ public class MenuDirectActionHandlerTest {
     @Test
     @MediumTest
     @Feature({"DirectActions"})
-    public void testRestrictAvailableActions() throws Exception {
+    public void testRestrictAvailableActions() {
         // By default, MenuDirectActionHandler supports no actions.
         assertThat(getDirectActions(), Matchers.empty());
 

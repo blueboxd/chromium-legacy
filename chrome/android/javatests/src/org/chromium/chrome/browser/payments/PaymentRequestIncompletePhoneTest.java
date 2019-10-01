@@ -44,7 +44,7 @@ public class PaymentRequestIncompletePhoneTest implements MainActivityStartCallb
             new PaymentRequestTestRule("payment_request_phone_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // The user has an invalid phone number on disk.
         helper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
@@ -58,7 +58,7 @@ public class PaymentRequestIncompletePhoneTest implements MainActivityStartCallb
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testEditIncompletePhoneAndCancel() throws InterruptedException, TimeoutException {
+    public void testEditIncompletePhoneAndCancel() throws TimeoutException {
         // Not ready to pay since Contact phone is invalid.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         // Check that there is a selected payment method (makes sure we are not ready to pay because
@@ -89,7 +89,7 @@ public class PaymentRequestIncompletePhoneTest implements MainActivityStartCallb
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testAddIncompletePhoneAndCancel() throws InterruptedException, TimeoutException {
+    public void testAddIncompletePhoneAndCancel() throws TimeoutException {
         // Not ready to pay since Contact phone is invalid.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         // Check that there is a selected payment method (makes sure we are not ready to pay because
@@ -121,7 +121,7 @@ public class PaymentRequestIncompletePhoneTest implements MainActivityStartCallb
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testEditIncompletePhoneAndPay() throws InterruptedException, TimeoutException {
+    public void testEditIncompletePhoneAndPay() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInContactInfoAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());

@@ -323,7 +323,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               bool enable_ping_based_connection_checking,
               bool is_http_enabled,
               bool is_quic_enabled,
-              bool support_ietf_format_quic_altsvc,
               bool is_trusted_proxy,
               size_t session_max_recv_window_size,
               int session_max_queued_capped_frames,
@@ -1175,9 +1174,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   const bool is_http2_enabled_;
   const bool is_quic_enabled_;
-
-  // If true, alt-svc headers advertising QUIC in IETF format will be supported.
-  const bool support_ietf_format_quic_altsvc_;
 
   // If true, this session is being made to a trusted SPDY/HTTP2 proxy that is
   // allowed to push cross-origin resources.

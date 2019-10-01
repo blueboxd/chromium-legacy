@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_update_checker.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
@@ -94,7 +96,9 @@ ServiceWorkerUpdateChecker::ServiceWorkerUpdateChecker(
       force_bypass_cache_(force_bypass_cache),
       update_via_cache_(update_via_cache),
       time_since_last_check_(time_since_last_check),
-      context_(context) {}
+      context_(context) {
+  DCHECK(context_);
+}
 
 ServiceWorkerUpdateChecker::~ServiceWorkerUpdateChecker() = default;
 

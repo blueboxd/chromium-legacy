@@ -2585,23 +2585,19 @@ void BrowserView::InitViews() {
   tab_strip_region_view_->AddChildView(tabstrip_);  // Takes ownership.
   tabstrip_controller->InitFromModel(tabstrip_);
 
+  views::View* webui_tab_strip_view = nullptr;
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (base::FeatureList::IsEnabled(features::kWebUITabStrip)) {
+    webui_tab_strip_ = top_container_->AddChildView(
+        std::make_unique<WebUITabStripContainerView>(browser_.get()));
+
+    webui_tab_strip_view = webui_tab_strip_;
+  }
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+
   toolbar_ = new ToolbarView(browser_.get(), this);
   top_container_->AddChildView(toolbar_);
   toolbar_->Init();
-
-  views::View* webui_tab_strip_view = nullptr;
-  views::View* webui_tab_strip_caption_buttons = nullptr;
-#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-  if (base::FeatureList::IsEnabled(features::kWebUITabStrip)) {
-    WebUITabStripContainerView* const webui_tab_strip =
-        top_container_->AddChildView(
-            std::make_unique<WebUITabStripContainerView>(browser_.get()));
-
-    webui_tab_strip_caption_buttons =
-        top_container_->AddChildView(webui_tab_strip->CreateControlButtons());
-    webui_tab_strip_view = webui_tab_strip;
-  }
-#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
   // This browser view may already have a custom button provider set (e.g the
   // hosted app frame).
@@ -2652,9 +2648,8 @@ void BrowserView::InitViews() {
   auto browser_view_layout = std::make_unique<BrowserViewLayout>(
       std::make_unique<BrowserViewLayoutDelegateImpl>(this), browser(), this,
       top_container_, tab_strip_region_view_, tabstrip_, webui_tab_strip_view,
-      webui_tab_strip_caption_buttons, toolbar_, infobar_container_,
-      contents_container_, immersive_mode_controller_.get(),
-      web_footer_experiment);
+      toolbar_, infobar_container_, contents_container_,
+      immersive_mode_controller_.get(), web_footer_experiment);
   SetLayoutManager(std::move(browser_view_layout));
 
   EnsureFocusOrder();

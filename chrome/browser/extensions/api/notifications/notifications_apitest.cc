@@ -206,11 +206,10 @@ class NotificationsApiTest : public extensions::ExtensionApiTest {
 
   void LaunchPlatformApp(const Extension* extension) {
     apps::LaunchService::Get(browser()->profile())
-        ->OpenApplication(
-            AppLaunchParams(browser()->profile(), extension->id(),
-                            apps::mojom::LaunchContainer::kLaunchContainerNone,
-                            WindowOpenDisposition::NEW_WINDOW,
-                            apps::mojom::AppLaunchSource::kSourceTest));
+        ->OpenApplication(apps::AppLaunchParams(
+            extension->id(), apps::mojom::LaunchContainer::kLaunchContainerNone,
+            WindowOpenDisposition::NEW_WINDOW,
+            apps::mojom::AppLaunchSource::kSourceTest));
   }
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;

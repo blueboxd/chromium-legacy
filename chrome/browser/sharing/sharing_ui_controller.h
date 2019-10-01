@@ -24,7 +24,6 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/styled_label_listener.h"
 
-class BrowserWindow;
 class SharingDialog;
 class SharingService;
 
@@ -116,8 +115,14 @@ class SharingUiController {
   // Called by the SharingDialogView when the help text got clicked.
   virtual void OnHelpTextClicked(SharingDialogType dialog_type);
 
+  // Called when a new dialog is shown.
+  virtual void OnDialogShown(bool has_devices, bool has_apps);
+
+  void set_on_dialog_shown_closure_for_testing(base::OnceClosure closure) {
+    on_dialog_shown_closure_for_testing_ = std::move(closure);
+  }
+
  protected:
-  virtual SharingDialog* DoShowDialog(BrowserWindow* window) = 0;
   virtual void DoUpdateApps(UpdateAppsCallback callback) = 0;
 
   void SendMessageToDevice(
@@ -154,6 +159,9 @@ class SharingUiController {
 
   // ID of the last shown dialog used to ignore events from old dialogs.
   int last_dialog_id_ = 0;
+
+  // Closure to call when a new dialog is shown.
+  base::OnceClosure on_dialog_shown_closure_for_testing_;
 
   base::WeakPtrFactory<SharingUiController> weak_ptr_factory_{this};
 };

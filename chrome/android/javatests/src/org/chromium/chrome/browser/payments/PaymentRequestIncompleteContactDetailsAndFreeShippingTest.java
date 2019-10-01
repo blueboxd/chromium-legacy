@@ -45,7 +45,7 @@ public class PaymentRequestIncompleteContactDetailsAndFreeShippingTest
             "payment_request_contact_details_and_free_shipping_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // The user has a shipping address with a valid email address on disk. However the phone
         // number is invalid.
@@ -60,7 +60,7 @@ public class PaymentRequestIncompleteContactDetailsAndFreeShippingTest
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testEditIncompleteShippingAndPay() throws InterruptedException, TimeoutException {
+    public void testEditIncompleteShippingAndPay() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -97,8 +97,7 @@ public class PaymentRequestIncompleteContactDetailsAndFreeShippingTest
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testEditIncompleteShippingAndContactAndPay()
-            throws InterruptedException, TimeoutException {
+    public void testEditIncompleteShippingAndContactAndPay() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());

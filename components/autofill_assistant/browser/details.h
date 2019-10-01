@@ -17,9 +17,8 @@ class TriggerContext;
 
 class Details {
  public:
-  const DetailsProto& details_proto() const { return proto_; }
-  const DetailsChangesProto& changes() const { return change_flags_; }
-  const std::string datetime() const { return datetime_; }
+  Details();
+  ~Details();
 
   // Returns a dictionary describing the current execution context, which
   // is intended to be serialized as JSON string. The execution context is
@@ -54,27 +53,58 @@ class Details {
                                            ClientMemory* client_memory,
                                            Details* details);
 
-  void SetDetailsProto(const DetailsProto& proto) { proto_ = proto; }
-  void SetDetailsChangesProto(const DetailsChangesProto& change_flags) {
-    change_flags_ = change_flags;
-  }
+  const std::string title() const;
+  int titleMaxLines() const;
+  const std::string imageUrl() const;
+  bool imageAllowClickthrough() const;
+  const std::string imageDescription() const;
+  const std::string imagePositiveText() const;
+  const std::string imageNegativeText() const;
+  const std::string imageClickthroughUrl() const;
+  bool showImagePlaceholder() const;
+  const std::string totalPriceLabel() const;
+  const std::string totalPrice() const;
+  const std::string descriptionLine1() const;
+  const std::string descriptionLine2() const;
+  const std::string descriptionLine3() const;
+  const std::string priceAttribution() const;
+  bool userApprovalRequired() const;
+  bool highlightTitle() const;
+  bool highlightLine1() const;
+  bool highlightLine2() const;
+  bool highlightLine3() const;
+  bool animatePlaceholders() const;
+
   // Clears all change flags.
   void ClearChanges();
 
  private:
+  void SetDetailsProto(const DetailsProto& proto);
+  void SetDetailsChangesProto(const DetailsChangesProto& change_flags) {
+    change_flags_ = change_flags;
+  }
+
   // Tries updating the details using generic detail parameters. Returns true
   // if at least one generic detail parameter was found and used.
   bool MaybeUpdateFromDetailsParameters(const TriggerContext& context);
 
+  // Updates fields by taking the current |proto_| values into account.
+  void Update();
+
   DetailsProto proto_;
   DetailsChangesProto change_flags_;
 
-  // RFC 3339 date-time. Ignore if proto.description_line_1 is set.
-  //
-  // TODO(crbug.com/806868): parse RFC 3339 date-time on the C++ side and fill
-  // proto.description_line_1 with the result instead of carrying a string
-  // representation of the datetime.
-  std::string datetime_;
+  // Maximum of lines for the title.
+  int title_max_lines_ = 1;
+
+  // Content to be shown in description line 1 in the UI.
+  std::string description_line_1_content_;
+
+  // Content to be shown in description line 3 in the UI.
+  std::string description_line_3_content_;
+
+  // Content to be shown in the price attribution view in the UI.
+  std::string price_attribution_content_;
 };
 
 }  // namespace autofill_assistant

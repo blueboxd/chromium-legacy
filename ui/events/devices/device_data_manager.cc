@@ -49,7 +49,7 @@ void DeviceDataManager::CreateInstance() {
   new DeviceDataManager();
 
   // TODO(bruthig): Replace the DeleteInstance callbacks with explicit calls.
-  base::AtExitManager::RegisterTask(base::Bind(DeleteInstance));
+  base::AtExitManager::RegisterTask(base::BindOnce(DeleteInstance));
 }
 
 // static

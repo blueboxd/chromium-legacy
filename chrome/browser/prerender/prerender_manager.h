@@ -25,8 +25,6 @@
 #include "chrome/browser/prerender/prerender_histograms.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -75,8 +73,7 @@ class PrerenderManagerObserver {
 // PrerenderManager is responsible for initiating and keeping prerendered
 // views of web pages. All methods must be called on the UI thread unless
 // indicated otherwise.
-class PrerenderManager : public content::NotificationObserver,
-                         public content::RenderProcessHostObserver,
+class PrerenderManager : public content::RenderProcessHostObserver,
                          public KeyedService,
                          public MediaCaptureDevicesDispatcher::Observer {
  public:
@@ -294,11 +291,6 @@ class PrerenderManager : public content::NotificationObserver,
 
   // Record a final status of a prerendered page in a histogram.
   void RecordFinalStatus(Origin origin, FinalStatus final_status) const;
-
-  // content::NotificationObserver
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // MediaCaptureDevicesDispatcher::Observer
   void OnCreatingAudioStream(int render_process_id,
@@ -614,8 +606,6 @@ class PrerenderManager : public content::NotificationObserver,
   std::unique_ptr<PrerenderHistory> prerender_history_;
 
   std::unique_ptr<PrerenderHistograms> histograms_;
-
-  content::NotificationRegistrar notification_registrar_;
 
   // The number of bytes transferred over the network for the profile this
   // PrerenderManager is attached to.

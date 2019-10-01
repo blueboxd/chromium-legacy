@@ -78,7 +78,7 @@ public class AsyncInitTaskRunnerTest {
     }
 
     @After
-    public void tearDown() throws InterruptedException {
+    public void tearDown() {
         PostTask.resetPrenativeThreadPoolExecutorForTesting();
     }
 

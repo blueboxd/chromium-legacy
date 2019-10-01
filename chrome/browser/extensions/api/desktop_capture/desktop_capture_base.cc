@@ -31,16 +31,14 @@
 #include "extensions/common/switches.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using extensions::api::desktop_capture::ChooseDesktopMedia::Results::Options;
 using content::DesktopMediaID;
+using extensions::api::desktop_capture::ChooseDesktopMedia::Results::Options;
 
 namespace extensions {
 
 namespace {
 
 const char kInvalidSourceNameError[] = "Invalid source type specified.";
-const char kEmptySourcesListError[] =
-    "At least one source type must be specified.";
 
 DesktopMediaPickerFactory* g_picker_factory = nullptr;
 
@@ -65,11 +63,12 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::Cancel() {
   // Keep reference to |this| to ensure the object doesn't get destroyed before
   // we return.
   scoped_refptr<DesktopCaptureChooseDesktopMediaFunctionBase> self(this);
-  if (picker_) {
-    picker_.reset();
-    SetResultList(Create(std::string(), Options()));
-    SendResponse(true);
-  }
+
+  // If this picker dialog is open, this will close it.
+  picker_controller_.reset();
+
+  SetResultList(Create(std::string(), Options()));
+  SendResponse(true);
 }
 
 bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
@@ -77,8 +76,7 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
     content::WebContents* web_contents,
     const GURL& origin,
     const base::string16 target_name) {
-  // Register to be notified when the tab is closed.
-  Observe(web_contents);
+  DCHECK(!picker_controller_);
 
   gfx::NativeWindow parent_window = web_contents->GetTopLevelNativeWindow();
   // In case of coming from background extension page, |parent_window| will
@@ -122,34 +120,20 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
     }
   }
 
-  DesktopMediaPickerFactory* picker_factory =
-      g_picker_factory ? g_picker_factory
-                       : DesktopMediaPickerFactoryImpl::GetInstance();
-  // Keep same order as the input |sources| and avoid duplicates.
-  std::vector<std::unique_ptr<DesktopMediaList>> source_lists =
-      picker_factory->CreateMediaList(media_types);
-  if (source_lists.empty()) {
-    error_ = kEmptySourcesListError;
-    return false;
-  }
-  picker_ = picker_factory->CreatePicker();
-  if (!picker_) {
-    error_ = "Desktop Capture API is not yet implemented for this platform.";
-    return false;
-  }
-
-  DesktopMediaPicker::DoneCallback callback = base::Bind(
+  DesktopMediaPickerController::DoneCallback callback = base::BindOnce(
       &DesktopCaptureChooseDesktopMediaFunctionBase::OnPickerDialogResults,
-      this);
-  DesktopMediaPicker::Params picker_params;
+      this, origin, web_contents);
+  DesktopMediaPickerController::Params picker_params;
   picker_params.web_contents = web_contents;
   picker_params.context = parent_window;
   picker_params.parent = parent_window;
   picker_params.app_name = base::UTF8ToUTF16(GetCallerDisplayName());
   picker_params.target_name = target_name;
   picker_params.request_audio = request_audio;
-  picker_->Show(picker_params, std::move(source_lists), callback);
-  origin_ = origin;
+  picker_controller_ =
+      std::make_unique<DesktopMediaPickerController>(g_picker_factory);
+  picker_controller_->Show(picker_params, std::move(media_types),
+                           std::move(callback));
   return true;
 }
 
@@ -163,22 +147,36 @@ std::string DesktopCaptureChooseDesktopMediaFunctionBase::GetCallerDisplayName()
   }
 }
 
-void DesktopCaptureChooseDesktopMediaFunctionBase::WebContentsDestroyed() {
-  Cancel();
-}
-
 void DesktopCaptureChooseDesktopMediaFunctionBase::OnPickerDialogResults(
+    const GURL& origin,
+    content::WebContents* web_contents,
+    const std::string& err,
     DesktopMediaID source) {
+  picker_controller_.reset();
+
+  if (!err.empty()) {
+    SetError(err);
+    SendResponse(false);
+    return;
+  }
+
+  if (source.is_null()) {
+    DLOG(ERROR) << "Sending empty results.";
+    SetResultList(Create(std::string(), Options()));
+    SendResponse(true);
+    return;
+  }
+
   std::string result;
-  if (source.type != DesktopMediaID::TYPE_NONE && web_contents()) {
+  if (source.type != DesktopMediaID::TYPE_NONE && web_contents) {
     // TODO(miu): Once render_frame_host() is being set, we should register the
     // exact RenderFrame requesting the stream, not the main RenderFrame.  With
     // that change, also update
     // MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest().
     // http://crbug.com/304341
-    content::RenderFrameHost* const main_frame = web_contents()->GetMainFrame();
+    content::RenderFrameHost* const main_frame = web_contents->GetMainFrame();
     result = content::DesktopStreamsRegistry::GetInstance()->RegisterStream(
-        main_frame->GetProcess()->GetID(), main_frame->GetRoutingID(), origin_,
+        main_frame->GetProcess()->GetID(), main_frame->GetRoutingID(), origin,
         source, extension()->name(), content::kRegistryStreamTypeDesktop);
   }
 

@@ -101,7 +101,7 @@ public class VisualStateTest {
         // This image delays returning data for 1 (scaled) second in order to simlate a slow network
         // connection.
         public static final long IMAGE_LOADING_DELAY_MS = scaleTimeout(1000);
-        public SlowBlueImage() throws Throwable {
+        public SlowBlueImage() {
             super("image/png", "utf-8",
                     new DelayedInputStream(new ByteArrayInputStream(
                             Base64.decode(CommonResources.BLUE_PNG_BASE64, Base64.DEFAULT))));

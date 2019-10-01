@@ -460,6 +460,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "PasswordManager::DidNavigateMainFrame";
     case STRING_NAVIGATION_NTP:
       return "Navigation to New Tab page";
+    case STRING_SERVER_PREDICTIONS:
+      return "Server predictions";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.

@@ -79,9 +79,9 @@ const int kLocationAuthorizationStatusCount = 5;
   // API endpoint for omnibox.
   std::unique_ptr<WebOmniboxEditControllerImpl> _editController;
   // Observer that updates |viewController| for fullscreen events.
-  std::unique_ptr<FullscreenControllerObserver> _fullscreenObserver;
+  std::unique_ptr<FullscreenUIUpdater> _omniboxFullscreenUIUpdater;
   // Observer that updates BadgeViewController for fullscreen events.
-  std::unique_ptr<FullscreenControllerObserver> _fullscreenBadgeObserver;
+  std::unique_ptr<FullscreenUIUpdater> _badgeFullscreenUIUpdater;
 }
 // Whether the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
@@ -190,11 +190,10 @@ const int kLocationAuthorizationStatusCount = 5;
       static_cast<id<InfobarCommands, BrowserCoordinatorCommands>>(
           self.dispatcher);
   buttonFactory.delegate = self.badgeMediator;
-  _fullscreenBadgeObserver =
-      std::make_unique<FullscreenUIUpdater>(self.badgeViewController);
-  FullscreenControllerFactory::GetInstance()
-      ->GetForBrowserState(self.browserState)
-      ->AddObserver(_fullscreenBadgeObserver.get());
+  FullscreenController* fullscreenController =
+      FullscreenControllerFactory::GetForBrowserState(self.browserState);
+  _badgeFullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(
+      fullscreenController, self.badgeViewController);
 
   self.mediator = [[LocationBarMediator alloc]
       initWithLocationBarModel:[self locationBarModel]];
@@ -205,11 +204,8 @@ const int kLocationAuthorizationStatusCount = 5;
       ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
   self.mediator.consumer = self;
 
-  _fullscreenObserver =
-      std::make_unique<FullscreenUIUpdater>(self.viewController);
-  FullscreenControllerFactory::GetInstance()
-      ->GetForBrowserState(self.browserState)
-      ->AddObserver(_fullscreenObserver.get());
+  _omniboxFullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(
+      fullscreenController, self.viewController);
 
   self.started = YES;
 }
@@ -228,12 +224,8 @@ const int kLocationAuthorizationStatusCount = 5;
   [self.mediator disconnect];
   self.mediator = nil;
 
-  FullscreenControllerFactory::GetInstance()
-      ->GetForBrowserState(self.browserState)
-      ->RemoveObserver(_fullscreenObserver.get());
-  FullscreenControllerFactory::GetInstance()
-      ->GetForBrowserState(self.browserState)
-      ->RemoveObserver(_fullscreenBadgeObserver.get());
+  _badgeFullscreenUIUpdater = nullptr;
+  _omniboxFullscreenUIUpdater = nullptr;
   self.started = NO;
 }
 

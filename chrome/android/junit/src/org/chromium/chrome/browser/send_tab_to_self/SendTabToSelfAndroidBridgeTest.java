@@ -54,7 +54,7 @@ public class SendTabToSelfAndroidBridgeTest {
     private static final long SHARE_TIME_MS = 456l;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         mocker.mock(SendTabToSelfAndroidBridgeJni.TEST_HOOKS, mNativeMock);
     }

@@ -45,11 +45,10 @@ public class RevampedContextMenuUtils {
      * @param tab                   The tab to open a context menu for.
      * @param openerDOMNodeId       The DOM node to long press to open the context menu for.
      * @return                      The {@link RevampedContextMenuCoordinator} of the context menu.
-     * @throws InterruptedException
      * @throws TimeoutException
      */
     public static RevampedContextMenuCoordinator openContextMenu(Tab tab, String openerDOMNodeId)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         String jsCode = "document.getElementById('" + openerDOMNodeId + "')";
         return openContextMenuByJs(tab, jsCode);
     }
@@ -60,11 +59,10 @@ public class RevampedContextMenuUtils {
      * @param jsCode                The javascript to get the DOM node to long press to
      *                              open the context menu for.
      * @return                      The {@link RevampedContextMenuCoordinator} of the context menu.
-     * @throws InterruptedException
      * @throws TimeoutException
      */
     private static RevampedContextMenuCoordinator openContextMenuByJs(Tab tab, String jsCode)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         final OnContextMenuShownHelper helper = new OnContextMenuShownHelper();
         ContextMenuHelper.sRevampedContextMenuShownCallback = ((coordinator) -> {
             helper.notifyCalled(coordinator);
@@ -84,12 +82,10 @@ public class RevampedContextMenuUtils {
      * @param openerDOMNodeId       The DOM node to long press to open the context menu for.
      * @param itemId                The context menu item ID to select.
      * @param activity              The activity to assert for gaining focus after click or null.
-     * @throws InterruptedException
      * @throws TimeoutException
      */
     public static void selectContextMenuItem(Instrumentation instrumentation, Activity activity,
-            Tab tab, String openerDOMNodeId, final int itemId)
-            throws InterruptedException, TimeoutException {
+            Tab tab, String openerDOMNodeId, final int itemId) throws TimeoutException {
         String jsCode = "document.getElementById('" + openerDOMNodeId + "')";
         selectContextMenuItemByJs(instrumentation, activity, tab, jsCode, itemId);
     }
@@ -101,12 +97,10 @@ public class RevampedContextMenuUtils {
      *                              to open the context menu for.
      * @param itemId                The context menu item ID to select.
      * @param activity              The activity to assert for gaining focus after click or null.
-     * @throws InterruptedException
      * @throws TimeoutException
      */
     private static void selectContextMenuItemByJs(Instrumentation instrumentation,
-            Activity activity, Tab tab, String jsCode, final int itemId)
-            throws InterruptedException, TimeoutException {
+            Activity activity, Tab tab, String jsCode, final int itemId) throws TimeoutException {
         RevampedContextMenuCoordinator menuCoordinator = openContextMenuByJs(tab, jsCode);
         Assert.assertNotNull("Failed to open context menu", menuCoordinator);
 

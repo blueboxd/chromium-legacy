@@ -181,7 +181,11 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                     View ungroupItemView = ungroupViewHolder.itemView;
                     filter.moveTabOutOfGroup(
                             mModel.get(mUnGroupTabIndex).model.get(TabProperties.TAB_ID));
-                    mRecyclerView.getLayoutManager().removeView(ungroupItemView);
+                    // Handle the case where the recyclerView is cleared out after ungrouping the
+                    // last tab in group.
+                    if (mRecyclerView.getAdapter().getItemCount() != 0) {
+                        mRecyclerView.getLayoutManager().removeView(ungroupItemView);
+                    }
                     RecordUserAction.record("TabGrid.Drag.RemoveFromGroup." + mComponentName);
                 }
             }
@@ -239,8 +243,6 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             }
         } else if (actionState == ItemTouchHelper.ACTION_STATE_DRAG
                 && mTabGridDialogHandler != null) {
-            // Not allow ungrouping the last tab in group.
-            if (recyclerView.getAdapter().getItemCount() == 1) return;
             boolean isHoveredOnUngroupBar = viewHolder.itemView.getBottom() + dY
                     > recyclerView.getBottom() - mUngroupThreshold;
             if (mSelectedTabIndex == TabModel.INVALID_TAB_INDEX) return;

@@ -220,8 +220,8 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
     EXPECT_TRUE(extension);
 
     apps::LaunchService::Get(profile())->OpenApplication(
-        AppLaunchParams(profile(), extension->id(), container, disposition,
-                        apps::mojom::AppLaunchSource::kSourceTest));
+        apps::AppLaunchParams(extension->id(), container, disposition,
+                              apps::mojom::AppLaunchSource::kSourceTest));
     return extension;
   }
 
@@ -1223,11 +1223,10 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   EXPECT_EQ(0u, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++running_browser, chrome::GetTotalBrowserCount());
 
-  apps::LaunchService::Get(profile())->OpenApplication(
-      AppLaunchParams(profile(), extension->id(),
-                      apps::mojom::LaunchContainer::kLaunchContainerTab,
-                      WindowOpenDisposition::NEW_WINDOW,
-                      apps::mojom::AppLaunchSource::kSourceTest));
+  apps::LaunchService::Get(profile())->OpenApplication(apps::AppLaunchParams(
+      extension->id(), apps::mojom::LaunchContainer::kLaunchContainerTab,
+      WindowOpenDisposition::NEW_WINDOW,
+      apps::mojom::AppLaunchSource::kSourceTest));
 
   // A new browser should get detected and one more should be running.
   EXPECT_EQ(NumberOfDetectedLauncherBrowsers(false), 1u);
@@ -1745,7 +1744,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_V1AppNavigation) {
   EXPECT_EQ(ash::STATUS_CLOSED, shelf_model()->ItemByID(id)->status);
 
   // Create a windowed application.
-  AppLaunchParams params = CreateAppLaunchParamsUserContainer(
+  apps::AppLaunchParams params = CreateAppLaunchParamsUserContainer(
       profile(), GetExtensionForAppID(extensions::kWebStoreAppId, profile()),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       apps::mojom::AppLaunchSource::kSourceTest);

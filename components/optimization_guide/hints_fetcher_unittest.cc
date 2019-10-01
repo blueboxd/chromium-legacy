@@ -125,9 +125,9 @@ class HintsFetcherTest : public testing::Test {
     }
   }
 
-  void SimulateNavigation(const std::string& host) {
-    HintsFetcher::RecordHintsFetcherCoverage(pref_service(), host,
-                                             GetMockClock());
+  bool WasHostCoveredByFetch(const std::string& host) {
+    return HintsFetcher::WasHostCoveredByFetch(pref_service(), host,
+                                               GetMockClock());
   }
 
  private:
@@ -275,10 +275,8 @@ TEST_F(HintsFetcherTest, HintsFetcherHostsCovered) {
 
   SeedCoveredHosts(hosts, host_invalid_time);
 
-  SimulateNavigation(hosts[0]);
-  SimulateNavigation(hosts[1]);
-  histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true, 2);
+  EXPECT_TRUE(WasHostCoveredByFetch(hosts[0]));
+  EXPECT_TRUE(WasHostCoveredByFetch(hosts[1]));
 }
 
 TEST_F(HintsFetcherTest, HintsFetcherCoveredHostExpired) {
@@ -299,10 +297,8 @@ TEST_F(HintsFetcherTest, HintsFetcherCoveredHostExpired) {
 
   // The first pair of hosts should be recorded as failed to be
   // covered by a recent hints fetcher as they have expired.
-  SimulateNavigation(hosts[0]);
-  SimulateNavigation(hosts[1]);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false, 2);
+  EXPECT_FALSE(WasHostCoveredByFetch(hosts[0]));
+  EXPECT_FALSE(WasHostCoveredByFetch(hosts[1]));
 
   // The first pair of hosts should be removed from the dictionary
   // pref as they have expired.
@@ -312,10 +308,8 @@ TEST_F(HintsFetcherTest, HintsFetcherCoveredHostExpired) {
 
   // Navigations to the valid hosts should be recorded as successfully
   // covered.
-  SimulateNavigation(hosts_valid[0]);
-  SimulateNavigation(hosts_valid[1]);
-  histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true, 2);
+  EXPECT_TRUE(WasHostCoveredByFetch(hosts_valid[0]));
+  EXPECT_TRUE(WasHostCoveredByFetch(hosts_valid[1]));
 }
 
 TEST_F(HintsFetcherTest, HintsFetcherHostNotCovered) {
@@ -329,13 +323,9 @@ TEST_F(HintsFetcherTest, HintsFetcherHostNotCovered) {
       pref_service(), prefs::kHintsFetcherHostsSuccessfullyFetched);
   EXPECT_EQ(2u, hosts_fetched->size());
 
-  SimulateNavigation(hosts[0]);
-  SimulateNavigation(hosts[1]);
-  SimulateNavigation("newhost.com");
-  histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true, 2);
-  histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false, 1);
+  EXPECT_TRUE(WasHostCoveredByFetch(hosts[0]));
+  EXPECT_TRUE(WasHostCoveredByFetch(hosts[1]));
+  EXPECT_FALSE(WasHostCoveredByFetch("newhost.com"));
 }
 
 TEST_F(HintsFetcherTest, HintsFetcherRemoveExpiredOnSuccessfullyFetched) {
@@ -360,15 +350,11 @@ TEST_F(HintsFetcherTest, HintsFetcherRemoveExpiredOnSuccessfullyFetched) {
       pref_service(), prefs::kHintsFetcherHostsSuccessfullyFetched);
   EXPECT_EQ(2u, hosts_fetched->size());
 
-  SimulateNavigation(hosts_expired[0]);
-  SimulateNavigation(hosts_expired[1]);
-  histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false, 2);
+  EXPECT_FALSE(WasHostCoveredByFetch(hosts_expired[0]));
+  EXPECT_FALSE(WasHostCoveredByFetch(hosts_expired[1]));
 
-  SimulateNavigation(hosts_valid[0]);
-  SimulateNavigation(hosts_valid[1]);
-  histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true, 2);
+  EXPECT_TRUE(WasHostCoveredByFetch(hosts_valid[0]));
+  EXPECT_TRUE(WasHostCoveredByFetch(hosts_valid[1]));
 }
 
 TEST_F(HintsFetcherTest, HintsFetcherSuccessfullyFetchedHostsFull) {
@@ -397,10 +383,8 @@ TEST_F(HintsFetcherTest, HintsFetcherSuccessfullyFetchedHostsFull) {
       pref_service(), prefs::kHintsFetcherHostsSuccessfullyFetched);
   EXPECT_EQ(200u, hosts_fetched->size());
 
-  SimulateNavigation(extra_hosts[0]);
-  SimulateNavigation(extra_hosts[1]);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true, 2);
+  EXPECT_TRUE(WasHostCoveredByFetch(extra_hosts[0]));
+  EXPECT_TRUE(WasHostCoveredByFetch(extra_hosts[1]));
 }
 
 }  // namespace optimization_guide

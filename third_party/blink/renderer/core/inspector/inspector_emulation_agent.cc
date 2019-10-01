@@ -94,10 +94,10 @@ void InspectorEmulationAgent::Restore() {
       std::make_unique<protocol::Array<protocol::Emulation::MediaFeature>>();
   for (auto const& name : emulated_media_features_.Keys()) {
     auto const& value = emulated_media_features_.Get(name);
-    features->push_back(std::move(protocol::Emulation::MediaFeature::create()
-                                      .setName(name)
-                                      .setValue(value)
-                                      .build()));
+    features->push_back(protocol::Emulation::MediaFeature::create()
+                            .setName(name)
+                            .setValue(value)
+                            .build());
   }
   setEmulatedMedia(emulated_media_.Get(), std::move(features));
   auto rgba = ParseRGBA(default_background_color_override_rgba_.Get());

@@ -108,12 +108,6 @@ void AppBannerUiDelegateAndroid::AddToHomescreen(
   InstallApp(weak_manager_->web_contents());
 }
 
-const base::android::ScopedJavaLocalRef<jobject>
-AppBannerUiDelegateAndroid::GetAddToHomescreenDialogForTesting() const {
-  return Java_AppBannerUiDelegateAndroid_getDialogForTesting(
-      base::android::AttachCurrentThread(), java_delegate_);
-}
-
 bool AppBannerUiDelegateAndroid::InstallApp(
     content::WebContents* web_contents) {
   has_user_interaction_ = true;
@@ -218,20 +212,21 @@ bool AppBannerUiDelegateAndroid::ShowDialog() {
       env, java_delegate_, java_app_title, java_bitmap, java_app_url);
 }
 
-void AppBannerUiDelegateAndroid::ShowNativeAppDetails() {
+bool AppBannerUiDelegateAndroid::ShowNativeAppDetails() {
   if (native_app_data_.is_null())
-    return;
+    return false;
 
   Java_AppBannerUiDelegateAndroid_showAppDetails(
       base::android::AttachCurrentThread(), java_delegate_, native_app_data_);
 
   TrackDismissEvent(DISMISS_EVENT_BANNER_CLICK);
+  return true;
 }
 
-void AppBannerUiDelegateAndroid::ShowNativeAppDetails(
+bool AppBannerUiDelegateAndroid::ShowNativeAppDetails(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  ShowNativeAppDetails();
+  return ShowNativeAppDetails();
 }
 
 AppBannerUiDelegateAndroid::AppBannerUiDelegateAndroid(

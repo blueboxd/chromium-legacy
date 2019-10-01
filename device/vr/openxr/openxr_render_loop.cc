@@ -7,7 +7,7 @@
 #include <directxmath.h>
 
 #include "device/vr/openxr/openxr_api_wrapper.h"
-#include "device/vr/openxr/openxr_gamepad_helper.h"
+#include "device/vr/openxr/openxr_input_helper.h"
 #include "device/vr/util/transform_utils.h"
 
 namespace device {
@@ -40,10 +40,13 @@ mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
   frame_data->time_delta =
       base::TimeDelta::FromNanoseconds(openxr_->GetPredictedDisplayTime());
 
+  frame_data->pose = mojom::VRPose::New();
+  frame_data->pose->input_state =
+      input_helper_->GetInputState(openxr_->GetPredictedDisplayTime());
+
   base::Optional<gfx::Quaternion> orientation;
   base::Optional<gfx::Point3F> position;
   if (XR_SUCCEEDED(openxr_->GetHeadPose(&orientation, &position))) {
-    frame_data->pose = mojom::VRPose::New();
 
     if (orientation.has_value())
       frame_data->pose->orientation = orientation;
@@ -78,12 +81,12 @@ mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
 }
 
 mojom::XRGamepadDataPtr OpenXrRenderLoop::GetNextGamepadData() {
-  return gamepad_helper_->GetGamepadData(openxr_->GetPredictedDisplayTime());
+  return input_helper_->GetGamepadData(openxr_->GetPredictedDisplayTime());
 }
 
 bool OpenXrRenderLoop::StartRuntime() {
   DCHECK(!openxr_);
-  DCHECK(!gamepad_helper_);
+  DCHECK(!input_helper_);
   DCHECK(!current_display_info_);
 
   // The new wrapper object is stored in a temporary variable instead of
@@ -100,7 +103,7 @@ bool OpenXrRenderLoop::StartRuntime() {
       !texture_helper_.SetAdapterLUID(luid) ||
       !texture_helper_.EnsureInitialized() ||
       XR_FAILED(
-          openxr->InitSession(texture_helper_.GetDevice(), &gamepad_helper_))) {
+          openxr->InitSession(texture_helper_.GetDevice(), &input_helper_))) {
     texture_helper_.Reset();
     return false;
   }
@@ -111,16 +114,16 @@ bool OpenXrRenderLoop::StartRuntime() {
   texture_helper_.SetDefaultSize(GetViewSize());
 
   DCHECK(openxr_);
-  DCHECK(gamepad_helper_);
+  DCHECK(input_helper_);
 
   return true;
 }
 
 void OpenXrRenderLoop::StopRuntime() {
-  // Has to reset gamepad_helper_ before reset openxr_. If we destroy openxr_
-  // first, gamepad_helper_destructor will try to call the actual openxr runtime
+  // Has to reset input_helper_ before reset openxr_. If we destroy openxr_
+  // first, input_helper_destructor will try to call the actual openxr runtime
   // rather than the mock in tests.
-  gamepad_helper_.reset();
+  input_helper_.reset();
   openxr_ = nullptr;
   current_display_info_ = nullptr;
   texture_helper_.Reset();

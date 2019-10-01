@@ -286,8 +286,8 @@ public class AwContentCaptureTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> { mContainerView.scrollTo(0, 0); });
     }
 
-    private static void verifyFrame(Long expectedId, String expectedUrl, ContentCaptureData result)
-            throws Exception {
+    private static void verifyFrame(
+            Long expectedId, String expectedUrl, ContentCaptureData result) {
         if (expectedId == null || expectedId.longValue() == 0) {
             Assert.assertNotEquals(0, result.getId());
         } else {
@@ -297,8 +297,7 @@ public class AwContentCaptureTest {
         Assert.assertFalse(result.getBounds().isEmpty());
     }
 
-    private static void verifyFrameSession(FrameSession expected, FrameSession result)
-            throws Exception {
+    private static void verifyFrameSession(FrameSession expected, FrameSession result) {
         if (expected == null && (result == null || result.isEmpty())) return;
         Assert.assertEquals(expected.size(), result.size());
         for (int i = 0; i < expected.size(); i++) {
@@ -307,7 +306,7 @@ public class AwContentCaptureTest {
     }
 
     private static void verifyContent(Set<String> expectedContent, Set<Long> unexpectedIds,
-            Set<Long> expectedIds, ContentCaptureData result) throws Exception {
+            Set<Long> expectedIds, ContentCaptureData result) {
         Assert.assertEquals(expectedContent.size(), result.getChildren().size());
         if (expectedIds != null) {
             Assert.assertEquals(expectedIds.size(), result.getChildren().size());
@@ -328,8 +327,7 @@ public class AwContentCaptureTest {
 
     private static void verifyCapturedContent(FrameSession expectedParentSession,
             Long expectedFrameId, String expectedUrl, Set<String> expectedContent,
-            Set<Long> unexpectedContentIds, FrameSession parentResult, ContentCaptureData result)
-            throws Exception {
+            Set<Long> unexpectedContentIds, FrameSession parentResult, ContentCaptureData result) {
         verifyFrameSession(expectedParentSession, parentResult);
         verifyFrame(expectedFrameId, expectedUrl, result);
         verifyContent(expectedContent, unexpectedContentIds, null, result);
@@ -337,14 +335,13 @@ public class AwContentCaptureTest {
 
     private static void verifyUpdatedContent(FrameSession expectedParentSession,
             Long expectedFrameId, String expectedUrl, Set<String> expectedContent,
-            Set<Long> expectedContentIds, FrameSession parentResult, ContentCaptureData result)
-            throws Exception {
+            Set<Long> expectedContentIds, FrameSession parentResult, ContentCaptureData result) {
         verifyFrameSession(expectedParentSession, parentResult);
         verifyFrame(expectedFrameId, expectedUrl, result);
         verifyContent(expectedContent, null, expectedContentIds, result);
     }
 
-    private static void verifyRemovedIds(Set<Long> expectedIds, long[] result) throws Exception {
+    private static void verifyRemovedIds(Set<Long> expectedIds, long[] result) {
         Assert.assertEquals(expectedIds.size(), result.length);
         Set<Long> resultSet = new HashSet<Long>(result.length);
         for (long id : result) {
@@ -354,7 +351,7 @@ public class AwContentCaptureTest {
     }
 
     private static void verifyRemovedContent(Long expectedFrameId, String expectedUrl,
-            Set<Long> expectedIds, FrameSession resultFrame, long[] result) throws Exception {
+            Set<Long> expectedIds, FrameSession resultFrame, long[] result) {
         Assert.assertEquals(1, resultFrame.size());
         verifyFrame(expectedFrameId, expectedUrl, resultFrame.get(0));
         verifyRemovedIds(expectedIds, result);

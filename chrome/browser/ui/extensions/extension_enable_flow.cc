@@ -54,11 +54,10 @@ void ExtensionEnableFlow::Run() {
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile_);
-  const Extension* extension = registry->GetExtensionById(
-      extension_id_, extensions::ExtensionRegistry::COMPATIBILITY);
+  const Extension* extension =
+      registry->disabled_extensions().GetByID(extension_id_);
   if (!extension) {
-    extension = registry->GetExtensionById(
-        extension_id_, extensions::ExtensionRegistry::TERMINATED);
+    extension = registry->terminated_extensions().GetByID(extension_id_);
     // It's possible (though unlikely) the app could have been uninstalled since
     // the user clicked on it.
     if (!extension)
@@ -67,8 +66,7 @@ void ExtensionEnableFlow::Run() {
     service->ReloadExtension(extension_id_);
 
     // ReloadExtension reallocates the Extension object.
-    extension = registry->GetExtensionById(
-        extension_id_, extensions::ExtensionRegistry::COMPATIBILITY);
+    extension = registry->disabled_extensions().GetByID(extension_id_);
 
     // |extension| could be NULL for asynchronous load, such as the case of
     // an unpacked extension. Wait for the load to continue the flow.
@@ -87,8 +85,8 @@ void ExtensionEnableFlow::CheckPermissionAndMaybePromptUser() {
   extensions::ExtensionService* service = system->extension_service();
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile_);
-  const Extension* extension = registry->GetExtensionById(
-      extension_id_, extensions::ExtensionRegistry::COMPATIBILITY);
+  const Extension* extension =
+      registry->disabled_extensions().GetByID(extension_id_);
 
   bool abort =
       !extension ||
@@ -188,8 +186,8 @@ void ExtensionEnableFlow::InstallPromptDone(
         extensions::ExtensionRegistry::Get(profile_);
     // The extension can be uninstalled in another window while the UI was
     // showing. Treat it as a cancellation and notify |delegate_|.
-    const Extension* extension = registry->GetExtensionById(
-        extension_id_, extensions::ExtensionRegistry::COMPATIBILITY);
+    const Extension* extension =
+        registry->disabled_extensions().GetByID(extension_id_);
     if (!extension) {
       delegate_->ExtensionEnableFlowAborted(true);
       return;

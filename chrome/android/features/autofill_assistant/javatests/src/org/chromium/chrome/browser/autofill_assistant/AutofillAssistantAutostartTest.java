@@ -41,7 +41,7 @@ public class AutofillAssistantAutostartTest {
     public CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         AutofillAssistantPreferencesUtil.setInitialPreferences(true);
     }
 
@@ -50,7 +50,7 @@ public class AutofillAssistantAutostartTest {
      */
     @Test
     @MediumTest
-    public void testAutostart() throws Exception {
+    public void testAutostart() {
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 SupportedScriptProto.newBuilder()
                         .setPath("example.com/hello")

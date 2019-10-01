@@ -24,6 +24,7 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/common/referrer.h"
 #include "extensions/buildflags/buildflags.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/prerender/prerender_rel_type.h"
 #include "ui/gfx/geometry/size.h"
@@ -58,9 +59,10 @@ void RecordLinkManagerStarting(const uint32_t rel_types) {
                             kRelTypeHistogramEnumMax);
 }
 
-chrome::mojom::PrerenderDispatcherAssociatedPtr GetPrerenderDispatcher(
-    int child_id) {
-  chrome::mojom::PrerenderDispatcherAssociatedPtr prerender_dispatcher;
+mojo::AssociatedRemote<chrome::mojom::PrerenderDispatcher>
+GetPrerenderDispatcher(int child_id) {
+  mojo::AssociatedRemote<chrome::mojom::PrerenderDispatcher>
+      prerender_dispatcher;
   content::RenderProcessHost* render_process_host =
       content::RenderProcessHost::FromID(child_id);
   if (render_process_host) {
@@ -384,7 +386,8 @@ void PrerenderLinkManager::StartPrerenders() {
       IPC::ChannelProxy* channel = render_process_host->GetChannel();
       // |channel| might be NULL in tests.
       if (channel) {
-        chrome::mojom::PrerenderDispatcherAssociatedPtr prerender_dispatcher;
+        mojo::AssociatedRemote<chrome::mojom::PrerenderDispatcher>
+            prerender_dispatcher;
         channel->GetRemoteAssociatedInterface(&prerender_dispatcher);
         prerender_dispatcher->PrerenderStop(it->prerender_id);
       }
@@ -476,8 +479,9 @@ void PrerenderLinkManager::OnPrerenderStart(
   if (!prerender)
     return;
 
-  chrome::mojom::PrerenderDispatcherAssociatedPtr prerender_dispatcher =
-      GetPrerenderDispatcher(prerender->launcher_child_id);
+  mojo::AssociatedRemote<chrome::mojom::PrerenderDispatcher>
+      prerender_dispatcher =
+          GetPrerenderDispatcher(prerender->launcher_child_id);
   if (prerender_dispatcher)
     prerender_dispatcher->PrerenderStart(prerender->prerender_id);
 }
@@ -488,8 +492,9 @@ void PrerenderLinkManager::OnPrerenderStopLoading(
   if (!prerender)
     return;
 
-  chrome::mojom::PrerenderDispatcherAssociatedPtr prerender_dispatcher =
-      GetPrerenderDispatcher(prerender->launcher_child_id);
+  mojo::AssociatedRemote<chrome::mojom::PrerenderDispatcher>
+      prerender_dispatcher =
+          GetPrerenderDispatcher(prerender->launcher_child_id);
   if (prerender_dispatcher)
     prerender_dispatcher->PrerenderStopLoading(prerender->prerender_id);
 }
@@ -500,8 +505,9 @@ void PrerenderLinkManager::OnPrerenderDomContentLoaded(
   if (!prerender)
     return;
 
-  chrome::mojom::PrerenderDispatcherAssociatedPtr prerender_dispatcher =
-      GetPrerenderDispatcher(prerender->launcher_child_id);
+  mojo::AssociatedRemote<chrome::mojom::PrerenderDispatcher>
+      prerender_dispatcher =
+          GetPrerenderDispatcher(prerender->launcher_child_id);
   if (prerender_dispatcher)
     prerender_dispatcher->PrerenderDomContentLoaded(prerender->prerender_id);
 }
@@ -512,8 +518,9 @@ void PrerenderLinkManager::OnPrerenderStop(
   if (!prerender)
     return;
 
-  chrome::mojom::PrerenderDispatcherAssociatedPtr prerender_dispatcher =
-      GetPrerenderDispatcher(prerender->launcher_child_id);
+  mojo::AssociatedRemote<chrome::mojom::PrerenderDispatcher>
+      prerender_dispatcher =
+          GetPrerenderDispatcher(prerender->launcher_child_id);
   if (prerender_dispatcher)
     prerender_dispatcher->PrerenderStop(prerender->prerender_id);
 

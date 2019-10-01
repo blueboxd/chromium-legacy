@@ -35,7 +35,7 @@ public class CustomTabTabPersistenceIntegrationTest {
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
                         InstrumentationRegistry.getTargetContext(),

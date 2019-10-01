@@ -11,7 +11,8 @@ import org.chromium.chrome.browser.download.DownloadManagerService.DownloadObser
 import org.chromium.components.offline_items_collection.ContentId;
 
 /**
- * Provides classes that need to be interacted with by the {@link DownloadHistoryAdapter}.
+ * Provides classes that need to be interacted with by the download UI. This interface will be
+ * removed once {@link OfflineContentProvider} is enabled for downloads.
  */
 public interface BackendProvider {
 

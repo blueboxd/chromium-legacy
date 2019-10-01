@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 namespace chromeos {
@@ -61,7 +62,8 @@ class MultiDeviceSetupDialogUI : public ui::MojoWebDialogUI {
 
  private:
   void BindMultiDeviceSetup(
-      chromeos::multidevice_setup::mojom::MultiDeviceSetupRequest request);
+      mojo::PendingReceiver<
+          chromeos::multidevice_setup::mojom::MultiDeviceSetup> receiver);
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupDialogUI);
 };

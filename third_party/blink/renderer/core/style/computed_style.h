@@ -2215,9 +2215,12 @@ class ComputedStyle : public ComputedStyleBase,
     return TableLayout() == ETableLayout::kFixed && !LogicalWidth().IsAuto();
   }
 
-  // Filter/transform utility functions.
-  bool Has3DTransform() const {
-    return Transform().Has3DOperation() ||
+  // Returns true if the computed style contains a 3D transform operation.
+  // This can be individual operations from the transform property, or
+  // individual values from translate/rotate/scale properties. Note that
+  // perspective is omitted, since it does not by itself specify a 3D transform.
+  bool Has3DTransformOperation() const {
+    return Transform().HasNonPerspective3DOperation() ||
            (Translate() && Translate()->Z() != 0) ||
            (Rotate() && (Rotate()->X() != 0 || Rotate()->Y() != 0)) ||
            (Scale() && Scale()->Z() != 1);

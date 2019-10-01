@@ -162,7 +162,7 @@ public class NavigationPopupTest {
             "force-fieldtrial-params=GestureNavigation.Disabled:"
                     + "overscroll_history_navigation_bottom_sheet/false"})
     public void
-    testLongPressBackTriggering() throws ExecutionException {
+    testLongPressBackTriggering() {
         KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivityTestRule.getActivity().onKeyDown(KeyEvent.KEYCODE_BACK, event); });

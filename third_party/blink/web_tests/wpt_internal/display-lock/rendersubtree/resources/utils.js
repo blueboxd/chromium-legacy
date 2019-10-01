@@ -8,7 +8,7 @@ function setInvisibleActivatable(element) {
 }
 
 function setVisible(element) {
-  return setRenderSubtree(element, "visible");
+  return setRenderSubtree(element, "");
 }
 
 function setRenderSubtree(element, value) {

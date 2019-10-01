@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_text_styles.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_text_boundary.h"
@@ -108,7 +109,6 @@ bool operator!=(const AXPosition<AXPositionType, AXNodeType>& first,
 //
 // This class can be copied using the |Clone| method. It is designed to be
 // immutable.
-
 template <class AXPositionType, class AXNodeType>
 class AXPosition {
  public:
@@ -124,21 +124,20 @@ class AXPosition {
   // position in order to make it valid.
   enum class AdjustmentBehavior { kMoveLeft, kMoveRight };
 
-  static const int32_t INVALID_ANCHOR_ID = -1;
   static const int BEFORE_TEXT = -1;
   static const int INVALID_INDEX = -2;
   static const int INVALID_OFFSET = -1;
 
   static AXPositionInstance CreateNullPosition() {
     AXPositionInstance new_position(new AXPositionType());
-    new_position->Initialize(AXPositionKind::NULL_POSITION, AXTreeIDUnknown(),
-                             INVALID_ANCHOR_ID, INVALID_INDEX, INVALID_OFFSET,
-                             ax::mojom::TextAffinity::kDownstream);
+    new_position->Initialize(
+        AXPositionKind::NULL_POSITION, AXTreeIDUnknown(), AXNode::kInvalidAXID,
+        INVALID_INDEX, INVALID_OFFSET, ax::mojom::TextAffinity::kDownstream);
     return new_position;
   }
 
   static AXPositionInstance CreateTreePosition(AXTreeID tree_id,
-                                               int32_t anchor_id,
+                                               AXNode::AXID anchor_id,
                                                int child_index) {
     AXPositionInstance new_position(new AXPositionType());
     new_position->Initialize(AXPositionKind::TREE_POSITION, tree_id, anchor_id,
@@ -149,7 +148,7 @@ class AXPosition {
 
   static AXPositionInstance CreateTextPosition(
       AXTreeID tree_id,
-      int32_t anchor_id,
+      AXNode::AXID anchor_id,
       int text_offset,
       ax::mojom::TextAffinity affinity) {
     AXPositionInstance new_position(new AXPositionType());
@@ -167,7 +166,7 @@ class AXPosition {
   // API that works with positions as opaque objects.
   struct SerializedPosition {
     AXPositionKind kind;
-    int32_t anchor_id;
+    AXNode::AXID anchor_id;
     int child_index;
     int text_offset;
     ax::mojom::TextAffinity affinity;
@@ -262,10 +261,10 @@ class AXPosition {
   }
 
   AXTreeID tree_id() const { return tree_id_; }
-  int32_t anchor_id() const { return anchor_id_; }
+  AXNode::AXID anchor_id() const { return anchor_id_; }
 
   AXNodeType* GetAnchor() const {
-    if (tree_id_ == AXTreeIDUnknown() || anchor_id_ == INVALID_ANCHOR_ID)
+    if (tree_id_ == AXTreeIDUnknown() || anchor_id_ == AXNode::kInvalidAXID)
       return nullptr;
     DCHECK_GE(anchor_id_, 0);
     return GetNodeInTree(tree_id_, anchor_id_);
@@ -374,13 +373,14 @@ class AXPosition {
         //
         // We assume that white space separates lines.
         if (text_position->IsInWhiteSpace() &&
-            GetNextOnLineID(text_position->anchor_id_) == INVALID_ANCHOR_ID &&
+            GetNextOnLineID(text_position->anchor_id_) ==
+                AXNode::kInvalidAXID &&
             text_position->AtEndOfAnchor()) {
           return true;
         }
 
         return GetPreviousOnLineID(text_position->anchor_id_) ==
-                   INVALID_ANCHOR_ID &&
+                   AXNode::kInvalidAXID &&
                text_position->AtStartOfAnchor();
     }
   }
@@ -414,10 +414,10 @@ class AXPosition {
         // of white space that is on a line by itself as being at the end of
         // that line. Note that white space that ends a line of text should be
         // connected to that text with a "previous on line ID".
-        if (GetNextOnLineID(text_position->anchor_id_) == INVALID_ANCHOR_ID)
+        if (GetNextOnLineID(text_position->anchor_id_) == AXNode::kInvalidAXID)
           return (!text_position->IsInWhiteSpace() ||
                   GetPreviousOnLineID(text_position->anchor_id_) ==
-                      INVALID_ANCHOR_ID)
+                      AXNode::kInvalidAXID)
                      ? text_position->AtEndOfAnchor()
                      : text_position->AtStartOfAnchor();
 
@@ -1163,10 +1163,10 @@ class AXPosition {
       return CreateNullPosition();
 
     AXTreeID tree_id = AXTreeIDUnknown();
-    int32_t child_id = INVALID_ANCHOR_ID;
+    AXNode::AXID child_id = AXNode::kInvalidAXID;
     AnchorChild(child_index, &tree_id, &child_id);
     DCHECK_NE(tree_id, AXTreeIDUnknown());
-    DCHECK_NE(child_id, INVALID_ANCHOR_ID);
+    DCHECK_NE(child_id, AXNode::kInvalidAXID);
     switch (kind_) {
       case AXPositionKind::NULL_POSITION:
         NOTREACHED();
@@ -1193,9 +1193,9 @@ class AXPosition {
       return CreateNullPosition();
 
     AXTreeID tree_id = AXTreeIDUnknown();
-    int32_t parent_id = INVALID_ANCHOR_ID;
+    AXNode::AXID parent_id = AXNode::kInvalidAXID;
     AnchorParent(&tree_id, &parent_id);
-    if (tree_id == AXTreeIDUnknown() || parent_id == INVALID_ANCHOR_ID)
+    if (tree_id == AXTreeIDUnknown() || parent_id == AXNode::kInvalidAXID)
       return CreateNullPosition();
 
     switch (kind_) {
@@ -2320,7 +2320,7 @@ class AXPosition {
       // Reset to the null position.
       kind_ = AXPositionKind::NULL_POSITION;
       tree_id_ = AXTreeIDUnknown();
-      anchor_id_ = INVALID_ANCHOR_ID;
+      anchor_id_ = AXNode::kInvalidAXID;
       child_index_ = INVALID_INDEX;
       text_offset_ = INVALID_OFFSET;
       affinity_ = ax::mojom::TextAffinity::kDownstream;
@@ -2753,8 +2753,6 @@ class AXPosition {
   ax::mojom::TextAffinity affinity_;
 };
 
-template <class AXPositionType, class AXNodeType>
-const int32_t AXPosition<AXPositionType, AXNodeType>::INVALID_ANCHOR_ID;
 template <class AXPositionType, class AXNodeType>
 const int AXPosition<AXPositionType, AXNodeType>::BEFORE_TEXT;
 template <class AXPositionType, class AXNodeType>

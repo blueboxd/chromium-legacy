@@ -53,7 +53,7 @@ public class IncognitoToggleButtonTablet extends IncognitoToggleButton {
 
     @Override
     protected void setImage(boolean isIncognitoSelected) {
-        setImageResource(isIncognitoSelected ? R.drawable.btn_tabstrip_switch_incognito
+        setImageResource(isIncognitoSelected ? R.drawable.location_bar_incognito_badge
                                              : R.drawable.btn_tabstrip_switch_normal);
     }
 

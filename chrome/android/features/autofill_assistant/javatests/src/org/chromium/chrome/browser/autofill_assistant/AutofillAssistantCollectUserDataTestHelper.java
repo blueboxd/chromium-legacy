@@ -146,8 +146,7 @@ public class AutofillAssistantCollectUserDataTestHelper {
         }
     }
 
-    public AutofillAssistantCollectUserDataTestHelper()
-            throws TimeoutException, InterruptedException {
+    public AutofillAssistantCollectUserDataTestHelper() throws TimeoutException {
         registerDataObserver();
         setRequestTimeoutForTesting();
         setSyncServiceForTesting();
@@ -163,8 +162,7 @@ public class AutofillAssistantCollectUserDataTestHelper {
                 () -> PersonalDataManager.getInstance().setSyncServiceForTesting());
     }
 
-    public String setProfile(final AutofillProfile profile)
-            throws TimeoutException, InterruptedException {
+    public String setProfile(final AutofillProfile profile) throws TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
         String guid = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> PersonalDataManager.getInstance().setProfile(profile));
@@ -181,7 +179,7 @@ public class AutofillAssistantCollectUserDataTestHelper {
      * @return the GUID of the created profile.
      */
     public String addDummyProfile(String fullName, String email, String postcode)
-            throws TimeoutException, InterruptedException {
+            throws TimeoutException {
         PersonalDataManager.AutofillProfile profile = new PersonalDataManager.AutofillProfile(
                 "" /* guid */, "https://www.example.com" /* origin */, fullName, "Acme Inc.",
                 "123 Main", "California", "Los Angeles", "", postcode, "", "Uzbekistan",
@@ -189,8 +187,7 @@ public class AutofillAssistantCollectUserDataTestHelper {
         return setProfile(profile);
     }
 
-    public String addDummyProfile(String fullName, String email)
-            throws TimeoutException, InterruptedException {
+    public String addDummyProfile(String fullName, String email) throws TimeoutException {
         return addDummyProfile(fullName, email, "90210");
     }
 
@@ -214,8 +211,7 @@ public class AutofillAssistantCollectUserDataTestHelper {
                                    .getShippingAddressLabelWithCountryForPaymentRequest(profile));
     }
 
-    public String setCreditCard(final CreditCard card)
-            throws TimeoutException, InterruptedException {
+    public String setCreditCard(final CreditCard card) throws TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
         String guid = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> PersonalDataManager.getInstance().setCreditCard(card));
@@ -229,8 +225,7 @@ public class AutofillAssistantCollectUserDataTestHelper {
      * @param billingAddressId The billing address profile GUID.
      * @return the GUID of the created credit card
      */
-    public String addDummyCreditCard(String billingAddressId)
-            throws TimeoutException, InterruptedException {
+    public String addDummyCreditCard(String billingAddressId) throws TimeoutException {
         String profileName = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> PersonalDataManager.getInstance().getProfile(billingAddressId).getFullName());
 
@@ -241,21 +236,21 @@ public class AutofillAssistantCollectUserDataTestHelper {
         return setCreditCard(creditCard);
     }
 
-    public void deleteProfile(final String guid) throws InterruptedException, TimeoutException {
+    public void deleteProfile(final String guid) throws TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().deleteProfile(guid));
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
     }
 
-    public void deleteCreditCard(final String guid) throws InterruptedException, TimeoutException {
+    public void deleteCreditCard(final String guid) throws TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.getInstance().deleteCreditCard(guid));
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
     }
 
-    private void registerDataObserver() throws TimeoutException, InterruptedException {
+    private void registerDataObserver() throws TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
         boolean isDataLoaded = TestThreadUtils.runOnUiThreadBlockingNoException(
                 ()

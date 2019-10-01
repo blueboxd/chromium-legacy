@@ -31,8 +31,6 @@ import org.chromium.components.variations.firstrun.VariationsSeedFetcher;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -108,8 +106,7 @@ public class AwVariationsSeedFetcherTest {
 
         @Override
         public SeedInfo downloadContent(@VariationsSeedFetcher.VariationsPlatform int platform,
-                String restrictMode, String milestone, String channel)
-                throws SocketTimeoutException, UnknownHostException, IOException {
+                String restrictMode, String milestone, String channel) {
             Assert.assertEquals(VariationsSeedFetcher.VariationsPlatform.ANDROID_WEBVIEW, platform);
             Assert.assertTrue(Integer.parseInt(milestone) > 0);
             helper.notifyCalled();
@@ -205,7 +202,7 @@ public class AwVariationsSeedFetcherTest {
 
     @Test
     @SmallTest
-    public void testFetch() throws IOException, InterruptedException, TimeoutException {
+    public void testFetch() throws IOException, TimeoutException {
         try {
             AwVariationsSeedFetcher fetcher = new AwVariationsSeedFetcher() {
                 // p is null in this test. Don't actually call JobService.jobFinished.

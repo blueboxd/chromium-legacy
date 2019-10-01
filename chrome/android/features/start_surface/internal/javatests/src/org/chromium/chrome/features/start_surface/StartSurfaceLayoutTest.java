@@ -97,7 +97,7 @@ public class StartSurfaceLayoutTest {
             (bitmap) -> mAllBitmaps.add(new WeakReference<>(bitmap));
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         FeatureUtilities.setGridTabSwitcherEnabledForTesting(true);
 
         EmbeddedTestServer testServer =
@@ -222,7 +222,7 @@ public class StartSurfaceLayoutTest {
      * Make Chrome have {@code numTabs} or Tabs with {@code url} loaded.
      * @see #prepareTabs(int, String, boolean)
      */
-    private void prepareTabs(int numTabs, @Nullable String url) throws InterruptedException {
+    private void prepareTabs(int numTabs, @Nullable String url) {
         prepareTabs(numTabs, url, true);
     }
 
@@ -233,8 +233,7 @@ public class StartSurfaceLayoutTest {
      *            be saved.
      * @param waitForLoading Whether wait for URL loading.
      */
-    private void prepareTabs(int numTabs, @Nullable String url, boolean waitForLoading)
-            throws InterruptedException {
+    private void prepareTabs(int numTabs, @Nullable String url, boolean waitForLoading) {
         assertTrue(numTabs >= 1);
         assertEquals(1, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
 
@@ -548,7 +547,7 @@ public class StartSurfaceLayoutTest {
     // clang-format off
     @DisabledTest(message = "http://crbug/1005865 - Test was previously flaky but only on bots."
             + "Was not locally reproducible. Disabling until verified that it's deflaked on bots.")
-    public void testIncognitoEnterGts() throws Exception {
+    public void testIncognitoEnterGts() {
         // clang-format on
         mActivityTestRule.newIncognitoTabFromMenu();
         TestThreadUtils.runOnUiThreadBlocking(

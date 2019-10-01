@@ -67,7 +67,7 @@ public class AutofillAssistantInfoBoxUiTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         AutofillAssistantUiTestUtil.startOnBlankPage(mTestRule);
     }
 

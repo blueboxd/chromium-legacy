@@ -32,6 +32,7 @@
 #include "media/mojo/services/media_manifest.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/test/test_service.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
@@ -205,7 +206,7 @@ class MediaServiceTest : public testing::Test {
   int InitializeCdmProxy(const base::Token& cdm_guid) {
     base::RunLoop run_loop;
     interface_factory_->CreateCdmProxy(cdm_guid,
-                                       mojo::MakeRequest(&cdm_proxy_));
+                                       cdm_proxy_.BindNewPipeAndPassReceiver());
 
     mojom::CdmProxyClientAssociatedPtrInfo client_ptr_info;
     cdm_proxy_client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
@@ -283,7 +284,7 @@ class MediaServiceTest : public testing::Test {
   mojom::MediaServicePtr media_service_;
   mojom::InterfaceFactoryPtr interface_factory_;
   mojom::ContentDecryptionModulePtr cdm_;
-  mojom::CdmProxyPtr cdm_proxy_;
+  mojo::Remote<mojom::CdmProxy> cdm_proxy_;
   mojom::RendererPtr renderer_;
 
   NiceMock<MockCdmProxyClient> cdm_proxy_client_;

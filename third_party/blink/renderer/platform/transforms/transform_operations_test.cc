@@ -546,4 +546,24 @@ TEST(TransformOperationsTest, ZoomTest) {
   EXPECT_EQ(result1, result2);
 }
 
+TEST(TransformOperationsTest, PerspectiveOpsTest) {
+  TransformOperations ops;
+  EXPECT_FALSE(ops.HasPerspective());
+  EXPECT_FALSE(ops.HasNonPerspective3DOperation());
+
+  ops.Operations().push_back(TranslateTransformOperation::Create(
+      Length::Fixed(1), Length::Fixed(2), TransformOperation::kTranslate));
+  EXPECT_FALSE(ops.HasPerspective());
+  EXPECT_FALSE(ops.HasNonPerspective3DOperation());
+
+  ops.Operations().push_back(PerspectiveTransformOperation::Create(1234));
+  EXPECT_TRUE(ops.HasPerspective());
+  EXPECT_FALSE(ops.HasNonPerspective3DOperation());
+
+  ops.Operations().push_back(TranslateTransformOperation::Create(
+      Length::Fixed(1), Length::Fixed(2), 3, TransformOperation::kTranslate3D));
+  EXPECT_TRUE(ops.HasPerspective());
+  EXPECT_TRUE(ops.HasNonPerspective3DOperation());
+}
+
 }  // namespace blink

@@ -2298,7 +2298,9 @@ TEST_P(ShelfLayoutManagerTest, ShelfAnimatesToVisibleWhenGestureInComplete) {
 
 // Tests that the shelf animates to the auto hidden bounds after a swipe down
 // on the visible shelf.
-TEST_P(ShelfLayoutManagerTest, ShelfAnimatesToHiddenWhenGestureOutComplete) {
+// TODO(https://crbug.com/1000463): Flaky.
+TEST_P(ShelfLayoutManagerTest,
+       DISABLED_ShelfAnimatesToHiddenWhenGestureOutComplete) {
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());

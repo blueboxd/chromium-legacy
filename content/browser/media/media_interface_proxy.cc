@@ -230,15 +230,15 @@ void MediaInterfaceProxy::CreateCdm(
 
 void MediaInterfaceProxy::CreateDecryptor(
     int cdm_id,
-    media::mojom::DecryptorRequest request) {
+    mojo::PendingReceiver<media::mojom::Decryptor> receiver) {
   InterfaceFactory* factory = GetMediaInterfaceFactory();
   if (factory)
-    factory->CreateDecryptor(cdm_id, std::move(request));
+    factory->CreateDecryptor(cdm_id, std::move(receiver));
 }
 
 void MediaInterfaceProxy::CreateCdmProxy(
     const base::Token& cdm_guid,
-    media::mojom::CdmProxyRequest request) {
+    mojo::PendingReceiver<media::mojom::CdmProxy> receiver) {
   NOTREACHED() << "The CdmProxy should only be created by a CDM.";
 }
 
@@ -405,13 +405,13 @@ void MediaInterfaceProxy::OnCdmServiceConnectionError(
 
 void MediaInterfaceProxy::CreateCdmProxyInternal(
     const base::Token& cdm_guid,
-    media::mojom::CdmProxyRequest request) {
+    mojo::PendingReceiver<media::mojom::CdmProxy> receiver) {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   InterfaceFactory* factory = GetMediaInterfaceFactory();
   if (factory)
-    factory->CreateCdmProxy(cdm_guid, std::move(request));
+    factory->CreateCdmProxy(cdm_guid, std::move(receiver));
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 }  // namespace content

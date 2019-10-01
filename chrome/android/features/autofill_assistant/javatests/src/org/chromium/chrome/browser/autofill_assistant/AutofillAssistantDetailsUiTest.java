@@ -11,16 +11,17 @@ import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.hasTypefaceStyle;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.isTextMaxLines;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.View;
@@ -32,7 +33,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.LocaleUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -41,9 +41,6 @@ import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCo
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsModel;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-
-import java.util.Calendar;
-import java.util.Locale;
 
 /** Tests for the Autofill Assistant details. */
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
@@ -76,21 +73,15 @@ public class AutofillAssistantDetailsUiTest {
         }
     }
 
+    /** Creates a coordinator for use in UI tests, and adds it to the global view hierarchy. */
     private AssistantDetailsCoordinator createCoordinator(AssistantDetailsModel model)
             throws Exception {
-        return createCoordinator(model, Locale.getDefault());
-    }
-
-    /** Creates a coordinator for use in UI tests, and adds it to the global view hierarchy. */
-    private AssistantDetailsCoordinator createCoordinator(
-            AssistantDetailsModel model, Locale locale) throws Exception {
         AssistantDetailsCoordinator coordinator = runOnUiThreadBlocking(() -> {
             Bitmap testImage = BitmapFactory.decodeResource(
                     mTestRule.getActivity().getResources(), R.drawable.btn_close);
 
             return new AssistantDetailsCoordinator(InstrumentationRegistry.getTargetContext(),
-                    locale, model,
-                    new AutofillAssistantUiTestUtil.MockImageFetcher(testImage, null));
+                    model, new AutofillAssistantUiTestUtil.MockImageFetcher(testImage, null));
         });
 
         runOnUiThreadBlocking(()
@@ -100,7 +91,7 @@ public class AutofillAssistantDetailsUiTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         AutofillAssistantUiTestUtil.startOnBlankPage(mTestRule);
     }
 
@@ -125,21 +116,19 @@ public class AutofillAssistantDetailsUiTest {
 
         runOnUiThreadBlocking(() -> {
             model.set(AssistantDetailsModel.DETAILS,
-                    new AssistantDetails("title", "image", null, false, "Total", "$12",
-                            java.util.Calendar.getInstance().getTime(), "line 1", "line 2",
-                            "line 3", false, false, false, false, false, false));
+                    new AssistantDetails("title", 1, "image", null, false, "Total", "$12", "line 1",
+                            "line 2", "", "line 3", false, false, false, false, false, false));
         });
 
         onView(is(viewHolder.mImageView)).check(matches(isDisplayed()));
         onView(is(viewHolder.mTitleView)).check(matches(isDisplayed()));
         onView(is(viewHolder.mDescriptionLine1View)).check(matches(isDisplayed()));
         onView(is(viewHolder.mDescriptionLine2View)).check(matches(isDisplayed()));
+        onView(is(viewHolder.mDescriptionLine3View)).check(matches(not(isDisplayed())));
         onView(is(viewHolder.mPriceView)).check(matches(isDisplayed()));
         onView(is(viewHolder.mTotalPriceLabelView)).check(matches(isDisplayed()));
         onView(is(viewHolder.mTotalPriceView)).check(matches(isDisplayed()));
-        // When total price is set, descriptionLine3 is shown in mPriceAttributionView instead.
         onView(is(viewHolder.mPriceAttributionView)).check(matches(isDisplayed()));
-        onView(is(viewHolder.mDescriptionLine3View)).check(matches(not(isDisplayed())));
     }
 
     @Test
@@ -153,104 +142,45 @@ public class AutofillAssistantDetailsUiTest {
         runOnUiThreadBlocking(
                 ()
                         -> model.set(AssistantDetailsModel.DETAILS,
-                                new AssistantDetails("title", "image", null, false, "Total", "$12",
-                                        null, "line 1", "line 2", "line 3", false, false, false,
-                                        false, false, false)));
+                                new AssistantDetails("title", 1, "image", null, false, "Total",
+                                        "$12", "line 1", "line 2", "", "line 3", false, false,
+                                        false, false, false, false)));
         onView(is(viewHolder.mTitleView)).check(matches(isTextMaxLines(1)));
+        onView(is(viewHolder.mTitleView)).check(matches(allOf(withText("title"), isDisplayed())));
 
-        /* Description line 2 not set, title may wrap once. */
+        /* titleMaxLines is set to 2, check that it is properly applied. */
         runOnUiThreadBlocking(()
                                       -> model.set(AssistantDetailsModel.DETAILS,
-                                              new AssistantDetails("title", "image", null, false,
-                                                      "Total", "$12", null, "line 1", "", "line 3",
+                                              new AssistantDetails("title", 2, "image", null, false,
+                                                      "Total", "$12", "line 1", "", "", "line 3",
                                                       false, false, false, false, false, false)));
         onView(is(viewHolder.mTitleView)).check(matches(isTextMaxLines(2)));
-
-        /* Description line 1 not set, title may wrap once.*/
-        runOnUiThreadBlocking(()
-                                      -> model.set(AssistantDetailsModel.DETAILS,
-                                              new AssistantDetails("title", "image", null, false,
-                                                      "Total", "$12", null, "", "line 2", "line 3",
-                                                      false, false, false, false, false, false)));
-        onView(is(viewHolder.mTitleView)).check(matches(isTextMaxLines(2)));
-
-        /* Description lines 1 and 2 not set, title may wrap twice.*/
-        runOnUiThreadBlocking(()
-                                      -> model.set(AssistantDetailsModel.DETAILS,
-                                              new AssistantDetails("title", "image", null, false,
-                                                      "Total", "$12", null, "", "", "line 3", false,
-                                                      false, false, false, false, false)));
-        onView(is(viewHolder.mTitleView)).check(matches(isTextMaxLines(3)));
-
-        /* Check title text and visibility. */
         onView(is(viewHolder.mTitleView)).check(matches(allOf(withText("title"), isDisplayed())));
     }
 
     @Test
     @MediumTest
     public void testDescriptionLine1() throws Exception {
-        Locale locale = LocaleUtils.forLanguageTag("en-US");
         AssistantDetailsModel model = new AssistantDetailsModel();
-        AssistantDetailsCoordinator coordinator = createCoordinator(model, locale);
+        AssistantDetailsCoordinator coordinator = createCoordinator(model);
         ViewHolder viewHolder = runOnUiThreadBlocking(() -> new ViewHolder(coordinator.getView()));
 
-        /* Both line 1 and date are set: description line 1 should show line 1. */
-        runOnUiThreadBlocking(
-                ()
-                        -> model.set(AssistantDetailsModel.DETAILS,
-                                new AssistantDetails("title", "image", null, false, "Total", "$12",
-                                        java.util.Calendar.getInstance().getTime(), "line 1",
-                                        "line 2", "line 3", false, false, false, false, false,
-                                        false)));
+        /* Description line 1 is set and should be visible. */
+        runOnUiThreadBlocking(()
+                                      -> model.set(AssistantDetailsModel.DETAILS,
+                                              new AssistantDetails("title", 1, "image", null, false,
+                                                      "", "", "line 1", "", "", "", false, false,
+                                                      false, false, false, false)));
         onView(is(viewHolder.mDescriptionLine1View))
                 .check(matches(allOf(withText("line 1"), isDisplayed())));
 
-        /*
-         * Line 1 is empty, but date is set: description line 1 should show the date & time.
-         * Note: locale was set to en-US, so we know the output format for date and time.
-         */
-        Calendar calendar = java.util.Calendar.getInstance(locale);
-        calendar.set(2050, 6, 25, 10, 05, 00);
+        /* Description line 1 is not set and should be invisible. */
         runOnUiThreadBlocking(
                 ()
                         -> model.set(AssistantDetailsModel.DETAILS,
-                                new AssistantDetails("title", "image", null, false, "Total", "$12",
-                                        calendar.getTime(), "", "line 2", "line 3", false, false,
-                                        false, false, false, false)));
-        onView(is(viewHolder.mDescriptionLine1View))
-                .check(matches(withText(containsString("Mon, Jul 25"))));
-        onView(is(viewHolder.mDescriptionLine1View))
-                .check(matches(withText(containsString("10:05 AM"))));
-
-        /* Line 1 is empty, date is not set: description line 1 should be invisible. */
-        runOnUiThreadBlocking(()
-                                      -> model.set(AssistantDetailsModel.DETAILS,
-                                              new AssistantDetails("title", "image", null, false,
-                                                      "Total", "$12", null, "", "line 2", "line 3",
-                                                      false, false, false, false, false, false)));
+                                new AssistantDetails("title", 1, "image", null, false, "", "", "",
+                                        "", "", "", false, false, false, false, false, false)));
         onView(is(viewHolder.mDescriptionLine1View)).check(matches(not(isDisplayed())));
-    }
-
-    @Test
-    @MediumTest
-    public void testDescriptionLine1NonUSLocale() throws Exception {
-        Locale locale = LocaleUtils.forLanguageTag("de-DE");
-        AssistantDetailsModel model = new AssistantDetailsModel();
-        AssistantDetailsCoordinator coordinator = createCoordinator(model, locale);
-        ViewHolder viewHolder = runOnUiThreadBlocking(() -> new ViewHolder(coordinator.getView()));
-
-        Calendar calendar = java.util.Calendar.getInstance(locale);
-        calendar.set(2050, 6, 25, 10, 05, 00);
-        runOnUiThreadBlocking(
-                ()
-                        -> model.set(AssistantDetailsModel.DETAILS,
-                                new AssistantDetails("title", "image", null, false, "Total", "$12",
-                                        calendar.getTime(), "", "line 2", "line 3", false, false,
-                                        false, false, false, false)));
-        onView(is(viewHolder.mDescriptionLine1View))
-                .check(matches(withText(containsString("Mo., Juli 25"))));
-        onView(is(viewHolder.mDescriptionLine1View))
-                .check(matches(withText(containsString("10:05"))));
     }
 
     @Test
@@ -261,13 +191,11 @@ public class AutofillAssistantDetailsUiTest {
         ViewHolder viewHolder = runOnUiThreadBlocking(() -> new ViewHolder(coordinator.getView()));
 
         /* Description line 2 is set and should be visible. */
-        runOnUiThreadBlocking(
-                ()
-                        -> model.set(AssistantDetailsModel.DETAILS,
-                                new AssistantDetails("title", "image", null, false, "Total", "$12",
-                                        java.util.Calendar.getInstance().getTime(), "line 1",
-                                        "line 2", "line 3", false, false, false, false, false,
-                                        false)));
+        runOnUiThreadBlocking(()
+                                      -> model.set(AssistantDetailsModel.DETAILS,
+                                              new AssistantDetails("title", 1, "image", null, false,
+                                                      "", "", "", "line 2", "", "", false, false,
+                                                      false, false, false, false)));
         onView(is(viewHolder.mDescriptionLine2View))
                 .check(matches(allOf(withText("line 2"), isDisplayed())));
 
@@ -275,9 +203,8 @@ public class AutofillAssistantDetailsUiTest {
         runOnUiThreadBlocking(
                 ()
                         -> model.set(AssistantDetailsModel.DETAILS,
-                                new AssistantDetails("title", "image", null, false, "Total", "$12",
-                                        java.util.Calendar.getInstance().getTime(), "line 1", "",
-                                        "line 3", false, false, false, false, false, false)));
+                                new AssistantDetails("title", 2, "image", null, false, "", "", "",
+                                        "", "", "", false, false, false, false, false, false)));
         onView(is(viewHolder.mDescriptionLine2View)).check(matches(not(isDisplayed())));
     }
 
@@ -288,37 +215,126 @@ public class AutofillAssistantDetailsUiTest {
         AssistantDetailsCoordinator coordinator = createCoordinator(model);
         ViewHolder viewHolder = runOnUiThreadBlocking(() -> new ViewHolder(coordinator.getView()));
 
-        /* No total price set, line 3 should be displayed in the normal spot. */
-        runOnUiThreadBlocking(
-                ()
-                        -> model.set(AssistantDetailsModel.DETAILS,
-                                new AssistantDetails("title", "image", null, false, "", "",
-                                        java.util.Calendar.getInstance().getTime(), "line 1",
-                                        "line 2", "line 3", false, false, false, false, false,
-                                        false)));
+        /* Description line 3 is set and should be visible. */
+        runOnUiThreadBlocking(()
+                                      -> model.set(AssistantDetailsModel.DETAILS,
+                                              new AssistantDetails("title", 1, "image", null, false,
+                                                      "", "", "", "", "line 3", "", false, false,
+                                                      false, false, false, false)));
         onView(is(viewHolder.mDescriptionLine3View))
                 .check(matches(allOf(withText("line 3"), isDisplayed())));
-        onView(is(viewHolder.mPriceAttributionView)).check(matches(not(isDisplayed())));
 
-        /* Total price and line 3 set, line 3 should be displayed in a different view. */
+        /* Description line 3 is not set and should be invisible. */
+        runOnUiThreadBlocking(()
+                                      -> model.set(AssistantDetailsModel.DETAILS,
+                                              new AssistantDetails("title", 1, "image", null, false,
+                                                      "", "", "", "", "", "line 3", false, false,
+                                                      false, false, false, false)));
+        onView(is(viewHolder.mDescriptionLine3View)).check(matches(not(isDisplayed())));
+    }
+
+    @Test
+    @MediumTest
+    public void testPriceAttribution() throws Exception {
+        AssistantDetailsModel model = new AssistantDetailsModel();
+        AssistantDetailsCoordinator coordinator = createCoordinator(model);
+        ViewHolder viewHolder = runOnUiThreadBlocking(() -> new ViewHolder(coordinator.getView()));
+
+        /* Price attribution is set and should be visible. */
         runOnUiThreadBlocking(
                 ()
                         -> model.set(AssistantDetailsModel.DETAILS,
-                                new AssistantDetails("title", "image", null, false, "Total", "$12",
-                                        java.util.Calendar.getInstance().getTime(), "line 1", "",
-                                        "line 3", false, false, false, false, false, false)));
+                                new AssistantDetails("title", 1, "image", null, false, "Total",
+                                        "$12", "", "", "", "price attribution", false, false, false,
+                                        false, false, false)));
         onView(is(viewHolder.mPriceAttributionView))
-                .check(matches(allOf(withText("line 3"), isDisplayed())));
-        onView(is(viewHolder.mDescriptionLine3View)).check(matches(not(isDisplayed())));
+                .check(matches(allOf(withText("price attribution"), isDisplayed())));
 
-        /* Line 3 not set, both views should be invisible. */
+        /* Price attribution is not set and should be invisible. */
         runOnUiThreadBlocking(
                 ()
                         -> model.set(AssistantDetailsModel.DETAILS,
-                                new AssistantDetails("title", "image", null, false, "Total", "$12",
-                                        java.util.Calendar.getInstance().getTime(), "line 1", "",
-                                        "", false, false, false, false, false, false)));
-        onView(is(viewHolder.mDescriptionLine3View)).check(matches(not(isDisplayed())));
+                                new AssistantDetails("title", 2, "image", null, false, "", "", "",
+                                        "", "", "", false, false, false, false, false, false)));
         onView(is(viewHolder.mPriceAttributionView)).check(matches(not(isDisplayed())));
+    }
+
+    @Test
+    @MediumTest
+    public void testHighlighting() throws Exception {
+        AssistantDetailsModel model = new AssistantDetailsModel();
+        AssistantDetailsCoordinator coordinator = createCoordinator(model);
+        ViewHolder viewHolder = runOnUiThreadBlocking(() -> new ViewHolder(coordinator.getView()));
+
+        /* Check that title is highlighted. */
+        runOnUiThreadBlocking(
+                ()
+                        -> model.set(AssistantDetailsModel.DETAILS,
+                                new AssistantDetails("title", 1, "image", null, false, "Total",
+                                        "$12", "line 1", "line 2", "line 3", "Est. total", true,
+                                        true, false, false, false, false)));
+        onView(is(viewHolder.mTitleView)).check(matches(hasTypefaceStyle(Typeface.BOLD_ITALIC)));
+        onView(is(viewHolder.mDescriptionLine1View))
+                .check(matches(not(hasTypefaceStyle(Typeface.BOLD_ITALIC))));
+        onView(is(viewHolder.mDescriptionLine2View))
+                .check(matches(not(hasTypefaceStyle(Typeface.BOLD_ITALIC))));
+        onView(is(viewHolder.mDescriptionLine3View))
+                .check(matches(not(hasTypefaceStyle(Typeface.BOLD_ITALIC))));
+        onView(is(viewHolder.mPriceAttributionView))
+                .check(matches(not(hasTypefaceStyle(Typeface.BOLD_ITALIC))));
+
+        /* Check that description 1 is highlighted. */
+        runOnUiThreadBlocking(
+                ()
+                        -> model.set(AssistantDetailsModel.DETAILS,
+                                new AssistantDetails("title", 1, "image", null, false, "Total",
+                                        "$12", "line 1", "line 2", "line 3", "Est. total", true,
+                                        false, true, false, false, false)));
+        onView(is(viewHolder.mTitleView))
+                .check(matches(not(hasTypefaceStyle(Typeface.BOLD_ITALIC))));
+        onView(is(viewHolder.mDescriptionLine1View))
+                .check(matches(hasTypefaceStyle(Typeface.BOLD_ITALIC)));
+        onView(is(viewHolder.mDescriptionLine2View))
+                .check(matches(not(hasTypefaceStyle(Typeface.BOLD_ITALIC))));
+        onView(is(viewHolder.mDescriptionLine3View))
+                .check(matches(not(hasTypefaceStyle(Typeface.BOLD_ITALIC))));
+        onView(is(viewHolder.mPriceAttributionView))
+                .check(matches(not(hasTypefaceStyle(Typeface.BOLD_ITALIC))));
+
+        /* Check that description 2 is highlighted. */
+        runOnUiThreadBlocking(
+                ()
+                        -> model.set(AssistantDetailsModel.DETAILS,
+                                new AssistantDetails("title", 1, "image", null, false, "Total",
+                                        "$12", "line 1", "line 2", "line 3", "Est. total", true,
+                                        false, false, true, false, false)));
+        onView(is(viewHolder.mTitleView))
+                .check(matches(not(hasTypefaceStyle(Typeface.BOLD_ITALIC))));
+        onView(is(viewHolder.mDescriptionLine1View))
+                .check(matches(not(hasTypefaceStyle(Typeface.BOLD_ITALIC))));
+        onView(is(viewHolder.mDescriptionLine2View))
+                .check(matches(hasTypefaceStyle(Typeface.BOLD_ITALIC)));
+        onView(is(viewHolder.mDescriptionLine3View))
+                .check(matches(not(hasTypefaceStyle(Typeface.BOLD_ITALIC))));
+        onView(is(viewHolder.mPriceAttributionView))
+                .check(matches(not(hasTypefaceStyle(Typeface.BOLD_ITALIC))));
+
+        /* Check that description 3 and price attribution are highlighted. */
+        runOnUiThreadBlocking(
+                ()
+                        -> model.set(AssistantDetailsModel.DETAILS,
+                                new AssistantDetails("title", 1, "image", null, false, "Total",
+                                        "$12", "line 1", "line 2", "line 3", "Est. total", true,
+                                        false, false, false, true, false)));
+        onView(is(viewHolder.mTitleView))
+                .check(matches(not(hasTypefaceStyle(Typeface.BOLD_ITALIC))));
+        onView(is(viewHolder.mDescriptionLine1View))
+                .check(matches(not(hasTypefaceStyle(Typeface.BOLD_ITALIC))));
+        onView(is(viewHolder.mDescriptionLine2View))
+                .check(matches(not(hasTypefaceStyle(Typeface.BOLD_ITALIC))));
+        onView(is(viewHolder.mDescriptionLine3View))
+                .check(matches(hasTypefaceStyle(Typeface.BOLD_ITALIC)));
+        onView(is(viewHolder.mPriceAttributionView))
+                .check(matches(hasTypefaceStyle(Typeface.BOLD_ITALIC)));
     }
 }

@@ -47,7 +47,7 @@ public class CrashReceiverServiceTest {
      */
     @Test
     @MediumTest
-    public void testCopyingAbortsForInvalidFds() throws IOException {
+    public void testCopyingAbortsForInvalidFds() {
         Assert.assertFalse(CrashReceiverService.copyMinidumps(0 /* uid */, null, null));
         Assert.assertFalse(CrashReceiverService.copyMinidumps(
                 0 /* uid */, new ParcelFileDescriptor[] {null, null}, null));

@@ -482,39 +482,6 @@ sync_pb::NigoriKey UnpackExplicitPassphraseKey(const Encryptor& encryptor,
   return key;
 }
 
-std::string ComputePbkdf2KeyName(const std::string& password) {
-  std::string key_name;
-  Nigori::CreateByDerivation(KeyDerivationParams::CreateForPbkdf2(), password)
-      ->Permute(Nigori::Password, kNigoriKeyName, &key_name);
-  return key_name;
-}
-
-sync_pb::CustomPassphraseKeyDerivationParams
-CustomPassphraseKeyDerivationParamsToProto(const KeyDerivationParams& params) {
-  sync_pb::CustomPassphraseKeyDerivationParams output;
-  output.set_custom_passphrase_key_derivation_method(
-      EnumKeyDerivationMethodToProto(params.method()));
-  if (params.method() == KeyDerivationMethod::SCRYPT_8192_8_11) {
-    output.set_custom_passphrase_key_derivation_salt(params.scrypt_salt());
-  }
-  return output;
-}
-
-KeyDerivationParams CustomPassphraseKeyDerivationParamsFromProto(
-    const sync_pb::CustomPassphraseKeyDerivationParams& proto) {
-  switch (ProtoKeyDerivationMethodToEnum(
-      proto.custom_passphrase_key_derivation_method())) {
-    case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
-      return KeyDerivationParams::CreateForPbkdf2();
-    case KeyDerivationMethod::SCRYPT_8192_8_11:
-      return KeyDerivationParams::CreateForScrypt(
-          proto.custom_passphrase_key_derivation_salt());
-    case KeyDerivationMethod::UNSUPPORTED:
-      NOTREACHED();
-      return KeyDerivationParams::CreateWithUnsupportedMethod();
-  }
-}
-
 ModelTypeSet GetEncryptedTypes(bool encrypt_everything) {
   if (encrypt_everything) {
     return EncryptableUserTypes();
@@ -536,10 +503,7 @@ NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
       random_salt_generator_(random_salt_generator),
       explicit_passphrase_key_(
           UnpackExplicitPassphraseKey(*encryptor,
-                                      packed_explicit_passphrase_key)),
-      cryptographer_(CryptographerImpl::CreateEmpty()),
-      passphrase_type_(NigoriSpecifics::UNKNOWN),
-      encrypt_everything_(false) {
+                                      packed_explicit_passphrase_key)) {
   DCHECK(encryptor);
 
   // TODO(crbug.com/922900): we currently don't verify |deserialized_data|.
@@ -558,46 +522,9 @@ NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
     return;
   }
 
-  // TODO(crbug.com/922900): consider factoring-out model state to a struct and
-  // introducing helper function for deserialization instead of having it in
-  // ctor.
-  // Restore state of the bridge.
-  const sync_pb::NigoriModel& nigori_model = deserialized_data->nigori_model();
-
-  // Restore |cryptographer_|.
-  cryptographer_ =
-      CryptographerImpl::FromProto(nigori_model.cryptographer_data());
-
-  if (nigori_model.has_pending_keys()) {
-    pending_keys_ = nigori_model.pending_keys();
-  }
-
-  if (!cryptographer_ ||
-      (pending_keys_ && cryptographer_->CanDecrypt(*pending_keys_)) ||
-      (pending_keys_ &&
-       !cryptographer_->GetDefaultEncryptionKeyName().empty())) {
-    // We either have no Nigori node stored locally or it was corrupted.
-    cryptographer_ = CryptographerImpl::CreateEmpty();
-    pending_keys_.reset();
-    processor_->ModelReadyToSync(this, NigoriMetadataBatch());
-    return;
-  }
-
-  // Restore rest of the state.
-  passphrase_type_ = nigori_model.passphrase_type();
-  keystore_migration_time_ =
-      ProtoTimeToTime(nigori_model.keystore_migration_time());
-  custom_passphrase_time_ =
-      ProtoTimeToTime(nigori_model.custom_passphrase_time());
-  if (nigori_model.has_custom_passphrase_key_derivation_params()) {
-    custom_passphrase_key_derivation_params_ =
-        CustomPassphraseKeyDerivationParamsFromProto(
-            nigori_model.custom_passphrase_key_derivation_params());
-  }
-  encrypt_everything_ = nigori_model.encrypt_everything();
-  for (int i = 0; i < nigori_model.keystore_key_size(); ++i) {
-    keystore_keys_.push_back(nigori_model.keystore_key(i));
-  }
+  // Restore data.
+  state_ =
+      syncer::NigoriState::CreateFromProto(deserialized_data->nigori_model());
 
   // Restore metadata.
   NigoriMetadataBatch metadata_batch;
@@ -627,26 +554,27 @@ bool NigoriSyncBridgeImpl::Init() {
   // completeness of first sync cycle (which happens before Init() call).
   // TODO(crbug.com/922900): try to avoid double notification (second one can
   // happen during UpdateLocalState() call).
-  if (pending_keys_) {
+  if (state_.pending_keys.has_value()) {
     for (auto& observer : observers_) {
       observer.OnPassphraseRequired(REASON_DECRYPTION,
                                     GetKeyDerivationParamsForPendingKeys(),
-                                    *pending_keys_);
+                                    *state_.pending_keys);
     }
   }
   for (auto& observer : observers_) {
-    observer.OnEncryptedTypesChanged(GetEncryptedTypes(encrypt_everything_),
-                                     encrypt_everything_);
+    observer.OnEncryptedTypesChanged(
+        GetEncryptedTypes(state_.encrypt_everything),
+        state_.encrypt_everything);
   }
   for (auto& observer : observers_) {
-    observer.OnCryptographerStateChanged(cryptographer_.get(),
-                                         pending_keys_.has_value());
+    observer.OnCryptographerStateChanged(state_.cryptographer.get(),
+                                         state_.pending_keys.has_value());
   }
-  if (passphrase_type_ != NigoriSpecifics::UNKNOWN) {
-    // if |passphrase_type_| is unknown, it is not yet initialized and we
+  if (state_.passphrase_type != NigoriSpecifics::UNKNOWN) {
+    // if |passphrase_type| is unknown, it is not yet initialized and we
     // shouldn't expose it.
     PassphraseType enum_passphrase_type =
-        *ProtoPassphraseInt32ToEnum(passphrase_type_);
+        *ProtoPassphraseInt32ToEnum(state_.passphrase_type);
     for (auto& observer : observers_) {
       observer.OnPassphraseTypeChanged(enum_passphrase_type,
                                        GetExplicitPassphraseTime());
@@ -654,17 +582,17 @@ bool NigoriSyncBridgeImpl::Init() {
     UMA_HISTOGRAM_ENUMERATION("Sync.PassphraseType", enum_passphrase_type);
   }
   UMA_HISTOGRAM_BOOLEAN("Sync.CryptographerReady",
-                        cryptographer_->CanEncrypt());
+                        state_.cryptographer->CanEncrypt());
   UMA_HISTOGRAM_BOOLEAN("Sync.CryptographerPendingKeys",
-                        pending_keys_.has_value());
-  if (pending_keys_ &&
-      passphrase_type_ == NigoriSpecifics::KEYSTORE_PASSPHRASE) {
+                        state_.pending_keys.has_value());
+  if (state_.pending_keys.has_value() &&
+      state_.passphrase_type == NigoriSpecifics::KEYSTORE_PASSPHRASE) {
     // If this is happening, it means the keystore decryptor is either
     // undecryptable with the available keystore keys or does not match the
     // nigori keybag's encryption key. Otherwise we're simply missing the
     // keystore key.
     UMA_HISTOGRAM_BOOLEAN("Sync.KeystoreDecryptionFailed",
-                          !keystore_keys_.empty());
+                          !state_.keystore_keys.empty());
   }
   return true;
 }
@@ -672,7 +600,7 @@ bool NigoriSyncBridgeImpl::Init() {
 void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
     const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  switch (passphrase_type_) {
+  switch (state_.passphrase_type) {
     case NigoriSpecifics::IMPLICIT_PASSPHRASE:
     case NigoriSpecifics::UNKNOWN:
       NOTREACHED();
@@ -691,25 +619,25 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
     case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
       break;
   }
-  DCHECK(cryptographer_->CanEncrypt());
+  DCHECK(state_.cryptographer->CanEncrypt());
 
   const KeyDerivationParams custom_passphrase_key_derivation_params =
       CreateKeyDerivationParamsForCustomPassphrase(random_salt_generator_);
 
-  const std::string default_key_name = cryptographer_->EmplaceKey(
+  const std::string default_key_name = state_.cryptographer->EmplaceKey(
       passphrase, custom_passphrase_key_derivation_params);
   if (default_key_name.empty()) {
     DLOG(ERROR) << "Failed to set encryption passphrase";
     return;
   }
 
-  cryptographer_->SelectDefaultEncryptionKey(default_key_name);
-  passphrase_type_ = NigoriSpecifics::CUSTOM_PASSPHRASE;
-  custom_passphrase_key_derivation_params_ =
+  state_.cryptographer->SelectDefaultEncryptionKey(default_key_name);
+  state_.passphrase_type = NigoriSpecifics::CUSTOM_PASSPHRASE;
+  state_.custom_passphrase_key_derivation_params =
       custom_passphrase_key_derivation_params;
 
-  encrypt_everything_ = true;
-  custom_passphrase_time_ = base::Time::Now();
+  state_.encrypt_everything = true;
+  state_.custom_passphrase_time = base::Time::Now();
   processor_->Put(GetData());
   storage_->StoreData(SerializeAsNigoriLocalData());
   for (auto& observer : observers_) {
@@ -717,15 +645,15 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
   }
   for (auto& observer : observers_) {
     observer.OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase,
-                                     custom_passphrase_time_);
+                                     state_.custom_passphrase_time);
   }
   for (auto& observer : observers_) {
-    observer.OnCryptographerStateChanged(cryptographer_.get(),
-                                         pending_keys_.has_value());
+    observer.OnCryptographerStateChanged(state_.cryptographer.get(),
+                                         state_.pending_keys.has_value());
   }
   for (auto& observer : observers_) {
     observer.OnEncryptedTypesChanged(EncryptableUserTypes(),
-                                     encrypt_everything_);
+                                     state_.encrypt_everything);
   }
   MaybeNotifyBootstrapTokenUpdated();
   UMA_HISTOGRAM_BOOLEAN("Sync.CustomEncryption", true);
@@ -739,9 +667,9 @@ void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
   // |passphrase| should be a valid one already (verified by SyncServiceCrypto,
   // using pending keys exposed by OnPassphraseRequired()).
   DCHECK(!passphrase.empty());
-  DCHECK(pending_keys_);
+  DCHECK(state_.pending_keys);
 
-  const std::string new_key_name = cryptographer_->EmplaceKey(
+  const std::string new_key_name = state_.cryptographer->EmplaceKey(
       passphrase, GetKeyDerivationParamsForPendingKeys());
   if (new_key_name.empty()) {
     processor_->ReportError(ModelError(
@@ -750,7 +678,8 @@ void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
   }
 
   sync_pb::NigoriKeyBag decrypted_pending_keys;
-  if (!cryptographer_->Decrypt(*pending_keys_, &decrypted_pending_keys)) {
+  if (!state_.cryptographer->Decrypt(*state_.pending_keys,
+                                     &decrypted_pending_keys)) {
     // TODO(crbug.com/922900): old implementation assumes that pending keys
     // encryption key may change in between of OnPassphraseRequired() and
     // SetDecryptionPassphrase() calls, verify whether it's really possible.
@@ -762,15 +691,15 @@ void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
     return;
   }
 
-  cryptographer_->EmplaceKeysFrom(
+  state_.cryptographer->EmplaceKeysFrom(
       NigoriKeyBag::CreateFromProto(decrypted_pending_keys));
-  cryptographer_->SelectDefaultEncryptionKey(new_key_name);
-  pending_keys_.reset();
+  state_.cryptographer->SelectDefaultEncryptionKey(new_key_name);
+  state_.pending_keys.reset();
 
   storage_->StoreData(SerializeAsNigoriLocalData());
   for (auto& observer : observers_) {
-    observer.OnCryptographerStateChanged(cryptographer_.get(),
-                                         pending_keys_.has_value());
+    observer.OnCryptographerStateChanged(state_.cryptographer.get(),
+                                         state_.pending_keys.has_value());
   }
   for (auto& observer : observers_) {
     observer.OnPassphraseAccepted();
@@ -795,8 +724,7 @@ bool NigoriSyncBridgeImpl::IsEncryptEverythingEnabled() const {
 
 base::Time NigoriSyncBridgeImpl::GetKeystoreMigrationTime() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
-  return base::Time();
+  return state_.keystore_migration_time;
 }
 
 KeystoreKeysHandler* NigoriSyncBridgeImpl::GetKeystoreKeysHandler() {
@@ -811,7 +739,7 @@ bool NigoriSyncBridgeImpl::NeedKeystoreKey() const {
   // server responsibility to send updated keystore keys. |keystore_keys_| is
   // expected to be non-empty before MergeSyncData() call, regardless of
   // passphrase type.
-  return keystore_keys_.empty();
+  return state_.keystore_keys.empty();
 }
 
 bool NigoriSyncBridgeImpl::SetKeystoreKeys(
@@ -821,13 +749,13 @@ bool NigoriSyncBridgeImpl::SetKeystoreKeys(
     return false;
   }
 
-  keystore_keys_.resize(keys.size());
+  state_.keystore_keys.resize(keys.size());
   for (size_t i = 0; i < keys.size(); ++i) {
     // We need to apply base64 encoding before using the keys to provide
     // backward compatibility with non-USS implementation. It's actually needed
     // only for the keys persisting, but was applied before passing keys to
     // cryptographer, so we have to do the same.
-    base::Base64Encode(keys[i], &keystore_keys_[i]);
+    base::Base64Encode(keys[i], &state_.keystore_keys[i]);
   }
 
   // Note: we don't need to persist keystore keys here, because we will receive
@@ -858,11 +786,11 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::MergeSyncData(
                       "sync of Nigori.");
   }
   DCHECK(data->specifics.has_nigori());
-  // Ensure we have |keystore_keys_| during the initial download, requested to
+  // Ensure we have |keystore_keys| during the initial download, requested to
   // the server as per NeedKeystoreKey(), and required for decrypting the
   // keystore_decryptor_token in specifics or initializing the default keystore
   // Nigori.
-  if (keystore_keys_.empty()) {
+  if (state_.keystore_keys.empty()) {
     // TODO(crbug.com/922900): verify, whether it's a valid behavior for custom
     // passphrase.
     return ModelError(FROM_HERE,
@@ -875,7 +803,7 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::MergeSyncData(
   // We received uninitialized Nigori and need to initialize it as default
   // keystore Nigori.
   base::Optional<NigoriSpecifics> initialized_specifics =
-      MakeDefaultKeystoreNigori(keystore_keys_);
+      MakeDefaultKeystoreNigori(state_.keystore_keys);
   if (!initialized_specifics) {
     return ModelError(FROM_HERE, "Failed to initialize keystore Nigori.");
   }
@@ -887,7 +815,7 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::MergeSyncData(
 base::Optional<ModelError> NigoriSyncBridgeImpl::ApplySyncChanges(
     base::Optional<EntityData> data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(passphrase_type_, NigoriSpecifics::UNKNOWN);
+  DCHECK_NE(state_.passphrase_type, NigoriSpecifics::UNKNOWN);
   if (!data) {
     // Receiving empty |data| means metadata-only change, we need to persist
     // its state.
@@ -909,33 +837,34 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
   DCHECK_NE(new_passphrase_type, NigoriSpecifics::UNKNOWN);
 
   if (!IsValidPassphraseTransition(
-          /*old_passphrase_type=*/passphrase_type_, new_passphrase_type)) {
+          /*old_passphrase_type=*/state_.passphrase_type,
+          new_passphrase_type)) {
     return ModelError(FROM_HERE, "Invalid passphrase type transition.");
   }
-  if (!IsValidEncryptedTypesTransition(encrypt_everything_, specifics)) {
+  if (!IsValidEncryptedTypesTransition(state_.encrypt_everything, specifics)) {
     return ModelError(FROM_HERE, "Invalid encrypted types transition.");
   }
 
   const bool passphrase_type_changed =
-      UpdatePassphraseType(new_passphrase_type, &passphrase_type_);
-  DCHECK_NE(passphrase_type_, NigoriSpecifics::UNKNOWN);
+      UpdatePassphraseType(new_passphrase_type, &state_.passphrase_type);
+  DCHECK_NE(state_.passphrase_type, NigoriSpecifics::UNKNOWN);
 
   const bool encrypted_types_changed =
-      UpdateEncryptedTypes(specifics, &encrypt_everything_);
+      UpdateEncryptedTypes(specifics, &state_.encrypt_everything);
 
   if (specifics.has_custom_passphrase_time()) {
-    custom_passphrase_time_ =
+    state_.custom_passphrase_time =
         ProtoTimeToTime(specifics.custom_passphrase_time());
   }
   if (specifics.has_keystore_migration_time()) {
-    keystore_migration_time_ =
+    state_.keystore_migration_time =
         ProtoTimeToTime(specifics.keystore_migration_time());
   }
 
-  DCHECK(!keystore_keys_.empty());
+  DCHECK(!state_.keystore_keys.empty());
   const sync_pb::EncryptedData& encryption_keybag =
       specifics.encryption_keybag();
-  switch (passphrase_type_) {
+  switch (state_.passphrase_type) {
     case NigoriSpecifics::UNKNOWN:
     case NigoriSpecifics::IMPLICIT_PASSPHRASE:
       // NigoriSpecifics with UNKNOWN or IMPLICIT_PASSPHRASE type is not valid
@@ -952,7 +881,7 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
       break;
     }
     case NigoriSpecifics::CUSTOM_PASSPHRASE:
-      custom_passphrase_key_derivation_params_ =
+      state_.custom_passphrase_key_derivation_params =
           GetKeyDerivationParamsFromSpecifics(specifics);
       FALLTHROUGH;
     case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
@@ -964,30 +893,30 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
   if (passphrase_type_changed) {
     for (auto& observer : observers_) {
       observer.OnPassphraseTypeChanged(
-          *ProtoPassphraseInt32ToEnum(passphrase_type_),
+          *ProtoPassphraseInt32ToEnum(state_.passphrase_type),
           GetExplicitPassphraseTime());
     }
   }
   if (encrypted_types_changed) {
     // Currently the only way to change encrypted types is to enable
     // encrypt_everything.
-    DCHECK(encrypt_everything_);
+    DCHECK(state_.encrypt_everything);
     for (auto& observer : observers_) {
       observer.OnEncryptedTypesChanged(EncryptableUserTypes(),
-                                       encrypt_everything_);
+                                       state_.encrypt_everything);
     }
   }
   for (auto& observer : observers_) {
-    observer.OnCryptographerStateChanged(cryptographer_.get(),
-                                         pending_keys_.has_value());
+    observer.OnCryptographerStateChanged(state_.cryptographer.get(),
+                                         state_.pending_keys.has_value());
   }
-  if (pending_keys_) {
+  if (state_.pending_keys.has_value()) {
     // Update with keystore Nigori shouldn't reach this point, since it should
     // report model error if it has pending keys.
     for (auto& observer : observers_) {
       observer.OnPassphraseRequired(REASON_DECRYPTION,
                                     GetKeyDerivationParamsForPendingKeys(),
-                                    *pending_keys_);
+                                    *state_.pending_keys);
     }
   }
   return base::nullopt;
@@ -1000,17 +929,18 @@ NigoriSyncBridgeImpl::UpdateCryptographerFromKeystoreNigori(
   DCHECK(!encryption_keybag.blob().empty());
   DCHECK(!keystore_decryptor_token.blob().empty());
 
-  cryptographer_->EmplaceKeysFrom(
-      DecryptKeystoreDecryptorToken(keystore_keys_, keystore_decryptor_token));
+  state_.cryptographer->EmplaceKeysFrom(DecryptKeystoreDecryptorToken(
+      state_.keystore_keys, keystore_decryptor_token));
 
   sync_pb::NigoriKeyBag key_bag;
-  if (!cryptographer_->Decrypt(encryption_keybag, &key_bag)) {
+  if (!state_.cryptographer->Decrypt(encryption_keybag, &key_bag)) {
     return ModelError(FROM_HERE, "Failed to decrypt incoming keystore nigori.");
   }
 
-  cryptographer_->EmplaceKeysFrom(NigoriKeyBag::CreateFromProto(key_bag));
-  pending_keys_.reset();
-  cryptographer_->SelectDefaultEncryptionKey(encryption_keybag.key_name());
+  state_.cryptographer->EmplaceKeysFrom(NigoriKeyBag::CreateFromProto(key_bag));
+  state_.pending_keys.reset();
+  state_.cryptographer->SelectDefaultEncryptionKey(
+      encryption_keybag.key_name());
   return base::nullopt;
 }
 
@@ -1019,20 +949,20 @@ void NigoriSyncBridgeImpl::UpdateCryptographerFromNonKeystoreNigori(
   // TODO(crbug.com/922900): support the case when client knows passphrase.
   NOTIMPLEMENTED();
   DCHECK(!encryption_keybag.blob().empty());
-  if (!cryptographer_->CanDecrypt(encryption_keybag)) {
+  if (!state_.cryptographer->CanDecrypt(encryption_keybag)) {
     // Historically, prior to USS, key derived from explicit passphrase was
     // stored in prefs and effectively we do migration here.
     NigoriKeyBag key_bag = NigoriKeyBag::CreateEmpty();
     const std::string key_name =
         key_bag.AddKeyFromProto(explicit_passphrase_key_);
     if (key_bag.CanDecrypt(encryption_keybag)) {
-      cryptographer_->EmplaceKeysFrom(key_bag);
-      DCHECK(cryptographer_->CanDecrypt(encryption_keybag));
-      cryptographer_->SelectDefaultEncryptionKey(key_name);
+      state_.cryptographer->EmplaceKeysFrom(key_bag);
+      DCHECK(state_.cryptographer->CanDecrypt(encryption_keybag));
+      state_.cryptographer->SelectDefaultEncryptionKey(key_name);
     } else {
       // This will lead to OnPassphraseRequired() call later.
-      pending_keys_ = encryption_keybag;
-      cryptographer_->ClearDefaultEncryptionKey();
+      state_.pending_keys = encryption_keybag;
+      state_.cryptographer->ClearDefaultEncryptionKey();
       return;
     }
   }
@@ -1045,42 +975,58 @@ void NigoriSyncBridgeImpl::UpdateCryptographerFromNonKeystoreNigori(
   // TODO(crbug.com/922900): we may also need to rewrite Nigori with keys
   // currently stored in cryptographer, in case it doesn't have them already.
   sync_pb::NigoriKeyBag key_bag;
-  cryptographer_->Decrypt(encryption_keybag, &key_bag);
-  cryptographer_->EmplaceKeysFrom(NigoriKeyBag::CreateFromProto(key_bag));
+  state_.cryptographer->Decrypt(encryption_keybag, &key_bag);
+  state_.cryptographer->EmplaceKeysFrom(NigoriKeyBag::CreateFromProto(key_bag));
 }
 
 std::unique_ptr<EntityData> NigoriSyncBridgeImpl::GetData() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(cryptographer_->CanEncrypt());
-  DCHECK_NE(passphrase_type_, NigoriSpecifics::UNKNOWN);
+  if (state_.passphrase_type == NigoriSpecifics::UNKNOWN) {
+    // Bridge never received NigoriSpecifics from the server. This line should
+    // be reachable only from processor's GetAllNodesForDebugging().
+    DCHECK(!state_.cryptographer->CanEncrypt());
+    DCHECK(!state_.pending_keys.has_value());
+    return nullptr;
+  }
 
   NigoriSpecifics specifics;
-  EncryptKeyBag(*cryptographer_, specifics.mutable_encryption_keybag());
+  if (state_.cryptographer->CanEncrypt()) {
+    EncryptKeyBag(*state_.cryptographer, specifics.mutable_encryption_keybag());
+  } else {
+    DCHECK(state_.pending_keys.has_value());
+    // This case is reachable only from processor's GetAllNodesForDebugging(),
+    // since currently commit is never issued while bridge has |pending_keys_|.
+    // Note: with complete support of TRUSTED_VAULT mode, commit might be
+    // issued in this case as well.
+    *specifics.mutable_encryption_keybag() = *state_.pending_keys;
+  }
   specifics.set_keybag_is_frozen(true);
-  specifics.set_encrypt_everything(encrypt_everything_);
-  if (encrypt_everything_) {
+  specifics.set_encrypt_everything(state_.encrypt_everything);
+  if (state_.encrypt_everything) {
     UpdateNigoriSpecificsFromEncryptedTypes(EncryptableUserTypes(), &specifics);
   }
-  specifics.set_passphrase_type(passphrase_type_);
-  if (passphrase_type_ == NigoriSpecifics::CUSTOM_PASSPHRASE) {
-    DCHECK(custom_passphrase_key_derivation_params_);
+  specifics.set_passphrase_type(state_.passphrase_type);
+  if (state_.passphrase_type == NigoriSpecifics::CUSTOM_PASSPHRASE) {
+    DCHECK(state_.custom_passphrase_key_derivation_params);
     UpdateSpecificsFromKeyDerivationParams(
-        *custom_passphrase_key_derivation_params_, &specifics);
+        *state_.custom_passphrase_key_derivation_params, &specifics);
   }
-  if (passphrase_type_ == NigoriSpecifics::KEYSTORE_PASSPHRASE) {
-    EncryptKeystoreDecryptorToken(*cryptographer_,
+  if (state_.passphrase_type == NigoriSpecifics::KEYSTORE_PASSPHRASE) {
+    EncryptKeystoreDecryptorToken(*state_.cryptographer,
                                   specifics.mutable_keystore_decryptor_token());
   }
-  if (!keystore_migration_time_.is_null()) {
+  if (!state_.keystore_migration_time.is_null()) {
     specifics.set_keystore_migration_time(
-        TimeToProtoTime(keystore_migration_time_));
+        TimeToProtoTime(state_.keystore_migration_time));
   }
-  if (!custom_passphrase_time_.is_null()) {
+  if (!state_.custom_passphrase_time.is_null()) {
     specifics.set_custom_passphrase_time(
-        TimeToProtoTime(custom_passphrase_time_));
+        TimeToProtoTime(state_.custom_passphrase_time));
   }
   // TODO(crbug.com/922900): add other fields support.
   NOTIMPLEMENTED();
+  DCHECK(IsValidNigoriSpecifics(specifics));
+
   auto entity_data = std::make_unique<EntityData>();
   *entity_data->specifics.mutable_nigori() = std::move(specifics);
   entity_data->name = kNigoriNonUniqueName;
@@ -1108,16 +1054,16 @@ void NigoriSyncBridgeImpl::ApplyDisableSyncChanges() {
   // |explicit_passphrase_key_| will become not working, once we clean up
   // storing explicit passphrase key in prefs, we need to find better solution.
   storage_->ClearData();
-  keystore_keys_.clear();
-  cryptographer_ = CryptographerImpl::CreateEmpty();
-  pending_keys_.reset();
-  passphrase_type_ = NigoriSpecifics::UNKNOWN;
-  encrypt_everything_ = false;
-  custom_passphrase_time_ = base::Time();
-  keystore_migration_time_ = base::Time();
-  custom_passphrase_key_derivation_params_ = base::nullopt;
+  state_.keystore_keys.clear();
+  state_.cryptographer = CryptographerImpl::CreateEmpty();
+  state_.pending_keys.reset();
+  state_.passphrase_type = NigoriSpecifics::UNKNOWN;
+  state_.encrypt_everything = false;
+  state_.custom_passphrase_time = base::Time();
+  state_.keystore_migration_time = base::Time();
+  state_.custom_passphrase_key_derivation_params = base::nullopt;
   for (auto& observer : observers_) {
-    observer.OnCryptographerStateChanged(cryptographer_.get(),
+    observer.OnCryptographerStateChanged(state_.cryptographer.get(),
                                          /*has_pending_keys=*/false);
   }
   for (auto& observer : observers_) {
@@ -1126,20 +1072,20 @@ void NigoriSyncBridgeImpl::ApplyDisableSyncChanges() {
 }
 
 const Cryptographer& NigoriSyncBridgeImpl::GetCryptographerForTesting() const {
-  return *cryptographer_;
+  return *state_.cryptographer;
 }
 
 sync_pb::NigoriSpecifics::PassphraseType
 NigoriSyncBridgeImpl::GetPassphraseTypeForTesting() const {
-  return passphrase_type_;
+  return state_.passphrase_type;
 }
 
 ModelTypeSet NigoriSyncBridgeImpl::GetEncryptedTypesForTesting() const {
-  return GetEncryptedTypes(encrypt_everything_);
+  return GetEncryptedTypes(state_.encrypt_everything);
 }
 
 bool NigoriSyncBridgeImpl::HasPendingKeysForTesting() const {
-  return pending_keys_.has_value();
+  return state_.pending_keys.has_value();
 }
 
 std::string NigoriSyncBridgeImpl::PackExplicitPassphraseKeyForTesting(
@@ -1149,7 +1095,7 @@ std::string NigoriSyncBridgeImpl::PackExplicitPassphraseKeyForTesting(
 }
 
 base::Time NigoriSyncBridgeImpl::GetExplicitPassphraseTime() const {
-  switch (passphrase_type_) {
+  switch (state_.passphrase_type) {
     case NigoriSpecifics::IMPLICIT_PASSPHRASE:
       // IMPLICIT_PASSPHRASE type isn't supported and should be never set as
       // |passphrase_type_|;
@@ -1160,17 +1106,17 @@ base::Time NigoriSyncBridgeImpl::GetExplicitPassphraseTime() const {
     case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
       return base::Time();
     case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
-      return keystore_migration_time_;
+      return state_.keystore_migration_time;
     case NigoriSpecifics::CUSTOM_PASSPHRASE:
-      return custom_passphrase_time_;
+      return state_.custom_passphrase_time;
   }
   NOTREACHED();
-  return custom_passphrase_time_;
+  return state_.custom_passphrase_time;
 }
 
 KeyDerivationParams NigoriSyncBridgeImpl::GetKeyDerivationParamsForPendingKeys()
     const {
-  switch (passphrase_type_) {
+  switch (state_.passphrase_type) {
     case NigoriSpecifics::UNKNOWN:
     case NigoriSpecifics::IMPLICIT_PASSPHRASE:
     case NigoriSpecifics::KEYSTORE_PASSPHRASE:
@@ -1180,13 +1126,13 @@ KeyDerivationParams NigoriSyncBridgeImpl::GetKeyDerivationParamsForPendingKeys()
     case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
       return KeyDerivationParams::CreateForPbkdf2();
     case NigoriSpecifics::CUSTOM_PASSPHRASE:
-      DCHECK(custom_passphrase_key_derivation_params_);
-      return *custom_passphrase_key_derivation_params_;
+      DCHECK(state_.custom_passphrase_key_derivation_params);
+      return *state_.custom_passphrase_key_derivation_params;
   }
 }
 
 void NigoriSyncBridgeImpl::MaybeNotifyBootstrapTokenUpdated() const {
-  switch (passphrase_type_) {
+  switch (state_.passphrase_type) {
     case NigoriSpecifics::UNKNOWN:
     case NigoriSpecifics::IMPLICIT_PASSPHRASE:
       NOTREACHED();
@@ -1206,7 +1152,7 @@ void NigoriSyncBridgeImpl::MaybeNotifyBootstrapTokenUpdated() const {
       // |packed_custom_passphrase_key| will be empty in case serialization or
       // encryption error occurs.
       std::string packed_custom_passphrase_key =
-          PackExplicitPassphraseKey(*encryptor_, *cryptographer_);
+          PackExplicitPassphraseKey(*encryptor_, *state_.cryptographer);
       if (!packed_custom_passphrase_key.empty()) {
         for (auto& observer : observers_) {
           observer.OnBootstrapTokenUpdated(packed_custom_passphrase_key,
@@ -1228,41 +1174,7 @@ sync_pb::NigoriLocalData NigoriSyncBridgeImpl::SerializeAsNigoriLocalData()
   }
 
   // Serialize the data.
-  sync_pb::NigoriModel* nigori_model = output.mutable_nigori_model();
-  *nigori_model->mutable_cryptographer_data() = cryptographer_->ToProto();
-  if (pending_keys_) {
-    *nigori_model->mutable_pending_keys() = *pending_keys_;
-  }
-  if (!keystore_keys_.empty()) {
-    nigori_model->set_current_keystore_key_name(
-        ComputePbkdf2KeyName(keystore_keys_.back()));
-  }
-  nigori_model->set_passphrase_type(passphrase_type_);
-  if (!keystore_migration_time_.is_null()) {
-    nigori_model->set_keystore_migration_time(
-        TimeToProtoTime(keystore_migration_time_));
-  }
-  if (!custom_passphrase_time_.is_null()) {
-    nigori_model->set_custom_passphrase_time(
-        TimeToProtoTime(custom_passphrase_time_));
-  }
-  if (custom_passphrase_key_derivation_params_) {
-    *nigori_model->mutable_custom_passphrase_key_derivation_params() =
-        CustomPassphraseKeyDerivationParamsToProto(
-            *custom_passphrase_key_derivation_params_);
-  }
-  nigori_model->set_encrypt_everything(encrypt_everything_);
-  for (ModelType model_type : GetEncryptedTypes(encrypt_everything_)) {
-    nigori_model->add_encrypted_types_specifics_field_number(
-        GetSpecificsFieldNumberFromModelType(model_type));
-  }
-  // TODO(crbug.com/970213): we currently store keystore keys in proto only to
-  // allow rollback of USS Nigori. Having keybag with all keystore keys and
-  // |current_keystore_key_name| is enough to support all bridge logic. We
-  // should remove them few milestones after USS migration completed.
-  for (const std::string& keystore_key : keystore_keys_) {
-    nigori_model->add_keystore_key(keystore_key);
-  }
+  *output.mutable_nigori_model() = state_.ToProto();
 
   return output;
 }

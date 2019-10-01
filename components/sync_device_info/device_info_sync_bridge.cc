@@ -34,6 +34,7 @@ using sync_pb::DeviceInfoSpecifics;
 using sync_pb::EntitySpecifics;
 using sync_pb::FeatureSpecificFields;
 using sync_pb::ModelTypeState;
+using sync_pb::SharingSpecificFields;
 
 using Record = ModelTypeStore::Record;
 using RecordList = ModelTypeStore::RecordList;
@@ -54,6 +55,22 @@ Time GetLastUpdateTime(const DeviceInfoSpecifics& specifics) {
   }
 }
 
+base::Optional<DeviceInfo::SharingInfo> SpecificsToSharingInfo(
+    const DeviceInfoSpecifics& specifics) {
+  if (!specifics.has_sharing_fields()) {
+    return base::nullopt;
+  }
+
+  std::set<SharingSpecificFields::EnabledFeatures> enabled_features;
+  for (int i = 0; i < specifics.sharing_fields().enabled_features_size(); ++i) {
+    enabled_features.insert(specifics.sharing_fields().enabled_features(i));
+  }
+  return DeviceInfo::SharingInfo(specifics.sharing_fields().fcm_token(),
+                                 specifics.sharing_fields().p256dh(),
+                                 specifics.sharing_fields().auth_secret(),
+                                 std::move(enabled_features));
+}
+
 // Converts DeviceInfoSpecifics into a freshly allocated DeviceInfo.
 std::unique_ptr<DeviceInfo> SpecificsToModel(
     const DeviceInfoSpecifics& specifics) {
@@ -62,7 +79,8 @@ std::unique_ptr<DeviceInfo> SpecificsToModel(
       specifics.chrome_version(), specifics.sync_user_agent(),
       specifics.device_type(), specifics.signin_scoped_device_id(),
       ProtoTimeToTime(specifics.last_updated_timestamp()),
-      specifics.feature_fields().send_tab_to_self_receiving_enabled());
+      specifics.feature_fields().send_tab_to_self_receiving_enabled(),
+      SpecificsToSharingInfo(specifics));
 }
 
 // Allocate a EntityData and copies |specifics| into it.
@@ -92,6 +110,19 @@ std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
   FeatureSpecificFields* feature_fields = specifics->mutable_feature_fields();
   feature_fields->set_send_tab_to_self_receiving_enabled(
       info.send_tab_to_self_receiving_enabled());
+
+  const base::Optional<DeviceInfo::SharingInfo>& sharing_info =
+      info.sharing_info();
+  if (sharing_info) {
+    SharingSpecificFields* sharing_fields = specifics->mutable_sharing_fields();
+    sharing_fields->set_fcm_token(sharing_info->fcm_token);
+    sharing_fields->set_p256dh(sharing_info->p256dh);
+    sharing_fields->set_auth_secret(sharing_info->auth_secret);
+    for (sync_pb::SharingSpecificFields::EnabledFeatures feature :
+         sharing_info->enabled_features) {
+      sharing_fields->add_enabled_features(feature);
+    }
+  }
 
   return specifics;
 }

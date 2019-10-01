@@ -287,8 +287,7 @@
   if (!(self.infobarBannerState ==
         InfobarBannerPresentationState::NotPresented) ||
       (!self.baseViewController.view.window)) {
-    if (![self.infobarCoordinatorsToPresent containsObject:infobarCoordinator])
-      [self.infobarCoordinatorsToPresent addObject:infobarCoordinator];
+    [self queueInfobarCoordinatorForPresentation:infobarCoordinator];
     return;
   }
 
@@ -300,9 +299,12 @@
   // Dismisses the presented InfobarCoordinator banner after
   // kInfobarBannerPresentationDurationInSeconds seconds.
   if (!UIAccessibilityIsVoiceOverRunning()) {
-    dispatch_time_t popTime = dispatch_time(
-        DISPATCH_TIME_NOW,
-        kInfobarBannerPresentationDurationInSeconds * NSEC_PER_SEC);
+    NSTimeInterval timeInterval =
+        infobarCoordinator.highPriorityPresentation
+            ? kInfobarBannerLongPresentationDurationInSeconds
+            : kInfobarBannerDefaultPresentationDurationInSeconds;
+    dispatch_time_t popTime =
+        dispatch_time(DISPATCH_TIME_NOW, timeInterval * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
       [infobarCoordinator dismissInfobarBannerAfterInteraction];
     });
@@ -320,6 +322,19 @@
     }
   }
   return nil;
+}
+
+// Queues an InfobarBanner for presentation. If it has already been queued it
+// won't be added again.
+- (void)queueInfobarCoordinatorForPresentation:
+    (InfobarCoordinator*)coordinator {
+  if (![self.infobarCoordinatorsToPresent containsObject:coordinator]) {
+    if (coordinator.highPriorityPresentation) {
+      [self.infobarCoordinatorsToPresent insertObject:coordinator atIndex:0];
+    } else {
+      [self.infobarCoordinatorsToPresent addObject:coordinator];
+    }
+  }
 }
 
 @end

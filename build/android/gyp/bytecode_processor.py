@@ -37,11 +37,6 @@ def main(argv):
   _AddSwitch(parser, '--enable-thread-annotations')
   _AddSwitch(parser, '--enable-check-class-path')
   parser.add_argument('--enable-class-deps-output', default='')
-  parser.add_argument(
-      '--split-compat-class-names',
-      action='append',
-      default=[],
-      help='Names of classes that need to be made SplitCompat-enabled.')
   args = parser.parse_args(argv)
 
   sdk_jars = build_utils.ParseGnList(args.sdk_classpath_jars)
@@ -54,9 +49,6 @@ def main(argv):
   for a in args.extra_jars:
     extra_classpath_jars.extend(build_utils.ParseGnList(a))
 
-  split_compat_class_names = build_utils.ParseGnList(
-      args.split_compat_class_names)
-
   if args.verbose:
     verbose = '--verbose'
   else:
@@ -68,9 +60,7 @@ def main(argv):
       args.enable_thread_annotations, args.enable_check_class_path,
       args.enable_class_deps_output,
       str(len(sdk_jars))
-  ] + sdk_jars + [str(len(direct_jars))] + direct_jars + [
-      str(len(split_compat_class_names))
-  ] + split_compat_class_names + extra_classpath_jars)
+  ] + sdk_jars + [str(len(direct_jars))] + direct_jars + extra_classpath_jars)
   subprocess.check_call(cmd)
 
 

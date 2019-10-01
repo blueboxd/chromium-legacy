@@ -4066,6 +4066,15 @@
   "DeviceLoginScreenMonoAudioEnabled" : {
   },
 
+  "DeviceLoginScreenAutoclickEnabled" : {
+  },
+
+  "DeviceLoginScreenStickyKeysEnabled" : {
+  },
+
+  "DeviceLoginScreenKeyboardFocusHighlightEnabled" : {
+  },
+
   "DeviceLoginScreenLocales" : {
   },
 

@@ -49,7 +49,7 @@ public class PartnerHomepageUnitTest {
     private HomepageManager mHomepageManager;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mHomepageManager = HomepageManager.getInstance();
         RecordHistogram.setDisabledForTests(true);
         Assert.assertNotNull(mHomepageManager);
@@ -60,7 +60,7 @@ public class PartnerHomepageUnitTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         RecordHistogram.setDisabledForTests(false);
     }
 

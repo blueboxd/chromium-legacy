@@ -13,9 +13,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/test/test_simple_task_runner.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chrome/browser/chromeos/android_sms/fake_android_sms_app_setup_controller.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
@@ -72,7 +72,8 @@ class AndroidSmsAppManagerImplTest : public testing::Test {
     }
 
     // AndroidSmsAppManagerImpl::PwaDelegate:
-    content::WebContents* OpenApp(const AppLaunchParams& params) override {
+    content::WebContents* OpenApp(Profile*, const apps::AppLaunchParams& params)
+        override {
       opened_app_ids_.push_back(params.app_id);
       return nullptr;
     }

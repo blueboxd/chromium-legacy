@@ -42,7 +42,7 @@ async_test((t) => {
     let commit_promise = setVisible(container);
     await commit_promise;
 
-    t.step(() => assert_false(container.displayLock.locked, "context after commit & activation is unlocked"));
+    t.step(() => assert_equals(container.renderSubtree, "", "context after commit & activation is unlocked"));
     t.done();
   }
 

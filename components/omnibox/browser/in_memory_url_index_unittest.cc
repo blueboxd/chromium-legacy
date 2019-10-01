@@ -488,7 +488,7 @@ TEST_F(InMemoryURLIndexTest, HiddenURLRowsAreIgnored) {
               .size());
 }
 
-TEST_F(InMemoryURLIndexTest, Retrieval) {
+TEST_F(InMemoryURLIndexTest, DISABLED_Retrieval) {
   // See if a very specific term gives a single result.
   ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("DrudgeReport"), base::string16::npos, kProviderMaxMatches);
@@ -956,7 +956,7 @@ TEST_F(InMemoryURLIndexTest, TypedCharacterCaching) {
   CheckTerm(cache, ASCIIToUTF16("rec"));
 }
 
-TEST_F(InMemoryURLIndexTest, AddNewRows) {
+TEST_F(InMemoryURLIndexTest, DISABLED_AddNewRows) {
   // Verify that the row we're going to add does not already exist.
   history::URLID new_row_id = 87654321;
   // Newly created history::URLRows get a last_visit time of 'right now' so it
@@ -1158,7 +1158,7 @@ TEST_F(InMemoryURLIndexTest, ReadVisitsFromHistory) {
   }
 }
 
-TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
+TEST_F(InMemoryURLIndexTest, DISABLED_CacheSaveRestore) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   set_history_dir(temp_directory.GetPath());

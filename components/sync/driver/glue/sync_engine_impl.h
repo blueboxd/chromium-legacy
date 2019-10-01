@@ -92,6 +92,7 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
                           bool empty_jar,
                           const base::Closure& callback) override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
+  void GetNigoriNodeForDebugging(AllNodesCallback callback) override;
 
   // InvalidationHandler implementation.
   void OnInvalidatorStateChange(InvalidatorState state) override;

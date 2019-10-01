@@ -7,6 +7,6 @@
   <app appid='oclffehlkdgibkainkilopaalpdobkan'>
     <updatecheck
         codebase='http://mock.http/extensions/api_test/login_screen_apis/extension.crx'
-        version='1.19' />
+        version='1.20' />
    </app>
 </gupdate>

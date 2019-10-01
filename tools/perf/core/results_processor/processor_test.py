@@ -9,12 +9,14 @@ standalone results processor on them to check that output files are produced
 with their expected contents.
 """
 
+import csv
 import json
 import os
 import shutil
 import tempfile
 import unittest
 
+from core.results_processor.formatters import csv_output
 from core.results_processor.formatters import json3_output
 from core.results_processor.formatters import histograms_output
 from core.results_processor.formatters import html_output
@@ -328,3 +330,121 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     diag_values = [list(v) for v in  out_histograms.shared_diagnostics]
     self.assertIn(['label1'], diag_values)
     self.assertIn(['label2'], diag_values)
+
+  def testCsvOutput(self):
+    hist_file = os.path.join(self.output_dir,
+                             histograms_output.HISTOGRAM_DICTS_NAME)
+    test_hist = histogram.Histogram('a', 'ms')
+    test_hist.AddSample(3000)
+    with open(hist_file, 'w') as f:
+      json.dump([test_hist.AsDict()], f)
+
+    self.SerializeIntermediateResults(
+        test_results=[
+            testing.TestResult(
+                'benchmark/story',
+                artifacts={'histogram_dicts.json': testing.Artifact(hist_file)},
+            ),
+        ],
+        diagnostics={
+            'benchmarks': ['benchmark'],
+            'osNames': ['linux'],
+            'documentationUrls': [['documentation', 'url']],
+        },
+    )
+
+    processor.main([
+        '--output-format', 'csv',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+        '--results-label', 'label',
+    ])
+
+    with open(os.path.join(self.output_dir, csv_output.OUTPUT_FILENAME)) as f:
+      lines = [line for line in f]
+
+    actual = list(zip(*csv.reader(lines)))
+    expected = [
+        ('name', 'a'), ('unit', 'ms'), ('avg', '3000'), ('count', '1'),
+        ('max', '3000'), ('min', '3000'), ('std', '0'), ('sum', '3000'),
+        ('architectures', ''), ('benchmarks', 'benchmark'),
+        ('benchmarkStart', ''), ('bots', ''),
+        ('builds', ''), ('deviceIds', ''), ('displayLabel', 'label'),
+        ('masters', ''), ('memoryAmounts', ''), ('osNames', 'linux'),
+        ('osVersions', ''), ('productVersions', ''),
+        ('stories', ''), ('storysetRepeats', ''),
+        ('traceStart', ''), ('traceUrls', '')
+    ]
+    self.assertEqual(actual, expected)
+
+  def testCsvOutputResetResults(self):
+    hist_file = os.path.join(self.output_dir,
+                             histograms_output.HISTOGRAM_DICTS_NAME)
+    with open(hist_file, 'w') as f:
+      json.dump([histogram.Histogram('a', 'unitless').AsDict()], f)
+
+    self.SerializeIntermediateResults(
+        test_results=[
+            testing.TestResult(
+                'benchmark/story',
+                artifacts={'histogram_dicts.json': testing.Artifact(hist_file)},
+            ),
+        ],
+    )
+
+    processor.main([
+        '--output-format', 'csv',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+        '--results-label', 'label1',
+    ])
+
+    processor.main([
+        '--output-format', 'csv',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+        '--results-label', 'label2',
+        '--reset-results',
+    ])
+
+    with open(os.path.join(self.output_dir, csv_output.OUTPUT_FILENAME)) as f:
+      lines = [line for line in f]
+
+    self.assertEqual(len(lines), 2)
+    self.assertIn('label2', lines[1])
+
+  def testCsvOutputAppendResults(self):
+    hist_file = os.path.join(self.output_dir,
+                             histograms_output.HISTOGRAM_DICTS_NAME)
+    with open(hist_file, 'w') as f:
+      json.dump([histogram.Histogram('a', 'unitless').AsDict()], f)
+
+    self.SerializeIntermediateResults(
+        test_results=[
+            testing.TestResult(
+                'benchmark/story',
+                artifacts={'histogram_dicts.json': testing.Artifact(hist_file)},
+            ),
+        ],
+    )
+
+    processor.main([
+        '--output-format', 'csv',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+        '--results-label', 'label1',
+    ])
+
+    processor.main([
+        '--output-format', 'csv',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+        '--results-label', 'label2',
+    ])
+
+    with open(os.path.join(self.output_dir, csv_output.OUTPUT_FILENAME)) as f:
+      lines = [line for line in f]
+
+    self.assertEqual(len(lines), 3)
+    self.assertIn('label2', lines[1])
+    self.assertIn('label1', lines[2])

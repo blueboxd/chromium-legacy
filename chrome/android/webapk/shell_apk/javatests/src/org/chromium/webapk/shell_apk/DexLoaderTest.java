@@ -130,7 +130,7 @@ public class DexLoaderTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mContext.unbindService(mServiceConnection);
     }
 

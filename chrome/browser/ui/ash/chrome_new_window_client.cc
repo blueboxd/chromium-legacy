@@ -385,7 +385,7 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
     return;
   }
 
-  AppLaunchParams params = CreateAppLaunchParamsUserContainer(
+  apps::AppLaunchParams params = CreateAppLaunchParamsUserContainer(
       profile, extension, WindowOpenDisposition::NEW_WINDOW,
       apps::mojom::AppLaunchSource::kSourceArc);
   params.override_url = url;

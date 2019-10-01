@@ -11,6 +11,10 @@ plugins {
     id('com.android.library')
 }
 
+dependencies {
+    api("androidx.annotation:annotation:1.1.0")
+}
+
 android {
     // COMPILE_SDK_VERSION provided by AndroidX build scripts to build all AndroidX modules.
     compileSdkVersion SupportConfig.COMPILE_SDK_VERSION

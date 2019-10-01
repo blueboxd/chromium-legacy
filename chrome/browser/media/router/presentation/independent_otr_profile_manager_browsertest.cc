@@ -26,6 +26,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_utils.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -377,4 +378,32 @@ IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
   run_loop.Run();
   ASSERT_FALSE(base::Contains(*BrowserList::GetInstance(), otr_browser));
   EXPECT_TRUE(destroyed);
+}
+
+IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest, Notifications) {
+  // Create the OTR profile.
+  content::WindowedNotificationObserver profile_created_observer(
+      chrome::NOTIFICATION_PROFILE_CREATED,
+      content::NotificationService::AllSources());
+
+  auto* profile = browser()->profile();
+  auto profile_registration = manager_->CreateFromOriginalProfile(
+      profile, base::BindOnce(&OriginalProfileNeverDestroyed));
+  profile_created_observer.Wait();
+
+  // Verify the received notification.
+  auto* otr_profile = profile_registration->profile();
+  EXPECT_EQ(profile_created_observer.source(),
+            content::Source<Profile>(otr_profile));
+  EXPECT_FALSE(profile->HasOffTheRecordProfile());
+  EXPECT_TRUE(otr_profile->IsOffTheRecord());
+  EXPECT_TRUE(otr_profile->IsIndependentOffTheRecordProfile());
+
+  // Destroy the OTR profile.
+  content::WindowedNotificationObserver profile_destroyed_observer(
+      chrome::NOTIFICATION_PROFILE_DESTROYED,
+      content::Source<Profile>(otr_profile));
+
+  profile_registration.reset();
+  profile_destroyed_observer.Wait();
 }

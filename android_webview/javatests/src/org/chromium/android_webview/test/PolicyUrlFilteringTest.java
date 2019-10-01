@@ -66,7 +66,7 @@ public class PolicyUrlFilteringTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mWebServer.shutdown();
     }
 

@@ -64,7 +64,7 @@ public class PermissionParamsListBuilderUnitTest {
     WebsitePreferenceBridge.Natives mWebsitePreferenceBridgeMock;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         mocker.mock(WebsitePreferenceBridgeJni.TEST_HOOKS, mWebsitePreferenceBridgeMock);
         when(mWebsitePreferenceBridgeMock.isPermissionControlledByDSE(

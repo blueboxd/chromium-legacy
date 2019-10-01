@@ -59,7 +59,7 @@ public class BrowsingDataBridgeTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mActionTester.tearDown();
     }
 

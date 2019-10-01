@@ -94,14 +94,14 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   static std::unique_ptr<ServiceWorkerStorage> Create(
       const base::FilePath& user_data_directory,
-      const base::WeakPtr<ServiceWorkerContextCore>& context,
+      ServiceWorkerContextCore* context,
       scoped_refptr<base::SequencedTaskRunner> database_task_runner,
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy);
 
   // Used for DeleteAndStartOver. Creates new storage based on |old_storage|.
   static std::unique_ptr<ServiceWorkerStorage> Create(
-      const base::WeakPtr<ServiceWorkerContextCore>& context,
+      ServiceWorkerContextCore* context,
       ServiceWorkerStorage* old_storage);
 
   // Finds registration for |document_url| or |scope| or |registration_id|.
@@ -373,7 +373,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   ServiceWorkerStorage(
       const base::FilePath& user_data_directory,
-      base::WeakPtr<ServiceWorkerContextCore> context,
+      ServiceWorkerContextCore* context,
       scoped_refptr<base::SequencedTaskRunner> database_task_runner,
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy);
@@ -602,8 +602,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   base::FilePath user_data_directory_;
 
-  // The context should be valid while the storage is alive.
-  base::WeakPtr<ServiceWorkerContextCore> context_;
+  // The ServiceWorkerContextCore object must outlive this.
+  ServiceWorkerContextCore* const context_;
 
   // |database_| is only accessed using |database_task_runner_|.
   std::unique_ptr<ServiceWorkerDatabase> database_;

@@ -86,7 +86,7 @@ public class StartSurfaceLayoutPerfTest {
     private int mTabNumCap;
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         FeatureUtilities.setGridTabSwitcherEnabledForTesting(true);
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.startMainActivityFromLauncher();
@@ -194,7 +194,7 @@ public class StartSurfaceLayoutPerfTest {
      * @param url The URL to load. Skip loading when null, but the thumbnail for the NTP might not
      *            be saved.
      */
-    private void prepareTabs(int numTabs, @Nullable String url) throws InterruptedException {
+    private void prepareTabs(int numTabs, @Nullable String url) {
         assertTrue(numTabs >= 1);
         assertEquals(1, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
         // Only run the full size when doing local perf tests.

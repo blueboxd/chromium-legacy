@@ -171,7 +171,7 @@ public class AutocompleteEditTextTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         if (DEBUG) Log.i(TAG, "setUp started.");
         MockitoAnnotations.initMocks(this);
         mContext = RuntimeEnvironment.application;

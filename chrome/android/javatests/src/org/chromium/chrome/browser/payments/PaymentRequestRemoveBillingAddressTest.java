@@ -45,7 +45,7 @@ public class PaymentRequestRemoveBillingAddressTest implements MainActivityStart
             new PaymentRequestTestRule("payment_request_no_shipping_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         helper.setProfile(new AutofillProfile("", "https://example.com", true, "Jane Smith",
                 "Google", "1600 Amphitheatre Pkwy", "CA", "Mountain View", "", "94043", "", "US",
@@ -66,7 +66,7 @@ public class PaymentRequestRemoveBillingAddressTest implements MainActivityStart
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPayWithCard() throws InterruptedException, TimeoutException {
+    public void testPayWithCard() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
 
         // Expand the payment section.

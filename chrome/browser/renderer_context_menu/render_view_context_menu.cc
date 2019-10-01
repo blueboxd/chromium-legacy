@@ -2039,7 +2039,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_CONTENT_LINK_SEND_TAB_TO_SELF:
     case IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET:
-      return send_tab_to_self::IsContentRequirementsMet(
+      return send_tab_to_self::AreContentRequirementsMet(
           params_.link_url, GetBrowser()->profile());
 
     case IDC_CHECK_SPELLING_WHILE_TYPING:
@@ -2660,9 +2660,8 @@ void RenderViewContextMenu::ExecOpenBookmarkApp() {
   if (!pwa)
     return;
 
-  AppLaunchParams launch_params(
-      GetProfile(), pwa->id(),
-      apps::mojom::LaunchContainer::kLaunchContainerWindow,
+  apps::AppLaunchParams launch_params(
+      pwa->id(), apps::mojom::LaunchContainer::kLaunchContainerWindow,
       WindowOpenDisposition::CURRENT_TAB,
       apps::mojom::AppLaunchSource::kSourceContextMenu);
   launch_params.override_url = params_.link_url;

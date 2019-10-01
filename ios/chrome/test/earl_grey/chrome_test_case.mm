@@ -24,6 +24,10 @@
 
 namespace {
 
+// This flag indicates whether +setUpForTestCase has been executed in a test
+// case.
+bool gExecutedSetUpForTestCase = false;
+
 NSString* const kFlakyEarlGreyTestTargetSuffix = @"_flaky_egtests";
 
 // Contains a list of test names that run in multitasking test suite.
@@ -205,6 +209,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 + (void)setUpForTestCase {
   [super setUpForTestCase];
   [ChromeTestCase setUpHelper];
+  gExecutedSetUpForTestCase = true;
 }
 #endif  // CHROME_EARL_GREY_2
 
@@ -214,6 +219,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   [[self class] disableMockAuthentication];
   [[self class] stopHTTPServer];
   [super tearDown];
+  gExecutedSetUpForTestCase = false;
 }
 
 - (net::EmbeddedTestServer*)testServer {
@@ -428,7 +434,12 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 #pragma mark AppLaunchManagerObserver method
 
 - (void)appLaunchManagerDidRelaunchApp:(AppLaunchManager*)appLaunchManager {
-  [ChromeTestCase setUpHelper];
+  // Do not call +[ChromeTestCase setUpHelper] if the app was relaunched before
+  // +setUpForTestCase. +setUpForTestCase will call +setUpHelper, and
+  // +setUpHelper can not be called twice during setup process.
+  if (gExecutedSetUpForTestCase) {
+    [ChromeTestCase setUpHelper];
+  }
   [self resetAppState];
 }
 

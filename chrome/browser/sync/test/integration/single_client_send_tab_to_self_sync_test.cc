@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,8 +22,6 @@ namespace {
 class SingleClientSendTabToSelfSyncTest : public SyncTest {
  public:
   SingleClientSendTabToSelfSyncTest() : SyncTest(SINGLE_CLIENT) {
-    scoped_list_.InitWithFeatures(
-        {send_tab_to_self::kSendTabToSelfShowSendingUI}, {});
   }
 
   ~SingleClientSendTabToSelfSyncTest() override {}

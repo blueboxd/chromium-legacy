@@ -12,7 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/media/webrtc/desktop_media_list_observer.h"
+#include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -92,6 +92,7 @@ class MockObserver : public DesktopMediaListObserver {
   MOCK_METHOD2(OnSourceNameChanged, void(DesktopMediaList* list, int index));
   MOCK_METHOD2(OnSourceThumbnailChanged,
                void(DesktopMediaList* list, int index));
+  MOCK_METHOD1(OnAllSourcesFound, void(DesktopMediaList* list));
 
   void VerifyAndClearExpectations() {
     testing::Mock::VerifyAndClearExpectations(this);

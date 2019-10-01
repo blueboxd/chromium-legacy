@@ -167,7 +167,7 @@ public class PreferencesTest {
         ensureTemplateUrlServiceLoaded();
         CriteriaHelper.pollUiThread(Criteria.equals(true, new Callable<Boolean>() {
             @Override
-            public Boolean call() throws Exception {
+            public Boolean call() {
                 return TemplateUrlServiceFactory.get().isDefaultSearchManaged();
             }
         }));
@@ -183,7 +183,7 @@ public class PreferencesTest {
 
         CriteriaHelper.pollUiThread(Criteria.equals(null, new Callable<Object>() {
             @Override
-            public Object call() throws Exception {
+            public Object call() {
                 return searchEnginePref.getFragment();
             }
         }));
@@ -337,7 +337,7 @@ public class PreferencesTest {
     @Test
     @SmallTest
     @Feature({"Accessibility"})
-    public void testCaptionPreferences() throws Exception {
+    public void testCaptionPreferences() {
         String accessibilityPrefClassname = AccessibilityPreferences.class.getName();
         AccessibilityPreferences accessibilityPref = (AccessibilityPreferences) startPreferences(
                 InstrumentationRegistry.getInstrumentation(), accessibilityPrefClassname)
@@ -360,7 +360,7 @@ public class PreferencesTest {
     @Test
     @SmallTest
     @Policies.Add({ @Policies.Item(key = "PasswordManagerEnabled", string = "false") })
-    public void testSavePasswordsPreferences_ManagedAndDisabled() throws ExecutionException {
+    public void testSavePasswordsPreferences_ManagedAndDisabled() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { ChromeBrowserInitializer.getInstance().handleSynchronousStartup(); });
 
@@ -413,7 +413,7 @@ public class PreferencesTest {
         return TestThreadUtils.runOnUiThreadBlocking(
                 new Callable<android.support.v7.preference.Preference>() {
                     @Override
-                    public android.support.v7.preference.Preference call() throws Exception {
+                    public android.support.v7.preference.Preference call() {
                         return prefFragment.findPreference(preferenceKey);
                     }
                 });

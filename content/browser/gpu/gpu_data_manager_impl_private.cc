@@ -381,7 +381,7 @@ bool GpuDataManagerImplPrivate::GpuProcessStartAllowed() const {
   return false;
 }
 
-void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded(
+void GpuDataManagerImplPrivate::RequestDxdiagDx12VulkanGpuInfoIfNeeded(
     GpuInfoRequest request,
     bool delayed) {
   if (request & kGpuInfoRequestDxDiag) {

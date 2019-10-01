@@ -83,7 +83,7 @@ public class VariationsSeedLoaderTest {
 
     // Create a TestLoader, run it on the UI thread, and block until it's finished. The return value
     // indicates whether the loader decided to request a new seed.
-    private boolean runTestLoaderBlocking() throws InterruptedException, TimeoutException {
+    private boolean runTestLoaderBlocking() throws TimeoutException {
         final TestLoaderResult result = new TestLoaderResult();
         Runnable run = () -> {
             TestLoader loader = new TestLoader(result);

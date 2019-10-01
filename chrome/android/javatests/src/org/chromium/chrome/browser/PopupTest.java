@@ -77,7 +77,7 @@ public class PopupTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
         MockSafeBrowsingApiHandler.clearMockResponses();
     }
@@ -85,7 +85,7 @@ public class PopupTest {
     @Test
     @MediumTest
     @Feature({"Popup"})
-    public void testPopupInfobarAppears() throws Exception {
+    public void testPopupInfobarAppears() {
         mActivityTestRule.loadUrl(mPopupHtmlUrl);
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> getNumInfobarsShowing()));
     }
@@ -159,7 +159,7 @@ public class PopupTest {
     @Test
     @MediumTest
     @Feature({"Popup"})
-    public void testPopupWindowsAppearWhenAllowed() throws Exception {
+    public void testPopupWindowsAppearWhenAllowed() {
         final TabModelSelector selector = mActivityTestRule.getActivity().getTabModelSelector();
 
         mActivityTestRule.loadUrl(mPopupHtmlUrl);

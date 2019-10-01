@@ -36,12 +36,12 @@ public class PaymentRequestDataUrlTest implements MainActivityStartCallback {
             this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {}
+    public void onMainActivityStarted() {}
 
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void test() throws InterruptedException, TimeoutException {
+    public void test() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickNode("buy");
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"PaymentRequest is not defined"});

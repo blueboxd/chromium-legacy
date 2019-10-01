@@ -52,7 +52,7 @@ public class UnuploadedFilesStateLoaderTest {
 
     @Test
     @SmallTest
-    public void testParseEmptyDir() throws IOException {
+    public void testParseEmptyDir() {
         List<CrashInfo> crashInfoList = mCrashInfoLoader.loadCrashesInfo();
         Assert.assertEquals(0, crashInfoList.size());
     }

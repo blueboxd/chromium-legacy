@@ -13,33 +13,434 @@
 
 namespace optimization_guide {
 
+std::unique_ptr<proto::PredictionModel> GetValidDecisionTreePredictionModel() {
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      std::make_unique<proto::PredictionModel>();
+  prediction_model->mutable_model()->mutable_threshold()->set_value(5.0);
+
+  proto::DecisionTree decision_tree_model = proto::DecisionTree();
+  decision_tree_model.set_weight(2.0);
+
+  proto::TreeNode* tree_node = decision_tree_model.add_nodes();
+  tree_node->mutable_node_id()->set_value(0);
+  tree_node->mutable_binary_node()->mutable_left_child_id()->set_value(1);
+  tree_node->mutable_binary_node()->mutable_right_child_id()->set_value(2);
+  tree_node->mutable_binary_node()
+      ->mutable_inequality_left_child_test()
+      ->mutable_feature_id()
+      ->mutable_id()
+      ->set_value("agg1");
+  tree_node->mutable_binary_node()
+      ->mutable_inequality_left_child_test()
+      ->set_type(proto::InequalityTest::LESS_OR_EQUAL);
+  tree_node->mutable_binary_node()
+      ->mutable_inequality_left_child_test()
+      ->mutable_threshold()
+      ->set_float_value(1.0);
+
+  tree_node = decision_tree_model.add_nodes();
+  tree_node->mutable_node_id()->set_value(1);
+  tree_node->mutable_leaf()->mutable_vector()->add_value()->set_double_value(
+      2.);
+
+  tree_node = decision_tree_model.add_nodes();
+  tree_node->mutable_node_id()->set_value(2);
+  tree_node->mutable_leaf()->mutable_vector()->add_value()->set_double_value(
+      4.);
+
+  *prediction_model->mutable_model()->mutable_decision_tree() =
+      decision_tree_model;
+  return prediction_model;
+}
+
+std::unique_ptr<proto::PredictionModel> GetValidEnsemblePredictionModel() {
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      std::make_unique<proto::PredictionModel>();
+  prediction_model->mutable_model()->mutable_threshold()->set_value(5.0);
+  proto::Ensemble ensemble = proto::Ensemble();
+  *ensemble.add_members()->mutable_submodel() =
+      *GetValidDecisionTreePredictionModel()->mutable_model();
+
+  *ensemble.add_members()->mutable_submodel() =
+      *GetValidDecisionTreePredictionModel()->mutable_model();
+
+  *prediction_model->mutable_model()->mutable_ensemble() = ensemble;
+  return prediction_model;
+}
+
 TEST(DecisionTreePredictionModel, ValidDecisionTreeModel) {
-  std::unique_ptr<optimization_guide::proto::PredictionModel> prediction_model =
-      std::make_unique<optimization_guide::proto::PredictionModel>();
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      GetValidDecisionTreePredictionModel();
 
-  optimization_guide::proto::DecisionTree* decision_tree_model =
-      prediction_model->mutable_model()->mutable_decision_tree();
-  decision_tree_model->set_weight(2.0);
-
-  optimization_guide::proto::ModelInfo* model_info =
-      prediction_model->mutable_model_info();
+  proto::ModelInfo* model_info = prediction_model->mutable_model_info();
   model_info->set_version(1);
   model_info->add_supported_model_types(
-      optimization_guide::proto::ModelType::MODEL_TYPE_DECISION_TREE);
+      proto::ModelType::MODEL_TYPE_DECISION_TREE);
   model_info->add_supported_model_features(
-      optimization_guide::proto::ClientModelFeature::
+      proto::ClientModelFeature::
           CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
 
   std::unique_ptr<PredictionModel> model =
       PredictionModel::Create(std::move(prediction_model), {"agg1"});
-  base::flat_map<std::string, float> feature_map = {};
-  EXPECT_EQ(1, model->GetVersion());
-  EXPECT_EQ(2u, model->GetModelFeatures().size());
-  EXPECT_TRUE(model->GetModelFeatures().count("agg1"));
-  EXPECT_TRUE(model->GetModelFeatures().count(
-      "CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE"));
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kUnknown,
-            model->Predict(feature_map));
+  EXPECT_TRUE(model);
+  EXPECT_EQ(OptimizationTargetDecision::kPageLoadDoesNotMatch,
+            model->Predict({{"agg1", 1.0}}));
+  EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
+            model->Predict({{"agg1", 2.0}}));
+}
+
+TEST(DecisionTreePredictionModel, InequalityLessThan) {
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      GetValidDecisionTreePredictionModel();
+
+  prediction_model->mutable_model()
+      ->mutable_decision_tree()
+      ->mutable_nodes(0)
+      ->mutable_binary_node()
+      ->mutable_inequality_left_child_test()
+      ->set_type(proto::InequalityTest::LESS_THAN);
+
+  proto::ModelInfo* model_info = prediction_model->mutable_model_info();
+  model_info->set_version(1);
+  model_info->add_supported_model_types(
+      proto::ModelType::MODEL_TYPE_DECISION_TREE);
+  model_info->add_supported_model_features(
+      proto::ClientModelFeature::
+          CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+
+  std::unique_ptr<PredictionModel> model =
+      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+  EXPECT_TRUE(model);
+  EXPECT_EQ(OptimizationTargetDecision::kPageLoadDoesNotMatch,
+            model->Predict({{"agg1", 0.5}}));
+  EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
+            model->Predict({{"agg1", 2.0}}));
+}
+
+TEST(DecisionTreePredictionModel, InequalityGreaterOrEqual) {
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      GetValidDecisionTreePredictionModel();
+
+  prediction_model->mutable_model()
+      ->mutable_decision_tree()
+      ->mutable_nodes(0)
+      ->mutable_binary_node()
+      ->mutable_inequality_left_child_test()
+      ->set_type(proto::InequalityTest::GREATER_OR_EQUAL);
+
+  proto::ModelInfo* model_info = prediction_model->mutable_model_info();
+  model_info->set_version(1);
+  model_info->add_supported_model_types(
+      proto::ModelType::MODEL_TYPE_DECISION_TREE);
+  model_info->add_supported_model_features(
+      proto::ClientModelFeature::
+          CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+
+  std::unique_ptr<PredictionModel> model =
+      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+  EXPECT_TRUE(model);
+  EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
+            model->Predict({{"agg1", 0.5}}));
+  EXPECT_EQ(OptimizationTargetDecision::kPageLoadDoesNotMatch,
+            model->Predict({{"agg1", 1.0}}));
+}
+
+TEST(DecisionTreePredictionModel, InequalityGreaterThan) {
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      GetValidDecisionTreePredictionModel();
+
+  prediction_model->mutable_model()
+      ->mutable_decision_tree()
+      ->mutable_nodes(0)
+      ->mutable_binary_node()
+      ->mutable_inequality_left_child_test()
+      ->set_type(proto::InequalityTest::GREATER_THAN);
+
+  proto::ModelInfo* model_info = prediction_model->mutable_model_info();
+  model_info->set_version(1);
+  model_info->add_supported_model_types(
+      proto::ModelType::MODEL_TYPE_DECISION_TREE);
+  model_info->add_supported_model_features(
+      proto::ClientModelFeature::
+          CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+
+  std::unique_ptr<PredictionModel> model =
+      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+  EXPECT_TRUE(model);
+  EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
+            model->Predict({{"agg1", 0.5}}));
+  EXPECT_EQ(OptimizationTargetDecision::kPageLoadDoesNotMatch,
+            model->Predict({{"agg1", 2.0}}));
+}
+
+TEST(DecisionTreePredictionModel, MissingInequalityTest) {
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      GetValidDecisionTreePredictionModel();
+
+  prediction_model->mutable_model()
+      ->mutable_decision_tree()
+      ->mutable_nodes(0)
+      ->mutable_binary_node()
+      ->mutable_inequality_left_child_test()
+      ->Clear();
+
+  proto::ModelInfo* model_info = prediction_model->mutable_model_info();
+  model_info->set_version(1);
+  model_info->add_supported_model_types(
+      proto::ModelType::MODEL_TYPE_DECISION_TREE);
+  model_info->add_supported_model_features(
+      proto::ClientModelFeature::
+          CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+
+  std::unique_ptr<PredictionModel> model =
+      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+  EXPECT_FALSE(model);
+}
+
+TEST(DecisionTreePredictionModel, NoDecisionTreeThreshold) {
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      GetValidDecisionTreePredictionModel();
+
+  prediction_model->mutable_model()->clear_threshold();
+
+  proto::ModelInfo* model_info = prediction_model->mutable_model_info();
+  model_info->set_version(1);
+  model_info->add_supported_model_types(
+      proto::ModelType::MODEL_TYPE_DECISION_TREE);
+  model_info->add_supported_model_features(
+      proto::ClientModelFeature::
+          CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+
+  std::unique_ptr<PredictionModel> model =
+      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+  EXPECT_FALSE(model);
+}
+
+TEST(DecisionTreePredictionModel, EmptyTree) {
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      GetValidDecisionTreePredictionModel();
+
+  prediction_model->mutable_model()->mutable_decision_tree()->clear_nodes();
+
+  proto::ModelInfo* model_info = prediction_model->mutable_model_info();
+  model_info->set_version(1);
+  model_info->add_supported_model_types(
+      proto::ModelType::MODEL_TYPE_DECISION_TREE);
+  model_info->add_supported_model_features(
+      proto::ClientModelFeature::
+          CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+
+  std::unique_ptr<PredictionModel> model =
+      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+  EXPECT_FALSE(model);
+}
+
+TEST(DecisionTreePredictionModel, ModelFeatureNotInFeatureMap) {
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      GetValidDecisionTreePredictionModel();
+
+  prediction_model->mutable_model()->mutable_decision_tree()->clear_nodes();
+
+  proto::ModelInfo* model_info = prediction_model->mutable_model_info();
+  model_info->set_version(1);
+  model_info->add_supported_model_types(
+      proto::ModelType::MODEL_TYPE_DECISION_TREE);
+  model_info->add_supported_model_features(
+      proto::ClientModelFeature::
+          CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+
+  std::unique_ptr<PredictionModel> model =
+      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+  EXPECT_FALSE(model);
+}
+
+TEST(DecisionTreePredictionModel, DecisionTreeMissingLeaf) {
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      GetValidDecisionTreePredictionModel();
+
+  prediction_model->mutable_model()
+      ->mutable_decision_tree()
+      ->mutable_nodes(1)
+      ->mutable_leaf()
+      ->Clear();
+
+  proto::ModelInfo* model_info = prediction_model->mutable_model_info();
+  model_info->set_version(1);
+  model_info->add_supported_model_types(
+      proto::ModelType::MODEL_TYPE_DECISION_TREE);
+  model_info->add_supported_model_features(
+      proto::ClientModelFeature::
+          CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+
+  std::unique_ptr<PredictionModel> model =
+      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+  EXPECT_FALSE(model);
+}
+
+TEST(DecisionTreePredictionModel, DecisionTreeLeftChildIndexInvalid) {
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      GetValidDecisionTreePredictionModel();
+
+  prediction_model->mutable_model()
+      ->mutable_decision_tree()
+      ->mutable_nodes(0)
+      ->mutable_binary_node()
+      ->mutable_left_child_id()
+      ->set_value(3);
+
+  proto::ModelInfo* model_info = prediction_model->mutable_model_info();
+  model_info->set_version(1);
+  model_info->add_supported_model_types(
+      proto::ModelType::MODEL_TYPE_DECISION_TREE);
+  model_info->add_supported_model_features(
+      proto::ClientModelFeature::
+          CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+
+  std::unique_ptr<PredictionModel> model =
+      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+  EXPECT_FALSE(model);
+}
+
+TEST(DecisionTreePredictionModel, DecisionTreeRightChildIndexInvalid) {
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      GetValidDecisionTreePredictionModel();
+
+  prediction_model->mutable_model()
+      ->mutable_decision_tree()
+      ->mutable_nodes(0)
+      ->mutable_binary_node()
+      ->mutable_right_child_id()
+      ->set_value(3);
+
+  proto::ModelInfo* model_info = prediction_model->mutable_model_info();
+  model_info->set_version(1);
+  model_info->add_supported_model_types(
+      proto::ModelType::MODEL_TYPE_DECISION_TREE);
+  model_info->add_supported_model_features(
+      proto::ClientModelFeature::
+          CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+
+  std::unique_ptr<PredictionModel> model =
+      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+  EXPECT_FALSE(model);
+}
+
+TEST(DecisionTreePredictionModel, DecisionTreeWithLoopOnLeftChild) {
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      GetValidDecisionTreePredictionModel();
+
+  proto::TreeNode* tree_node =
+      prediction_model->mutable_model()->mutable_decision_tree()->mutable_nodes(
+          1);
+
+  tree_node->mutable_node_id()->set_value(0);
+  tree_node->mutable_binary_node()
+      ->mutable_inequality_left_child_test()
+      ->mutable_feature_id()
+      ->mutable_id()
+      ->set_value("agg1");
+  tree_node->mutable_binary_node()
+      ->mutable_inequality_left_child_test()
+      ->set_type(proto::InequalityTest::LESS_OR_EQUAL);
+  tree_node->mutable_binary_node()
+      ->mutable_inequality_left_child_test()
+      ->mutable_threshold()
+      ->set_float_value(1.0);
+
+  tree_node->mutable_binary_node()->mutable_left_child_id()->set_value(0);
+  tree_node->mutable_binary_node()->mutable_right_child_id()->set_value(2);
+
+  proto::ModelInfo* model_info = prediction_model->mutable_model_info();
+  model_info->set_version(1);
+  model_info->add_supported_model_types(
+      proto::ModelType::MODEL_TYPE_DECISION_TREE);
+  model_info->add_supported_model_features(
+      proto::ClientModelFeature::
+          CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+
+  std::unique_ptr<PredictionModel> model =
+      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+  EXPECT_FALSE(model);
+}
+
+TEST(DecisionTreePredictionModel, DecisionTreeWithLoopOnRightChild) {
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      GetValidDecisionTreePredictionModel();
+
+  proto::TreeNode* tree_node =
+      prediction_model->mutable_model()->mutable_decision_tree()->mutable_nodes(
+          1);
+
+  tree_node->mutable_node_id()->set_value(0);
+  tree_node->mutable_binary_node()
+      ->mutable_inequality_left_child_test()
+      ->mutable_feature_id()
+      ->mutable_id()
+      ->set_value("agg1");
+  tree_node->mutable_binary_node()
+      ->mutable_inequality_left_child_test()
+      ->set_type(proto::InequalityTest::LESS_OR_EQUAL);
+  tree_node->mutable_binary_node()
+      ->mutable_inequality_left_child_test()
+      ->mutable_threshold()
+      ->set_float_value(1.0);
+
+  tree_node->mutable_binary_node()->mutable_left_child_id()->set_value(2);
+  tree_node->mutable_binary_node()->mutable_right_child_id()->set_value(0);
+
+  proto::ModelInfo* model_info = prediction_model->mutable_model_info();
+  model_info->set_version(1);
+  model_info->add_supported_model_types(
+      proto::ModelType::MODEL_TYPE_DECISION_TREE);
+  model_info->add_supported_model_features(
+      proto::ClientModelFeature::
+          CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+
+  std::unique_ptr<PredictionModel> model =
+      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+  EXPECT_FALSE(model);
+}
+
+TEST(DecisionTreePredictionModel, ValidEnsembleModel) {
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      GetValidEnsemblePredictionModel();
+
+  proto::ModelInfo* model_info = prediction_model->mutable_model_info();
+  model_info->set_version(1);
+  model_info->add_supported_model_types(
+      proto::ModelType::MODEL_TYPE_DECISION_TREE);
+  model_info->add_supported_model_features(
+      proto::ClientModelFeature::
+          CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+
+  std::unique_ptr<PredictionModel> model =
+      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+  EXPECT_TRUE(model);
+  EXPECT_EQ(OptimizationTargetDecision::kPageLoadDoesNotMatch,
+            model->Predict({{"agg1", 1.0}}));
+  EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
+            model->Predict({{"agg1", 2.0}}));
+}
+
+TEST(DecisionTreePredictionModel, EnsembleWithNoMembers) {
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      GetValidEnsemblePredictionModel();
+  prediction_model->mutable_model()
+      ->mutable_ensemble()
+      ->mutable_members()
+      ->Clear();
+
+  proto::ModelInfo* model_info = prediction_model->mutable_model_info();
+  model_info->set_version(1);
+  model_info->add_supported_model_types(
+      proto::ModelType::MODEL_TYPE_DECISION_TREE);
+  model_info->add_supported_model_features(
+      proto::ClientModelFeature::
+          CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+
+  std::unique_ptr<PredictionModel> model =
+      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+  EXPECT_FALSE(model);
 }
 
 }  // namespace optimization_guide

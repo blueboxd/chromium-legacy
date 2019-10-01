@@ -7,15 +7,13 @@ cr.define('print_preview', function() {
   'use strict';
 
   /**
-   * @const {!Map<!print_preview.ticket_items.CustomMarginsOrientation, string>}
+   * @const {!Map<!print_preview.CustomMarginsOrientation, string>}
    */
   const MARGIN_KEY_MAP = new Map([
-    [print_preview.ticket_items.CustomMarginsOrientation.TOP, 'marginTop'],
-    [print_preview.ticket_items.CustomMarginsOrientation.RIGHT, 'marginRight'],
-    [
-      print_preview.ticket_items.CustomMarginsOrientation.BOTTOM, 'marginBottom'
-    ],
-    [print_preview.ticket_items.CustomMarginsOrientation.LEFT, 'marginLeft']
+    [print_preview.CustomMarginsOrientation.TOP, 'marginTop'],
+    [print_preview.CustomMarginsOrientation.RIGHT, 'marginRight'],
+    [print_preview.CustomMarginsOrientation.BOTTOM, 'marginBottom'],
+    [print_preview.CustomMarginsOrientation.LEFT, 'marginLeft']
   ]);
 
   /** @const {number} */
@@ -87,16 +85,16 @@ cr.define('print_preview', function() {
       },
 
       /**
-       * @private {!Array<!print_preview.ticket_items.CustomMarginsOrientation>}
+       * @private {!Array<!print_preview.CustomMarginsOrientation>}
        */
       marginSides_: {
         type: Array,
         notify: true,
         value: [
-          print_preview.ticket_items.CustomMarginsOrientation.TOP,
-          print_preview.ticket_items.CustomMarginsOrientation.RIGHT,
-          print_preview.ticket_items.CustomMarginsOrientation.BOTTOM,
-          print_preview.ticket_items.CustomMarginsOrientation.LEFT,
+          print_preview.CustomMarginsOrientation.TOP,
+          print_preview.CustomMarginsOrientation.RIGHT,
+          print_preview.CustomMarginsOrientation.BOTTOM,
+          print_preview.CustomMarginsOrientation.LEFT,
         ],
       },
 
@@ -139,7 +137,7 @@ cr.define('print_preview', function() {
     computeAvailable_: function() {
       return this.previewLoaded && !!this.clipSize_ &&
           this.getSettingValue('margins') ==
-          print_preview.ticket_items.MarginsTypeValue.CUSTOM &&
+          print_preview.MarginsTypeValue.CUSTOM &&
           !!this.pageSize;
     },
 
@@ -150,7 +148,7 @@ cr.define('print_preview', function() {
         // custom margins were reset.
         const newMargins = {};
         for (const side of Object.values(
-                 print_preview.ticket_items.CustomMarginsOrientation)) {
+                 print_preview.CustomMarginsOrientation)) {
           const key = print_preview.MARGIN_KEY_MAP.get(side);
           newMargins[key] = this.documentMargins.get(side);
         }
@@ -187,11 +185,9 @@ cr.define('print_preview', function() {
 
       this.resetMargins_ = true;
       const marginsSetting = this.getSetting('margins');
-      if (marginsSetting.value ==
-          print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
+      if (marginsSetting.value == print_preview.MarginsTypeValue.CUSTOM) {
         // Set the margins value to default first.
-        this.setSetting(
-            'margins', print_preview.ticket_items.MarginsTypeValue.DEFAULT);
+        this.setSetting('margins', print_preview.MarginsTypeValue.DEFAULT);
       }
       // Reset custom margins so that the sticky value is not restored for the
       // new paper size.
@@ -218,16 +214,14 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @param {!print_preview.ticket_items.CustomMarginsOrientation} orientation
+     * @param {!print_preview.CustomMarginsOrientation} orientation
      *     Orientation value to test.
      * @return {boolean} Whether the given orientation is TOP or BOTTOM.
      * @private
      */
     isTopOrBottom_: function(orientation) {
-      return orientation ==
-          print_preview.ticket_items.CustomMarginsOrientation.TOP ||
-          orientation ==
-          print_preview.ticket_items.CustomMarginsOrientation.BOTTOM;
+      return orientation == print_preview.CustomMarginsOrientation.TOP ||
+          orientation == print_preview.CustomMarginsOrientation.BOTTOM;
     },
 
     /**
@@ -241,8 +235,7 @@ cr.define('print_preview', function() {
      */
     posInPixelsToPts_: function(control, posInPixels) {
       const side =
-          /** @type {print_preview.ticket_items.CustomMarginsOrientation} */ (
-              control.side);
+          /** @type {print_preview.CustomMarginsOrientation} */ (control.side);
       return this.clipAndRoundValue_(
           side,
           control.convertPixelsToPts(
@@ -349,7 +342,7 @@ cr.define('print_preview', function() {
       const x = control.offsetLeft;
       const y = control.offsetTop;
       const isTopOrBottom = this.isTopOrBottom_(
-          /** @type {!print_preview.ticket_items.CustomMarginsOrientation} */ (
+          /** @type {!print_preview.CustomMarginsOrientation} */ (
               control.side));
       const position = {};
       // Extra padding, in px, to ensure the full textbox will be visible and
@@ -395,8 +388,7 @@ cr.define('print_preview', function() {
      */
     setMargin_: function(side, marginValue) {
       const marginSide =
-          /** @type {!print_preview.ticket_items.CustomMarginsOrientation} */ (
-              side);
+          /** @type {!print_preview.CustomMarginsOrientation} */ (side);
       const oldMargins = /** @type {print_preview.MarginsSetting} */ (
           this.getSettingValue('customMargins'));
       const key = print_preview.MARGIN_KEY_MAP.get(marginSide);
@@ -416,12 +408,11 @@ cr.define('print_preview', function() {
      */
     clipAndRoundValue_: function(side, value) {
       const marginSide =
-          /** @type {!print_preview.ticket_items.CustomMarginsOrientation} */ (
-              side);
+          /** @type {!print_preview.CustomMarginsOrientation} */ (side);
       if (value < 0) {
         return 0;
       }
-      const Orientation = print_preview.ticket_items.CustomMarginsOrientation;
+      const Orientation = print_preview.CustomMarginsOrientation;
       let limit = 0;
       const margins = this.getSettingValue('customMargins');
       if (marginSide == Orientation.TOP) {
@@ -482,10 +473,9 @@ cr.define('print_preview', function() {
           new print_preview.Coordinate2d(e.x, e.y);
       this.marginStartPositionInPixels_ =
           new print_preview.Coordinate2d(control.offsetLeft, control.offsetTop);
-      this.dragging_ =
-          this.isTopOrBottom_(
-              /** @type {print_preview.ticket_items.CustomMarginsOrientation} */
-              (control.side)) ?
+      this.dragging_ = this.isTopOrBottom_(
+                           /** @type {print_preview.CustomMarginsOrientation} */
+                           (control.side)) ?
           'dragging-vertical' :
           'dragging-horizontal';
       this.listen(control, 'pointercancel', 'onPointerUp_');

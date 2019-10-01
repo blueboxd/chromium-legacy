@@ -61,13 +61,13 @@ public class CustomTabsConnectionTest {
     private static final String INVALID_SCHEME_URL = "intent://www.google.com";
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         mCustomTabsConnection = CustomTabsTestUtils.setUpConnection();
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         CustomTabsTestUtils.cleanupSessions(mCustomTabsConnection);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> WarmupManager.getInstance().destroySpareWebContents());

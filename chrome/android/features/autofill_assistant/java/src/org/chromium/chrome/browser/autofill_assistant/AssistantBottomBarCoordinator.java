@@ -416,8 +416,9 @@ class AssistantBottomBarCoordinator
     @Override
     public int getHeight() {
         if (mViewportMode == AssistantViewportMode.RESIZE_LAYOUT_VIEWPORT
-                && mBottomSheetController.getBottomSheet().getCurrentSheetContent() == mContent)
+                && mBottomSheetController.getBottomSheet().getCurrentSheetContent() == mContent) {
             return mPeekHeightCoordinator.getPeekHeight();
+        }
 
         return 0;
     }

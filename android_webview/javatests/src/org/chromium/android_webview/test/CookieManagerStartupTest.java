@@ -48,7 +48,7 @@ public class CookieManagerStartupTest {
     private AwContents mAwContents;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ThreadUtils.setUiThread(null);
         ThreadUtils.setWillOverrideUiThread(true);
 
@@ -58,16 +58,16 @@ public class CookieManagerStartupTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         ThreadUtils.setWillOverrideUiThread(false);
     }
 
-    private void startChromium() throws Exception {
+    private void startChromium() {
         ThreadUtils.setUiThread(Looper.getMainLooper());
         startChromiumWithClient(new TestAwContentsClient());
     }
 
-    private void startChromiumWithClient(TestAwContentsClient contentsClient) throws Exception {
+    private void startChromiumWithClient(TestAwContentsClient contentsClient) {
         mActivityTestRule.createAwBrowserContext();
         mActivityTestRule.startBrowserProcess();
         mContentsClient = contentsClient;
@@ -112,7 +112,7 @@ public class CookieManagerStartupTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Privacy"})
-    public void testAllowFileSchemeCookies() throws Throwable {
+    public void testAllowFileSchemeCookies() {
         AwCookieManager cookieManager = new AwCookieManager();
         Assert.assertFalse(cookieManager.allowFileSchemeCookies());
         cookieManager.setAcceptFileSchemeCookies(true);
@@ -124,7 +124,7 @@ public class CookieManagerStartupTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Privacy"})
-    public void testAllowCookies() throws Throwable {
+    public void testAllowCookies() {
         AwCookieManager cookieManager = new AwCookieManager();
         Assert.assertTrue(cookieManager.acceptCookie());
         cookieManager.setAcceptCookie(false);

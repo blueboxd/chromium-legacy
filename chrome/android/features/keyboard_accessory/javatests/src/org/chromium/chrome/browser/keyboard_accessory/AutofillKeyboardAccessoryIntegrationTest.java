@@ -77,7 +77,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
     }
 
     private void loadTestPage(ChromeWindow.KeyboardVisibilityDelegateFactory keyboardDelegate)
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws TimeoutException {
         mHelper.loadTestPage("/chrome/test/data/autofill/autofill_test_form.html", false, false,
                 keyboardDelegate);
         ManualFillingTestHelper.createAutofillTestProfiles();
@@ -89,8 +89,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
      */
     @Test
     @MediumTest
-    public void testAutofocusedFieldDoesNotShowKeyboardAccessory()
-            throws ExecutionException, InterruptedException, TimeoutException {
+    public void testAutofocusedFieldDoesNotShowKeyboardAccessory() throws TimeoutException {
         loadTestPage(FakeKeyboard::new);
         CriteriaHelper.pollUiThread(() -> {
             View accessory = mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory);
@@ -103,8 +102,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
      */
     @Test
     @MediumTest
-    public void testTapInputFieldShowsKeyboardAccessory()
-            throws ExecutionException, InterruptedException, TimeoutException {
+    public void testTapInputFieldShowsKeyboardAccessory() throws TimeoutException {
         loadTestPage(FakeKeyboard::new);
         mHelper.clickNodeAndShowKeyboard("NAME_FIRST");
         mHelper.waitForKeyboardAccessoryToBeShown();
@@ -116,8 +114,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
     @Test
     @MediumTest
     @FlakyTest(message = "https://crbug.com/984489")
-    public void testSwitchFieldsRescrollsKeyboardAccessory()
-            throws ExecutionException, InterruptedException, TimeoutException {
+    public void testSwitchFieldsRescrollsKeyboardAccessory() throws TimeoutException {
         loadTestPage(FakeKeyboard::new);
         mHelper.clickNodeAndShowKeyboard("EMAIL_ADDRESS");
         mHelper.waitForKeyboardAccessoryToBeShown(true);
@@ -143,7 +140,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
     @Test
     @MediumTest
     public void testSelectSuggestionHidesKeyboardAccessory()
-            throws ExecutionException, InterruptedException, TimeoutException {
+            throws ExecutionException, TimeoutException {
         loadTestPage(FakeKeyboard::new);
         mHelper.clickNodeAndShowKeyboard("NAME_FIRST");
         mHelper.waitForKeyboardAccessoryToBeShown(true);
@@ -156,7 +153,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
     @Test
     @MediumTest
     public void testSuggestionsCloseAccessoryWhenClicked()
-            throws ExecutionException, InterruptedException, TimeoutException {
+            throws ExecutionException, TimeoutException {
         MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(true);
         loadTestPage(MultiWindowKeyboard::new);
         mHelper.clickNode("NAME_FIRST", FocusedFieldType.FILLABLE_NON_SEARCH_FIELD);
@@ -170,7 +167,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
     @Test
     @SmallTest
     public void testPressingBackButtonHidesAccessoryWithAutofillSuggestions()
-            throws InterruptedException, TimeoutException, ExecutionException {
+            throws TimeoutException, ExecutionException {
         loadTestPage(MultiWindowKeyboard::new);
         mHelper.clickNodeAndShowKeyboard("NAME_FIRST");
         mHelper.waitForKeyboardAccessoryToBeShown(true);
@@ -189,8 +186,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
 
     @Test
     @MediumTest
-    public void testSheetHasMinimumSizeWhenTriggeredBySuggestion()
-            throws ExecutionException, InterruptedException, TimeoutException {
+    public void testSheetHasMinimumSizeWhenTriggeredBySuggestion() throws TimeoutException {
         MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(true);
         loadTestPage(MultiWindowKeyboard::new);
         mHelper.clickNode("NAME_FIRST", FocusedFieldType.FILLABLE_NON_SEARCH_FIELD);

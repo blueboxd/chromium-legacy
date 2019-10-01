@@ -52,7 +52,7 @@ public class ReturnToChromeTest {
     private ChromeTabbedActivity mActivity;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         FeatureUtilities.setGridTabSwitcherEnabledForTesting(true);
 
         mActivityTestRule.startMainActivityFromLauncher();
@@ -112,7 +112,7 @@ public class ReturnToChromeTest {
         assertEquals(2, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
     }
 
-    private void setupTabs() throws InterruptedException {
+    private void setupTabs() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getTabModelSelector().closeAllTabs());
         EmbeddedTestServer testServer =
@@ -130,7 +130,7 @@ public class ReturnToChromeTest {
         assertEquals(2, mActivity.getTabModelSelector().getTotalTabCount());
     }
 
-    private void finishActivityCompletely() throws InterruptedException, TimeoutException {
+    private void finishActivityCompletely() throws TimeoutException {
         final CallbackHelper activityCallback = new CallbackHelper();
         ApplicationStatus.ActivityStateListener stateListener =
                 new ApplicationStatus.ActivityStateListener() {

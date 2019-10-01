@@ -99,7 +99,7 @@ public class UpdateMenuItemHelperTest {
     private MockMarketURLGetter mMockMarketURLGetter;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // This test explicitly tests for the menu item, so turn it on.
         VersionNumberGetter.setEnableUpdateDetection(true);
     }
@@ -110,8 +110,7 @@ public class UpdateMenuItemHelperTest {
      * @param currentVersion Version to report as the current version of Chrome
      * @param latestVersion Version to report is available by Omaha
      */
-    private void prepareAndStartMainActivity(String currentVersion, String latestVersion)
-            throws Exception {
+    private void prepareAndStartMainActivity(String currentVersion, String latestVersion) {
         // Report fake versions back to Main when it asks.
         mMockVersionNumberGetter = new MockVersionNumberGetter(currentVersion, latestVersion);
         VersionNumberGetter.setInstanceForTests(mMockVersionNumberGetter);
@@ -128,7 +127,7 @@ public class UpdateMenuItemHelperTest {
         versionNumbersQueried();
     }
 
-    private void versionNumbersQueried() throws Exception {
+    private void versionNumbersQueried() {
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria() {
                     @Override

@@ -162,6 +162,7 @@ enum LaunchSource {
   kFromAppListRecommendation,    // Query-less recommendations (smaller icons).
   kFromParentalControls,         // Parental Controls Settings Section.
   kFromShelf,                    // Shelf.
+  kFromFileManager,              // FileManager.
 };
 
 enum TriState {
@@ -211,4 +212,13 @@ struct Condition {
 // matches against an intent.
 struct IntentFilter {
   array<Condition> conditions;
+};
+
+// Action and resource handling request. This includes the scheme and URL at
+// the moment, and will be extended to handle MIME type and file extensions in
+// the future.
+struct Intent {
+  string? scheme; // URL scheme. e.g. https.
+  string? host;   // URL host. e.g. www.google.com.
+  string? path;   // URL path. e.g. /abc.
 };

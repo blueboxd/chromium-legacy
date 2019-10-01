@@ -153,9 +153,7 @@ class DisplayDeciderTest : public testing::Test {
 };
 
 TEST_F(DisplayDeciderTest, NoNotification) {
-  TestData data{kClientsImpressionTestData,
-                {},
-                DisplayDecider::Results()};
+  TestData data{kClientsImpressionTestData, {}, DisplayDecider::Results()};
   RunTestCase(data);
 }
 
@@ -252,6 +250,18 @@ TEST_F(DisplayDeciderTest, ThrottleSuppressedClient) {
   auto entry1 = CreateNotification(SchedulerClientType::kTest1, "guid1");
 
   TestData data{impression_test_data, {entry1}, DisplayDecider::Results()};
+  RunTestCase(data);
+}
+
+// Notifitions with NoThrottle Priority should always show.
+TEST_F(DisplayDeciderTest, UnthrottlePriority) {
+  auto impression_test_data = kClientsImpressionTestData;
+  auto entry1 = CreateNotification(SchedulerClientType::kTest1, "guid1");
+  entry1.schedule_params.priority = ScheduleParams::Priority::kNoThrottle;
+  auto entry2 = CreateNotification(SchedulerClientType::kTest1, "guid2");
+  entry2.schedule_params.priority = ScheduleParams::Priority::kNoThrottle;
+  config()->max_daily_shown_all_type = 0;
+  TestData data{impression_test_data, {entry1, entry2}, {"guid1", "guid2"}};
   RunTestCase(data);
 }
 

@@ -128,7 +128,7 @@ public class ContentViewScrollingTest {
         });
     }
 
-    private void fling(final int vx, final int vy) throws Throwable {
+    private void fling(final int vx, final int vy) {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -138,7 +138,7 @@ public class ContentViewScrollingTest {
         });
     }
 
-    private void scrollTo(final int x, final int y) throws Throwable {
+    private void scrollTo(final int x, final int y) {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -147,7 +147,7 @@ public class ContentViewScrollingTest {
         });
     }
 
-    private void scrollBy(final int dx, final int dy) throws Throwable {
+    private void scrollBy(final int dx, final int dy) {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -156,8 +156,7 @@ public class ContentViewScrollingTest {
         });
     }
 
-    private void scrollWithJoystick(final float deltaAxisX, final float deltaAxisY)
-            throws Throwable {
+    private void scrollWithJoystick(final float deltaAxisX, final float deltaAxisY) {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -173,7 +172,7 @@ public class ContentViewScrollingTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mActivityTestRule.launchContentShellWithUrl(LARGE_PAGE);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
         mCoordinates = mActivityTestRule.getRenderCoordinates();
@@ -188,7 +187,7 @@ public class ContentViewScrollingTest {
     @SmallTest
     @Feature({"Main"})
     @RetryOnFailure
-    public void testFling() throws Throwable {
+    public void testFling() {
         // Scaling the initial velocity by the device scale factor ensures that
         // it's of sufficient magnitude for all displays densities.
         float deviceScaleFactor = InstrumentationRegistry.getInstrumentation()
@@ -223,7 +222,7 @@ public class ContentViewScrollingTest {
     @SmallTest
     @Feature({"Main"})
     @RetryOnFailure
-    public void testFlingDistance() throws Throwable {
+    public void testFlingDistance() {
         // Scaling the initial velocity by the device scale factor ensures that
         // it's of sufficient magnitude for all displays densities.
         float deviceScaleFactor = InstrumentationRegistry.getInstrumentation()
@@ -258,7 +257,7 @@ public class ContentViewScrollingTest {
     @RerunWithUpdatedContainerView
     @Feature({"Main"})
     @RetryOnFailure
-    public void testScrollTo() throws Throwable {
+    public void testScrollTo() {
         // Vertical scroll to lower-left.
         scrollTo(0, 2500);
         waitForScroll(true, false);
@@ -285,7 +284,7 @@ public class ContentViewScrollingTest {
     @RerunWithUpdatedContainerView
     @Feature({"Main"})
     @RetryOnFailure
-    public void testScrollBy() throws Throwable {
+    public void testScrollBy() {
         scrollTo(0, 0);
         waitForScroll(true, true);
 
@@ -317,7 +316,7 @@ public class ContentViewScrollingTest {
     @Test
     @SmallTest
     @Feature({"Main"})
-    public void testJoystickScroll() throws Throwable {
+    public void testJoystickScroll() {
         scrollTo(0, 0);
         waitForScroll(true, true);
 
@@ -352,7 +351,7 @@ public class ContentViewScrollingTest {
     @RerunWithUpdatedContainerView
     @Feature({"Main"})
     @RetryOnFailure
-    public void testOverScroll() throws Throwable {
+    public void testOverScroll() {
         // Overscroll lower-left.
         scrollTo(-10000, 10000);
         waitForScroll(true, false);
@@ -383,7 +382,7 @@ public class ContentViewScrollingTest {
     @RerunWithUpdatedContainerView
     @Feature({"Main"})
     @RetryOnFailure
-    public void testOnScrollChanged() throws Throwable {
+    public void testOnScrollChanged() {
         final int scrollToX = mCoordinates.getScrollXPixInt() + 2500;
         final int scrollToY = mCoordinates.getScrollYPixInt() + 2500;
         final TestInternalAccessDelegate accessDelegate = new TestInternalAccessDelegate();

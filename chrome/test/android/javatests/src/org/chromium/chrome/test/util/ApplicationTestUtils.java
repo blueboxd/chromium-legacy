@@ -66,7 +66,7 @@ public class ApplicationTestUtils {
         VersionNumberGetter.setEnableUpdateDetection(false);
     }
 
-    public static void tearDown(Context context) throws Exception {
+    public static void tearDown(Context context) {
         Assert.assertNotNull("Uninitialized wake lock", sWakeLock);
         sWakeLock.release();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -80,7 +80,7 @@ public class ApplicationTestUtils {
     // TODO(bauerb): make this function throw more specific exception and update
     // StartupLoadingMetricsTest correspondingly.
     /** Send the user to the Android home screen. */
-    public static void fireHomeScreenIntent(Context context) throws Exception {
+    public static void fireHomeScreenIntent(Context context) {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_HOME);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -89,7 +89,7 @@ public class ApplicationTestUtils {
     }
 
     /** Simulate starting Chrome from the launcher with a Main Intent. */
-    public static void launchChrome(Context context) throws Exception {
+    public static void launchChrome(Context context) {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.setPackage(context.getPackageName());
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -273,7 +273,7 @@ public class ApplicationTestUtils {
             T createdActivity = activityRef.get();
             Assert.assertNotNull("Activity reference is null.", createdActivity);
             return createdActivity;
-        } catch (InterruptedException | TimeoutException e) {
+        } catch (TimeoutException e) {
             throw new RuntimeException(e);
         } finally {
             ApplicationStatus.unregisterActivityStateListener(stateListener);

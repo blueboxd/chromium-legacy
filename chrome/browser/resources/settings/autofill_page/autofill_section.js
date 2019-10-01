@@ -13,16 +13,18 @@
  */
 class AutofillManager {
   /**
-   * Add an observer to the list of addresses.
-   * @param {function(!Array<!AutofillManager.AddressEntry>):void} listener
+   * Add an observer to the list of personal data.
+   * @param {function(!Array<!AutofillManager.AddressEntry>,
+   *     !Array<!PaymentsManager.CreditCardEntry>):void} listener
    */
-  addAddressListChangedListener(listener) {}
+  setPersonalDataManagerListener(listener) {}
 
   /**
-   * Remove an observer from the list of addresses.
-   * @param {function(!Array<!AutofillManager.AddressEntry>):void} listener
+   * Remove an observer from the list of personal data.
+   * @param {function(!Array<!AutofillManager.AddressEntry>,
+   *     !Array<!PaymentsManager.CreditCardEntry>):void} listener
    */
-  removeAddressListChangedListener(listener) {}
+  removePersonalDataManagerListener(listener) {}
 
   /**
    * Request the list of addresses.
@@ -49,13 +51,13 @@ AutofillManager.AddressEntry;
  */
 class AutofillManagerImpl {
   /** @override */
-  addAddressListChangedListener(listener) {
-    chrome.autofillPrivate.onAddressListChanged.addListener(listener);
+  setPersonalDataManagerListener(listener) {
+    chrome.autofillPrivate.onPersonalDataChanged.addListener(listener);
   }
 
   /** @override */
-  removeAddressListChangedListener(listener) {
-    chrome.autofillPrivate.onAddressListChanged.removeListener(listener);
+  removePersonalDataManagerListener(listener) {
+    chrome.autofillPrivate.onPersonalDataChanged.removeListener(listener);
   }
 
   /** @override */
@@ -117,21 +119,30 @@ Polymer({
   autofillManager_: null,
 
   /**
-   * @type {?function(!Array<!AutofillManager.AddressEntry>)}
+   * @type {?function(!Array<!AutofillManager.AddressEntry>,
+   *     !Array<!PaymentsManager.CreditCardEntry>)}
    * @private
    */
-  setAddressesListener_: null,
+  setPersonalDataListener_: null,
 
   /** @override */
   attached: function() {
     // Create listener functions.
     /** @type {function(!Array<!AutofillManager.AddressEntry>)} */
-    const setAddressesListener = list => {
-      this.addresses = list;
+    const setAddressesListener = addressList => {
+      this.addresses = addressList;
+    };
+
+    /**
+     * @type {function(!Array<!AutofillManager.AddressEntry>,
+     *     !Array<!PaymentsManager.CreditCardEntry>)}
+     */
+    const setPersonalDataListener = (addressList, cardList) => {
+      this.addresses = addressList;
     };
 
     // Remember the bound reference in order to detach.
-    this.setAddressesListener_ = setAddressesListener;
+    this.setPersonalDataListener_ = setPersonalDataListener;
 
     // Set the managers. These can be overridden by tests.
     this.autofillManager_ = AutofillManagerImpl.getInstance();
@@ -140,7 +151,8 @@ Polymer({
     this.autofillManager_.getAddressList(setAddressesListener);
 
     // Listen for changes.
-    this.autofillManager_.addAddressListChangedListener(setAddressesListener);
+    this.autofillManager_.setPersonalDataManagerListener(
+        setPersonalDataListener);
 
     // Record that the user opened the address settings.
     chrome.metricsPrivate.recordUserAction('AutofillAddressesViewed');
@@ -148,9 +160,12 @@ Polymer({
 
   /** @override */
   detached: function() {
-    this.autofillManager_.removeAddressListChangedListener(
-        /** @type {function(!Array<!AutofillManager.AddressEntry>)} */ (
-            this.setAddressesListener_));
+    this.autofillManager_.removePersonalDataManagerListener(
+        /**
+           @type {function(!Array<!AutofillManager.AddressEntry>,
+               !Array<!PaymentsManager.CreditCardEntry>)}
+         */
+        (this.setPersonalDataListener_));
   },
 
   /**

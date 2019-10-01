@@ -124,7 +124,7 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   // If true, left/right key events will traverse this container
   bool horizontally_traversable_ = false;
 
-  double container_score_;
+  double container_score_ = 0.0;
 
   SearchModel::SearchResults* results_ = nullptr;  // Owned by SearchModel.
 

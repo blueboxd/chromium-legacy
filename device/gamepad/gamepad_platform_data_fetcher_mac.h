@@ -66,18 +66,9 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher {
   // GamepadDataFetcher private implementation.
   void OnAddedToProvider() override;
 
-  // Returns the index of the first empty slot, or Gamepads::kItemsLengthCap if
-  // there are no empty slots.
-  size_t GetEmptySlot();
-
-  // Returns the index of the slot allocated for this device, or the first empty
-  // slot if none is yet allocated. If there is no allocated or empty slots,
-  // returns Gamepads::kItemsLengthCap.
-  size_t GetSlotForDevice(IOHIDDeviceRef device);
-
-  // Returns the index of the slot allocated for the device with the specified
-  // |location_id|, or Gamepads::kItemsLengthCap if none is yet allocated.
-  size_t GetSlotForLocation(int location_id);
+  // Returns the GamepadDeviceMac from |devices_| that has the given device
+  // reference. Returns nullptr if the device is not in |devices_|.
+  GamepadDeviceMac* GetGamepadFromHidDevice(IOHIDDeviceRef device);
 
   // Query device info for |device| and add it to |devices_| if it is a
   // gamepad.
@@ -96,11 +87,14 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher {
   // Unregister from connection events and value change notifications.
   void UnregisterFromNotifications();
 
+  bool DisconnectUnrecognizedGamepad(int source_id) override;
+
   bool enabled_ = false;
   bool paused_ = false;
   base::ScopedCFTypeRef<IOHIDManagerRef> hid_manager_ref_;
 
-  std::unique_ptr<GamepadDeviceMac> devices_[Gamepads::kItemsLengthCap];
+  // A map of all devices using this data fetcher with the source_id as the key.
+  std::unordered_map<int, std::unique_ptr<GamepadDeviceMac>> devices_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadPlatformDataFetcherMac);
 };

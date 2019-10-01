@@ -68,7 +68,7 @@ public class ChromeContextMenuPopulatorTest {
     private ChromeContextMenuPopulator mPopulator;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
 
         when(mItemDelegate.getPageUrl()).thenReturn(PAGE_URL);

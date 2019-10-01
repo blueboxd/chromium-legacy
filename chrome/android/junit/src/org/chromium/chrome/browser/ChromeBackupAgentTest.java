@@ -368,7 +368,7 @@ public class ChromeBackupAgentTest {
             private int mPos;
 
             @Override
-            public String answer(InvocationOnMock invocation) throws Throwable {
+            public String answer(InvocationOnMock invocation) {
                 return keys[mPos++];
             }
         });
@@ -377,7 +377,7 @@ public class ChromeBackupAgentTest {
             private int mPos;
 
             @Override
-            public Integer answer(InvocationOnMock invocation) throws Throwable {
+            public Integer answer(InvocationOnMock invocation) {
                 return values[mPos++].length;
             }
         });
@@ -387,7 +387,7 @@ public class ChromeBackupAgentTest {
                     private int mPos;
 
                     @Override
-                    public Integer answer(InvocationOnMock invocation) throws Throwable {
+                    public Integer answer(InvocationOnMock invocation) {
                         byte[] buffer = invocation.getArgument(0);
                         for (int i = 0; i < values[mPos].length; i++) {
                             buffer[i] = values[mPos][i];
@@ -400,7 +400,7 @@ public class ChromeBackupAgentTest {
             private int mPos;
 
             @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+            public Boolean answer(InvocationOnMock invocation) {
                 return mPos++ < 5;
             }
         });

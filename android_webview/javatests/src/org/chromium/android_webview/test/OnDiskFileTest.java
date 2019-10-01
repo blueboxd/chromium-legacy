@@ -75,7 +75,7 @@ public class OnDiskFileTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testCookiePathIsInsideDataDir() throws Exception {
+    public void testCookiePathIsInsideDataDir() {
         File webViewCookiePath = new File(InstrumentationRegistry.getInstrumentation()
                                                   .getTargetContext()
                                                   .getDir("webview", Context.MODE_PRIVATE)

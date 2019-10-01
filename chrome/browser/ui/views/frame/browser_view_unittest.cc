@@ -98,7 +98,7 @@ TEST_F(BrowserViewTest, BrowserView) {
 }
 
 // Test layout of the top-of-window UI.
-TEST_F(BrowserViewTest, BrowserViewLayout) {
+TEST_F(BrowserViewTest, DISABLED_BrowserViewLayout) {
   BookmarkBarView::DisableAnimationsForTesting(true);
 
   // |browser_view_| owns the Browser, not the test class.
@@ -193,7 +193,7 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
 // Test that repeated accelerators are processed or ignored depending on the
 // commands that they refer to. The behavior for different commands is dictated
 // by IsCommandRepeatable() in chrome/browser/ui/views/accelerator_table.h.
-TEST_F(BrowserViewTest, RepeatedAccelerators) {
+TEST_F(BrowserViewTest, DISABLED_RepeatedAccelerators) {
   // A non-repeated Ctrl-L accelerator should be processed.
   const ui::Accelerator kLocationAccel(ui::VKEY_L, ui::EF_PLATFORM_ACCELERATOR);
   EXPECT_TRUE(browser_view()->AcceleratorPressed(kLocationAccel));
@@ -239,7 +239,7 @@ TEST_F(BrowserViewTest, MAYBE_BookmarkBarInvisibleOnShutdown) {
   BookmarkBarView::DisableAnimationsForTesting(false);
 }
 
-TEST_F(BrowserViewTest, AccessibleWindowTitle) {
+TEST_F(BrowserViewTest, DISABLED_AccessibleWindowTitle) {
   EXPECT_EQ(SubBrowserName("Untitled - %s"),
             browser_view()->GetAccessibleWindowTitleForChannelAndProfile(
                 version_info::Channel::STABLE, browser()->profile()));

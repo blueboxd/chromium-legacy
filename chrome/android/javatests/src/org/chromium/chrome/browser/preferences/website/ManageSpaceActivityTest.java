@@ -56,7 +56,7 @@ public class ManageSpaceActivityTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
@@ -152,7 +152,7 @@ public class ManageSpaceActivityTest {
     @Test
     @MediumTest
     @Feature({"SiteEngagement"})
-    public void testClearUnimporantWithoutChromeStart() throws Exception {
+    public void testClearUnimporantWithoutChromeStart() {
         ManageSpaceActivity manageSpaceActivity = startManageSpaceActivity();
         // Click 'clear' in the CBD screen.
         waitForClearButtonEnabled(manageSpaceActivity);

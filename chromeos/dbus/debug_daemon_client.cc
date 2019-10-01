@@ -555,21 +555,10 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void SetSchedulerConfiguration(const std::string& config_name,
-                                 VoidDBusMethodCallback callback) override {
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kSetSchedulerConfiguration);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(config_name);
-    debugdaemon_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnVoidMethod,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void SetSchedulerConfigurationV2(const std::string& config_name,
-                                   bool lock_policy,
-                                   VoidDBusMethodCallback callback) override {
+  void SetSchedulerConfigurationV2(
+      const std::string& config_name,
+      bool lock_policy,
+      SetSchedulerConfigurationV2Callback callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kSetSchedulerConfigurationV2);
     dbus::MessageWriter writer(&method_call);
@@ -577,7 +566,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     writer.AppendBool(lock_policy);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnVoidMethod,
+        base::BindOnce(&DebugDaemonClientImpl::OnSetSchedulerConfigurationV2,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -860,6 +849,26 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       reader.PopBool(&result);
     }
     std::move(callback).Run(result);
+  }
+
+  void OnSetSchedulerConfigurationV2(
+      SetSchedulerConfigurationV2Callback callback,
+      dbus::Response* response) {
+    if (!response) {
+      std::move(callback).Run(false, 0);
+      return;
+    }
+
+    bool result = false;
+    uint32_t num_cores_disabled = 0;
+    dbus::MessageReader reader(response);
+    if (!reader.PopBool(&result) || !reader.PopUint32(&num_cores_disabled)) {
+      LOG(ERROR) << "Failed to read SetSchedulerConfigurationV2 response";
+      std::move(callback).Run(false, 0);
+      return;
+    }
+
+    std::move(callback).Run(result, num_cores_disabled);
   }
 
   void OnGetU2fFlags(DBusMethodCallback<std::set<std::string>> callback,

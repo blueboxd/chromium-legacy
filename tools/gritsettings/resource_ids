@@ -83,90 +83,93 @@
     "includes": [11000],
     "structures": [11800],
   },
-  "chrome/browser/resources/bluetooth_internals/resources.grd": {
-    "includes": [11870],
-  },
   "chrome/browser/resources/chromeos/camera/camera_resources.grd": {
-    "includes": [11930],
-    "structures": [11990],
+    "includes": [11870],
+    "structures": [11930],
   },
   "chrome/browser/resources/chromeos/camera/src/strings/camera_strings.grd": {
-    "messages": [12030],
+    "messages": [11970],
   },
   "chrome/browser/resources/chromeos/cellular_setup/cellular_setup_resources.grd": {
-    "structures": [12100],
+    "structures": [12040],
   },
   "chrome/browser/resources/chromeos/multidevice_setup/multidevice_setup_resources.grd": {
-    "structures": [12110],
+    "structures": [12050],
   },
   "chrome/browser/resources/component_extension_resources.grd": {
-    "includes": [12120],
-    "structures": [12260],
+    "includes": [12060],
+    "structures": [12200],
   },
   "chrome/browser/resources/downloads/downloads_resources_vulcanized.grd": {
-    "includes": [12300],
+    "includes": [12240],
   },
   "chrome/browser/resources/downloads/downloads_resources.grd": {
-    "includes": [12310],
-    "structures": [12320],
+    "includes": [12250],
+    "structures": [12260],
   },
   "chrome/browser/resources/extensions/extensions_resources_vulcanized.grd": {
-    "includes": [12400],
+    "includes": [12340],
   },
   "chrome/browser/resources/extensions/extensions_resources.grd": {
-    "structures": [12410],
+    "structures": [12350],
   },
   "chrome/browser/resources/invalidations_resources.grd": {
-    "includes": [12500],
+    "includes": [12440],
   },
   "chrome/browser/resources/local_ntp/local_ntp_resources.grd": {
-    "includes": [12540],
+    "includes": [12480],
   },
   "chrome/browser/resources/net_internals/net_internals_resources.grd": {
-    "includes": [12600],
+    "includes": [12540],
   },
   "chrome/browser/resources/print_preview/print_preview_resources_vulcanized.grd": {
-    "includes": [12610],
+    "includes": [12550],
   },
   "chrome/browser/resources/print_preview/print_preview_resources.grd": {
-    "structures": [12620],
+    "structures": [12560],
   },
   "chrome/browser/resources/quota_internals/quota_internals_resources.grd": {
-    "includes": [12810],
+    "includes": [12750],
   },
   "chrome/browser/resources/settings/os_settings_resources_vulcanized.grd": {
-    "includes": [12830],
+    "includes": [12770],
   },
   "chrome/browser/resources/settings/os_settings_resources.grd": {
-    "structures": [12840],
+    "structures": [12780],
   },
   "chrome/browser/resources/settings/settings_resources_vulcanized.grd": {
-    "includes": [13340],
+    "includes": [13280],
   },
   "chrome/browser/resources/settings/settings_resources.grd": {
-    "structures": [13350],
+    "structures": [13290],
   },
   "chrome/browser/resources/sync_file_system_internals/sync_file_system_internals_resources.grd": {
-    "includes": [13860],
+    "includes": [13800],
   },
   "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
-    "structures": [13880],
-    "includes": [13900],
-  },
-  "chrome/browser/resources/usb_internals/resources.grd": {
-    "includes": [13910],
+    "structures": [13820],
+    "includes": [13840],
   },
   "chrome/browser/resources/webapks/webapks_ui_resources.grd": {
-    "includes": [13920],
+    "includes": [13850],
   },
   "chrome/browser/resources/welcome/welcome_resources.grd": {
-    "includes": [13930],
-    "structures": [13980],
+    "includes": [13860],
+    "structures": [13910],
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [14020],
+    "includes": [13950],
   },
   # END chrome/browser section.
+
+  # START chrome/ WebUI resources section
+  "chrome/browser/resources/bluetooth_internals/resources.grd": {
+    "includes": [13970],
+  },
+  "chrome/browser/resources/usb_internals/resources.grd": {
+    "includes": [14030],
+  },
+  # END chrome/ WebUI resources section
 
   # START chrome/ miscellaneous section.
   "chrome/common/common_resources.grd": {
@@ -232,25 +235,6 @@
   },
   # END components/ section.
 
-  # START content/ section.
-  # content/ and ios/web/ must start at the same id.
-  # App only use one file depending on whether it is iOS or other platform.
-  "content/app/resources/content_resources.grd": {
-    "structures": [20000],
-  },
-  "content/content_resources.grd": {
-    "includes": [20400],
-  },
-  "content/shell/shell_resources.grd": {
-    "includes": [20500],
-  },
-
-  # This file is generated during the build.
-  "<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.grd": {
-    "includes": [20550],
-  },
-  # END content/ section.
-
   # START ios/ section.
   #
   # chrome/ and ios/chrome/ must start at the same id.
@@ -294,7 +278,28 @@
   "ios/chrome/content_widget_extension/strings/ios_content_widget_extension_google_chrome_strings.grd": {
     "messages": [3080],
   },
+  # END ios/ section.
 
+  # START content/ section.
+  # content/ and ios/web/ must start at the same id.
+  # App only use one file depending on whether it is iOS or other platform.
+  "content/app/resources/content_resources.grd": {
+    "structures": [20000],
+  },
+  "content/content_resources.grd": {
+    "includes": [20400],
+  },
+  "content/shell/shell_resources.grd": {
+    "includes": [20500],
+  },
+
+  # This file is generated during the build.
+  "<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.grd": {
+    "includes": [20550],
+  },
+  # END content/ section.
+
+  # START ios/web/ section.
   # content/ and ios/web/ must start at the same id.
   # App only use one file depending on whether it is iOS or other platform.
   "ios/web/ios_web_resources.grd": {
@@ -303,7 +308,7 @@
   "ios/web/test/test_resources.grd": {
     "includes": [22000],
   },
-  # END ios/ section.
+  # END ios/web/ section.
 
   # START "everything else" section.
   # Everything but chrome/, components/, content/, and ios/

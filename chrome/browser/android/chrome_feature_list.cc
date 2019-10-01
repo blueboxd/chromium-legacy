@@ -133,8 +133,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDirectActions,
     &kDownloadLocationShowImageInGallery,
     &kDownloadFileProvider,
-    &kDownloadHomeV2,
-    &kDownloadHomeShowStorageInfo,
     &kDownloadNotificationBadge,
     &kDownloadProgressInfoBar,
     &kDownloadRename,
@@ -410,12 +408,6 @@ const base::Feature kDownloadProgressInfoBar{"DownloadProgressInfoBar",
 const base::Feature kDownloadFileProvider{"DownloadFileProvider",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kDownloadHomeV2{"DownloadHomeV2",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kDownloadHomeShowStorageInfo{
-    "DownloadHomeShowStorageInfo", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kDownloadNotificationBadge{
     "DownloadNotificationBadge", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -580,7 +572,7 @@ const base::Feature kUmaBackgroundSessions{"UMABackgroundSessions",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kUsageStatsFeature{"UsageStats",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUserMediaScreenCapturing{
     "UserMediaScreenCapturing", base::FEATURE_DISABLED_BY_DEFAULT};

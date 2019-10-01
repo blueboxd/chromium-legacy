@@ -23,17 +23,30 @@
 namespace {
 
 constexpr int kUpdateIconIntervalMs = 40;  // 40ms for 25 frames per second.
+
+// Controls the spinner animation. See crbug.com/922977 for details.
+constexpr double kFadeInDurationMs = 200;
 constexpr int kSpinningGapPercent = 25;
+constexpr color_utils::HSL kInactiveHslShift = {-1, 0, 0.25};
+constexpr double kInactiveTransparency = 0.5;
 
 class SpinningEffectSource : public gfx::CanvasImageSource {
  public:
   SpinningEffectSource(const base::WeakPtr<ShelfSpinnerController>& host,
                        const std::string& app_id,
-                       const gfx::ImageSkia& image)
+                       const gfx::ImageSkia& image,
+                       bool is_pinned)
       : gfx::CanvasImageSource(image.size()),
         host_(host),
         app_id_(app_id),
-        image_(image) {}
+        active_image_(
+            is_pinned
+                ? image
+                : gfx::ImageSkiaOperations::CreateTransparentImage(image, 0)),
+        inactive_image_(gfx::ImageSkiaOperations::CreateTransparentImage(
+            gfx::ImageSkiaOperations::CreateHSLShiftedImage(image,
+                                                            kInactiveHslShift),
+            kInactiveTransparency)) {}
 
   ~SpinningEffectSource() override {}
 
@@ -42,19 +55,28 @@ class SpinningEffectSource : public gfx::CanvasImageSource {
     if (!host_)
       return;
 
-    canvas->DrawImageInt(image_, 0, 0);
+    base::TimeDelta active_time = host_->GetActiveTime(app_id_);
+    double fade_in_lirp =
+        std::min(kFadeInDurationMs, active_time.InMillisecondsF()) /
+        kFadeInDurationMs;
 
-    const int gap = kSpinningGapPercent * image_.width() / 100;
-    gfx::PaintThrobberSpinning(canvas,
-                               gfx::Rect(gap, gap, image_.width() - 2 * gap,
-                                         image_.height() - 2 * gap),
-                               SK_ColorWHITE, host_->GetActiveTime(app_id_));
+    canvas->DrawImageInt(gfx::ImageSkiaOperations::CreateBlendedImage(
+                             active_image_, inactive_image_, fade_in_lirp),
+                         0, 0);
+
+    const int gap = kSpinningGapPercent * inactive_image_.width() / 100;
+    gfx::PaintThrobberSpinning(
+        canvas,
+        gfx::Rect(gap, gap, inactive_image_.width() - 2 * gap,
+                  inactive_image_.height() - 2 * gap),
+        SkColorSetA(SK_ColorWHITE, 0xFF * fade_in_lirp), active_time);
   }
 
  private:
   base::WeakPtr<ShelfSpinnerController> host_;
   const std::string app_id_;
-  const gfx::ImageSkia image_;
+  const gfx::ImageSkia active_image_;
+  const gfx::ImageSkia inactive_image_;
 
   DISALLOW_COPY_AND_ASSIGN(SpinningEffectSource);
 };
@@ -83,14 +105,10 @@ void ShelfSpinnerController::MaybeApplySpinningEffect(const std::string& app_id,
   if (app_controller_map_.find(app_id) == app_controller_map_.end())
     return;
 
-  const color_utils::HSL shift = {-1, 0, 0.25};
-  *image = gfx::ImageSkia(
-      std::make_unique<SpinningEffectSource>(
-          weak_ptr_factory_.GetWeakPtr(), app_id,
-          gfx::ImageSkiaOperations::CreateTransparentImage(
-              gfx::ImageSkiaOperations::CreateHSLShiftedImage(*image, shift),
-              0.5)),
-      image->size());
+  *image = gfx::ImageSkia(std::make_unique<SpinningEffectSource>(
+                              weak_ptr_factory_.GetWeakPtr(), app_id, *image,
+                              owner_->IsAppPinned(app_id)),
+                          image->size());
 }
 
 void ShelfSpinnerController::HideSpinner(const std::string& app_id) {

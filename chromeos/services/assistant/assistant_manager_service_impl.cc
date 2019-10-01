@@ -5,6 +5,7 @@
 #include "chromeos/services/assistant/assistant_manager_service_impl.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "ash/public/cpp/assistant/assistant_state_base.h"
@@ -14,6 +15,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -24,8 +26,10 @@
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/services/assistant/assistant_communication_error_observer.h"
+#include "chromeos/services/assistant/assistant_manager_service_delegate.h"
 #include "chromeos/services/assistant/constants.h"
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
+#include "chromeos/services/assistant/platform_api_impl.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/service_context.h"
 #include "chromeos/services/assistant/utils.h"
@@ -34,6 +38,7 @@
 #include "libassistant/shared/internal_api/alarm_timer_types.h"
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
+#include "libassistant/shared/public/assistant_manager.h"
 #include "libassistant/shared/public/media_manager.h"
 #include "mojo/public/mojom/base/time.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -136,8 +141,8 @@ CommunicationErrorType CommunicationErrorTypeFromLibassistantErrorCode(
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     mojom::Client* client,
-    mojo::PendingRemote<device::mojom::BatteryMonitor> battery_monitor,
     ServiceContext* context,
+    std::unique_ptr<AssistantManagerServiceDelegate> delegate,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info,
     bool is_signed_out_mode)
@@ -151,16 +156,15 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       assistant_settings_manager_(
           std::make_unique<AssistantSettingsManagerImpl>(context, this)),
       context_(context),
+      delegate_(std::move(delegate)),
       background_thread_("background thread"),
       is_signed_out_mode_(is_signed_out_mode),
       app_list_subscriber_binding_(this),
       weak_factory_(this) {
   background_thread_.Start();
-  platform_api_ = std::make_unique<PlatformApiImpl>(
-      client_, media_session_.get(), context_->power_manager_client(),
-      context_->cras_audio_handler(), std::move(battery_monitor),
-      main_task_runner(), background_thread_.task_runner(),
-      assistant_state()->locale().value());
+
+  platform_api_ = delegate_->CreatePlatformApi(
+      media_session_.get(), background_thread_.task_runner());
 
   mojo::Remote<media_session::mojom::MediaControllerManager>
       media_controller_manager;
@@ -182,7 +186,7 @@ void AssistantManagerServiceImpl::Start(
   DCHECK_EQ(state_, State::STOPPED);
 
   // Set the flag to avoid starting the service multiple times.
-  state_ = State::STARTED;
+  state_ = State::STARTING;
 
   started_time_ = base::TimeTicks::Now();
 
@@ -201,10 +205,9 @@ void AssistantManagerServiceImpl::Start(
 
 void AssistantManagerServiceImpl::Stop() {
   // We cannot cleanly stop the service if it is in the process of starting up.
-  DCHECK_NE(state_, State::STARTED);
+  DCHECK_NE(state_, State::STARTING);
 
   state_ = State::STOPPED;
-  start_finished_ = false;
 
   // When user disables the feature, we also deletes all data.
   if (!assistant_state()->settings_enabled().value() && assistant_manager_)
@@ -282,6 +285,14 @@ void AssistantManagerServiceImpl::UpdateInternalMediaPlayerStatus(
   }
 }
 
+void AssistantManagerServiceImpl::WaitUntilStartIsFinishedForTesting() {
+  // First we wait until |StartAssistantInternal| is finished.
+  background_thread_.FlushForTesting();
+  // Then we wait until |PostInitAssistant| finishes.
+  // (which runs on the main thread).
+  base::RunLoop().RunUntilIdle();
+}
+
 void AssistantManagerServiceImpl::AddMediaControllerObserver() {
   if (features::IsMediaSessionIntegrationEnabled()) {
     media_controller_->AddObserver(
@@ -295,6 +306,10 @@ void AssistantManagerServiceImpl::RegisterAlarmsTimersListener() {
 
   auto* alarm_timer_manager =
       assistant_manager_internal_->GetAlarmTimerManager();
+
+  // Can be nullptr during unittests.
+  if (!alarm_timer_manager)
+    return;
 
   alarm_timer_manager->RegisterRingingStateListener([this]() {
     main_task_runner()->PostTask(
@@ -314,7 +329,7 @@ void AssistantManagerServiceImpl::EnableHotword(bool enable) {
 }
 
 void AssistantManagerServiceImpl::SetArcPlayStoreEnabled(bool enable) {
-  if (!start_finished_) {
+  if (!HasStartFinished()) {
     // Skip setting play store status if libassistant is not ready. The status
     // will be set when it is ready.
     return;
@@ -1009,27 +1024,29 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
       this, assistant::features::IsFeedbackUiEnabled(),
       assistant::features::IsMediaSessionIntegrationEnabled());
 
-  new_assistant_manager_.reset(assistant_client::AssistantManager::Create(
-      platform_api_.get(), CreateLibAssistantConfig()));
-  auto* assistant_manager_internal =
-      UnwrapAssistantManagerInternal(new_assistant_manager_.get());
+  new_assistant_manager_ = delegate_->CreateAssistantManager(
+      platform_api_.get(), CreateLibAssistantConfig());
+  new_assistant_manager_internal_ =
+      delegate_->UnwrapAssistantManagerInternal(new_assistant_manager_.get());
 
-  UpdateInternalOptions(assistant_manager_internal);
+  UpdateInternalOptions(new_assistant_manager_internal_);
 
-  assistant_manager_internal->SetDisplayConnection(
+  new_assistant_manager_internal_->SetDisplayConnection(
       new_display_connection_.get());
-  assistant_manager_internal->RegisterActionModule(action_module_.get());
-  assistant_manager_internal->SetAssistantManagerDelegate(this);
-  assistant_manager_internal->GetFuchsiaApiHelperOrDie()->SetFuchsiaApiDelegate(
-      &chromium_api_delegate_);
+  new_assistant_manager_internal_->RegisterActionModule(action_module_.get());
+  new_assistant_manager_internal_->SetAssistantManagerDelegate(this);
+  new_assistant_manager_internal_->GetFuchsiaApiHelperOrDie()
+      ->SetFuchsiaApiDelegate(&chromium_api_delegate_);
   new_assistant_manager_->AddConversationStateListener(this);
   new_assistant_manager_->AddDeviceStateListener(this);
 
   std::vector<std::string> server_experiment_ids;
   FillServerExperimentIds(&server_experiment_ids);
 
-  if (server_experiment_ids.size() > 0)
-    assistant_manager_internal->AddExtraExperimentIds(server_experiment_ids);
+  if (server_experiment_ids.size() > 0) {
+    new_assistant_manager_internal_->AddExtraExperimentIds(
+        server_experiment_ids);
+  }
 
   if (!is_signed_out_mode_) {
     new_assistant_manager_->SetAuthTokens(
@@ -1041,7 +1058,7 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
 void AssistantManagerServiceImpl::PostInitAssistant(
     base::OnceClosure post_init_callback) {
   DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
-  DCHECK_EQ(state_, State::STARTED);
+  DCHECK_EQ(state_, State::STARTING);
 
   {
     base::AutoLock lock(new_assistant_manager_lock_);
@@ -1058,11 +1075,11 @@ void AssistantManagerServiceImpl::PostInitAssistant(
 
     display_connection_ = std::move(new_display_connection_);
     assistant_manager_ = std::move(new_assistant_manager_);
+    assistant_manager_internal_ = new_assistant_manager_internal_;
+    new_assistant_manager_internal_ = nullptr;
   }
 
-  assistant_manager_internal_ =
-      UnwrapAssistantManagerInternal(assistant_manager_.get());
-  state_ = State::RUNNING;
+  state_ = State::STARTED;
 
   const base::TimeDelta time_since_started =
       base::TimeTicks::Now() - started_time_;
@@ -1119,21 +1136,18 @@ void AssistantManagerServiceImpl::HandleVerifyAndroidAppResponse(
       interaction_proto, "verify_provider_response", options, [](auto) {});
 }
 
-// assistant_client::DeviceStateListener overrides
-// Run on LibAssistant threads
-// This method currently only triggered as the callback of libassistant bootup
-// checkin. For example, it won't get triggered for opted-out users.
+// This method runs on the LibAssistant thread.
+// This method is triggered as the callback of libassistant bootup checkin.
 void AssistantManagerServiceImpl::OnStartFinished() {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnStartFinished);
 
   // It is possible the |assistant_manager_| was destructed before the
   // rescheduled main thread task got a chance to run. We check this and also
-  // try to avoid double run by check |start_finished_|.
-  if (!assistant_manager_ || start_finished_)
+  // try to avoid double run by check |HasStartFinished()|.
+  if (!assistant_manager_ || HasStartFinished())
     return;
 
-  // TODO(b/129896357): find a better place for additional setups.
-  start_finished_ = true;
+  SetStartFinished();
 
   if (is_first_init) {
     is_first_init = false;
@@ -1229,9 +1243,7 @@ void AssistantManagerServiceImpl::MediaSessionMetadataChanged(
 
 void AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread(
     const assistant_client::ConversationTurnMetadata& metadata) {
-  platform_api_->GetAudioInputProvider()
-      .GetAudioInput()
-      .OnConversationTurnStarted();
+  platform_api_->OnConversationTurnStarted();
 
   // Retrieve the cached interaction metadata associated with this conversation
   // turn or construct a new instance if there's no match in the cache.
@@ -1260,9 +1272,7 @@ void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
     platform_api_->SetMicState(false);
   }
 
-  platform_api_->GetAudioInputProvider()
-      .GetAudioInput()
-      .OnConversationTurnFinished();
+  platform_api_->OnConversationTurnFinished();
 
   switch (resolution) {
     // Interaction ended normally.
@@ -1709,6 +1719,14 @@ mojom::DeviceActions* AssistantManagerServiceImpl::device_actions() {
 scoped_refptr<base::SequencedTaskRunner>
 AssistantManagerServiceImpl::main_task_runner() {
   return context_->main_task_runner();
+}
+
+bool AssistantManagerServiceImpl::HasStartFinished() const {
+  return state_ == State::RUNNING;
+}
+
+void AssistantManagerServiceImpl::SetStartFinished() {
+  state_ = State::RUNNING;
 }
 
 }  // namespace assistant

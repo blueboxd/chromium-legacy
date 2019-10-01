@@ -98,7 +98,7 @@ public class DialogOverlayImplPixelTest {
     RenderCoordinatesImpl mCoordinates;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         takeScreenshotOfBackground();
         mCoordinates = mActivityTestRule.getRenderCoordinates();
     }

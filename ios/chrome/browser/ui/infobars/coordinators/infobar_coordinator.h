@@ -116,6 +116,13 @@ enum class InfobarBannerPresentationState;
 // YES if the banner has ever been presented for this Coordinator.
 @property(nonatomic, assign, readonly) BOOL bannerWasPresented;
 
+// If YES this Coordinator's banner will have a higher presentation priority
+// than other InfobarCoordinators with this property set to NO. The parent
+// Coordinator will define what this means e.g. Longer presentation time before
+// auto-dismiss and/or jumping the queue and being the next banner to present,
+// etc.
+@property(nonatomic, assign) BOOL highPriorityPresentation;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_COORDINATORS_INFOBAR_COORDINATOR_H_

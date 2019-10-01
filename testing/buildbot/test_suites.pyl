@@ -3717,7 +3717,7 @@
           '${got_revision}',
           '--test-machine-name',
           '${buildername}',
-          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer,UseSkiaForGLReadback --use-gl=egl --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization --disable-software-compositing-fallback --disable-headless-mode',
+          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer --use-gl=egl --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization --disable-software-compositing-fallback --disable-headless-mode',
         ],
         'precommit_args': [
           # Gerrit issue ID
@@ -3761,7 +3761,6 @@
           '--buildbucket-build-id',
           '${buildbucket_build_id}',
         ],
-        'experiment_percentage': 100,
         'swarming': {
           'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
         },

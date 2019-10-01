@@ -9,6 +9,8 @@ const cannotAccessLocalStorageErrorMessage =
     '"local" is not available for login screen extensions';
 const cannotAccessSyncStorageErrorMessage =
     '"sync" is not available for login screen extensions';
+const noManagedGuestSessionAccountsErrorMessage =
+    'No managed guest session accounts';
 
 const tests = {
   /* LoginScreenUi ************************************************************/
@@ -80,6 +82,35 @@ const tests = {
     chrome.storage.managed.get(() => {
       chrome.test.assertNoLastError();
       chrome.test.succeed();
+    });
+  },
+
+  /* Login ********************************************************************/
+  'LoginLaunchManagedGuestSession': () => {
+    chrome.login.launchManagedGuestSession(() => {
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+    });
+  },
+  'LoginLaunchManagedGuestSessionNoAccounts': () => {
+    chrome.login.launchManagedGuestSession(() => {
+      chrome.test.assertLastError(noManagedGuestSessionAccountsErrorMessage);
+      chrome.test.succeed();
+    });
+  },
+  'LoginExitCurrentSession': () => {
+    chrome.test.getConfig(config => {
+      chrome.login.exitCurrentSession(config.customArg);
+      // No check for success as browser process exists.
+    });
+  },
+  'LoginFetchDataForNextLoginAttempt': () => {
+    chrome.test.getConfig(config => {
+      chrome.login.fetchDataForNextLoginAttempt(data => {
+        chrome.test.assertNoLastError();
+        chrome.test.assertEq(config.customArg, data);
+        chrome.test.succeed();
+      });
     });
   },
 };

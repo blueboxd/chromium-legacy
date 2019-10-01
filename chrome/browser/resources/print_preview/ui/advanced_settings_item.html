@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/search_highlight_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
@@ -76,10 +77,15 @@
           </select>
         </div>
       </template>
-      <span hidden$="[[isCapabilityTypeSelect_(capability)]]">
+      <span hidden$="[[!isCapabilityTypeInput_(capability)]]">
         <cr-input type="text" on-input="onUserInput_" spellcheck="false"
             placeholder="[[getCapabilityPlaceholder_(capability)]]">
         </cr-input>
+      </span>
+      <span hidden$="[[!isCapabilityTypeCheckbox_(capability)]]">
+        <cr-checkbox on-change="onCheckboxInput_"
+            checked="[[isChecked_(currentValue_)]]">
+        </cr-checkbox>
       </span>
     </div>
   </template>

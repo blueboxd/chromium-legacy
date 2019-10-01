@@ -38,6 +38,7 @@ UI_BASE_EXPORT extern const char kTopChromeTouchUiAuto[];
 UI_BASE_EXPORT extern const char kTopChromeTouchUiDisabled[];
 UI_BASE_EXPORT extern const char kTopChromeTouchUiEnabled[];
 UI_BASE_EXPORT extern const char kUIDisablePartialSwap[];
+UI_BASE_EXPORT extern const char kUseSystemClipboard[];
 
 // Test related.
 UI_BASE_EXPORT extern const char kDisallowNonExactResourceReuse[];

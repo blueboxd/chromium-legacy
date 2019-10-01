@@ -230,16 +230,12 @@ if (is_android || is_chromeos) {
       android_sdk_platform_version = android_sdk_version
     }
 
-    # Speed up dexing using dx --incremental.
-    enable_incremental_dx = is_java_debug
+    # Reduce build time by using d8 incremental build.
+    enable_incremental_d8 = true
 
     # Use hashed symbol names to reduce JNI symbol overhead.
     use_hashed_jni_names = !is_java_debug
   }
-
-  # This should not be used for release builds since dx --incremental is known
-  # to not produce byte-for-byte identical output.
-  assert(!(enable_incremental_dx && !is_java_debug))
 
   # Path to where selected build variables are written to.
   android_build_vars = "$root_build_dir/build_vars.txt"

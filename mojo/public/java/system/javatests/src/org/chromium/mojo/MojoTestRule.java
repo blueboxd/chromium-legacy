@@ -40,7 +40,7 @@ public class MojoTestRule extends ExternalResource {
     }
 
     @Override
-    protected void before() throws Throwable {
+    protected void before() {
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         if (mShouldInitCore && !sIsCoreInitialized) {
             nativeInitCore();

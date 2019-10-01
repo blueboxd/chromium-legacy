@@ -6,8 +6,9 @@
 #define COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SYNC_CLIENT_H_
 
 #include <string>
-
 #include "base/macros.h"
+#include "base/optional.h"
+#include "components/sync_device_info/device_info.h"
 
 namespace syncer {
 
@@ -19,6 +20,8 @@ class DeviceInfoSyncClient {
 
   virtual std::string GetSigninScopedDeviceId() const = 0;
   virtual bool GetSendTabToSelfReceivingEnabled() const = 0;
+  virtual base::Optional<DeviceInfo::SharingInfo> GetLocalSharingInfo()
+      const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceInfoSyncClient);

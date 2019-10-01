@@ -35,7 +35,7 @@ import java.util.List;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class SingleThreadTaskRunnerImplTest {
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mHandlerThread = new HandlerThread("SingleThreadTaskRunnerImplTest thread");
         mHandlerThread.start();
         mHandler = new Handler(mHandlerThread.getLooper());

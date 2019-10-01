@@ -47,7 +47,7 @@ public class SaveRestoreStateTest {
         }
     }
 
-    private TestVars createNewView() throws Exception {
+    private TestVars createNewView() {
         TestAwContentsClient contentsClient = new TestAwContentsClient();
         AwTestContainerView testView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
@@ -79,7 +79,7 @@ public class SaveRestoreStateTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         if (mWebServer != null) {
             mWebServer.shutdown();
         }
@@ -118,7 +118,7 @@ public class SaveRestoreStateTest {
         }
     }
 
-    private TestVars saveAndRestoreStateOnUiThread(final TestVars vars) throws Throwable {
+    private TestVars saveAndRestoreStateOnUiThread(final TestVars vars) {
         final TestVars restoredVars = createNewView();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             Bundle bundle = new Bundle();

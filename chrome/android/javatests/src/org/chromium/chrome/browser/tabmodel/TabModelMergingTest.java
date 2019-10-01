@@ -366,8 +366,7 @@ public class TabModelMergingTest {
     @Test
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
-    public void testMergeOnColdStartIntoChromeTabbedActivity2()
-            throws TimeoutException, InterruptedException {
+    public void testMergeOnColdStartIntoChromeTabbedActivity2() throws TimeoutException {
         String CTA2ClassName = mActivity2.getClass().getName();
         String CTA2PackageName = mActivity2.getPackageName();
 
@@ -437,7 +436,7 @@ public class TabModelMergingTest {
     @Test
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
-    public void testMergeWithNoTabs() throws Exception {
+    public void testMergeWithNoTabs() {
         // Close all tabs and wait for the callback.
         ChromeTabUtils.closeAllTabs(InstrumentationRegistry.getInstrumentation(), mActivity1);
 
@@ -454,7 +453,7 @@ public class TabModelMergingTest {
     @Test
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
-    public void testMergingIncognitoTabs() throws InterruptedException {
+    public void testMergingIncognitoTabs() {
         // Incognito tabs must be fully loaded so that their tab states are written out.
         ChromeTabUtils.fullyLoadUrlInNewTab(
                 InstrumentationRegistry.getInstrumentation(), mActivity1, TEST_URL_5, true);

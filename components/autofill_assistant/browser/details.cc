@@ -7,17 +7,79 @@
 #include <unordered_set>
 
 #include <base/strings/stringprintf.h>
+#include "base/i18n/time_formatting.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/strings/grit/components_strings.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill_assistant {
+namespace {
 
+// TODO(b/141850276): Remove hardcoded formatting strings.
+constexpr char kDateFormat[] = "EEE, MMM d";
+constexpr char kTimeFormat[] = "h:mm a";
+constexpr char kDateTimeSeparator[] = " \xE2\x80\xA2 ";
 constexpr char kSpaceBetweenCardNumAndDate[] = "    ";
+
+// Parse RFC 3339 date-time. Store the value in the datetime proto field.
+bool ParseDateTimeStringToProto(const std::string& datetime,
+                                DateTimeProto* result) {
+  // RFC 3339 format without timezone: yyyy'-'MM'-'dd'T'HH':'mm':'ss
+  std::string pattern =
+      R"rgx((\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}))rgx";
+
+  int year, month, day, hour, minute, second;
+  if (re2::RE2::FullMatch(datetime, pattern, &year, &month, &day, &hour,
+                          &minute, &second)) {
+    auto* date = result->mutable_date();
+    date->set_year(year);
+    date->set_month(month);
+    date->set_day(day);
+    auto* time = result->mutable_time();
+    time->set_hour(hour);
+    time->set_minute(minute);
+    time->set_second(second);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+// Format a datetime proto with current locale.
+std::string FormatDateTimeProto(const DateTimeProto& date_time) {
+  if (!date_time.has_date() || !date_time.has_time()) {
+    return std::string();
+  }
+  auto date_proto = date_time.date();
+  auto time_proto = date_time.time();
+
+  base::Time::Exploded exploded_time = {
+      date_proto.year(),      date_proto.month(),
+      /* day_of_week = */ -1, date_proto.day(),    time_proto.hour(),
+      time_proto.minute(),    time_proto.second(), 0};
+  base::Time time;
+
+  if (base::Time::FromLocalExploded(exploded_time, &time)) {
+    auto date_string = base::TimeFormatWithPattern(time, kDateFormat);
+    auto time_string = base::TimeFormatWithPattern(time, kTimeFormat);
+
+    return base::StrCat({base::UTF16ToUTF8(time_string), kDateTimeSeparator,
+                         base::UTF16ToUTF8(date_string)});
+  }
+
+  return std::string();
+}
+
+}  // namespace
+
+Details::Details() = default;
+Details::~Details() = default;
 
 // static
 bool Details::UpdateFromProto(const ShowDetailsProto& proto, Details* details) {
@@ -125,52 +187,45 @@ bool Details::UpdateFromSelectedCreditCard(const ShowDetailsProto& proto,
 
 base::Value Details::GetDebugContext() const {
   base::Value dict(base::Value::Type::DICTIONARY);
-  if (!details_proto().title().empty())
-    dict.SetKey("title", base::Value(details_proto().title()));
+  if (!proto_.title().empty())
+    dict.SetKey("title", base::Value(proto_.title()));
 
-  if (!details_proto().image_url().empty())
-    dict.SetKey("image_url", base::Value(details_proto().image_url()));
+  if (!proto_.image_url().empty())
+    dict.SetKey("image_url", base::Value(proto_.image_url()));
 
-  if (!details_proto().total_price().empty())
-    dict.SetKey("total_price", base::Value(details_proto().total_price()));
+  if (!proto_.total_price().empty())
+    dict.SetKey("total_price", base::Value(proto_.total_price()));
 
-  if (!details_proto().total_price_label().empty())
-    dict.SetKey("total_price_label",
-                base::Value(details_proto().total_price_label()));
+  if (!proto_.total_price_label().empty())
+    dict.SetKey("total_price_label", base::Value(proto_.total_price_label()));
 
-  if (!details_proto().description_line_1().empty())
-    dict.SetKey("description_line_1",
-                base::Value(details_proto().description_line_1()));
+  if (!proto_.description_line_1().empty())
+    dict.SetKey("description_line_1", base::Value(proto_.description_line_1()));
 
-  if (!details_proto().description_line_2().empty())
-    dict.SetKey("description_line_2",
-                base::Value(details_proto().description_line_2()));
+  if (!proto_.description_line_2().empty())
+    dict.SetKey("description_line_2", base::Value(proto_.description_line_2()));
 
-  if (!details_proto().description_line_3().empty())
-    dict.SetKey("description_line_3",
-                base::Value(details_proto().description_line_3()));
+  if (!proto_.description_line_3().empty())
+    dict.SetKey("description_line_3", base::Value(proto_.description_line_3()));
 
-  if (details_proto().has_datetime()) {
-    dict.SetKey("datetime",
-                base::Value(base::StringPrintf(
-                    "%d-%02d-%02dT%02d:%02d:%02d",
-                    static_cast<int>(details_proto().datetime().date().year()),
-                    details_proto().datetime().date().month(),
-                    details_proto().datetime().date().day(),
-                    details_proto().datetime().time().hour(),
-                    details_proto().datetime().time().minute(),
-                    details_proto().datetime().time().second())));
+  if (proto_.has_datetime()) {
+    dict.SetKey(
+        "datetime",
+        base::Value(base::StringPrintf(
+            "%d-%02d-%02dT%02d:%02d:%02d",
+            static_cast<int>(proto_.datetime().date().year()),
+            proto_.datetime().date().month(), proto_.datetime().date().day(),
+            proto_.datetime().time().hour(), proto_.datetime().time().minute(),
+            proto_.datetime().time().second())));
   }
-  if (!datetime_.empty())
-    dict.SetKey("datetime_str", base::Value(datetime_));
 
   dict.SetKey("user_approval_required",
-              base::Value(changes().user_approval_required()));
-  dict.SetKey("highlight_title", base::Value(changes().highlight_title()));
-  dict.SetKey("highlight_line1", base::Value(changes().highlight_line1()));
-  dict.SetKey("highlight_line2", base::Value(changes().highlight_line2()));
-  dict.SetKey("highlight_line3", base::Value(changes().highlight_line3()));
-  dict.SetKey("highlight_line3", base::Value(changes().highlight_line3()));
+              base::Value(change_flags_.user_approval_required()));
+  dict.SetKey("highlight_title", base::Value(change_flags_.highlight_title()));
+  dict.SetKey("highlight_line1", base::Value(change_flags_.highlight_line1()));
+  dict.SetKey("highlight_line2", base::Value(change_flags_.highlight_line2()));
+  dict.SetKey("highlight_line3", base::Value(change_flags_.highlight_line3()));
+  dict.SetKey("highlight_line3", base::Value(change_flags_.highlight_line3()));
 
   return dict;
 }
@@ -186,6 +241,7 @@ bool Details::UpdateFromParameters(const TriggerContext& context) {
   proto_.set_animate_placeholders(true);
   proto_.set_show_image_placeholder(true);
   if (MaybeUpdateFromDetailsParameters(context)) {
+    Update();
     return true;
   }
 
@@ -208,10 +264,13 @@ bool Details::UpdateFromParameters(const TriggerContext& context) {
 
   base::Optional<std::string> screening_datetime =
       context.GetParameter("MOVIES_SCREENING_DATETIME");
-  if (screening_datetime) {
-    datetime_ = screening_datetime.value();
+  if (screening_datetime &&
+      ParseDateTimeStringToProto(screening_datetime.value(),
+                                 proto_.mutable_datetime())) {
     is_updated = true;
   }
+
+  Update();
   return is_updated;
 }
 
@@ -278,8 +337,121 @@ bool Details::MaybeUpdateFromDetailsParameters(const TriggerContext& context) {
   return details_updated;
 }
 
+void Details::SetDetailsProto(const DetailsProto& proto) {
+  proto_ = proto;
+  Update();
+}
+
+const std::string Details::title() const {
+  return proto_.title();
+}
+
+int Details::titleMaxLines() const {
+  return title_max_lines_;
+}
+
+const std::string Details::imageUrl() const {
+  return proto_.image_url();
+}
+
+bool Details::imageAllowClickthrough() const {
+  return proto_.image_clickthrough_data().allow_clickthrough();
+}
+
+const std::string Details::imageDescription() const {
+  return proto_.image_clickthrough_data().description();
+}
+
+const std::string Details::imagePositiveText() const {
+  return proto_.image_clickthrough_data().positive_text();
+}
+
+const std::string Details::imageNegativeText() const {
+  return proto_.image_clickthrough_data().negative_text();
+}
+
+const std::string Details::imageClickthroughUrl() const {
+  return proto_.image_clickthrough_data().clickthrough_url();
+}
+
+bool Details::showImagePlaceholder() const {
+  return proto_.show_image_placeholder();
+}
+
+const std::string Details::totalPriceLabel() const {
+  return proto_.total_price_label();
+}
+
+const std::string Details::totalPrice() const {
+  return proto_.total_price();
+}
+
+const std::string Details::descriptionLine1() const {
+  return description_line_1_content_;
+}
+
+const std::string Details::descriptionLine2() const {
+  return proto_.description_line_2();
+}
+
+const std::string Details::descriptionLine3() const {
+  return description_line_3_content_;
+}
+
+const std::string Details::priceAttribution() const {
+  return price_attribution_content_;
+}
+
+bool Details::userApprovalRequired() const {
+  return change_flags_.user_approval_required();
+}
+
+bool Details::highlightTitle() const {
+  return change_flags_.highlight_title();
+}
+
+bool Details::highlightLine1() const {
+  return change_flags_.highlight_line1();
+}
+
+bool Details::highlightLine2() const {
+  return change_flags_.highlight_line2();
+}
+
+bool Details::highlightLine3() const {
+  return change_flags_.highlight_line3();
+}
+
+bool Details::animatePlaceholders() const {
+  return proto_.animate_placeholders();
+}
+
 void Details::ClearChanges() {
   change_flags_.Clear();
+}
+
+void Details::Update() {
+  auto formatted_datetime = FormatDateTimeProto(proto_.datetime());
+  description_line_1_content_.assign(proto_.description_line_1().empty()
+                                         ? formatted_datetime
+                                         : proto_.description_line_1());
+
+  description_line_3_content_.assign(proto_.total_price().empty()
+                                         ? proto_.description_line_3()
+                                         : std::string());
+  price_attribution_content_.assign(proto_.total_price().empty()
+                                        ? std::string()
+                                        : proto_.description_line_3());
+
+  bool isDescriptionLine1Empty = descriptionLine1().empty();
+  bool isDescriptionLine2Empty = descriptionLine2().empty();
+  if (isDescriptionLine1Empty && isDescriptionLine2Empty) {
+    title_max_lines_ = 3;
+  } else if (isDescriptionLine1Empty || isDescriptionLine2Empty) {
+    title_max_lines_ = 2;
+  } else {
+    title_max_lines_ = 1;
+  }
 }
 
 }  // namespace autofill_assistant

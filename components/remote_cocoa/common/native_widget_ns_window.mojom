@@ -77,6 +77,10 @@ struct NativeWidgetNSWindowInitParams {
   // NSWindowCollectionBehaviorParticipatesInCycle (this is not the
   // default for NSWindows with NSBorderlessWindowMask).
   bool force_into_collection_cycle;
+  // An opaque blob of AppKit data which includes, among other things, a
+  // window's workspace and fullscreen state, and can be retrieved from or
+  // applied to a window.
+  array<uint8> state_restoration_data;
 };
 
 // The interface through which a NativeWidgetMac may interact with an NSWindow

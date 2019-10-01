@@ -16,7 +16,7 @@ class TabDesktopMediaList : public DesktopMediaListBase {
  private:
   typedef std::map<content::DesktopMediaID, uint32_t> ImageHashesMap;
 
-  void Refresh() override;
+  void Refresh(bool update_thumnails) override;
 
   ImageHashesMap favicon_hashes_;
 

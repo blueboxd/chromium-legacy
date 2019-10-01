@@ -51,6 +51,8 @@ source_set("common_source_set") {
     "host_view_controller.h",
     "host_view_controller.mm",
     "main.mm",
+    "notification_presenter.h",
+    "notification_presenter.mm",
     "physical_keyboard_detector.h",
     "physical_keyboard_detector.mm",
     "pin_entry_view.h",

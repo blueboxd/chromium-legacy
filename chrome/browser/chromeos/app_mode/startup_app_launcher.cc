@@ -425,11 +425,10 @@ void StartupAppLauncher::LaunchApp() {
   SYSLOG(INFO) << "Attempt to launch app.";
 
   // Always open the app in a window.
-  apps::LaunchService::Get(profile_)->OpenApplication(
-      AppLaunchParams(profile_, extension->id(),
-                      apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                      WindowOpenDisposition::NEW_WINDOW,
-                      apps::mojom::AppLaunchSource::kSourceKiosk));
+  apps::LaunchService::Get(profile_)->OpenApplication(apps::AppLaunchParams(
+      extension->id(), apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_WINDOW,
+      apps::mojom::AppLaunchSource::kSourceKiosk));
 
   KioskAppManager::Get()->InitSession(profile_, app_id_);
   session_manager::SessionManager::Get()->SessionStarted();

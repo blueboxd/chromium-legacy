@@ -227,16 +227,17 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
       // Optional bits.
       int touch_major =
           info.GetAbsMtSlotValueWithDefault(ABS_MT_TOUCH_MAJOR, i, 0);
+      int touch_minor =
+          info.GetAbsMtSlotValueWithDefault(ABS_MT_TOUCH_MINOR, i, 0);
       events_[i].radius_x = touch_major * touch_major_scale_ / 2.0f;
-      events_[i].radius_y =
-          info.GetAbsMtSlotValueWithDefault(ABS_MT_TOUCH_MINOR, i, 0) *
-          touch_minor_scale_ / 2.0f;
+      events_[i].radius_y = touch_minor * touch_minor_scale_ / 2.0f;
       events_[i].pressure = ScalePressure(
           info.GetAbsMtSlotValueWithDefault(ABS_MT_PRESSURE, i, 0));
       int tool_type = info.GetAbsMtSlotValueWithDefault(ABS_MT_TOOL_TYPE, i,
                                                         MT_TOOL_FINGER);
       events_[i].tool_type = tool_type;
       events_[i].major = touch_major;
+      events_[i].minor = touch_minor;
       events_[i].stylus_button = false;
       if (events_[i].cancelled)
         cancelled_state = true;
@@ -421,6 +422,7 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
       break;
     case ABS_MT_TOUCH_MINOR:
       events_[current_slot_].radius_y = input.value * touch_minor_scale_ / 2.0f;
+      events_[current_slot_].minor = input.value;
       break;
     case ABS_MT_POSITION_X:
       events_[current_slot_].x = input.value;

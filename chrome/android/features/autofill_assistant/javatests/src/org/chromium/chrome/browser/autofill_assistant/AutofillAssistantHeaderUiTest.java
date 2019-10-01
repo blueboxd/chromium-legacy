@@ -79,7 +79,7 @@ public class AutofillAssistantHeaderUiTest {
     public Runnable mRunnableMock;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
                         InstrumentationRegistry.getTargetContext(), "about:blank"));

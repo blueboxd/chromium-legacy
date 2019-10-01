@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.incognito;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.os.Build;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
@@ -34,7 +35,12 @@ public class IncognitoNotificationManager {
         Context context = ContextUtils.getApplicationContext();
         String actionMessage =
                 context.getResources().getString(R.string.close_all_incognito_notification);
-        String title = context.getResources().getString(R.string.app_name);
+
+        // From Android N, notification by default has the app name and title should not be the same
+        // as app name.
+        String title = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                ? context.getResources().getString(R.string.close_all_incognito_notification_title)
+                : context.getResources().getString(R.string.app_name);
 
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory

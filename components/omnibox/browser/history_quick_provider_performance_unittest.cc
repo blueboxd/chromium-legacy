@@ -21,7 +21,7 @@
 #include "components/omnibox/browser/history_test_util.h"
 #include "components/omnibox/browser/in_memory_url_index_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 namespace history {
 
@@ -150,16 +150,21 @@ void HQPPerfTestOnePopularURL::PrepareData() {
 }
 
 void HQPPerfTestOnePopularURL::PrintMeasurements(
-    const std::string& trace_name,
+    const std::string& story_name,
     const std::vector<base::TimeDelta>& measurements) {
   auto* test_info = ::testing::UnitTest::GetInstance()->current_test_info();
 
   std::string durations;
   for (const auto& measurement : measurements)
     durations += std::to_string(measurement.InMillisecondsRoundedUp()) + ',';
+  // Strip off trailing comma.
+  durations.pop_back();
 
-  perf_test::PrintResultList(test_info->test_case_name(), test_info->name(),
-                             trace_name, durations, "ms", true);
+  auto metric_prefix = std::string(test_info->test_case_name()) + "_" +
+                       std::string(test_info->name());
+  perf_test::PerfResultReporter reporter(metric_prefix, story_name);
+  reporter.RegisterImportantMetric(".duration", "ms");
+  reporter.AddResultList(".duration", durations);
 }
 
 base::TimeDelta HQPPerfTestOnePopularURL::RunTest(const base::string16& text) {

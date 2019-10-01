@@ -14,6 +14,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/app_service_impl.h"
+#include "chrome/services/app_service/public/cpp/intent_util.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/url_data_source.h"
@@ -222,6 +223,25 @@ void AppServiceProxy::ReInitializeCrostiniForTesting(Profile* profile) {
     crostini_apps_->ReInitializeForTesting(app_service_, profile);
   }
 #endif
+}
+
+std::vector<std::string> AppServiceProxy::GetAppIdsForUrl(const GURL& url) {
+  return GetAppIdsForIntent(apps_util::CreateIntentFromUrl(url));
+}
+
+std::vector<std::string> AppServiceProxy::GetAppIdsForIntent(
+    apps::mojom::IntentPtr intent) {
+  std::vector<std::string> app_ids;
+  if (app_service_.is_bound()) {
+    cache_.ForEachApp([&app_ids, &intent](const apps::AppUpdate& update) {
+      for (const auto& filter : update.IntentFilters()) {
+        if (apps_util::IntentMatchesFilter(intent, filter)) {
+          app_ids.push_back(update.AppId());
+        }
+      }
+    });
+  }
+  return app_ids;
 }
 
 void AppServiceProxy::AddAppIconSource(Profile* profile) {

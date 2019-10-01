@@ -31,6 +31,7 @@
 #include "content/browser/web_contents/frame_tree_node_id_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -41,6 +42,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
+#include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "net/base/url_util.h"
@@ -85,6 +87,18 @@ void GetInterfaceImpl(const std::string& interface_name,
 
   BindWorkerInterface(interface_name, std::move(interface_pipe), process,
                       origin);
+}
+
+void BindVideoDecodePerfHistoryImpl(
+    int process_id,
+    mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* process = RenderProcessHost::FromID(process_id);
+  if (!process)
+    return;
+
+  process->GetBrowserContext()->GetVideoDecodePerfHistory()->BindReceiver(
+      std::move(receiver));
 }
 
 void CreateLockManagerImpl(
@@ -1422,6 +1436,16 @@ void ServiceWorkerProviderHost::CreateLockManager(
       base::BindOnce(&CreateLockManagerImpl,
                      running_hosted_version_->script_origin(),
                      render_process_id_, std::move(receiver)));
+}
+
+void ServiceWorkerProviderHost::BindVideoDecodePerfHistory(
+    mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK(IsProviderForServiceWorker());
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(&BindVideoDecodePerfHistoryImpl, render_process_id_,
+                     std::move(receiver)));
 }
 
 void ServiceWorkerProviderHost::CreatePermissionService(

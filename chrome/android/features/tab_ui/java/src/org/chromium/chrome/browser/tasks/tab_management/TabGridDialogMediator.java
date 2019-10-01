@@ -244,7 +244,6 @@ public class TabGridDialogMediator {
     }
 
     private void updateDialog() {
-        if (mCurrentTabId == Tab.INVALID_TAB_ID) return;
         List<Tab> relatedTabs = getRelatedTabs(mCurrentTabId);
         int tabsCount = relatedTabs.size();
         if (tabsCount == 0) {

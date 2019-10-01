@@ -24,6 +24,17 @@ using SpeakerIdEnrollmentState =
 namespace chromeos {
 namespace assistant {
 
+namespace {
+
+bool HasStarted(const AssistantManagerService* assistant_manager_service) {
+  return (assistant_manager_service->GetState() ==
+              AssistantManagerService::STARTED ||
+          assistant_manager_service->GetState() ==
+              AssistantManagerService::RUNNING);
+}
+
+}  // namespace
+
 AssistantSettingsManagerImpl::AssistantSettingsManagerImpl(
     ServiceContext* context,
     AssistantManagerServiceImpl* assistant_manager_service)
@@ -40,8 +51,7 @@ void AssistantSettingsManagerImpl::BindRequest(
 
 void AssistantSettingsManagerImpl::GetSettings(const std::string& selector,
                                                GetSettingsCallback callback) {
-  DCHECK(assistant_manager_service_->GetState() ==
-         AssistantManagerService::State::RUNNING);
+  DCHECK(HasStarted(assistant_manager_service_));
   DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
 
   // TODO(xiaohuic): libassistant could be restarting for various reasons. In
@@ -79,8 +89,7 @@ void AssistantSettingsManagerImpl::GetSettings(const std::string& selector,
 void AssistantSettingsManagerImpl::UpdateSettings(
     const std::string& update,
     GetSettingsCallback callback) {
-  DCHECK(assistant_manager_service_->GetState() ==
-         AssistantManagerService::State::RUNNING);
+  DCHECK(HasStarted(assistant_manager_service_));
   DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
 
   if (!assistant_manager_service_->assistant_manager_internal()) {
@@ -114,8 +123,7 @@ void AssistantSettingsManagerImpl::UpdateSettings(
 void AssistantSettingsManagerImpl::StartSpeakerIdEnrollment(
     bool skip_cloud_enrollment,
     mojom::SpeakerIdEnrollmentClientPtr client) {
-  DCHECK(assistant_manager_service_->GetState() ==
-         AssistantManagerService::State::RUNNING);
+  DCHECK(HasStarted(assistant_manager_service_));
   DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
 
   if (!assistant_manager_service_->assistant_manager_internal())
@@ -142,8 +150,7 @@ void AssistantSettingsManagerImpl::StartSpeakerIdEnrollment(
 
 void AssistantSettingsManagerImpl::StopSpeakerIdEnrollment(
     StopSpeakerIdEnrollmentCallback callback) {
-  DCHECK(assistant_manager_service_->GetState() ==
-         AssistantManagerService::State::RUNNING);
+  DCHECK(HasStarted(assistant_manager_service_));
   DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
 
   if (!assistant_manager_service_->assistant_manager_internal()) {

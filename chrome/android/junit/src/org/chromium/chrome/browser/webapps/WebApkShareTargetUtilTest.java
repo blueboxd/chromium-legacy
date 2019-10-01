@@ -18,7 +18,6 @@ import org.robolectric.annotation.Implements;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -169,7 +168,7 @@ public class WebApkShareTargetUtilTest {
      * the correct information in the correct place.
      */
     @Test
-    public void testPostUrlEncoded() throws UnsupportedEncodingException {
+    public void testPostUrlEncoded() {
         ShareTargetBuilder shareTargetBuilder = new ShareTargetBuilder("/share.html");
         shareTargetBuilder.setMethod(ShareTarget.METHOD_POST);
         shareTargetBuilder.setEncodingType(ShareTarget.ENCODING_TYPE_URL_ENCODED);

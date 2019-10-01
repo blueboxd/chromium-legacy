@@ -610,10 +610,10 @@ void AppListFolderView::UpdatePreferredBounds() {
         0, GetAppListConfig().search_box_fullscreen_top_padding(), 0, 0);
   }
   // Avoid overlap with the search box widget.
-  container_bounds.Inset(0,
+  container_bounds.Inset(8,
                          search_box::kSearchBoxPreferredHeight +
                              SearchBoxView::GetFocusRingSpacing(),
-                         0, 0);
+                         8, 0);
 
   preferred_bounds_.AdjustToFit(container_bounds);
 

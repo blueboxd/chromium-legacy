@@ -85,8 +85,9 @@ class SharedClipboardUiControllerTest : public testing::Test {
     syncer::DeviceInfo device_info(
         kReceiverGuid, kReceiverName, "chrome_version", "user_agent",
         sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
-        /* last_updated_timestamp= */ base::Time::Now(),
-        /* send_tab_to_self_receiving_enabled= */ false);
+        /*last_updated_timestamp=*/base::Time::Now(),
+        /*send_tab_to_self_receiving_enabled=*/false,
+        /*sharing_info=*/base::nullopt);
     controller_ = SharedClipboardUiController::GetOrCreateFromWebContents(
         web_contents_.get());
     controller_->OnDeviceSelected(base::UTF8ToUTF16(kText), device_info);
@@ -117,8 +118,9 @@ TEST_F(SharedClipboardUiControllerTest, OnDeviceChosen) {
   syncer::DeviceInfo device_info(
       kReceiverGuid, kReceiverName, "chrome_version", "user_agent",
       sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
-      /* last_updated_timestamp= */ base::Time::Now(),
-      /* send_tab_to_self_receiving_enabled= */ false);
+      /*last_updated_timestamp=*/base::Time::Now(),
+      /*send_tab_to_self_receiving_enabled=*/false,
+      /*sharing_info=*/base::nullopt);
 
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_shared_clipboard_message()->set_text(kExpectedText);

@@ -151,6 +151,20 @@ cr.define('print_preview_test_utils', function() {
       }
     });
 
+    if (numSettings < 4) {
+      return template;
+    }
+
+    template.capabilities.printer.vendor_capability.push({
+      display_name: 'Staple',
+      id: 'finishings/4',
+      type: 'TYPED_VALUE',
+      typed_value_cap: {
+        default: '',
+        value_type: 'BOOLEAN',
+      }
+    });
+
     return template;
   }
 

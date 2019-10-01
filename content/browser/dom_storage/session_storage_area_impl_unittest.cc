@@ -16,7 +16,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
-#include "components/services/leveldb/leveldb_service_impl.h"
+#include "components/services/leveldb/leveldb_database_impl.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
@@ -40,18 +40,6 @@ using leveldb::StdStringToUint8Vector;
 using leveldb::Uint8VectorToStdString;
 using leveldb::mojom::DatabaseError;
 
-template <typename Interface, typename Impl>
-void CreateSelfOwnedreceiverOnTaskRunner(
-    scoped_refptr<base::SequencedTaskRunner> runner,
-    mojo::PendingReceiver<Interface> pending_receiver,
-    std::unique_ptr<Impl> interface) {
-  runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          base::IgnoreResult(&mojo::MakeSelfOwnedReceiver<Interface, Impl>),
-          std::move(interface), std::move(pending_receiver), runner));
-}
-
 class MockListener : public SessionStorageDataMap::Listener {
  public:
   MockListener() = default;
@@ -70,15 +58,10 @@ class SessionStorageAreaImplTest : public testing::Test {
         test_namespace_id2_(base::GenerateGUID()),
         test_origin1_(url::Origin::Create(GURL("https://host1.com:1/"))),
         test_origin2_(url::Origin::Create(GURL("https://host2.com:2/"))) {
-    CreateSelfOwnedreceiverOnTaskRunner(
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
-        leveldb_service_.BindNewPipeAndPassReceiver(),
-        std::make_unique<leveldb::LevelDBServiceImpl>());
-
-    leveldb_service_->OpenInMemory(
+    leveldb_database_ = leveldb::LevelDBDatabaseImpl::OpenInMemory(
         base::nullopt, "SessionStorageAreaImplTestDatabase",
-        leveldb_database_.BindNewEndpointAndPassReceiver(), base::DoNothing());
-
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
+        base::DoNothing());
     leveldb_database_->Put(StdStringToUint8Vector("map-0-key1"),
                            StdStringToUint8Vector("data1"), base::DoNothing());
 
@@ -113,8 +96,7 @@ class SessionStorageAreaImplTest : public testing::Test {
   const std::string test_namespace_id2_;
   const url::Origin test_origin1_;
   const url::Origin test_origin2_;
-  mojo::Remote<leveldb::mojom::LevelDBService> leveldb_service_;
-  mojo::AssociatedRemote<leveldb::mojom::LevelDBDatabase> leveldb_database_;
+  std::unique_ptr<leveldb::mojom::LevelDBDatabase> leveldb_database_;
   SessionStorageMetadata metadata_;
 
   testing::StrictMock<MockListener> listener_;

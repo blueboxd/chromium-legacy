@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -31,7 +32,6 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/fake_leveldb_database.h"
-#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
@@ -192,9 +192,7 @@ class RemoveCookieTester {
 class RemoveLocalStorageTester {
  public:
   explicit RemoveLocalStorageTester(TestBrowserContext* profile)
-      : dom_storage_context_(nullptr),
-        mock_db_(&mock_data_),
-        db_receiver_(&mock_db_) {
+      : dom_storage_context_(nullptr) {
     dom_storage_context_ =
         content::BrowserContext::GetDefaultStoragePartition(profile)->
             GetDOMStorageContext();
@@ -215,12 +213,11 @@ class RemoveLocalStorageTester {
     // Note: This test depends on details of how the dom_storage library
     // stores data in the database.
 
-    mojo::AssociatedRemote<leveldb::mojom::LevelDBDatabase> database_remote;
-    auto receiver =
-        database_remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
     static_cast<DOMStorageContextWrapper*>(dom_storage_context_)
-        ->SetLocalStorageDatabaseForTesting(database_remote.Unbind());
-    db_receiver_.Bind(std::move(receiver));
+        ->SetLocalStorageDatabaseFactoryForTesting(base::BindLambdaForTesting(
+            [&]() -> std::unique_ptr<leveldb::mojom::LevelDBDatabase> {
+              return std::make_unique<FakeLevelDBDatabase>(&mock_data_);
+            }));
 
     LocalStorageOriginMetaData data;
 
@@ -282,8 +279,6 @@ class RemoveLocalStorageTester {
   content::DOMStorageContext* dom_storage_context_;
 
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
-  FakeLevelDBDatabase mock_db_;
-  mojo::AssociatedReceiver<leveldb::mojom::LevelDBDatabase> db_receiver_;
 
   std::vector<content::StorageUsageInfo> infos_;
 

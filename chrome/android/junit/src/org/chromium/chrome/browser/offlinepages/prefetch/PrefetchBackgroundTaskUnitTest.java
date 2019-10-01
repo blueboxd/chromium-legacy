@@ -246,7 +246,7 @@ public class PrefetchBackgroundTaskUnitTest {
     }
 
     @Test
-    public void testBatteryLow() throws Exception {
+    public void testBatteryLow() {
         // Setup low battery conditions with no power connected.
         DeviceConditions deviceConditionsLowBattery = new DeviceConditions(!POWER_CONNECTED,
                 LOW_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI, !POWER_SAVE_MODE_ON, METERED,
@@ -268,7 +268,7 @@ public class PrefetchBackgroundTaskUnitTest {
     }
 
     @Test
-    public void testBatteryHigh() throws Exception {
+    public void testBatteryHigh() {
         // Setup high battery conditions with no power connected.
         DeviceConditions deviceConditionsHighBattery = new DeviceConditions(!POWER_CONNECTED,
                 HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI, !POWER_SAVE_MODE_ON, !METERED,
@@ -290,7 +290,7 @@ public class PrefetchBackgroundTaskUnitTest {
     }
 
     @Test
-    public void testNoNetwork() throws Exception {
+    public void testNoNetwork() {
         // Setup no network conditions.
         DeviceConditions deviceConditionsNoNetwork = new DeviceConditions(!POWER_CONNECTED,
                 HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_NONE, !POWER_SAVE_MODE_ON, !METERED,
@@ -316,7 +316,7 @@ public class PrefetchBackgroundTaskUnitTest {
      * limitless prefetching is enabled.
      */
     @Test
-    public void testNoNetworkLimitless() throws Exception {
+    public void testNoNetworkLimitless() {
         // Setup no network conditions.
         DeviceConditions deviceConditionsNoNetwork = new DeviceConditions(!POWER_CONNECTED,
                 0 /* battery level */, ConnectionType.CONNECTION_NONE, !POWER_SAVE_MODE_ON,
@@ -341,7 +341,7 @@ public class PrefetchBackgroundTaskUnitTest {
     }
 
     @Test
-    public void testUnmeteredWifiNetwork() throws Exception {
+    public void testUnmeteredWifiNetwork() {
         // Setup unmetered wifi conditions.
         DeviceConditions deviceConditionsUnmeteredWifi = new DeviceConditions(!POWER_CONNECTED,
                 HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI, !POWER_SAVE_MODE_ON, !METERED,
@@ -363,7 +363,7 @@ public class PrefetchBackgroundTaskUnitTest {
     }
 
     @Test
-    public void testMeteredWifiNetwork() throws Exception {
+    public void testMeteredWifiNetwork() {
         // Setup metered wifi conditions.
         DeviceConditions deviceConditionsMeteredWifi = new DeviceConditions(!POWER_CONNECTED,
                 HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI, !POWER_SAVE_MODE_ON, METERED,
@@ -385,7 +385,7 @@ public class PrefetchBackgroundTaskUnitTest {
     }
 
     @Test
-    public void test2GNetwork() throws Exception {
+    public void test2GNetwork() {
         // Setup metered 2g connection conditions.
         DeviceConditions deviceConditions2G = new DeviceConditions(!POWER_CONNECTED,
                 HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_2G, !POWER_SAVE_MODE_ON, METERED,
@@ -408,7 +408,7 @@ public class PrefetchBackgroundTaskUnitTest {
     }
 
     @Test
-    public void testBluetoothNetwork() throws Exception {
+    public void testBluetoothNetwork() {
         // Setup bluetooth connection conditions.
         DeviceConditions deviceConditionsBluetooth = new DeviceConditions(!POWER_CONNECTED,
                 HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_BLUETOOTH, !POWER_SAVE_MODE_ON,
@@ -430,7 +430,7 @@ public class PrefetchBackgroundTaskUnitTest {
     }
 
     @Test
-    public void testOnStopAfterCallback() throws Exception {
+    public void testOnStopAfterCallback() {
         final ArrayList<Boolean> reschedules = new ArrayList<>();
         TaskParameters params =
                 TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID).build();
@@ -455,7 +455,7 @@ public class PrefetchBackgroundTaskUnitTest {
     }
 
     @Test
-    public void testPowerSaverOn() throws Exception {
+    public void testPowerSaverOn() {
         // Setup power save mode, battery is high, wifi, not plugged in.
         DeviceConditions deviceConditionsPowerSave = new DeviceConditions(!POWER_CONNECTED,
                 HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI, POWER_SAVE_MODE_ON, !METERED,

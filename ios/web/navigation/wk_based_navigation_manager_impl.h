@@ -116,6 +116,7 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
                                    NSString* state_object,
                                    ui::PageTransition transition) override;
   bool IsRestoreSessionInProgress() const override;
+  bool ShouldBlockUrlDuringRestore(const GURL& url) override;
   void SetPendingItemIndex(int index) override;
   void ApplyWKWebViewForwardHistoryClobberWorkaround() override;
   void SetWKWebViewNextPendingUrlNotSerializable(const GURL& url) override;
@@ -249,6 +250,10 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   bool CanTrustLastCommittedItem(
       const NavigationItem* last_committed_item) const;
 
+  // Update state to reflect session restore is complete, and call any post
+  // restore callbacks.
+  void FinalizeSessionRestore();
+
   // The pending main frame navigation item. This is nullptr if there is no
   // pending item or if the pending item is a back-forward navigation, in which
   // case the NavigationItemImpl is stored on the WKBackForwardListItem.
@@ -292,8 +297,8 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   WKWebViewCache web_view_cache_;
 
   // Whether this navigation manager is in the process of restoring session
-  // history into WKWebView. It is set in Restore() and unset in the first
-  // OnNavigationItemCommitted() callback.
+  // history into WKWebView. It is set in Restore() and unset in
+  // FinalizeSessionRestore().
   bool is_restore_session_in_progress_ = false;
 
   // Set to true when delegate_->GoToBackForwardListItem is being called, which
@@ -318,8 +323,8 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   std::unique_ptr<NavigationItem> restored_visible_item_;
 
   // Non-empty only during the session restoration. The callbacks are
-  // registered in AddRestoreCompletionCallback() and are executed in the first
-  // OnNavigationItemCommitted() callback.
+  // registered in AddRestoreCompletionCallback() and are executed in
+  // FinalizeSessionRestore().
   std::vector<base::OnceClosure> restore_session_completion_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(WKBasedNavigationManagerImpl);

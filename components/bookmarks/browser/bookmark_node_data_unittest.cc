@@ -278,7 +278,7 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   EXPECT_TRUE(read_data.GetFirstNode(model(), GetProfilePath()) == nullptr);
 }
 
-TEST_F(BookmarkNodeDataTest, WriteToClipboardURL) {
+TEST_F(BookmarkNodeDataTest, DISABLED_WriteToClipboardURL) {
   BookmarkNodeData data;
   GURL url(GURL("http://foo.com"));
   const base::string16 title(ASCIIToUTF16("blah"));

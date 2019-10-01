@@ -31,6 +31,13 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) UpdateEngineClient : public DBusClient {
     UPDATE_RESULT_NOTIMPLEMENTED,
   };
 
+  // Holds information related to end-of-life.
+  struct EolInfo {
+    // The number of days since Unix Epoch, all negative values signify an
+    // invalid value.
+    int64_t days_from_epoch = -1;
+  };
+
   // Interface for observing changes from the update engine.
   class Observer {
    public:
@@ -106,13 +113,24 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) UpdateEngineClient : public DBusClient {
   virtual void GetChannel(bool get_current_channel,
                           const GetChannelCallback& callback) = 0;
 
+  // TODO(crbug.com/1005511): Deprecate with GetEolStatus().
   // Called once GetEolStatus() is complete. Takes one parameter;
   // - EndOfLife Status: the end of life status of the device.
   using GetEolStatusCallback =
       base::OnceCallback<void(update_engine::EndOfLifeStatus status)>;
 
+  // TODO(crbug.com/1005511): Deprecate GetEolStatus() use GetEolInfo().
   // Get EndOfLife status of the device and calls |callback| when completed.
   virtual void GetEolStatus(GetEolStatusCallback callback) = 0;
+
+  // Called once GetStatusAdvanced() is complete. Takes one parameter;
+  // - EolInfo: Please look at EolInfo for param details, all params related to
+  //            end-of-life will be place within this struct.
+  using GetEolInfoCallback = base::OnceCallback<void(EolInfo eol_info)>;
+
+  // Get EndOfLife info for the device and calls |callback| when completed. This
+  // method should be used in place of GetEolInfo.
+  virtual void GetEolInfo(GetEolInfoCallback callback) = 0;
 
   // Either allow or disallow receiving updates over cellular connections.
   // Synchronous (blocking) method.

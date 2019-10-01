@@ -191,6 +191,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void DidHandleInputEventOnMainThread(const WebInputEvent& web_input_event,
                                        WebInputEventResult result) override;
   void DidAnimateForInputOnCompositorThread() override;
+  void DidScheduleBeginMainFrame() override;
+  void DidRunBeginMainFrame() override;
   void SetRendererHidden(bool hidden) override;
   void SetRendererBackgrounded(bool backgrounded) override;
   void SetSchedulerKeepActive(bool keep_active) override;
@@ -217,6 +219,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       const char* name,
       WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
   PendingUserInputInfo GetPendingUserInputInfo() const override;
+  bool IsBeginMainFrameScheduled() const override;
 
   // ThreadScheduler implementation:
   void PostIdleTask(const base::Location&, Thread::IdleTask) override;
@@ -958,6 +961,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         waiting_for_meaningful_paint;
     TraceableState<bool, TracingCategoryName::kInfo>
         have_seen_input_since_navigation;
+    TraceableCounter<uint32_t, TracingCategoryName::kInfo>
+        begin_main_frame_scheduled_count;
   };
 
   struct CompositorThreadOnly {

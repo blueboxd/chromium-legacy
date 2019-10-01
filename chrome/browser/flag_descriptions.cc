@@ -1784,12 +1784,6 @@ const char kSendTabToSelfBroadcastDescription[] =
     "Allows users to broadcast the tab they send to all of their devices "
     "instead of targetting only one device.";
 
-const char kSendTabToSelfShowSendingUIName[] =
-    "Send tab to self show sending UI";
-const char kSendTabToSelfShowSendingUIDescription[] =
-    "Allows users to send tabs to other synced devices by accessing the "
-    "sending user interface. Requires Send tab to self to also be enabled";
-
 const char kSendTabToSelfWhenSignedInName[] =
     "Send tab to self: enable use when signed-in regardless of sync state";
 const char kSendTabToSelfWhenSignedInDescription[] =
@@ -2462,10 +2456,6 @@ const char kContextualSearchTranslationModelDescription[] =
 const char kDirectActionsName[] = "Direct actions";
 const char kDirectActionsDescription[] =
     "Enables direct actions (Android Q and more).";
-
-const char kDownloadHomeV2Name[] = "Enable download home v2";
-const char kDownloadHomeV2Description[] =
-    "Enables the new UI for download home";
 
 const char kDownloadRenameName[] = "Enable download rename";
 const char kDownloadRenameDescription[] = "Enables rename option for downloads";
@@ -3545,6 +3535,11 @@ const char kPrinterProviderSearchAppDescription[] =
     "Enables Chrome Web Store Gallery app for printer drivers. The app "
     "searches Chrome Web Store for extensions that support printing to a USB "
     "printer with specific USB ID.";
+
+const char kReduceDisplayNotificationsName[] = "Reduce display notifications";
+const char kReduceDisplayNotificationsDescription[] =
+    "If enabled, notifications for display rotation, display removed, display "
+    "mirroring, and display extending will be suppressed.";
 
 const char kReleaseNotesName[] = "CrOS Release Notes.";
 const char kReleaseNotesDescription[] =

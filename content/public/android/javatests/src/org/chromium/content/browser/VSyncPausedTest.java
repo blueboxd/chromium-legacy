@@ -61,7 +61,7 @@ public class VSyncPausedTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mObserver.destroy();
     }
 

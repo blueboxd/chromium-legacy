@@ -678,7 +678,7 @@ public class ImeTest {
         }));
     }
 
-    private void reloadPage() throws Throwable {
+    private void reloadPage() {
         // Reload the page, then focus will be lost and keyboard should be hidden.
         mRule.fullyLoadUrl(mRule.getWebContents().getLastCommittedUrl());
     }
@@ -1608,7 +1608,7 @@ public class ImeTest {
         });
         Assert.assertEquals("abc", mRule.runBlockingOnImeThread(new Callable<CharSequence>() {
             @Override
-            public CharSequence call() throws Exception {
+            public CharSequence call() {
                 return connection.getTextBeforeCursor(5, 0);
             }
         }));
@@ -1639,7 +1639,7 @@ public class ImeTest {
             public boolean isSatisfied() {
                 try {
                     return DOMUtils.getNodeContents(webContents, "div").equals("hello world");
-                } catch (InterruptedException | TimeoutException e) {
+                } catch (TimeoutException e) {
                     return false;
                 }
             }

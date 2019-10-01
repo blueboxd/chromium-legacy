@@ -4,28 +4,31 @@
 
 package org.chromium.chrome.browser.webapps.addtohomescreen;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.text.TextUtils;
+import android.util.Pair;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
  * Manages the add to home screen process. Coordinates the native-side data fetching, and owns
  * a dialog prompting the user to confirm the action (and potentially supply a title).
  */
-public class AddToHomescreenManager implements AddToHomescreenView.Delegate {
-    protected final Activity mActivity;
+public class AddToHomescreenManager implements AddToHomescreenViewDelegate {
+    protected final ChromeActivity mActivity;
     protected final Tab mTab;
 
-    protected AddToHomescreenView mDialog;
+    protected PropertyModel mViewModel;
     private long mNativeAddToHomescreenManager;
 
-    public AddToHomescreenManager(Activity activity, Tab tab) {
+    public AddToHomescreenManager(ChromeActivity activity, Tab tab) {
         mActivity = activity;
         mTab = tab;
     }
@@ -47,7 +50,7 @@ public class AddToHomescreenManager implements AddToHomescreenView.Delegate {
      * Puts the object in a state where it is safe to be destroyed.
      */
     public void destroy() {
-        mDialog = null;
+        mViewModel = null;
         if (mNativeAddToHomescreenManager == 0) return;
 
         AddToHomescreenManagerJni.get().destroy(
@@ -55,29 +58,21 @@ public class AddToHomescreenManager implements AddToHomescreenView.Delegate {
         mNativeAddToHomescreenManager = 0;
     }
 
-    /**
-     * Adds a shortcut for the current Tab. Must not be called unless start() has been called.
-     * @param userRequestedTitle Title of the shortcut displayed on the homescreen.
-     */
     @Override
-    public void addToHomescreen(String userRequestedTitle) {
+    public void onAddToHomescreen(String title) {
         assert mNativeAddToHomescreenManager != 0;
 
         AddToHomescreenManagerJni.get().addToHomescreen(
-                mNativeAddToHomescreenManager, AddToHomescreenManager.this, userRequestedTitle);
+                mNativeAddToHomescreenManager, AddToHomescreenManager.this, title);
     }
 
     @Override
-    public void onNativeAppDetailsRequested() {
-        // This should never be called.
-        assert false;
+    public boolean onAppDetailsRequested() {
+        return false;
     }
 
     @Override
-    /**
-     * Destroys this object once the dialog has been dismissed.
-     */
-    public void onDialogDismissed() {
+    public void onViewDismissed() {
         destroy();
     }
 
@@ -86,25 +81,28 @@ public class AddToHomescreenManager implements AddToHomescreenView.Delegate {
      */
     @CalledByNative
     public void showDialog() {
-        mDialog = new AddToHomescreenView(mActivity, this);
-        mDialog.show();
+        mViewModel = new PropertyModel.Builder(AddToHomescreenProperties.ALL_KEYS).build();
+        PropertyModelChangeProcessor.create(mViewModel,
+                new AddToHomescreenDialogView(mActivity, mActivity.getModalDialogManager(),
+                        AppBannerManager.getHomescreenLanguageOption(), this),
+                AddToHomescreenViewBinder::bind);
     }
 
     @CalledByNative
     private void onUserTitleAvailable(String title, String url, boolean isWebapp) {
         // Users may edit the title of bookmark shortcuts, but we respect web app names and do not
         // let users change them.
-        mDialog.onUserTitleAvailable(title, url, isWebapp);
+        mViewModel.set(AddToHomescreenProperties.TITLE, title);
+        mViewModel.set(AddToHomescreenProperties.URL, url);
+        mViewModel.set(AddToHomescreenProperties.TYPE,
+                isWebapp ? AddToHomescreenProperties.AppType.WEB_APK
+                         : AddToHomescreenProperties.AppType.SHORTCUT);
     }
 
     @CalledByNative
     private void onIconAvailable(Bitmap icon, boolean iconAdaptable) {
-        if (iconAdaptable && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            mDialog.onAdaptableIconAvailable(icon);
-        } else {
-            assert !iconAdaptable : "Adaptive icons should not be provided pre-Android O.";
-            mDialog.onIconAvailable(icon);
-        }
+        mViewModel.set(AddToHomescreenProperties.ICON, new Pair<>(icon, iconAdaptable));
+        mViewModel.set(AddToHomescreenProperties.CAN_SUBMIT, true);
     }
 
     @NativeMethods

@@ -16,7 +16,6 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/accessibility/accessibility_ui.h"
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
-#include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -71,11 +70,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
-#include "components/dom_distiller/core/dom_distiller_constants.h"
-#include "components/dom_distiller/core/dom_distiller_features.h"
-#include "components/dom_distiller/core/dom_distiller_service.h"
-#include "components/dom_distiller/core/url_constants.h"
-#include "components/dom_distiller/webui/dom_distiller_ui.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/favicon_base/select_favicon_frames.h"
@@ -313,21 +307,6 @@ WebUIController* NewWebUI<chromeos::multidevice::ProximityAuthUI>(
           ->GetClient());
 }
 #endif
-
-// Special cases for DOM distiller.
-template <>
-WebUIController* NewWebUI<dom_distiller::DomDistillerUi>(WebUI* web_ui,
-                                                         const GURL& url) {
-  // The DomDistillerUi can not depend on components/dom_distiller/content,
-  // so inject the correct DomDistillerService from chrome/.
-  content::BrowserContext* browser_context =
-      web_ui->GetWebContents()->GetBrowserContext();
-  dom_distiller::DomDistillerService* service =
-      dom_distiller::DomDistillerServiceFactory::GetForBrowserContext(
-          browser_context);
-  return new dom_distiller::DomDistillerUi(web_ui, service,
-                                           dom_distiller::kDomDistillerScheme);
-}
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 template <>
@@ -730,11 +709,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (base::FeatureList::IsEnabled(features::kBundledConnectionHelpFeature) &&
       url.host_piece() == security_interstitials::kChromeUIConnectionHelpHost) {
     return &NewWebUI<security_interstitials::ConnectionHelpUI>;
-  }
-
-  if (dom_distiller::IsDomDistillerEnabled() &&
-      url.host_piece() == dom_distiller::kChromeUIDomDistillerHost) {
-    return &NewWebUI<dom_distiller::DomDistillerUi>;
   }
 
   if (SiteEngagementService::IsEnabled() &&

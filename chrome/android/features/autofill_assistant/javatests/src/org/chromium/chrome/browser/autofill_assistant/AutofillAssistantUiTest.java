@@ -57,7 +57,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -78,7 +77,7 @@ public class AutofillAssistantUiTest {
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
 
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
@@ -88,7 +87,7 @@ public class AutofillAssistantUiTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         ThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
         mTestServer.stopAndDestroyServer();
     }
@@ -170,12 +169,14 @@ public class AutofillAssistantUiTest {
                 ()
                         -> assistantCoordinator.getModel().getDetailsModel().set(
                                 AssistantDetailsModel.DETAILS,
-                                new AssistantDetails(movieTitle, /* imageUrl = */ "",
+                                new AssistantDetails(movieTitle, /* titleMaxLines = */ 1,
+                                        /* imageUrl = */ "",
                                         /* imageClickthroughData = */ null,
                                         /* showImage = */ false,
                                         /* totalPriceLabel = */ "",
-                                        /* totalPrice = */ "", Calendar.getInstance().getTime(),
-                                        descriptionLine1, descriptionLine2, descriptionLine3,
+                                        /* totalPrice = */ "", descriptionLine1, descriptionLine2,
+                                        descriptionLine3,
+                                        /* priceAttribution = */ "",
                                         /* userApprovalRequired= */ false,
                                         /* highlightTitle= */ false, /* highlightLine1= */
                                         false, /* highlightLine2 = */ false,

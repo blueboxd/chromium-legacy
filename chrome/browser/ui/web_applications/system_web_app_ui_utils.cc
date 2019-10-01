@@ -65,7 +65,7 @@ Browser* LaunchSystemWebApp(Profile* profile,
   DCHECK(extension);
 
   // TODO(calamity): Plumb through better launch sources from callsites.
-  AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
+  apps::AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
       profile, extension, 0, extensions::AppLaunchSource::kSourceChromeInternal,
       display::kInvalidDisplayId);
   params.override_url = url;
@@ -73,10 +73,10 @@ Browser* LaunchSystemWebApp(Profile* profile,
   if (!browser) {
     if (did_create)
       *did_create = true;
-    browser = CreateApplicationWindow(params, url);
+    browser = CreateApplicationWindow(profile, params, url);
   }
 
-  ShowApplicationWindow(params, url, browser,
+  ShowApplicationWindow(profile, params, url, browser,
                         WindowOpenDisposition::CURRENT_TAB);
 
   return browser;

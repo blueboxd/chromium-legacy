@@ -33,12 +33,21 @@ void InfobarBadgeTabHelper::SetDelegate(
 
 void InfobarBadgeTabHelper::UpdateBadgeForInfobarAccepted(
     InfobarType infobar_type) {
-  infobar_badge_models_[infobar_type].badgeState = BadgeStateAccepted;
+  infobar_badge_models_[infobar_type].badgeState |= BadgeStateAccepted;
+  [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type]];
+}
+
+void InfobarBadgeTabHelper::UpdateBadgeForInfobarBannerPresented(
+    InfobarType infobar_type) {
+  infobar_badge_models_[infobar_type].badgeState |= BadgeStatePresented;
   [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type]];
 }
 
 void InfobarBadgeTabHelper::UpdateBadgeForInfobarBannerDismissed(
-    InfobarType infobar_type) {}
+    InfobarType infobar_type) {
+  infobar_badge_models_[infobar_type].badgeState &= ~BadgeStatePresented;
+  [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type]];
+}
 
 std::vector<id<BadgeItem>> InfobarBadgeTabHelper::GetInfobarBadgeItems() {
   // Return all infobar badge items.

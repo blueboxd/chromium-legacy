@@ -169,18 +169,21 @@ public class CallbackHelper {
      *                               currentCallCount was obtained) that we will wait for.
      * @param timeout timeout value for all callbacks to occur.
      * @param unit timeout unit.
-     * @throws InterruptedException
      * @throws TimeoutException Thrown if the method times out before onPageFinished is called.
      */
     public void waitForCallback(String msg, int currentCallCount, int numberOfCallsToWaitFor,
-            long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
+            long timeout, TimeUnit unit) throws TimeoutException {
         assert mCallCount >= currentCallCount;
         assert numberOfCallsToWaitFor > 0;
         TimeoutTimer timer = new TimeoutTimer(unit.toMillis(timeout));
         synchronized (mLock) {
             int callCountWhenDoneWaiting = currentCallCount + numberOfCallsToWaitFor;
             while (callCountWhenDoneWaiting > mCallCount && !timer.isTimedOut()) {
-                mLock.wait(timer.getRemainingMs());
+                try {
+                    mLock.wait(timer.getRemainingMs());
+                } catch (InterruptedException e) {
+                    // Ignore the InterruptedException. Rely on the outer while loop to re-run.
+                }
                 if (mFailureString != null) {
                     String s = mFailureString;
                     mFailureString = null;
@@ -197,7 +200,7 @@ public class CallbackHelper {
      * @see #waitForCallback(String, int, int, long, TimeUnit)
      */
     public void waitForCallback(int currentCallCount, int numberOfCallsToWaitFor, long timeout,
-            TimeUnit unit) throws InterruptedException, TimeoutException {
+            TimeUnit unit) throws TimeoutException {
         waitForCallback(null, currentCallCount, numberOfCallsToWaitFor, timeout, unit);
     }
 
@@ -205,7 +208,7 @@ public class CallbackHelper {
      * @see #waitForCallback(String, int, int, long, TimeUnit)
      */
     public void waitForCallback(int currentCallCount, int numberOfCallsToWaitFor)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         waitForCallback(null, currentCallCount, numberOfCallsToWaitFor,
                 WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
@@ -213,24 +216,21 @@ public class CallbackHelper {
     /**
      * @see #waitForCallback(String, int, int, long, TimeUnit)
      */
-    public void waitForCallback(String msg, int currentCallCount)
-            throws InterruptedException, TimeoutException {
+    public void waitForCallback(String msg, int currentCallCount) throws TimeoutException {
         waitForCallback(msg, currentCallCount, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
     /**
      * @see #waitForCallback(String, int, int, long, TimeUnit)
      */
-    public void waitForCallback(int currentCallCount)
-            throws InterruptedException, TimeoutException {
+    public void waitForCallback(int currentCallCount) throws TimeoutException {
         waitForCallback(null, currentCallCount, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
     /**
      * Wait until the callback has been called once.
      */
-    public void waitForFirst(String msg, long timeout, TimeUnit unit)
-            throws InterruptedException, TimeoutException {
+    public void waitForFirst(String msg, long timeout, TimeUnit unit) throws TimeoutException {
         MatcherAssert.assertThat(
                 "Use waitForCallback(currentCallCount) for callbacks that are called multiple "
                         + "times.",
@@ -242,22 +242,21 @@ public class CallbackHelper {
     /**
      * Wait until the callback has been called once.
      */
-    public void waitForFirst(long timeout, TimeUnit unit)
-            throws InterruptedException, TimeoutException {
+    public void waitForFirst(long timeout, TimeUnit unit) throws TimeoutException {
         waitForFirst(null, timeout, unit);
     }
 
     /**
      * Wait until the callback has been called once.
      */
-    public void waitForFirst(String msg) throws InterruptedException, TimeoutException {
+    public void waitForFirst(String msg) throws TimeoutException {
         waitForFirst(msg, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
     /**
      * Wait until the callback has been called at least once.
      */
-    public void waitForFirst() throws InterruptedException, TimeoutException {
+    public void waitForFirst() throws TimeoutException {
         waitForFirst(null);
     }
 

@@ -24,8 +24,9 @@ class PredictionModel {
  public:
   virtual ~PredictionModel();
 
-  // Creates an Prediction model of the correct ModelType
-  // specified in |prediction_model|.
+  // Creates an Prediction model of the correct ModelType specified in
+  // |prediction_model|. The validation overhead of this factory can be high and
+  // should should be called in the background.
   static std::unique_ptr<PredictionModel> Create(
       std::unique_ptr<optimization_guide::proto::PredictionModel>
           prediction_model,
@@ -48,9 +49,13 @@ class PredictionModel {
                       prediction_model,
                   const base::flat_set<std::string>& host_model_features);
 
- private:
   // The in-memory model used for prediction.
   std::unique_ptr<optimization_guide::proto::Model> model_;
+
+ private:
+  // Determines if the |model_| is complete and can be successfully evaluated by
+  // |this|.
+  virtual bool ValidatePredictionModel() const = 0;
 
   // The information that describes the |model_|
   std::unique_ptr<optimization_guide::proto::ModelInfo> model_info_;

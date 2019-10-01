@@ -106,7 +106,7 @@ void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
     if (pad_info.type == UdevGamepadLinux::Type::JOYDEV) {
       // If |syspath_prefix| is empty, the device was already disconnected.
       if (pad_info.syspath_prefix.empty())
-        RemoveDeviceAtIndex(pad_info.index);
+        DisconnectUnrecognizedGamepad(pad_info.index);
       else
         RefreshJoydevDevice(dev, pad_info);
     } else if (pad_info.type == UdevGamepadLinux::Type::EVDEV) {
@@ -138,15 +138,16 @@ void GamepadPlatformDataFetcherLinux::RemoveDevice(GamepadDeviceLinux* device) {
   }
 }
 
-void GamepadPlatformDataFetcherLinux::RemoveDeviceAtIndex(int index) {
+bool GamepadPlatformDataFetcherLinux::DisconnectUnrecognizedGamepad(int index) {
   for (auto it = devices_.begin(); it != devices_.end(); ++it) {
     const auto& device = *it;
     if (device->GetJoydevIndex() == index) {
       device->Shutdown();
       devices_.erase(it);
-      return;
+      return true;
     }
   }
+  return false;
 }
 
 GamepadDeviceLinux* GamepadPlatformDataFetcherLinux::GetOrCreateMatchingDevice(
@@ -195,7 +196,10 @@ void GamepadPlatformDataFetcherLinux::RefreshJoydevDevice(
     return;
   }
 
-  PadState* state = GetPadState(joydev_index);
+  bool is_recognized = GamepadIdList::Get().GetGamepadId(
+                           vendor_id, product_id) != GamepadId::kUnknownGamepad;
+
+  PadState* state = GetPadState(joydev_index, is_recognized);
   if (!state) {
     // No slot available for device, don't use.
     device->CloseJoydevNode();
@@ -217,12 +221,10 @@ void GamepadPlatformDataFetcherLinux::RefreshJoydevDevice(
     return;
   }
 
-  // Joydev uses its own internal list of device IDs to identify known gamepads.
   // If the device is on our list, record it by ID. If the device is unknown,
   // record that an unknown gamepad was enumerated.
-  GamepadId gamepad_id =
-      GamepadIdList::Get().GetGamepadId(vendor_id, product_id);
-  if (gamepad_id == GamepadId::kUnknownGamepad)
+
+  if (is_recognized)
     RecordUnknownGamepad(source());
   else
     RecordConnectedGamepad(vendor_id, product_id);

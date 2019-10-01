@@ -318,7 +318,7 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
 
 // Test for updating title such that url and title pair are unique among the
 // children of parent.
-TEST_F(BookmarkUtilsTest, MakeTitleUnique) {
+TEST_F(BookmarkUtilsTest, DISABLED_MakeTitleUnique) {
   std::unique_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
   const base::string16 url_text = ASCIIToUTF16("http://www.google.com/");
   const base::string16 title_text = ASCIIToUTF16("foobar");
@@ -351,7 +351,7 @@ TEST_F(BookmarkUtilsTest, MakeTitleUnique) {
             bookmark_bar_node->children()[1]->GetTitle());
 }
 
-TEST_F(BookmarkUtilsTest, CopyPasteMetaInfo) {
+TEST_F(BookmarkUtilsTest, DISABLED_CopyPasteMetaInfo) {
   std::unique_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
   const BookmarkNode* node = model->AddURL(model->other_node(),
                                            0,

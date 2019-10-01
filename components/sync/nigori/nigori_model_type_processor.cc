@@ -229,35 +229,34 @@ void NigoriModelTypeProcessor::GetAllNodesForDebugging(
     AllNodesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::unique_ptr<base::DictionaryValue> root_node;
   std::unique_ptr<EntityData> entity_data = bridge_->GetData();
-  if (entity_data) {
-    if (entity_) {
-      const sync_pb::EntityMetadata& metadata = entity_->metadata();
-      // Set id value as directory, "s" means server.
-      entity_data->id = "s" + metadata.server_id();
-      entity_data->creation_time = ProtoTimeToTime(metadata.creation_time());
-      entity_data->modification_time =
-          ProtoTimeToTime(metadata.modification_time());
-    }
-    root_node = entity_data->ToDictionaryValue();
-    if (entity_) {
-      root_node->Set("metadata", EntityMetadataToValue(entity_->metadata()));
-    }
-  } else {
-    root_node = std::make_unique<base::DictionaryValue>();
+  if (!entity_data) {
+    std::move(callback).Run(syncer::NIGORI,
+                            std::make_unique<base::ListValue>());
+    return;
+  }
+
+  if (entity_) {
+    const sync_pb::EntityMetadata& metadata = entity_->metadata();
+    // Set id value as directory, "s" means server.
+    entity_data->id = "s" + metadata.server_id();
+    entity_data->creation_time = ProtoTimeToTime(metadata.creation_time());
+    entity_data->modification_time =
+        ProtoTimeToTime(metadata.modification_time());
+  }
+  std::unique_ptr<base::DictionaryValue> root_node;
+  root_node = entity_data->ToDictionaryValue();
+  if (entity_) {
+    root_node->Set("metadata", EntityMetadataToValue(entity_->metadata()));
   }
 
   // Function isTypeRootNode in sync_node_browser.js use PARENT_ID and
   // UNIQUE_SERVER_TAG to check if the node is root node. isChildOf in
   // sync_node_browser.js uses modelType to check if root node is parent of real
-  // data node. NON_UNIQUE_NAME will be the name of node to display.
-  root_node->SetString("ID", "NIGORI_ROOT");
+  // data node.
   root_node->SetString("PARENT_ID", "r");
   root_node->SetString("UNIQUE_SERVER_TAG", "Nigori");
-  root_node->SetBoolean("IS_DIR", false);
-  root_node->SetString("modelType", "Nigori");
-  root_node->SetString("NON_UNIQUE_NAME", "Nigori");
+  root_node->SetString("modelType", ModelTypeToString(NIGORI));
 
   auto all_nodes = std::make_unique<base::ListValue>();
   all_nodes->Append(std::move(root_node));

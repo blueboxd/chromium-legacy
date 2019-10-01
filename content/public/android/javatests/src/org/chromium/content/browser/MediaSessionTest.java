@@ -76,7 +76,7 @@ public class MediaSessionTest {
             return mAudioFocusState;
         }
 
-        public void requestAudioFocus(int focusType) throws Exception {
+        public void requestAudioFocus(int focusType) {
             int result = getAudioManager().requestAudioFocus(
                     this, AudioManager.STREAM_MUSIC, focusType);
             if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
@@ -138,7 +138,7 @@ public class MediaSessionTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         try {
             mActivityTestRule.launchContentShellWithUrlSync(MEDIA_SESSION_TEST_URL);
         } catch (Throwable t) {
@@ -158,9 +158,8 @@ public class MediaSessionTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mAudioFocusChangeListener.abandonAudioFocus();
-
     }
 
     @Test

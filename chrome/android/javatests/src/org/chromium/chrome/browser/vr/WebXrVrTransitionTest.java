@@ -63,7 +63,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * End-to-end tests for transitioning between WebVR and WebXR's magic window and
@@ -92,7 +91,7 @@ public class WebXrVrTransitionTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mWebXrVrTestFramework = new WebXrVrTestFramework(mTestRule);
         mWebVrTestFramework = new WebVrTestFramework(mTestRule);
     }
@@ -103,7 +102,7 @@ public class WebXrVrTransitionTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testRequestPresentEntersVr() throws InterruptedException {
+    public void testRequestPresentEntersVr() {
         testPresentationEntryImpl(
                 WebVrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"),
                 mWebVrTestFramework);
@@ -118,14 +117,13 @@ public class WebXrVrTransitionTest {
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-            public void testRequestSessionEntersVr() throws InterruptedException {
+            public void testRequestSessionEntersVr() {
         testPresentationEntryImpl(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
                 mWebXrVrTestFramework);
     }
 
-    private void testPresentationEntryImpl(String url, WebXrVrTestFramework framework)
-            throws InterruptedException {
+    private void testPresentationEntryImpl(String url, WebXrVrTestFramework framework) {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
         Assert.assertTrue("Browser did not enter VR", VrShellDelegate.isInVr());
@@ -171,7 +169,7 @@ public class WebXrVrTransitionTest {
     @MediumTest
     @CommandLineFlags.Remove({"enable-webvr"})
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testWebVrDisabledWithoutFlagSet() throws InterruptedException {
+    public void testWebVrDisabledWithoutFlagSet() {
         // TODO(bsheedy): Remove this test once WebVR is on by default without
         // requiring an origin trial.
         apiDisabledWithoutFlagSetImpl(WebVrTestFramework.getFileUrlForHtmlTestFile(
@@ -187,7 +185,7 @@ public class WebXrVrTransitionTest {
     @MediumTest
     @CommandLineFlags.Remove({"enable-webvr"})
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testWebXrDisabledWithoutFlagSet() throws InterruptedException {
+    public void testWebXrDisabledWithoutFlagSet() {
         // TODO(bsheedy): Remove this test once WebXR is on by default without
         // requiring an origin trial.
         apiDisabledWithoutFlagSetImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile(
@@ -195,8 +193,7 @@ public class WebXrVrTransitionTest {
                 mWebXrVrTestFramework);
     }
 
-    private void apiDisabledWithoutFlagSetImpl(String url, WebXrVrTestFramework framework)
-            throws InterruptedException {
+    private void apiDisabledWithoutFlagSetImpl(String url, WebXrVrTestFramework framework) {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.waitOnJavaScriptStep();
         framework.endTest();
@@ -210,7 +207,7 @@ public class WebXrVrTransitionTest {
     @LargeTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testNfcFiresVrdisplayactivate() throws InterruptedException {
+    public void testNfcFiresVrdisplayactivate() {
         mWebVrTestFramework.loadUrlAndAwaitInitialization(
                 WebVrTestFramework.getFileUrlForHtmlTestFile("test_nfc_fires_vrdisplayactivate"),
                 PAGE_LOAD_TIMEOUT_S);
@@ -235,7 +232,7 @@ public class WebXrVrTransitionTest {
     @VrSettingsFile(VrSettingsServiceUtils.FILE_DDVIEW_DONENABLED)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     @DisabledTest(message = "crbug.com/972153")
-    public void testPresentationPromiseUnresolvedDuringDon() throws InterruptedException {
+    public void testPresentationPromiseUnresolvedDuringDon() {
         presentationPromiseUnresolvedDuringDonImpl(
                 WebVrTestFramework.getFileUrlForHtmlTestFile(
                         "test_presentation_promise_unresolved_during_don"),
@@ -254,8 +251,7 @@ public class WebXrVrTransitionTest {
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-            public void testPresentationPromiseUnresolvedDuringDon_WebXr()
-            throws InterruptedException {
+            public void testPresentationPromiseUnresolvedDuringDon_WebXr() {
         presentationPromiseUnresolvedDuringDonImpl(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile(
                         "webxr_test_presentation_promise_unresolved_during_don"),
@@ -263,7 +259,7 @@ public class WebXrVrTransitionTest {
     }
 
     private void presentationPromiseUnresolvedDuringDonImpl(
-            String url, WebXrVrTestFramework framework) throws InterruptedException {
+            String url, WebXrVrTestFramework framework) {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureAndWait();
         framework.endTest();
@@ -278,7 +274,7 @@ public class WebXrVrTransitionTest {
     @VrSettingsFile(VrSettingsServiceUtils.FILE_DDVIEW_DONENABLED)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     @DisabledTest(message = "crbug.com/972153")
-    public void testPresentationPromiseRejectedIfDonCanceled() throws InterruptedException {
+    public void testPresentationPromiseRejectedIfDonCanceled() {
         presentationPromiseRejectedIfDonCanceledImpl(
                 WebVrTestFramework.getFileUrlForHtmlTestFile(
                         "test_presentation_promise_rejected_if_don_canceled"),
@@ -296,8 +292,7 @@ public class WebXrVrTransitionTest {
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-            public void testPresentationPromiseRejectedIfDonCanceled_WebXr()
-            throws InterruptedException {
+            public void testPresentationPromiseRejectedIfDonCanceled_WebXr() {
         presentationPromiseRejectedIfDonCanceledImpl(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile(
                         "webxr_test_presentation_promise_rejected_if_don_canceled"),
@@ -305,7 +300,7 @@ public class WebXrVrTransitionTest {
     }
 
     private void presentationPromiseRejectedIfDonCanceledImpl(
-            String url, WebXrVrTestFramework framework) throws InterruptedException {
+            String url, WebXrVrTestFramework framework) {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         final UiDevice uiDevice =
                 UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
@@ -422,8 +417,7 @@ public class WebXrVrTransitionTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
-    public void testRendererKilledInWebVrStaysInVr()
-            throws IllegalArgumentException, InterruptedException, TimeoutException {
+    public void testRendererKilledInWebVrStaysInVr() throws IllegalArgumentException {
         rendererKilledInVrStaysInVrImpl(
                 WebVrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"),
                 mWebVrTestFramework);
@@ -438,15 +432,13 @@ public class WebXrVrTransitionTest {
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
-            public void testRendererKilledInWebXrStaysInVr()
-            throws IllegalArgumentException, InterruptedException, TimeoutException {
+            public void testRendererKilledInWebXrStaysInVr() throws IllegalArgumentException {
         rendererKilledInVrStaysInVrImpl(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
                 mWebXrVrTestFramework);
     }
 
-    private void rendererKilledInVrStaysInVrImpl(String url, WebXrVrTestFramework framework)
-            throws InterruptedException {
+    private void rendererKilledInVrStaysInVrImpl(String url, WebXrVrTestFramework framework) {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
         framework.simulateRendererKilled();
@@ -463,7 +455,7 @@ public class WebXrVrTransitionTest {
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-            public void testWindowRafFiresDuringNonImmersiveSession() throws InterruptedException {
+            public void testWindowRafFiresDuringNonImmersiveSession() {
         mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile(
                         "test_window_raf_fires_during_non_immersive_session"),
@@ -483,7 +475,7 @@ public class WebXrVrTransitionTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             @DisableFeatures(ChromeFeatureList.SEND_TAB_TO_SELF)
-            public void testNonImmersiveStopsDuringImmersive() throws InterruptedException {
+            public void testNonImmersiveStopsDuringImmersive() {
         mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile(
                         "test_non_immersive_stops_during_immersive"),
@@ -507,7 +499,7 @@ public class WebXrVrTransitionTest {
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA})
-            public void testAppButtonExitToast() throws InterruptedException {
+            public void testAppButtonExitToast() {
         mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
                 PAGE_LOAD_TIMEOUT_S);
@@ -526,8 +518,7 @@ public class WebXrVrTransitionTest {
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-            public void testConsentDialogIsDismissedWhenPageNavigatesAwayInMainFrame()
-            throws InterruptedException {
+            public void testConsentDialogIsDismissedWhenPageNavigatesAwayInMainFrame() {
         mWebXrVrTestFramework.setConsentDialogAction(
                 WebXrVrTestFramework.CONSENT_DIALOG_ACTION_DO_NOTHING);
         mWebXrVrTestFramework.loadUrlAndAwaitInitialization(

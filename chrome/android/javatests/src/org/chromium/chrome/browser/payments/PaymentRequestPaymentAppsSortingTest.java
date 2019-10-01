@@ -43,7 +43,7 @@ public class PaymentRequestPaymentAppsSortingTest implements MainActivityStartCa
             "payment_request_alicepay_bobpay_charliepay_and_cards_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
                 true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
@@ -58,7 +58,7 @@ public class PaymentRequestPaymentAppsSortingTest implements MainActivityStartCa
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPaymentAppsSortingByFrecency() throws InterruptedException, TimeoutException {
+    public void testPaymentAppsSortingByFrecency() throws TimeoutException {
         // Install a payment app with Bob Pay and Alice Pay, and another payment app with Charlie
         // Pay.
         final TestPay appA =

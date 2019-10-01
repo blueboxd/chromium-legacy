@@ -171,15 +171,36 @@ gfx::ScrollOffset ScrollbarController::GetScrollOffsetForDragPosition(
   const gfx::Vector2dF pointer_delta =
       pointer_position_in_layer - drag_position_relative_to_layer;
 
-  gfx::ScrollOffset scaled_thumb_drag_delta;
   const ScrollbarOrientation orientation =
       currently_captured_scrollbar_->orientation();
-  orientation == ScrollbarOrientation::VERTICAL
-      ? scaled_thumb_drag_delta.set_y(pointer_delta.y())
-      : scaled_thumb_drag_delta.set_x(pointer_delta.x());
 
   float scaled_scroller_to_scrollbar_ratio = GetScrollerToScrollbarRatio();
-  scaled_thumb_drag_delta.Scale(scaled_scroller_to_scrollbar_ratio);
+  float current_scroll_position = currently_captured_scrollbar_->current_pos();
+
+  // Thumb position needs to be floored to match main thread per pixel behavior
+  float thumb_position = floorf(std::max(0.0f, current_scroll_position) /
+                                scaled_scroller_to_scrollbar_ratio);
+  float delta_in_orientation = orientation == ScrollbarOrientation::VERTICAL
+                                   ? pointer_delta.y()
+                                   : pointer_delta.x();
+
+  // This is effectively equal to delta_in_orientation *
+  // scaled_scroller_to_scrollbar_ratio but is necessary due to truncated delta
+  // value. Floored thumb_position cancels out the rounding error introduced
+  // in pointer_delta due to static_cast<int> in
+  // ScrollbarLayerImplBase::ComputeThumbQuadRectWithThumbThicknessScale
+  float scroll_delta = (delta_in_orientation + thumb_position) *
+                           scaled_scroller_to_scrollbar_ratio -
+                       current_scroll_position;
+
+  // gfx::ScrollOffset scaled_thumb_drag_delta;
+  gfx::ScrollOffset scaled_thumb_drag_delta;
+
+  // Scroll delta floored to match main thread per pixel behavior
+  orientation == ScrollbarOrientation::VERTICAL
+      ? scaled_thumb_drag_delta.set_y(floorf(scroll_delta))
+      : scaled_thumb_drag_delta.set_x(floorf(scroll_delta));
+
   return scaled_thumb_drag_delta;
 }
 
@@ -289,16 +310,6 @@ float ScrollbarController::GetScrollerToScrollbarRatio() {
       ((scroll_layer_length - viewport_length) /
        (scrollbar_track_length - scrollbar_thumb_length)) *
       layer_tree_host_impl_->active_tree()->device_scale_factor();
-
-  // Avoid precision loss later on by rounding up 3 decimal places here.
-  // TODO(arakeri): Revisit this while fixing crbug.com/986174. There is a
-  // precision loss that is happening somewhere which affects root scrollbars
-  // only. Even though it is not visible to the end user, without rounding up,
-  // the scrolling tests will fail due to this precision loss.
-  DCHECK_GT(scaled_scroller_to_scrollbar_ratio, 0);
-  scaled_scroller_to_scrollbar_ratio =
-      ceil(scaled_scroller_to_scrollbar_ratio * 1000.0) / 1000.0;
-
   return scaled_scroller_to_scrollbar_ratio;
 }
 

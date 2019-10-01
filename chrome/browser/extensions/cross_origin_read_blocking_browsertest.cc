@@ -1023,11 +1023,10 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
   {
     content::WebContentsAddedObserver new_contents_observer;
     apps::LaunchService::Get(browser()->profile())
-        ->OpenApplication(
-            AppLaunchParams(browser()->profile(), app->id(),
-                            LaunchContainer::kLaunchContainerNone,
-                            WindowOpenDisposition::NEW_WINDOW,
-                            apps::mojom::AppLaunchSource::kSourceTest));
+        ->OpenApplication(apps::AppLaunchParams(
+            app->id(), LaunchContainer::kLaunchContainerNone,
+            WindowOpenDisposition::NEW_WINDOW,
+            apps::mojom::AppLaunchSource::kSourceTest));
     app_contents = new_contents_observer.GetWebContents();
   }
   ASSERT_TRUE(content::WaitForLoadStop(app_contents));

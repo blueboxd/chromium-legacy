@@ -55,7 +55,7 @@ public class PaymentRequestBillingAddressWithoutPhoneTest implements MainActivit
     private static final int BILLING_ADDRESS_DROPDOWN_INDEX = 2;
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         String address_without_phone = helper.setProfile(new AutofillProfile("",
                 "https://example.com", true, "Jon NoPhone", "Google", "340 Main St", "CA",
@@ -75,7 +75,7 @@ public class PaymentRequestBillingAddressWithoutPhoneTest implements MainActivit
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanPayWithBillingNoPhone() throws InterruptedException, TimeoutException {
+    public void testCanPayWithBillingNoPhone() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
@@ -89,8 +89,7 @@ public class PaymentRequestBillingAddressWithoutPhoneTest implements MainActivit
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanSelectBillingAddressWithoutPhone()
-            throws InterruptedException, TimeoutException {
+    public void testCanSelectBillingAddressWithoutPhone() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Go edit the credit card.
@@ -117,8 +116,7 @@ public class PaymentRequestBillingAddressWithoutPhoneTest implements MainActivit
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCantSelectShippingAddressWithoutPhone()
-            throws InterruptedException, TimeoutException {
+    public void testCantSelectShippingAddressWithoutPhone() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -140,8 +138,7 @@ public class PaymentRequestBillingAddressWithoutPhoneTest implements MainActivit
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCantAddNewBillingAddressWithoutPhone()
-            throws InterruptedException, TimeoutException {
+    public void testCantAddNewBillingAddressWithoutPhone() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());

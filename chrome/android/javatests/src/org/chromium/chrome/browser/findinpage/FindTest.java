@@ -71,7 +71,7 @@ public class FindTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         if (mTestServer != null) mTestServer.stopAndDestroyServer();
     }
 
@@ -95,9 +95,8 @@ public class FindTest {
     /**
      * Find in page by invoking the 'find in page' menu item.
      *
-     * @throws InterruptedException
      */
-    private void findInPageFromMenu() throws InterruptedException {
+    private void findInPageFromMenu() {
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), R.id.find_in_page_id);
 
@@ -118,8 +117,7 @@ public class FindTest {
         });
     }
 
-    private String findStringInPage(final String query, String expectedResult)
-            throws InterruptedException {
+    private String findStringInPage(final String query, String expectedResult) {
         findInPageFromMenu();
         // FindToolbar should automatically get focus.
         final TextView findQueryText = getFindQueryText();
@@ -139,8 +137,7 @@ public class FindTest {
         return waitForFindResults(expectedResult);
     }
 
-    private void loadTestAndVerifyFindInPage(String query, String expectedResult)
-            throws InterruptedException {
+    private void loadTestAndVerifyFindInPage(String query, String expectedResult) {
         mActivityTestRule.loadUrl(mTestServer.getURL(FILEPATH));
         String findResults = findStringInPage(query, expectedResult);
         Assert.assertTrue("Expected: " + expectedResult + " Got: " + findResults
@@ -169,7 +166,7 @@ public class FindTest {
     @MediumTest
     @Feature({"FindInPage", "Main"})
     @RetryOnFailure
-    public void testFind() throws InterruptedException {
+    public void testFind() {
         loadTestAndVerifyFindInPage("pitts", "1/7");
     }
 
@@ -180,7 +177,7 @@ public class FindTest {
     @MediumTest
     @Feature({"FindInPage"})
     @RetryOnFailure
-    public void testFind101() throws InterruptedException {
+    public void testFind101() {
         loadTestAndVerifyFindInPage("it", "1/101");
     }
 
@@ -191,7 +188,7 @@ public class FindTest {
     @MediumTest
     @Feature({"FindInPage"})
     @RetryOnFailure
-    public void testFindMultiLine() throws InterruptedException {
+    public void testFindMultiLine() {
         String multiLineSearchTerm = "This is the text of this document.\n"
                 + " I am going to write the word \'Pitts\' 7 times. (That was one.)";
         loadTestAndVerifyFindInPage(multiLineSearchTerm, "1/1");
@@ -205,7 +202,7 @@ public class FindTest {
     @MediumTest
     @Feature({"FindInPage"})
     @RetryOnFailure
-    public void testFindMultiLineFalse() throws InterruptedException {
+    public void testFindMultiLineFalse() {
         String multiLineSearchTerm = "aThis is the text of this document.\n"
                 + " I am going to write the word \'Pitts\' 7 times. (That was one.)";
         loadTestAndVerifyFindInPage(multiLineSearchTerm, "0/0");
@@ -218,7 +215,7 @@ public class FindTest {
     @MediumTest
     @Feature({"FindInPage"})
     @RetryOnFailure
-    public void testFindNext() throws InterruptedException {
+    public void testFindNext() {
         String query = "pitts";
         loadTestAndVerifyFindInPage(query, "1/7");
         // TODO(jaydeepmehta): Verify number of results and match against boxes drawn.
@@ -239,7 +236,7 @@ public class FindTest {
     @MediumTest
     @Feature({"FindInPage"})
     @RetryOnFailure
-    public void testFindNextPrevious() throws InterruptedException {
+    public void testFindNextPrevious() {
         String query = "pitts";
         loadTestAndVerifyFindInPage(query, "1/7");
         // TODO(jaydeepmehta): Verify number of results and match against boxes drawn.
@@ -258,7 +255,7 @@ public class FindTest {
     @MediumTest
     @Feature({"FindInPage"})
     @RetryOnFailure
-    public void testFullscreen() throws InterruptedException {
+    public void testFullscreen() {
         loadTestAndVerifyFindInPage("pitts", "1/7");
 
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
@@ -275,7 +272,7 @@ public class FindTest {
     @MediumTest
     @Feature({"FindInPage"})
     @RetryOnFailure
-    public void testResultsBarInitiallyVisible() throws InterruptedException {
+    public void testResultsBarInitiallyVisible() {
         mActivityTestRule.loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
         final FindToolbar findToolbar = getFindToolbar();
@@ -288,7 +285,7 @@ public class FindTest {
     @MediumTest
     @Feature({"FindInPage"})
     @RetryOnFailure
-    public void testResultsBarVisibleAfterTypingText() throws InterruptedException {
+    public void testResultsBarVisibleAfterTypingText() {
         mActivityTestRule.loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
         final FindToolbar findToolbar = getFindToolbar();
@@ -311,7 +308,7 @@ public class FindTest {
     @Test
     @MediumTest
     @Feature({"FindInPage"})
-    public void testFindDismissOnEmptyString() throws InterruptedException {
+    public void testFindDismissOnEmptyString() {
         mActivityTestRule.loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
 
@@ -338,7 +335,7 @@ public class FindTest {
     @SmallTest
     @Feature({"FindInPage"})
     @RetryOnFailure
-    public void testFindNextPreviousIncognitoTab() throws InterruptedException {
+    public void testFindNextPreviousIncognitoTab() {
         String query = "pitts";
         mActivityTestRule.newIncognitoTabFromMenu();
         loadTestAndVerifyFindInPage(query, "1/7");
@@ -382,7 +379,7 @@ public class FindTest {
     @SmallTest
     @Feature({"FindInPage"})
     @RetryOnFailure
-    public void testPastedTextStylingRemoved() throws InterruptedException {
+    public void testPastedTextStylingRemoved() {
         mActivityTestRule.loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
 
@@ -417,7 +414,7 @@ public class FindTest {
     @MediumTest
     @Feature({"FindInPage"})
     @RetryOnFailure
-    public void testBackKeyDoesNotDismissFindWhenImeIsPresent() throws InterruptedException {
+    public void testBackKeyDoesNotDismissFindWhenImeIsPresent() {
         mActivityTestRule.loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
         final TextView findQueryText = getFindQueryText();
@@ -440,7 +437,7 @@ public class FindTest {
     @MediumTest
     @Feature({"FindInPage"})
     @RetryOnFailure
-    public void testBackKeyDismissesFind() throws InterruptedException {
+    public void testBackKeyDismissesFind() {
         loadTestAndVerifyFindInPage("pitts", "1/7");
         waitForIME(true);
         // Hide IME by clicking next button from find tool bar.

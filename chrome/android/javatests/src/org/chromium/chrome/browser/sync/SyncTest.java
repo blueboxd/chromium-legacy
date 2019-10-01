@@ -46,7 +46,7 @@ public class SyncTest {
     @Test
     @LargeTest
     @Feature({"Sync"})
-    public void testFlushDirectoryDoesntBreakSync() throws Throwable {
+    public void testFlushDirectoryDoesntBreakSync() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         final Activity activity = mSyncTestRule.getActivity();
 

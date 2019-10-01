@@ -139,13 +139,13 @@ int AXNodePosition::MaxTextOffset() const {
 
 void AXNodePosition::AnchorChild(int child_index,
                                  AXTreeID* tree_id,
-                                 int32_t* child_id) const {
+                                 AXNode::AXID* child_id) const {
   DCHECK(tree_id);
   DCHECK(child_id);
 
   if (!GetAnchor() || child_index < 0 || child_index >= AnchorChildCount()) {
     *tree_id = AXTreeIDUnknown();
-    *child_id = INVALID_ANCHOR_ID;
+    *child_id = AXNode::kInvalidAXID;
     return;
   }
 
@@ -187,10 +187,10 @@ base::stack<AXNode*> AXNodePosition::GetAncestorAnchors() const {
   base::stack<AXNode*> anchors;
   AXNode* current_anchor = GetAnchor();
 
-  int32_t current_anchor_id = GetAnchor()->id();
+  AXNode::AXID current_anchor_id = GetAnchor()->id();
   AXTreeID current_tree_id = this->tree_id();
 
-  int32_t parent_anchor_id = INVALID_ANCHOR_ID;
+  AXNode::AXID parent_anchor_id = AXNode::kInvalidAXID;
   AXTreeID parent_tree_id = AXTreeIDUnknown();
 
   while (current_anchor) {
@@ -205,12 +205,13 @@ base::stack<AXNode*> AXNodePosition::GetAncestorAnchors() const {
   return anchors;
 }
 
-void AXNodePosition::AnchorParent(AXTreeID* tree_id, int32_t* parent_id) const {
+void AXNodePosition::AnchorParent(AXTreeID* tree_id,
+                                  AXNode::AXID* parent_id) const {
   DCHECK(tree_id);
   DCHECK(parent_id);
 
   *tree_id = AXTreeIDUnknown();
-  *parent_id = INVALID_ANCHOR_ID;
+  *parent_id = AXNode::kInvalidAXID;
 
   if (!GetAnchor())
     return;
@@ -221,12 +222,13 @@ void AXNodePosition::AnchorParent(AXTreeID* tree_id, int32_t* parent_id) const {
 
   if (!parent) {
     *tree_id = AXTreeIDUnknown();
-    *parent_id = INVALID_ANCHOR_ID;
+    *parent_id = AXNode::kInvalidAXID;
   }
 }
 
-AXNode* AXNodePosition::GetNodeInTree(AXTreeID tree_id, int32_t node_id) const {
-  if (node_id == INVALID_ANCHOR_ID)
+AXNode* AXNodePosition::GetNodeInTree(AXTreeID tree_id,
+                                      AXNode::AXID node_id) const {
+  if (node_id == AXNode::kInvalidAXID)
     return nullptr;
 
   // Used for testing via AXNodePosition::SetTree
@@ -306,40 +308,40 @@ std::vector<int32_t> AXNodePosition::GetWordEndOffsets() const {
       ax::mojom::IntListAttribute::kWordEnds);
 }
 
-int32_t AXNodePosition::GetNextOnLineID(int32_t node_id) const {
+AXNode::AXID AXNodePosition::GetNextOnLineID(AXNode::AXID node_id) const {
   if (IsNullPosition())
-    return INVALID_ANCHOR_ID;
+    return AXNode::kInvalidAXID;
   AXNode* node = GetNodeInTree(tree_id(), node_id);
   int next_on_line_id;
   if (!node || !node->data().GetIntAttribute(
                    ax::mojom::IntAttribute::kNextOnLineId, &next_on_line_id)) {
-    return INVALID_ANCHOR_ID;
+    return AXNode::kInvalidAXID;
   }
-  return static_cast<int32_t>(next_on_line_id);
+  return static_cast<AXNode::AXID>(next_on_line_id);
 }
 
-int32_t AXNodePosition::GetPreviousOnLineID(int32_t node_id) const {
+AXNode::AXID AXNodePosition::GetPreviousOnLineID(AXNode::AXID node_id) const {
   if (IsNullPosition())
-    return INVALID_ANCHOR_ID;
+    return AXNode::kInvalidAXID;
   AXNode* node = GetNodeInTree(tree_id(), node_id);
   int previous_on_line_id;
   if (!node ||
       !node->data().GetIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
                                     &previous_on_line_id)) {
-    return INVALID_ANCHOR_ID;
+    return AXNode::kInvalidAXID;
   }
-  return static_cast<int32_t>(previous_on_line_id);
+  return static_cast<AXNode::AXID>(previous_on_line_id);
 }
 
 AXNode* AXNodePosition::GetParent(AXNode* child,
                                   AXTreeID child_tree_id,
                                   AXTreeID* parent_tree_id,
-                                  int32_t* parent_id) {
+                                  AXNode::AXID* parent_id) {
   DCHECK(parent_tree_id);
   DCHECK(parent_id);
 
   *parent_tree_id = AXTreeIDUnknown();
-  *parent_id = INVALID_ANCHOR_ID;
+  *parent_id = AXNode::kInvalidAXID;
 
   if (!child)
     return nullptr;

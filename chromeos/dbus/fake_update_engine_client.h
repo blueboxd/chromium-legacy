@@ -38,6 +38,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeUpdateEngineClient
   void GetChannel(bool get_current_channel,
                   const GetChannelCallback& callback) override;
   void GetEolStatus(GetEolStatusCallback callback) override;
+  void GetEolInfo(GetEolInfoCallback callback) override;
   void SetUpdateOverCellularPermission(bool allowed,
                                        const base::Closure& callback) override;
   void SetUpdateOverCellularOneTimePermission(

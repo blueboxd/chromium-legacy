@@ -32,7 +32,7 @@ public class JSUtils {
     public static void clickOnLinkUsingJs(final Instrumentation instrumentation,
             final AwContents awContents,
             final OnEvaluateJavaScriptResultHelper onEvaluateJavaScriptResultHelper,
-            final String linkId) throws Exception {
+            final String linkId) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

@@ -33,6 +33,7 @@ TEST(OptimizationGuideNavigationDataTest, RecordMetricsNoDataNoCommit) {
   EXPECT_THAT(histogram_tester.GetAllHistogramsRecorded(),
               Not(AnyOf(HasSubstr("OptimizationGuide.ApplyDecision"),
                         HasSubstr("OptimizationGuide.HintCache"),
+                        HasSubstr("OptimizationGuide.Hints."),
                         HasSubstr("OptimizationGuide.TargetDecision"))));
 
   // Make sure no UKM recorded.
@@ -52,11 +53,32 @@ TEST(OptimizationGuideNavigationDataTest, RecordMetricsNoDataHasCommit) {
 
   // Make sure no UMA recorded.
   EXPECT_THAT(histogram_tester.GetAllHistogramsRecorded(),
-              Not(AnyOf(HasSubstr("OptimizationGuide.HintCache"))));
+              Not(AnyOf(HasSubstr("OptimizationGuide.Hints."),
+                        HasSubstr("OptimizationGuide.HintCache"))));
   // Make sure no UKM recorded.
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::OptimizationGuide::kEntryName);
   EXPECT_TRUE(entries.empty());
+}
+
+TEST(OptimizationGuideNavigationDataTest,
+     RecordMetricsCoveredByFetchButNoHintLoadAttempted) {
+  base::HistogramTester histogram_tester;
+
+  OptimizationGuideNavigationData data(/*navigation_id=*/3);
+  data.set_was_host_covered_by_fetch_at_navigation_start(true);
+  data.RecordMetrics(/*has_committed=*/false);
+
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintCache.HasHint.AtCommit", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintCache.HostMatch.AtCommit", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
 }
 
 TEST(OptimizationGuideNavigationDataTest,
@@ -65,10 +87,34 @@ TEST(OptimizationGuideNavigationDataTest,
 
   OptimizationGuideNavigationData data(/*navigation_id=*/3);
   data.set_has_hint_before_commit(false);
+  data.set_was_host_covered_by_fetch_at_navigation_start(true);
   data.RecordMetrics(/*has_committed=*/false);
 
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HasHint.BeforeCommit", false, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", true, 1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintCache.HasHint.AtCommit", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintCache.HostMatch.AtCommit", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
+}
+
+TEST(OptimizationGuideNavigationDataTest,
+     RecordMetricsHintCacheNoHostMatchBeforeCommitAlsoNotCoveredByFetch) {
+  base::HistogramTester histogram_tester;
+
+  OptimizationGuideNavigationData data(/*navigation_id=*/3);
+  data.set_has_hint_before_commit(false);
+  data.set_was_host_covered_by_fetch_at_navigation_start(false);
+  data.RecordMetrics(/*has_committed=*/false);
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.HasHint.BeforeCommit", false, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", false, 1);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintCache.HasHint.AtCommit", 0);
   histogram_tester.ExpectTotalCount(
@@ -89,6 +135,8 @@ TEST(OptimizationGuideNavigationDataTest,
   // check works for before commit.
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", 0);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HasHint.AtCommit", false, 1);
   histogram_tester.ExpectTotalCount(
@@ -109,6 +157,8 @@ TEST(OptimizationGuideNavigationDataTest,
   // check works for before commit.
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", 0);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
@@ -123,6 +173,7 @@ TEST(OptimizationGuideNavigationDataTest,
 
   OptimizationGuideNavigationData data(/*navigation_id=*/3);
   data.set_has_hint_before_commit(true);
+  data.set_was_host_covered_by_fetch_at_navigation_start(false);
   data.set_has_hint_after_commit(true);
   data.set_serialized_hint_version_string("abc");
   data.set_page_hint(std::make_unique<optimization_guide::proto::PageHint>());
@@ -130,6 +181,8 @@ TEST(OptimizationGuideNavigationDataTest,
 
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
@@ -151,6 +204,8 @@ TEST(OptimizationGuideNavigationDataTest,
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", true, 1);
+  histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
@@ -171,6 +226,8 @@ TEST(OptimizationGuideNavigationDataTest,
 
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
   histogram_tester.ExpectUniqueSample(

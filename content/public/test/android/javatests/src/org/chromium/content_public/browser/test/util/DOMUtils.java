@@ -37,7 +37,7 @@ public class DOMUtils {
      * @param id The element's id to be played.
      */
     public static void playMedia(final WebContents webContents, final String id)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
         sb.append("  var media = document.getElementById('" + id + "');");
@@ -53,7 +53,7 @@ public class DOMUtils {
      * @param id The element's id to be paused.
      */
     public static void pauseMedia(final WebContents webContents, final String id)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
         sb.append("  var media = document.getElementById('" + id + "');");
@@ -70,7 +70,7 @@ public class DOMUtils {
      * @return whether the media is paused.
      */
     public static boolean isMediaPaused(final WebContents webContents, final String id)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         return getNodeField("paused", webContents, id, Boolean.class);
     }
 
@@ -81,7 +81,7 @@ public class DOMUtils {
      * @return whether the media has ended.
      */
     public static boolean isMediaEnded(final WebContents webContents, final String id)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         return getNodeField("ended", webContents, id, Boolean.class);
     }
 
@@ -92,7 +92,7 @@ public class DOMUtils {
      * @return the current time (in seconds) of the media.
      */
     private static double getCurrentTime(final WebContents webContents, final String id)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         return getNodeField("currentTime", webContents, id, Double.class);
     }
 
@@ -109,9 +109,6 @@ public class DOMUtils {
                     // Playback can't be reliably detected until current time moves forward.
                     return !DOMUtils.isMediaPaused(webContents, id)
                             && DOMUtils.getCurrentTime(webContents, id) > 0;
-                } catch (InterruptedException e) {
-                    // Intentionally do nothing
-                    return false;
                 } catch (TimeoutException e) {
                     // Intentionally do nothing
                     return false;
@@ -132,9 +129,6 @@ public class DOMUtils {
                 try {
                     return DOMUtils.isMediaPaused(webContents, id)
                             && !DOMUtils.isMediaEnded(webContents, id);
-                } catch (InterruptedException e) {
-                    // Intentionally do nothing
-                    return false;
                 } catch (TimeoutException e) {
                     // Intentionally do nothing
                     return false;
@@ -148,8 +142,7 @@ public class DOMUtils {
      * @param webContents The WebContents to check.
      * @return Whether the document is fullsscreen.
      */
-    public static boolean isFullscreen(final WebContents webContents)
-            throws InterruptedException, TimeoutException {
+    public static boolean isFullscreen(final WebContents webContents) throws TimeoutException {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
         sb.append("  return [document.webkitIsFullScreen];");
@@ -188,7 +181,7 @@ public class DOMUtils {
      * @return The rect boundaries for the node.
      */
     public static Rect getNodeBounds(final WebContents webContents, String nodeId)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         String jsCode = "document.getElementById('" + nodeId + "')";
         return getNodeBoundsByJs(webContents, jsCode);
     }
@@ -199,7 +192,7 @@ public class DOMUtils {
      * @param nodeId The id of the node.
      */
     public static void focusNode(final WebContents webContents, String nodeId)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
         sb.append("  var node = document.getElementById('" + nodeId + "');");
@@ -214,8 +207,7 @@ public class DOMUtils {
      * @param webContents The WebContents in which the node lives.
      * @return The id of the currently focused node.
      */
-    public static String getFocusedNode(WebContents webContents)
-            throws InterruptedException, TimeoutException {
+    public static String getFocusedNode(WebContents webContents) throws TimeoutException {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
         sb.append("  var node = document.activeElement;");
@@ -238,7 +230,7 @@ public class DOMUtils {
      * @param nodeId The id of the node.
      */
     public static boolean clickNode(final WebContents webContents, String nodeId)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         return clickNode(webContents, nodeId, true /* goThroughRootAndroidView */);
     }
 
@@ -250,7 +242,7 @@ public class DOMUtils {
      *        the CVC.
      */
     public static boolean clickNode(final WebContents webContents, String nodeId,
-            boolean goThroughRootAndroidView) throws InterruptedException, TimeoutException {
+            boolean goThroughRootAndroidView) throws TimeoutException {
         return clickNode(
                 webContents, nodeId, goThroughRootAndroidView, true /* shouldScrollIntoView */);
     }
@@ -265,7 +257,7 @@ public class DOMUtils {
      */
     public static boolean clickNode(final WebContents webContents, String nodeId,
             boolean goThroughRootAndroidView, boolean shouldScrollIntoView)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         if (shouldScrollIntoView) scrollNodeIntoView(webContents, nodeId);
         int[] clickTarget = getClickTargetForNode(webContents, nodeId);
         if (goThroughRootAndroidView) {
@@ -288,7 +280,7 @@ public class DOMUtils {
      * @param jsCode The JS code to find the node.
      */
     public static void clickNodeByJs(final WebContents webContents, String jsCode)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         scrollNodeIntoViewByJs(webContents, jsCode);
         int[] clickTarget = getClickTargetForNodeByJs(webContents, jsCode);
         TouchCommon.singleClickView(getContainerView(webContents), clickTarget[0], clickTarget[1]);
@@ -314,7 +306,7 @@ public class DOMUtils {
      * @param downTime When the drag was started, in millis since the epoch.
      */
     public static void dragNodeStart(final WebContents webContents, String nodeId, long downTime)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         scrollNodeIntoView(webContents, nodeId);
         String jsCode = "document.getElementById('" + nodeId + "')";
         int[] fromTarget = getClickTargetForNodeByJs(webContents, jsCode);
@@ -332,7 +324,7 @@ public class DOMUtils {
      * @param downTime When the drag was started, in millis since the epoch.
      */
     public static void dragNodeTo(final WebContents webContents, String fromNodeId, String toNodeId,
-            int stepCount, long downTime) throws InterruptedException, TimeoutException {
+            int stepCount, long downTime) throws TimeoutException {
         int[] fromTarget = getClickTargetForNodeByJs(
                 webContents, "document.getElementById('" + fromNodeId + "')");
         int[] toTarget = getClickTargetForNodeByJs(
@@ -350,7 +342,7 @@ public class DOMUtils {
      * @param downTime When the drag was started, in millis since the epoch.
      */
     public static void dragNodeEnd(final WebContents webContents, String nodeId, long downTime)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         scrollNodeIntoView(webContents, nodeId);
         String jsCode = "document.getElementById('" + nodeId + "')";
         int[] endTarget = getClickTargetForNodeByJs(webContents, jsCode);
@@ -363,8 +355,8 @@ public class DOMUtils {
      * @param nodeId The id of the node.
      * @param downTime When the Long-press was started, in millis since the epoch.
      */
-    public static void longPressNodeWithoutUp(final WebContents webContents, String nodeId,
-            long downTime) throws InterruptedException, TimeoutException {
+    public static void longPressNodeWithoutUp(
+            final WebContents webContents, String nodeId, long downTime) throws TimeoutException {
         scrollNodeIntoView(webContents, nodeId);
         String jsCode = "document.getElementById('" + nodeId + "')";
         longPressNodeWithoutUpByJs(webContents, jsCode, downTime);
@@ -378,8 +370,8 @@ public class DOMUtils {
      * @param jsCode js code that returns an element.
      * @param downTime When the Long-press was started, in millis since the epoch.
      */
-    public static void longPressNodeWithoutUpByJs(final WebContents webContents, String jsCode,
-            long downTime) throws InterruptedException, TimeoutException {
+    public static void longPressNodeWithoutUpByJs(
+            final WebContents webContents, String jsCode, long downTime) throws TimeoutException {
         int[] clickTarget = getClickTargetForNodeByJs(webContents, jsCode);
         TouchCommon.longPressViewWithoutUp(
                 getContainerView(webContents), clickTarget[0], clickTarget[1], downTime);
@@ -391,7 +383,7 @@ public class DOMUtils {
      * @param nodeId The id of the node.
      */
     public static void longPressNode(final WebContents webContents, String nodeId)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         scrollNodeIntoView(webContents, nodeId);
         String jsCode = "document.getElementById('" + nodeId + "')";
         longPressNodeByJs(webContents, jsCode);
@@ -405,7 +397,7 @@ public class DOMUtils {
      * @param jsCode js code that returns an element.
      */
     public static void longPressNodeByJs(final WebContents webContents, String jsCode)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         int[] clickTarget = getClickTargetForNodeByJs(webContents, jsCode);
         TouchCommon.longPressView(getContainerView(webContents), clickTarget[0], clickTarget[1]);
     }
@@ -416,7 +408,7 @@ public class DOMUtils {
      * @param nodeId The id of the node.
      */
     public static void scrollNodeIntoView(WebContents webContents, String nodeId)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         scrollNodeIntoViewByJs(webContents, "document.getElementById('" + nodeId + "')");
     }
 
@@ -426,7 +418,7 @@ public class DOMUtils {
      * @param jsCode The JS code to find the node.
      */
     public static void scrollNodeIntoViewByJs(WebContents webContents, String jsCode)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 webContents, jsCode + ".scrollIntoView()");
     }
@@ -438,7 +430,7 @@ public class DOMUtils {
      * @return the text contents of the node.
      */
     public static String getNodeContents(WebContents webContents, String nodeId)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         return getNodeField("textContent", webContents, nodeId, String.class);
     }
 
@@ -449,7 +441,7 @@ public class DOMUtils {
      * @return the value of the node.
      */
     public static String getNodeValue(final WebContents webContents, String nodeId)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         return getNodeField("value", webContents, nodeId, String.class);
     }
 
@@ -461,7 +453,7 @@ public class DOMUtils {
      * @return the value of the field.
      */
     public static String getNodeField(String fieldName, final WebContents webContents,
-            String nodeId) throws InterruptedException, TimeoutException {
+            String nodeId) throws TimeoutException {
         return getNodeField(fieldName, webContents, nodeId, String.class);
     }
 
@@ -477,9 +469,6 @@ public class DOMUtils {
             public boolean isSatisfied() {
                 try {
                     return !DOMUtils.getNodeBounds(webContents, nodeId).isEmpty();
-                } catch (InterruptedException e) {
-                    // Intentionally do nothing
-                    return false;
                 } catch (TimeoutException e) {
                     // Intentionally do nothing
                     return false;
@@ -497,7 +486,7 @@ public class DOMUtils {
      * @return the field's value.
      */
     public static <T> T getNodeField(String fieldName, final WebContents webContents, String nodeId,
-            Class<T> valueType) throws InterruptedException, TimeoutException {
+            Class<T> valueType) throws TimeoutException {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
         sb.append("  var node = document.getElementById('" + nodeId + "');");
@@ -559,7 +548,7 @@ public class DOMUtils {
      * @return the click target of the node in the form of a [ x, y ] array.
      */
     private static int[] getClickTargetForNode(WebContents webContents, String nodeId)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         String jsCode = "document.getElementById('" + nodeId + "')";
         return getClickTargetForNodeByJs(webContents, jsCode);
     }
@@ -571,7 +560,7 @@ public class DOMUtils {
      * @return the click target of the node in the form of a [ x, y ] array.
      */
     private static int[] getClickTargetForNodeByJs(WebContents webContents, String jsCode)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         Rect bounds = getNodeBoundsByJs(webContents, jsCode);
         Assert.assertNotNull(
                 "Failed to get DOM element bounds of element='" + jsCode + "'.", bounds);
@@ -616,7 +605,7 @@ public class DOMUtils {
      * @return The rect boundaries for the node.
      */
     private static Rect getNodeBoundsByJs(final WebContents webContents, String jsCode)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
         sb.append("  var node = " + jsCode + ";");

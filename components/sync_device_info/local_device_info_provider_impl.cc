@@ -38,6 +38,7 @@ const DeviceInfo* LocalDeviceInfoProviderImpl::GetLocalDeviceInfo() const {
 
   local_device_info_->set_send_tab_to_self_receiving_enabled(
       sync_client_->GetSendTabToSelfReceivingEnabled());
+  local_device_info_->set_sharing_info(sync_client_->GetLocalSharingInfo());
   return local_device_info_.get();
 }
 
@@ -60,7 +61,8 @@ void LocalDeviceInfoProviderImpl::Initialize(const std::string& cache_guid,
       cache_guid, session_name, version_, MakeUserAgentForSync(channel_),
       GetLocalDeviceType(), sync_client_->GetSigninScopedDeviceId(),
       /*last_updated_timestamp=*/base::Time(),
-      sync_client_->GetSendTabToSelfReceivingEnabled());
+      sync_client_->GetSendTabToSelfReceivingEnabled(),
+      sync_client_->GetLocalSharingInfo());
 
   // Notify observers.
   callback_list_.Notify();

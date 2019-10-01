@@ -136,7 +136,7 @@ public class OmniboxTest {
     @MediumTest
     @Feature({"Omnibox"})
     @RetryOnFailure
-    public void testFocusChangingSoftInputMode() throws InterruptedException {
+    public void testFocusChangingSoftInputMode() {
         final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
 
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
@@ -171,7 +171,7 @@ public class OmniboxTest {
     @MediumTest
     @Feature({"Omnibox"})
     @RetryOnFailure
-    public void testRequestZeroSuggestOnFocus() throws Exception {
+    public void testRequestZeroSuggestOnFocus() {
         final LocationBarLayout locationBar =
                 (LocationBarLayout) mActivityTestRule.getActivity().findViewById(R.id.location_bar);
         final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
@@ -253,7 +253,7 @@ public class OmniboxTest {
     @MediumTest
     @Feature({"Omnibox"})
     @RetryOnFailure
-    public void testRequestZeroSuggestTypeAndBackspace() throws InterruptedException {
+    public void testRequestZeroSuggestTypeAndBackspace() {
         final LocationBarLayout locationBar =
                 (LocationBarLayout) mActivityTestRule.getActivity().findViewById(R.id.location_bar);
         final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
@@ -287,7 +287,7 @@ public class OmniboxTest {
     @MediumTest
     @Feature({"Omnibox"})
     @RetryOnFailure
-    public void testDefaultText() throws InterruptedException {
+    public void testDefaultText() {
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
 
         final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
@@ -528,7 +528,7 @@ public class OmniboxTest {
 
         CharSequence urlText = TestThreadUtils.runOnUiThreadBlocking(new Callable<CharSequence>() {
             @Override
-            public CharSequence call() throws Exception {
+            public CharSequence call() {
                 return urlBarView.getText();
             }
         });
@@ -586,7 +586,7 @@ public class OmniboxTest {
     @Test
     @MediumTest
     @SkipCommandLineParameterization
-    public void testSecurityIconOnHTTP() throws InterruptedException {
+    public void testSecurityIconOnHTTP() {
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         try {
@@ -726,7 +726,7 @@ public class OmniboxTest {
     @Feature({"Omnibox"})
     @RetryOnFailure
     @DisabledTest // https://crbug.com/950556
-    public void testSuggestionDirectionSwitching() throws InterruptedException {
+    public void testSuggestionDirectionSwitching() {
         final TextView urlBarView =
                 (TextView) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
         TestThreadUtils.runOnUiThreadBlocking(() -> {

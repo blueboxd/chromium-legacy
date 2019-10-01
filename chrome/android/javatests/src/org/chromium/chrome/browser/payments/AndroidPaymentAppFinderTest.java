@@ -113,7 +113,7 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
     }
 
     @After
-    public void tearDown() throws Throwable {
+    public void tearDown() {
         if (mServer != null) mServer.stopAndDestroyServer();
     }
 

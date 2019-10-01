@@ -143,7 +143,7 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
         return mConnectionFactory;
     }
 
-    void fullyLoadUrl(final String url) throws Throwable {
+    void fullyLoadUrl(final String url) {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { getActivity().getActiveShell().loadUrl(url); });
         waitForActiveShellToBeDoneLoading();
@@ -238,8 +238,9 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
         Integer[] textInputModeHistory = null;
         Integer[] textInputActionHistory = null;
         if (includeInputMode) textInputModeHistory = mConnectionFactory.getTextInputModeHistory();
-        if (includeInputAction)
+        if (includeInputAction) {
             textInputActionHistory = mConnectionFactory.getTextInputActionHistory();
+        }
         return stringifyKeyboardStates(showCount, hideCount, restartCount, textInputTypeHistory,
                 textInputModeHistory, textInputActionHistory);
     }
@@ -272,7 +273,7 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
         final InputConnection inputConnection = mConnection;
         final Callable<Void> callable = new Callable<Void>() {
             @Override
-            public Void call() throws Exception {
+            public Void call() {
                 inputConnection.performEditorAction(EditorInfo.IME_ACTION_GO);
                 return null;
             }
@@ -582,20 +583,18 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
      * Focus element, wait for a single state update, reset state update list.
      * @param id ID of the element to focus.
      */
-    void focusElementAndWaitForStateUpdate(String id)
-            throws InterruptedException, TimeoutException {
+    void focusElementAndWaitForStateUpdate(String id) throws TimeoutException {
         resetAllStates();
         focusElement(id);
         waitAndVerifyUpdateSelection(0, 0, 0, -1, -1);
         resetAllStates();
     }
 
-    void focusElement(final String id) throws InterruptedException, TimeoutException {
+    void focusElement(final String id) throws TimeoutException {
         focusElement(id, true);
     }
 
-    void focusElement(final String id, boolean shouldShowKeyboard)
-            throws InterruptedException, TimeoutException {
+    void focusElement(final String id, boolean shouldShowKeyboard) throws TimeoutException {
         DOMUtils.focusNode(getWebContents(), id);
         assertWaitForKeyboardStatus(shouldShowKeyboard);
         waitForFocusedElement(id);

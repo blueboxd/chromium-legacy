@@ -349,10 +349,9 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
         keep_if_present) {
       ExtensionRegistry* extension_registry = ExtensionRegistry::Get(profile_);
       const Extension* extension =
-          extension_registry
-              ? extension_registry->GetExtensionById(
-                    extension_id, ExtensionRegistry::COMPATIBILITY)
-              : nullptr;
+          extension_registry ? extension_registry->GetExtensionById(
+                                   extension_id, ExtensionRegistry::EVERYTHING)
+                             : nullptr;
       if (!extension) {
         unsupported_extensions.insert(extension_id);
         installation_reporter->ReportFailure(

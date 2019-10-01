@@ -76,7 +76,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@drawable/btn_incognito_tabs"
+            android:src="@drawable/incognito_simple"
             app:tint="@color/tint_on_dark_bg"
             android:background="@drawable/btn_bg_holo"
             android:contentDescription="@string/accessibility_tab_switcher_incognito_stack"

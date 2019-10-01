@@ -50,7 +50,7 @@ public class ReadAndDispatchMessageTest {
      * @see org.chromium.mojo.MojoTestCase#setUp()
      */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         Core core = CoreImpl.getInstance();
         mData = BindingsTestUtils.newRandomMessage(DATA_SIZE).getData();
         mMessageReceiver = new RecordingMessageReceiver();
@@ -65,7 +65,7 @@ public class ReadAndDispatchMessageTest {
      * @see org.chromium.mojo.MojoTestCase#tearDown()
      */
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         for (Handle handle : mHandlesToClose) {
             handle.close();
         }

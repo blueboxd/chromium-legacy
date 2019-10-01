@@ -254,7 +254,7 @@ class FakeSerialPort {
 class FakeSerialService {
   constructor() {
     this.interceptor_ =
-        new MojoInterfaceInterceptor(blink.mojom.SerialService.name);
+        new MojoInterfaceInterceptor(blink.mojom.SerialService.name, "context", true);
     this.interceptor_.oninterfacerequest = e => this.bind(e.handle);
     this.bindingSet_ = new mojo.BindingSet(blink.mojom.SerialService);
     this.nextToken_ = 0;

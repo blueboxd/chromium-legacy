@@ -287,7 +287,7 @@ public class AwContentsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testClearCacheInQuickSuccession() throws Throwable {
+    public void testClearCacheInQuickSuccession() {
         final AwTestContainerView testContainer =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(new TestAwContentsClient());
         final AwContents awContents = testContainer.getAwContents();
@@ -527,7 +527,7 @@ public class AwContentsTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    public void testHardwareModeWorks() throws Throwable {
+    public void testHardwareModeWorks() {
         AwTestContainerView testContainer =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         Assert.assertTrue(testContainer.isHardwareAccelerated());
@@ -935,7 +935,7 @@ public class AwContentsTest {
         }
     }
 
-    private int getHistogramSampleCount(String name) throws Throwable {
+    private int getHistogramSampleCount(String name) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mHistogramTotalCount = RecordHistogram.getHistogramTotalCountForTesting(name);
         });
@@ -1056,7 +1056,7 @@ public class AwContentsTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    public void testLoadUrlRecordsScheme_http() throws Throwable {
+    public void testLoadUrlRecordsScheme_http() {
         // No need to spin up a web server, since we don't care if the load ever succeeds.
         final String httpUrlWithNoRealPage = "http://some.origin/some/path.html";
         loadUrlAndCheckScheme(httpUrlWithNoRealPage, AwContents.UrlScheme.HTTP_SCHEME);
@@ -1065,7 +1065,7 @@ public class AwContentsTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    public void testLoadUrlRecordsScheme_javascript() throws Throwable {
+    public void testLoadUrlRecordsScheme_javascript() {
         loadUrlAndCheckScheme(
                 "javascript:console.log('message')", AwContents.UrlScheme.JAVASCRIPT_SCHEME);
     }
@@ -1073,7 +1073,7 @@ public class AwContentsTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    public void testLoadUrlRecordsScheme_fileAndroidAsset() throws Throwable {
+    public void testLoadUrlRecordsScheme_fileAndroidAsset() {
         loadUrlAndCheckScheme("file:///android_asset/some/asset/page.html",
                 AwContents.UrlScheme.FILE_ANDROID_ASSET_SCHEME);
     }
@@ -1081,14 +1081,14 @@ public class AwContentsTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    public void testLoadUrlRecordsScheme_fileRegular() throws Throwable {
+    public void testLoadUrlRecordsScheme_fileRegular() {
         loadUrlAndCheckScheme("file:///some/path/on/disk.html", AwContents.UrlScheme.FILE_SCHEME);
     }
 
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    public void testLoadUrlRecordsScheme_data() throws Throwable {
+    public void testLoadUrlRecordsScheme_data() {
         loadUrlAndCheckScheme(
                 "data:text/html,<html><body>foo</body></html>", AwContents.UrlScheme.DATA_SCHEME);
     }
@@ -1096,12 +1096,11 @@ public class AwContentsTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    public void testLoadUrlRecordsScheme_blank() throws Throwable {
+    public void testLoadUrlRecordsScheme_blank() {
         loadUrlAndCheckScheme("about:blank", AwContents.UrlScheme.EMPTY);
     }
 
-    private void loadUrlAndCheckScheme(String url, @AwContents.UrlScheme int expectedSchemeEnum)
-            throws Throwable {
+    private void loadUrlAndCheckScheme(String url, @AwContents.UrlScheme int expectedSchemeEnum) {
         AwTestContainerView testView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testView.getAwContents();

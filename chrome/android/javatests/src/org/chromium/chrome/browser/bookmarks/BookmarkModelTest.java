@@ -50,7 +50,7 @@ public class BookmarkModelTest {
     private BookmarkId mDesktopNode;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Profile profile = Profile.getLastUsedProfile();
             mBookmarkModel = new BookmarkModel(profile);
@@ -69,7 +69,7 @@ public class BookmarkModelTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Bookmark"})
-    public void testBookmarkPropertySetters() throws Throwable {
+    public void testBookmarkPropertySetters() {
         BookmarkId folderA = mBookmarkModel.addFolder(mMobileNode, 0, "a");
 
         BookmarkId bookmarkA = addBookmark(mDesktopNode, 0, "a", "http://a.com");
@@ -101,7 +101,7 @@ public class BookmarkModelTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Bookmark"})
-    public void testMoveBookmarks() throws Throwable {
+    public void testMoveBookmarks() {
         BookmarkId bookmarkA = addBookmark(mDesktopNode, 0, "a", "http://a.com");
         BookmarkId bookmarkB = addBookmark(mOtherNode, 0, "b", "http://b.com");
         BookmarkId bookmarkC = addBookmark(mMobileNode, 0, "c", "http://c.com");
@@ -128,7 +128,7 @@ public class BookmarkModelTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Bookmark"})
-    public void testDeleteBookmarks() throws Throwable {
+    public void testDeleteBookmarks() {
         BookmarkId bookmarkA = addBookmark(mDesktopNode, 0, "a", "http://a.com");
         BookmarkId bookmarkB = addBookmark(mOtherNode, 0, "b", "http://b.com");
         BookmarkId bookmarkC = addBookmark(mMobileNode, 0, "c", "http://c.com");
@@ -160,7 +160,7 @@ public class BookmarkModelTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Bookmark"})
-    public void testDeleteBookmarksRepeatedly() throws Throwable {
+    public void testDeleteBookmarksRepeatedly() {
         BookmarkId bookmarkA = addBookmark(mDesktopNode, 0, "a", "http://a.com");
         BookmarkId bookmarkB = addBookmark(mOtherNode, 0, "b", "http://b.com");
         BookmarkId bookmarkC = addBookmark(mMobileNode, 0, "c", "http://c.com");
@@ -186,7 +186,7 @@ public class BookmarkModelTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Bookmark"})
-    public void testGetChildIDs() throws Throwable {
+    public void testGetChildIDs() {
         BookmarkId folderA = mBookmarkModel.addFolder(mMobileNode, 0, "fa");
         HashSet<BookmarkId> expectedChildren = new HashSet<>();
         expectedChildren.add(addBookmark(folderA, 0, "a", "http://a.com"));
@@ -211,7 +211,7 @@ public class BookmarkModelTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Bookmark"})
-    public void testAddBookmarksAndFolders() throws Throwable {
+    public void testAddBookmarksAndFolders() {
         BookmarkId bookmarkA = addBookmark(mDesktopNode, 0, "a", "http://a.com");
         verifyBookmark(bookmarkA, "a", "http://a.com/", false, mDesktopNode);
 

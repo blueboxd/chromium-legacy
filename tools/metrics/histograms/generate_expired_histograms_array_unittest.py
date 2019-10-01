@@ -93,7 +93,7 @@ class ExpiredHistogramsTest(unittest.TestCase):
             "expires_after": "2000/10/01"
         }
     }
-    base_date = datetime.date(2000, 10, 01)
+    base_date = datetime.date(2000, 10, 1)
     current_milestone = 60
 
     with self.assertRaises(generate_expired_histograms_array.Error) as error:
@@ -129,7 +129,7 @@ class ExpiredHistogramsTest(unittest.TestCase):
 
     content = "!!FOO!\nMAJOR_BRANCH_DATE=2010-01-01\n!FOO!!"
     base_date = generate_expired_histograms_array._GetBaseDate(content, regex)
-    self.assertEqual(base_date, datetime.date(2010, 01, 01))
+    self.assertEqual(base_date, datetime.date(2010, 1, 1))
 
   def testGenerateHeaderFileContent(self):
     header_filename = "test/test.h"

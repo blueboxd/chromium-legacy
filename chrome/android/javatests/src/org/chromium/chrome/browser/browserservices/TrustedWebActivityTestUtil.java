@@ -36,8 +36,7 @@ public class TrustedWebActivityTestUtil {
     }
 
     /** Creates a Custom Tabs Session from the Intent, specifying the |packageName|. */
-    public static void createSession(Intent intent, String packageName)
-            throws TimeoutException, InterruptedException {
+    public static void createSession(Intent intent, String packageName) throws TimeoutException {
         CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         connection.newSession(token);

@@ -157,10 +157,11 @@ class OobeUI : public ui::MojoWebUIController {
   // display type.
   void ConfigureOobeDisplay();
 
-  // Adds Mojo bindings for this WebUIController.
+  // Adds Mojo receivers for this WebUIController.
   service_manager::Connector* GetLoggedInUserMojoConnector();
   void BindMultiDeviceSetup(
-      multidevice_setup::mojom::MultiDeviceSetupRequest request);
+      mojo::PendingReceiver<multidevice_setup::mojom::MultiDeviceSetup>
+          receiver);
   void BindPrivilegedHostDeviceSetter(
       multidevice_setup::mojom::PrivilegedHostDeviceSetterRequest request);
   void BindCrosNetworkConfig(

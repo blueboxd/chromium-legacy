@@ -171,7 +171,7 @@ void GamepadPlatformDataFetcherWin::GetGamepadData(bool devices_changed_hint) {
 }
 
 void GamepadPlatformDataFetcherWin::GetXInputPadData(int i) {
-  PadState* pad_state = provider()->GetPadState(GAMEPAD_SOURCE_WIN_XINPUT, i);
+  PadState* pad_state = GetPadState(i);
   if (!pad_state)
     return;
 

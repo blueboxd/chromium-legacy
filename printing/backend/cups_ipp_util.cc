@@ -129,13 +129,14 @@ gfx::Size DimensionsToMicrons(base::StringPiece value) {
 
 // We read the media name expressed by |value| and return a Paper
 // with the vendor_id and size_um members populated.
-// We don't handle l10n here, so we don't populate the display_name
-// member, deferring that to the caller.
+// We don't handle l10n here. We do populate the display_name member
+// with the prettified vendor ID, but fully expect the caller to clobber
+// this if a better localization exists.
 PrinterSemanticCapsAndDefaults::Paper ParsePaper(base::StringPiece value) {
   // <name>_<width>x<height>{in,mm}
   // e.g. na_letter_8.5x11in, iso_a4_210x297mm
 
-  const std::vector<base::StringPiece> pieces = base::SplitStringPiece(
+  std::vector<base::StringPiece> pieces = base::SplitStringPiece(
       value, "_", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   // we expect at least a display string and a dimension string
   if (pieces.size() < 2)
@@ -146,6 +147,9 @@ PrinterSemanticCapsAndDefaults::Paper ParsePaper(base::StringPiece value) {
   PrinterSemanticCapsAndDefaults::Paper paper;
   paper.vendor_id = value.as_string();
   paper.size_um = DimensionsToMicrons(dimensions);
+  // Omits the final token describing the media dimensions.
+  pieces.pop_back();
+  paper.display_name = base::JoinString(pieces, " ");
 
   return paper;
 }

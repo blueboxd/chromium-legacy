@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/shape_detection/face_detection_impl_mac.h"
 #include "services/shape_detection/face_detection_impl_mac_vision.h"
@@ -19,9 +20,9 @@ FaceDetectionProviderMac::~FaceDetectionProviderMac() = default;
 
 // static
 void FaceDetectionProviderMac::Create(
-    mojom::FaceDetectionProviderRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<FaceDetectionProviderMac>(),
-                          std::move(request));
+    mojo::PendingReceiver<mojom::FaceDetectionProvider> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<FaceDetectionProviderMac>(),
+                              std::move(receiver));
 }
 
 void FaceDetectionProviderMac::CreateFaceDetection(
@@ -34,9 +35,8 @@ void FaceDetectionProviderMac::CreateFaceDetection(
     if (!options->fast_mode) {
       auto impl = std::make_unique<FaceDetectionImplMacVision>();
       auto* impl_ptr = impl.get();
-      impl_ptr->SetBinding(mojo::MakeStrongBinding(
-          std::move(impl),
-          mojo::InterfaceRequest<mojom::FaceDetection>(std::move(receiver))));
+      impl_ptr->SetReceiver(
+          mojo::MakeSelfOwnedReceiver(std::move(impl), std::move(receiver)));
       return;
     }
   }

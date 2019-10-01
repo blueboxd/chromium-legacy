@@ -14,9 +14,14 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "device/vr/test/test_hook.h"
 #include "third_party/openxr/src/include/openxr/openxr.h"
+
+namespace gfx {
+class Transform;
+}  // namespace gfx
 
 class OpenXrTestHelper : public device::ServiceTestHook {
  public:
@@ -38,17 +43,17 @@ class OpenXrTestHelper : public device::ServiceTestHook {
 
   XrSystemId GetSystemId();
   XrSwapchain GetSwapchain();
+  XrResult GetActionStateFloat(XrAction action, XrActionStateFloat* data) const;
   XrResult GetActionStateBoolean(XrAction action,
                                  XrActionStateBoolean* data) const;
   XrResult GetActionStateVector2f(XrAction action,
                                   XrActionStateVector2f* data) const;
   XrResult GetActionStatePose(XrAction action, XrActionStatePose* data) const;
-  XrSpace CreateLocalSpace();
-  XrSpace CreateViewSpace();
+  XrSpace CreateReferenceSpace(XrReferenceSpaceType type);
   XrAction CreateAction(XrActionSet action_set,
                         const XrActionCreateInfo& create_info);
   XrActionSet CreateActionSet(const XrActionSetCreateInfo& createInfo);
-  XrSpace CreateActionSpace();
+  XrSpace CreateActionSpace(XrAction);
   XrPath GetPath(const char* path_string);
 
   XrResult GetSession(XrSession* session);
@@ -61,7 +66,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   XrResult SyncActionData(XrActionSet action_set);
   const std::vector<Microsoft::WRL::ComPtr<ID3D11Texture2D>>&
   GetSwapchainTextures() const;
-  void GetPose(XrPosef* pose);
+  void LocateSpace(XrSpace space, XrPosef* pose);
   std::string PathToString(XrPath path) const;
   bool UpdateData();
   bool UpdateViewFOV(XrView views[], uint32_t size);
@@ -114,6 +119,9 @@ class OpenXrTestHelper : public device::ServiceTestHook {
 
   XrResult UpdateAction(XrAction action);
   void SetSessionState(XrSessionState state);
+  base::Optional<gfx::Transform> GetPose();
+  device::ControllerFrameData GetControllerDataFromPath(
+      std::string path_string) const;
 
   // Properties of the mock OpenXR runtime that doesn't change throughout the
   // lifetime of the instance. However, these aren't static because they are
@@ -124,8 +132,6 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   XrSession session_;
   XrSessionState session_state_;
   XrSwapchain swapchain_;
-  XrSpace local_space_;
-  XrSpace view_space_;
 
   // Properties that changes depending on the state of the runtime.
   Microsoft::WRL::ComPtr<ID3D11Device> d3d_device_;
@@ -141,7 +147,10 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   // index_in_action_state_arr member which can help index into the following
   // *_action_states_ vector and retrieve data.
   std::unordered_map<XrAction, ActionProperties> actions_;
+  std::unordered_map<XrSpace, XrAction> action_spaces_;
+  std::unordered_map<XrSpace, std::string> reference_spaces_;
   std::unordered_map<XrActionSet, std::vector<XrAction>> action_sets_;
+  std::unordered_map<XrAction, XrActionStateFloat> float_action_states_;
   std::unordered_map<XrAction, XrActionStateBoolean> boolean_action_states_;
   std::unordered_map<XrAction, XrActionStateVector2f> v2f_action_states_;
   std::unordered_map<XrAction, XrActionStatePose> pose_action_state_;

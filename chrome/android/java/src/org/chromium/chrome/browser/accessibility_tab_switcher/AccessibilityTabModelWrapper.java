@@ -111,7 +111,7 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
         mStandardButtonIcon.setContentDescription(
                 getResources().getString(R.string.accessibility_tab_switcher_standard_stack));
         mIncognitoButtonIcon = new ChromeImageView(getContext());
-        mIncognitoButtonIcon.setImageResource(R.drawable.btn_incognito_tabs);
+        mIncognitoButtonIcon.setImageResource(R.drawable.incognito_simple);
         mIncognitoButtonIcon.setScaleY(-1.0f);
         mIncognitoButtonIcon.setContentDescription(
                 getResources().getString(R.string.accessibility_tab_switcher_incognito_stack));

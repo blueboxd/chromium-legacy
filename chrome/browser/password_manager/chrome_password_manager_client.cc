@@ -157,10 +157,9 @@ void AddToWidgetInputEventObservers(
 #if defined(OS_ANDROID)
   widget_host->RemoveImeTextCommittedEventObserver(observer);
   widget_host->AddImeTextCommittedEventObserver(observer);
-#else
+#endif
   widget_host->RemoveInputEventObserver(observer);
   widget_host->AddInputEventObserver(observer);
-#endif
 }
 
 #if defined(OS_ANDROID)
@@ -666,9 +665,24 @@ void ChromePasswordManagerClient::OnImeTextCommittedEvent(
   password_reuse_detection_manager_.OnKeyPressed(text_str);
 #endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 }
-#else   // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID)
+
 void ChromePasswordManagerClient::OnInputEvent(
     const blink::WebInputEvent& event) {
+#if defined(OS_ANDROID)
+
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+  // On Android, key down events are triggered if a user types in through a
+  // number bar on Android keyboard. If text is typed in through other parts of
+  // Android keyboard, ImeTextCommittedEvent is triggered instead.
+  if (event.GetType() != blink::WebInputEvent::kKeyDown)
+    return;
+  const blink::WebKeyboardEvent& key_event =
+      static_cast<const blink::WebKeyboardEvent&>(event);
+  password_reuse_detection_manager_.OnKeyPressed(key_event.text);
+#endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+
+#else   // defined(OS_ANDROID)
   if (event.GetType() != blink::WebInputEvent::kChar)
     return;
   const blink::WebKeyboardEvent& key_event =
@@ -680,8 +694,8 @@ void ChromePasswordManagerClient::OnInputEvent(
   } else {
     password_reuse_detection_manager_.OnKeyPressed(key_event.text);
   }
-}
 #endif  // defined(OS_ANDROID)
+}
 
 PrefService* ChromePasswordManagerClient::GetPrefs() const {
   return profile_->GetPrefs();

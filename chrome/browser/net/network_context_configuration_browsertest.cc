@@ -64,6 +64,7 @@
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
+#include "net/cookies/cookie_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/reporting/reporting_policy.h"
@@ -201,11 +202,13 @@ class NetworkContextConfigurationBrowserTest
     kPersistent,
   };
 
-  NetworkContextConfigurationBrowserTest() {
+  NetworkContextConfigurationBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     // Have to get a port before setting up the command line, but can only set
     // up the connection listener after there's a main thread, so can't start
     // the test server here.
     EXPECT_TRUE(embedded_test_server()->InitializeAndListen());
+    EXPECT_TRUE(https_server()->InitializeAndListen());
   }
 
   // Returns a cacheable response (10 hours) that is some random text.
@@ -240,6 +243,8 @@ class NetworkContextConfigurationBrowserTest
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &NetworkContextConfigurationBrowserTest::HandleCacheRandom));
     embedded_test_server()->StartAcceptingConnections();
+    net::test_server::RegisterDefaultHandlers(https_server());
+    https_server()->StartAcceptingConnections();
 
     if (is_incognito())
       incognito_ = CreateIncognitoBrowser();
@@ -281,6 +286,8 @@ class NetworkContextConfigurationBrowserTest
             .ToString()
             .c_str());
   }
+
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
 
   content::StoragePartition* GetStoragePartition() {
     return GetStoragePartitionForContextType(GetParam().network_context_type);
@@ -528,18 +535,24 @@ class NetworkContextConfigurationBrowserTest
     return false;
   }
 
+  // |server| should be |TYPE_HTTPS| if the cookie is third-party, because
+  // SameSite=None cookies must be Secure.
   void SetCookie(CookieType cookie_type,
-                 CookiePersistenceType cookie_expiration_type) {
+                 CookiePersistenceType cookie_expiration_type,
+                 net::EmbeddedTestServer* server) {
     std::unique_ptr<network::ResourceRequest> request =
         std::make_unique<network::ResourceRequest>();
     std::string cookie_line = "cookie";
     if (cookie_expiration_type == CookiePersistenceType::kPersistent)
       cookie_line += ";max-age=3600";
-    request->url = embedded_test_server()->GetURL("/set-cookie?" + cookie_line);
+    // Third party (i.e. SameSite=None) cookies must be secure.
+    if (cookie_type == CookieType::kThirdParty)
+      cookie_line += ";SameSite=None;Secure";
+    request->url = server->GetURL("/set-cookie?" + cookie_line);
     if (cookie_type == CookieType::kThirdParty)
       request->site_for_cookies = GURL("http://example.com");
     else
-      request->site_for_cookies = embedded_test_server()->base_url();
+      request->site_for_cookies = server->base_url();
     content::SimpleURLLoaderTestHelper simple_loader_helper;
     std::unique_ptr<network::SimpleURLLoader> simple_loader =
         network::SimpleURLLoader::Create(std::move(request),
@@ -599,7 +612,7 @@ class NetworkContextConfigurationBrowserTest
     GetNetworkContextForContextType(network_context_type)
         ->GetCookieManager(cookie_manager.BindNewPipeAndPassReceiver());
     cookie_manager->GetCookieList(
-        url, net::CookieOptions(),
+        url, net::CookieOptions::MakeAllInclusive(),
         base::BindOnce(
             [](std::string* cookies_out, base::RunLoop* run_loop,
                const net::CookieStatusList& cookies,
@@ -734,6 +747,7 @@ class NetworkContextConfigurationBrowserTest
   Browser* incognito_ = nullptr;
   base::test::ScopedFeatureList feature_list_;
 
+  net::EmbeddedTestServer https_server_;
   std::unique_ptr<net::test_server::ControllableHttpResponse>
       controllable_http_response_;
 
@@ -750,6 +764,11 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        SecureCookiesAllowedForChromeScheme) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
+  // TODO(crbug.com/1007320): This does not work under SameSiteByDefaultCookies,
+  // (and also does not work for SameSite cookies, in general). This is not
+  // easily fixable, so disable the test for now.
+  if (net::cookie_util::IsSameSiteByDefaultCookiesEnabled())
+    return;
   // Cookies are only allowed for chrome:// schemes requesting a secure origin,
   // so create an HTTPS server.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
@@ -757,7 +776,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   ASSERT_TRUE(https_server.Start());
   if (GetPrefService()->FindPreference(prefs::kBlockThirdPartyCookies))
     GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
-  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent,
+            embedded_test_server());
 
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
@@ -805,7 +825,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   ASSERT_TRUE(test_server.Start());
 
   GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
-  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent,
+            embedded_test_server());
 
   extensions::TestExtensionDir extension_dir;
   extension_dir.WriteManifest(R"({
@@ -825,6 +846,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
       loader.LoadExtension(extension_dir.UnpackedPath());
   ASSERT_TRUE(extension);
 
+  // This request will show up as cross-site because the chrome-extension URL
+  // won't match the test_server domain (127.0.0.1), but because we set
+  // |attach_same_site_cookies| to true for extension-initiated requests, this
+  // will actually be able to get the cookie.
   GURL url = test_server.GetURL("/echocookieheader");
   std::string script = R"((url => {
     var xhr = new XMLHttpRequest();
@@ -1401,7 +1426,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
     return;
   EXPECT_TRUE(GetCookies(embedded_test_server()->base_url()).empty());
 
-  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent,
+            embedded_test_server());
   EXPECT_FALSE(GetCookies(embedded_test_server()->base_url()).empty());
 }
 
@@ -1423,7 +1449,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        CookieIsolation) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
-  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent,
+            embedded_test_server());
   EXPECT_FALSE(GetCookies(embedded_test_server()->base_url()).empty());
 
   ForEachOtherContext(
@@ -1447,9 +1474,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
     return;
 
   GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
-  SetCookie(CookieType::kThirdParty, CookiePersistenceType::kSession);
+  SetCookie(CookieType::kThirdParty, CookiePersistenceType::kSession,
+            https_server());
 
-  EXPECT_TRUE(GetCookies(embedded_test_server()->base_url()).empty());
+  EXPECT_TRUE(GetCookies(https_server()->base_url()).empty());
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
@@ -1472,15 +1500,18 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 
   // The kBlockThirdPartyCookies pref should carry over to the next session.
   EXPECT_TRUE(GetPrefService()->GetBoolean(prefs::kBlockThirdPartyCookies));
-  SetCookie(CookieType::kThirdParty, CookiePersistenceType::kSession);
+  SetCookie(CookieType::kThirdParty, CookiePersistenceType::kSession,
+            https_server());
 
-  EXPECT_TRUE(GetCookies(embedded_test_server()->base_url()).empty());
+  EXPECT_TRUE(GetCookies(https_server()->base_url()).empty());
 
   // Set pref to false, third party cookies should be allowed now.
   GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, false);
-  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession);
+  // Set a third-party cookie. It should actually get set this time.
+  SetCookie(CookieType::kThirdParty, CookiePersistenceType::kSession,
+            https_server());
 
-  EXPECT_FALSE(GetCookies(embedded_test_server()->base_url()).empty());
+  EXPECT_FALSE(GetCookies(https_server()->base_url()).empty());
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
@@ -1498,7 +1529,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   CookieSettingsFactory::GetForProfile(browser()->profile())
       ->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
   FlushNetworkInterface();
-  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession,
+            embedded_test_server());
 
   EXPECT_TRUE(GetCookies(embedded_test_server()->base_url()).empty());
 }
@@ -1515,7 +1547,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookieSettings) {
     return;
 
   // The content settings should carry over to the next session.
-  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession,
+            embedded_test_server());
 
   EXPECT_TRUE(GetCookies(embedded_test_server()->base_url()).empty());
 
@@ -1523,7 +1556,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookieSettings) {
   CookieSettingsFactory::GetForProfile(browser()->profile())
       ->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
   FlushNetworkInterface();
-  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession,
+            embedded_test_server());
 
   EXPECT_FALSE(GetCookies(embedded_test_server()->base_url()).empty());
 }

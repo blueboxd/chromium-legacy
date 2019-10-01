@@ -247,7 +247,7 @@ void GPUDevice::OnPopErrorScopeCallback(ScriptPromiseResolver* resolver,
   v8::Isolate* isolate = resolver->GetScriptState()->GetIsolate();
   switch (type) {
     case DAWN_ERROR_TYPE_NO_ERROR:
-      resolver->Resolve(ScriptValue::CreateNull(isolate));
+      resolver->Resolve(v8::Null(isolate));
       break;
     case DAWN_ERROR_TYPE_OUT_OF_MEMORY:
       resolver->Resolve(GPUOutOfMemoryError::Create());

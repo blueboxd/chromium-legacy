@@ -88,8 +88,7 @@ public class SelectPopupOtherContentViewTest {
     @LargeTest
     @Feature({"Browser"})
     @RetryOnFailure
-    public void testPopupNotClosedByOtherContentView()
-            throws InterruptedException, Exception, Throwable {
+    public void testPopupNotClosedByOtherContentView() throws Exception, Throwable {
         // Load the test page.
         mActivityTestRule.startMainActivityWithURL(SELECT_URL);
 

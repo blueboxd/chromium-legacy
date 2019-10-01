@@ -42,8 +42,7 @@ public class TestsJavaScriptEvalTest {
     @Test
     @LargeTest
     @Feature({"Browser"})
-    public void testJavaScriptEvalIsCorrectlyOrdered()
-            throws InterruptedException, Exception, Throwable {
+    public void testJavaScriptEvalIsCorrectlyOrdered() throws Exception, Throwable {
         mActivityTestRule.launchContentShellWithUrl(JSTEST_URL);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
 

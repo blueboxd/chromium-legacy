@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/shape_detection/barcode_detection_impl_mac.h"
 #include "services/shape_detection/barcode_detection_impl_mac_vision.h"
@@ -23,9 +24,9 @@ BarcodeDetectionProviderMac::~BarcodeDetectionProviderMac() = default;
 
 // static
 void BarcodeDetectionProviderMac::Create(
-    mojom::BarcodeDetectionProviderRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<BarcodeDetectionProviderMac>(),
-                          std::move(request));
+    mojo::PendingReceiver<mojom::BarcodeDetectionProvider> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<BarcodeDetectionProviderMac>(),
+                              std::move(receiver));
 }
 
 void BarcodeDetectionProviderMac::CreateBarcodeDetection(
@@ -40,9 +41,8 @@ void BarcodeDetectionProviderMac::CreateBarcodeDetection(
       auto impl =
           std::make_unique<BarcodeDetectionImplMacVision>(std::move(options));
       auto* impl_ptr = impl.get();
-      impl_ptr->SetBinding(mojo::MakeStrongBinding(
-          std::move(impl), mojo::InterfaceRequest<mojom::BarcodeDetection>(
-                               std::move(receiver))));
+      impl_ptr->SetReceiver(
+          mojo::MakeSelfOwnedReceiver(std::move(impl), std::move(receiver)));
       return;
     }
   }

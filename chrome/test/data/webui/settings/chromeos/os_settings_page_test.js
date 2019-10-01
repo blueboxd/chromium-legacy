@@ -5,8 +5,8 @@
 /** @fileoverview Suite of tests for the OS Settings main page. */
 
 suite('OSSettingsPage', function() {
-  /** @type {?OsSettingsMainElement} */
   let settingsMain = null;
+  let settingsPage = null;
 
   suiteSetup(async function() {
     await CrSettingsPrefs.initialized;
@@ -15,24 +15,15 @@ suite('OSSettingsPage', function() {
         document.querySelector('os-settings-ui').$$('os-settings-main');
     assert(!!settingsMain);
 
+    settingsPage = settingsMain.$$('os-settings-page');
+    assertTrue(!!settingsPage);
+
     const idleRender =
         settingsMain.$$('os-settings-page').$$('settings-idle-load');
     assert(!!idleRender);
     await idleRender.get();
     Polymer.dom.flush();
   });
-
-  function getSection(page, section) {
-    const sections = page.shadowRoot.querySelectorAll('settings-section');
-    assertTrue(!!sections);
-    for (let i = 0; i < sections.length; ++i) {
-      const s = sections[i];
-      if (s.section == section) {
-        return s;
-      }
-    }
-    return undefined;
-  }
 
   /**
    * Verifies the section has a visible #main element and that any possible
@@ -73,21 +64,61 @@ suite('OSSettingsPage', function() {
     }
   }
 
+  test('Basic sections', function() {
+    const sectionNames = [
+      'internet', 'bluetooth', 'multidevice', 'people', 'device',
+      'personalization', 'search', 'apps'
+    ];
+
+    for (let name of sectionNames) {
+      const section = settingsPage.shadowRoot.querySelector(
+          `settings-section[section=${name}]`);
+      assertTrue(!!section, 'Did not find ' + name);
+      verifySubpagesHidden(section);
+    }
+  });
+
   test('AdvancedSections', async function() {
     // Open the Advanced section.
     settingsMain.advancedToggleExpanded = true;
     Polymer.dom.flush();
     await test_util.flushTasks();
 
-    const page = settingsMain.$$('os-settings-page');
-    assertTrue(!!page);
-    let sections =
+    const sectionNames =
         ['privacy', 'languages', 'files', 'reset', 'dateTime', 'a11y'];
 
-    for (let i = 0; i < sections.length; i++) {
-      const section = getSection(page, sections[i]);
-      assertTrue(!!section, 'Did not find ' + sections[i]);
+    for (let name of sectionNames) {
+      const section = settingsPage.shadowRoot.querySelector(
+          `settings-section[section=${name}]`);
+      assertTrue(!!section, 'Did not find ' + name);
       verifySubpagesHidden(section);
+    }
+  });
+
+  test('Guest mode', async function() {
+    // Simulate guest mode.
+    settingsPage.isGuestMode_ = true;
+
+    // Ensure Advanced is open.
+    settingsMain.advancedToggleExpanded = true;
+    Polymer.dom.flush();
+    await test_util.flushTasks();
+
+    const hiddenSections = ['multidevice', 'people', 'personalization'];
+    for (let name of hiddenSections) {
+      const section = settingsPage.shadowRoot.querySelector(
+          `settings-section[section=${name}]`);
+      assertFalse(!!section, 'Found unexpected section ' + name);
+    }
+
+    const visibleSections = [
+      'internet', 'bluetooth', 'device', 'search', 'apps', 'privacy',
+      'languages', 'files', 'reset', 'dateTime', 'a11y'
+    ];
+    for (let name of visibleSections) {
+      const section = settingsPage.shadowRoot.querySelector(
+          `settings-section[section=${name}]`);
+      assertTrue(!!section, 'Expected section ' + name);
     }
   });
 });

@@ -91,7 +91,7 @@ ChromeTracingDelegate::~ChromeTracingDelegate() {
 void ChromeTracingDelegate::OnTabModelAdded() {
   for (TabModelList::const_iterator i = TabModelList::begin();
        i != TabModelList::end(); i++) {
-    if ((*i)->IsOffTheRecord())
+    if ((*i)->GetProfile()->IsOffTheRecord())
       incognito_launched_ = true;
   }
 }

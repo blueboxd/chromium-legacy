@@ -30,7 +30,7 @@ const base::Feature kAndroidUserAgentStringContainsBuildId{
 #endif  // defined(OS_ANDROID)
 
 std::string GetUserAgentPlatform() {
-#if defined(OS_WIN) || defined(OS_FUCHSIA)
+#if defined(OS_WIN)
   return "";
 #elif defined(OS_MACOSX)
   return "Macintosh; ";
@@ -38,6 +38,10 @@ std::string GetUserAgentPlatform() {
   return "X11; ";  // strange, but that's what Firefox uses
 #elif defined(OS_ANDROID)
   return "Linux; ";
+#elif defined(OS_FUCHSIA)
+  // TODO(https://bugs.fuchsia.dev/p/fuchsia/issues/detail?id=36774#c11): Sites
+  // get confused into serving mobile content if we report only "Fuchsia".
+  return "X11; ";
 #elif defined(OS_POSIX)
   return "Unknown; ";
 #endif

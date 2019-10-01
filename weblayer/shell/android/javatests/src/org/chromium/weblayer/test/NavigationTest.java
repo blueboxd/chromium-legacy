@@ -41,8 +41,7 @@ public class NavigationTest {
                 notifyCalled();
             }
 
-            public void assertCalledWith(int currentCallCount, String uri)
-                    throws TimeoutException, InterruptedException {
+            public void assertCalledWith(int currentCallCount, String uri) throws TimeoutException {
                 waitForCallback(currentCallCount);
                 Assert.assertEquals(mUri.toString(), uri);
             }
@@ -70,7 +69,7 @@ public class NavigationTest {
 
     @Test
     @SmallTest
-    public void testBaseStartup() throws Exception {
+    public void testBaseStartup() {
         WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(URL);
 
         Assert.assertNotNull(activity);

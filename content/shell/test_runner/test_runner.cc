@@ -176,7 +176,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void DumpNavigationPolicy();
   void DumpPermissionClientCallbacks();
   void DumpPingLoaderCallbacks();
-  void DumpResourceLoadCallbacks();
   void DumpSelectionRect();
   void DumpSpellCheckCallbacks();
   void DumpTitleChanges();
@@ -437,8 +436,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::DumpPermissionClientCallbacks)
       .SetMethod("dumpPingLoaderCallbacks",
                  &TestRunnerBindings::DumpPingLoaderCallbacks)
-      .SetMethod("dumpResourceLoadCallbacks",
-                 &TestRunnerBindings::DumpResourceLoadCallbacks)
       .SetMethod("dumpSelectionRect", &TestRunnerBindings::DumpSelectionRect)
       .SetMethod("dumpSpellCheckCallbacks",
                  &TestRunnerBindings::DumpSpellCheckCallbacks)
@@ -1037,11 +1034,6 @@ void TestRunnerBindings::DumpCreateView() {
 void TestRunnerBindings::SetCanOpenWindows() {
   if (runner_)
     runner_->SetCanOpenWindows();
-}
-
-void TestRunnerBindings::DumpResourceLoadCallbacks() {
-  if (runner_)
-    runner_->DumpResourceLoadCallbacks();
 }
 
 void TestRunnerBindings::SetImagesAllowed(bool allowed) {
@@ -1758,11 +1750,6 @@ bool TestRunner::CanOpenWindows() const {
   return web_test_runtime_flags_.can_open_windows();
 }
 
-bool TestRunner::ShouldDumpResourceLoadCallbacks() const {
-  return test_is_running_ &&
-         web_test_runtime_flags_.dump_resource_load_callbacks();
-}
-
 blink::WebContentSettingsClient* TestRunner::GetWebContentSettings() const {
   return mock_content_settings_client_.get();
 }
@@ -2339,11 +2326,6 @@ void TestRunner::DumpCreateView() {
 
 void TestRunner::SetCanOpenWindows() {
   web_test_runtime_flags_.set_can_open_windows(true);
-  OnWebTestRuntimeFlagsChanged();
-}
-
-void TestRunner::DumpResourceLoadCallbacks() {
-  web_test_runtime_flags_.set_dump_resource_load_callbacks(true);
   OnWebTestRuntimeFlagsChanged();
 }
 

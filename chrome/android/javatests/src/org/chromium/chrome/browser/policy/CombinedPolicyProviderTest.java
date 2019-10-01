@@ -47,7 +47,7 @@ public class CombinedPolicyProviderTest {
     @Feature({"Policy"})
     @SmallTest
     @RetryOnFailure
-    public void testTerminateIncognitoSon() throws InterruptedException {
+    public void testTerminateIncognitoSon() {
         final boolean incognitoMode = true;
 
         TabModel incognitoTabModel =

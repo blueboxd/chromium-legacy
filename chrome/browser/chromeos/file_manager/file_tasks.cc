@@ -19,6 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -41,6 +42,7 @@
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/drive/drive_api_util.h"
 #include "components/prefs/pref_service.h"
@@ -402,6 +404,11 @@ bool ExecuteFileTask(Profile* profile,
     UMA_HISTOGRAM_ENUMERATION("FileBrowser.ViewingTaskType.Online",
                               task.task_type, NUM_TASK_TYPE);
   }
+
+  // TODO(crbug.com/1005640): Move recording this metric to the App Service when
+  // file handling is supported there.
+  apps::RecordAppLaunch(task.app_id,
+                        apps::mojom::LaunchSource::kFromFileManager);
 
   if (auto* notifier = FileTasksNotifier::GetForProfile(profile)) {
     notifier->NotifyFileTasks(file_urls);

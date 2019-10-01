@@ -24,7 +24,6 @@ import android.support.test.espresso.DaggerBaseLayerComponent;
 import android.support.test.rule.ActivityTestRule;
 import android.webkit.WebView;
 
-import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
@@ -80,27 +79,15 @@ public class WebViewUiTestRule extends ActivityTestRule<WebViewUiTestActivity> {
 
     public void loadDataSync(
             String data, String mimeType, String encoding, boolean confirmByJavaScript) {
-        try {
-            mSyncWrapper.loadDataSync(data, mimeType, encoding, confirmByJavaScript);
-        } catch (InterruptedException e) {
-            Assert.fail(e.getMessage());
-        }
+        mSyncWrapper.loadDataSync(data, mimeType, encoding, confirmByJavaScript);
     }
 
     public void loadJavaScriptSync(String js, boolean appendConfirmationJavascript) {
-        try {
-            mSyncWrapper.loadJavaScriptSync(js, appendConfirmationJavascript);
-        } catch (InterruptedException e) {
-            Assert.fail(e.getMessage());
-        }
+        mSyncWrapper.loadJavaScriptSync(js, appendConfirmationJavascript);
     }
 
     public void loadFileSync(String html, boolean confirmByJavaScript) {
-        try {
-            mSyncWrapper.loadFileSync(html, confirmByJavaScript);
-        } catch (InterruptedException e) {
-            Assert.fail(e.getMessage());
-        }
+        mSyncWrapper.loadFileSync(html, confirmByJavaScript);
     }
 
     /**

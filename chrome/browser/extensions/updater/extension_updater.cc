@@ -358,7 +358,7 @@ void ExtensionUpdater::CheckNow(CheckParams params) {
   } else {
     for (const std::string& id : params.ids) {
       const Extension* extension = registry_->GetExtensionById(
-          id, extensions::ExtensionRegistry::COMPATIBILITY);
+          id, extensions::ExtensionRegistry::EVERYTHING);
       if (extension) {
         if (update_service_->CanUpdate(id)) {
           update_check_params.update_info[id] = ExtensionUpdateData();
@@ -528,7 +528,7 @@ bool ExtensionUpdater::GetExtensionExistingVersion(const std::string& id,
                                                    std::string* version) {
   DCHECK(alive_);
   const Extension* extension = registry_->GetExtensionById(
-      id, extensions::ExtensionRegistry::COMPATIBILITY);
+      id, extensions::ExtensionRegistry::EVERYTHING);
   if (!extension)
     return false;
   const Extension* update = service_->GetPendingExtensionUpdate(id);

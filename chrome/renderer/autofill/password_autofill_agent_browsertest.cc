@@ -1701,7 +1701,7 @@ TEST_F(PasswordAutofillAgentTest,
 
 // Tests that TryToShowTouchToFill() works correctly for fillable and
 // non-fillable fields.
-TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFill) {
+TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFillUsername) {
   // Initially no fill data is available.
   WebInputElement random_element = GetInputElementByID("random_field");
   EXPECT_FALSE(
@@ -1718,13 +1718,40 @@ TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFill) {
   EXPECT_TRUE(
       password_autofill_agent_->TryToShowTouchToFill(username_element_));
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFillPassword) {
+  SimulateOnFillPasswordForm(fill_data_);
 
   EXPECT_CALL(fake_driver_, ShowTouchToFill);
   EXPECT_TRUE(
       password_autofill_agent_->TryToShowTouchToFill(password_element_));
   base::RunLoop().RunUntilIdle();
+}
 
-  EXPECT_FALSE(password_autofill_agent_->TryToShowTouchToFill(random_element));
+TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFillShownOnlyOnce) {
+  SimulateOnFillPasswordForm(fill_data_);
+
+  password_autofill_agent_->TryToShowTouchToFill(username_element_);
+  base::RunLoop().RunUntilIdle();
+
+  // Touch to fill is shown not more than one time per page load. Check that.
+  EXPECT_FALSE(
+      password_autofill_agent_->TryToShowTouchToFill(username_element_));
+  EXPECT_FALSE(
+      password_autofill_agent_->TryToShowTouchToFill(password_element_));
+
+  // Reload the page and simulate fill.
+  LoadHTML(kFormHTML);
+  UpdateOriginForHTML(kFormHTML);
+  UpdateUsernameAndPasswordElements();
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // After the reload touch to fill is shown again.
+  EXPECT_CALL(fake_driver_, ShowTouchToFill);
+  EXPECT_TRUE(
+      password_autofill_agent_->TryToShowTouchToFill(password_element_));
+  base::RunLoop().RunUntilIdle();
 }
 
 // Tests that |FillIntoFocusedField| doesn't fill read-only text fields.

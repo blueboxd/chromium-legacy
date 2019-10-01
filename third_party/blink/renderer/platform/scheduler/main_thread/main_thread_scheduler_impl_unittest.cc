@@ -3653,6 +3653,21 @@ TEST_P(MainThreadSchedulerImplTest, MicrotaskCheckpointTiming) {
             observer.result().front().second);
 }
 
+TEST_P(MainThreadSchedulerImplTest, IsBeginMainFrameScheduled) {
+  EXPECT_FALSE(scheduler_->IsBeginMainFrameScheduled());
+  scheduler_->DidScheduleBeginMainFrame();
+  EXPECT_TRUE(scheduler_->IsBeginMainFrameScheduled());
+  scheduler_->DidRunBeginMainFrame();
+  EXPECT_FALSE(scheduler_->IsBeginMainFrameScheduled());
+  scheduler_->DidScheduleBeginMainFrame();
+  scheduler_->DidScheduleBeginMainFrame();
+  EXPECT_TRUE(scheduler_->IsBeginMainFrameScheduled());
+  scheduler_->DidRunBeginMainFrame();
+  EXPECT_TRUE(scheduler_->IsBeginMainFrameScheduled());
+  scheduler_->DidRunBeginMainFrame();
+  EXPECT_FALSE(scheduler_->IsBeginMainFrameScheduled());
+}
+
 class VeryHighPriorityForCompositingAlwaysExperimentTest
     : public MainThreadSchedulerImplTest {
  public:

@@ -76,7 +76,7 @@ public class AutofillAssistantPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     @EnableFeatures(ChromeFeatureList.AUTOFILL_ASSISTANT)
-    public void testAutofillAssistantSwitch() throws Exception {
+    public void testAutofillAssistantSwitch() {
         TestThreadUtils.runOnUiThreadBlocking(() -> { setAutofillAssistantSwitch(true); });
 
         final Preferences preferences =
@@ -123,7 +123,7 @@ public class AutofillAssistantPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     @EnableFeatures(ChromeFeatureList.AUTOFILL_ASSISTANT)
-    public void testAutofillAssistantNoPreferenceIfOnboardingNeverShown() throws Exception {
+    public void testAutofillAssistantNoPreferenceIfOnboardingNeverShown() {
         // Note: |PREF_AUTOFILL_ASSISTANT_SWITCH| is cleared in setUp().
         final Preferences preferences = PreferencesTest.startPreferences(
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
@@ -144,7 +144,7 @@ public class AutofillAssistantPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     @EnableFeatures(ChromeFeatureList.AUTOFILL_ASSISTANT)
-    public void testAutofillAssistantPreferenceShownIfOnboardingShown() throws Exception {
+    public void testAutofillAssistantPreferenceShownIfOnboardingShown() {
         setAutofillAssistantSwitch(false);
         final Preferences preferences = PreferencesTest.startPreferences(
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
@@ -162,7 +162,7 @@ public class AutofillAssistantPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     @DisableFeatures(ChromeFeatureList.AUTOFILL_ASSISTANT)
-    public void testAutofillAssistantNoPreferenceIfFeatureDisabled() throws Exception {
+    public void testAutofillAssistantNoPreferenceIfFeatureDisabled() {
         final Preferences preferences = PreferencesTest.startPreferences(
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
 

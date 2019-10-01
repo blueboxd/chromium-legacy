@@ -924,6 +924,25 @@
       }
     },
     {
+      "command": "previousSimilarItem",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [73],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "nextSimilarItem",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [73]
+        }
+      }
+    },
+    {
       "command": "jumpToDetails",
       "sequence": {
         "cvoxModifier": true,

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/base64.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/remote_cocoa/app_shim/mouse_capture.h"
@@ -82,6 +83,8 @@ class BridgedNativeWidgetHostDummy
   void OnWindowKeyStatusChanged(bool is_key,
                                 bool is_content_first_responder,
                                 bool full_keyboard_access_enabled) override {}
+  void OnWindowStateRestorationDataChanged(
+      const std::vector<uint8_t>& data) override {}
   void DoDialogButtonAction(ui::DialogButton button) override {}
   void OnFocusWindowToolbar() override {}
   void SetRemoteAccessibilityTokens(
@@ -428,6 +431,16 @@ void NativeWidgetMacNSWindowHost::InitWindow(const Widget::InitParams& params) {
   widget_type_ = params.type;
   tooltip_manager_ = std::make_unique<TooltipManagerMac>(GetNSWindowMojo());
 
+  if (params.workspace.length()) {
+    std::string restoration_data;
+    if (base::Base64Decode(params.workspace, &restoration_data)) {
+      state_restoration_data_ = std::vector<uint8_t>(restoration_data.begin(),
+                                                     restoration_data.end());
+    } else {
+      DLOG(ERROR) << "Failed to decode a window's state restoration data.";
+    }
+  }
+
   // Initialize the window.
   {
     auto window_params = NativeWidgetNSWindowInitParams::New();
@@ -461,6 +474,7 @@ void NativeWidgetMacNSWindowHost::InitWindow(const Widget::InitParams& params) {
     window_params->force_into_collection_cycle =
         widget_type_ == Widget::InitParams::TYPE_WINDOW &&
         params.remove_standard_frame;
+    window_params->state_restoration_data = state_restoration_data_;
 
     GetNSWindowMojo()->InitWindow(std::move(window_params));
   }
@@ -665,6 +679,11 @@ gfx::Rect NativeWidgetMacNSWindowHost::GetRestoredBounds() const {
   if (target_fullscreen_state_ || in_fullscreen_transition_)
     return window_bounds_before_fullscreen_;
   return window_bounds_in_screen_;
+}
+
+const std::vector<uint8_t>&
+NativeWidgetMacNSWindowHost::GetWindowStateRestorationData() const {
+  return state_restoration_data_;
 }
 
 void NativeWidgetMacNSWindowHost::SetNativeWindowProperty(const char* name,
@@ -1103,6 +1122,12 @@ void NativeWidgetMacNSWindowHost::OnWindowKeyStatusChanged(
       widget->GetFocusManager()->StoreFocusedView(true);
     }
   }
+}
+
+void NativeWidgetMacNSWindowHost::OnWindowStateRestorationDataChanged(
+    const std::vector<uint8_t>& data) {
+  state_restoration_data_ = data;
+  native_widget_mac_->GetWidget()->OnNativeWidgetWorkspaceChanged();
 }
 
 void NativeWidgetMacNSWindowHost::DoDialogButtonAction(

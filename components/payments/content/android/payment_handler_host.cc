@@ -34,7 +34,7 @@ PaymentHandlerHost::PaymentHandlerHost(
 PaymentHandlerHost::~PaymentHandlerHost() {}
 
 jboolean PaymentHandlerHost::IsChangingPaymentMethod(JNIEnv* env) const {
-  return payment_handler_host_.is_changing_payment_method();
+  return payment_handler_host_.is_changing();
 }
 
 jlong PaymentHandlerHost::GetNativePaymentHandlerHost(JNIEnv* env) {
@@ -67,6 +67,22 @@ bool PaymentHandlerHost::ChangePaymentMethod(
   return Java_PaymentHandlerHostDelegate_changePaymentMethodFromPaymentHandler(
       env, delegate_, base::android::ConvertUTF8ToJavaString(env, method_name),
       base::android::ConvertUTF8ToJavaString(env, stringified_data));
+}
+
+bool PaymentHandlerHost::ChangeShippingOption(
+    const std::string& shipping_option_id) {
+  // Shipping and contact info delegation is not implemented on Android yet.
+  // TODO(sahel): crbug.com/984694
+  NOTREACHED();
+  return false;
+}
+
+bool PaymentHandlerHost::ChangeShippingAddress(
+    mojom::PaymentAddressPtr shipping_address) {
+  // Shipping and contact info delegation is not implemented on Android yet.
+  // TODO(sahel): crbug.com/984694
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace android

@@ -56,7 +56,6 @@ import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
 import org.chromium.ui.base.PageTransition;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -92,7 +91,7 @@ public class CustomTabsDynamicModuleUITest {
     private String mModuleManagedPage2;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
 
         // Module managed hosts only work with HTTPS.
@@ -110,7 +109,7 @@ public class CustomTabsDynamicModuleUITest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         DynamicModuleCoordinator.setAllowNonStandardPortNumber(false);
     }
 
@@ -122,7 +121,7 @@ public class CustomTabsDynamicModuleUITest {
     @Test
     @SmallTest
     @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE)
-    public void testModuleNotProvided() throws InterruptedException {
+    public void testModuleNotProvided() {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                 .setModulePackageName(null).setModuleClassName(null)
                 .setModuleManagedUrlRegex(getModuleManagedRegex())
@@ -144,7 +143,7 @@ public class CustomTabsDynamicModuleUITest {
     @Test
     @SmallTest
     @Features.DisableFeatures(ChromeFeatureList.CCT_MODULE)
-    public void testFeatureIsDisabled() throws InterruptedException {
+    public void testFeatureIsDisabled() {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                 .setModuleManagedUrlRegex(getModuleManagedRegex())
                 .build();
@@ -169,8 +168,7 @@ public class CustomTabsDynamicModuleUITest {
     @SmallTest
     @DisabledTest
     @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE)
-    public void testCloseButtonBehaviourWithDynamicModule()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testCloseButtonBehaviourWithDynamicModule() throws TimeoutException {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                 .setModuleManagedUrlRegex(getModuleManagedRegex())
                 .build();
@@ -224,8 +222,7 @@ public class CustomTabsDynamicModuleUITest {
      */
     @Test
     @SmallTest
-    public void testCloseButtonBehaviourWithoutDynamicModule()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testCloseButtonBehaviourWithoutDynamicModule() throws TimeoutException {
         // Open CCT with moduleManagedUrl1 and navigate
         // moduleManagedUrl1 -> nav1.1 - nav1.2 -> modulemanagedUrl2 -> nav2.1 -> nav2.2
 
@@ -257,8 +254,7 @@ public class CustomTabsDynamicModuleUITest {
      */
     @Test
     @SmallTest
-    public void testCloseButtonBehaviourDynamicModuleLoadFails()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testCloseButtonBehaviourDynamicModuleLoadFails() throws TimeoutException {
         // Open CCT with moduleManagedUrl1 and navigate
         // moduleManagedUrl1 -> nav1.1 - nav1.2
         Intent intent = new IntentBuilder(mModuleManagedPage)
@@ -283,7 +279,7 @@ public class CustomTabsDynamicModuleUITest {
     @Test
     @SmallTest
     @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE)
-    public void testSetTopBarContentView() throws Exception {
+    public void testSetTopBarContentView() {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                 .build();
 
@@ -304,7 +300,7 @@ public class CustomTabsDynamicModuleUITest {
     @Test
     @SmallTest
     @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE)
-    public void testSetTopBarContentView_secondCallIsNoOp() throws Exception {
+    public void testSetTopBarContentView_secondCallIsNoOp() {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                 .setModuleManagedUrlRegex(getModuleManagedRegex())
                 .build();
@@ -324,7 +320,7 @@ public class CustomTabsDynamicModuleUITest {
     @Test
     @SmallTest
     @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE)
-    public void testSetTopBarContentView_moduleLoadingFailed_cctHeaderVisible() throws Exception {
+    public void testSetTopBarContentView_moduleLoadingFailed_cctHeaderVisible() {
         Intent intent = new IntentBuilder(mTestPage).setModuleFailToLoadComponentName().build();
 
         mActivityRule.startCustomTabActivityWithIntent(intent);
@@ -345,7 +341,7 @@ public class CustomTabsDynamicModuleUITest {
     @Test
     @SmallTest
     @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE)
-    public void testSetTopBarContentView_withModuleAndManagedUrls_topBarVisible() throws Exception {
+    public void testSetTopBarContentView_withModuleAndManagedUrls_topBarVisible() {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                 .setModuleManagedUrlRegex(getModuleManagedRegex())
                 .build();
@@ -365,10 +361,11 @@ public class CustomTabsDynamicModuleUITest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({
-            ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
+    @Features.
+    EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
             ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS})
-    public void testSetTopBarContentView_notModuleManagedHost_cctHeaderVisible() throws Exception {
+    public void
+    testSetTopBarContentView_notModuleManagedHost_cctHeaderVisible() {
         String url = mTestServer.getURLWithHostName("non-managed-domain", MODULE_MANAGED_PAGE);
         Intent intent = new IntentBuilder(url)
                                 .setModuleManagedUrlRegex(getModuleManagedRegex())
@@ -385,10 +382,11 @@ public class CustomTabsDynamicModuleUITest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({
-            ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
+    @Features.
+    EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
             ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS})
-    public void testSetTopBarContentView_withModuleAndExtras_cctHeaderHidden() throws Exception {
+    public void
+    testSetTopBarContentView_withModuleAndExtras_cctHeaderHidden() {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                 .setModuleManagedUrlRegex(getModuleManagedRegex())
                 .setHideCCTHeader(true)
@@ -412,9 +410,10 @@ public class CustomTabsDynamicModuleUITest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS)
-    @Features.DisableFeatures(ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER)
-    public void testSetTopBarHeight_featureDisabled_heightNotChanged() throws Exception {
+    @Features
+            .EnableFeatures(ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS)
+            @Features.DisableFeatures(ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER)
+            public void testSetTopBarHeight_featureDisabled_heightNotChanged() {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                 .setModuleManagedUrlRegex(getModuleManagedRegex())
                 .setHideCCTHeader(true)
@@ -433,10 +432,11 @@ public class CustomTabsDynamicModuleUITest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({
-            ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
+    @Features.
+    EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
             ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS})
-    public void testSetTopBarHeight_cctHeaderNotHidden_heightNotChanged() throws Exception {
+    public void
+    testSetTopBarHeight_cctHeaderNotHidden_heightNotChanged() {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                 .setModuleManagedUrlRegex(getModuleManagedRegex())
                 .setHideCCTHeader(false)
@@ -454,10 +454,11 @@ public class CustomTabsDynamicModuleUITest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({
-            ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
+    @Features.
+    EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
             ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS})
-    public void testSetTopBarHeight_withModuleAndExtras_heightUpdated() throws Exception {
+    public void
+    testSetTopBarHeight_withModuleAndExtras_heightUpdated() {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                 .setModuleManagedUrlRegex(getModuleManagedRegex())
                 .setHideCCTHeader(true)
@@ -475,10 +476,11 @@ public class CustomTabsDynamicModuleUITest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({
-            ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
+    @Features.
+    EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
             ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS})
-    public void testSetTopBarHeight_zeroHeightHidesTopBar() throws Exception {
+    public void
+    testSetTopBarHeight_zeroHeightHidesTopBar() {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                 .setModuleManagedUrlRegex(getModuleManagedRegex())
                 .build();
@@ -496,9 +498,10 @@ public class CustomTabsDynamicModuleUITest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS)
-    @Features.DisableFeatures(ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER)
-    public void testSetTopBarContentView_featureDisabled_progressBarNoChange() throws Exception {
+    @Features
+            .EnableFeatures(ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS)
+            @Features.DisableFeatures(ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER)
+            public void testSetTopBarContentView_featureDisabled_progressBarNoChange() {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                                 .setModuleManagedUrlRegex(getModuleManagedRegex())
                                 .setHideCCTHeader(true)
@@ -512,8 +515,9 @@ public class CustomTabsDynamicModuleUITest {
     @SmallTest
     @Features.
     EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
-                    ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS})
-    public void testSetTopBarContentView_cctHeaderNotHidden_progressBarNoChange() throws Exception {
+            ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS})
+    public void
+    testSetTopBarContentView_cctHeaderNotHidden_progressBarNoChange() {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                                 .setModuleManagedUrlRegex(getModuleManagedRegex())
                                 .setHideCCTHeader(false)
@@ -527,8 +531,9 @@ public class CustomTabsDynamicModuleUITest {
     @SmallTest
     @Features.
     EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER,
-                    ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS})
-    public void testSetTopBarContentView_withModuleAndExtras_progressBarChanged() throws Exception {
+            ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS})
+    public void
+    testSetTopBarContentView_withModuleAndExtras_progressBarChanged() {
         Intent intent = new IntentBuilder(mModuleManagedPage)
                                 .setModuleManagedUrlRegex(getModuleManagedRegex())
                                 .setHideCCTHeader(true)
@@ -607,8 +612,7 @@ public class CustomTabsDynamicModuleUITest {
         return "^(" + MODULE_MANAGED_PAGE + "|" + MODULE_MANAGED_PAGE_2 + ")$";
     }
 
-    private void runAndWaitForActivityStopped(Runnable runnable)
-            throws TimeoutException, InterruptedException {
+    private void runAndWaitForActivityStopped(Runnable runnable) throws TimeoutException {
         CallbackHelper cctHiddenCallback = new CallbackHelper();
         ApplicationStatus.ActivityStateListener listener = (activity, newState) -> {
             if (activity == getActivity() &&

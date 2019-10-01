@@ -170,11 +170,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.QuotaDispatcherHost",
-                  "blink.mojom.WebSocketConnector",
-                  "media.mojom.VideoDecodePerfHistory",
-                  "shape_detection.mojom.BarcodeDetectionProvider",
-                  "shape_detection.mojom.FaceDetectionProvider",
-                  "shape_detection.mojom.TextDetection"})
+                  "blink.mojom.WebSocketConnector"})
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:dedicated_worker", "renderer",
               std::set<const char*>{
@@ -184,13 +180,8 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.QuotaDispatcherHost",
-                  "blink.mojom.SerialService",
                   "blink.mojom.WebUsbService",
-                  "blink.mojom.WebSocketConnector",
-                  "media.mojom.VideoDecodePerfHistory",
-                  "shape_detection.mojom.BarcodeDetectionProvider",
-                  "shape_detection.mojom.FaceDetectionProvider",
-                  "shape_detection.mojom.TextDetection"})
+                  "blink.mojom.WebSocketConnector"})
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:service_worker", "renderer",
               std::set<const char*>{
@@ -199,12 +190,8 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.QuotaDispatcherHost",
-                  "media.mojom.VideoDecodePerfHistory",
                   "network.mojom.RestrictedCookieManager",
-                  "blink.mojom.WebSocketConnector",
-                  "shape_detection.mojom.BarcodeDetectionProvider",
-                  "shape_detection.mojom.FaceDetectionProvider",
-                  "shape_detection.mojom.TextDetection"})
+                  "blink.mojom.WebSocketConnector"})
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:frame", "renderer",
               std::set<const char*>{
@@ -225,7 +212,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.Portal",
                   "blink.mojom.PrefetchURLLoaderService",
                   "blink.mojom.QuotaDispatcherHost",
-                  "blink.mojom.SerialService",
                   "blink.mojom.SharedWorkerConnector",
                   "blink.mojom.SpeechRecognizer",
                   "blink.mojom.TextSuggestionHost",
@@ -243,14 +229,10 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "media.mojom.MediaMetricsProvider",
                   "media.mojom.RemoterFactory",
                   "media.mojom.Renderer",
-                  "media.mojom.VideoDecodePerfHistory",
                   "mojom.ProcessInternalsHandler",
                   "network.mojom.RestrictedCookieManager",
                   "blink.mojom.WebSocketConnector",
                   "resource_coordinator.mojom.DocumentCoordinationUnit",
-                  "shape_detection.mojom.BarcodeDetectionProvider",
-                  "shape_detection.mojom.FaceDetectionProvider",
-                  "shape_detection.mojom.TextDetection",
                   "viz.mojom.Gpu"})
           .RequireInterfaceFilterCapability_Deprecated(
               mojom::kRendererServiceName, "navigation:frame", "browser")

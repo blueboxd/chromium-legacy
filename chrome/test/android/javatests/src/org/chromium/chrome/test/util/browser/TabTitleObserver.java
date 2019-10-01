@@ -41,10 +41,9 @@ public class TabTitleObserver extends EmptyTabObserver {
      * Wait for title update up to the given number of seconds.
      *
      * @param seconds The number of seconds to wait.
-     * @throws InterruptedException
      * @throws TimeoutException
      */
-    public void waitForTitleUpdate(int seconds) throws InterruptedException, TimeoutException {
+    public void waitForTitleUpdate(int seconds) throws TimeoutException {
         mCallback.waitForCallback(0, 1, seconds, TimeUnit.SECONDS);
     }
 

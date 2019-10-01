@@ -38,7 +38,7 @@ public class PrivacyPreferencesManagerNativeTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Android-AppBase"})
-    public void testSyncUsageAndCrashReporting() throws Throwable {
+    public void testSyncUsageAndCrashReporting() {
         PermissionContext context =
                 new PermissionContext(InstrumentationRegistry.getTargetContext());
         PrefServiceBridge prefBridge = PrefServiceBridge.getInstance();
@@ -59,7 +59,7 @@ public class PrivacyPreferencesManagerNativeTest {
     @Feature({"Android-AppBase"})
     @UiThreadTest
     @DisabledTest(message = "crbug.com/700500")
-    public void testSetUsageAndCrashReporting() throws Throwable {
+    public void testSetUsageAndCrashReporting() {
         PermissionContext context =
                 new PermissionContext(InstrumentationRegistry.getTargetContext());
         PrefServiceBridge prefBridge = PrefServiceBridge.getInstance();

@@ -37,6 +37,7 @@
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
+#include "chrome/common/heap_profiler_controller.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/gpu/chrome_content_gpu_client.h"
@@ -568,16 +569,16 @@ bool ChromeMainDelegate::ShouldCreateFeatureList() {
 #endif
 
 void ChromeMainDelegate::PostFieldTrialInitialization() {
+  std::string process_type =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kProcessType);
+  bool is_browser_process = process_type.empty();
+
 #if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
   {
     version_info::Channel channel = chrome::GetChannel();
     bool is_canary_dev = (channel == version_info::Channel::CANARY ||
                           channel == version_info::Channel::DEV);
-    const base::CommandLine& command_line =
-        *base::CommandLine::ForCurrentProcess();
-    std::string process_type =
-        command_line.GetSwitchValueASCII(switches::kProcessType);
-    bool is_browser_process = process_type.empty();
     gwp_asan::EnableForMalloc(is_canary_dev || is_browser_process,
                               process_type.c_str());
   }
@@ -588,13 +589,16 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
     version_info::Channel channel = chrome::GetChannel();
     bool is_canary_dev = (channel == version_info::Channel::CANARY ||
                           channel == version_info::Channel::DEV);
-    const base::CommandLine& command_line =
-        *base::CommandLine::ForCurrentProcess();
-    std::string process_type =
-        command_line.GetSwitchValueASCII(switches::kProcessType);
     gwp_asan::EnableForPartitionAlloc(is_canary_dev, process_type.c_str());
   }
 #endif
+
+  // Start heap profiling as early as possible so it can start recording
+  // memory allocations.
+  if (is_browser_process) {
+    heap_profiler_controller_ = std::make_unique<HeapProfilerController>();
+    heap_profiler_controller_->Start();
+  }
 }
 
 bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {

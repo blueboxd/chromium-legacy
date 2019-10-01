@@ -49,6 +49,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -607,6 +608,67 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, LastSelectedDirectory) {
   base::FilePath home;
   base::PathService::Get(base::DIR_HOME, &home);
   ASSERT_EQ(profile_impl->last_selected_directory(), home);
+}
+
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, Notifications) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  // Create the profile and check that a notification is received for it.
+  std::unique_ptr<Profile> profile;
+  {
+    content::WindowedNotificationObserver profile_created_observer(
+        chrome::NOTIFICATION_PROFILE_CREATED,
+        content::NotificationService::AllSources());
+
+    profile = CreateProfile(temp_dir.GetPath(), nullptr,
+                            Profile::CREATE_MODE_SYNCHRONOUS);
+    profile_created_observer.Wait();
+
+    EXPECT_EQ(profile_created_observer.source(),
+              content::Source<Profile>(profile.get()));
+  }
+
+  // Now retrieve the off-the-record profile, which will be created because it
+  // doesn't exist yet.
+  Profile* otr_profile = nullptr;
+  {
+    content::WindowedNotificationObserver profile_created_observer(
+        chrome::NOTIFICATION_PROFILE_CREATED,
+        content::NotificationService::AllSources());
+
+    otr_profile = profile->GetOffTheRecordProfile();
+    profile_created_observer.Wait();
+
+    EXPECT_EQ(profile_created_observer.source(),
+              content::Source<Profile>(otr_profile));
+    EXPECT_TRUE(profile->HasOffTheRecordProfile());
+    EXPECT_TRUE(otr_profile->IsOffTheRecord());
+    EXPECT_FALSE(otr_profile->IsIndependentOffTheRecordProfile());
+  }
+
+  // Destroy the off-the-record profile.
+  {
+    content::WindowedNotificationObserver profile_destroyed_observer(
+        chrome::NOTIFICATION_PROFILE_DESTROYED,
+        content::Source<Profile>(otr_profile));
+
+    profile->DestroyOffTheRecordProfile();
+    profile_destroyed_observer.Wait();
+
+    EXPECT_FALSE(profile->HasOffTheRecordProfile());
+  }
+
+  // Destroy the regular profile.
+  {
+    content::WindowedNotificationObserver profile_destroyed_observer(
+        chrome::NOTIFICATION_PROFILE_DESTROYED,
+        content::Source<Profile>(profile.get()));
+
+    profile.reset();
+    profile_destroyed_observer.Wait();
+  }
 }
 
 class ProfileWithoutMediaCacheBrowserTest : public ProfileBrowserTest {

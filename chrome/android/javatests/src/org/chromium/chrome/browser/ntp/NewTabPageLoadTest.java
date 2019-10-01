@@ -34,8 +34,6 @@ import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependencies
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
 import org.chromium.net.test.EmbeddedTestServer;
 
-import java.io.IOException;
-
 /**
  * Tests for events around the loading of a New Tab Page.
  */
@@ -67,13 +65,13 @@ public class NewTabPageLoadTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
     @Test
     @SmallTest
-    public void testTilesTypeInitialisedWhenPageLoaded() throws IOException, InterruptedException {
+    public void testTilesTypeInitialisedWhenPageLoaded() {
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         NewTabPageTestUtils.waitForNtpLoaded(mTab);
         assertTrue(mMostVisitedSites.pageImpressionRecorded);

@@ -127,7 +127,7 @@ WebContents* AddRestoredTab(
 
   if (select) {
     if (!browser->window()->IsMinimized())
-      browser->window()->Activate();
+      browser->window()->Show();
   } else {
     // We set the size of the view here, before Blink does its initial layout.
     // If we don't, the initial layout of background tabs will be performed

@@ -34,7 +34,7 @@ public class WebViewWebVrTest {
     private WebContents mWebContents;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mContentsClient = new TestAwContentsClient();
         mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         mWebContents = mTestContainerView.getWebContents();
@@ -55,7 +55,7 @@ public class WebViewWebVrTest {
             try {
                 result = JavaScriptUtils.executeJavaScriptAndWaitForResult(
                         mWebContents, "promiseResolved", 100, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException | TimeoutException e) {
+            } catch (TimeoutException e) {
                 // Expected to happen regularly, do nothing
             }
             return Boolean.parseBoolean(result);

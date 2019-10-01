@@ -815,6 +815,7 @@ if ((is_linux || is_win) && enable_remoting && !use_ozone) {
   group("shipped_binaries") {
     deps = [
       "//chrome:chrome",
+      "//remoting/client",
       "//remoting/host:host",
       "//tools/traffic_annotation/summary:annotations_xml",
     ]

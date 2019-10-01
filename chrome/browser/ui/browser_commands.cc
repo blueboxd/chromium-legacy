@@ -595,7 +595,7 @@ void NewWindow(Browser* browser) {
         browser->profile(), extension, WindowOpenDisposition::NEW_WINDOW,
         extensions::AppLaunchSource::kSourceKeyboard);
     OpenApplicationWindow(
-        app_launch_params,
+        browser->profile(), app_launch_params,
         extensions::AppLaunchInfo::GetLaunchWebURL(extension));
     return;
   }

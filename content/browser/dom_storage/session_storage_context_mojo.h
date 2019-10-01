@@ -18,17 +18,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl_mojo.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/session_storage_usage_info.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "url/origin.h"
 
@@ -133,17 +131,13 @@ class CONTENT_EXPORT SessionStorageContextMojo
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  using LevelDBBinder = base::RepeatingCallback<void(
-      mojo::PendingReceiver<leveldb::mojom::LevelDBService>)>;
-  void OverrideLevelDBBinderForTesting(LevelDBBinder binder) {
-    leveldb_binder_override_ = std::move(binder);
+  using DatabaseFactory = base::RepeatingCallback<
+      std::unique_ptr<leveldb::mojom::LevelDBDatabase>()>;
+  void SetDatabaseFactoryForTesting(DatabaseFactory factory) {
+    database_factory_for_testing_ = std::move(factory);
   }
 
   void PretendToConnectForTesting();
-
-  // Sets the database for testing.
-  void SetDatabaseForTesting(
-      mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database);
 
   leveldb::mojom::LevelDBDatabase* DatabaseForTesting() {
     return database_.get();
@@ -205,7 +199,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   // Part of our asynchronous directory opening called from RunWhenConnected().
   void InitiateConnection(bool in_memory_only = false);
-  void OnDatabaseOpened(bool in_memory, leveldb::mojom::DatabaseError status);
+  void OnDatabaseOpened(leveldb::mojom::DatabaseError status);
 
   void OnGotDatabaseMetadata(
       std::vector<leveldb::mojom::GetManyResultPtr> results);
@@ -222,9 +216,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   void OnConnectionFinished();
   void DeleteAndRecreateDatabase(const char* histogram_name);
-  void OnDBDestroyed(bool recreate_in_memory,
-                     leveldb::mojom::DatabaseError status);
-  void OnMojoConnectionDestroyed();
+  void OnDBDestroyed(bool recreate_in_memory, leveldb::Status status);
 
   void OnGotMetaData(GetStorageUsageCallback callback,
                      leveldb::mojom::DatabaseError status,
@@ -257,8 +249,8 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   base::trace_event::MemoryAllocatorDumpGuid memory_dump_id_;
 
-  mojo::Remote<leveldb::mojom::LevelDBService> leveldb_service_;
-  mojo::AssociatedRemote<leveldb::mojom::LevelDBDatabase> database_;
+  std::unique_ptr<leveldb::mojom::LevelDBDatabase> database_;
+  bool in_memory_ = false;
   bool tried_to_recreate_during_open_ = false;
 
   std::vector<base::OnceClosure> on_database_opened_callbacks_;
@@ -288,7 +280,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
   // Name of an extra histogram to log open results to, if not null.
   const char* open_result_histogram_ = nullptr;
 
-  LevelDBBinder leveldb_binder_override_;
+  DatabaseFactory database_factory_for_testing_;
 
   base::WeakPtrFactory<SessionStorageContextMojo> weak_ptr_factory_{this};
 };

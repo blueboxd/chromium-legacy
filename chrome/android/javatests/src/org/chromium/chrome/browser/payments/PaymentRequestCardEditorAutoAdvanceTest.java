@@ -46,7 +46,7 @@ public class PaymentRequestCardEditorAutoAdvanceTest implements MainActivityStar
             new PaymentRequestTestRule("payment_request_free_shipping_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // Set user has a shipping address and valid credit card on disk to make it easy to click in
         // to the payment section.
@@ -61,7 +61,7 @@ public class PaymentRequestCardEditorAutoAdvanceTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void test14DigitsCreditCard() throws InterruptedException, TimeoutException {
+    public void test14DigitsCreditCard() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
@@ -95,7 +95,7 @@ public class PaymentRequestCardEditorAutoAdvanceTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void test15DigitsCreditCard() throws InterruptedException, TimeoutException {
+    public void test15DigitsCreditCard() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
@@ -129,7 +129,7 @@ public class PaymentRequestCardEditorAutoAdvanceTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void test16DigitsCreditCard() throws InterruptedException, TimeoutException {
+    public void test16DigitsCreditCard() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
@@ -173,7 +173,7 @@ public class PaymentRequestCardEditorAutoAdvanceTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void test19DigitsCreditCard() throws InterruptedException, TimeoutException {
+    public void test19DigitsCreditCard() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(

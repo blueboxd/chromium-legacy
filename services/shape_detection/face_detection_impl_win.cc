@@ -47,7 +47,7 @@ void FaceDetectionImplWin::Detect(const SkBitmap& bitmap,
   detected_face_callback_ = std::move(callback);
   // This prevents the Detect function from being called before the
   // AsyncOperation completes.
-  binding_->PauseIncomingMethodCallProcessing();
+  receiver_->PauseIncomingMethodCallProcessing();
 }
 
 HRESULT FaceDetectionImplWin::BeginDetect(const SkBitmap& bitmap) {
@@ -122,7 +122,7 @@ void FaceDetectionImplWin::OnFaceDetected(
     ComPtr<IVector<DetectedFace*>> result) {
   std::move(detected_face_callback_)
       .Run(BuildFaceDetectionResult(std::move(result)));
-  binding_->ResumeIncomingMethodCallProcessing();
+  receiver_->ResumeIncomingMethodCallProcessing();
 }
 
 }  // namespace shape_detection

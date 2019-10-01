@@ -739,6 +739,14 @@ This file contains the strings for ash.
         Toggle dictation
       </message>
 
+      <message name="IDS_ASH_STATUS_AREA_OVERFLOW_BUTTON_EXPAND" desc="The accessible name for the overflow button in the status area to expand width of the status area.">
+        Expand status area
+      </message>
+
+      <message name="IDS_ASH_STATUS_AREA_OVERFLOW_BUTTON_COLLAPSE" desc="The accessible name for the overflow button in the status area to expand width of the status area.">
+        Collapse status area
+      </message>
+
       <!-- Overview Mode -->
       <message name="IDS_ASH_OVERVIEW_BUTTON_ACCESSIBLE_NAME" desc="The accessible name for the Overview button in the system tray.">
         Toggle window overview

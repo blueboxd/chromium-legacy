@@ -65,8 +65,6 @@ extern const base::Feature kDirectActions;
 extern const base::Feature kDontPrefetchLibraries;
 extern const base::Feature kDownloadAutoResumptionThrottling;
 extern const base::Feature kDownloadFileProvider;
-extern const base::Feature kDownloadHomeV2;
-extern const base::Feature kDownloadHomeShowStorageInfo;
 extern const base::Feature kDownloadLocationShowImageInGallery;
 extern const base::Feature kDownloadNotificationBadge;
 extern const base::Feature kDownloadProgressInfoBar;

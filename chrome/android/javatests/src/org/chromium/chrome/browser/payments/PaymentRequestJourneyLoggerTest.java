@@ -54,7 +54,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Override
     public void onMainActivityStarted() {}
 
-    private void createTestData() throws InterruptedException, TimeoutException {
+    private void createTestData() throws TimeoutException {
         AutofillTestHelper mHelper = new AutofillTestHelper();
         // The user has a shipping address and a credit card associated with that address on disk.
         String mBillingAddressId = mHelper.setProfile(new AutofillProfile("", "https://example.com",
@@ -79,8 +79,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @MediumTest
     @Feature({"Payments"})
     @RetryOnFailure
-    public void testNumberOfSuggestionsShown_ShippingAddress_Completed()
-            throws InterruptedException, TimeoutException {
+    public void testNumberOfSuggestionsShown_ShippingAddress_Completed() throws TimeoutException {
         createTestData();
 
         // Complete a Payment Request with a credit card.
@@ -166,8 +165,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNumberOfSelectionEdits_ShippingAddress_Completed()
-            throws InterruptedException, TimeoutException {
+    public void testNumberOfSelectionEdits_ShippingAddress_Completed() throws TimeoutException {
         createTestData();
 
         // Complete a Payment Request with a credit card.
@@ -212,8 +210,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNumberOfSelectionAdds_ShippingAddress_Completed()
-            throws InterruptedException, TimeoutException {
+    public void testNumberOfSelectionAdds_ShippingAddress_Completed() throws TimeoutException {
         createTestData();
 
         // Complete a Payment Request with a credit card.
@@ -261,8 +258,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNumberOfSuggestionsShown_PaymentMethod_Completed()
-            throws InterruptedException, TimeoutException {
+    public void testNumberOfSuggestionsShown_PaymentMethod_Completed() throws TimeoutException {
         // Add two credit cards.
         createTestData();
 
@@ -368,8 +364,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNumberOfSelectionAdds_PaymentMethod_Completed()
-            throws InterruptedException, TimeoutException {
+    public void testNumberOfSelectionAdds_PaymentMethod_Completed() throws TimeoutException {
         createTestData();
 
         // Complete a Payment Request with a credit card.
@@ -417,8 +412,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNumberOfSuggestionsShown_ContactInfo_Completed()
-            throws InterruptedException, TimeoutException {
+    public void testNumberOfSuggestionsShown_ContactInfo_Completed() throws TimeoutException {
         createTestData();
 
         // Complete a Payment Request with a credit card.
@@ -490,8 +484,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNumberOfSelectionEdits_ContactInfo_Completed()
-            throws InterruptedException, TimeoutException {
+    public void testNumberOfSelectionEdits_ContactInfo_Completed() throws TimeoutException {
         createTestData();
 
         // Complete a Payment Request with a credit card.
@@ -537,8 +530,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNumberOfSelectionAdds_ContactInfo_Completed()
-            throws InterruptedException, TimeoutException {
+    public void testNumberOfSelectionAdds_ContactInfo_Completed() throws TimeoutException {
         createTestData();
 
         // Complete a Payment Request with a credit card.
@@ -585,8 +577,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testUserHadCompleteSuggestions_ShippingAndPayment()
-            throws InterruptedException, TimeoutException {
+    public void testUserHadCompleteSuggestions_ShippingAndPayment() throws TimeoutException {
         // Add two addresses and two cards.
         createTestData();
 
@@ -614,7 +605,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @MediumTest
     @Feature({"Payments"})
     public void testUserDidNotHaveCompleteSuggestions_ShippingAndPayment_IncompleteShipping()
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         // Add a card and an incomplete address (no region).
         AutofillTestHelper mHelper = new AutofillTestHelper();
         String mBillingAddressId = mHelper.setProfile(new AutofillProfile("", "https://example.com",
@@ -650,7 +641,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @MediumTest
     @Feature({"Payments"})
     public void testUserDidNotHaveCompleteSuggestions_ShippingAndPayment_IncompleteCard()
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         // Add an incomplete card (no exp date) and an complete address.
         AutofillTestHelper mHelper = new AutofillTestHelper();
         String mBillingAddressId = mHelper.setProfile(new AutofillProfile("", "https://example.com",
@@ -686,7 +677,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Feature({"Payments"})
     @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
     public void testUserDidNotHaveCompleteSuggestions_ShippingAndPayment_UnsupportedCard()
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         // Add an unsupported card (mastercard) and an complete address.
         AutofillTestHelper mHelper = new AutofillTestHelper();
         String mBillingAddressId = mHelper.setProfile(new AutofillProfile("", "https://example.com",
@@ -721,7 +712,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Feature({"Payments"})
     @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
     public void testUserDidNotHaveCompleteSuggestions_ShippingAndPayment_OnlyPaymentApp()
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         // Add a complete address and a working payment app.
         AutofillTestHelper mHelper = new AutofillTestHelper();
         mHelper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
@@ -754,7 +745,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Feature({"Payments"})
     @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
     public void testUserDidNotHaveCompleteSuggestions_PaymentApp_NoInstruments()
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         // Add an address and a payment app without instruments on file.
         AutofillTestHelper mHelper = new AutofillTestHelper();
         mHelper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
@@ -787,7 +778,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @MediumTest
     @Feature({"Payments"})
     public void testUserHadCompleteSuggestions_PaymentApp_HasValidPaymentApp()
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         // Add an address and a payment app on file.
         AutofillTestHelper mHelper = new AutofillTestHelper();
         mHelper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
@@ -820,7 +811,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @MediumTest
     @Feature({"Payments"})
     public void testUserHadCompleteSuggestions_ShippingAndPaymentApp_HasInvalidShipping()
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         // Add a card and an incomplete address (no region).
         AutofillTestHelper mHelper = new AutofillTestHelper();
         String mBillingAddressId = mHelper.setProfile(new AutofillProfile("", "https://example.com",
@@ -857,7 +848,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @MediumTest
     @Feature({"Payments"})
     public void testUserHadCompleteSuggestions_AcceptsCardsAndApps_UserHasOnlyCard()
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         // Add an address and a credit card on file.
         AutofillTestHelper mHelper = new AutofillTestHelper();
         String mBillingAddressId = mHelper.setProfile(new AutofillProfile("", "https://example.com",
@@ -893,7 +884,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @MediumTest
     @Feature({"Payments"})
     public void testUserHadCompleteSuggestions_AcceptsCardsAndApps_UserHasOnlyPaymentApp()
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         // Add an address and a payment app on file.
         AutofillTestHelper mHelper = new AutofillTestHelper();
         mHelper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
@@ -927,7 +918,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @MediumTest
     @Feature({"Payments"})
     public void testUserHadCompleteSuggestions_AcceptsCardsAndApps_UserHasCardAndPaymentApp()
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         // Add an address, a credit card and a payment app on file.
         AutofillTestHelper mHelper = new AutofillTestHelper();
         String mBillingAddressId = mHelper.setProfile(new AutofillProfile("", "https://example.com",
@@ -965,7 +956,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Feature({"Payments"})
     @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
     public void testUserDidNotHaveCompleteSuggestions_AcceptsCardsAndApps_NoCardOrPaymentApp()
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         // Add an address on file.
         new AutofillTestHelper().setProfile(new AutofillProfile("", "https://example.com", true,
                 "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "", "US",
@@ -995,7 +986,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNoContactInfoHistogram() throws InterruptedException, TimeoutException {
+    public void testNoContactInfoHistogram() throws TimeoutException {
         createTestData();
 
         // Complete a Payment Request with a credit card.
@@ -1029,7 +1020,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testTwoTimes() throws InterruptedException, TimeoutException {
+    public void testTwoTimes() throws TimeoutException {
         createTestData();
 
         // Complete a Payment Request with a credit card.
@@ -1100,7 +1091,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNoShow() throws InterruptedException, TimeoutException {
+    public void testNoShow() throws TimeoutException {
         // Android Pay is supported but no instruments are present.
         mPaymentRequestTestRule.installPaymentApp(
                 "https://android.com/pay", NO_INSTRUMENTS, DELAYED_RESPONSE);

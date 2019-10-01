@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
@@ -195,6 +196,7 @@ jumbo_component("ozone") {
   visibility = []
   visibility = [ "*" ]
   public_deps = [
+    ":buildflags",
     ":platform",
     "//ui/ozone/public/mojom",
   ]
@@ -309,4 +311,9 @@ if (ozone_platform_x11) {
     # 2nd copy of any code via the component.
     assert_no_deps = [ "//ui/ozone" ]
   }
+}
+
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+  flags = [ "OZONE_PLATFORM_X11=$ozone_platform_x11" ]
 }

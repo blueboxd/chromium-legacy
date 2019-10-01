@@ -1785,4 +1785,14 @@ class PixelTestPages(object):
         browser_args=browser_args,
         other_args={'no_overlay': True},
         tolerance=tolerance_dc),
+
+      PixelTestPage(
+        'pixel_video_mp4.html',
+        base_name + '_DirectComposition_Video_Disable_Overlays',
+        test_rect=[0, 0, 240, 135],
+        revision=0, # Golden image revision is not used
+        browser_args=['--disable-direct-composition-video-overlays'],
+        other_args={'no_overlay': True},
+        tolerance=tolerance_dc,
+        expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
       ]

@@ -32,7 +32,7 @@ public class WebappSplashScreenBackgroundColorTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testShowBackgroundColorAndRecordUma() throws Exception {
+    public void testShowBackgroundColorAndRecordUma() {
         ViewGroup splashScreen = mActivityTestRule.startWebappActivityAndWaitForSplashScreen(
                 mActivityTestRule
                         .createIntent()

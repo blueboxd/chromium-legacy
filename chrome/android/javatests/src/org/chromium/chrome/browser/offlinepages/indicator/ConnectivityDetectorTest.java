@@ -350,8 +350,7 @@ public class ConnectivityDetectorTest implements ConnectivityDetector.Observer {
         Assert.assertTrue(mSemaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void setConnectionState(@ConnectivityDetector.ConnectionState int connectionState)
-            throws Exception {
+    private void setConnectionState(@ConnectivityDetector.ConnectionState int connectionState) {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mConnectivityDetector.forceConnectionStateForTesting(connectionState); });
     }

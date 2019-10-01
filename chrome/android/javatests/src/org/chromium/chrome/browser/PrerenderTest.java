@@ -53,7 +53,7 @@ public class PrerenderTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
@@ -91,7 +91,7 @@ public class PrerenderTest {
     */
     @Test
     @FlakyTest(message = "crbug.com/339668")
-    public void testPrerenderNotDead() throws InterruptedException, TimeoutException {
+    public void testPrerenderNotDead() throws TimeoutException {
         String testUrl = mTestServer.getURL(
                 "/chrome/test/data/android/prerender/google.html");
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
@@ -130,7 +130,7 @@ public class PrerenderTest {
     */
     @Test
     @DisabledTest(message = "Prerenderer disables infobars. crbug.com/588808")
-    public void testInfoBarDismissed() throws InterruptedException {
+    public void testInfoBarDismissed() {
         final String url = mTestServer.getURL(
                 "/chrome/test/data/geolocation/geolocation_on_load.html");
         final ExternalPrerenderHandler handler = PrerenderTestHelper.prerenderUrl(

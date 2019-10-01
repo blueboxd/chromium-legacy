@@ -93,7 +93,7 @@ public class SelectFileDialogTest {
     private ActivityWindowAndroidForTest mActivityWindowAndroidForTest;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mActivityTestRule.startMainActivityWithURL(DATA_URL);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {

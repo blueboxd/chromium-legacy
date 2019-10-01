@@ -146,7 +146,7 @@ public class UsbChooserDialogTest {
 
     @Test
     @LargeTest
-    public void testSelectItem() throws InterruptedException {
+    public void testSelectItem() {
         Dialog dialog = mChooserDialog.mItemChooserDialog.getDialogForTesting();
 
         TextViewWithClickableSpans statusView =

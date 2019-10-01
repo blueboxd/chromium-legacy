@@ -28,6 +28,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/timer/timer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/display/display.h"
@@ -278,6 +279,51 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
     gfx::Rect hotseat_bounds_in_shelf;  // Bounds of the hotseat within shelf
     gfx::Rect status_bounds_in_shelf;   // Bounds of status area within shelf
     gfx::Insets shelf_insets;           // Shelf insets within the screen
+
+    bool operator==(const TargetBounds& other) {
+      return opacity == other.opacity && shelf_bounds == other.shelf_bounds &&
+             shelf_bounds_in_shelf == other.shelf_bounds_in_shelf &&
+             nav_bounds_in_shelf == other.nav_bounds_in_shelf &&
+             hotseat_bounds_in_shelf == other.hotseat_bounds_in_shelf &&
+             status_bounds_in_shelf == other.status_bounds_in_shelf &&
+             shelf_insets == other.shelf_insets;
+    }
+
+    std::string diff_for_debug(const TargetBounds& other) {
+      std::string diff = "";
+      if (*this == other)
+        return diff;
+      if (opacity != other.opacity) {
+        diff += " opacity " + base::NumberToString(opacity) + " vs " +
+                base::NumberToString(other.opacity);
+      }
+      if (shelf_bounds != other.shelf_bounds) {
+        diff += " shelf_bounds " + shelf_bounds.ToString() + " vs " +
+                other.shelf_bounds.ToString();
+      }
+      if (shelf_bounds_in_shelf != other.shelf_bounds_in_shelf) {
+        diff += " shelf_bounds_in_shelf " + shelf_bounds_in_shelf.ToString() +
+                " vs " + other.shelf_bounds_in_shelf.ToString();
+      }
+      if (nav_bounds_in_shelf != other.nav_bounds_in_shelf) {
+        diff += " nav_bounds_in_shelf " + nav_bounds_in_shelf.ToString() +
+                " vs " + other.nav_bounds_in_shelf.ToString();
+      }
+      if (hotseat_bounds_in_shelf != other.hotseat_bounds_in_shelf) {
+        diff += " hotseat_bounds_in_shelf " +
+                hotseat_bounds_in_shelf.ToString() + " vs " +
+                other.hotseat_bounds_in_shelf.ToString();
+      }
+      if (status_bounds_in_shelf != other.status_bounds_in_shelf) {
+        diff += " status_bounds_in_shelf " + status_bounds_in_shelf.ToString() +
+                " vs " + other.status_bounds_in_shelf.ToString();
+      }
+      if (shelf_insets != other.shelf_insets) {
+        diff += " shelf_insets " + shelf_insets.ToString() + " vs " +
+                other.shelf_insets.ToString();
+      }
+      return diff;
+    }
   };
 
   struct State {

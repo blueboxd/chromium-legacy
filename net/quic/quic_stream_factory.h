@@ -152,9 +152,6 @@ struct NET_EXPORT QuicParams {
   // Retry requests which fail with QUIC_PROTOCOL_ERROR, and mark QUIC
   // broken if the retry succeeds.
   bool retry_without_alt_svc_on_quic_errors = true;
-  // If true, alt-svc headers advertising QUIC in IETF format will be
-  // supported.
-  bool support_ietf_format_quic_altsvc = false;
   // If true, all QUIC sessions are closed when any local IP address changes.
   bool close_sessions_on_ip_change = false;
   // If true, all QUIC sessions are marked as goaway when any local IP address

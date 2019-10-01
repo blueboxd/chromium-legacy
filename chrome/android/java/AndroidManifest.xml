@@ -300,6 +300,29 @@ by a child template that "extends" this file.
                 {{ self.mhtml_view_intent_shared_filter_body() }}
                 <data android:mimeType="*/*"/>
             </intent-filter>
+            <!-- Bundled HTTP Exchanges (.wbn) support -->
+            {% if channel in ['dev', 'canary', 'default'] %}
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+                <data android:mimeType="*/*" />
+                <data android:host="*" />
+                <data android:pathPattern="/.*\\.wbn" />
+                <data android:pathPattern="/.*\\..*\\.wbn" />
+                <data android:pathPattern="/.*\\..*\\..*\\.wbn" />
+                <data android:pathPattern="/.*\\..*\\..*\\..*\\.wbn" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" />
+                <data android:mimeType="application/webbundle" />
+            </intent-filter>
+            {% endif %}
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_SEARCH" />
                 <category android:name="android.intent.category.DEFAULT" />

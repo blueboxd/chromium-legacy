@@ -131,7 +131,6 @@ class TestRunner : public WebTestRunner {
   bool ShouldDumpIconChanges() const;
   bool ShouldDumpCreateView() const;
   bool CanOpenWindows() const;
-  bool ShouldDumpResourceLoadCallbacks() const;
   bool ShouldDumpSpellCheckCallbacks() const;
   bool ShouldWaitUntilExternalURLLoad() const;
   const std::set<std::string>* HttpHeadersToClear() const;
@@ -367,11 +366,6 @@ class TestRunner : public WebTestRunner {
   void DumpCreateView();
 
   void SetCanOpenWindows();
-
-  // This function sets a flag that tells the test runner to dump a descriptive
-  // line for each resource load callback. It takes no arguments, and ignores
-  // any that may be present.
-  void DumpResourceLoadCallbacks();
 
   // This function sets a flag that tells the test runner to dump the MIME type
   // for each resource that was loaded. It takes no arguments, and ignores any

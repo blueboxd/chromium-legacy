@@ -38,7 +38,7 @@ public class AwWebContentsObserverTest {
     private String mUnreachableWebDataUrl;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mContentsClient = new TestAwContentsClient();
         mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         mUnreachableWebDataUrl = AwContentsStatics.getUnreachableWebDataUrl();

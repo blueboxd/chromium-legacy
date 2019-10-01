@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -27,6 +26,7 @@
 #include "chromeos/services/assistant/fake_client.h"
 #include "chromeos/services/assistant/pref_connection_delegate.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/services/assistant/test_support/fully_initialized_assistant_state.h"
 #include "components/prefs/testing_pref_service.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
@@ -131,12 +131,6 @@ class FakeAssistantClient : public FakeClient {
   explicit FakeAssistantClient(ash::AssistantState* assistant_state)
       : assistant_state_(assistant_state) {}
 
-  mojom::ClientPtr CreatePendingRemoteAndBind() {
-    mojom::ClientPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
-  }
-
  private:
   // FakeClient:
   void RequestAssistantStateController(
@@ -146,7 +140,6 @@ class FakeAssistantClient : public FakeClient {
   }
 
   ash::AssistantState* const assistant_state_;
-  mojo::Binding<mojom::Client> binding_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeAssistantClient);
 };
@@ -200,11 +193,6 @@ class AssistantServiceTest : public testing::Test {
     shared_url_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &url_loader_factory_);
-
-    assistant_state()->NotifyArcPlayStoreEnabledChanged(true);
-    assistant_state()->NotifyFeatureAllowed(
-        ash::mojom::AssistantAllowedState::ALLOWED);
-    assistant_state()->NotifyLocaleChanged("en_US");
 
     auto fake_pref_connection = std::make_unique<FakePrefConnectionDelegate>();
     pref_service_ = fake_pref_connection->pref_service();
@@ -265,7 +253,7 @@ class AssistantServiceTest : public testing::Test {
   std::unique_ptr<Service> service_;
   mojo::Remote<mojom::AssistantService> remote_service_;
 
-  ash::AssistantState assistant_state_;
+  FullyInitializedAssistantState assistant_state_;
 
   FakeIdentityAccessor fake_identity_accessor_;
   FakeAssistantClient fake_assistant_client_{&assistant_state_};
@@ -342,19 +330,19 @@ TEST_F(AssistantServiceTest, StopImmediatelyIfAssistantIsRunning) {
 }
 
 TEST_F(AssistantServiceTest, StopDelayedIfAssistantNotFinishedStarting) {
-  // Test is set up as |State::STARTED|, turning settings off will trigger
+  // Test is set up as |State::STARTING|, turning settings off will trigger
   // logic to try to stop it.
   pref_service()->SetBoolean(prefs::kAssistantEnabled, false);
 
   EXPECT_EQ(assistant_manager()->GetState(),
-            AssistantManagerService::State::STARTED);
+            AssistantManagerService::State::STARTING);
 
   mock_task_runner()->FastForwardBy(kUpdateAssistantManagerDelay);
   base::RunLoop().RunUntilIdle();
 
   // No change of state because it is still starting.
   EXPECT_EQ(assistant_manager()->GetState(),
-            AssistantManagerService::State::STARTED);
+            AssistantManagerService::State::STARTING);
 
   assistant_manager()->FinishStart();
 

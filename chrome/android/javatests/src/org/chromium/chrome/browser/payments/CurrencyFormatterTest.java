@@ -35,7 +35,7 @@ public class CurrencyFormatterTest {
     private static final String NarrowNBSP = "\u202F";
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
     }
 
@@ -49,7 +49,7 @@ public class CurrencyFormatterTest {
 
     @Test
     @MediumTest
-    public void testMultipleConversions() throws Exception {
+    public void testMultipleConversions() {
         // Note, all spaces are expected to be unicode non-breaking spaces. Here they are shown as
         // normal spaces.
         List<Object[]> testCases = Arrays.asList(new Object[][] {

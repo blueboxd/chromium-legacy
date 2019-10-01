@@ -61,7 +61,7 @@ public class CloseTabDirectActionHandlerTest {
     @Test
     @MediumTest
     @Feature({"DirectActions"})
-    public void testCloseTabs() throws Exception {
+    public void testCloseTabs() {
         // Actions are available
         assertThat(getDirectActions(), Matchers.containsInAnyOrder("close_tab"));
 

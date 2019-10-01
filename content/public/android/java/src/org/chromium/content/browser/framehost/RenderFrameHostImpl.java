@@ -12,6 +12,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.mojo.system.impl.CoreImpl;
 import org.chromium.services.service_manager.InterfaceProvider;
+import org.chromium.url.Origin;
 
 /**
  * The RenderFrameHostImpl Java wrapper to allow communicating with the native RenderFrameHost
@@ -73,6 +74,13 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     }
 
     @Override
+    public Origin getLastCommittedOrigin() {
+        if (mNativeRenderFrameHostAndroid == 0) return null;
+        return RenderFrameHostImplJni.get().getLastCommittedOrigin(
+                mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this);
+    }
+
+    @Override
     public void getCanonicalUrlForSharing(Callback<String> callback) {
         if (mNativeRenderFrameHostAndroid == 0) {
             callback.onResult(null);
@@ -121,6 +129,8 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     @NativeMethods
     interface Natives {
         String getLastCommittedURL(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
+        Origin getLastCommittedOrigin(
+                long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
         void getCanonicalUrlForSharing(long nativeRenderFrameHostAndroid,
                 RenderFrameHostImpl caller, Callback<String> callback);
         UnguessableToken getAndroidOverlayRoutingToken(

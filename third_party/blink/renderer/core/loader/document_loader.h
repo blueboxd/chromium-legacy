@@ -356,8 +356,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   FrameLoader& GetFrameLoader() const;
   LocalFrameClient& GetLocalFrameClient() const;
 
-  void CommitData(const char* bytes, size_t length);
-
   ContentSecurityPolicy* CreateCSP(
       const ResourceResponse&,
       const base::Optional<WebOriginPolicy>& origin_policy);
@@ -368,15 +366,15 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   void FinalizeMHTMLArchiveLoad();
   void HandleRedirect(const KURL& current_request_url);
   void HandleResponse();
-  void HandleData(const char* data, size_t length);
 
   void InitializeEmptyResponse();
 
   bool ShouldReportTimingInfoToParent();
 
+  void CommitData(const char* bytes, size_t length);
   // Processes the data stored in the data_buffer_, used to avoid appending data
   // to the parser in a nested message loop.
-  void ProcessDataBuffer();
+  void ProcessDataBuffer(const char* bytes = nullptr, size_t length = 0);
 
   // Sends an intervention report if the page is being served as a preview.
   void ReportPreviewsIntervention() const;
@@ -477,11 +475,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   // Used to block the parser.
   int parser_blocked_count_ = 0;
-  bool finished_loading_ = false;
-  scoped_refptr<SharedBuffer> committed_data_buffer_;
+  bool finish_loading_when_parser_resumed_ = false;
 
-  // Used to protect against reentrancy into dataReceived().
-  bool in_data_received_;
+  // Used to protect against reentrancy into CommitData().
+  bool in_commit_data_;
   scoped_refptr<SharedBuffer> data_buffer_;
   base::UnguessableToken devtools_navigation_token_;
 

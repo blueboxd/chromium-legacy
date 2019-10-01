@@ -245,12 +245,12 @@ public class DownloadManagerServiceTest {
     private DownloadManagerServiceForTest mService;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         RecordHistogram.setDisabledForTests(true);
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mService = null;
         RecordHistogram.setDisabledForTests(false);
     }
@@ -383,7 +383,7 @@ public class DownloadManagerServiceTest {
     @Test
     @MediumTest
     @Feature({"Download"})
-    public void testDownloadFailedIsCalled() throws InterruptedException {
+    public void testDownloadFailedIsCalled() {
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         createDownloadManagerService(notifier, UPDATE_DELAY_FOR_TEST);
         TestThreadUtils.runOnUiThreadBlocking(
@@ -400,7 +400,7 @@ public class DownloadManagerServiceTest {
     @Test
     @MediumTest
     @Feature({"Download"})
-    public void testDownloadPausedIsCalled() throws InterruptedException {
+    public void testDownloadPausedIsCalled() {
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         createDownloadManagerService(notifier, UPDATE_DELAY_FOR_TEST);
         DownloadManagerService.disableNetworkListenerForTest();

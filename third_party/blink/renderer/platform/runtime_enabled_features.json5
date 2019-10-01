@@ -385,7 +385,7 @@
       // CSS min(), max() and clamp()
       // https://drafts.csswg.org/css-values-4/#comp-func
       name: "CSSComparisonFunctions",
-      status: "test",
+      status: "stable",
     },
     {
       // Support for CSS content-size property.
@@ -604,8 +604,10 @@
       name: "ExperimentalContentSecurityPolicyFeatures",
       status: "experimental",
     },
-    // Enables navigator.scheduling.isInputPending, allowing long-running JS to
-    // be able to yield itself when user input is queued (crbug.com/910421).
+    // Enables navigator.scheduling.isInputPending and
+    // navigator.scheduling.isFramePending, allowing long-running JS to
+    // be able to yield itself when user input is queued (crbug.com/910421) or a
+    // display update is scheduled.
     {
       name: "ExperimentalIsInputPending",
       origin_trial_feature_name: "ExperimentalIsInputPending",

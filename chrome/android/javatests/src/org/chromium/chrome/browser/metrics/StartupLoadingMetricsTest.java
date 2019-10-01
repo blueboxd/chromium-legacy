@@ -75,7 +75,7 @@ public class StartupLoadingMetricsTest {
     private EmbeddedTestServer mTestServer;
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         Context appContext = InstrumentationRegistry.getInstrumentation()
                                      .getTargetContext()
                                      .getApplicationContext();
@@ -120,7 +120,7 @@ public class StartupLoadingMetricsTest {
                         FIRST_CONTENTFUL_PAINT_HISTOGRAM + histogramSuffix));
     }
 
-    private void startWebApkActivity(final String startUrl) throws InterruptedException {
+    private void startWebApkActivity(final String startUrl) {
         Intent intent =
                 new Intent(InstrumentationRegistry.getTargetContext(), WebApkActivity.class);
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, "org.chromium.webapk.test");

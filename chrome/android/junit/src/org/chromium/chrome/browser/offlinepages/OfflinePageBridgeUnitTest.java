@@ -99,7 +99,7 @@ public class OfflinePageBridgeUnitTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         mocker.mock(OfflinePageBridgeJni.TEST_HOOKS, mOfflinePageBridgeJniMock);
         OfflinePageBridge bridge = new OfflinePageBridge(0);

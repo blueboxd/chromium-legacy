@@ -92,6 +92,11 @@ extern const char kBrowserContainerKeepsContentViewDescription[];
 extern const char kCollectionsCardPresentationStyleName[];
 extern const char kCollectionsCardPresentationStyleDescription[];
 
+// Title and description for the flag that enables Messages UI on
+// ConfirmInfobars.
+extern const char kConfirmInfobarMessagesUIName[];
+extern const char kConfirmInfobarMessagesUIDescription[];
+
 // Title and description for the flag to diffentiate between copied
 // urls, strings, and images.
 extern const char kCopiedContentBehaviorName[];
@@ -116,6 +121,10 @@ extern const char kDetectMainThreadFreezeDescription[];
 // Title and description for the flag to enable drag and drop.
 extern const char kDragAndDropName[];
 extern const char kDragAndDropDescription[];
+
+// Title and description for the flag to block restore urls.
+extern const char kEmbedderBlockRestoreUrlName[];
+extern const char kEmbedderBlockRestoreUrlDescription[];
 
 // Title and description for the flag to control if credit card upload can
 // display a cardholder name fix flow.
@@ -253,10 +262,6 @@ extern const char kSendTabToSelfDescription[];
 // of the users devices.
 extern const char kSendTabToSelfBroadcastName[];
 extern const char kSendTabToSelfBroadcastDescription[];
-
-// Title and description for the flag to enable the send tab to self sending UI.
-extern const char kSendTabToSelfShowSendingUIName[];
-extern const char kSendTabToSelfShowSendingUIDescription[];
 
 // Title and description for the flag to send UMA data over any network.
 extern const char kSendUmaOverAnyNetwork[];

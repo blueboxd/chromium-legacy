@@ -235,14 +235,14 @@ public class ContactsPickerDialogTest
         topView.notifyChipToggled(filter);
     }
 
-    private void toggleFilter(@PickerAdapter.FilterType int filter) throws Exception {
+    private void toggleFilter(@PickerAdapter.FilterType int filter) {
         RecyclerView recyclerView = getRecyclerView();
         RecyclerViewTestUtils.waitForView(recyclerView, 0);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> notifyChipToggled(filter));
     }
 
-    private void clickSearchButton() throws Exception {
+    private void clickSearchButton() {
         ContactsPickerToolbar toolbar =
                 (ContactsPickerToolbar) mDialog.findViewById(R.id.action_bar);
         View search = toolbar.findViewById(R.id.search);
@@ -258,7 +258,7 @@ public class ContactsPickerDialogTest
         onActionCallback.waitForCallback(callCount, 1);
     }
 
-    private TopView getTopView() throws Exception {
+    private TopView getTopView() {
         RecyclerView recyclerView = getRecyclerView();
         RecyclerViewTestUtils.waitForView(recyclerView, 0);
         View view = recyclerView.getLayoutManager().findViewByPosition(0);

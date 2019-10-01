@@ -73,7 +73,7 @@ public class TextSuggestionMenuTest {
             public boolean isSatisfied() {
                 try {
                     return DOMUtils.getNodeContents(webContents, "div").equals("");
-                } catch (InterruptedException | TimeoutException e) {
+                } catch (TimeoutException e) {
                     return false;
                 }
             }
@@ -102,7 +102,7 @@ public class TextSuggestionMenuTest {
             public boolean isSatisfied() {
                 try {
                     return DOMUtils.getNodeContents(webContents, "div").equals("hello");
-                } catch (InterruptedException | TimeoutException e) {
+                } catch (TimeoutException e) {
                     return false;
                 }
             }
@@ -127,7 +127,7 @@ public class TextSuggestionMenuTest {
             public boolean isSatisfied() {
                 try {
                     return DOMUtils.getNodeContents(mRule.getWebContents(), "div").equals("");
-                } catch (InterruptedException | TimeoutException e) {
+                } catch (TimeoutException e) {
                     return false;
                 }
             }
@@ -176,7 +176,7 @@ public class TextSuggestionMenuTest {
             public boolean isSatisfied() {
                 try {
                     return DOMUtils.getNodeContents(webContents, "div").equals("hello world");
-                } catch (InterruptedException | TimeoutException e) {
+                } catch (TimeoutException e) {
                     return false;
                 }
             }
@@ -205,7 +205,7 @@ public class TextSuggestionMenuTest {
                 try {
                     return DOMUtils.getNodeContents(mRule.getWebContents(), "div")
                             .equals("suggestion3");
-                } catch (InterruptedException | TimeoutException e) {
+                } catch (TimeoutException e) {
                     return false;
                 }
             }
@@ -248,7 +248,7 @@ public class TextSuggestionMenuTest {
                 try {
                     return DOMUtils.getNodeContents(mRule.getWebContents(), "div")
                             .equals("replacement");
-                } catch (InterruptedException | TimeoutException e) {
+                } catch (TimeoutException e) {
                     return false;
                 }
             }

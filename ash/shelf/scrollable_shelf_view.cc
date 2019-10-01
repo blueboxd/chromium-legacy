@@ -765,7 +765,8 @@ gfx::Insets ScrollableShelfView::CalculateEdgePadding() const {
     return CalculatePaddingForDisplayCentering();
 
   const int icons_size = shelf_view_->GetSizeOfAppIcons(
-      shelf_view_->number_of_visible_apps(), false);
+                             shelf_view_->number_of_visible_apps(), false) +
+                         2 * GetAppIconEndPadding();
   const int base_padding = ShelfConfig::Get()->app_icon_group_margin();
 
   const int available_size_for_app_icons =
@@ -795,7 +796,8 @@ gfx::Insets ScrollableShelfView::CalculateEdgePadding() const {
 
 gfx::Insets ScrollableShelfView::CalculatePaddingForDisplayCentering() const {
   const int icons_size = shelf_view_->GetSizeOfAppIcons(
-      shelf_view_->number_of_visible_apps(), false);
+                             shelf_view_->number_of_visible_apps(), false) +
+                         2 * GetAppIconEndPadding();
   const gfx::Rect display_bounds =
       screen_util::GetDisplayBoundsWithShelf(GetWidget()->GetNativeWindow());
   const int display_size_primary = GetShelf()->PrimaryAxisValue(

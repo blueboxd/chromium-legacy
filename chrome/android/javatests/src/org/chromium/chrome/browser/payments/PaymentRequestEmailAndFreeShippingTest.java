@@ -44,7 +44,7 @@ public class PaymentRequestEmailAndFreeShippingTest implements MainActivityStart
             new PaymentRequestTestRule("payment_request_email_and_free_shipping_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // The user has a shipping address with a valid email on disk.
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
@@ -59,7 +59,7 @@ public class PaymentRequestEmailAndFreeShippingTest implements MainActivityStart
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPay() throws InterruptedException, TimeoutException {
+    public void testPay() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
@@ -79,7 +79,7 @@ public class PaymentRequestEmailAndFreeShippingTest implements MainActivityStart
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPaymentRequestEventsMetric() throws InterruptedException, TimeoutException {
+    public void testPaymentRequestEventsMetric() throws TimeoutException {
         // Start and cancel the Payment Request.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
@@ -102,7 +102,7 @@ public class PaymentRequestEmailAndFreeShippingTest implements MainActivityStart
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testAddAddressNoCrash() throws InterruptedException, TimeoutException {
+    public void testAddAddressNoCrash() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());

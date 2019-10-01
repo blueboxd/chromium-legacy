@@ -132,7 +132,7 @@ public class SelectionPopupControllerTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         ShadowLog.stream = System.out;
 
@@ -177,7 +177,7 @@ public class SelectionPopupControllerTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         ContentClassFactory.set(mOriginalContentClassFactory);
     }
 

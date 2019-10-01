@@ -19,6 +19,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 using ::testing::UnorderedElementsAreArray;
 
@@ -362,7 +363,9 @@ TEST_F(StorageServiceDomStorageDatabaseTest, DeletePrefixed) {
 
     // Wipe out the first prefix. We should still see the second prefix.
     std::vector<DomStorageDatabase::KeyValuePair> entries;
-    EXPECT_STATUS_OK(db.DeletePrefixed(MakeBytes(kTestPrefix1)));
+    leveldb::WriteBatch batch;
+    EXPECT_STATUS_OK(db.DeletePrefixed(MakeBytes(kTestPrefix1), &batch));
+    EXPECT_STATUS_OK(db.Commit(&batch));
     EXPECT_STATUS_OK(db.GetPrefixed(MakeBytes(kTestPrefix1), &entries));
     EXPECT_TRUE(entries.empty());
     EXPECT_STATUS_OK(db.GetPrefixed(MakeBytes(kTestPrefix2), &entries));
@@ -372,7 +375,9 @@ TEST_F(StorageServiceDomStorageDatabaseTest, DeletePrefixed) {
                      MakeKeyValuePair(kTestPrefix2Key2, kTestValue3)}));
 
     // Wipe out the second prefix.
-    EXPECT_STATUS_OK(db.DeletePrefixed(MakeBytes(kTestPrefix2)));
+    batch.Clear();
+    EXPECT_STATUS_OK(db.DeletePrefixed(MakeBytes(kTestPrefix2), &batch));
+    EXPECT_STATUS_OK(db.Commit(&batch));
     EXPECT_STATUS_OK(db.GetPrefixed(MakeBytes(kTestPrefix2), &entries));
 
     // The lone unprefixed value should still exist.
@@ -414,8 +419,10 @@ TEST_F(StorageServiceDomStorageDatabaseTest, CopyPrefixed) {
 
     // Copy the prefixed entries to |kTestPrefix2| and verify that we have the
     // expected entries.
-    EXPECT_STATUS_OK(
-        db.CopyPrefixed(MakeBytes(kTestPrefix1), MakeBytes(kTestPrefix2)));
+    leveldb::WriteBatch batch;
+    EXPECT_STATUS_OK(db.CopyPrefixed(MakeBytes(kTestPrefix1),
+                                     MakeBytes(kTestPrefix2), &batch));
+    EXPECT_STATUS_OK(db.Commit(&batch));
 
     std::vector<DomStorageDatabase::KeyValuePair> entries;
     EXPECT_STATUS_OK(db.GetPrefixed(MakeBytes(kTestPrefix2), &entries));

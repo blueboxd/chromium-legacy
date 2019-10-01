@@ -24,6 +24,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
 #include "media/media_buildflags.h"
+#include "media/mojo/mojom/video_decode_perf_history.mojom-forward.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -498,6 +499,12 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void BindIndexedDB(
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
       const url::Origin& origin) = 0;
+
+  // Binds |receiver| to the VideoDecodePerfHistory instance.  This is for
+  // internal use only, and is only exposed here to support
+  // MockRenderProcessHost usage in tests.
+  virtual void BindVideoDecodePerfHistory(
+      mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver) = 0;
 
   // Binds |receiver| to an instance of LockManager. This is for internal use
   // only, and is only exposed here to support MockRenderProcessHost usage in

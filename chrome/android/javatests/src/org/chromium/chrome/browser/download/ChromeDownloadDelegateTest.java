@@ -62,7 +62,7 @@ public class ChromeDownloadDelegateTest {
     @SmallTest
     @Feature({"Download"})
     @RetryOnFailure
-    public void testShouldInterceptContextMenuDownload() throws InterruptedException {
+    public void testShouldInterceptContextMenuDownload() {
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
         mActivityTestRule.loadUrl("about:blank");
         ChromeDownloadDelegate delegate = TestThreadUtils.runOnUiThreadBlockingNoException(

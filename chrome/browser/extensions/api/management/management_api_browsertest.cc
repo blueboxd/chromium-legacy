@@ -245,15 +245,12 @@ class ExtensionManagementApiEscalationTest :
 
     // Install low-permission version of the extension.
     ASSERT_TRUE(InstallExtension(path_v1, 1));
-    EXPECT_TRUE(extension_registry()->GetExtensionById(
-        kId, ExtensionRegistry::ENABLED));
+    EXPECT_TRUE(extension_registry()->enabled_extensions().GetByID(kId));
 
     // Update to a high-permission version - it should get disabled.
     EXPECT_FALSE(UpdateExtension(kId, path_v2, -1));
-    EXPECT_FALSE(extension_registry()->GetExtensionById(
-        kId, ExtensionRegistry::ENABLED));
-    EXPECT_TRUE(extension_registry()->GetExtensionById(
-        kId, ExtensionRegistry::COMPATIBILITY));
+    EXPECT_FALSE(extension_registry()->enabled_extensions().GetByID(kId));
+    EXPECT_TRUE(extension_registry()->disabled_extensions().GetByID(kId));
     EXPECT_TRUE(ExtensionPrefs::Get(browser()->profile())
                     ->DidExtensionEscalatePermissions(kId));
   }
@@ -347,9 +344,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
     extension_service()->AddExtension(target_extension.get());
     SetEnabled(false, true, std::string(), source_extension);
     SetEnabled(true, true, std::string(), source_extension);
-    const Extension* extension =
-        extension_registry()->GetExtensionById(kId, ExtensionRegistry::ENABLED);
-    EXPECT_TRUE(extension);
+    EXPECT_TRUE(extension_registry()->enabled_extensions().GetByID(kId));
   }
 }
 

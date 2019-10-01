@@ -484,9 +484,9 @@ tree .tree-item > .tree-item > .tree-row >
       url(../images/volumes/2x/hard_drive_active.png) 2x);
 }
 
-.tree-row:not([selected]) [volume-type-icon='provided'],
-#add-new-services-menu cr-menu-item .icon.start {
-  /* Apply the rgb(90, 90, 90) mask. */
+.tree-row:not([selected]) [volume-type-icon='provided'] {
+  /* Third-party icons are not provided with both an active and a non-active
+  version. This filter defines the non-active version of a provided icon. */
   -webkit-filter: contrast(0) brightness(0.7143);
 }
 

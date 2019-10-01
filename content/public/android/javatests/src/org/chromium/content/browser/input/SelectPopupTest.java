@@ -74,7 +74,7 @@ public class SelectPopupTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mActivityTestRule.launchContentShellWithUrl(SELECT_URL);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
     }
@@ -88,7 +88,7 @@ public class SelectPopupTest {
     @Feature({"Browser"})
     @RerunWithUpdatedContainerView
     @RetryOnFailure
-    public void testReloadWhilePopupShowing() throws InterruptedException, Exception, Throwable {
+    public void testReloadWhilePopupShowing() throws Exception, Throwable {
         // The popup should be hidden before the click.
         CriteriaHelper.pollUiThread(new PopupHiddenCriteria());
 

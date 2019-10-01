@@ -72,7 +72,7 @@ public class TabbedNavigationBarColorControllerTest {
 
     @Test
     @SmallTest
-    public void testToggleIncognito() throws InterruptedException {
+    public void testToggleIncognito() {
         assertEquals("Navigation bar should be white on normal tabs.", mLightNavigationColor,
                 mWindow.getNavigationBarColor());
 

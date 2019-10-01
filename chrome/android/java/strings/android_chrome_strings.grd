@@ -2555,8 +2555,11 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Search your history
       </message>
 
-      <!-- Document mode messages -->
-      <message name="IDS_CLOSE_ALL_INCOGNITO_NOTIFICATION" desc="Message on the notification that closes all incognito tabs in document mode">
+      <!-- Close Incognito tabs notification messages -->
+      <message name="IDS_CLOSE_ALL_INCOGNITO_NOTIFICATION_TITLE" desc="Title on the notification that closes all incognito tabs on Android N+.">
+        Incognito Tabs
+      </message>
+      <message name="IDS_CLOSE_ALL_INCOGNITO_NOTIFICATION" desc="Message on the notification that closes all incognito tabs.">
         Close all incognito tabs
       </message>
 

@@ -48,7 +48,7 @@ public class WebappDisplayModeTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testStandalone() throws Exception {
+    public void testStandalone() {
         WebappActivity activity = startActivity(WebDisplayMode.STANDALONE, "");
 
         Assert.assertFalse(activity.getToolbarManager().getToolbarLayoutForTesting().isShown());
@@ -58,7 +58,7 @@ public class WebappDisplayModeTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testFullScreen() throws Exception {
+    public void testFullScreen() {
         WebappActivity activity = startActivity(WebDisplayMode.FULLSCREEN, "");
 
         Assert.assertFalse(activity.getToolbarManager().getToolbarLayoutForTesting().isShown());
@@ -68,7 +68,7 @@ public class WebappDisplayModeTest {
     @Test
     @MediumTest
     @Feature({"Webapps"})
-    public void testFullScreenInFullscreen() throws Exception {
+    public void testFullScreenInFullscreen() {
         WebappActivity activity = startActivity(WebDisplayMode.FULLSCREEN, "fullscreen_on_click");
 
         Assert.assertFalse(activity.getToolbarManager().getToolbarLayoutForTesting().isShown());
@@ -91,7 +91,7 @@ public class WebappDisplayModeTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testMinimalUi() throws Exception {
+    public void testMinimalUi() {
         WebappActivity activity = startActivity(WebDisplayMode.MINIMAL_UI, "");
 
         Assert.assertFalse(isFullscreen(activity));
@@ -110,15 +110,14 @@ public class WebappDisplayModeTest {
     private String getJavascriptResult(WebContents webContents, String js) {
         try {
             return JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents, js);
-        } catch (InterruptedException | TimeoutException e) {
+        } catch (TimeoutException e) {
             Assert.fail("Fatal interruption or timeout running JavaScript '" + js
                     + "': " + e.toString());
             return "";
         }
     }
 
-    private WebappActivity startActivity(@WebDisplayMode int displayMode, String action)
-            throws Exception {
+    private WebappActivity startActivity(@WebDisplayMode int displayMode, String action) {
         String url = WebappTestPage.getServiceWorkerUrlWithAction(
                 mActivityTestRule.getTestServer(), action);
         mActivityTestRule.startWebappActivity(

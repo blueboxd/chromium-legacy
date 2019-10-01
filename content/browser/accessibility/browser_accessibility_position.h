@@ -39,13 +39,14 @@ class CONTENT_EXPORT BrowserAccessibilityPosition
       default;
   void AnchorChild(int child_index,
                    AXTreeID* tree_id,
-                   int32_t* child_id) const override;
+                   ui::AXNode::AXID* child_id) const override;
   int AnchorChildCount() const override;
   int AnchorIndexInParent() const override;
   base::stack<BrowserAccessibility*> GetAncestorAnchors() const override;
-  void AnchorParent(AXTreeID* tree_id, int32_t* parent_id) const override;
+  void AnchorParent(AXTreeID* tree_id,
+                    ui::AXNode::AXID* parent_id) const override;
   BrowserAccessibility* GetNodeInTree(AXTreeID tree_id,
-                                      int32_t node_id) const override;
+                                      ui::AXNode::AXID node_id) const override;
   bool IsEmbeddedObjectInParent() const override;
 
   bool IsInLineBreakingObject() const override;
@@ -53,8 +54,8 @@ class CONTENT_EXPORT BrowserAccessibilityPosition
   ui::AXNodeTextStyles GetTextStyles() const override;
   std::vector<int32_t> GetWordStartOffsets() const override;
   std::vector<int32_t> GetWordEndOffsets() const override;
-  int32_t GetNextOnLineID(int32_t node_id) const override;
-  int32_t GetPreviousOnLineID(int32_t node_id) const override;
+  ui::AXNode::AXID GetNextOnLineID(ui::AXNode::AXID node_id) const override;
+  ui::AXNode::AXID GetPreviousOnLineID(ui::AXNode::AXID node_id) const override;
 };
 
 }  // namespace content

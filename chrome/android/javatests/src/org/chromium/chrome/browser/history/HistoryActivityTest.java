@@ -172,7 +172,7 @@ public class HistoryActivityTest {
         SigninTestUtil.tearDownAuthForTest();
     }
 
-    private void launchHistoryActivity() throws Exception {
+    private void launchHistoryActivity() {
         HistoryActivity activity = mActivityTestRule.launchActivity(null);
         mHistoryManager = activity.getHistoryManagerForTests();
         mAdapter = mHistoryManager.getAdapterForTests();
@@ -521,7 +521,7 @@ public class HistoryActivityTest {
 
     @Test
     @SmallTest
-    public void testInvisibleHeader() throws Exception {
+    public void testInvisibleHeader() {
         Assert.assertTrue(mAdapter.hasListHeader());
 
         // Not sign in and set clear browsing data button to invisible

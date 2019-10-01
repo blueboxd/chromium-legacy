@@ -10,11 +10,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -38,8 +34,8 @@ import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.shell_apk.CustomAndroidOsShadowAsyncTask;
 import org.chromium.webapk.shell_apk.HostBrowserLauncher;
 import org.chromium.webapk.shell_apk.HostBrowserUtils;
+import org.chromium.webapk.shell_apk.TestBrowserInstaller;
 import org.chromium.webapk.shell_apk.WebApkSharedPreferences;
-import org.chromium.webapk.shell_apk.WebApkUtils;
 import org.chromium.webapk.test.WebApkTestHelper;
 
 import java.util.ArrayList;
@@ -61,6 +57,8 @@ public final class LaunchTest {
     private ShadowApplication mShadowApplication;
     private PackageManager mPackageManager;
     private ShadowPackageManager mShadowPackageManager;
+
+    private TestBrowserInstaller mTestBrowserInstaller = new TestBrowserInstaller();
 
     @Before
     public void setUp() {
@@ -235,7 +233,7 @@ public final class LaunchTest {
      * yield an infinite loop.
      */
     @Test
-    public void testDoesNotPropagateRelaunchDirective() throws Exception {
+    public void testDoesNotPropagateRelaunchDirective() {
         final String deepLinkUrl = "https://pwa.rocks/deep_link.html";
 
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(deepLinkUrl));
@@ -454,9 +452,8 @@ public final class LaunchTest {
 
     /** Installs browser with the given package name and version. */
     private void installBrowser(String browserPackageName, int version) {
-        Intent intent = WebApkUtils.getQueryInstalledBrowsersIntent();
-        mShadowPackageManager.addResolveInfoForIntent(intent, newResolveInfo(browserPackageName));
-        mShadowPackageManager.addPackage(newPackageInfo(browserPackageName, version));
+        mTestBrowserInstaller.uninstallBrowser(browserPackageName);
+        mTestBrowserInstaller.installBrowserWithVersion(browserPackageName, version + ".");
     }
 
     private static void setAppTaskTopActivity(int taskId, Activity topActivity) {
@@ -474,24 +471,5 @@ public final class LaunchTest {
                         Context.ACTIVITY_SERVICE);
         ShadowActivityManager shadowActivityManager = Shadows.shadowOf(activityManager);
         shadowActivityManager.setAppTasks(appTasks);
-    }
-
-    private static ResolveInfo newResolveInfo(String packageName) {
-        ActivityInfo activityInfo = new ActivityInfo();
-        activityInfo.packageName = packageName;
-        ResolveInfo resolveInfo = new ResolveInfo();
-        resolveInfo.activityInfo = activityInfo;
-        return resolveInfo;
-    }
-
-    private static PackageInfo newPackageInfo(String packageName, int version) {
-        PackageInfo packageInfo = new PackageInfo();
-        packageInfo.packageName = packageName;
-        packageInfo.versionName = version + ".";
-        packageInfo.applicationInfo = new ApplicationInfo();
-        packageInfo.applicationInfo.packageName = packageName;
-        packageInfo.applicationInfo.enabled = true;
-        packageInfo.applicationInfo.metaData = new Bundle();
-        return packageInfo;
     }
 }

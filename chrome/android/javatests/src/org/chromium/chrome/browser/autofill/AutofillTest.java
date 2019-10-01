@@ -146,7 +146,7 @@ public class AutofillTest {
     @Test
     @SmallTest
     @Feature({"autofill"})
-    public void testAutofillWithDifferentNumberSuggestions() throws Exception {
+    public void testAutofillWithDifferentNumberSuggestions() {
         openAutofillPopupAndWaitUntilReady(createTwoAutofillSuggestionArray());
         Assert.assertEquals(2, mAutofillPopup.getListView().getCount());
 
@@ -157,7 +157,7 @@ public class AutofillTest {
     @Test
     @SmallTest
     @Feature({"autofill"})
-    public void testAutofillClickFirstSuggestion() throws Exception {
+    public void testAutofillClickFirstSuggestion() {
         AutofillSuggestion[] suggestions = createTwoAutofillSuggestionArray();
         openAutofillPopupAndWaitUntilReady(suggestions);
         Assert.assertEquals(2, mAutofillPopup.getListView().getCount());

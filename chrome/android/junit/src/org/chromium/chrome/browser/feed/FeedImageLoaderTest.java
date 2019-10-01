@@ -86,7 +86,7 @@ public class FeedImageLoaderTest {
     private FeedImageLoader mImageLoader;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         setUpWithImageFetcher(mCachedImageFetcher);
     }

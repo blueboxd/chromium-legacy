@@ -144,7 +144,7 @@ public class PrefetchFeedFlowTest {
         }
     }
 
-    private void forceLoadSnippets() throws Throwable {
+    private void forceLoadSnippets() {
         if (mUseReducedMode) {
             // NTP suggestions require a connection.
             TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -263,7 +263,7 @@ public class PrefetchFeedFlowTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         FakeInstanceIDWithSubtype.clearDataAndSetEnabled(false);
         mServer.shutdown();
     }
@@ -272,7 +272,7 @@ public class PrefetchFeedFlowTest {
         return OfflineContentAggregatorFactory.get();
     }
 
-    private OfflineItem findItemByUrl(String url) throws InterruptedException, TimeoutException {
+    private OfflineItem findItemByUrl(String url) throws TimeoutException {
         for (OfflineItem item : OfflineTestUtil.getOfflineItems()) {
             if (item.pageUrl.equals(url)) {
                 return item;
@@ -281,8 +281,7 @@ public class PrefetchFeedFlowTest {
         return null;
     }
 
-    private OfflinePageItem findPageByUrl(String url)
-            throws InterruptedException, TimeoutException {
+    private OfflinePageItem findPageByUrl(String url) throws TimeoutException {
         for (OfflinePageItem page : OfflineTestUtil.getAllPages()) {
             if (page.getUrl().equals(url)) {
                 return page;
@@ -291,7 +290,7 @@ public class PrefetchFeedFlowTest {
         return null;
     }
 
-    private Bitmap findVisuals(ContentId id) throws InterruptedException, TimeoutException {
+    private Bitmap findVisuals(ContentId id) throws TimeoutException {
         final CallbackHelper finished = new CallbackHelper();
         final AtomicReference<Bitmap> result = new AtomicReference<>();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -432,7 +431,7 @@ public class PrefetchFeedFlowTest {
     /**
      * Check that a server-enabled check can enable prefetching.
      */
-    public void doTestPrefetchBecomesEnabledByServer() throws Throwable {
+    public void doTestPrefetchBecomesEnabledByServer() {
         OfflineTestUtil.setPrefetchingEnabledByServer(false);
 
         Assert.assertFalse(isEnabledByServer());
@@ -447,7 +446,7 @@ public class PrefetchFeedFlowTest {
      * Check that prefetching remains disabled by the server after receiving a forbidden
      * response.
      */
-    public void doTestPrefetchRemainsDisabledByServer() throws Throwable {
+    public void doTestPrefetchRemainsDisabledByServer() {
         OfflineTestUtil.setPrefetchingEnabledByServer(false);
         mOPS.setForbidGeneratePageBundle(true);
 

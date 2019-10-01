@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/webrtc/native_desktop_media_list.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/hash/hash.h"
 #include "base/message_loop/message_pump_type.h"
@@ -12,7 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "chrome/browser/media/webrtc/desktop_media_list_observer.h"
+#include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -56,9 +58,8 @@ gfx::ImageSkia ScaleDesktopFrame(std::unique_ptr<webrtc::DesktopFrame> frame,
   result.allocN32Pixels(scaled_rect.width(), scaled_rect.height(), true);
 
   uint8_t* pixels_data = reinterpret_cast<uint8_t*>(result.getPixels());
-  libyuv::ARGBScale(frame->data(), frame->stride(),
-                    frame->size().width(), frame->size().height(),
-                    pixels_data, result.rowBytes(),
+  libyuv::ARGBScale(frame->data(), frame->stride(), frame->size().width(),
+                    frame->size().height(), pixels_data, result.rowBytes(),
                     scaled_rect.width(), scaled_rect.height(),
                     libyuv::kFilterBilinear);
 
@@ -89,7 +90,7 @@ class NativeDesktopMediaList::Worker
   ~Worker() override;
 
   void Start();
-  void Refresh(const DesktopMediaID::Id& view_dialog_id);
+  void Refresh(const DesktopMediaID::Id& view_dialog_id, bool update_thumnails);
 
   void RefreshThumbnails(const std::vector<DesktopMediaID>& native_ids,
                          const gfx::Size& thumbnail_size);
@@ -136,7 +137,8 @@ void NativeDesktopMediaList::Worker::Start() {
 }
 
 void NativeDesktopMediaList::Worker::Refresh(
-    const DesktopMediaID::Id& view_dialog_id) {
+    const DesktopMediaID::Id& view_dialog_id,
+    bool update_thumnails) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   std::vector<SourceDescription> result;
 
@@ -177,7 +179,7 @@ void NativeDesktopMediaList::Worker::Refresh(
 
   base::PostTask(FROM_HERE, {BrowserThread::UI},
                  base::BindOnce(&NativeDesktopMediaList::RefreshForAuraWindows,
-                                media_list_, result));
+                                media_list_, result, update_thumnails));
 }
 
 void NativeDesktopMediaList::Worker::RefreshThumbnails(
@@ -257,7 +259,9 @@ NativeDesktopMediaList::~NativeDesktopMediaList() {
   thread_.Stop();
 }
 
-void NativeDesktopMediaList::Refresh() {
+void NativeDesktopMediaList::Refresh(bool update_thumnails) {
+  DCHECK(can_refresh());
+
 #if defined(USE_AURA)
   DCHECK_EQ(pending_aura_capture_requests_, 0);
   DCHECK(!pending_native_thumbnail_capture_);
@@ -267,11 +271,14 @@ void NativeDesktopMediaList::Refresh() {
   thread_.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&Worker::Refresh, base::Unretained(worker_.get()),
-                     view_dialog_id_.id));
+                     view_dialog_id_.id, update_thumnails));
 }
 
 void NativeDesktopMediaList::RefreshForAuraWindows(
-    std::vector<SourceDescription> sources) {
+    std::vector<SourceDescription> sources,
+    bool update_thumnails) {
+  DCHECK(can_refresh());
+
 #if defined(USE_AURA)
   // Associate aura id with native id.
   for (auto& source : sources) {
@@ -291,6 +298,11 @@ void NativeDesktopMediaList::RefreshForAuraWindows(
 #endif  // defined(USE_AURA)
 
   UpdateSourcesList(sources);
+
+  if (!update_thumnails) {
+    OnRefreshComplete();
+    return;
+  }
 
   if (thumbnail_size_.IsEmpty()) {
 #if defined(USE_AURA)
@@ -336,12 +348,13 @@ void NativeDesktopMediaList::UpdateNativeThumbnailsFinished() {
 #if defined(USE_AURA)
   DCHECK(pending_native_thumbnail_capture_);
   pending_native_thumbnail_capture_ = false;
-  // Schedule next refresh if native thumbnail captures finished after aura
-  // thumbnail captures.
+  // If native thumbnail captures finished after aura thumbnail captures,
+  // execute |done_callback| to let the caller know the update process is
+  // finished.  If necessary, this will schedule the next refresh.
   if (pending_aura_capture_requests_ == 0)
-    ScheduleNextRefresh();
+    OnRefreshComplete();
 #else
-  ScheduleNextRefresh();
+  OnRefreshComplete();
 #endif  // defined(USE_AURA)
 }
 
@@ -349,6 +362,8 @@ void NativeDesktopMediaList::UpdateNativeThumbnailsFinished() {
 
 void NativeDesktopMediaList::CaptureAuraWindowThumbnail(
     const DesktopMediaID& id) {
+  DCHECK(can_refresh());
+
   gfx::NativeWindow window = DesktopMediaID::GetNativeWindowById(id);
   if (!window)
     return;
@@ -366,6 +381,8 @@ void NativeDesktopMediaList::CaptureAuraWindowThumbnail(
 
 void NativeDesktopMediaList::OnAuraThumbnailCaptured(const DesktopMediaID& id,
                                                      gfx::Image image) {
+  DCHECK(can_refresh());
+
   if (!image.IsEmpty()) {
     // Only new or changed thumbnail need update.
     new_aura_thumbnail_hashes_[id] = GetImageHash(image);
@@ -383,7 +400,7 @@ void NativeDesktopMediaList::OnAuraThumbnailCaptured(const DesktopMediaID& id,
     // Schedule next refresh if aura thumbnail captures finished after native
     // thumbnail captures.
     if (!pending_native_thumbnail_capture_)
-      ScheduleNextRefresh();
+      OnRefreshComplete();
   }
 }
 

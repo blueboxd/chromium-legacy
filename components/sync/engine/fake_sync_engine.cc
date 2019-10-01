@@ -108,4 +108,6 @@ void FakeSyncEngine::OnCookieJarChanged(bool account_mismatch,
 
 void FakeSyncEngine::SetInvalidationsForSessionsEnabled(bool enabled) {}
 
+void FakeSyncEngine::GetNigoriNodeForDebugging(AllNodesCallback callback) {}
+
 }  // namespace syncer

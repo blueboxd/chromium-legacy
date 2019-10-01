@@ -8,7 +8,8 @@
 #include <memory>
 #include <utility>
 
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
 
 namespace shape_detection {
@@ -19,9 +20,10 @@ class BarcodeDetectionProviderImpl
   ~BarcodeDetectionProviderImpl() override = default;
 
   static void Create(
-      shape_detection::mojom::BarcodeDetectionProviderRequest request) {
-    mojo::MakeStrongBinding(std::make_unique<BarcodeDetectionProviderImpl>(),
-                            std::move(request));
+      mojo::PendingReceiver<shape_detection::mojom::BarcodeDetectionProvider>
+          receiver) {
+    mojo::MakeSelfOwnedReceiver(
+        std::make_unique<BarcodeDetectionProviderImpl>(), std::move(receiver));
   }
 
   void CreateBarcodeDetection(

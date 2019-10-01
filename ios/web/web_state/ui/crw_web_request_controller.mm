@@ -682,6 +682,10 @@ enum class BackForwardNavigationType {
 
     if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
         self.navigationManagerImpl->IsRestoreSessionInProgress()) {
+      if (self.navigationManagerImpl->ShouldBlockUrlDuringRestore(
+              navigationURL)) {
+        return;
+      }
       [_delegate
           webRequestControllerDisableNavigationGesturesUntilFinishNavigation:
               self];

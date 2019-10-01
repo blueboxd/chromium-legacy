@@ -30,7 +30,6 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/predictors/loading_predictor.h"
@@ -54,8 +53,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -213,10 +210,6 @@ PrerenderManager::PrerenderManager(Profile* profile)
       GetCurrentTimeTicks() -
       base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs);
 
-  notification_registrar_.Add(
-      this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-      content::Source<Profile>(profile_));
-
   MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
 }
 
@@ -234,7 +227,7 @@ PrerenderManager::~PrerenderManager() {
 }
 
 void PrerenderManager::Shutdown() {
-  DestroyAllContents(FINAL_STATUS_MANAGER_SHUTDOWN);
+  DestroyAllContents(FINAL_STATUS_PROFILE_DESTROYED);
   on_close_web_contents_deleters_.clear();
   profile_ = nullptr;
 
@@ -1263,15 +1256,6 @@ void PrerenderManager::SkipPrerenderContentsAndMaybePreconnect(
   static_assert(
       FINAL_STATUS_MAX == FINAL_STATUS_NAVIGATION_PREDICTOR_HOLDBACK + 1,
       "Consider whether a failed prerender should fallback to preconnect");
-}
-
-void PrerenderManager::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
-
-  DestroyAllContents(FINAL_STATUS_PROFILE_DESTROYED);
-  on_close_web_contents_deleters_.clear();
 }
 
 void PrerenderManager::OnCreatingAudioStream(int render_process_id,

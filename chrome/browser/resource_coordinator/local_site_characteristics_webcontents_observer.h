@@ -51,11 +51,11 @@ class LocalSiteCharacteristicsWebContentsObserver
                             LoadingState old_loading_state,
                             LoadingState new_loading_state) override;
 
+  const url::Origin& writer_origin() const { return writer_origin_; }
 
   SiteCharacteristicsDataWriter* GetWriterForTesting() const {
     return writer_.get();
   }
-  url::Origin GetWriterOriginForTesting() const { return writer_origin_; }
   void ResetWriterForTesting() { writer_.reset(); }
 
  private:

@@ -16,6 +16,7 @@
 #include "content/public/android/content_jni_headers/RenderFrameHostImpl_jni.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/site_instance.h"
+#include "url/origin.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -76,6 +77,12 @@ ScopedJavaLocalRef<jstring> RenderFrameHostAndroid::GetLastCommittedURL(
     const JavaParamRef<jobject>& obj) const {
   return ConvertUTF8ToJavaString(
       env, render_frame_host_->GetLastCommittedURL().spec());
+}
+
+ScopedJavaLocalRef<jobject> RenderFrameHostAndroid::GetLastCommittedOrigin(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return render_frame_host_->GetLastCommittedOrigin().CreateJavaObject();
 }
 
 void RenderFrameHostAndroid::GetCanonicalUrlForSharing(

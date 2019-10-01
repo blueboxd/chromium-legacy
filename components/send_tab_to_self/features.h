@@ -11,10 +11,6 @@ class PrefService;
 
 namespace send_tab_to_self {
 
-// If this feature is enabled, we will display the UI to send tabs if the Sync
-// datatype is also enabled.
-extern const base::Feature kSendTabToSelfShowSendingUI;
-
 // If this feature is enabled, the tabs will be broadcasted instead of
 // targeted to a specific device. This only affects the receiving side.
 extern const base::Feature kSendTabToSelfBroadcast;

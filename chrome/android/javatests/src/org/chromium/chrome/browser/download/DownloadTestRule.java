@@ -177,7 +177,7 @@ public class DownloadTestRule extends ChromeActivityTestRule<ChromeActivity> {
         return mHttpDownloadFinished.getCallCount();
     }
 
-    public boolean waitForChromeDownloadToFinish(int currentCallCount) throws InterruptedException {
+    public boolean waitForChromeDownloadToFinish(int currentCallCount) {
         boolean eventReceived = true;
         try {
             mHttpDownloadFinished.waitForCallback(currentCallCount, 1, 5, TimeUnit.SECONDS);
@@ -258,7 +258,7 @@ public class DownloadTestRule extends ChromeActivityTestRule<ChromeActivity> {
         });
     }
 
-    private void tearDown() throws Exception {
+    private void tearDown() {
         cleanUpAllDownloads();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             DownloadManagerService.getDownloadManagerService().removeDownloadObserver(

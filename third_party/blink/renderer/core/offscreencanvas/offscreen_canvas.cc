@@ -404,9 +404,8 @@ void OffscreenCanvas::DidDraw(const FloatRect& rect) {
 
   if (HasPlaceholderCanvas()) {
     needs_push_frame_ = true;
-    // TODO(fserb): perhaps we could avoid requesting begin frames here in cases
-    // where the draw is call from within a worker rAF?
-    GetOrCreateResourceDispatcher()->SetNeedsBeginFrame(true);
+    if (!inside_worker_raf_)
+      GetOrCreateResourceDispatcher()->SetNeedsBeginFrame(true);
   }
 }
 
@@ -421,13 +420,6 @@ bool OffscreenCanvas::PushFrameIfNeeded() {
     return context_->PushFrame();
   }
   return false;
-}
-
-bool OffscreenCanvas::ShouldAccelerate2dContext() const {
-  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
-      SharedGpuContext::ContextProviderWrapper();
-  return context_provider_wrapper &&
-         context_provider_wrapper->Utils()->Accelerated2DCanvasFeatureEnabled();
 }
 
 bool OffscreenCanvas::PushFrame(scoped_refptr<CanvasResource> canvas_resource,
@@ -445,6 +437,13 @@ bool OffscreenCanvas::PushFrame(scoped_refptr<CanvasResource> canvas_resource,
       IsOpaque());
   current_frame_damage_rect_ = SkIRect::MakeEmpty();
   return true;
+}
+
+bool OffscreenCanvas::ShouldAccelerate2dContext() const {
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
+      SharedGpuContext::ContextProviderWrapper();
+  return context_provider_wrapper &&
+         context_provider_wrapper->Utils()->Accelerated2DCanvasFeatureEnabled();
 }
 
 FontSelector* OffscreenCanvas::GetFontSelector() {

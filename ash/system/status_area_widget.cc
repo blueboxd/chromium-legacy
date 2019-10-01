@@ -15,6 +15,7 @@
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/session/logout_button_tray.h"
 #include "ash/system/status_area_widget_delegate.h"
+#include "ash/system/tray/status_area_overflow_button_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"
 #include "base/i18n/time_formatting.h"
@@ -42,6 +43,10 @@ StatusAreaWidget::StatusAreaWidget(aura::Window* status_container, Shelf* shelf)
 
 void StatusAreaWidget::Initialize() {
   // Create the child views, left to right.
+
+  overflow_button_tray_ =
+      std::make_unique<StatusAreaOverflowButtonTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(overflow_button_tray_.get());
 
   logout_button_tray_ = std::make_unique<LogoutButtonTray>(shelf_);
   status_area_widget_delegate_->AddChildView(logout_button_tray_.get());
@@ -72,6 +77,7 @@ void StatusAreaWidget::Initialize() {
   status_area_widget_delegate_->UpdateLayout();
 
   // Initialize after all trays have been created.
+  overflow_button_tray_->Initialize();
   unified_system_tray_->Initialize();
   palette_tray_->Initialize();
   virtual_keyboard_tray_->Initialize();
@@ -89,6 +95,7 @@ void StatusAreaWidget::Initialize() {
 }
 
 StatusAreaWidget::~StatusAreaWidget() {
+  overflow_button_tray_.reset();
   unified_system_tray_.reset();
   ime_menu_tray_.reset();
   select_to_speak_tray_.reset();
@@ -103,6 +110,7 @@ StatusAreaWidget::~StatusAreaWidget() {
 }
 
 void StatusAreaWidget::UpdateAfterShelfAlignmentChange() {
+  overflow_button_tray_->UpdateAfterShelfAlignmentChange();
   unified_system_tray_->UpdateAfterShelfAlignmentChange();
   logout_button_tray_->UpdateAfterShelfAlignmentChange();
   virtual_keyboard_tray_->UpdateAfterShelfAlignmentChange();
@@ -167,6 +175,7 @@ bool StatusAreaWidget::IsMessageBubbleShown() const {
 }
 
 void StatusAreaWidget::SchedulePaint() {
+  overview_button_tray_->SchedulePaint();
   status_area_widget_delegate_->SchedulePaint();
   unified_system_tray_->SchedulePaint();
   virtual_keyboard_tray_->SchedulePaint();

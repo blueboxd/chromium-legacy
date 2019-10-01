@@ -301,7 +301,7 @@ public class WebappNavigationTest {
     @SmallTest
     @Feature({"Webapps"})
     @RetryOnFailure
-    public void testOpenInChromeFromCustomMenuTabbedChrome() throws Exception {
+    public void testOpenInChromeFromCustomMenuTabbedChrome() {
         WebappActivity activity =
                 runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent().putExtra(
                         ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.MINIMAL_UI));
@@ -439,13 +439,12 @@ public class WebappNavigationTest {
         ChromeTabUtils.waitForTabPageLoaded(activity.getActivityTab(), initialInScopeUrl);
     }
 
-    private WebappActivity runWebappActivityAndWaitForIdle(Intent intent) throws Exception {
+    private WebappActivity runWebappActivityAndWaitForIdle(Intent intent) {
         return runWebappActivityAndWaitForIdleWithUrl(
                 intent, WebappTestPage.getServiceWorkerUrl(mActivityTestRule.getTestServer()));
     }
 
-    private WebappActivity runWebappActivityAndWaitForIdleWithUrl(Intent intent, String url)
-            throws Exception {
+    private WebappActivity runWebappActivityAndWaitForIdleWithUrl(Intent intent, String url) {
         mActivityTestRule.startWebappActivity(intent.putExtra(ShortcutHelper.EXTRA_URL, url));
         mActivityTestRule.waitUntilSplashscreenHides();
         mActivityTestRule.waitUntilIdle();

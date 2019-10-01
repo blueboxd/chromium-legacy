@@ -80,12 +80,12 @@ public class ClientOnPageStartedTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         setTestAwContentsClient(new TestAwContentsClient());
         AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
     }
 
-    private void setTestAwContentsClient(TestAwContentsClient contentsClient) throws Exception {
+    private void setTestAwContentsClient(TestAwContentsClient contentsClient) {
         mContentsClient = contentsClient;
         final AwTestContainerView testContainerView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);

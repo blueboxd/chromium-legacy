@@ -32,7 +32,7 @@ public class PlatformMediaCodecTest {
     private WebContents mWebContents;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mContentsClient = new TestAwContentsClient();
         mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         mWebContents = mTestContainerView.getWebContents();

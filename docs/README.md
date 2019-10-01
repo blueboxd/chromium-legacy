@@ -274,6 +274,8 @@ used when committed.
     How to build Android app bundles for Chrome.
 *   [Dynamic Feature Modules (DFMs)](android_dynamic_feature_modules.md) - How
     to create dynamic feature modules.
+*   [Chrome for Android UI](ui/android/overview.md) - Resources and best practices for
+    developing UI
 
 ### Misc iOS-Specific Docs
 *   [Continuous Build and Test Infrastructure for Chromium for iOS](ios/infra.md)

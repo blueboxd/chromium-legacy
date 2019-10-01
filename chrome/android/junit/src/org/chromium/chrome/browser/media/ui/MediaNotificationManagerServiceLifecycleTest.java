@@ -39,8 +39,6 @@ import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerSer
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.services.media_session.MediaMetadata;
 
-import java.util.concurrent.TimeoutException;
-
 /**
  * JUnit tests for checking {@link MediaNotificationManager} handles the listener service life cycle
  * correctly.
@@ -69,7 +67,7 @@ public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificat
     }
 
     @Test
-    public void testProcessIntentFailureStopsService() throws TimeoutException {
+    public void testProcessIntentFailureStopsService() {
         MediaNotificationManager manager = getManager();
         setUpService();
 

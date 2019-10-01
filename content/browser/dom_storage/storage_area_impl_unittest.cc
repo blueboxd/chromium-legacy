@@ -123,13 +123,10 @@ class StorageAreaImplTest : public testing::Test,
   };
 
   StorageAreaImplTest() : db_(&mock_data_) {
-    auto request = level_db_database_remote_.BindNewPipeAndPassReceiver();
-    db_.Bind(std::move(request));
-
     StorageAreaImpl::Options options =
         GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
-    storage_area_ = std::make_unique<StorageAreaImpl>(
-        level_db_database_remote_.get(), test_prefix_, &delegate_, options);
+    storage_area_ = std::make_unique<StorageAreaImpl>(&db_, test_prefix_,
+                                                      &delegate_, options);
 
     set_mock_data(test_prefix_ + test_key1_, test_value1_);
     set_mock_data(test_prefix_ + test_key2_, test_value2_);
@@ -233,16 +230,12 @@ class StorageAreaImplTest : public testing::Test,
       area->ScheduleImmediateCommit();
       loop.Run();
     }
-
-    db_.FlushBindingsForTesting();
   }
 
   const std::vector<Observation>& observations() { return observations_; }
 
   MockDelegate* delegate() { return &delegate_; }
-  leveldb::mojom::LevelDBDatabase* database() const {
-    return level_db_database_remote_.get();
-  }
+  leveldb::mojom::LevelDBDatabase* database() { return &db_; }
 
   void should_record_send_old_value_observations(bool value) {
     should_record_send_old_value_observations_ = value;
@@ -264,7 +257,6 @@ class StorageAreaImplTest : public testing::Test,
   const std::vector<uint8_t> test_key2_bytes_ = ToBytes(test_key2_);
   const std::vector<uint8_t> test_value1_bytes_ = ToBytes(test_value1_);
   const std::vector<uint8_t> test_value2_bytes_ = ToBytes(test_value2_);
-  mojo::Remote<leveldb::mojom::LevelDBDatabase> level_db_database_remote_;
 
  private:
   // LevelDBObserver:
@@ -869,8 +861,6 @@ TEST_F(StorageAreaImplTest, GetAllWhenCacheOnlyKeys) {
   EXPECT_TRUE(put_result1);
   EXPECT_EQ("foo", get_mock_data(test_prefix_ + test_key2_));
 
-  EXPECT_FALSE(put_result2);
-  EXPECT_FALSE(result);
   loop.Run();
 
   EXPECT_TRUE(result);
@@ -927,11 +917,11 @@ TEST_F(StorageAreaImplTest, GetAllAfterSetCacheMode) {
         key, value, value2, test_source_,
         MakeSuccessCallback(barrier.AddClosure(), &put_success));
 
-    // Put task triggers database upgrade, so there are no more changes
-    // to commit.
-    FlushAreaBinding();
-    EXPECT_FALSE(storage_area_impl()->has_changes_to_commit());
-    EXPECT_TRUE(storage_area_impl()->has_pending_load_tasks());
+    // Put task triggers database upgrade, so there should be another map load.
+    base::RunLoop upgrade_loop;
+    storage_area_impl()->SetOnLoadCallbackForTesting(
+        upgrade_loop.QuitClosure());
+    upgrade_loop.Run();
 
     storage_area()->GetAll(
         GetAllCallback::CreateAndBind(&get_all_success, barrier.AddClosure()),
@@ -1312,7 +1302,7 @@ TEST_P(StorageAreaImplParamTest, EmptyMapIgnoresDisk) {
   StorageAreaImpl::Options options =
       GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
   auto empty_storage_area = std::make_unique<StorageAreaImpl>(
-      level_db_database_remote_.get(), test_copy_prefix1_, delegate(), options);
+      database(), test_copy_prefix1_, delegate(), options);
   empty_storage_area->InitializeAsEmpty();
 
   // Check the forked state, which should be empty.
@@ -1330,7 +1320,7 @@ TEST_P(StorageAreaImplParamTest, ForkFromEmptyMap) {
   StorageAreaImpl::Options options =
       GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
   auto empty_storage_area = std::make_unique<StorageAreaImpl>(
-      level_db_database_remote_.get(), test_copy_prefix1_, delegate(), options);
+      database(), test_copy_prefix1_, delegate(), options);
   empty_storage_area->InitializeAsEmpty();
 
   // Execute the fork, which should shortcut disk and just be empty.

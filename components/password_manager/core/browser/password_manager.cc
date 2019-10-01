@@ -938,32 +938,33 @@ void PasswordManager::ProcessAutofillPredictions(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
   }
 
-    for (const FormStructure* form : forms)
-      predictions_[form->form_signature()] = ConvertToFormPredictions(*form);
-    for (auto& manager : form_managers_)
-      manager->ProcessServerPredictions(predictions_);
+  for (const FormStructure* form : forms)
+    predictions_[form->form_signature()] = ConvertToFormPredictions(*form);
+  for (auto& manager : form_managers_)
+    manager->ProcessServerPredictions(predictions_);
 
-    // Create form managers for non-password forms with single usernames.
-    for (const FormStructure* form : forms) {
-      if (form->has_password_field())
-        continue;
+  // Create form managers for non-password forms with single usernames.
+  for (const FormStructure* form : forms) {
+    if (logger)
+      logger->LogFormStructure(Logger::STRING_SERVER_PREDICTIONS, *form);
+    if (form->has_password_field())
+      continue;
 
-      // Do not skip the form if it either contains a field for the Username
-      // first flow or a clear-text password field.
-      if (!(HasSingleUsernameVote(*form) || HasNewPasswordVote(*form)))
-        continue;
+    // Do not skip the form if it either contains a field for the Username
+    // first flow or a clear-text password field.
+    if (!(HasSingleUsernameVote(*form) || HasNewPasswordVote(*form)))
+      continue;
 
-      if (FindMatchedManagerByRendererId(form->unique_renderer_id(),
-                                         form_managers_, driver)) {
-        // The form manager is already created.
-        continue;
-      }
-
-      FormData form_data = form->ToFormData();
-      auto* manager = CreateFormManager(driver, form_data);
-      manager->ProcessServerPredictions(predictions_);
+    if (FindMatchedManagerByRendererId(form->unique_renderer_id(),
+                                       form_managers_, driver)) {
+      // The form manager is already created.
+      continue;
     }
 
+    FormData form_data = form->ToFormData();
+    auto* manager = CreateFormManager(driver, form_data);
+    manager->ProcessServerPredictions(predictions_);
+  }
 }
 
 PasswordFormManager* PasswordManager::GetSubmittedManager() const {

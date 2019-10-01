@@ -34,14 +34,14 @@ public class ViewHighlighterTest {
     private Context mContext;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mContext = InstrumentationRegistry.getTargetContext();
         mContext.setTheme(R.style.Theme_Chromium_WithWindowAnimation);
     }
 
     @Test
     @MediumTest
-    public void testRepeatedCallsToHighlightWorksCorrectly() throws Exception {
+    public void testRepeatedCallsToHighlightWorksCorrectly() {
         View tintedImageButton =
                 LayoutInflater.from(mContext).inflate(R.layout.clear_storage, null, false);
         tintedImageButton.setBackground(new ColorDrawable(Color.LTGRAY));
@@ -64,7 +64,7 @@ public class ViewHighlighterTest {
 
     @Test
     @MediumTest
-    public void testViewWithNullBackground() throws Exception {
+    public void testViewWithNullBackground() {
         View tintedImageButton =
                 LayoutInflater.from(mContext).inflate(R.layout.clear_storage, null, false);
         checkHighlightOff(tintedImageButton);

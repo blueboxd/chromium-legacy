@@ -17,7 +17,6 @@
 #include "media/base/video_codecs.h"
 #include "media/capabilities/learning_helper.h"
 #include "media/mojo/mojom/media_types.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -75,11 +74,11 @@ VideoDecodePerfHistory::~VideoDecodePerfHistory() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void VideoDecodePerfHistory::BindRequest(
-    mojom::VideoDecodePerfHistoryRequest request) {
+void VideoDecodePerfHistory::BindReceiver(
+    mojo::PendingReceiver<mojom::VideoDecodePerfHistory> receiver) {
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  bindings_.AddBinding(this, std::move(request));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void VideoDecodePerfHistory::InitDatabase() {

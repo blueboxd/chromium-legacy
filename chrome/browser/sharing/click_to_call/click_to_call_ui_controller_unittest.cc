@@ -113,8 +113,9 @@ TEST_F(ClickToCallUiControllerTest, OnDeviceChosen) {
   syncer::DeviceInfo device_info(
       kReceiverGuid, kReceiverName, "chrome_version", "user_agent",
       sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
-      /* last_updated_timestamp= */ base::Time::Now(),
-      /* send_tab_to_self_receiving_enabled= */ false);
+      /*last_updated_timestamp=*/base::Time::Now(),
+      /*send_tab_to_self_receiving_enabled=*/false,
+      /*sharing_info=*/base::nullopt);
 
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_click_to_call_message()->set_phone_number(

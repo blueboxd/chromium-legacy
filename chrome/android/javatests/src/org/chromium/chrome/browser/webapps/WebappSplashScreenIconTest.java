@@ -34,7 +34,7 @@ public class WebappSplashScreenIconTest {
     private ViewGroup mSplashScreen;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         WebappRegistry.getInstance()
                 .getWebappDataStorage(WebappActivityTestRule.WEBAPP_ID)
                 .updateSplashScreenImage(WebappActivityTestRule.TEST_SPLASH_ICON);

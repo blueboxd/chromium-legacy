@@ -71,12 +71,12 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
             new String[] {FILENAME_GIF, FILENAME_PNG, FILENAME_WEBM};
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
     }
 
     @Override
-    public void customMainActivityStart() throws InterruptedException {
+    public void customMainActivityStart() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mTestUrl = mTestServer.getURL(TEST_PATH);
         deleteTestFiles();
@@ -85,7 +85,7 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
         deleteTestFiles();
@@ -104,7 +104,7 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
 
     @Test
     @MediumTest
-    public void testLongPressOnImage() throws InterruptedException, TimeoutException {
+    public void testLongPressOnImage() throws TimeoutException {
         final Tab activityTab = mDownloadTestRule.getActivity().getActivityTab();
 
         final CallbackHelper newTabCallback = new CallbackHelper();
@@ -143,7 +143,7 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
 
     @Test
     @MediumTest
-    public void testDismissContextMenuOnBack() throws InterruptedException, TimeoutException {
+    public void testDismissContextMenuOnBack() throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         RevampedContextMenuCoordinator menuCoordinator =
                 RevampedContextMenuUtils.openContextMenu(tab, "testImage");
@@ -166,7 +166,7 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
 
     @Test
     @MediumTest
-    public void testDismissContextMenuOnClick() throws InterruptedException, TimeoutException {
+    public void testDismissContextMenuOnClick() throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         RevampedContextMenuCoordinator menuCoordinator =
                 RevampedContextMenuUtils.openContextMenu(tab, "testImage");
@@ -212,22 +212,19 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
 
     @Test
     @LargeTest
-    public void testSaveDataUrl()
-            throws InterruptedException, TimeoutException, SecurityException, IOException {
+    public void testSaveDataUrl() throws TimeoutException, SecurityException, IOException {
         saveMediaFromContextMenu("dataUrlIcon", R.id.contextmenu_save_image, FILENAME_GIF);
     }
 
     @Test
     @LargeTest
-    public void testSaveImage()
-            throws InterruptedException, TimeoutException, SecurityException, IOException {
+    public void testSaveImage() throws TimeoutException, SecurityException, IOException {
         saveMediaFromContextMenu("testImage", R.id.contextmenu_save_image, FILENAME_PNG);
     }
 
     @Test
     @LargeTest
-    public void testSaveVideo()
-            throws InterruptedException, TimeoutException, SecurityException, IOException {
+    public void testSaveVideo() throws TimeoutException, SecurityException, IOException {
         saveMediaFromContextMenu("videoDOMElement", R.id.contextmenu_save_video, FILENAME_WEBM);
     }
 
@@ -240,8 +237,7 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
      */
     @Test
     @LargeTest
-    public void testOpenLinksInNewTabsAndVerifyTabIndexOrdering()
-            throws InterruptedException, TimeoutException {
+    public void testOpenLinksInNewTabsAndVerifyTabIndexOrdering() throws TimeoutException {
         TabModel tabModel = mDownloadTestRule.getActivity().getCurrentTabModel();
         int numOpenedTabs = tabModel.getCount();
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
@@ -285,9 +281,8 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
         Assert.assertEquals(imageUrl, tabModel.getTabAt(indexOfLinkPage2).getUrl());
     }
 
-    private void saveMediaFromContextMenu(
-            String mediaDOMElement, int saveMenuID, String expectedFilename)
-            throws InterruptedException, TimeoutException, SecurityException, IOException {
+    private void saveMediaFromContextMenu(String mediaDOMElement, int saveMenuID,
+            String expectedFilename) throws TimeoutException, SecurityException, IOException {
         // Select "save [image/video]" in that menu.
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         int callCount = mDownloadTestRule.getChromeDownloadCallCount();

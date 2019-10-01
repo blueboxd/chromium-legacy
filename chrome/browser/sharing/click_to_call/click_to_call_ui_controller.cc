@@ -14,8 +14,6 @@
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/vector_icons/vector_icons.h"
@@ -125,14 +123,14 @@ void ClickToCallUiController::OnAppChosen(const SharingApp& app) {
                                                          web_contents());
 }
 
-SharingDialog* ClickToCallUiController::DoShowDialog(BrowserWindow* window) {
+void ClickToCallUiController::OnDialogShown(bool has_devices, bool has_apps) {
   if (!HasSendFailed()) {
     // Only left clicks open a dialog.
     ukm_recorder_ = base::BindOnce(&LogClickToCallUKM, web_contents(),
                                    SharingClickToCallEntryPoint::kLeftClickLink,
-                                   !devices().empty(), !apps().empty());
+                                   has_devices, has_apps);
   }
-  return window->ShowSharingDialog(web_contents(), this);
+  SharingUiController::OnDialogShown(has_devices, has_apps);
 }
 
 base::string16 ClickToCallUiController::GetContentType() const {

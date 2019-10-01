@@ -48,7 +48,7 @@ public class VariationsSeedServerTest {
     }
 
     @After
-    public void tearDown() throws IOException {
+    public void tearDown() {
         Assert.assertTrue("Failed to delete \"" + mTempFile + "\"", mTempFile.delete());
     }
 

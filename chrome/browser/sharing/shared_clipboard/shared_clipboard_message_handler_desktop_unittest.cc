@@ -115,12 +115,12 @@ TEST_F(SharedClipboardMessageHandlerTest, NotificationDisplayed) {
             [](const std::string& guid) -> std::unique_ptr<syncer::DeviceInfo> {
               return std::make_unique<syncer::DeviceInfo>(
                   base::GenerateGUID(), kClientName,
-                  /* chrome_version= */ "78.0.0.0",
-                  /* sync_user_agent= */ "Chrome",
-                  sync_pb::SyncEnums::TYPE_LINUX,
-                  /* signin_scoped_device_id= */ base::GenerateGUID(),
-                  base::Time::Now(),
-                  /* send_tab_to_self_receiving_enabled= */ true);
+                  /*chrome_version=*/"78.0.0.0",
+                  /*sync_user_agent=*/"Chrome", sync_pb::SyncEnums::TYPE_LINUX,
+                  /*signin_scoped_device_id=*/base::GenerateGUID(),
+                  /*last_updated_timestamp=*/base::Time::Now(),
+                  /*send_tab_to_self_receiving_enabled=*/false,
+                  /*sharing_info=*/base::nullopt);
             });
     message_handler_->OnMessage(CreateMessage(guid));
   }

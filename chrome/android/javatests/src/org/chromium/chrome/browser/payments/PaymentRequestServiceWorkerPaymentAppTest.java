@@ -79,7 +79,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNoSupportedPaymentMethods() throws InterruptedException, TimeoutException {
+    public void testNoSupportedPaymentMethods() throws TimeoutException {
         installMockServiceWorkerPaymentApp(
                 new String[0], new ServiceWorkerPaymentApp.Capabilities[0], true, true);
 
@@ -93,7 +93,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testHasSupportedPaymentMethods() throws InterruptedException, TimeoutException {
+    public void testHasSupportedPaymentMethods() throws TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com"};
         installMockServiceWorkerPaymentApp(
                 supportedMethodNames, new ServiceWorkerPaymentApp.Capabilities[0], true, true);
@@ -107,7 +107,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNoCapabilities() throws InterruptedException, TimeoutException {
+    public void testNoCapabilities() throws TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com", "basic-card"};
         ServiceWorkerPaymentApp.Capabilities[] capabilities = {};
         installMockServiceWorkerPaymentApp(supportedMethodNames, capabilities, true, true);
@@ -163,7 +163,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testHasVisaCreditCapabilities() throws InterruptedException, TimeoutException {
+    public void testHasVisaCreditCapabilities() throws TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com", "basic-card"};
         int[] networks = {BasicCardNetwork.VISA};
         int[] types = {BasicCardType.CREDIT};
@@ -214,8 +214,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testHasMastercardCreditCapabilities()
-            throws InterruptedException, TimeoutException {
+    public void testHasMastercardCreditCapabilities() throws TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com", "basic-card"};
         int[] networks = {BasicCardNetwork.MASTERCARD};
         int[] types = {BasicCardType.CREDIT};
@@ -267,8 +266,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testHasVisaCreditAndDebitCapabilities()
-            throws InterruptedException, TimeoutException {
+    public void testHasVisaCreditAndDebitCapabilities() throws TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com", "basic-card"};
         int[] networks = {BasicCardNetwork.VISA};
         int[] types = {BasicCardType.CREDIT, BasicCardType.DEBIT};
@@ -320,7 +318,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testDoNotCallCanMakePayment() throws InterruptedException, TimeoutException {
+    public void testDoNotCallCanMakePayment() throws TimeoutException {
         String[] supportedMethodNames = {"basic-card"};
         installMockServiceWorkerPaymentApp(
                 supportedMethodNames, new ServiceWorkerPaymentApp.Capabilities[0], true, true);
@@ -337,7 +335,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCallCanMakePayment() throws InterruptedException, TimeoutException {
+    public void testCallCanMakePayment() throws TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com", "basic-card"};
         installMockServiceWorkerPaymentApp(
                 supportedMethodNames, new ServiceWorkerPaymentApp.Capabilities[0], true, true);
@@ -355,7 +353,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanPreselect() throws InterruptedException, TimeoutException {
+    public void testCanPreselect() throws TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com"};
         installMockServiceWorkerPaymentApp(
                 supportedMethodNames, new ServiceWorkerPaymentApp.Capabilities[0], true, true);
@@ -369,7 +367,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanNotPreselectWithoutName() throws InterruptedException, TimeoutException {
+    public void testCanNotPreselectWithoutName() throws TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com"};
         installMockServiceWorkerPaymentApp(
                 supportedMethodNames, new ServiceWorkerPaymentApp.Capabilities[0], false, true);
@@ -383,7 +381,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanNotPreselectWithoutIcon() throws InterruptedException, TimeoutException {
+    public void testCanNotPreselectWithoutIcon() throws TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com"};
         installMockServiceWorkerPaymentApp(
                 supportedMethodNames, new ServiceWorkerPaymentApp.Capabilities[0], true, false);
@@ -397,8 +395,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanNotPreselectWithoutNameAndIcon()
-            throws InterruptedException, TimeoutException {
+    public void testCanNotPreselectWithoutNameAndIcon() throws TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com"};
         installMockServiceWorkerPaymentApp(
                 supportedMethodNames, new ServiceWorkerPaymentApp.Capabilities[0], false, false);

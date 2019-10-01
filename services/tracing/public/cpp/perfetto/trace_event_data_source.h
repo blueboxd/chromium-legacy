@@ -157,6 +157,10 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
     startup_tracing_timeout_ = timeout_us;
   }
 
+  bool privacy_filtering_enabled() const { return privacy_filtering_enabled_; }
+
+  bool IsEnabled();
+
  private:
   friend class base::NoDestructor<TraceEventDataSource>;
 
@@ -219,6 +223,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
       startup_writer_registry_;
   std::unique_ptr<perfetto::StartupTraceWriter> trace_writer_;
   base::OneShotTimer startup_tracing_timer_;
+  bool is_enabled_ = false;
   bool flushing_trace_log_ = false;
   base::OnceClosure flush_complete_task_;
   std::vector<std::string> histograms_;

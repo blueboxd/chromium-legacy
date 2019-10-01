@@ -423,6 +423,7 @@ void NativeWidgetNSWindowBridge::InitWindow(
   is_translucent_window_ = params->is_translucent;
   widget_is_top_level_ = params->widget_is_top_level;
   position_window_in_screen_coords_ = params->position_window_in_screen_coords;
+  pending_restoration_data_ = params->state_restoration_data;
 
   // Register for application hide notifications so that visibility can be
   // properly tracked. This is not done in the delegate so that the lifetime is
@@ -690,6 +691,22 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
       return;
   }
 
+  if (!pending_restoration_data_.empty()) {
+    NSData* restore_ns_data =
+        [NSData dataWithBytes:pending_restoration_data_.data()
+                       length:pending_restoration_data_.size()];
+    base::scoped_nsobject<NSKeyedUnarchiver> decoder(
+        [[NSKeyedUnarchiver alloc] initForReadingWithData:restore_ns_data]);
+    [window_ restoreStateWithCoder:decoder];
+    pending_restoration_data_.clear();
+
+    // When first showing a window with restoration data, don't activate it.
+    // This avoids switching spaces or un-miniaturizing it right away.
+    // Additional activations act normally.
+    if (new_state == WindowVisibilityState::kShowAndActivateWindow)
+      new_state = WindowVisibilityState::kShowInactive;
+  }
+
   if (IsWindowModalSheet()) {
     ShowAsModalSheet();
     return;
@@ -701,8 +718,11 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
   if (new_state == WindowVisibilityState::kShowAndActivateWindow) {
     [window_ makeKeyAndOrderFront:nil];
     [NSApp activateIgnoringOtherApps:YES];
-  } else if (!parent_) {
-    [window_ orderFront:nil];
+  } else if (!parent_ && ![window_ isMiniaturized]) {
+    // When showing a window without activation, avoid making it the front
+    // window (with e.g. orderFront:), which can cause a space switch.
+    [window_ orderWindow:NSWindowBelow
+              relativeTo:NSApp.mainWindow.windowNumber];
   }
 
   // For non-sheet modal types, use the constrained window animations to make

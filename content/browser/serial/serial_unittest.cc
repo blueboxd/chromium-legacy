@@ -58,9 +58,8 @@ TEST_F(SerialTest, OpenAndClosePort) {
   NavigateAndCommit(GURL(kTestUrl));
 
   mojo::Remote<blink::mojom::SerialService> service;
-  contents()->GetMainFrame()->BinderRegistryForTesting().BindInterface(
-      blink::mojom::SerialService::Name_,
-      service.BindNewPipeAndPassReceiver().PassPipe());
+  contents()->GetMainFrame()->BindSerialService(
+      service.BindNewPipeAndPassReceiver());
 
   auto token = base::UnguessableToken::Create();
   auto port_info = device::mojom::SerialPortInfo::New();
@@ -83,9 +82,8 @@ TEST_F(SerialTest, OpenAndNavigateCrossOrigin) {
   NavigateAndCommit(GURL(kTestUrl));
 
   mojo::Remote<blink::mojom::SerialService> service;
-  contents()->GetMainFrame()->BinderRegistryForTesting().BindInterface(
-      blink::mojom::SerialService::Name_,
-      service.BindNewPipeAndPassReceiver().PassPipe());
+  contents()->GetMainFrame()->BindSerialService(
+      service.BindNewPipeAndPassReceiver());
 
   auto token = base::UnguessableToken::Create();
   auto port_info = device::mojom::SerialPortInfo::New();

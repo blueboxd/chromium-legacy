@@ -16,6 +16,7 @@
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
+#include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/glue/sync_engine_backend.h"
@@ -443,6 +444,14 @@ void SyncEngineImpl::SetInvalidationsForSessionsEnabled(bool enabled) {
   bool success = invalidator_->UpdateRegisteredInvalidationIds(
       this, ModelTypeSetToObjectIdSet(enabled_for_invalidation));
   DCHECK(success);
+}
+
+void SyncEngineImpl::GetNigoriNodeForDebugging(AllNodesCallback callback) {
+  DCHECK(backend_);
+  sync_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SyncEngineBackend::GetNigoriNodeForDebugging, backend_,
+                     BindToCurrentSequence(std::move(callback))));
 }
 
 void SyncEngineImpl::OnInvalidatorClientIdChange(const std::string& client_id) {

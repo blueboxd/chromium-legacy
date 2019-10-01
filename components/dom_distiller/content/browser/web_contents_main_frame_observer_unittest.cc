@@ -59,7 +59,7 @@ TEST_F(WebContentsMainFrameObserverTest, ListensForMainFrameNavigation) {
   EXPECT_TRUE(main_frame_observer_->is_document_loaded_in_main_frame());
 }
 
-TEST_F(WebContentsMainFrameObserverTest, IgnoresChildFrameNavigation) {
+TEST_F(WebContentsMainFrameObserverTest, DISABLED_IgnoresChildFrameNavigation) {
   Navigate(kChildFrame, kDifferentDocument);
   EXPECT_FALSE(main_frame_observer_->is_initialized());
   EXPECT_FALSE(main_frame_observer_->is_document_loaded_in_main_frame());

@@ -53,7 +53,7 @@ public class ShareMenuActionHandlerIntegrationTest {
 
     @Test
     @SmallTest
-    public void testCanonicalUrlsOverHttps() throws InterruptedException, TimeoutException {
+    public void testCanonicalUrlsOverHttps() throws TimeoutException {
         EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartHTTPSServer(
                 InstrumentationRegistry.getInstrumentation().getContext(),
                 ServerCertificate.CERT_OK);
@@ -75,7 +75,7 @@ public class ShareMenuActionHandlerIntegrationTest {
 
     @Test
     @SmallTest
-    public void testCanonicalUrlsOverHttp() throws InterruptedException, TimeoutException {
+    public void testCanonicalUrlsOverHttp() throws TimeoutException {
         EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
         final String httpsCanonicalUrl = testServer.getURL(PAGE_WITH_HTTPS_CANONICAL_URL);
@@ -96,7 +96,7 @@ public class ShareMenuActionHandlerIntegrationTest {
 
     private void verifyShareUrl(
             String pageUrl, String expectedShareUrl, @CanonicalURLResult int expectedUrlResult)
-            throws IllegalArgumentException, InterruptedException, TimeoutException {
+            throws IllegalArgumentException, TimeoutException {
         mActivityTestRule.loadUrl(pageUrl);
         HistogramDelta urlResultDelta = new HistogramDelta(
                 ShareMenuActionHandler.CANONICAL_URL_RESULT_HISTOGRAM, expectedUrlResult);
@@ -105,7 +105,7 @@ public class ShareMenuActionHandlerIntegrationTest {
         Assert.assertEquals(1, urlResultDelta.getDelta());
     }
 
-    private ShareParams triggerShare() throws InterruptedException, TimeoutException {
+    private ShareParams triggerShare() throws TimeoutException {
         final CallbackHelper helper = new CallbackHelper();
         final AtomicReference<ShareParams> paramsRef = new AtomicReference<>();
         TestThreadUtils.runOnUiThreadBlocking(() -> {

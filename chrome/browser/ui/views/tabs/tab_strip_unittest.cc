@@ -1184,8 +1184,7 @@ TEST_P(TabStripTest, DeleteTabGroupHeaderAndUnderlineWhenEmpty) {
 TEST_P(TabStripTest, GroupUnderlineBasics) {
   tab_strip_->SetBounds(0, 0, 1000, 100);
   bounds_animator()->SetAnimationDuration(base::TimeDelta());
-  tab_strip_->AddTabAt(0, TabRendererData(), false);
-  tab_strip_->AddTabAt(1, TabRendererData(), false);
+  controller_->AddTab(0, false);
 
   base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group);
@@ -1195,13 +1194,25 @@ TEST_P(TabStripTest, GroupUnderlineBasics) {
   EXPECT_EQ(1u, underlines.size());
   TabGroupUnderline* underline = underlines[0];
   // Update underline manually in the absence of a real Paint cycle.
-  underline->UpdateVisuals();
+  underline->UpdateBounds();
+
   constexpr int kInset = 20;
+
   EXPECT_EQ(underline->x(), kInset);
   EXPECT_GT(underline->width(), 0);
   EXPECT_EQ(underline->bounds().right(),
             tab_strip_->tab_at(0)->bounds().right() - kInset);
   EXPECT_EQ(underline->height(), TabGroupUnderline::kStrokeThickness);
+
+  // Endpoints are different if the last grouped tab is active.
+  controller_->AddTab(1, true);
+  controller_->MoveTabIntoGroup(1, group);
+  underline->UpdateBounds();
+
+  EXPECT_EQ(underline->x(), kInset);
+  EXPECT_EQ(underline->bounds().right(),
+            tab_strip_->tab_at(1)->bounds().right() +
+                TabGroupUnderline::kStrokeThickness);
 }
 
 TEST_P(TabStripTest, ChangingLayoutTypeResizesTabs) {

@@ -41,6 +41,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "cast_for_education.icon",
     "content_paste.icon",
     "cookie.icon",
+    "copy.icon",
     "crashed_tab.icon",
     "credit_card.icon",
     "default_touch_favicon.icon",

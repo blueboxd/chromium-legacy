@@ -156,8 +156,8 @@ public class StripLayoutHelperManager implements SceneOverlay {
         mModelSelectorButton.setVisible(false);
         // Pressed resources are the same as the unpressed resources.
         mModelSelectorButton.setResources(R.drawable.btn_tabstrip_switch_normal,
-                R.drawable.btn_tabstrip_switch_normal, R.drawable.btn_tabstrip_switch_incognito,
-                R.drawable.btn_tabstrip_switch_incognito);
+                R.drawable.btn_tabstrip_switch_normal, R.drawable.location_bar_incognito_badge,
+                R.drawable.location_bar_incognito_badge);
         mModelSelectorButton.setY(MODEL_SELECTOR_BUTTON_Y_OFFSET_DP);
 
         Resources res = context.getResources();

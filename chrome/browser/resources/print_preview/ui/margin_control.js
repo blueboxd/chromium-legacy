@@ -138,7 +138,7 @@ Polymer({
    */
   convertPixelsToPts: function(pixels) {
     let pts;
-    const Orientation = print_preview.ticket_items.CustomMarginsOrientation;
+    const Orientation = print_preview.CustomMarginsOrientation;
     if (this.side == Orientation.TOP) {
       pts = pixels - this.translateTransform.y + RADIUS_PX;
       pts /= this.scaleTransform;
@@ -253,7 +253,7 @@ Polymer({
       return;
     }
 
-    const Orientation = print_preview.ticket_items.CustomMarginsOrientation;
+    const Orientation = print_preview.CustomMarginsOrientation;
     let x = this.translateTransform.x;
     let y = this.translateTransform.y;
     let width = null;

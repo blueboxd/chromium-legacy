@@ -53,12 +53,11 @@ public class WebContentsTest {
      * TODO(dtrainor): Test this using {@link WebContents#destroy()} instead once it is possible to
      * build a {@link WebContents} directly in the content/ layer.
      *
-     * @throws InterruptedException
      * @throws ExecutionException
      */
     @Test
     @SmallTest
-    public void testWebContentsIsDestroyedMethod() throws InterruptedException, ExecutionException {
+    public void testWebContentsIsDestroyedMethod() throws ExecutionException {
         final ContentShellActivity activity =
                 mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
@@ -79,11 +78,10 @@ public class WebContentsTest {
     /**
      * Check that it is possible to serialize and deserialize a WebContents object through Parcels.
      *
-     * @throws InterruptedException
      */
     @Test
     @SmallTest
-    public void testWebContentsSerializeDeserializeInParcel() throws InterruptedException {
+    public void testWebContentsSerializeDeserializeInParcel() {
         mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
         WebContents webContents = mActivityTestRule.getWebContents();
@@ -109,13 +107,12 @@ public class WebContentsTest {
 
     /**
      * Check that it is possible to serialize and deserialize a WebContents object through Bundles.
-     * @throws InterruptedException
      */
     @Test
     @SmallTest
     // TODO(crbug.com/635567): Fix this properly.
     @SuppressLint("ParcelClassLoader")
-    public void testWebContentsSerializeDeserializeInBundle() throws InterruptedException {
+    public void testWebContentsSerializeDeserializeInBundle() {
         mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
         WebContents webContents = mActivityTestRule.getWebContents();
@@ -151,13 +148,12 @@ public class WebContentsTest {
 
     /**
      * Check that it is possible to serialize and deserialize a WebContents object through Intents.
-     * @throws InterruptedException
      */
     @Test
     @SmallTest
     // TODO(crbug.com/635567): Fix this properly.
     @SuppressLint("ParcelClassLoader")
-    public void testWebContentsSerializeDeserializeInIntent() throws InterruptedException {
+    public void testWebContentsSerializeDeserializeInIntent() {
         mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
         WebContents webContents = mActivityTestRule.getWebContents();
@@ -194,12 +190,10 @@ public class WebContentsTest {
     /**
      * Check that attempting to deserialize a WebContents object from a Parcel from another process
      * instance fails.
-     * @throws InterruptedException
      */
     @Test
     @SmallTest
-    public void testWebContentsFailDeserializationAcrossProcessBoundary()
-            throws InterruptedException {
+    public void testWebContentsFailDeserializationAcrossProcessBoundary() {
         mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
         WebContents webContents = mActivityTestRule.getWebContents();
@@ -228,13 +222,11 @@ public class WebContentsTest {
     /**
      * Check that serializing a destroyed WebContents always results in a null deserialized
      * WebContents.
-     * @throws InterruptedException
      * @throws ExecutionException
      */
     @Test
     @SmallTest
-    public void testSerializingADestroyedWebContentsDoesNotDeserialize()
-            throws InterruptedException, ExecutionException {
+    public void testSerializingADestroyedWebContentsDoesNotDeserialize() throws ExecutionException {
         ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
         WebContents webContents = activity.getActiveWebContents();
@@ -264,13 +256,12 @@ public class WebContentsTest {
     /**
      * Check that destroying a WebContents after serializing it always results in a null
      * deserialized WebContents.
-     * @throws InterruptedException
      * @throws ExecutionException
      */
     @Test
     @SmallTest
     public void testDestroyingAWebContentsAfterSerializingDoesNotDeserialize()
-            throws InterruptedException, ExecutionException {
+            throws ExecutionException {
         ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
         WebContents webContents = activity.getActiveWebContents();
@@ -301,11 +292,10 @@ public class WebContentsTest {
     /**
      * Check that failing a WebContents deserialization doesn't corrupt subsequent data in the
      * Parcel.
-     * @throws InterruptedException
      */
     @Test
     @SmallTest
-    public void testFailedDeserializationDoesntCorruptParcel() throws InterruptedException {
+    public void testFailedDeserializationDoesntCorruptParcel() {
         mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
         WebContents webContents = mActivityTestRule.getWebContents();
@@ -342,11 +332,10 @@ public class WebContentsTest {
      * Check that the main frame associated with the WebContents is not null
      * and corresponds with the test URL.
      *
-     * @throws InterruptedException
      */
     @Test
     @SmallTest
-    public void testWebContentsMainFrame() throws InterruptedException {
+    public void testWebContentsMainFrame() {
         final ContentShellActivity activity =
                 mActivityTestRule.launchContentShellWithUrl(TEST_URL_2);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
@@ -429,7 +418,7 @@ public class WebContentsTest {
     private boolean isWebContentsDestroyed(final WebContents webContents) {
         return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
-            public Boolean call() throws Exception {
+            public Boolean call() {
                 return webContents.isDestroyed();
             }
         });

@@ -6,7 +6,6 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "remoting/base/url_request_context_getter.h"
@@ -37,9 +36,10 @@ base::Optional<base::Value> GetResponse(
 
 }  // namespace
 
-GstaticJsonFetcher::GstaticJsonFetcher() {
-  request_context_getter_ = new remoting::URLRequestContextGetter(
-      base::ThreadTaskRunnerHandle::Get());
+GstaticJsonFetcher::GstaticJsonFetcher(
+    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner) {
+  request_context_getter_ =
+      new remoting::URLRequestContextGetter(network_task_runner);
 }
 
 GstaticJsonFetcher::~GstaticJsonFetcher() = default;
@@ -73,8 +73,13 @@ void GstaticJsonFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     LOG(DFATAL) << "Fetcher not found in the map";
     return;
   }
-  std::move(it->second).Run(GetResponse(std::move(it->first)));
+  // callback can potentially add new requests to the JSON fetcher, which makes
+  // the iterator unstable, so we erase the iterator before running the
+  // callback.
+  auto callback =
+      base::BindOnce(std::move(it->second), GetResponse(std::move(it->first)));
   fetcher_callback_map_.erase(it);
+  std::move(callback).Run();
 }
 
 }  // namespace remoting

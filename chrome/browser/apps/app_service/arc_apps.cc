@@ -250,6 +250,9 @@ void ArcApps::Launch(const std::string& app_id,
     case apps::mojom::LaunchSource::kFromShelf:
       uit = arc::UserInteractionType::APP_STARTED_FROM_SHELF;
       break;
+    case apps::mojom::LaunchSource::kFromFileManager:
+      uit = arc::UserInteractionType::APP_STARTED_FROM_FILE_MANAGER;
+      break;
   }
 
   arc::LaunchApp(profile_, app_id, event_flags, uit, display_id);

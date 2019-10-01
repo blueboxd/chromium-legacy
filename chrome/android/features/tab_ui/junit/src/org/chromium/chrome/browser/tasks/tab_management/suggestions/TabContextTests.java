@@ -64,7 +64,7 @@ public class TabContextTests {
                     "mock_original_url_related_tab_1", "mock_referrer_url_related_tab_1", 300);
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         doReturn(mTabModelFilterProvider).when(mTabModelSelector).getTabModelFilterProvider();
         doReturn(mTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
@@ -95,7 +95,7 @@ public class TabContextTests {
      * Test finding related tabs
      */
     @Test
-    public void testRelatedTabsExist() throws Exception {
+    public void testRelatedTabsExist() {
         doReturn(sTab0).when(mTabModelFilter).getTabAt(eq(TAB_0_ID));
         doReturn(1).when(mTabModelFilter).getCount();
         doReturn(Arrays.asList(sTab0, sRelatedTab0, sRelatedTab1))
@@ -116,7 +116,7 @@ public class TabContextTests {
      * Test finding no related tabs
      */
     @Test
-    public void testFindNoRelatedTabs() throws Exception {
+    public void testFindNoRelatedTabs() {
         doReturn(sTab0).when(mTabModelFilter).getTabAt(eq(TAB_0_ID));
         doReturn(1).when(mTabModelFilter).getCount();
         doReturn(Arrays.asList(sTab0)).when(mTabModelFilter).getRelatedTabList(eq(TAB_0_ID));

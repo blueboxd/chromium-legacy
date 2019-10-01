@@ -10,7 +10,7 @@
 #include <array>
 
 #include "base/logging.h"
-#include "device/vr/openxr/openxr_gamepad_helper.h"
+#include "device/vr/openxr/openxr_input_helper.h"
 #include "device/vr/openxr/openxr_util.h"
 #include "device/vr/test/test_hook.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -279,7 +279,7 @@ XrResult OpenXrApiWrapper::PickEnvironmentBlendMode(XrSystemId system) {
 // objects that may have been created before the failure.
 XrResult OpenXrApiWrapper::InitSession(
     const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device,
-    std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper) {
+    std::unique_ptr<OpenXRInputHelper>* input_helper) {
   DCHECK(d3d_device.Get());
   DCHECK(IsInitialized());
 
@@ -290,7 +290,7 @@ XrResult OpenXrApiWrapper::InitSession(
   RETURN_IF_XR_FAILED(
       CreateSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, &local_space_));
   RETURN_IF_XR_FAILED(CreateSpace(XR_REFERENCE_SPACE_TYPE_VIEW, &view_space_));
-  RETURN_IF_XR_FAILED(CreateGamepadHelper(gamepad_helper));
+  RETURN_IF_XR_FAILED(CreateGamepadHelper(input_helper));
 
   // It's ok if stage_space_ fails since not all OpenXR devices are required to
   // support this reference space.
@@ -307,7 +307,7 @@ XrResult OpenXrApiWrapper::InitSession(
   DCHECK(HasColorSwapChain());
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL));
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_VIEW));
-  DCHECK(gamepad_helper);
+  DCHECK(input_helper);
 
   return xr_result;
 }
@@ -388,12 +388,12 @@ XrResult OpenXrApiWrapper::CreateSpace(XrReferenceSpaceType type,
 }
 
 XrResult OpenXrApiWrapper::CreateGamepadHelper(
-    std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper) {
+    std::unique_ptr<OpenXRInputHelper>* input_helper) {
   DCHECK(HasSession());
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL));
 
-  return OpenXrGamepadHelper::CreateOpenXrGamepadHelper(
-      instance_, session_, local_space_, gamepad_helper);
+  return OpenXRInputHelper::CreateOpenXRInputHelper(instance_, session_,
+                                                    local_space_, input_helper);
 }
 
 XrResult OpenXrApiWrapper::BeginSession() {

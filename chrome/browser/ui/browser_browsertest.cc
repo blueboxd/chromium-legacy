@@ -1330,8 +1330,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
   WebContents* app_window =
       apps::LaunchService::Get(browser()->profile())
-          ->OpenApplication(AppLaunchParams(
-              browser()->profile(), extension_app->id(),
+          ->OpenApplication(apps::AppLaunchParams(
+              extension_app->id(),
               apps::mojom::LaunchContainer::kLaunchContainerWindow,
               WindowOpenDisposition::NEW_WINDOW,
               apps::mojom::AppLaunchSource::kSourceTest));
@@ -1502,8 +1502,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
   WebContents* app_window =
       apps::LaunchService::Get(browser()->profile())
-          ->OpenApplication(AppLaunchParams(
-              browser()->profile(), extension_app->id(),
+          ->OpenApplication(apps::AppLaunchParams(
+              extension_app->id(),
               apps::mojom::LaunchContainer::kLaunchContainerWindow,
               WindowOpenDisposition::NEW_WINDOW,
               apps::mojom::AppLaunchSource::kSourceTest));

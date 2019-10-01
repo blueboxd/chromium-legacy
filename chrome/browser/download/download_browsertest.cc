@@ -3300,8 +3300,10 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
 
 // This test ensures that a cross-domain download correctly sets the referrer
 // according to the referrer policy.
+//
+// Disabled because flaky. See https://crbug.com/1009022.
 IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
-                       DownloadCrossDomainReferrerPolicy) {
+                       DISABLED_DownloadCrossDomainReferrerPolicy) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&ServerRedirectRequestHandler));
   embedded_test_server()->RegisterRequestHandler(

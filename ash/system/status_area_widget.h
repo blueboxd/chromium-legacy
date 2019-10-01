@@ -18,6 +18,7 @@ class Window;
 namespace ash {
 class ImeMenuTray;
 class LogoutButtonTray;
+class StatusAreaOverflowButtonTray;
 class OverviewButtonTray;
 class DictationButtonTray;
 class PaletteTray;
@@ -68,6 +69,9 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   DictationButtonTray* dictation_button_tray() {
     return dictation_button_tray_.get();
   }
+  StatusAreaOverflowButtonTray* overflow_button_tray() {
+    return overflow_button_tray_.get();
+  }
   OverviewButtonTray* overview_button_tray() {
     return overview_button_tray_.get();
   }
@@ -114,6 +118,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
 
   StatusAreaWidgetDelegate* status_area_widget_delegate_;
 
+  std::unique_ptr<StatusAreaOverflowButtonTray> overflow_button_tray_;
   std::unique_ptr<OverviewButtonTray> overview_button_tray_;
   std::unique_ptr<DictationButtonTray> dictation_button_tray_;
   std::unique_ptr<UnifiedSystemTray> unified_system_tray_;

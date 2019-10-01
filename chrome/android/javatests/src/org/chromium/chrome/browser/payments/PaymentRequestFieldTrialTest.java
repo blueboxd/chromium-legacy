@@ -40,7 +40,7 @@ public class PaymentRequestFieldTrialTest implements MainActivityStartCallback {
             new PaymentRequestTestRule("payment_request_bobpay_and_cards_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // The user has a shipping address on disk but no credit card.
         helper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
@@ -56,7 +56,7 @@ public class PaymentRequestFieldTrialTest implements MainActivityStartCallback {
     @MediumTest
     @Feature({"Payments"})
     @CommandLineFlags.Add("enable-features=NoCreditCardAbort")
-    public void testAbortIfNoCard_Enabled_NoApp() throws InterruptedException, TimeoutException {
+    public void testAbortIfNoCard_Enabled_NoApp() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"Payment method not supported"});
@@ -70,7 +70,7 @@ public class PaymentRequestFieldTrialTest implements MainActivityStartCallback {
     @MediumTest
     @Feature({"Payments"})
     @CommandLineFlags.Add("enable-features=NoCreditCardAbort")
-    public void testAbortIfNoCard_Enabled_WithApp() throws InterruptedException, TimeoutException {
+    public void testAbortIfNoCard_Enabled_WithApp() throws TimeoutException {
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
     }
@@ -83,7 +83,7 @@ public class PaymentRequestFieldTrialTest implements MainActivityStartCallback {
     @MediumTest
     @Feature({"Payments"})
     @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
-    public void testAbortIfNoCard_Disabled() throws InterruptedException, TimeoutException {
+    public void testAbortIfNoCard_Disabled() throws TimeoutException {
         // Check that the Payment Request UI is shown.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
     }

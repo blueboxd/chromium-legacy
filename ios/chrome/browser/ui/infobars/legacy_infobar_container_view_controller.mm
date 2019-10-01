@@ -23,7 +23,7 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
 
 @interface LegacyInfobarContainerViewController () <FullscreenUIElement> {
   // Observer that notifies this object of fullscreen events.
-  std::unique_ptr<FullscreenControllerObserver> _fullscreenObserver;
+  std::unique_ptr<FullscreenUIUpdater> _fullscreenUIUpdater;
 }
 
 // Whether the controller's view is currently available.
@@ -61,16 +61,15 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
   [super viewDidAppear:animated];
   self.visible = YES;
 
-  if (!_fullscreenObserver && !self.disableFullscreenSupport) {
-    _fullscreenObserver = std::make_unique<FullscreenUIUpdater>(self);
-    self.fullscreenController->AddObserver(_fullscreenObserver.get());
+  if (!_fullscreenUIUpdater && !self.disableFullscreenSupport) {
+    _fullscreenUIUpdater =
+        std::make_unique<FullscreenUIUpdater>(self.fullscreenController, self);
   }
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
-  if (_fullscreenObserver && !self.disableFullscreenSupport) {
-    self.fullscreenController->RemoveObserver(_fullscreenObserver.get());
-    _fullscreenObserver = nullptr;
+  if (_fullscreenUIUpdater && !self.disableFullscreenSupport) {
+    _fullscreenUIUpdater = nullptr;
   }
 
   self.visible = NO;

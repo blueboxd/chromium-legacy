@@ -45,7 +45,7 @@ public class WatcherImplTest {
      * @see MojoTestCase#setUp()
      */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mWatcher = new WatcherImpl();
         mCore = CoreImpl.getInstance();
     }
@@ -54,7 +54,7 @@ public class WatcherImplTest {
      * @see MojoTestCase#tearDown()
      */
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mWatcher.destroy();
         MojoException toThrow = null;
         for (Handle handle : mHandlesToClose) {

@@ -885,9 +885,8 @@ public class BookmarkReorderTest extends BookmarkTest {
      * Loads an empty partner bookmarks folder for testing. The partner bookmarks folder will appear
      * in the mobile bookmarks folder.
      *
-     * @throws InterruptedException If the loading process is interrupted.
      */
-    private void loadEmptyPartnerBookmarksForTesting() throws InterruptedException {
+    private void loadEmptyPartnerBookmarksForTesting() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mBookmarkModel.loadEmptyPartnerBookmarkShimForTesting(); });
         BookmarkTestUtil.waitForBookmarkModelLoaded();
@@ -899,11 +898,9 @@ public class BookmarkReorderTest extends BookmarkTest {
      * @param title The title of the bookmark to add.
      * @param url The url of the bookmark to add.
      * @return The BookmarkId of the added bookmark.
-     * @throws InterruptedException If this operation is interrupted.
      * @throws ExecutionException If something goes wrong while we are trying to add the bookmark.
      */
-    private BookmarkId addBookmarkWithPartner(String title, String url)
-            throws InterruptedException, ExecutionException {
+    private BookmarkId addBookmarkWithPartner(String title, String url) throws ExecutionException {
         loadEmptyPartnerBookmarksForTesting();
         return TestThreadUtils.runOnUiThreadBlocking(
                 () -> mBookmarkModel.addBookmark(mBookmarkModel.getDefaultFolder(), 0, title, url));
@@ -914,11 +911,9 @@ public class BookmarkReorderTest extends BookmarkTest {
      *
      * @param title The title of the folder to add.
      * @return The BookmarkId of the added folder.
-     * @throws InterruptedException If this operation is interrupted.
      * @throws ExecutionException If something goes wrong while we are trying to add the bookmark.
      */
-    private BookmarkId addFolderWithPartner(String title)
-            throws InterruptedException, ExecutionException {
+    private BookmarkId addFolderWithPartner(String title) throws ExecutionException {
         loadEmptyPartnerBookmarksForTesting();
         return TestThreadUtils.runOnUiThreadBlocking(
                 () -> mBookmarkModel.addFolder(mBookmarkModel.getDefaultFolder(), 0, title));

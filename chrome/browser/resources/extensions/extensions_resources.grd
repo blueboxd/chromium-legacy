@@ -85,6 +85,12 @@
       <structure name="IDR_EXTENSIONS_ERROR_PAGE_JS"
                  file="error_page.js"
                  type="chrome_html" />
+      <structure name="IDR_EXTENSIONS_KEYBOARD_SHORTCUT_DELEGATE_HTML"
+                 file="keyboard_shortcut_delegate.html"
+                 type="chrome_html" />
+      <structure name="IDR_EXTENSIONS_KEYBOARD_SHORTCUT_DELEGATE_JS"
+                 file="keyboard_shortcut_delegate.js"
+                 type="chrome_html" />
       <structure name="IDR_EXTENSIONS_KEYBOARD_SHORTCUTS_HTML"
                  file="keyboard_shortcuts.html"
                  type="chrome_html" />

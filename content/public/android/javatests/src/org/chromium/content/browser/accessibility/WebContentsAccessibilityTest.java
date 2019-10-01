@@ -88,7 +88,7 @@ public class WebContentsAccessibilityTest {
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
     @TargetApi(Build.VERSION_CODES.O)
-    public void testAddExtraDataToAccessibilityNodeInfo() throws Throwable {
+    public void testAddExtraDataToAccessibilityNodeInfo() {
         // Load a really simple webpage.
         final String data = "<h1>Simple test page</h1>"
                 + "<section><p>Text</p></section>";
@@ -370,7 +370,7 @@ public class WebContentsAccessibilityTest {
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void testTextFieldExposesActionSetText() throws Throwable {
+    public void testTextFieldExposesActionSetText() {
         // Load a web page with a text field.
         final String data = "<h1>Simple test page</h1>"
                 + "<section><input type=text placeholder=Text></section>";
@@ -394,7 +394,7 @@ public class WebContentsAccessibilityTest {
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void testContentEditableClassName() throws Throwable {
+    public void testContentEditableClassName() {
         final String data = "<div contenteditable>Edit This</div>";
 
         mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
@@ -416,7 +416,7 @@ public class WebContentsAccessibilityTest {
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void testEditTextFieldAriaInvalidTrueErrorMessage() throws Throwable {
+    public void testEditTextFieldAriaInvalidTrueErrorMessage() {
         final String data = "<form>\n"
                 + "  First name:<br>\n"
                 + "  <input id='fn' type='text' aria-invalid='true'><br>\n"
@@ -441,7 +441,7 @@ public class WebContentsAccessibilityTest {
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void testEditTextFieldAriaInvalidSpellingErrorMessage() throws Throwable {
+    public void testEditTextFieldAriaInvalidSpellingErrorMessage() {
         final String data = "<input type='text' aria-invalid='spelling'><br>\n";
 
         mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
@@ -463,7 +463,7 @@ public class WebContentsAccessibilityTest {
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void testEditTextFieldAriaInvalidGrammarErrorMessage() throws Throwable {
+    public void testEditTextFieldAriaInvalidGrammarErrorMessage() {
         final String data = "<input type='text' aria-invalid='grammar'><br>\n";
 
         mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
@@ -485,7 +485,7 @@ public class WebContentsAccessibilityTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 
-    public void testEditTextFieldValidNoErrorMessage() throws Throwable {
+    public void testEditTextFieldValidNoErrorMessage() {
         final String data = "<input type='text'><br>\n";
         mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
         mActivityTestRule.waitForActiveShellToBeDoneLoading();

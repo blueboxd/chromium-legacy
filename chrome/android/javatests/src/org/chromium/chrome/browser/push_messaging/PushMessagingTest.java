@@ -76,7 +76,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         final PushMessagingServiceObserver.Listener listener = this;
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             FakeInstanceIDWithSubtype.clearDataAndSetEnabled(true);
@@ -87,7 +87,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PushMessagingServiceObserver.setListenerForTesting(null);
             FakeInstanceIDWithSubtype.clearDataAndSetEnabled(false);
@@ -105,7 +105,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     @Test
     @MediumTest
     @Feature({"Browser", "PushMessaging"})
-    public void testNotificationsPermissionDenied() throws InterruptedException, TimeoutException {
+    public void testNotificationsPermissionDenied() throws TimeoutException {
         // Deny Notifications permission before trying to subscribe Push.
         mNotificationTestRule.setNotificationContentSettingForOrigin(
                 ContentSettingValues.BLOCK, mEmbeddedTestServerRule.getOrigin());
@@ -131,7 +131,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     //@CommandLineFlags.Add("disable-features=ModalPermissionPrompts")
     @Test
     @DisabledTest
-    public void testPushPermissionDenied() throws InterruptedException, TimeoutException {
+    public void testPushPermissionDenied() throws TimeoutException {
         // Notifications permission should initially be prompt.
         Assert.assertEquals("\"default\"", runScriptBlocking("Notification.permission"));
 
@@ -184,7 +184,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     @MediumTest
     @Feature({"Browser", "PushMessaging"})
     @DisabledTest(message = "Modals are now enabled and test needs to be reworked crbug.com/935900")
-    public void testPushPermissionGranted() throws InterruptedException, TimeoutException {
+    public void testPushPermissionGranted() throws TimeoutException {
         // Notifications permission should initially be prompt.
         Assert.assertEquals("\"default\"", runScriptBlocking("Notification.permission"));
 
@@ -209,7 +209,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     @MediumTest
     @Feature({"Browser", "PushMessaging"})
     @RetryOnFailure
-    public void testPushAndShowNotification() throws InterruptedException, TimeoutException {
+    public void testPushAndShowNotification() throws TimeoutException {
         mNotificationTestRule.setNotificationContentSettingForOrigin(
                 ContentSettingValues.ALLOW, mEmbeddedTestServerRule.getOrigin());
         runScriptAndWaitForTitle("subscribePush()", "subscribe ok");
@@ -230,7 +230,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     @LargeTest
     @Feature({"Browser", "PushMessaging"})
     @RetryOnFailure
-    public void testDefaultNotification() throws InterruptedException, TimeoutException {
+    public void testDefaultNotification() throws TimeoutException {
         // Start off using the tab loaded in setUp().
         Assert.assertEquals(1, mNotificationTestRule.getActivity().getCurrentTabModel().getCount());
         Tab tab = mNotificationTestRule.getActivity().getActivityTab();
@@ -282,7 +282,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     /**
      * Runs {@code script} in the current tab and returns its synchronous result in JSON format.
      */
-    private String runScriptBlocking(String script) throws InterruptedException, TimeoutException {
+    private String runScriptBlocking(String script) throws TimeoutException {
         return JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 mNotificationTestRule.getWebContents(), script);
     }
@@ -291,8 +291,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
      * Runs {@code script} in the current tab and waits for the tab title to change to
      * {@code expectedTitle}.
      */
-    private void runScriptAndWaitForTitle(String script, String expectedTitle)
-            throws InterruptedException {
+    private void runScriptAndWaitForTitle(String script, String expectedTitle) {
         runScriptAndWaitForTitle(
                 script, expectedTitle, mNotificationTestRule.getActivity().getActivityTab());
     }
@@ -301,14 +300,13 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
      * Runs {@code script} in {@code tab} and waits for the tab title to change to
      * {@code expectedTitle}.
      */
-    private void runScriptAndWaitForTitle(String script, String expectedTitle, Tab tab)
-            throws InterruptedException {
+    private void runScriptAndWaitForTitle(String script, String expectedTitle, Tab tab) {
         JavaScriptUtils.executeJavaScript(tab.getWebContents(), script);
         waitForTitle(tab, expectedTitle);
     }
 
     private void sendPushAndWaitForCallback(Pair<String, String> appIdAndSenderId)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         final String appId = appIdAndSenderId.first;
         final String senderId = appIdAndSenderId.second;
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -327,7 +325,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     }
 
     @SuppressWarnings("MissingFail")
-    private void waitForTitle(Tab tab, String expectedTitle) throws InterruptedException {
+    private void waitForTitle(Tab tab, String expectedTitle) {
         TabTitleObserver titleObserver = new TabTitleObserver(tab, expectedTitle);
         try {
             titleObserver.waitForTitleUpdate(TITLE_UPDATE_TIMEOUT_SECONDS);

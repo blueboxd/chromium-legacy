@@ -15,10 +15,18 @@ namespace {
 const char kDefaultApplicationLocale[] = "us-en";
 }  // namespace
 
+class FontFallbackLinuxTest : public testing::Test {
+ public:
+  void SetUp() override {
+    // Clear the font fallback cache.
+    GetFallbackFontsCacheInstance()->Clear();
+  }
+};
+
 // If the Type 1 Symbol.pfb font is installed, it is returned as fallback font
 // for the PUA character 0xf6db. This test ensures we're not returning Type 1
 // fonts as fallback.
-TEST(FontFallbackLinuxTest, NoType1InFallbackFonts) {
+TEST_F(FontFallbackLinuxTest, NoType1InFallbackFonts) {
   FallbackFontData font_fallback_data =
       GetFallbackFontForChar(0xf6db, std::string());
   if (font_fallback_data.filename.length() >= 3u) {
@@ -30,7 +38,7 @@ TEST(FontFallbackLinuxTest, NoType1InFallbackFonts) {
   }
 }
 
-TEST(FontFallbackLinuxTest, GetFallbackFont) {
+TEST_F(FontFallbackLinuxTest, GetFallbackFont) {
   Font base_font;
 
   Font fallback_font_cjk;
@@ -44,16 +52,24 @@ TEST(FontFallbackLinuxTest, GetFallbackFont) {
   EXPECT_EQ(fallback_font_khmer.GetFontName(), "Noto Sans Khmer");
 }
 
-TEST(FontFallbackLinuxTest, Fallbacks) {
+TEST_F(FontFallbackLinuxTest, Fallbacks) {
+  EXPECT_EQ(0U, GetFallbackFontsCacheInstance()->size());
+
   Font default_font("sans", 13);
   std::vector<Font> fallbacks = GetFallbackFonts(default_font);
   EXPECT_FALSE(fallbacks.empty());
+  EXPECT_EQ(1U, GetFallbackFontsCacheInstance()->size());
 
   // The first fallback should be 'DejaVu Sans' which is the default linux
   // fonts. The fonts on linux are mock with test_fonts (see
   // third_party/tests_font).
   if (!fallbacks.empty())
     EXPECT_EQ(fallbacks[0].GetFontName(), "DejaVu Sans");
+
+  // Second lookup should not increase the cache size.
+  fallbacks = GetFallbackFonts(default_font);
+  EXPECT_FALSE(fallbacks.empty());
+  EXPECT_EQ(1U, GetFallbackFontsCacheInstance()->size());
 }
 
 }  // namespace gfx

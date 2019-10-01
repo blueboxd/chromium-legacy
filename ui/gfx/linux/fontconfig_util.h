@@ -7,6 +7,7 @@
 
 #include <fontconfig/fontconfig.h>
 
+#include "base/files/file_path.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/gfx_export.h"
 
@@ -16,6 +17,19 @@ struct FcPatternDeleter {
   void operator()(FcPattern* ptr) const { FcPatternDestroy(ptr); }
 };
 using ScopedFcPattern = std::unique_ptr<FcPattern, FcPatternDeleter>;
+
+// FcPattern accessor wrappers.
+GFX_EXPORT std::string GetFontName(FcPattern* pattern);
+GFX_EXPORT std::string GetFilename(FcPattern* pattern);
+GFX_EXPORT int GetFontTtcIndex(FcPattern* pattern);
+GFX_EXPORT bool IsFontBold(FcPattern* pattern);
+GFX_EXPORT bool IsFontItalic(FcPattern* pattern);
+GFX_EXPORT bool IsFontScalable(FcPattern* pattern);
+GFX_EXPORT std::string GetFontFormat(FcPattern* pattern);
+
+// Return the path of the font. Relative to the sysroot config specified in the
+// font config (see: FcConfigGetSysRoot(...)).
+GFX_EXPORT base::FilePath GetFontPath(FcPattern* pattern);
 
 // Returns the appropriate parameters for rendering the font represented by the
 // font config pattern.

@@ -39,7 +39,7 @@ public class DownloadUtilsTest {
     private static final String ITEM_ID = "42";
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         RecordHistogram.setDisabledForTests(true);
 
         HashMap<String, Boolean> features = new HashMap<String, Boolean>();
@@ -48,7 +48,7 @@ public class DownloadUtilsTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         RecordHistogram.setDisabledForTests(false);
     }
 

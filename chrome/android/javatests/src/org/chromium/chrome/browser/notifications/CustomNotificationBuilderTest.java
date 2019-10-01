@@ -54,7 +54,7 @@ public class CustomNotificationBuilderTest {
     public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mActivityTestRule.loadNativeLibraryNoBrowserProcess();
     }
 

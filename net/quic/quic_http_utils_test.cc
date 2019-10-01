@@ -59,23 +59,7 @@ TEST(QuicHttpUtilsTest, FilterSupportedAltSvcVersions) {
   altsvc.protocol_id = "quic";
   altsvc.version = alt_svc_versions_google;
   EXPECT_EQ(supported_alt_svc_versions,
-            FilterSupportedAltSvcVersions(altsvc, supported_versions, true));
-  EXPECT_EQ(supported_alt_svc_versions,
-            FilterSupportedAltSvcVersions(altsvc, supported_versions, false));
-
-  altsvc.protocol_id = "hq";
-  altsvc.version = alt_svc_versions_ietf;
-  EXPECT_EQ(supported_alt_svc_versions,
-            FilterSupportedAltSvcVersions(altsvc, supported_versions, true));
-  EXPECT_EQ(quic::ParsedQuicVersionVector(),
-            FilterSupportedAltSvcVersions(altsvc, supported_versions, false));
-
-  altsvc.protocol_id = "invalid_protocol";
-  altsvc.version = alt_svc_versions_ietf;
-  EXPECT_EQ(quic::ParsedQuicVersionVector(),
-            FilterSupportedAltSvcVersions(altsvc, supported_versions, true));
-  EXPECT_EQ(quic::ParsedQuicVersionVector(),
-            FilterSupportedAltSvcVersions(altsvc, supported_versions, false));
+            FilterSupportedAltSvcVersions(altsvc, supported_versions));
 }
 
 }  // namespace test

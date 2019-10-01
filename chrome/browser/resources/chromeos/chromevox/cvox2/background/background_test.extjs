@@ -2061,3 +2061,30 @@ TEST_F('ChromeVoxBackgroundTest', 'ReadPhoneticPronunciationTest', function() {
     mockFeedback.replay();
   });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'SimilarItemNavigation', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <h3><a href="#a">inner</a></h3>
+    <p>some text</p>
+    <button>some other text</button>
+    <a href="#b">outer1</a>
+    <h3>outer2</h3>
+  */}, function(root) {
+    assertEquals(RoleType.LINK, ChromeVoxState.instance.currentRange.start.node.role);
+    assertEquals('inner', ChromeVoxState.instance.currentRange.start.node.name);
+    mockFeedback.call(doCmd('nextSimilarItem'))
+        .expectSpeech('outer1', 'Link')
+        .call(doCmd('nextSimilarItem'))
+        .expectSpeech('inner', 'Link')
+        .call(doCmd('nextSimilarItem'))
+        .call(doCmd('previousSimilarItem'))
+        .expectSpeech('inner', 'Link')
+        .call(doCmd('nextHeading'))
+        .expectSpeech('outer2', 'Heading 3')
+        .call(doCmd('previousSimilarItem'))
+        .expectSpeech('inner', 'Heading 3');
+
+    mockFeedback.replay();
+  });
+});

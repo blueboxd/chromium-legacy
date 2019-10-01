@@ -100,7 +100,7 @@ public final class EditUrlSuggestionTest {
     /** Test that the suggestion is triggered. */
     @Test
     @SmallTest
-    public void testSuggestionTriggered() throws Exception {
+    public void testSuggestionTriggered() {
         mProcessor.onUrlFocusChange(true);
 
         Assert.assertTrue("The processor should handle the \"what you typed\" suggestion.",
@@ -118,7 +118,7 @@ public final class EditUrlSuggestionTest {
     /** Test that the suggestion is not triggered if it is not the first suggestion. */
     @Test
     @SmallTest
-    public void testWhatYouTypedSecondSuggestion() throws Exception {
+    public void testWhatYouTypedSecondSuggestion() {
         mProcessor.onUrlFocusChange(true);
 
         Assert.assertFalse("The processor should not handle the suggestion.",
@@ -131,7 +131,7 @@ public final class EditUrlSuggestionTest {
     /** Test the edit button is pressed, the correct method in the URL bar delegate is triggered. */
     @Test
     @SmallTest
-    public void testEditButtonPress() throws Exception {
+    public void testEditButtonPress() {
         mProcessor.onUrlFocusChange(true);
         mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion);
         mProcessor.populateModel(mWhatYouTypedSuggestion, mModel, 0);
@@ -144,7 +144,7 @@ public final class EditUrlSuggestionTest {
     /** Test that when suggestion is tapped, it still navigates to the correct location. */
     @Test
     @SmallTest
-    public void testPressSuggestion() throws Exception {
+    public void testPressSuggestion() {
         mProcessor.onUrlFocusChange(true);
         mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion);
         mProcessor.populateModel(mWhatYouTypedSuggestion, mModel, 0);

@@ -120,7 +120,7 @@ public class AssistantOnboardingCoordinatorTest {
     @Test
     @MediumTest
     @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/990118): re-enable
-    public void testOnboardingWithNoTabs() throws Exception {
+    public void testOnboardingWithNoTabs() {
         AssistantOnboardingCoordinator coordinator = createCoordinator(/* tab= */ null);
         showOnboardingAndWait(coordinator, mCallback);
 
@@ -157,8 +157,8 @@ public class AssistantOnboardingCoordinatorTest {
     }
 
     /** Trigger onboarding and wait until it is fully displayed. */
-    private void showOnboardingAndWait(AssistantOnboardingCoordinator coordinator,
-            Callback<Boolean> callback) throws Exception {
+    private void showOnboardingAndWait(
+            AssistantOnboardingCoordinator coordinator, Callback<Boolean> callback) {
         ThreadUtils.runOnUiThreadBlocking(() -> coordinator.show(callback));
         waitUntilViewMatchesCondition(withId(R.id.button_init_ok), isDisplayed());
     }

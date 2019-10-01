@@ -827,7 +827,7 @@ public class NetworkChangeNotifierTest {
     @UiThreadTest
     @MediumTest
     @Feature({"Android-AppBase"})
-    public void testQueryableAPIsReturnExpectedValuesFromMockDelegate() throws Exception {
+    public void testQueryableAPIsReturnExpectedValuesFromMockDelegate() {
         NetworkChangeNotifierAutoDetect.Observer observer =
                 new TestNetworkChangeNotifierAutoDetectObserver();
 
@@ -1031,7 +1031,7 @@ public class NetworkChangeNotifierTest {
     @MediumTest
     @Feature({"Android-AppBase"})
     @MinAndroidSdkLevel(Build.VERSION_CODES.M)
-    public void testIsProcessBoundToNetwork() throws Exception {
+    public void testIsProcessBoundToNetwork() {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) InstrumentationRegistry.getTargetContext().getSystemService(
                         Context.CONNECTIVITY_SERVICE);

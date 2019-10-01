@@ -127,11 +127,13 @@ void OnSharePathForLaunchApplication(
       base::BindOnce(OnApplicationLaunched, std::move(callback), app_id));
 }
 
-void LaunchTerminal(AppLaunchParams launch_params,
+void LaunchTerminal(Profile* profile,
+                    apps::AppLaunchParams launch_params,
                     GURL vsh_in_crosh_url,
                     Browser* browser,
                     crostini::LaunchCrostiniAppCallback callback) {
-  crostini::ShowContainerTerminal(launch_params, vsh_in_crosh_url, browser);
+  crostini::ShowContainerTerminal(profile, launch_params, vsh_in_crosh_url,
+                                  browser);
   std::move(callback).Run(true, "");
 }
 
@@ -418,14 +420,15 @@ void LaunchCrostiniApp(Profile* profile,
 
     GURL vsh_in_crosh_url = GenerateVshInCroshUrl(
         profile, vm_name, container_name, std::vector<std::string>());
-    AppLaunchParams launch_params = GenerateTerminalAppLaunchParams(profile);
+    apps::AppLaunchParams launch_params = GenerateTerminalAppLaunchParams();
     // Create the terminal here so it's created in the right display. If the
     // browser creation is delayed into the callback the root window for new
     // windows setting can be changed due to the launcher or shelf dismissal.
-    Browser* browser = CreateContainerTerminal(launch_params, vsh_in_crosh_url);
+    Browser* browser =
+        CreateContainerTerminal(profile, launch_params, vsh_in_crosh_url);
     launch_closure =
-        base::BindOnce(&LaunchTerminal, launch_params, vsh_in_crosh_url,
-                       browser, std::move(callback));
+        base::BindOnce(&LaunchTerminal, profile, launch_params,
+                       vsh_in_crosh_url, browser, std::move(callback));
   } else {
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
     launch_closure =

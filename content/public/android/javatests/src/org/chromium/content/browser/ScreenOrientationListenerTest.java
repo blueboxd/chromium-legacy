@@ -81,7 +81,7 @@ public class ScreenOrientationListenerTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mDisplayAndroid.removeObserver(mCallbackHelper);
             mDisplayAndroid = null;

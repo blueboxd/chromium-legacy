@@ -23,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
@@ -31,6 +32,7 @@
 #include "content/public/common/content_client.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
@@ -1680,7 +1682,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 // Returns an enum indicating the role from owner_.
 // internal
 - (ax::mojom::Role)internalRole {
-  return static_cast<ax::mojom::Role>(owner_->GetRole());
+  if ([self instanceActive])
+    return static_cast<ax::mojom::Role>(owner_->GetRole());
+  return ax::mojom::Role::kNone;
 }
 
 - (BOOL)shouldExposeNameInDescription {
@@ -1814,31 +1818,32 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
 // Returns a string indicating the NSAccessibility role of this object.
 - (NSString*)role {
-  if (![self instanceActive])
+  if (![self instanceActive]) {
+    TRACE_EVENT0("accessibility", "BrowserAccessibilityCocoa::role nil");
     return nil;
+  }
 
+  NSString* cocoa_role = nil;
   ax::mojom::Role role = [self internalRole];
   if (role == ax::mojom::Role::kCanvas &&
       owner_->GetBoolAttribute(ax::mojom::BoolAttribute::kCanvasHasFallback)) {
-    return NSAccessibilityGroupRole;
+    cocoa_role = NSAccessibilityGroupRole;
+  } else if ((owner_->IsPlainTextField() &&
+              owner_->HasState(ax::mojom::State::kMultiline)) ||
+             owner_->IsRichTextField()) {
+    cocoa_role = NSAccessibilityTextAreaRole;
+  } else if (role == ax::mojom::Role::kImage &&
+             owner_->HasExplicitlyEmptyName()) {
+    cocoa_role = NSAccessibilityUnknownRole;
+  } else if (owner_->IsWebAreaForPresentationalIframe()) {
+    cocoa_role = NSAccessibilityGroupRole;
+  } else {
+    cocoa_role = [AXPlatformNodeCocoa nativeRoleFromAXRole:role];
   }
 
-  if ((owner_->IsPlainTextField() &&
-       owner_->HasState(ax::mojom::State::kMultiline)) ||
-      owner_->IsRichTextField()) {
-    return NSAccessibilityTextAreaRole;
-  }
-
-  if (role == ax::mojom::Role::kImage && owner_->HasExplicitlyEmptyName())
-    return NSAccessibilityUnknownRole;
-
-  // If this is a web area for a presentational iframe, give it a role of
-  // something other than WebArea so that the fact that it's a separate doc
-  // is not exposed to AT.
-  if (owner_->IsWebAreaForPresentationalIframe())
-    return NSAccessibilityGroupRole;
-
-  return [AXPlatformNodeCocoa nativeRoleFromAXRole:role];
+  TRACE_EVENT1("accessibility", "BrowserAccessibilityCocoa::role",
+               "role=", base::SysNSStringToUTF8(cocoa_role));
+  return cocoa_role;
 }
 
 // Returns a string indicating the role description of this object.
@@ -1861,7 +1866,6 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   }
 
   NSString* role = [self role];
-
   ContentClient* content_client = content::GetContentClient();
 
   // The following descriptions are specific to webkit.
@@ -2517,6 +2521,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 // Returns the accessibility value for the given attribute.  If the value isn't
 // supported this will return nil.
 - (id)accessibilityAttributeValue:(NSString*)attribute {
+  TRACE_EVENT2("accessibility",
+               "BrowserAccessibilityCocoa::accessibilityAttributeValue",
+               "role=", ui::ToString([self internalRole]),
+               "attribute=", base::SysNSStringToUTF8(attribute));
   if (![self instanceActive])
     return nil;
 
@@ -2531,6 +2539,21 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 // value isn't supported this will return nil.
 - (id)accessibilityAttributeValue:(NSString*)attribute
                      forParameter:(id)parameter {
+  if (parameter && [parameter isKindOfClass:[NSNumber self]]) {
+    TRACE_EVENT2(
+        "accessibility",
+        "BrowserAccessibilityCocoa::accessibilityAttributeValue:forParameter",
+        "role=", ui::ToString([self internalRole]), "attribute=",
+        base::SysNSStringToUTF8(attribute) +
+            " parameter=" + base::SysNSStringToUTF8([parameter stringValue]));
+  } else {
+    TRACE_EVENT2(
+        "accessibility",
+        "BrowserAccessibilityCocoa::accessibilityAttributeValue:forParameter",
+        "role=", ui::ToString([self internalRole]),
+        "attribute=", base::SysNSStringToUTF8(attribute));
+  }
+
   if (![self instanceActive])
     return nil;
 
@@ -3026,6 +3049,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 // Returns an array of parameterized attributes names that this object will
 // respond to.
 - (NSArray*)accessibilityParameterizedAttributeNames {
+  TRACE_EVENT1(
+      "accessibility",
+      "BrowserAccessibilityCocoa::accessibilityParameterizedAttributeNames",
+      "role=", ui::ToString([self internalRole]));
   if (![self instanceActive])
     return nil;
 
@@ -3111,6 +3138,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
 // Returns an array of action names that this object will respond to.
 - (NSArray*)accessibilityActionNames {
+  TRACE_EVENT1("accessibility",
+               "BrowserAccessibilityCocoa::accessibilityActionNames",
+               "role=", ui::ToString([self internalRole]));
   if (![self instanceActive])
     return nil;
 
@@ -3137,6 +3167,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
 // Returns the list of accessibility attributes that this object supports.
 - (NSArray*)accessibilityAttributeNames {
+  TRACE_EVENT1("accessibility",
+               "BrowserAccessibilityCocoa::accessibilityAttributeNames",
+               "role=", ui::ToString([self internalRole]));
   if (![self instanceActive])
     return nil;
 
@@ -3386,6 +3419,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
 // Returns the index of the child in this objects array of children.
 - (NSUInteger)accessibilityGetIndexOf:(id)child {
+  TRACE_EVENT1("accessibility",
+               "BrowserAccessibilityCocoa::accessibilityGetIndexOf",
+               "role=", ui::ToString([self internalRole]));
   if (![self instanceActive])
     return 0;
 
@@ -3401,6 +3437,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 // Returns whether or not the specified attribute can be set by the
 // accessibility API via |accessibilitySetValue:forAttribute:|.
 - (BOOL)accessibilityIsAttributeSettable:(NSString*)attribute {
+  TRACE_EVENT2("accessibility",
+               "BrowserAccessibilityCocoa::accessibilityIsAttributeSettable",
+               "role=", ui::ToString([self internalRole]),
+               "attribute=", base::SysNSStringToUTF8(attribute));
   if (![self instanceActive])
     return NO;
 
@@ -3425,6 +3465,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 // Returns whether or not this object should be ignored in the accessibility
 // tree.
 - (BOOL)accessibilityIsIgnored {
+  TRACE_EVENT1("accessibility",
+               "BrowserAccessibilityCocoa::accessibilityIsIgnored",
+               "role=", ui::ToString([self internalRole]));
   if (![self instanceActive])
     return YES;
 
@@ -3434,6 +3477,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 // Performs the given accessibility action on the webkit accessibility object
 // that backs this object.
 - (void)accessibilityPerformAction:(NSString*)action {
+  TRACE_EVENT2("accessibility",
+               "BrowserAccessibilityCocoa::accessibilityPerformAction",
+               "role=", ui::ToString([self internalRole]),
+               "action=", base::SysNSStringToUTF8(action));
   if (![self instanceActive])
     return;
 
@@ -3477,6 +3524,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
 // Returns the description of the given action.
 - (NSString*)accessibilityActionDescription:(NSString*)action {
+  TRACE_EVENT2("accessibility",
+               "BrowserAccessibilityCocoa::accessibilityActionDescription",
+               "role=", ui::ToString([self internalRole]),
+               "action=", base::SysNSStringToUTF8(action));
   if (![self instanceActive])
     return nil;
 
@@ -3487,6 +3538,11 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 // This class does not support this.
 - (BOOL)accessibilitySetOverrideValue:(id)value
                          forAttribute:(NSString*)attribute {
+  TRACE_EVENT2(
+      "accessibility",
+      "BrowserAccessibilityCocoa::accessibilitySetOverrideValue:forAttribute",
+      "role=", ui::ToString([self internalRole]),
+      "attribute=", base::SysNSStringToUTF8(attribute));
   if (![self instanceActive])
     return NO;
   return NO;
@@ -3494,6 +3550,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
 // Sets the value for an accessibility attribute via the accessibility API.
 - (void)accessibilitySetValue:(id)value forAttribute:(NSString*)attribute {
+  TRACE_EVENT2("accessibility",
+               "BrowserAccessibilityCocoa::accessibilitySetValue:forAttribute",
+               "role=", ui::ToString([self internalRole]),
+               "attribute=", base::SysNSStringToUTF8(attribute));
   if (![self instanceActive])
     return;
 
@@ -3518,6 +3578,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 // or one of its children, so this will never return nil unless this
 // object is invalid.
 - (id)accessibilityHitTest:(NSPoint)point {
+  TRACE_EVENT2("accessibility",
+               "BrowserAccessibilityCocoa::accessibilityHitTest",
+               "role=", ui::ToString([self internalRole]),
+               "point=", base::SysNSStringToUTF8(NSStringFromPoint(point)));
   if (![self instanceActive])
     return nil;
 
@@ -3546,6 +3610,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 }
 
 - (BOOL)accessibilityNotifiesWhenDestroyed {
+  TRACE_EVENT1("accessibility",
+               "BrowserAccessibilityCocoa::accessibilityNotifiesWhenDestroyed",
+               "role=", ui::ToString([self internalRole]));
   // Indicate that BrowserAccessibilityCocoa will post a notification when it's
   // destroyed (see -detach). This allows VoiceOver to do some internal things
   // more efficiently.

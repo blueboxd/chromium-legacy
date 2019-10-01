@@ -105,7 +105,7 @@ public class ContentTextSelectionTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mActivityTestRule.launchContentShellWithUrl(DATA_URL);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
@@ -664,7 +664,7 @@ public class ContentTextSelectionTest {
         return ImeTestUtils.runBlockingOnHandlerNoException(
                 connection.getHandler(), new Callable<CharSequence>() {
                     @Override
-                    public CharSequence call() throws Exception {
+                    public CharSequence call() {
                         return connection.getTextBeforeCursor(length, flags);
                     }
                 });

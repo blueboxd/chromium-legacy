@@ -129,13 +129,12 @@ public class SadTabTest {
      * Confirm that after a successive refresh of a failed tab that failed to load, change the
      * button from "Reload" to "Send Feedback". If reloaded a third time and it is successful it
      * reverts from "Send Feedback" to "Reload".
-     * @throws InterruptedException
      * @throws IllegalArgumentException
      */
     @Test
     @SmallTest
     @Feature({"SadTab"})
-    public void testSadTabPageButtonText() throws IllegalArgumentException, InterruptedException {
+    public void testSadTabPageButtonText() throws IllegalArgumentException {
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
 
         Assert.assertFalse(isShowingSadTab(tab));

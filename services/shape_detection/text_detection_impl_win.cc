@@ -15,7 +15,8 @@
 #include "base/win/post_async_results.h"
 #include "base/win/scoped_hstring.h"
 #include "base/win/windows_version.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/shape_detection/detection_utils_win.h"
 #include "services/shape_detection/text_detection_impl.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -40,7 +41,8 @@ using base::win::ScopedHString;
 using Microsoft::WRL::ComPtr;
 
 // static
-void TextDetectionImpl::Create(mojom::TextDetectionRequest request) {
+void TextDetectionImpl::Create(
+    mojo::PendingReceiver<mojom::TextDetection> receiver) {
   // OcrEngine class is only available in Win 10 onwards (v10.0.10240.0) that
   // documents in
   // https://docs.microsoft.com/en-us/uwp/api/windows.media.ocr.ocrengine.
@@ -120,8 +122,8 @@ void TextDetectionImpl::Create(mojom::TextDetectionRequest request) {
   auto impl = std::make_unique<TextDetectionImplWin>(std::move(ocr_engine),
                                                      std::move(bitmap_factory));
   auto* impl_ptr = impl.get();
-  impl_ptr->SetBinding(
-      mojo::MakeStrongBinding(std::move(impl), std::move(request)));
+  impl_ptr->SetReceiver(
+      mojo::MakeSelfOwnedReceiver(std::move(impl), std::move(receiver)));
 }
 
 TextDetectionImplWin::TextDetectionImplWin(
@@ -146,7 +148,7 @@ void TextDetectionImplWin::Detect(const SkBitmap& bitmap,
   recognize_text_callback_ = std::move(callback);
   // This prevents the Detect function from being called before the
   // AsyncOperation completes.
-  binding_->PauseIncomingMethodCallProcessing();
+  receiver_->PauseIncomingMethodCallProcessing();
 }
 
 HRESULT TextDetectionImplWin::BeginDetect(const SkBitmap& bitmap) {
@@ -246,7 +248,7 @@ void TextDetectionImplWin::OnTextDetected(
     ComPtr<IOcrResult> ocr_result) {
   std::move(recognize_text_callback_)
       .Run(BuildTextDetectionResult(std::move(ocr_result)));
-  binding_->ResumeIncomingMethodCallProcessing();
+  receiver_->ResumeIncomingMethodCallProcessing();
 }
 
 }  // namespace shape_detection

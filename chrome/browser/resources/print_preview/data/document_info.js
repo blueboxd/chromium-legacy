@@ -159,7 +159,7 @@ Polymer({
         Math.round(pageLayout.marginTop), Math.round(pageLayout.marginRight),
         Math.round(pageLayout.marginBottom), Math.round(pageLayout.marginLeft));
 
-    const o = print_preview.ticket_items.CustomMarginsOrientation;
+    const o = print_preview.CustomMarginsOrientation;
     const pageSize = new print_preview.Size(
         pageLayout.contentWidth + margins.get(o.LEFT) + margins.get(o.RIGHT),
         pageLayout.contentHeight + margins.get(o.TOP) + margins.get(o.BOTTOM));

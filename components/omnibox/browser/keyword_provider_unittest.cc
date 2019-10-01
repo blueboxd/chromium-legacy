@@ -367,7 +367,7 @@ TEST_F(KeywordProviderTest, IgnoreRegistryForScoring) {
                           &AutocompleteMatch::fill_into_edit);
 }
 
-TEST_F(KeywordProviderTest, URL) {
+TEST_F(KeywordProviderTest, DISABLED_URL) {
   const MatchType<GURL> kEmptyMatch = { GURL(), false };
   TestData<GURL> url_cases[] = {
       // No query input -> empty destination URL.

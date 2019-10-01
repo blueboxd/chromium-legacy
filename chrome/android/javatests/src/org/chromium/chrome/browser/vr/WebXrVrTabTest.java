@@ -61,7 +61,7 @@ public class WebXrVrTabTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mWebXrVrTestFramework = new WebXrVrTestFramework(mTestRule);
         mWebVrTestFramework = new WebVrTestFramework(mTestRule);
     }
@@ -74,7 +74,7 @@ public class WebXrVrTabTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_SVR)
-    public void testPoseDataUnfocusedTab() throws InterruptedException {
+    public void testPoseDataUnfocusedTab() {
         testPoseDataUnfocusedTabImpl(
                 WebVrTestFramework.getFileUrlForHtmlTestFile("test_pose_data_unfocused_tab"),
                 mWebVrTestFramework);
@@ -91,14 +91,13 @@ public class WebXrVrTabTest {
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
-            public void testPoseDataUnfocusedTab_WebXr() throws InterruptedException {
+            public void testPoseDataUnfocusedTab_WebXr() {
         testPoseDataUnfocusedTabImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile(
                                              "webxr_test_pose_data_unfocused_tab"),
                 mWebXrVrTestFramework);
     }
 
-    private void testPoseDataUnfocusedTabImpl(String url, WebXrVrTestFramework framework)
-            throws InterruptedException {
+    private void testPoseDataUnfocusedTabImpl(String url, WebXrVrTestFramework framework) {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.executeStepAndWait("stepCheckFrameDataWhileFocusedTab()");
         WebContents firstTabContents = framework.getCurrentWebContents();

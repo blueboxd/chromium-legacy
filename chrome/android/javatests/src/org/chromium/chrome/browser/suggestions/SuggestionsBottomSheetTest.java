@@ -54,7 +54,7 @@ public class SuggestionsBottomSheetTest {
     @Test
     @RetryOnFailure
     @MediumTest
-    public void testContextMenu() throws InterruptedException, ExecutionException {
+    public void testContextMenu() throws ExecutionException {
         ViewHolder suggestionViewHolder =
                 mActivityRule.scrollToFirstItemOfType(ItemViewType.SNIPPET);
         assertFalse(mActivityRule.getBottomSheet().onInterceptTouchEvent(createTapEvent()));

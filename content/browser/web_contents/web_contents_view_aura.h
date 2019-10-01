@@ -9,10 +9,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/web_contents/web_contents_view.h"
@@ -20,9 +22,12 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/visibility.h"
+#include "content/public/browser/web_contents_view_delegate.h"
+#include "content/public/common/drop_data.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/dragdrop/drop_target_event.h"
 
 namespace ui {
 class DropTargetEvent;
@@ -34,7 +39,6 @@ class GestureNavSimple;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewAura;
 class TouchSelectionControllerClientAura;
-class WebContentsViewDelegate;
 class WebContentsImpl;
 class WebDragDestDelegate;
 
@@ -64,6 +68,27 @@ class CONTENT_EXPORT WebContentsViewAura
       RenderWidgetHostViewCreateFunction create_render_widget_host_view);
 
  private:
+  // A structure used to keep drop context for asynchronously finishing a
+  // drop operation.  This is required because some drop event data gets
+  // cleared out once PerformDropCallback() returns.
+  struct CONTENT_EXPORT OnPerformDropContext {
+    OnPerformDropContext(RenderWidgetHostImpl* target_rwh,
+                         const ui::DropTargetEvent& event,
+                         std::unique_ptr<ui::OSExchangeData> data,
+                         base::ScopedClosureRunner end_drag_runner,
+                         base::Optional<gfx::PointF> transformed_pt,
+                         gfx::PointF screen_pt);
+    OnPerformDropContext(OnPerformDropContext&& other);
+    ~OnPerformDropContext();
+
+    base::WeakPtr<RenderWidgetHostImpl> target_rwh;
+    ui::DropTargetEvent event;
+    std::unique_ptr<ui::OSExchangeData> data;
+    base::ScopedClosureRunner end_drag_runner;
+    base::Optional<gfx::PointF> transformed_pt;
+    gfx::PointF screen_pt;
+  };
+
   friend class WebContentsViewAuraTest;
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, EnableDisableOverscroll);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropFiles);
@@ -74,6 +99,8 @@ class CONTENT_EXPORT WebContentsViewAura
                            DragDropVirtualFilesOriginateFromRenderer);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropUrlData);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropOnOopif);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, OnPerformDrop_DeepScanOK);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, OnPerformDrop_DeepScanBad);
 
   class WindowObserver;
 
@@ -206,6 +233,11 @@ class CONTENT_EXPORT WebContentsViewAura
                            base::WeakPtr<RenderWidgetHostViewBase> target,
                            base::Optional<gfx::PointF> transformed_pt);
 
+  // Called from PerformDropCallback() to finish processing the drop.
+  void FinishOnPerformDropCallback(
+      OnPerformDropContext context,
+      WebContentsViewDelegate::DropCompletionResult result);
+
   // Completes a drop operation by communicating the drop data to the renderer
   // process.
   void CompleteDrop(RenderWidgetHostImpl* target_rwh,
@@ -243,6 +275,10 @@ class CONTENT_EXPORT WebContentsViewAura
   std::unique_ptr<AsyncDropTempFileDeleter> async_drop_temp_file_deleter_;
 #endif
   DropCallbackForTesting drop_callback_for_testing_;
+
+  // If this callback is initialized it must be run after the drop operation is
+  // done to send dragend event in EndDrag function.
+  base::ScopedClosureRunner end_drag_runner_;
 
   std::unique_ptr<aura::Window> window_;
 
@@ -292,7 +328,7 @@ class CONTENT_EXPORT WebContentsViewAura
 
   bool init_rwhv_with_null_parent_for_testing_;
 
-  // Used to ensure the drag and drop callbacks bound to this
+  // Used to ensure that the drag and drop callbacks bound to this
   // object are canceled when this object is destroyed.
   base::WeakPtrFactory<WebContentsViewAura> weak_ptr_factory_{this};
 

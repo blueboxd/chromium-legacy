@@ -51,7 +51,7 @@ public class LauncherActivityTest {
     private static final long DEVICE_STARTUP_TIMEOUT_MS = 15000L;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mContext = InstrumentationRegistry.getTargetContext();
     }
 

@@ -52,15 +52,16 @@ MultiDeviceSetupClientImpl::MultiDeviceSetupClientImpl(
           multidevice::RemoteDeviceCache::Factory::Get()->BuildInstance()),
       host_status_with_device_(GenerateDefaultHostStatusWithDevice()),
       feature_states_map_(GenerateDefaultFeatureStatesMap()) {
-  connector->BindInterface(mojom::kServiceName, &multidevice_setup_ptr_);
-  multidevice_setup_ptr_->AddHostStatusObserver(
+  connector->Connect(mojom::kServiceName,
+                     multidevice_setup_remote_.BindNewPipeAndPassReceiver());
+  multidevice_setup_remote_->AddHostStatusObserver(
       GenerateHostStatusObserverRemote());
-  multidevice_setup_ptr_->AddFeatureStateObserver(
+  multidevice_setup_remote_->AddFeatureStateObserver(
       GenerateFeatureStatesObserverRemote());
-  multidevice_setup_ptr_->GetHostStatus(
+  multidevice_setup_remote_->GetHostStatus(
       base::BindOnce(&MultiDeviceSetupClientImpl::OnHostStatusChanged,
                      base::Unretained(this)));
-  multidevice_setup_ptr_->GetFeatureStates(
+  multidevice_setup_remote_->GetFeatureStates(
       base::BindOnce(&MultiDeviceSetupClientImpl::OnFeatureStatesChanged,
                      base::Unretained(this)));
 }
@@ -69,7 +70,7 @@ MultiDeviceSetupClientImpl::~MultiDeviceSetupClientImpl() = default;
 
 void MultiDeviceSetupClientImpl::GetEligibleHostDevices(
     GetEligibleHostDevicesCallback callback) {
-  multidevice_setup_ptr_->GetEligibleHostDevices(base::BindOnce(
+  multidevice_setup_remote_->GetEligibleHostDevices(base::BindOnce(
       &MultiDeviceSetupClientImpl::OnGetEligibleHostDevicesCompleted,
       base::Unretained(this), std::move(callback)));
 }
@@ -78,12 +79,12 @@ void MultiDeviceSetupClientImpl::SetHostDevice(
     const std::string& host_device_id,
     const std::string& auth_token,
     mojom::MultiDeviceSetup::SetHostDeviceCallback callback) {
-  multidevice_setup_ptr_->SetHostDevice(host_device_id, auth_token,
-                                        std::move(callback));
+  multidevice_setup_remote_->SetHostDevice(host_device_id, auth_token,
+                                           std::move(callback));
 }
 
 void MultiDeviceSetupClientImpl::RemoveHostDevice() {
-  multidevice_setup_ptr_->RemoveHostDevice();
+  multidevice_setup_remote_->RemoveHostDevice();
 }
 
 const MultiDeviceSetupClient::HostStatusWithDevice&
@@ -96,8 +97,8 @@ void MultiDeviceSetupClientImpl::SetFeatureEnabledState(
     bool enabled,
     const base::Optional<std::string>& auth_token,
     mojom::MultiDeviceSetup::SetFeatureEnabledStateCallback callback) {
-  multidevice_setup_ptr_->SetFeatureEnabledState(feature, enabled, auth_token,
-                                                 std::move(callback));
+  multidevice_setup_remote_->SetFeatureEnabledState(
+      feature, enabled, auth_token, std::move(callback));
 }
 
 const MultiDeviceSetupClient::FeatureStatesMap&
@@ -107,13 +108,14 @@ MultiDeviceSetupClientImpl::GetFeatureStates() const {
 
 void MultiDeviceSetupClientImpl::RetrySetHostNow(
     mojom::MultiDeviceSetup::RetrySetHostNowCallback callback) {
-  multidevice_setup_ptr_->RetrySetHostNow(std::move(callback));
+  multidevice_setup_remote_->RetrySetHostNow(std::move(callback));
 }
 
 void MultiDeviceSetupClientImpl::TriggerEventForDebugging(
     mojom::EventTypeForDebugging type,
     mojom::MultiDeviceSetup::TriggerEventForDebuggingCallback callback) {
-  multidevice_setup_ptr_->TriggerEventForDebugging(type, std::move(callback));
+  multidevice_setup_remote_->TriggerEventForDebugging(type,
+                                                      std::move(callback));
 }
 
 void MultiDeviceSetupClientImpl::OnHostStatusChanged(
@@ -165,7 +167,7 @@ MultiDeviceSetupClientImpl::GenerateFeatureStatesObserverRemote() {
 }
 
 void MultiDeviceSetupClientImpl::FlushForTesting() {
-  multidevice_setup_ptr_.FlushForTesting();
+  multidevice_setup_remote_.FlushForTesting();
 }
 
 }  // namespace multidevice_setup

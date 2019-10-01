@@ -57,7 +57,7 @@ public class OnboardingDialogIntegrationTest {
     private EmbeddedTestServer mEmbeddedTestServer;
     private final AtomicReference<WebContents> mWebContentsRef = new AtomicReference<>();
 
-    public void loadTestPage() throws InterruptedException {
+    public void loadTestPage() {
         mEmbeddedTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
                 InstrumentationRegistry.getInstrumentation().getContext(), CERT_OK);
         mSyncTestRule.startMainActivityWithURL(mEmbeddedTestServer.getURL(FORM_URL));
@@ -70,7 +70,7 @@ public class OnboardingDialogIntegrationTest {
     }
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge.getInstance().setInteger(
@@ -86,14 +86,14 @@ public class OnboardingDialogIntegrationTest {
 
     @Test
     @IntegrationTest
-    public void testOnboardingIsShown() throws InterruptedException, TimeoutException {
+    public void testOnboardingIsShown() throws TimeoutException {
         DOMUtils.clickNode(mWebContentsRef.get(), SUBMIT_NODE_ID);
         waitForView(R.id.password_manager_dialog);
     }
 
     @Test
     @IntegrationTest
-    public void testOnboardingAccepted() throws InterruptedException, TimeoutException {
+    public void testOnboardingAccepted() throws TimeoutException {
         DOMUtils.clickNode(mWebContentsRef.get(), SUBMIT_NODE_ID);
         waitForView(R.id.password_manager_dialog);
         clickOnView(R.id.positive_button);
@@ -105,7 +105,7 @@ public class OnboardingDialogIntegrationTest {
 
     @Test
     @IntegrationTest
-    public void testOnboardingRejected() throws InterruptedException, TimeoutException {
+    public void testOnboardingRejected() throws TimeoutException {
         DOMUtils.clickNode(mWebContentsRef.get(), SUBMIT_NODE_ID);
         waitForView(R.id.password_manager_dialog);
         clickOnView(R.id.negative_button);
@@ -114,7 +114,7 @@ public class OnboardingDialogIntegrationTest {
 
     @Test
     @IntegrationTest
-    public void testOnboardingDismissedPressedBack() throws InterruptedException, TimeoutException {
+    public void testOnboardingDismissedPressedBack() throws TimeoutException {
         DOMUtils.clickNode(mWebContentsRef.get(), SUBMIT_NODE_ID);
         waitForView(R.id.password_manager_dialog);
         pressBack();

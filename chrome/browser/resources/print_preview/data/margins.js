@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview.ticket_items', function() {
+cr.define('print_preview', function() {
   'use strict';
 
   /**
@@ -61,18 +61,14 @@ cr.define('print_preview', function() {
       /**
        * Backing store for the margin values in points.
        * @type {!Object<
-       *     !print_preview.ticket_items.CustomMarginsOrientation, number>}
+       *     !print_preview.CustomMarginsOrientation, number>}
        * @private
        */
       this.value_ = {};
-      this.value_[print_preview.ticket_items.CustomMarginsOrientation.TOP] =
-          top;
-      this.value_[print_preview.ticket_items.CustomMarginsOrientation.RIGHT] =
-          right;
-      this.value_[print_preview.ticket_items.CustomMarginsOrientation.BOTTOM] =
-          bottom;
-      this.value_[print_preview.ticket_items.CustomMarginsOrientation.LEFT] =
-          left;
+      this.value_[print_preview.CustomMarginsOrientation.TOP] = top;
+      this.value_[print_preview.CustomMarginsOrientation.RIGHT] = right;
+      this.value_[print_preview.CustomMarginsOrientation.BOTTOM] = bottom;
+      this.value_[print_preview.CustomMarginsOrientation.LEFT] = left;
     }
 
     /**
@@ -83,15 +79,14 @@ cr.define('print_preview', function() {
      */
     static parse(state) {
       return new print_preview.Margins(
-          state[print_preview.ticket_items.CustomMarginsOrientation.TOP] || 0,
-          state[print_preview.ticket_items.CustomMarginsOrientation.RIGHT] || 0,
-          state[print_preview.ticket_items.CustomMarginsOrientation.BOTTOM] ||
-              0,
-          state[print_preview.ticket_items.CustomMarginsOrientation.LEFT] || 0);
+          state[print_preview.CustomMarginsOrientation.TOP] || 0,
+          state[print_preview.CustomMarginsOrientation.RIGHT] || 0,
+          state[print_preview.CustomMarginsOrientation.BOTTOM] || 0,
+          state[print_preview.CustomMarginsOrientation.LEFT] || 0);
     }
 
     /**
-     * @param {!print_preview.ticket_items.CustomMarginsOrientation}
+     * @param {!print_preview.CustomMarginsOrientation}
      *     orientation Specifies the margin value to get.
      * @return {number} Value of the margin of the given orientation.
      */
@@ -100,7 +95,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {!print_preview.ticket_items.CustomMarginsOrientation}
+     * @param {!print_preview.CustomMarginsOrientation}
      *     orientation Specifies the margin to set.
      * @param {number} value Updated value of the margin in points to modify.
      * @return {!print_preview.Margins} A new copy of |this| with the
@@ -110,10 +105,10 @@ cr.define('print_preview', function() {
       const newValue = this.clone_();
       newValue[orientation] = value;
       return new Margins(
-          newValue[print_preview.ticket_items.CustomMarginsOrientation.TOP],
-          newValue[print_preview.ticket_items.CustomMarginsOrientation.RIGHT],
-          newValue[print_preview.ticket_items.CustomMarginsOrientation.BOTTOM],
-          newValue[print_preview.ticket_items.CustomMarginsOrientation.LEFT]);
+          newValue[print_preview.CustomMarginsOrientation.TOP],
+          newValue[print_preview.CustomMarginsOrientation.RIGHT],
+          newValue[print_preview.CustomMarginsOrientation.BOTTOM],
+          newValue[print_preview.CustomMarginsOrientation.LEFT]);
     }
 
     /**

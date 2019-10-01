@@ -58,10 +58,6 @@ class OfflinePageTabHelper
  public:
   ~OfflinePageTabHelper() override;
 
-  // Creates the Mojo service that can listen to the renderer's archive events.
-  void CreateMhtmlPageNotifier(
-      offline_pages::mojom::MhtmlPageNotifierRequest request);
-
   // MhtmlPageNotifier overrides.
   void NotifyMhtmlPageLoadAttempted(blink::mojom::MHTMLLoadResult result,
                                     const GURL& main_frame_url,

@@ -140,7 +140,7 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   MockDataWriter* mock_writer = NavigateAndReturnMockWriter(kTestUrl1);
   EXPECT_TRUE(mock_writer);
 
-  auto writer_origin = observer()->GetWriterOriginForTesting();
+  auto writer_origin = observer()->writer_origin();
 
   EXPECT_EQ(url::Origin::Create(kTestUrl1), writer_origin);
 
@@ -162,8 +162,8 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   mock_writer = NavigateAndReturnMockWriter(kTestUrl2);
   ::testing::Mock::VerifyAndClear(mock_writer);
 
-  EXPECT_FALSE(writer_origin == observer()->GetWriterOriginForTesting());
-  writer_origin = observer()->GetWriterOriginForTesting();
+  EXPECT_FALSE(writer_origin == observer()->writer_origin());
+  writer_origin = observer()->writer_origin();
 
   EXPECT_EQ(url::Origin::Create(kTestUrl2), mock_writer->Origin());
 

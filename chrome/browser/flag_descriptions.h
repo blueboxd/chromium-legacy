@@ -1058,9 +1058,6 @@ extern const char kSendTabToSelfDescription[];
 extern const char kSendTabToSelfBroadcastName[];
 extern const char kSendTabToSelfBroadcastDescription[];
 
-extern const char kSendTabToSelfShowSendingUIName[];
-extern const char kSendTabToSelfShowSendingUIDescription[];
-
 extern const char kSendTabToSelfWhenSignedInName[];
 extern const char kSendTabToSelfWhenSignedInDescription[];
 
@@ -1456,9 +1453,6 @@ extern const char kDirectActionsDescription[];
 
 extern const char kDontPrefetchLibrariesName[];
 extern const char kDontPrefetchLibrariesDescription[];
-
-extern const char kDownloadHomeV2Name[];
-extern const char kDownloadHomeV2Description[];
 
 extern const char kDownloadRenameName[];
 extern const char kDownloadRenameDescription[];
@@ -2111,6 +2105,9 @@ extern const char kNewZipUnpackerDescription[];
 
 extern const char kPrinterProviderSearchAppName[];
 extern const char kPrinterProviderSearchAppDescription[];
+
+extern const char kReduceDisplayNotificationsName[];
+extern const char kReduceDisplayNotificationsDescription[];
 
 extern const char kReleaseNotesName[];
 extern const char kReleaseNotesDescription[];

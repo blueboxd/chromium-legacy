@@ -117,7 +117,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @DisabledTest
     // Failed multiple times on Android CFI https://crbug.com/954145
-    public void testShowWithAnimation() throws Exception {
+    public void testShowWithAnimation() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mContainerModel.set(
                     TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
@@ -145,7 +145,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @MediumTest
     @UiThreadTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-    public void testShowWithoutAnimation() throws Exception {
+    public void testShowWithoutAnimation() {
         mContainerModel.set(
                 TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
 
@@ -162,7 +162,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-    public void testHidesWithAnimation() throws Exception {
+    public void testHidesWithAnimation() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mContainerModel.set(
                     TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
@@ -200,7 +200,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @MediumTest
     @UiThreadTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-    public void testHidesWithoutAnimation() throws Exception {
+    public void testHidesWithoutAnimation() {
         mContainerModel.set(
                 TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
 
@@ -222,7 +222,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testIsIncognitoSetsBackgroundColor() throws Exception {
+    public void testIsIncognitoSetsBackgroundColor() {
         mContainerModel.set(TabListContainerProperties.IS_INCOGNITO, true);
         assertThat(mRecyclerView.getBackground(), instanceOf(ColorDrawable.class));
         assertThat(((ColorDrawable) mRecyclerView.getBackground()).getColor(),
@@ -239,7 +239,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testTopContainerHeightSetsTopMargin() throws Exception {
+    public void testTopContainerHeightSetsTopMargin() {
         assertThat(mRecyclerView.getLayoutParams(), instanceOf(FrameLayout.LayoutParams.class));
         assertThat(
                 ((FrameLayout.LayoutParams) mRecyclerView.getLayoutParams()).topMargin, equalTo(0));
@@ -252,7 +252,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testBottomContainerHeightSetsBottomMargin() throws Exception {
+    public void testBottomContainerHeightSetsBottomMargin() {
         assertThat(mRecyclerView.getLayoutParams(), instanceOf(FrameLayout.LayoutParams.class));
         assertThat(((FrameLayout.LayoutParams) mRecyclerView.getLayoutParams()).bottomMargin,
                 equalTo(0));

@@ -139,7 +139,7 @@ public class SmartClipProviderTest implements Handler.Callback {
 
     @After
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    public void tearDown() throws Exception {
+    public void tearDown() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             mHandlerThread.quitSafely();
         } else {
@@ -194,7 +194,7 @@ public class SmartClipProviderTest implements Handler.Callback {
     @MediumTest
     @Feature({"SmartClip"})
     @RetryOnFailure
-    public void testSmartClipDataCallback() throws InterruptedException, TimeoutException {
+    public void testSmartClipDataCallback() throws TimeoutException {
         final float dpi = Coordinates.createFor(mWebContents).getDeviceScaleFactor();
         final Rect bounds = DOMUtils.getNodeBounds(mWebContents, "simple_text");
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -226,7 +226,7 @@ public class SmartClipProviderTest implements Handler.Callback {
     @MediumTest
     @Feature({"SmartClip"})
     @RetryOnFailure
-    public void testSmartClipNoHandlerDoesntCrash() throws InterruptedException, TimeoutException {
+    public void testSmartClipNoHandlerDoesntCrash() throws TimeoutException {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Object scp = findSmartClipProvider(
                     mActivityTestRule.getActivity().findViewById(android.R.id.content));

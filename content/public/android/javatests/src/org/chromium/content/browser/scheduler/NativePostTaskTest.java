@@ -97,7 +97,7 @@ public class NativePostTaskTest {
 
     @Test
     @MediumTest
-    public void testCreateTaskRunner() throws Exception {
+    public void testCreateTaskRunner() {
         startNativeScheduler();
         TaskRunner taskQueue = PostTask.createTaskRunner(TaskTraits.USER_BLOCKING);
         // This should not time out.
@@ -129,7 +129,7 @@ public class NativePostTaskTest {
 
     @Test
     @MediumTest
-    public void testCreateSequencedTaskRunner() throws Exception {
+    public void testCreateSequencedTaskRunner() {
         startNativeScheduler();
         TaskRunner taskQueue = PostTask.createSequencedTaskRunner(TaskTraits.USER_BLOCKING);
         testRunningTasksInSequence(taskQueue);
@@ -137,7 +137,7 @@ public class NativePostTaskTest {
 
     @Test
     @MediumTest
-    public void testCreateSingleThreadSequencedTaskRunner() throws Exception {
+    public void testCreateSingleThreadSequencedTaskRunner() {
         startNativeScheduler();
         TaskRunner taskQueue = PostTask.createSingleThreadTaskRunner(TaskTraits.USER_BLOCKING);
         testRunningTasksInSequence(taskQueue);
@@ -254,7 +254,7 @@ public class NativePostTaskTest {
         }
     }
 
-    private void startNativeScheduler() throws Exception {
+    private void startNativeScheduler() {
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
         ContentMain.start(/* startServiceManagerOnly */ false);
         ThreadPoolTestHelpers.enableThreadPoolExecutionForTesting();

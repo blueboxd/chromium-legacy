@@ -42,6 +42,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/http/http_response_headers.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -179,7 +180,6 @@ PrerenderContents::PrerenderContents(
     Origin origin)
     : prerender_mode_(DEPRECATED_FULL_PRERENDER),
       prerendering_has_started_(false),
-      prerender_canceler_binding_(this),
       prerender_manager_(prerender_manager),
       prerender_url_(url),
       referrer_(referrer),
@@ -214,7 +214,7 @@ PrerenderContents::PrerenderContents(
 
   DCHECK(prerender_manager);
   registry_.AddInterface(base::Bind(
-      &PrerenderContents::OnPrerenderCancelerRequest, base::Unretained(this)));
+      &PrerenderContents::OnPrerenderCancelerReceiver, base::Unretained(this)));
 }
 
 bool PrerenderContents::Init() {
@@ -361,7 +361,8 @@ PrerenderContents::~PrerenderContents() {
       IPC::ChannelProxy* channel = host->GetChannel();
       // |channel| might be NULL in tests.
       if (host->IsInitializedAndNotDead() && channel) {
-        chrome::mojom::PrerenderDispatcherAssociatedPtr prerender_dispatcher;
+        mojo::AssociatedRemote<chrome::mojom::PrerenderDispatcher>
+            prerender_dispatcher;
         channel->GetRemoteAssociatedInterface(&prerender_dispatcher);
         prerender_dispatcher->PrerenderRemoveAliases(alias_urls_);
       }
@@ -484,7 +485,8 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
       IPC::ChannelProxy* channel = host->GetChannel();
       // |channel| might be NULL in tests.
       if (host->IsInitializedAndNotDead() && channel) {
-        chrome::mojom::PrerenderDispatcherAssociatedPtr prerender_dispatcher;
+        mojo::AssociatedRemote<chrome::mojom::PrerenderDispatcher>
+            prerender_dispatcher;
         channel->GetRemoteAssociatedInterface(&prerender_dispatcher);
         prerender_dispatcher->PrerenderAddAlias(url);
       }
@@ -763,10 +765,10 @@ void PrerenderContents::CancelPrerenderForSyncDeferredRedirect() {
   Destroy(FINAL_STATUS_BAD_DEFERRED_REDIRECT);
 }
 
-void PrerenderContents::OnPrerenderCancelerRequest(
-    chrome::mojom::PrerenderCancelerRequest request) {
-  if (!prerender_canceler_binding_.is_bound())
-    prerender_canceler_binding_.Bind(std::move(request));
+void PrerenderContents::OnPrerenderCancelerReceiver(
+    mojo::PendingReceiver<chrome::mojom::PrerenderCanceler> receiver) {
+  if (!prerender_canceler_receiver_.is_bound())
+    prerender_canceler_receiver_.Bind(std::move(receiver));
 }
 
 void PrerenderContents::AddNetworkBytes(int64_t bytes) {

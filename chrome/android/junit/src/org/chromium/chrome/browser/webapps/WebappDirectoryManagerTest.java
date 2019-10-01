@@ -58,7 +58,7 @@ public class WebappDirectoryManagerTest {
     private Context mContext;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mContext = RuntimeEnvironment.application;
         ContextUtils.initApplicationContext(mContext);
         ThreadUtils.setThreadAssertsDisabledForTesting(true);
@@ -72,7 +72,7 @@ public class WebappDirectoryManagerTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         FileUtils.recursivelyDeleteFile(mContext.getDataDir());
         FileUtils.recursivelyDeleteFile(mContext.getCodeCacheDir());
         FileUtils.recursivelyDeleteFile(WebappDirectoryManager.getBaseWebappDirectory(mContext));
@@ -91,7 +91,7 @@ public class WebappDirectoryManagerTest {
 
     @Test
     @Feature({"Webapps"})
-    public void testDeletesObsoleteDirectories() throws Exception {
+    public void testDeletesObsoleteDirectories() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
         // Seed the base directory with folders that correspond to pre-L web apps.
@@ -161,7 +161,7 @@ public class WebappDirectoryManagerTest {
      */
     @Test
     @Feature({"Webapps"})
-    public void testDoesNotCountFilesForNewlyScheduledUpdates() throws Exception {
+    public void testDoesNotCountFilesForNewlyScheduledUpdates() {
         File directory = new File(WebappDirectoryManager.getWebApkUpdateDirectory(), WEBAPK_ID_1);
         directory.mkdirs();
         registerWebapp(WEBAPK_ID_1);

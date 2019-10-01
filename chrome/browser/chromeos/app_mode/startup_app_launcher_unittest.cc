@@ -266,7 +266,7 @@ class TestKioskLoaderVisitor
       const ExternalInstallInfoFile& info) override {
     const extensions::Extension* existing =
         extension_registry_->GetExtensionById(
-            info.extension_id, extensions::ExtensionRegistry::COMPATIBILITY);
+            info.extension_id, extensions::ExtensionRegistry::EVERYTHING);
     // Alredy exists, and does not require update.
     if (existing && existing->version().CompareTo(info.version) >= 0)
       return false;
@@ -286,7 +286,7 @@ class TestKioskLoaderVisitor
       const ExternalInstallInfoUpdateUrl& info,
       bool is_initial_load) override {
     if (extension_registry_->GetExtensionById(
-            info.extension_id, extensions::ExtensionRegistry::COMPATIBILITY))
+            info.extension_id, extensions::ExtensionRegistry::EVERYTHING))
       return false;
 
     if (!extension_service_->pending_extension_manager()

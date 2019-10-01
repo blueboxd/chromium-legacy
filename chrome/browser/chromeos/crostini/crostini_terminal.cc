@@ -45,9 +45,9 @@ GURL GenerateVshInCroshUrl(Profile* profile,
   return GURL(base::JoinString(pieces, "&args[]="));
 }
 
-AppLaunchParams GenerateTerminalAppLaunchParams(Profile* profile) {
-  AppLaunchParams launch_params(
-      profile, kCrostiniCroshBuiltinAppId,
+apps::AppLaunchParams GenerateTerminalAppLaunchParams() {
+  apps::AppLaunchParams launch_params(
+      kCrostiniCroshBuiltinAppId,
       apps::mojom::LaunchContainer::kLaunchContainerWindow,
       WindowOpenDisposition::NEW_WINDOW,
       apps::mojom::AppLaunchSource::kSourceAppLauncher);
@@ -56,15 +56,17 @@ AppLaunchParams GenerateTerminalAppLaunchParams(Profile* profile) {
   return launch_params;
 }
 
-Browser* CreateContainerTerminal(const AppLaunchParams& launch_params,
+Browser* CreateContainerTerminal(Profile* profile,
+                                 const apps::AppLaunchParams& launch_params,
                                  const GURL& vsh_in_crosh_url) {
-  return CreateApplicationWindow(launch_params, vsh_in_crosh_url);
+  return CreateApplicationWindow(profile, launch_params, vsh_in_crosh_url);
 }
 
-void ShowContainerTerminal(const AppLaunchParams& launch_params,
+void ShowContainerTerminal(Profile* profile,
+                           const apps::AppLaunchParams& launch_params,
                            const GURL& vsh_in_crosh_url,
                            Browser* browser) {
-  ShowApplicationWindow(launch_params, vsh_in_crosh_url, browser,
+  ShowApplicationWindow(profile, launch_params, vsh_in_crosh_url, browser,
                         WindowOpenDisposition::NEW_FOREGROUND_TAB);
   browser->window()->GetNativeWindow()->SetProperty(
       kOverrideWindowIconResourceIdKey, IDR_LOGO_CROSTINI_TERMINAL);
@@ -76,10 +78,11 @@ void LaunchContainerTerminal(Profile* profile,
                              const std::vector<std::string>& terminal_args) {
   GURL vsh_in_crosh_url =
       GenerateVshInCroshUrl(profile, vm_name, container_name, terminal_args);
-  AppLaunchParams launch_params = GenerateTerminalAppLaunchParams(profile);
+  apps::AppLaunchParams launch_params = GenerateTerminalAppLaunchParams();
 
-  Browser* browser = CreateContainerTerminal(launch_params, vsh_in_crosh_url);
-  ShowContainerTerminal(launch_params, vsh_in_crosh_url, browser);
+  Browser* browser =
+      CreateContainerTerminal(profile, launch_params, vsh_in_crosh_url);
+  ShowContainerTerminal(profile, launch_params, vsh_in_crosh_url, browser);
 }
 
 }  // namespace crostini

@@ -232,7 +232,7 @@ downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
         content::DownloadItemUtils::GetBrowserContext(download_item));
     auto* registry = extensions::ExtensionRegistry::Get(profile);
     const extensions::Extension* extension = registry->GetExtensionById(
-        by_ext->id(), extensions::ExtensionRegistry::COMPATIBILITY);
+        by_ext->id(), extensions::ExtensionRegistry::EVERYTHING);
     if (extension)
       by_ext_name = extension->name();
   }

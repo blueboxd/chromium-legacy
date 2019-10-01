@@ -12,12 +12,42 @@
 namespace optimization_guide {
 
 TEST(PredictionModelTest, ValidPredictionModel) {
-  std::unique_ptr<optimization_guide::proto::PredictionModel> prediction_model =
-      std::make_unique<optimization_guide::proto::PredictionModel>();
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      std::make_unique<proto::PredictionModel>();
+  prediction_model->mutable_model()->mutable_threshold()->set_value(5.0);
 
-  optimization_guide::proto::DecisionTree* decision_tree_model =
-      prediction_model->mutable_model()->mutable_decision_tree();
-  decision_tree_model->set_weight(2.0);
+  proto::DecisionTree decision_tree_model = proto::DecisionTree();
+  decision_tree_model.set_weight(2.0);
+
+  proto::TreeNode* tree_node = decision_tree_model.add_nodes();
+  tree_node->mutable_node_id()->set_value(0);
+  tree_node->mutable_binary_node()->mutable_left_child_id()->set_value(1);
+  tree_node->mutable_binary_node()->mutable_right_child_id()->set_value(2);
+  tree_node->mutable_binary_node()
+      ->mutable_inequality_left_child_test()
+      ->mutable_feature_id()
+      ->mutable_id()
+      ->set_value("agg1");
+  tree_node->mutable_binary_node()
+      ->mutable_inequality_left_child_test()
+      ->set_type(proto::InequalityTest::LESS_OR_EQUAL);
+  tree_node->mutable_binary_node()
+      ->mutable_inequality_left_child_test()
+      ->mutable_threshold()
+      ->set_float_value(1.0);
+
+  tree_node = decision_tree_model.add_nodes();
+  tree_node->mutable_node_id()->set_value(1);
+  tree_node->mutable_leaf()->mutable_vector()->add_value()->set_double_value(
+      2.);
+
+  tree_node = decision_tree_model.add_nodes();
+  tree_node->mutable_node_id()->set_value(2);
+  tree_node->mutable_leaf()->mutable_vector()->add_value()->set_double_value(
+      4.);
+
+  *prediction_model->mutable_model()->mutable_decision_tree() =
+      decision_tree_model;
 
   optimization_guide::proto::ModelInfo* model_info =
       prediction_model->mutable_model_info();

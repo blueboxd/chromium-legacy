@@ -165,14 +165,14 @@ void BarcodeDetectionImplMacVision::Detect(const SkBitmap& bitmap,
   detected_callback_ = std::move(callback);
   // This prevents the Detect function from being called before the
   // VisionAPIAsyncRequestMac completes.
-  if (binding_)  // Can be unbound in unit testing.
-    binding_->PauseIncomingMethodCallProcessing();
+  if (receiver_)  // Can be unbound in unit testing.
+    receiver_->PauseIncomingMethodCallProcessing();
 }
 
 void BarcodeDetectionImplMacVision::OnBarcodesDetected(VNRequest* request,
                                                        NSError* error) {
-  if (binding_)  // Can be unbound in unit testing.
-    binding_->ResumeIncomingMethodCallProcessing();
+  if (receiver_)  // Can be unbound in unit testing.
+    receiver_->ResumeIncomingMethodCallProcessing();
 
   if ([request.results count] == 0 || error) {
     std::move(detected_callback_).Run({});

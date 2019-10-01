@@ -43,7 +43,7 @@ public class PaymentRequestCcCanMakePaymentQueryTest implements MainActivityStar
     }
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         // The user has a valid credit card without a billing address on file. This is sufficient
         // for canMakePayment() to return true.
         new AutofillTestHelper().setCreditCard(new CreditCard("", "https://example.com", true, true,
@@ -54,7 +54,7 @@ public class PaymentRequestCcCanMakePaymentQueryTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanMakePayment() throws InterruptedException, TimeoutException {
+    public void testCanMakePayment() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
         mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
@@ -92,7 +92,7 @@ public class PaymentRequestCcCanMakePaymentQueryTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCanMakePaymentDisabled() throws InterruptedException, TimeoutException {
+    public void testCanMakePaymentDisabled() throws TimeoutException {
         TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> {
             PrefServiceBridge.getInstance().setBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED, false);
         });

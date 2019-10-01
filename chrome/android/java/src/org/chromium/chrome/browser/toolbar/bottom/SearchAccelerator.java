@@ -64,7 +64,11 @@ class SearchAccelerator extends ChromeImageButton
     public void setWrapperView(ViewGroup wrapper) {
         mWrapper = wrapper;
         mLabel = mWrapper.findViewById(R.id.search_accelerator_label);
-        if (FeatureUtilities.isLabeledBottomToolbarEnabled()) mLabel.setVisibility(View.VISIBLE);
+        if (FeatureUtilities.isLabeledBottomToolbarEnabled()) {
+            mLabel.setVisibility(View.VISIBLE);
+        } else {
+            mWrapper.setBackground(null);
+        }
     }
 
     @Override

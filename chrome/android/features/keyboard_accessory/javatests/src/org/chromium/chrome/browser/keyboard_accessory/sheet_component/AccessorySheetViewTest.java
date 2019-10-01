@@ -55,7 +55,6 @@ import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
 
 /**
  * View tests for the keyboard accessory sheet component.
@@ -96,8 +95,7 @@ public class AccessorySheetViewTest {
 
     @Test
     @MediumTest
-    public void testAccessoryVisibilityChangedByModel()
-            throws ExecutionException, InterruptedException {
+    public void testAccessoryVisibilityChangedByModel() throws InterruptedException {
         // Initially, there shouldn't be a view yet.
         assertNull(mViewPager.poll());
 

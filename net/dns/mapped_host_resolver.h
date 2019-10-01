@@ -61,8 +61,6 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
   HostResolverManager* GetManagerForTesting() override;
 
  private:
-  class AlwaysErrorRequestImpl;
-
   std::unique_ptr<HostResolver> impl_;
 
   HostMappingRules rules_;

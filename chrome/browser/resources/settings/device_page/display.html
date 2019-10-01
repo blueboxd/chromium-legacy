@@ -65,10 +65,6 @@
         margin-top: 20px;
       }
 
-      #nightLightOffSpacer {
-        padding-top: 28px;
-      }
-
       iron-collapse {
        width: 100%;
       }
@@ -246,63 +242,53 @@
         sub-label="$i18n{displayNightLightText}">
     </settings-toggle-button>
 
-    <template is="dom-if" if="[[prefs.ash.night_light.enabled.value]]">
-      <div id="nightLightSettingsDiv"
-          class="settings-box continuation start layout vertical">
-        <!-- Color temperature slider -->
-        <div id="nightLightTemperatureDiv"
-            class="settings-box indented continuation">
-          <div class="start text-area" id="colorTemperatureLabel">
-            $i18n{displayNightLightTemperatureLabel}
-          </div>
-          <settings-slider id="colorTemperatureSlider"
-              aria-labelledby="colorTemperatureLabel" min="0" max="100"
-              scale="100" label-min="$i18n{displayNightLightTempSliderMinLabel}"
-              label-max="$i18n{displayNightLightTempSliderMaxLabel}"
-              pref="{{prefs.ash.night_light.color_temperature}}">
-          </settings-slider>
+    <div id="nightLightSettingsDiv"
+        class="settings-box continuation start layout vertical">
+      <!-- Color temperature slider -->
+      <div id="nightLightTemperatureDiv"
+          class="settings-box indented continuation"
+          hidden$="[[!prefs.ash.night_light.enabled.value]]">
+        <div class="start text-area" id="colorTemperatureLabel">
+          $i18n{displayNightLightTemperatureLabel}
         </div>
-        <!-- Schedule settings -->
-        <div class="settings-box indented">
-          <div class="start text-area">
-            <div id="nightLightScheduleLabel" class="label">
-              $i18n{displayNightLightScheduleLabel}
-            </div>
-            <div id="nightLightScheduleSubLabel" class="secondary label"
-                hidden$="[[!nightLightScheduleSubLabel_]]">
-              [[nightLightScheduleSubLabel_]]
-            </div>
-          </div>
-          <settings-dropdown-menu
-              id="nightLightScheduleTypeDropDown"
-              aria-labelledby="nightLightScheduleLabel"
-              pref="{{prefs.ash.night_light.schedule_type}}"
-              menu-options="[[scheduleTypesList_]]">
-          </settings-dropdown-menu>
-        </div>
-        <!-- Custom schedule slider -->
-        <iron-collapse id="nightLightCustomScheduleCollapse"
-            opened="[[shouldOpenCustomScheduleCollapse_]]">
-          <div class="settings-box indented continuation">
-            <div class="start text-area layout vertical">
-              <div class="settings-box continuation self-stretch">
-                <night-light-slider id="nightLightSlider" prefs="{{prefs}}">
-                </night-light-slider>
-              </div>
-            </div>
-          </div>
-        </iron-collapse>
+        <settings-slider id="colorTemperatureSlider"
+            aria-labelledby="colorTemperatureLabel" min="0" max="100"
+            scale="100" label-min="$i18n{displayNightLightTempSliderMinLabel}"
+            label-max="$i18n{displayNightLightTempSliderMaxLabel}"
+            pref="{{prefs.ash.night_light.color_temperature}}">
+        </settings-slider>
       </div>
-    </template>
-    <template is="dom-if" if="[[!prefs.ash.night_light.enabled.value]]">
-      <!-- When the user scrolls to the bottom then enables Night Light ensure
-           that the "Schedule" select is at least partially visible so the user
-           knows they can scroll down for more controls. -->
-      <div id="nightLightOffSpacer"></div>
-    </template>
-
-    <!-- NOTE: If you add more controls here you can remove the
-         nightLightOffSpacer div above. -->
+      <!-- Schedule settings -->
+      <div class="settings-box indented">
+        <div class="start text-area">
+          <div id="nightLightScheduleLabel" class="label">
+            $i18n{displayNightLightScheduleLabel}
+          </div>
+          <div id="nightLightScheduleSubLabel" class="secondary label"
+              hidden$="[[!nightLightScheduleSubLabel_]]">
+            [[nightLightScheduleSubLabel_]]
+          </div>
+        </div>
+        <settings-dropdown-menu
+            id="nightLightScheduleTypeDropDown"
+            aria-labelledby="nightLightScheduleLabel"
+            pref="{{prefs.ash.night_light.schedule_type}}"
+            menu-options="[[scheduleTypesList_]]">
+        </settings-dropdown-menu>
+      </div>
+      <!-- Custom schedule slider -->
+      <iron-collapse id="nightLightCustomScheduleCollapse"
+          opened="[[shouldOpenCustomScheduleCollapse_]]">
+        <div class="settings-box indented continuation">
+          <div class="start text-area layout vertical">
+            <div class="settings-box continuation self-stretch">
+              <night-light-slider id="nightLightSlider" prefs="{{prefs}}">
+              </night-light-slider>
+            </div>
+          </div>
+        </div>
+      </iron-collapse>
+    </div>
 
   </template>
   <script src="display.js"></script>

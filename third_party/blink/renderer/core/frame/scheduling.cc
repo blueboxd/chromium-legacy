@@ -61,4 +61,9 @@ bool Scheduling::isInputPending(ScriptState* script_state,
   return has_pending_input;
 }
 
+bool Scheduling::isFramePending() const {
+  auto* scheduler = ThreadScheduler::Current();
+  return scheduler->IsBeginMainFrameScheduled();
+}
+
 }  // namespace blink

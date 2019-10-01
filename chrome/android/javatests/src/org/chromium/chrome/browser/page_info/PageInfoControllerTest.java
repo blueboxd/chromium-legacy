@@ -47,7 +47,7 @@ public class PageInfoControllerTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
@@ -58,7 +58,7 @@ public class PageInfoControllerTest {
     @MediumTest
     @Feature({"PageInfoController"})
     @RetryOnFailure
-    public void testShow() throws InterruptedException {
+    public void testShow() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PageInfoController.show(mActivityTestRule.getActivity(),
                     mActivityTestRule.getActivity().getActivityTab(), null,
@@ -73,7 +73,7 @@ public class PageInfoControllerTest {
     @MediumTest
     @Feature({"PageInfoController"})
     @RetryOnFailure
-    public void testPageInfoUrl() throws InterruptedException {
+    public void testPageInfoUrl() {
         String testUrl = mTestServer.getURLWithHostName("xn--allestrungen-9ib.ch", "/");
         mActivityTestRule.loadUrlInTab(
                 testUrl, PageTransition.TYPED, mActivityTestRule.getActivity().getActivityTab());

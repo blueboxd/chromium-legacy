@@ -42,7 +42,7 @@ public final class ReachedCodeProfilerTest {
     @SmallTest
     @DisableFeatures(ChromeFeatureList.REACHED_CODE_PROFILER)
     @CommandLineFlags.Add(BaseSwitches.ENABLE_REACHED_CODE_PROFILER)
-    public void testExplicitlyEnableViaCommandLineSwitch() throws Exception {
+    public void testExplicitlyEnableViaCommandLineSwitch() {
         mActivityTestRule.startMainActivityFromLauncher();
         assertReachedCodeProfilerIsEnabled();
     }
@@ -54,7 +54,7 @@ public final class ReachedCodeProfilerTest {
     @Test
     @SmallTest
     @EnableFeatures(ChromeFeatureList.REACHED_CODE_PROFILER)
-    public void testEnabledViaCachedSharedPreference() throws Exception {
+    public void testEnabledViaCachedSharedPreference() {
         setReachedCodeProfilerSharedPreference(true);
         mActivityTestRule.startMainActivityFromLauncher();
         assertReachedCodeProfilerIsEnabled();
@@ -67,7 +67,7 @@ public final class ReachedCodeProfilerTest {
     @Test
     @SmallTest
     @EnableFeatures(ChromeFeatureList.REACHED_CODE_PROFILER)
-    public void testSharedPreferenceIsCached_Enable() throws Exception {
+    public void testSharedPreferenceIsCached_Enable() {
         mActivityTestRule.startMainActivityFromLauncher();
 
         Assert.assertTrue(getReachedCodeProfilerSharedPreference());
@@ -83,7 +83,7 @@ public final class ReachedCodeProfilerTest {
     @Test
     @SmallTest
     @DisableFeatures(ChromeFeatureList.REACHED_CODE_PROFILER)
-    public void testSharedPreferenceIsCached_Disable() throws Exception {
+    public void testSharedPreferenceIsCached_Disable() {
         setReachedCodeProfilerSharedPreference(true);
         mActivityTestRule.startMainActivityFromLauncher();
 
@@ -100,7 +100,7 @@ public final class ReachedCodeProfilerTest {
     @SmallTest
     @CommandLineFlags.
     Add("force-fieldtrials=" + ChromeFeatureList.REACHED_CODE_PROFILER + "/" + FAKE_GROUP_NAME)
-    public void testSharedPreferenceTrialGroupIsCached() throws Exception {
+    public void testSharedPreferenceTrialGroupIsCached() {
         mActivityTestRule.startMainActivityFromLauncher();
         Assert.assertEquals(FAKE_GROUP_NAME,
                 ChromePreferenceManager.getInstance().readString(

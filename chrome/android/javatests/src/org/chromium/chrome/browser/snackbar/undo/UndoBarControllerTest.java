@@ -156,7 +156,7 @@ public class UndoBarControllerTest {
     private Snackbar getCurrentSnackbar() throws ExecutionException {
         return TestThreadUtils.runOnUiThreadBlocking(new Callable<Snackbar>() {
             @Override
-            public Snackbar call() throws Exception {
+            public Snackbar call() {
                 return mSnackbarManager.getCurrentSnackbarForTesting();
             }
         });

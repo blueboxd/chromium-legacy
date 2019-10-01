@@ -71,14 +71,14 @@ public class BookmarkPersonalizedSigninPromoTest {
             new AccountManagerTestRule(FakeAccountManagerDelegate.ENABLE_PROFILE_DATA_SOURCE);
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mActivityTestRule.startMainActivityFromLauncher();
     }
 
     @Test
     @MediumTest
     @DisabledTest(message = "crbug.com/789531")
-    public void testManualDismissPromo() throws Exception {
+    public void testManualDismissPromo() {
         openBookmarkManager();
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
         onView(withId(R.id.signin_promo_close_button)).perform(click());
@@ -89,7 +89,7 @@ public class BookmarkPersonalizedSigninPromoTest {
     @LargeTest
     @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/776405.
     @DisabledTest(message = "crbug.com/789531")
-    public void testAutoDismissPromo() throws Exception {
+    public void testAutoDismissPromo() {
         int impressionCap = SigninPromoController.getMaxImpressionsBookmarksForTests();
         for (int impression = 0; impression < impressionCap; impression++) {
             openBookmarkManager();
@@ -103,7 +103,7 @@ public class BookmarkPersonalizedSigninPromoTest {
     @Test
     @MediumTest
     @DisabledTest(message = "crbug.com/789531")
-    public void testSigninButtonDefaultAccount() throws Exception {
+    public void testSigninButtonDefaultAccount() {
         addTestAccount();
         openBookmarkManager();
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
@@ -125,7 +125,7 @@ public class BookmarkPersonalizedSigninPromoTest {
     @Test
     @MediumTest
     @DisabledTest(message = "crbug.com/789531")
-    public void testSigninButtonNotDefaultAccount() throws Exception {
+    public void testSigninButtonNotDefaultAccount() {
         addTestAccount();
         openBookmarkManager();
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
@@ -146,7 +146,7 @@ public class BookmarkPersonalizedSigninPromoTest {
     @Test
     @MediumTest
     @DisabledTest(message = "crbug.com/789531")
-    public void testSigninButtonNewAccount() throws Exception {
+    public void testSigninButtonNewAccount() {
         openBookmarkManager();
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
 
@@ -165,7 +165,7 @@ public class BookmarkPersonalizedSigninPromoTest {
         assertTrue(expectedIntent.filterEquals(startedIntents.get(0)));
     }
 
-    private void openBookmarkManager() throws InterruptedException {
+    private void openBookmarkManager() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> BookmarkUtils.showBookmarkManager(mActivityTestRule.getActivity()));
     }

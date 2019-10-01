@@ -590,6 +590,7 @@ void StorageAreaImpl::OnMapLoaded(
                                           weak_ptr_factory_.GetWeakPtr()));
     return;
   }
+
   keys_only_map_.clear();
   map_state_ = MapState::LOADED_KEYS_AND_VALUES;
 
@@ -634,6 +635,9 @@ void StorageAreaImpl::OnMapLoaded(
     database_ = nullptr;
     SetCacheMode(CacheMode::KEYS_AND_VALUES);
   }
+
+  if (on_load_callback_for_testing_)
+    std::move(on_load_callback_for_testing_).Run();
 
   OnLoadComplete();
 }

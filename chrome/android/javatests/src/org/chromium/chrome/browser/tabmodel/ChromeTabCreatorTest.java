@@ -53,7 +53,7 @@ public class ChromeTabCreatorTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
@@ -64,8 +64,7 @@ public class ChromeTabCreatorTest {
     @Restriction(RESTRICTION_TYPE_LOW_END_DEVICE)
     @MediumTest
     @Feature({"Browser"})
-    public void testCreateNewTabInBackgroundLowEnd()
-            throws ExecutionException, InterruptedException {
+    public void testCreateNewTabInBackgroundLowEnd() throws ExecutionException {
         final Tab fgTab = mActivityTestRule.getActivity().getActivityTab();
         final Tab bgTab = TestThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
             @Override
@@ -99,7 +98,7 @@ public class ChromeTabCreatorTest {
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @MediumTest
     @Feature({"Browser"})
-    public void testCreateNewTabInBackground() throws ExecutionException, InterruptedException {
+    public void testCreateNewTabInBackground() throws ExecutionException {
         final Tab fgTab = mActivityTestRule.getActivity().getActivityTab();
         Tab bgTab = TestThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
             @Override

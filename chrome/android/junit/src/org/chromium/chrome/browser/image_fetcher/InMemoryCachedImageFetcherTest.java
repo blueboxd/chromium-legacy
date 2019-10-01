@@ -97,7 +97,7 @@ public class InMemoryCachedImageFetcherTest {
 
     @Test
     @SmallTest
-    public void testFetchImageCachesFirstCall() throws Exception {
+    public void testFetchImageCachesFirstCall() {
         answerFetch(mBitmap, mCachedImageFetcher, false);
         mInMemoryCachedImageFetcher.fetchImage(
                 URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX, mCallback);
@@ -118,7 +118,7 @@ public class InMemoryCachedImageFetcherTest {
 
     @Test
     @SmallTest
-    public void testFetchImageReturnsNullWhenFetcherIsNull() throws Exception {
+    public void testFetchImageReturnsNullWhenFetcherIsNull() {
         answerFetch(mBitmap, null, false);
         doReturn(null)
                 .when(mInMemoryCachedImageFetcher)

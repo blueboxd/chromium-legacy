@@ -197,7 +197,7 @@ public class ChainedTasksTest {
 
     @Test
     @SmallTest
-    public void testThreadRestrictions() throws Exception {
+    public void testThreadRestrictions() {
         ChainedTasks tasks = new ChainedTasks();
         tasks.start(false);
         try {

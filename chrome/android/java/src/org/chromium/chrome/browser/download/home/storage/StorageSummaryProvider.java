@@ -52,16 +52,6 @@ public class StorageSummaryProvider implements OfflineItemFilterObserver {
         computeTotalStorage();
     }
 
-    /**
-     * Sets the total size used by downloads. Used to support legacy download home UI, see
-     * {@link DownloadHistoryAdapter}.
-     * @param totalSize
-     */
-    public void setUsedStorage(long totalSize) {
-        mTotalDownloadSize = totalSize;
-        update();
-    }
-
     // OfflineItemFilterObserver implementation.
     @Override
     public void onItemsAdded(Collection<OfflineItem> items) {

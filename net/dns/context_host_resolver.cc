@@ -8,8 +8,10 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
 #include "base/time/tick_clock.h"
+#include "net/base/net_errors.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_manager.h"
@@ -19,53 +21,114 @@
 namespace net {
 
 // Wrapper of ResolveHostRequests that on destruction will remove itself from
-// |ContextHostResolver::active_requests_|.
+// |ContextHostResolver::handed_out_requests_|.
 class ContextHostResolver::WrappedRequest
     : public HostResolver::ResolveHostRequest {
  public:
   WrappedRequest(
       std::unique_ptr<HostResolverManager::CancellableRequest> inner_request,
-      ContextHostResolver* resolver)
-      : inner_request_(std::move(inner_request)), resolver_(resolver) {}
+      ContextHostResolver* resolver,
+      bool shutting_down)
+      : inner_request_(std::move(inner_request)),
+        resolver_(resolver),
+        shutting_down_(shutting_down) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(resolver_->sequence_checker_);
+  }
 
   ~WrappedRequest() override { Cancel(); }
 
   void Cancel() {
-    // Cannot destroy |inner_request_| because it is still allowed to call
-    // Get...Results() methods if the request was already complete.
-    inner_request_->Cancel();
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    OnShutdown();
 
     if (resolver_) {
-      resolver_->active_requests_.erase(this);
+      DCHECK_EQ(1u, resolver_->handed_out_requests_.count(this));
+      resolver_->handed_out_requests_.erase(this);
       resolver_ = nullptr;
     }
   }
 
+  void OnShutdown() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+    // Cannot destroy |inner_request_| because it is still allowed to call
+    // Get...Results() methods if the request was already complete.
+    if (inner_request_)
+      inner_request_->Cancel();
+
+    shutting_down_ = true;
+
+    // Not clearing |resolver_| so that early shutdown can be differentiated in
+    // Start() from full cancellation on resolver destruction.
+  }
+
   int Start(CompletionOnceCallback callback) override {
-    DCHECK(resolver_);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+    if (!resolver_) {
+      // Parent resolver has been destroyed. HostResolver generally disallows
+      // calling Start() in this case, but this implementation returns
+      // ERR_FAILED to allow testing the case.
+      inner_request_ = nullptr;
+      return ERR_FAILED;
+    }
+
+    if (shutting_down_) {
+      // Shutting down but the resolver is not yet destroyed.
+      inner_request_ = nullptr;
+      return ERR_CONTEXT_SHUT_DOWN;
+    }
+
+    DCHECK(inner_request_);
     return inner_request_->Start(std::move(callback));
   }
 
   const base::Optional<AddressList>& GetAddressResults() const override {
+    if (!inner_request_) {
+      static base::NoDestructor<base::Optional<AddressList>> nullopt_result;
+      return *nullopt_result;
+    }
+
     return inner_request_->GetAddressResults();
   }
 
   const base::Optional<std::vector<std::string>>& GetTextResults()
       const override {
+    if (!inner_request_) {
+      static const base::NoDestructor<base::Optional<std::vector<std::string>>>
+          nullopt_result;
+      return *nullopt_result;
+    }
+
     return inner_request_->GetTextResults();
   }
 
   const base::Optional<std::vector<HostPortPair>>& GetHostnameResults()
       const override {
+    if (!inner_request_) {
+      static const base::NoDestructor<base::Optional<std::vector<HostPortPair>>>
+          nullopt_result;
+      return *nullopt_result;
+    }
+
     return inner_request_->GetHostnameResults();
   }
 
   const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
       const override {
+    if (!inner_request_) {
+      static const base::NoDestructor<base::Optional<HostCache::EntryStaleness>>
+          nullopt_result;
+      return *nullopt_result;
+    }
+
     return inner_request_->GetStaleInfo();
   }
 
   void ChangeRequestPriority(RequestPriority priority) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK(inner_request_);
+
     inner_request_->ChangeRequestPriority(priority);
   }
 
@@ -75,6 +138,9 @@ class ContextHostResolver::WrappedRequest
   // Resolver is expected to call Cancel() on destruction, clearing the pointer
   // before it becomes invalid.
   ContextHostResolver* resolver_;
+  bool shutting_down_ = false;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(WrappedRequest);
 };
@@ -108,12 +174,21 @@ ContextHostResolver::~ContextHostResolver() {
     manager_->RemoveHostCacheInvalidator(host_cache_->invalidator());
 
   // Silently cancel all requests associated with this resolver.
-  while (!active_requests_.empty())
-    (*active_requests_.begin())->Cancel();
+  while (!handed_out_requests_.empty())
+    (*handed_out_requests_.begin())->Cancel();
 }
 
 void ContextHostResolver::OnShutdown() {
-  // TODO(crbug.com/1006902): Implement.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  for (auto* active_request : handed_out_requests_)
+    active_request->OnShutdown();
+
+  context_ = nullptr;
+  shutting_down_ = true;
+
+  // TODO(crbug.com/1006902): Cancel DoH prober requests too if using
+  // |context_|.
 }
 
 std::unique_ptr<HostResolver::ResolveHostRequest>
@@ -121,11 +196,17 @@ ContextHostResolver::CreateRequest(
     const HostPortPair& host,
     const NetLogWithSource& source_net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
-  auto request = std::make_unique<WrappedRequest>(
-      manager_->CreateRequest(host, source_net_log, optional_parameters,
-                              context_, host_cache_.get()),
-      this);
-  active_requests_.insert(request.get());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  std::unique_ptr<HostResolverManager::CancellableRequest> inner_request;
+  if (!shutting_down_) {
+    inner_request = manager_->CreateRequest(
+        host, source_net_log, optional_parameters, context_, host_cache_.get());
+  }
+
+  auto request = std::make_unique<WrappedRequest>(std::move(inner_request),
+                                                  this, shutting_down_);
+  handed_out_requests_.insert(request.get());
   return request;
 }
 
@@ -147,6 +228,8 @@ void ContextHostResolver::SetRequestContext(
     URLRequestContext* request_context) {
   DCHECK(request_context);
   DCHECK(!context_);
+  DCHECK(!shutting_down_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   context_ = request_context;
 }

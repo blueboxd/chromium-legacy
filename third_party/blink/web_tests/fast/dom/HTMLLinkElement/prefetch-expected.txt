@@ -1,4 +1,0 @@
-HTMLLinkElement/prefetch.link - willSendRequest <NSURLRequest URL HTMLLinkElement/prefetch.link, main document URL prefetch.html, http method GET>
-This test requires DumpRenderTree to see the log of what resources are loaded.
-
-SUCCESS! prefetch onload called.

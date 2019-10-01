@@ -60,7 +60,7 @@ public class VrBrowserWebInputEditingTest {
     private VrBrowserTestFramework mVrBrowserTestFramework;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mVrBrowserTestFramework = new VrBrowserTestFramework(mVrTestRule);
     }
 
@@ -148,7 +148,7 @@ public class VrBrowserWebInputEditingTest {
      */
     @Test
     @MediumTest
-    public void testSelectTag() throws TimeoutException, InterruptedException {
+    public void testSelectTag() throws TimeoutException {
         mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_select_tag"),
                 PAGE_LOAD_TIMEOUT_S);
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);

@@ -42,13 +42,13 @@ public final class BackgroundMetricsTest {
     @Before
     public void setUp() {}
 
-    private void waitForHistogram(String name, int count) throws Throwable {
+    private void waitForHistogram(String name, int count) {
         CriteriaHelper.pollUiThread(() -> {
             return RecordHistogram.getHistogramTotalCountForTesting(name) >= count;
         }, "waitForHistogram timeout", 10000, 200);
     }
 
-    public void pressHome() throws Throwable {
+    public void pressHome() {
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         device.pressHome();
     }

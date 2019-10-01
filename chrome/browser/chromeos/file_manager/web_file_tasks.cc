@@ -124,9 +124,9 @@ void ExecuteWebTask(Profile* profile,
     launch_container = apps::mojom::LaunchContainer::kLaunchContainerTab;
   }
 
-  AppLaunchParams params(profile, task.app_id, launch_container,
-                         WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                         apps::mojom::AppLaunchSource::kSourceFileHandler);
+  apps::AppLaunchParams params(
+      task.app_id, launch_container, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      apps::mojom::AppLaunchSource::kSourceFileHandler);
   for (const auto& file_system_url : file_system_urls)
     params.launch_files.push_back(file_system_url.path());
   apps::LaunchService::Get(profile)->OpenApplication(params);

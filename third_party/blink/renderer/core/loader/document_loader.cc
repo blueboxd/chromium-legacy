@@ -127,8 +127,7 @@ DocumentLoader::DocumentLoader(
           std::move(params_->service_worker_network_provider)),
       was_blocked_after_csp_(false),
       state_(kNotStarted),
-      committed_data_buffer_(nullptr),
-      in_data_received_(false),
+      in_commit_data_(false),
       data_buffer_(SharedBuffer::Create()),
       devtools_navigation_token_(params_->devtools_navigation_token),
       had_sticky_activation_(params_->is_user_activated),
@@ -575,7 +574,24 @@ void DocumentLoader::BodyDataReceived(base::span<const char> data) {
   probe::DidReceiveData(probe::ToCoreProbeSink(GetFrame()),
                         main_resource_identifier_, this, data.data(),
                         data.size());
-  HandleData(data.data(), data.size());
+
+  TRACE_EVENT1("loading", "DocumentLoader::HandleData", "length", data.size());
+
+  DCHECK(data.data());
+  DCHECK(data.size());
+  DCHECK(!frame_->GetPage()->Paused());
+  time_of_last_data_received_ = clock_->NowTicks();
+
+  if (listing_ftp_directory_ || loading_mhtml_archive_) {
+    // 1) Ftp directory listings accumulate data buffer and transform it later
+    //    to the actual document content.
+    // 2) Mhtml archives accumulate data buffer and parse it as mhtml later
+    //    to retrieve the actual document content.
+    data_buffer_->Append(data.data(), data.size());
+    return;
+  }
+
+  ProcessDataBuffer(data.data(), data.size());
 }
 
 void DocumentLoader::BodyLoadingFinished(
@@ -659,10 +675,9 @@ void DocumentLoader::FinishedLoading(base::TimeTicks finish_time) {
          MainThreadDebugger::Instance()->IsPaused());
 
   if (listing_ftp_directory_) {
-    scoped_refptr<SharedBuffer> buffer = GenerateFtpDirectoryListingHtml(
+    data_buffer_ = GenerateFtpDirectoryListingHtml(
         response_.CurrentRequestUrl(), data_buffer_.get());
-    for (const auto& span : *buffer)
-      CommitData(span.data(), span.size());
+    ProcessDataBuffer();
   }
 
   if (loading_mhtml_archive_ && state_ < kCommitted) {
@@ -689,7 +704,7 @@ void DocumentLoader::FinishedLoading(base::TimeTicks finish_time) {
 
   if (parser_) {
     if (parser_blocked_count_) {
-      finished_loading_ = true;
+      finish_loading_when_parser_resumed_ = true;
     } else {
       parser_->Finish();
       parser_.Clear();
@@ -884,7 +899,6 @@ void DocumentLoader::FinishNavigationCommit(const AtomicString& mime_type,
 
 void DocumentLoader::CommitData(const char* bytes, size_t length) {
   TRACE_EVENT1("loading", "DocumentLoader::CommitData", "length", length);
-  DCHECK_GE(state_, kCommitted);
 
   // This can happen if document.close() is called by an event handler while
   // there's still pending incoming data.
@@ -894,16 +908,10 @@ void DocumentLoader::CommitData(const char* bytes, size_t length) {
   if (!frame_ || !frame_->GetDocument()->Parsing())
     return;
 
+  base::AutoReset<bool> reentrancy_protector(&in_commit_data_, true);
   if (length)
     data_received_ = true;
-
-  if (parser_blocked_count_) {
-    if (!committed_data_buffer_)
-      committed_data_buffer_ = SharedBuffer::Create();
-    committed_data_buffer_->Append(bytes, length);
-  } else {
-    parser_->AppendBytes(bytes, length);
-  }
+  parser_->AppendBytes(bytes, length);
 }
 
 mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
@@ -1012,35 +1020,23 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
                                                    history_item);
 }
 
-void DocumentLoader::HandleData(const char* data, size_t length) {
-  TRACE_EVENT1("loading", "DocumentLoader::HandleData", "length", length);
-  DCHECK(data);
-  DCHECK(length);
-  DCHECK(!frame_->GetPage()->Paused());
-  time_of_last_data_received_ = clock_->NowTicks();
-
-  if (listing_ftp_directory_ || loading_mhtml_archive_) {
-    data_buffer_->Append(data, length);
+void DocumentLoader::ProcessDataBuffer(const char* bytes, size_t length) {
+  DCHECK_GE(state_, kCommitted);
+  if (parser_blocked_count_ || in_commit_data_) {
+    // 1) If parser is blocked, we buffer data and process it upon resume.
+    // 2) If this function is reentered, we defer processing of the additional
+    //    data to the top-level invocation. Reentrant calls can occur because
+    //    of web platform (mis-)features that require running a nested run loop:
+    //    - alert(), confirm(), prompt()
+    //    - Detach of plugin elements.
+    //    - Synchronous XMLHTTPRequest
+    if (bytes)
+      data_buffer_->Append(bytes, length);
     return;
   }
 
-  if (in_data_received_) {
-    // If this function is reentered, defer processing of the additional data to
-    // the top-level invocation. Reentrant calls can occur because of web
-    // platform (mis-)features that require running a nested run loop:
-    // - alert(), confirm(), prompt()
-    // - Detach of plugin elements.
-    // - Synchronous XMLHTTPRequest
-    data_buffer_->Append(data, length);
-    return;
-  }
-
-  base::AutoReset<bool> reentrancy_protector(&in_data_received_, true);
-  CommitData(data, length);
-  ProcessDataBuffer();
-}
-
-void DocumentLoader::ProcessDataBuffer() {
+  if (bytes)
+    CommitData(bytes, length);
   // Process data received in reentrant invocations. Note that the invocations
   // of CommitData() may queue more data in reentrant invocations, so iterate
   // until it's empty.
@@ -1283,9 +1279,8 @@ void DocumentLoader::StartLoadingResponse() {
 
   // Finish load of MHTML archives and empty documents.
   if (main_resource) {
-    scoped_refptr<SharedBuffer> data(main_resource->Data());
-    for (const auto& span : *data)
-      CommitData(span.data(), span.size());
+    data_buffer_ = main_resource->Data();
+    ProcessDataBuffer();
   }
 
   if (loading_mhtml_archive_ || loading_url_as_empty_document_) {
@@ -1688,22 +1683,10 @@ void DocumentLoader::ResumeParser() {
   if (parser_blocked_count_ != 0)
     return;
 
-  if (committed_data_buffer_ && !committed_data_buffer_->IsEmpty()) {
-    // Don't recursively process data.
-    base::AutoReset<bool> reentrancy_protector(&in_data_received_, true);
+  ProcessDataBuffer();
 
-    // Append data to the parser that may have been received while the parser
-    // was blocked.
-    for (const auto& span : *committed_data_buffer_)
-      parser_->AppendBytes(span.data(), span.size());
-    committed_data_buffer_->Clear();
-
-    // DataReceived may be called in a nested message loop.
-    ProcessDataBuffer();
-  }
-
-  if (finished_loading_) {
-    finished_loading_ = false;
+  if (finish_loading_when_parser_resumed_) {
+    finish_loading_when_parser_resumed_ = false;
     parser_->Finish();
     parser_.Clear();
   }

@@ -52,8 +52,7 @@ public class BrowsingDataTest {
         mUrl = mTestServer.getURL(TEST_FILE);
     }
 
-    private void clearBrowsingData(int dataType, int timePeriod)
-            throws InterruptedException, TimeoutException {
+    private void clearBrowsingData(int dataType, int timePeriod) throws TimeoutException {
         CallbackHelper helper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             BrowsingDataBridge.getInstance().clearBrowsingData(

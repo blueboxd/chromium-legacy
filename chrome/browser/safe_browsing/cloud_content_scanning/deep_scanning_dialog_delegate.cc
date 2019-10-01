@@ -419,7 +419,8 @@ bool DeepScanningDialogDelegate::UploadData() {
           base::BindOnce(&DeepScanningDialogDelegate::StringRequestCallback,
                          weak_ptr_factory_.GetWeakPtr()));
 
-      PrepareRequest(request.get());
+      PrepareRequest(DlpDeepScanningClientRequest::WEB_CONTENT_UPLOAD,
+                     request.get());
       UploadTextForDeepScanning(std::move(request));
     }
   } else {
@@ -434,7 +435,7 @@ bool DeepScanningDialogDelegate::UploadData() {
         base::BindOnce(&DeepScanningDialogDelegate::FileRequestCallback,
                        weak_ptr_factory_.GetWeakPtr(), path));
 
-    PrepareRequest(request.get());
+    PrepareRequest(DlpDeepScanningClientRequest::FILE_UPLOAD, request.get());
     UploadFileForDeepScanning(path, std::move(request));
   }
 
@@ -442,11 +443,11 @@ bool DeepScanningDialogDelegate::UploadData() {
 }
 
 void DeepScanningDialogDelegate::PrepareRequest(
+    DlpDeepScanningClientRequest::ContentSource trigger,
     BinaryUploadService::Request* request) {
   if (data_.do_dlp_scan) {
     DlpDeepScanningClientRequest dlp_request;
-    dlp_request.set_content_source(
-        DlpDeepScanningClientRequest::WEB_CONTENT_UPLOAD);
+    dlp_request.set_content_source(trigger);
     request->set_request_dlp_scan(std::move(dlp_request));
   }
 
@@ -467,6 +468,9 @@ void DeepScanningDialogDelegate::FillAllResultsWith(bool status) {
 
 void DeepScanningDialogDelegate::UploadTextForDeepScanning(
     std::unique_ptr<BinaryUploadService::Request> request) {
+  DCHECK_EQ(
+      DlpDeepScanningClientRequest::WEB_CONTENT_UPLOAD,
+      request->deep_scanning_request().dlp_scan_request().content_source());
   BinaryUploadService* upload_service =
       g_browser_process->safe_browsing_service()->GetBinaryUploadService(
           Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
@@ -477,6 +481,9 @@ void DeepScanningDialogDelegate::UploadTextForDeepScanning(
 void DeepScanningDialogDelegate::UploadFileForDeepScanning(
     const base::FilePath& path,
     std::unique_ptr<BinaryUploadService::Request> request) {
+  DCHECK_EQ(
+      DlpDeepScanningClientRequest::FILE_UPLOAD,
+      request->deep_scanning_request().dlp_scan_request().content_source());
   BinaryUploadService* upload_service =
       g_browser_process->safe_browsing_service()->GetBinaryUploadService(
           Profile::FromBrowserContext(web_contents_->GetBrowserContext()));

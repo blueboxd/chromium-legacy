@@ -58,7 +58,7 @@ public class PictureInPictureControllerTest {
     private ChromeTabbedActivity mActivity;
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         mTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
         mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(TEST_PATH));

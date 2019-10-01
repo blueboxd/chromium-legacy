@@ -7,6 +7,7 @@ package org.chromium.content_public.browser.test.mock;
 import org.chromium.base.Callback;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.services.service_manager.InterfaceProvider;
+import org.chromium.url.Origin;
 
 /**
  * Mock class for {@link RenderFrameHost}.
@@ -14,6 +15,11 @@ import org.chromium.services.service_manager.InterfaceProvider;
 public class MockRenderFrameHost implements RenderFrameHost {
     @Override
     public String getLastCommittedURL() {
+        return null;
+    }
+
+    @Override
+    public Origin getLastCommittedOrigin() {
         return null;
     }
 

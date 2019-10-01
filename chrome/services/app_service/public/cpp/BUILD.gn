@@ -41,10 +41,12 @@ source_set("icon_loader_test_support") {
   ]
 }
 
-source_set("intent_filter_util") {
+source_set("intents") {
   sources = [
     "intent_filter_util.cc",
     "intent_filter_util.h",
+    "intent_util.cc",
+    "intent_util.h",
   ]
 
   deps = [
@@ -61,6 +63,7 @@ source_set("unit_tests") {
     "app_update_unittest.cc",
     "icon_cache_unittest.cc",
     "icon_coalescer_unittest.cc",
+    "intent_util_unittest.cc",
   ]
 
   deps = [

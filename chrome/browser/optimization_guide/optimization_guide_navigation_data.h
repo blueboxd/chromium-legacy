@@ -86,6 +86,16 @@ class OptimizationGuideNavigationData {
     page_hint_ = std::move(page_hint);
   }
 
+  // Whether the host was covered by a hints fetch at the start of navigation.
+  base::Optional<bool> was_host_covered_by_fetch_at_navigation_start() const {
+    return was_host_covered_by_fetch_at_navigation_start_;
+  }
+  void set_was_host_covered_by_fetch_at_navigation_start(
+      bool was_host_covered_by_fetch_at_navigation_start) {
+    was_host_covered_by_fetch_at_navigation_start_ =
+        was_host_covered_by_fetch_at_navigation_start;
+  }
+
  private:
   // Records hint cache histograms based on data currently held in |this|.
   void RecordHintCacheMatch(bool has_committed) const;
@@ -104,7 +114,7 @@ class OptimizationGuideNavigationData {
   const int64_t navigation_id_;
 
   // The serialized hints version for the hint that applied to the navigation.
-  base::Optional<std::string> serialized_hint_version_string_ = base::nullopt;
+  base::Optional<std::string> serialized_hint_version_string_;
 
   // The map from optimization type to the last decision made for that type.
   std::unordered_map<optimization_guide::proto::OptimizationType,
@@ -117,14 +127,18 @@ class OptimizationGuideNavigationData {
       optimization_target_decisions_;
 
   // Whether the hint cache had a hint for the navigation before commit.
-  base::Optional<bool> has_hint_before_commit_ = base::nullopt;
+  base::Optional<bool> has_hint_before_commit_;
 
   // Whether the hint cache had a hint for the navigation after commit.
-  base::Optional<bool> has_hint_after_commit_ = base::nullopt;
+  base::Optional<bool> has_hint_after_commit_;
 
   // The page hint for the navigation.
   base::Optional<std::unique_ptr<optimization_guide::proto::PageHint>>
-      page_hint_ = base::nullopt;
+      page_hint_;
+
+  // Whether the host was covered by a hints fetch at the start of
+  // navigation.
+  base::Optional<bool> was_host_covered_by_fetch_at_navigation_start_;
 
   DISALLOW_ASSIGN(OptimizationGuideNavigationData);
 };

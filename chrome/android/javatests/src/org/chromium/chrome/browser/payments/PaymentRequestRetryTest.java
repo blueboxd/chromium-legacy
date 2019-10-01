@@ -54,7 +54,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
             new RenderTestRule("components/test/data/payments/render_tests");
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
 
         String billing_address_id = helper.setProfile(new AutofillProfile("", "https://example.com",
@@ -74,7 +74,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testRetryWithDefaultError() throws InterruptedException, TimeoutException {
+    public void testRetryWithDefaultError() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
@@ -97,7 +97,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testRetryWithCustomError() throws InterruptedException, TimeoutException {
+    public void testRetryWithCustomError() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
@@ -216,8 +216,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testRetryWithShippingAddressErrorsAndPayerErrors()
-            throws InterruptedException, TimeoutException {
+    public void testRetryWithShippingAddressErrorsAndPayerErrors() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
@@ -259,7 +258,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testRetryAndPayerDetailChangeEvent() throws InterruptedException, TimeoutException {
+    public void testRetryAndPayerDetailChangeEvent() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
@@ -298,7 +297,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testRetryAndReselectContactDetail() throws InterruptedException, TimeoutException {
+    public void testRetryAndReselectContactDetail() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());

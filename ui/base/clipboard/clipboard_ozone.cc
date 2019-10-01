@@ -19,8 +19,15 @@
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/ozone/buildflags.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/platform_clipboard.h"
+
+#if defined(OS_CHROMEOS) && BUILDFLAG(OZONE_PLATFORM_X11)
+#include "base/command_line.h"
+#include "ui/base/clipboard/clipboard_aura.h"
+#include "ui/base/ui_base_switches.h"
+#endif
 
 namespace ui {
 
@@ -285,6 +292,14 @@ class ClipboardOzone::AsyncClipboardOzone {
 
 // Clipboard factory method.
 Clipboard* Clipboard::Create() {
+// linux-chromeos uses aura clipboard by default, but supports ozone x11
+// with flag --use-system-clipbboard.
+#if defined(OS_CHROMEOS) && BUILDFLAG(OZONE_PLATFORM_X11)
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseSystemClipboard)) {
+    return new ClipboardAura;
+  }
+#endif
   return new ClipboardOzone;
 }
 

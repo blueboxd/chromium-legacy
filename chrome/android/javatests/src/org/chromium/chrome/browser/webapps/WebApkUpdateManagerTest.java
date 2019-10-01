@@ -150,7 +150,7 @@ public class WebApkUpdateManagerTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         RecordHistogram.setDisabledForTests(false);
     }
 

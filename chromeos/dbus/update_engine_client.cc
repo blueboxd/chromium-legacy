@@ -199,6 +199,17 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void GetEolInfo(GetEolInfoCallback callback) override {
+    dbus::MethodCall method_call(update_engine::kUpdateEngineInterface,
+                                 update_engine::kGetStatusAdvanced);
+
+    VLOG(1) << "Requesting to get end of life status";
+    update_engine_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&UpdateEngineClientImpl::OnGetEolInfo,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void SetUpdateOverCellularPermission(bool allowed,
                                        const base::Closure& callback) override {
     dbus::MethodCall method_call(
@@ -401,6 +412,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     callback.Run(channel);
   }
 
+  // TODO(crbug.com/1005511): Deprecate with GetEolStatus().
   // Called when a response for GetEolStatus() is received.
   void OnGetEolStatus(GetEolStatusCallback callback, dbus::Response* response) {
     if (!response) {
@@ -427,6 +439,31 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     VLOG(1) << "Eol status received: " << status;
     std::move(callback).Run(
         static_cast<update_engine::EndOfLifeStatus>(status));
+  }
+
+  // TODO(crbug.com/1005511): Called when a response for GetStatusAdvanced() is
+  // received instead of a response from GetEolStatus(). A transition is being
+  // made to handle the deprecation of GetEolStatus() within update_engine.
+  void OnGetEolInfo(GetEolInfoCallback callback, dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to request getting eol info.";
+      std::move(callback).Run(EolInfo());
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+    update_engine::StatusResult status;
+    if (!reader.PopArrayOfBytesAsProto(&status)) {
+      LOG(ERROR) << "Failed to parse proto from DBus Response.";
+      std::move(callback).Run(EolInfo());
+      return;
+    }
+
+    EolInfo eol_info;
+    eol_info.days_from_epoch = status.eol_date();
+
+    VLOG(1) << "Eol date received: " << eol_info.days_from_epoch;
+    std::move(callback).Run(eol_info);
   }
 
   // Called when a response for SetUpdateOverCellularPermission() is received.
@@ -585,8 +622,13 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
       callback.Run(target_channel_);
   }
 
+  // TODO(crbug.com/1005511): Deprecate with GetEolStatus().
   void GetEolStatus(GetEolStatusCallback callback) override {
     std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported);
+  }
+
+  void GetEolInfo(GetEolInfoCallback callback) override {
+    std::move(callback).Run(EolInfo());
   }
 
   void SetUpdateOverCellularPermission(bool allowed,

@@ -18,13 +18,14 @@
 + (Class)frameViewClassForStyleMask:(NSWindowStyleMask)windowStyle;
 - (BOOL)hasKeyAppearance;
 - (long long)_resizeDirectionForMouseLocation:(CGPoint)location;
+- (BOOL)_isConsideredOpenForPersistentState;
 
 // Available in later point releases of 10.10. On 10.11+, use the public
 // -performWindowDragWithEvent: instead.
 - (void)beginWindowDragWithEvent:(NSEvent*)event;
 @end
 
-@interface NativeWidgetMacNSWindow ()
+@interface NativeWidgetMacNSWindow () <NSKeyedArchiverDelegate>
 - (ViewsNSWindowDelegate*)viewsNSWindowDelegate;
 - (BOOL)hasViewsMenuActive;
 - (id<NSAccessibility>)rootAccessibilityObject;
@@ -84,6 +85,7 @@
   id<WindowTouchBarDelegate> touchBarDelegate_;  // Weak.
   uint64_t bridgedNativeWidgetId_;
   remote_cocoa::NativeWidgetNSWindowBridge* bridge_;
+  BOOL willUpdateRestorableState_;
 }
 @synthesize bridgedNativeWidgetId = bridgedNativeWidgetId_;
 @synthesize bridge = bridge_;
@@ -102,9 +104,12 @@
   return self;
 }
 
-// This override doesn't do anything, but keeping it helps diagnose lifetime
-// issues in crash stacktraces by inserting a symbol on NativeWidgetMacNSWindow.
+// This override helps diagnose lifetime issues in crash stacktraces by
+// inserting a symbol on NativeWidgetMacNSWindow and should be kept even if it
+// does nothing.
 - (void)dealloc {
+  willUpdateRestorableState_ = YES;
+  [NSObject cancelPreviousPerformRequestsWithTarget:self];
   [super dealloc];
 }
 
@@ -298,6 +303,54 @@
 
 - (NSTouchBar*)makeTouchBar API_AVAILABLE(macos(10.12.2)) {
   return touchBarDelegate_ ? [touchBarDelegate_ makeTouchBar] : nil;
+}
+
+// Called when the window is the delegate of the archiver passed to
+// |-encodeRestorableStateWithCoder:|, below. It prevents the archiver from
+// trying to encode the window or an NSView, say, to represent the first
+// responder. When AppKit calls |-encodeRestorableStateWithCoder:|, it
+// accomplishes the same thing by passing a custom coder.
+- (id)archiver:(NSKeyedArchiver*)archiver willEncodeObject:(id)object {
+  if (object == self)
+    return nil;
+  if ([object isKindOfClass:[NSView class]])
+    return nil;
+  return object;
+}
+
+- (void)saveRestorableState {
+  if (![self _isConsideredOpenForPersistentState])
+    return;
+  base::scoped_nsobject<NSMutableData> restorableStateData(
+      [[NSMutableData alloc] init]);
+  base::scoped_nsobject<NSKeyedArchiver> encoder([[NSKeyedArchiver alloc]
+      initForWritingWithMutableData:restorableStateData]);
+  encoder.get().delegate = self;
+  [self encodeRestorableStateWithCoder:encoder];
+  [encoder finishEncoding];
+
+  auto* bytes = static_cast<uint8_t const*>(restorableStateData.get().bytes);
+  bridge_->host()->OnWindowStateRestorationDataChanged(
+      std::vector<uint8_t>(bytes, bytes + restorableStateData.get().length));
+  willUpdateRestorableState_ = NO;
+}
+
+// AppKit calls -invalidateRestorableState when a property of the window which
+// affects its restorable state changes.
+- (void)invalidateRestorableState {
+  [super invalidateRestorableState];
+  if ([self _isConsideredOpenForPersistentState]) {
+    if (willUpdateRestorableState_)
+      return;
+    willUpdateRestorableState_ = YES;
+    [self performSelectorOnMainThread:@selector(saveRestorableState)
+                           withObject:nil
+                        waitUntilDone:NO
+                                modes:@[ NSDefaultRunLoopMode ]];
+  } else if (willUpdateRestorableState_) {
+    willUpdateRestorableState_ = NO;
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+  }
 }
 
 // On newer SDKs, _canMiniaturize respects NSMiniaturizableWindowMask in the

@@ -232,10 +232,8 @@ public class OmniboxTestUtils {
      * Checks and verifies that the URL bar can request and release focus X times without issue.
      * @param urlBar The view to focus.
      * @param times The number of times focus should be requested and released.
-     * @throws InterruptedException
      */
-    public static void checkUrlBarRefocus(UrlBar urlBar, int times)
-            throws InterruptedException {
+    public static void checkUrlBarRefocus(UrlBar urlBar, int times) {
         for (int i = 0; i < times; i++) {
             toggleUrlBarFocus(urlBar, true);
             waitForFocusAndKeyboardActive(urlBar, true);
@@ -252,7 +250,7 @@ public class OmniboxTestUtils {
     public static boolean doesUrlBarHaveFocus(final UrlBar urlBar) {
         return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
-            public Boolean call() throws Exception {
+            public Boolean call() {
                 return urlBar.hasFocus();
             }
         });
@@ -261,7 +259,7 @@ public class OmniboxTestUtils {
     private static boolean isKeyboardActiveForView(final View view) {
         return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
-            public Boolean call() throws Exception {
+            public Boolean call() {
                 InputMethodManager imm =
                         (InputMethodManager) view.getContext().getSystemService(
                                 Context.INPUT_METHOD_SERVICE);

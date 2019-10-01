@@ -14,6 +14,7 @@
 #include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace content {
 
@@ -50,10 +51,12 @@ class VideoDecoderProxy : public media::mojom::InterfaceFactory {
 #endif  // defined(OS_ANDROID)
   void CreateCdm(const std::string& key_system,
                  media::mojom::ContentDecryptionModuleRequest request) final;
-  void CreateDecryptor(int cdm_id,
-                       media::mojom::DecryptorRequest request) final;
-  void CreateCdmProxy(const base::Token& cdm_guid,
-                      media::mojom::CdmProxyRequest request) final;
+  void CreateDecryptor(
+      int cdm_id,
+      mojo::PendingReceiver<media::mojom::Decryptor> receiver) final;
+  void CreateCdmProxy(
+      const base::Token& cdm_guid,
+      mojo::PendingReceiver<media::mojom::CdmProxy> receiver) final;
 
  private:
   media::mojom::InterfaceFactory* GetMediaInterfaceFactory();

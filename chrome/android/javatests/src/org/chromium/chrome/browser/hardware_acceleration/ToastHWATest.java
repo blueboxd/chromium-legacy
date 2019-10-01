@@ -62,7 +62,7 @@ public class ToastHWATest implements CustomMainActivityStart {
     private static final String[] TEST_FILES = {IMAGE_NAME};
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
 
         mDownloadTestRule.deleteFilesInDownloadDirectory(TEST_FILES);
@@ -70,7 +70,7 @@ public class ToastHWATest implements CustomMainActivityStart {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
 
         mTestServer.stopAndDestroyServer();
@@ -87,7 +87,7 @@ public class ToastHWATest implements CustomMainActivityStart {
     @SmallTest
     @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
     @FlakyTest(message = "crbug.com/668217")
-    public void testNoRenderThread() throws Exception {
+    public void testNoRenderThread() {
         Utils.assertNoRenderThread();
     }
 

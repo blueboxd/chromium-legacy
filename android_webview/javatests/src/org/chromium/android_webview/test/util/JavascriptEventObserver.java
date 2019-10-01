@@ -38,7 +38,7 @@ public class JavascriptEventObserver {
      * Wait for the javascript event happen for specific time, there is no timeout parameter,
      * return true if the event happened.
      */
-    public boolean waitForEvent(long time) throws InterruptedException {
+    public boolean waitForEvent(long time) {
         try {
             mCallbackHelper.waitForCallback(mCurCallCount, 1, time, TimeUnit.MILLISECONDS);
             mCurCallCount = mCallbackHelper.getCallCount();

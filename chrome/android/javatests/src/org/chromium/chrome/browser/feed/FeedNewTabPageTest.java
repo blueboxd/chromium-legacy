@@ -100,7 +100,7 @@ public class FeedNewTabPageTest {
     private List<SiteSuggestion> mSiteSuggestions;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mActivityTestRule.startMainActivityWithURL("about:blank");
 
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());

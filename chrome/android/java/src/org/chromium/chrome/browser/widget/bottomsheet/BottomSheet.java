@@ -940,8 +940,6 @@ public class BottomSheet
             int targetState = getTargetSheetState(offset, -velocityY);
 
             setSheetState(targetState, true, BottomSheet.StateChangeReason.SWIPE);
-
-            for (BottomSheetObserver o : mObservers) o.onSheetReleased();
         } else {
             setInternalCurrentState(
                     BottomSheet.SheetState.SCROLLING, BottomSheet.StateChangeReason.SWIPE);
@@ -1126,9 +1124,7 @@ public class BottomSheet
     /**
      * @return The target state that the sheet is moving to during animation. If the sheet is
      *         stationary or a target state has not been determined, SheetState.NONE will be
-     *         returned. A target state will be set when the user releases the sheet from drag
-     *         ({@link BottomSheetObserver#onSheetReleased()}) and has begun animation to the next
-     *         state.
+     *         returned.
      */
     public int getTargetSheetState() {
         return mTargetState;

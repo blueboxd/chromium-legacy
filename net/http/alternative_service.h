@@ -213,8 +213,7 @@ NET_EXPORT_PRIVATE AlternativeServiceInfoVector ProcessAlternativeServices(
         alternative_service_vector,
     bool is_http2_enabled,
     bool is_quic_enabled,
-    const quic::ParsedQuicVersionVector& supported_quic_versions,
-    bool support_ietf_format_quic_altsvc);
+    const quic::ParsedQuicVersionVector& supported_quic_versions);
 
 }  // namespace net
 

@@ -650,6 +650,9 @@
         'DeviceLoginScreenCursorHighlightEnabled',
         'DeviceLoginScreenCaretHighlightEnabled',
         'DeviceLoginScreenMonoAudioEnabled',
+        'DeviceLoginScreenAutoclickEnabled',
+        'DeviceLoginScreenStickyKeysEnabled',
+        'DeviceLoginScreenKeyboardFocusHighlightEnabled',
       ],
     },
     {
@@ -10508,6 +10511,85 @@
           If this policy is left unset, the mono audio is disabled on the login screen initially but can be enabled by the user anytime.''',
     },
     {
+      'name': 'DeviceLoginScreenAutoclickEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:79-'],
+      'device_only': True,
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 617,
+      'caption': '''Enable the autoclick on the login screen''',
+      'tags': [],
+      'desc': '''Enable the autoclick accessibility feature on the login screen.
+
+          This feature allows to automatically click when the mouse cursor stops, without requiring the user to physically press the mouse or touchpad buttons.
+
+          If this policy is set to true, the autoclick will always be enabled on the login screen.
+
+          If this policy is set to false, the autoclick will always be disabled on the login screen.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the autoclick is disabled on the login screen initially but can be enabled by the user anytime.''',
+    },
+    {
+      'name': 'DeviceLoginScreenStickyKeysEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:79-'],
+      'device_only': True,
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 618,
+      'caption': '''Enable the sticky keys on the login screen''',
+      'tags': [],
+      'desc': '''Enable the sticky keys accessibility feature on the login screen.
+
+          If this policy is set to true, the sticky keys will always be enabled on the login screen.
+
+          If this policy is set to false, the sticky keys will always be disabled on the login screen.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the sticky keys is disabled on the login screen initially but can be enabled by the user anytime.''',
+    },
+    {
+      'name': 'DeviceLoginScreenKeyboardFocusHighlightEnabled',
+      'owners': ['amraboelkher@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:79-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 619,
+      'caption': '''Enable the keyboard focus highlighting accessibility feature''',
+      'tags': [],
+      'desc': '''Enable the keyboard focus highlighting accessibility feature on the login screen.
+
+          This feature is responsible for highlighting the object that is focused by the keyboard.
+
+          If this policy is set to enabled, the keyboard focus highlighting will always be enabled.
+
+          If this policy is set to disabled, the keyboard focus highlighting will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the keyboard focus highlighting is disabled initially but can be enabled by the user anytime.'''
+    },
+    {
       'name': 'HideWebStoreIcon',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
@@ -18327,6 +18409,9 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenCursorHighlightEnabled': 'accessibility_settings.login_screen_cursor_highlight_enabled',
     'DeviceLoginScreenCaretHighlightEnabled': 'accessibility_settings.login_screen_caret_highlight_enabled',
     'DeviceLoginScreenMonoAudioEnabled': 'accessibility_settings.login_screen_mono_audio_enabled',
+    'DeviceLoginScreenAutoclickEnabled': 'accessibility_settings.login_screen_autoclick_enabled',
+    'DeviceLoginScreenStickyKeysEnabled': 'accessibility_settings.login_screen_sticky_keys_enabled',
+    'DeviceLoginScreenKeyboardFocusHighlightEnabled': 'accessibility_settings.login_screen_keyboard_focus_highlight_enabled',
     'AttestationEnabledForDevice': 'attestation_settings.attestation_enabled',
     'AttestationForContentProtectionEnabled': 'attestation_settings.content_protection_enabled',
     'SystemTimezone': 'system_timezone.timezone',
@@ -18827,6 +18912,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 616,
+  'highest_id_currently_used': 619,
   'highest_atomic_group_id_currently_used': 37
 }

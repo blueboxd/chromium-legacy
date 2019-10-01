@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenView;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -169,12 +168,6 @@ public class AppBannerManager extends EmptyTabObserver {
         return R.string.menu_add_to_homescreen;
     }
 
-    @VisibleForTesting
-    public AddToHomescreenView getAddToHomescreenDialogForTesting() {
-        return AppBannerManagerJni.get().getAddToHomescreenDialogForTesting(
-                mNativePointer, AppBannerManager.this);
-    }
-
     /** Overrides whether the system supports add to home screen. Used in testing. */
     @VisibleForTesting
     public static void setIsSupported(boolean state) {
@@ -217,9 +210,6 @@ public class AppBannerManager extends EmptyTabObserver {
         boolean onAppDetailsRetrieved(long nativeAppBannerManagerAndroid, AppBannerManager caller,
                 AppData data, String title, String packageName, String imageUrl);
         // Testing methods.
-        AddToHomescreenView getAddToHomescreenDialogForTesting(
-                long nativeAppBannerManagerAndroid, AppBannerManager caller);
-
         boolean isRunningForTesting(long nativeAppBannerManagerAndroid, AppBannerManager caller);
         void setDaysAfterDismissAndIgnoreToTrigger(int dismissDays, int ignoreDays);
         void setTimeDeltaForTesting(int days);

@@ -16,8 +16,6 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.chrome.browser.crypto.CipherFactory.CipherDataObserver;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.Arrays;
 
 import javax.crypto.Cipher;
@@ -36,7 +34,7 @@ public class CipherFactoryTest {
     /** Generates non-random byte[] for testing. */
     private static class DeterministicParameterGenerator extends ByteArrayGenerator {
         @Override
-        public byte[] getBytes(int numBytes) throws IOException, GeneralSecurityException {
+        public byte[] getBytes(int numBytes) {
             return getBytes(numBytes, (byte) 0);
         }
 
@@ -84,7 +82,7 @@ public class CipherFactoryTest {
      * deterministic results.
      */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mNumberProvider = new DeterministicParameterGenerator();
         CipherFactory.getInstance().setRandomNumberProviderForTests(mNumberProvider);
     }
@@ -171,7 +169,7 @@ public class CipherFactoryTest {
      */
     @Test
     @MediumTest
-    public void testIncompleteBundleRestoration() throws Exception {
+    public void testIncompleteBundleRestoration() {
         // Make sure we handle the null case.
         Assert.assertFalse(CipherFactory.getInstance().restoreFromBundle(null));
 
@@ -195,7 +193,7 @@ public class CipherFactoryTest {
      */
     @Test
     @MediumTest
-    public void testRestorationSucceedsBeforeCipherCreated() throws Exception {
+    public void testRestorationSucceedsBeforeCipherCreated() {
         byte[] iv = mNumberProvider.getBytes(CipherFactory.NUM_BYTES, (byte) 50);
         byte[] key = mNumberProvider.getBytes(CipherFactory.NUM_BYTES, (byte) 100);
         Bundle bundle = new Bundle();
@@ -235,7 +233,7 @@ public class CipherFactoryTest {
      */
     @Test
     @MediumTest
-    public void testSavingToBundle() throws Exception {
+    public void testSavingToBundle() {
         // Nothing should get saved out before Cipher data exists.
         Bundle initialBundle = new Bundle();
         CipherFactory.getInstance().saveToBundle(initialBundle);
@@ -258,7 +256,7 @@ public class CipherFactoryTest {
      */
     @Test
     @MediumTest
-    public void testCipherFactoryObserver() throws Exception {
+    public void testCipherFactoryObserver() {
         TestCipherDataObserver observer = new TestCipherDataObserver();
         CipherFactory.getInstance().addCipherDataObserver(observer);
         Assert.assertEquals(0, observer.getTimesNotified());
@@ -280,7 +278,7 @@ public class CipherFactoryTest {
      */
     @Test
     @MediumTest
-    public void testCipherFactoryObserverTooLate() throws Exception {
+    public void testCipherFactoryObserverTooLate() {
         CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
         // Ensures that cipher finishes initializing before running the rest of the test.
         TestThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);

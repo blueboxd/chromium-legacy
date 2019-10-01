@@ -76,7 +76,7 @@ public class CreditCardAccessoryIntegrationTest {
     }
 
     private void loadTestPage(ChromeWindow.KeyboardVisibilityDelegateFactory keyboardDelegate)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         mHelper.loadTestPage("/chrome/test/data/autofill/autofill_creditcard_form.html", false,
                 false, keyboardDelegate);
         CreditCard card = new CreditCard();
@@ -92,7 +92,7 @@ public class CreditCardAccessoryIntegrationTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
-    public void testCreditCardSheetAvailable() throws InterruptedException {
+    public void testCreditCardSheetAvailable() {
         mHelper.loadTestPage(false);
 
         CriteriaHelper.pollUiThread(() -> {
@@ -103,7 +103,7 @@ public class CreditCardAccessoryIntegrationTest {
     @Test
     @SmallTest
     @DisableFeatures({ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
-    public void testCreditCardSheetUnavailableWithoutFeature() throws InterruptedException {
+    public void testCreditCardSheetUnavailableWithoutFeature() {
         mHelper.loadTestPage(false);
 
         Assert.assertNull("Credit Card sheet should not have been created.",
@@ -113,8 +113,7 @@ public class CreditCardAccessoryIntegrationTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
-    public void testDisplaysEmptyStateMessageWithoutSavedCards()
-            throws InterruptedException, TimeoutException {
+    public void testDisplaysEmptyStateMessageWithoutSavedCards() throws TimeoutException {
         mHelper.loadTestPage(false);
 
         // Focus the field to bring up the accessory.
@@ -133,7 +132,7 @@ public class CreditCardAccessoryIntegrationTest {
     @Test
     @MediumTest
     @EnableFeatures({ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
-    public void testFillsSuggestionOnClick() throws InterruptedException, TimeoutException {
+    public void testFillsSuggestionOnClick() throws TimeoutException {
         loadTestPage(FakeKeyboard::new);
         mHelper.clickNodeAndShowKeyboard("CREDIT_CARD_NAME_FULL");
         DOMUtils.focusNode(mActivityTestRule.getWebContents(), "CREDIT_CARD_NAME_FULL");

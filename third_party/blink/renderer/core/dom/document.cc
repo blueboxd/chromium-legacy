@@ -6094,53 +6094,22 @@ const KURL Document::SiteForCookies() const {
   if (!GetFrame())
     return NullURL();
 
-  // TODO(mkwst): This doesn't correctly handle sandboxed documents; we want to
-  // look at their URL, but we can't because we don't know what it is.
   Frame& top = GetFrame()->Tree().Top();
-  KURL top_document_url;
-  auto* top_local_frame = DynamicTo<LocalFrame>(&top);
-  if (top_local_frame) {
-    top_document_url = top_local_frame->GetDocument()->Url();
-  } else {
-    const SecurityOrigin* origin =
-        top.GetSecurityContext()->GetSecurityOrigin();
-    // TODO(yhirano): Ideally |origin| should not be null here.
-    if (origin)
-      top_document_url = KURL(NullURL(), origin->ToString());
-    else
-      top_document_url = NullURL();
-  }
+  const SecurityOrigin* origin = top.GetSecurityContext()->GetSecurityOrigin();
+  // TODO(yhirano): Ideally |origin| should not be null here.
+  if (!origin)
+    return NullURL();
 
   if (SchemeRegistry::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
-          top_document_url.Protocol()))
-    return top_document_url;
-
-  // We're intentionally using the URL of each document rather than the
-  // document's SecurityOrigin. A sandboxed document has a unique opaque
-  // origin, but that shouldn't affect first-/third-party status for cookies
-  // and site data.
-  base::Optional<OriginAccessEntry> remote_entry;
-  if (!top_local_frame) {
-    remote_entry.emplace(
-        top_document_url,
-        network::mojom::CorsDomainMatchMode::kAllowRegistrableDomains);
+          origin->Protocol())) {
+    return origin->IsOpaque() ? NullURL() : KURL(origin->ToString());
   }
-  const OriginAccessEntry& access_entry =
-      remote_entry ? *remote_entry
-                   : top_local_frame->GetDocument()->AccessEntryFromURL();
+
+  OriginAccessEntry access_entry(
+      *origin, network::mojom::CorsDomainMatchMode::kAllowRegistrableDomains);
 
   const Frame* current_frame = GetFrame();
   while (current_frame) {
-    // Skip over srcdoc documents, as they are always same-origin with their
-    // closest non-srcdoc parent.
-    auto is_srcdoc = [](const Frame* frame) {
-      const auto* local_frame = DynamicTo<LocalFrame>(frame);
-      return local_frame && local_frame->GetDocument()->IsSrcdocDocument();
-    };
-    while (is_srcdoc(current_frame))
-      current_frame = current_frame->Tree().Parent();
-    DCHECK(current_frame);
-
     // We use 'matchesDomain' here, as it turns out that some folks embed HTTPS
     // login forms into HTTP pages; we should allow this kind of upgrade.
     if (access_entry.MatchesDomain(
@@ -6152,7 +6121,7 @@ const KURL Document::SiteForCookies() const {
     current_frame = current_frame->Tree().Parent();
   }
 
-  return top_document_url;
+  return origin->IsOpaque() ? NullURL() : KURL(origin->ToString());
 }
 
 ScriptPromise Document::hasStorageAccess(ScriptState* script_state) const {

@@ -140,7 +140,7 @@ public class CreditCardAccessorySheetViewTest {
 
     @Test
     @MediumTest
-    public void testAddingUnselectableFieldsRendersUnclickabeChips() throws ExecutionException {
+    public void testAddingUnselectableFieldsRendersUnclickabeChips() {
         assertThat(mView.get().getChildCount(), is(0));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {

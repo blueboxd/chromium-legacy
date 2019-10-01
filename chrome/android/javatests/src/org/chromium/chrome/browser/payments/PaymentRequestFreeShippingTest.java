@@ -68,7 +68,7 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mPaymentRequestTestRule.startMainActivity();
     }
 
@@ -78,7 +78,7 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
     }
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // The user has a shipping address on disk.
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
@@ -114,7 +114,7 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
     @MediumTest
     @FlakyTest(message = "crbug.com/673371")
     @Feature({"Payments"})
-    public void testAddInvalidAddressAndCancel() throws InterruptedException, TimeoutException {
+    public void testAddInvalidAddressAndCancel() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -134,7 +134,7 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testAddAddressAndPay() throws InterruptedException, TimeoutException {
+    public void testAddAddressAndPay() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -160,7 +160,7 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testChangeCountryAddAddressAndPay() throws InterruptedException, TimeoutException {
+    public void testChangeCountryAddAddressAndPay() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -188,8 +188,7 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testQuickAddAddressAndCloseShouldNotCrash()
-            throws InterruptedException, TimeoutException {
+    public void testQuickAddAddressAndCloseShouldNotCrash() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -220,8 +219,7 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testQuickCloseAndAddAddressShouldNotCrash()
-            throws InterruptedException, TimeoutException {
+    public void testQuickCloseAndAddAddressShouldNotCrash() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -249,8 +247,7 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
     @MediumTest
     @FlakyTest(message = "crbug.com/673371")
     @Feature({"Payments"})
-    public void testQuickAddAddressAndCancelShouldNotCrash()
-            throws InterruptedException, TimeoutException {
+    public void testQuickAddAddressAndCancelShouldNotCrash() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -281,8 +278,7 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testQuickCancelAndAddAddressShouldNotCrash()
-            throws InterruptedException, TimeoutException {
+    public void testQuickCancelAndAddAddressShouldNotCrash() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -312,7 +308,7 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPaymentRequestEventsMetric() throws InterruptedException, TimeoutException {
+    public void testPaymentRequestEventsMetric() throws TimeoutException {
         // Start and abort the Payment Request.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(

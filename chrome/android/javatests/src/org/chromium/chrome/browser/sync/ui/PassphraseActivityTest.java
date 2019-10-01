@@ -40,12 +40,12 @@ public class PassphraseActivityTest {
     private Context mContext;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mContext = InstrumentationRegistry.getTargetContext();
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         // Clear ProfileSyncService in case it was mocked.
         TestThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
     }
@@ -57,7 +57,7 @@ public class PassphraseActivityTest {
     @SmallTest
     @Feature({"Sync"})
     @RetryOnFailure
-    public void testCallbackAfterBackgrounded() throws Exception {
+    public void testCallbackAfterBackgrounded() {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         SigninTestUtil.addAndSignInTestAccount();
 

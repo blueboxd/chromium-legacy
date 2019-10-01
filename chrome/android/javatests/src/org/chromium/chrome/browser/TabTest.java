@@ -68,7 +68,7 @@ public class TabTest {
     @Test
     @SmallTest
     @Feature({"Tab"})
-    public void testTabContext() throws Throwable {
+    public void testTabContext() {
         Assert.assertFalse("The tab context cannot be an activity",
                 mTab.getContentView().getContext() instanceof Activity);
         Assert.assertNotSame("The tab context's theme should have been updated",

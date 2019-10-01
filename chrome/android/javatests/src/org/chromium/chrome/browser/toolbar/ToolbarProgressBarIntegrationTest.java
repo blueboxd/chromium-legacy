@@ -48,7 +48,7 @@ public class ToolbarProgressBarIntegrationTest {
     private ToolbarProgressBar mProgressBar;
 
     @Before
-    public void setUp() throws InterruptedException, TimeoutException {
+    public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
         mProgressBar =
                 mActivityTestRule.getActivity().getToolbarManager().getToolbar().getProgressBar();
@@ -63,7 +63,7 @@ public class ToolbarProgressBarIntegrationTest {
     @Test
     @Feature({"Android-Progress-Bar"})
     @MediumTest
-    public void testProgressBarTraversesScreenOnce() throws InterruptedException, TimeoutException {
+    public void testProgressBarTraversesScreenOnce() throws TimeoutException {
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 

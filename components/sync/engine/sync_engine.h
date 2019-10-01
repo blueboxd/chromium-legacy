@@ -43,6 +43,8 @@ class UnrecoverableErrorHandler;
 // interface will handle crossing threads if necessary.
 class SyncEngine : public ModelTypeConfigurer {
  public:
+  using AllNodesCallback =
+      base::OnceCallback<void(ModelType, std::unique_ptr<base::ListValue>)>;
   using HttpPostProviderFactoryGetter =
       base::OnceCallback<std::unique_ptr<HttpPostProviderFactory>(
           CancelationSignal*)>;
@@ -189,6 +191,9 @@ class SyncEngine : public ModelTypeConfigurer {
 
   // Enables/Disables invalidations for session sync related datatypes.
   virtual void SetInvalidationsForSessionsEnabled(bool enabled) = 0;
+
+  // Returns a ListValue representing Nigori node.
+  virtual void GetNigoriNodeForDebugging(AllNodesCallback callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncEngine);

@@ -66,10 +66,10 @@ class WebAppFileHandlingBrowserTest
   content::WebContents* LaunchWithFiles(
       const std::string& app_id,
       const std::vector<base::FilePath>& files) {
-    AppLaunchParams params(browser()->profile(), app_id,
-                           apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                           WindowOpenDisposition::NEW_WINDOW,
-                           apps::mojom::AppLaunchSource::kSourceFileHandler);
+    apps::AppLaunchParams params(
+        app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+        WindowOpenDisposition::NEW_WINDOW,
+        apps::mojom::AppLaunchSource::kSourceFileHandler);
     params.launch_files = files;
 
     content::TestNavigationObserver navigation_observer(

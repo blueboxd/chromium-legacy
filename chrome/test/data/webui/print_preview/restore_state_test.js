@@ -219,7 +219,7 @@ cr.define('restore_state_test', function() {
           section: 'print-preview-margins-settings',
           settingName: 'margins',
           key: 'marginsType',
-          value: print_preview.ticket_items.MarginsTypeValue.MINIMUM,
+          value: print_preview.MarginsTypeValue.MINIMUM,
         },
         {
           section: 'print-preview-dpi-settings',

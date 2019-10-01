@@ -70,7 +70,7 @@ public class DetachedResourceRequestTest {
     private static final int NET_OK = 0;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
         mConnection = CustomTabsTestUtils.setUpConnection();
         mContext = InstrumentationRegistry.getInstrumentation()
@@ -80,7 +80,7 @@ public class DetachedResourceRequestTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         CustomTabsTestUtils.cleanupSessions(mConnection);
         if (mServer != null) mServer.stopAndDestroyServer();
         mServer = null;
@@ -88,7 +88,7 @@ public class DetachedResourceRequestTest {
 
     @Test
     @SmallTest
-    public void testCanDoParallelRequest() throws Exception {
+    public void testCanDoParallelRequest() {
         CustomTabsSessionToken session = CustomTabsSessionToken.createMockSessionTokenForTesting();
         Assert.assertTrue(mConnection.newSession(session));
         TestThreadUtils.runOnUiThreadBlocking(
@@ -576,8 +576,7 @@ public class DetachedResourceRequestTest {
         return token;
     }
 
-    private void setUpTestServerWithListener(EmbeddedTestServer.ConnectionListener listener)
-            throws InterruptedException {
+    private void setUpTestServerWithListener(EmbeddedTestServer.ConnectionListener listener) {
         mServer = new EmbeddedTestServer();
         final CallbackHelper readFromSocketCallback = new CallbackHelper();
         mServer.initializeNative(mContext, EmbeddedTestServer.ServerHTTPSSetting.USE_HTTP);
@@ -587,7 +586,7 @@ public class DetachedResourceRequestTest {
     }
 
     private CallbackHelper waitForDetachedRequest(CustomTabsSessionToken session,
-            String relativeUrl, boolean afterNative) throws InterruptedException, TimeoutException {
+            String relativeUrl, boolean afterNative) throws TimeoutException {
         // Count the number of times data is read from the socket.
         // We expect 1 for the detached request.
         // Cannot count connections as Chrome opens multiple sockets at page load time.
@@ -656,21 +655,21 @@ public class DetachedResourceRequestTest {
             }
         }
 
-        public void waitForRequest() throws InterruptedException, TimeoutException {
+        public void waitForRequest() throws TimeoutException {
             mRequestedWaiter.waitForFirst();
         }
 
         public void waitForRequest(int currentCallCount, int numberOfCallsToWaitFor)
-                throws InterruptedException, TimeoutException {
+                throws TimeoutException {
             mRequestedWaiter.waitForCallback(currentCallCount, numberOfCallsToWaitFor);
         }
 
-        public void waitForCompletion() throws InterruptedException, TimeoutException {
+        public void waitForCompletion() throws TimeoutException {
             mCompletionWaiter.waitForFirst();
         }
 
         public void waitForCompletion(int currentCallCount, int numberOfCallsToWaitFor)
-                throws InterruptedException, TimeoutException {
+                throws TimeoutException {
             mCompletionWaiter.waitForCallback(currentCallCount, numberOfCallsToWaitFor);
         }
     }

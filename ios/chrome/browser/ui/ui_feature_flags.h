@@ -39,4 +39,7 @@ extern const base::Feature kLanguageSettings;
 // Feature flag for the optional article thumbnail.
 extern const base::Feature kOptionalArticleThumbnail;
 
+// Feature flag for embedders to block restore urls.
+extern const base::Feature kEmbedderBlockRestoreUrl;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

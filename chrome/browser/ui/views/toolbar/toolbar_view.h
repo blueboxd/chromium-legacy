@@ -272,6 +272,8 @@ class ToolbarView : public views::AccessiblePaneView,
   ExtensionsToolbarContainer* extensions_container_ = nullptr;
   media_router::CastToolbarButton* cast_ = nullptr;
   ToolbarAccountIconContainerView* toolbar_account_icon_container_ = nullptr;
+  ToolbarButton* webui_new_tab_button_ = nullptr;
+  ToolbarButton* webui_toggle_button_ = nullptr;
   AvatarToolbarButton* avatar_ = nullptr;
   MediaToolbarButtonView* media_button_ = nullptr;
   BrowserAppMenuButton* app_menu_button_ = nullptr;

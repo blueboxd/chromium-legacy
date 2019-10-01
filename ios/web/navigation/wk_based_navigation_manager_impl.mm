@@ -107,7 +107,6 @@ void WKBasedNavigationManagerImpl::OnNavigationStarted(const GURL& url) {
       !web::wk_navigation_util::ExtractTargetURL(url, &target_url)) {
     restoration_timer_ = std::make_unique<base::ElapsedTimer>();
   } else if (!wk_navigation_util::IsRestoreSessionUrl(url)) {
-    is_restore_session_in_progress_ = false;
     // It's possible for there to be pending navigations for a session that is
     // going to be restored (such as for the -ForwardHistoryClobber workaround).
     // In this case, the pending navigation will start while the navigation
@@ -121,14 +120,17 @@ void WKBasedNavigationManagerImpl::OnNavigationStarted(const GURL& url) {
                           restoration_timer_->Elapsed());
       restoration_timer_.reset();
     }
-
-    for (base::OnceClosure& callback : restore_session_completion_callbacks_) {
-      std::move(callback).Run();
-    }
-    restore_session_completion_callbacks_.clear();
-
-    LoadIfNecessary();
+    FinalizeSessionRestore();
   }
+}
+
+void WKBasedNavigationManagerImpl::FinalizeSessionRestore() {
+  is_restore_session_in_progress_ = false;
+  for (base::OnceClosure& callback : restore_session_completion_callbacks_) {
+    std::move(callback).Run();
+  }
+  restore_session_completion_callbacks_.clear();
+  LoadIfNecessary();
 }
 
 CRWSessionController* WKBasedNavigationManagerImpl::GetSessionController()
@@ -421,6 +423,20 @@ void WKBasedNavigationManagerImpl::AddPushStateItemIfNecessary(
 
 bool WKBasedNavigationManagerImpl::IsRestoreSessionInProgress() const {
   return is_restore_session_in_progress_;
+}
+
+bool WKBasedNavigationManagerImpl::ShouldBlockUrlDuringRestore(
+    const GURL& url) {
+  DCHECK(is_restore_session_in_progress_);
+  if (!web::GetWebClient()->ShouldBlockUrlDuringRestore(url, GetWebState()))
+    return false;
+
+  // Abort restore.
+  DiscardNonCommittedItems();
+  last_committed_item_index_ = web_view_cache_.GetCurrentItemIndex();
+  restored_visible_item_.reset();
+  FinalizeSessionRestore();
+  return true;
 }
 
 void WKBasedNavigationManagerImpl::SetPendingItemIndex(int index) {

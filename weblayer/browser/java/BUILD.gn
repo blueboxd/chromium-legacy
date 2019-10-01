@@ -12,7 +12,6 @@ android_library("java") {
     "org/chromium/weblayer_private/BrowserObserverProxy.java",
     "org/chromium/weblayer_private/ContentView.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
-    "org/chromium/weblayer_private/EventOffsetHandler.java",
     "org/chromium/weblayer_private/NavigationControllerImpl.java",
     "org/chromium/weblayer_private/NavigationImpl.java",
     "org/chromium/weblayer_private/ProfileImpl.java",
@@ -56,9 +55,9 @@ android_library("client_java") {
 android_aidl("aidl") {
   import_include = [ "org/chromium/weblayer_private/aidl" ]
   sources = [
-    "org/chromium/weblayer_private/aidl/IBrowserFragmentController.aidl",
     "org/chromium/weblayer_private/aidl/IBrowserController.aidl",
     "org/chromium/weblayer_private/aidl/IBrowserControllerClient.aidl",
+    "org/chromium/weblayer_private/aidl/IBrowserFragmentController.aidl",
     "org/chromium/weblayer_private/aidl/IChildProcessService.aidl",
     "org/chromium/weblayer_private/aidl/IClientNavigation.aidl",
     "org/chromium/weblayer_private/aidl/INavigation.aidl",

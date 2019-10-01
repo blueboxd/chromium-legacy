@@ -14,6 +14,7 @@
 #include "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
+#import "ios/web/public/web_client.h"
 #import "ios/web/session/session_certificate_policy_cache_impl.h"
 #include "ios/web/session/session_certificate_policy_cache_storage_builder.h"
 #import "ios/web/web_state/web_state_impl.h"
@@ -68,6 +69,10 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
       web::SerializableUserDataManager::FromWebState(web_state);
   [session_storage
       setSerializableUserData:user_data_manager->CreateSerializableUserData()];
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    web::GetWebClient()->AddSerializableData(user_data_manager, web_state);
+  }
+
   return session_storage;
 }
 

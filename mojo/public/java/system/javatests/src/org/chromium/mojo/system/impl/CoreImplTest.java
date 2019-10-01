@@ -57,7 +57,7 @@ public class CoreImplTest {
      * @see MojoTestCase#tearDown()
      */
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         MojoException toThrow = null;
         for (Handle handle : mHandlesToClose) {
             try {

@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/shapedetection/barcode_detector_statics.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -66,9 +66,9 @@ void BarcodeDetectorStatics::EnsureServiceConnection() {
 
   // See https://bit.ly/2S0zRAS for task types.
   auto task_runner = context->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  auto request = mojo::MakeRequest(&service_, task_runner);
-  context->GetInterfaceProvider()->GetInterface(std::move(request));
-  service_.set_connection_error_handler(WTF::Bind(
+  context->GetBrowserInterfaceBroker().GetInterface(
+      service_.BindNewPipeAndPassReceiver(task_runner));
+  service_.set_disconnect_handler(WTF::Bind(
       &BarcodeDetectorStatics::OnConnectionError, WrapWeakPersistent(this)));
 }
 

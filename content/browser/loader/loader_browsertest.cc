@@ -787,7 +787,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, Basic) {
   EXPECT_FALSE(first_request->initiator.has_value());
   for (size_t i = 1; i < requests.size(); i++) {
     const RequestData* request = &requests[i];
-    EXPECT_EQ(top_url, request->first_party);
+    EXPECT_EQ(top_origin, url::Origin::Create(request->first_party));
     ASSERT_TRUE(request->initiator.has_value());
     EXPECT_EQ(top_origin, request->initiator);
   }
@@ -849,15 +849,15 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, BasicCrossSite) {
   EXPECT_EQ(9u, requests.size());
 
   // The first items loaded are the top-level and nested documents. These should
-  // both have a |first_party| that match the URL of the top-level document.
+  // both have a |first_party| that match the origin of the top-level document.
   // The top-level document has no initiator and the nested frame is initiated
   // by the top-level document.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_url, requests[0].first_party);
+  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
   EXPECT_FALSE(requests[0].initiator.has_value());
 
   EXPECT_EQ(nested_url, requests[1].url);
-  EXPECT_EQ(top_url, requests[1].first_party);
+  EXPECT_EQ(top_origin, url::Origin::Create(requests[1].first_party));
   EXPECT_EQ(top_origin, requests[1].initiator);
 
   // The remaining items are loaded as subresources in the nested document, and
@@ -885,19 +885,19 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, SameOriginNested) {
   // URL to which they navigate. The navigation was initiated outside of a
   // document, so there is no |initiator|.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_url, requests[0].first_party);
+  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
   EXPECT_FALSE(requests[0].initiator.has_value());
 
   // Subresource requests have a first-party and initiator that matches the
   // document in which they're embedded.
   EXPECT_EQ(image_url, requests[1].url);
-  EXPECT_EQ(top_url, requests[1].first_party);
+  EXPECT_EQ(top_origin, url::Origin::Create(requests[1].first_party));
   EXPECT_EQ(top_origin, requests[1].initiator);
 
   // Same-origin nested frames have a first-party and initiator that matches
   // the document in which they're embedded.
   EXPECT_EQ(nested_url, requests[2].url);
-  EXPECT_EQ(top_url, requests[2].first_party);
+  EXPECT_EQ(top_origin, url::Origin::Create(requests[2].first_party));
   EXPECT_EQ(top_origin, requests[2].initiator);
 }
 
@@ -925,13 +925,14 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, SameOriginAuxiliary) {
   // URL to which they navigate, even if they fail to load. The navigation was
   // initiated outside of a document, so there is no |initiator|.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_url, requests[0].first_party);
+  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
   EXPECT_FALSE(requests[0].initiator.has_value());
 
   // Auxiliary navigations have a first-party that matches the URL to which they
   // navigate, and an initiator that matches the document that triggered them.
   EXPECT_EQ(auxiliary_url, requests[1].url);
-  EXPECT_EQ(auxiliary_url, requests[1].first_party);
+  EXPECT_EQ(url::Origin::Create(auxiliary_url),
+            url::Origin::Create(requests[1].first_party));
   EXPECT_EQ(top_origin, requests[1].initiator);
 }
 
@@ -967,13 +968,14 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, CrossOriginAuxiliary) {
   // URL to which they navigate, even if they fail to load. The navigation was
   // initiated outside of a document, so there is no initiator.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_url, requests[0].first_party);
+  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
   EXPECT_FALSE(requests[0].initiator.has_value());
 
   // Auxiliary navigations have a first-party that matches the URL to which they
   // navigate, and an initiator that matches the document that triggered them.
   EXPECT_EQ(auxiliary_url, requests[1].url);
-  EXPECT_EQ(auxiliary_url, requests[1].first_party);
+  EXPECT_EQ(url::Origin::Create(auxiliary_url),
+            url::Origin::Create(requests[1].first_party));
   EXPECT_EQ(top_origin, requests[1].initiator);
 }
 
@@ -992,7 +994,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, FailedNavigation) {
   // URL to which they navigate, even if they fail to load. The navigation was
   // initiated outside of a document, so there is no initiator.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_url, requests[0].first_party);
+  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
   EXPECT_FALSE(requests[0].initiator.has_value());
 }
 
@@ -1016,17 +1018,17 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, CrossOriginNested) {
   // User-initiated top-level navigations have a |first-party|. The navigation
   // was initiated outside of a document, so there are no initiator.
   EXPECT_EQ(top_url, requests[0].url);
-  EXPECT_EQ(top_url, requests[0].first_party);
+  EXPECT_EQ(top_origin, url::Origin::Create(requests[0].first_party));
   EXPECT_FALSE(requests[0].initiator.has_value());
 
   EXPECT_EQ(top_js_url, requests[1].url);
-  EXPECT_EQ(top_url, requests[1].first_party);
+  EXPECT_EQ(top_origin, url::Origin::Create(requests[1].first_party));
   EXPECT_EQ(top_origin, requests[1].initiator);
 
   // Cross-origin frames have a first-party and initiator that matches the URL
   // in which they're embedded.
   EXPECT_EQ(nested_url, requests[2].url);
-  EXPECT_EQ(top_url, requests[2].first_party);
+  EXPECT_EQ(top_origin, url::Origin::Create(requests[2].first_party));
   EXPECT_EQ(top_origin, requests[2].initiator);
 
   // Cross-origin subresource requests have a unique first-party, and an

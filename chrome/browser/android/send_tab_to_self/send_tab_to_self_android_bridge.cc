@@ -208,11 +208,6 @@ static jboolean JNI_SendTabToSelfAndroidBridge_IsFeatureAvailable(
   return ShouldOfferFeature(web_contents);
 }
 
-// Returns whether the sending component of the feature is enabled.
-static jboolean JNI_SendTabToSelfAndroidBridge_IsSendingEnabled(JNIEnv* env) {
-  return IsSendingEnabled();
-}
-
 static void JNI_SendTabToSelfAndroidBridge_ShowInfoBar(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_web_contents,

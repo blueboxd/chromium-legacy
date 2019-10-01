@@ -76,7 +76,7 @@ public class BluetoothScanningPermissionDialogTest {
 
     @Test
     @LargeTest
-    public void testAddDevice() throws InterruptedException {
+    public void testAddDevice() {
         Dialog dialog = mPermissionDialog.getDialogForTesting();
 
         final ListView items = (ListView) dialog.findViewById(R.id.items);

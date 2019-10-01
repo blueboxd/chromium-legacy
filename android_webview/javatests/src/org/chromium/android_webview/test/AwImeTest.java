@@ -63,7 +63,7 @@ public class AwImeTest {
     private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mContentsClient = new TestAwContentsClient();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Use detached container view to avoid focus request.

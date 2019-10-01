@@ -67,53 +67,6 @@ class CSSTextIndentNonInterpolableValue : public NonInterpolableValue {
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSTextIndentNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSTextIndentNonInterpolableValue);
 
-// TODO(xiaochengh): Clean up. With |InterpolableLength| introduced and
-// |LengthNonInterpolableValue| removed, the following no longer makes sense.
-//
-// A wrapper for the UnderlyingValue passed to
-// CSSTextIndentInterpolationType::Composite which can be forwarded to
-// LengthInterpolationFunctions::Composite.
-//
-// If LengthInterpolationFunctions::Composite calls SetNonInterpolableValue with
-// a new NonInterpolableValue, this class wraps it in a new
-// CSSTextIndentNonInterpolableValue before being set on the inner
-// UnderlyingValue.
-class UnderlyingTextIndentAsLengthValue : public UnderlyingValue {
-  STACK_ALLOCATED();
-
- public:
-  UnderlyingTextIndentAsLengthValue(UnderlyingValue& inner_underlying_value,
-                                    IndentMode mode)
-      : inner_underlying_value_(inner_underlying_value), mode_(mode) {}
-
-  InterpolableValue& MutableInterpolableValue() final {
-    return inner_underlying_value_.MutableInterpolableValue();
-  }
-
-  void SetInterpolableValue(
-      std::unique_ptr<InterpolableValue> interpolable_value) final {
-    inner_underlying_value_.SetInterpolableValue(std::move(interpolable_value));
-  }
-
-  const NonInterpolableValue* GetNonInterpolableValue() const final {
-    const auto& text_indent_non_interpolable_value =
-        ToCSSTextIndentNonInterpolableValue(
-            *inner_underlying_value_.GetNonInterpolableValue());
-    return text_indent_non_interpolable_value.LengthNonInterpolableValue();
-  }
-
-  void SetNonInterpolableValue(
-      scoped_refptr<const NonInterpolableValue> non_interpolable_value) final {
-    inner_underlying_value_.SetNonInterpolableValue(
-        CSSTextIndentNonInterpolableValue::Create(
-            std::move(non_interpolable_value), mode_));
-  }
-
- private:
-  UnderlyingValue& inner_underlying_value_;
-  const IndentMode mode_;
-};
-
 namespace {
 
 class UnderlyingIndentModeChecker
@@ -266,9 +219,7 @@ void CSSTextIndentInterpolationType::Composite(
     return;
   }
 
-  UnderlyingTextIndentAsLengthValue underlying_text_indent_as_length(
-      underlying_value_owner, mode);
-  underlying_text_indent_as_length.MutableInterpolableValue().ScaleAndAdd(
+  underlying_value_owner.MutableInterpolableValue().ScaleAndAdd(
       underlying_fraction, *value.interpolable_value);
 }
 

@@ -225,8 +225,8 @@ content::WebContents* RemoteDesktopBrowserTest::LaunchChromotingApp(
   }
 
   apps::LaunchService::Get(browser()->profile())
-      ->OpenApplication(AppLaunchParams(
-          browser()->profile(), extension_->id(),
+      ->OpenApplication(apps::AppLaunchParams(
+          extension_->id(),
           is_platform_app() ? apps::mojom::LaunchContainer::kLaunchContainerNone
                             : apps::mojom::LaunchContainer::kLaunchContainerTab,
           window_open_disposition, apps::mojom::AppLaunchSource::kSourceTest));

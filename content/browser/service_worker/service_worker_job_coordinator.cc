@@ -59,20 +59,18 @@ void ServiceWorkerJobCoordinator::JobQueue::AbortAll() {
 }
 
 void ServiceWorkerJobCoordinator::JobQueue::ClearForShutdown() {
+  for (const auto& job : jobs_)
+    job->WillShutDown();
   jobs_.clear();
 }
 
 ServiceWorkerJobCoordinator::ServiceWorkerJobCoordinator(
-    base::WeakPtr<ServiceWorkerContextCore> context)
+    ServiceWorkerContextCore* context)
     : context_(context) {
+  DCHECK(context_);
 }
 
 ServiceWorkerJobCoordinator::~ServiceWorkerJobCoordinator() {
-  if (!context_) {
-    for (auto& job_pair : job_queues_)
-      job_pair.second.ClearForShutdown();
-    job_queues_.clear();
-  }
   DCHECK(job_queues_.empty()) << "Destroying ServiceWorkerJobCoordinator with "
                               << job_queues_.size() << " job queues";
 }
@@ -136,6 +134,12 @@ void ServiceWorkerJobCoordinator::Abort(const GURL& scope) {
 void ServiceWorkerJobCoordinator::AbortAll() {
   for (auto& job_pair : job_queues_)
     job_pair.second.AbortAll();
+  job_queues_.clear();
+}
+
+void ServiceWorkerJobCoordinator::ClearForShutdown() {
+  for (auto& job_pair : job_queues_)
+    job_pair.second.ClearForShutdown();
   job_queues_.clear();
 }
 

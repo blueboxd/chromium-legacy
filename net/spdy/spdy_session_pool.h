@@ -140,7 +140,6 @@ class NET_EXPORT SpdySessionPool
                   bool enable_ping_based_connection_checking,
                   bool is_http_enabled,
                   bool is_quic_enabled,
-                  bool support_ietf_format_quic_altsvc,
                   size_t session_max_recv_window_size,
                   int session_max_queued_capped_frames,
                   const spdy::SettingsMap& initial_settings,
@@ -427,9 +426,6 @@ class NET_EXPORT SpdySessionPool
 
   const bool is_http2_enabled_;
   const bool is_quic_enabled_;
-
-  // If true, alt-svc headers advertising QUIC in IETF format will be supported.
-  bool support_ietf_format_quic_altsvc_;
 
   size_t session_max_recv_window_size_;
 

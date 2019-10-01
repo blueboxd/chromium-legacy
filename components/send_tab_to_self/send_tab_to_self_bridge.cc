@@ -376,11 +376,6 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
     return nullptr;
   }
 
-  // AddEntry should be a no-op if the UI is disabled
-  if (!base::FeatureList::IsEnabled(kSendTabToSelfShowSendingUI)) {
-    return nullptr;
-  }
-
   // In the case where the user has attempted to send an identical URL
   // within the last |kDedupeTime| we think it is likely that user still
   // has the first sent tab in progress, and so we will not attempt to resend.

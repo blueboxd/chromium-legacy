@@ -65,11 +65,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
         @"Disabled for iPad due to alternate letters educational screen.");
   }
 
-  if ([ChromeEarlGrey isSlimNavigationManagerEnabled]) {
-    // TODO(crbug.com/834116): Fix and enable this test.
-    EARL_GREY_TEST_DISABLED(@"Prerender is not supported by slim-nav yet.");
-  }
-
   [ChromeEarlGrey clearBrowsingHistory];
   // Set server up.
   int visitCounter = 0;

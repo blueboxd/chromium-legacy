@@ -44,7 +44,7 @@ public class DataReductionPromoUtilsTest {
     private Context mContext;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // Using an AdvancedMockContext allows us to use a fresh in-memory SharedPreference.
         mContext = new AdvancedMockContext(InstrumentationRegistry.getInstrumentation()
                                                    .getTargetContext()
@@ -62,7 +62,7 @@ public class DataReductionPromoUtilsTest {
             "force-fieldtrials=DataCompressionProxyPromoVisibility/Enabled"})
     @Feature({"DataReduction"})
     public void
-    testCanShowPromos() throws Throwable {
+    testCanShowPromos() {
         if (DataReductionProxySettings.getInstance().isDataReductionProxyManaged()) return;
         Assert.assertFalse(DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
 
@@ -87,7 +87,7 @@ public class DataReductionPromoUtilsTest {
     @SmallTest
     @UiThreadTest
     @Feature({"DataReduction"})
-    public void testFreOrSecondRunPromoDisplayed() throws Throwable {
+    public void testFreOrSecondRunPromoDisplayed() {
         AboutVersionStrings versionStrings =
                 PrefServiceBridge.getInstance().getAboutVersionStrings();
 
@@ -110,7 +110,7 @@ public class DataReductionPromoUtilsTest {
     @SmallTest
     @UiThreadTest
     @Feature({"DataReduction"})
-    public void testFrePromoOptOut() throws Throwable {
+    public void testFrePromoOptOut() {
         // Save that the user opted out of the first run experience.
         DataReductionPromoUtils.saveFrePromoOptOut(true);
         Assert.assertTrue(DataReductionPromoUtils.getOptedOutOnFrePromo());
@@ -128,7 +128,7 @@ public class DataReductionPromoUtilsTest {
     @SmallTest
     @UiThreadTest
     @Feature({"DataReduction"})
-    public void testInfoBarPromoDisplayed() throws Throwable {
+    public void testInfoBarPromoDisplayed() {
         AboutVersionStrings versionStrings =
                 PrefServiceBridge.getInstance().getAboutVersionStrings();
 

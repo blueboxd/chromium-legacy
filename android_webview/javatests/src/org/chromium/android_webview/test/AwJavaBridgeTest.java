@@ -34,7 +34,7 @@ public class AwJavaBridgeTest {
     private static final int MAX_IDLE_INSTANCES = 1;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
     }
 

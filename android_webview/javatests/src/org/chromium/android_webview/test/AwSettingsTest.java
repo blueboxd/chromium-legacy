@@ -2497,16 +2497,15 @@ public class AwSettingsTest {
             return mManifestPath;
         }
 
-        int waitUntilHtmlIsRequested(final int initialRequestCount) throws Exception {
+        int waitUntilHtmlIsRequested(final int initialRequestCount) {
             return waitUntilResourceIsRequested(mHtmlPath, initialRequestCount);
         }
 
-        int waitUntilManifestIsRequested(final int initialRequestCount) throws Exception {
+        int waitUntilManifestIsRequested(final int initialRequestCount) {
             return waitUntilResourceIsRequested(mManifestPath, initialRequestCount);
         }
 
-        private int waitUntilResourceIsRequested(
-                final String path, final int initialRequestCount) throws Exception {
+        private int waitUntilResourceIsRequested(final String path, final int initialRequestCount) {
             AwActivityTestRule.pollInstrumentationThread(
                     () -> mWebServer.getRequestCount(path) > initialRequestCount);
             return mWebServer.getRequestCount(path);
@@ -3048,7 +3047,7 @@ public class AwSettingsTest {
     private TestDependencyFactory mOverridenFactory;
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mOverridenFactory = null;
     }
 
@@ -3183,7 +3182,7 @@ public class AwSettingsTest {
                 expectedResult, getSelectionChangeCountForSelectionUpdateTest(awContents, client));
     }
 
-    private void pollTitleAs(final String title, final AwContents awContents) throws Exception {
+    private void pollTitleAs(final String title, final AwContents awContents) {
         AwActivityTestRule.pollInstrumentationThread(
                 () -> title.equals(mActivityTestRule.getTitleOnUiThread(awContents)));
     }
@@ -3310,11 +3309,11 @@ public class AwSettingsTest {
         helper1.ensureSettingHasInitialValue();
     }
 
-    private ViewPair createViews() throws Throwable {
+    private ViewPair createViews() {
         return createViews(false);
     }
 
-    private ViewPair createViews(boolean supportsLegacyQuirks) throws Throwable {
+    private ViewPair createViews(boolean supportsLegacyQuirks) {
         TestAwContentsClient client0 = new TestAwContentsClient();
         TestAwContentsClient client1 = new TestAwContentsClient();
         return new ViewPair(mActivityTestRule.createAwTestContainerViewOnMainSync(
@@ -3358,8 +3357,7 @@ public class AwSettingsTest {
         return TestContentProvider.createContentUrl(target);
     }
 
-    private void simulateDoubleTapCenterOfWebViewOnUiThread(final AwTestContainerView webView)
-            throws Throwable {
+    private void simulateDoubleTapCenterOfWebViewOnUiThread(final AwTestContainerView webView) {
         final int x = (webView.getRight() - webView.getLeft()) / 2;
         final int y = (webView.getBottom() - webView.getTop()) / 2;
         final AwContents awContents = webView.getAwContents();

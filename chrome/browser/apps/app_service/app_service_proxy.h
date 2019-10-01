@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/apps/app_service/built_in_chromeos_apps.h"
@@ -72,6 +73,8 @@ class AppServiceProxy : public KeyedService,
   apps::IconLoader* OverrideInnerIconLoaderForTesting(
       apps::IconLoader* icon_loader);
   void ReInitializeCrostiniForTesting(Profile* profile);
+  std::vector<std::string> GetAppIdsForUrl(const GURL& url);
+  std::vector<std::string> GetAppIdsForIntent(apps::mojom::IntentPtr intent);
 
  private:
   // An adapter, presenting an IconLoader interface based on the underlying

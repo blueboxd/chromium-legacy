@@ -83,16 +83,23 @@ void SchedulerConfigurationManager::OnPrefChange() {
   // NB: Also send an update when the config gets reset to let the system pick
   // whatever default. Note that the value we read in this case will be the
   // default specified on pref registration, e.g. empty string.
-  debug_daemon_client_->SetSchedulerConfiguration(
+  debug_daemon_client_->SetSchedulerConfigurationV2(
       config_name,
+      /*lock_policy=*/false,
       base::BindOnce(&SchedulerConfigurationManager::OnConfigurationSet,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SchedulerConfigurationManager::OnConfigurationSet(bool result) {
-  if (!result) {
+void SchedulerConfigurationManager::OnConfigurationSet(
+    bool result,
+    size_t num_cores_disabled) {
+  if (result) {
+    VLOG(1) << num_cores_disabled << " logical CPU cores are disabled";
+  } else {
     LOG(ERROR) << "Failed to update scheduler configuration";
   }
+  for (Observer& obs : observer_list_)
+    obs.OnConfigurationSet(result, num_cores_disabled);
 }
 
 }  // namespace chromeos

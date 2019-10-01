@@ -148,7 +148,7 @@ public class OriginVerifierTest {
 
     @Test
     @SmallTest
-    public void testWipedWithBrowsingData() throws InterruptedException, TimeoutException {
+    public void testWipedWithBrowsingData() throws TimeoutException {
         CallbackHelper callbackHelper = new CallbackHelper();
 
         String relationship = "relationship1";

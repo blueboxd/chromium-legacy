@@ -59,6 +59,26 @@ MATCHER_P(EqualsProto, expected, "") {
 }
 
 MATCHER_P(ModelEqualsSpecifics, expected_specifics, "") {
+  if (expected_specifics.has_sharing_fields() != arg.sharing_info().has_value())
+    return false;
+
+  if (expected_specifics.has_sharing_fields()) {
+    auto& expected_fields = expected_specifics.sharing_fields();
+    auto& arg_info = *arg.sharing_info();
+    if (expected_fields.fcm_token() != arg_info.fcm_token ||
+        expected_fields.p256dh() != arg_info.p256dh ||
+        expected_fields.auth_secret() != arg_info.auth_secret ||
+        static_cast<size_t>(expected_fields.enabled_features_size()) !=
+            arg_info.enabled_features.size()) {
+      return false;
+    }
+
+    for (int i = 0; i < expected_fields.enabled_features_size(); ++i) {
+      if (!arg_info.enabled_features.count(expected_fields.enabled_features(i)))
+        return false;
+    }
+  }
+
   // Note that we ignore the device name here to avoid having to inject the
   // local device's.
   return expected_specifics.cache_guid() == arg.guid() &&
@@ -115,6 +135,24 @@ std::string SigninScopedDeviceIdForSuffix(int suffix) {
   return base::StringPrintf("signin scoped device id %d", suffix);
 }
 
+std::string SharingFcmTokenForSuffix(int suffix) {
+  return base::StringPrintf("sharing fcm token %d", suffix);
+}
+
+std::string SharingP256dhForSuffix(int suffix) {
+  return base::StringPrintf("sharing p256dh %d", suffix);
+}
+
+std::string SharingAuthSecretForSuffix(int suffix) {
+  return base::StringPrintf("sharing auth secret %d", suffix);
+}
+
+sync_pb::SharingSpecificFields::EnabledFeatures SharingEnabledFeaturesForSuffix(
+    int suffix) {
+  return suffix % 2 ? sync_pb::SharingSpecificFields::CLICK_TO_CALL
+                    : sync_pb::SharingSpecificFields::SHARED_CLIPBOARD;
+}
+
 DataTypeActivationRequest TestDataTypeActivationRequest() {
   DataTypeActivationRequest request;
   request.cache_guid = CacheGuidForSuffix(kLocalSuffix);
@@ -134,6 +172,14 @@ DeviceInfoSpecifics CreateSpecifics(
   specifics.set_last_updated_timestamp(TimeToProtoTime(last_updated));
   specifics.mutable_feature_fields()->set_send_tab_to_self_receiving_enabled(
       true);
+  specifics.mutable_sharing_fields()->set_fcm_token(
+      SharingFcmTokenForSuffix(suffix));
+  specifics.mutable_sharing_fields()->set_p256dh(
+      SharingP256dhForSuffix(suffix));
+  specifics.mutable_sharing_fields()->set_auth_secret(
+      SharingAuthSecretForSuffix(suffix));
+  specifics.mutable_sharing_fields()->add_enabled_features(
+      SharingEnabledFeaturesForSuffix(suffix));
   return specifics;
 }
 
@@ -188,11 +234,18 @@ class TestLocalDeviceInfoProvider : public MutableLocalDeviceInfoProvider {
   // MutableLocalDeviceInfoProvider implementation.
   void Initialize(const std::string& cache_guid,
                   const std::string& session_name) override {
+    std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
+        sharing_enabled_features{SharingEnabledFeaturesForSuffix(kLocalSuffix)};
     local_device_info_ = std::make_unique<DeviceInfo>(
         cache_guid, session_name, ChromeVersionForSuffix(kLocalSuffix),
         SyncUserAgentForSuffix(kLocalSuffix),
         sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-        SigninScopedDeviceIdForSuffix(kLocalSuffix), base::Time(), true);
+        SigninScopedDeviceIdForSuffix(kLocalSuffix), base::Time(),
+        /*send_tab_to_self_receiving_enabled=*/true,
+        DeviceInfo::SharingInfo(SharingFcmTokenForSuffix(kLocalSuffix),
+                                SharingP256dhForSuffix(kLocalSuffix),
+                                SharingAuthSecretForSuffix(kLocalSuffix),
+                                sharing_enabled_features));
   }
 
   void Clear() override { local_device_info_.reset(); }

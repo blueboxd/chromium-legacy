@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-struct AppLaunchParams;
 class Profile;
 
 namespace base {
@@ -26,6 +25,7 @@ class WebContents;
 namespace apps {
 
 class LaunchManager;
+struct AppLaunchParams;
 
 // This KeyedService receives app launch requests and forwards them
 // to the appropriate LaunchManager, based on the type of app.

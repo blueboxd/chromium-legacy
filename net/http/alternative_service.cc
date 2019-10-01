@@ -176,8 +176,7 @@ AlternativeServiceInfoVector ProcessAlternativeServices(
         alternative_service_vector,
     bool is_http2_enabled,
     bool is_quic_enabled,
-    const quic::ParsedQuicVersionVector& supported_quic_versions,
-    bool support_ietf_format_quic_altsvc) {
+    const quic::ParsedQuicVersionVector& supported_quic_versions) {
   // Convert spdy::SpdyAltSvcWireFormat::AlternativeService entries
   // to net::AlternativeServiceInfo.
   AlternativeServiceInfoVector alternative_service_info_vector;
@@ -195,8 +194,7 @@ AlternativeServiceInfoVector ProcessAlternativeServices(
         continue;
       if (!alternative_service_entry.version.empty()) {
         advertised_versions = FilterSupportedAltSvcVersions(
-            alternative_service_entry, supported_quic_versions,
-            support_ietf_format_quic_altsvc);
+            alternative_service_entry, supported_quic_versions);
         if (advertised_versions.empty())
           continue;
       }

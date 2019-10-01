@@ -317,8 +317,7 @@ const std::vector<GURL> AppInfoSummaryPanel::GetLicenseUrls() const {
 
   for (const auto& shared_module : imports) {
     const extensions::Extension* imported_module = registry->GetExtensionById(
-        shared_module.extension_id,
-        extensions::ExtensionRegistry::COMPATIBILITY);
+        shared_module.extension_id, extensions::ExtensionRegistry::EVERYTHING);
     DCHECK(imported_module);
 
     GURL about_page = extensions::ManifestURL::GetAboutPage(imported_module);

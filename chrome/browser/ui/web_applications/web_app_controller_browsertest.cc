@@ -88,10 +88,10 @@ content::WebContents* WebAppControllerBrowserTest::OpenApplication(
       provider->registrar().GetAppLaunchURL(app_id),
       content::NotificationService::AllSources());
 
-  AppLaunchParams params(profile(), app_id,
-                         apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                         WindowOpenDisposition::NEW_WINDOW,
-                         apps::mojom::AppLaunchSource::kSourceTest);
+  apps::AppLaunchParams params(
+      app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_WINDOW,
+      apps::mojom::AppLaunchSource::kSourceTest);
   content::WebContents* contents =
       apps::LaunchService::Get(profile())->OpenApplication(params);
   url_observer.Wait();

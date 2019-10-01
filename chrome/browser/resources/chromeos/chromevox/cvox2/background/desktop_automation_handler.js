@@ -546,10 +546,13 @@ DesktopAutomationHandler.prototype = {
     var selectionEndObject = evt.target.root.selectionEndObject;
     var selectionEndOffset = evt.target.root.selectionEndOffset || 0;
     if (selectionStartObject && selectionEndObject) {
+      // Sync to the selection's deep equivalent especially in editables, where
+      // selection is often on the root text field with a child offset.
       var selectedRange = new cursors.Range(
-          new cursors.WrappingCursor(
-              selectionStartObject, selectionStartOffset),
-          new cursors.WrappingCursor(selectionEndObject, selectionEndOffset));
+          new cursors.WrappingCursor(selectionStartObject, selectionStartOffset)
+              .deepEquivalent,
+          new cursors.WrappingCursor(selectionEndObject, selectionEndOffset)
+              .deepEquivalent);
 
       // Sync ChromeVox range with selection.
       ChromeVoxState.instance.setCurrentRange(selectedRange);

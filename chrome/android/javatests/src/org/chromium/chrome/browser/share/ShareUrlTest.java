@@ -30,8 +30,7 @@ public class ShareUrlTest {
     private static final String HTTP_URL = "http://www.google.com/";
     private static final String HTTPS_URL = "https://www.google.com/";
 
-    private void assertCorrectUrl(final String originalUrl, final String sharedUrl)
-            throws Throwable {
+    private void assertCorrectUrl(final String originalUrl, final String sharedUrl) {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             ShareParams params =
                     new ShareParams.Builder(new Activity(), "", sharedUrl).setText("").build();
@@ -44,14 +43,14 @@ public class ShareUrlTest {
 
     @Test
     @SmallTest
-    public void testNormalUrl() throws Throwable {
+    public void testNormalUrl() {
         assertCorrectUrl(HTTP_URL, HTTP_URL);
         assertCorrectUrl(HTTPS_URL, HTTPS_URL);
     }
 
     @Test
     @SmallTest
-    public void testDistilledUrl() throws Throwable {
+    public void testDistilledUrl() {
         final String DomDistillerScheme = "chrome-distiller";
         String distilledHttpUrl =
                 DomDistillerUrlUtils.getDistillerViewUrlFromUrl(DomDistillerScheme, HTTP_URL);

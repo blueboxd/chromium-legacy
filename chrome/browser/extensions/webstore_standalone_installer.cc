@@ -195,8 +195,8 @@ void WebstoreStandaloneInstaller::OnInstallPromptDone(
   std::unique_ptr<WebstoreInstaller::Approval> approval = CreateApproval();
 
   ExtensionRegistry* extension_registry = ExtensionRegistry::Get(profile_);
-  const Extension* installed_extension = extension_registry->GetExtensionById(
-      id_, ExtensionRegistry::COMPATIBILITY);
+  const Extension* installed_extension =
+      extension_registry->GetExtensionById(id_, ExtensionRegistry::EVERYTHING);
   if (installed_extension) {
     std::string install_message;
     webstore_install::Result install_result = webstore_install::SUCCESS;

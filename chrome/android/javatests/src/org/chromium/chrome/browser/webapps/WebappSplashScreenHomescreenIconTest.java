@@ -34,7 +34,7 @@ public class WebappSplashScreenHomescreenIconTest {
     private ViewGroup mSplashScreen;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mSplashScreen = mActivityTestRule.startWebappActivityAndWaitForSplashScreen(
                 mActivityTestRule.createIntent().putExtra(
                         ShortcutHelper.EXTRA_ICON, WebappActivityTestRule.TEST_ICON));

@@ -23,6 +23,11 @@ enum class InfobarType;
                forWebState:(web::WebState*)webState;
 
 // Called whenever an InfobarBanner of type |infobarType| in |webState| was
+// presented. |webState| cannot be nil.
+- (void)infobarBannerWasPresented:(InfobarType)infobarType
+                      forWebState:(web::WebState*)webState;
+
+// Called whenever an InfobarBanner of type |infobarType| in |webState| was
 // dismissed. |webState| cannot be nil.
 - (void)infobarBannerWasDismissed:(InfobarType)infobarType
                       forWebState:(web::WebState*)webState;

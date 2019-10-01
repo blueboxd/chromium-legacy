@@ -6,6 +6,7 @@
 
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
@@ -31,6 +32,11 @@ LoginScreenApitestBase::~LoginScreenApitestBase() = default;
 
 void LoginScreenApitestBase::SetUpExtensionAndRunTest(
     const std::string& testName) {
+  SetUpExtensionAndRunTest(testName, /*assert_test_succeed=*/true);
+}
+void LoginScreenApitestBase::SetUpExtensionAndRunTest(
+    const std::string& testName,
+    bool assert_test_succeed) {
   extensions::ResultCatcher catcher;
 
   ExtensionTestMessageListener listener(kWaitingForTestName,
@@ -42,7 +48,8 @@ void LoginScreenApitestBase::SetUpExtensionAndRunTest(
   ASSERT_TRUE(listener.WaitUntilSatisfied());
   listener.Reply(testName);
 
-  ASSERT_TRUE(catcher.GetNextResult());
+  if (assert_test_succeed)
+    ASSERT_TRUE(catcher.GetNextResult());
 }
 
 }  // namespace chromeos

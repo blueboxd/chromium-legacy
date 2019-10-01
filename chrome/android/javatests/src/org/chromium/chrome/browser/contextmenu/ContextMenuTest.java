@@ -86,12 +86,12 @@ public class ContextMenuTest implements CustomMainActivityStart {
     };
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
         deleteTestFiles();
@@ -100,7 +100,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     }
 
     @Override
-    public void customMainActivityStart() throws InterruptedException {
+    public void customMainActivityStart() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mTestUrl = mTestServer.getURL(TEST_PATH);
         deleteTestFiles();
@@ -139,7 +139,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @MediumTest
     @Feature({"Browser"})
     @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
-    public void testSearchWithGoogleLensFiresIntent() throws Throwable, IOException {
+    public void testSearchWithGoogleLensFiresIntent() throws Throwable {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
 
         LensUtils.setFakePassableLensVersionForTesting(true);
@@ -156,7 +156,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @MediumTest
     @Feature({"Browser"})
     @RetryOnFailure
-    public void testLongPressOnImage() throws InterruptedException, TimeoutException {
+    public void testLongPressOnImage() throws TimeoutException {
         checkOpenImageInNewTab(
                 "testImage", "/chrome/test/data/android/contextmenu/test_image.png");
     }
@@ -168,13 +168,13 @@ public class ContextMenuTest implements CustomMainActivityStart {
     */
     @Test
     @FlakyTest(message = "http://crbug.com/606939")
-    public void testLongPressOnImageLink() throws InterruptedException, TimeoutException {
+    public void testLongPressOnImageLink() throws TimeoutException {
         checkOpenImageInNewTab(
                 "testImageLink", "/chrome/test/data/android/contextmenu/test_image.png");
     }
 
     private void checkOpenImageInNewTab(String domId, final String expectedPath)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         final Tab activityTab = mDownloadTestRule.getActivity().getActivityTab();
 
         final CallbackHelper newTabCallback = new CallbackHelper();
@@ -219,7 +219,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @MediumTest
     @Feature({"Browser"})
     @RetryOnFailure
-    public void testDismissContextMenuOnBack() throws InterruptedException, TimeoutException {
+    public void testDismissContextMenuOnBack() throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImage");
         Assert.assertNotNull("Context menu was not properly created", menu);
@@ -243,7 +243,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @MediumTest
     @Feature({"Browser"})
     @RetryOnFailure
-    public void testDismissContextMenuOnClick() throws InterruptedException, TimeoutException {
+    public void testDismissContextMenuOnClick() throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImage");
         Assert.assertNotNull("Context menu was not properly created", menu);
@@ -294,8 +294,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @LargeTest
     @Feature({"Browser"})
     @RetryOnFailure
-    public void testSaveDataUrl()
-            throws InterruptedException, TimeoutException, SecurityException, IOException {
+    public void testSaveDataUrl() throws TimeoutException, SecurityException, IOException {
         saveMediaFromContextMenu("dataUrlIcon", R.id.contextmenu_save_image, FILENAME_GIF);
     }
 
@@ -303,8 +302,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @LargeTest
     @Feature({"Browser"})
     @RetryOnFailure
-    public void testSaveImage()
-            throws InterruptedException, TimeoutException, SecurityException, IOException {
+    public void testSaveImage() throws TimeoutException, SecurityException, IOException {
         saveMediaFromContextMenu("testImage", R.id.contextmenu_save_image, FILENAME_PNG);
     }
 
@@ -313,8 +311,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Feature({"Browser"})
     @RetryOnFailure
     @DisabledTest(message = "https://crbug.com/947695")
-    public void testSaveVideo()
-            throws InterruptedException, TimeoutException, SecurityException, IOException {
+    public void testSaveVideo() throws TimeoutException, SecurityException, IOException {
         // Click the video to enable playback
         DOMUtils.clickNode(
                 mDownloadTestRule.getActivity().getCurrentWebContents(), "videoDOMElement");
@@ -332,8 +329,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @LargeTest
     @Feature({"Browser"})
     @RetryOnFailure
-    public void testOpenLinksInNewTabsAndVerifyTabIndexOrdering()
-            throws InterruptedException, TimeoutException {
+    public void testOpenLinksInNewTabsAndVerifyTabIndexOrdering() throws TimeoutException {
         TabModel tabModel = mDownloadTestRule.getActivity().getCurrentTabModel();
         int numOpenedTabs = tabModel.getCount();
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
@@ -382,8 +378,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
     @RetryOnFailure
-    public void testContextMenuRetrievesLinkOptions()
-            throws TimeoutException, InterruptedException {
+    public void testContextMenuRetrievesLinkOptions() throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testLink");
 
@@ -402,8 +397,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Feature({"Browser", "ContextMenu"})
     @RetryOnFailure
     @DisableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
-    public void testContextMenuRetrievesImageOptions()
-            throws TimeoutException, InterruptedException {
+    public void testContextMenuRetrievesImageOptions() throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImage");
 
@@ -420,8 +414,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
     @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
-    public void testContextMenuRetrievesImageOptionsLensEnabled()
-            throws TimeoutException, InterruptedException {
+    public void testContextMenuRetrievesImageOptionsLensEnabled() throws TimeoutException {
         LensUtils.setFakePassableLensVersionForTesting(true);
 
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
@@ -443,7 +436,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @RetryOnFailure
     @DisableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
     public void testContextMenuRetrievesImageOptions_NoDefaultSearchEngine()
-            throws TimeoutException, InterruptedException {
+            throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImage");
 
@@ -461,7 +454,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Policies.Add({ @Policies.Item(key = "DefaultSearchProviderEnabled", string = "false") })
     @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
     public void testContextMenuRetrievesImageOptions_NoDefaultSearchEngineLensEnabled()
-            throws TimeoutException, InterruptedException {
+            throws TimeoutException {
         LensUtils.setFakePassableLensVersionForTesting(true);
 
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
@@ -480,8 +473,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
     @DisableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
-    public void testContextMenuRetrievesImageLinkOptions()
-            throws TimeoutException, InterruptedException {
+    public void testContextMenuRetrievesImageLinkOptions() throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImageLink");
 
@@ -502,7 +494,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Feature({"Browser", "ContextMenu"})
     @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
     public void testContextMenuRetrievesImageLinkOptionsSearchLensEnabled()
-            throws TimeoutException, InterruptedException {
+            throws TimeoutException {
         LensUtils.setFakePassableLensVersionForTesting(true);
 
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
@@ -525,8 +517,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Feature({"Browser", "ContextMenu"})
     @RetryOnFailure
     @DisabledTest(message = "https://crbug.com/947695")
-    public void testContextMenuRetrievesVideoOptions()
-            throws TimeoutException, InterruptedException {
+    public void testContextMenuRetrievesVideoOptions() throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         DOMUtils.clickNode(
                 mDownloadTestRule.getActivity().getCurrentWebContents(), "videoDOMElement");
@@ -582,8 +573,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     }
 
     private void saveMediaFromContextMenu(String mediaDOMElement, int saveMenuID,
-            String expectedFilename) throws InterruptedException, TimeoutException,
-            SecurityException, IOException {
+            String expectedFilename) throws TimeoutException, SecurityException, IOException {
         // Select "save [image/video]" in that menu.
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         int callCount = mDownloadTestRule.getChromeDownloadCallCount();
@@ -615,7 +605,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     /**
      * Hardcode image bytes to non-null arbitrary data.
      */
-    private void hardcodeTestImageForSharing() throws IOException {
+    private void hardcodeTestImageForSharing() {
         // This string just needs to be not empty in order for the code to accept it as valid
         // image data and generate the temp file for sharing. In the future we could explore
         // transcoding the actual test image from png to jpeg to make the test more realistic.

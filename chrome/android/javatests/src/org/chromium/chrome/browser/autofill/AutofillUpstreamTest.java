@@ -36,7 +36,6 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.ButtonCompat;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -62,7 +61,7 @@ public class AutofillUpstreamTest {
     private EmbeddedTestServer mServer;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         mServer = new EmbeddedTestServer();
         mServer.initializeNative(InstrumentationRegistry.getContext(),
@@ -72,7 +71,7 @@ public class AutofillUpstreamTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mServer.stopAndDestroyServer();
     }
 
@@ -117,8 +116,7 @@ public class AutofillUpstreamTest {
     @Test
     @MediumTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
-    public void testSaveCardInfoBarWithAllFieldsFilled()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testSaveCardInfoBarWithAllFieldsFilled() throws TimeoutException {
         mActivityTestRule.startMainActivityWithURL(mServer.getURL(TEST_FORM_URL));
         final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
 
@@ -133,8 +131,7 @@ public class AutofillUpstreamTest {
     @Test
     @MediumTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
-    public void testSaveCardInfoBarWithEmptyMonth()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testSaveCardInfoBarWithEmptyMonth() throws TimeoutException {
         mActivityTestRule.startMainActivityWithURL(mServer.getURL(TEST_FORM_URL));
         final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
 
@@ -151,8 +148,7 @@ public class AutofillUpstreamTest {
     @Test
     @MediumTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
-    public void testSaveCardInfoBarWithEmptyYear()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testSaveCardInfoBarWithEmptyYear() throws TimeoutException {
         mActivityTestRule.startMainActivityWithURL(mServer.getURL(TEST_FORM_URL));
         final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
 
@@ -169,8 +165,7 @@ public class AutofillUpstreamTest {
     @Test
     @MediumTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
-    public void testSaveCardInfoBarWithEmptyMonthAndYear()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testSaveCardInfoBarWithEmptyMonthAndYear() throws TimeoutException {
         mActivityTestRule.startMainActivityWithURL(mServer.getURL(TEST_FORM_URL));
         final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
 
@@ -188,7 +183,7 @@ public class AutofillUpstreamTest {
     @MediumTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
     public void testSaveCardInfoBarContinueButton_EmptyExpDate_launchesExpDateFixFlow()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws TimeoutException {
         mActivityTestRule.startMainActivityWithURL(mServer.getURL(TEST_FORM_URL));
         final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
 
@@ -210,8 +205,7 @@ public class AutofillUpstreamTest {
     @Test
     @MediumTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
-    public void testSaveCardInfoBarWithEmptyName()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testSaveCardInfoBarWithEmptyName() throws TimeoutException {
         mActivityTestRule.startMainActivityWithURL(mServer.getURL(TEST_FORM_URL));
         final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
 
@@ -229,7 +223,7 @@ public class AutofillUpstreamTest {
     @MediumTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
     public void testSaveCardInfoBarContinueButton_EmptyName_launchesNameFixFlow()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws TimeoutException {
         mActivityTestRule.startMainActivityWithURL(mServer.getURL(TEST_FORM_URL));
         final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
 

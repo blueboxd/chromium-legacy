@@ -65,7 +65,7 @@ public class TrustedWebActivityTest {
     private String mTestPage;
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         // Native needs to be initialized to start the test server.
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
 
@@ -75,7 +75,7 @@ public class TrustedWebActivityTest {
 
     @Test
     @MediumTest
-    public void launchesTwa() throws TimeoutException, InterruptedException {
+    public void launchesTwa() throws TimeoutException {
         Intent intent = createTrustedWebActivityIntent(mTestPage);
         spoofVerification(PACKAGE_NAME, mTestPage);
         createSession(intent, PACKAGE_NAME);
@@ -87,7 +87,7 @@ public class TrustedWebActivityTest {
 
     @Test
     @MediumTest
-    public void doesntLaunchTwa_WithoutFlag() throws TimeoutException, InterruptedException {
+    public void doesntLaunchTwa_WithoutFlag() throws TimeoutException {
         Intent intent = createTrustedWebActivityIntent(mTestPage);
         spoofVerification(PACKAGE_NAME, mTestPage);
         createSession(intent, PACKAGE_NAME);
@@ -101,7 +101,7 @@ public class TrustedWebActivityTest {
 
     @Test
     @MediumTest
-    public void leavesTwa_VerificationFailure() throws TimeoutException, InterruptedException {
+    public void leavesTwa_VerificationFailure() throws TimeoutException {
         Intent intent = createTrustedWebActivityIntent(mTestPage);
         createSession(intent, PACKAGE_NAME);
 
@@ -119,7 +119,7 @@ public class TrustedWebActivityTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     // Customizing status bar color is disallowed for tablets.
-    public void testStatusBarColorPrecedence() throws TimeoutException, InterruptedException {
+    public void testStatusBarColorPrecedence() throws TimeoutException {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
         final int intentToolbarColor = Color.GREEN;

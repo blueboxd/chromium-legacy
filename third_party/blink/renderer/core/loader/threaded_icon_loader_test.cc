@@ -137,5 +137,18 @@ TEST_F(ThreadedIconLoaderTest, LoadTimeRecordedByUMA) {
   histogram_tester.ExpectTotalCount("Blink.ThreadedIconLoader.LoadTime", 1);
 }
 
+TEST_F(ThreadedIconLoaderTest, ResizeFailed) {
+  WebSize dimensions = {25, 0};
+  auto result = LoadIcon(RegisterMockedURL(kIconLoaderIcon100x100), dimensions);
+  const SkBitmap& icon = result.first;
+  double resize_scale = result.second;
+
+  // Resizing should have failed so the original will be returned.
+  ASSERT_FALSE(icon.isNull());
+  EXPECT_EQ(icon.width(), 100);
+  EXPECT_EQ(icon.height(), 100);
+  EXPECT_EQ(resize_scale, 1.0);
+}
+
 }  // namespace
 }  // namespace blink

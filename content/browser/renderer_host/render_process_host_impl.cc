@@ -191,6 +191,7 @@
 #include "media/audio/audio_manager.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
+#include "media/mojo/services/video_decode_perf_history.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -1938,6 +1939,13 @@ void RenderProcessHostImpl::BindFileSystemManager(
       base::BindOnce(&FileSystemManagerImpl::BindReceiver,
                      base::Unretained(file_system_manager_impl_.get()),
                      std::move(receiver)));
+}
+
+void RenderProcessHostImpl::BindVideoDecodePerfHistory(
+    mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GetBrowserContext()->GetVideoDecodePerfHistory()->BindReceiver(
+      std::move(receiver));
 }
 
 void RenderProcessHostImpl::CreateLockManager(

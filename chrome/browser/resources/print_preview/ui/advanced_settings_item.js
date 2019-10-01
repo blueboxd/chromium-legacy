@@ -67,6 +67,33 @@ Polymer({
   },
 
   /**
+   * @return {boolean} Whether the capability represented by this item is
+   *     of type checkbox.
+   * @private
+   */
+  isCapabilityTypeCheckbox_: function() {
+    return this.capability.type == 'TYPED_VALUE' &&
+        this.capability.typed_value_cap.value_type == 'BOOLEAN';
+  },
+
+  /**
+   * @return {boolean} Whether the capability represented by this item is
+   *     of type input.
+   * @private
+   */
+  isCapabilityTypeInput_: function() {
+    return !this.isCapabilityTypeSelect_() && !this.isCapabilityTypeCheckbox_();
+  },
+
+  /**
+   * @return {boolean} Whether the checkbox setting is checked.
+   * @private
+   */
+  isChecked_: function() {
+    return this.currentValue_ == 'true';
+  },
+
+  /**
    * @param {!print_preview.VendorCapabilitySelectOption} option The option
    *     for a select capability.
    * @return {boolean} Whether the option is selected.
@@ -134,6 +161,14 @@ Polymer({
    */
   onUserInput_: function(e) {
     this.currentValue_ = e.target.value;
+  },
+
+  /**
+   * @param {!Event} e Event containing the new value.
+   * @private
+   */
+  onCheckboxInput_: function(e) {
+    this.currentValue_ = e.target.checked ? 'true' : 'false';
   },
 
   /**

@@ -93,7 +93,7 @@ public class GeolocationTest {
         }
     }
 
-    private void initAwContents(TestAwContentsClient contentsClient) throws Exception {
+    private void initAwContents(TestAwContentsClient contentsClient) {
         mContentsClient = contentsClient;
         mAwContents = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient)
                               .getAwContents();
@@ -103,13 +103,13 @@ public class GeolocationTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mMockLocationProvider = new MockLocationProvider();
         LocationProviderOverrider.setLocationProviderImpl(mMockLocationProvider);
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mMockLocationProvider.stopUpdates();
         mOverridenFactory = null;
     }
@@ -125,7 +125,7 @@ public class GeolocationTest {
         return result;
     }
 
-    private void ensureGeolocationRunning(final boolean running) throws Exception {
+    private void ensureGeolocationRunning(final boolean running) {
         AwActivityTestRule.pollInstrumentationThread(
                 () -> mMockLocationProvider.isRunning() == running);
     }

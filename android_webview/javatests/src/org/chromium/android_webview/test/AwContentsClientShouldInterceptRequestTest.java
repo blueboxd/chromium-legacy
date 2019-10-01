@@ -83,7 +83,7 @@ public class AwContentsClientShouldInterceptRequestTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mWebServer.shutdown();
     }
 
@@ -366,7 +366,7 @@ public class AwContentsClientShouldInterceptRequestTest {
         }
 
         @Override
-        public long skip(long n) throws IOException {
+        public long skip(long n) {
             return n;
         }
     }

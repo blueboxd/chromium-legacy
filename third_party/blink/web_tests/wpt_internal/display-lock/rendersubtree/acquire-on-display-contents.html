@@ -11,34 +11,14 @@
 
 <body></body>
 <script>
-async_test(async (t) => {
-  let div = document.createElement("div");
-  div.style = "display: contents;";
-  document.body.appendChild(div);
-  await setInvisible(div).then(() => {
-      // TODO(rakina): Change this once we support non-contained locking.
-      t.step(() => assert_false(div.displayLock.locked));
-      t.done();
-    });
-}, "Elements with display:contents can't be locked");
-
-async_test(async (t) => {
-  let slot = document.createElement("slot");
-  document.body.appendChild(slot);
-  await setInvisible(slot).then(() => {
-      // TODO(rakina): Change this once we support non-contained locking.
-      t.step(() => assert_false(slot.displayLock.locked));
-      t.done();
-    });
-}, "<slot> can't be locked");
+// TODO(vmpstr): Add tests for display:contents, slot, which cannot be locked.
 
 async_test(async (t) => {
   let slot = document.createElement("slot");
   slot.style = "display: block;";
   document.body.appendChild(slot);
   await setInvisible(slot).then(() => {
-    // TODO(rakina): Change this once we support non-contained locking.
-    t.step(() => assert_true(slot.displayLock.locked));
+    t.step(() => assert_equals(slot.renderSubtree, "invisible"));
     t.done();
   });
 }, "<slot> with changed display type can be locked");

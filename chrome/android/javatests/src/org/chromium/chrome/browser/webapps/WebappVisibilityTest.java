@@ -37,7 +37,7 @@ public class WebappVisibilityTest {
     private static final String WEBAPP_URL = "http://originalwebsite.com";
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mActivityTestRule.loadNativeLibraryNoBrowserProcess();
     }
 

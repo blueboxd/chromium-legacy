@@ -69,6 +69,7 @@ class ToolbarView;
 class TopContainerView;
 class TopControlsSlideControllerTest;
 class WebContentsCloseHandler;
+class WebUITabStripContainerView;
 
 namespace extensions {
 class ActiveTabPermissionGranter;
@@ -185,6 +186,9 @@ class BrowserView : public BrowserWindow,
   // Accessor for the TabStrip.
   TabStrip* tabstrip() { return tabstrip_; }
   const TabStrip* tabstrip() const { return tabstrip_; }
+
+  // Accessor for the WebUI tab strip.
+  WebUITabStripContainerView* webui_tab_strip() { return webui_tab_strip_; }
 
   // Accessor for the Toolbar.
   ToolbarView* toolbar() { return toolbar_; }
@@ -735,6 +739,9 @@ class BrowserView : public BrowserWindow,
 
   // The TabStrip.
   TabStrip* tabstrip_ = nullptr;
+
+  // the webui based tabstrip, when applicable. see https://crbug.com/989131.
+  WebUITabStripContainerView* webui_tab_strip_ = nullptr;
 
   // The Toolbar containing the navigation buttons, menus and the address bar.
   ToolbarView* toolbar_ = nullptr;

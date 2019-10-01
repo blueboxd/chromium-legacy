@@ -64,7 +64,6 @@ class ByteCodeProcessor {
     private static ClassLoader sFullClassPathClassLoader;
     private static Set<String> sFullClassPathJarPaths;
     private static String sGenerateClassDepsPath;
-    private static Set<String> sSplitCompatClassNames;
     private static ClassPathValidator sValidator;
 
     private static class EntryDataPair {
@@ -137,10 +136,6 @@ class ByteCodeProcessor {
         if (sShouldUseCustomResources) {
             chain = new CustomResourcesClassAdapter(
                     chain, reader.getClassName(), reader.getSuperName(), sFullClassPathClassLoader);
-        }
-        if (!sSplitCompatClassNames.isEmpty()) {
-            chain = new SplitCompatClassAdapter(
-                    chain, sSplitCompatClassNames, sFullClassPathClassLoader);
         }
         reader.accept(chain, 0);
         byte[] patchedByteCode = writer.toByteArray();
@@ -276,13 +271,6 @@ class ByteCodeProcessor {
                 Arrays.asList(Arrays.copyOfRange(args, currIndex, currIndex + directJarsLength)));
         currIndex += directJarsLength;
         sDirectClassPathClassLoader = loadJars(directClassPathJarPaths);
-
-        // Load list of class names that need to be fixed.
-        int splitCompatClassNamesLength = Integer.parseInt(args[currIndex++]);
-        sSplitCompatClassNames = new HashSet<>();
-        sSplitCompatClassNames.addAll(Arrays.asList(
-                Arrays.copyOfRange(args, currIndex, currIndex + splitCompatClassNamesLength)));
-        currIndex += splitCompatClassNamesLength;
 
         // Load all jars that are on the classpath for the input jar for analyzing class hierarchy.
         sFullClassPathJarPaths = new HashSet<>();

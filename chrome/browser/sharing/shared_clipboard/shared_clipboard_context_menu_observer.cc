@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_ui_controller.h"
@@ -77,7 +76,7 @@ void SharedClipboardContextMenuObserver::InitMenu(
         l10n_util::GetStringFUTF16(
             IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE,
             base::UTF8ToUTF16(devices[0]->client_name())),
-        kSendTabToSelfIcon);
+        controller_->GetVectorIcon());
 #endif
   } else {
     BuildSubMenu();
@@ -91,7 +90,7 @@ void SharedClipboardContextMenuObserver::InitMenu(
     proxy_->AddSubMenuWithStringIdAndIcon(
         IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES,
         IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES,
-        sub_menu_model_.get(), kSendTabToSelfIcon);
+        sub_menu_model_.get(), controller_->GetVectorIcon());
 #endif
   }
 }

@@ -97,10 +97,10 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
 
   WebAppBrowserController* controller;
   {
-    AppLaunchParams params(browser()->profile(), app_id,
-                           apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                           WindowOpenDisposition::NEW_WINDOW,
-                           apps::mojom::AppLaunchSource::kSourceTest);
+    apps::AppLaunchParams params(
+        app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+        WindowOpenDisposition::NEW_WINDOW,
+        apps::mojom::AppLaunchSource::kSourceTest);
     content::WebContents* contents =
         apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
     controller = chrome::FindBrowserWithWebContents(contents)

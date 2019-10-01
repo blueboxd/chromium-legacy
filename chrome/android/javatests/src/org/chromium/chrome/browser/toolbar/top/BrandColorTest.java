@@ -105,7 +105,7 @@ public class BrandColorTest {
         }
     }
 
-    protected void startMainActivityWithURL(String url) throws InterruptedException {
+    protected void startMainActivityWithURL(String url) {
         mActivityTestRule.startMainActivityWithURL(url);
         mToolbar = (ToolbarPhone) mActivityTestRule.getActivity().findViewById(R.id.toolbar);
         mToolbarDataProvider = mToolbar.getToolbarDataProvider();
@@ -123,7 +123,7 @@ public class BrandColorTest {
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
-    public void testNoBrandColor() throws InterruptedException {
+    public void testNoBrandColor() {
         startMainActivityWithURL(getUrlWithBrandColor(""));
         checkForBrandColor(mDefaultColor);
     }
@@ -135,7 +135,7 @@ public class BrandColorTest {
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
-    public void testBrandColorNoAlpha() throws InterruptedException {
+    public void testBrandColorNoAlpha() {
         startMainActivityWithURL(getUrlWithBrandColor(BRAND_COLOR_1));
         checkForBrandColor(Color.parseColor(BRAND_COLOR_1));
     }
@@ -147,7 +147,7 @@ public class BrandColorTest {
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
-    public void testImmediateColorChange() throws InterruptedException {
+    public void testImmediateColorChange() {
         startMainActivityWithURL(getUrlWithBrandColor(BRAND_COLOR_1));
         checkForBrandColor(Color.parseColor(BRAND_COLOR_1));
 
@@ -168,7 +168,7 @@ public class BrandColorTest {
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
-    public void testBrandColorWithLoadStarted() throws InterruptedException {
+    public void testBrandColorWithLoadStarted() {
         startMainActivityWithURL(getUrlWithBrandColor(BRAND_COLOR_1));
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             Tab tab = mActivityTestRule.getActivity().getActivityTab();
@@ -187,7 +187,7 @@ public class BrandColorTest {
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
-    public void testNavigatingToNewBrandColor() throws InterruptedException {
+    public void testNavigatingToNewBrandColor() {
         startMainActivityWithURL(getUrlWithBrandColor(BRAND_COLOR_1));
         checkForBrandColor(Color.parseColor(BRAND_COLOR_1));
         mActivityTestRule.loadUrl(getUrlWithBrandColor(BRAND_COLOR_2));
@@ -202,7 +202,7 @@ public class BrandColorTest {
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
-    public void testNavigatingToBrandColorAndBack() throws InterruptedException {
+    public void testNavigatingToBrandColorAndBack() {
         startMainActivityWithURL("about:blank");
         checkForBrandColor(mDefaultColor);
         mActivityTestRule.loadUrl(getUrlWithBrandColor(BRAND_COLOR_1));
@@ -227,7 +227,7 @@ public class BrandColorTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @DisableInTabbedMode
     @Feature({"Omnibox"})
-    public void testBrandColorInterstitial() throws InterruptedException {
+    public void testBrandColorInterstitial() {
         final String brandColorUrl = getUrlWithBrandColor(BRAND_COLOR_1);
         startMainActivityWithURL(brandColorUrl);
         checkForBrandColor(Color.parseColor(BRAND_COLOR_1));

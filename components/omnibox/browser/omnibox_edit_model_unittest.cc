@@ -223,7 +223,7 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopyQueryInOmnibox) {
   }
 }
 
-TEST_F(OmniboxEditModelTest, InlineAutocompleteText) {
+TEST_F(OmniboxEditModelTest, DISABLED_InlineAutocompleteText) {
   // Test if the model updates the inline autocomplete text in the view.
   EXPECT_EQ(base::string16(), view()->inline_autocomplete_text());
   model()->SetUserText(base::ASCIIToUTF16("he"));

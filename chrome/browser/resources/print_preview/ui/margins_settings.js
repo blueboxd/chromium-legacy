@@ -18,7 +18,7 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.MarginsValue = print_preview.ticket_items.MarginsTypeValue;
+    this.MarginsValue = print_preview.MarginsTypeValue;
   },
 
   /**
@@ -27,8 +27,7 @@ Polymer({
    */
   onMarginsSettingChange_: function(newValue) {
     this.selectedValue =
-        /** @type {!print_preview.ticket_items.MarginsTypeValue} */ (newValue)
-            .toString();
+        /** @type {!print_preview.MarginsTypeValue} */ (newValue).toString();
   },
 
   /** @param {string} value The new select value. */

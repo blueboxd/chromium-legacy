@@ -122,7 +122,7 @@ public class TrustedCdnPublisherUrlTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
 
         mWebServer.shutdown();
@@ -315,7 +315,7 @@ public class TrustedCdnPublisherUrlTest {
     @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
     @OverrideTrustedCdn
     @DisabledTest // Disabled for flakiness! See http://crbug.com/847341
-    public void testOfflinePage() throws TimeoutException, InterruptedException {
+    public void testOfflinePage() throws TimeoutException {
         String publisherUrl = "https://example.com/test";
         runTrustedCdnPublisherUrlTest(
                 publisherUrl, "com.example.test", "example.com", R.drawable.omnibox_https_valid);
@@ -371,8 +371,7 @@ public class TrustedCdnPublisherUrlTest {
     }
 
     private void runTrustedCdnPublisherUrlTest(@Nullable String publisherUrl, String clientPackage,
-            @Nullable String expectedPublisher, int expectedSecurityIcon)
-            throws InterruptedException, TimeoutException {
+            @Nullable String expectedPublisher, int expectedSecurityIcon) throws TimeoutException {
         final List<Pair<String, String>> headers;
         if (publisherUrl != null) {
             headers = Collections.singletonList(Pair.create("X-AMP-Cache", publisherUrl));

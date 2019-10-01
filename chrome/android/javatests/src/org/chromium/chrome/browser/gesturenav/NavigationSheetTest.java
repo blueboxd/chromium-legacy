@@ -152,7 +152,7 @@ public class NavigationSheetTest {
             "force-fieldtrial-params=GestureNavigation.Enabled:"
                     + "overscroll_history_navigation_bottom_sheet/true"})
     public void
-    testLongPressBackTriggering() throws ExecutionException {
+    testLongPressBackTriggering() {
         KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
         ChromeTabbedActivity activity = mActivityTestRule.getActivity();
         TestThreadUtils.runOnUiThreadBlocking(

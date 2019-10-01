@@ -18,8 +18,6 @@ namespace browser_switcher {
 
 namespace {
 
-const char kLBSExtensionId[] = "heildphpnddilhkemkielfhnkaagiabh";
-
 void SecondsToMilliseconds(base::Value* val) {
   const int ms_per_second = 1000;
   *val = base::Value(val->GetInt() * ms_per_second);
@@ -42,6 +40,8 @@ void StringToList(base::Value* val) {
 }
 
 }  // namespace
+
+const char kLBSExtensionId[] = "heildphpnddilhkemkielfhnkaagiabh";
 
 BrowserSwitcherPolicyMigrator::BrowserSwitcherPolicyMigrator() = default;
 BrowserSwitcherPolicyMigrator::~BrowserSwitcherPolicyMigrator() = default;

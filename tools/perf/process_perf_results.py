@@ -57,6 +57,7 @@ DATA_FORMAT_UNKNOWN = 'unknown'
 GTEST_CONVERSION_WHITELIST = [
   'angle_perftests',
   'cc_perftests',
+  'components_perftests',
   'gpu_perftests',
   'latency_perftests',
   'load_library_perf_tests',

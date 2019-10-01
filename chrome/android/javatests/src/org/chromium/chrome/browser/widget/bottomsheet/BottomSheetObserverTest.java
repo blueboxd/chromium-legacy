@@ -50,7 +50,7 @@ public class BottomSheetObserverTest {
      */
     @Test
     @MediumTest
-    public void testCloseEventCalledNoAnimation() throws InterruptedException, TimeoutException {
+    public void testCloseEventCalledNoAnimation() throws TimeoutException {
         mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.FULL, false);
 
         CallbackHelper closedCallbackHelper = mObserver.mClosedCallbackHelper;
@@ -69,7 +69,7 @@ public class BottomSheetObserverTest {
      */
     @Test
     @MediumTest
-    public void testCloseEventCalledWithAnimation() throws InterruptedException, TimeoutException {
+    public void testCloseEventCalledWithAnimation() throws TimeoutException {
         mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.FULL, false);
 
         CallbackHelper closedCallbackHelper = mObserver.mClosedCallbackHelper;
@@ -88,7 +88,7 @@ public class BottomSheetObserverTest {
      */
     @Test
     @MediumTest
-    public void testOpenedEventCalledNoAnimation() throws InterruptedException, TimeoutException {
+    public void testOpenedEventCalledNoAnimation() throws TimeoutException {
         mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.PEEK, false);
 
         CallbackHelper openedCallbackHelper = mObserver.mOpenedCallbackHelper;
@@ -107,7 +107,7 @@ public class BottomSheetObserverTest {
      */
     @Test
     @MediumTest
-    public void testOpenedEventCalledWithAnimation() throws InterruptedException, TimeoutException {
+    public void testOpenedEventCalledWithAnimation() throws TimeoutException {
         mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.PEEK, false);
 
         CallbackHelper openedCallbackHelper = mObserver.mOpenedCallbackHelper;
@@ -126,7 +126,7 @@ public class BottomSheetObserverTest {
      */
     @Test
     @MediumTest
-    public void testOffsetChangedEvent() throws InterruptedException, TimeoutException {
+    public void testOffsetChangedEvent() throws TimeoutException {
         mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.FULL, false);
         CallbackHelper callbackHelper = mObserver.mOffsetChangedCallbackHelper;
 
@@ -158,7 +158,7 @@ public class BottomSheetObserverTest {
 
     @Test
     @MediumTest
-    public void testWrapContentBehavior() throws TimeoutException, InterruptedException {
+    public void testWrapContentBehavior() throws TimeoutException {
         // We make sure the height of the wrapped content is smaller than sheetContainerHeight.
         BottomSheet bottomSheet = mBottomSheetTestRule.getBottomSheet();
         int wrappedContentHeight = (int) bottomSheet.getSheetContainerHeight() / 2;

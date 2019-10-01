@@ -641,7 +641,7 @@ public class AwAutofillTest {
             });
         }
 
-        public int getHistogramSampleCount(String name) throws Throwable {
+        public int getHistogramSampleCount(String name) {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 mHistogramSimpleCount =
                         Integer.valueOf(RecordHistogram.getHistogramTotalCountForTesting(name));
@@ -649,28 +649,28 @@ public class AwAutofillTest {
             return mHistogramSimpleCount;
         }
 
-        public void verifyAutofillEnabled() throws Throwable {
+        public void verifyAutofillEnabled() {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 assertEquals(1, mAutofillWebViewViewEnabled.getDelta());
                 assertEquals(0, mAutofillWebViewViewDisabled.getDelta());
             });
         }
 
-        public void verifyAutofillDisabled() throws Throwable {
+        public void verifyAutofillDisabled() {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 assertEquals(0, mAutofillWebViewViewEnabled.getDelta());
                 assertEquals(1, mAutofillWebViewViewDisabled.getDelta());
             });
         }
 
-        public void verifyUserChangedAutofilledField() throws Throwable {
+        public void verifyUserChangedAutofilledField() {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 assertEquals(0, mUserChangedNonAutofilledField.getDelta());
                 assertEquals(1, mUserChangedAutofilledField.getDelta());
             });
         }
 
-        public void verifyUserChangedNonAutofilledField() throws Throwable {
+        public void verifyUserChangedNonAutofilledField() {
             // User changed the form, but not the autofilled field.
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 assertEquals(1, mUserChangedNonAutofilledField.getDelta());
@@ -678,7 +678,7 @@ public class AwAutofillTest {
             });
         }
 
-        public void verifyUserDidntChangeForm() throws Throwable {
+        public void verifyUserDidntChangeForm() {
             // User didn't change the form at all.
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 assertEquals(0, mUserChangedNonAutofilledField.getDelta());
@@ -686,7 +686,7 @@ public class AwAutofillTest {
             });
         }
 
-        public void verifyWebViewCreatedByActivityContext() throws Throwable {
+        public void verifyWebViewCreatedByActivityContext() {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 assertEquals(1, mAutofillWebViewCreatedByActivityContext.getDelta());
                 assertEquals(0, mAutofillWebViewCreatedByAppContext.getDelta());
@@ -722,7 +722,7 @@ public class AwAutofillTest {
     private AwAutofillSessionUMATestHelper mUMATestHelper;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mUMATestHelper = new AwAutofillSessionUMATestHelper(this);
         mContentsClient = new AwAutofillTestClient();
         mTestContainerView = mRule.createAwTestContainerViewOnMainSync(
@@ -1810,7 +1810,7 @@ public class AwAutofillTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testUMAAutofillCreatedByActivityContext() throws Throwable {
+    public void testUMAAutofillCreatedByActivityContext() {
         mUMATestHelper.verifyWebViewCreatedByActivityContext();
     }
 
@@ -1903,11 +1903,10 @@ public class AwAutofillTest {
      * @param expectedEventArray The callback types that need to be verified.
      * @return The number of new callbacks since currentCallCount. This should be same as the length
      *         of expectedEventArray.
-     * @throws InterruptedException
      * @throws TimeoutException
      */
     private int waitForCallbackAndVerifyTypes(int currentCallCount, Integer[] expectedEventArray)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         Integer[] adjustedEventArray;
         // Didn't call cancel after Android P.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {

@@ -71,10 +71,11 @@ class WebState;
 // Returns whether |webState| is the WebState used for pre-rendering.
 - (BOOL)isWebStatePrerendered:(web::WebState*)webState;
 
-// Returns the currently prerendered WebState, or nil if none exists.  After
-// this method is called, the PrerenderController reverts to a non-prerendering
-// state.
-- (std::unique_ptr<web::WebState>)releasePrerenderContents;
+// Returns the currently prerendered WebState, or nil if it was not created
+// while |oldWebState| was active, or nil if none exists.  After this method is
+// called, the PrerenderController reverts to a non-prerendering state.
+- (std::unique_ptr<web::WebState>)releasePrerenderContentsForWebState:
+    (web::WebState*)oldWebState;
 
 @end
 

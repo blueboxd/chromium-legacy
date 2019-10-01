@@ -376,14 +376,12 @@ cr.define('model_settings_availability_test', function() {
 
       // Set margins to NONE
       model.set(
-          'settings.margins.value',
-          print_preview.ticket_items.MarginsTypeValue.NO_MARGINS);
+          'settings.margins.value', print_preview.MarginsTypeValue.NO_MARGINS);
       assertFalse(model.settings.headerFooter.available);
 
       // Custom margins of 0.
       model.set(
-          'settings.margins.value',
-          print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+          'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
       model.set(
           'settings.customMargins.value',
           {marginTop: 0, marginLeft: 0, marginRight: 0, marginBottom: 0});
@@ -429,8 +427,7 @@ cr.define('model_settings_availability_test', function() {
       };
       model.set('destination.capabilities', capabilities);
       model.set(
-          'settings.margins.value',
-          print_preview.ticket_items.MarginsTypeValue.DEFAULT);
+          'settings.margins.value', print_preview.MarginsTypeValue.DEFAULT);
 
       // Header/footer should be available for default big label with
       // default margins.

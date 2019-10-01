@@ -199,11 +199,10 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, DISABLED_HostedApp) {
   EXPECT_TRUE(extension);
 
   apps::LaunchService::Get(browser()->profile())
-      ->OpenApplication(
-          AppLaunchParams(browser()->profile(), extension->id(),
-                          apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                          WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                          apps::mojom::AppLaunchSource::kSourceTest));
+      ->OpenApplication(apps::AppLaunchParams(
+          extension->id(), apps::mojom::LaunchContainer::kLaunchContainerWindow,
+          WindowOpenDisposition::NEW_FOREGROUND_TAB,
+          apps::mojom::AppLaunchSource::kSourceTest));
 
   // Check that the new browser has an app name.
   // The launch should have created a new browser.

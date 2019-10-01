@@ -40,8 +40,6 @@ async_test((t) => {
 
     t.step(() => {
       assert_equals(container.renderSubtree, cloned.renderSubtree);
-      assert_true(container.displayLock.locked, "original is locked");
-      assert_true(cloned.displayLock.locked, "cloned copy is locked");
       t.done();
     });
   }

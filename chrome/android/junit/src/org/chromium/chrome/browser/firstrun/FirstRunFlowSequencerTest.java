@@ -130,7 +130,7 @@ public class FirstRunFlowSequencerTest {
     private TestFirstRunFlowSequencer mSequencer;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mActivityController = Robolectric.buildActivity(Activity.class);
         mSequencer = new TestFirstRunFlowSequencer(mActivityController.setup().get());
     }

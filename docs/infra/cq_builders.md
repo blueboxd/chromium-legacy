@@ -127,6 +127,12 @@ builder.
     * [`//third_party/blink/renderer/platform/graphics/gpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/gpu/)
     * [`//ui/gl/.+`](https://cs.chromium.org/chromium/src/ui/gl/)
 
+* [chromeos-amd64-generic-dbg](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/chromeos-amd64-generic-dbg) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/chromeos-amd64-generic-dbg)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+chromeos-amd64-generic-dbg))
+
+  Path regular expressions:
+    * [`//content/gpu/.+`](https://cs.chromium.org/chromium/src/content/gpu/)
+    * [`//media/.+`](https://cs.chromium.org/chromium/src/media/)
+
 * [chromeos-kevin-compile-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/chromeos-kevin-compile-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/chromeos-kevin-compile-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+chromeos-kevin-compile-rel))
 
   Path regular expressions:

@@ -53,11 +53,9 @@ FakeLevelDBDatabase::FakeLevelDBDatabase(
     std::map<std::vector<uint8_t>, std::vector<uint8_t>>* mock_data)
     : mock_data_(*mock_data) {}
 
-FakeLevelDBDatabase::~FakeLevelDBDatabase() {}
-
-void FakeLevelDBDatabase::Bind(
-    mojo::PendingReceiver<leveldb::mojom::LevelDBDatabase> receiver) {
-  receivers_.Add(this, std::move(receiver));
+FakeLevelDBDatabase::~FakeLevelDBDatabase() {
+  if (destruction_callback_)
+    std::move(destruction_callback_).Run();
 }
 
 void FakeLevelDBDatabase::Put(const std::vector<uint8_t>& key,
@@ -149,6 +147,7 @@ void FakeLevelDBDatabase::Write(
         break;
     }
   }
+
   std::move(callback).Run(leveldb::mojom::DatabaseError::OK);
 }
 
@@ -213,69 +212,6 @@ void FakeLevelDBDatabase::CopyPrefixed(
       CopyPrefixedHelper(source_key_prefix, destination_key_prefix);
   mock_data_.insert(changes.begin(), changes.end());
   std::move(callback).Run(leveldb::mojom::DatabaseError::OK);
-}
-
-void FakeLevelDBDatabase::GetSnapshot(GetSnapshotCallback callback) {
-  NOTREACHED();
-}
-
-void FakeLevelDBDatabase::ReleaseSnapshot(
-    const base::UnguessableToken& snapshot) {
-  NOTREACHED();
-}
-
-void FakeLevelDBDatabase::GetFromSnapshot(
-    const base::UnguessableToken& snapshot,
-    const std::vector<uint8_t>& key,
-    GetCallback callback) {
-  NOTREACHED();
-}
-
-void FakeLevelDBDatabase::NewIterator(NewIteratorCallback callback) {
-  NOTREACHED();
-}
-
-void FakeLevelDBDatabase::NewIteratorFromSnapshot(
-    const base::UnguessableToken& snapshot,
-    NewIteratorFromSnapshotCallback callback) {
-  NOTREACHED();
-}
-
-void FakeLevelDBDatabase::ReleaseIterator(
-    const base::UnguessableToken& iterator) {
-  NOTREACHED();
-}
-
-void FakeLevelDBDatabase::IteratorSeekToFirst(
-    const base::UnguessableToken& iterator,
-    IteratorSeekToFirstCallback callback) {
-  NOTREACHED();
-}
-
-void FakeLevelDBDatabase::IteratorSeekToLast(
-    const base::UnguessableToken& iterator,
-    IteratorSeekToLastCallback callback) {
-  NOTREACHED();
-}
-
-void FakeLevelDBDatabase::IteratorSeek(const base::UnguessableToken& iterator,
-                                       const std::vector<uint8_t>& target,
-                                       IteratorSeekToLastCallback callback) {
-  NOTREACHED();
-}
-
-void FakeLevelDBDatabase::IteratorNext(const base::UnguessableToken& iterator,
-                                       IteratorNextCallback callback) {
-  NOTREACHED();
-}
-
-void FakeLevelDBDatabase::IteratorPrev(const base::UnguessableToken& iterator,
-                                       IteratorPrevCallback callback) {
-  NOTREACHED();
-}
-
-void FakeLevelDBDatabase::FlushBindingsForTesting() {
-  receivers_.FlushForTesting();
 }
 
 std::vector<std::pair<std::vector<uint8_t>, std::vector<uint8_t>>>

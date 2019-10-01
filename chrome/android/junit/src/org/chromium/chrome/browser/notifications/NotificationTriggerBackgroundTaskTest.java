@@ -50,14 +50,14 @@ public class NotificationTriggerBackgroundTaskTest {
     private BackgroundTask.TaskFinishedCallback mTaskFinishedCallback;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mTaskScheduler);
         NotificationTriggerScheduler.setInstanceForTests(mTriggerScheduler);
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         SysUtils.resetForTesting();
     }
 

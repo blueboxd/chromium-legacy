@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "net/base/request_priority.h"
+#include "net/base/test_completion_callback.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_manager.h"
 #include "net/dns/mock_host_resolver.h"
@@ -16,6 +17,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
@@ -207,6 +209,33 @@ TEST_F(URLRequestContextBuilderTest, ShutDownNELAndReportingWithPendingUpload) {
   context.reset();
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
+
+TEST_F(URLRequestContextBuilderTest, ShutdownHostResolverWithPendingRequest) {
+  auto mock_host_resolver = std::make_unique<MockHostResolver>();
+  mock_host_resolver->rules()->AddRule("example.com", "1.2.3.4");
+  mock_host_resolver->set_ondemand_mode(true);
+
+  std::unique_ptr<URLRequestContext> context(builder_.Build());
+  context->set_host_resolver(mock_host_resolver.get());
+
+  std::unique_ptr<HostResolver::ResolveHostRequest> request =
+      context->host_resolver()->CreateRequest(
+          HostPortPair("example.com", 1234), NetLogWithSource(), base::nullopt);
+  TestCompletionCallback callback;
+  int rv = request->Start(callback.callback());
+  ASSERT_TRUE(mock_host_resolver->has_pending_requests());
+
+  context.reset();
+  mock_host_resolver->ResolveAllPending();
+
+  EXPECT_FALSE(mock_host_resolver->has_pending_requests());
+  EXPECT_TRUE(mock_host_resolver->rules_map().empty());
+
+  // Request should never complete.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(rv, test::IsError(ERR_IO_PENDING));
+  EXPECT_FALSE(callback.have_result());
+}
 
 TEST_F(URLRequestContextBuilderTest, DefaultHostResolver) {
   auto manager = std::make_unique<HostResolverManager>(

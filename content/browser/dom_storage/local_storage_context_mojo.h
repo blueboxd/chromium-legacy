@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
@@ -94,14 +95,11 @@ class CONTENT_EXPORT LocalStorageContextMojo
   // Clears unused storage areas, when thresholds are reached.
   void PurgeUnusedAreasIfNeeded();
 
-  using LevelDBBinder = base::RepeatingCallback<void(
-      mojo::PendingReceiver<leveldb::mojom::LevelDBService>)>;
-  void OverrideLevelDBBinderForTesting(LevelDBBinder binder) {
-    leveldb_binder_override_ = std::move(binder);
+  using DatabaseFactory = base::RepeatingCallback<
+      std::unique_ptr<leveldb::mojom::LevelDBDatabase>()>;
+  void SetDatabaseFactoryForTesting(DatabaseFactory factory) {
+    database_factory_for_testing_ = std::move(factory);
   }
-
-  void SetDatabaseForTesting(
-      mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database);
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -128,14 +126,12 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   // Part of our asynchronous directory opening called from RunWhenConnected().
   void InitiateConnection(bool in_memory_only = false);
-  void OnDatabaseOpened(bool in_memory, leveldb::mojom::DatabaseError status);
+  void OnDatabaseOpened(leveldb::mojom::DatabaseError status);
   void OnGotDatabaseVersion(leveldb::mojom::DatabaseError status,
                             const std::vector<uint8_t>& value);
   void OnConnectionFinished();
   void DeleteAndRecreateDatabase(const char* histogram_name);
-  void OnDBDestroyed(bool recreate_in_memory,
-                     leveldb::mojom::DatabaseError status);
-  void OnMojoConnectionDestroyed();
+  void OnDBDestroyed(bool recreate_in_memory, leveldb::Status status);
 
   // The (possibly delayed) implementation of OpenLocalStorage(). Can be called
   // directly from that function, or through |on_database_open_callbacks_|.
@@ -187,9 +183,9 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   base::trace_event::MemoryAllocatorDumpGuid memory_dump_id_;
 
-  mojo::Remote<leveldb::mojom::LevelDBService> leveldb_service_;
-  mojo::AssociatedRemote<leveldb::mojom::LevelDBDatabase> database_;
+  std::unique_ptr<leveldb::mojom::LevelDBDatabase> database_;
   bool tried_to_recreate_during_open_ = false;
+  bool in_memory_ = false;
 
   std::vector<base::OnceClosure> on_database_opened_callbacks_;
 
@@ -209,7 +205,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
   // Name of an extra histogram to log open results to, if not null.
   const char* open_result_histogram_ = nullptr;
 
-  LevelDBBinder leveldb_binder_override_;
+  DatabaseFactory database_factory_for_testing_;
 
   base::WeakPtrFactory<LocalStorageContextMojo> weak_ptr_factory_{this};
 };

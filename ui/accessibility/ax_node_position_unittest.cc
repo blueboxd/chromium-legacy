@@ -31,15 +31,15 @@ using TestPositionRange = AXRange<AXPosition<AXNodePosition, AXNode>>;
 
 namespace {
 
-int32_t ROOT_ID = 1;
-int32_t BUTTON_ID = 2;
-int32_t CHECK_BOX_ID = 3;
-int32_t TEXT_FIELD_ID = 4;
-int32_t STATIC_TEXT1_ID = 5;
-int32_t INLINE_BOX1_ID = 6;
-int32_t LINE_BREAK_ID = 7;
-int32_t STATIC_TEXT2_ID = 8;
-int32_t INLINE_BOX2_ID = 9;
+constexpr AXNode::AXID ROOT_ID = 1;
+constexpr AXNode::AXID BUTTON_ID = 2;
+constexpr AXNode::AXID CHECK_BOX_ID = 3;
+constexpr AXNode::AXID TEXT_FIELD_ID = 4;
+constexpr AXNode::AXID STATIC_TEXT1_ID = 5;
+constexpr AXNode::AXID INLINE_BOX1_ID = 6;
+constexpr AXNode::AXID LINE_BREAK_ID = 7;
+constexpr AXNode::AXID STATIC_TEXT2_ID = 8;
+constexpr AXNode::AXID INLINE_BOX2_ID = 9;
 
 class AXPositionTest : public testing::Test {
  public:
@@ -115,7 +115,7 @@ class AXPositionTest : public testing::Test {
   }
 
   void AssertTextLengthEquals(const AXTree* tree,
-                              int32_t node_id,
+                              AXNode::AXID node_id,
                               int expected_text_length) {
     TestPositionType text_position = AXNodePosition::CreateTextPosition(
         tree->data().tree_id, node_id, 0 /* text_offset */,

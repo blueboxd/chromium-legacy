@@ -59,7 +59,7 @@ public class TabUnitTest {
     private Tab mTab;
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
 
         doReturn(mWeakReferenceActivity).when(mWindowAndroid).getActivity();
@@ -79,7 +79,7 @@ public class TabUnitTest {
 
     @Test
     @SmallTest
-    public void testSetRootIdWithChange() throws Exception {
+    public void testSetRootIdWithChange() {
         assertThat(mTab.getRootId(), equalTo(TAB1_ID));
 
         mTab.setRootId(TAB2_ID);
@@ -91,7 +91,7 @@ public class TabUnitTest {
 
     @Test
     @SmallTest
-    public void testSetRootIdWithoutChange() throws Exception {
+    public void testSetRootIdWithoutChange() {
         assertThat(mTab.getRootId(), equalTo(TAB1_ID));
         mTab.setIsTabStateDirty(false);
 

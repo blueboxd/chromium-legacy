@@ -16,11 +16,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
-class Profile;
+namespace apps {
 
 struct AppLaunchParams {
-  AppLaunchParams(Profile* profile,
-                  const std::string& app_id,
+  AppLaunchParams(const std::string& app_id,
                   apps::mojom::LaunchContainer container,
                   WindowOpenDisposition disposition,
                   apps::mojom::AppLaunchSource source,
@@ -29,9 +28,6 @@ struct AppLaunchParams {
   AppLaunchParams(const AppLaunchParams& other);
 
   ~AppLaunchParams();
-
-  // The profile to load the application from.
-  Profile* profile;
 
   // The app to launch.
   std::string app_id;
@@ -77,5 +73,7 @@ struct AppLaunchParams {
   // not launched with files.
   std::vector<base::FilePath> launch_files;
 };
+
+}  // namespace apps
 
 #endif  // CHROME_BROWSER_APPS_APP_SERVICE_APP_LAUNCH_PARAMS_H_

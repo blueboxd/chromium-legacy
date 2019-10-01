@@ -60,7 +60,7 @@ public class VariationsSeedHolderTest {
         }
 
         public void writeSeedIfNewerBlocking(File destination, long date)
-                throws IOException, TimeoutException, InterruptedException {
+                throws IOException, TimeoutException {
             ParcelFileDescriptor fd = null;
             try {
                 fd = ParcelFileDescriptor.open(destination, ParcelFileDescriptor.MODE_WRITE_ONLY);
@@ -72,8 +72,7 @@ public class VariationsSeedHolderTest {
             }
         }
 
-        public void updateSeedBlocking(SeedInfo newSeed)
-                throws TimeoutException, InterruptedException {
+        public void updateSeedBlocking(SeedInfo newSeed) throws TimeoutException {
             int calls = mUpdateFinished.getCallCount();
             updateSeed(newSeed, /*onFinished=*/() -> mUpdateFinished.notifyCalled());
             mUpdateFinished.waitForCallback(calls);
@@ -94,7 +93,7 @@ public class VariationsSeedHolderTest {
     // write should happen.
     @Test
     @MediumTest
-    public void testWriteNoSeed() throws IOException, TimeoutException, InterruptedException {
+    public void testWriteNoSeed() throws IOException, TimeoutException {
         TestHolder holder = new TestHolder();
         File file = null;
         try {
@@ -110,8 +109,7 @@ public class VariationsSeedHolderTest {
     // an empty file. The written seed should match the mock seed.
     @Test
     @MediumTest
-    public void testUpdateAndWriteToEmptySeed()
-            throws IOException, TimeoutException, InterruptedException {
+    public void testUpdateAndWriteToEmptySeed() throws IOException, TimeoutException {
         try {
             TestHolder holder = new TestHolder();
             holder.updateSeedBlocking(VariationsTestUtils.createMockSeed());
@@ -136,7 +134,7 @@ public class VariationsSeedHolderTest {
     @Test
     @MediumTest
     public void testUpdateAndWriteToStaleSeed()
-            throws IOException, TimeoutException, InterruptedException, ParseException {
+            throws IOException, TimeoutException, ParseException {
         try {
             SeedInfo mockSeed = VariationsTestUtils.createMockSeed();
             long mockDateMinusOneDay = mockSeed.parseDate().getTime() - TimeUnit.DAYS.toMillis(1);
@@ -161,7 +159,7 @@ public class VariationsSeedHolderTest {
     @Test
     @MediumTest
     public void testUpdateAndWriteToFreshSeed()
-            throws IOException, TimeoutException, InterruptedException, ParseException {
+            throws IOException, TimeoutException, ParseException {
         try {
             SeedInfo mockSeed = VariationsTestUtils.createMockSeed();
             long mockDate = mockSeed.parseDate().getTime();
@@ -183,7 +181,7 @@ public class VariationsSeedHolderTest {
     @Test
     @MediumTest
     public void testConcurrentUpdatesAndWrites()
-            throws IOException, FileNotFoundException, InterruptedException, TimeoutException {
+            throws IOException, FileNotFoundException, TimeoutException {
         ArrayList<File> files = new ArrayList<>();
         try {
             ArrayList<ParcelFileDescriptor> fds = new ArrayList<>();

@@ -62,7 +62,6 @@ import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
 import org.chromium.ui.DropdownPopupWindowInterface;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -70,9 +69,9 @@ import java.util.concurrent.atomic.AtomicReference;
  * Helpers in this class simplify interactions with the Keyboard Accessory and the sheet below it.
  */
 public class ManualFillingTestHelper {
-    private final static String PASSWORD_NODE_ID = "password_field";
-    private final static String USERNAME_NODE_ID = "username_field";
-    private final static String SUBMIT_NODE_ID = "input_submit_button";
+    private static final String PASSWORD_NODE_ID = "password_field";
+    private static final String USERNAME_NODE_ID = "username_field";
+    private static final String SUBMIT_NODE_ID = "input_submit_button";
 
     private final ChromeTabbedActivityTestRule mActivityTestRule;
     private final AtomicReference<WebContents> mWebContentsRef = new AtomicReference<>();
@@ -90,17 +89,16 @@ public class ManualFillingTestHelper {
         mActivityTestRule = activityTestRule;
     }
 
-    public void loadTestPage(boolean isRtl) throws InterruptedException {
+    public void loadTestPage(boolean isRtl) {
         loadTestPage("/chrome/test/data/password/password_form.html", isRtl);
     }
 
-    public void loadTestPage(String url, boolean isRtl) throws InterruptedException {
+    public void loadTestPage(String url, boolean isRtl) {
         loadTestPage(url, isRtl, false, FakeKeyboard::new);
     }
 
     public void loadTestPage(String url, boolean isRtl, boolean waitForNode,
-            ChromeWindow.KeyboardVisibilityDelegateFactory keyboardDelegate)
-            throws InterruptedException {
+            ChromeWindow.KeyboardVisibilityDelegateFactory keyboardDelegate) {
         mEmbeddedTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
                 InstrumentationRegistry.getInstrumentation().getContext(),
                 ServerCertificate.CERT_OK);
@@ -158,23 +156,22 @@ public class ManualFillingTestHelper {
         return isKeyboardAccessoryTabLayout().matches(view) ? null : view;
     }
 
-    public void focusPasswordField() throws TimeoutException, InterruptedException {
+    public void focusPasswordField() throws TimeoutException {
         DOMUtils.focusNode(mActivityTestRule.getWebContents(), PASSWORD_NODE_ID);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivityTestRule.getWebContents().scrollFocusedEditableNodeIntoView(); });
         getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
     }
 
-    public String getPasswordText() throws TimeoutException, InterruptedException {
+    public String getPasswordText() throws TimeoutException {
         return DOMUtils.getNodeValue(mWebContentsRef.get(), PASSWORD_NODE_ID);
     }
 
-    public String getFieldText(String nodeId) throws TimeoutException, InterruptedException {
+    public String getFieldText(String nodeId) throws TimeoutException {
         return DOMUtils.getNodeValue(mWebContentsRef.get(), nodeId);
     }
 
-    public void clickEmailField(boolean forceAccessory)
-            throws TimeoutException, InterruptedException {
+    public void clickEmailField(boolean forceAccessory) throws TimeoutException {
         // TODO(fhorschig): This should be |focusNode|. Change with autofill popup deprecation.
         DOMUtils.clickNode(mWebContentsRef.get(), USERNAME_NODE_ID);
         if (forceAccessory) {
@@ -185,19 +182,17 @@ public class ManualFillingTestHelper {
         getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
     }
 
-    public void clickNodeAndShowKeyboard(String node)
-            throws TimeoutException, InterruptedException {
+    public void clickNodeAndShowKeyboard(String node) throws TimeoutException {
         clickNodeAndShowKeyboard(node, FILLABLE_NON_SEARCH_FIELD);
     }
 
     public void clickNodeAndShowKeyboard(String node, int focusedFieldType)
-            throws TimeoutException, InterruptedException {
+            throws TimeoutException {
         clickNode(node, focusedFieldType);
         getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
     }
 
-    public void clickNode(String node, int focusedFieldType)
-            throws TimeoutException, InterruptedException {
+    public void clickNode(String node, int focusedFieldType) throws TimeoutException {
         DOMUtils.clickNode(mWebContentsRef.get(), node);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ManualFillingComponentBridge.notifyFocusedFieldType(
@@ -209,7 +204,7 @@ public class ManualFillingTestHelper {
      * Although the submit button has no effect, it takes the focus from the input field and should
      * hide the keyboard.
      */
-    public void clickSubmit() throws TimeoutException, InterruptedException {
+    public void clickSubmit() throws TimeoutException {
         DOMUtils.clickNode(mWebContentsRef.get(), SUBMIT_NODE_ID);
         getKeyboard().hideAndroidSoftKeyboard(null);
     }
@@ -345,8 +340,7 @@ public class ManualFillingTestHelper {
         });
     }
 
-    public static void createAutofillTestProfiles()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public static void createAutofillTestProfiles() throws TimeoutException {
         new AutofillTestHelper().setProfile(new AutofillProfile("", "https://www.example.com",
                 "Johnathan Smithonian-Jackson", "Acme Inc", "1 Main\nApt A", "CA", "San Francisco",
                 "", "94102", "", "US", "(415) 888-9999", "john.sj@acme-mail.inc", "en"));
@@ -368,7 +362,7 @@ public class ManualFillingTestHelper {
      * @param tabIndex The index to be selected.
      * @return The action executed by |perform|.
      */
-    static public ViewAction selectTabAtPosition(int tabIndex) {
+    public static ViewAction selectTabAtPosition(int tabIndex) {
         return new ViewAction() {
             @Override
             public Matcher<View> getConstraints() {
@@ -398,7 +392,7 @@ public class ManualFillingTestHelper {
      * Use in a |onView().perform| action to scroll to the end of a {@link RecyclerView}.
      * @return The action executed by |perform|.
      */
-    static public ViewAction scrollToLastElement() {
+    public static ViewAction scrollToLastElement() {
         return new ViewAction() {
             @Override
             public Matcher<View> getConstraints() {

@@ -82,7 +82,7 @@ public class AppMenuTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // We need list selection; ensure we are not in touch mode.
         InstrumentationRegistry.getInstrumentation().setInTouchMode(false);
 
@@ -115,7 +115,7 @@ public class AppMenuTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
-    public void testMenuNewTab() throws InterruptedException {
+    public void testMenuNewTab() {
         final int tabCountBefore = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
         ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
                 (ChromeTabbedActivity) mActivityTestRule.getActivity());
@@ -236,7 +236,7 @@ public class AppMenuTest {
     @SmallTest
     @Feature({"Browser", "Main"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testHideMenuOnToggleOverview() throws TimeoutException, InterruptedException {
+    public void testHideMenuOnToggleOverview() throws TimeoutException {
         CallbackHelper overviewModeFinishedShowingCallback = new CallbackHelper();
         OverviewModeBehavior.OverviewModeObserver overviewModeObserver =
                 new EmptyOverviewModeObserver() {

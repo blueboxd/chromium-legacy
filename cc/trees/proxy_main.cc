@@ -132,6 +132,10 @@ void ProxyMain::BeginMainFrame(
       benchmark_instrumentation::kDoBeginFrame,
       begin_main_frame_state->begin_frame_id);
 
+  // This needs to run unconditionally, so do it before any early-returns.
+  if (layer_tree_host_->scheduling_client())
+    layer_tree_host_->scheduling_client()->DidRunBeginMainFrame();
+
   // If the commit finishes, LayerTreeHost will transfer its swap promises to
   // LayerTreeImpl. The destructor of ScopedSwapPromiseChecker aborts the
   // remaining swap promises.

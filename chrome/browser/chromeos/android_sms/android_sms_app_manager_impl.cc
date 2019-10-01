@@ -43,8 +43,9 @@ AndroidSmsAppManagerImpl::PwaDelegate::PwaDelegate() = default;
 AndroidSmsAppManagerImpl::PwaDelegate::~PwaDelegate() = default;
 
 content::WebContents* AndroidSmsAppManagerImpl::PwaDelegate::OpenApp(
-    const AppLaunchParams& params) {
-  return apps::LaunchService::Get(params.profile)->OpenApplication(params);
+    Profile* profile,
+    const apps::AppLaunchParams& params) {
+  return apps::LaunchService::Get(profile)->OpenApplication(params);
 }
 
 bool AndroidSmsAppManagerImpl::PwaDelegate::TransferItemAttributes(
@@ -250,14 +251,15 @@ void AndroidSmsAppManagerImpl::HandleAppSetupFinished() {
   // Otherwise, launch the app.
   PA_LOG(VERBOSE) << "AndroidSmsAppManagerImpl::HandleAppSetupFinished(): "
                   << "Launching Messages PWA.";
-  pwa_delegate_->OpenApp(AppLaunchParams(
-      profile_,
-      setup_controller_
-          ->GetPwa(GetAndroidMessagesURL(true /* use_install_url */, *domain))
-          ->id(),
-      apps::mojom::LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::NEW_WINDOW,
-      apps::mojom::AppLaunchSource::kSourceChromeInternal));
+  pwa_delegate_->OpenApp(
+      profile_, apps::AppLaunchParams(
+                    setup_controller_
+                        ->GetPwa(GetAndroidMessagesURL(
+                            true /* use_install_url */, *domain))
+                        ->id(),
+                    apps::mojom::LaunchContainer::kLaunchContainerWindow,
+                    WindowOpenDisposition::NEW_WINDOW,
+                    apps::mojom::AppLaunchSource::kSourceChromeInternal));
 }
 
 void AndroidSmsAppManagerImpl::SetPwaDelegateForTesting(

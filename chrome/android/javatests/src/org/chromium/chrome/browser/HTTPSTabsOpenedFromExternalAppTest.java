@@ -43,13 +43,11 @@ public class HTTPSTabsOpenedFromExternalAppTest {
     /**
      * Tests that an http:// referrer is not stripped in case of https:// navigation with
      * default Policy.
-     * @throws InterruptedException
      */
     @Test
     @LargeTest
     @Feature({"Navigation"})
-    public void testReferrerPolicyHttpReferrerHttpsNavigationsPolicyDefault()
-            throws InterruptedException {
+    public void testReferrerPolicyHttpReferrerHttpsNavigationsPolicyDefault() {
         mTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
                 InstrumentationRegistry.getContext(), ServerCertificate.CERT_OK);
         try {

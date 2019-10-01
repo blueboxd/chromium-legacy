@@ -214,11 +214,12 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
   const Shelf* shelf = shelf_widget_->shelf();
   const ShelfBackgroundType background_type =
       shelf_widget_->GetBackgroundType();
+  const bool tablet_mode =
+      Shell::Get()->tablet_mode_controller()->InTabletMode();
+  const bool in_app = ShelfConfig::Get()->is_in_app();
 
   bool show_opaque_background =
-      !Shell::Get()->tablet_mode_controller()->InTabletMode() ||
-      ShelfConfig::Get()->is_in_app() ||
-      !chromeos::switches::ShouldShowShelfHotseat();
+      !tablet_mode || in_app || !chromeos::switches::ShouldShowShelfHotseat();
   if (show_opaque_background != opaque_background_.visible())
     opaque_background_.SetVisible(show_opaque_background);
 
@@ -239,8 +240,10 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
       -shelf->SelectValueForShelfAlignment(0, 0, safety_margin),
       -shelf->SelectValueForShelfAlignment(safety_margin, 0, 0));
 
-  // Show rounded corners except in maximized (which includes split view) mode.
-  if (background_type == SHELF_BACKGROUND_MAXIMIZED) {
+  // Show rounded corners except in maximized (which includes split view) mode,
+  // or whenever we are "in app".
+  if (background_type == SHELF_BACKGROUND_MAXIMIZED ||
+      (tablet_mode && in_app)) {
     opaque_background_.SetRoundedCornerRadius({0, 0, 0, 0});
   } else {
     opaque_background_.SetRoundedCornerRadius({

@@ -7,4 +7,4 @@
 package: chromium/third_party/android_deps/libs/com_google_android_play_core_verification
 description: ""
 data:
-- file: core-1.6.2.aar
+- file: core-1.6.4.aar

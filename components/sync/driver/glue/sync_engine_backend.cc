@@ -18,6 +18,7 @@
 #include "components/sync/base/invalidation_adapter.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/configure_context.h"
+#include "components/sync/driver/directory_data_type_controller.h"
 #include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/cycle/commit_counters.h"
@@ -679,6 +680,20 @@ void SyncEngineBackend::DoOnInvalidatorClientIdChange(
     return;
   }
   sync_manager_->UpdateInvalidationClientId(client_id);
+}
+
+void SyncEngineBackend::GetNigoriNodeForDebugging(AllNodesCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (nigori_controller_) {
+    // USS implementation of Nigori.
+    nigori_controller_->GetAllNodes(std::move(callback));
+  } else {
+    // Directory implementation of Nigori.
+    DCHECK(user_share_.directory);
+    std::move(callback).Run(
+        NIGORI, DirectoryDataTypeController::GetAllNodesForTypeFromDirectory(
+                    NIGORI, user_share_.directory.get()));
+  }
 }
 
 bool SyncEngineBackend::HasUnsyncedItemsForTest() const {

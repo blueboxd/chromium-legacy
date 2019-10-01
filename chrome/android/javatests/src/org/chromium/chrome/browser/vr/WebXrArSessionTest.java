@@ -57,7 +57,7 @@ public class WebXrArSessionTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mWebXrArTestFramework = new WebXrArTestFramework(mTestRule);
     }
 
@@ -67,7 +67,7 @@ public class WebXrArSessionTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testArRequestSessionSucceeds() throws InterruptedException {
+    public void testArRequestSessionSucceeds() {
         mWebXrArTestFramework.loadUrlAndAwaitInitialization(
                 mWebXrArTestFramework.getEmbeddedServerUrlForHtmlTestFile(
                         "test_ar_request_session_succeeds"),
@@ -84,7 +84,7 @@ public class WebXrArSessionTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testConsentPersistanceOnSamePage() throws InterruptedException {
+    public void testConsentPersistanceOnSamePage() {
         mWebXrArTestFramework.loadUrlAndAwaitInitialization(
                 mWebXrArTestFramework.getEmbeddedServerUrlForHtmlTestFile(
                         "test_ar_request_session_succeeds"),
@@ -118,7 +118,7 @@ public class WebXrArSessionTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testRepeatedArSessionsSucceed() throws InterruptedException {
+    public void testRepeatedArSessionsSucceed() {
         mWebXrArTestFramework.loadUrlAndAwaitInitialization(
                 mWebXrArTestFramework.getEmbeddedServerUrlForHtmlTestFile(
                         "test_ar_request_session_succeeds"),

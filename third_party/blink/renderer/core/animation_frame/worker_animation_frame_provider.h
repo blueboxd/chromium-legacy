@@ -39,7 +39,7 @@ class CORE_EXPORT WorkerAnimationFrameProvider
   void Trace(blink::Visitor* visitor);
 
   // BeginFrameProviderClient
-  void BeginFrame(const base::TimeTicks& frame_time) override;
+  void BeginFrame(const viz::BeginFrameArgs&) override;
 
   void RegisterOffscreenCanvas(OffscreenCanvas*);
   void DeregisterOffscreenCanvas(OffscreenCanvas*);

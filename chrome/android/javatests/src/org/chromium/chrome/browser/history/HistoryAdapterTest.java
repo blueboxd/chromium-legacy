@@ -30,7 +30,7 @@ public class HistoryAdapterTest {
     private HistoryAdapter mAdapter;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mHistoryProvider = new StubbedHistoryProvider();
         mAdapter = new HistoryAdapter(new SelectionDelegate<HistoryItem>(), null, mHistoryProvider);
         mAdapter.generateHeaderItemsForTest();
@@ -201,7 +201,7 @@ public class HistoryAdapterTest {
 
     @Test
     @SmallTest
-    public void testOnHistoryDeleted() throws Exception {
+    public void testOnHistoryDeleted() {
         Date today = new Date();
         long timestamp = today.getTime();
         HistoryItem item1 = StubbedHistoryProvider.createHistoryItem(0, timestamp);

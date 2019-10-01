@@ -230,7 +230,7 @@ public class CustomTabActivityTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
 
         mTestServer.stopAndDestroyServer();
@@ -402,7 +402,7 @@ public class CustomTabActivityTest {
      */
     @Test
     @DisabledTest
-    public void testContextMenuEntriesForImage() throws InterruptedException, TimeoutException {
+    public void testContextMenuEntriesForImage() throws TimeoutException {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
         final int expectedMenuSize = 12;
@@ -445,7 +445,7 @@ public class CustomTabActivityTest {
      */
     @Test
     @DisabledTest
-    public void testContextMenuEntriesForLink() throws InterruptedException, TimeoutException {
+    public void testContextMenuEntriesForLink() throws TimeoutException {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
         final int expectedMenuSize = 12;
@@ -487,7 +487,7 @@ public class CustomTabActivityTest {
      */
     @Test
     @DisabledTest
-    public void testContextMenuEntriesForMailto() throws InterruptedException, TimeoutException {
+    public void testContextMenuEntriesForMailto() throws TimeoutException {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
         final int expectedMenuSize = 12;
@@ -529,7 +529,7 @@ public class CustomTabActivityTest {
      */
     @Test
     @DisabledTest
-    public void testContextMenuEntriesForTel() throws InterruptedException, TimeoutException {
+    public void testContextMenuEntriesForTel() throws TimeoutException {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
         final int expectedMenuSize = 12;
@@ -603,7 +603,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testAppMenuForMediaViewer() throws Exception {
+    public void testAppMenuForMediaViewer() {
         Intent intent = createMinimalCustomTabIntent();
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE, CustomTabsUiType.MEDIA_VIEWER);
         IntentHandler.addTrustedIntentExtras(intent);
@@ -721,7 +721,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testCustomMenuEntry() throws InterruptedException, TimeoutException {
+    public void testCustomMenuEntry() throws TimeoutException {
         Intent customTabIntent = createMinimalCustomTabIntent();
         Intent baseCallbackIntent = new Intent();
         baseCallbackIntent.putExtra("FOO", 42);
@@ -806,7 +806,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testTabReparentingBasic() throws InterruptedException {
+    public void testTabReparentingBasic() {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
         reparentAndVerifyTab();
     }
@@ -817,7 +817,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testTabReparentingInfoBar() throws InterruptedException {
+    public void testTabReparentingInfoBar() {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
@@ -844,7 +844,7 @@ public class CustomTabActivityTest {
     // @RetryOnFailure
     @Test
     @DisabledTest // Disabled due to flakiness on browser_side_navigation apk - see crbug.com/707766
-    public void testTabReparentingSelectPopup() throws InterruptedException, TimeoutException {
+    public void testTabReparentingSelectPopup() throws TimeoutException {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
@@ -879,7 +879,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testToolbarColor() throws InterruptedException {
+    public void testToolbarColor() {
         Intent intent = createMinimalCustomTabIntent();
         final int expectedColor = Color.RED;
         addToolbarColorToIntent(intent, expectedColor);
@@ -913,7 +913,7 @@ public class CustomTabActivityTest {
     @SmallTest
     @Feature({"UiCatalogue"})
     @RetryOnFailure
-    public void testActionButton() throws InterruptedException, TimeoutException {
+    public void testActionButton() throws TimeoutException {
         Bitmap expectedIcon = createVectorDrawableBitmap(R.drawable.ic_credit_card_black, 77, 48);
         Intent intent = createMinimalCustomTabIntent();
         final PendingIntent pi = addActionButtonToIntent(intent, expectedIcon, "Good test");
@@ -952,7 +952,7 @@ public class CustomTabActivityTest {
     @SmallTest
     @Feature({"UiCatalogue"})
     @RetryOnFailure
-    public void testMultipleActionButtons() throws InterruptedException, TimeoutException {
+    public void testMultipleActionButtons() throws TimeoutException {
         Bitmap expectedIcon1 = createVectorDrawableBitmap(R.drawable.ic_content_copy_black, 48, 48);
         Bitmap expectedIcon2 = createVectorDrawableBitmap(R.drawable.ic_music_note_36dp, 48, 48);
         Intent intent = createMinimalCustomTabIntent();
@@ -1025,8 +1025,7 @@ public class CustomTabActivityTest {
     @SmallTest
     @Feature({"UiCatalogue"})
     @RetryOnFailure
-    public void testMultipleActionButtons_untrusted()
-            throws InterruptedException, TimeoutException {
+    public void testMultipleActionButtons_untrusted() {
         Bitmap expectedIcon1 = createVectorDrawableBitmap(R.drawable.ic_content_copy_black, 48, 48);
         Bitmap expectedIcon2 = createVectorDrawableBitmap(R.drawable.ic_music_note_36dp, 48, 48);
         Intent intent = createMinimalCustomTabIntent();
@@ -1060,7 +1059,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testActionButtonBadRatio() throws InterruptedException {
+    public void testActionButtonBadRatio() {
         Bitmap expectedIcon = createTestBitmap(60, 20);
         Intent intent = createMinimalCustomTabIntent();
         addActionButtonToIntent(intent, expectedIcon, "Good test");
@@ -1081,7 +1080,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testBottomBar() throws InterruptedException {
+    public void testBottomBar() {
         final int numItems = 3;
         final Bitmap expectedIcon = createTestBitmap(48, 24);
         final int barColor = Color.GREEN;
@@ -1121,7 +1120,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @Feature({"UiCatalogue"})
-    public void testRemoteViews() throws Exception {
+    public void testRemoteViews() {
         Intent intent = createMinimalCustomTabIntent();
 
         Bitmap expectedIcon = createVectorDrawableBitmap(R.drawable.ic_credit_card_black, 77, 48);
@@ -1836,7 +1835,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testMayLaunchUrlWithoutWarmupNoSpeculation() throws InterruptedException {
+    public void testMayLaunchUrlWithoutWarmupNoSpeculation() {
         mayLaunchUrlWithoutWarmup(false);
     }
 
@@ -1844,7 +1843,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testMayLaunchUrlWithoutWarmupHiddenTab() throws InterruptedException {
+    public void testMayLaunchUrlWithoutWarmupHiddenTab() {
         mayLaunchUrlWithoutWarmup(true);
     }
 
@@ -2133,7 +2132,7 @@ public class CustomTabActivityTest {
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
-    public void testAllocateChildConnectionNoWarmup() throws Exception {
+    public void testAllocateChildConnectionNoWarmup() {
         Context context = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()
                                   .getApplicationContext();
@@ -2319,7 +2318,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @DisableIf.Build(sdk_is_greater_than = 20)
-    public void testLaunchCustomTabWithColorSchemeDark_Kitkat() throws Exception {
+    public void testLaunchCustomTabWithColorSchemeDark_Kitkat() {
         FeatureUtilities.setNightModeForCustomTabsAvailableForTesting(true);
 
         Intent intent = createMinimalCustomTabIntent();
@@ -2339,7 +2338,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @DisableIf.Build(sdk_is_less_than = 21)
-    public void testLaunchCustomTabWithColorSchemeDark_PostKitkat() throws Exception {
+    public void testLaunchCustomTabWithColorSchemeDark_PostKitkat() {
         FeatureUtilities.setNightModeForCustomTabsAvailableForTesting(true);
 
         Intent intent = createMinimalCustomTabIntent();
@@ -2359,7 +2358,7 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
-    public void testLaunchCustomTabWithColorSchemeLight() throws Exception {
+    public void testLaunchCustomTabWithColorSchemeLight() {
         FeatureUtilities.setNightModeForCustomTabsAvailableForTesting(true);
 
         Intent intent = createMinimalCustomTabIntent();
@@ -2381,7 +2380,7 @@ public class CustomTabActivityTest {
 
     @Test
     @MediumTest
-    public void testLaunchIncognitoCustomTabForPaymentRequest() throws Exception {
+    public void testLaunchIncognitoCustomTabForPaymentRequest() {
         Intent intent = createMinimalCustomTabIntent();
         intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
         CustomTabIntentDataProvider.addPaymentRequestUIExtras(intent);
@@ -2401,7 +2400,7 @@ public class CustomTabActivityTest {
             {"DataReductionProxyDecidesTransform", "DataReductionProxyEnabledWithNetworkService"})
     @RetryOnFailure
     public void
-    testLaunchWebLiteURL() throws Exception {
+    testLaunchWebLiteURL() {
         final String testUrl = WEBLITE_PREFIX + mTestPage;
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
@@ -2419,7 +2418,7 @@ public class CustomTabActivityTest {
     @CommandLineFlags.Add("enable-spdy-proxy-auth")
     @DisableFeatures("DataReductionProxyDecidesTransform")
     @RetryOnFailure
-    public void testLaunchWebLiteURLDRPDecidesTransformDisabled() throws Exception {
+    public void testLaunchWebLiteURLDRPDecidesTransformDisabled() {
         final String testUrl = WEBLITE_PREFIX + mTestPage;
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
@@ -2440,7 +2439,7 @@ public class CustomTabActivityTest {
     @DisableFeatures("Previews")
     @RetryOnFailure
     public void
-    testLaunchWebLiteURLNoPreviews() throws Exception {
+    testLaunchWebLiteURLNoPreviews() {
         final String testUrl = WEBLITE_PREFIX + mTestPage;
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
@@ -2459,7 +2458,7 @@ public class CustomTabActivityTest {
             {"DataReductionProxyDecidesTransform", "DataReductionProxyEnabledWithNetworkService"})
     @RetryOnFailure
     public void
-    testLaunchWebLiteURLNoDataReductionProxy() throws Exception {
+    testLaunchWebLiteURLNoDataReductionProxy() {
         final String testUrl = WEBLITE_PREFIX + mTestPage;
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
@@ -2477,7 +2476,7 @@ public class CustomTabActivityTest {
     @CommandLineFlags.Add("enable-spdy-proxy-auth")
     @EnableFeatures("DataReductionProxyDecidesTransform")
     @RetryOnFailure
-    public void testLaunchNonWebLiteURL() throws Exception {
+    public void testLaunchNonWebLiteURL() {
         final String testUrl = mTestPage2 + "/?lite_url=" + mTestPage;
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
@@ -2561,7 +2560,7 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
-    public void closeButton_navigatesToLandingPage() throws InterruptedException, TimeoutException {
+    public void closeButton_navigatesToLandingPage() throws TimeoutException {
         Context context = InstrumentationRegistry.getInstrumentation()
                 .getTargetContext()
                 .getApplicationContext();
@@ -2589,8 +2588,7 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
-    public void closeButton_closesActivityIfNoLandingPage()
-            throws InterruptedException, TimeoutException {
+    public void closeButton_closesActivityIfNoLandingPage() throws TimeoutException {
         Context context = InstrumentationRegistry.getInstrumentation()
                 .getTargetContext()
                 .getApplicationContext();
@@ -2635,7 +2633,7 @@ public class CustomTabActivityTest {
         assertEquals(navigationUrl, history.get(0).getUrl());
     }
 
-    private void mayLaunchUrlWithoutWarmup(boolean useHiddenTab) throws InterruptedException {
+    private void mayLaunchUrlWithoutWarmup(boolean useHiddenTab) {
         Context context = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()
                                   .getApplicationContext();
@@ -2651,7 +2649,7 @@ public class CustomTabActivityTest {
         assertEquals(mTestPage, tab.getUrl());
     }
 
-    private ChromeActivity reparentAndVerifyTab() throws InterruptedException {
+    private ChromeActivity reparentAndVerifyTab() {
         final ActivityMonitor monitor = InstrumentationRegistry.getInstrumentation().addMonitor(
                 ChromeTabbedActivity.class.getName(), /* result = */ null, false);
         final Tab tabToBeReparented = getActivity().getActivityTab();
@@ -2700,8 +2698,7 @@ public class CustomTabActivityTest {
         return newActivity;
     }
 
-    private void checkPageLoadMetrics(boolean allowMetrics)
-            throws InterruptedException, TimeoutException {
+    private void checkPageLoadMetrics(boolean allowMetrics) throws TimeoutException {
         final AtomicReference<Long> firstContentfulPaintMs = new AtomicReference<>(-1L);
         final AtomicReference<Long> largestContentfulPaintMs = new AtomicReference<>(-1L);
         final AtomicReference<Long> activityStartTimeMs = new AtomicReference<>(-1L);
@@ -2826,7 +2823,7 @@ public class CustomTabActivityTest {
     }
 
     private static void ensureCompletedSpeculationForUrl(
-            final CustomTabsConnection connection, final String url) throws InterruptedException {
+            final CustomTabsConnection connection, final String url) {
         CriteriaHelper.pollUiThread(new Criteria("Tab was not created") {
             @Override
             public boolean isSatisfied() {
@@ -2856,8 +2853,7 @@ public class CustomTabActivityTest {
             return mCallbackIntent;
         }
 
-        public void waitForCallback(String failureReason)
-                throws TimeoutException, InterruptedException {
+        public void waitForCallback(String failureReason) throws TimeoutException {
             mCallbackHelper.waitForCallback(failureReason, 0);
         }
 
@@ -2892,7 +2888,7 @@ public class CustomTabActivityTest {
                         mTab.getWebContents(), mJsFunction);
                 if (jsonText.equalsIgnoreCase("null")) jsonText = "";
                 value = jsonText;
-            } catch (InterruptedException | TimeoutException e) {
+            } catch (TimeoutException e) {
                 e.printStackTrace();
                 return false;
             }
@@ -2904,7 +2900,7 @@ public class CustomTabActivityTest {
         }
     }
 
-    private static List<HistoryItem> getHistory() throws TimeoutException, InterruptedException {
+    private static List<HistoryItem> getHistory() throws TimeoutException {
         final TestBrowsingHistoryObserver historyObserver = new TestBrowsingHistoryObserver();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             BrowsingHistoryBridge historyService = new BrowsingHistoryBridge(false);
@@ -2916,7 +2912,7 @@ public class CustomTabActivityTest {
         return historyObserver.getHistoryQueryResults();
     }
 
-    private void waitForTitle(String newTitle) throws InterruptedException {
+    private void waitForTitle(String newTitle) {
         Tab currentTab = getActivity().getActivityTab();
         ChromeTabUtils.waitForTitle(currentTab, newTitle);
     }

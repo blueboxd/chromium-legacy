@@ -60,10 +60,10 @@ class DecisionHelper {
 
       for (const auto* notification : pair.second) {
         DCHECK(notification);
+        DCHECK_NE(notification->schedule_params.priority,
+                  ScheduleParams::Priority::kNoThrottle);
         if (!ShouldFilterOut(notification))
           filtered_notifications[notification->type].emplace_back(notification);
-        // TODO(xingliu): Filter with priority. Consider to delete notification
-        // with expired scheduling time stamp.
       }
     }
 
@@ -109,7 +109,6 @@ class DecisionHelper {
     size_t steps = 0u;
 
     // Circling around all clients to find new notification to show.
-    // TODO(xingliu): Apply scheduling parameters here.
     do {
       // Move the iterator to next client type.
       DCHECK(it != clients_.end());
@@ -179,13 +178,26 @@ class DisplayDeciderImpl : public DisplayDecider {
 
  private:
   // DisplayDecider implementation.
-  void FindNotificationsToShow(
-      Notifications notifications,
-      ClientStates client_states,
-      Results* results) override {
-    auto helper = std::make_unique<DecisionHelper>(config_, clients_, clock_,
-                                                   std::move(notifications),
-                                                   std::move(client_states));
+  void FindNotificationsToShow(Notifications notifications,
+                               ClientStates client_states,
+                               Results* results) override {
+    Notifications throttled_notifications;
+    for (const auto& pair : notifications) {
+      auto type = pair.first;
+      for (auto* notification : pair.second) {
+        // Move unthrottled notifications to results directly.
+        if (notification->schedule_params.priority ==
+            ScheduleParams::Priority::kNoThrottle) {
+          results->emplace(notification->guid);
+        } else {
+          throttled_notifications[type].emplace_back(std::move(notification));
+        }
+      }
+    }
+    // Handle throttled notifications.
+    auto helper = std::make_unique<DecisionHelper>(
+        config_, clients_, clock_, std::move(throttled_notifications),
+        std::move(client_states));
     helper->DecideNotificationToShow(results);
   }
 

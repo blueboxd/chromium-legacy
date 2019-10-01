@@ -10,6 +10,7 @@
 
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/mac/scoped_nsobject.h"
@@ -393,7 +394,9 @@ gfx::Rect NativeWidgetMac::GetRestoredBounds() const {
 }
 
 std::string NativeWidgetMac::GetWorkspace() const {
-  return std::string();
+  return ns_window_host_ ? base::Base64Encode(
+                               ns_window_host_->GetWindowStateRestorationData())
+                         : std::string();
 }
 
 void NativeWidgetMac::SetBounds(const gfx::Rect& bounds) {

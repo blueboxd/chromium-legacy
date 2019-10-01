@@ -52,8 +52,6 @@ OpenXrTestHelper::OpenXrTestHelper()
       session_(XR_NULL_HANDLE),
       session_state_(XR_SESSION_STATE_UNKNOWN),
       swapchain_(XR_NULL_HANDLE),
-      local_space_(XR_NULL_HANDLE),
-      view_space_(XR_NULL_HANDLE),
       acquired_swapchain_texture_(0),
       next_action_space_(0),
       next_predicted_display_time_(0) {}
@@ -127,6 +125,18 @@ XrSwapchain OpenXrTestHelper::GetSwapchain() {
   return swapchain_;
 }
 
+XrResult OpenXrTestHelper::GetActionStateFloat(XrAction action,
+                                               XrActionStateFloat* data) const {
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(ValidateAction(action));
+  const ActionProperties& cur_action_properties = actions_.at(action);
+  RETURN_IF(cur_action_properties.type != XR_ACTION_TYPE_FLOAT_INPUT,
+            XR_ERROR_ACTION_TYPE_MISMATCH, "GetActionStateFloat type mismatch");
+  *data = float_action_states_.at(action);
+  return XR_SUCCESS;
+}
+
 XrResult OpenXrTestHelper::GetActionStateBoolean(
     XrAction action,
     XrActionStateBoolean* data) const {
@@ -168,14 +178,20 @@ XrResult OpenXrTestHelper::GetActionStatePose(XrAction action,
   return XR_SUCCESS;
 }
 
-XrSpace OpenXrTestHelper::CreateLocalSpace() {
-  local_space_ = TreatIntegerAsHandle<XrSpace>(++next_action_space_);
-  return local_space_;
-}
-
-XrSpace OpenXrTestHelper::CreateViewSpace() {
-  view_space_ = TreatIntegerAsHandle<XrSpace>(++next_action_space_);
-  return view_space_;
+XrSpace OpenXrTestHelper::CreateReferenceSpace(XrReferenceSpaceType type) {
+  XrSpace cur_space = TreatIntegerAsHandle<XrSpace>(++next_action_space_);
+  switch (type) {
+    case XR_REFERENCE_SPACE_TYPE_VIEW:
+      reference_spaces_[cur_space] = "/reference_space/view";
+      break;
+    case XR_REFERENCE_SPACE_TYPE_LOCAL:
+      reference_spaces_[cur_space] = "/reference_space/local";
+      break;
+    default:
+      NOTREACHED() << "Test currently only supports to create View space and "
+                      "local space";
+  }
+  return cur_space;
 }
 
 XrAction OpenXrTestHelper::CreateAction(XrActionSet action_set,
@@ -187,6 +203,10 @@ XrAction OpenXrTestHelper::CreateAction(XrActionSet action_set,
   ActionProperties cur_action_properties;
   cur_action_properties.type = create_info.actionType;
   switch (create_info.actionType) {
+    case XR_ACTION_TYPE_FLOAT_INPUT: {
+      float_action_states_[cur_action];
+      break;
+    }
     case XR_ACTION_TYPE_BOOLEAN_INPUT: {
       boolean_action_states_[cur_action];
       break;
@@ -222,8 +242,10 @@ XrActionSet OpenXrTestHelper::CreateActionSet(
   return cur_action_set;
 }
 
-XrSpace OpenXrTestHelper::CreateActionSpace() {
-  return TreatIntegerAsHandle<XrSpace>(++next_action_space_);
+XrSpace OpenXrTestHelper::CreateActionSpace(XrAction action) {
+  XrSpace cur_space = TreatIntegerAsHandle<XrSpace>(++next_action_space_);
+  action_spaces_[cur_space] = action;
+  return cur_space;
 }
 
 XrPath OpenXrTestHelper::GetPath(const char* path_string) {
@@ -258,6 +280,8 @@ XrResult OpenXrTestHelper::BindActionAndPath(XrActionSuggestedBinding binding) {
             "BindActionAndPath action is bind to more than one path, this is "
             "not cupported with current test");
   current_action.binding = binding.binding;
+  std::string path_string = PathToString(current_action.binding);
+  DLOG(ERROR) << path_string;
   return XR_SUCCESS;
 }
 
@@ -307,27 +331,23 @@ XrResult OpenXrTestHelper::UpdateAction(XrAction action) {
   RETURN_IF_FALSE(
       support_path, XR_ERROR_VALIDATION_FAILURE,
       "UpdateAction this action has a path that is not supported by test now");
-  device::ControllerFrameData data;
-  device::ControllerRole role;
-  if (PathContainsString(path_string, "/user/hand/left/")) {
-    role = device::kControllerRoleLeft;
-  } else if (PathContainsString(path_string, "/user/hand/right/")) {
-    role = device::kControllerRoleRight;
-  } else {
-    LOG(ERROR) << "Currently Action should belong to either left or right";
-    NOTREACHED();
-  }
-  for (uint32_t i = 0; i < data_arr_.size(); i++) {
-    if (data_arr_[i].role == role) {
-      data = data_arr_[i];
-    }
-  }
+
+  device::ControllerFrameData data = GetControllerDataFromPath(path_string);
 
   switch (cur_action_properties.type) {
+    case XR_ACTION_TYPE_FLOAT_INPUT: {
+      if (!PathContainsString(path_string, "/trigger")) {
+        NOTREACHED() << "Only trigger button has float action";
+      }
+      float_action_states_[action].isActive = data.is_valid;
+      break;
+    }
     case XR_ACTION_TYPE_BOOLEAN_INPUT: {
       device::XrButtonId button_id = device::kMax;
       if (PathContainsString(path_string, "/trackpad/")) {
         button_id = device::kAxisTrackpad;
+      } else if (PathContainsString(path_string, "/thumbstick/")) {
+        button_id = device::kAxisThumbstick;
       } else if (PathContainsString(path_string, "/trigger/")) {
         button_id = device::kAxisTrigger;
       } else if (PathContainsString(path_string, "/squeeze/")) {
@@ -340,18 +360,43 @@ XrResult OpenXrTestHelper::UpdateAction(XrAction action) {
       uint64_t button_mask = XrButtonMaskFromId(button_id);
 
       // This bool pressed is needed because XrActionStateBoolean.currentState
-      // is XrBool32 which is uint32_t. And it won't behave correctly if we try
-      // to set is using uint64_t value like button_mask. like the following:
-      // boolean_action_states_[].currentState = data.buttons_pressed &
-      // button_mask
-      bool pressed = data.buttons_pressed & button_mask;
-      boolean_action_states_[action].currentState = pressed;
+      // is XrBool32 which is uint32_t. And XrActionStateBoolean.currentState
+      // won't behave correctly if we try to set it using an uint64_t value like
+      // button_mask, like: boolean_action_states_[].currentState =
+      // data.buttons_pressed & button_mask
       boolean_action_states_[action].isActive = data.is_valid;
+      bool button_supported = data.supported_buttons & button_mask;
+
+      if (PathContainsString(path_string, "/value") ||
+          PathContainsString(path_string, "/click")) {
+        bool pressed = data.buttons_pressed & button_mask;
+        boolean_action_states_[action].currentState =
+            button_supported && pressed;
+      } else if (PathContainsString(path_string, "/touch")) {
+        bool touched = data.buttons_touched & button_mask;
+        boolean_action_states_[action].currentState =
+            button_supported && touched;
+      } else {
+        NOTREACHED() << "Boolean actions only supports path string ends with "
+                        "value, click or touch";
+      }
       break;
     }
     case XR_ACTION_TYPE_VECTOR2F_INPUT: {
-      // index is the same as the sequence action is created they should be
-      // consistent when set in the tests
+      device::XrButtonId button_id = device::kMax;
+      if (PathContainsString(path_string, "/trackpad")) {
+        button_id = device::kAxisTrackpad;
+      } else if (PathContainsString(path_string, "/thumbstick")) {
+        button_id = device::kAxisThumbstick;
+      } else {
+        NOTREACHED() << "Path is " << path_string
+                     << "But only Trackpad and thumbstick has 2d vector action";
+      }
+      uint64_t axis_mask = XrAxisOffsetFromId(button_id);
+      v2f_action_states_[action].currentState.x = data.axis_data[axis_mask].x;
+      // we have to negate y because webxr has different direction for y than
+      // openxr
+      v2f_action_states_[action].currentState.y = -data.axis_data[axis_mask].y;
       v2f_action_states_[action].isActive = data.is_valid;
       break;
     }
@@ -417,29 +462,69 @@ bool OpenXrTestHelper::HasPendingSessionStateEvent() {
   return !session_state_event_queue_.empty();
 }
 
-void OpenXrTestHelper::GetPose(XrPosef* pose) {
-  *pose = device::PoseIdentity();
-
+base::Optional<gfx::Transform> OpenXrTestHelper::GetPose() {
   base::AutoLock lock(lock_);
   if (test_hook_) {
     device::PoseFrameData pose_data = test_hook_->WaitGetPresentingPose();
     if (pose_data.is_valid) {
-      gfx::Transform transform = PoseFrameDataToTransform(pose_data);
-
-      gfx::DecomposedTransform decomposed_transform;
-      bool decomposable =
-          gfx::DecomposeTransform(&decomposed_transform, transform);
-      DCHECK(decomposable);
-
-      pose->orientation.x = decomposed_transform.quaternion.x();
-      pose->orientation.y = decomposed_transform.quaternion.y();
-      pose->orientation.z = decomposed_transform.quaternion.z();
-      pose->orientation.w = decomposed_transform.quaternion.w();
-
-      pose->position.x = decomposed_transform.translate[0];
-      pose->position.y = decomposed_transform.translate[1];
-      pose->position.z = decomposed_transform.translate[2];
+      return PoseFrameDataToTransform(pose_data);
     }
+  }
+  return base::nullopt;
+}
+
+device::ControllerFrameData OpenXrTestHelper::GetControllerDataFromPath(
+    std::string path_string) const {
+  device::ControllerRole role;
+  if (PathContainsString(path_string, "/user/hand/left/")) {
+    role = device::kControllerRoleLeft;
+  } else if (PathContainsString(path_string, "/user/hand/right/")) {
+    role = device::kControllerRoleRight;
+  } else {
+    NOTREACHED() << "Currently Path should belong to either left or right";
+  }
+  device::ControllerFrameData data;
+  for (uint32_t i = 0; i < data_arr_.size(); i++) {
+    if (data_arr_[i].role == role) {
+      data = data_arr_[i];
+    }
+  }
+  return data;
+}
+
+void OpenXrTestHelper::LocateSpace(XrSpace space, XrPosef* pose) {
+  *pose = device::PoseIdentity();
+  base::Optional<gfx::Transform> transform = base::nullopt;
+
+  if (reference_spaces_.count(space) == 1) {
+    transform = GetPose();
+  } else if (action_spaces_.count(space) == 1) {
+    XrAction cur_action = action_spaces_.at(space);
+    ActionProperties cur_action_properties = actions_[cur_action];
+    std::string path_string = PathToString(cur_action_properties.binding);
+    device::ControllerFrameData data = GetControllerDataFromPath(path_string);
+    if (data.pose_data.is_valid) {
+      transform = PoseFrameDataToTransform(data.pose_data);
+    }
+  } else {
+    NOTREACHED() << "Locate Space only supports reference space or action "
+                    "space for controller";
+  }
+
+  if (transform) {
+    gfx::DecomposedTransform decomposed_transform;
+    bool decomposable =
+        gfx::DecomposeTransform(&decomposed_transform, transform.value());
+    DCHECK(decomposable);
+
+    pose->orientation.x = decomposed_transform.quaternion.x();
+    pose->orientation.y = decomposed_transform.quaternion.y();
+    pose->orientation.z = decomposed_transform.quaternion.z();
+    pose->orientation.w = decomposed_transform.quaternion.w();
+
+    pose->position.x = decomposed_transform.translate[0];
+    pose->position.y = decomposed_transform.translate[1];
+    pose->position.z = decomposed_transform.translate[2];
   }
 }
 
@@ -578,8 +663,9 @@ XrResult OpenXrTestHelper::ValidateSwapchain(XrSwapchain swapchain) const {
 XrResult OpenXrTestHelper::ValidateSpace(XrSpace space) const {
   RETURN_IF(space == XR_NULL_HANDLE, XR_ERROR_HANDLE_INVALID,
             "XrSpace has not been queried");
-  RETURN_IF(MakeHandleGeneric(space) > next_action_space_,
-            XR_ERROR_HANDLE_INVALID, "XrSpace invalid");
+  if (reference_spaces_.count(space) != 1 && action_spaces_.count(space) != 1) {
+    RETURN_IF(true, XR_ERROR_HANDLE_INVALID, "XrSpace invalid");
+  }
 
   return XR_SUCCESS;
 }

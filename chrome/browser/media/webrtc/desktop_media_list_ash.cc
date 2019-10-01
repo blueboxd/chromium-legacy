@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/webrtc/desktop_media_list_ash.h"
 
+#include <utility>
+
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desks_util.h"
@@ -35,17 +37,20 @@ DesktopMediaListAsh::~DesktopMediaListAsh() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void DesktopMediaListAsh::Refresh() {
+void DesktopMediaListAsh::Refresh(bool update_thumnails) {
+  DCHECK(can_refresh());
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(pending_window_capture_requests_, 0);
 
   std::vector<SourceDescription> new_sources;
-  EnumerateSources(&new_sources);
-
+  EnumerateSources(&new_sources, update_thumnails);
   UpdateSourcesList(new_sources);
+  OnRefreshMaybeComplete();
 }
 
 void DesktopMediaListAsh::EnumerateWindowsForRoot(
     std::vector<DesktopMediaListAsh::SourceDescription>* sources,
+    bool update_thumnails,
     aura::Window* root_window,
     int container_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -68,12 +73,14 @@ void DesktopMediaListAsh::EnumerateWindowsForRoot(
     SourceDescription window_source(id, (*it)->GetTitle());
     sources->push_back(window_source);
 
-    CaptureThumbnail(window_source.id, *it);
+    if (update_thumnails)
+      CaptureThumbnail(window_source.id, *it);
   }
 }
 
 void DesktopMediaListAsh::EnumerateSources(
-    std::vector<DesktopMediaListAsh::SourceDescription>* sources) {
+    std::vector<DesktopMediaListAsh::SourceDescription>* sources,
+    bool update_thumnails) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
@@ -106,16 +113,18 @@ void DesktopMediaListAsh::EnumerateSources(
         }
       }
 
-      CaptureThumbnail(screen_source.id, root_windows[i]);
+      if (update_thumnails)
+        CaptureThumbnail(screen_source.id, root_windows[i]);
     } else {
       // The list of desks containers depends on whether the Virtual Desks
       // feature is enabled or not.
       for (int desk_id : ash::desks_util::GetDesksContainersIds())
-        EnumerateWindowsForRoot(sources, root_windows[i], desk_id);
+        EnumerateWindowsForRoot(sources, update_thumnails, root_windows[i],
+                                desk_id);
 
-      EnumerateWindowsForRoot(sources, root_windows[i],
+      EnumerateWindowsForRoot(sources, update_thumnails, root_windows[i],
                               ash::kShellWindowId_AlwaysOnTopContainer);
-      EnumerateWindowsForRoot(sources, root_windows[i],
+      EnumerateWindowsForRoot(sources, update_thumnails, root_windows[i],
                               ash::kShellWindowId_PipContainer);
     }
   }
@@ -143,9 +152,15 @@ void DesktopMediaListAsh::OnThumbnailCaptured(content::DesktopMediaID id,
   --pending_window_capture_requests_;
   DCHECK_GE(pending_window_capture_requests_, 0);
 
-  if (!pending_window_capture_requests_) {
-    // Once we've finished capturing all windows post a task for the next list
-    // update.
-    ScheduleNextRefresh();
+  OnRefreshMaybeComplete();
+}
+
+void DesktopMediaListAsh::OnRefreshMaybeComplete() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (pending_window_capture_requests_ == 0) {
+    // Once we've finished capturing all windows, notify the caller, which will
+    // post a task for the next list update if necessary.
+    OnRefreshComplete();
   }
 }

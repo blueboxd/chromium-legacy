@@ -121,7 +121,7 @@ void NavigationObserver::OnInstallPromptDone(
 
   ExtensionRegistry* extension_registry = ExtensionRegistry::Get(profile_);
   const Extension* extension = extension_registry->GetExtensionById(
-      in_progress_prompt_extension_id_, ExtensionRegistry::COMPATIBILITY);
+      in_progress_prompt_extension_id_, ExtensionRegistry::EVERYTHING);
   CHECK(extension);
 
   if (result == ExtensionInstallPrompt::Result::ACCEPTED) {

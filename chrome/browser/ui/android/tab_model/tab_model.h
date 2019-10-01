@@ -13,8 +13,6 @@
 #include "components/omnibox/browser/location_bar_model_delegate.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sync_sessions/synced_window_delegate.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 struct NavigateParams;
 
@@ -37,7 +35,7 @@ class TabModelObserver;
 // Abstract representation of a Tab Model for Android.  Since Android does
 // not use Browser/BrowserList, this is required to allow Chrome to interact
 // with Android's Tabs and Tab Model.
-class TabModel : public content::NotificationObserver {
+class TabModel {
  public:
   // Various ways tabs can be launched.
   // Values must be numbered from 0 and can't have gaps.
@@ -147,7 +145,7 @@ class TabModel : public content::NotificationObserver {
 
  protected:
   explicit TabModel(Profile* profile, bool is_tabbed_activity);
-  ~TabModel() override;
+  virtual ~TabModel();
 
   // Instructs the TabModel to broadcast a notification that all tabs are now
   // loaded from storage.
@@ -156,20 +154,11 @@ class TabModel : public content::NotificationObserver {
   LocationBarModel* GetLocationBarModel();
 
  private:
-  // Determines how TabModel will interact with the profile.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
-  // The profile associated with this TabModel.
   Profile* profile_;
 
   // The LiveTabContext associated with TabModel.
   // Used to restore closed tabs through the TabRestoreService.
   std::unique_ptr<AndroidLiveTabContext> live_tab_context_;
-
-  // Describes if this TabModel contains an off-the-record profile.
-  bool is_off_the_record_;
 
   // The SyncedWindowDelegate associated with this TabModel.
   std::unique_ptr<browser_sync::SyncedWindowDelegateAndroid>
@@ -179,9 +168,6 @@ class TabModel : public content::NotificationObserver {
   // unique within the current session, and is not guaranteed to be unique
   // across sessions.
   SessionID session_id_;
-
-  // The Registrar used to register TabModel for notifications.
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TabModel);
 };

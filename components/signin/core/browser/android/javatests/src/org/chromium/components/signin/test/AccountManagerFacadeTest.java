@@ -33,7 +33,7 @@ public class AccountManagerFacadeTest {
                     FakeAccountManagerDelegate.ENABLE_BLOCK_GET_ACCOUNTS);
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         AccountManagerFacade.overrideAccountManagerFacadeForTests(mDelegate);
     }
 

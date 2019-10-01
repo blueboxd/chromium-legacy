@@ -174,7 +174,7 @@ void UnpackedInstaller::StartInstallChecks() {
       for (i = imports.begin(); i != imports.end(); ++i) {
         base::Version version_required(i->minimum_version);
         const Extension* imported_module = registry->GetExtensionById(
-            i->extension_id, ExtensionRegistry::COMPATIBILITY);
+            i->extension_id, ExtensionRegistry::EVERYTHING);
         if (!imported_module) {
           ReportExtensionLoadError(kImportMissing);
           return;

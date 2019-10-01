@@ -73,7 +73,7 @@ public final class FeedContentStorageConformanceTest extends ContentStorageConfo
     public final ChromeBrowserTestRule mRule = new ChromeBrowserTestRule();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // storage is declared and tested in ContentStorageConformanceTest.
             storage = new ContentStorageWrapper(Profile.getLastUsedProfile());

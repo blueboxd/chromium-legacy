@@ -649,7 +649,8 @@ class SessionRestoreImpl : public BrowserListObserver {
     if (browser_ == browser)
       return;
 
-    browser->window()->Show();
+    if (!browser->window()->IsVisible() && !browser->window()->IsMinimized())
+      browser->window()->Show();
     browser->set_is_session_restore(false);
   }
 

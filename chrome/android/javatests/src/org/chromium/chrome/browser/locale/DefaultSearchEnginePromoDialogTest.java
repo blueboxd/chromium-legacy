@@ -87,14 +87,14 @@ public class DefaultSearchEnginePromoDialogTest {
 
         CriteriaHelper.pollUiThread(Criteria.equals(false, new Callable<Boolean>() {
             @Override
-            public Boolean call() throws Exception {
+            public Boolean call() {
                 return searchDialog.isShowing();
             }
         }));
 
         CriteriaHelper.pollUiThread(Criteria.equals(true, new Callable<Boolean>() {
             @Override
-            public Boolean call() throws Exception {
+            public Boolean call() {
                 return searchActivity.isFinishing();
             }
         }));
@@ -113,7 +113,7 @@ public class DefaultSearchEnginePromoDialogTest {
         return TestThreadUtils.runOnUiThreadBlocking(
                 new Callable<DefaultSearchEnginePromoDialog>() {
                     @Override
-                    public DefaultSearchEnginePromoDialog call() throws Exception {
+                    public DefaultSearchEnginePromoDialog call() {
                         DefaultSearchEnginePromoDialog dialog = new DefaultSearchEnginePromoDialog(
                                 activity, LocaleManager.SearchEnginePromoType.SHOW_EXISTING, null);
                         dialog.show();

@@ -117,7 +117,7 @@ public class MultiWindowTestHelper {
     private static void waitUntilActivityResumed(final Activity activity) {
         CriteriaHelper.pollUiThread(Criteria.equals(ActivityState.RESUMED, new Callable<Integer>() {
             @Override
-            public Integer call() throws Exception {
+            public Integer call() {
                 return ApplicationStatus.getStateForActivity(activity);
             }
         }));

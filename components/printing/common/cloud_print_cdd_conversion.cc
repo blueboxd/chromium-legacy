@@ -179,15 +179,15 @@ base::Value PrinterSemanticCapsAndDefaultsToCdd(
           select_capability.AddDefaultOption(
               printer::SelectVendorCapabilityOption(value.name,
                                                     localized_value),
-              value.is_default);
+              value.name == capability.default_value);
         }
         vendor_capabilities.AddOption(printer::VendorCapability(
             capability.name, capability_name, std::move(select_capability)));
       } else {
-        vendor_capabilities.AddOption(printer::VendorCapability(
-            capability.name, capability_name,
-            printer::TypedValueVendorCapability(
-                ToCloudValueType(base::Value::Type::STRING))));
+        vendor_capabilities.AddOption(
+            printer::VendorCapability(capability.name, capability_name,
+                                      printer::TypedValueVendorCapability(
+                                          ToCloudValueType(capability.type))));
       }
     }
     vendor_capabilities.SaveTo(&description);

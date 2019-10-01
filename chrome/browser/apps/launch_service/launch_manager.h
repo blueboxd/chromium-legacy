@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 
-struct AppLaunchParams;
 class Profile;
 
 namespace base {
@@ -22,6 +21,8 @@ class WebContents;
 }
 
 namespace apps {
+
+struct AppLaunchParams;
 
 // A LaunchManager handles launch requests for a given type of apps.
 class LaunchManager {

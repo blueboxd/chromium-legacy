@@ -28,7 +28,7 @@ cr.define('custom_margins_test', function() {
     /** @type {?PrintPreviewModelElement} */
     let model = null;
 
-    /** @type {!Array<!print_preview.ticket_items.CustomMarginsOrientation>} */
+    /** @type {!Array<!print_preview.CustomMarginsOrientation>} */
     let sides = [];
 
     /** @type {!print_preview.MeasurementSystem} */
@@ -56,10 +56,10 @@ cr.define('custom_margins_test', function() {
       model.set('settings.mediaSize.available', true);
 
       sides = [
-        print_preview.ticket_items.CustomMarginsOrientation.TOP,
-        print_preview.ticket_items.CustomMarginsOrientation.RIGHT,
-        print_preview.ticket_items.CustomMarginsOrientation.BOTTOM,
-        print_preview.ticket_items.CustomMarginsOrientation.LEFT
+        print_preview.CustomMarginsOrientation.TOP,
+        print_preview.CustomMarginsOrientation.RIGHT,
+        print_preview.CustomMarginsOrientation.BOTTOM,
+        print_preview.CustomMarginsOrientation.LEFT
       ];
 
       container =
@@ -131,19 +131,19 @@ cr.define('custom_margins_test', function() {
       let xEnd = 0;
       let yEnd = 0;
       switch (control.side) {
-        case print_preview.ticket_items.CustomMarginsOrientation.TOP:
+        case print_preview.CustomMarginsOrientation.TOP:
           yStart = start;
           yEnd = end;
           break;
-        case print_preview.ticket_items.CustomMarginsOrientation.RIGHT:
+        case print_preview.CustomMarginsOrientation.RIGHT:
           xStart = control.clipSize.width - start;
           xEnd = control.clipSize.width - end;
           break;
-        case print_preview.ticket_items.CustomMarginsOrientation.BOTTOM:
+        case print_preview.CustomMarginsOrientation.BOTTOM:
           yStart = control.clipSize.height - start;
           yEnd = control.clipSize.height - end;
           break;
-        case print_preview.ticket_items.CustomMarginsOrientation.LEFT:
+        case print_preview.CustomMarginsOrientation.LEFT:
           xStart = start;
           xEnd = end;
           break;
@@ -202,12 +202,11 @@ cr.define('custom_margins_test', function() {
     /*
      * Initializes the settings custom margins to some test values, and returns
      * a map with the values.
-     * @return {!Map<!print_preview.ticket_items.CustomMarginsOrientation,
+     * @return {!Map<!print_preview.CustomMarginsOrientation,
      *               number>}
      */
     function setupCustomMargins() {
-      const orientationEnum =
-          print_preview.ticket_items.CustomMarginsOrientation;
+      const orientationEnum = print_preview.CustomMarginsOrientation;
       const marginValues = new Map([
         [orientationEnum.TOP, 72], [orientationEnum.RIGHT, 36],
         [orientationEnum.BOTTOM, 108], [orientationEnum.LEFT, 18]
@@ -233,8 +232,7 @@ cr.define('custom_margins_test', function() {
       return finishSetup().then(() => {
         // Simulate setting custom margins.
         model.set(
-            'settings.margins.value',
-            print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+            'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
 
         // Validate control positions are set based on the custom values.
         const controls = getControls();
@@ -251,7 +249,7 @@ cr.define('custom_margins_test', function() {
         // Margins should be reset to default and custom margins values should
         // be cleared.
         expectEquals(
-            print_preview.ticket_items.MarginsTypeValue.DEFAULT,
+            print_preview.MarginsTypeValue.DEFAULT,
             container.getSettingValue('margins'));
         expectEquals(
             '{}', JSON.stringify(container.getSettingValue('customMargins')));
@@ -282,7 +280,7 @@ cr.define('custom_margins_test', function() {
             // Controls become visible when margin type CUSTOM is selected.
             model.set(
                 'settings.margins.value',
-                print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+                print_preview.MarginsTypeValue.CUSTOM);
 
             // Wait for the opacity transitions to finish.
             return onTransitionEnd;
@@ -339,8 +337,7 @@ cr.define('custom_margins_test', function() {
 
         // Simulate setting custom margins from sticky settings.
         model.set(
-            'settings.margins.value',
-            print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+            'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
         const marginValues = setupCustomMargins();
         model.notifyPath('settings.customMargins.value');
         Polymer.dom.flush();
@@ -386,8 +383,7 @@ cr.define('custom_margins_test', function() {
       return finishSetup().then(() => {
         const controls = getControls();
         model.set(
-            'settings.margins.value',
-            print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+            'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
         Polymer.dom.flush();
 
 
@@ -446,8 +442,7 @@ cr.define('custom_margins_test', function() {
           c.getInput().setAttribute('data-timeout-delay', 1);
         });
         model.set(
-            'settings.margins.value',
-            print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+            'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
         Polymer.dom.flush();
 
         // Verify entering a new value updates the settings.
@@ -493,8 +488,7 @@ cr.define('custom_margins_test', function() {
           c.getInput().setAttribute('data-timeout-delay', 1);
         });
         model.set(
-            'settings.margins.value',
-            print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+            'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
         Polymer.dom.flush();
 
         // Verify entering a new value updates the settings.
@@ -545,8 +539,7 @@ cr.define('custom_margins_test', function() {
         // Simulate setting custom margins.
         const controls = getControls();
         model.set(
-            'settings.margins.value',
-            print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+            'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
 
         // Validate control positions are set based on the custom values.
         controls.forEach((control, index) => {
@@ -557,8 +550,7 @@ cr.define('custom_margins_test', function() {
 
         // Simulate setting minimum margins.
         model.set(
-            'settings.margins.value',
-            print_preview.ticket_items.MarginsTypeValue.MINIMUM);
+            'settings.margins.value', print_preview.MarginsTypeValue.MINIMUM);
 
         // Validate control positions still reflect the custom values.
         controls.forEach((control, index) => {
@@ -577,7 +569,7 @@ cr.define('custom_margins_test', function() {
             // Simulate setting custom margins again.
             model.set(
                 'settings.margins.value',
-                print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+                print_preview.MarginsTypeValue.CUSTOM);
 
             // Validate control positions are initialized based on the default
             // values.
@@ -595,8 +587,7 @@ cr.define('custom_margins_test', function() {
       return validateMarginsClearedForSetting('layout', true).then(() => {
         // Simulate setting custom margins again
         model.set(
-            'settings.margins.value',
-            print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+            'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
 
         // Validate control positions are initialized based on the default
         // values.
@@ -647,7 +638,7 @@ cr.define('custom_margins_test', function() {
             // Controls become visible when margin type CUSTOM is selected.
             model.set(
                 'settings.margins.value',
-                print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+                print_preview.MarginsTypeValue.CUSTOM);
             container.notifyPath('settings.customMargins.value');
             Polymer.dom.flush();
             return onTransitionEnd;
@@ -693,8 +684,7 @@ cr.define('custom_margins_test', function() {
       return finishSetup().then(() => {
         // Simulate setting custom margins.
         model.set(
-            'settings.margins.value',
-            print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+            'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
 
         const controls = getControls();
         controls.forEach(control => assertFalse(control.disabled));

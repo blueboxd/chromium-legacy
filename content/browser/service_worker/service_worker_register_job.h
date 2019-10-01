@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTER_JOB_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTER_JOB_H_
 
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -49,13 +51,13 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
 
   // For registration jobs.
   CONTENT_EXPORT ServiceWorkerRegisterJob(
-      base::WeakPtr<ServiceWorkerContextCore> context,
+      ServiceWorkerContextCore* context,
       const GURL& script_url,
       const blink::mojom::ServiceWorkerRegistrationOptions& options);
 
   // For update jobs.
   CONTENT_EXPORT ServiceWorkerRegisterJob(
-      base::WeakPtr<ServiceWorkerContextCore> context,
+      ServiceWorkerContextCore* context,
       ServiceWorkerRegistration* registration,
       bool force_bypass_cache,
       bool skip_script_comparison);
@@ -68,6 +70,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   // ServiceWorkerRegisterJobBase implementation:
   void Start() override;
   void Abort() override;
+  void WillShutDown() override;
   bool Equals(ServiceWorkerRegisterJobBase* job) const override;
   RegistrationJobType GetType() const override;
 
@@ -171,8 +174,8 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
 
   void BumpLastUpdateCheckTimeIfNeeded();
 
-  // The ServiceWorkerContextCore object should always outlive this.
-  base::WeakPtr<ServiceWorkerContextCore> context_;
+  // The ServiceWorkerContextCore object must outlive this.
+  ServiceWorkerContextCore* const context_;
 
   std::unique_ptr<ServiceWorkerUpdateChecker> update_checker_;
   std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
@@ -188,6 +191,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   const blink::mojom::ServiceWorkerUpdateViaCache update_via_cache_;
   std::vector<RegistrationCallback> callbacks_;
   Phase phase_;
+  bool is_shutting_down_;
   Internal internal_;
   bool is_promise_resolved_;
   bool should_uninstall_on_failure_;

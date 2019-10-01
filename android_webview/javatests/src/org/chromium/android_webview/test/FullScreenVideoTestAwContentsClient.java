@@ -99,11 +99,11 @@ public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
         return mOnShowCustomViewCallbackHelper.getCallCount() > 0;
     }
 
-    public void waitForCustomViewShown() throws TimeoutException, InterruptedException {
+    public void waitForCustomViewShown() throws TimeoutException {
         mOnShowCustomViewCallbackHelper.waitForCallback(0, 1, WAITING_SECONDS, TimeUnit.SECONDS);
     }
 
-    public void waitForCustomViewHidden() throws InterruptedException, TimeoutException {
+    public void waitForCustomViewHidden() throws TimeoutException {
         mOnHideCustomViewCallbackHelper.waitForCallback(0, 1, WAITING_SECONDS, TimeUnit.SECONDS);
     }
 }

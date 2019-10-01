@@ -87,7 +87,7 @@ public class BrowserObserverTest {
 
     @Test
     @SmallTest
-    public void testLoadEvents() throws Exception {
+    public void testLoadEvents() {
         String startupUrl = "about:blank";
         WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(startupUrl);
         Assert.assertNotNull(activity);

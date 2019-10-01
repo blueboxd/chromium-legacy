@@ -1,9 +1,6 @@
 # Test consistently hitting default timeout.
 Bug(none) css3/filters/effect-reference-subregion.html [ Skip ]
 
-# Times out.
-crbug.com/994331 compositing/lots-of-img-layers.html [ Skip ]
-
 # Not rendering the rightmost frame.
 crbug.com/1001616 media/alpha-video-playback.html [ Skip ]
 

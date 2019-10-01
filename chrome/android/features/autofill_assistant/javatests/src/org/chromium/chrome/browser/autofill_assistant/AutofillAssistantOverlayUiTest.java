@@ -56,7 +56,7 @@ public class AutofillAssistantOverlayUiTest {
             "/components/test/data/autofill_assistant/autofill_assistant_target_website.html";
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mTestRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
                 InstrumentationRegistry.getTargetContext(),
                 mTestRule.getTestServer().getURL(TEST_PAGE)));

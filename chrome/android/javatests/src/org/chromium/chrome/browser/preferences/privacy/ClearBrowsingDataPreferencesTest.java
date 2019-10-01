@@ -100,7 +100,7 @@ public class ClearBrowsingDataPreferencesTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         SigninTestUtil.tearDownAuthForTest();
     }
 
@@ -195,7 +195,7 @@ public class ClearBrowsingDataPreferencesTest {
      */
     @Test
     @MediumTest
-    public void testClearingEverything() throws Exception {
+    public void testClearingEverything() {
         setDataTypesToClear(ClearBrowsingDataPreferences.getAllOptions());
 
         final ClearBrowsingDataPreferences preferences =
@@ -279,7 +279,7 @@ public class ClearBrowsingDataPreferencesTest {
      */
     @Test
     @LargeTest
-    public void testDialogAboutOtherFormsOfBrowsingHistory() throws Exception {
+    public void testDialogAboutOtherFormsOfBrowsingHistory() {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();
         OtherFormsOfHistoryDialogFragment.clearShownPreferenceForTesting(
@@ -552,7 +552,7 @@ public class ClearBrowsingDataPreferencesTest {
     @Test
     @EnableFeatures(ChromeFeatureList.REMOVE_NAVIGATION_HISTORY)
     @MediumTest
-    public void testNavigationDeletion() throws Exception {
+    public void testNavigationDeletion() {
         final String url1 = mTestServer.getURL("/chrome/test/data/browsing_data/a.html");
         final String url2 = mTestServer.getURL("/chrome/test/data/browsing_data/b.html");
 
@@ -583,7 +583,7 @@ public class ClearBrowsingDataPreferencesTest {
     @Test
     @MediumTest
     @EnableFeatures(ChromeFeatureList.REMOVE_NAVIGATION_HISTORY)
-    public void testFrozenNavigationDeletion() throws Exception {
+    public void testFrozenNavigationDeletion() {
         final String url1 = mTestServer.getURL("/chrome/test/data/browsing_data/a.html");
         final String url2 = mTestServer.getURL("/chrome/test/data/browsing_data/b.html");
 

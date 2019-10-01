@@ -210,11 +210,15 @@ class CaptivePortalWindowCtorDtorTest : public LoginManagerTest {
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalWindowCtorDtorTest);
 };
 
-IN_PROC_BROWSER_TEST_F(CaptivePortalWindowCtorDtorTest, PRE_OpenPortalDialog) {
+// Flaky. https://crbug.com/1005456.
+IN_PROC_BROWSER_TEST_F(CaptivePortalWindowCtorDtorTest,
+                       DISABLED_PRE_OpenPortalDialog) {
   StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_F(CaptivePortalWindowCtorDtorTest, OpenPortalDialog) {
+// Flaky. https://crbug.com/1005456.
+IN_PROC_BROWSER_TEST_F(CaptivePortalWindowCtorDtorTest,
+                       DISABLED_OpenPortalDialog) {
   LoginDisplayHost* host = LoginDisplayHost::default_host();
   ASSERT_TRUE(host);
   OobeUI* oobe = host->GetOobeUI();

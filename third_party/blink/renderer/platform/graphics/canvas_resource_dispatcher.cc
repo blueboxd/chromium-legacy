@@ -321,11 +321,15 @@ void CanvasResourceDispatcher::SetNeedsBeginFrameInternal() {
     sink_->SetNeedsBeginFrame(needs_begin_frame_ && !suspend_animation_);
 }
 
+bool CanvasResourceDispatcher::HasTooManyPendingFrames() const {
+  return pending_compositor_frames_ >= kMaxPendingCompositorFrames;
+}
+
 void CanvasResourceDispatcher::OnBeginFrame(
     const viz::BeginFrameArgs& begin_frame_args,
     WTF::HashMap<uint32_t, ::viz::mojom::blink::FrameTimingDetailsPtr>) {
   current_begin_frame_ack_ = viz::BeginFrameAck(begin_frame_args, false);
-  if (pending_compositor_frames_ >= kMaxPendingCompositorFrames ||
+  if (HasTooManyPendingFrames() ||
       (begin_frame_args.type == viz::BeginFrameArgs::MISSED &&
        base::TimeTicks::Now() > begin_frame_args.deadline)) {
     sink_->DidNotProduceFrame(current_begin_frame_ack_);

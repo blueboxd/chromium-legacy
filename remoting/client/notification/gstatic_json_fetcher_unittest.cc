@@ -10,6 +10,7 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -68,7 +69,7 @@ class GstaticJsonFetcherTest : public testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   net::FakeURLFetcherFactory url_fetcher_factory_{nullptr};
-  GstaticJsonFetcher fetcher_;
+  GstaticJsonFetcher fetcher_{base::ThreadTaskRunnerHandle::Get()};
 };
 
 TEST_F(GstaticJsonFetcherTest, FetchJsonFileSuccess) {

@@ -38,7 +38,7 @@ public class MainActivityWithURLTest {
     @Test
     @SmallTest
     @Feature({"Navigation"})
-    public void testLaunchActivityWithURL() throws Exception {
+    public void testLaunchActivityWithURL() {
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         try {
@@ -60,7 +60,7 @@ public class MainActivityWithURLTest {
     @Test
     @SmallTest
     @Feature({"Navigation"})
-    public void testLaunchActivity() throws Exception {
+    public void testLaunchActivity() {
         // Launch chrome
         mActivityTestRule.startMainActivityFromLauncher();
         String currentUrl = mActivityTestRule.getActivity().getActivityTab().getUrl();
@@ -75,7 +75,7 @@ public class MainActivityWithURLTest {
     @Test
     @SmallTest
     @Feature({"Navigation"})
-    public void testNewTabPageLaunch() throws Exception {
+    public void testNewTabPageLaunch() {
         // Launch chrome with NTP.
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
         String currentUrl = mActivityTestRule.getActivity().getActivityTab().getUrl();

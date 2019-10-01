@@ -11,7 +11,6 @@ aggregate_vector_icons("ash_vector_icons") {
   icons = [
     "always_show_shelf.icon",
     "assistant.icon",
-    "assistant_mic.icon",
     "auto_hide.icon",
     "autoclick.icon",
     "autoclick_close.icon",

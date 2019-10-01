@@ -58,7 +58,6 @@ namespace cc {
 
 class HeadsUpDisplayLayer;
 class Layer;
-class LayerTreeHostClient;
 class LayerTreeHostImpl;
 class LayerTreeHostImplClient;
 class LayerTreeHostSingleThreadClient;
@@ -97,6 +96,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     InitParams& operator=(InitParams&&);
 
     LayerTreeHostClient* client = nullptr;
+    LayerTreeHostSchedulingClient* scheduling_client = nullptr;
     TaskGraphRunner* task_graph_runner = nullptr;
     LayerTreeSettings const* settings = nullptr;
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner;
@@ -594,6 +594,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time);
 
   LayerTreeHostClient* client() { return client_; }
+  LayerTreeHostSchedulingClient* scheduling_client() {
+    return scheduling_client_;
+  }
 
   bool gpu_rasterization_histogram_recorded() const {
     return gpu_rasterization_histogram_recorded_;
@@ -736,6 +739,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   std::unique_ptr<UIResourceManager> ui_resource_manager_;
 
   LayerTreeHostClient* client_;
+  LayerTreeHostSchedulingClient* scheduling_client_;
   std::unique_ptr<Proxy> proxy_;
   std::unique_ptr<TaskRunnerProvider> task_runner_provider_;
 

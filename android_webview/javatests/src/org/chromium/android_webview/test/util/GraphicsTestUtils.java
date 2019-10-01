@@ -86,8 +86,7 @@ public class GraphicsTestUtils {
                                    .getPixel(0, 0));
     }
 
-    public static void pollForBackgroundColor(final AwContents awContents, final int c)
-            throws Throwable {
+    public static void pollForBackgroundColor(final AwContents awContents, final int c) {
         AwActivityTestRule.pollInstrumentationThread(
                 () -> sampleBackgroundColorOnUiThread(awContents) == c);
     }

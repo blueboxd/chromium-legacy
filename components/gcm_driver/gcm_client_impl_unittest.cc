@@ -950,7 +950,7 @@ TEST_F(GCMClientImplTest, RegisterPreviousSenderAgain) {
   EXPECT_TRUE(ExistsRegistration(kExtensionAppId));
 }
 
-TEST_F(GCMClientImplTest, RegisterAgainWhenTokenIsFresh) {
+TEST_F(GCMClientImplTest, DISABLED_RegisterAgainWhenTokenIsFresh) {
   // Register a sender.
   std::vector<std::string> senders;
   senders.push_back("sender");
@@ -1102,7 +1102,7 @@ TEST_F(GCMClientImplTest, DispatchDownstreamMessageRawData) {
   EXPECT_EQ(kRawData, last_message().raw_data);
 }
 
-TEST_F(GCMClientImplTest, DispatchDownstreamMessageSendError) {
+TEST_F(GCMClientImplTest, DISABLED_DispatchDownstreamMessageSendError) {
   std::map<std::string, std::string> expected_data = {
       {"message_type", "send_error"}, {"error_details", "some details"}};
 
@@ -1429,7 +1429,7 @@ void GCMClientImplStartAndStopTest::DefaultCompleteCheckin() {
   PumpLoopUntilIdle();
 }
 
-TEST_F(GCMClientImplStartAndStopTest, StartStopAndRestart) {
+TEST_F(GCMClientImplStartAndStopTest, DISABLED_StartStopAndRestart) {
   // GCMClientImpl should be in INITIALIZED state at first.
   EXPECT_EQ(GCMClientImpl::INITIALIZED, gcm_client_state());
 
@@ -1543,7 +1543,7 @@ TEST_F(GCMClientImplStartAndStopTest, ImmediateStartAndThenDelayStart) {
   EXPECT_EQ(GCMClientImpl::LOADED, gcm_client_state());
 }
 
-TEST_F(GCMClientImplStartAndStopTest, DelayedStartRace) {
+TEST_F(GCMClientImplStartAndStopTest, DISABLED_DelayedStartRace) {
   // GCMClientImpl should be in INITIALIZED state at first.
   EXPECT_EQ(GCMClientImpl::INITIALIZED, gcm_client_state());
 
@@ -1849,7 +1849,7 @@ TEST_F(GCMClientInstanceIDTest, DeleteSingleToken) {
   EXPECT_EQ(GCMClient::INVALID_PARAMETER, last_result());
 }
 
-TEST_F(GCMClientInstanceIDTest, DeleteAllTokens) {
+TEST_F(GCMClientInstanceIDTest, DISABLED_DeleteAllTokens) {
   AddInstanceID(kExtensionAppId, kInstanceID);
 
   // Get a token.

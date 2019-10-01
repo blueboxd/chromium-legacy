@@ -84,12 +84,12 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
     private ProfileSyncService mProfileSyncService;
     private MockSyncContentResolverDelegate mSyncContentResolver;
 
-    private void ruleSetUp() throws Throwable {
+    private void ruleSetUp() {
         // This must be called before super.setUp() in order for test authentication to work.
         SigninTestUtil.setUpAuthForTest();
     }
 
-    private void ruleTearDown() throws Exception {
+    private void ruleTearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mProfileSyncService.requestStop();
             FakeServerHelper.deleteFakeServer();

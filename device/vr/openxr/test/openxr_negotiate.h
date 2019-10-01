@@ -68,6 +68,8 @@ XrResult XRAPI_PTR GetInstanceProcAddress(XrInstance instance,
   } else if (strcmp(name, "xrGetD3D11GraphicsRequirementsKHR") == 0) {
     *function =
         reinterpret_cast<PFN_xrVoidFunction>(xrGetD3D11GraphicsRequirementsKHR);
+  } else if (strcmp(name, "xrGetActionStateFloat") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(xrGetActionStateFloat);
   } else if (strcmp(name, "xrGetActionStateBoolean") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrGetActionStateBoolean);
   } else if (strcmp(name, "xrGetActionStateVector2f") == 0) {

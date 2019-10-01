@@ -6,10 +6,12 @@
 #define COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_H_
 
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -22,6 +24,32 @@ namespace syncer {
 // A class that holds information regarding the properties of a device.
 class DeviceInfo {
  public:
+  struct SharingInfo {
+    SharingInfo(std::string fcm_token,
+                std::string p256dh,
+                std::string auth_secret,
+                std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
+                    enabled_features);
+    SharingInfo(const SharingInfo& other);
+    SharingInfo(SharingInfo&& other);
+    SharingInfo& operator=(const SharingInfo& other);
+    ~SharingInfo();
+
+    // FCM registration token of device for sending Sharing messages.
+    std::string fcm_token;
+
+    // Subscription public key required for Sharing message encryption[RFC8291].
+    std::string p256dh;
+
+    // Auth secret key required for Sharing message encryption[RFC8291].
+    std::string auth_secret;
+
+    // Set of Sharing features enabled on the device.
+    std::set<sync_pb::SharingSpecificFields::EnabledFeatures> enabled_features;
+
+    bool operator==(const SharingInfo& other) const;
+  };
+
   DeviceInfo(const std::string& guid,
              const std::string& client_name,
              const std::string& chrome_version,
@@ -29,7 +57,8 @@ class DeviceInfo {
              const sync_pb::SyncEnums::DeviceType device_type,
              const std::string& signin_scoped_device_id,
              base::Time last_updated_timestamp,
-             bool send_tab_to_self_receiving_enabled);
+             bool send_tab_to_self_receiving_enabled,
+             const base::Optional<SharingInfo>& sharing_info);
   ~DeviceInfo();
 
   // Sync specific unique identifier for the device. Note if a device
@@ -65,6 +94,9 @@ class DeviceInfo {
   // Whether the receiving side of the SendTabToSelf feature is enabled.
   bool send_tab_to_self_receiving_enabled() const;
 
+  // Returns Sharing related info of the device.
+  const base::Optional<SharingInfo>& sharing_info() const;
+
   // Gets the OS in string form.
   std::string GetOSString() const;
 
@@ -81,6 +113,8 @@ class DeviceInfo {
   void set_public_id(const std::string& id);
 
   void set_send_tab_to_self_receiving_enabled(bool new_value);
+
+  void set_sharing_info(const base::Optional<SharingInfo>& sharing_info);
 
   // Converts the |DeviceInfo| values to a JS friendly DictionaryValue,
   // which extension APIs can expose to third party apps.
@@ -108,6 +142,8 @@ class DeviceInfo {
   const base::Time last_updated_timestamp_;
 
   bool send_tab_to_self_receiving_enabled_;
+
+  base::Optional<SharingInfo> sharing_info_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceInfo);
 };

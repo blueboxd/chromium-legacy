@@ -529,13 +529,12 @@ Polymer({
    */
   marginsValid_: function() {
     const type = this.getSettingValue('margins');
-    if (!Object.values(print_preview.ticket_items.MarginsTypeValue)
-             .includes(type)) {
+    if (!Object.values(print_preview.MarginsTypeValue).includes(type)) {
       // Unrecognized margins type.
       return false;
     }
 
-    if (type !== print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
+    if (type !== print_preview.MarginsTypeValue.CUSTOM) {
       return true;
     }
 
@@ -567,11 +566,11 @@ Polymer({
     // Margins
     const newMarginsType = this.getSettingValue('margins');
     if (newMarginsType !== lastTicket.marginsType &&
-        newMarginsType !== print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
+        newMarginsType !== print_preview.MarginsTypeValue.CUSTOM) {
       return true;
     }
 
-    if (newMarginsType === print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
+    if (newMarginsType === print_preview.MarginsTypeValue.CUSTOM) {
       const customMargins =
           /** @type {!print_preview.MarginsSetting} */ (
               this.getSettingValue('customMargins'));
@@ -595,11 +594,10 @@ Polymer({
       }
 
       const customMarginsChanged =
-          Object.values(print_preview.ticket_items.CustomMarginsOrientation)
-              .some(side => {
-                return this.margins.get(side) !==
-                    customMargins[print_preview.MARGIN_KEY_MAP.get(side)];
-              });
+          Object.values(print_preview.CustomMarginsOrientation).some(side => {
+            return this.margins.get(side) !==
+                customMargins[print_preview.MARGIN_KEY_MAP.get(side)];
+          });
       if (customMarginsChanged) {
         return true;
       }
@@ -629,7 +627,7 @@ Polymer({
     // default margins to trigger a request.
     if (this.getSettingValue('pagesPerSheet') !== lastTicket.pagesPerSheet &&
         this.getSettingValue('margins') ===
-            print_preview.ticket_items.MarginsTypeValue.DEFAULT) {
+            print_preview.MarginsTypeValue.DEFAULT) {
       return true;
     }
 
@@ -641,7 +639,7 @@ Polymer({
         newValue.width_microns != lastTicket.mediaSize.width_microns ||
         (this.destination.id !== lastTicket.deviceName &&
          this.getSettingValue('margins') ===
-             print_preview.ticket_items.MarginsTypeValue.MINIMUM)) {
+             print_preview.MarginsTypeValue.MINIMUM)) {
       return true;
     }
 
@@ -734,7 +732,7 @@ Polymer({
     }
 
     if (this.getSettingValue('margins') ==
-        print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
+        print_preview.MarginsTypeValue.CUSTOM) {
       ticket.marginsCustom = this.getSettingValue('customMargins');
     }
     this.lastTicket_ = ticket;

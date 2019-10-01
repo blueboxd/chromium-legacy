@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/shape_detection/public/mojom/facedetection_provider.mojom-blink.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -37,13 +37,12 @@ FaceDetector::FaceDetector(ExecutionContext* context,
   face_detector_options->max_detected_faces = options->maxDetectedFaces();
   face_detector_options->fast_mode = options->fastMode();
 
-  shape_detection::mojom::blink::FaceDetectionProviderPtr provider;
+  mojo::Remote<shape_detection::mojom::blink::FaceDetectionProvider> provider;
   // See https://bit.ly/2S0zRAS for task types.
   auto task_runner = context->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  auto request = mojo::MakeRequest(&provider, task_runner);
-  if (auto* interface_provider = context->GetInterfaceProvider()) {
-    interface_provider->GetInterface(std::move(request));
-  }
+  context->GetBrowserInterfaceBroker().GetInterface(
+      provider.BindNewPipeAndPassReceiver(task_runner));
+
   provider->CreateFaceDetection(
       face_service_.BindNewPipeAndPassReceiver(task_runner),
       std::move(face_detector_options));

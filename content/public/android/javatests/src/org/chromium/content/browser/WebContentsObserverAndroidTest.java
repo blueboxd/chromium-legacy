@@ -54,7 +54,7 @@ public class WebContentsObserverAndroidTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl(null);
         Assert.assertNotNull(activity);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
@@ -70,7 +70,7 @@ public class WebContentsObserverAndroidTest {
         TestWebContentsObserver observer =
                 TestThreadUtils.runOnUiThreadBlocking(new Callable<TestWebContentsObserver>() {
                     @Override
-                    public TestWebContentsObserver call() throws Exception {
+                    public TestWebContentsObserver call() {
                         return new TestWebContentsObserver(mActivityTestRule.getWebContents());
                     }
                 });

@@ -84,7 +84,7 @@ public class AutofillAssistantDirectActionHandlerTest {
 
     @Test
     @MediumTest
-    public void testReportAvailableDirectActions() throws Exception {
+    public void testReportAvailableDirectActions() {
         FakeDirectActionReporter reporter = new FakeDirectActionReporter();
         mHandler.reportAvailableDirectActions(reporter);
 

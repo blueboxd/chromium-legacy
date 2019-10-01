@@ -169,7 +169,7 @@ public class OfflinePageAutoFetchTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         OfflineTestUtil.clearIntercepts();
         if (mWebServer != null) {
             mWebServer.shutdown();
@@ -179,7 +179,7 @@ public class OfflinePageAutoFetchTest {
     @Test
     @MediumTest
     @Feature({"OfflineAutoFetch"})
-    public void testAutoFetchTriggersOnDNSErrorWhenOffline() throws Exception {
+    public void testAutoFetchTriggersOnDNSErrorWhenOffline() {
         attemptLoadPage("http://does.not.resolve.com");
         waitForRequestCount(1);
     }
@@ -187,7 +187,7 @@ public class OfflinePageAutoFetchTest {
     @Test
     @MediumTest
     @Feature({"OfflineAutoFetch"})
-    public void testAutoFetchDoesNotTriggerOnDNSErrorWhenOnline() throws Exception {
+    public void testAutoFetchDoesNotTriggerOnDNSErrorWhenOnline() {
         forceConnectivityState(true);
         attemptLoadPage("http://does.not.resolve.com");
         waitForRequestCount(0);
@@ -427,7 +427,7 @@ public class OfflinePageAutoFetchTest {
     }
 
     // Wait until at least one auto-fetch request has shown an in-progress notification.
-    private void waitForInProgressNotification() throws Exception {
+    private void waitForInProgressNotification() {
         waitForHistogram("OfflinePages.AutoFetch.InProgressNotificationAction:SHOWN", 1);
     }
 
@@ -559,7 +559,7 @@ public class OfflinePageAutoFetchTest {
         try {
             Log.d(TAG,
                     "Request Coordinator state:" + OfflineTestUtil.dumpRequestCoordinatorState());
-        } catch (TimeoutException | InterruptedException e) {
+        } catch (TimeoutException e) {
         }
     }
     private void pollInstrumentationThread(final Callable<Boolean> criteria) {

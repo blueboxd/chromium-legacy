@@ -78,7 +78,7 @@ public class WebappRegistryTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         WebappRegistry.refreshSharedPrefsForTesting();
         mSharedPreferences = ContextUtils.getApplicationContext().getSharedPreferences(
                 REGISTRY_FILE_NAME, Context.MODE_PRIVATE);
@@ -130,7 +130,7 @@ public class WebappRegistryTest {
 
     @Test
     @Feature({"Webapp"})
-    public void testWebappIdsRetrieval() throws Exception {
+    public void testWebappIdsRetrieval() {
         final Set<String> expected = addWebappsToRegistry("first", "second");
         assertEquals(expected, WebappRegistry.getRegisteredWebappIdsForTesting());
     }
@@ -225,7 +225,7 @@ public class WebappRegistryTest {
 
     @Test
     @Feature({"Webapp"})
-      public void testCleanupDoesNotRunTooOften() throws Exception {
+    public void testCleanupDoesNotRunTooOften() {
         // Put the current time to just before the task should run.
         long currentTime = INITIAL_TIME + WebappRegistry.FULL_CLEANUP_DURATION - 1;
 
@@ -252,7 +252,7 @@ public class WebappRegistryTest {
 
     @Test
     @Feature({"Webapp"})
-    public void testCleanupDoesNotRemoveRecentApps() throws Exception {
+    public void testCleanupDoesNotRemoveRecentApps() {
         // Put the current time such that the task runs.
         long currentTime = INITIAL_TIME + WebappRegistry.FULL_CLEANUP_DURATION;
 
@@ -284,7 +284,7 @@ public class WebappRegistryTest {
 
     @Test
     @Feature({"Webapp"})
-    public void testCleanupRemovesOldApps() throws Exception {
+    public void testCleanupRemovesOldApps() {
         // Put the current time such that the task runs.
         long currentTime = INITIAL_TIME + WebappRegistry.FULL_CLEANUP_DURATION;
 

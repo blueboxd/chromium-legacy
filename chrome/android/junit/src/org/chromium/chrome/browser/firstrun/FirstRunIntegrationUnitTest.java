@@ -66,7 +66,7 @@ public final class FirstRunIntegrationUnitTest {
     private ShadowApplication mShadowApplication;
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         mContext = RuntimeEnvironment.application;
         mShadowApplication = ShadowApplication.getInstance();
 

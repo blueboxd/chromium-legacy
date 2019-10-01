@@ -488,7 +488,7 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
     ParseBeginOrEnd(value.GetString(), kBegin);
     if (isConnected()) {
       ConnectConditions();
-      InstanceListChanged(kBegin);
+      InstanceListChanged();
       if (time_container_)
         time_container_->NotifyIntervalsChanged();
     }
@@ -501,7 +501,7 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
     ParseBeginOrEnd(value.GetString(), kEnd);
     if (isConnected()) {
       ConnectConditions();
-      InstanceListChanged(kEnd);
+      InstanceListChanged();
       if (time_container_)
         time_container_->NotifyIntervalsChanged();
     }
@@ -706,7 +706,7 @@ void SVGSMILElement::AddInstanceTime(BeginOrEnd begin_or_end,
       begin_or_end == kBegin ? begin_times_ : end_times_;
   InsertSortedAndUnique(list, SMILTimeWithOrigin(time, origin));
 
-  InstanceListChanged(begin_or_end);
+  InstanceListChanged();
   if (time_container_)
     time_container_->NotifyIntervalsChanged();
 }
@@ -840,7 +840,7 @@ SMILTime SVGSMILElement::NextInterestingTime(SMILTime presentation_time) const {
                   FindInstanceTime(kBegin, presentation_time, false));
 }
 
-void SVGSMILElement::InstanceListChanged(BeginOrEnd begin_or_end) {
+void SVGSMILElement::InstanceListChanged() {
   if (is_waiting_for_first_interval_) {
     ResolveFirstInterval();
     return;
@@ -848,41 +848,17 @@ void SVGSMILElement::InstanceListChanged(BeginOrEnd begin_or_end) {
   SMILTime current_presentation_time =
       time_container_ ? time_container_->CurrentDocumentTime() : SMILTime();
   DCHECK(!current_presentation_time.IsUnresolved());
-  if (begin_or_end == kEnd) {
-    // If we have no current interval, or the current interval ends before the
-    // indicated time, then a new 'end' instance time will have no effect.
-    if (!interval_.IsResolved() ||
-        interval_.EndsBefore(current_presentation_time))
-      return;
-    SMILTime new_end = FindInstanceTime(kEnd, interval_.begin, false);
-    if (interval_.EndsBefore(new_end))
-      return;
-    new_end = ResolveActiveEnd(interval_.begin, new_end);
-    if (new_end != interval_.end) {
-      interval_.end = new_end;
-      NotifyDependentsOnNewInterval(interval_);
-    }
-    return;
+  DiscardOrRevalidateCurrentInterval(current_presentation_time);
+  SMILInterval old_interval = interval_;
+  if (!interval_.IsResolved()) {
+    // We have no current interval, try to resolve one.
+    interval_ =
+        ResolveInterval(SMILTime::Earliest(), current_presentation_time);
+  } else {
+    // We have a current interval, check if it needs to be updated.
+    CheckAndUpdateInterval(current_presentation_time);
   }
-  // Never resolve more than one interval when restart is 'never'.
-  if (GetRestart() == kRestartNever)
-    return;
-  SMILTime new_begin =
-      FindInstanceTime(kBegin, current_presentation_time, true);
-  if (!new_begin.IsFinite())
-    return;
-  // If the current interval is active and contains the new begin time, then we
-  // will pick up a potentially new interval during the regular interval
-  // update.
-  if (interval_.BeginsBefore(new_begin) &&
-      interval_.EndsAfter(current_presentation_time))
-    return;
-  // Begin time changed, re-resolve the interval.
-  SMILTime old_begin = interval_.begin;
-  interval_ =
-      ResolveInterval(current_presentation_time, current_presentation_time);
-  DCHECK(interval_.IsResolved());
-  if (interval_.begin != old_begin) {
+  if (interval_ != old_interval) {
     if (GetActiveState() == kActive &&
         interval_.BeginsAfter(current_presentation_time)) {
       active_state_ = DetermineActiveState(current_presentation_time);
@@ -890,6 +866,30 @@ void SVGSMILElement::InstanceListChanged(BeginOrEnd begin_or_end) {
         EndedActiveInterval();
     }
     NotifyDependentsOnNewInterval(interval_);
+    interval_has_changed_ = false;
+  }
+}
+
+void SVGSMILElement::DiscardOrRevalidateCurrentInterval(
+    SMILTime presentation_time) {
+  if (!interval_.IsResolved())
+    return;
+  // If the current interval has not yet started, discard it and re-resolve.
+  if (interval_.BeginsAfter(presentation_time)) {
+    interval_ = {SMILTime::Unresolved(), SMILTime::Unresolved()};
+    return;
+  }
+
+  // If we have a current interval but it has not yet ended, re-resolve the
+  // end time.
+  if (interval_.EndsAfter(presentation_time)) {
+    SMILTime new_end = FindInstanceTime(kEnd, interval_.begin, false);
+    DCHECK(!new_end.IsUnresolved());
+    new_end = ResolveActiveEnd(interval_.begin, new_end);
+    if (new_end != interval_.end) {
+      interval_.end = new_end;
+      NotifyDependentsOnNewInterval(interval_);
+    }
   }
 }
 

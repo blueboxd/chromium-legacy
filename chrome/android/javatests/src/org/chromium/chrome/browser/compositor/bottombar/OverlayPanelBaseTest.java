@@ -96,7 +96,7 @@ public class OverlayPanelBaseTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         OverlayPanelManager panelManager = new OverlayPanelManager();
         mExpandPanel =
                 new MockOverlayPanel(InstrumentationRegistry.getTargetContext(), panelManager);

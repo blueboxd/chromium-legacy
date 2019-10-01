@@ -91,7 +91,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest
     private int[] mDatesToSet;
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
 
         // Add the profiles.
@@ -119,8 +119,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testShippingAddressSuggestionOrdering()
-            throws InterruptedException, TimeoutException {
+    public void testShippingAddressSuggestionOrdering() throws TimeoutException {
         // Create two complete and two incomplete profiles. Values are set so that complete profiles
         // are ordered by frecency, incomplete profiles are sorted by their completeness score.
         mProfilesToAdd = new AutofillProfile[] {
@@ -158,8 +157,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testEquallyIncompleteSuggestionsOrdering()
-            throws InterruptedException, TimeoutException {
+    public void testEquallyIncompleteSuggestionsOrdering() throws TimeoutException {
         // Create two profiles both with missing phone numbers.
         mProfilesToAdd = new AutofillProfile[] {AUTOFILL_PROFILES[0], AUTOFILL_PROFILES[7]};
         mCountsToSet = new int[] {20, 30};
@@ -183,7 +181,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testShippingAddressSuggestionLimit() throws InterruptedException, TimeoutException {
+    public void testShippingAddressSuggestionLimit() throws TimeoutException {
         // Create five profiles that can be suggested to the user.
         mProfilesToAdd = new AutofillProfile[] {
                 AUTOFILL_PROFILES[0], AUTOFILL_PROFILES[2], AUTOFILL_PROFILES[3],
@@ -224,7 +222,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest
     @MediumTest
     @Feature({"Payments"})
     public void testShippingAddressSuggestion_OnlyIncludeProfilesWithStreetAddress()
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         // Create two complete profiles and two incomplete profiles, one of which has no street
         // address.
         mProfilesToAdd = new AutofillProfile[] {
@@ -255,8 +253,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testShippingAddresNotAcceptedByMerchant()
-            throws InterruptedException, TimeoutException {
+    public void testShippingAddresNotAcceptedByMerchant() throws TimeoutException {
         // Add a profile that is not accepted by the website.
         mProfilesToAdd = new AutofillProfile[] {AUTOFILL_PROFILES[3]};
         mCountsToSet = new int[] {5};
@@ -284,8 +281,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testShippingAddressEditRequiredMessage()
-            throws InterruptedException, TimeoutException {
+    public void testShippingAddressEditRequiredMessage() throws TimeoutException {
         // Create four incomplete profiles with different missing information. Profiles will be
         // sorted based on their missing fields.
         mProfilesToAdd = new AutofillProfile[] {AUTOFILL_PROFILES[0], AUTOFILL_PROFILES[4],
@@ -323,8 +319,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testMissingShippingAddressFieldRecorded()
-            throws InterruptedException, TimeoutException {
+    public void testMissingShippingAddressFieldRecorded() throws TimeoutException {
         // Add a profile with invalid shipping address, and another one with both missing name and
         // address.
         mProfilesToAdd = new AutofillProfile[] {AUTOFILL_PROFILES[4], AUTOFILL_PROFILES[6]};
@@ -350,7 +345,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testMissingNameFieldRecorded() throws InterruptedException, TimeoutException {
+    public void testMissingNameFieldRecorded() throws TimeoutException {
         // Add a profile with invalid shipping address, and another one with missing name.
         mProfilesToAdd = new AutofillProfile[] {AUTOFILL_PROFILES[4], AUTOFILL_PROFILES[5]};
         mCountsToSet = new int[] {5, 5};
@@ -375,7 +370,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest
     @MediumTest
     @Feature({"Payments"})
     @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
-    public void testAllMissingFieldsRecorded() throws InterruptedException, TimeoutException {
+    public void testAllMissingFieldsRecorded() throws TimeoutException {
         // Don't add any profiles
         mProfilesToAdd = new AutofillProfile[] {};
         mCountsToSet = new int[] {};

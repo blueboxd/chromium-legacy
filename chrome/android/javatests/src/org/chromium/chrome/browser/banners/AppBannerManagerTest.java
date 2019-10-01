@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
 import android.app.Instrumentation.ActivityResult;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -16,9 +15,10 @@ import android.graphics.Bitmap;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
-import android.support.v7.app.AlertDialog;
+import android.support.test.uiautomator.UiDevice;
+import android.support.test.uiautomator.UiObject;
+import android.support.test.uiautomator.UiSelector;
 import android.view.View;
-import android.widget.Button;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
 import org.chromium.chrome.browser.infobar.InstallableAmbientBadgeInfoBar;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenView;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -63,9 +62,14 @@ import org.chromium.chrome.test.util.browser.webapps.WebappTestPage;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modaldialog.ModalDialogProperties.ButtonType;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -172,6 +176,7 @@ public class AppBannerManagerTest {
     @Mock
     private PackageManager mPackageManager;
     private EmbeddedTestServer mTestServer;
+    private UiDevice mUiDevice;
 
     @Before
     public void setUp() throws Exception {
@@ -192,10 +197,11 @@ public class AppBannerManagerTest {
 
         AppBannerManager.setTotalEngagementForTesting(10);
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+        mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
@@ -252,32 +258,22 @@ public class AppBannerManagerTest {
         }
     }
 
-    private void waitUntilNoDialogsShowing(final Tab tab) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                AddToHomescreenView dialog =
-                        getAppBannerManager(tab).getAddToHomescreenDialogForTesting();
-                return dialog == null || dialog.getAlertDialogForTesting() == null;
-            }
-        });
+    private String getExpectedDialogTitle(Tab tab) {
+        return tab.getActivity().getString(AppBannerManager.getHomescreenLanguageOption());
     }
 
-    private void tapAndWaitForModalBanner(final Tab tab) throws Exception {
+    private void waitUntilNoDialogsShowing(final Tab tab) {
+        UiObject dialogUiObject =
+                mUiDevice.findObject(new UiSelector().text(getExpectedDialogTitle(tab)));
+        dialogUiObject.waitUntilGone(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+    }
+
+    private void tapAndWaitForModalBanner(final Tab tab) {
         TouchCommon.singleClickView(tab.getView());
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                AddToHomescreenView dialog =
-                        getAppBannerManager(tab).getAddToHomescreenDialogForTesting();
-                if (dialog != null) {
-                    AlertDialog alertDialog = dialog.getAlertDialogForTesting();
-                    return alertDialog != null && alertDialog.isShowing();
-                }
-                return false;
-            }
-        });
+        UiObject dialogUiObject =
+                mUiDevice.findObject(new UiSelector().text(getExpectedDialogTitle(tab)));
+        Assert.assertTrue(dialogUiObject.waitForExists(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL));
     }
 
     private void triggerModalWebAppBanner(ChromeActivityTestRule<? extends ChromeActivity> rule,
@@ -293,7 +289,7 @@ public class AppBannerManagerTest {
         if (!installApp) return;
 
         // Click the button to trigger the adding of the shortcut.
-        clickButton(tab, DialogInterface.BUTTON_POSITIVE);
+        clickButton(rule.getActivity(), ButtonType.POSITIVE);
     }
 
     private void triggerModalNativeAppBanner(ChromeActivityTestRule<? extends ChromeActivity> rule,
@@ -305,8 +301,8 @@ public class AppBannerManagerTest {
         waitUntilAmbientBadgeInfoBarAppears(rule);
         Assert.assertEquals(mDetailsDelegate.mReferrer, expectedReferrer);
 
-        final Tab tab = rule.getActivity().getActivityTab();
-        tapAndWaitForModalBanner(tab);
+        final ChromeActivity activity = rule.getActivity();
+        tapAndWaitForModalBanner(activity.getActivityTab());
         if (!installApp) return;
 
         // Click the button to trigger the installation.
@@ -317,14 +313,12 @@ public class AppBannerManagerTest {
         instrumentation.addMonitor(activityMonitor);
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            Button button = getAppBannerManager(tab)
-                                    .getAddToHomescreenDialogForTesting()
-                                    .getAlertDialogForTesting()
-                                    .getButton(DialogInterface.BUTTON_POSITIVE);
-            Assert.assertEquals(NATIVE_APP_INSTALL_TEXT, button.getText());
+            String buttonText = activity.getModalDialogManager().getCurrentDialogForTest().get(
+                    ModalDialogProperties.POSITIVE_BUTTON_TEXT);
+            Assert.assertEquals(NATIVE_APP_INSTALL_TEXT, buttonText);
         });
 
-        clickButton(tab, DialogInterface.BUTTON_POSITIVE);
+        clickButton(activity, ButtonType.POSITIVE);
 
         // Wait until the installation triggers.
         instrumentation.waitForMonitorWithTimeout(
@@ -346,23 +340,21 @@ public class AppBannerManagerTest {
         tapAndWaitForModalBanner(tab);
 
         // Explicitly dismiss the banner. We should be able to show the banner after dismissing.
-        clickButton(tab, DialogInterface.BUTTON_NEGATIVE);
+        clickButton(rule.getActivity(), ButtonType.NEGATIVE);
         waitUntilNoDialogsShowing(tab);
         tapAndWaitForModalBanner(tab);
 
-        clickButton(tab, DialogInterface.BUTTON_NEGATIVE);
+        clickButton(rule.getActivity(), ButtonType.NEGATIVE);
         waitUntilNoDialogsShowing(tab);
         tapAndWaitForModalBanner(tab);
     }
 
-    private void clickButton(final Tab tab, final int button) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            getAppBannerManager(tab)
-                    .getAddToHomescreenDialogForTesting()
-                    .getAlertDialogForTesting()
-                    .getButton(button)
-                    .performClick();
-        });
+    private void clickButton(final ChromeActivity activity, @ButtonType final int buttonType) {
+        ModalDialogManager manager = activity.getModalDialogManager();
+        PropertyModel model = manager.getCurrentDialogForTest();
+        ModalDialogProperties.Controller dialogController =
+                model.get(ModalDialogProperties.CONTROLLER);
+        TestThreadUtils.runOnUiThreadBlocking(() -> dialogController.onClick(model, buttonType));
     }
 
     @Test
@@ -514,11 +506,12 @@ public class AppBannerManagerTest {
                 false);
 
         // Explicitly dismiss the banner.
-        final Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
-        clickButton(tab, DialogInterface.BUTTON_NEGATIVE);
+        final ChromeActivity activity = mTabbedActivityTestRule.getActivity();
+        clickButton(activity, ButtonType.NEGATIVE);
 
         // Ensure userChoice is resolved.
-        new TabTitleObserver(tab, "Got userChoice: dismissed").waitForTitleUpdate(3);
+        new TabTitleObserver(activity.getActivityTab(), "Got userChoice: dismissed")
+                .waitForTitleUpdate(3);
     }
 
     @Test
@@ -531,11 +524,12 @@ public class AppBannerManagerTest {
                 NATIVE_APP_BLANK_REFERRER, false);
 
         // Explicitly dismiss the banner.
-        final Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
-        clickButton(tab, DialogInterface.BUTTON_NEGATIVE);
+        final ChromeActivity activity = mTabbedActivityTestRule.getActivity();
+        clickButton(activity, ButtonType.NEGATIVE);
 
         // Ensure userChoice is resolved.
-        new TabTitleObserver(tab, "Got userChoice: dismissed").waitForTitleUpdate(3);
+        new TabTitleObserver(activity.getActivityTab(), "Got userChoice: dismissed")
+                .waitForTitleUpdate(3);
     }
 
     @Test

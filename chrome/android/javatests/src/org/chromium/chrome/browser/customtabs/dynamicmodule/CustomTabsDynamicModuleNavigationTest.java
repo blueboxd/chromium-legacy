@@ -84,7 +84,7 @@ public class CustomTabsDynamicModuleNavigationTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
 
         // Module managed hosts only work with HTTPS.
@@ -112,7 +112,7 @@ public class CustomTabsDynamicModuleNavigationTest {
     @Test
     @SmallTest
     @EnableFeatures(ChromeFeatureList.CCT_MODULE)
-    public void testModuleNavigationNotification() throws TimeoutException, InterruptedException {
+    public void testModuleNavigationNotification() throws TimeoutException {
         Intent intent = new IntentBuilder(mTestPage).build();
 
         mActivityRule.startCustomTabActivityWithIntent(intent);

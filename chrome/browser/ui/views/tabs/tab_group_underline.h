@@ -15,28 +15,34 @@ class TabStrip;
 // strip flow and positioned across all tabs in the group.
 class TabGroupUnderline : public views::View {
  public:
-  static constexpr int kStrokeThickness = 2;
+  static constexpr int kStrokeThickness = 3;
 
   TabGroupUnderline(TabStrip* tab_strip, TabGroupId group);
 
   TabGroupId group() const { return group_; }
 
-  // Updates the bounds and color of the underline for painting.
-  void UpdateVisuals();
+  // Updates the bounds of the underline for painting.
+  void UpdateBounds();
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
-  // The underline color is the group color.
-  SkColor GetColor() const;
-
   // The underline starts at the left edge of the header chip.
   int GetStart() const;
 
   // The underline ends at the right edge of the last grouped tab's close
-  // button.
+  // button. If the last grouped tab is active, the underline ends at the
+  // right edge of the active tab border stroke.
   int GetEnd() const;
+
+  // The underline is a straight line with half-rounded endcaps. Since this
+  // geometry is nontrivial to represent using primitives, it's instead
+  // represented using a fill path.
+  SkPath GetPath() const;
+
+  // The underline color is the group color.
+  SkColor GetColor() const;
 
   TabStrip* const tab_strip_;
   const TabGroupId group_;

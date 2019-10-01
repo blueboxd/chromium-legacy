@@ -12,7 +12,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "components/send_tab_to_self/features.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
@@ -916,9 +915,6 @@ TEST_F(ActivityServiceControllerTest, SendTabToSelfActivity) {
 
 TEST_F(ActivityServiceControllerTest, PresentWhenOffTheRecord) {
   base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitWithFeatures(
-      /*enabled_features=*/{send_tab_to_self::kSendTabToSelfShowSendingUI},
-      /*disabled_features=*/{});
 
   UIViewController* parentController =
       static_cast<UIViewController*>(parentController_);

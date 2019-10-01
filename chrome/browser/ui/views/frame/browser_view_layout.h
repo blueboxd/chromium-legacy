@@ -55,7 +55,6 @@ class BrowserViewLayout : public views::LayoutManager {
                     views::View* tab_strip_region_view,
                     TabStrip* tab_strip,
                     views::View* webui_tab_strip,
-                    views::View* webui_tab_strip_caption_buttons,
                     views::View* toolbar,
                     InfoBarContainerView* infobar_container,
                     views::View* contents_container,
@@ -148,7 +147,6 @@ class BrowserViewLayout : public views::LayoutManager {
   views::View* const top_container_;
   views::View* const tab_strip_region_view_;
   views::View* const webui_tab_strip_;
-  views::View* const webui_tab_strip_caption_buttons_;
   views::View* const toolbar_;
   InfoBarContainerView* const infobar_container_;
   views::View* const contents_container_;

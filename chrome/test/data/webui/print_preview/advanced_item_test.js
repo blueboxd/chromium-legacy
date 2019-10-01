@@ -7,8 +7,10 @@ cr.define('advanced_item_test', function() {
   const TestNames = {
     DisplaySelect: 'display select',
     DisplayInput: 'display input',
+    DisplayCheckbox: 'display checkbox',
     UpdateSelect: 'update select',
     UpdateInput: 'update input',
+    UpdateCheckbox: 'update checkbox',
     QueryName: 'query name',
     QueryOption: 'query option',
   };
@@ -50,9 +52,9 @@ cr.define('advanced_item_test', function() {
       assertEquals('Recycled', select.options[1].textContent.trim());
       assertEquals('Special', select.options[2].textContent.trim());
 
-      // The input should not be shown for a select capability.
-      const input = item.$$('cr-input');
-      assertTrue(input.parentElement.hidden);
+      // Don't show input or checkbox.
+      assertTrue(item.$$('cr-input').parentElement.hidden);
+      assertTrue(item.$$('cr-checkbox').parentElement.hidden);
     });
 
     test(assert(TestNames.DisplayInput), function() {
@@ -70,8 +72,29 @@ cr.define('advanced_item_test', function() {
       assertFalse(input.parentElement.hidden);
       assertEquals('', input.inputElement.value);
 
-      // No select.
+      // Don't show select or checkbox.
       assertEquals(null, item.$$('select'));
+      assertTrue(item.$$('cr-checkbox').parentElement.hidden);
+    });
+
+    test(assert(TestNames.DisplayCheckbox), function() {
+      // Create capability
+      item.capability = print_preview_test_utils
+                            .getCddTemplateWithAdvancedSettings(4, 'FooDevice')
+                            .capabilities.printer.vendor_capability[3];
+      Polymer.dom.flush();
+
+      const label = item.$$('.label');
+      assertEquals('Staple', label.textContent);
+
+      // The checkbox should be shown.
+      const checkbox = item.$$('cr-checkbox');
+      assertFalse(checkbox.parentElement.hidden);
+      assertFalse(checkbox.checked);
+
+      // Don't show select or input.
+      assertEquals(null, item.$$('select'));
+      assertTrue(item.$$('cr-input').parentElement.hidden);
     });
 
     // Test that a select capability updates correctly when the setting is
@@ -102,6 +125,24 @@ cr.define('advanced_item_test', function() {
       // Update the setting.
       item.set('settings.vendorItems.value', {watermark: 'ABCD'});
       assertEquals('ABCD', input.inputElement.value);
+    });
+
+    // Test that an checkbox capability updates correctly when the setting is
+    // updated (e.g. when sticky settings are set).
+    test(assert(TestNames.UpdateCheckbox), function() {
+      // Create capability
+      item.capability = print_preview_test_utils
+                            .getCddTemplateWithAdvancedSettings(4, 'FooDevice')
+                            .capabilities.printer.vendor_capability[3];
+      Polymer.dom.flush();
+
+      // Check that checkbox is unset.
+      const checkbox = item.$$('cr-checkbox');
+      assertFalse(checkbox.checked);
+
+      // Update the setting.
+      item.set('settings.vendorItems.value', {'finishings/4': 'true'});
+      assertTrue(checkbox.checked);
     });
 
     // Test that the setting is displayed correctly when the search query

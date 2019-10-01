@@ -137,14 +137,14 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
     /**
      * Starts up the WebappActivity and sets up the test observer.
      */
-    public final void startWebappActivity() throws Exception {
+    public final void startWebappActivity() {
         startWebappActivity(createIntent());
     }
 
     /**
      * Starts up the WebappActivity with a specific Intent and sets up the test observer.
      */
-    public final void startWebappActivity(Intent intent) throws Exception {
+    public final void startWebappActivity(Intent intent) {
         launchActivity(intent);
         waitUntilIdle();
     }
@@ -200,7 +200,7 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
      * Starts up the WebappActivity and sets up the test observer.
      * Wait till Splashscreen full loaded.
      */
-    public final ViewGroup startWebappActivityAndWaitForSplashScreen() throws Exception {
+    public final ViewGroup startWebappActivityAndWaitForSplashScreen() {
         return startWebappActivityAndWaitForSplashScreen(createIntent());
     }
 
@@ -209,8 +209,7 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
      * Wait till Splashscreen full loaded.
      * Intent url is modified to one that takes more time to load.
      */
-    public final ViewGroup startWebappActivityAndWaitForSplashScreen(Intent intent)
-            throws Exception {
+    public final ViewGroup startWebappActivityAndWaitForSplashScreen(Intent intent) {
         // Reset the url to one that takes more time to load.
         // This is to make sure splash screen won't disappear during test.
         intent.putExtra(ShortcutHelper.EXTRA_URL, getTestServer().getURL("/slow?2"));

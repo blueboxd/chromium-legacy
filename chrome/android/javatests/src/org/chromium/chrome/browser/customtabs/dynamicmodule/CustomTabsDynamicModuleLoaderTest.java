@@ -50,7 +50,7 @@ public class CustomTabsDynamicModuleLoaderTest {
     private ModuleLoader mModuleLoaderFromDex2;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         mDexInputStreamProvider = new FakeDexInputStreamProvider();
         mModuleLoaderFromApk = new ModuleLoader(FAKE_MODULE_COMPONENT_NAME,
@@ -73,8 +73,7 @@ public class CustomTabsDynamicModuleLoaderTest {
      */
     @Test
     @SmallTest
-    public void testModuleLoadingFromApk_loadsModuleEntryPoint()
-            throws TimeoutException, InterruptedException {
+    public void testModuleLoadingFromApk_loadsModuleEntryPoint() throws TimeoutException {
         CallbackHelper onLoaded = new CallbackHelper();
 
         runOnUiThreadBlocking(() -> {
@@ -94,8 +93,7 @@ public class CustomTabsDynamicModuleLoaderTest {
      */
     @Test
     @SmallTest
-    public void testModuleLoadingFromApk_doesNotCopyDexToDisk()
-            throws TimeoutException, InterruptedException {
+    public void testModuleLoadingFromApk_doesNotCopyDexToDisk() throws TimeoutException {
         CallbackHelper onLoaded = new CallbackHelper();
 
         runOnUiThreadBlocking(() -> {
@@ -119,8 +117,7 @@ public class CustomTabsDynamicModuleLoaderTest {
      */
     @Test
     @SmallTest
-    public void testModuleLoadingFromDex_loadsModuleEntryPoint()
-            throws TimeoutException, InterruptedException {
+    public void testModuleLoadingFromDex_loadsModuleEntryPoint() throws TimeoutException {
         CallbackHelper onLoaded = new CallbackHelper();
 
         runOnUiThreadBlocking(() -> {
@@ -137,8 +134,7 @@ public class CustomTabsDynamicModuleLoaderTest {
 
     @Test
     @SmallTest
-    public void testModuleLoadingFromDex_hasNoLocalDex_copiesDexToDisk()
-            throws TimeoutException, InterruptedException {
+    public void testModuleLoadingFromDex_hasNoLocalDex_copiesDexToDisk() throws TimeoutException {
         CallbackHelper onLoaded = new CallbackHelper();
 
         runOnUiThreadBlocking(() -> {
@@ -165,7 +161,7 @@ public class CustomTabsDynamicModuleLoaderTest {
     @Test
     @SmallTest
     public void testModuleLoadingFromDex_localDexHasSameUpdateTime_doesNotCopyDexToDisk()
-            throws TimeoutException, InterruptedException {
+            throws TimeoutException {
         CallbackHelper onLoaded1 = new CallbackHelper();
 
         runOnUiThreadBlocking(() -> {
@@ -201,7 +197,7 @@ public class CustomTabsDynamicModuleLoaderTest {
     @Test
     @SmallTest
     public void testModuleLoadingFromDex_localDexHasDifferentUpdateTime_copiesDexToDisk()
-            throws TimeoutException, InterruptedException {
+            throws TimeoutException {
         CallbackHelper onLoaded = new CallbackHelper();
 
         runOnUiThreadBlocking(() -> {
@@ -228,7 +224,7 @@ public class CustomTabsDynamicModuleLoaderTest {
     @Test
     @SmallTest
     public void testModuleLoadingFromDex_reloadingWithoutDex_cleansUpLocalDex()
-            throws TimeoutException, InterruptedException {
+            throws TimeoutException {
         CallbackHelper onLoadedWithDex = new CallbackHelper();
 
         runOnUiThreadBlocking(() -> {
@@ -262,7 +258,7 @@ public class CustomTabsDynamicModuleLoaderTest {
      */
     @Test
     @SmallTest
-    public void testModuleUseCounter() throws TimeoutException, InterruptedException {
+    public void testModuleUseCounter() throws TimeoutException {
         final int callbacksNumber = 3;
         CallbackHelper onLoaded = new CallbackHelper();
         List<Callback<ModuleEntryPoint>> unusedCallbacks = new ArrayList<>();

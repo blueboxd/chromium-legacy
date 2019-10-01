@@ -29,8 +29,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.ActivityWindowAndroid;
 
-import java.util.concurrent.TimeoutException;
-
 /**
  * Tests for the SmsReceiverInfoBar class.
  */
@@ -42,8 +40,8 @@ public class SmsReceiverInfoBarTest {
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     private ChromeActivity mActivity;
-    private final static String INFOBAR_HISTOGRAM = "Blink.Sms.Receive.Infobar";
-    private final static String TIME_CANCEL_ON_KEYBOARD_DISMISSAL_HISTOGRAM =
+    private static final String INFOBAR_HISTOGRAM = "Blink.Sms.Receive.Infobar";
+    private static final String TIME_CANCEL_ON_KEYBOARD_DISMISSAL_HISTOGRAM =
             "Blink.Sms.Receive.TimeCancelOnKeyboardDismissal";
 
     @Before
@@ -75,7 +73,7 @@ public class SmsReceiverInfoBarTest {
     @Test
     @MediumTest
     @Feature({"InfoBars", "UiCatalogue"})
-    public void testSmsInfoBarOk() throws TimeoutException, InterruptedException {
+    public void testSmsInfoBarOk() {
         SmsReceiverInfoBar infoBar = createInfoBar();
 
         Assert.assertFalse(InfoBarUtil.hasSecondaryButton(infoBar));
@@ -91,7 +89,7 @@ public class SmsReceiverInfoBarTest {
     @Test
     @MediumTest
     @Feature({"InfoBars", "UiCatalogue"})
-    public void testSmsInfoBarClose() throws TimeoutException, InterruptedException {
+    public void testSmsInfoBarClose() {
         SmsReceiverInfoBar infoBar = createInfoBar();
 
         Assert.assertFalse(InfoBarUtil.hasSecondaryButton(infoBar));

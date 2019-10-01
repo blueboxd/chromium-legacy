@@ -99,7 +99,7 @@ public class WebappModeTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             WebappRegistry.refreshSharedPrefsForTesting();
 
@@ -191,7 +191,7 @@ public class WebappModeTest {
     @Test
     @MediumTest
     @Feature({"Webapps"})
-    public void testBringTabToFront() throws Exception {
+    public void testBringTabToFront() {
         // Start the WebappActivity.
         final WebappActivity firstActivity =
                 startWebappActivity(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON);
@@ -262,7 +262,7 @@ public class WebappModeTest {
     @Test
     @MediumTest
     @Feature({"Webapps"})
-    public void testWebappInfoReuse() throws Exception {
+    public void testWebappInfoReuse() {
         Intent intent = createIntent(
                 WebappActivityTestRule.WEBAPP_ID, WEBAPP_2_URL, WEBAPP_2_TITLE, WEBAPP_ICON, true);
         Intent newIntent = createIntent(
@@ -293,7 +293,7 @@ public class WebappModeTest {
     @Test
     //    @MediumTest
     //    @Feature({"Webapps"})
-    public void testSetsHasBeenLaunchedOnFirstLaunch() throws Exception {
+    public void testSetsHasBeenLaunchedOnFirstLaunch() {
         WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPP_1_ID);
         Assert.assertFalse(storage.hasBeenLaunched());
 

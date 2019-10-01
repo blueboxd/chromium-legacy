@@ -67,7 +67,7 @@ public class HomeSheetCardsUiCaptureTest {
     @Test
     @MediumTest
     @Feature({"UiCatalogue"})
-    public void testContextMenu() throws Exception {
+    public void testContextMenu() {
         mActivityRule.setSheetState(BottomSheet.SheetState.FULL, false);
         waitForWindowUpdates();
 
@@ -79,7 +79,7 @@ public class HomeSheetCardsUiCaptureTest {
     @Test
     @MediumTest
     @Feature({"UiCatalogue"})
-    public void testScrolling() throws Exception {
+    public void testScrolling() {
         mActivityRule.setSheetState(BottomSheet.SheetState.FULL, false);
         waitForWindowUpdates();
 
@@ -106,7 +106,7 @@ public class HomeSheetCardsUiCaptureTest {
     @Test
     @MediumTest
     @Feature({"UiCatalogue"})
-    public void testContentSuggestionPlaceholder() throws Exception {
+    public void testContentSuggestionPlaceholder() {
         FakeSuggestionsSource source = (FakeSuggestionsSource) mDepsFactory.suggestionsSource;
         source.setSuggestionsForCategory(KnownCategories.ARTICLES, Collections.emptyList());
         source.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE_LOADING);

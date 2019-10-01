@@ -217,7 +217,7 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
       InstallationReporter::Get(profile_);
 
   const Extension* extension = registry_->GetExtensionById(
-      info.extension_id, ExtensionRegistry::COMPATIBILITY);
+      info.extension_id, ExtensionRegistry::EVERYTHING);
   if (extension) {
     // Already installed. Skip this install if the current location has higher
     // priority than |info.download_location|, and we aren't doing a
@@ -761,8 +761,8 @@ void ExtensionService::DisableExtensionWithSource(
            Manifest::IsComponentLocation(source_extension->location()));
   }
 
-  const Extension* extension = registry_->GetExtensionById(
-      extension_id, ExtensionRegistry::COMPATIBILITY);
+  const Extension* extension =
+      registry_->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
   CHECK(system_->management_policy()->ExtensionMayModifySettings(
       source_extension, extension, nullptr));
   extension_registrar_.DisableExtension(extension_id, disable_reasons);
@@ -1147,7 +1147,7 @@ void ExtensionService::UnloadExtension(const std::string& extension_id,
 void ExtensionService::RemoveComponentExtension(
     const std::string& extension_id) {
   scoped_refptr<const Extension> extension(
-      registry_->GetExtensionById(extension_id, ExtensionRegistry::ENABLED));
+      registry_->enabled_extensions().GetByID(extension_id));
   UnloadExtension(extension_id, UnloadedExtensionReason::UNINSTALL);
   if (extension.get()) {
     ExtensionRegistry::Get(profile_)->TriggerOnUninstalled(
@@ -1693,7 +1693,7 @@ bool ExtensionService::OnExternalExtensionFileFound(
   // version. This is important because these extensions are going to get
   // installed on every startup.
   const Extension* existing = registry_->GetExtensionById(
-      info.extension_id, ExtensionRegistry::COMPATIBILITY);
+      info.extension_id, ExtensionRegistry::EVERYTHING);
 
   if (existing) {
     // The default apps will have the location set as INTERNAL. Since older
@@ -1809,8 +1809,8 @@ void ExtensionService::Observe(int type,
         // idle to update.  Check all imports of these extensions, too.
         std::set<std::string> import_ids;
         for (auto it = extension_ids.begin(); it != extension_ids.end(); ++it) {
-          const Extension* extension = registry_->GetExtensionById(
-              *it, ExtensionRegistry::COMPATIBILITY);
+          const Extension* extension =
+              registry_->GetExtensionById(*it, ExtensionRegistry::EVERYTHING);
           if (!extension)
             continue;
           const std::vector<SharedModuleInfo::ImportInfo>& imports =

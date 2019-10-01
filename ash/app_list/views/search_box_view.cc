@@ -798,17 +798,13 @@ void SearchBoxView::SetupAssistantButton() {
     return;
   }
 
-  const bool embedded_assistant =
-      app_list_features::IsEmbeddedAssistantUIEnabled();
   views::ImageButton* assistant = assistant_button();
   assistant->SetImage(
       views::ImageButton::STATE_NORMAL,
-      gfx::CreateVectorIcon(
-          embedded_assistant ? ash::kAssistantMicIcon : ash::kAssistantIcon,
-          search_box::kIconSize, gfx::kGoogleGrey700));
-  base::string16 assistant_button_label(l10n_util::GetStringUTF16(
-      embedded_assistant ? IDS_APP_LIST_START_ASSISTANT_VOICE_QUERY
-                         : IDS_APP_LIST_START_ASSISTANT));
+      gfx::CreateVectorIcon(ash::kAssistantIcon, search_box::kIconSize,
+                            gfx::kGoogleGrey700));
+  base::string16 assistant_button_label(
+      l10n_util::GetStringUTF16(IDS_APP_LIST_START_ASSISTANT));
   assistant->SetAccessibleName(assistant_button_label);
   assistant->SetTooltipText(assistant_button_label);
 }

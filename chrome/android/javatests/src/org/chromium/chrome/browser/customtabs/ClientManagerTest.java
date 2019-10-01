@@ -48,7 +48,7 @@ public class ClientManagerTest {
     private int mUid = Process.myUid();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         Context context = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()
                                   .getApplicationContext();

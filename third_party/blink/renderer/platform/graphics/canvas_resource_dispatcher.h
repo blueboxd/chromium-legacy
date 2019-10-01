@@ -60,6 +60,10 @@ class PLATFORM_EXPORT CanvasResourceDispatcher
                          const SkIRect& damage_rect,
                          bool needs_vertical_flip,
                          bool is_opaque);
+  void ReplaceBeginFrameAck(const viz::BeginFrameArgs& args) {
+    current_begin_frame_ack_ = viz::BeginFrameAck(args, true);
+  }
+  bool HasTooManyPendingFrames() const;
 
   void Reshape(const IntSize&);
 

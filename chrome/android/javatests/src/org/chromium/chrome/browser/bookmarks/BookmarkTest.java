@@ -112,7 +112,7 @@ public class BookmarkTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mActivityTestRule.startMainActivityFromLauncher();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mBookmarkModel = new BookmarkModel(
@@ -123,7 +123,7 @@ public class BookmarkTest {
         mTestPageFoo = mTestServer.getURL(TEST_PAGE_URL_FOO);
     }
 
-    protected void readPartnerBookmarks() throws InterruptedException {
+    protected void readPartnerBookmarks() {
         // Do not read partner bookmarks in setUp(), so that the lazy reading is covered.
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> PartnerBookmarksShim.kickOffReading(mActivityTestRule.getActivity()));
@@ -131,7 +131,7 @@ public class BookmarkTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
@@ -164,7 +164,7 @@ public class BookmarkTest {
     protected boolean isItemPresentInBookmarkList(final String expectedTitle) {
         return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
-            public Boolean call() throws Exception {
+            public Boolean call() {
                 for (int i = 0; i < mItemsContainer.getAdapter().getItemCount(); i++) {
                     BookmarkId item = getIdByPosition(i);
 
@@ -183,7 +183,7 @@ public class BookmarkTest {
     @Test
     @SmallTest
     @DisableIf.Build(sdk_is_less_than = 21, message = "crbug.com/807807")
-    public void testAddBookmark() throws InterruptedException {
+    public void testAddBookmark() {
         mActivityTestRule.loadUrl(mTestPage);
         // Check partner bookmarks are lazily loaded.
         Assert.assertFalse(mBookmarkModel.isBookmarkModelLoaded());
@@ -221,7 +221,7 @@ public class BookmarkTest {
 
     @Test
     @SmallTest
-    public void testUrlComposition() throws InterruptedException {
+    public void testUrlComposition() {
         readPartnerBookmarks();
         BookmarkId mobileId = mBookmarkModel.getMobileFolderId();
         BookmarkId bookmarkBarId = mBookmarkModel.getDesktopFolderId();
@@ -491,7 +491,7 @@ public class BookmarkTest {
     protected static View getViewWithText(final ViewGroup viewGroup, final String expectedText) {
         return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<View>() {
             @Override
-            public View call() throws Exception {
+            public View call() {
                 ArrayList<View> outViews = new ArrayList<>();
                 ArrayList<View> matchingViews = new ArrayList<>();
                 viewGroup.findViewsWithText(outViews, expectedText, View.FIND_VIEWS_WITH_TEXT);
@@ -518,14 +518,13 @@ public class BookmarkTest {
     }
 
     protected BookmarkId addBookmark(final String title, final String url)
-            throws InterruptedException, ExecutionException {
+            throws ExecutionException {
         readPartnerBookmarks();
         return TestThreadUtils.runOnUiThreadBlocking(
                 () -> mBookmarkModel.addBookmark(mBookmarkModel.getDefaultFolder(), 0, title, url));
     }
 
-    protected BookmarkId addFolder(final String title)
-            throws InterruptedException, ExecutionException {
+    protected BookmarkId addFolder(final String title) throws ExecutionException {
         readPartnerBookmarks();
         return TestThreadUtils.runOnUiThreadBlocking(
                 () -> mBookmarkModel.addFolder(mBookmarkModel.getDefaultFolder(), 0, title));

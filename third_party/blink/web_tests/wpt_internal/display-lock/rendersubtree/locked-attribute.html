@@ -15,25 +15,23 @@
 async_test((t) => {
   async function runTest() {
     const container = document.getElementById("container");
-    t.step(() => assert_false(container.displayLock.locked, "initial context is unlocked"));
-
     const acquire_promise = setInvisible(container);
-    t.step(() => assert_true(container.displayLock.locked, "context before acquire finishes is locked"));
+    t.step(() => assert_equals(container.renderSubtree, "invisible", "context before acquire finishes is locked"));
 
     await acquire_promise;
-    t.step(() => assert_true(container.displayLock.locked, "context after acquire finishes is locked"));
+    t.step(() => assert_equals(container.renderSubtree, "invisible", "context after acquire finishes is locked"));
 
     const update_promise = container.updateRendering();
-    t.step(() => assert_true(container.displayLock.locked, "context during update is locked"));
+    t.step(() => assert_equals(container.renderSubtree, "invisible", "context during update is locked"));
 
     await update_promise;
-    t.step(() => assert_true(container.displayLock.locked, "context after update is locked"));
+    t.step(() => assert_equals(container.renderSubtree, "invisible", "context after update is locked"));
 
     const commit_promise = setVisible(container);
-    t.step(() => assert_false(container.displayLock.locked, "context during commit is unlocked"));
+    t.step(() => assert_equals(container.renderSubtree, "", "context during commit is unlocked"));
 
     await commit_promise;
-    t.step(() => assert_false(container.displayLock.locked, "context after commit is unlocked"));
+    t.step(() => assert_equals(container.renderSubtree, "", "context after commit is unlocked"));
 
     t.done();
   }

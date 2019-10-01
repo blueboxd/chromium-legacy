@@ -1263,7 +1263,7 @@ bool AppListSyncableService::AppIsOem(const std::string& id) {
     return false;
   const extensions::Extension* extension =
       extension_registry_->GetExtensionById(
-          id, extensions::ExtensionRegistry::COMPATIBILITY);
+          id, extensions::ExtensionRegistry::EVERYTHING);
   return extension && extension->was_installed_by_oem();
 }
 

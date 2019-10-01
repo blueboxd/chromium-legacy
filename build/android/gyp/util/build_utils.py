@@ -70,7 +70,7 @@ def Touch(path, fail_if_missing=False):
     os.utime(path, None)
 
 
-def FindInDirectory(directory, filename_filter):
+def FindInDirectory(directory, filename_filter='*'):
   files = []
   for root, _dirnames, filenames in os.walk(directory):
     matched_files = fnmatch.filter(filenames, filename_filter)

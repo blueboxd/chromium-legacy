@@ -60,12 +60,11 @@ Polymer({
 
     /**
      * Whether the user is in guest mode.
-     * @private{boolean}
+     * @private {boolean}
      */
     isGuestMode_: {
       type: Boolean,
       value: loadTimeData.getBoolean('isGuest'),
-      readOnly: true,
     },
 
     /**

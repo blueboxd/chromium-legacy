@@ -84,6 +84,9 @@ class PaymentRequest : public mojom::PaymentRequest,
   // PaymentHandlerHost::Delegate
   bool ChangePaymentMethod(const std::string& method_name,
                            const std::string& stringified_data) override;
+  bool ChangeShippingOption(const std::string& shipping_option_id) override;
+  bool ChangeShippingAddress(
+      mojom::PaymentAddressPtr shipping_address) override;
 
   // PaymentRequestSpec::Observer:
   void OnSpecUpdated() override {}

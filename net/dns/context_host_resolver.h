@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "net/base/net_export.h"
 #include "net/dns/host_resolver.h"
 
@@ -67,7 +68,7 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
   void SetTickClockForTesting(const base::TickClock* tick_clock);
 
   size_t GetNumActiveRequestsForTesting() const {
-    return active_requests_.size();
+    return handed_out_requests_.size();
   }
 
  private:
@@ -77,11 +78,19 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
   std::unique_ptr<HostResolverManager> owned_manager_;
 
   // Requests are expected to clear themselves from this set on destruction or
-  // cancellation.
-  std::unordered_set<WrappedRequest*> active_requests_;
+  // cancellation.  Requests in an early shutdown state (from
+  // HostResolver::OnShutdown()) are still in this set, so they can be notified
+  // on resolver destruction.
+  std::unordered_set<WrappedRequest*> handed_out_requests_;
 
   URLRequestContext* context_ = nullptr;
   std::unique_ptr<HostCache> host_cache_;
+
+  // If true, the context is shutting down. Subsequent request Start() calls
+  // will always fail immediately with ERR_CONTEXT_SHUT_DOWN.
+  bool shutting_down_ = false;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ContextHostResolver);
 };

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_
 
-#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "url/gurl.h"
 
 class Browser;
@@ -22,24 +22,29 @@ class Extension;
 enum class WindowOpenDisposition;
 
 // Opens the application, possibly prompting the user to re-enable it.
-void OpenApplicationWithReenablePrompt(const AppLaunchParams& params);
+void OpenApplicationWithReenablePrompt(Profile* profile,
+                                       const apps::AppLaunchParams& params);
 
 // Open the application in a way specified by |params|.
-content::WebContents* OpenApplication(const AppLaunchParams& params);
+content::WebContents* OpenApplication(Profile* profile,
+                                      const apps::AppLaunchParams& params);
 
 // Create the application in a way specified by |params| in a new window but
 // delaying activating and showing it.
-Browser* CreateApplicationWindow(const AppLaunchParams& params,
+Browser* CreateApplicationWindow(Profile* profile,
+                                 const apps::AppLaunchParams& params,
                                  const GURL& url);
 
 // Show the application window that's already created.
-content::WebContents* ShowApplicationWindow(const AppLaunchParams& params,
+content::WebContents* ShowApplicationWindow(Profile* profile,
+                                            const apps::AppLaunchParams& params,
                                             const GURL& url,
                                             Browser* browser,
                                             WindowOpenDisposition disposition);
 
 // Open the application in a way specified by |params| in a new window.
-content::WebContents* OpenApplicationWindow(const AppLaunchParams& params,
+content::WebContents* OpenApplicationWindow(Profile* profile,
+                                            const apps::AppLaunchParams& params,
                                             const GURL& url);
 
 // Open |url| in an app shortcut window.

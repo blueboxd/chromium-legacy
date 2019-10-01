@@ -11,13 +11,13 @@
 #include <vector>
 
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/services/assistant/cros_platform_api.h"
 #include "chromeos/services/assistant/platform/audio_input_provider_impl.h"
 #include "chromeos/services/assistant/platform/audio_output_provider_impl.h"
 #include "chromeos/services/assistant/platform/file_provider_impl.h"
 #include "chromeos/services/assistant/platform/network_provider_impl.h"
 #include "chromeos/services/assistant/platform/system_provider_impl.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "libassistant/shared/public/platform_api.h"
 #include "libassistant/shared/public/platform_auth.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
@@ -30,7 +30,7 @@ namespace assistant {
 class AssistantMediaSession;
 
 // Platform API required by the voice assistant.
-class PlatformApiImpl : public assistant_client::PlatformApi,
+class PlatformApiImpl : public CrosPlatformApi,
                         CrasAudioHandler::AudioObserver {
  public:
   PlatformApiImpl(
@@ -56,10 +56,13 @@ class PlatformApiImpl : public assistant_client::PlatformApi,
   void OnAudioNodesChanged() override;
 
   // Called when the mic state associated with the interaction is changed.
-  void SetMicState(bool mic_open);
+  void SetMicState(bool mic_open) override;
+
+  void OnConversationTurnStarted() override;
+  void OnConversationTurnFinished() override;
 
   // Called when hotword enabled status changed.
-  void OnHotwordEnabled(bool enable);
+  void OnHotwordEnabled(bool enable) override;
 
  private:
   // ChromeOS does not use auth manager, so we don't yet need to implement a

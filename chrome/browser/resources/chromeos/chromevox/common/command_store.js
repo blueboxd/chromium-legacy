@@ -320,6 +320,18 @@ cvox.CommandStore.CMD_WHITELIST = {
     skipInput: true,
     category: 'navigation'
   },
+  'previousSimilarItem': {
+    backward: true,
+    announce: true,
+    msgId: 'previous_similar_item',
+    category: 'navigation'
+  },
+  'nextSimilarItem': {
+    forward: true,
+    announce: true,
+    msgId: 'next_similar_item',
+    category: 'navigation'
+  },
 
   'jumpToTop': {
     forward: true,

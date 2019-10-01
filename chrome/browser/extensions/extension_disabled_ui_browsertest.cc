@@ -259,8 +259,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
   install_observer.WaitForExtensionWillBeInstalled();
   content::RunAllTasksUntilIdle();
 
-  extension = extension_registry()->GetExtensionById(
-      extension_id, ExtensionRegistry::COMPATIBILITY);
+  extension = extension_registry()->disabled_extensions().GetByID(extension_id);
   ASSERT_TRUE(extension);
   EXPECT_EQ("2", extension->VersionString());
   EXPECT_EQ(1u, extension_registry()->disabled_extensions().size());
@@ -320,8 +319,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, RemoteInstall) {
   install_observer.WaitForExtensionWillBeInstalled();
   content::RunAllTasksUntilIdle();
 
-  const Extension* extension = extension_registry()->GetExtensionById(
-      extension_id, ExtensionRegistry::COMPATIBILITY);
+  const Extension* extension =
+      extension_registry()->disabled_extensions().GetByID(extension_id);
   ASSERT_TRUE(extension);
   EXPECT_EQ("2", extension->VersionString());
   EXPECT_EQ(1u, extension_registry()->disabled_extensions().size());

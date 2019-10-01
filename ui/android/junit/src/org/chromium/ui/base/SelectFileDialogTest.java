@@ -95,7 +95,7 @@ public class SelectFileDialogTest {
     }
 
     @Test
-    public void testPhotoPickerLaunchAndMimeTypes() throws Throwable {
+    public void testPhotoPickerLaunchAndMimeTypes() {
         ShadowMimeTypeMap shadowMimeTypeMap = Shadows.shadowOf(MimeTypeMap.getSingleton());
         shadowMimeTypeMap.addExtensionMimeTypMapping("jpg", "image/jpeg");
         shadowMimeTypeMap.addExtensionMimeTypMapping("gif", "image/gif");
@@ -140,7 +140,7 @@ public class SelectFileDialogTest {
     }
 
     @Test
-    public void testMultipleFileSelectorWithFileUris() throws Throwable {
+    public void testMultipleFileSelectorWithFileUris() {
         SelectFileDialog selectFileDialog = new SelectFileDialog(0);
         Uri[] filePathArray = new Uri[] {
                 Uri.parse("file:///storage/emulated/0/DCIM/Camera/IMG_0.jpg"),

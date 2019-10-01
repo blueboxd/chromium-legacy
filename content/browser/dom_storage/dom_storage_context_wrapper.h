@@ -104,8 +104,9 @@ class CONTENT_EXPORT DOMStorageContextWrapper
       mojo::ReportBadMessageCallback bad_message_callback,
       mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver);
 
-  void SetLocalStorageDatabaseForTesting(
-      mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database);
+  void SetLocalStorageDatabaseFactoryForTesting(
+      base::RepeatingCallback<
+          std::unique_ptr<leveldb::mojom::LevelDBDatabase>()>);
 
   SessionStorageContextMojo* mojo_session_state() {
     return mojo_session_state_;

@@ -100,7 +100,7 @@ public final class ServicificationDownloadTest {
     }
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         RecordHistogram.setDisabledForTests(true);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mNotificationService = new MockDownloadNotificationService();
@@ -109,7 +109,7 @@ public final class ServicificationDownloadTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         RecordHistogram.setDisabledForTests(false);
     }
 

@@ -29,8 +29,6 @@ import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 
-import java.util.concurrent.TimeoutException;
-
 /**
  * Tests for the infobar that prompts the user to enter feedback on their VR browsing experience.
  */
@@ -56,7 +54,7 @@ public class VrFeedbackInfoBarTest {
             WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page");
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mWebXrVrTestFramework = new WebXrVrTestFramework(mTestRule);
         mWebVrTestFramework = new WebVrTestFramework(mTestRule);
         mVrBrowserTestFramework = new VrBrowserTestFramework(mTestRule);
@@ -82,7 +80,7 @@ public class VrFeedbackInfoBarTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-    public void testFeedbackFrequency() throws InterruptedException, TimeoutException {
+    public void testFeedbackFrequency() {
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
                 TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
         // Set frequency of infobar to every 2nd time.
@@ -110,7 +108,7 @@ public class VrFeedbackInfoBarTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-    public void testFeedbackOptOut() throws InterruptedException, TimeoutException {
+    public void testFeedbackOptOut() {
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
                 TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
 
@@ -136,7 +134,7 @@ public class VrFeedbackInfoBarTest {
      */
     @Test
     @MediumTest
-    public void testFeedbackOnlyOnVrBrowsing() throws InterruptedException, TimeoutException {
+    public void testFeedbackOnlyOnVrBrowsing() {
         feedbackOnlyOnVrBrowsingImpl(TEST_PAGE_WEBVR_URL, mWebVrTestFramework);
     }
 
@@ -148,13 +146,11 @@ public class VrFeedbackInfoBarTest {
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
-            public void testFeedbackOnlyOnVrBrowsing_WebXr()
-            throws InterruptedException, TimeoutException {
+            public void testFeedbackOnlyOnVrBrowsing_WebXr() {
         feedbackOnlyOnVrBrowsingImpl(TEST_PAGE_WEBXR_URL, mWebXrVrTestFramework);
     }
 
-    private void feedbackOnlyOnVrBrowsingImpl(String url, WebXrVrTestFramework framework)
-            throws InterruptedException {
+    private void feedbackOnlyOnVrBrowsingImpl(String url, WebXrVrTestFramework framework) {
         // Enter VR presentation mode.
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
@@ -174,7 +170,7 @@ public class VrFeedbackInfoBarTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-    public void testExitPresentationInVr() throws InterruptedException, TimeoutException {
+    public void testExitPresentationInVr() {
         // Enter VR presentation mode.
         exitPresentationInVrImpl(TEST_PAGE_WEBVR_URL, mWebVrTestFramework);
     }
@@ -189,13 +185,11 @@ public class VrFeedbackInfoBarTest {
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-            public void testExitPresentationInVr_WebXr()
-            throws InterruptedException, TimeoutException {
+            public void testExitPresentationInVr_WebXr() {
         exitPresentationInVrImpl(TEST_PAGE_WEBXR_URL, mWebXrVrTestFramework);
     }
 
-    private void exitPresentationInVrImpl(String url, final WebXrVrTestFramework framework)
-            throws InterruptedException {
+    private void exitPresentationInVrImpl(String url, final WebXrVrTestFramework framework) {
         // Enter VR presentation mode.
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();

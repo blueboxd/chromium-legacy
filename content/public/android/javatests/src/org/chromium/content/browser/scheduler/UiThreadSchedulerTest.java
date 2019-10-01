@@ -68,7 +68,7 @@ public class UiThreadSchedulerTest {
 
     @Test
     @MediumTest
-    public void testSimpleUiThreadPostingBeforeNativeLoaded() throws Exception {
+    public void testSimpleUiThreadPostingBeforeNativeLoaded() {
         TaskRunner uiThreadTaskRunner =
                 PostTask.createSingleThreadTaskRunner(UiThreadTaskTraits.DEFAULT);
         try {
@@ -117,7 +117,7 @@ public class UiThreadSchedulerTest {
 
     @Test
     @MediumTest
-    public void testUiThreadTaskRunnerMigrationToNative() throws Exception {
+    public void testUiThreadTaskRunnerMigrationToNative() {
         TaskRunner uiThreadTaskRunner =
                 PostTask.createSingleThreadTaskRunner(UiThreadTaskTraits.DEFAULT);
         try {
@@ -139,7 +139,7 @@ public class UiThreadSchedulerTest {
 
     @Test
     @MediumTest
-    public void testSimpleUiThreadPostingAfterNativeLoaded() throws Exception {
+    public void testSimpleUiThreadPostingAfterNativeLoaded() {
         TaskRunner uiThreadTaskRunner =
                 PostTask.createSingleThreadTaskRunner(UiThreadTaskTraits.DEFAULT);
         try {
@@ -159,7 +159,7 @@ public class UiThreadSchedulerTest {
 
     @Test
     @MediumTest
-    public void testTaskNotRunOnUiThreadWithoutUiThreadTaskTraits() throws Exception {
+    public void testTaskNotRunOnUiThreadWithoutUiThreadTaskTraits() {
         TaskRunner uiThreadTaskRunner =
                 PostTask.createSingleThreadTaskRunner(TaskTraits.USER_BLOCKING);
         try {
@@ -211,7 +211,7 @@ public class UiThreadSchedulerTest {
 
     @Test
     @MediumTest
-    public void testRunSynchronously() throws InterruptedException {
+    public void testRunSynchronously() {
         final Object lock = new Object();
         final AtomicBoolean taskExecuted = new AtomicBoolean();
 
@@ -257,7 +257,7 @@ public class UiThreadSchedulerTest {
     }
 
     private void postRepeatingTaskAndStartNativeSchedulerThenWaitForTaskToRun(
-            TaskRunner taskQueue, Runnable taskToRunAfterNativeSchedulerLoaded) throws Exception {
+            TaskRunner taskQueue, Runnable taskToRunAfterNativeSchedulerLoaded) {
         final Object lock = new Object();
         final AtomicBoolean taskRun = new AtomicBoolean();
         final AtomicBoolean nativeSchedulerStarted = new AtomicBoolean();

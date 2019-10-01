@@ -15,7 +15,7 @@ namespace login_api {
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
-}
+}  // namespace login_api
 
 class LoginLaunchManagedGuestSessionFunction : public ExtensionFunction {
  public:

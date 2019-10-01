@@ -186,7 +186,7 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
     }
 
     @Test
-    public void testMediaMetadataResetsAfterSameOriginNavigation() throws Throwable {
+    public void testMediaMetadataResetsAfterSameOriginNavigation() {
         mTabHolder.simulateNavigation("https://example.com/", false);
         mTabHolder.simulateMediaSessionStateChanged(true, false);
         mTabHolder.simulateMediaSessionMetadataChanged(new MediaMetadata("title2", "", ""));
@@ -199,7 +199,7 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
     }
 
     @Test
-    public void testMediaMetadataPersistsAfterSameDocumentNavigation() throws Throwable {
+    public void testMediaMetadataPersistsAfterSameDocumentNavigation() {
         mTabHolder.simulateNavigation("https://example.com/", false);
         mTabHolder.simulateMediaSessionStateChanged(true, false);
         mTabHolder.simulateMediaSessionMetadataChanged(new MediaMetadata("title2", "", ""));

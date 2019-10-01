@@ -56,7 +56,7 @@ public class DirectActionsInActivityTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         if (mActionTester != null) mActionTester.tearDown();
     }
 

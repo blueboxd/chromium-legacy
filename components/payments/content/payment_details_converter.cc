@@ -23,31 +23,41 @@ PaymentDetailsConverter::ConvertToPaymentMethodChangeResponse(
   response->error = details->error;
   response->stringified_payment_method_errors =
       details->stringified_payment_method_errors;
+  if (details->shipping_address_errors) {
+    response->shipping_address_errors =
+        details->shipping_address_errors.Clone();
+  }
 
   if (details->total)
     response->total = details->total->amount.Clone();
 
-  if (!details->modifiers)
-    return response;
+  if (details->modifiers) {
+    response->modifiers = std::vector<mojom::PaymentHandlerModifierPtr>();
 
-  response->modifiers = std::vector<mojom::PaymentHandlerModifierPtr>();
+    for (const auto& merchant : *details->modifiers) {
+      bool is_valid = false;
+      method_checker.Run(merchant->method_data->supported_method, &is_valid);
+      if (!is_valid)
+        continue;
 
-  for (const auto& merchant : *details->modifiers) {
-    bool is_valid = false;
-    method_checker.Run(merchant->method_data->supported_method, &is_valid);
-    if (!is_valid)
-      continue;
+      mojom::PaymentHandlerModifierPtr mod =
+          mojom::PaymentHandlerModifier::New();
+      mod->method_data = mojom::PaymentHandlerMethodData::New();
+      mod->method_data->method_name = merchant->method_data->supported_method;
+      mod->method_data->stringified_data =
+          merchant->method_data->stringified_data;
 
-    mojom::PaymentHandlerModifierPtr mod = mojom::PaymentHandlerModifier::New();
-    mod->method_data = mojom::PaymentHandlerMethodData::New();
-    mod->method_data->method_name = merchant->method_data->supported_method;
-    mod->method_data->stringified_data =
-        merchant->method_data->stringified_data;
+      if (merchant->total)
+        mod->total = merchant->total->amount.Clone();
 
-    if (merchant->total)
-      mod->total = merchant->total->amount.Clone();
+      response->modifiers->emplace_back(std::move(mod));
+    }
+  }
 
-    response->modifiers->emplace_back(std::move(mod));
+  if (details->shipping_options) {
+    response->shipping_options = std::vector<mojom::PaymentShippingOptionPtr>();
+    for (const auto& option : *details->shipping_options)
+      response->shipping_options->emplace_back(option.Clone());
   }
 
   return response;

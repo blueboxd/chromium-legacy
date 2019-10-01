@@ -6,6 +6,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -256,6 +257,24 @@ TEST_F(BackgroundTaskCoordinatorTest, MutipleNotifications) {
                          "04/27/1984 05:00:00 AM", "04/27/1984 23:59:00 PM");
 
   test_data.notification_entries = {entry0, entry1};
+  EXPECT_CALL(*background_task(),
+              Schedule(_, GetTime(kDeliverTimeWindowStart) - GetTime(kNow), _));
+  EXPECT_CALL(*background_task(), Cancel()).Times(0);
+  ScheduleTask(test_data);
+}
+
+// Verifies that the notification with NoThrottle priority will always trigger
+// background task.
+TEST_F(BackgroundTaskCoordinatorTest, NoThrottleNotifications) {
+  TestData test_data;
+  test_data.impression_test_data = kSingleClientImpressionTestData;
+  test_data.impression_test_data.front().current_max_daily_show = 1;
+  config()->max_daily_shown_all_type = 0;
+  auto entry =
+      CreateNotification(SchedulerClientType::kTest1, kGuid,
+                         kDeliverTimeWindowStart, kDeliverTimeWindowEnd);
+  entry.schedule_params.priority = ScheduleParams::Priority::kNoThrottle;
+  test_data.notification_entries = {entry};
   EXPECT_CALL(*background_task(),
               Schedule(_, GetTime(kDeliverTimeWindowStart) - GetTime(kNow), _));
   EXPECT_CALL(*background_task(), Cancel()).Times(0);

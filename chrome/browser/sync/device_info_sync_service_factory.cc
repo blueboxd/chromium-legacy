@@ -54,6 +54,13 @@ class DeviceInfoSyncClient : public syncer::DeviceInfoSyncClient {
         profile_->GetPrefs());
   }
 
+  // syncer::DeviceInfoSyncClient:
+  base::Optional<syncer::DeviceInfo::SharingInfo> GetLocalSharingInfo()
+      const override {
+    // TODO(crbug.com/991971): Returns from SharingSyncPreference.
+    return base::nullopt;
+  }
+
  private:
   Profile* const profile_;
 };

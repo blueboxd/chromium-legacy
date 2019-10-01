@@ -187,7 +187,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testSelected() throws Exception {
+    public void testSelected() {
         testGridSelected(mTabGridView, mGridModel);
 
         mStripModel.set(TabProperties.IS_SELECTED, true);
@@ -209,7 +209,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
-    public void testAnimationRestored() throws Exception {
+    public void testAnimationRestored() {
         View backgroundView = mTabGridView.findViewById(R.id.background_view);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -250,7 +250,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testTitle() throws Exception {
+    public void testTitle() {
         final String title = "Surf the cool webz";
         mGridModel.set(TabProperties.TITLE, title);
         TextView textView = mTabGridView.findViewById(R.id.tab_title);
@@ -264,7 +264,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testThumbnail() throws Exception {
+    public void testThumbnail() {
         mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
         ImageView thumbnail = mTabGridView.findViewById(R.id.tab_thumbnail);
         Assert.assertNull(thumbnail.getDrawable());
@@ -279,7 +279,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testThumbnailGCAfterNullBitmap() throws Exception {
+    public void testThumbnailGCAfterNullBitmap() {
         ImageView thumbnail = mTabGridView.findViewById(R.id.tab_thumbnail);
         mShouldReturnBitmap = true;
         mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
@@ -299,7 +299,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testThumbnailGCAfterNewBitmap() throws Exception {
+    public void testThumbnailGCAfterNewBitmap() {
         ImageView thumbnail = mTabGridView.findViewById(R.id.tab_thumbnail);
         mShouldReturnBitmap = true;
         mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
@@ -318,7 +318,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testResetThumbnailGC() throws Exception {
+    public void testResetThumbnailGC() {
         ImageView thumbnail = mTabGridView.findViewById(R.id.tab_thumbnail);
         mShouldReturnBitmap = true;
         mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
@@ -336,7 +336,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testHiddenGC() throws Exception {
+    public void testHiddenGC() {
         ImageView thumbnail = mTabGridView.findViewById(R.id.tab_thumbnail);
         mShouldReturnBitmap = true;
         mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
@@ -356,7 +356,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testHiddenThenShow() throws Exception {
+    public void testHiddenThenShow() {
         ImageView thumbnail = mTabGridView.findViewById(R.id.tab_thumbnail);
         mShouldReturnBitmap = true;
         mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
@@ -375,7 +375,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testClickToSelect() throws Exception {
+    public void testClickToSelect() {
         Assert.assertFalse(mSelectClicked.get());
         mTabGridView.performClick();
         Assert.assertTrue(mSelectClicked.get());
@@ -416,7 +416,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testClickToClose() throws Exception {
+    public void testClickToClose() {
         ImageView actionButton = mTabGridView.findViewById(R.id.action_button);
         ImageButton button = mTabStripView.findViewById(R.id.tab_strip_item_button);
         Assert.assertFalse(mCloseClicked.get());
@@ -448,7 +448,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testSetCreateGroupListener() throws Exception {
+    public void testSetCreateGroupListener() {
         ButtonCompat actionButton = mTabGridView.findViewById(R.id.create_group_button);
         // By default, the create group button is invisible.
         Assert.assertEquals(View.GONE, actionButton.getVisibility());

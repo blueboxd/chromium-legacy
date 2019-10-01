@@ -54,12 +54,21 @@ const char kTestUrl[] = "https://chromium.test/";
 // A point in the web view's coordinate space on the link returned by
 // |GetHtmlForLink()|.
 const CGPoint kPointOnLink = {5.0, 2.0};
+
 // A point in the web view's coordinate space on the image returned by
 // |GetHtmlForImage()|.
 const CGPoint kPointOnImage = {50.0, 10.0};
 // A point in the web view's coordinate space within the document bounds but not
 // on the image returned by |GetHtmlForImage()|.
 const CGPoint kPointOutsideImage = {50.0, 75.0};
+
+// A point in the web view's coordinate space on the svg link returned by
+// |GetHtmlForSvgLink()| and |GetHtmlForSvgXlink()|.
+const CGPoint kPointOnSvgLink = {50.0, 75.0};
+// A point in the web view's coordinate space within the svg element but not
+// on the svg link returned by |GetHtmlForSvgLink()| and |GetHtmlForSvgXlink()|.
+const CGPoint kPointOutsideSvgLink = {50.0, 10.0};
+
 // A point in the web view's coordinate space outside of the document bounds.
 const CGPoint kPointOutsideDocument = {150.0, 150.0};
 
@@ -94,6 +103,23 @@ NSString* GetHtmlForLink(NSString* href, NSString* text, NSString* style) {
       style ? [NSString stringWithFormat:@"style=\"%@\" ", style] : @"";
   return [NSString
       stringWithFormat:@"<a %@href=\"%@\">%@</a>", style_attribute, href, text];
+}
+
+// Returns HTML for an SVG shape which links to |href|.
+NSString* GetHtmlForSvgLink(NSString* href) {
+  NSString* svg_shape = @"<rect y=\"50\" width=\"100\" height=\"50\"/>";
+  return [NSString
+      stringWithFormat:
+          @"<svg width=\"100\" height=\"100\"><a href=\"%@\">%@</a></svg>",
+          href, svg_shape];
+}
+
+// Returns HTML for an SVG shape which links to |href| with an xlink:href.
+NSString* GetHtmlForSvgXlink(NSString* href) {
+  NSString* svg_shape = @"<rect y=\"50\" width=\"100\" height=\"50\"/>";
+  return [NSString stringWithFormat:@"<svg width=\"100\" height=\"100\"><a "
+                                    @"xlink:href=\"%@\">%@</a></svg>",
+                                    href, svg_shape];
 }
 
 // Returns HTML for a link to |href| and display text |text|.
@@ -430,6 +456,52 @@ TEST_F(ContextMenuJsFindElementAtPointTest, LinkOfImageWithCalloutNone) {
     kContextMenuElementHyperlink : image_link,
   };
   EXPECT_NSEQ(expected_result, result);
+}
+
+#pragma mark - SVG shape links
+
+// Tests that an SVG shape link returns details for the link.
+TEST_F(ContextMenuJsFindElementAtPointTest, FindSvgLinkAtPoint) {
+  NSString* const link = @"file:///linky";
+  NSString* html = GetHtmlForPage(/*head=*/nil, GetHtmlForSvgLink(link));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, html, GetTestURL()));
+
+  id result = FindElementAtPoint(kPointOnSvgLink);
+  NSDictionary* expected_value = @{
+    kContextMenuElementRequestId : kRequestId,
+    kContextMenuElementReferrerPolicy : @"default",
+    kContextMenuElementHyperlink : link,
+  };
+  EXPECT_NSEQ(expected_value, result);
+}
+
+// Tests that an SVG shape xlink returns details for the link.
+TEST_F(ContextMenuJsFindElementAtPointTest, FindSvgXlinkAtPoint) {
+  NSString* const link = @"file:///linky";
+  NSString* html = GetHtmlForPage(/*head=*/nil, GetHtmlForSvgXlink(link));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, html, GetTestURL()));
+
+  id result = FindElementAtPoint(kPointOnSvgLink);
+  NSDictionary* expected_value = @{
+    kContextMenuElementRequestId : kRequestId,
+    kContextMenuElementReferrerPolicy : @"default",
+    kContextMenuElementHyperlink : link,
+  };
+  EXPECT_NSEQ(expected_value, result);
+}
+
+// Tests that a point within an SVG element but outside a linked shape does not
+// return details for the link.
+TEST_F(ContextMenuJsFindElementAtPointTest, FindSvgLinkAtPointOutsideElement) {
+  NSString* const link = @"file:///linky";
+  NSString* html = GetHtmlForPage(/*head=*/nil, GetHtmlForSvgXlink(link));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, html, GetTestURL()));
+
+  id result = FindElementAtPoint(kPointOutsideSvgLink);
+  NSDictionary* expected_value = @{
+    kContextMenuElementRequestId : kRequestId,
+  };
+  EXPECT_NSEQ(expected_value, result);
 }
 
 #pragma mark -

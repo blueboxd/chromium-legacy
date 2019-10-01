@@ -865,7 +865,6 @@ SpdySession::SpdySession(
     bool enable_ping_based_connection_checking,
     bool is_http2_enabled,
     bool is_quic_enabled,
-    bool support_ietf_format_quic_altsvc,
     bool is_trusted_proxy,
     size_t session_max_recv_window_size,
     int session_max_queued_capped_frames,
@@ -929,7 +928,6 @@ SpdySession::SpdySession(
           enable_ping_based_connection_checking),
       is_http2_enabled_(is_http2_enabled),
       is_quic_enabled_(is_quic_enabled),
-      support_ietf_format_quic_altsvc_(support_ietf_format_quic_altsvc),
       is_trusted_proxy_(is_trusted_proxy),
       enable_push_(IsPushEnabled(initial_settings)),
       support_websocket_(false),
@@ -3390,8 +3388,7 @@ void SpdySession::OnAltSvc(
   http_server_properties_->SetAlternativeServices(
       scheme_host_port, spdy_session_key_.network_isolation_key(),
       ProcessAlternativeServices(altsvc_vector, is_http2_enabled_,
-                                 is_quic_enabled_, quic_supported_versions_,
-                                 support_ietf_format_quic_altsvc_));
+                                 is_quic_enabled_, quic_supported_versions_));
 }
 
 bool SpdySession::OnUnknownFrame(spdy::SpdyStreamId stream_id,

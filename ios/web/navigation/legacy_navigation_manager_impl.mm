@@ -357,6 +357,10 @@ bool LegacyNavigationManagerImpl::IsRestoreSessionInProgress() const {
   return false;  // Session restoration is synchronous.
 }
 
+bool LegacyNavigationManagerImpl::ShouldBlockUrlDuringRestore(const GURL& url) {
+  return false;
+}
+
 void LegacyNavigationManagerImpl::SetPendingItemIndex(int index) {
   session_controller_.pendingItemIndex = index;
 }

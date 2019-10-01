@@ -8,6 +8,7 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingViewException;
@@ -85,12 +86,37 @@ class AutofillAssistantUiTestUtil {
         return new TypeSafeMatcher<View>() {
             @Override
             protected boolean matchesSafely(View item) {
+                if (!(item instanceof TextView)) {
+                    return false;
+                }
                 return ((TextView) item).getMaxLines() == maxLines;
             }
 
             @Override
             public void describeTo(Description description) {
                 description.appendText("isTextMaxLines");
+            }
+        };
+    }
+
+    /** Checks that a text view has a specific typeface style. */
+    public static TypeSafeMatcher<View> hasTypefaceStyle(/*@Typeface.Style*/ int style) {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            protected boolean matchesSafely(View item) {
+                if (!(item instanceof TextView)) {
+                    return false;
+                }
+                Typeface typeface = ((TextView) item).getTypeface();
+                if (typeface == null) {
+                    return false;
+                }
+                return (typeface.getStyle() & style) == style;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("hasTypefaceStyle");
             }
         };
     }
@@ -171,8 +197,7 @@ class AutofillAssistantUiTestUtil {
     /**
      * Starts the CCT test rule on a blank page.
      */
-    public static void startOnBlankPage(CustomTabActivityTestRule testRule)
-            throws InterruptedException {
+    public static void startOnBlankPage(CustomTabActivityTestRule testRule) {
         testRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
                 InstrumentationRegistry.getTargetContext(), "about:blank"));
     }

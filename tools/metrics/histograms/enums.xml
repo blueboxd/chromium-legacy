@@ -18141,6 +18141,9 @@ Called by update_net_error_codes.py.-->
   <int value="614" label="DeviceLoginScreenCaretHighlightEnabled"/>
   <int value="615" label="DeviceLoginScreenMonoAudioEnabled"/>
   <int value="616" label="TotalMemoryLimitMb"/>
+  <int value="617" label="DeviceLoginScreenAutoclickEnabled"/>
+  <int value="618" label="DeviceLoginScreenStickyKeysEnabled"/>
+  <int value="619" label="DeviceLoginScreenKeyboardFocusHighlightEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -18810,8 +18813,9 @@ Called by update_net_error_codes.py.-->
   <int value="25" label="AUDIO_ON_DEVICES_CHANGED"/>
   <int value="26" label="AUDIO_ON_LEVEL_CHANGED"/>
   <int value="27" label="AUDIO_ON_MUTE_CHANGED"/>
-  <int value="28" label="AUTOFILL_PRIVATE_ON_ADDRESS_LIST_CHANGED"/>
-  <int value="29" label="AUTOFILL_PRIVATE_ON_CREDIT_CARD_LIST_CHANGED"/>
+  <int value="28" label="AUTOFILL_PRIVATE_ON_ADDRESS_LIST_CHANGED_DEPRECATED"/>
+  <int value="29"
+      label="AUTOFILL_PRIVATE_ON_CREDIT_CARD_LIST_CHANGED_DEPRECATED"/>
   <int value="30" label="AUTOMATION_INTERNAL_ON_ACCESSIBILITY_EVENT"/>
   <int value="31" label="AUTOMATION_INTERNAL_ON_ACCESSIBILITY_TREE_DESTROYED"/>
   <int value="32" label="BLUETOOTH_LOW_ENERGY_ON_CHARACTERISTIC_VALUE_CHANGED"/>
@@ -19243,6 +19247,7 @@ Called by update_net_error_codes.py.-->
   <int value="441" label="LOGIN_STATE_ON_SESSION_STATE_CHANGED"/>
   <int value="442" label="PRINTING_METRICS_ON_PRINT_JOB_FINISHED"/>
   <int value="443" label="AUTOTESTPRIVATE_ON_CLIPBOARD_DATA_CHANGED"/>
+  <int value="444" label="AUTOFILL_PRIVATE_ON_PERSONAL_DATA_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -29626,8 +29631,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
     CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUCRASH
   </int>
   <int value="1" label="about:gpuhang">CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUHANG</int>
-  <int value="2" label="GpuDataManager RequestCompleteGpuInfoIfNeeded">
-    CAUSE_FOR_GPU_LAUNCH_GPUDATAMANAGER_REQUESTCOMPLETEGPUINFOIFNEEDED
+  <int value="2" label="GpuDataManager RequestDxdiagDx12VulkanGpuInfoIfNeeded">
+    CAUSE_FOR_GPU_LAUNCH_GPUDATAMANAGER_REQUESTDXDIAGDX12VULKANGPUINFOIFNEEDED
   </int>
   <int value="3" label="RenderWidgetFullScreenPepper CreateContext">
     CAUSE_FOR_GPU_LAUNCH_RENDERWIDGETFULLSCREENPEPPER_CREATECONTEXT
@@ -35607,6 +35612,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1143496217" label="enable-oop-rasterization"/>
   <int value="-1143108160" label="PasswordManagerOnboardingAndroid:enabled"/>
   <int value="-1143007275" label="EnableNewStyleLauncher:disabled"/>
+  <int value="-1142933895" label="ReduceDisplayNotifications:disabled"/>
   <int value="-1142034548" label="BuiltInModuleKvStorage:enabled"/>
   <int value="-1137696948" label="enable-chromeos-account-manager"/>
   <int value="-1137442543" label="enable-slimming-paint"/>
@@ -36551,6 +36557,7 @@ from previous Chrome versions.
   <int value="106840653" label="mus"/>
   <int value="107900612" label="ChromeHomePersistentIph:disabled"/>
   <int value="109577361" label="ForbidSyncXHRInPageDismissal:enabled"/>
+  <int value="110888614" label="ReduceDisplayNotifications:enabled"/>
   <int value="112140177" label="DesktopPWAsUnifiedInstall:disabled"/>
   <int value="115915570"
       label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef:enabled"/>

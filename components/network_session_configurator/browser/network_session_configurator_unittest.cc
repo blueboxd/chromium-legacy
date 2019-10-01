@@ -103,7 +103,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
 
   EXPECT_TRUE(params_.enable_quic);
   EXPECT_TRUE(params_.quic_params.retry_without_alt_svc_on_quic_errors);
-  EXPECT_FALSE(params_.quic_params.support_ietf_format_quic_altsvc);
   EXPECT_EQ(1350u, params_.quic_params.max_packet_length);
   EXPECT_EQ(quic::QuicTagVector(), params_.quic_params.connection_options);
   EXPECT_EQ(quic::QuicTagVector(),
@@ -177,17 +176,6 @@ TEST_F(NetworkSessionConfiguratorTest, DisableRetryWithoutAltSvcOnQuicErrors) {
   ParseFieldTrials();
 
   EXPECT_FALSE(params_.quic_params.retry_without_alt_svc_on_quic_errors);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, SupportIetfFormatQuicAltSvc) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["support_ietf_format_quic_altsvc"] = "true";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.quic_params.support_ietf_format_quic_altsvc);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,

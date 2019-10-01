@@ -470,11 +470,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFillOnAccountSelectHttpName,
      flag_descriptions::kFillOnAccountSelectHttpDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kFillOnAccountSelectHttp)},
-    {"enable-send-tab-to-self-show-sending-ui",
-     flag_descriptions::kSendTabToSelfShowSendingUIName,
-     flag_descriptions::kSendTabToSelfShowSendingUIDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfShowSendingUI)},
     {"omnibox-use-default-search-engine-favicon",
      flag_descriptions::kOmniboxUseDefaultSearchEngineFaviconName,
      flag_descriptions::kOmniboxUseDefaultSearchEngineFaviconDescription,
@@ -551,6 +546,14 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceStartupSigninPromoName,
      flag_descriptions::kForceStartupSigninPromoDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(signin::kForceStartupSigninPromo)},
+    {"embedder-block-restore-url",
+     flag_descriptions::kEmbedderBlockRestoreUrlName,
+     flag_descriptions::kEmbedderBlockRestoreUrlDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kEmbedderBlockRestoreUrl)},
+    {"messages-confirm-infobars",
+     flag_descriptions::kConfirmInfobarMessagesUIName,
+     flag_descriptions::kConfirmInfobarMessagesUIDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kConfirmInfobarMessagesUI)},
 };
 
 // Add all switches from experimental flags to |command_line|.

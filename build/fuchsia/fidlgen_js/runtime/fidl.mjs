@@ -10,7 +10,7 @@ const $fidl_kInitialBufferSize = 1024;
 
 const $fidl_kMessageHeaderSize = 16;
 const $fidl_kMessageTxidOffset = 0;
-const $fidl_kMessageOrdinalOffset = 12;
+const $fidl_kMessageOrdinalOffset = 8;
 
 const $fidl__kAlignment = 8;
 const $fidl__kAlignmentMask = 0x7;
@@ -30,8 +30,8 @@ function $fidl__align(size) {
 function $fidl__setUint64LE(dataView, offset, value) {
   var high_bits = Number(BigInt.asUintN(32, value >> 32n))
   var low_bits = Number(BigInt.asUintN(32, value))
-  dataView.setUint32(offset+0, high_bits, $fidl__kLE);
-  dataView.setUint32(offset+4, low_bits, $fidl__kLE);
+  dataView.setUint32(offset+4, high_bits, $fidl__kLE);
+  dataView.setUint32(offset+0, low_bits, $fidl__kLE);
 }
 
 

@@ -47,7 +47,7 @@ public class AutofillPopupWithKeyboardTest {
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // TODO(crbug.com/894428) - fix this suite to use the embedded test server instead of
         // data urls.
         Features.getInstance().enable(ChromeFeatureList.AUTOFILL_ALLOW_NON_HTTP_ACTIVATION);
@@ -61,8 +61,7 @@ public class AutofillPopupWithKeyboardTest {
     @Feature({"autofill-keyboard"})
     @RetryOnFailure
     @DisabledTest
-    public void testShowAutofillPopupAndKeyboardimultaneously()
-            throws InterruptedException, TimeoutException {
+    public void testShowAutofillPopupAndKeyboardimultaneously() throws TimeoutException {
         mActivityTestRule.startMainActivityWithURL(UrlUtils.encodeHtmlDataUri("<html><head>"
                 + "<meta name=\"viewport\""
                 + "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>"

@@ -154,7 +154,7 @@ async_test((t) => {
 
   // Unlock target3.
   async function enqueueStep5() {
-    await target3.displayLock.commit();
+    await setVisible(target3);
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         runStep5();

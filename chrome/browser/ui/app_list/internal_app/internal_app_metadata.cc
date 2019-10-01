@@ -187,7 +187,7 @@ void OpenChromeCameraApp(Profile* profile, int event_flags) {
       registry->GetInstalledExtension(extension_misc::kChromeCameraAppId);
   if (extension) {
     AppListClientImpl* controller = AppListClientImpl::GetInstance();
-    AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
+    apps::AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
         profile, extension, event_flags,
         apps::mojom::AppLaunchSource::kSourceAppLauncher,
         controller->GetAppListDisplayId());

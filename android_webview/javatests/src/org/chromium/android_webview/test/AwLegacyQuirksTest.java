@@ -377,12 +377,11 @@ public class AwLegacyQuirksTest {
     }
 
     private AwTestContainerView createAwTestContainerViewOnMainSyncInQuirksMode(
-            final AwContentsClient client) throws Exception {
+            final AwContentsClient client) {
         return mActivityTestRule.createAwTestContainerViewOnMainSync(client, true);
     }
 
-    private void ensureScaleBecomes(final float targetScale, final AwContents awContents)
-            throws Throwable {
+    private void ensureScaleBecomes(final float targetScale, final AwContents awContents) {
         AwActivityTestRule.pollInstrumentationThread(
                 () -> targetScale == mActivityTestRule.getScaleOnUiThread(awContents));
     }

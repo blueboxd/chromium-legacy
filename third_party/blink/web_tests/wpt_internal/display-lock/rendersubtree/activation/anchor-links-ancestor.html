@@ -33,10 +33,10 @@ function prepareTest() {
 promise_test(() => {
   return new Promise((resolve, reject) => {
     prepareTest().then(() => {
-      assert_false(outermost.displayLock.locked);
-      assert_true(outer.displayLock.locked);
-      assert_true(inner.displayLock.locked);
-      assert_false(innermost.displayLock.locked);
+      assert_equals(outermost.renderSubtree, "");
+      assert_equals(outer.renderSubtree, "invisible activatable");
+      assert_equals(inner.renderSubtree, "invisible activatable");
+      assert_equals(innermost.renderSubtree, "");
 
       let innerPromise = new Promise((resolve, reject) => {
         inner.onbeforeactivate = (e) => {

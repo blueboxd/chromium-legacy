@@ -24,7 +24,7 @@ struct PLATFORM_EXPORT BeginFrameProviderParams final {
 
 class PLATFORM_EXPORT BeginFrameProviderClient {
  public:
-  virtual void BeginFrame(const base::TimeTicks& frame_time) = 0;
+  virtual void BeginFrame(const viz::BeginFrameArgs&) = 0;
   virtual ~BeginFrameProviderClient() = default;
 };
 
@@ -39,6 +39,7 @@ class PLATFORM_EXPORT BeginFrameProvider
   void CreateCompositorFrameSinkIfNeeded();
 
   void RequestBeginFrame();
+  void FinishBeginFrame(const viz::BeginFrameArgs&);
 
   // viz::mojom::blink::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(

@@ -67,14 +67,14 @@ public class NetworkQualityProviderTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mProvider = new NetworkQualityProviderForTesting();
         NetworkQualityProviderForTesting.reset(mProvider);
         mObserver = new TestNetworkQualityObserver();
     }
 
     @Test
-    public void testObserversGetNotified() throws Exception {
+    public void testObserversGetNotified() {
         NetworkQualityProvider.addObserverAndMaybeTrigger(mObserver);
 
         assertEquals(0, mObserver.getConnectionTypeCount());
@@ -90,7 +90,7 @@ public class NetworkQualityProviderTest {
     }
 
     @Test
-    public void testRemovedObserversDontGetNotified() throws Exception {
+    public void testRemovedObserversDontGetNotified() {
         NetworkQualityProvider.addObserverAndMaybeTrigger(mObserver);
         NetworkQualityProvider.removeObserver(mObserver);
 
@@ -101,7 +101,7 @@ public class NetworkQualityProviderTest {
     }
 
     @Test
-    public void testObserversGetNotifiedWhenAdded() throws Exception {
+    public void testObserversGetNotifiedWhenAdded() {
         mProvider.onEffectiveConnectionTypeChanged(CONNECTION_TYPE);
         NetworkQualityProvider.addObserverAndMaybeTrigger(mObserver);
         assertEquals(1, mObserver.getConnectionTypeCount());

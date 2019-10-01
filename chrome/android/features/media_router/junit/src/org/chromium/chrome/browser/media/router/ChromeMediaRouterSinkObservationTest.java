@@ -108,7 +108,7 @@ public class ChromeMediaRouterSinkObservationTest extends ChromeMediaRouterTestB
 
     @Test
     @Feature({"MediaRouter"})
-    public void testNotLowRamDevice() throws Exception {
+    public void testNotLowRamDevice() {
         SysUtils.resetForTesting();
         CommandLine.getInstance().appendSwitch(BaseSwitches.DISABLE_LOW_END_DEVICE_MODE);
         assertTrue(mChromeMediaRouter.startObservingMediaSinks(SOURCE_ID1));
@@ -116,7 +116,7 @@ public class ChromeMediaRouterSinkObservationTest extends ChromeMediaRouterTestB
 
     @Test
     @Feature({"MediaRouter"})
-    public void testIsLowRamDevice() throws Exception {
+    public void testIsLowRamDevice() {
         SysUtils.resetForTesting();
         CommandLine.getInstance().appendSwitch(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE);
         assertEquals(false, mChromeMediaRouter.startObservingMediaSinks(SOURCE_ID1));

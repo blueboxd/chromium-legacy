@@ -73,7 +73,7 @@ public final class SafeBrowsingTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // Create a new temporary instance to ensure the Class is loaded. Otherwise we will get a
         // ClassNotFoundException when trying to instantiate during startup.
         SafeBrowsingApiBridge.setSafeBrowsingHandlerType(
@@ -81,7 +81,7 @@ public final class SafeBrowsingTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         if (mTestServer != null) {
             mTestServer.stopAndDestroyServer();
         }

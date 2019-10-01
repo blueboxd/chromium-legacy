@@ -27,13 +27,13 @@ public class PaymentRequestModifierTest implements MainActivityStartCallback {
             new PaymentRequestTestRule("payment_request_modifier_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {}
+    public void onMainActivityStarted() {}
 
     /** Using modifiers should not crash. */
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNoCrash() throws InterruptedException, TimeoutException {
+    public void testNoCrash() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"Payment method not supported"});

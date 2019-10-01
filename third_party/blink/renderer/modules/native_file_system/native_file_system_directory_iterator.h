@@ -29,9 +29,6 @@ class NativeFileSystemDirectoryIterator final
                                     ExecutionContext* execution_context);
 
   ScriptPromise next(ScriptState*);
-  // TODO(mek): This return method should cancel the backend directory iteration
-  // operation, to avoid doing useless work.
-  void IteratorReturn() {}
 
   void Trace(Visitor*) override;
 

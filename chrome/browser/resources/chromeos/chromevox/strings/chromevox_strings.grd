@@ -2293,6 +2293,12 @@
       <message desc="The description of the next group command.  Displayed in the Options page." name="IDS_CHROMEVOX_NEXT_GROUP">
         Next Group
       </message>
+      <message desc="The description of the previous similar command." name="IDS_CHROMEVOX_PREVIOUS_SIMILAR_ITEM">
+        Previous similar item
+      </message>
+      <message desc="The description of the next similar item command." name="IDS_CHROMEVOX_NEXT_SIMILAR_ITEM">
+        Next similar item
+      </message>
       <message desc="Describes nodes or anything describing them as a landmark." name="IDS_CHROMEVOX_ROLE_LANDMARK">
         Landmark
       </message>

@@ -36,30 +36,19 @@ void ScalarHandler(const CupsOptionProvider& printer,
   capabilities->emplace_back();
   AdvancedCapability& capability = capabilities->back();
   capability.name = attribute_name;
-}
-
-void PopulateBooleanCapability(AdvancedCapability* capability,
-                               bool default_value) {
-  // TODO(crbug.com/964919) Support checkbox in UI instead of making this
-  // two-value enum.
-  capability->values.emplace_back();
-  capability->values.back().name = kOptionFalse;
-  capability->values.back().is_default = !default_value;
-  capability->values.emplace_back();
-  capability->values.back().name = kOptionTrue;
-  capability->values.back().is_default = default_value;
+  capability.type = base::Value::Type::STRING;
+  // TODO(crbug.com/964919) Set defaults.
 }
 
 void BooleanHandler(const CupsOptionProvider& printer,
                     const char* attribute_name,
                     AdvancedCapabilities* capabilities) {
-  ipp_attribute_t* attr_default = printer.GetDefaultOptionValue(attribute_name);
-  bool default_value = attr_default && ippGetBoolean(attr_default, 0);
-
   capabilities->emplace_back();
   AdvancedCapability& capability = capabilities->back();
   capability.name = attribute_name;
-  PopulateBooleanCapability(&capability, default_value);
+  capability.type = base::Value::Type::BOOLEAN;
+  ipp_attribute_t* attr_default = printer.GetDefaultOptionValue(attribute_name);
+  capability.default_value = attr_default && ippGetBoolean(attr_default, 0);
 }
 
 void KeywordHandler(const CupsOptionProvider& printer,
@@ -69,17 +58,15 @@ void KeywordHandler(const CupsOptionProvider& printer,
   if (!attr)
     return;
 
-  ipp_attribute_t* attr_default = printer.GetDefaultOptionValue(attribute_name);
-  std::string default_value;
-  if (attr_default) {
-    const char* value = ippGetString(attr_default, 0, nullptr);
-    if (value)
-      default_value = value;
-  }
-
   capabilities->emplace_back();
   AdvancedCapability& capability = capabilities->back();
   capability.name = attribute_name;
+  ipp_attribute_t* attr_default = printer.GetDefaultOptionValue(attribute_name);
+  if (attr_default) {
+    const char* value = ippGetString(attr_default, 0, nullptr);
+    if (value)
+      capability.default_value = value;
+  }
   int num_values = ippGetCount(attr);
   for (int i = 0; i < num_values; i++) {
     const char* value = ippGetString(attr, i, nullptr);
@@ -88,7 +75,6 @@ void KeywordHandler(const CupsOptionProvider& printer,
 
     capability.values.emplace_back();
     capability.values.back().name = value;
-    capability.values.back().is_default = default_value == value;
   }
 }
 
@@ -99,18 +85,17 @@ void EnumHandler(const CupsOptionProvider& printer,
   if (!attr)
     return;
 
-  ipp_attribute_t* attr_default = printer.GetDefaultOptionValue(attribute_name);
-  int default_value = attr_default ? ippGetInteger(attr_default, 0) : 0;
-
   capabilities->emplace_back();
   AdvancedCapability& capability = capabilities->back();
   capability.name = attribute_name;
+  ipp_attribute_t* attr_default = printer.GetDefaultOptionValue(attribute_name);
+  capability.default_value =
+      base::NumberToString(attr_default ? ippGetInteger(attr_default, 0) : 0);
   int num_values = ippGetCount(attr);
   for (int i = 0; i < num_values; i++) {
     int value = ippGetInteger(attr, i);
     capability.values.emplace_back();
     capability.values.back().name = base::NumberToString(value);
-    capability.values.back().is_default = default_value == value;
   }
 }
 
@@ -133,9 +118,8 @@ void MultivalueEnumHandler(int none_value,
     AdvancedCapability& capability = capabilities->back();
     capability.name =
         std::string(attribute_name) + "/" + base::NumberToString(value);
-
-    // TODO(crbug.com/964919) Get correct defaults.
-    PopulateBooleanCapability(&capability, false);
+    capability.type = base::Value::Type::BOOLEAN;
+    // TODO(crbug.com/964919) Set defaults.
   }
 }
 

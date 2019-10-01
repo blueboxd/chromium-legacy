@@ -52,7 +52,7 @@ public class DownloadLocationChangeTest implements CustomMainActivityStart {
     private static final long STORAGE_SIZE = 1024000;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
         // Show the location dialog for the first time.
@@ -60,7 +60,7 @@ public class DownloadLocationChangeTest implements CustomMainActivityStart {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
@@ -72,13 +72,12 @@ public class DownloadLocationChangeTest implements CustomMainActivityStart {
 
     /**
      * Ensures the default download location dialog is shown to the user with SD card inserted.
-     * @throws Exception
      */
     @Test
     @MediumTest
     @Feature({"Downloads"})
     @Features.EnableFeatures(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)
-    public void testDefaultDialogPositiveButtonClickThrough() throws Exception {
+    public void testDefaultDialogPositiveButtonClickThrough() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(DownloadPromptStatus.SHOW_INITIAL,
                     PrefServiceBridge.getInstance().getPromptForDownloadAndroid());
@@ -108,13 +107,12 @@ public class DownloadLocationChangeTest implements CustomMainActivityStart {
 
     /**
      * Ensures no default download location dialog is shown to the user without SD card inserted.
-     * @throws Exception
      */
     @Test
     @MediumTest
     @Feature({"Downloads"})
     @Features.EnableFeatures(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)
-    public void testNoDialogWithoutSDCard() throws Exception {
+    public void testNoDialogWithoutSDCard() {
         int currentCallCount = mDownloadTestRule.getChromeDownloadCallCount();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {

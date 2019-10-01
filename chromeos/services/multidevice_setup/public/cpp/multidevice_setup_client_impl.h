@@ -18,6 +18,7 @@
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace service_manager {
 class Connector;
@@ -93,7 +94,7 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
 
   void FlushForTesting();
 
-  mojom::MultiDeviceSetupPtr multidevice_setup_ptr_;
+  mojo::Remote<mojom::MultiDeviceSetup> multidevice_setup_remote_;
   mojo::Receiver<mojom::HostStatusObserver> host_status_observer_receiver_{
       this};
   mojo::Receiver<mojom::FeatureStateObserver> feature_state_observer_receiver_{

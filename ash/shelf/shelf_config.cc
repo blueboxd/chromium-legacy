@@ -124,9 +124,6 @@ void ShelfConfig::OnOverviewModeEnded() {
 }
 
 int ShelfConfig::shelf_size() const {
-  // TODO(manucornet): Add unit tests to check that this returns the correct
-  // sizes in various situations.
-
   // Before the hotseat redesign, the shelf always has the same size.
   if (!chromeos::switches::ShouldShowShelfHotseat())
     return 56;
@@ -183,7 +180,10 @@ int ShelfConfig::control_size() const {
 }
 
 int ShelfConfig::control_border_radius() const {
-  return control_size() / 2;
+  return (chromeos::switches::ShouldShowShelfHotseat() && is_in_app() &&
+          Shell::Get()->tablet_mode_controller()->InTabletMode())
+             ? 0
+             : control_size() / 2;
 }
 
 int ShelfConfig::overflow_button_margin() const {

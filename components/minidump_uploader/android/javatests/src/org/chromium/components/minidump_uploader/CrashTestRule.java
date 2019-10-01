@@ -69,7 +69,7 @@ public class CrashTestRule implements TestRule {
         return ContextUtils.getApplicationContext().getCacheDir();
     }
 
-    private void tearDown() throws Exception {
+    private void tearDown() {
         File[] crashFiles = mCrashDir.listFiles();
         if (crashFiles == null) {
             return;

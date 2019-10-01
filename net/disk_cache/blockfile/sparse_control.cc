@@ -43,6 +43,10 @@ const int kMaxMapSize = 8 * 1024;
 // The maximum number of bytes that a child can store.
 const int kMaxEntrySize = 0x100000;
 
+// How much we can address. 8 KiB bitmap (kMaxMapSize above) gives us offsets
+// up to 64 GiB.
+const int64_t kMaxEndOffset = 8ll * kMaxMapSize * kMaxEntrySize;
+
 // The size of each data block (tracked by the child allocation bitmap).
 const int kBlockSize = 1024;
 
@@ -264,11 +268,37 @@ int SparseControl::StartIO(SparseOperation op,
   if (offset < 0 || buf_len < 0)
     return net::ERR_INVALID_ARGUMENT;
 
-  // We only support up to 64 GB.
-  if (static_cast<uint64_t>(offset) + static_cast<unsigned int>(buf_len) >=
-      UINT64_C(0x1000000000)) {
-    return net::ERR_CACHE_OPERATION_NOT_SUPPORTED;
+  int64_t end_offset = 0;  // non-inclusive.
+  if (!base::CheckAdd(offset, buf_len).AssignIfValid(&end_offset)) {
+    // Writes aren't permitted to try to cross the end of address space;
+    // read/GetAvailableRange clip.
+    if (op == kWriteOperation)
+      return net::ERR_INVALID_ARGUMENT;
+    else
+      end_offset = std::numeric_limits<int64_t>::max();
   }
+
+  if (offset >= kMaxEndOffset) {
+    // Interval is within valid offset space, but completely outside backend
+    // supported range. Permit GetAvailableRange to say "nothing here", actual
+    // I/O fails.
+    if (op == kGetRangeOperation)
+      return 0;
+    else
+      return net::ERR_CACHE_OPERATION_NOT_SUPPORTED;
+  }
+
+  if (end_offset > kMaxEndOffset) {
+    // Interval is partially what the backend can handle. Fail writes, clip
+    // reads.
+    if (op == kWriteOperation)
+      return net::ERR_CACHE_OPERATION_NOT_SUPPORTED;
+    else
+      end_offset = kMaxEndOffset;
+  }
+
+  DCHECK_GE(end_offset, offset);
+  buf_len = end_offset - offset;
 
   DCHECK(!user_buf_.get());
   DCHECK(user_callback_.is_null());
@@ -420,7 +450,7 @@ int SparseControl::OpenSparseEntry(int data_len) {
   if (!(PARENT_ENTRY & entry_->GetEntryFlags()))
     return net::ERR_CACHE_OPERATION_NOT_SUPPORTED;
 
-  // Dont't go over board with the bitmap. 8 KB gives us offsets up to 64 GB.
+  // Don't go over board with the bitmap.
   int map_len = data_len - sizeof(sparse_header_);
   if (map_len > kMaxMapSize || map_len % 4)
     return net::ERR_CACHE_OPERATION_NOT_SUPPORTED;

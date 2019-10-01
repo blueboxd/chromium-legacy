@@ -60,7 +60,7 @@ public class PostTaskTest {
 
     @Test
     @SmallTest
-    public void testCreateSingleThreadTaskRunner() throws Exception {
+    public void testCreateSingleThreadTaskRunner() {
         TaskRunner taskQueue = PostTask.createSingleThreadTaskRunner(TaskTraits.USER_BLOCKING);
         // A SingleThreadTaskRunner with default traits will run in the native thread pool
         // and tasks posted won't run until after the native library has loaded.
@@ -70,7 +70,7 @@ public class PostTaskTest {
 
     @Test
     @SmallTest
-    public void testCreateSequencedTaskRunner() throws Exception {
+    public void testCreateSequencedTaskRunner() {
         TaskRunner taskQueue = PostTask.createSequencedTaskRunner(TaskTraits.USER_BLOCKING);
         List<Integer> orderList = new ArrayList<>();
         try {
@@ -87,7 +87,7 @@ public class PostTaskTest {
 
     @Test
     @SmallTest
-    public void testCreateTaskRunner() throws Exception {
+    public void testCreateTaskRunner() {
         TaskRunner taskQueue = PostTask.createTaskRunner(TaskTraits.USER_BLOCKING);
 
         // This should not timeout.

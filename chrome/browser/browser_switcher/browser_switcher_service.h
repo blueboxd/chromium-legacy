@@ -130,6 +130,7 @@ class BrowserSwitcherService : public KeyedService {
   AlternativeBrowserDriver* driver();
   BrowserSwitcherSitelist* sitelist();
   BrowserSwitcherPrefs& prefs();
+  Profile* profile();
 
   base::TimeDelta fetch_delay();
   base::TimeDelta refresh_delay();

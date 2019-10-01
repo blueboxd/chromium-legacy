@@ -19,6 +19,7 @@
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 namespace media {
@@ -68,10 +69,12 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
 #endif  // defined(OS_ANDROID)
   void CreateCdm(const std::string& key_system,
                  media::mojom::ContentDecryptionModuleRequest request) final;
-  void CreateDecryptor(int cdm_id,
-                       media::mojom::DecryptorRequest request) final;
-  void CreateCdmProxy(const base::Token& cdm_guid,
-                      media::mojom::CdmProxyRequest request) final;
+  void CreateDecryptor(
+      int cdm_id,
+      mojo::PendingReceiver<media::mojom::Decryptor> receiver) final;
+  void CreateCdmProxy(
+      const base::Token& cdm_guid,
+      mojo::PendingReceiver<media::mojom::CdmProxy> receiver) final;
 
  private:
   // Gets services provided by the browser (at RenderFrameHost level) to the
@@ -112,8 +115,9 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   // Creates a CdmProxy for the CDM in CdmService. Not implemented in
   // CreateCdmProxy() because we don't want any client to be able to create
   // a CdmProxy.
-  void CreateCdmProxyInternal(const base::Token& cdm_guid,
-                              media::mojom::CdmProxyRequest request);
+  void CreateCdmProxyInternal(
+      const base::Token& cdm_guid,
+      mojo::PendingReceiver<media::mojom::CdmProxy> receiver);
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   // Safe to hold a raw pointer since |this| is owned by RenderFrameHostImpl.

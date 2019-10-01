@@ -121,14 +121,15 @@ MultiDeviceSetupDialogUI::MultiDeviceSetupDialogUI(content::WebUI* web_ui)
 MultiDeviceSetupDialogUI::~MultiDeviceSetupDialogUI() = default;
 
 void MultiDeviceSetupDialogUI::BindMultiDeviceSetup(
-    chromeos::multidevice_setup::mojom::MultiDeviceSetupRequest request) {
+    mojo::PendingReceiver<chromeos::multidevice_setup::mojom::MultiDeviceSetup>
+        receiver) {
   service_manager::Connector* connector =
       content::BrowserContext::GetConnectorFor(
           web_ui()->GetWebContents()->GetBrowserContext());
   DCHECK(connector);
 
-  connector->BindInterface(chromeos::multidevice_setup::mojom::kServiceName,
-                           std::move(request));
+  connector->Connect(chromeos::multidevice_setup::mojom::kServiceName,
+                     std::move(receiver));
 }
 
 }  // namespace multidevice_setup

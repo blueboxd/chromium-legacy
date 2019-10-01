@@ -34,8 +34,6 @@ import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 
-import java.util.concurrent.TimeoutException;
-
 /**
  * Tests {@link NavigationHandler} navigating back/forward using overscroll history navigation.
  * TODO(jinsukkim): Add more tests (right swipe, tab switcher, etc).
@@ -66,7 +64,7 @@ public class NavigationHandlerTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         if (mTestServer != null) mTestServer.stopAndDestroyServer();
     }
 
@@ -74,13 +72,12 @@ public class NavigationHandlerTest {
         return mActivityTestRule.getActivity().getActivityTabProvider().get();
     }
 
-    private void loadNewTabPage() throws InterruptedException, TimeoutException {
+    private void loadNewTabPage() {
         ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), false, true);
     }
 
-    private void assertNavigateOnSwipeFrom(boolean edge, String toUrl)
-            throws InterruptedException, TimeoutException {
+    private void assertNavigateOnSwipeFrom(boolean edge, String toUrl) {
         ChromeTabUtils.waitForTabPageLoaded(currentTab(), toUrl, () -> swipeFromEdge(edge), 10);
         CriteriaHelper.pollUiThread(Criteria.equals(toUrl, () -> currentTab().getUrl()));
         Assert.assertEquals("Didn't navigate back", toUrl, currentTab().getUrl());
@@ -105,7 +102,7 @@ public class NavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void testCloseChromeAtHistoryStackHead() throws InterruptedException, TimeoutException {
+    public void testCloseChromeAtHistoryStackHead() {
         loadNewTabPage();
         final Activity activity = mActivityTestRule.getActivity();
         swipeFromEdge(LEFT_EDGE);
@@ -117,8 +114,7 @@ public class NavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void testLeftSwipeNavigateBackOnNativePage()
-            throws InterruptedException, TimeoutException {
+    public void testLeftSwipeNavigateBackOnNativePage() {
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), UrlConstants.RECENT_TABS_URL, false);
 
@@ -127,8 +123,7 @@ public class NavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void testRightSwipeNavigateForwardOnNativePage()
-            throws InterruptedException, TimeoutException {
+    public void testRightSwipeNavigateForwardOnNativePage() {
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), UrlConstants.RECENT_TABS_URL, false);
 
@@ -139,8 +134,7 @@ public class NavigationHandlerTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testLeftSwipeNavigateBackOnRenderedPage()
-            throws InterruptedException, TimeoutException {
+    public void testLeftSwipeNavigateBackOnRenderedPage() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), mTestServer.getURL(RENDERED_PAGE), false);
@@ -150,8 +144,7 @@ public class NavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void testRightSwipeNavigateForwardOnRenderedPage()
-            throws InterruptedException, TimeoutException {
+    public void testRightSwipeNavigateForwardOnRenderedPage() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), mTestServer.getURL(RENDERED_PAGE), false);

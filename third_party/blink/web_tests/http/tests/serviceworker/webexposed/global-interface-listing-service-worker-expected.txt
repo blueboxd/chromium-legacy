@@ -1061,6 +1061,8 @@ interface PaymentRequestEvent : ExtendableEvent
     getter topOrigin
     getter total
     method changePaymentMethod
+    method changeShippingAddress
+    method changeShippingOption
     method constructor
     method openWindow
     method respondWith

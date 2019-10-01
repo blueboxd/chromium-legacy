@@ -29,6 +29,12 @@ class TestWebClient : public web::WebClient {
   // Returns true for kTestWebUIScheme and kTestNativeContentScheme URL schemes.
   bool IsAppSpecificURL(const GURL& url) const override;
 
+  bool ShouldBlockUrlDuringRestore(const GURL& url,
+                                   WebState* web_state) const override;
+
+  void AddSerializableData(web::SerializableUserDataManager* user_data_manager,
+                           web::WebState* web_state) override;
+
   std::string GetUserAgent(UserAgentType type) const override;
 
   // Returns |plugin_not_supported_text_| as the text to be displayed for an

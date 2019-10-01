@@ -1693,9 +1693,7 @@ class VideoRendererPixelTest : public cc::RendererPixelTest<RendererType> {
   std::unique_ptr<media::VideoResourceUpdater> video_resource_updater_;
 };
 
-// TODO(samans): Make these tests pass with Vulkan. https://crbug.com/960795
-using NonVulkanGPURendererTypes = ::testing::Types<GLRenderer, SkiaRenderer>;
-TYPED_TEST_SUITE(VideoRendererPixelTest, NonVulkanGPURendererTypes);
+TYPED_TEST_SUITE(VideoRendererPixelTest, GPURendererTypes);
 
 template <typename RendererType>
 class VideoRendererPixelHiLoTest : public VideoRendererPixelTest<RendererType>,

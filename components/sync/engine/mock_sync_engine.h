@@ -60,6 +60,7 @@ class MockSyncEngine : public SyncEngine {
   MOCK_METHOD1(ClearServerData, void(const base::Closure&));
   MOCK_METHOD3(OnCookieJarChanged, void(bool, bool, const base::Closure&));
   MOCK_METHOD1(SetInvalidationsForSessionsEnabled, void(bool));
+  MOCK_METHOD1(GetNigoriNodeForDebugging, void(AllNodesCallback));
 };
 
 }  // namespace syncer

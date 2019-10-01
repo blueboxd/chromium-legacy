@@ -39,40 +39,21 @@ WebUITabStripContainerView::WebUITabStripContainerView(Browser* browser)
       web_view_->web_contents());
 }
 
-std::unique_ptr<views::View>
-WebUITabStripContainerView::CreateControlButtons() {
-  auto toolbar_button_container = std::make_unique<views::View>();
-  toolbar_button_container
-      ->SetLayoutManager(std::make_unique<views::FlexLayout>())
-      ->SetOrientation(views::LayoutOrientation::kHorizontal)
-      .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
-      .SetDefault(views::kMarginsKey,
-                  gfx::Insets(0, GetLayoutConstant(TOOLBAR_ELEMENT_PADDING)))
-      .SetInteriorMargin(
-          gfx::Insets(0, GetLayoutConstant(TOOLBAR_STANDARD_SPACING)))
-      .SetCollapseMargins(true);
-  toolbar_button_container->SetBackground(
-      views::CreateSolidBackground(gfx::kGoogleGrey300));
-
-  ToolbarButton* const new_tab_button = toolbar_button_container->AddChildView(
-      std::make_unique<ToolbarButton>(this));
+std::unique_ptr<ToolbarButton>
+WebUITabStripContainerView::CreateNewTabButton() {
+  auto new_tab_button = std::make_unique<ToolbarButton>(this);
   new_tab_button->SetID(VIEW_ID_WEBUI_TAB_STRIP_NEW_TAB_BUTTON);
-  new_tab_button->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kAddIcon, gfx::kGoogleGrey700));
   new_tab_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));
+  return new_tab_button;
+}
 
-  // TODO(pbos): Replace this button with tab counter. Remember to add a
-  // tooltip.
-  ToolbarButton* const toggle_button = toolbar_button_container->AddChildView(
-      std::make_unique<ToolbarButton>(this));
+// TODO(pbos): Replace this button with tab counter. Remember to add a tooltip.
+std::unique_ptr<ToolbarButton>
+WebUITabStripContainerView::CreateToggleButton() {
+  auto toggle_button = std::make_unique<ToolbarButton>(this);
   toggle_button->SetID(VIEW_ID_WEBUI_TAB_STRIP_TOGGLE_BUTTON);
-  toggle_button->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kCaretUpIcon, gfx::kGoogleGrey700));
-
-  return toolbar_button_container;
+  return toggle_button;
 }
 
 void WebUITabStripContainerView::ButtonPressed(views::Button* sender,

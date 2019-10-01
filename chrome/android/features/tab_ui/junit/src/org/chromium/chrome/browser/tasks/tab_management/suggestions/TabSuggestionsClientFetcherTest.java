@@ -47,7 +47,7 @@ public class TabSuggestionsClientFetcherTest {
     private Callback<TabSuggestionsFetcherResults> mTabSuggestionsFetcherResultsCallback;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
 
@@ -62,7 +62,7 @@ public class TabSuggestionsClientFetcherTest {
     // 86400000 milliseconds = 1 day
     @Test
     public void
-    testClientFetcher() throws Exception {
+    testClientFetcher() {
         TabSuggestionsClientFetcher tabSuggestionsClientFetcher = new TabSuggestionsClientFetcher();
         // Ensures we call StaleTabSuggestionsProvider by ensuring stale tabs
         // are recommended to be closed.
@@ -97,7 +97,7 @@ public class TabSuggestionsClientFetcherTest {
     // 86400000 milliseconds = 1 day
     @Test
     public void
-    testNullResults() throws Exception {
+    testNullResults() {
         TabSuggestionsClientFetcher tabSuggestionsClientFetcher = new TabSuggestionsClientFetcher();
         doReturn(null).when(mTabContext).getUngroupedTabs();
         tabSuggestionsClientFetcher.fetch(mTabContext, mTabSuggestionsFetcherResultsCallback);
@@ -118,7 +118,7 @@ public class TabSuggestionsClientFetcherTest {
     // 86400000 milliseconds = 1 day
     @Test
     public void
-    testEmptyResults() throws Exception {
+    testEmptyResults() {
         TabSuggestionsClientFetcher tabSuggestionsClientFetcher = new TabSuggestionsClientFetcher();
         doReturn(Collections.emptyList()).when(mTabContext).getUngroupedTabs();
         tabSuggestionsClientFetcher.fetch(mTabContext, mTabSuggestionsFetcherResultsCallback);

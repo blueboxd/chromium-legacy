@@ -184,6 +184,14 @@ void PlatformApiImpl::SetMicState(bool mic_open) {
   audio_input_provider_.SetMicState(mic_open);
 }
 
+void PlatformApiImpl::OnConversationTurnStarted() {
+  audio_input_provider_.GetAudioInput().OnConversationTurnStarted();
+}
+
+void PlatformApiImpl::OnConversationTurnFinished() {
+  audio_input_provider_.GetAudioInput().OnConversationTurnFinished();
+}
+
 void PlatformApiImpl::OnHotwordEnabled(bool enable) {
   audio_input_provider_.OnHotwordEnabled(enable);
 }

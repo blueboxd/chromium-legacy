@@ -14,7 +14,6 @@ import static org.mockito.Mockito.when;
 import android.content.ComponentName;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.RemoteException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -63,7 +62,7 @@ public class TrustedWebActivityClientTest {
     private TrustedWebActivityClient mClient;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
 
         when(mConnection.execute(any(), anyString(), any()))
@@ -114,9 +113,8 @@ public class TrustedWebActivityClientTest {
         verify(mNotificationBuilder, never()).setContentSmallIconForRemoteApp(any());
     }
 
-
     @Test
-    public void doesntFetchIconIdFromService_IfBothIconsAreSet() throws RemoteException {
+    public void doesntFetchIconIdFromService_IfBothIconsAreSet() {
         setHasContentBitmap(true);
         setHasStatusBarBitmap(true);
         postNotification();
@@ -124,13 +122,12 @@ public class TrustedWebActivityClientTest {
     }
 
     @Test
-    public void doesntFetchIconBitmapFromService_IfIconsIdIs() throws RemoteException {
+    public void doesntFetchIconBitmapFromService_IfIconsIdIs() {
         setHasContentBitmap(false);
         when(mService.getSmallIconId()).thenReturn(-1);
         postNotification();
         verify(mService, never()).getSmallIconBitmap();
     }
-
 
     private void setHasStatusBarBitmap(boolean hasBitmap) {
         when(mNotificationBuilder.hasStatusBarIconBitmap()).thenReturn(hasBitmap);

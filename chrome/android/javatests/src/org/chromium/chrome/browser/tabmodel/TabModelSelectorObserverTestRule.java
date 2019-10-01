@@ -58,7 +58,7 @@ public class TabModelSelectorObserverTestRule extends ChromeBrowserTestRule {
         }, description);
     }
 
-    private void setUp() throws Exception {
+    private void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> { initialize(); });
     }
 

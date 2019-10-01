@@ -10,5 +10,4 @@
     RuntimeEnabled=NativeFileSystem
 ] interface NativeFileSystemDirectoryIterator {
   [CallWith=ScriptState] Promise<any> next();
-  [ImplementedAs=IteratorReturn] void return();
 };

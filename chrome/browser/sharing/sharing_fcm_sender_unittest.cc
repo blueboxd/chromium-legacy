@@ -91,8 +91,9 @@ class FakeLocalDeviceInfoProvider : public syncer::LocalDeviceInfoProvider {
                            "user_agent",
                            sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
                            "device_id",
-                           base::Time::Now(),
-                           false) {}
+                           /*last_updated_timestamp=*/base::Time::Now(),
+                           /*send_tab_to_self_receiving_enabled=*/false,
+                           /*sharing_info=*/base::nullopt) {}
   ~FakeLocalDeviceInfoProvider() override {}
 
   version_info::Channel GetChannel() const override {

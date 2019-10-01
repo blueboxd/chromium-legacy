@@ -27,12 +27,12 @@ public class PaymentRequestLongIdTest implements MainActivityStartCallback {
             new PaymentRequestTestRule("payment_request_long_id_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {}
+    public void onMainActivityStarted() {}
 
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNoCrash() throws InterruptedException, TimeoutException {
+    public void testNoCrash() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickNode("buy");
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"ID cannot be longer than 1024 characters"});

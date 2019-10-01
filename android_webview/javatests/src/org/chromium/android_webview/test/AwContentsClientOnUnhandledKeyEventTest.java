@@ -62,7 +62,7 @@ public class AwContentsClientOnUnhandledKeyEventTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mContentsClient = new KeyEventTestAwContentsClient();
         mHelper = new UnhandledKeyEventHelper();
         mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
@@ -146,7 +146,7 @@ public class AwContentsClientOnUnhandledKeyEventTest {
         dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, code));
     }
 
-    private void assertUnhandledDownAndUp(final int code) throws Throwable {
+    private void assertUnhandledDownAndUp(final int code) {
         List<KeyEvent> list = mHelper.getUnhandledKeyEventList();
         Assert.assertEquals(
                 "KeyEvent list: " + Arrays.deepToString(list.toArray()), 2, list.size());

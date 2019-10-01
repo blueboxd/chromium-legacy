@@ -51,14 +51,12 @@ static jlong JNI_ContentViewRenderView_Init(
   return reinterpret_cast<intptr_t>(content_view_render_view);
 }
 
-void ContentViewRenderView::Destroy(JNIEnv* env,
-                                    const JavaParamRef<jobject>& obj) {
+void ContentViewRenderView::Destroy(JNIEnv* env) {
   delete this;
 }
 
 void ContentViewRenderView::SetCurrentWebContents(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jweb_contents) {
   InitCompositor();
   content::WebContents* web_contents =
@@ -74,7 +72,6 @@ void ContentViewRenderView::SetCurrentWebContents(
 
 void ContentViewRenderView::OnPhysicalBackingSizeChanged(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jweb_contents,
     jint width,
     jint height) {
@@ -84,19 +81,20 @@ void ContentViewRenderView::OnPhysicalBackingSizeChanged(
   web_contents->GetNativeView()->OnPhysicalBackingSizeChanged(size);
 }
 
-void ContentViewRenderView::SurfaceCreated(JNIEnv* env,
-                                           const JavaParamRef<jobject>& obj) {
+void ContentViewRenderView::SurfaceCreated(JNIEnv* env) {
   InitCompositor();
 }
 
 void ContentViewRenderView::SurfaceDestroyed(JNIEnv* env,
-                                             const JavaParamRef<jobject>& obj) {
+                                             jboolean cache_back_buffer) {
+  evict_back_buffer_on_next_swap_ = cache_back_buffer;
+  if (evict_back_buffer_on_next_swap_)
+    compositor_->CacheBackBufferForCurrentSurface();
   compositor_->SetSurface(nullptr, false);
 }
 
 void ContentViewRenderView::SurfaceChanged(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     jboolean can_be_used_with_surface_control,
     jint width,
     jint height,
@@ -107,9 +105,7 @@ void ContentViewRenderView::SurfaceChanged(
 }
 
 base::android::ScopedJavaLocalRef<jobject>
-ContentViewRenderView::GetResourceManager(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jobj) {
+ContentViewRenderView::GetResourceManager(JNIEnv* env) {
   return compositor_->GetResourceManager().GetJavaObject();
 }
 
@@ -121,6 +117,10 @@ void ContentViewRenderView::UpdateLayerTreeHost() {
 void ContentViewRenderView::DidSwapFrame(int pending_frames) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ContentViewRenderView_didSwapFrame(env, java_obj_);
+  if (evict_back_buffer_on_next_swap_) {
+    compositor_->EvictCachedBackBuffer();
+    evict_back_buffer_on_next_swap_ = false;
+  }
 }
 
 void ContentViewRenderView::InitCompositor() {

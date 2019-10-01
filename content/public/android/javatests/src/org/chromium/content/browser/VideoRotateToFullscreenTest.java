@@ -49,7 +49,7 @@ public class VideoRotateToFullscreenTest {
         CriteriaHelper.pollInstrumentationThread(
                 Criteria.equals(fullscreenValue, new Callable<Boolean>() {
                     @Override
-                    public Boolean call() throws InterruptedException, TimeoutException {
+                    public Boolean call() throws TimeoutException {
                         return DOMUtils.isFullscreen(mRule.getWebContents());
                     }
                 }));
@@ -59,13 +59,13 @@ public class VideoRotateToFullscreenTest {
         CriteriaHelper.pollInstrumentationThread(
                 Criteria.equals(orientationValue, new Callable<String>() {
                     @Override
-                    public String call() throws InterruptedException, TimeoutException {
+                    public String call() throws TimeoutException {
                         return screenOrientation();
                     }
                 }));
     }
 
-    private String screenOrientation() throws InterruptedException, TimeoutException {
+    private String screenOrientation() throws TimeoutException {
         // Returns "\"portrait\"" or "\"landscape\"" (strips the "-primary" or "-secondary" suffix).
         return JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 mRule.getWebContents(), "screen.orientation.type.split('-')[0]");
@@ -80,7 +80,7 @@ public class VideoRotateToFullscreenTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mRule.getActivity().setRequestedOrientation(
                     ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);

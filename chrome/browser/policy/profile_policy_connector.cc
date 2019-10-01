@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -60,6 +61,13 @@ class ProxiedPoliciesPropagatedWatcher : PolicyService::ProviderUpdateObserver {
         proxied_policies_propagated_callback_(
             std::move(proxied_policies_propagated_callback)) {
     device_wide_policy_service->AddProviderUpdateObserver(this);
+
+    timeout_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromSeconds(
+            kProxiedPoliciesPropagationTimeoutInSeconds),
+        this,
+        &ProxiedPoliciesPropagatedWatcher::OnProviderUpdatePropagationTimedOut);
   }
 
   ~ProxiedPoliciesPropagatedWatcher() override {
@@ -82,11 +90,21 @@ class ProxiedPoliciesPropagatedWatcher : PolicyService::ProviderUpdateObserver {
     std::move(proxied_policies_propagated_callback_).Run();
   }
 
+  void OnProviderUpdatePropagationTimedOut() {
+    if (!proxied_policies_propagated_callback_)
+      return;
+    LOG(WARNING) << "Waiting for proxied policies to propagate timed out.";
+    std::move(proxied_policies_propagated_callback_).Run();
+  }
+
  private:
+  static constexpr int kProxiedPoliciesPropagationTimeoutInSeconds = 5;
+
   PolicyService* const device_wide_policy_service_;
   const ProxyPolicyProvider* const proxy_policy_provider_;
   const ConfigurationPolicyProvider* const source_policy_provider_;
   base::OnceClosure proxied_policies_propagated_callback_;
+  base::OneShotTimer timeout_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxiedPoliciesPropagatedWatcher);
 };
@@ -267,6 +285,13 @@ bool ProfilePolicyConnector::IsProfilePolicy(const char* policy_key) const {
       DeterminePolicyProviderForPolicy(policy_key);
   return provider == configuration_policy_provider_;
 }
+
+#if defined(OS_CHROMEOS)
+void ProfilePolicyConnector::TriggerProxiedPoliciesWaitTimeoutForTesting() {
+  CHECK(proxied_policies_propagated_watcher_);
+  proxied_policies_propagated_watcher_->OnProviderUpdatePropagationTimedOut();
+}
+#endif  // defined(OS_CHROMEOS)
 
 const CloudPolicyStore* ProfilePolicyConnector::GetActualPolicyStore() const {
   if (policy_store_)

@@ -54,7 +54,7 @@ public final class RecyclerViewTestUtils {
     }
 
     public static void waitForViewToDetach(final RecyclerView recyclerView, final View view)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         final CallbackHelper callback = new CallbackHelper();
 
         recyclerView.addOnChildAttachStateChangeListener(

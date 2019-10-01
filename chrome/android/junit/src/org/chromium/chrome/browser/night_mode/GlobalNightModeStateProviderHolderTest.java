@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 @Config(manifest = Config.NONE)
 public class GlobalNightModeStateProviderHolderTest {
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         FeatureUtilities.setNightModeAvailableForTesting(null);
         GlobalNightModeStateProviderHolder.resetInstanceForTesting();
         ChromePreferenceManager.getInstance().removeKey(UI_THEME_SETTING_KEY);

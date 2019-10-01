@@ -61,6 +61,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.EventForwarder;
+import org.chromium.ui.base.EventOffsetHandler;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -225,18 +226,18 @@ public class CompositorViewHolder extends FrameLayout
                     private final RectF mCacheViewport = new RectF();
 
                     @Override
-                    public RectF getViewport() {
+                    public float getTop() {
                         if (mLayoutManager != null) mLayoutManager.getViewportPixel(mCacheViewport);
-                        return mCacheViewport;
+                        return mCacheViewport.top;
                     }
 
                     @Override
-                    public void setCurrentTouchEventOffsets(float x, float y) {
+                    public void setCurrentTouchEventOffsets(float top) {
                         if (mTabVisible == null) return;
                         WebContents webContents = mTabVisible.getWebContents();
                         if (webContents == null) return;
                         EventForwarder forwarder = webContents.getEventForwarder();
-                        forwarder.setCurrentTouchEventOffsets(x, y);
+                        forwarder.setCurrentTouchEventOffsets(0, top);
                     }
                 });
 

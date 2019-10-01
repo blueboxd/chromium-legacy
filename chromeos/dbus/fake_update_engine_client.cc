@@ -85,6 +85,11 @@ void FakeUpdateEngineClient::GetEolStatus(GetEolStatusCallback callback) {
                                 update_engine::EndOfLifeStatus::kSupported));
 }
 
+void FakeUpdateEngineClient::GetEolInfo(GetEolInfoCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), EolInfo()));
+}
+
 void FakeUpdateEngineClient::SetUpdateOverCellularPermission(
     bool allowed,
     const base::Closure& callback) {

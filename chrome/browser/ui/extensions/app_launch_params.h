@@ -17,7 +17,7 @@ class Extension;
 
 // Helper to create AppLaunchParams using extensions::GetLaunchContainer with
 // LAUNCH_TYPE_REGULAR to check for a user-configured container.
-AppLaunchParams CreateAppLaunchParamsUserContainer(
+apps::AppLaunchParams CreateAppLaunchParamsUserContainer(
     Profile* profile,
     const extensions::Extension* extension,
     WindowOpenDisposition disposition,
@@ -27,7 +27,7 @@ AppLaunchParams CreateAppLaunchParamsUserContainer(
 // override the user-configured container using modifier keys, falling back to
 // extensions::GetLaunchContainer() with no modifiers. |display_id| is the id of
 // the display from which the app is launched.
-AppLaunchParams CreateAppLaunchParamsWithEventFlags(
+apps::AppLaunchParams CreateAppLaunchParamsWithEventFlags(
     Profile* profile,
     const extensions::Extension* extension,
     int event_flags,

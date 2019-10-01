@@ -8,13 +8,12 @@ static_library("lib") {
   sources = [
     "leveldb_database_impl.cc",
     "leveldb_database_impl.h",
-    "leveldb_service_impl.cc",
-    "leveldb_service_impl.h",
   ]
 
   public_deps = [
     "//components/services/leveldb/public/cpp",
     "//components/services/leveldb/public/mojom",
+    "//components/services/storage",
   ]
 
   deps = [
@@ -26,8 +25,6 @@ static_library("lib") {
 test("leveldb_service_unittests") {
   sources = [
     "leveldb_mojo_unittest.cc",
-    "leveldb_service_unittest.cc",
-    "remote_iterator_unittest.cc",
   ]
 
   deps = [

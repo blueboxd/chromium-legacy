@@ -112,8 +112,9 @@ class SharedClipboardContextMenuObserverTest : public testing::Test {
           base::StrCat({"guid", base::NumberToString(i)}), "name",
           "chrome_version", "user_agent",
           sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "device_id",
-          /* last_updated_timestamp= */ base::Time::Now(),
-          /* send_tab_to_self_receiving_enabled= */ false));
+          /*last_updated_timestamp=*/base::Time::Now(),
+          /*send_tab_to_self_receiving_enabled=*/false,
+          /*sharing_info=*/base::nullopt));
     }
     return devices;
   }

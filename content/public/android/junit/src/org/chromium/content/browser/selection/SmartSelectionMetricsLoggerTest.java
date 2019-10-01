@@ -64,7 +64,7 @@ public class SmartSelectionMetricsLoggerTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         ShadowLog.stream = System.out;
     }

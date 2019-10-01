@@ -51,12 +51,21 @@ namespace {
 
 #if BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
 // Iterate on the Papers of a given printer |info| and set the
-// display_name members, localizing where possible.
+// display_name members, localizing where possible. We expect the
+// backend to have populated non-empty display names already, so we
+// don't touch media display names that we can't localize.
 void PopulateAllPaperDisplayNames(PrinterSemanticCapsAndDefaults* info) {
-  info->default_paper.display_name =
+  std::string default_paper_display =
       LocalizePaperDisplayName(info->default_paper.vendor_id);
+  if (!default_paper_display.empty()) {
+    info->default_paper.display_name = default_paper_display;
+  }
+
   for (PrinterSemanticCapsAndDefaults::Paper& paper : info->papers) {
-    paper.display_name = LocalizePaperDisplayName(paper.vendor_id);
+    std::string display = LocalizePaperDisplayName(paper.vendor_id);
+    if (!display.empty()) {
+      paper.display_name = display;
+    }
   }
 }
 #endif  // BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)

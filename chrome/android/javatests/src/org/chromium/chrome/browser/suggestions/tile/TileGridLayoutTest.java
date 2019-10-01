@@ -209,7 +209,7 @@ public class TileGridLayoutTest {
         return siteSuggestions;
     }
 
-    private NewTabPage setUpFakeDataToShowOnNtp(int suggestionCount) throws InterruptedException {
+    private NewTabPage setUpFakeDataToShowOnNtp(int suggestionCount) {
         List<SiteSuggestion> siteSuggestions = makeSuggestions(suggestionCount);
 
         FakeMostVisitedSites mMostVisitedSites = new FakeMostVisitedSites();
@@ -279,7 +279,7 @@ public class TileGridLayoutTest {
      * @return the layout in which the suggestions are rendered.
      */
     private TileGridLayout renderTiles(List<SiteSuggestion> siteSuggestions,
-            List<String> offlineUrls) throws IOException, InterruptedException {
+            List<String> offlineUrls) throws InterruptedException {
         // Launching the activity, that should now use the right UI.
         mActivityTestRule.startMainActivityOnBlankPage();
         ChromeActivity activity = mActivityTestRule.getActivity();
@@ -313,7 +313,7 @@ public class TileGridLayoutTest {
     }
 
     private TileGridLayout renderTiles(List<SiteSuggestion> siteSuggestions)
-            throws IOException, InterruptedException {
+            throws InterruptedException {
         return renderTiles(siteSuggestions, Collections.emptyList());
     }
 

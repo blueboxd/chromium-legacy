@@ -40,7 +40,7 @@ public class StaleTabSuggestionProviderTest {
     TabContext mTabContext;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
 
@@ -57,7 +57,7 @@ public class StaleTabSuggestionProviderTest {
                     + "close_tab_suggestions_stale_time_ms/86400000"})
     // 86400000 milliseconds = 1 day
     public void
-    testIdentifyStaleTabs() throws Exception {
+    testIdentifyStaleTabs() {
         StaleTabSuggestionProvider staleSuggestionsProvider = new StaleTabSuggestionProvider();
         List<TabContext.TabInfo> tabInfos = new ArrayList<>();
         tabInfos.add(new TabContext.TabInfo(3, "mock_recent_title", "mock_recent_url",

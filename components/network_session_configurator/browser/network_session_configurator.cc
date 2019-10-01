@@ -199,13 +199,6 @@ bool ShouldRetryWithoutAltSvcOnQuicErrors(
       "false");
 }
 
-bool ShouldSupportIetfFormatQuicAltSvc(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "support_ietf_format_quic_altsvc"),
-      "true");
-}
-
 quic::QuicTagVector GetQuicConnectionOptions(
     const VariationParameters& quic_trial_params) {
   auto it = quic_trial_params.find("connection_options");
@@ -481,9 +474,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
 
   params->quic_params.retry_without_alt_svc_on_quic_errors =
       ShouldRetryWithoutAltSvcOnQuicErrors(quic_trial_params);
-
-  params->quic_params.support_ietf_format_quic_altsvc =
-      ShouldSupportIetfFormatQuicAltSvc(quic_trial_params);
 
   if (params->enable_quic) {
     params->enable_quic_proxies_for_https_urls =

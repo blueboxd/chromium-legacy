@@ -88,7 +88,7 @@ public class OfflineIndicatorControllerTest {
 
     @Test
     @MediumTest
-    public void testShowOfflineIndicatorOnNTPWhenOffline() throws Exception {
+    public void testShowOfflineIndicatorOnNTPWhenOffline() {
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         String testUrl = testServer.getURL(TEST_PAGE);
@@ -105,7 +105,7 @@ public class OfflineIndicatorControllerTest {
 
     @Test
     @MediumTest
-    public void testShowOfflineIndicatorOnRegularPageWhenOffline() throws Exception {
+    public void testShowOfflineIndicatorOnRegularPageWhenOffline() {
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         String testUrl = testServer.getURL(TEST_PAGE);
@@ -122,7 +122,7 @@ public class OfflineIndicatorControllerTest {
 
     @Test
     @MediumTest
-    public void testHideOfflineIndicatorWhenBackToOnline() throws Exception {
+    public void testHideOfflineIndicatorWhenBackToOnline() {
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         String testUrl = testServer.getURL(TEST_PAGE);
@@ -145,7 +145,7 @@ public class OfflineIndicatorControllerTest {
 
     @Test
     @MediumTest
-    public void testDoNotShowSubsequentOfflineIndicatorWhenFlaky() throws Exception {
+    public void testDoNotShowSubsequentOfflineIndicatorWhenFlaky() {
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         String testUrl = testServer.getURL(TEST_PAGE);
@@ -182,7 +182,7 @@ public class OfflineIndicatorControllerTest {
 
     @Test
     @MediumTest
-    public void testDoNotShowOfflineIndicatorOnErrorPageWhenOffline() throws Exception {
+    public void testDoNotShowOfflineIndicatorOnErrorPageWhenOffline() {
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         String testUrl = testServer.getURL(TEST_PAGE);
@@ -233,7 +233,7 @@ public class OfflineIndicatorControllerTest {
 
     @Test
     @MediumTest
-    public void testDoNotShowOfflineIndicatorOnDownloadsWhenOffline() throws Exception {
+    public void testDoNotShowOfflineIndicatorOnDownloadsWhenOffline() {
         if (mActivityTestRule.getActivity().isTablet()) return;
 
         DownloadActivity downloadActivity = ActivityUtils.waitForActivity(
@@ -250,7 +250,7 @@ public class OfflineIndicatorControllerTest {
 
     @Test
     @MediumTest
-    public void testDoNotShowOfflineIndicatorOnPageLoadingWhenOffline() throws Exception {
+    public void testDoNotShowOfflineIndicatorOnPageLoadingWhenOffline() {
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         String testUrl = testServer.getURL("/slow?1");
@@ -273,7 +273,7 @@ public class OfflineIndicatorControllerTest {
 
     @Test
     @MediumTest
-    public void testReshowOfflineIndicatorWhenResumed() throws Exception {
+    public void testReshowOfflineIndicatorWhenResumed() {
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         String testUrl = testServer.getURL(TEST_PAGE);
@@ -300,7 +300,7 @@ public class OfflineIndicatorControllerTest {
 
     @Test
     @MediumTest
-    public void testDoNotShowOfflineIndicatorWhenTemporarilyPaused() throws Exception {
+    public void testDoNotShowOfflineIndicatorWhenTemporarilyPaused() {
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         String testUrl = testServer.getURL(TEST_PAGE);
@@ -345,7 +345,7 @@ public class OfflineIndicatorControllerTest {
         });
     }
 
-    private void loadPage(String pageUrl) throws Exception {
+    private void loadPage(String pageUrl) {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
 
         mActivityTestRule.loadUrl(pageUrl);
@@ -358,7 +358,7 @@ public class OfflineIndicatorControllerTest {
         }
     }
 
-    private void loadPageWithoutWaiting(String pageUrl, String headers) throws Exception {
+    private void loadPageWithoutWaiting(String pageUrl, String headers) {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -371,7 +371,7 @@ public class OfflineIndicatorControllerTest {
         });
     }
 
-    private void waitForPageLoaded(String pageUrl) throws Exception {
+    private void waitForPageLoaded(String pageUrl) {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         ChromeTabUtils.waitForTabPageLoaded(tab, pageUrl);
         ChromeTabUtils.waitForInteractable(tab);

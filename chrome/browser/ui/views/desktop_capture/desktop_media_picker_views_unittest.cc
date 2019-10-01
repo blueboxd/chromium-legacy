@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
 
 #include <map>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -86,9 +87,10 @@ class DesktopMediaPickerViewsTest : public testing::Test {
     DesktopMediaPickerManager::Get()->AddObserver(&observer_);
     EXPECT_CALL(observer_, OnDialogOpened());
     EXPECT_CALL(observer_, OnDialogClosed());
-    picker_views_->Show(picker_params, std::move(source_lists),
-                        base::Bind(&DesktopMediaPickerViewsTest::OnPickerDone,
-                                   base::Unretained(this)));
+    picker_views_->Show(
+        picker_params, std::move(source_lists),
+        base::BindOnce(&DesktopMediaPickerViewsTest::OnPickerDone,
+                       base::Unretained(this)));
   }
 
   void TearDown() override {

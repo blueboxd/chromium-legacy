@@ -81,7 +81,7 @@ public class CaptivePortalTest {
     private EmbeddedTestServer mServer;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mActivityTestRule.startMainActivityFromLauncher();
         mServer = EmbeddedTestServer.createAndStartHTTPSServer(
                 InstrumentationRegistry.getContext(), ServerCertificate.CERT_MISMATCHED_NAME);
@@ -91,7 +91,7 @@ public class CaptivePortalTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mServer.stopAndDestroyServer();
     }
 

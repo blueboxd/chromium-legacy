@@ -76,7 +76,7 @@ public class TileGroupTest {
     private EmbeddedTestServer mTestServer;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
         mSiteSuggestionUrls = mTestServer.getURLs(FAKE_MOST_VISITED_URLS);
@@ -89,7 +89,7 @@ public class TileGroupTest {
         initializeTab();
     }
 
-    public void initializeTab() throws Exception {
+    public void initializeTab() {
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
         Tab mTab = mActivityTestRule.getActivity().getActivityTab();
         NewTabPageTestUtils.waitForNtpLoaded(mTab);
@@ -102,7 +102,7 @@ public class TileGroupTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
@@ -219,8 +219,7 @@ public class TileGroupTest {
         return activity.findViewById(R.id.snackbar_button);
     }
 
-    private void waitForTileRemoved(final SiteSuggestion suggestion)
-            throws TimeoutException, InterruptedException {
+    private void waitForTileRemoved(final SiteSuggestion suggestion) throws TimeoutException {
         TileGridLayout tileContainer = getTileGridLayout();
         final SuggestionsTileView removedTile = tileContainer.getTileView(suggestion);
         if (removedTile == null) return;
@@ -239,8 +238,7 @@ public class TileGroupTest {
         tileContainer.setOnHierarchyChangeListener(null);
     }
 
-    private void waitForTileAdded(final SiteSuggestion suggestion)
-            throws TimeoutException, InterruptedException {
+    private void waitForTileAdded(final SiteSuggestion suggestion) throws TimeoutException {
         TileGridLayout tileContainer = getTileGridLayout();
         if (tileContainer.getTileView(suggestion) != null) return;
 

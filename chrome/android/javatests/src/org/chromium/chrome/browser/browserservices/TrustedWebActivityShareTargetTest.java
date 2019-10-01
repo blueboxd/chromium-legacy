@@ -97,7 +97,7 @@ public class TrustedWebActivityShareTargetTest {
 
     @Test
     @MediumTest
-    public void sharesDataWithGet_FromInitialIntent() throws Exception {
+    public void sharesDataWithGet_FromInitialIntent() {
         putShareData(mIntent, mGetShareTarget);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(mIntent);
         assertGetRequestUrl(mExpectedGetRequestUrl);
@@ -123,7 +123,7 @@ public class TrustedWebActivityShareTargetTest {
 
     @Test
     @MediumTest
-    public void sharesDataWithGet_FromNewIntent() throws Exception {
+    public void sharesDataWithGet_FromNewIntent() {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(mIntent);
         putShareData(mIntent, mGetShareTarget);
 
@@ -146,14 +146,13 @@ public class TrustedWebActivityShareTargetTest {
         intent.putExtra(TrustedWebActivityIntentBuilder.EXTRA_SHARE_TARGET, shareTarget.toBundle());
     }
 
-    private void assertGetRequestUrl(final String expectedGetRequestUrl)
-            throws InterruptedException {
+    private void assertGetRequestUrl(final String expectedGetRequestUrl) {
         // startCustomTabActivityWithIntent waits for native, so the tab must be present already.
         Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
         ChromeTabUtils.waitForTabPageLoaded(tab, expectedGetRequestUrl);
     }
 
-    private void assertPostNavigatorCalled() throws InterruptedException, TimeoutException {
+    private void assertPostNavigatorCalled() throws TimeoutException {
         // Constructing POST requests is unit-tested elsewhere.
         // Here we only care that the request reaches the native code.
         mPostNavigatorCallback.waitForCallback(0);

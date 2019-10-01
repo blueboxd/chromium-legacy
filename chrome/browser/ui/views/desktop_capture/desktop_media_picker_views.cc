@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/task/post_task.h"
@@ -60,8 +63,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     const DesktopMediaPicker::Params& params,
     DesktopMediaPickerViews* parent,
     std::vector<std::unique_ptr<DesktopMediaList>> source_lists)
-    : parent_(parent),
-      modality_(params.modality) {
+    : parent_(parent), modality_(params.modality) {
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -475,10 +477,10 @@ DesktopMediaPickerViews::~DesktopMediaPickerViews() {
 void DesktopMediaPickerViews::Show(
     const DesktopMediaPicker::Params& params,
     std::vector<std::unique_ptr<DesktopMediaList>> source_lists,
-    const DoneCallback& done_callback) {
+    DoneCallback done_callback) {
   DesktopMediaPickerManager::Get()->OnShowDialog();
 
-  callback_ = done_callback;
+  callback_ = std::move(done_callback);
   dialog_ =
       new DesktopMediaPickerDialogView(params, this, std::move(source_lists));
 }
@@ -496,8 +498,7 @@ void DesktopMediaPickerViews::NotifyDialogResult(DesktopMediaID source) {
   // Notify the |callback_| asynchronously because it may need to destroy
   // DesktopMediaPicker.
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(callback_, source));
-  callback_.Reset();
+                 base::BindOnce(std::move(callback_), source));
 }
 
 // static

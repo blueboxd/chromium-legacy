@@ -170,9 +170,8 @@ public class TabsTest {
                 true);
     }
 
-
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         if (mTestServer != null) {
             mTestServer.stopAndDestroyServer();
         }
@@ -180,8 +179,6 @@ public class TabsTest {
 
     /**
      * Verify that spawning a popup from a background tab in a different model works properly.
-     * @throws InterruptedException
-     * @throws TimeoutException
      */
     @Test
     @LargeTest
@@ -189,7 +186,7 @@ public class TabsTest {
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @CommandLineFlags.Add(ContentSwitches.DISABLE_POPUP_BLOCKING)
     @RetryOnFailure
-    public void testSpawnPopupOnBackgroundTab() throws InterruptedException, TimeoutException {
+    public void testSpawnPopupOnBackgroundTab() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE_PATH));
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
@@ -212,7 +209,7 @@ public class TabsTest {
     @Test
     @MediumTest
     @RetryOnFailure
-    public void testAlertDialogDoesNotChangeActiveModel() throws InterruptedException {
+    public void testAlertDialogDoesNotChangeActiveModel() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.newIncognitoTabFromMenu();
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE_PATH));
@@ -251,16 +248,13 @@ public class TabsTest {
 
     /**
      * Verify New Tab Open and Close Event not from the context menu.
-     * @throws InterruptedException
-     *
-     * https://crbug.com/490473
      * @LargeTest
      * @Feature({"Android-TabSwitcher"})
      * @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
      */
     @Test
     @DisabledTest
-    public void testOpenAndCloseNewTabButton() throws InterruptedException {
+    public void testOpenAndCloseNewTabButton() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(TEST_FILE_PATH));
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
@@ -304,7 +298,7 @@ public class TabsTest {
                                 mActivityTestRule.getActivity().getCurrentTabModel().getCount()));
     }
 
-    private void assertWaitForKeyboardStatus(final boolean show) throws InterruptedException {
+    private void assertWaitForKeyboardStatus(final boolean show) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -382,7 +376,7 @@ public class TabsTest {
         assertWaitForKeyboardStatus(false);
     }
 
-    private void assertWaitForSelectedText(final String text) throws InterruptedException {
+    private void assertWaitForSelectedText(final String text) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -446,13 +440,12 @@ public class TabsTest {
     /**
      * Verify that opening a new tab and navigating immediately sets a size on the newly created
      * renderer. https://crbug.com/434477.
-     * @throws InterruptedException
      * @throws TimeoutException
      */
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testNewTabSetsContentViewSize() throws InterruptedException, TimeoutException {
+    public void testNewTabSetsContentViewSize() throws TimeoutException {
         ChromeTabUtils.newTabFromMenu(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -525,10 +518,8 @@ public class TabsTest {
 
     /**
      * Verify that the provided click position closes a tab.
-     * @throws InterruptedException
      */
-    private void checkCloseTabAtPosition(final float x, final float y)
-            throws InterruptedException {
+    private void checkCloseTabAtPosition(final float x, final float y) {
         mActivityTestRule.getActivity();
 
         int initialTabCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
@@ -555,14 +546,13 @@ public class TabsTest {
     /**
      * Verify close button works in the TabSwitcher in portrait mode.
      * This code does not handle properly different screen densities.
-     * @throws InterruptedException
      */
     @Test
     @LargeTest
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"Android-TabSwitcher"})
     @RetryOnFailure
-    public void testTabSwitcherPortraitCloseButton() throws InterruptedException {
+    public void testTabSwitcherPortraitCloseButton() {
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         int portraitWidth = Math.min(
@@ -577,14 +567,13 @@ public class TabsTest {
     /**
      * Verify close button works in the TabSwitcher in landscape mode.
      * This code does not handle properly different screen densities.
-     * @throws InterruptedException
      * @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
      * @LargeTest
      * @Feature({"Android-TabSwitcher"})
      */
     @Test
     @FlakyTest(message = "crbug.com/170179")
-    public void testTabSwitcherLandscapeCloseButton() throws InterruptedException {
+    public void testTabSwitcherLandscapeCloseButton() {
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         // Hard-coded coordinates of the close button on the bottom left of the screen.
@@ -606,7 +595,7 @@ public class TabsTest {
      */
     @Test
     @DisabledTest
-    public void testOpenManyTabsSlowly() throws InterruptedException {
+    public void testOpenManyTabsSlowly() {
         int startCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
         for (int i = 1; i <= STRESSFUL_TAB_COUNT; ++i) {
             ChromeTabUtils.newTabFromMenu(
@@ -648,7 +637,7 @@ public class TabsTest {
      */
     @Test
     @FlakyTest
-    public void testOpenManyTabsInBursts() throws InterruptedException, TimeoutException {
+    public void testOpenManyTabsInBursts() throws TimeoutException {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         final int burstSize = 5;
         final String url = mTestServer.getURL(TEST_PAGE_FILE_PATH);
@@ -670,7 +659,7 @@ public class TabsTest {
      */
     @Test
     @FlakyTest(message = "crbug.com/223110")
-    public void testOpenManyTabsAtOnce10() throws InterruptedException, TimeoutException {
+    public void testOpenManyTabsAtOnce10() throws TimeoutException {
         openAndVerifyManyTestTabs(10);
     }
 
@@ -678,8 +667,7 @@ public class TabsTest {
      * Verify that we can open a large number of tabs all at once and that each
      * tab loads when selected.
      */
-    private void openAndVerifyManyTestTabs(final int num)
-            throws InterruptedException, TimeoutException {
+    private void openAndVerifyManyTestTabs(final int num) throws TimeoutException {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         final String url = mTestServer.getURL(TEST_PAGE_FILE_PATH);
         int startCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
@@ -703,7 +691,7 @@ public class TabsTest {
     /**
      * Displays the tabSwitcher mode and wait for it to settle.
      */
-    private void showOverviewAndWaitForAnimation() throws InterruptedException {
+    private void showOverviewAndWaitForAnimation() {
         OverviewModeBehaviorWatcher overviewModeWatcher = new OverviewModeBehaviorWatcher(
                 mActivityTestRule.getActivity().getLayoutManager(), true, false);
         // For some unknown reasons calling clickById(R.id.tab_switcher_button) sometimes hang.
@@ -716,7 +704,7 @@ public class TabsTest {
     /**
      * Exits the tabSwitcher mode and wait for it to settle.
      */
-    private void hideOverviewAndWaitForAnimation() throws InterruptedException {
+    private void hideOverviewAndWaitForAnimation() {
         OverviewModeBehaviorWatcher overviewModeWatcher = new OverviewModeBehaviorWatcher(
                 mActivityTestRule.getActivity().getLayoutManager(), false, true);
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
@@ -729,9 +717,8 @@ public class TabsTest {
      * @param targetTabCount The desired number of tabs in the model.
      * @param waitToLoad     Whether the tabs need to be fully loaded.
      * @return               The new number of tabs in the model.
-     * @throws InterruptedException
      */
-    private int openTabs(final int targetTabCount, boolean waitToLoad) throws InterruptedException {
+    private int openTabs(final int targetTabCount, boolean waitToLoad) {
         int tabCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
         while (tabCount < targetTabCount) {
             ChromeTabUtils.newTabFromMenu(
@@ -759,7 +746,7 @@ public class TabsTest {
     @Test
     @DisabledTest(message = "crbug.com/156746")
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    public void testTabsCulling() throws InterruptedException {
+    public void testTabsCulling() {
         // Open one more tabs than maxTabsDrawn.
         final int maxTabsDrawn = 8;
         int tabCount = openTabs(maxTabsDrawn + 1, false);
@@ -775,9 +762,8 @@ public class TabsTest {
 
     /**
      * Checks the stacked tabs in the stack are visible.
-     * @throws InterruptedException
      */
-    private void checkTabsStacking() throws InterruptedException {
+    private void checkTabsStacking() {
         final int count = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
         Assert.assertEquals(
                 "The number of tab in the stack should match the number of tabs in the model",
@@ -806,7 +792,7 @@ public class TabsTest {
     @Test
     @FlakyTest(message = "crbug.com/170179")
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    public void testTabsStacking() throws InterruptedException {
+    public void testTabsStacking() {
         final int count = openTabs(12, false);
 
         // Selecting the first tab to scroll all the way to the top.
@@ -865,7 +851,7 @@ public class TabsTest {
     @Test
     @FlakyTest(message = "crbug.com/303319")
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testTabSwitcherMemoryLeak() throws InterruptedException {
+    public void testTabSwitcherMemoryLeak() {
         openTabs(4, true);
 
         int maxTries = 10;
@@ -920,7 +906,7 @@ public class TabsTest {
     @LargeTest
     @Feature({"Android-TabSwitcher"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    public void testTabSelectionPortrait() throws InterruptedException {
+    public void testTabSelectionPortrait() {
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         checkTabSelection(2, 0, false);
@@ -945,7 +931,7 @@ public class TabsTest {
     @Test
     @FlakyTest(message = "crbug.com/170179")
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    public void testTabSelectionLandscape() throws InterruptedException {
+    public void testTabSelectionLandscape() {
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         checkTabSelection(2, 0, true);
@@ -971,7 +957,7 @@ public class TabsTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Android-TabSwitcher"})
     @RetryOnFailure
-    public void testCloseLastTabFromMain() throws InterruptedException {
+    public void testCloseLastTabFromMain() {
         OverviewModeBehaviorWatcher overviewModeWatcher = new OverviewModeBehaviorWatcher(
                 mActivityTestRule.getActivity().getLayoutManager(), true, false);
         ChromeTabUtils.closeCurrentTab(
@@ -1064,8 +1050,8 @@ public class TabsTest {
         return target;
     }
 
-    private void checkTabSelection(int additionalTabsToOpen, int tabIndexToSelect,
-            boolean isLandscape) throws InterruptedException {
+    private void checkTabSelection(
+            int additionalTabsToOpen, int tabIndexToSelect, boolean isLandscape) {
         for (int i = 0; i < additionalTabsToOpen; i++) {
             ChromeTabUtils.newTabFromMenu(
                     InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
@@ -1092,7 +1078,7 @@ public class TabsTest {
     }
 
     public void swipeToCloseTab(final int tabIndexToClose, final boolean isLandscape,
-            final boolean isIncognito, final int swipeDirection) throws InterruptedException {
+            final boolean isIncognito, final int swipeDirection) {
         final LayoutManagerChrome layoutManager = updateTabsViewSize();
         float[] coordinates = getStackTabClickTarget(tabIndexToClose, isIncognito, isLandscape);
         final float clickX = coordinates[0];
@@ -1122,10 +1108,8 @@ public class TabsTest {
         });
     }
 
-    private void swipeToCloseNTabs(int number, boolean isLandscape, boolean isIncognito,
-            int swipeDirection)
-            throws InterruptedException {
-
+    private void swipeToCloseNTabs(
+            int number, boolean isLandscape, boolean isIncognito, int swipeDirection) {
         for (int i = number - 1; i >= 0; i--) {
             swipeToCloseTab(i, isLandscape, isIncognito, swipeDirection);
         }
@@ -1139,7 +1123,7 @@ public class TabsTest {
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"Android-TabSwitcher", "Main"})
     @RetryOnFailure
-    public void testCloseTabPortrait() throws InterruptedException {
+    public void testCloseTabPortrait() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.startMainActivityWithURL(
                 mTestServer.getURL("/chrome/test/data/android/test.html"));
@@ -1168,7 +1152,7 @@ public class TabsTest {
     @Feature({"Android-TabSwitcher", "Main"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @RetryOnFailure
-    public void testCloseTabLandscape() throws InterruptedException {
+    public void testCloseTabLandscape() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.startMainActivityWithURL(
                 mTestServer.getURL("/chrome/test/data/android/test.html"));
@@ -1371,7 +1355,7 @@ public class TabsTest {
     @SmallTest
     @Feature({"Android-TabSwitcher"})
     @RetryOnFailure
-    public void testCloseTabDuringFling() throws InterruptedException {
+    public void testCloseTabDuringFling() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.loadUrlInNewTab(
                 mTestServer.getURL("/chrome/test/data/android/tabstest/text_page.html"));
@@ -1392,7 +1376,7 @@ public class TabsTest {
      */
     @Test
     @FlakyTest
-    public void testQuickSwitchBetweenTabAndSwitcherMode() throws InterruptedException {
+    public void testQuickSwitchBetweenTabAndSwitcherMode() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         final String[] urls = {
                 mTestServer.getURL("/chrome/test/data/android/navigate/one.html"),
@@ -1425,7 +1409,7 @@ public class TabsTest {
     @MediumTest
     @Feature({"Android-TabSwitcher"})
     @RetryOnFailure
-    public void testOpenIncognitoTab() throws InterruptedException {
+    public void testOpenIncognitoTab() {
         mActivityTestRule.newIncognitoTabFromMenu();
 
         Assert.assertTrue("Current Tab should be an incognito tab.",
@@ -1466,7 +1450,7 @@ public class TabsTest {
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
     @DisabledTest(message = "https://crbug.com/947694")
-    public void testToolbarSwipeOnlyTab() throws InterruptedException, TimeoutException {
+    public void testToolbarSwipeOnlyTab() throws TimeoutException {
         final TabModel tabModel =
                 mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
 
@@ -1596,9 +1580,8 @@ public class TabsTest {
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.RIGHT, 0, true);
     }
 
-    private void runToolbarSideSwipeTestOnCurrentModel(
-            @ScrollDirection int direction, int finalIndex, boolean expectsSelection)
-            throws InterruptedException, TimeoutException {
+    private void runToolbarSideSwipeTestOnCurrentModel(@ScrollDirection int direction,
+            int finalIndex, boolean expectsSelection) throws TimeoutException {
         final CallbackHelper selectCallback = new CallbackHelper();
         final ChromeTabbedActivity activity = mActivityTestRule.getActivity();
         final int id = activity.getCurrentTabModel().getTabAt(finalIndex).getId();
@@ -1911,8 +1894,7 @@ public class TabsTest {
         assertFileExists(incognitoTabFile, false);
     }
 
-    private void assertFileExists(final File fileToCheck, final boolean expected)
-            throws InterruptedException {
+    private void assertFileExists(final File fileToCheck, final boolean expected) {
         CriteriaHelper.pollInstrumentationThread(
                 Criteria.equals(expected, () -> fileToCheck.exists()));
     }
@@ -1924,8 +1906,7 @@ public class TabsTest {
      * @param url The url of the page to load.
      * @param numTabs The number of tabs to open.
      */
-    private void loadUrlInManyNewTabs(final String url, final int numTabs)
-            throws InterruptedException, TimeoutException {
+    private void loadUrlInManyNewTabs(final String url, final int numTabs) throws TimeoutException {
         final CallbackHelper[] pageLoadedCallbacks = new CallbackHelper[numTabs];
         final int[] tabIds = new int[numTabs];
         for (int i = 0; i < numTabs; ++i) {

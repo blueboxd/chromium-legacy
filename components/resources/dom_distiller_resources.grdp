@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
-  <include name="IDR_ABOUT_DOM_DISTILLER_HTML" file="../dom_distiller/webui/resources/about_dom_distiller.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
-  <include name="IDR_ABOUT_DOM_DISTILLER_CSS" file="../dom_distiller/webui/resources/about_dom_distiller.css" type="BINDATA" compress="gzip" />
-  <include name="IDR_ABOUT_DOM_DISTILLER_JS" file="../dom_distiller/webui/resources/about_dom_distiller.js" type="BINDATA" compress="gzip" />
   <include name="IDR_DOM_DISTILLER_VIEWER_HTML" file="../dom_distiller/core/html/dom_distiller_viewer.html" type="BINDATA" compress="gzip" />
   <include name="IDR_DOM_DISTILLER_VIEWER_JS" file="../dom_distiller/core/javascript/dom_distiller_viewer.js" type="BINDATA" compress="gzip" />
   <include name="IDR_DISTILLER_JS" file="../dom_distiller/core/javascript/domdistiller.js" flattenhtml="true" type="BINDATA" compress="gzip" />

@@ -4,8 +4,6 @@
 
 static_library("cpp") {
   sources = [
-    "remote_iterator.cc",
-    "remote_iterator.h",
     "util.cc",
     "util.h",
   ]

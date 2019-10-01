@@ -111,6 +111,14 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
     preferred_arrow_adjustment_ = adjustment;
   }
 
+  // TODO(crbug.com/1007604): remove this in favor of using
+  // Widget::InitParams::accept_events. In the mean time, don't add new uses of
+  // this flag.
+  bool hit_test_transparent() const { return hit_test_transparent_; }
+  void set_hit_test_transparent(bool hit_test_transparent) {
+    hit_test_transparent_ = hit_test_transparent;
+  }
+
   // Get/set the corner radius of the bubble border.
   int corner_radius() const {
     return bubble_border_ ? bubble_border_->corner_radius() : 0;
@@ -236,6 +244,10 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // the available bounds.
   PreferredArrowAdjustment preferred_arrow_adjustment_ =
       PreferredArrowAdjustment::kMirror;
+
+  // If true the view is transparent to all hit tested events (i.e. click and
+  // hover). DEPRECATED: See note above set_hit_test_transparent().
+  bool hit_test_transparent_ = false;
 
   InputEventActivationProtector input_protector_;
 

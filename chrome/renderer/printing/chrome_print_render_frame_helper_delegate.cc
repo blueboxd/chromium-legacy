@@ -14,6 +14,7 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/buildflags/buildflags.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
@@ -36,8 +37,9 @@ bool ChromePrintRenderFrameHelperDelegate::CancelPrerender(
   if (!prerender::PrerenderHelper::IsPrerendering(render_frame))
     return false;
 
-  chrome::mojom::PrerenderCancelerPtr canceler;
-  render_frame->GetRemoteInterfaces()->GetInterface(&canceler);
+  mojo::Remote<chrome::mojom::PrerenderCanceler> canceler;
+  render_frame->GetRemoteInterfaces()->GetInterface(
+      canceler.BindNewPipeAndPassReceiver());
   canceler->CancelPrerenderForPrinting();
   return true;
 }

@@ -13,6 +13,12 @@ import java.util.List;
  */
 public class EmptyTabGroupModelFilterObserver implements TabGroupModelFilter.Observer {
     @Override
+    public void willMergeTabToGroup(Tab movedTab) {}
+
+    @Override
+    public void willMoveTabOutOfGroup(Tab movedTab, int newRootId) {}
+
+    @Override
     public void didMergeTabToGroup(Tab movedTab, int selectedTabIdInGroup) {}
 
     @Override

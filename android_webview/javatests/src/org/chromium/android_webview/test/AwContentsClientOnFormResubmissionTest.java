@@ -82,7 +82,7 @@ public class AwContentsClientOnFormResubmissionTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mServer.shutdown();
     }
 

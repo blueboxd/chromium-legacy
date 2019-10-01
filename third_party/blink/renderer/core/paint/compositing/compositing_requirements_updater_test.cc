@@ -125,4 +125,44 @@ TEST_F(CompositingRequirementsUpdaterTest,
   EXPECT_EQ(IntRect(0, 0, 100, 100), tracking->Invalidations()[0].rect);
 }
 
+TEST_F(CompositingRequirementsUpdaterTest,
+       DontPromotePerspectiveOnlyTransform) {
+  ScopedCSSIndependentTransformPropertiesForTest feature_scope(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <div id="perspective-no-3d-descendant"
+        style="transform:perspective(1px) scale(2)">
+      <div id="transform2d" style="transform:translate(1px, 2px);"></div>
+    </div>
+    <div id="perspective-with-3d-descendant"
+        style="transform:perspective(1px) scale(2)">
+      <div id="3d-descendant" style="rotate: 0 1 0 1deg;"></div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  // Perspective with descendant with only a 2d transform should not be layered
+  // (neither should the descendant).
+  EXPECT_FALSE(ToLayoutBoxModelObject(
+                   GetLayoutObjectByElementId("perspective-no-3d-descendant"))
+                   ->Layer()
+                   ->GetCompositingState());
+  EXPECT_FALSE(ToLayoutBoxModelObject(GetLayoutObjectByElementId("transform2d"))
+                   ->Layer()
+                   ->GetCompositingReasons());
+
+  // Both the perspective and 3d descendant should be layered, the former for
+  // flattening purposes, as it contains 3d transformed content.
+  EXPECT_EQ(CompositingReason::kPerspectiveWith3DDescendants,
+            ToLayoutBoxModelObject(
+                GetLayoutObjectByElementId("perspective-with-3d-descendant"))
+                ->Layer()
+                ->GetCompositingReasons());
+  EXPECT_EQ(CompositingReason::k3DTransform,
+            ToLayoutBoxModelObject(GetLayoutObjectByElementId("3d-descendant"))
+                ->Layer()
+                ->GetCompositingReasons());
+}
+
 }  // namespace blink

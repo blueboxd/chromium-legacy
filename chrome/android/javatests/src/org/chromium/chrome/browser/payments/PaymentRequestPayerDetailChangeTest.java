@@ -45,7 +45,7 @@ public class PaymentRequestPayerDetailChangeTest implements MainActivityStartCal
             new PaymentRequestTestRule("payment_request_onpayerdetailchange.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
 
         String billing_address_id = helper.setProfile(new AutofillProfile("", "https://example.com",
@@ -65,7 +65,7 @@ public class PaymentRequestPayerDetailChangeTest implements MainActivityStartCal
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPayerDetailChangeEvent() throws InterruptedException, TimeoutException {
+    public void testPayerDetailChangeEvent() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());

@@ -9,6 +9,7 @@
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/image_capture/image_capture_impl.h"
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
 #include "content/browser/media/session/media_session_service_impl.h"
@@ -26,10 +27,16 @@
 #include "device/gamepad/gamepad_monitor.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
 #include "media/capture/mojom/image_capture.mojom.h"
+#include "media/mojo/mojom/video_decode_perf_history.mojom.h"
+#include "media/mojo/services/video_decode_perf_history.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
+#include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
+#include "services/shape_detection/public/mojom/shape_detection_service.mojom.h"
+#include "services/shape_detection/public/mojom/textdetection.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
@@ -52,17 +59,23 @@
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
 
 #if !defined(OS_ANDROID)
+#include "base/command_line.h"
 #include "content/browser/installedapp/installed_app_provider_impl_default.h"
+#include "content/public/common/content_switches.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
+#include "third_party/blink/public/mojom/serial/serial.mojom.h"
 #endif
 
 #if defined(OS_ANDROID)
 #include "services/device/public/mojom/nfc.mojom.h"
+#include "third_party/blink/public/mojom/hid/hid.mojom.h"
 #endif
 
 namespace content {
 namespace internal {
+
+namespace {
 
 // Forwards service receivers to Service Manager since the renderer cannot
 // launch out-of-process services on is own.
@@ -74,6 +87,54 @@ void ForwardServiceReceiver(const char* service_name,
       BrowserContext::GetConnectorFor(host->GetProcess()->GetBrowserContext());
   connector->Connect(service_name, std::move(receiver));
 }
+
+void BindShapeDetectionServiceOnIOThread(
+    mojo::PendingReceiver<shape_detection::mojom::ShapeDetectionService>
+        receiver) {
+  auto* gpu = GpuProcessHost::Get();
+  if (gpu)
+    gpu->RunService(std::move(receiver));
+}
+
+shape_detection::mojom::ShapeDetectionService* GetShapeDetectionService() {
+  static base::NoDestructor<
+      mojo::Remote<shape_detection::mojom::ShapeDetectionService>>
+      remote;
+  if (!*remote) {
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&BindShapeDetectionServiceOnIOThread,
+                                  remote->BindNewPipeAndPassReceiver()));
+    remote->reset_on_disconnect();
+  }
+
+  return remote->get();
+}
+
+void BindBarcodeDetectionProvider(
+    mojo::PendingReceiver<shape_detection::mojom::BarcodeDetectionProvider>
+        receiver) {
+  GetShapeDetectionService()->BindBarcodeDetectionProvider(std::move(receiver));
+}
+
+void BindFaceDetectionProvider(
+    mojo::PendingReceiver<shape_detection::mojom::FaceDetectionProvider>
+        receiver) {
+  GetShapeDetectionService()->BindFaceDetectionProvider(std::move(receiver));
+}
+
+void BindTextDetection(
+    mojo::PendingReceiver<shape_detection::mojom::TextDetection> receiver) {
+  GetShapeDetectionService()->BindTextDetection(std::move(receiver));
+}
+
+#if !defined(OS_ANDROID)
+bool AreExperimentalWebPlatformFeaturesEnabled() {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(
+      switches::kEnableExperimentalWebPlatformFeatures);
+}
+#endif
+}  // namespace
 
 // Documents/frames
 void PopulateFrameBinders(RenderFrameHostImpl* host,
@@ -90,20 +151,8 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::mojom::FileSystemManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetFileSystemManager, base::Unretained(host)));
 
-#if !defined(OS_ANDROID)
-  map->Add<blink::mojom::HidService>(base::BindRepeating(
-      &RenderFrameHostImpl::GetHidService, base::Unretained(host)));
-#endif
-
   map->Add<blink::mojom::IdleManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetIdleManager, base::Unretained(host)));
-
-#if !defined(OS_ANDROID)
-  // The default (no-op) implementation of InstalledAppProvider. On Android, the
-  // real implementation is provided in Java.
-  map->Add<blink::mojom::InstalledAppProvider>(
-      base::BindRepeating(&InstalledAppProviderImplDefault::Create));
-#endif
 
   map->Add<blink::mojom::PermissionService>(base::BindRepeating(
       &RenderFrameHostImpl::CreatePermissionService, base::Unretained(host)));
@@ -131,22 +180,12 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<device::mojom::GamepadMonitor>(
       base::BindRepeating(&device::GamepadMonitor::Create));
 
-#if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kWebNfc)) {
-    map->Add<device::mojom::NFC>(base::BindRepeating(
-        &RenderFrameHostImpl::BindNFCReceiver, base::Unretained(host)));
-  }
-#endif
-
   map->Add<device::mojom::SensorProvider>(base::BindRepeating(
       &RenderFrameHostImpl::GetSensorProvider, base::Unretained(host)));
 
   map->Add<device::mojom::VibrationManager>(base::BindRepeating(
       &ForwardServiceReceiver<device::mojom::VibrationManager>,
       device::mojom::kServiceName, base::Unretained(host)));
-
-  map->Add<media::mojom::ImageCapture>(
-      base::BindRepeating(&ImageCaptureImpl::Create));
 
   map->Add<payments::mojom::PaymentManager>(
       base::BindRepeating(&RenderProcessHost::CreatePaymentManager,
@@ -167,6 +206,42 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::test::mojom::VirtualAuthenticatorManager>(
       base::BindRepeating(&RenderFrameHostImpl::GetVirtualAuthenticatorManager,
                           base::Unretained(host)));
+
+  map->Add<media::mojom::ImageCapture>(
+      base::BindRepeating(&ImageCaptureImpl::Create));
+
+  map->Add<media::mojom::VideoDecodePerfHistory>(
+      base::BindRepeating(&RenderProcessHost::BindVideoDecodePerfHistory,
+                          base::Unretained(host->GetProcess())));
+
+  map->Add<shape_detection::mojom::BarcodeDetectionProvider>(
+      base::BindRepeating(&BindBarcodeDetectionProvider));
+
+  map->Add<shape_detection::mojom::FaceDetectionProvider>(
+      base::BindRepeating(&BindFaceDetectionProvider));
+
+  map->Add<shape_detection::mojom::TextDetection>(
+      base::BindRepeating(&BindTextDetection));
+
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kWebNfc)) {
+    map->Add<device::mojom::NFC>(base::BindRepeating(
+        &RenderFrameHostImpl::BindNFCReceiver, base::Unretained(host)));
+  }
+#else
+  map->Add<blink::mojom::HidService>(base::BindRepeating(
+      &RenderFrameHostImpl::GetHidService, base::Unretained(host)));
+
+  // The default (no-op) implementation of InstalledAppProvider. On Android, the
+  // real implementation is provided in Java.
+  map->Add<blink::mojom::InstalledAppProvider>(
+      base::BindRepeating(&InstalledAppProviderImplDefault::Create));
+
+  if (AreExperimentalWebPlatformFeaturesEnabled()) {
+    map->Add<blink::mojom::SerialService>(base::BindRepeating(
+        &RenderFrameHostImpl::BindSerialService, base::Unretained(host)));
+  }
+#endif  // !defined(OS_ANDROID)
 }
 
 void PopulateBinderMapWithContext(
@@ -211,12 +286,29 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
       &DedicatedWorkerHost::CreateIdleManager, base::Unretained(host)));
   map->Add<blink::mojom::ScreenEnumeration>(
       base::BindRepeating(&ScreenEnumerationImpl::Create));
+
   if (base::FeatureList::IsEnabled(features::kSmsReceiver)) {
     map->Add<blink::mojom::SmsReceiver>(base::BindRepeating(
         &DedicatedWorkerHost::BindSmsReceiverReceiver, base::Unretained(host)));
   }
+  map->Add<media::mojom::VideoDecodePerfHistory>(
+      base::BindRepeating(&DedicatedWorkerHost::BindVideoDecodePerfHistory,
+                          base::Unretained(host)));
   map->Add<payments::mojom::PaymentManager>(base::BindRepeating(
       &DedicatedWorkerHost::CreatePaymentManager, base::Unretained(host)));
+  map->Add<shape_detection::mojom::BarcodeDetectionProvider>(
+      base::BindRepeating(&BindBarcodeDetectionProvider));
+  map->Add<shape_detection::mojom::FaceDetectionProvider>(
+      base::BindRepeating(&BindFaceDetectionProvider));
+  map->Add<shape_detection::mojom::TextDetection>(
+      base::BindRepeating(&BindTextDetection));
+
+#if !defined(OS_ANDROID)
+  if (AreExperimentalWebPlatformFeaturesEnabled()) {
+    map->Add<blink::mojom::SerialService>(base::BindRepeating(
+        &DedicatedWorkerHost::BindSerialService, base::Unretained(host)));
+  }
+#endif  // !defined(OS_ANDROID)
 }
 
 void PopulateBinderMapWithContext(
@@ -248,8 +340,16 @@ void PopulateSharedWorkerBinders(SharedWorkerHost* host,
       &SharedWorkerHost::CreateAppCacheBackend, base::Unretained(host)));
   map->Add<blink::mojom::ScreenEnumeration>(
       base::BindRepeating(&ScreenEnumerationImpl::Create));
+  map->Add<media::mojom::VideoDecodePerfHistory>(base::BindRepeating(
+      &SharedWorkerHost::BindVideoDecodePerfHistory, base::Unretained(host)));
   map->Add<payments::mojom::PaymentManager>(base::BindRepeating(
       &SharedWorkerHost::CreatePaymentManager, base::Unretained(host)));
+  map->Add<shape_detection::mojom::BarcodeDetectionProvider>(
+      base::BindRepeating(&BindBarcodeDetectionProvider));
+  map->Add<shape_detection::mojom::FaceDetectionProvider>(
+      base::BindRepeating(&BindFaceDetectionProvider));
+  map->Add<shape_detection::mojom::TextDetection>(
+      base::BindRepeating(&BindTextDetection));
 }
 
 void PopulateBinderMapWithContext(
@@ -291,9 +391,23 @@ void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
   map->Add<blink::mojom::PermissionService>(
       base::BindRepeating(&ServiceWorkerProviderHost::CreatePermissionService,
                           base::Unretained(host)));
+
+  map->Add<media::mojom::VideoDecodePerfHistory>(base::BindRepeating(
+      &ServiceWorkerProviderHost::BindVideoDecodePerfHistory,
+      base::Unretained(host)));
+
   map->Add<payments::mojom::PaymentManager>(
       base::BindRepeating(&ServiceWorkerProviderHost::CreatePaymentManager,
                           base::Unretained(host)));
+
+  map->Add<shape_detection::mojom::BarcodeDetectionProvider>(
+      base::BindRepeating(&BindBarcodeDetectionProvider));
+
+  map->Add<shape_detection::mojom::FaceDetectionProvider>(
+      base::BindRepeating(&BindFaceDetectionProvider));
+
+  map->Add<shape_detection::mojom::TextDetection>(
+      base::BindRepeating(&BindTextDetection));
 }
 
 void PopulateBinderMapWithContext(

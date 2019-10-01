@@ -45,11 +45,6 @@ class ExtensionRegistry : public KeyedService {
     TERMINATED = 1 << 2,
     BLACKLISTED = 1 << 3,
     BLOCKED = 1 << 4,
-    // Used for compatibility with ExtensionService::GetExtensionById.
-    // DO NOT USE THIS FOR NEW CODE!
-    // TODO(489687): Analyze uses of this enum and replace them with either a
-    // more-specific one, or EVERYTHING as appropriate.
-    COMPATIBILITY = ENABLED | DISABLED | BLACKLISTED | BLOCKED,
     EVERYTHING = (1 << 5) - 1,
   };
 

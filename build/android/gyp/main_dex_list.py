@@ -28,26 +28,25 @@ def main(args):
                            'main dex.')
   parser.add_argument('--main-dex-list-path', required=True,
                       help='The main dex list file to generate.')
-  parser.add_argument('--inputs',
-                      help='JARs for which a main dex list should be '
-                           'generated.')
+  parser.add_argument(
+      '--class-inputs',
+      action='append',
+      help='GN-list of .jars with .class files.')
+  parser.add_argument(
+      '--class-inputs-filearg',
+      action='append',
+      help='GN-list of .jars with .class files (added to depfile).')
   parser.add_argument(
       '--r8-path', required=True, help='Path to the r8 executable.')
   parser.add_argument('--negative-main-dex-globs',
       help='GN-list of globs of .class names (e.g. org/chromium/foo/Bar.class) '
            'that will fail the build if they match files in the main dex.')
 
-  parser.add_argument('paths', nargs='*', default=[],
-                      help='JARs for which a main dex list should be '
-                           'generated.')
-
   args = parser.parse_args(build_utils.ExpandFileArgs(args))
 
-  depfile_deps = []
-  if args.inputs:
-    args.inputs = build_utils.ParseGnList(args.inputs)
-    depfile_deps = args.inputs
-    args.paths.extend(args.inputs)
+  args.class_inputs = build_utils.ParseGnList(args.class_inputs)
+  args.class_inputs_filearg = build_utils.ParseGnList(args.class_inputs_filearg)
+  args.class_inputs += args.class_inputs_filearg
 
   if args.negative_main_dex_globs:
     args.negative_main_dex_globs = build_utils.ParseGnList(
@@ -82,7 +81,7 @@ def main(args):
     '--disable-annotation-resolution-workaround',
   ]
 
-  input_paths = list(args.paths)
+  input_paths = list(args.class_inputs)
   input_paths += [
     args.shrinked_android_path,
     args.dx_path,
@@ -106,8 +105,8 @@ def main(args):
   ]
 
   def _LineLengthHelperForOnStaleMd5():
-    _OnStaleMd5(proguard_cmd, proguard_flags, main_dex_list_cmd, args.paths,
-                args.main_dex_list_path)
+    _OnStaleMd5(proguard_cmd, proguard_flags, main_dex_list_cmd,
+                args.class_inputs, args.main_dex_list_path)
 
   build_utils.CallAndWriteDepfileIfStale(
       _LineLengthHelperForOnStaleMd5,
@@ -115,7 +114,7 @@ def main(args):
       input_paths=input_paths,
       input_strings=input_strings,
       output_paths=output_paths,
-      depfile_deps=depfile_deps,
+      depfile_deps=args.class_inputs_filearg,
       add_pydeps=False)
 
   return 0

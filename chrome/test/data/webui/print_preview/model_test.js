@@ -188,7 +188,7 @@ cr.define('model_test', function() {
         layout: true,
         color: false,
         mediaSize: testDestination.capabilities.printer.media_size.option[1],
-        margins: print_preview.ticket_items.MarginsTypeValue.CUSTOM,
+        margins: print_preview.MarginsTypeValue.CUSTOM,
         customMargins: {
           marginTop: 100,
           marginRight: 200,
@@ -278,7 +278,7 @@ cr.define('model_test', function() {
         landscape: false,
         color: testDestination.getNativeColorModel(true),
         headerFooterEnabled: false,  // Only used in print preview
-        marginsType: print_preview.ticket_items.MarginsTypeValue.DEFAULT,
+        marginsType: print_preview.MarginsTypeValue.DEFAULT,
         duplex: print_preview.DuplexMode.SIMPLEX,
         copies: 1,
         collate: true,
@@ -319,7 +319,7 @@ cr.define('model_test', function() {
         landscape: true,
         color: testDestination.getNativeColorModel(false),
         headerFooterEnabled: false,
-        marginsType: print_preview.ticket_items.MarginsTypeValue.CUSTOM,
+        marginsType: print_preview.MarginsTypeValue.CUSTOM,
         duplex: print_preview.DuplexMode.SHORT_EDGE,
         copies: 2,
         collate: false,

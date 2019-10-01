@@ -46,7 +46,7 @@ public class NavigationRecorderTest {
     private Tab mInitialTab;
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         mTestSetupRule.startMainActivityWithURL(UrlConstants.NTP_URL);
 
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
@@ -65,8 +65,7 @@ public class NavigationRecorderTest {
 
     @Test
     @SmallTest
-    public void testRecordVisitInCurrentTabEndsWithBack()
-            throws InterruptedException, TimeoutException {
+    public void testRecordVisitInCurrentTabEndsWithBack() throws TimeoutException {
         final CallbackHelper callback = new CallbackHelper();
         loadUrlAndRecordVisit(mNavUrl, new Callback<NavigationRecorder.VisitData>() {
             @Override
@@ -85,8 +84,7 @@ public class NavigationRecorderTest {
 
     @Test
     @SmallTest
-    public void testRecordVisitInCurrentTabEndsWhenHidden()
-            throws InterruptedException, TimeoutException {
+    public void testRecordVisitInCurrentTabEndsWhenHidden() throws TimeoutException {
         final CallbackHelper callback = new CallbackHelper();
         loadUrlAndRecordVisit(mNavUrl, new Callback<NavigationRecorder.VisitData>() {
             @Override
@@ -103,8 +101,7 @@ public class NavigationRecorderTest {
 
     @Test
     @SmallTest
-    public void testRecordVisitInCurrentTabEndsWhenURLTyped()
-            throws InterruptedException, TimeoutException {
+    public void testRecordVisitInCurrentTabEndsWhenURLTyped() throws TimeoutException {
         final CallbackHelper callback = new CallbackHelper();
         loadUrlAndRecordVisit(mNavUrl, new Callback<NavigationRecorder.VisitData>() {
             @Override

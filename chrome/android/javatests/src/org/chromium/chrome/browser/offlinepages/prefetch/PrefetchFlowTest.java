@@ -141,7 +141,7 @@ public class PrefetchFlowTest implements WebServer.RequestHandler {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         FakeInstanceIDWithSubtype.clearDataAndSetEnabled(false);
         mServer.shutdown();
     }
@@ -203,7 +203,7 @@ public class PrefetchFlowTest implements WebServer.RequestHandler {
     }
 
     /** Trigger conditions required to load NTP snippets. */
-    private void forceLoadSnippets() throws Throwable {
+    private void forceLoadSnippets() {
         // NTP suggestions require a connection and an accepted EULA.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             NetworkChangeNotifier.forceConnectivityState(true);

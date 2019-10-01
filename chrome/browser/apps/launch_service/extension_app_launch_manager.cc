@@ -18,7 +18,7 @@ ExtensionAppLaunchManager::~ExtensionAppLaunchManager() = default;
 
 content::WebContents* ExtensionAppLaunchManager::OpenApplication(
     const AppLaunchParams& params) {
-  return ::OpenApplication(params);
+  return ::OpenApplication(profile(), params);
 }
 
 bool ExtensionAppLaunchManager::OpenApplicationWindow(

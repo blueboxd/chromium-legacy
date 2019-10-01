@@ -67,8 +67,6 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
 
         Map<String, Boolean> features = new HashMap<>();
         features.put(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE, true);
-        features.put(ChromeFeatureList.DOWNLOAD_HOME_SHOW_STORAGE_INFO, true);
-        features.put(ChromeFeatureList.DOWNLOAD_HOME_V2, true);
         features.put(ChromeFeatureList.OFFLINE_PAGES_PREFETCHING, true);
         features.put(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION, false);
         features.put(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER, false);
@@ -114,7 +112,7 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
-    public void testLaunchingActivity() throws Exception {
+    public void testLaunchingActivity() {
         TestThreadUtils.runOnUiThreadBlocking(() -> { setUpUi(); });
 
         onView(withText("page 1")).check(matches(isDisplayed()));

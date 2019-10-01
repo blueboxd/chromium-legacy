@@ -53,7 +53,7 @@ public class PasswordViewingTypeTest {
     private Account mAccount;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         setupTestAccount();
         mSyncContentResolverDelegate = new MockSyncContentResolverDelegate();
         mContext = InstrumentationRegistry.getTargetContext();
@@ -75,7 +75,7 @@ public class PasswordViewingTypeTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
     }
 

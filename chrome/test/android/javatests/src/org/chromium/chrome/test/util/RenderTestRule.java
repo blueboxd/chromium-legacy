@@ -152,7 +152,7 @@ public class RenderTestRule extends TestWatcher {
         Bitmap testBitmap =
                 ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Bitmap>() {
                     @Override
-                    public Bitmap call() throws Exception {
+                    public Bitmap call() {
                         int height = view.getMeasuredHeight();
                         int width = view.getMeasuredWidth();
                         if (height <= 0 || width <= 0) {

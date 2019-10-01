@@ -195,7 +195,7 @@ void MultiDeviceNotificationPresenter::OnNotificationClicked(
 
 void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
   // If already the delegate, there is nothing else to do.
-  if (multidevice_setup_ptr_)
+  if (multidevice_setup_remote_)
     return;
 
   const SessionControllerImpl* session_controller =
@@ -220,14 +220,13 @@ void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
   if (!service_instance_group)
     return;
 
-  connector_->BindInterface(
-      service_manager::ServiceFilter::ByNameInGroup(
-          chromeos::multidevice_setup::mojom::kServiceName,
-          *service_instance_group),
-      &multidevice_setup_ptr_);
+  connector_->Connect(service_manager::ServiceFilter::ByNameInGroup(
+                          chromeos::multidevice_setup::mojom::kServiceName,
+                          *service_instance_group),
+                      multidevice_setup_remote_.BindNewPipeAndPassReceiver());
 
   // Add this object as the delegate of the MultiDeviceSetup Service.
-  multidevice_setup_ptr_->SetAccountStatusChangeDelegate(
+  multidevice_setup_remote_->SetAccountStatusChangeDelegate(
       receiver_.BindNewPipeAndPassRemote());
 
   message_center_->AddObserver(this);
@@ -268,8 +267,8 @@ MultiDeviceNotificationPresenter::CreateNotification(
 }
 
 void MultiDeviceNotificationPresenter::FlushForTesting() {
-  if (multidevice_setup_ptr_)
-    multidevice_setup_ptr_.FlushForTesting();
+  if (multidevice_setup_remote_)
+    multidevice_setup_remote_.FlushForTesting();
 }
 
 }  // namespace ash

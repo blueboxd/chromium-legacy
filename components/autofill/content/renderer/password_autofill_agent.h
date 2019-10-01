@@ -533,6 +533,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // Contains renderer id of the form of the last updated input element.
   uint32_t last_updated_form_renderer_id_ = FormData::kNotSetFormRendererId;
 
+  bool was_touch_to_fill_ui_shown_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);
 };
 

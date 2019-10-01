@@ -83,7 +83,7 @@ public class MinidumpUploadCallableTest {
         }
 
         @Override
-        public OutputStream getOutputStream() throws IOException {
+        public OutputStream getOutputStream() {
             return new ByteArrayOutputStream();
         }
 
@@ -181,7 +181,7 @@ public class MinidumpUploadCallableTest {
         CrashTestRule.setUpMinidumpFile(mTestUpload, BOUNDARY);
     }
 
-    private void setForcedUpload() throws Exception {
+    private void setForcedUpload() {
         File renamed =
                 new File(mTestRule.getCrashDir(), mTestUpload.getName().replace(".dmp", ".forced"));
         mTestUpload.renameTo(renamed);
@@ -227,7 +227,7 @@ public class MinidumpUploadCallableTest {
     @Test
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testCallNotPermittedByUser() throws Exception {
+    public void testCallNotPermittedByUser() {
         CrashReportingPermissionManager testPermManager =
                 new MockCrashReportingPermissionManager() {
                     {
@@ -254,7 +254,7 @@ public class MinidumpUploadCallableTest {
     @Test
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testCallPermittedButNotInSample() throws Exception {
+    public void testCallPermittedButNotInSample() {
         CrashReportingPermissionManager testPermManager =
                 new MockCrashReportingPermissionManager() {
                     {
@@ -281,7 +281,7 @@ public class MinidumpUploadCallableTest {
     @Test
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testCallPermittedButNotUnderCurrentCircumstances() throws Exception {
+    public void testCallPermittedButNotUnderCurrentCircumstances() {
         CrashReportingPermissionManager testPermManager =
                 new MockCrashReportingPermissionManager() {
                     {
@@ -350,7 +350,7 @@ public class MinidumpUploadCallableTest {
     @Test
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testCallNotPermittedByUser_ForcedUpload() throws Exception {
+    public void testCallNotPermittedByUser_ForcedUpload() {
         setForcedUpload();
         CrashReportingPermissionManager testPermManager =
                 new MockCrashReportingPermissionManager() {
@@ -377,7 +377,7 @@ public class MinidumpUploadCallableTest {
     @Test
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testCallPermittedButNotInSample_ForcedUpload() throws Exception {
+    public void testCallPermittedButNotInSample_ForcedUpload() {
         setForcedUpload();
         CrashReportingPermissionManager testPermManager =
                 new MockCrashReportingPermissionManager() {
@@ -404,7 +404,7 @@ public class MinidumpUploadCallableTest {
     @Test
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testCallPermittedButNotUnderCurrentCircumstances_ForcedUpload() throws Exception {
+    public void testCallPermittedButNotUnderCurrentCircumstances_ForcedUpload() {
         setForcedUpload();
         CrashReportingPermissionManager testPermManager =
                 new MockCrashReportingPermissionManager() {
@@ -479,7 +479,7 @@ public class MinidumpUploadCallableTest {
     @Test
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testReceivingErrorCodes() throws Exception {
+    public void testReceivingErrorCodes() {
         CrashReportingPermissionManager testPermManager =
                 new MockCrashReportingPermissionManager() {
                     {

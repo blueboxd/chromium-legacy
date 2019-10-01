@@ -265,7 +265,7 @@ public class SearchActivityTest {
 
         waitForChromeTabbedActivityToStart(new Callable<Void>() {
             @Override
-            public Void call() throws InterruptedException, TimeoutException {
+            public Void call() throws TimeoutException {
                 // Finish initialization.  It should notice the URL is queued up and start the
                 // browser.
                 TestThreadUtils.runOnUiThreadBlocking(
@@ -282,7 +282,7 @@ public class SearchActivityTest {
 
     @Test
     @SmallTest
-    public void testZeroSuggestBeforeNativeIsLoaded() throws Exception {
+    public void testZeroSuggestBeforeNativeIsLoaded() {
         LocaleManager.setInstanceForTest(new LocaleManager() {
             @Override
             public boolean needToCheckForSearchEnginePromo() {
@@ -415,7 +415,7 @@ public class SearchActivityTest {
         // SearchActivity should realize the failure case and prevent the user from using it.
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
-            public Integer call() throws Exception {
+            public Integer call() {
                 return ApplicationStatus.getRunningActivities().size();
             }
         }));
@@ -427,7 +427,7 @@ public class SearchActivityTest {
 
     @Test
     @SmallTest
-    public void testNewIntentDiscardsQuery() throws Exception {
+    public void testNewIntentDiscardsQuery() {
         final SearchActivity searchActivity = startSearchActivity();
         setUrlBarText(searchActivity, "first query");
         final SearchActivityLocationBarLayout locationBar =
@@ -449,11 +449,11 @@ public class SearchActivityTest {
         });
     }
 
-    private SearchActivity startSearchActivity() throws Exception {
+    private SearchActivity startSearchActivity() {
         return startSearchActivity(0);
     }
 
-    private SearchActivity startSearchActivity(int expectedCallCount) throws Exception {
+    private SearchActivity startSearchActivity(int expectedCallCount) {
         final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
         ActivityMonitor searchMonitor =
                 new ActivityMonitor(SearchActivity.class.getName(), null, false);
@@ -485,7 +485,7 @@ public class SearchActivityTest {
 
         CriteriaHelper.pollUiThread(Criteria.equals(expectedUrl, new Callable<String>() {
             @Override
-            public String call() throws Exception {
+            public String call() {
                 Tab tab = cta.getActivityTab();
                 if (tab == null) return null;
 

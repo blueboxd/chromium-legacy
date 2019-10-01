@@ -312,7 +312,7 @@ public class TabStripTest {
     @LargeTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
-    public void testCloseAllTabsFromTabMenuClosesAllTabs() throws Exception {
+    public void testCloseAllTabsFromTabMenuClosesAllTabs() {
         // 1. Create a second tab
         ChromeTabUtils.newTabFromMenu(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
@@ -353,7 +353,7 @@ public class TabStripTest {
     @LargeTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
-    public void testTabMenuDismissedOnOrientationChange() throws Exception {
+    public void testTabMenuDismissedOnOrientationChange() {
         // 1. Set orientation to portrait
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -417,7 +417,7 @@ public class TabStripTest {
     @LargeTest
     @Feature({"TabStrip"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
-    public void testCloseLastIncognitoTab() throws Exception {
+    public void testCloseLastIncognitoTab() {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         Assert.assertFalse("Expected normal strip to be selected",
                 mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected());
@@ -446,7 +446,7 @@ public class TabStripTest {
     @LargeTest
     @Feature({"TabStrip"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
-    public void testCloseAllIncognitoTabsFromTabMenu() throws Exception {
+    public void testCloseAllIncognitoTabsFromTabMenu() {
         //1. Create two incognito tabs
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         Assert.assertFalse("Expected normal strip to be selected",
@@ -493,7 +493,7 @@ public class TabStripTest {
     @LargeTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
-    public void testTabSelectionViewDoesNotBreakModelSwitch() throws Exception {
+    public void testTabSelectionViewDoesNotBreakModelSwitch() {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         Assert.assertFalse("Expected normal strip to be selected",
                 mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected());
@@ -856,7 +856,7 @@ public class TabStripTest {
     /**
      * Simulates a click to the incognito toggle button.
      */
-    protected void clickIncognitoToggleButton() throws InterruptedException {
+    protected void clickIncognitoToggleButton() {
         final CallbackHelper tabModelSelectedCallback = new CallbackHelper();
         TabModelSelectorObserver observer = new EmptyTabModelSelectorObserver() {
             @Override
@@ -882,7 +882,7 @@ public class TabStripTest {
      * @param incognito Whether or not this tab is in the incognito or normal stack.
      * @param id The id of the tab to click.
      */
-    protected void selectTab(final boolean incognito, final int id) throws InterruptedException {
+    protected void selectTab(final boolean incognito, final int id) {
         ChromeTabUtils.selectTabWithAction(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), new Runnable() {
                     @Override
@@ -901,7 +901,7 @@ public class TabStripTest {
      * @param incognito Whether or not this tab is in the incognito or normal stack.
      * @param id The id of the tab to click.
      */
-    protected void closeTab(final boolean incognito, final int id) throws InterruptedException {
+    protected void closeTab(final boolean incognito, final int id) {
         ChromeTabUtils.closeTabWithAction(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), new Runnable() {
                     @Override
@@ -921,8 +921,7 @@ public class TabStripTest {
      * @param incognito Whether or not this tab is in the incognito or normal stack.
      * @param id The id of the tab to click.
      */
-    protected void longPressCloseTab(final boolean incognito, final int id)
-            throws InterruptedException {
+    protected void longPressCloseTab(final boolean incognito, final int id) {
         ChromeTabUtils.selectTabWithAction(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), new Runnable() {
                     @Override
@@ -1159,7 +1158,7 @@ public class TabStripTest {
         // Only tabs that can currently be seen on the screen should be visible.
         Boolean shouldBeVisible = TestThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
             @Override
-            public Boolean call() throws Exception {
+            public Boolean call() {
                 return (tabView.getDrawX() + tabView.getWidth()) >= 0
                         && tabView.getDrawX() <= tabStrip.getWidth();
             }
@@ -1176,7 +1175,7 @@ public class TabStripTest {
             throws ExecutionException {
         Boolean isVisible = TestThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
             @Override
-            public Boolean call() throws Exception {
+            public Boolean call() {
                 return tabView.isVisible();
             }
         });
@@ -1196,7 +1195,7 @@ public class TabStripTest {
             throws ExecutionException {
         Float tabDrawX = TestThreadUtils.runOnUiThreadBlocking(new Callable<Float>() {
             @Override
-            public Float call() throws Exception {
+            public Float call() {
                 return tabView.getDrawX();
             }
         });

@@ -463,6 +463,7 @@ class HangingHostResolver : public HostResolver {
   class RequestImpl;
 
   int num_cancellations_ = 0;
+  bool shutting_down_ = false;
   base::WeakPtrFactory<HangingHostResolver> weak_ptr_factory_{this};
 };
 

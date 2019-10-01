@@ -150,6 +150,14 @@ void WebThreadScheduler::DidAnimateForInputOnCompositorThread() {
   NOTREACHED();
 }
 
+void WebThreadScheduler::DidScheduleBeginMainFrame() {
+  NOTREACHED();
+}
+
+void WebThreadScheduler::DidRunBeginMainFrame() {
+  NOTREACHED();
+}
+
 void WebThreadScheduler::SetRendererHidden(bool hidden) {
   NOTREACHED();
 }

@@ -46,6 +46,10 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
                           public SyncManager::Observer,
                           public TypeDebugInfoObserver {
  public:
+  using AllNodesCallback =
+      base::OnceCallback<void(const ModelType,
+                              std::unique_ptr<base::ListValue>)>;
+
   SyncEngineBackend(const std::string& name,
                     const base::FilePath& sync_data_folder,
                     const base::WeakPtr<SyncEngineImpl>& host);
@@ -173,6 +177,9 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
 
   // Notify about change in client id.
   void DoOnInvalidatorClientIdChange(const std::string& client_id);
+
+  // Returns a ListValue representing Nigori node.
+  void GetNigoriNodeForDebugging(AllNodesCallback callback);
 
   bool HasUnsyncedItemsForTest() const;
 

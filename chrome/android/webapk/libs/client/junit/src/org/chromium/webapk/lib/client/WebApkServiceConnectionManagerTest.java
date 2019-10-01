@@ -94,7 +94,7 @@ public class WebApkServiceConnectionManagerTest {
      * already exists.
      */
     @Test
-    public void testAfterConnectionEstablished() throws Exception {
+    public void testAfterConnectionEstablished() {
         TestCallback callback1 = new TestCallback();
         TestCallback callback2 = new TestCallback();
 
@@ -117,7 +117,7 @@ public class WebApkServiceConnectionManagerTest {
      * WebAPK but has not established a connection yet.
      */
     @Test
-    public void testConnectWhileConnectionBeingEstablished() throws Exception {
+    public void testConnectWhileConnectionBeingEstablished() {
         // Context for testing {@link Context#bindService()} occurring asynchronously.
         class AsyncBindContext extends ContextWrapper {
             private ServiceConnection mConnection;
@@ -224,7 +224,7 @@ public class WebApkServiceConnectionManagerTest {
      * Test reconnecting to a WebAPK's service.
      */
     @Test
-    public void testConnectDisconnectConnect() throws Exception {
+    public void testConnectDisconnectConnect() {
         final int flagRunBackgroundTasksAfterConnect = 0x1;
         final int flagRunBackgroundTasksAfterDisconnect = 0x2;
 

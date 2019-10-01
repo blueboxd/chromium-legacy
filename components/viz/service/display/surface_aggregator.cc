@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
+#include "components/viz/common/display/de_jelly.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
@@ -33,6 +34,8 @@
 #include "components/viz/service/surfaces/surface_allocation_group.h"
 #include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/surfaces/surface_manager.h"
+#include "ui/gfx/geometry/angle_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/overlay_transform_utils.h"
 
 namespace viz {
@@ -538,11 +541,14 @@ void SurfaceAggregator::EmitSurfaceContent(
       is_reflection &&
       !scaled_quad_to_target_transform.IsIdentityOrTranslation();
 
+  // We cannot merge passes if de-jelly is being applied, as we must have a
+  // renderpass to skew.
   bool merge_pass =
       allow_merge && !reflected_and_scaled &&
       base::IsApproximatelyEqual(source_sqs->opacity, 1.f, kOpacityEpsilon) &&
       copy_requests.empty() && combined_transform.Preserves2dAxisAlignment() &&
-      CanMergeRoundedCorner(rounded_corner_info, *render_pass_list.back());
+      CanMergeRoundedCorner(rounded_corner_info, *render_pass_list.back()) &&
+      source_sqs->de_jelly_delta_y == 0;
 
   gfx::Rect occluding_damage_rect;
   bool occluding_damage_rect_valid = ProcessSurfaceOccludingDamage(
@@ -905,6 +911,7 @@ SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
   if (occluding_damage_rect_valid) {
     shared_quad_state->occluding_damage_rect = occluding_damage_rect;
   }
+  shared_quad_state->de_jelly_delta_y = source_sqs->de_jelly_delta_y;
 
   return shared_quad_state;
 }
@@ -981,7 +988,7 @@ void SurfaceAggregator::CopyQuadsToPass(
                                 quad->shared_quad_state->is_fast_rounded_corner,
                                 target_transform);
         }
-        const SharedQuadState* dest_shared_quad_state = CopySharedQuadState(
+        SharedQuadState* dest_shared_quad_state = CopySharedQuadState(
             quad->shared_quad_state, target_transform, clip_rect, dest_pass,
             new_rounded_corner_info, occluding_damage_rect,
             occluding_damage_rect_valid);
@@ -1604,6 +1611,11 @@ CompositorFrame SurfaceAggregator::Aggregate(
   referenced_surfaces_.insert(surface_id);
   CopyPasses(root_surface_frame, surface);
   referenced_surfaces_.erase(surface_id);
+
+  // Now that we've handled our main surface aggregation, apply de-jelly effect
+  // if enabled.
+  HandleDeJelly(surface);
+
   AddColorConversionPass();
 
   moved_pixel_passes_.clear();
@@ -1713,6 +1725,260 @@ void SurfaceAggregator::SetFrameAnnotator(
 
 bool SurfaceAggregator::IsRootSurface(const Surface* surface) const {
   return surface->surface_id() == root_surface_id_;
+}
+
+void SurfaceAggregator::HandleDeJelly(Surface* surface) {
+  TRACE_EVENT0("viz", "SurfaceAggregator::HandleDeJelly");
+
+  if (dest_pass_list_->empty() || !DeJellyActive())
+    return;
+
+  // |jelly_clip| is the rect that contains all de-jelly'd quads. It is used as
+  // an approximation for the containing non-skewed clip rect.
+  gfx::Rect jelly_clip;
+  // |max_skew| represents the maximum skew applied to an element. To prevent
+  // tearing due to slight inaccuracies, we apply the max skew to all skewed
+  // elements.
+  float max_skew = 0.0f;
+
+  // Iterate over each SharedQuadState in the root render pass and compute
+  // |max_skew| and |jelly_clip|.
+  auto* root_render_pass = dest_pass_list_->back().get();
+  float screen_width = DeJellyScreenWidth();
+  for (SharedQuadState* state : root_render_pass->shared_quad_state_list) {
+    float delta_y = state->de_jelly_delta_y;
+    if (delta_y == 0.0f)
+      continue;
+
+    // We are going to de-jelly this SharedQuadState. Expand the max clip.
+    jelly_clip.Union(state->clip_rect);
+
+    // Compute the skew angle and update |max_skew|.
+    float de_jelly_angle = gfx::RadToDeg(atan2(delta_y, screen_width));
+    float sign = de_jelly_angle / std::abs(de_jelly_angle);
+    max_skew = std::max(std::abs(de_jelly_angle), std::abs(max_skew)) * sign;
+  }
+
+  // Exit if nothing was skewed.
+  if (max_skew == 0.0f)
+    return;
+
+  // Remove the existing root render pass and create a new one which we will
+  // re-copy skewed quads / render-passes to.
+  // TODO(ericrk): Handle backdrop filters?
+  // TODO(ericrk): This will end up skewing copy requests. Address if
+  // necessary.
+  std::unique_ptr<RenderPass> old_root = std::move(dest_pass_list_->back());
+  dest_pass_list_->pop_back();
+  auto new_root = root_render_pass->Copy(root_render_pass->id);
+  new_root->copy_requests = std::move(old_root->copy_requests);
+
+  // Data tracking the current sub RenderPass (if any) which is being appended
+  // to. We can keep re-using a sub RenderPass if the skew has not changed and
+  // if we are in the typical kSrcOver blend mode.
+  std::unique_ptr<RenderPass> sub_render_pass;
+  SkBlendMode sub_render_pass_blend_mode;
+  float sub_render_pass_opacity;
+
+  // Apply de-jelly to all quads, promoting quads into render passes as
+  // necessary.
+  for (auto it = root_render_pass->quad_list.begin();
+       it != root_render_pass->quad_list.end();) {
+    auto* state = it->shared_quad_state;
+    bool has_skew = state->de_jelly_delta_y != 0.0f;
+
+    // If we have a sub RenderPass which is not compatible with our current
+    // quad, we must flush and clear it.
+    if (sub_render_pass) {
+      if (!has_skew || sub_render_pass_blend_mode != state->blend_mode ||
+          state->blend_mode != SkBlendMode::kSrcOver) {
+        AppendDeJellyRenderPass(max_skew, jelly_clip, sub_render_pass_opacity,
+                                sub_render_pass_blend_mode, new_root.get(),
+                                std::move(sub_render_pass));
+        sub_render_pass.reset();
+      }
+    }
+
+    // Create a new render pass if we have a skewed quad which is clipped more
+    // than jelly_clip.
+    bool create_render_pass =
+        has_skew && state->is_clipped && state->clip_rect != jelly_clip;
+    if (!sub_render_pass && create_render_pass) {
+      sub_render_pass = RenderPass::Create(1, 1);
+      gfx::Transform skew_transform;
+      skew_transform.Skew(0.0f, max_skew);
+      // Ignore rectangles for now, these are updated in
+      // CreateDeJellyRenderPassQuads.
+      sub_render_pass->SetNew(next_render_pass_id_++, gfx::Rect(), gfx::Rect(),
+                              skew_transform);
+      // If blend mode is not kSrcOver, we apply it in the render pass.
+      if (state->blend_mode != SkBlendMode::kSrcOver) {
+        sub_render_pass_opacity = state->opacity;
+        sub_render_pass_blend_mode = state->blend_mode;
+      } else {
+        sub_render_pass_opacity = 1.0f;
+        sub_render_pass_blend_mode = SkBlendMode::kSrcOver;
+      }
+    }
+
+    if (sub_render_pass) {
+      CreateDeJellyRenderPassQuads(&it, root_render_pass->quad_list.end(),
+                                   jelly_clip, max_skew, sub_render_pass.get());
+    } else {
+      float skew = has_skew ? max_skew : 0.0f;
+      CreateDeJellyNormalQuads(&it, root_render_pass->quad_list.end(),
+                               new_root.get(), skew);
+    }
+  }
+  if (sub_render_pass) {
+    AppendDeJellyRenderPass(max_skew, jelly_clip, sub_render_pass_opacity,
+                            sub_render_pass_blend_mode, new_root.get(),
+                            std::move(sub_render_pass));
+  }
+
+  dest_pass_list_->push_back(std::move(new_root));
+}
+
+void SurfaceAggregator::CreateDeJellyRenderPassQuads(
+    cc::ListContainer<DrawQuad>::Iterator* quad_iterator,
+    const cc::ListContainer<DrawQuad>::Iterator& end,
+    const gfx::Rect& jelly_clip,
+    float skew,
+    RenderPass* render_pass) {
+  auto* quad = **quad_iterator;
+  const auto* state = quad->shared_quad_state;
+
+  // Heuristic - we may have over-clipped a quad. If a quad is clipped by the
+  // |jelly_clip|, but contains content beyond |jelly_clip|, un-clip the quad by
+  // MaxDeJellyHeight().
+  int un_clip_top = 0;
+  int un_clip_bottom = 0;
+  if (state->clip_rect.y() <= jelly_clip.y()) {
+    un_clip_top = MaxDeJellyHeight();
+  }
+  if (state->clip_rect.bottom() >= jelly_clip.bottom()) {
+    un_clip_bottom = MaxDeJellyHeight();
+  }
+
+  // Compute the required renderpass rect in target space.
+  // First, find the un-transformed visible rect.
+  gfx::RectF render_pass_visible_rect_f(state->visible_quad_layer_rect);
+  // Next, if this is a RenderPass quad, find any filters and expand the
+  // visible rect.
+  if (quad->material == DrawQuad::Material::kRenderPass) {
+    RenderPassId target_id =
+        RenderPassDrawQuad::MaterialCast(quad)->render_pass_id;
+    RenderPass* source_render_pass = nullptr;
+    for (auto& rp : *dest_pass_list_) {
+      if (rp->id == target_id) {
+        source_render_pass = rp.get();
+        break;
+      }
+    }
+    if (source_render_pass) {
+      render_pass_visible_rect_f =
+          gfx::RectF(source_render_pass->filters.MapRect(
+              state->visible_quad_layer_rect, SkMatrix()));
+    }
+  }
+  // Next, find the enclosing Rect for the transformed target space RectF.
+  state->quad_to_target_transform.TransformRect(&render_pass_visible_rect_f);
+  gfx::Rect render_pass_visible_rect =
+      gfx::ToEnclosingRect(render_pass_visible_rect_f);
+  // Finally, expand by our un_clip amounts.
+  render_pass_visible_rect.Inset(0, -un_clip_top, 0, -un_clip_bottom);
+
+  // Expand the |render_pass|'s rects.
+  render_pass->output_rect =
+      gfx::UnionRects(render_pass->output_rect, render_pass_visible_rect);
+  render_pass->damage_rect = render_pass->output_rect;
+
+  // Create a new SharedQuadState based on |state|.
+  {
+    auto* new_state = render_pass->CreateAndAppendSharedQuadState();
+    *new_state = *state;
+    // If blend mode is not kSrcOver, we apply it in the RenderPass.
+    if (state->blend_mode != SkBlendMode::kSrcOver) {
+      new_state->opacity = 1.0f;
+      new_state->blend_mode = SkBlendMode::kSrcOver;
+    }
+
+    // Expand our clip by un clip amounts.
+    new_state->clip_rect.Inset(0, -un_clip_top, 0, -un_clip_bottom);
+  }
+
+  // Append all quads sharing |new_state|.
+  AppendDeJellyQuadsForSharedQuadState(quad_iterator, end, render_pass, state);
+}
+
+void SurfaceAggregator::CreateDeJellyNormalQuads(
+    cc::ListContainer<DrawQuad>::Iterator* quad_iterator,
+    const cc::ListContainer<DrawQuad>::Iterator& end,
+    RenderPass* root_pass,
+    float skew) {
+  auto* quad = **quad_iterator;
+  const auto* state = quad->shared_quad_state;
+
+  // Crearte a new SharedQuadState on |root_pass| and apply skew if any.
+  SharedQuadState* new_state = root_pass->CreateAndAppendSharedQuadState();
+  *new_state = *state;
+  if (skew != 0.0f) {
+    gfx::Transform skew_transform;
+    skew_transform.Skew(0.0f, skew);
+    new_state->quad_to_target_transform =
+        skew_transform * new_state->quad_to_target_transform;
+  }
+
+  // Append all quads sharing |new_state|.
+  AppendDeJellyQuadsForSharedQuadState(quad_iterator, end, root_pass, state);
+}
+
+void SurfaceAggregator::AppendDeJellyRenderPass(
+    float skew,
+    const gfx::Rect& jelly_clip,
+    float opacity,
+    SkBlendMode blend_mode,
+    RenderPass* root_pass,
+    std::unique_ptr<RenderPass> render_pass) {
+  // Create a new quad for this renderpass and append it to the pass list.
+  auto* new_state = root_pass->CreateAndAppendSharedQuadState();
+  gfx::Transform transform;
+  new_state->SetAll(transform, render_pass->output_rect,
+                    render_pass->output_rect, gfx::RRectF(), jelly_clip, true,
+                    false, opacity, blend_mode, 0);
+  auto* quad = root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+  quad->SetNew(new_state, render_pass->output_rect, render_pass->output_rect,
+               render_pass->id, 0, gfx::RectF(), gfx::Size(), gfx::Vector2dF(),
+               gfx::PointF(),
+               gfx::RectF(gfx::SizeF(render_pass->output_rect.size())), false,
+               1.0f);
+  gfx::Transform skew_transform;
+  skew_transform.Skew(0.0f, skew);
+  new_state->quad_to_target_transform =
+      skew_transform * new_state->quad_to_target_transform;
+  dest_pass_list_->push_back(std::move(render_pass));
+}
+
+void SurfaceAggregator::AppendDeJellyQuadsForSharedQuadState(
+    cc::ListContainer<DrawQuad>::Iterator* quad_iterator,
+    const cc::ListContainer<DrawQuad>::Iterator& end,
+    RenderPass* render_pass,
+    const SharedQuadState* state) {
+  auto* quad = **quad_iterator;
+  while (quad->shared_quad_state == state) {
+    if (quad->material == DrawQuad::Material::kRenderPass) {
+      const auto* pass_quad = RenderPassDrawQuad::MaterialCast(quad);
+      render_pass->CopyFromAndAppendRenderPassDrawQuad(
+          pass_quad, pass_quad->render_pass_id);
+    } else {
+      render_pass->CopyFromAndAppendDrawQuad(quad);
+    }
+
+    ++(*quad_iterator);
+    if (*quad_iterator == end)
+      break;
+    quad = **quad_iterator;
+  }
 }
 
 }  // namespace viz

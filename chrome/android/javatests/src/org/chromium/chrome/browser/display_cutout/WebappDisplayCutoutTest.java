@@ -34,7 +34,7 @@ public class WebappDisplayCutoutTest {
     @LargeTest
     @FlakyTest(message = "crbug.com/862728")
     @WebappDisplayCutoutTestRule.TestConfiguration(displayMode = WebDisplayMode.UNDEFINED)
-    public void testViewportFitWebapp() throws InterruptedException, TimeoutException {
+    public void testViewportFitWebapp() throws TimeoutException {
         mTestRule.setViewportFit(DisplayCutoutTestRule.VIEWPORT_FIT_COVER);
 
         mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITHOUT_CUTOUT);
@@ -49,7 +49,7 @@ public class WebappDisplayCutoutTest {
     @LargeTest
     @FlakyTest(message = "crbug.com/862728")
     @WebappDisplayCutoutTestRule.TestConfiguration(displayMode = WebDisplayMode.FULLSCREEN)
-    public void testViewportFitWebapp_Fullscreen() throws InterruptedException, TimeoutException {
+    public void testViewportFitWebapp_Fullscreen() throws TimeoutException {
         mTestRule.setViewportFit(DisplayCutoutTestRule.VIEWPORT_FIT_COVER);
 
         mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITH_CUTOUT);
@@ -65,7 +65,7 @@ public class WebappDisplayCutoutTest {
     @LargeTest
     @FlakyTest(message = "crbug.com/862728")
     @WebappDisplayCutoutTestRule.TestConfiguration(displayMode = WebDisplayMode.MINIMAL_UI)
-    public void testViewportFitWebapp_MinimalUi() throws InterruptedException, TimeoutException {
+    public void testViewportFitWebapp_MinimalUi() throws TimeoutException {
         mTestRule.setViewportFit(DisplayCutoutTestRule.VIEWPORT_FIT_COVER);
 
         mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITHOUT_CUTOUT);
@@ -81,7 +81,7 @@ public class WebappDisplayCutoutTest {
     @LargeTest
     @FlakyTest(message = "crbug.com/862728")
     @WebappDisplayCutoutTestRule.TestConfiguration(displayMode = WebDisplayMode.STANDALONE)
-    public void testViewportFitWebapp_Standalone() throws InterruptedException, TimeoutException {
+    public void testViewportFitWebapp_Standalone() throws TimeoutException {
         mTestRule.setViewportFit(DisplayCutoutTestRule.VIEWPORT_FIT_COVER);
 
         mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITHOUT_CUTOUT);

@@ -47,13 +47,13 @@ public class LoadUrlTest {
     private AwEmbeddedTestServer mTestServer;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mTestServer = AwEmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 

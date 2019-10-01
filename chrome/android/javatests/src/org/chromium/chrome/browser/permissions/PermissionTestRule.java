@@ -116,9 +116,10 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
                     public Boolean call() {
                         boolean isDialogShownForTest =
                                 PermissionDialogController.getInstance().isDialogShownForTest();
-                        if (isDialogShownForTest)
+                        if (isDialogShownForTest) {
                             ModalDialogTestUtils.checkCurrentPresenter(
                                     mModalDialogManager, ModalDialogType.TAB);
+                        }
                         return isDialogShownForTest == mExpectDialog;
                     }
                 });
@@ -132,7 +133,7 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
         super(ChromeActivity.class);
     }
 
-    private void ruleSetUp() throws Throwable {
+    private void ruleSetUp() {
         // TODO(https://crbug.com/867446): Refactor to use EmbeddedTestServerRule.
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
@@ -146,11 +147,11 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
         getInfoBarContainer().addAnimationListener(mListener);
     }
 
-    private void ruleTearDown() throws Exception {
+    private void ruleTearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
-    protected void setUpUrl(final String url) throws InterruptedException {
+    protected void setUpUrl(final String url) {
         loadUrl(getURL(url));
     }
 
@@ -223,7 +224,7 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
     }
 
     private void runJavaScriptCodeInCurrentTabWithGesture(String javascript)
-            throws InterruptedException, java.util.concurrent.TimeoutException {
+            throws java.util.concurrent.TimeoutException {
         runJavaScriptCodeInCurrentTab("functionToRun = '" + javascript + "'");
         TouchCommon.singleClickView(getActivity().getActivityTab().getView());
     }

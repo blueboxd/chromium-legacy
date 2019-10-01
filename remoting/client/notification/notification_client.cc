@@ -184,12 +184,14 @@ class MessageAndLinkTextResults
 
 }  // namespace
 
-NotificationClient::NotificationClient()
-    : NotificationClient(std::make_unique<GstaticJsonFetcher>(),
-                         kCurrentPlatform,
-                         kCurrentVersion,
-                         l10n_util::GetApplicationLocale(""),
-                         kShouldIgnoreDevMessages) {}
+NotificationClient::NotificationClient(
+    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
+    : NotificationClient(
+          std::make_unique<GstaticJsonFetcher>(network_task_runner),
+          kCurrentPlatform,
+          kCurrentVersion,
+          l10n_util::GetApplicationLocale(""),
+          kShouldIgnoreDevMessages) {}
 
 NotificationClient::~NotificationClient() = default;
 

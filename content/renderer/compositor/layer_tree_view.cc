@@ -74,6 +74,7 @@ void LayerTreeView::Initialize(
 
   cc::LayerTreeHost::InitParams params;
   params.client = this;
+  params.scheduling_client = this;
   params.settings = &settings;
   params.task_graph_runner = task_graph_runner_;
   params.main_task_runner = main_thread_;
@@ -270,6 +271,14 @@ void LayerTreeView::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
 std::unique_ptr<cc::BeginMainFrameMetrics>
 LayerTreeView::GetBeginMainFrameMetrics() {
   return delegate_->GetBeginMainFrameMetrics();
+}
+
+void LayerTreeView::DidScheduleBeginMainFrame() {
+  web_main_thread_scheduler_->DidScheduleBeginMainFrame();
+}
+
+void LayerTreeView::DidRunBeginMainFrame() {
+  web_main_thread_scheduler_->DidRunBeginMainFrame();
 }
 
 void LayerTreeView::DidSubmitCompositorFrame() {}

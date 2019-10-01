@@ -107,13 +107,13 @@ import java.util.List;
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         deleteTestFiles();
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
         deleteTestFiles();
     }
@@ -236,7 +236,7 @@ import java.util.List;
     @MediumTest
     @Feature({"Downloads"})
     @DisabledTest(message = "crbug.com/597230")
-    public void testDuplicateHttpPostDownload_Cancel() throws Exception {
+    public void testDuplicateHttpPostDownload_Cancel() {
         // Download a file.
         mDownloadTestRule.loadUrl(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + "post.html"));
         waitForFocus();
@@ -341,7 +341,7 @@ import java.util.List;
                 mDownloadTestRule.hasDownload(FILENAME_TEXT_2, SUPERBO_CONTENTS));
     }
 
-    private void goToLastTab() throws Exception {
+    private void goToLastTab() {
         final TabModel model = mDownloadTestRule.getActivity().getCurrentTabModel();
         final int count = model.getCount();
 

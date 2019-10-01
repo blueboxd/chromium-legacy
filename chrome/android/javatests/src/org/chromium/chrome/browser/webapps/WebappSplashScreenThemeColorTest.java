@@ -40,7 +40,7 @@ public class WebappSplashScreenThemeColorTest {
     public final WebappActivityTestRule mActivityTestRule = new WebappActivityTestRule();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mActivityTestRule.startWebappActivityAndWaitForSplashScreen(
                 mActivityTestRule
                         .createIntent()

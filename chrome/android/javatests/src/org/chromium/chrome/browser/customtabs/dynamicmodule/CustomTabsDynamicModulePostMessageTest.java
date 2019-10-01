@@ -96,7 +96,7 @@ public class CustomTabsDynamicModulePostMessageTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mServer.shutdown();
     }
 
@@ -106,7 +106,7 @@ public class CustomTabsDynamicModulePostMessageTest {
     @Test
     @SmallTest
     @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE_POST_MESSAGE)
-    public void testPostMessageFromDynamicModuleReceivedInPage() throws Exception {
+    public void testPostMessageFromDynamicModuleReceivedInPage() {
         final String url =
                 mServer.setResponse("/test.html", TITLE_FROM_POSTMESSAGE_TO_CHANNEL, null);
 
@@ -184,9 +184,10 @@ public class CustomTabsDynamicModulePostMessageTest {
      */
     @Test
     @SmallTest
-    @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE_POST_MESSAGE)
-    @Features.DisableFeatures(ChromeFeatureList.CCT_MODULE)
-    public void testPostMessageFromDynamicModuleDisallowedBeforeModuleLoaded() throws Exception {
+    @Features
+            .EnableFeatures(ChromeFeatureList.CCT_MODULE_POST_MESSAGE)
+            @Features.DisableFeatures(ChromeFeatureList.CCT_MODULE)
+            public void testPostMessageFromDynamicModuleDisallowedBeforeModuleLoaded() {
         final CallbackHelper messageChannelHelper = new CallbackHelper();
         final CallbackHelper onPostMessageHelper = new CallbackHelper();
         final String url = mServer.setResponse("/test.html", MESSAGE_FROM_PAGE_TO_CHANNEL, null);
@@ -234,9 +235,10 @@ public class CustomTabsDynamicModulePostMessageTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE)
-    @Features.DisableFeatures(ChromeFeatureList.CCT_MODULE_POST_MESSAGE)
-    public void testPostMessageFromDynamicModuleDisallowedWhenFeatureDisabled() throws Exception {
+    @Features
+            .EnableFeatures(ChromeFeatureList.CCT_MODULE)
+            @Features.DisableFeatures(ChromeFeatureList.CCT_MODULE_POST_MESSAGE)
+            public void testPostMessageFromDynamicModuleDisallowedWhenFeatureDisabled() {
         final String url = mServer.setResponse("/test.html", MESSAGE_FROM_PAGE_TO_CHANNEL, null);
 
         Intent intent = new IntentBuilder(url).build();

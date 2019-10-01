@@ -617,60 +617,61 @@ scoped_refptr<VideoFrame> VideoFrame::WrapCVPixelBuffer(
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
-    const VideoFrame& frame,
+    scoped_refptr<VideoFrame> frame,
     VideoPixelFormat format,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size) {
-  // Frames with textures need mailbox info propagated, and there's no support
-  // for that here yet, see http://crbug/362521.
-  CHECK(!frame.HasTextures());
-  DCHECK(frame.visible_rect().Contains(visible_rect));
+  DCHECK(frame->visible_rect().Contains(visible_rect));
 
   // The following storage type should not be wrapped as the shared region
   // cannot be owned by both the wrapped frame and the wrapping frame.
-  DCHECK(frame.storage_type() != STORAGE_MOJO_SHARED_BUFFER);
+  //
+  // TODO: We can support this now since we have a reference to the wrapped
+  // frame through |wrapped_frame_|.
+  DCHECK(frame->storage_type() != STORAGE_MOJO_SHARED_BUFFER);
 
-  if (!AreValidPixelFormatsForWrap(frame.format(), format)) {
+  if (!AreValidPixelFormatsForWrap(frame->format(), format)) {
     DLOG(ERROR) << __func__ << " Invalid format conversion."
-                << VideoPixelFormatToString(frame.format()) << " to "
+                << VideoPixelFormatToString(frame->format()) << " to "
                 << VideoPixelFormatToString(format);
     return nullptr;
   }
 
-  if (!IsValidConfig(format, frame.storage_type(), frame.coded_size(),
+  if (!IsValidConfig(format, frame->storage_type(), frame->coded_size(),
                      visible_rect, natural_size)) {
     DLOG(ERROR) << __func__ << " Invalid config."
-                << ConfigToString(format, frame.storage_type(),
-                                  frame.coded_size(), visible_rect,
+                << ConfigToString(format, frame->storage_type(),
+                                  frame->coded_size(), visible_rect,
                                   natural_size);
     return nullptr;
   }
 
   scoped_refptr<VideoFrame> wrapping_frame(
-      new VideoFrame(frame.layout(), frame.storage_type(), visible_rect,
-                     natural_size, frame.timestamp()));
+      new VideoFrame(frame->layout(), frame->storage_type(), visible_rect,
+                     natural_size, frame->timestamp()));
 
-  // Copy all metadata to the wrapped frame.
-  wrapping_frame->metadata()->MergeMetadataFrom(frame.metadata());
+  // Copy all metadata to the wrapped frame->
+  wrapping_frame->metadata()->MergeMetadataFrom(frame->metadata());
 
-  if (frame.IsMappable()) {
+  if (frame->IsMappable()) {
     for (size_t i = 0; i < NumPlanes(format); ++i) {
-      wrapping_frame->data_[i] = frame.data_[i];
+      wrapping_frame->data_[i] = frame->data_[i];
     }
   }
 
 #if defined(OS_LINUX)
-  DCHECK(frame.dmabuf_fds_);
+  DCHECK(frame->dmabuf_fds_);
   // If there are any |dmabuf_fds_| plugged in, we should refer them too.
-  wrapping_frame->dmabuf_fds_ = frame.dmabuf_fds_;
+  wrapping_frame->dmabuf_fds_ = frame->dmabuf_fds_;
 #endif
 
-  if (frame.storage_type() == STORAGE_SHMEM) {
-    DCHECK(frame.shm_region_ && frame.shm_region_->IsValid());
-    wrapping_frame->BackWithSharedMemory(frame.shm_region_,
-                                         frame.shared_memory_offset());
+  if (frame->storage_type() == STORAGE_SHMEM) {
+    DCHECK(frame->shm_region_ && frame->shm_region_->IsValid());
+    wrapping_frame->BackWithSharedMemory(frame->shm_region_,
+                                         frame->shared_memory_offset());
   }
 
+  wrapping_frame->wrapped_frame_ = std::move(frame);
   return wrapping_frame;
 }
 
@@ -906,16 +907,19 @@ bool VideoFrame::IsMappable() const {
 }
 
 bool VideoFrame::HasTextures() const {
-  return !mailbox_holders_[0].mailbox.IsZero();
+  return wrapped_frame_ ? wrapped_frame_->HasTextures()
+                        : !mailbox_holders_[0].mailbox.IsZero();
 }
 
 size_t VideoFrame::NumTextures() const {
   if (!HasTextures())
     return 0;
 
+  const auto& mailbox_holders =
+      wrapped_frame_ ? wrapped_frame_->mailbox_holders_ : mailbox_holders_;
   size_t i = 0;
   for (; i < NumPlanes(format()); ++i) {
-    if (mailbox_holders_[i].mailbox.IsZero()) {
+    if (mailbox_holders[i].mailbox.IsZero()) {
       return i;
     }
   }
@@ -923,11 +927,13 @@ size_t VideoFrame::NumTextures() const {
 }
 
 bool VideoFrame::HasGpuMemoryBuffer() const {
-  return !!gpu_memory_buffer_;
+  return wrapped_frame_ ? wrapped_frame_->HasGpuMemoryBuffer()
+                        : !!gpu_memory_buffer_;
 }
 
 gfx::GpuMemoryBuffer* VideoFrame::GetGpuMemoryBuffer() const {
-  return gpu_memory_buffer_.get();
+  return wrapped_frame_ ? wrapped_frame_->GetGpuMemoryBuffer()
+                        : gpu_memory_buffer_.get();
 }
 
 gfx::ColorSpace VideoFrame::ColorSpace() const {
@@ -970,7 +976,8 @@ const gpu::MailboxHolder&
 VideoFrame::mailbox_holder(size_t texture_index) const {
   DCHECK(HasTextures());
   DCHECK(IsValidPlane(texture_index, format()));
-  return mailbox_holders_[texture_index];
+  return wrapped_frame_ ? wrapped_frame_->mailbox_holders_[texture_index]
+                        : mailbox_holders_[texture_index];
 }
 
 #if defined(OS_LINUX)
@@ -1000,11 +1007,16 @@ CVPixelBufferRef VideoFrame::CvPixelBuffer() const {
 void VideoFrame::SetReleaseMailboxCB(ReleaseMailboxCB release_mailbox_cb) {
   DCHECK(release_mailbox_cb);
   DCHECK(!mailbox_holders_release_cb_);
+  // We don't relay SetReleaseMailboxCB to |wrapped_frame_| because the method
+  // is not thread safe.  This method should only be called by the owner of
+  // |wrapped_frame_| directly.
+  DCHECK(!wrapped_frame_);
   mailbox_holders_release_cb_ = std::move(release_mailbox_cb);
 }
 
 bool VideoFrame::HasReleaseMailboxCB() const {
-  return !!mailbox_holders_release_cb_;
+  return wrapped_frame_ ? wrapped_frame_->HasReleaseMailboxCB()
+                        : !!mailbox_holders_release_cb_;
 }
 
 void VideoFrame::AddDestructionObserver(base::OnceClosure callback) {
@@ -1014,6 +1026,9 @@ void VideoFrame::AddDestructionObserver(base::OnceClosure callback) {
 
 gpu::SyncToken VideoFrame::UpdateReleaseSyncToken(SyncTokenClient* client) {
   DCHECK(HasTextures());
+  if (wrapped_frame_) {
+    return wrapped_frame_->UpdateReleaseSyncToken(client);
+  }
   base::AutoLock locker(release_sync_token_lock_);
   // Must wait on the previous sync point before inserting a new sync point so
   // that |mailbox_holders_release_cb_| guarantees the previous sync point

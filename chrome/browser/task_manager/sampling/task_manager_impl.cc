@@ -309,7 +309,7 @@ bool TaskManagerImpl::GetV8Memory(TaskId task_id,
 
 bool TaskManagerImpl::GetWebCacheStats(
     TaskId task_id,
-    blink::WebCache::ResourceTypeStats* stats) const {
+    blink::WebCacheResourceTypeStats* stats) const {
   const Task* task = GetTaskByTaskId(task_id);
   if (!task->ReportsWebCacheStats())
     return false;

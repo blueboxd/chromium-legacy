@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
+#include "content/browser/web_package/bundled_exchanges_handle_tracker.h"
 #include "content/browser/web_package/bundled_exchanges_reader.h"
 #include "content/browser/web_package/bundled_exchanges_source.h"
 #include "content/browser/web_package/bundled_exchanges_url_loader_factory.h"
@@ -29,6 +30,10 @@
 namespace content {
 
 namespace {
+
+using DoneCallback = base::OnceCallback<void(
+    const GURL& base_url_override,
+    std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory)>;
 
 const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("bundled_exchanges_start_url_loader",
@@ -123,10 +128,6 @@ class PrimaryURLRedirectLoader final : public network::mojom::URLLoader {
 //     StartResponse() to create the loader for the main resource.
 class InterceptorForFile final : public NavigationLoaderInterceptor {
  public:
-  using DoneCallback = base::OnceCallback<void(
-      const GURL& base_url_override,
-      std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory)>;
-
   explicit InterceptorForFile(DoneCallback done_callback)
       : done_callback_(std::move(done_callback)) {}
   ~InterceptorForFile() override {
@@ -173,7 +174,7 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
         BundledExchangesSource::MaybeCreateFromFileUrl(request.url);
     if (!source)
       return false;
-    reader_ = std::make_unique<BundledExchangesReader>(*source);
+    reader_ = base::MakeRefCounted<BundledExchangesReader>(std::move(source));
     reader_->ReadMetadata(base::BindOnce(&InterceptorForFile::OnMetadataReady,
                                          weak_factory_.GetWeakPtr(), request));
     *client_request = forwarding_client_.BindNewPipeAndPassReceiver();
@@ -218,7 +219,7 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
   }
 
   DoneCallback done_callback_;
-  std::unique_ptr<BundledExchangesReader> reader_;
+  scoped_refptr<BundledExchangesReader> reader_;
   GURL primary_url_;
   std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory_;
 
@@ -249,14 +250,10 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
 //     CreateURLLoader() to create the loader for the main resource.
 class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
  public:
-  using DoneCallback = base::OnceCallback<void(
-      const GURL& base_url_override,
-      std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory)>;
-
   InterceptorForTrustableFile(std::unique_ptr<BundledExchangesSource> source,
                               DoneCallback done_callback)
       : source_(std::move(source)),
-        reader_(std::make_unique<BundledExchangesReader>(*source_)),
+        reader_(base::MakeRefCounted<BundledExchangesReader>(source_->Clone())),
         done_callback_(std::move(done_callback)) {
     reader_->ReadMetadata(
         base::BindOnce(&InterceptorForTrustableFile::OnMetadataReady,
@@ -340,7 +337,7 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
   }
 
   std::unique_ptr<BundledExchangesSource> source_;
-  std::unique_ptr<BundledExchangesReader> reader_;
+  scoped_refptr<BundledExchangesReader> reader_;
   DoneCallback done_callback_;
 
   network::ResourceRequest pending_resource_request_;
@@ -357,6 +354,153 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
   base::WeakPtrFactory<InterceptorForTrustableFile> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InterceptorForTrustableFile);
+};
+
+// A class to inherit NavigationLoaderInterceptor for the navigation within a
+// trustable BundledExchanges file.
+// For example:
+//   A user opened "file:///tmp/a.wbn", and InterceptorForTrustableFile
+//   redirected to "https://example.com/a.html" and "a.html" in "a.wbn" was
+//   loaded. And the user clicked a link to "https://example.com/b.html" from
+//   "a.html".
+// In this case, this interceptor intecepts the navigation request to "b.html",
+// and creates a URLLoader using the BundledExchangesURLLoaderFactory to load
+// the response of "b.html" in "a.wbn".
+class InterceptorForTrackedNavigationFromTrustableFile final
+    : public NavigationLoaderInterceptor {
+ public:
+  InterceptorForTrackedNavigationFromTrustableFile(
+      scoped_refptr<BundledExchangesReader> reader,
+      DoneCallback done_callback)
+      : url_loader_factory_(std::make_unique<BundledExchangesURLLoaderFactory>(
+            std::move(reader))),
+        done_callback_(std::move(done_callback)) {}
+  ~InterceptorForTrackedNavigationFromTrustableFile() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  }
+
+ private:
+  // NavigationLoaderInterceptor implementation
+  void MaybeCreateLoader(const network::ResourceRequest& resource_request,
+                         BrowserContext* browser_context,
+                         LoaderCallback callback,
+                         FallbackCallback fallback_callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK(url_loader_factory_->reader()->HasEntry(resource_request.url));
+    std::move(callback).Run(base::BindOnce(
+        &InterceptorForTrackedNavigationFromTrustableFile::CreateURLLoader,
+        weak_factory_.GetWeakPtr()));
+  }
+
+  void CreateURLLoader(const network::ResourceRequest& resource_request,
+                       network::mojom::URLLoaderRequest request,
+                       network::mojom::URLLoaderClientPtr client) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    url_loader_factory_->CreateLoaderAndStart(
+        std::move(request), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
+        resource_request, std::move(client),
+        net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
+    std::move(done_callback_)
+        .Run(
+            /*base_url_override=*/GURL(), std::move(url_loader_factory_));
+  }
+
+  std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory_;
+  DoneCallback done_callback_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<InterceptorForTrackedNavigationFromTrustableFile>
+      weak_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(InterceptorForTrackedNavigationFromTrustableFile);
+};
+
+// A class to inherit NavigationLoaderInterceptor for the navigation within a
+// BundledExchanges file.
+// For example:
+//   A user opened "file:///tmp/a.wbn", and InterceptorForFile redirected to
+//   "file:///tmp/a.wbn?https://example.com/a.html" and "a.html" in "a.wbn" was
+//   loaded. And the user clicked a link to "https://example.com/b.html" from
+//   "a.html".
+// In this case, this interceptor intecepts the navigation request to "b.html",
+// and redirect the navigation request to
+// "file:///tmp/a.wbn?https://example.com/b.html" and creates a URLLoader using
+// the BundledExchangesURLLoaderFactory to load the response of "b.html" in
+// "a.wbn".
+class InterceptorForTrackedNavigationFromFile final
+    : public NavigationLoaderInterceptor {
+ public:
+  InterceptorForTrackedNavigationFromFile(
+      scoped_refptr<BundledExchangesReader> reader,
+      DoneCallback done_callback)
+      : url_loader_factory_(std::make_unique<BundledExchangesURLLoaderFactory>(
+            std::move(reader))),
+        done_callback_(std::move(done_callback)) {}
+  ~InterceptorForTrackedNavigationFromFile() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  }
+
+ private:
+  // NavigationLoaderInterceptor implementation
+  void MaybeCreateLoader(const network::ResourceRequest& resource_request,
+                         BrowserContext* browser_context,
+                         LoaderCallback callback,
+                         FallbackCallback fallback_callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    std::move(callback).Run(base::BindOnce(
+        &InterceptorForTrackedNavigationFromFile::CreateURLLoader,
+        weak_factory_.GetWeakPtr()));
+  }
+
+  bool ShouldBypassRedirectChecks() override { return true; }
+
+  void CreateURLLoader(const network::ResourceRequest& resource_request,
+                       network::mojom::URLLoaderRequest request,
+                       network::mojom::URLLoaderClientPtr client) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    if (!is_redirected_) {
+      DCHECK(url_loader_factory_->reader()->HasEntry(resource_request.url));
+      is_redirected_ = true;
+      original_request_url_ = resource_request.url;
+
+      GURL bundled_exchanges_url =
+          url_loader_factory_->reader()->source().url();
+      const GURL new_url =
+          bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
+              bundled_exchanges_url, original_request_url_);
+      auto redirect_loader =
+          std::make_unique<PrimaryURLRedirectLoader>(client.PassInterface());
+      redirect_loader->OnReadyToRedirect(resource_request, new_url);
+      mojo::MakeSelfOwnedReceiver(
+          std::move(redirect_loader),
+          mojo::PendingReceiver<network::mojom::URLLoader>(std::move(request)));
+      return;
+    }
+    network::ResourceRequest new_resource_request = resource_request;
+    new_resource_request.url = original_request_url_;
+    url_loader_factory_->CreateLoaderAndStart(
+        std::move(request), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
+        new_resource_request, std::move(client),
+        net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
+    std::move(done_callback_)
+        .Run(
+            /*base_url_override=*/original_request_url_,
+            std::move(url_loader_factory_));
+  }
+
+  std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory_;
+  DoneCallback done_callback_;
+
+  bool is_redirected_ = false;
+  GURL original_request_url_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<InterceptorForTrackedNavigationFromFile> weak_factory_{
+      this};
+
+  DISALLOW_COPY_AND_ASSIGN(InterceptorForTrackedNavigationFromFile);
 };
 
 }  // namespace
@@ -384,6 +528,29 @@ BundledExchangesHandle::CreateForTrustableFile(
   return handle;
 }
 
+// static
+std::unique_ptr<BundledExchangesHandle>
+BundledExchangesHandle::CreateForTrackedNavigation(
+    scoped_refptr<BundledExchangesReader> reader) {
+  auto handle = base::WrapUnique(new BundledExchangesHandle());
+  if (reader->source().is_trusted()) {
+    handle->SetInterceptor(
+        std::make_unique<InterceptorForTrackedNavigationFromTrustableFile>(
+            std::move(reader),
+            base::BindOnce(
+                &BundledExchangesHandle::OnBundledExchangesFileLoaded,
+                handle->weak_factory_.GetWeakPtr())));
+  } else {
+    handle->SetInterceptor(
+        std::make_unique<InterceptorForTrackedNavigationFromFile>(
+            std::move(reader),
+            base::BindOnce(
+                &BundledExchangesHandle::OnBundledExchangesFileLoaded,
+                handle->weak_factory_.GetWeakPtr())));
+  }
+  return handle;
+}
+
 BundledExchangesHandle::BundledExchangesHandle() = default;
 
 BundledExchangesHandle::~BundledExchangesHandle() = default;
@@ -402,6 +569,14 @@ void BundledExchangesHandle::CreateURLLoaderFactory(
 
   url_loader_factory_->SetFallbackFactory(std::move(fallback_factory));
   url_loader_factory_->Clone(std::move(receiver));
+}
+
+std::unique_ptr<BundledExchangesHandleTracker>
+BundledExchangesHandle::MaybeCreateTracker() {
+  if (!url_loader_factory_)
+    return nullptr;
+  return std::make_unique<BundledExchangesHandleTracker>(
+      url_loader_factory_->reader());
 }
 
 bool BundledExchangesHandle::IsReadyForLoading() {

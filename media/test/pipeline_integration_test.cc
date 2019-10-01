@@ -904,7 +904,15 @@ TEST_F(PipelineIntegrationTest, TrackStatusChangesAfterPipelineEnded) {
   OnSelectedVideoTrackChanged(MediaTrack::Id("1"));
 }
 
-TEST_F(PipelineIntegrationTest, TrackStatusChangesWhileSuspended) {
+// TODO(https://crbug.com/1009964): Enable test when MacOS flake is fixed.
+#if defined(OS_MACOSX)
+#define MAYBE_TrackStatusChangesWhileSuspended \
+  DISABLED_TrackStatusChangesWhileSuspended
+#else
+#define MAYBE_TrackStatusChangesWhileSuspended TrackStatusChangesWhileSuspended
+#endif
+
+TEST_F(PipelineIntegrationTest, MAYBE_TrackStatusChangesWhileSuspended) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kNoClockless));
   Play();
 

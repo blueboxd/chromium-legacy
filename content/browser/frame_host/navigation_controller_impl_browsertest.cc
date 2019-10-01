@@ -7588,7 +7588,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
                             ->root();
-  EXPECT_FALSE(main_frame->GetNavigationHandle());
+  EXPECT_FALSE(main_frame->navigation_request());
   EXPECT_FALSE(root->navigation_request());
 
   // Start navigating to the second page.

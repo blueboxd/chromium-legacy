@@ -75,6 +75,8 @@
 #if defined(USE_X11)
 #include "ui/gfx/x/x11.h"        // nogncheck
 #include "ui/gfx/x/x11_types.h"  // nogncheck
+#elif defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -332,11 +334,15 @@ GtkUi::GtkUi() {
       {ActionSource::kRightClick, Action::kMenu}};
 
 #if defined(USE_X11)
-  // Force Gtk to use Xwayland if it would have used wayland. In Aura/X11,
-  // libgtkui assumes the use of X11 (eg. InputMethodContextImplGtk) and will
-  // crash under other backends.
-  // TODO(thomasanderson): Change this logic once Wayland support is added.
+  // Force Gtk to use Xwayland (in case a Wayland compositor is being used).
   gdk_set_allowed_backends("x11");
+#elif defined(USE_OZONE)
+  // TODO(crbug.com/1002674): This is a temporary layering violation, supported
+  // during X11 migration to Ozone. Once LinuxUI/GtkUi is reworked to be more
+  // aligned with Ozone design, this will be moved into ozone backend code.
+  std::string ozone_platform{ui::OzonePlatform::GetPlatformName()};
+  if (ozone_platform == "x11" || ozone_platform == "wayland")
+    gdk_set_allowed_backends(ozone_platform.c_str());
 #endif
 
   // Avoid GTK initializing atk-bridge, and let AuraLinux implementation

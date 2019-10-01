@@ -364,7 +364,7 @@ testcase.transferFromDownloadsToDrive = () => {
  */
 testcase.transferFromSharedToDownloads = () => {
   return transferBetweenVolumes(new TransferInfo({
-    fileToTransfer: ENTRIES.testSharedDocument,
+    fileToTransfer: ENTRIES.testSharedFile,
     source: TRANSFER_LOCATIONS.sharedWithMe,
     destination: TRANSFER_LOCATIONS.downloads,
   }));
@@ -386,7 +386,7 @@ testcase.transferFromSharedToDrive = () => {
  */
 testcase.transferFromOfflineToDownloads = () => {
   return transferBetweenVolumes(new TransferInfo({
-    fileToTransfer: ENTRIES.testDocument,
+    fileToTransfer: ENTRIES.testSharedFile,
     source: TRANSFER_LOCATIONS.driveOffline,
     destination: TRANSFER_LOCATIONS.downloads,
   }));

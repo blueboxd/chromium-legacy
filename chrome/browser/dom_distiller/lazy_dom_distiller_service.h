@@ -36,15 +36,8 @@ class LazyDomDistillerService : public DomDistillerServiceInterface,
 
  public:
   // DomDistillerServiceInterface implementation:
-  const std::string AddToList(
-      const GURL& url,
-      std::unique_ptr<DistillerPage> distiller_page,
-      const ArticleAvailableCallback& article_cb) override;
   bool HasEntry(const std::string& entry_id) override;
   std::string GetUrlForEntry(const std::string& entry_id) override;
-  std::vector<ArticleEntry> GetEntries() const override;
-  std::unique_ptr<ArticleEntry> RemoveEntry(
-      const std::string& entry_id) override;
   std::unique_ptr<ViewerHandle> ViewEntry(
       ViewRequestDelegate* delegate,
       std::unique_ptr<DistillerPage> distiller_page,

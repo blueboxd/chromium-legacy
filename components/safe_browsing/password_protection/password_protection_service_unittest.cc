@@ -14,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
@@ -780,7 +781,16 @@ TEST_P(PasswordProtectionServiceTest, TestNoRequestSentForWhitelistedURL) {
       ElementsAre(base::Bucket(4 /* MATCHED_WHITELIST */, 1)));
 }
 
-TEST_P(PasswordProtectionServiceTest, TestNoRequestSentIfVerdictAlreadyCached) {
+// crbug.com/1010007: crashes on win
+#if defined(OS_WIN)
+#define MAYBE_TestNoRequestSentIfVerdictAlreadyCached \
+  DISABLED_TestNoRequestSentIfVerdictAlreadyCached
+#else
+#define MAYBE_TestNoRequestSentIfVerdictAlreadyCached \
+  TestNoRequestSentIfVerdictAlreadyCached
+#endif
+TEST_P(PasswordProtectionServiceTest,
+       MAYBE_TestNoRequestSentIfVerdictAlreadyCached) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
   ReusedPasswordAccountType reused_password_account_type;
   reused_password_account_type.set_account_type(

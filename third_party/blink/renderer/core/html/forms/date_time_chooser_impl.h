@@ -38,14 +38,14 @@
 
 namespace blink {
 
-class ChromeClient;
 class DateTimeChooserClient;
+class LocalFrame;
 class PagePopup;
 
 class CORE_EXPORT DateTimeChooserImpl final : public DateTimeChooser,
                                               public PagePopupClient {
  public:
-  DateTimeChooserImpl(ChromeClient*,
+  DateTimeChooserImpl(LocalFrame*,
                       DateTimeChooserClient*,
                       const DateTimeChooserParameters&);
   ~DateTimeChooserImpl() override;
@@ -67,7 +67,7 @@ class CORE_EXPORT DateTimeChooserImpl final : public DateTimeChooser,
   Element& OwnerElement() override;
   void DidClosePopup() override;
 
-  Member<ChromeClient> chrome_client_;
+  Member<LocalFrame> frame_;
   Member<DateTimeChooserClient> client_;
   PagePopup* popup_;
   // This pointer is valid only in the constructor.

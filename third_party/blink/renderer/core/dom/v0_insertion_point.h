@@ -81,6 +81,8 @@ class CORE_EXPORT V0InsertionPoint : public HTMLElement {
     return !HasDistribution() || DistributedNodeAt(0)->parentNode() == this;
   }
 
+  void RecalcStyleForInsertionPointChildren(const StyleRecalcChange);
+
   void Trace(Visitor*) override;
 
  protected:

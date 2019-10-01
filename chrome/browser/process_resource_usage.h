@@ -14,7 +14,7 @@
 #include "content/public/common/resource_usage_reporter.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/platform/web_cache.h"
+#include "third_party/blink/public/common/web_cache/web_cache_resource_type_stats.h"
 
 // Provides resource usage information about a child process.
 //
@@ -73,7 +73,7 @@ class ProcessResourceUsage {
   size_t GetV8MemoryUsed() const;
 
   // Get Blink resource cache information.
-  blink::WebCache::ResourceTypeStats GetWebCoreCacheStats() const;
+  blink::WebCacheResourceTypeStats GetBlinkMemoryCacheStats() const;
 
  private:
   // Mojo IPC callback.

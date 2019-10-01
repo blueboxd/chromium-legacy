@@ -766,7 +766,7 @@ void XWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
     ui::SetAtomArrayProperty(xwindow_, "_NET_WM_ICON", "CARDINAL", data);
 }
 
-void XWindow::SetVisibleOnAllWorkspaces(bool visible) {
+void XWindow::SetXWindowVisibleOnAllWorkspaces(bool visible) {
   SetWMSpecState(visible, gfx::GetAtom("_NET_WM_STATE_STICKY"), x11::None);
 
   int new_desktop = 0;
@@ -793,7 +793,7 @@ void XWindow::SetVisibleOnAllWorkspaces(bool visible) {
              SubstructureRedirectMask | SubstructureNotifyMask, &xevent);
 }
 
-bool XWindow::IsVisibleOnAllWorkspaces() const {
+bool XWindow::IsXWindowVisibleOnAllWorkspaces() const {
   // We don't need a check for _NET_WM_STATE_STICKY because that would specify
   // that the window remain in a fixed position even if the viewport scrolls.
   // This is different from the type of workspace that's associated with

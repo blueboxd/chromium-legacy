@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
@@ -50,6 +51,8 @@ class ExtensionApps : public apps::mojom::Publisher,
   void FlushMojoCallsForTesting();
 
   void Shutdown();
+
+  void ApplyChromeBadge(const std::string& app_id);
 
  private:
   void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
@@ -129,6 +132,8 @@ class ExtensionApps : public apps::mojom::Publisher,
   void ConvertVector(const extensions::ExtensionSet& extensions,
                      apps::mojom::Readiness readiness,
                      std::vector<apps::mojom::AppPtr>* apps_out);
+
+  IconEffects GetIconEffect(const extensions::Extension* extension);
 
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;

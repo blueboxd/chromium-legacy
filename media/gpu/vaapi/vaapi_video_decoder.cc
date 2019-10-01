@@ -481,11 +481,8 @@ void VaapiVideoDecoder::OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
       video_frame->timestamp() != timestamp) {
     gfx::Size natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio_);
     scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
-        *video_frame, video_frame->format(), visible_rect, natural_size);
+        video_frame, video_frame->format(), visible_rect, natural_size);
     wrapped_frame->set_timestamp(timestamp);
-    wrapped_frame->AddDestructionObserver(
-        base::BindOnce(base::DoNothing::Once<scoped_refptr<VideoFrame>>(),
-                       std::move(video_frame)));
 
     video_frame = std::move(wrapped_frame);
   }

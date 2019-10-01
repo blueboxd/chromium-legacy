@@ -76,6 +76,10 @@ class AppServiceProxy : public KeyedService,
   std::vector<std::string> GetAppIdsForUrl(const GURL& url);
   std::vector<std::string> GetAppIdsForIntent(apps::mojom::IntentPtr intent);
 
+#if defined(OS_CHROMEOS)
+  void ApplyChromeBadge(Profile* profile, const std::string& arc_package_name);
+#endif
+
  private:
   // An adapter, presenting an IconLoader interface based on the underlying
   // Mojo service (or on a fake implementation for testing).

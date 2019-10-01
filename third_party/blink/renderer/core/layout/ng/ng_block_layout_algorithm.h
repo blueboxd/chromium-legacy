@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 
 namespace blink {
@@ -22,7 +23,6 @@ namespace blink {
 class NGConstraintSpace;
 class NGEarlyBreak;
 class NGFragment;
-class NGLayoutResult;
 class NGPhysicalLineBoxFragment;
 
 // This struct is used for communicating to a child the position of the previous
@@ -179,9 +179,10 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   //
   // Returns false if we need to abort layout, because a previously unknown BFC
   // block offset has now been resolved.
-  bool HandleNewFormattingContext(NGLayoutInputNode child,
-                                  const NGBreakToken* child_break_token,
-                                  NGPreviousInflowPosition*);
+  NGLayoutResult::EStatus HandleNewFormattingContext(
+      NGLayoutInputNode child,
+      const NGBreakToken* child_break_token,
+      NGPreviousInflowPosition*);
 
   // Performs the actual layout of a new formatting context. This may be called
   // multiple times from HandleNewFormattingContext.
@@ -196,14 +197,14 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // Handle an in-flow child.
   // Returns false if we need to abort layout, because a previously unknown BFC
   // block offset has now been resolved. (Same as HandleNewFormattingContext).
-  bool HandleInflow(
+  NGLayoutResult::EStatus HandleInflow(
       NGLayoutInputNode child,
       const NGBreakToken* child_break_token,
       NGPreviousInflowPosition*,
       NGInlineChildLayoutContext*,
       scoped_refptr<const NGInlineBreakToken>* previous_inline_break_token);
 
-  bool FinishInflow(
+  NGLayoutResult::EStatus FinishInflow(
       NGLayoutInputNode child,
       const NGBreakToken* child_break_token,
       const NGConstraintSpace&,
@@ -224,6 +225,14 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // whether fits within the fragmentainer or not.
   bool IsFragmentainerOutOfSpace(LayoutUnit block_offset) const;
 
+  // Final adjustments before fragment creation. We need to prevent the fragment
+  // from crossing fragmentainer boundaries, and rather create a break token if
+  // we're out of space. As part of finalizing we may also discover that we need
+  // to abort layout, because we've run out of space at a less-than-ideal
+  // location. In this case, false will be returned. Otherwise, true will be
+  // returned.
+  bool FinalizeForFragmentation();
+
   // Insert a fragmentainer break before the child if necessary.
   // Update previous in-flow position and return true if a break was inserted.
   // Otherwise return false.
@@ -237,28 +246,24 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // block-start content edge of the container and the block-start margin edge
   // of the first in-flow child. This can happen when in-flow content is pushed
   // down by floats. https://www.w3.org/TR/css-break-3/#possible-breaks
-  bool BreakBeforeChild(NGLayoutInputNode child,
+  bool BreakBeforeChildIfNeeded(NGLayoutInputNode child,
+                                const NGLayoutResult&,
+                                NGPreviousInflowPosition*,
+                                LayoutUnit block_offset,
+                                bool has_container_separation);
+
+  // Insert either a soft or forced break before the child.
+  void BreakBeforeChild(NGLayoutInputNode child,
                         const NGLayoutResult&,
-                        NGPreviousInflowPosition*,
                         LayoutUnit block_offset,
-                        bool has_container_separation);
+                        bool is_forced_break,
+                        NGPreviousInflowPosition*);
+  void BreakBeforeChild(NGLayoutInputNode child,
+                        bool is_forced_break,
+                        NGPreviousInflowPosition*);
 
-  enum BreakType { NoBreak, SoftBreak, ForcedBreak };
-
-  // Given a child fragment and the corresponding node's style, determine the
-  // type of break we should insert in front of it, if any.
-  BreakType BreakTypeBeforeChild(NGLayoutInputNode child,
-                                 const NGLayoutResult&,
-                                 LayoutUnit block_offset,
-                                 bool has_container_separation) const;
-
-  // Final adjustments before fragment creation. We need to prevent the fragment
-  // from crossing fragmentainer boundaries, and rather create a break token if
-  // we're out of space. As part of finalizing we may also discover that we need
-  // to abort layout, because we've run out of space at a less-than-ideal
-  // location. In this case, false will be returned. Otherwise, true will be
-  // returned.
-  bool FinalizeForFragmentation();
+  // Propagate the minimal space shortage from a child.
+  void PropagateSpaceShortage(const NGLayoutResult&, LayoutUnit block_offset);
 
   void PropagateBaselinesFromChildren();
   bool AddBaseline(const NGBaselineRequest&,

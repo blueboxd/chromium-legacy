@@ -5,14 +5,10 @@
 #ifndef CHROME_BROWSER_SHARING_SHARED_CLIPBOARD_SHARED_CLIPBOARD_MESSAGE_HANDLER_H_
 #define CHROME_BROWSER_SHARING_SHARED_CLIPBOARD_SHARED_CLIPBOARD_MESSAGE_HANDLER_H_
 
-#include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
-
-namespace syncer {
-class DeviceInfo;
-}  // namespace syncer
 
 class SharingService;
 
@@ -28,9 +24,8 @@ class SharedClipboardMessageHandler : public SharingMessageHandler {
 
  protected:
   // Called after the message has been copied to the clipboard. Implementers
-  // should display a notification using information from |device_info|.
-  virtual void ShowNotification(
-      std::unique_ptr<syncer::DeviceInfo> device_info) = 0;
+  // should display a notification using |device_name|.
+  virtual void ShowNotification(const std::string& device_name) = 0;
 
  private:
   SharingService* sharing_service_ = nullptr;

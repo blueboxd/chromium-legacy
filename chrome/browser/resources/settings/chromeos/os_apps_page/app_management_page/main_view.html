@@ -3,42 +3,11 @@
 <link rel="import" href="app_item.html">
 <link rel="import" href="shared_style.html">
 <link rel="import" href="store_client.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 
 <dom-module id="app-management-main-view">
   <template>
     <style include="app-management-shared-css">
-      .notification-row-sublabel {
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        padding: 11px 0;
-      }
-
-      .collapsible {
-        max-width: 250px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      #notifications-sublabel {
-        display: flex;
-        overflow: hidden;
-      }
-
-      #notifications-sublabel > span {
-        white-space: pre;
-      }
-
-      .notification-row {
-        align-items: center;
-        cursor: pointer;
-        display: inline-flex;
-        justify-content: space-between;
-        padding: 0 24px;
-      }
-
       .app-management-item-arrow {
         margin-inline-end: 8px;
         padding: 12px;
@@ -67,18 +36,6 @@
         $i18n{appManagementNoAppsFound}
       </div>
     </template>
-
-    <div class="card-container" hidden>
-      <span class="notification-row" on-click="onClickNotificationSublabel_">
-        <div class="notification-row-sublabel">
-          <div class="header-text">
-              $i18n{notifications}
-          </div>
-          <div id="notifications-sublabel" class="secondary-text"></div>
-        </div>
-        <cr-icon-button class="subpage-arrow" actionable></cr-icon-button>
-      </span>
-    </div>
   </template>
   <script src="main_view.js"></script>
 </dom-module>

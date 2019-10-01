@@ -50,6 +50,11 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
       bool close_on_remove);
   ~BookmarkContextMenu() override;
 
+  // Installs a callback to be run before the context menu is run. The callback
+  // runs only once, and only one such callback can be set at any time. Once the
+  // installed callback is run, another callback can be installed.
+  static void InstallPreRunCallback(base::OnceClosure callback);
+
   // Shows the context menu at the specified point.
   void RunMenuAt(const gfx::Point& point,
                  ui::MenuSourceType source_type);

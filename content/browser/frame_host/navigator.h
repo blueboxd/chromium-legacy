@@ -7,7 +7,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/common/content_export.h"
@@ -31,6 +30,7 @@ class ResourceRequestBody;
 
 namespace content {
 
+class BundledExchangesHandleTracker;
 class FrameNavigationEntry;
 class FrameTreeNode;
 class PrefetchedSignedExchangeCache;
@@ -156,7 +156,9 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       mojo::PendingRemote<blink::mojom::NavigationInitiator>
           navigation_initiator,
       scoped_refptr<PrefetchedSignedExchangeCache>
-          prefetched_signed_exchange_cache);
+          prefetched_signed_exchange_cache,
+      std::unique_ptr<BundledExchangesHandleTracker>
+          bundled_exchanges_handle_tracker);
 
   // Used to restart a navigation that was thought to be same-document in
   // cross-document mode.

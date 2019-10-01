@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -62,14 +61,13 @@ base::Optional<std::pair<std::string, std::string>> GetBadgeContentAndAlt(
 
 }  // namespace
 
-BadgeManagerDelegateWin::BadgeManagerDelegateWin(
-    Profile* profile,
-    BadgeManager* badge_manager,
-    web_app::AppRegistrar* registrar)
-    : BadgeManagerDelegate(profile, badge_manager, registrar) {}
+BadgeManagerDelegateWin::BadgeManagerDelegateWin(Profile* profile,
+                                                 BadgeManager* badge_manager)
+    : BadgeManagerDelegate(profile, badge_manager) {}
 
 void BadgeManagerDelegateWin::OnAppBadgeUpdated(const web_app::AppId& app_id) {
-  const auto& content_and_alt = GetBadgeContentAndAlt(GetAppBadgeValue(app_id));
+  const auto& content_and_alt =
+      GetBadgeContentAndAlt(badge_manager()->GetBadgeValue(app_id));
 
   for (Browser* browser : *BrowserList::GetInstance()) {
     if (!IsAppBrowser(browser, app_id))

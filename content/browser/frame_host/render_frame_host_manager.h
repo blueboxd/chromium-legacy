@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/frame_host/back_forward_cache_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/content_export.h"
@@ -94,6 +95,10 @@ struct FrameReplicationState;
 class CONTENT_EXPORT RenderFrameHostManager
     : public SiteInstanceImpl::Observer {
  public:
+  using RenderFrameProxyHostMap =
+      std::unordered_map<int32_t /* SiteInstance id */,
+                         std::unique_ptr<RenderFrameProxyHost>>;
+
   // Functions implemented by our owner that we need.
   //
   // TODO(brettw) Clean this up! These are all the functions in WebContentsImpl
@@ -316,7 +321,8 @@ class CONTENT_EXPORT RenderFrameHostManager
   // BackForwardCache:
   // During a history navigation, unfreezes and swaps in a document from the
   // BackForwardCache, making it active.
-  void RestoreFromBackForwardCache(std::unique_ptr<RenderFrameHostImpl>);
+  void RestoreFromBackForwardCache(
+      std::unique_ptr<BackForwardCacheImpl::Entry>);
 
   // BackForwardCache:
   // Unfreezes the current frame host. This is called after committing a
@@ -462,8 +468,7 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Returns a const reference to the map of proxy hosts. The keys are
   // SiteInstance IDs, the values are RenderFrameProxyHosts.
-  const std::unordered_map<int32_t, std::unique_ptr<RenderFrameProxyHost>>&
-  GetAllProxyHostsForTesting() const {
+  const RenderFrameProxyHostMap& GetAllProxyHostsForTesting() const {
     return proxy_hosts_;
   }
 
@@ -737,8 +742,14 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Sets the |pending_rfh| to be the active one. Called when the pending
   // RenderFrameHost commits.
-  // BackForwardCache: Called to restore a RenderFrameHost.
-  void CommitPending(std::unique_ptr<RenderFrameHostImpl> pending_rfh);
+  //
+  // This function is also called when restoring an entry from BackForwardCache.
+  // In that case, |pending_rfh| is the RenderFrameHost to be restored, and
+  // |pending_bfcache_entry| provides additional state to be restored, such as
+  // proxies.
+  void CommitPending(
+      std::unique_ptr<RenderFrameHostImpl> pending_rfh,
+      std::unique_ptr<BackForwardCacheImpl::Entry> pending_bfcache_entry);
 
   // Helper to call CommitPending() in all necessary cases.
   void CommitPendingIfNecessary(RenderFrameHostImpl* render_frame_host,
@@ -809,8 +820,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   std::unique_ptr<RenderFrameHostImpl> render_frame_host_;
 
   // Proxy hosts, indexed by site instance ID.
-  std::unordered_map<int32_t, std::unique_ptr<RenderFrameProxyHost>>
-      proxy_hosts_;
+  RenderFrameProxyHostMap proxy_hosts_;
 
   // A list of RenderFrameHosts waiting to shut down after swapping out.
   using RFHPendingDeleteList = std::list<std::unique_ptr<RenderFrameHostImpl>>;
@@ -822,11 +832,11 @@ class CONTENT_EXPORT RenderFrameHostManager
   // behavior. The speculative RenderFrameHost might be discarded later on if
   // the final URL's SiteInstance isn't compatible with the one used to create
   // it.
-  //
-  // This is also used by the BackForwardCache, which
-  // sets speculative_render_frame_host_ to the restored frame before
-  // committing.
   std::unique_ptr<RenderFrameHostImpl> speculative_render_frame_host_;
+
+  // After being set in RestoreFromBackForwardCache(), the bfcache entry is
+  // immediately consumed in CommitPending().
+  std::unique_ptr<BackForwardCacheImpl::Entry> bfcache_entry_to_restore_;
 
   // This callback is used when attaching an inner Delegate to |delegate_|
   // through |frame_tree_node_|.

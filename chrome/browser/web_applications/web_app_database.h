@@ -18,6 +18,7 @@
 
 namespace syncer {
 class ModelError;
+class MetadataBatch;
 }  // namespace syncer
 
 namespace web_app {
@@ -30,10 +31,16 @@ struct RegistryUpdateData;
 // Exclusively used from the UI thread.
 class WebAppDatabase {
  public:
-  explicit WebAppDatabase(AbstractWebAppDatabaseFactory* database_factory);
+  using ReportErrorCallback =
+      base::RepeatingCallback<void(const syncer::ModelError&)>;
+
+  WebAppDatabase(AbstractWebAppDatabaseFactory* database_factory,
+                 ReportErrorCallback error_callback);
   ~WebAppDatabase();
 
-  using RegistryOpenedCallback = base::OnceCallback<void(Registry registry)>;
+  using RegistryOpenedCallback = base::OnceCallback<void(
+      Registry registry,
+      std::unique_ptr<syncer::MetadataBatch> metadata_batch)>;
   // Open existing or create new DB. Read all data and return it via callback.
   void OpenDatabase(RegistryOpenedCallback callback);
 
@@ -61,6 +68,11 @@ class WebAppDatabase {
       RegistryOpenedCallback callback,
       const base::Optional<syncer::ModelError>& error,
       std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records);
+  void OnAllMetadataRead(
+      std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records,
+      RegistryOpenedCallback callback,
+      const base::Optional<syncer::ModelError>& error,
+      std::unique_ptr<syncer::MetadataBatch> metadata_batch);
 
   void OnDataWritten(CompletionCallback callback,
                      const base::Optional<syncer::ModelError>& error);
@@ -68,6 +80,7 @@ class WebAppDatabase {
   std::unique_ptr<syncer::ModelTypeStore> store_;
   std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch_;
   AbstractWebAppDatabaseFactory* database_factory_;
+  ReportErrorCallback error_callback_;
 
   // Database is opened if store is created and all data read.
   bool opened_ = false;

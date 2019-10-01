@@ -33,8 +33,9 @@ namespace {
 
 // Replaces all non-digits in |str| by spaces.
 std::string ScrubNonDigit(std::string str) {
-  std::replace_if(str.begin(), str.end(),
-                  [](char c) { return !base::IsAsciiDigit(c); }, ' ');
+  std::replace_if(
+      str.begin(), str.end(), [](char c) { return !base::IsAsciiDigit(c); },
+      ' ');
   return str;
 }
 
@@ -144,16 +145,6 @@ BrowserSavePasswordProgressLogger::FormStructurePasswordAttributesLogString(
     case PasswordAttribute::kHasLowercaseLetter:
       message += BinaryPasswordAttributeLogString(
           STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_LOWERCASE, attribute_value);
-      break;
-
-    case PasswordAttribute::kHasUppercaseLetter:
-      message += BinaryPasswordAttributeLogString(
-          STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_UPPERCASE, attribute_value);
-      break;
-
-    case PasswordAttribute::kHasNumeric:
-      message += BinaryPasswordAttributeLogString(
-          STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_NUMERICS, attribute_value);
       break;
 
     case PasswordAttribute::kHasSpecialSymbol:

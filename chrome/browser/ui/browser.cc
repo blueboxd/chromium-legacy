@@ -2858,8 +2858,8 @@ BackgroundContents* Browser::CreateBackgroundContents(
   if (allow_js_access) {
     return service->CreateBackgroundContents(
         source_site_instance, opener, route_id, main_frame_route_id,
-        main_frame_widget_route_id, profile_, frame_name, extension->id(),
-        partition_id, session_storage_namespace);
+        main_frame_widget_route_id, frame_name, extension->id(), partition_id,
+        session_storage_namespace);
   }
 
   // If script access is not allowed, create the the background contents in a
@@ -2868,8 +2868,8 @@ BackgroundContents* Browser::CreateBackgroundContents(
   // process.
   BackgroundContents* contents = service->CreateBackgroundContents(
       content::SiteInstance::Create(source_site_instance->GetBrowserContext()),
-      nullptr, MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE, profile_,
-      frame_name, extension->id(), partition_id, session_storage_namespace);
+      nullptr, MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE, frame_name,
+      extension->id(), partition_id, session_storage_namespace);
 
   // When a separate process is used, the original renderer cannot access the
   // new window later, thus we need to navigate the window now.

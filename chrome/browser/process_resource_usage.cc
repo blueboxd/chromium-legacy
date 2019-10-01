@@ -80,10 +80,10 @@ size_t ProcessResourceUsage::GetV8MemoryUsed() const {
   return 0;
 }
 
-blink::WebCache::ResourceTypeStats ProcessResourceUsage::GetWebCoreCacheStats()
-    const {
+blink::WebCacheResourceTypeStats
+ProcessResourceUsage::GetBlinkMemoryCacheStats() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (stats_ && stats_->web_cache_stats)
-    return stats_->web_cache_stats->To<blink::WebCache::ResourceTypeStats>();
+    return stats_->web_cache_stats->To<blink::WebCacheResourceTypeStats>();
   return {};
 }

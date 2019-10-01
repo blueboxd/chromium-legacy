@@ -200,7 +200,7 @@ bool FakeBaseTabStripController::CanDrawStrokes() const {
 }
 
 SkColor FakeBaseTabStripController::GetFrameColor(
-    BrowserNonClientFrameView::ActiveState active_state) const {
+    BrowserFrameActiveState active_state) const {
   return gfx::kPlaceholderColor;
 }
 
@@ -209,7 +209,7 @@ SkColor FakeBaseTabStripController::GetToolbarTopSeparatorColor() const {
 }
 
 base::Optional<int> FakeBaseTabStripController::GetCustomBackgroundId(
-    BrowserNonClientFrameView::ActiveState active_state) const {
+    BrowserFrameActiveState active_state) const {
   return base::nullopt;
 }
 

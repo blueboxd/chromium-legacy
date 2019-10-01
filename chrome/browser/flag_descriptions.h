@@ -1067,6 +1067,9 @@ extern const char kServiceWorkerImportedScriptUpdateCheckDescription[];
 extern const char kServiceWorkerLongRunningMessageName[];
 extern const char kServiceWorkerLongRunningMessageDescription[];
 
+extern const char kServiceWorkerOnUIName[];
+extern const char kServiceWorkerOnUIDescription[];
+
 extern const char kSessionRestorePrioritizesBackgroundUseCasesName[];
 extern const char kSessionRestorePrioritizesBackgroundUseCasesDescription[];
 

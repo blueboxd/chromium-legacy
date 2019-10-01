@@ -548,12 +548,14 @@ const UChar* GetFallbackFamily(UChar32 character,
   return family;
 }
 
-const String GetOutOfProcessFallbackFamily(
+bool GetOutOfProcessFallbackFamily(
     UChar32 character,
     FontDescription::GenericFamilyType generic_family,
     String bcp47_language_tag,
     FontFallbackPriority,
-    const mojo::Remote<mojom::blink::DWriteFontProxy>& service) {
+    const mojo::Remote<mojom::blink::DWriteFontProxy>& service,
+    String* fallback_family,
+    SkFontStyle* fallback_style) {
   String base_family_name_approximation;
   switch (generic_family) {
     case FontDescription::kMonospaceFamily:
@@ -565,11 +567,19 @@ const String GetOutOfProcessFallbackFamily(
     default:
       base_family_name_approximation = kTimesNewRoman;
   }
-  String fallback_family_name;
-  service->FallbackFamilyNameForCodepoint(base_family_name_approximation,
-                                          bcp47_language_tag, character,
-                                          &fallback_family_name);
-  return fallback_family_name;
+
+  mojom::blink::FallbackFamilyAndStylePtr fallback_family_and_style;
+  bool mojo_result = service->FallbackFamilyAndStyleForCodepoint(
+      base_family_name_approximation, bcp47_language_tag, character,
+      &fallback_family_and_style);
+
+  SECURITY_DCHECK(fallback_family);
+  SECURITY_DCHECK(fallback_style);
+  *fallback_family = fallback_family_and_style->fallback_family_name;
+  *fallback_style = SkFontStyle(
+      fallback_family_and_style->weight, fallback_family_and_style->width,
+      static_cast<SkFontStyle::Slant>(fallback_family_and_style->slant));
+  return mojo_result;
 }
 
 }  // namespace blink

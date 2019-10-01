@@ -31,44 +31,44 @@ class ControllerObserver : public base::CheckedObserver {
   ~ControllerObserver() override;
 
   // Called when the controller has entered a new state.
-  virtual void OnStateChanged(AutofillAssistantState new_state);
+  virtual void OnStateChanged(AutofillAssistantState new_state) = 0;
 
   // Report that the status message has changed.
-  virtual void OnStatusMessageChanged(const std::string& message);
+  virtual void OnStatusMessageChanged(const std::string& message) = 0;
 
   // Report that the bubble / tooltip message has changed.
-  virtual void OnBubbleMessageChanged(const std::string& message);
+  virtual void OnBubbleMessageChanged(const std::string& message) = 0;
 
   // If the current chrome activity is a custom tab activity, close it.
   // Otherwise, do nothing.
-  virtual void CloseCustomTab();
+  virtual void CloseCustomTab() = 0;
 
   // Report that the set of user actions has changed.
   virtual void OnUserActionsChanged(
-      const std::vector<UserAction>& user_actions);
+      const std::vector<UserAction>& user_actions) = 0;
 
   // Report that the options configuring a CollectUserDataAction have changed.
   virtual void OnCollectUserDataOptionsChanged(
-      const CollectUserDataOptions* options);
+      const CollectUserDataOptions* options) = 0;
 
   // Updates the currently selected user data (e.g., contact information).
-  virtual void OnUserDataChanged(const UserData* state);
+  virtual void OnUserDataChanged(const UserData* state) = 0;
 
   // Called when details have changed. Details will be null if they have been
   // cleared.
-  virtual void OnDetailsChanged(const Details* details);
+  virtual void OnDetailsChanged(const Details* details) = 0;
 
   // Called when info box has changed. |info_box| will be null if it has been
   // cleared.
-  virtual void OnInfoBoxChanged(const InfoBox* info_box);
+  virtual void OnInfoBoxChanged(const InfoBox* info_box) = 0;
 
   // Called when the current progress has changed. Progress, is expressed as a
   // percentage.
-  virtual void OnProgressChanged(int progress);
+  virtual void OnProgressChanged(int progress) = 0;
 
   // Called when the current progress bar visibility has changed. If |visible|
   // is true, then the bar is now shown.
-  virtual void OnProgressVisibilityChanged(bool visible);
+  virtual void OnProgressVisibilityChanged(bool visible) = 0;
 
   // Updates the area of the visible viewport that is accessible when the
   // overlay state is OverlayState::PARTIAL.
@@ -88,22 +88,24 @@ class ControllerObserver : public base::CheckedObserver {
   virtual void OnTouchableAreaChanged(
       const RectF& visual_viewport,
       const std::vector<RectF>& touchable_areas,
-      const std::vector<RectF>& restricted_areas);
+      const std::vector<RectF>& restricted_areas) = 0;
 
   // Called when the viewport mode has changed.
-  virtual void OnViewportModeChanged(ViewportMode mode);
+  virtual void OnViewportModeChanged(ViewportMode mode) = 0;
 
   // Called when the peek mode has changed.
-  virtual void OnPeekModeChanged(ConfigureBottomSheetProto::PeekMode peek_mode);
+  virtual void OnPeekModeChanged(
+      ConfigureBottomSheetProto::PeekMode peek_mode) = 0;
 
   // Called when the overlay colors have changed.
-  virtual void OnOverlayColorsChanged(const UiDelegate::OverlayColors& colors);
+  virtual void OnOverlayColorsChanged(
+      const UiDelegate::OverlayColors& colors) = 0;
 
   // Called when the form has changed.
-  virtual void OnFormChanged(const FormProto* form);
+  virtual void OnFormChanged(const FormProto* form) = 0;
 
   // Called when client settings have changed.
-  virtual void OnClientSettingsChanged(const ClientSettings& settings);
+  virtual void OnClientSettingsChanged(const ClientSettings& settings) = 0;
 };
 }  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_CONTROLLER_OBSERVER_H_

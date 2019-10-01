@@ -30,6 +30,10 @@ bool WebApp::HasAnySources() const {
   return sources_.any();
 }
 
+bool WebApp::IsSynced() const {
+  return sources_[Source::kSync];
+}
+
 void WebApp::SetName(const std::string& name) {
   name_ = name;
 }

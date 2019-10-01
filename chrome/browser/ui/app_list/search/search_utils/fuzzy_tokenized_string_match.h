@@ -60,6 +60,12 @@ class FuzzyTokenizedStringMatch {
   // The return score is in range of [0, 1].
   double WeightedRatio(const TokenizedString& query,
                        const TokenizedString& text);
+  // Since prefix match should always be favored over other matches, this
+  // function is dedicated to calculate a prefix match score in range of [0, 1].
+  // This score has two components: first character match and whole prefix
+  // match.
+  double PrefixMatcher(const TokenizedString& query,
+                       const TokenizedString& text);
   // Score in range of [0,1] representing how well the query matches the text.
   double relevance_ = 0;
   Hits hits_;
@@ -67,6 +73,11 @@ class FuzzyTokenizedStringMatch {
   DISALLOW_COPY_AND_ASSIGN(FuzzyTokenizedStringMatch);
 };
 
+namespace internal {
+double FirstCharacterMatch(const TokenizedString& query,
+                           const TokenizedString& text);
+double PrefixMatch(const TokenizedString& query, const TokenizedString& text);
+}  // namespace internal
 }  // namespace app_list
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_UTILS_FUZZY_TOKENIZED_STRING_MATCH_H_

@@ -222,8 +222,8 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColor() {
   aura::Window* window = frame()->GetNativeWindow();
   base::Optional<SkColor> active_color, inactive_color;
   if (!UsePackagedAppHeaderStyle(browser_view()->browser())) {
-    active_color = GetFrameColor(kActive);
-    inactive_color = GetFrameColor(kInactive);
+    active_color = GetFrameColor(BrowserFrameActiveState::kActive);
+    inactive_color = GetFrameColor(BrowserFrameActiveState::kInactive);
   } else if (browser_view()->IsBrowserTypeWebApp()) {
     active_color = browser_view()->browser()->app_controller()->GetThemeColor();
   } else if (!browser_view()->browser()->deprecated_is_app()) {
@@ -257,7 +257,7 @@ bool BrowserNonClientFrameViewAsh::CanUserExitFullscreen() const {
 }
 
 SkColor BrowserNonClientFrameViewAsh::GetCaptionColor(
-    ActiveState active_state) const {
+    BrowserFrameActiveState active_state) const {
   bool active = ShouldPaintAsActive(active_state);
 
   SkColor active_color =
@@ -448,11 +448,13 @@ SkColor BrowserNonClientFrameViewAsh::GetTitleColor() {
 }
 
 SkColor BrowserNonClientFrameViewAsh::GetFrameHeaderColor(bool active) {
-  return GetFrameColor(active ? kActive : kInactive);
+  return GetFrameColor(active ? BrowserFrameActiveState::kActive
+                              : BrowserFrameActiveState::kInactive);
 }
 
 gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFrameHeaderImage(bool active) {
-  return GetFrameImage(active ? kActive : kInactive);
+  return GetFrameImage(active ? BrowserFrameActiveState::kActive
+                              : BrowserFrameActiveState::kInactive);
 }
 
 int BrowserNonClientFrameViewAsh::GetFrameHeaderImageYInset() {
@@ -461,7 +463,8 @@ int BrowserNonClientFrameViewAsh::GetFrameHeaderImageYInset() {
 
 gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFrameHeaderOverlayImage(
     bool active) {
-  return GetFrameOverlayImage(active ? kActive : kInactive);
+  return GetFrameOverlayImage(active ? BrowserFrameActiveState::kActive
+                                     : BrowserFrameActiveState::kInactive);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -700,8 +703,9 @@ void BrowserNonClientFrameViewAsh::SetUpForWebApp() {
 
   // Add the container for extra web app buttons (e.g app menu button).
   set_web_app_frame_toolbar(new WebAppFrameToolbarView(
-      frame(), browser_view(), GetCaptionColor(kActive),
-      GetCaptionColor(kInactive)));
+      frame(), browser_view(),
+      GetCaptionColor(BrowserFrameActiveState::kActive),
+      GetCaptionColor(BrowserFrameActiveState::kInactive)));
   AddChildView(web_app_frame_toolbar());
 }
 

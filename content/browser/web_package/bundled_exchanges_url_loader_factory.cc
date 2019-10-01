@@ -84,7 +84,7 @@ class BundledExchangesURLLoaderFactory::EntryLoader final
       }
     }
 
-    factory_->GetReader()->ReadResponse(
+    factory_->reader()->ReadResponse(
         resource_request.url, base::BindOnce(&EntryLoader::OnResponseReady,
                                              weak_factory_.GetWeakPtr()));
   }
@@ -152,7 +152,7 @@ class BundledExchangesURLLoaderFactory::EntryLoader final
       return;
     }
 
-    factory_->GetReader()->ReadResponseBody(
+    factory_->reader()->ReadResponseBody(
         std::move(response), std::move(producer_handle),
         base::BindOnce(&EntryLoader::FinishReadingBody,
                        weak_factory_.GetWeakPtr()));
@@ -178,7 +178,7 @@ class BundledExchangesURLLoaderFactory::EntryLoader final
 };
 
 BundledExchangesURLLoaderFactory::BundledExchangesURLLoaderFactory(
-    std::unique_ptr<BundledExchangesReader> reader)
+    scoped_refptr<BundledExchangesReader> reader)
     : reader_(std::move(reader)) {}
 
 BundledExchangesURLLoaderFactory::~BundledExchangesURLLoaderFactory() = default;

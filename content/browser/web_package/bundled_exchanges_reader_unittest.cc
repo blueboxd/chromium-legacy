@@ -61,7 +61,7 @@ class BundledExchangesReaderTest : public testing::Test {
  private:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockBundledExchangesReaderFactory> reader_factory_;
-  std::unique_ptr<BundledExchangesReader> reader_;
+  scoped_refptr<BundledExchangesReader> reader_;
   const GURL primary_url_ = GURL("https://test.example.org/");
   const std::string body_ = std::string("hello new open world.");
 };

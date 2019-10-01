@@ -121,6 +121,7 @@ RESOURCES = \
 	src/js/device/device_info_updater.js \
 	src/js/gallerybutton.js \
 	src/js/google-analytics-bundle.js \
+	src/js/intent.js \
 	src/js/main.js \
 	src/js/metrics.js \
 	src/js/models/filenamer.js \

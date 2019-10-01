@@ -27,6 +27,7 @@
 
 #include <algorithm>
 
+#include "base/auto_reset.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -198,8 +199,8 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tag_name, Document& doc)
       cached_repeat_count_(SMILRepeatCount::Invalid()),
       cached_min_(kInvalidCachedTime),
       cached_max_(kInvalidCachedTime),
-      interval_has_changed_(false) {
-}
+      interval_has_changed_(false),
+      is_notifying_dependents_(false) {}
 
 SVGSMILElement::~SVGSMILElement() = default;
 
@@ -1136,23 +1137,14 @@ void SVGSMILElement::NotifyDependentsOnRepeat(unsigned repeat_nr,
 }
 
 void SVGSMILElement::NotifyDependents(const NotifyDependentsInfo& info) {
-  // |loopBreaker| is used to avoid infinite recursions which may be caused by:
-  // |notifyDependentsIntervalChanged| -> |createInstanceTimesFromSyncBase| ->
-  // |add{Begin,End}Time| -> |{begin,end}TimeChanged| ->
-  // |notifyDependentsIntervalChanged|
-  //
-  // As the set here records SVGSMILElements on the stack, it is acceptable to
-  // use a HashSet of untraced heap references -- any conservative GC which
-  // strikes before unwinding will find these elements on the stack.
-  DEFINE_STATIC_LOCAL(HashSet<UntracedMember<SVGSMILElement>>, loop_breaker,
-                      ());
-  if (!loop_breaker.insert(this).is_new_entry)
+  // Avoid infinite recursion which may be caused by:
+  // |NotifyDependents| -> |CreateInstanceTimesFromSyncBase| ->
+  // |AddInstanceTime| -> |InstanceListChanged| -> |NotifyDependents|
+  if (is_notifying_dependents_)
     return;
-
+  base::AutoReset<bool> reentrancy_guard(&is_notifying_dependents_, true);
   for (SVGSMILElement* element : sync_base_dependents_)
     element->CreateInstanceTimesFromSyncBase(this, info);
-
-  loop_breaker.erase(this);
 }
 
 void SVGSMILElement::CreateInstanceTimesFromSyncBase(

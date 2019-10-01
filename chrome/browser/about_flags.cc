@@ -2844,6 +2844,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kServiceWorkerLongRunningMessageDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kServiceWorkerLongRunningMessage)},
 
+    {"enable-service-worker-on-ui", flag_descriptions::kServiceWorkerOnUIName,
+     flag_descriptions::kServiceWorkerOnUIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kServiceWorkerOnUI)},
+
 #if defined(OS_CHROMEOS)
     {"scheduler-configuration", flag_descriptions::kSchedulerConfigurationName,
      flag_descriptions::kSchedulerConfigurationDescription, kOsCrOS,
@@ -4031,7 +4035,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(blink::features::kNativeFileSystemAPI)},
 
     {"file-handling-api", flag_descriptions::kFileHandlingAPIName,
-     flag_descriptions::kFileHandlingAPIDescription, kOsCrOS,
+     flag_descriptions::kFileHandlingAPIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(blink::features::kFileHandlingAPI)},
 
 #if !defined(OS_ANDROID)

@@ -395,7 +395,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   friend class test::TestMenuItemViewNotShown;  // for access to |submenu_|;
   friend class TestMenuItemView;             // For access to AddEmptyMenus();
 
-  enum PaintButtonMode { PB_NORMAL, PB_FOR_DRAG };
+  enum class PaintButtonMode { kNormal, kForDrag };
 
   // Calculates all sizes that we can from the OS.
   //
@@ -432,8 +432,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // necessary.
   void AdjustBoundsForRTLUI(gfx::Rect* rect) const;
 
-  // Actual paint implementation. If mode is PB_FOR_DRAG, portions of the menu
-  // are not rendered.
+  // Actual paint implementation. If mode is kForDrag, portions of the menu are
+  // not rendered.
   void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
 
   // Helper function for PaintButton(), draws the background for the button if

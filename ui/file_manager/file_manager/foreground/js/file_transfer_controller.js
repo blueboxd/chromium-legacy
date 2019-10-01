@@ -453,55 +453,31 @@ class FileTransferController {
     const pastePlan =
         this.preparePaste(clipboardData, opt_destinationEntry, opt_effect);
 
-    return util.URLsToEntries(pastePlan.sourceURLs).then(entriesResult => {
-      const sourceEntries = entriesResult.entries;
-      const destinationEntry = pastePlan.destinationEntry;
-      const destinationLocationInfo =
-          this.volumeManager_.getLocationInfo(destinationEntry);
+    return FileTransferController.URLsToEntriesWithAccess(pastePlan.sourceURLs)
+        .then(entriesResult => {
+          const sourceEntries = entriesResult.entries;
 
-      const destinationIsOutsideOfDrive =
-          VolumeManagerCommon.getVolumeTypeFromRootType(
-              destinationLocationInfo.rootType) !==
-          VolumeManagerCommon.VolumeType.DRIVE;
-
-      // Disallow transferring hosted files from Shared Drives to outside of
-      // Drive. This is because hosted files aren't 'real' files, so it doesn't
-      // make sense to allow a 'local' copy (e.g. in Downloads, or on a USB),
-      // where the file can't be accessed offline (or necessarily accessed at
-      // all) by the person who tries to open it. In future, block this for all
-      // hosted files, regardless of their source. For now, to maintain
-      // backwards-compatibility, just block this for hosted files stored in a
-      // Shared Drive.
-      if (sourceEntries.some(
-              entry =>
-                  util.isSharedDriveEntry(entry) && FileType.isHosted(entry)) &&
-          destinationIsOutsideOfDrive) {
-        // For now, just don't execute the paste.
-        // TODO(sashab): Display a warning message, and disallow drag-drop
-        // operations.
-        return null;
-      }
-
-      if (sourceEntries.length == 0) {
-        // This can happen when copied files were deleted before pasting them.
-        // We execute the plan as-is, so as to share the post-copy logic.
-        // This is basically same as getting empty by filtering same-directory
-        // entries.
-        return Promise.resolve(this.executePaste(pastePlan));
-      }
-      const confirmationType = pastePlan.getConfirmationType(sourceEntries);
-      if (confirmationType == FileTransferController.ConfirmationType.NONE) {
-        return Promise.resolve(this.executePaste(pastePlan));
-      }
-      const messages =
-          pastePlan.getConfirmationMessages(confirmationType, sourceEntries);
-      this.confirmationCallback_(pastePlan.isMove, messages)
-          .then(userApproved => {
-            if (userApproved) {
-              this.executePaste(pastePlan);
-            }
-          });
-    });
+          if (sourceEntries.length == 0) {
+            // This can happen when copied files were deleted before pasting
+            // them. We execute the plan as-is, so as to share the post-copy
+            // logic. This is basically same as getting empty by filtering
+            // same-directory entries.
+            return Promise.resolve(this.executePaste(pastePlan));
+          }
+          const confirmationType = pastePlan.getConfirmationType(sourceEntries);
+          if (confirmationType ==
+              FileTransferController.ConfirmationType.NONE) {
+            return Promise.resolve(this.executePaste(pastePlan));
+          }
+          const messages = pastePlan.getConfirmationMessages(
+              confirmationType, sourceEntries);
+          this.confirmationCallback_(pastePlan.isMove, messages)
+              .then(userApproved => {
+                if (userApproved) {
+                  this.executePaste(pastePlan);
+                }
+              });
+        });
   }
 
   /**
@@ -1238,15 +1214,28 @@ class FileTransferController {
       return false;  // Unsupported type of content.
     }
 
-    // Copying between different sources requires all files to be available.
+    const sourceUrls = (clipboardData.getData('fs/sources') || '').split('\n');
     if (this.getSourceRootURL_(
             clipboardData, this.getDragAndDropGlobalData_()) !==
-            destinationLocationInfo.volumeInfo.fileSystem.root.toURL() &&
-        this.isMissingFileContents_(clipboardData)) {
-      return false;
+        destinationLocationInfo.volumeInfo.fileSystem.root.toURL()) {
+      // Copying between different sources requires all files to be available.
+      if (this.isMissingFileContents_(clipboardData)) {
+        return false;
+      }
+
+      // Block transferring hosted files between different sources in order to
+      // prevent hosted files from being transferred outside of Drive. This is
+      // done because hosted files aren't 'real' files, so it doesn't make sense
+      // to allow a 'local' copy (e.g. in Downloads, or on a USB), where the
+      // file can't be accessed offline (or necessarily accessed at all) by the
+      // person who tries to open it. It also blocks copying hosted files to
+      // other profiles, as the files would need to be shared in Drive first.
+      if (sourceUrls.some(
+              source => FileType.getTypeForName(source).type === 'hosted')) {
+        return false;
+      }
     }
 
-    const sourceUrls = (clipboardData.getData('fs/sources') || '').split('\n');
     // If the destination is sub-tree of any of the sources paste isn't allowed.
     const destinationUrl = destinationEntry.toURL();
     if (sourceUrls.some(source => destinationUrl.startsWith(source))) {
@@ -1641,7 +1630,8 @@ FileTransferController.PastePlan = class {
  * them, which is essential when pasting files from a different profile.
  *
  * @param {!Array<string>} urls Urls to be converted.
- * @return {Promise<!Array<string>>}
+ * @return {Promise} Promise fulfilled with the object that has entries property
+ *     and failureUrls property. The promise is never rejected.
  */
 FileTransferController.URLsToEntriesWithAccess = urls => {
   return new Promise((resolve, reject) => {

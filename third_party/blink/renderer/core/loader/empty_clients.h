@@ -177,6 +177,9 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
     return r;
   }
   float WindowToViewportScalar(const float s) const override { return s; }
+  float WindowToViewportScalar(LocalFrame*, const float s) const override {
+    return s;
+  }
   WebScreenInfo GetScreenInfo() const override { return WebScreenInfo(); }
   void ContentsSizeChanged(LocalFrame*, const IntSize&) const override {}
 

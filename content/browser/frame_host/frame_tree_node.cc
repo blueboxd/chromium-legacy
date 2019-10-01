@@ -430,7 +430,7 @@ void FrameTreeNode::CreatedNavigationRequest(
   // RenderFrameHostManager will take care of updates to the speculative
   // RenderFrameHost in DidCreateNavigationRequest below.
   if (was_previously_loading) {
-    if (navigation_request_ && navigation_request_->navigation_handle()) {
+    if (navigation_request_ && navigation_request_->IsNavigationStarted()) {
       // Mark the old request as aborted.
       navigation_request_->set_net_error(net::ERR_ABORTED);
     }

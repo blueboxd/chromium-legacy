@@ -41,19 +41,8 @@ class TestDomDistillerService : public DomDistillerServiceInterface {
   TestDomDistillerService() {}
   ~TestDomDistillerService() override {}
 
-  MOCK_METHOD3(AddToList,
-               const std::string(const GURL&,
-                                 DistillerPage*,
-                                 const ArticleAvailableCallback&));
-  const std::string AddToList(
-      const GURL& url,
-      std::unique_ptr<DistillerPage> distiller_page,
-      const ArticleAvailableCallback& article_cb) override {
-    return AddToList(url, distiller_page.get(), article_cb);
-  }
   MOCK_METHOD1(HasEntry, bool(const std::string&));
   MOCK_METHOD1(GetUrlForEntry, std::string(const std::string&));
-  MOCK_CONST_METHOD0(GetEntries, std::vector<ArticleEntry>());
   MOCK_METHOD0(ViewUrlImpl, ViewerHandle*());
   std::unique_ptr<ViewerHandle> ViewUrl(
       ViewRequestDelegate*,
@@ -67,10 +56,6 @@ class TestDomDistillerService : public DomDistillerServiceInterface {
       std::unique_ptr<DistillerPage> distiller_page,
       const std::string&) override {
     return std::unique_ptr<ViewerHandle>(ViewEntryImpl());
-  }
-  MOCK_METHOD0(RemoveEntryImpl, ArticleEntry*());
-  std::unique_ptr<ArticleEntry> RemoveEntry(const std::string&) override {
-    return std::unique_ptr<ArticleEntry>(RemoveEntryImpl());
   }
   std::unique_ptr<DistillerPage> CreateDefaultDistillerPage(
       const gfx::Size& render_view_size) override {

@@ -140,7 +140,7 @@ void LaunchReleaseNotesImpl(Profile* profile) {
           chromeos::default_web_apps::kReleaseNotesAppId,
           extensions::ExtensionRegistry::EVERYTHING);
   if (extension) {
-    AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
+    apps::AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
         profile, extension, 0, apps::mojom::AppLaunchSource::kSourceUntracked,
         -1);
     params.override_url = GURL(BuildQueryString(profile));
@@ -184,8 +184,8 @@ void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
     default:
       NOTREACHED() << "Unhandled help source" << source;
   }
-  apps::LaunchService::Get(profile)->OpenApplication(AppLaunchParams(
-      profile, extension_misc::kGeniusAppId,
+  apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
+      extension_misc::kGeniusAppId,
       extensions::GetLaunchContainer(extensions::ExtensionPrefs::Get(profile),
                                      extension),
       WindowOpenDisposition::NEW_FOREGROUND_TAB, app_launch_source, true));

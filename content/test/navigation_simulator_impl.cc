@@ -11,7 +11,6 @@
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -368,8 +367,7 @@ void NavigationSimulatorImpl::InitializeFromStartedRequest(
     NavigationRequest* request) {
   CHECK(request);
   request_ = request;
-  CHECK(request->navigation_handle());
-  CHECK_LE(NavigationRequest::STARTED, request_->state());
+  CHECK(request_->IsNavigationStarted());
   CHECK_EQ(web_contents_, request_->GetDelegate());
   CHECK(render_frame_host_);
   CHECK_EQ(frame_tree_node_, request_->frame_tree_node());
@@ -398,7 +396,7 @@ void NavigationSimulatorImpl::InitializeFromStartedRequest(
 void NavigationSimulatorImpl::RegisterTestThrottle(NavigationRequest* request) {
   request->RegisterThrottleForTesting(
       std::make_unique<NavigationThrottleCallbackRunner>(
-          request->navigation_handle(),
+          request,
           base::BindOnce(&NavigationSimulatorImpl::OnWillStartRequest,
                          weak_factory_.GetWeakPtr()),
           base::BindRepeating(&NavigationSimulatorImpl::OnWillRedirectRequest,
@@ -935,9 +933,9 @@ NavigationSimulatorImpl::GetLastThrottleCheckResult() {
   return last_throttle_check_result_.value();
 }
 
-NavigationHandleImpl* NavigationSimulatorImpl::GetNavigationHandle() {
+NavigationRequest* NavigationSimulatorImpl::GetNavigationHandle() {
   CHECK_GE(state_, STARTED);
-  return request_->navigation_handle();
+  return request_;
 }
 
 content::GlobalRequestID NavigationSimulatorImpl::GetGlobalRequestID() {
@@ -1001,13 +999,13 @@ void NavigationSimulatorImpl::DidStartNavigation(
 
 void NavigationSimulatorImpl::DidRedirectNavigation(
     NavigationHandle* navigation_handle) {
-  if (request_ && navigation_handle == request_->navigation_handle())
+  if (request_ == navigation_handle)
     num_did_redirect_navigation_called_++;
 }
 
 void NavigationSimulatorImpl::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
-  if (request_ && navigation_handle == request_->navigation_handle())
+  if (request_ && navigation_handle == request_)
     num_ready_to_commit_called_++;
 }
 
@@ -1075,15 +1073,14 @@ bool NavigationSimulatorImpl::SimulateBrowserInitiatedStart() {
       state_ = FAILED;
       return false;
     } else if (request_ &&
-               web_contents_->GetMainFrame()->GetNavigationHandle() ==
-                   request_->navigation_handle()) {
+               web_contents_->GetMainFrame()->navigation_request() ==
+                   request_) {
       CHECK(!IsURLHandledByNetworkStack(request_->common_params().url));
       return true;
     } else if (web_contents_->GetMainFrame()
                    ->same_document_navigation_request() &&
                web_contents_->GetMainFrame()
-                       ->same_document_navigation_request()
-                       ->navigation_handle() == request_->navigation_handle()) {
+                       ->same_document_navigation_request() == request_) {
       CHECK(request_->IsSameDocument());
       same_document_ = true;
       return true;

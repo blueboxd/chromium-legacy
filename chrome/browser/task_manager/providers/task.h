@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/sessions/core/session_id.h"
-#include "third_party/blink/public/platform/web_cache.h"
+#include "third_party/blink/public/common/web_cache/web_cache_resource_type_stats.h"
 #include "ui/gfx/image/image_skia.h"
 
 class Profile;
@@ -150,7 +150,7 @@ class Task {
   // Checking if the task reports Webkit resource cache statistics and getting
   // them if it does.
   virtual bool ReportsWebCacheStats() const;
-  virtual blink::WebCache::ResourceTypeStats GetWebCacheStats() const;
+  virtual blink::WebCacheResourceTypeStats GetWebCacheStats() const;
 
   // Returns the keep-alive counter if the Task is an event page, -1 otherwise.
   virtual int GetKeepaliveCount() const;

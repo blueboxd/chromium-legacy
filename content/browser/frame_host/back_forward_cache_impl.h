@@ -7,6 +7,7 @@
 
 #include <list>
 #include <memory>
+#include <unordered_map>
 
 #include "base/feature_list.h"
 #include "base/macros.h"
@@ -23,6 +24,7 @@
 namespace content {
 
 class RenderFrameHostImpl;
+class RenderFrameProxyHost;
 
 // BackForwardCache:
 //
@@ -32,6 +34,35 @@ class RenderFrameHostImpl;
 // the current_frame_host.
 class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
  public:
+  struct Entry {
+    using RenderFrameProxyHostMap =
+        std::unordered_map<int32_t /* SiteInstance ID */,
+                           std::unique_ptr<RenderFrameProxyHost>>;
+
+    Entry(std::unique_ptr<RenderFrameHostImpl> rfh,
+          RenderFrameProxyHostMap proxy_hosts);
+    ~Entry();
+
+    // These functions forward to the underlying render_frame_host. Do not call
+    // just before storing or right after restoring, as the Entry will be in an
+    // invalid state.
+    int GetNavigationEntryId();
+    bool IsEvictedFromBackForwardCache();
+    void EvictFromBackForwardCache();
+    void LeaveBackForwardCache();
+
+    // The main document being stored.
+    std::unique_ptr<RenderFrameHostImpl> render_frame_host;
+
+    // Proxies of the main document as seen by other processes.
+    // Currently, we only store proxies for SiteInstances of all subframes on
+    // the page, because pages using window.open and nested WebContents are not
+    // cached.
+    RenderFrameProxyHostMap proxy_hosts;
+
+    DISALLOW_COPY_AND_ASSIGN(Entry);
+  };
+
   BackForwardCacheImpl();
   ~BackForwardCacheImpl();
 
@@ -66,30 +97,30 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   CanStoreDocumentResult CanStoreDocument(
       RenderFrameHostImpl* render_frame_host);
 
-  // Moves |rfh| into the BackForwardCache. It can be reused in
-  // a future history navigation by using RestoreDocument(). When the
-  // BackForwardCache is full, the least recently used document is evicted.
-  // Precondition: CanStoreDocument(render_frame_host).
-  void StoreDocument(std::unique_ptr<RenderFrameHostImpl> rfh);
+  // Moves the specified BackForwardCache entry into the BackForwardCache. It
+  // can be reused in a future history navigation by using RestoreEntry(). When
+  // the BackForwardCache is full, the least recently used document is evicted.
+  // Precondition: CanStoreDocument(*(entry->render_frame_host)).
+  void StoreEntry(std::unique_ptr<Entry> entry);
 
   // Iterates over all the RenderViewHost inside |main_rfh| and freeze or
   // resume them.
   static void Freeze(RenderFrameHostImpl* main_rfh);
   static void Resume(RenderFrameHostImpl* main_rfh);
 
-  // Returns a pointer to a cached RenderFrameHost matching
+  // Returns a pointer to a cached BackForwardCache entry matching
   // |navigation_entry_id| if it exists in the BackForwardCache. Returns nullptr
-  // if no matching document is found.
+  // if no matching entry is found.
   //
   // Note: The returned pointer should be used temporarily only within the
   // execution of a single task on the event loop. Beyond that, there is no
   // guarantee the pointer will be valid, because the document may be
   // removed/evicted from the cache.
-  RenderFrameHostImpl* GetDocument(int navigation_entry_id);
+  Entry* GetEntry(int navigation_entry_id);
 
-  // During a history navigation, move a document out of the BackForwardCache
+  // During a history navigation, moves an entry out of the BackForwardCache
   // knowing its |navigation_entry_id|. Returns nullptr when none is found.
-  std::unique_ptr<RenderFrameHostImpl> RestoreDocument(int navigation_entry_id);
+  std::unique_ptr<Entry> RestoreEntry(int navigation_entry_id);
 
   // Remove all entries from the BackForwardCache.
   void Flush();
@@ -139,11 +170,11 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
       RenderFrameHostImpl* render_frame_host,
       uint64_t disallowed_features);
 
-  // Contains the set of stored RenderFrameHost.
+  // Contains the set of stored Entries.
   // Invariant:
   // - Ordered from the most recently used to the last recently used.
   // - Once the list is full, the least recently used document is evicted.
-  std::list<std::unique_ptr<RenderFrameHostImpl>> render_frame_hosts_;
+  std::list<std::unique_ptr<Entry>> entries_;
 
   // Only used in tests. Whether the BackforwardCached has been disabled for
   // testing.

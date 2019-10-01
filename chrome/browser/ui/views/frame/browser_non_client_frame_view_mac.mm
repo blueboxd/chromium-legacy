@@ -71,8 +71,10 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
     if (browser_view->browser()->app_controller()->HasTitlebarToolbar()) {
       set_web_app_frame_toolbar(
           AddChildView(std::make_unique<WebAppFrameToolbarView>(
-              frame, browser_view, GetCaptionColor(kActive),
-              GetCaptionColor(kInactive), kHostedAppMenuMargin)));
+              frame, browser_view,
+              GetCaptionColor(BrowserFrameActiveState::kActive),
+              GetCaptionColor(BrowserFrameActiveState::kInactive),
+              kHostedAppMenuMargin)));
     }
 
     DCHECK(browser_view->ShouldShowWindowTitle());
@@ -307,7 +309,8 @@ void BrowserNonClientFrameViewMac::OnPaint(gfx::Canvas* canvas) {
 
   if (window_title_) {
     window_title_->SetBackgroundColor(frame_color);
-    window_title_->SetEnabledColor(GetCaptionColor(kUseCurrent));
+    window_title_->SetEnabledColor(
+        GetCaptionColor(BrowserFrameActiveState::kUseCurrent));
   }
 
   auto* theme_service =

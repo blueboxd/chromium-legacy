@@ -1238,9 +1238,9 @@ bool TabStrip::ShouldDrawStrokes() const {
   // the window activation state changes.
   constexpr float kMinimumContrastRatioForOutlines = 1.3f;
   const SkColor background_color = GetTabBackgroundColor(
-      TabActive::kActive, BrowserNonClientFrameView::kActive);
+      TabActive::kActive, BrowserFrameActiveState::kActive);
   const SkColor frame_color =
-      controller_->GetFrameColor(BrowserNonClientFrameView::kActive);
+      controller_->GetFrameColor(BrowserFrameActiveState::kActive);
   const float contrast_ratio =
       color_utils::GetContrastRatio(background_color, frame_color);
   if (contrast_ratio < kMinimumContrastRatioForOutlines)
@@ -1634,7 +1634,7 @@ SkColor TabStrip::GetTabSeparatorColor() const {
 
 SkColor TabStrip::GetTabBackgroundColor(
     TabActive active,
-    BrowserNonClientFrameView::ActiveState active_state) const {
+    BrowserFrameActiveState active_state) const {
   const ui::ThemeProvider* tp = GetThemeProvider();
   if (!tp)
     return SK_ColorBLACK;
@@ -1643,10 +1643,10 @@ SkColor TabStrip::GetTabBackgroundColor(
     return tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
 
   bool is_active_frame;
-  if (active_state == BrowserNonClientFrameView::kUseCurrent)
+  if (active_state == BrowserFrameActiveState::kUseCurrent)
     is_active_frame = ShouldPaintAsActiveFrame();
   else
-    is_active_frame = active_state == BrowserNonClientFrameView::kActive;
+    is_active_frame = active_state == BrowserFrameActiveState::kActive;
 
   const int color_id = is_active_frame
                            ? ThemeProperties::COLOR_BACKGROUND_TAB
@@ -1718,7 +1718,7 @@ base::string16 TabStrip::GetAccessibleTabName(const Tab* tab) const {
 }
 
 base::Optional<int> TabStrip::GetCustomBackgroundId(
-    BrowserNonClientFrameView::ActiveState active_state) const {
+    BrowserFrameActiveState active_state) const {
   if (!TitlebarBackgroundIsTransparent())
     return controller_->GetCustomBackgroundId(active_state);
 
@@ -2539,14 +2539,14 @@ void TabStrip::UpdateContrastRatioValues() {
     return;
 
   const SkColor inactive_bg = GetTabBackgroundColor(
-      TabActive::kInactive, BrowserNonClientFrameView::kUseCurrent);
+      TabActive::kInactive, BrowserFrameActiveState::kUseCurrent);
   const auto get_blend = [inactive_bg](SkColor target, float contrast) {
     return color_utils::BlendForMinContrast(inactive_bg, inactive_bg, target,
                                             contrast);
   };
 
   const SkColor active_bg = GetTabBackgroundColor(
-      TabActive::kActive, BrowserNonClientFrameView::kUseCurrent);
+      TabActive::kActive, BrowserFrameActiveState::kUseCurrent);
   const auto get_hover_opacity = [active_bg, &get_blend](float contrast) {
     return get_blend(active_bg, contrast).alpha / 255.0f;
   };

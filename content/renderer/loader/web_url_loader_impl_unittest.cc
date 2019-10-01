@@ -171,7 +171,8 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
                 CreateUnprioritized(
                     blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &fake_url_loader_factory_))),
+                &fake_url_loader_factory_),
+            /*keep_alive_handle=*/mojo::NullRemote())),
         delete_on_receive_redirect_(false),
         delete_on_receive_response_(false),
         delete_on_receive_data_(false),

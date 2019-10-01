@@ -118,16 +118,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   // animations are rendered useless.
   virtual bool OverwritesUnderlyingAnimationValue() const = 0;
 
-  bool AnimatedTypeIsLocked() const { return animated_property_locked_; }
-  void LockAnimatedType() {
-    DCHECK(!animated_property_locked_);
-    animated_property_locked_ = true;
-  }
-  void UnlockAnimatedType() {
-    DCHECK(animated_property_locked_);
-    animated_property_locked_ = false;
-  }
-
   void ScheduleEvent(const AtomicString& event_type);
   void ScheduleRepeatEvents();
   void DispatchPendingEvent(const AtomicString& event_type);
@@ -287,8 +277,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   mutable SMILTime cached_min_;
   mutable SMILTime cached_max_;
 
-  bool animated_property_locked_;
   bool interval_has_changed_;
+  bool is_notifying_dependents_;
 
   friend class ConditionEventListener;
 };

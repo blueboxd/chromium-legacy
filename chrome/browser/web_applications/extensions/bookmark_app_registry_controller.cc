@@ -9,6 +9,7 @@
 #include "base/one_shot_event.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -53,6 +54,13 @@ void BookmarkAppRegistryController::SetAppLaunchContainer(
       NOTREACHED();
       return;
   }
+}
+
+void BookmarkAppRegistryController::SetAppIsLocallyInstalledForTesting(
+    const web_app::AppId& app_id,
+    bool is_locally_installed) {
+  SetBookmarkAppIsLocallyInstalled(profile(), GetExtension(app_id),
+                                   is_locally_installed);
 }
 
 web_app::WebAppSyncBridge* BookmarkAppRegistryController::AsWebAppSyncBridge() {

@@ -588,6 +588,41 @@ int LayoutBox::PixelSnappedClientHeight() const {
   return SnapSizeToPixel(ClientHeight(), Location().Y() + ClientTop());
 }
 
+int LayoutBox::PixelSnappedClientWidthWithTableSpecialBehavior() const {
+  // clientWidth/Height is the visual portion of the box content, not including
+  // borders or scroll bars, but includes padding. And per
+  // https://www.w3.org/TR/CSS2/tables.html#model,
+  // table wrapper box is a principal block box that contains the table box
+  // itself and any caption boxes, and table grid box is a block-level box that
+  // contains the table's internal table boxes. When table's border is specified
+  // in CSS, the border is added to table grid box, not table wrapper box.
+  // Currently, Blink doesn't have table wrapper box, and we are supposed to
+  // retrieve clientWidth/Height from table wrapper box, not table grid box. So
+  // when we retrieve clientWidth/Height, it includes table's border size.
+  LayoutUnit client_width = ClientWidth();
+  if (IsTable())
+    client_width += BorderLeft() + BorderRight();
+  return SnapSizeToPixel(client_width, Location().X() + ClientLeft());
+}
+
+DISABLE_CFI_PERF
+int LayoutBox::PixelSnappedClientHeightWithTableSpecialBehavior() const {
+  // clientWidth/Height is the visual portion of the box content, not including
+  // borders or scroll bars, but includes padding. And per
+  // https://www.w3.org/TR/CSS2/tables.html#model,
+  // table wrapper box is a principal block box that contains the table box
+  // itself and any caption boxes, and table grid box is a block-level box that
+  // contains the table's internal table boxes. When table's border is specified
+  // in CSS, the border is added to table grid box, not table wrapper box.
+  // Currently, Blink doesn't have table wrapper box, and we are supposed to
+  // retrieve clientWidth/Height from table wrapper box, not table grid box. So
+  // when we retrieve clientWidth/Height, it includes table's border size.
+  LayoutUnit client_height = ClientHeight();
+  if (IsTable())
+    client_height += BorderTop() + BorderBottom();
+  return SnapSizeToPixel(client_height, Location().Y() + ClientTop());
+}
+
 int LayoutBox::PixelSnappedOffsetWidth(const Element*) const {
   return SnapSizeToPixel(OffsetWidth(), Location().X() + ClientLeft());
 }

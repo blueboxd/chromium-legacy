@@ -6,9 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_COMMAND_ENCODER_H_
 
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 
+class ExceptionState;
 class GPUBuffer;
 class GPUBufferCopyView;
 class GPUCommandBuffer;
@@ -16,10 +18,10 @@ class GPUCommandBufferDescriptor;
 class GPUCommandEncoderDescriptor;
 class GPUComputePassDescriptor;
 class GPUComputePassEncoder;
-class GPUExtent3D;
 class GPURenderPassDescriptor;
 class GPURenderPassEncoder;
 class GPUTextureCopyView;
+class UnsignedLongSequenceOrGPUExtent3DDict;
 
 class GPUCommandEncoder : public DawnObject<DawnCommandEncoder> {
   DEFINE_WRAPPERTYPEINFO();
@@ -34,7 +36,8 @@ class GPUCommandEncoder : public DawnObject<DawnCommandEncoder> {
 
   // gpu_command_encoder.idl
   GPURenderPassEncoder* beginRenderPass(
-      const GPURenderPassDescriptor* descriptor);
+      const GPURenderPassDescriptor* descriptor,
+      ExceptionState& exception_state);
   GPUComputePassEncoder* beginComputePass(
       const GPUComputePassDescriptor* descriptor);
   void copyBufferToBuffer(GPUBuffer* src,
@@ -44,13 +47,16 @@ class GPUCommandEncoder : public DawnObject<DawnCommandEncoder> {
                           uint64_t size);
   void copyBufferToTexture(GPUBufferCopyView* source,
                            GPUTextureCopyView* destination,
-                           GPUExtent3D* copy_size);
+                           UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
+                           ExceptionState& exception_state);
   void copyTextureToBuffer(GPUTextureCopyView* source,
                            GPUBufferCopyView* destination,
-                           GPUExtent3D* copy_size);
+                           UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
+                           ExceptionState& exception_state);
   void copyTextureToTexture(GPUTextureCopyView* source,
                             GPUTextureCopyView* destination,
-                            GPUExtent3D* copy_size);
+                            UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
+                            ExceptionState& exception_state);
   void pushDebugGroup(String groupLabel);
   void popDebugGroup();
   void insertDebugMarker(String markerLabel);

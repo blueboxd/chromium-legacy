@@ -10,13 +10,13 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/widget/widget.h"
 
+class BrowserNonClientFrameView;
 class BrowserRootView;
 class BrowserView;
 class NativeBrowserFrame;

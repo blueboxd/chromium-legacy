@@ -16,6 +16,8 @@
 #include "media/cdm/cdm_proxy.h"
 #include "media/mojo/mojom/cdm_proxy.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
 namespace media {
 
@@ -31,7 +33,7 @@ class MEDIA_MOJO_EXPORT MojoCdmProxyService : public mojom::CdmProxy,
   ~MojoCdmProxyService() final;
 
   // mojom::CdmProxy implementation.
-  void Initialize(mojom::CdmProxyClientAssociatedPtrInfo client,
+  void Initialize(mojo::PendingAssociatedRemote<mojom::CdmProxyClient> client,
                   InitializeCallback callback) final;
   void Process(media::CdmProxy::Function function,
                uint32_t crypto_session_id,
@@ -69,7 +71,7 @@ class MEDIA_MOJO_EXPORT MojoCdmProxyService : public mojom::CdmProxy,
   std::unique_ptr<::media::CdmProxy> cdm_proxy_;
   MojoCdmServiceContext* const context_ = nullptr;
 
-  mojom::CdmProxyClientAssociatedPtr client_;
+  mojo::AssociatedRemote<mojom::CdmProxyClient> client_;
 
   // Set to a valid CDM ID if the |cdm_proxy_| is successfully initialized.
   int cdm_id_ = CdmContext::kInvalidCdmId;

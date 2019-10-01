@@ -41,9 +41,6 @@ public class HostBrowserUtilsTest {
         int NO = 1;
     }
 
-    // Cannot specify a custom package name with {@link ParameterizedRobolectricTestRunner}.
-    private static final String WEBAPK_PACKAGE_NAME = "org.robolectric.default";
-
     private static final String DEFAULT_BROWSER_SUPPORTING_WEBAPKS =
             "com.google.android.apps.chrome";
     private static final String DEFAULT_BROWSER_NOT_SUPPORTING_WEBAPKS =
@@ -192,6 +189,16 @@ public class HostBrowserUtilsTest {
                         BROWSERS_NOT_SUPPORTING_WEBAPKS[1]});
         setHostBrowserInSharedPreferences(null);
         Assert.assertEquals(BROWSERS_SUPPORTING_WEBAPKS[0],
+                HostBrowserUtils.computeHostBrowserPackageClearCachedDataOnChange(mContext));
+
+        // Shared pref browser: Null
+        // Default browser: Does not support WebAPKs
+        // > 1 installed browsers
+        setInstalledBrowsersAndClearedCachedData(DefaultBrowserWebApkSupport.NO,
+                new String[] {
+                        BROWSERS_NOT_SUPPORTING_WEBAPKS[0], BROWSERS_NOT_SUPPORTING_WEBAPKS[1]});
+        setHostBrowserInSharedPreferences(null);
+        Assert.assertEquals(DEFAULT_BROWSER_NOT_SUPPORTING_WEBAPKS,
                 HostBrowserUtils.computeHostBrowserPackageClearCachedDataOnChange(mContext));
     }
 
@@ -344,6 +351,6 @@ public class HostBrowserUtilsTest {
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, hostBrowserPackage);
         WebApkTestHelper.registerWebApkWithMetaData(
-                WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
+                mContext.getPackageName(), bundle, null /* shareTargetMetaData */);
     }
 }

@@ -4,7 +4,6 @@
 
 #include "content/browser/web_contents/javascript_dialog_navigation_deferrer.h"
 
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 
 namespace content {

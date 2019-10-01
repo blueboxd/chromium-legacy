@@ -159,7 +159,6 @@ class GeolocationServiceImpl;
 class KeepAliveHandleFactory;
 class MediaInterfaceProxy;
 class NavigationEntryImpl;
-class NavigationHandleImpl;
 class NavigationRequest;
 class PermissionServiceContext;
 class PrefetchedSignedExchangeCache;
@@ -538,10 +537,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   NavigationRequest* same_document_navigation_request() {
     return same_document_navigation_request_.get();
   }
-
-  // Returns the NavigationHandleImpl stored in the NavigationRequest returned
-  // by GetNavigationRequest(), if any.
-  NavigationHandleImpl* GetNavigationHandle();
 
   // Resets the NavigationRequests stored in this RenderFrameHost.
   void ResetNavigationRequests();

@@ -504,14 +504,18 @@ void DWriteFontProxyImpl::GetUniqueNameLookupTable(
       base::SequencedTaskRunnerHandle::Get(), std::move(callback));
 }
 
-void DWriteFontProxyImpl::FallbackFamilyNameForCodepoint(
+void DWriteFontProxyImpl::FallbackFamilyAndStyleForCodepoint(
     const std::string& base_family_name,
     const std::string& locale_name,
     uint32_t codepoint,
-    FallbackFamilyNameForCodepointCallback callback) {
+    FallbackFamilyAndStyleForCodepointCallback callback) {
   InitializeDirectWrite();
-  callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback),
-                                                         std::string());
+  callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      std::move(callback),
+      blink::mojom::FallbackFamilyAndStyle::New("",
+                                                /* weight */ 0,
+                                                /* width */ 0,
+                                                /* slant */ 0));
 
   if (!codepoint)
     return;
@@ -532,7 +536,13 @@ void DWriteFontProxyImpl::FallbackFamilyNameForCodepoint(
 
   SkString family_name;
   typeface->getFamilyName(&family_name);
-  std::move(callback).Run(family_name.c_str());
+
+  SkFontStyle font_style = typeface->fontStyle();
+
+  auto result_fallback_and_style = blink::mojom::FallbackFamilyAndStyle::New(
+      family_name.c_str(), font_style.weight(), font_style.width(),
+      font_style.slant());
+  std::move(callback).Run(std::move(result_fallback_and_style));
 }
 
 void DWriteFontProxyImpl::InitializeDirectWrite() {

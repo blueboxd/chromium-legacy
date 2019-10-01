@@ -22,7 +22,7 @@ DawnTextureDescriptor AsDawnType(const GPUTextureDescriptor* webgpu_desc) {
   dawn_desc.usage = static_cast<DawnTextureUsage>(webgpu_desc->usage());
   dawn_desc.dimension =
       AsDawnEnum<DawnTextureDimension>(webgpu_desc->dimension());
-  dawn_desc.size = AsDawnType(webgpu_desc->size());
+  dawn_desc.size = AsDawnType(&webgpu_desc->size());
   dawn_desc.arrayLayerCount = webgpu_desc->arrayLayerCount();
   dawn_desc.format = AsDawnEnum<DawnTextureFormat>(webgpu_desc->format());
   dawn_desc.mipLevelCount = webgpu_desc->mipLevelCount();
@@ -53,9 +53,19 @@ DawnTextureViewDescriptor AsDawnType(
 
 // static
 GPUTexture* GPUTexture::Create(GPUDevice* device,
-                               const GPUTextureDescriptor* webgpu_desc) {
+                               const GPUTextureDescriptor* webgpu_desc,
+                               ExceptionState& exception_state) {
   DCHECK(device);
   DCHECK(webgpu_desc);
+
+  // Check size is correctly formatted before further processing.
+  const UnsignedLongSequenceOrGPUExtent3DDict& size = webgpu_desc->size();
+  if (size.IsUnsignedLongSequence() &&
+      size.GetAsUnsignedLongSequence().size() != 3) {
+    exception_state.ThrowRangeError("size length must be 3");
+    return nullptr;
+  }
+
   DawnTextureDescriptor dawn_desc = AsDawnType(webgpu_desc);
 
   return MakeGarbageCollected<GPUTexture>(

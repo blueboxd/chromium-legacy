@@ -126,7 +126,7 @@ class CrashNotificationDelegate : public message_center::NotificationDelegate {
       BackgroundContentsService* service =
           BackgroundContentsServiceFactory::GetForProfile(profile);
       if (!service->GetAppBackgroundContents(extension_id))
-        service->LoadBackgroundContentsForExtension(profile, extension_id);
+        service->LoadBackgroundContentsForExtension(extension_id);
     } else if (is_platform_app) {
       apps::AppLoadService::Get(profile)->RestartApplication(extension_id);
     } else {
@@ -327,8 +327,8 @@ void BackgroundContentsService::StartObserving() {
 }
 
 void BackgroundContentsService::OnExtensionSystemReady() {
-  LoadBackgroundContentsFromManifests(profile_);
-  LoadBackgroundContentsFromPrefs(profile_);
+  LoadBackgroundContentsFromManifests();
+  LoadBackgroundContentsFromPrefs();
   SendChangeNotification();
 }
 
@@ -358,8 +358,7 @@ void BackgroundContentsService::OnExtensionLoaded(
       // Now load the manifest-specified background page. If service isn't
       // ready, then the background page will be loaded from the
       // EXTENSIONS_READY callback.
-      LoadBackgroundContents(profile,
-                             BackgroundInfo::GetBackgroundURL(extension),
+      LoadBackgroundContents(BackgroundInfo::GetBackgroundURL(extension),
                              "background", extension->id());
     }
   }
@@ -434,8 +433,7 @@ void BackgroundContentsService::OnExtensionUninstalled(
 }
 
 void BackgroundContentsService::RestartForceInstalledExtensionOnCrash(
-    const Extension* extension,
-    Profile* profile) {
+    const Extension* extension) {
   int restart_delay = restart_delay_in_ms_;
 
   // If the extension was a component extension, use exponential backoff when
@@ -461,13 +459,12 @@ void BackgroundContentsService::RestartForceInstalledExtensionOnCrash(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&ReloadExtension, extension->id(), profile),
+      FROM_HERE, base::BindOnce(&ReloadExtension, extension->id(), profile_),
       base::TimeDelta::FromMilliseconds(restart_delay));
 }
 
 // Loads all background contents whose urls have been stored in prefs.
-void BackgroundContentsService::LoadBackgroundContentsFromPrefs(
-    Profile* profile) {
+void BackgroundContentsService::LoadBackgroundContentsFromPrefs() {
   if (!prefs_)
     return;
   const base::DictionaryValue* contents =
@@ -475,7 +472,7 @@ void BackgroundContentsService::LoadBackgroundContentsFromPrefs(
   if (!contents)
     return;
   extensions::ExtensionRegistry* extension_registry =
-      extensions::ExtensionRegistry::Get(profile);
+      extensions::ExtensionRegistry::Get(profile_);
   DCHECK(extension_registry);
   for (base::DictionaryValue::Iterator it(*contents); !it.IsAtEnd();
        it.Advance()) {
@@ -494,7 +491,7 @@ void BackgroundContentsService::LoadBackgroundContentsFromPrefs(
       // load the next one.
       continue;
     }
-    LoadBackgroundContentsFromDictionary(profile, it.key(), contents);
+    LoadBackgroundContentsFromDictionary(it.key(), contents);
   }
 }
 
@@ -520,15 +517,14 @@ void BackgroundContentsService::MaybeClearBackoffEntry(
 }
 
 void BackgroundContentsService::LoadBackgroundContentsForExtension(
-    Profile* profile,
     const std::string& extension_id) {
   // First look if the manifest specifies a background page.
   const Extension* extension =
-      extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
+      extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
           extension_id, extensions::ExtensionRegistry::ENABLED);
   DCHECK(!extension || extension->is_hosted_app());
   if (extension && BackgroundInfo::HasBackgroundPage(extension)) {
-    LoadBackgroundContents(profile, BackgroundInfo::GetBackgroundURL(extension),
+    LoadBackgroundContents(BackgroundInfo::GetBackgroundURL(extension),
                            "background", extension->id());
     return;
   }
@@ -540,15 +536,14 @@ void BackgroundContentsService::LoadBackgroundContentsForExtension(
       prefs_->GetDictionary(prefs::kRegisteredBackgroundContents);
   if (!contents)
     return;
-  LoadBackgroundContentsFromDictionary(profile, extension_id, contents);
+  LoadBackgroundContentsFromDictionary(extension_id, contents);
 }
 
 void BackgroundContentsService::LoadBackgroundContentsFromDictionary(
-    Profile* profile,
     const std::string& extension_id,
     const base::DictionaryValue* contents) {
   extensions::ExtensionService* extensions_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   DCHECK(extensions_service);
 
   const base::DictionaryValue* dict;
@@ -560,24 +555,21 @@ void BackgroundContentsService::LoadBackgroundContentsFromDictionary(
   std::string url;
   dict->GetString(kUrlKey, &url);
   dict->GetString(kFrameNameKey, &frame_name);
-  LoadBackgroundContents(profile, GURL(url), frame_name, extension_id);
+  LoadBackgroundContents(GURL(url), frame_name, extension_id);
 }
 
-void BackgroundContentsService::LoadBackgroundContentsFromManifests(
-    Profile* profile) {
+void BackgroundContentsService::LoadBackgroundContentsFromManifests() {
   for (const scoped_refptr<const extensions::Extension>& extension :
-       extensions::ExtensionRegistry::Get(profile)->enabled_extensions()) {
+       extensions::ExtensionRegistry::Get(profile_)->enabled_extensions()) {
     if (extension->is_hosted_app() &&
         BackgroundInfo::HasBackgroundPage(extension.get())) {
-      LoadBackgroundContents(profile,
-                             BackgroundInfo::GetBackgroundURL(extension.get()),
+      LoadBackgroundContents(BackgroundInfo::GetBackgroundURL(extension.get()),
                              "background", extension->id());
     }
   }
 }
 
 void BackgroundContentsService::LoadBackgroundContents(
-    Profile* profile,
     const GURL& url,
     const std::string& frame_name,
     const std::string& application_id) {
@@ -590,8 +582,8 @@ void BackgroundContentsService::LoadBackgroundContents(
   DVLOG(1) << "Loading background content url: " << url;
 
   BackgroundContents* contents = CreateBackgroundContents(
-      SiteInstance::CreateForURL(profile, url), nullptr, MSG_ROUTING_NONE,
-      MSG_ROUTING_NONE, MSG_ROUTING_NONE, profile, frame_name, application_id,
+      SiteInstance::CreateForURL(profile_, url), nullptr, MSG_ROUTING_NONE,
+      MSG_ROUTING_NONE, MSG_ROUTING_NONE, frame_name, application_id,
       std::string(), nullptr);
 
   contents->CreateRenderViewSoon(url);
@@ -603,7 +595,6 @@ BackgroundContents* BackgroundContentsService::CreateBackgroundContents(
     int32_t routing_id,
     int32_t main_frame_route_id,
     int32_t main_frame_widget_route_id,
-    Profile* profile,
     const std::string& frame_name,
     const std::string& application_id,
     const std::string& partition_id,
@@ -617,7 +608,7 @@ BackgroundContents* BackgroundContentsService::CreateBackgroundContents(
   // to external listeners.
   BackgroundContentsOpenedDetails details = {contents, frame_name,
                                              application_id};
-  BackgroundContentsOpened(&details, profile);
+  BackgroundContentsOpened(&details);
   for (auto& observer : observers_)
     observer.OnBackgroundContentsOpened(details);
 
@@ -680,15 +671,14 @@ void BackgroundContentsService::ShutdownAssociatedBackgroundContents(
 }
 
 void BackgroundContentsService::BackgroundContentsOpened(
-    BackgroundContentsOpenedDetails* details,
-    Profile* profile) {
+    BackgroundContentsOpenedDetails* details) {
   // Add the passed object to our list. Should not already be tracked.
   DCHECK(!IsTracked(details->contents));
   DCHECK(!details->application_id.empty());
   contents_map_[details->application_id].contents = details->contents;
   contents_map_[details->application_id].frame_name = details->frame_name;
 
-  CloseBalloon(details->application_id, profile);
+  CloseBalloon(details->application_id, profile_);
 }
 
 // Used by test code and debug checks to verify whether a given
@@ -796,6 +786,6 @@ void BackgroundContentsService::HandleExtensionCrashed(
     ShowBalloon(extension, profile_);
   } else {
     // Restart the extension.
-    RestartForceInstalledExtensionOnCrash(extension, profile_);
+    RestartForceInstalledExtensionOnCrash(extension);
   }
 }

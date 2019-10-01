@@ -25,7 +25,7 @@ class MockBundledExchangesReaderFactory {
   // Creates BundledExchangesReader instance. A temporary file is created and
   // |test_file_data| is stored. This temporary file is used when
   // BundledExchangesReader::ReadResponseBody() is called.
-  virtual std::unique_ptr<BundledExchangesReader> CreateReader(
+  virtual scoped_refptr<BundledExchangesReader> CreateReader(
       const std::string& test_file_data) = 0;
 
   // Calls ReadMetadata with |callback| for |reader|, and simulates the call as

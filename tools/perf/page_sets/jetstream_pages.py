@@ -8,8 +8,10 @@ from telemetry import story
 from telemetry.util import statistics
 from telemetry.value import list_of_scalar_values
 
+
 class JetstreamStory(press_story.PressStory):
-  URL='http://browserbench.org/JetStream/'
+  URL = 'http://browserbench.org/JetStream/'
+  NAME = 'JetStream'
 
   def __init__(self, ps):
     super(JetstreamStory, self).__init__(ps)
@@ -50,9 +52,9 @@ class JetstreamStory(press_story.PressStory):
     all_scores = []
     for score_list in all_score_lists:
       all_scores.append(statistics.GeometricMean(score_list))
-    self.AddJavascriptMetricSummaryValue(
+    self.AddJavascriptMetricValue(
         list_of_scalar_values.ListOfScalarValues(
-        None, 'Score', 'score', all_scores))
+        self, 'Score', 'score', all_scores))
 
 
 class JetstreamStorySet(story.StorySet):

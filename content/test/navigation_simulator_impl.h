@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/common/content_security_policy/csp_disposition_enum.h"
 #include "content/public/browser/navigation_controller.h"
@@ -31,7 +30,6 @@ struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 namespace content {
 
 class FrameTreeNode;
-class NavigationHandleImpl;
 class NavigationRequest;
 class TestRenderFrameHost;
 class WebContentsImpl;
@@ -99,7 +97,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void SetSSLInfo(const net::SSLInfo& ssl_info) override;
 
   NavigationThrottle::ThrottleCheckResult GetLastThrottleCheckResult() override;
-  NavigationHandleImpl* GetNavigationHandle() override;
+  NavigationRequest* GetNavigationHandle() override;
   content::GlobalRequestID GetGlobalRequestID() override;
 
   void SetKeepLoading(bool keep_loading) override;

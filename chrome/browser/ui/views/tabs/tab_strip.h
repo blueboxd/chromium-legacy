@@ -270,12 +270,12 @@ class TabStrip : public views::AccessiblePaneView,
   SkColor GetTabSeparatorColor() const override;
   SkColor GetTabBackgroundColor(
       TabActive active,
-      BrowserNonClientFrameView::ActiveState active_state) const override;
+      BrowserFrameActiveState active_state) const override;
   SkColor GetTabForegroundColor(TabActive active,
                                 SkColor background_color) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   base::Optional<int> GetCustomBackgroundId(
-      BrowserNonClientFrameView::ActiveState active_state) const override;
+      BrowserFrameActiveState active_state) const override;
   gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override;
   float GetHoverOpacityForTab(float range_parameter) const override;
   float GetHoverOpacityForRadialHighlight() const override;

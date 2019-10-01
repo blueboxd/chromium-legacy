@@ -20,6 +20,13 @@ struct DWriteFontStyle {
   uint8 font_stretch;
 };
 
+struct FallbackFamilyAndStyle {
+  string fallback_family_name;
+  uint16 weight;
+  uint8 width;
+  uint8 slant;
+};
+
 struct MapCharactersResult {
   uint32 family_index;
   mojo_base.mojom.String16 family_name;
@@ -120,8 +127,8 @@ interface DWriteFontProxy {
   // Use only on Windows 8.0 and earlier - otherwise better fallback API is
   // available through using a proxies IDWriteFontFallback.
   [Sync]
-  FallbackFamilyNameForCodepoint(string base_family_name,
-                                 string bcp47_language_tag,
-                                 uint32 codepoint)
-      => (string fallback_family_name);
+  FallbackFamilyAndStyleForCodepoint(string base_family_name,
+                                     string bcp47_language_tag,
+                                     uint32 codepoint)
+      => (FallbackFamilyAndStyle fallback_result);
 };

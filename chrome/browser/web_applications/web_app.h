@@ -49,6 +49,8 @@ class WebApp {
   void RemoveSource(Source::Type source);
   bool HasAnySources() const;
 
+  bool IsSynced() const;
+
   void SetName(const std::string& name);
   void SetDescription(const std::string& description);
   void SetLaunchUrl(const GURL& launch_url);

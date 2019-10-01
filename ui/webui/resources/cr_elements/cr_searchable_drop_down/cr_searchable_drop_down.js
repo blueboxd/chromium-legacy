@@ -41,6 +41,11 @@ Polymer({
      */
     errorMessage: String,
 
+    /**
+     * Message to display next to the loading spinner.
+     */
+    loadingMessage: String,
+
     placeholder: String,
 
     /** @type {!Array<string>} */
@@ -64,7 +69,7 @@ Polymer({
     /** @type {boolean} */
     updateValueOnInput: Boolean,
 
-    /** @private {boolean} */
+    /** @type {boolean} */
     showLoading: {
       type: Boolean,
       value: false,

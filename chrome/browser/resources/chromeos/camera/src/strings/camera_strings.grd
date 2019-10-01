@@ -297,6 +297,12 @@
       <message desc="Label for the button of grid-type options." name="IDS_GRID_TYPE_BUTTON">
         Grid type
       </message>
+      <message desc="Label showing current state of 30 FPS on tooltip of toggle 60 FPS recording checkbox." name="IDS_LABEL_30FPS">
+        30 FPS
+      </message>
+      <message desc="Label showing current state of 60 FPS on tooltip of toggle 60 FPS recording checkbox." name="IDS_LABEL_60FPS">
+        60 FPS
+      </message>
       <message desc="Label for the checkbox to toggle 60 FPS recording." name="IDS_TOGGLE_60FPS_BUTTON">
         60 FPS
       </message>

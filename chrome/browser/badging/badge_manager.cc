@@ -32,13 +32,9 @@ namespace badging {
 
 BadgeManager::BadgeManager(Profile* profile) {
 #if defined(OS_MACOSX)
-  SetDelegate(std::make_unique<BadgeManagerDelegateMac>(
-      profile, this,
-      &web_app::WebAppProviderBase::GetProviderBase(profile)->registrar()));
+  SetDelegate(std::make_unique<BadgeManagerDelegateMac>(profile, this));
 #elif defined(OS_WIN)
-  SetDelegate(std::make_unique<BadgeManagerDelegateWin>(
-      profile, this,
-      &web_app::WebAppProviderBase::GetProviderBase(profile)->registrar()));
+  SetDelegate(std::make_unique<BadgeManagerDelegateWin>(profile, this));
 #endif
 }
 
@@ -64,39 +60,35 @@ void BadgeManager::BindReceiver(
                                 std::move(context));
 }
 
-bool BadgeManager::HasMoreSpecificBadgeForUrl(const GURL& scope,
-                                              const GURL& url) {
-  return MostSpecificBadgeForScope(url).spec().size() > scope.spec().size();
-}
-
 base::Optional<BadgeManager::BadgeValue> BadgeManager::GetBadgeValue(
-    const GURL& scope) {
-  const GURL& most_specific = MostSpecificBadgeForScope(scope);
-  if (most_specific == GURL::EmptyGURL())
+    const web_app::AppId& app_id) {
+  const auto& it = badged_apps_.find(app_id);
+  if (it == badged_apps_.end())
     return base::nullopt;
 
-  return base::make_optional(badged_scopes_[most_specific]);
+  return it->second;
 }
 
-void BadgeManager::SetBadgeForTesting(const GURL& scope, BadgeValue value) {
-  UpdateBadge(scope, value);
+void BadgeManager::SetBadgeForTesting(const web_app::AppId& app_id,
+                                      BadgeValue value) {
+  UpdateBadge(app_id, value);
 }
 
-void BadgeManager::ClearBadgeForTesting(const GURL& scope) {
-  UpdateBadge(scope, base::nullopt);
+void BadgeManager::ClearBadgeForTesting(const web_app::AppId& app_id) {
+  UpdateBadge(app_id, base::nullopt);
 }
 
-void BadgeManager::UpdateBadge(const GURL& scope,
+void BadgeManager::UpdateBadge(const web_app::AppId& app_id,
                                base::Optional<BadgeValue> value) {
   if (!value)
-    badged_scopes_.erase(scope);
+    badged_apps_.erase(app_id);
   else
-    badged_scopes_[scope] = value.value();
+    badged_apps_[app_id] = value.value();
 
   if (!delegate_)
     return;
 
-  delegate_->OnBadgeUpdated(scope);
+  delegate_->OnAppBadgeUpdated(app_id);
 }
 
 void BadgeManager::SetBadge(blink::mojom::BadgeValuePtr mojo_value) {
@@ -107,48 +99,28 @@ void BadgeManager::SetBadge(blink::mojom::BadgeValuePtr mojo_value) {
     return;
   }
 
-  const base::Optional<GURL> app_scope =
-      GetAppScopeForContext(receivers_.current_context());
-  if (!app_scope)
+  const base::Optional<web_app::AppId> app_id =
+      GetAppIdForBadging(receivers_.current_context());
+  if (!app_id)
     return;
 
   // Convert the mojo badge representation into a BadgeManager::BadgeValue.
   BadgeValue value = mojo_value->is_flag()
                          ? base::nullopt
                          : base::make_optional(mojo_value->get_number());
-  UpdateBadge(app_scope.value(), base::make_optional(value));
+  UpdateBadge(app_id.value(), base::make_optional(value));
 }
 
 void BadgeManager::ClearBadge() {
-  const base::Optional<GURL> app_scope =
-      GetAppScopeForContext(receivers_.current_context());
-  if (!app_scope)
+  const base::Optional<web_app::AppId> app_id =
+      GetAppIdForBadging(receivers_.current_context());
+  if (!app_id)
     return;
 
-  UpdateBadge(app_scope.value(), base::nullopt);
+  UpdateBadge(app_id.value(), base::nullopt);
 }
 
-GURL BadgeManager::MostSpecificBadgeForScope(const GURL& scope) {
-  const std::string& scope_string = scope.spec();
-  GURL best_match = GURL::EmptyGURL();
-  uint64_t longest_match = 0;
-
-  for (const auto& pair : badged_scopes_) {
-    const std::string& cur_scope_str = pair.first.spec();
-    if (scope_string.find(cur_scope_str) != 0)
-      continue;
-
-    if (longest_match >= cur_scope_str.size())
-      continue;
-
-    longest_match = cur_scope_str.size();
-    best_match = pair.first;
-  }
-
-  return best_match;
-}
-
-base::Optional<GURL> BadgeManager::GetAppScopeForContext(
+base::Optional<web_app::AppId> BadgeManager::GetAppIdForBadging(
     const BindingContext& context) {
   content::RenderFrameHost* frame =
       content::RenderFrameHost::FromID(context.process_id, context.frame_id);
@@ -167,10 +139,7 @@ base::Optional<GURL> BadgeManager::GetAppScopeForContext(
 
   const base::Optional<web_app::AppId> app_id =
       registrar.FindAppWithUrlInScope(frame->GetLastCommittedURL());
-  if (!app_id)
-    return base::nullopt;
-
-  return registrar.GetAppScope(app_id.value());
+  return app_id;
 }
 
 std::string GetBadgeString(base::Optional<uint64_t> badge_content) {

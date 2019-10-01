@@ -164,7 +164,7 @@ TEST_F(PlatformVideoFramePoolTest, UnwrapVideoFrame) {
   SetFrameFormat(PIXEL_FORMAT_I420);
   scoped_refptr<VideoFrame> frame_1 = GetFrame(10);
   scoped_refptr<VideoFrame> frame_2 = VideoFrame::WrapVideoFrame(
-      *frame_1, frame_1->format(), frame_1->visible_rect(),
+      frame_1, frame_1->format(), frame_1->visible_rect(),
       frame_1->natural_size());
   EXPECT_EQ(pool_->UnwrapFrame(*frame_1), pool_->UnwrapFrame(*frame_2));
   EXPECT_TRUE(frame_1->IsSameDmaBufsAs(*frame_2));

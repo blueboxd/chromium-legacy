@@ -1414,8 +1414,6 @@
       'Linux FYI SkiaRenderer Vulkan (Intel HD 630)',
       'Linux FYI SkiaRenderer Vulkan (NVIDIA)',
       'Linux Release (NVIDIA)',
-      # Fails on Mac ASAN due to crbug.com/1008508
-      'Mac FYI GPU ASAN Release',
     ],
   },
   'telemetry_perf_unittests': {

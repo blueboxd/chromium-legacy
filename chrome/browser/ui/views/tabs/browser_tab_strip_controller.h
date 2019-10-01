@@ -82,12 +82,10 @@ class BrowserTabStripController : public TabStripController,
   bool EverHasVisibleBackgroundTabShapes() const override;
   bool ShouldPaintAsActiveFrame() const override;
   bool CanDrawStrokes() const override;
-  SkColor GetFrameColor(
-      BrowserNonClientFrameView::ActiveState active_state =
-          BrowserNonClientFrameView::kUseCurrent) const override;
+  SkColor GetFrameColor(BrowserFrameActiveState active_state) const override;
   SkColor GetToolbarTopSeparatorColor() const override;
   base::Optional<int> GetCustomBackgroundId(
-      BrowserNonClientFrameView::ActiveState active_state) const override;
+      BrowserFrameActiveState active_state) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   Profile* GetProfile() const override;
 

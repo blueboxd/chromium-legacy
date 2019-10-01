@@ -36,7 +36,7 @@ class NGLineBoxFragmentBuilder;
 // NGFragment et al.
 class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
  public:
-  enum NGLayoutResultStatus {
+  enum EStatus {
     kSuccess = 0,
     kBfcBlockOffsetResolved = 1,
     kNeedsEarlierBreak = 2,
@@ -57,7 +57,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   const NGPhysicalContainerFragment& PhysicalFragment() const {
     DCHECK(physical_fragment_);
-    DCHECK_EQ(NGLayoutResultStatus::kSuccess, Status());
+    DCHECK_EQ(kSuccess, Status());
     return *physical_fragment_;
   }
 
@@ -92,9 +92,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return space_.ExclusionSpace();
   }
 
-  NGLayoutResultStatus Status() const {
-    return static_cast<NGLayoutResultStatus>(bitfields_.status);
-  }
+  EStatus Status() const { return static_cast<EStatus>(bitfields_.status); }
 
   LayoutUnit BfcLineOffset() const {
     if (HasRareData())
@@ -263,7 +261,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
       scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
       NGLineBoxFragmentBuilder*);
   // This constructor is for a non-success status.
-  NGLayoutResult(NGLayoutResultStatus, NGBoxFragmentBuilder*);
+  NGLayoutResult(EStatus, NGBoxFragmentBuilder*);
 
   // We don't need the copy constructor, move constructor, copy
   // assigmnment-operator, or move assignment-operator today.
@@ -371,7 +369,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     unsigned initial_break_before : 4;  // EBreakBetween
     unsigned final_break_after : 4;     // EBreakBetween
 
-    unsigned status : 2;  // NGLayoutResultStatus
+    unsigned status : 2;  // EStatus
   };
 
   // The constraint space which generated this layout result, may not be valid

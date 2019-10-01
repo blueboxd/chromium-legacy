@@ -149,6 +149,15 @@ NSHTTPCookie* SystemCookieFromCanonicalCookie(
   return system_cookie;
 }
 
+NSArray<NSHTTPCookie*>* SystemCookiesFromCanonicalCookieList(
+    const net::CookieList& cookie_list) {
+  NSMutableArray<NSHTTPCookie*>* cookies = [[NSMutableArray alloc] init];
+  for (const net::CanonicalCookie& cookie : cookie_list) {
+    [cookies addObject:net::SystemCookieFromCanonicalCookie(cookie)];
+  }
+  return [cookies copy];
+}
+
 void CheckForCookieLoss(size_t cookie_count, CookieEvent event) {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   BOOL check_cookie_loss = [defaults boolForKey:kCheckCookieLossKey];

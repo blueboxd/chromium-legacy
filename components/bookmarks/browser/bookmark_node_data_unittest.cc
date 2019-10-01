@@ -292,7 +292,12 @@ TEST_F(BookmarkNodeDataTest, DISABLED_WriteToClipboardURL) {
   EXPECT_EQ(base::UTF8ToUTF16(url.spec()), clipboard_result);
 }
 
-TEST_F(BookmarkNodeDataTest, WriteToClipboardMultipleURLs) {
+#if defined(OS_MACOSX)
+#define MAYBE_WriteToClipboardMultipleURLs DISABLED_WriteToClipboardMultipleURLs
+#else
+#define MAYBE_WriteToClipboardMultipleURLs WriteToClipboardMultipleURLs
+#endif
+TEST_F(BookmarkNodeDataTest, MAYBE_WriteToClipboardMultipleURLs) {
   BookmarkNodeData data;
   const BookmarkNode* root = model()->bookmark_bar_node();
   GURL url(GURL("http://foo.com"));
@@ -322,7 +327,12 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardMultipleURLs) {
   EXPECT_EQ(combined_text, clipboard_result);
 }
 
-TEST_F(BookmarkNodeDataTest, WriteToClipboardEmptyFolder) {
+#if defined(OS_MACOSX)
+#define MAYBE_WriteToClipboardEmptyFolder DISABLED_WriteToClipboardEmptyFolder
+#else
+#define MAYBE_WriteToClipboardEmptyFolder WriteToClipboardEmptyFolder
+#endif
+TEST_F(BookmarkNodeDataTest, MAYBE_WriteToClipboardEmptyFolder) {
   BookmarkNodeData data;
   const BookmarkNode* root = model()->bookmark_bar_node();
   const BookmarkNode* folder = model()->AddFolder(root, 0, ASCIIToUTF16("g1"));

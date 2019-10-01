@@ -43,6 +43,7 @@ include_rules = [
     "+services/network/public/mojom/referrer_policy.mojom-shared.h",
 
     "+services/service_manager/public/mojom",
+    "+third_party/blink/public/common/web_cache/web_cache_resource_type_stats.h",
     "+third_party/blink/public/platform",
     "-third_party/blink/public/web",
     "-third_party/blink/renderer/bindings",

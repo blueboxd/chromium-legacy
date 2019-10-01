@@ -75,6 +75,7 @@ const BASIC_DRIVE_ENTRY_SET = [
   ENTRIES.unsupported,
   ENTRIES.testDocument,
   ENTRIES.testSharedDocument,
+  ENTRIES.testSharedFile,
 ];
 
 /**
@@ -159,6 +160,7 @@ const RECENT_ENTRY_SET = [
 const OFFLINE_ENTRY_SET = [
   ENTRIES.testDocument,
   ENTRIES.testSharedDocument,
+  ENTRIES.testSharedFile,
 ];
 
 /**
@@ -170,6 +172,7 @@ const OFFLINE_ENTRY_SET = [
  */
 const SHARED_WITH_ME_ENTRY_SET = [
   ENTRIES.testSharedDocument,
+  ENTRIES.testSharedFile,
 ];
 
 /**

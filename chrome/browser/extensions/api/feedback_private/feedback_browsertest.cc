@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
@@ -140,7 +141,13 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowLoginFeedback) {
 
 // Tests that there's an option in the email drop down box with a value
 // 'anonymous_user'.
-IN_PROC_BROWSER_TEST_F(FeedbackTest, AnonymousUser) {
+// crbug.com/1010031: fails on win
+#if defined(OS_WIN)
+#define MAYBE_AnonymousUser DISABLED_AnonymousUser
+#else
+#define MAYBE_AnonymousUser AnonymousUser
+#endif
+IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_AnonymousUser) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());

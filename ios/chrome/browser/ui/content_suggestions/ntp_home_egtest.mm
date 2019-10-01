@@ -51,9 +51,17 @@
 #error "This file requires ARC support."
 #endif
 
-using namespace content_suggestions;
-using namespace ntp_home;
-using namespace ntp_snippets;
+using content_suggestions::searchFieldWidth;
+using ntp_home::CollectionView;
+using ntp_home::FakeOmnibox;
+using ntp_home::OmniboxWidth;
+using ntp_home::OmniboxWidthBetween;
+using ntp_home::Suggestions;
+using ntp_snippets::CategoryStatus;
+using ntp_snippets::ContentSuggestionsService;
+using ntp_snippets::CreateChromeContentSuggestionsService;
+using ntp_snippets::KnownCategories;
+using ntp_snippets::MockContentSuggestionsProvider;
 
 namespace {
 const char kPageLoadedString[] = "Page loaded!";
@@ -410,7 +418,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   ReadingListModelFactory::GetForBrowserState(self.browserState)
       ->AddEntry(GURL("http://chromium.org/"), "title",
                  reading_list::ADDED_VIA_CURRENT_APP);
-  self.provider->FireSuggestionsChanged(self.category, ntp_home::Suggestions());
+  self.provider->FireSuggestionsChanged(self.category, Suggestions());
 
   // Scroll to have a position to restored.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
@@ -418,7 +426,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       performAction:grey_scrollInDirection(kGREYDirectionDown, 150)];
 
   // Save the position before navigating.
-  UIView* omnibox = ntp_home::FakeOmnibox();
+  UIView* omnibox = FakeOmnibox();
   CGPoint previousPosition = omnibox.bounds.origin;
 
   // Navigate and come back.
@@ -430,7 +438,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGrey goBack];
 
   // Check that the new position is the same.
-  omnibox = ntp_home::FakeOmnibox();
+  omnibox = FakeOmnibox();
   GREYAssertEqual(previousPosition.y, omnibox.bounds.origin.y,
                   @"Omnibox not at the same position");
 }
@@ -445,7 +453,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   ReadingListModelFactory::GetForBrowserState(self.browserState)
       ->AddEntry(GURL("http://chromium.org/"), "title",
                  reading_list::ADDED_VIA_CURRENT_APP);
-  self.provider->FireSuggestionsChanged(self.category, ntp_home::Suggestions());
+  self.provider->FireSuggestionsChanged(self.category, Suggestions());
 
   // Scroll to have a position to restored.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
@@ -453,7 +461,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       performAction:grey_scrollInDirection(kGREYDirectionDown, 150)];
 
   // Save the position before navigating.
-  UIView* omnibox = ntp_home::FakeOmnibox();
+  UIView* omnibox = FakeOmnibox();
   CGPoint previousPosition = omnibox.bounds.origin;
 
   // Tap the omnibox to focus it.
@@ -468,7 +476,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGrey goBack];
 
   // Check that the new position is the same.
-  omnibox = ntp_home::FakeOmnibox();
+  omnibox = FakeOmnibox();
   GREYAssertEqual(previousPosition.y, omnibox.bounds.origin.y,
                   @"Omnibox not at the same position");
 }
@@ -527,7 +535,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // Tests that tapping the fake omnibox moves the collection.
 - (void)testTapFakeOmniboxScroll {
   // Get the collection and its layout.
-  UIView* collection = ntp_home::CollectionView();
+  UIView* collection = CollectionView();
   GREYAssertTrue([collection isKindOfClass:[UICollectionView class]],
                  @"The collection has not been correctly selected.");
   UICollectionView* collectionView = (UICollectionView*)collection;
@@ -556,7 +564,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 
-  CGFloat top = ntp_home::CollectionView().safeAreaInsets.top;
+  CGFloat top = CollectionView().safeAreaInsets.top;
   GREYAssertTrue(offsetAfterTap.y >= origin.y + headerHeight - (60 + top),
                  @"The collection has not moved.");
 
@@ -578,7 +586,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // back to where it was.
 - (void)testTapFakeOmniboxScrollScrolled {
   // Get the collection and its layout.
-  UIView* collection = ntp_home::CollectionView();
+  UIView* collection = CollectionView();
   GREYAssertTrue([collection isKindOfClass:[UICollectionView class]],
                  @"The collection has not been correctly selected.");
   UICollectionView* collectionView = (UICollectionView*)collection;

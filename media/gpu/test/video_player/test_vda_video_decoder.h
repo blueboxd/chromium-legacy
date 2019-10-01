@@ -71,8 +71,7 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
                                             uint32_t texture_target) override;
   void DismissPictureBuffer(int32_t picture_buffer_id) override;
   void PictureReady(const Picture& picture) override;
-  void ReusePictureBufferTask(int32_t picture_buffer_id,
-                              scoped_refptr<VideoFrame> video_frame);
+  void ReusePictureBufferTask(int32_t picture_buffer_id);
   void NotifyEndOfBitstreamBuffer(int32_t bitstream_buffer_id) override;
   void NotifyFlushDone() override;
   void NotifyResetDone() override;

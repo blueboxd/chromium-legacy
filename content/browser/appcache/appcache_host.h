@@ -179,7 +179,7 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   }
   // SetProcessId may only be called once, and only if kInvalidUniqueID was
   // passed to the AppCacheHost's constructor (e.g. in a scenario where
-  // NavigationHandleImpl needs to delay specifying the |process_id| until
+  // NavigationRequest needs to delay specifying the |process_id| until
   // ReadyToCommit time).
   void SetProcessId(int process_id);
 

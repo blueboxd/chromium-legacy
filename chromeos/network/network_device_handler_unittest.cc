@@ -109,6 +109,16 @@ class NetworkDeviceHandlerTest : public testing::Test {
     ASSERT_EQ(expected_result, result_);
   }
 
+  void ExpectDeviceProperty(const std::string& device_path,
+                            const std::string& property_name,
+                            const std::string& expected_value) {
+    GetDeviceProperties(device_path, kResultSuccess);
+    std::string value;
+    ASSERT_TRUE(
+        properties_->GetStringWithoutPathExpansion(property_name, &value));
+    ASSERT_EQ(value, expected_value);
+  }
+
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
   std::string result_;
@@ -223,6 +233,66 @@ TEST_F(NetworkDeviceHandlerTest, CellularAllowRoaming) {
   EXPECT_FALSE(allow_roaming);
 }
 
+TEST_F(NetworkDeviceHandlerTest,
+       ResetUsbEthernetMacAddressSourceForSecondaryUsbDevices) {
+  ShillDeviceClient::TestInterface* device_test =
+      fake_device_client_->GetTestInterface();
+
+  constexpr char kSource[] = "some_source1";
+
+  constexpr char kUsbEthernetDevicePath1[] = "usb_ethernet_device1";
+  device_test->AddDevice(kUsbEthernetDevicePath1, shill::kTypeEthernet, "eth1");
+  device_test->SetDeviceProperty(
+      kUsbEthernetDevicePath1, shill::kDeviceBusTypeProperty,
+      base::Value(shill::kDeviceBusTypeUsb), /*notify_changed=*/true);
+  device_test->SetDeviceProperty(kUsbEthernetDevicePath1,
+                                 shill::kLinkUpProperty, base::Value(true),
+                                 /*notify_changed=*/true);
+  device_test->SetDeviceProperty(kUsbEthernetDevicePath1,
+                                 shill::kUsbEthernetMacAddressSourceProperty,
+                                 base::Value("source_to_override1"),
+                                 /*notify_changed=*/true);
+  constexpr char kUsbEthernetDevicePath2[] = "usb_ethernet_device2";
+  device_test->AddDevice(kUsbEthernetDevicePath2, shill::kTypeEthernet, "eth2");
+  device_test->SetDeviceProperty(
+      kUsbEthernetDevicePath2, shill::kDeviceBusTypeProperty,
+      base::Value(shill::kDeviceBusTypeUsb), /*notify_changed=*/true);
+  device_test->SetDeviceProperty(kUsbEthernetDevicePath2,
+                                 shill::kLinkUpProperty, base::Value(true),
+                                 /*notify_changed=*/true);
+  device_test->SetDeviceProperty(kUsbEthernetDevicePath2,
+                                 shill::kUsbEthernetMacAddressSourceProperty,
+                                 base::Value(kSource),
+                                 /*notify_changed=*/true);
+  constexpr char kUsbEthernetDevicePath3[] = "usb_ethernet_device3";
+  device_test->AddDevice(kUsbEthernetDevicePath3, shill::kTypeEthernet, "eth3");
+  device_test->SetDeviceProperty(
+      kUsbEthernetDevicePath3, shill::kDeviceBusTypeProperty,
+      base::Value(shill::kDeviceBusTypeUsb), /*notify_changed=*/true);
+  device_test->SetDeviceProperty(kUsbEthernetDevicePath3,
+                                 shill::kLinkUpProperty, base::Value(true),
+                                 /*notify_changed=*/true);
+  device_test->SetDeviceProperty(kUsbEthernetDevicePath3,
+                                 shill::kUsbEthernetMacAddressSourceProperty,
+                                 base::Value("source_to_override2"),
+                                 /*notify_changed=*/true);
+
+  network_device_handler_->SetUsbEthernetMacAddressSource(kSource);
+  base::RunLoop().RunUntilIdle();
+
+  // Expect to reset source property for eth1 and eth3 since eth2 already has
+  // needed source value.
+  ASSERT_NO_FATAL_FAILURE(ExpectDeviceProperty(
+      kUsbEthernetDevicePath1, shill::kUsbEthernetMacAddressSourceProperty,
+      "usb_adapter_mac"));
+  ASSERT_NO_FATAL_FAILURE(ExpectDeviceProperty(
+      kUsbEthernetDevicePath2, shill::kUsbEthernetMacAddressSourceProperty,
+      kSource));
+  ASSERT_NO_FATAL_FAILURE(ExpectDeviceProperty(
+      kUsbEthernetDevicePath3, shill::kUsbEthernetMacAddressSourceProperty,
+      "usb_adapter_mac"));
+}
+
 TEST_F(NetworkDeviceHandlerTest, UsbEthernetMacAddressSource) {
   ShillDeviceClient::TestInterface* device_test =
       fake_device_client_->GetTestInterface();
@@ -246,7 +316,7 @@ TEST_F(NetworkDeviceHandlerTest, UsbEthernetMacAddressSource) {
                                  shill::kLinkUpProperty, base::Value(true),
                                  /*notify_changed=*/true);
   device_test->SetUsbEthernetMacAddressSourceError(kUsbEthernetDevicePath2,
-                                                   "not_supported");
+                                                   "not-supported");
 
   constexpr char kUsbEthernetDevicePath3[] = "usb_ethernet_device3";
   device_test->AddDevice(kUsbEthernetDevicePath3, shill::kTypeEthernet, "eth3");
@@ -275,43 +345,31 @@ TEST_F(NetworkDeviceHandlerTest, UsbEthernetMacAddressSource) {
   constexpr char kSource1[] = "some_source1";
   network_device_handler_->SetUsbEthernetMacAddressSource(kSource1);
   base::RunLoop().RunUntilIdle();
-  network_device_handler_->GetDeviceProperties(
-      kUsbEthernetDevicePath3, properties_success_callback_, error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kResultSuccess, result_);
-  std::string usb_ethernet_mac_address_source;
-  EXPECT_TRUE(properties_->GetStringWithoutPathExpansion(
-      shill::kUsbEthernetMacAddressSourceProperty,
-      &usb_ethernet_mac_address_source));
-  EXPECT_EQ(usb_ethernet_mac_address_source, kSource1);
+
+  ASSERT_NO_FATAL_FAILURE(ExpectDeviceProperty(
+      kUsbEthernetDevicePath3, shill::kUsbEthernetMacAddressSourceProperty,
+      kSource1));
 
   // Expect property change on eth3, because device is connected to the
   // internet.
   const char* kSource2 = shill::kUsbEthernetMacAddressSourceBuiltinAdapterMac;
   network_device_handler_->SetUsbEthernetMacAddressSource(kSource2);
   base::RunLoop().RunUntilIdle();
-  network_device_handler_->GetDeviceProperties(
-      kUsbEthernetDevicePath3, properties_success_callback_, error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kResultSuccess, result_);
-  EXPECT_TRUE(properties_->GetStringWithoutPathExpansion(
-      shill::kUsbEthernetMacAddressSourceProperty,
-      &usb_ethernet_mac_address_source));
-  EXPECT_EQ(usb_ethernet_mac_address_source, kSource2);
+
+  ASSERT_NO_FATAL_FAILURE(ExpectDeviceProperty(
+      kUsbEthernetDevicePath3, shill::kUsbEthernetMacAddressSourceProperty,
+      kSource2));
 
   // Expect property change back to "usb_adapter_mac" on eth3, because device
   // is not connected to the internet.
   device_test->SetDeviceProperty(kUsbEthernetDevicePath3,
                                  shill::kLinkUpProperty, base::Value(false),
                                  /*notify_changed=*/true);
-  network_device_handler_->GetDeviceProperties(
-      kUsbEthernetDevicePath3, properties_success_callback_, error_callback_);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kResultSuccess, result_);
-  EXPECT_TRUE(properties_->GetStringWithoutPathExpansion(
-      shill::kUsbEthernetMacAddressSourceProperty,
-      &usb_ethernet_mac_address_source));
-  EXPECT_EQ(usb_ethernet_mac_address_source, "usb_adapter_mac");
+
+  ASSERT_NO_FATAL_FAILURE(ExpectDeviceProperty(
+      kUsbEthernetDevicePath3, shill::kUsbEthernetMacAddressSourceProperty,
+      "usb_adapter_mac"));
 
   // Expect property change back to "usb_adapter_mac" on eth1, because both
   // builtin PCI eth4 and eth1 have the same MAC address and connected to the
@@ -322,28 +380,21 @@ TEST_F(NetworkDeviceHandlerTest, UsbEthernetMacAddressSource) {
   device_test->SetDeviceProperty(kPciEthernetDevicePath, shill::kLinkUpProperty,
                                  base::Value(true),
                                  /*notify_changed=*/true);
-  network_device_handler_->GetDeviceProperties(
-      kUsbEthernetDevicePath1, properties_success_callback_, error_callback_);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kResultSuccess, result_);
-  EXPECT_TRUE(properties_->GetStringWithoutPathExpansion(
-      shill::kUsbEthernetMacAddressSourceProperty,
-      &usb_ethernet_mac_address_source));
-  EXPECT_EQ(usb_ethernet_mac_address_source, "usb_adapter_mac");
 
-  // Expect property change on eth1, because device is connected to the internet
-  // and builtin PCI eth4 and eth1 have different MAC addresses.
+  ASSERT_NO_FATAL_FAILURE(ExpectDeviceProperty(
+      kUsbEthernetDevicePath1, shill::kUsbEthernetMacAddressSourceProperty,
+      "usb_adapter_mac"));
+
+  // Expect property change on eth1, because device is connected to the
+  // internet and builtin PCI eth4 and eth1 have different MAC addresses.
   constexpr char kSource3[] = "some_source3";
   network_device_handler_->SetUsbEthernetMacAddressSource(kSource3);
   base::RunLoop().RunUntilIdle();
-  network_device_handler_->GetDeviceProperties(
-      kUsbEthernetDevicePath1, properties_success_callback_, error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kResultSuccess, result_);
-  EXPECT_TRUE(properties_->GetStringWithoutPathExpansion(
-      shill::kUsbEthernetMacAddressSourceProperty,
-      &usb_ethernet_mac_address_source));
-  EXPECT_EQ(usb_ethernet_mac_address_source, kSource3);
+
+  ASSERT_NO_FATAL_FAILURE(ExpectDeviceProperty(
+      kUsbEthernetDevicePath1, shill::kUsbEthernetMacAddressSourceProperty,
+      kSource3));
 }
 
 TEST_F(NetworkDeviceHandlerTest, SetWifiTDLSEnabled) {

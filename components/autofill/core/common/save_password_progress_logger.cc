@@ -440,12 +440,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
         STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_LOWERCASE:
       return "Uploading password requirements vote for using lowercase letters";
     case SavePasswordProgressLogger::
-        STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_UPPERCASE:
-      return "Uploading password requirements vote for using lowercase letters";
-    case SavePasswordProgressLogger::
-        STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_NUMERICS:
-      return "Uploading password requirements vote for using numbers";
-    case SavePasswordProgressLogger::
         STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_SPECIAL_SYMBOL:
       return "Uploading password requirements vote for using special symbols";
     case SavePasswordProgressLogger::

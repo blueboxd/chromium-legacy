@@ -281,7 +281,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Wraps |frame|. |visible_rect| must be a sub rect within
   // frame->visible_rect().
   static scoped_refptr<VideoFrame> WrapVideoFrame(
-      const VideoFrame& frame,
+      scoped_refptr<VideoFrame> frame,
       VideoPixelFormat format,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size);
@@ -616,6 +616,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // VideFrameLayout (includes format, coded_size, and strides).
   const VideoFrameLayout layout_;
+
+  // Set by WrapVideoFrame to soft-apply a new set of format, visible rectangle,
+  // and natural size on |wrapped_frame_|
+  scoped_refptr<VideoFrame> wrapped_frame_;
 
   // Storage type for the different planes.
   StorageType storage_type_;  // TODO(mcasas): make const

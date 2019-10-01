@@ -58,7 +58,7 @@ class BrowserNonClientFrameViewAsh
   void UpdateFrameColor() override;
   void UpdateThrobber(bool running) override;
   bool CanUserExitFullscreen() const override;
-  SkColor GetCaptionColor(ActiveState active_state) const override;
+  SkColor GetCaptionColor(BrowserFrameActiveState active_state) const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;

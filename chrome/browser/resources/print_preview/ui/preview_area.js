@@ -529,12 +529,12 @@ Polymer({
    */
   marginsValid_: function() {
     const type = this.getSettingValue('margins');
-    if (!Object.values(print_preview.MarginsTypeValue).includes(type)) {
+    if (!Object.values(print_preview.MarginsType).includes(type)) {
       // Unrecognized margins type.
       return false;
     }
 
-    if (type !== print_preview.MarginsTypeValue.CUSTOM) {
+    if (type !== print_preview.MarginsType.CUSTOM) {
       return true;
     }
 
@@ -566,11 +566,11 @@ Polymer({
     // Margins
     const newMarginsType = this.getSettingValue('margins');
     if (newMarginsType !== lastTicket.marginsType &&
-        newMarginsType !== print_preview.MarginsTypeValue.CUSTOM) {
+        newMarginsType !== print_preview.MarginsType.CUSTOM) {
       return true;
     }
 
-    if (newMarginsType === print_preview.MarginsTypeValue.CUSTOM) {
+    if (newMarginsType === print_preview.MarginsType.CUSTOM) {
       const customMargins =
           /** @type {!print_preview.MarginsSetting} */ (
               this.getSettingValue('customMargins'));
@@ -626,8 +626,7 @@ Polymer({
     // Pages per sheet. If margins are non-default, wait for the return to
     // default margins to trigger a request.
     if (this.getSettingValue('pagesPerSheet') !== lastTicket.pagesPerSheet &&
-        this.getSettingValue('margins') ===
-            print_preview.MarginsTypeValue.DEFAULT) {
+        this.getSettingValue('margins') === print_preview.MarginsType.DEFAULT) {
       return true;
     }
 
@@ -639,7 +638,7 @@ Polymer({
         newValue.width_microns != lastTicket.mediaSize.width_microns ||
         (this.destination.id !== lastTicket.deviceName &&
          this.getSettingValue('margins') ===
-             print_preview.MarginsTypeValue.MINIMUM)) {
+             print_preview.MarginsType.MINIMUM)) {
       return true;
     }
 
@@ -731,8 +730,7 @@ Polymer({
       ticket.cloudPrintID = this.destination.id;
     }
 
-    if (this.getSettingValue('margins') ==
-        print_preview.MarginsTypeValue.CUSTOM) {
+    if (this.getSettingValue('margins') == print_preview.MarginsType.CUSTOM) {
       ticket.marginsCustom = this.getSettingValue('customMargins');
     }
     this.lastTicket_ = ticket;

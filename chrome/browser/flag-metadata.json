@@ -1669,6 +1669,11 @@
     "expiry_milestone": 77
   },
   {
+    "name": "enable-service-worker-on-ui",
+    "owners": [ "falken" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-sharing-device-registration",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 79

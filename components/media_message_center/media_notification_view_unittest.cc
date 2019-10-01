@@ -12,6 +12,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "components/media_message_center/media_notification_background.h"
 #include "components/media_message_center/media_notification_constants.h"
 #include "components/media_message_center/media_notification_container.h"
@@ -365,7 +366,12 @@ TEST_F(MAYBE_MediaNotificationViewTest, ButtonsSanityCheck) {
   EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, ButtonsFocusCheck) {
+#if defined(OS_WIN)
+#define MAYBE_ButtonsFocusCheck DISABLED_ButtonsFocusCheck
+#else
+#define MAYBE_ButtonsFocusCheck ButtonsFocusCheck
+#endif
+TEST_F(MAYBE_MediaNotificationViewTest, MAYBE_ButtonsFocusCheck) {
   // Expand and enable all actions to show all buttons.
   view()->SetExpanded(true);
   EnableAllActions();

@@ -27,10 +27,11 @@ interface CdmProxy {
   // If the proxy created a crypto session, then the ID for the crypto session
   // is |crypto_session_id|.
   // |cdm_id| can be used to connect the remote media pipeline and CdmProxy.
-  Initialize(associated CdmProxyClient client) => (Status status,
-                                                   Protocol protocol,
-                                                   uint32 crypto_session_id,
-                                                   int32 cdm_id);
+  Initialize(pending_associated_remote<CdmProxyClient> client)
+    => (Status status,
+        Protocol protocol,
+        uint32 crypto_session_id,
+        int32 cdm_id);
 
   // Processes and updates the state of the proxy.
   // |func| specifies what type of function to use.

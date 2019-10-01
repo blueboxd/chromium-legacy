@@ -16,6 +16,7 @@
 
 namespace net {
 class URLFetcherResponseWriter;
+class URLRequestContextGetter;
 }
 
 namespace web {
@@ -87,6 +88,12 @@ class DownloadTaskImpl : public DownloadTask {
   // Asynchronously returns cookies for WebState associated with this task.
   // Must be called on UI thread. The callback will be invoked on the UI thread.
   void GetCookies(base::Callback<void(NSArray<NSHTTPCookie*>*)> callback);
+
+  // Asynchronously returns cookies for |context_getter|. Must
+  // be called on IO thread. The callback will be invoked on the UI thread.
+  static void GetCookiesFromContextGetter(
+      scoped_refptr<net::URLRequestContextGetter> context_getter,
+      base::Callback<void(NSArray<NSHTTPCookie*>*)> callback);
 
   // Starts the download with given cookies.
   void StartWithCookies(NSArray<NSHTTPCookie*>* cookies);

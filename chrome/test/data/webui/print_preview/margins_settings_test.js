@@ -19,7 +19,7 @@ cr.define('margins_settings_test', function() {
       marginsSection.settings = model.settings;
       marginsSection.disabled = false;
       test_util.fakeDataBind(model, marginsSection, 'settings');
-      marginsTypeEnum = print_preview.MarginsTypeValue;
+      marginsTypeEnum = print_preview.MarginsType;
     });
 
     // Tests that setting the setting updates the UI.

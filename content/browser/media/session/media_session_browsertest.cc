@@ -12,14 +12,18 @@
 #include "base/synchronization/lock.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/cpp/test/audio_focus_test_util.h"
@@ -168,6 +172,10 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
     return embedded_test_server()->GetURL(kMediaSessionTestImagePath);
   }
 
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList disabled_feature_list_;
+
  private:
   class MediaStartStopObserver : public WebContentsObserver {
    public:
@@ -215,10 +223,24 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
   base::Lock visited_urls_lock_;
   std::set<GURL> visited_urls_;
 
-  base::test::ScopedFeatureList scoped_feature_list_;
-  base::test::ScopedFeatureList disabled_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(MediaSessionBrowserTest);
+};
+
+// A MediaSessionBrowserTest with BackForwardCache enabled.
+class MediaSessionBrowserTestWithBackForwardCache
+    : public MediaSessionBrowserTest {
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    MediaSessionBrowserTest::SetUpOnMainThread();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kBackForwardCache,
+          {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}},
+         {media::kInternalMediaSession, {}}},
+        /*disabled_features=*/{});
+  }
 };
 
 }  // anonymous namespace
@@ -428,4 +450,43 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   EXPECT_FALSE(WasURLVisited(image.src));
 }
 
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTestWithBackForwardCache,
+                       DoNotCacheIfMediaSessionExists) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // 1) Navigate to a page containing media.
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            GetTestUrl("media/session", "media-session.html")));
+
+  RenderFrameHost* rfh_a = shell()->web_contents()->GetMainFrame();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // 2) Navigate away.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
+
+  // The page should not have been cached in the back forward cache.
+  delete_observer_rfh_a.WaitUntilDeleted();
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTestWithBackForwardCache,
+                       CachesPageWithoutMedia) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // 1) Navigate to a page not containing any media.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+
+  RenderFrameHostImpl* rfh_a = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // 2) Navigate away.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
+
+  // The page should be cached in the back forward cache.
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+}
 }  // namespace content

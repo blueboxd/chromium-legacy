@@ -136,8 +136,7 @@ cr.define('print_preview', function() {
      */
     computeAvailable_: function() {
       return this.previewLoaded && !!this.clipSize_ &&
-          this.getSettingValue('margins') ==
-          print_preview.MarginsTypeValue.CUSTOM &&
+          this.getSettingValue('margins') == print_preview.MarginsType.CUSTOM &&
           !!this.pageSize;
     },
 
@@ -185,9 +184,9 @@ cr.define('print_preview', function() {
 
       this.resetMargins_ = true;
       const marginsSetting = this.getSetting('margins');
-      if (marginsSetting.value == print_preview.MarginsTypeValue.CUSTOM) {
+      if (marginsSetting.value == print_preview.MarginsType.CUSTOM) {
         // Set the margins value to default first.
-        this.setSetting('margins', print_preview.MarginsTypeValue.DEFAULT);
+        this.setSetting('margins', print_preview.MarginsType.DEFAULT);
       }
       // Reset custom margins so that the sticky value is not restored for the
       // new paper size.

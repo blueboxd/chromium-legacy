@@ -32,10 +32,11 @@ android_library("test_java") {
 
   java_files = [
     "javatests/src/org/chromium/chrome/browser/keyboard_accessory/AutofillKeyboardAccessoryIntegrationTest.java",
+    "javatests/src/org/chromium/chrome/browser/keyboard_accessory/FakeKeyboard.java",
     "javatests/src/org/chromium/chrome/browser/keyboard_accessory/ManualFillingIntegrationTest.java",
     "javatests/src/org/chromium/chrome/browser/keyboard_accessory/ManualFillingTestHelper.java",
     "javatests/src/org/chromium/chrome/browser/keyboard_accessory/ManualFillingUiCaptureTest.java",
-    "javatests/src/org/chromium/chrome/browser/keyboard_accessory/FakeKeyboard.java",
+    "javatests/src/org/chromium/chrome/browser/keyboard_accessory/PasswordGenerationIntegrationTest.java",
     "javatests/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryViewTest.java",
     "javatests/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryModernViewTest.java",
     "javatests/src/org/chromium/chrome/browser/keyboard_accessory/sheet_component/AccessorySheetViewTest.java",

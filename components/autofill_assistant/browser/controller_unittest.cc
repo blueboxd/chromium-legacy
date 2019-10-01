@@ -521,6 +521,28 @@ TEST_F(ControllerTest, Stop) {
   EXPECT_TRUE(controller_->PerformUserAction(0));
 }
 
+TEST_F(ControllerTest, CloseCustomTab) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "stop");
+  SetNextScriptResponse(script_response);
+
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_stop()->set_close_cct(true);
+  std::string actions_response_str;
+  actions_response.SerializeToString(&actions_response_str);
+  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("stop"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, actions_response_str));
+
+  Start();
+  ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
+  EXPECT_CALL(mock_observer_, CloseCustomTab()).Times(1);
+
+  testing::InSequence seq;
+  EXPECT_CALL(fake_client_,
+              Shutdown(Metrics::DropOutReason::CUSTOM_TAB_CLOSED));
+  EXPECT_TRUE(controller_->PerformUserAction(0));
+}
+
 TEST_F(ControllerTest, Reset) {
   // 1. Fetch scripts for URL, which in contains a single "reset" script.
   SupportsScriptResponseProto script_response;
@@ -1572,6 +1594,33 @@ TEST_F(ControllerTest, SetShippingAddress) {
   EXPECT_THAT(
       controller_->GetUserData()->shipping_address->Compare(*shipping_address),
       Eq(0));
+}
+
+TEST_F(ControllerTest, SetOverlayColors) {
+  EXPECT_CALL(
+      mock_observer_,
+      OnOverlayColorsChanged(AllOf(
+          Field(&Controller::OverlayColors::background, StrEq("#FF000000")),
+          Field(&Controller::OverlayColors::highlight_border,
+                StrEq("#FFFFFFFF")))));
+
+  std::map<std::string, std::string> parameters;
+  parameters["OVERLAY_COLORS"] = "#FF000000:#FFFFFFFF";
+  auto context = TriggerContext::Create(parameters, "exps");
+
+  GURL url("http://a.example.com/path");
+  controller_->Start(url, std::move(context));
+}
+
+TEST_F(ControllerTest, ChangeClientSettings) {
+  SupportsScriptResponseProto response;
+  response.mutable_client_settings()->set_periodic_script_check_interval_ms(1);
+  SetupScripts(response);
+  EXPECT_CALL(mock_observer_,
+              OnClientSettingsChanged(
+                  Field(&ClientSettings::periodic_script_check_interval,
+                        base::TimeDelta::FromMilliseconds(1))));
+  Start();
 }
 
 }  // namespace autofill_assistant

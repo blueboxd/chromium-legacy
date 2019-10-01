@@ -85,17 +85,22 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
           task_runner_handle) override {
     DCHECK(task_runner_handle);
     DCHECK(resource_dispatcher_);
+
+    // KeepAlive is not yet supported in web workers.
+    mojo::PendingRemote<mojom::KeepAliveHandle> keep_alive_handle =
+        mojo::NullRemote();
+
     if (CanCreateServiceWorkerURLLoader(request)) {
       // Create our own URLLoader to route the request to the controller service
       // worker.
-      return std::make_unique<WebURLLoaderImpl>(resource_dispatcher_.get(),
-                                                std::move(task_runner_handle),
-                                                service_worker_loader_factory_);
+      return std::make_unique<WebURLLoaderImpl>(
+          resource_dispatcher_.get(), std::move(task_runner_handle),
+          service_worker_loader_factory_, std::move(keep_alive_handle));
     }
 
-    return std::make_unique<WebURLLoaderImpl>(resource_dispatcher_.get(),
-                                              std::move(task_runner_handle),
-                                              loader_factory_);
+    return std::make_unique<WebURLLoaderImpl>(
+        resource_dispatcher_.get(), std::move(task_runner_handle),
+        loader_factory_, std::move(keep_alive_handle));
   }
 
   void SetServiceWorkerURLLoaderFactory(

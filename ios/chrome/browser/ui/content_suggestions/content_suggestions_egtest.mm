@@ -47,7 +47,14 @@
 #error "This file requires ARC support."
 #endif
 
-using namespace ntp_snippets;
+using ntp_snippets::AdditionalSuggestionsHelper;
+using ntp_snippets::Category;
+using ntp_snippets::CategoryStatus;
+using ntp_snippets::ContentSuggestion;
+using ntp_snippets::ContentSuggestionsService;
+using ntp_snippets::CreateChromeContentSuggestionsService;
+using ntp_snippets::KnownCategories;
+using ntp_snippets::MockContentSuggestionsProvider;
 using testing::_;
 using testing::Invoke;
 using testing::WithArg;
@@ -198,11 +205,11 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 
   // Add 3 suggestions, persisted accross page loads.
   std::vector<ContentSuggestion> suggestions;
-  suggestions.emplace_back(
+  suggestions.push_back(
       Suggestion(self.category, "chromium1", GURL("http://chromium.org/1")));
-  suggestions.emplace_back(
+  suggestions.push_back(
       Suggestion(self.category, "chromium2", GURL("http://chromium.org/2")));
-  suggestions.emplace_back(
+  suggestions.push_back(
       Suggestion(self.category, "chromium3", GURL("http://chromium.org/3")));
   self.provider->FireSuggestionsChanged(self.category, std::move(suggestions));
 
@@ -238,15 +245,15 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 - (void)testReloadPage {
   // Add 2 suggestions.
   std::vector<ContentSuggestion> suggestions;
-  suggestions.emplace_back(
+  suggestions.push_back(
       Suggestion(self.category, "chromium1", GURL("http://chromium.org/1")));
-  suggestions.emplace_back(
+  suggestions.push_back(
       Suggestion(self.category, "chromium2", GURL("http://chromium.org/2")));
   self.provider->FireSuggestionsChanged(self.category, std::move(suggestions));
 
   // Change the suggestions to have one the second one.
   std::vector<ContentSuggestion> suggestionsOnly;
-  suggestionsOnly.emplace_back(
+  suggestionsOnly.push_back(
       Suggestion(self.category, "chromium2", GURL("http://chromium.org/2")));
   self.provider->FireSuggestionsChanged(self.category,
                                         std::move(suggestionsOnly));
@@ -276,11 +283,11 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 
   // Add 3 suggestions, persisted accross page loads.
   std::vector<ContentSuggestion> suggestions;
-  suggestions.emplace_back(
+  suggestions.push_back(
       Suggestion(self.category, "chromium1", GURL("http://chromium.org/1")));
-  suggestions.emplace_back(
+  suggestions.push_back(
       Suggestion(self.category, "chromium2", GURL("http://chromium.org/2")));
-  suggestions.emplace_back(
+  suggestions.push_back(
       Suggestion(self.category, "chromium3", GURL("http://chromium.org/3")));
   self.provider->FireSuggestionsChanged(self.category, std::move(suggestions));
 
@@ -339,7 +346,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
       assertWithMatcher:grey_nil()];
 
   std::vector<ContentSuggestion> suggestions;
-  suggestions.emplace_back(
+  suggestions.push_back(
       Suggestion(self.category, "chromium", GURL("http://chromium.org")));
   self.provider->FireSuggestionsChanged(self.category, std::move(suggestions));
 

@@ -123,6 +123,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void OnNoControllees(int64_t version_id, const GURL& scope) override;
   void OnRunningStateChanged(int64_t version_id,
                              EmbeddedWorkerStatus running_status) override;
+  void OnDeleteAndStartOver() override;
   void OnVersionStateChanged(int64_t version_id,
                              const GURL& scope,
                              ServiceWorkerVersion::Status status) override;

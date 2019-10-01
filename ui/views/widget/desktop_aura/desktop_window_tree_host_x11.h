@@ -91,11 +91,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
   std::unique_ptr<aura::client::DragDropClient> CreateDragDropClient(
       DesktopNativeCursorManager* cursor_manager) override;
-  std::string GetWorkspace() const override;
   void SetShape(std::unique_ptr<Widget::ShapeRects> native_shape) override;
   bool IsActive() const override;
-  void SetVisibleOnAllWorkspaces(bool always_visible) override;
-  bool IsVisibleOnAllWorkspaces() const override;
   Widget::MoveLoopResult RunMoveLoop(
       const gfx::Vector2d& drag_offset,
       Widget::MoveLoopSource source,
@@ -150,7 +147,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   void OnXWindowMapped() override;
   void OnXWindowUnmapped() override;
   void OnLostMouseGrab() override;
-  void OnWorkspaceChanged() override;
 
   // Overridden from ui::XEventDelegate.
   void OnXWindowSelectionEvent(XEvent* xev) override;

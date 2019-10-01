@@ -253,8 +253,8 @@ CSSNumericValue* CSSNumericValue::parse(const String& css_text,
           range.Peek().FunctionId() == CSSValueID::kWebkitCalc ||
           (RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled() &&
            (range.Peek().FunctionId() == CSSValueID::kMin ||
-            range.Peek().FunctionId() == CSSValueID::kMax))) {
-        // TODO(crbug.com/825895): Support clamp() after min()/max() are done.
+            range.Peek().FunctionId() == CSSValueID::kMax ||
+            range.Peek().FunctionId() == CSSValueID::kClamp))) {
         CSSMathExpressionNode* expression =
             CSSMathExpressionNode::ParseCalc(range);
         if (expression)

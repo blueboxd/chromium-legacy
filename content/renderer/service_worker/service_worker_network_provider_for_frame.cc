@@ -137,11 +137,22 @@ ServiceWorkerNetworkProviderForFrame::CreateURLLoader(
             kServiceWorkerInterceptedRequestFromOriginDirtyStyleSheet);
   }
 
+  mojo::PendingRemote<mojom::KeepAliveHandle> keep_alive_handle;
+  if (request.GetKeepalive()) {
+    // This cast is safe because NewDocumentObserver is always created with a
+    // RenderFrameImpl.
+    auto* render_frame_impl =
+        static_cast<RenderFrameImpl*>(observer_->render_frame());
+    render_frame_impl->GetFrameHost()->IssueKeepAliveHandle(
+        keep_alive_handle.InitWithNewPipeAndPassReceiver());
+  }
+
   // Create our own SubresourceLoader to route the request to the controller
   // ServiceWorker.
   return std::make_unique<WebURLLoaderImpl>(
       RenderThreadImpl::current()->resource_dispatcher(),
-      std::move(task_runner_handle), context()->GetSubresourceLoaderFactory());
+      std::move(task_runner_handle), context()->GetSubresourceLoaderFactory(),
+      std::move(keep_alive_handle));
 }
 
 blink::mojom::ControllerServiceWorkerMode

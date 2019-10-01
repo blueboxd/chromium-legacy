@@ -9,6 +9,8 @@
 #include "base/strings/stringprintf.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/google_api_keys.h"
+#include "url/url_canon.h"
+#include "url/url_constants.h"
 
 namespace {
 
@@ -88,6 +90,10 @@ GaiaUrls* GaiaUrls::GetInstance() {
 GaiaUrls::GaiaUrls() {
   google_url_ = GetURLSwitchValueWithDefault(switches::kGoogleUrl,
                                              kDefaultGoogleUrl);
+  url::Replacements<char> scheme_replacement;
+  scheme_replacement.SetScheme(url::kHttpsScheme,
+                               url::Component(0, strlen(url::kHttpsScheme)));
+  secure_google_url_ = google_url_.ReplaceComponents(scheme_replacement);
   gaia_url_ = GetURLSwitchValueWithDefault(switches::kGaiaUrl, kDefaultGaiaUrl);
   GURL lso_origin_url =
       GetURLSwitchValueWithDefault(switches::kLsoUrl, kDefaultGaiaUrl);
@@ -155,6 +161,10 @@ GaiaUrls::~GaiaUrls() {
 
 const GURL& GaiaUrls::google_url() const {
   return google_url_;
+}
+
+const GURL& GaiaUrls::secure_google_url() const {
+  return secure_google_url_;
 }
 
 const GURL& GaiaUrls::gaia_url() const {

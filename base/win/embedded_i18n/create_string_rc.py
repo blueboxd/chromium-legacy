@@ -575,7 +575,7 @@ def main():
       parser.error('A brand was specified (' + brand + ') but no mode '
         'specific strings were given.')
     valid_brands = [b for b in
-      mode_specific_strings.itervalues().next().iterkeys()]
+      next(iter(mode_specific_strings.values())).keys()]
     if not brand in valid_brands:
       parser.error('A brand was specified (' + brand + ') but it is not '
         'a valid brand [' + ', '.join(valid_brands) + '].')

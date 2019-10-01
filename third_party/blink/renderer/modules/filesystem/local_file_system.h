@@ -46,7 +46,6 @@
 
 namespace blink {
 
-class FileSystemClient;
 class ExecutionContext;
 class FileSystemCallbacks;
 class KURL;
@@ -63,8 +62,8 @@ class LocalFileSystem final : public GarbageCollected<LocalFileSystem>,
 
   static const char kSupplementName[];
 
-  LocalFileSystem(LocalFrame&, std::unique_ptr<FileSystemClient>);
-  LocalFileSystem(WorkerClients&, std::unique_ptr<FileSystemClient>);
+  explicit LocalFileSystem(LocalFrame&);
+  explicit LocalFileSystem(WorkerClients&);
   ~LocalFileSystem();
 
   void ResolveURL(ExecutionContext*,
@@ -76,8 +75,6 @@ class LocalFileSystem final : public GarbageCollected<LocalFileSystem>,
                          int64_t size,
                          std::unique_ptr<FileSystemCallbacks>,
                          SynchronousType sync_type);
-
-  FileSystemClient& Client() const { return *client_; }
 
   static LocalFileSystem* From(ExecutionContext&);
 
@@ -110,10 +107,11 @@ class LocalFileSystem final : public GarbageCollected<LocalFileSystem>,
                           std::unique_ptr<ResolveURICallbacks>,
                           SynchronousType sync_type);
 
-  const std::unique_ptr<FileSystemClient> client_;
-
   DISALLOW_COPY_AND_ASSIGN(LocalFileSystem);
 };
+
+void ProvideLocalFileSystemTo(LocalFrame&);
+void ProvideLocalFileSystemToWorker(WorkerClients&);
 
 }  // namespace blink
 

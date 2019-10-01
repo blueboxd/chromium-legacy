@@ -28,7 +28,6 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_factory.h"
@@ -341,7 +340,8 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     // same-process navigation is also ongoing, it will be canceled when the
     // speculative RenderFrameHost replaces the current one in the commit call
     // below.
-    CommitPending(std::move(speculative_render_frame_host_));
+    CommitPending(std::move(speculative_render_frame_host_),
+                  std::move(bfcache_entry_to_restore_));
     frame_tree_node_->ResetNavigationRequest(false, true);
     return;
   }
@@ -504,11 +504,31 @@ void RenderFrameHostManager::SwapOutOldFrame(
         delegate_->GetControllerForRenderManager().GetBackForwardCache();
     auto can_store =
         back_forward_cache.CanStoreDocument(old_render_frame_host.get());
-    TRACE_EVENT1("navigation", "BackForwardCache_MaybeStoreDocument",
-                 "can_store", can_store.ToString());
+    TRACE_EVENT1("navigation", "BackForwardCache_MaybeStorePage", "can_store",
+                 can_store.ToString());
     if (can_store) {
+      // Prepare the main frame.
       back_forward_cache.Freeze(old_render_frame_host.get());
-      back_forward_cache.StoreDocument(std::move(old_render_frame_host));
+
+      // Prepare the proxies.
+      RenderFrameProxyHostMap old_proxy_hosts;
+      SiteInstance* instance = old_render_frame_host->GetSiteInstance();
+      for (auto& it : proxy_hosts_) {
+        // This avoids including the proxy created when starting a
+        // new cross-process, cross-BrowsingInstance navigation, as well as any
+        // restored proxies which are also in a different BrowsingInstance.
+        if (instance->IsRelatedSiteInstance(it.second->GetSiteInstance()))
+          old_proxy_hosts[it.first] = std::move(it.second);
+      }
+      // Remove the previously extracted proxies from the
+      // RenderFrameHostManager, which also remove their respective
+      // SiteInstanceImpl::Observer.
+      for (auto& it : old_proxy_hosts)
+        DeleteRenderFrameProxyHost(it.second->GetSiteInstance());
+
+      auto entry = std::make_unique<BackForwardCacheImpl::Entry>(
+          std::move(old_render_frame_host), std::move(old_proxy_hosts));
+      back_forward_cache.StoreEntry(std::move(entry));
       return;
     }
   }
@@ -585,13 +605,18 @@ bool RenderFrameHostManager::DeleteFromPendingList(
 }
 
 void RenderFrameHostManager::RestoreFromBackForwardCache(
-    std::unique_ptr<RenderFrameHostImpl> rfh) {
+    std::unique_ptr<BackForwardCacheImpl::Entry> entry) {
   // Matched in CommitPending().
-  rfh->GetProcess()->AddPendingView();
+  entry->render_frame_host->GetProcess()->AddPendingView();
 
-  // speculative_render_frame_host_ will be committed during
-  // CommitPendingIfNecessary.
-  speculative_render_frame_host_ = std::move(rfh);
+  // speculative_render_frame_host_ and bfcache_entry_to_restore_ will be
+  // consumed during CommitPendingIfNecessary.
+  // TODO(ahemery): This is awkward to leave the entry in a half consumed state
+  // and it would be clearer if we could not reuse speculative_render_frame_host
+  // in the long run. For now, and to avoid complex edge cases, we simply reuse
+  // it to preserve the understood logic in CommitPending.
+  speculative_render_frame_host_ = std::move(entry->render_frame_host);
+  bfcache_entry_to_restore_ = std::move(entry);
 }
 
 void RenderFrameHostManager::UnfreezeCurrentFrameHost() {
@@ -785,7 +810,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
         navigation_rfh->Send(
             new FrameMsg_SwapIn(navigation_rfh->GetRoutingID()));
       }
-      CommitPending(std::move(speculative_render_frame_host_));
+      CommitPending(std::move(speculative_render_frame_host_), nullptr);
 
       // Notify the WebUI about the new RenderFrame if needed (the newly
       // created WebUI has just been committed by CommitPending, so
@@ -2435,10 +2460,14 @@ void RenderFrameHostManager::CommitPendingWebUI() {
 }
 
 void RenderFrameHostManager::CommitPending(
-    std::unique_ptr<RenderFrameHostImpl> pending_rfh) {
+    std::unique_ptr<RenderFrameHostImpl> pending_rfh,
+    std::unique_ptr<BackForwardCacheImpl::Entry> pending_bfcache_entry) {
   TRACE_EVENT1("navigation", "RenderFrameHostManager::CommitPending",
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
   DCHECK(pending_rfh);
+
+  // We should never have a pending bfcache entry if bfcache is disabled.
+  DCHECK(!pending_bfcache_entry || IsBackForwardCacheEnabled());
 
 #if defined(OS_MACOSX)
   // The old RenderWidgetHostView will be hidden before the new
@@ -2491,11 +2520,27 @@ void RenderFrameHostManager::CommitPending(
         navigation_entry);
   }
 
-  // Swap in the pending frame and make it active. Also ensure the FrameTree
+  // Swap in the new frame and make it active. Also ensure the FrameTree
   // stays in sync.
   DCHECK(pending_rfh);
   std::unique_ptr<RenderFrameHostImpl> old_render_frame_host;
   old_render_frame_host = SetRenderFrameHost(std::move(pending_rfh));
+
+  // If a document is being restored from the BackForwardCache, restore all
+  // cached state now.
+  if (pending_bfcache_entry) {
+    RenderFrameProxyHostMap pending_proxy_hosts =
+        std::move(pending_bfcache_entry->proxy_hosts);
+    for (auto& proxy : pending_proxy_hosts) {
+      // We only cache pages when swapping BrowsingInstance, so we should never
+      // be reusing SiteInstances.
+      CHECK(!base::Contains(proxy_hosts_,
+                            proxy.second->GetSiteInstance()->GetId()));
+      static_cast<SiteInstanceImpl*>(proxy.second->GetSiteInstance())
+          ->AddObserver(this);
+      proxy_hosts_.insert(std::move(proxy));
+    }
+  }
 
   // For top-level frames, the RenderWidget{Host} will not be destroyed when the
   // local frame is detached. https://crbug.com/419087
@@ -3003,7 +3048,7 @@ void RenderFrameHostManager::CreateNewFrameForInnerDelegateAttachIfNecessary() {
   // WebContents::AttachToOuterWebContentsFrame is called.
   speculative_render_frame_host_->Send(
       new FrameMsg_SwapIn(speculative_render_frame_host_->GetRoutingID()));
-  CommitPending(std::move(speculative_render_frame_host_));
+  CommitPending(std::move(speculative_render_frame_host_), nullptr);
   NotifyPrepareForInnerDelegateAttachComplete(true /* success */);
 }
 

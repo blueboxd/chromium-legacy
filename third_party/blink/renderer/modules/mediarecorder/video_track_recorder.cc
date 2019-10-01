@@ -263,11 +263,9 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
       frame = media::WrapAsI420VideoFrame(video_frame);
     } else {
       frame = media::VideoFrame::WrapVideoFrame(
-          *video_frame, video_frame->format(), video_frame->visible_rect(),
+          video_frame, video_frame->format(), video_frame->visible_rect(),
           video_frame->natural_size());
     }
-    frame->AddDestructionObserver(ConvertToBaseOnceCallback(CrossThreadBindOnce(
-        [](scoped_refptr<VideoFrame> video_frame) {}, std::move(video_frame))));
   }
   frame->AddDestructionObserver(media::BindToCurrentLoop(
       WTF::Bind(&VideoTrackRecorder::Counter::DecreaseCount,

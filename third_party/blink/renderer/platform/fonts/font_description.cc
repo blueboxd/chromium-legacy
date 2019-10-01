@@ -373,6 +373,42 @@ SkFontStyle FontDescription::SkiaFontStyle() const {
   return SkFontStyle(skia_weight, skia_width, slant);
 }
 
+void FontDescription::UpdateFromSkiaFontStyle(const SkFontStyle& font_style) {
+  SetWeight(FontSelectionValue(font_style.weight()));
+
+  switch (font_style.width()) {
+    case (SkFontStyle::kUltraCondensed_Width):
+      SetStretch(UltraCondensedWidthValue());
+      break;
+    case (SkFontStyle::kExtraCondensed_Width):
+      SetStretch(ExtraCondensedWidthValue());
+      break;
+    case (SkFontStyle::kCondensed_Width):
+      SetStretch(CondensedWidthValue());
+      break;
+    case (SkFontStyle::kSemiCondensed_Width):
+      SetStretch(SemiCondensedWidthValue());
+      break;
+    case (SkFontStyle::kSemiExpanded_Width):
+      SetStretch(SemiExpandedWidthValue());
+      break;
+    case (SkFontStyle::kExpanded_Width):
+      SetStretch(ExpandedWidthValue());
+      break;
+    case (SkFontStyle::kExtraExpanded_Width):
+      SetStretch(ExtraExpandedWidthValue());
+      break;
+    case (SkFontStyle::kUltraExpanded_Width):
+      SetStretch(UltraExpandedWidthValue());
+      break;
+  }
+
+  if (font_style.slant() == SkFontStyle::kOblique_Slant)
+    SetStyle(ItalicSlopeValue());
+  else
+    SetStyle(NormalSlopeValue());
+}
+
 int FontDescription::MinimumPrefixWidthToHyphenate() const {
   // If the maximum width available for the prefix before the hyphen is small,
   // then it is very unlikely that an hyphenation opportunity exists, so do not

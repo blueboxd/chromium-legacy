@@ -16,9 +16,12 @@ class Database;
 namespace password_manager {
 
 // Represents information about the particular credentials leak.
-// TODO(crbug.com/1005746): Discuss the design whether we should have additional
-// |update_time| field or store multiple records with different |create_time|.
 struct LeakedCredentials {
+  LeakedCredentials(GURL url, base::string16 username, base::Time create_time)
+      : url(std::move(url)),
+        username(std::move(username)),
+        create_time(create_time) {}
+
   // The url of the website of the leak.
   GURL url;
   // The value of the leaked username.

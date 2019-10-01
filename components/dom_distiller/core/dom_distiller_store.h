@@ -24,11 +24,6 @@ class DomDistillerStoreInterface {
  public:
   virtual ~DomDistillerStoreInterface() {}
 
-  virtual bool AddEntry(const ArticleEntry& entry) = 0;
-  // Returns false if |entry| is not present or |entry| was not updated.
-  virtual bool UpdateEntry(const ArticleEntry& entry) = 0;
-  virtual bool RemoveEntry(const ArticleEntry& entry) = 0;
-
   // Lookup an ArticleEntry by ID or URL. Returns whether a corresponding entry
   // was found. On success, if |entry| is not null, it will contain the entry.
   virtual bool GetEntryById(const std::string& entry_id,
@@ -70,10 +65,6 @@ class DomDistillerStore : public DomDistillerStoreInterface {
 
   ~DomDistillerStore() override;
 
-  bool AddEntry(const ArticleEntry& entry) override;
-  bool UpdateEntry(const ArticleEntry& entry) override;
-  bool RemoveEntry(const ArticleEntry& entry) override;
-
   bool GetEntryById(const std::string& entry_id, ArticleEntry* entry) override;
   bool GetEntryByUrl(const GURL& url, ArticleEntry* entry) override;
   std::vector<ArticleEntry> GetEntries() const override;
@@ -83,21 +74,11 @@ class DomDistillerStore : public DomDistillerStoreInterface {
   void OnDatabaseLoad(bool success, std::unique_ptr<EntryVector> entries);
   void OnDatabaseSave(bool success);
 
-  // Returns true if the change is successfully applied.
-  bool ChangeEntry(const ArticleEntry& entry,
-                   syncer::SyncChange::SyncChangeType changeType);
-
   void MergeDataWithModel(const syncer::SyncDataList& data,
                           syncer::SyncChangeList* changes_applied,
                           syncer::SyncChangeList* changes_missing);
 
   bool ApplyChangesToDatabase(const syncer::SyncChangeList& change_list);
-
-  // Applies the changes to |model_|. If the model returns an error, disables
-  // syncing and database changes and returns false.
-  void ApplyChangesToModel(const syncer::SyncChangeList& change_list,
-                           syncer::SyncChangeList* changes_applied,
-                           syncer::SyncChangeList* changes_missing);
 
   std::unique_ptr<leveldb_proto::ProtoDatabase<ArticleEntry>> database_;
   bool database_loaded_;

@@ -42,7 +42,11 @@
 #error "This file requires ARC support."
 #endif
 
-using namespace sync_encryption_passphrase;
+using sync_encryption_passphrase::ItemTypeEnterPassphrase;
+using sync_encryption_passphrase::ItemTypeError;
+using sync_encryption_passphrase::ItemTypeFooter;
+using sync_encryption_passphrase::ItemTypeMessage;
+using sync_encryption_passphrase::SectionIdentifierPassphrase;
 
 namespace {
 

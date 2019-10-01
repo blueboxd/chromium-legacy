@@ -47,6 +47,7 @@ const BASIC_DRIVE_ENTRY_SET_WITH_HIDDEN = [
   ENTRIES.unsupported,
   ENTRIES.testDocument,
   ENTRIES.testSharedDocument,
+  ENTRIES.testSharedFile,
   ENTRIES.hiddenFile,
 ];
 
@@ -79,6 +80,7 @@ const BASIC_DRIVE_ENTRY_SET_WITHOUT_GDOCS = [
   ENTRIES.beautiful,
   ENTRIES.photos,
   ENTRIES.unsupported,
+  ENTRIES.testSharedFile,
 ];
 
 /**

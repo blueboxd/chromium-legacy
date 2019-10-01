@@ -884,6 +884,14 @@ cca.util.setupI18nElements = function(rootElement) {
       .forEach(
           (element) => element.textContent =
               getMessage(element, 'i18n-content'));
+  getElements('i18n-tooltip-true')
+      .forEach(
+          (element) => element.setAttribute(
+              'tooltip-true', getMessage(element, 'i18n-tooltip-true')));
+  getElements('i18n-tooltip-false')
+      .forEach(
+          (element) => element.setAttribute(
+              'tooltip-false', getMessage(element, 'i18n-tooltip-false')));
   getElements('i18n-aria')
       .forEach((element) => setAriaLabel(element, 'i18n-aria'));
   cca.tooltip.setup(getElements('i18n-label'))

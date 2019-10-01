@@ -84,7 +84,7 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
   DCHECK_EQ(origin_frame->coded_size(), coded_size);
 
   scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
-      *origin_frame, format, visible_rect_, natural_size_);
+      origin_frame, format, visible_rect_, natural_size_);
   DCHECK(wrapped_frame);
   frames_in_use_.emplace(GetDmabufId(*wrapped_frame), origin_frame.get());
   wrapped_frame->AddDestructionObserver(

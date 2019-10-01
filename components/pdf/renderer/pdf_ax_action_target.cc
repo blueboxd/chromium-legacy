@@ -57,8 +57,8 @@ bool PdfAXActionTarget::Click() const {
 
   if ((target_plugin_node_.data().role != ax::mojom::Role::kLink) ||
       !pdf_accessibility_tree_source_->GetPdfLinkInfoFromAXNode(
-          target_plugin_node_.data().id, &pdf_action_data.link_index,
-          &pdf_action_data.page_index)) {
+          target_plugin_node_.data().id, &pdf_action_data.page_index,
+          &pdf_action_data.link_index)) {
     return false;
   }
 

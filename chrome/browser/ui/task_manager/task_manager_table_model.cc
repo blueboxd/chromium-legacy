@@ -26,7 +26,6 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/common/result_codes.h"
-#include "third_party/blink/public/platform/web_cache.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -234,7 +233,7 @@ class TaskManagerValuesStringifier {
   }
 
   base::string16 GetWebCacheStatText(
-      const blink::WebCache::ResourceTypeStat& stat) {
+      const blink::WebCacheResourceTypeStat& stat) {
     return GetMemoryUsageText(stat.size, false);
   }
 
@@ -396,21 +395,21 @@ base::string16 TaskManagerTableModel::GetText(int row, int column) {
           observed_task_manager()->GetHardFaultsPerSecond(tasks_[row]));
 
     case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN: {
-      blink::WebCache::ResourceTypeStats stats;
+      blink::WebCacheResourceTypeStats stats;
       if (observed_task_manager()->GetWebCacheStats(tasks_[row], &stats))
         return stringifier_->GetWebCacheStatText(stats.images);
       return stringifier_->n_a_string();
     }
 
     case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN: {
-      blink::WebCache::ResourceTypeStats stats;
+      blink::WebCacheResourceTypeStats stats;
       if (observed_task_manager()->GetWebCacheStats(tasks_[row], &stats))
         return stringifier_->GetWebCacheStatText(stats.scripts);
       return stringifier_->n_a_string();
     }
 
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN: {
-      blink::WebCache::ResourceTypeStats stats;
+      blink::WebCacheResourceTypeStats stats;
       if (observed_task_manager()->GetWebCacheStats(tasks_[row], &stats))
         return stringifier_->GetWebCacheStatText(stats.css_style_sheets);
       return stringifier_->n_a_string();
@@ -558,8 +557,8 @@ int TaskManagerTableModel::CompareValues(int row1,
     case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
     case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN: {
-      blink::WebCache::ResourceTypeStats stats1;
-      blink::WebCache::ResourceTypeStats stats2;
+      blink::WebCacheResourceTypeStats stats1;
+      blink::WebCacheResourceTypeStats stats2;
       bool row1_stats_valid =
           observed_task_manager()->GetWebCacheStats(tasks_[row1], &stats1);
       bool row2_stats_valid =

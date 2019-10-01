@@ -48,6 +48,11 @@ class ServiceWorkerContextCoreObserver {
   virtual void OnNewLiveVersion(const ServiceWorkerVersionInfo& version_info) {}
   virtual void OnRunningStateChanged(int64_t version_id,
                                      EmbeddedWorkerStatus running_status) {}
+  // Called when the context core is about to be deleted. After this is called,
+  // method calls on this observer will be for a new context core, possibly
+  // reusing version/registration IDs previously seen. So this method gives the
+  // observer a chance to discard any state it has.
+  virtual void OnDeleteAndStartOver() {}
   virtual void OnVersionStateChanged(int64_t version_id,
                                      const GURL& scope,
                                      ServiceWorkerVersion::Status status) {}

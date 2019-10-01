@@ -260,8 +260,7 @@ TEST(VideoFrame, CreateBlackFrame) {
   }
 }
 
-static void FrameNoLongerNeededCallback(scoped_refptr<media::VideoFrame> frame,
-                                        bool* triggered) {
+static void FrameNoLongerNeededCallback(bool* triggered) {
   *triggered = true;
 }
 
@@ -282,9 +281,9 @@ TEST(VideoFrame, WrapVideoFrame) {
     wrapped_frame->metadata()->SetTimeDelta(
         media::VideoFrameMetadata::FRAME_DURATION, kFrameDuration);
     frame = media::VideoFrame::WrapVideoFrame(
-        *wrapped_frame, wrapped_frame->format(), visible_rect, natural_size);
-    frame->AddDestructionObserver(base::Bind(
-        &FrameNoLongerNeededCallback, wrapped_frame, &done_callback_was_run));
+        wrapped_frame, wrapped_frame->format(), visible_rect, natural_size);
+    wrapped_frame->AddDestructionObserver(
+        base::Bind(&FrameNoLongerNeededCallback, &done_callback_was_run));
     EXPECT_EQ(wrapped_frame->coded_size(), frame->coded_size());
     EXPECT_EQ(wrapped_frame->data(media::VideoFrame::kYPlane),
               frame->data(media::VideoFrame::kYPlane));
@@ -308,6 +307,7 @@ TEST(VideoFrame, WrapVideoFrame) {
         frame->metadata()->HasKey(media::VideoFrameMetadata::FRAME_DURATION));
   }
 
+  // Verify that |wrapped_frame| outlives |frame|.
   EXPECT_FALSE(done_callback_was_run);
   frame = NULL;
   EXPECT_TRUE(done_callback_was_run);
@@ -454,13 +454,13 @@ TEST(VideoFrame, WrapExternalDmabufs) {
 
   // Wrapped DMABUF frames must share the same memory as their wrappee.
   auto wrapped_frame = VideoFrame::WrapVideoFrame(
-      *frame, frame->format(), visible_rect, visible_rect.size());
+      frame, frame->format(), visible_rect, visible_rect.size());
   ASSERT_NE(wrapped_frame, nullptr);
   ASSERT_EQ(wrapped_frame->IsSameDmaBufsAs(*frame), true);
 
   // Multi-level wrapping should share same memory as well.
   auto wrapped_frame2 = VideoFrame::WrapVideoFrame(
-      *wrapped_frame, frame->format(), visible_rect, visible_rect.size());
+      wrapped_frame, frame->format(), visible_rect, visible_rect.size());
   ASSERT_NE(wrapped_frame2, nullptr);
   ASSERT_EQ(wrapped_frame2->IsSameDmaBufsAs(*wrapped_frame), true);
   ASSERT_EQ(wrapped_frame2->IsSameDmaBufsAs(*frame), true);

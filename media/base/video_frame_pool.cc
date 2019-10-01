@@ -111,7 +111,7 @@ scoped_refptr<VideoFrame> VideoFramePool::PoolImpl::CreateFrame(
   }
 
   scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
-      *frame, frame->format(), frame->visible_rect(), frame->natural_size());
+      frame, frame->format(), frame->visible_rect(), frame->natural_size());
   wrapped_frame->AddDestructionObserver(base::Bind(
       &VideoFramePool::PoolImpl::FrameReleased, this, std::move(frame)));
   return wrapped_frame;

@@ -8,6 +8,7 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
+#include "build/build_config.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/triggers/mock_trigger_manager.h"
@@ -191,7 +192,13 @@ TEST_F(SuspiciousSiteTriggerTest, RegularPageNonSuspicious) {
   ExpectNoReportRejection();
 }
 
-TEST_F(SuspiciousSiteTriggerTest, SuspiciousHitDuringLoad) {
+// crbug.com/1010037: fails on win.
+#if defined(OS_WIN)
+#define MAYBE_SuspiciousHitDuringLoad DISABLED_SuspiciousHitDuringLoad
+#else
+#define MAYBE_SuspiciousHitDuringLoad SuspiciousHitDuringLoad
+#endif
+TEST_F(SuspiciousSiteTriggerTest, MAYBE_SuspiciousHitDuringLoad) {
   // When a suspicious site is detected in the middle of a page load, a report
   // is created after the page load has finished.
   CreateTrigger(/*monitor_mode=*/false);

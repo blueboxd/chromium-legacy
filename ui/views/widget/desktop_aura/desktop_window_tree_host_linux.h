@@ -28,14 +28,15 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
 
  protected:
   // Overridden from DesktopWindowTreeHost:
+  void Init(const Widget::InitParams& params) override;
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
+  std::string GetWorkspace() const override;
+  void SetVisibleOnAllWorkspaces(bool always_visible) override;
+  bool IsVisibleOnAllWorkspaces() const override;
 
   // PlatformWindowDelegateBase:
   void DispatchEvent(ui::Event* event) override;
   void OnClosed() override;
-
-  // DesktopWindowTreeHostPlatform:
-  void Init(const Widget::InitParams& params) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostLinuxTest, HitTest);
@@ -54,6 +55,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
 
   void AddNonClientEventFilter();
   void RemoveNonClientEventFilter();
+
+  // PlatformWindowDelegateLinux overrides:
+  void OnWorkspaceChanged() override;
 
   // A handler for events intended for non client area.
   std::unique_ptr<WindowEventFilterLinux> non_client_window_event_filter_;

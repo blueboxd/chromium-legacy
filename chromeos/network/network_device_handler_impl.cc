@@ -575,39 +575,37 @@ void NetworkDeviceHandlerImpl::ApplyMACAddressRandomizationToShill() {
 }
 
 void NetworkDeviceHandlerImpl::ApplyUsbEthernetMacAddressSourceToShill() {
-  const std::string new_primary_enabled_usb_ethernet_device_path =
-      FindPrimaryEnabledUsbEthernetDevicePath();
-  // Restore USB Ethernet MAC address source value to "builtin" at the old
-  // device path if primary enabled USB Ethernet device path has changed.
-  if (new_primary_enabled_usb_ethernet_device_path !=
-          primary_enabled_usb_ethernet_device_path_ &&
-      !primary_enabled_usb_ethernet_device_path_.empty()) {
-    ShillDeviceClient::Get()->SetUsbEthernetMacAddressSource(
-        dbus::ObjectPath(primary_enabled_usb_ethernet_device_path_),
-        shill::kUsbEthernetMacAddressSourceUsbAdapterMac, base::DoNothing(),
-        base::Bind(&HandleShillCallFailure,
-                   primary_enabled_usb_ethernet_device_path_,
-                   network_handler::ErrorCallback()));
+  // Do nothing else if MAC address source is not specified yet.
+  if (usb_ethernet_mac_address_source_.empty()) {
+    NET_LOG(DEBUG) << "Empty USB Ethernet MAC address source.";
+    return;
   }
+
+  std::string previous_primary_enabled_usb_ethernet_device_path =
+      primary_enabled_usb_ethernet_device_path_;
+
+  UpdatePrimaryEnabledUsbEthernetDevice();
+  ResetMacAddressSourceForSecondaryUsbEthernetDevices();
 
   // Do nothing else if device path and MAC address source have not changed.
   if (!usb_ethernet_mac_address_source_needs_update_ &&
-      new_primary_enabled_usb_ethernet_device_path ==
+      previous_primary_enabled_usb_ethernet_device_path ==
           primary_enabled_usb_ethernet_device_path_) {
     return;
   }
 
-  primary_enabled_usb_ethernet_device_path_ =
-      new_primary_enabled_usb_ethernet_device_path;
   usb_ethernet_mac_address_source_needs_update_ = false;
 
   const DeviceState* primary_enabled_usb_ethernet_device_state =
       network_state_handler_->GetDeviceState(
           primary_enabled_usb_ethernet_device_path_);
 
-  // Do nothing else if device path is empty or device state is nullptr.
+  // Do nothing else if device path is empty or device state is nullptr or
+  // device MAC address source property equals to needed value.
   if (primary_enabled_usb_ethernet_device_path_.empty() ||
-      !primary_enabled_usb_ethernet_device_state) {
+      !primary_enabled_usb_ethernet_device_state ||
+      primary_enabled_usb_ethernet_device_state->mac_address_source() ==
+          usb_ethernet_mac_address_source_) {
     return;
   }
 
@@ -628,10 +626,12 @@ void NetworkDeviceHandlerImpl::OnSetUsbEthernetMacAddressSourceError(
     const network_handler::ErrorCallback& error_callback,
     const std::string& shill_error_name,
     const std::string& shill_error_message) {
-  mac_address_change_not_supported_.insert(device_mac_address);
   HandleShillCallFailure(device_path, error_callback, shill_error_name,
                          shill_error_message);
-  ApplyUsbEthernetMacAddressSourceToShill();
+  if (shill_error_name == NetworkDeviceHandler::kErrorNotSupported) {
+    mac_address_change_not_supported_.insert(device_mac_address);
+    ApplyUsbEthernetMacAddressSourceToShill();
+  }
 }
 
 bool NetworkDeviceHandlerImpl::IsUsbEnabledDevice(
@@ -643,8 +643,7 @@ bool NetworkDeviceHandlerImpl::IsUsbEnabledDevice(
              mac_address_change_not_supported_.end();
 }
 
-std::string NetworkDeviceHandlerImpl::FindPrimaryEnabledUsbEthernetDevicePath()
-    const {
+void NetworkDeviceHandlerImpl::UpdatePrimaryEnabledUsbEthernetDevice() {
   NetworkStateHandler::DeviceStateList device_state_list;
   network_state_handler_->GetDeviceListByType(NetworkTypePattern::Ethernet(),
                                               &device_state_list);
@@ -657,21 +656,62 @@ std::string NetworkDeviceHandlerImpl::FindPrimaryEnabledUsbEthernetDevicePath()
     for (const auto* device_state : device_state_list) {
       if (device_state && device_state->link_up() &&
           device_state->device_bus_type() == shill::kDeviceBusTypePci) {
-        return "";
+        primary_enabled_usb_ethernet_device_path_ = "";
+        return;
       }
     }
   }
 
+  // Nothing change, primary USB Ethernet device still enabled.
   if (IsUsbEnabledDevice(network_state_handler_->GetDeviceState(
           primary_enabled_usb_ethernet_device_path_))) {
-    return primary_enabled_usb_ethernet_device_path_;
+    return;
+  }
+
+  // Reset primary enabled USB Ethernet device since it isn't enabled anymore.
+  primary_enabled_usb_ethernet_device_path_ = "";
+
+  // Give the priority to USB Ethernet device which already has the required MAC
+  // address source property. It can happen after Chrome crashes, when shill
+  // devices have some properties and Chrome does not know which device was
+  // the primary USB Ethernet before the crash.
+  for (const auto* device_state : device_state_list) {
+    if (IsUsbEnabledDevice(device_state) && device_state &&
+        device_state->mac_address_source() ==
+            usb_ethernet_mac_address_source_) {
+      primary_enabled_usb_ethernet_device_path_ = device_state->path();
+      return;
+    }
   }
 
   for (const auto* device_state : device_state_list) {
-    if (IsUsbEnabledDevice(device_state))
-      return device_state->path();
+    if (IsUsbEnabledDevice(device_state)) {
+      primary_enabled_usb_ethernet_device_path_ = device_state->path();
+      return;
+    }
   }
-  return "";
+}
+
+void NetworkDeviceHandlerImpl::
+    ResetMacAddressSourceForSecondaryUsbEthernetDevices() const {
+  NetworkStateHandler::DeviceStateList device_state_list;
+  network_state_handler_->GetDeviceListByType(NetworkTypePattern::Ethernet(),
+                                              &device_state_list);
+
+  for (const auto* device_state : device_state_list) {
+    if (!device_state ||
+        device_state->path() == primary_enabled_usb_ethernet_device_path_ ||
+        device_state->mac_address_source().empty() ||
+        device_state->mac_address_source() ==
+            shill::kUsbEthernetMacAddressSourceUsbAdapterMac) {
+      continue;
+    }
+    ShillDeviceClient::Get()->SetUsbEthernetMacAddressSource(
+        dbus::ObjectPath(device_state->path()),
+        shill::kUsbEthernetMacAddressSourceUsbAdapterMac, base::DoNothing(),
+        base::Bind(&HandleShillCallFailure, device_state->path(),
+                   network_handler::ErrorCallback()));
+  }
 }
 
 void NetworkDeviceHandlerImpl::HandleMACAddressRandomization(

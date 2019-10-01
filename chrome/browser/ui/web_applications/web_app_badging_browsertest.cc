@@ -72,9 +72,8 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
     // The delegate is owned by the badge manager. We hold a pointer to it for
     // the test.
     std::unique_ptr<badging::TestBadgeManagerDelegate> owned_delegate =
-        std::make_unique<badging::TestBadgeManagerDelegate>(
-            profile(), badge_manager,
-            &WebAppProviderBase::GetProviderBase(profile())->registrar());
+        std::make_unique<badging::TestBadgeManagerDelegate>(profile(),
+                                                            badge_manager);
     owned_delegate->SetOnBadgeChanged(base::BindRepeating(
         &WebAppBadgingBrowserTest::OnBadgeChanged, base::Unretained(this)));
     delegate_ = owned_delegate.get();
@@ -85,18 +84,18 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
   void OnBadgeChanged() {
     // This is only set up to deal with one badge change at a time, in order to
     // make asserting the result of a badge change easier.
-    int total_changes = delegate_->cleared_app_badges().size() +
-                        delegate_->set_app_badges().size();
+    int total_changes =
+        delegate_->cleared_badges().size() + delegate_->set_badges().size();
     ASSERT_EQ(total_changes, 1);
 
-    if (delegate_->cleared_app_badges().size()) {
-      changed_app_id_ = delegate_->cleared_app_badges()[0];
+    if (delegate_->cleared_badges().size()) {
+      changed_app_id_ = delegate_->cleared_badges()[0];
       was_cleared_ = true;
     }
 
-    if (delegate_->set_app_badges().size() == 1) {
-      changed_app_id_ = delegate_->set_app_badges()[0].first;
-      last_badge_content_ = delegate_->set_app_badges()[0].second;
+    if (delegate_->set_badges().size() == 1) {
+      changed_app_id_ = delegate_->set_badges()[0].first;
+      last_badge_content_ = delegate_->set_badges()[0].second;
       was_flagged_ = last_badge_content_ == base::nullopt;
     }
 

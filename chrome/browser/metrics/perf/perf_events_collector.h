@@ -19,10 +19,13 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace chromeos {
+class DebugDaemonClientProvider;
+}  // namespace chromeos
+
 namespace metrics {
 
 struct CPUIdentity;
-class DebugdClientProvider;
 class WindowedIncognitoObserver;
 
 // Enables collection of perf events profile data. perf aka "perf events" is a
@@ -112,7 +115,7 @@ class PerfCollector : public internal::MetricCollector {
   RandomSelector command_selector_;
 
   // |debugd_client_provider_| hosts the private DBus connection to debugd.
-  std::unique_ptr<DebugdClientProvider> debugd_client_provider_;
+  std::unique_ptr<chromeos::DebugDaemonClientProvider> debugd_client_provider_;
 
   // An active call to perf/quipper, if set.
   std::unique_ptr<PerfOutputCall> perf_output_call_;

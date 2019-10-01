@@ -121,8 +121,8 @@ TEST_F(FuzzyTokenizedStringMatchTest, WeightedRatio) {
         0.67, 0.01);
   }
   {
-    base::string16 query(base::UTF8ToUTF16("clash of clan"));
-    base::string16 text(base::UTF8ToUTF16("clash of titan"));
+    base::string16 query(base::UTF8ToUTF16("Clash.of.clan"));
+    base::string16 text(base::UTF8ToUTF16("ClashOfTitan"));
     EXPECT_NEAR(
         match.WeightedRatio(TokenizedString(query), TokenizedString(text)),
         0.81, 0.01);
@@ -135,13 +135,68 @@ TEST_F(FuzzyTokenizedStringMatchTest, WeightedRatio) {
         0.96, 0.01);
   }
   {
-    base::string16 query(base::UTF8ToUTF16("short text"));
+    base::string16 query(base::UTF8ToUTF16("short text!!!"));
     base::string16 text(
         base::UTF8ToUTF16("this sentence is much much much much much longer "
                           "than the text before"));
     EXPECT_NEAR(
         match.WeightedRatio(TokenizedString(query), TokenizedString(text)),
         0.85, 0.01);
+  }
+}
+
+TEST_F(FuzzyTokenizedStringMatchTest, FirstCharacterMatchTest) {
+  {
+    base::string16 query(base::UTF8ToUTF16("COC"));
+    base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
+    EXPECT_EQ(internal::FirstCharacterMatch(TokenizedString(query),
+                                            TokenizedString(text)),
+              1.0);
+  }
+  {
+    base::string16 query(base::UTF8ToUTF16("CC"));
+    base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
+    EXPECT_EQ(internal::FirstCharacterMatch(TokenizedString(query),
+                                            TokenizedString(text)),
+              0.8);
+  }
+  {
+    base::string16 query(base::UTF8ToUTF16("C o C"));
+    base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
+    EXPECT_EQ(internal::FirstCharacterMatch(TokenizedString(query),
+                                            TokenizedString(text)),
+              0.0);
+  }
+}
+
+TEST_F(FuzzyTokenizedStringMatchTest, PrefixMatchTest) {
+  {
+    base::string16 query(base::UTF8ToUTF16("clas"));
+    base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
+    EXPECT_EQ(
+        internal::PrefixMatch(TokenizedString(query), TokenizedString(text)),
+        1.0);
+  }
+  {
+    base::string16 query(base::UTF8ToUTF16("clash clan"));
+    base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
+    EXPECT_EQ(
+        internal::PrefixMatch(TokenizedString(query), TokenizedString(text)),
+        0.9);
+  }
+  {
+    base::string16 query(base::UTF8ToUTF16("c o c"));
+    base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
+    EXPECT_EQ(
+        internal::PrefixMatch(TokenizedString(query), TokenizedString(text)),
+        1.0);
+  }
+  {
+    base::string16 query(base::UTF8ToUTF16("clam"));
+    base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
+    EXPECT_EQ(
+        internal::PrefixMatch(TokenizedString(query), TokenizedString(text)),
+        0.0);
   }
 }
 }  // namespace app_list

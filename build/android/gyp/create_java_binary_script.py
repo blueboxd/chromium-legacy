@@ -37,13 +37,14 @@ if os.getcwd() != self_dir:
   offset = os.path.relpath(self_dir, os.getcwd())
   classpath = [os.path.join(offset, p) for p in classpath]
   bootclasspath = [os.path.join(offset, p) for p in bootclasspath]
-java_cmd = ["java"]
-# This is a simple argparser for jvm and jar arguments.
+java_cmd = ['java']
+# This is a simple argparser for jvm, jar, and classpath arguments.
 parser = argparse.ArgumentParser()
 parser.add_argument('--jar-args')
 parser.add_argument('--jvm-args')
-
+parser.add_argument('--classpath')
 known_args, unknown_args = parser.parse_known_args(sys.argv[1:])
+
 if known_args.jvm_args:
   jvm_arguments = known_args.jvm_args.strip('"').split()
   java_cmd.extend(jvm_arguments)
@@ -54,14 +55,17 @@ if known_args.jar_args:
 else:
   jar_arguments = unknown_args
 
+if known_args.classpath:
+  classpath += [known_args.classpath]
+
 {noverify_flag}
 if bootclasspath:
-    java_cmd.append("-Xbootclasspath/p:" + ":".join(bootclasspath))
+    java_cmd.append('-Xbootclasspath/p:' + ':'.join(bootclasspath))
 java_cmd.extend(
-    ["-classpath", ":".join(classpath), "-enableassertions", \"{main_class}\"])
+    ['-classpath', ':'.join(classpath), '-enableassertions', \"{main_class}\"])
 java_cmd.extend(extra_program_args)
 java_cmd.extend(jar_arguments)
-os.execvp("java", java_cmd)
+os.execvp('java', java_cmd)
 """
 
 def main(argv):

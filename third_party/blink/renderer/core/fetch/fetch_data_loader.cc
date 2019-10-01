@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_disposition.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
@@ -27,8 +28,6 @@
 namespace blink {
 
 namespace {
-
-static const int kDefaultBufferCapacity = 32768;
 
 class FetchDataLoaderAsBlobHandle final : public FetchDataLoader,
                                           public BytesConsumer::Client {
@@ -127,12 +126,11 @@ class FetchDataLoaderAsArrayBuffer final : public FetchDataLoader,
   void Start(BytesConsumer* consumer,
              FetchDataLoader::Client* client) override {
     DCHECK(!client_);
-    DCHECK(!IsValid());
     DCHECK(!consumer_);
+    DCHECK(!buffer_);
     client_ = client;
-    buffer_ = ArrayBuffer::Create(kDefaultBufferCapacity, 1);
-    bytes_used_ = 0;
     consumer_ = consumer;
+    buffer_ = WTF::SharedBuffer::Create();
     consumer_->SetClient(this);
     OnStateChange();
   }
@@ -148,16 +146,14 @@ class FetchDataLoaderAsArrayBuffer final : public FetchDataLoader,
         return;
       if (result == BytesConsumer::Result::kOk) {
         if (available > 0) {
-          unsigned bytes_appended =
-              Append(buffer, SafeCast<wtf_size_t>(available));
-          if (!bytes_appended) {
+          bool ok = Append(buffer, SafeCast<wtf_size_t>(available));
+          if (!ok) {
             auto unused = consumer_->EndRead(0);
             ALLOW_UNUSED_LOCAL(unused);
             consumer_->Cancel();
             client_->DidFetchDataLoadFailed();
             return;
           }
-          DCHECK_EQ(bytes_appended, available);
         }
         result = consumer_->EndRead(available);
       }
@@ -167,10 +163,15 @@ class FetchDataLoaderAsArrayBuffer final : public FetchDataLoader,
         case BytesConsumer::Result::kShouldWait:
           NOTREACHED();
           return;
-        case BytesConsumer::Result::kDone:
-          client_->DidFetchDataLoadedArrayBuffer(
-              DOMArrayBuffer::Create(PassArrayBuffer()));
+        case BytesConsumer::Result::kDone: {
+          DOMArrayBuffer* result = BuildArrayBuffer();
+          if (!result) {
+            client_->DidFetchDataLoadFailed();
+            return;
+          }
+          client_->DidFetchDataLoadedArrayBuffer(result);
           return;
+        }
         case BytesConsumer::Result::kError:
           client_->DidFetchDataLoadFailed();
           return;
@@ -187,81 +188,39 @@ class FetchDataLoaderAsArrayBuffer final : public FetchDataLoader,
     BytesConsumer::Client::Trace(visitor);
   }
 
-  bool IsValid() const { return buffer_.get(); }
-
-  // Appending empty data is not allowed.
-  unsigned Append(const char* data, unsigned length) {
-    DCHECK_GT(length, 0u);
-
-    size_t current_buffer_size = buffer_->ByteLength();
-
-    DCHECK_LE(bytes_used_, current_buffer_size);
-
-    size_t remaining_buffer_space = current_buffer_size - bytes_used_;
-
-    if (length > remaining_buffer_space && !ExpandCapacity(length))
-      return 0;
-
-    memcpy(static_cast<char*>(buffer_->Data()) + bytes_used_, data, length);
-    bytes_used_ += length;
-
-    return length;
-  }
-
-  // Number of bytes currently accumulated.
-  unsigned ByteLength() const { return bytes_used_; }
-
-  // Returns the accumulated data as an ArrayBuffer instance. This transfers
-  // ownership of the internal buffer, making this ArrayBufferBuilder invalid
-  // for future use.
-  scoped_refptr<ArrayBuffer> PassArrayBuffer() {
-    DCHECK_LE(bytes_used_, buffer_->ByteLength());
-
-    if (buffer_->ByteLength() > bytes_used_)
-      buffer_ = buffer_->Slice(0, bytes_used_);
-    return std::move(buffer_);
-  }
-
  private:
-  // Expands the size of m_buffer to size + m_bytesUsed bytes. Returns true
-  // iff successful. If reallocation is needed, copies only data in
-  // [0, m_bytesUsed) range.
-  bool ExpandCapacity(unsigned size_to_increase) {
-    size_t current_buffer_size = buffer_->ByteLength();
-
-    // If the size of the buffer exceeds max of unsigned, it can't be grown any
-    // more.
-    if (size_to_increase > std::numeric_limits<unsigned>::max() - bytes_used_)
+  // Appending empty data is not allowed. Returns false upon buffer overlow.
+  bool Append(const char* data, wtf_size_t length) {
+    DCHECK_GT(length, 0u);
+    buffer_->Append(data, length);
+    if (buffer_->size() >
+        static_cast<size_t>(std::numeric_limits<uint32_t>::max())) {
       return false;
-
-    unsigned new_buffer_size = bytes_used_ + size_to_increase;
-
-    // Grow exponentially if possible.
-    unsigned exponential_growth_new_buffer_size =
-        std::numeric_limits<unsigned>::max();
-    if (current_buffer_size <= std::numeric_limits<unsigned>::max() / 2) {
-      exponential_growth_new_buffer_size =
-          static_cast<unsigned>(current_buffer_size * 2);
     }
-    if (exponential_growth_new_buffer_size > new_buffer_size)
-      new_buffer_size = exponential_growth_new_buffer_size;
-
-    // Copy existing data in current buffer to new buffer.
-    scoped_refptr<ArrayBuffer> new_buffer =
-        ArrayBuffer::Create(new_buffer_size, 1);
-    if (!new_buffer)
-      return false;
-
-    memcpy(new_buffer->Data(), buffer_->Data(), bytes_used_);
-    buffer_ = new_buffer;
     return true;
+  }
+
+  // Builds a DOMArrayBuffer from the received bytes.
+  DOMArrayBuffer* BuildArrayBuffer() {
+    DOMArrayBuffer* result = DOMArrayBuffer::CreateUninitializedOrNull(
+        SafeCast<unsigned>(buffer_->size()), 1);
+    // Handle a failed allocation.
+    if (!result) {
+      return result;
+    }
+    char* data = reinterpret_cast<char*>(result->Data());
+    for (const auto& span : *buffer_) {
+      memcpy(data, span.data(), span.size());
+      data += span.size();
+    }
+    buffer_->Clear();
+    return result;
   }
 
   Member<BytesConsumer> consumer_;
   Member<FetchDataLoader::Client> client_;
 
-  unsigned bytes_used_;
-  scoped_refptr<ArrayBuffer> buffer_;
+  scoped_refptr<SharedBuffer> buffer_;
 };
 
 class FetchDataLoaderAsFailure final : public FetchDataLoader,

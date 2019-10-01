@@ -187,7 +187,7 @@ TEST_P(DisplayChangeObserverTest, FindDeviceScaleFactor) {
   EXPECT_EQ(1.0f, ComputeDeviceScaleFactor(21.5f, gfx::Rect(1920, 1080)));
 
   // 10" 1920x1200
-  EXPECT_NEAR(1.77778f, ComputeDeviceScaleFactor(10.f, gfx::Rect(1920, 1200)),
+  EXPECT_NEAR(1.77777f, ComputeDeviceScaleFactor(10.f, gfx::Rect(1920, 1200)),
               std::numeric_limits<float>::epsilon());
 
   // 12.1" 1280x800
@@ -215,13 +215,13 @@ TEST_P(DisplayChangeObserverTest, FindDeviceScaleFactor) {
   EXPECT_EQ(2.25f, ComputeDeviceScaleFactor(12.3f, gfx::Rect(3000, 2000)));
 
   // 13.1" 3840x2160
-  EXPECT_NEAR(2.66667f, ComputeDeviceScaleFactor(13.1f, gfx::Rect(3840, 2160)),
+  EXPECT_NEAR(2.66666f, ComputeDeviceScaleFactor(13.1f, gfx::Rect(3840, 2160)),
               std::numeric_limits<float>::epsilon());
 
   // Erroneous values should still work.
   EXPECT_EQ(1.0f, DisplayChangeObserver::FindDeviceScaleFactor(-100.0f));
   EXPECT_EQ(1.0f, DisplayChangeObserver::FindDeviceScaleFactor(0.0f));
-  EXPECT_NEAR(2.66667f, DisplayChangeObserver::FindDeviceScaleFactor(10000.0f),
+  EXPECT_NEAR(2.66666f, DisplayChangeObserver::FindDeviceScaleFactor(10000.0f),
               std::numeric_limits<float>::epsilon());
 }
 

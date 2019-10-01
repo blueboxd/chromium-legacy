@@ -515,7 +515,7 @@ void MenuItemView::SetIconView(ImageView* icon_view) {
 }
 
 void MenuItemView::OnPaint(gfx::Canvas* canvas) {
-  PaintButton(canvas, PB_NORMAL);
+  PaintButton(canvas, PaintButtonMode::kNormal);
 }
 
 gfx::Size MenuItemView::CalculatePreferredSize() const {
@@ -971,7 +971,7 @@ void MenuItemView::AdjustBoundsForRTLUI(gfx::Rect* rect) const {
 void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   const MenuConfig& config = MenuConfig::instance();
   bool render_selection =
-      (mode == PB_NORMAL && IsSelected() &&
+      (mode == PaintButtonMode::kNormal && IsSelected() &&
        parent_menu_item_->GetSubmenu()->GetShowSelection(this) &&
        (NonIconChildViewsCount() == 0));
   if (forced_visual_selection_.has_value())
@@ -1019,7 +1019,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   gfx::Rect text_bounds(label_start, top_margin, width, available_height);
   text_bounds.set_x(GetMirroredXForRect(text_bounds));
   int flags = GetDrawStringFlags();
-  if (mode == PB_FOR_DRAG)
+  if (mode == PaintButtonMode::kForDrag)
     flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
   canvas->DrawStringRectWithFlags(title(), style.font_list, style.foreground,
                                   text_bounds, flags);

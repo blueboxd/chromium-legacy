@@ -705,6 +705,16 @@ TEST_F(PdfAccessibilityTreeTest, TestClickActionDataConversion) {
     links_.push_back(std::move(link));
   }
 
+  {
+    ppapi::PdfAccessibilityLinkInfo link;
+    link.url = kChromiumTestUrl;
+    link.text_run_index = 1;
+    link.text_run_count = 1;
+    link.bounds = {{10, 10}, {10, 10}};
+    link.index_in_page = 1;
+    links_.push_back(std::move(link));
+  }
+
   page_info_.text_run_count = text_runs_.size();
   page_info_.char_count = chars_.size();
   page_info_.link_count = links_.size();
@@ -728,7 +738,7 @@ TEST_F(PdfAccessibilityTreeTest, TestClickActionDataConversion) {
   ASSERT_EQ(1u, page_nodes.size());
   const std::vector<ui::AXNode*>& para_nodes = page_nodes[0]->children();
   ASSERT_EQ(2u, para_nodes.size());
-  const std::vector<ui::AXNode*>& link_nodes = para_nodes[0]->children();
+  const std::vector<ui::AXNode*>& link_nodes = para_nodes[1]->children();
   ASSERT_EQ(1u, link_nodes.size());
 
   const ui::AXNode* link_node = link_nodes[0];
@@ -746,7 +756,7 @@ TEST_F(PdfAccessibilityTreeTest, TestClickActionDataConversion) {
   EXPECT_EQ(PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_NONE,
             pdf_action_data.vertical_scroll_alignment);
   EXPECT_EQ(0u, pdf_action_data.page_index);
-  EXPECT_EQ(0u, pdf_action_data.link_index);
+  EXPECT_EQ(1u, pdf_action_data.link_index);
   CompareRect({{0, 0}, {0, 0}}, pdf_action_data.target_rect);
 }
 

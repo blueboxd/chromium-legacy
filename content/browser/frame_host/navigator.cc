@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/navigator.h"
 
 #include "base/time/time.h"
+#include "content/browser/web_package/bundled_exchanges_handle_tracker.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 
 namespace content {
@@ -35,6 +36,8 @@ void Navigator::OnBeginNavigation(
     mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
     mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator,
     scoped_refptr<PrefetchedSignedExchangeCache>
-        prefetched_signed_exchange_cache) {}
+        prefetched_signed_exchange_cache,
+    std::unique_ptr<BundledExchangesHandleTracker>
+        bundled_exchanges_handle_tracker) {}
 
 }  // namespace content

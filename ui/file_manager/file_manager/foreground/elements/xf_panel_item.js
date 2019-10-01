@@ -166,6 +166,7 @@ class PanelItem extends HTMLElement {
 
   /**
    * Remove an element from the panel using it's id.
+   * @return {?Element}
    * @private
    */
   removePanelElementById_(id) {
@@ -173,6 +174,7 @@ class PanelItem extends HTMLElement {
     if (element) {
       element.remove();
     }
+    return element;
   }
 
   /**
@@ -188,8 +190,14 @@ class PanelItem extends HTMLElement {
 
     // Remove the indicators/buttons that can change.
     this.removePanelElementById_('#indicator');
-    this.removePanelElementById_('#primary-action');
-    this.removePanelElementById_('#secondary-action');
+    let element = this.removePanelElementById_('#primary-action');
+    if (element) {
+      element.onclick = null;
+    }
+    element = this.removePanelElementById_('#secondary-action');
+    if (element) {
+      element.onclick = null;
+    }
 
     // Mark the indicator as empty so it recreates on setAttribute.
     this.setAttribute('indicator', 'empty');
@@ -369,6 +377,16 @@ class PanelItem extends HTMLElement {
    */
   connectedCallback() {
     this.onclick = this.onClicked_.bind(this);
+
+    // Set click event handler references.
+    let button = this.shadowRoot.querySelector('#primary-action');
+    if (button) {
+      button.onclick = this.onclick;
+    }
+    button = this.shadowRoot.querySelector('#secondary-action');
+    if (button) {
+      button.onclick = this.onclick;
+    }
   }
 
   /**

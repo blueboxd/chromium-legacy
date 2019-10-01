@@ -12,7 +12,7 @@ namespace blink {
 
 class GPUBindGroup;
 class GPUBuffer;
-class GPUColor;
+class DoubleSequenceOrGPUColorDict;
 class GPURenderBundle;
 class GPURenderPipeline;
 
@@ -36,7 +36,8 @@ class GPURenderPassEncoder : public DawnObject<DawnRenderPassEncoder> {
   void insertDebugMarker(String markerLabel);
   void setPipeline(GPURenderPipeline* pipeline);
 
-  void setBlendColor(GPUColor* color);
+  void setBlendColor(DoubleSequenceOrGPUColorDict& color,
+                     ExceptionState& exception_state);
   void setStencilReference(uint32_t reference);
   void setViewport(float x,
                    float y,

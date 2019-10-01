@@ -487,7 +487,7 @@ tree .tree-item > .tree-item > .tree-row >
 .tree-row:not([selected]) [volume-type-icon='provided'] {
   /* Third-party icons are not provided with both an active and a non-active
   version. This filter defines the non-active version of a provided icon. */
-  -webkit-filter: contrast(0) brightness(0.7143);
+  filter: contrast(0) brightness(0.7143);
 }
 
 cr-menu-item[command='#install-new-extension'] .icon.start {

@@ -87,6 +87,9 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   ZOrderLevel GetZOrderLevel() const override;
   void StackAbove(gfx::AcceleratedWidget widget) override;
   void StackAtTop() override;
+  base::Optional<int> GetWorkspace() const override;
+  void SetVisibleOnAllWorkspaces(bool always_visible) override;
+  bool IsVisibleOnAllWorkspaces() const override;
 
  protected:
   PlatformWindowDelegateLinux* platform_window_delegate() const {

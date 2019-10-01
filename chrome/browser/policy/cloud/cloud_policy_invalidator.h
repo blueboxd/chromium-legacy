@@ -156,10 +156,6 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // |version| is the version of the invalidation, or zero for unknown.
   bool IsInvalidationExpired(int64_t version);
 
-  // Get the kMetricPolicyRefresh histogram metric which should be incremented
-  // when a policy is stored.
-  MetricPolicyRefresh GetPolicyRefreshMetric(bool policy_changed);
-
   // Get the kMetricPolicyInvalidations histogram metric which should be
   // incremented when an invalidation is received.
   PolicyInvalidationType GetInvalidationMetric(bool is_missing_payload,

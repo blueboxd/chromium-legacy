@@ -17,7 +17,7 @@
 
     void setPipeline(GPURenderPipeline pipeline);
 
-    void setBlendColor(GPUColor color);
+    [RaisesException] void setBlendColor(GPUColor color);
     void setStencilReference(unsigned long reference);
     void setViewport(float x, float y,
                      float width, float height,

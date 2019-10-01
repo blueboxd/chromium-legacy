@@ -26,10 +26,6 @@ class LeakedCredentialsTableTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ReloadDatabase();
-
-    test_data_.url = GURL(kTestDomain);
-    test_data_.username = base::ASCIIToUTF16(kUsername);
-    test_data_.create_time = base::Time::FromTimeT(1);
   }
 
   void ReloadDatabase() {
@@ -49,7 +45,8 @@ class LeakedCredentialsTableTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<sql::Database> connection_;
   std::unique_ptr<LeakedCredentialsTable> db_;
-  LeakedCredentials test_data_;
+  LeakedCredentials test_data_{GURL(kTestDomain), base::ASCIIToUTF16(kUsername),
+                               base::Time::FromTimeT(1)};
 };
 
 TEST_F(LeakedCredentialsTableTest, Sanity) {

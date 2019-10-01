@@ -33,14 +33,14 @@ class SynchronousCompositorClient {
   // compositor thread, and open for business. |process_id| and |routing_id|
   // belong to the RVH that owns the compositor.
   virtual void DidInitializeCompositor(SynchronousCompositor* compositor,
-                                       const viz::FrameSinkId& id);
+                                       const viz::FrameSinkId& id) = 0;
 
   // Indication to the client that |compositor| is going out of scope, and
   // must not be accessed within or after this call.
   // NOTE if the client goes away before the compositor it must call
   // SynchronousCompositor::SetClient(nullptr) to release the back pointer.
   virtual void DidDestroyCompositor(SynchronousCompositor* compositor,
-                                    const viz::FrameSinkId& id);
+                                    const viz::FrameSinkId& id) = 0;
 
   virtual void UpdateRootLayerState(SynchronousCompositor* compositor,
                                     const gfx::Vector2dF& total_scroll_offset,

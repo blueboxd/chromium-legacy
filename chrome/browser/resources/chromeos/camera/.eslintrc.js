@@ -147,6 +147,7 @@ module.exports = {
   },
   'extends': 'eslint:recommended',
   'globals': {
+    'arc': 'readable',
     // Adds BigInt64Array here since current version of eslint does not treat
     // BigInt64Array as a defined type.
     'BigInt64Array': 'readable',

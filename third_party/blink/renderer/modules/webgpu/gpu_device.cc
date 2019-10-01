@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_command_encoder.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pipeline.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device_descriptor.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_device_lost_info.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_pipeline_layout.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_queue.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle_encoder.h"
@@ -50,6 +51,9 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
                  dawn_control_client->GetInterface()->GetDefaultDevice()),
       adapter_(adapter),
       queue_(GPUQueue::Create(this, GetProcs().deviceCreateQueue(GetHandle()))),
+      lost_property_(MakeGarbageCollected<LostProperty>(execution_context,
+                                                        this,
+                                                        LostProperty::kLost)),
       error_callback_(
           BindRepeatingDawnCallback(&GPUDevice::OnUncapturedError,
                                     WrapWeakPersistent(this),
@@ -78,6 +82,13 @@ void GPUDevice::OnUncapturedError(ExecutionContext* execution_context,
     execution_context->AddConsoleMessage(console_message);
   }
 
+  // TODO: Use device lost callback instead of uncaptured error callback.
+  if (errorType == DAWN_ERROR_TYPE_DEVICE_LOST &&
+      lost_property_->GetState() == ScriptPromisePropertyBase::kPending) {
+    GPUDeviceLostInfo* device_lost_info = GPUDeviceLostInfo::Create(message);
+    lost_property_->Resolve(device_lost_info);
+  }
+
   GPUUncapturedErrorEventInit* init = GPUUncapturedErrorEventInit::Create();
   if (errorType == DAWN_ERROR_TYPE_VALIDATION) {
     GPUValidationError* error = GPUValidationError::Create(message);
@@ -97,6 +108,10 @@ void GPUDevice::OnUncapturedError(ExecutionContext* execution_context,
 
 GPUAdapter* GPUDevice::adapter() const {
   return adapter_;
+}
+
+ScriptPromise GPUDevice::lost(ScriptState* script_state) {
+  return lost_property_->Promise(script_state->World());
 }
 
 GPUBuffer* GPUDevice::createBuffer(const GPUBufferDescriptor* descriptor) {
@@ -158,8 +173,9 @@ ScriptPromise GPUDevice::createBufferMappedAsync(
   return promise;
 }
 
-GPUTexture* GPUDevice::createTexture(const GPUTextureDescriptor* descriptor) {
-  return GPUTexture::Create(this, descriptor);
+GPUTexture* GPUDevice::createTexture(const GPUTextureDescriptor* descriptor,
+                                     ExceptionState& exception_state) {
+  return GPUTexture::Create(this, descriptor, exception_state);
 }
 
 GPUSampler* GPUDevice::createSampler(const GPUSamplerDescriptor* descriptor) {
@@ -276,6 +292,7 @@ const AtomicString& GPUDevice::InterfaceName() const {
 void GPUDevice::Trace(blink::Visitor* visitor) {
   visitor->Trace(adapter_);
   visitor->Trace(queue_);
+  visitor->Trace(lost_property_);
   ContextClient::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }

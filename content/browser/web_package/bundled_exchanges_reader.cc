@@ -24,13 +24,13 @@
 namespace content {
 
 BundledExchangesReader::SharedFile::SharedFile(
-    const BundledExchangesSource& source) {
+    std::unique_ptr<BundledExchangesSource> source) {
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(
           [](std::unique_ptr<BundledExchangesSource> source)
               -> std::unique_ptr<base::File> { return source->OpenFile(); },
-          source.Clone()),
+          std::move(source)),
       base::BindOnce(&SharedFile::SetFile, base::RetainedRef(this)));
 }
 
@@ -136,11 +136,12 @@ class BundledExchangesReader::SharedFileDataSource final
 };
 
 BundledExchangesReader::BundledExchangesReader(
-    const BundledExchangesSource& source)
-    : parser_(ServiceManagerConnection::GetForProcess()
+    std::unique_ptr<BundledExchangesSource> source)
+    : source_(std::move(source)),
+      parser_(ServiceManagerConnection::GetForProcess()
                   ? ServiceManagerConnection::GetForProcess()->GetConnector()
                   : nullptr),
-      file_(base::MakeRefCounted<SharedFile>(source)) {}
+      file_(base::MakeRefCounted<SharedFile>(source_->Clone())) {}
 
 BundledExchangesReader::~BundledExchangesReader() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -151,8 +152,8 @@ void BundledExchangesReader::ReadMetadata(MetadataCallback callback) {
   DCHECK(!metadata_ready_);
 
   file_->DuplicateFile(
-      base::BindOnce(&BundledExchangesReader::ReadMetadataInternal,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+      base::BindOnce(&BundledExchangesReader::ReadMetadataInternal, this,
+                     std::move(callback)));
 }
 
 void BundledExchangesReader::ReadResponse(const GURL& url,
@@ -208,6 +209,11 @@ const GURL& BundledExchangesReader::GetPrimaryURL() const {
   DCHECK(metadata_ready_);
 
   return primary_url_;
+}
+
+const BundledExchangesSource& BundledExchangesReader::source() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return *source_;
 }
 
 void BundledExchangesReader::SetBundledExchangesParserFactoryForTesting(

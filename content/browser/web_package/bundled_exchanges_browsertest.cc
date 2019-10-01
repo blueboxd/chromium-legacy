@@ -9,11 +9,13 @@
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "content/browser/web_package/bundled_exchanges_utils.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/content_features.h"
@@ -31,7 +33,13 @@ namespace content {
 namespace {
 
 // "%2F" is treated as an invalid character for file URLs.
-static constexpr char kInvalidFileUrl[] = "file:///tmp/test%2F/a.wbn";
+constexpr char kInvalidFileUrl[] = "file:///tmp/test%2F/a.wbn";
+
+constexpr char kTestPageUrl[] = "https://test.example.org/";
+constexpr char kTestPage1Url[] = "https://test.example.org/page1.html";
+constexpr char kTestPage2Url[] = "https://test.example.org/page2.html";
+constexpr char kTestPageForHashUrl[] =
+    "https://test.example.org/hash.html#hello";
 
 base::FilePath GetTestDataPath(base::StringPiece file) {
   base::FilePath test_data_dir;
@@ -59,6 +67,42 @@ GURL CopyFileAndGetContentUri(const base::FilePath& file) {
   return GURL(base::GetContentUriFromFilePath(temp_file).value());
 }
 #endif  // OS_ANDROID
+
+class BundledExchangesBrowserTestBase : public ContentBrowserTest {
+ protected:
+  BundledExchangesBrowserTestBase() = default;
+  ~BundledExchangesBrowserTestBase() override = default;
+
+  void NavigateToBundleAndWaitForReady(const GURL& test_data_url,
+                                       const GURL& expected_commit_url) {
+    base::string16 expected_title = base::ASCIIToUTF16("Ready");
+    TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+    EXPECT_TRUE(NavigateToURL(shell()->web_contents(), test_data_url,
+                              expected_commit_url));
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  }
+
+  void RunTestScript(const std::string& script) {
+    EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                              "loadScript('" + script + "');"));
+    base::string16 ok = base::ASCIIToUTF16("OK");
+    TitleWatcher title_watcher(shell()->web_contents(), ok);
+    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
+    EXPECT_EQ(ok, title_watcher.WaitAndGetTitle());
+  }
+
+  void NavigateToURLAndWaitForTitle(const GURL& url, const std::string& title) {
+    base::string16 title16 = base::ASCIIToUTF16(title);
+    TitleWatcher title_watcher(shell()->web_contents(), title16);
+    EXPECT_TRUE(ExecuteScript(
+        shell()->web_contents(),
+        base::StringPrintf("location.href = '%s';", url.spec().c_str())));
+    EXPECT_EQ(title16, title_watcher.WaitAndGetTitle());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BundledExchangesBrowserTestBase);
+};
 
 class TestBrowserClient : public ContentBrowserClient {
  public:
@@ -152,17 +196,16 @@ IN_PROC_BROWSER_TEST_F(InvalidTrustableBundledExchangesFileUrlBrowserTest,
   EXPECT_EQ(net::ERR_INVALID_URL, *finish_navigation_observer.error_code());
 }
 
-class BundledExchangesTrustableFileBrowserTestBase : public ContentBrowserTest {
+class BundledExchangesTrustableFileBrowserTestBase
+    : public BundledExchangesBrowserTestBase {
  protected:
   BundledExchangesTrustableFileBrowserTestBase() = default;
   ~BundledExchangesTrustableFileBrowserTestBase() override = default;
 
-  void SetUp() override {
-    ContentBrowserTest::SetUp();
-  }
+  void SetUp() override { BundledExchangesBrowserTestBase::SetUp(); }
 
   void SetUpOnMainThread() override {
-    ContentBrowserTest::SetUpOnMainThread();
+    BundledExchangesBrowserTestBase::SetUpOnMainThread();
     original_client_ = MaybeSetBrowserClientForTesting(&browser_client_);
   }
 
@@ -172,27 +215,9 @@ class BundledExchangesTrustableFileBrowserTestBase : public ContentBrowserTest {
   }
 
   void TearDownOnMainThread() override {
-    ContentBrowserTest::TearDownOnMainThread();
+    BundledExchangesBrowserTestBase::TearDownOnMainThread();
     if (original_client_)
       SetBrowserClientForTesting(original_client_);
-  }
-
-  void NavigateToBundleAndWaitForReady() {
-    base::string16 expected_title = base::ASCIIToUTF16("Ready");
-    TitleWatcher title_watcher(shell()->web_contents(), expected_title);
-    EXPECT_TRUE(NavigateToURL(shell()->web_contents(), test_data_url(),
-                              GURL("https://test.example.org/")));
-    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-  }
-
-  void RunTestScript(const std::string& script) {
-    EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
-                              "loadScript('" + script + "');"));
-
-    base::string16 ok = base::ASCIIToUTF16("OK");
-    TitleWatcher title_watcher(shell()->web_contents(), ok);
-    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
-    EXPECT_EQ(ok, title_watcher.WaitAndGetTitle());
   }
 
   const GURL& test_data_url() const { return test_data_url_; }
@@ -241,7 +266,7 @@ IN_PROC_BROWSER_TEST_P(BundledExchangesTrustableFileBrowserTest,
   // on Android Kitkat or older systems.
   if (!original_client_)
     return;
-  NavigateToBundleAndWaitForReady();
+  NavigateToBundleAndWaitForReady(test_data_url(), GURL(kTestPageUrl));
 }
 
 IN_PROC_BROWSER_TEST_P(BundledExchangesTrustableFileBrowserTest, RangeRequest) {
@@ -250,8 +275,33 @@ IN_PROC_BROWSER_TEST_P(BundledExchangesTrustableFileBrowserTest, RangeRequest) {
   if (!original_client_)
     return;
 
-  NavigateToBundleAndWaitForReady();
+  NavigateToBundleAndWaitForReady(test_data_url(), GURL(kTestPageUrl));
   RunTestScript("test-range-request.js");
+}
+
+IN_PROC_BROWSER_TEST_P(BundledExchangesTrustableFileBrowserTest, Navigation) {
+  // Don't run the test if we couldn't override BrowserClient. It happens only
+  // on Android Kitkat or older systems.
+  if (!original_client_)
+    return;
+
+  NavigateToBundleAndWaitForReady(test_data_url(), GURL(kTestPageUrl));
+  NavigateToURLAndWaitForTitle(GURL(kTestPage1Url), "Page 1");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            GURL(kTestPage1Url));
+  NavigateToURLAndWaitForTitle(GURL(kTestPage2Url), "Page 2");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            GURL(kTestPage2Url));
+}
+
+IN_PROC_BROWSER_TEST_P(BundledExchangesTrustableFileBrowserTest,
+                       NavigationWithHash) {
+  // Don't run the test if we couldn't override BrowserClient. It happens only
+  // on Android Kitkat or older systems.
+  if (!original_client_)
+    return;
+  NavigateToBundleAndWaitForReady(test_data_url(), GURL(kTestPageUrl));
+  NavigateToURLAndWaitForTitle(GURL(kTestPageForHashUrl), "#hello");
 }
 
 INSTANTIATE_TEST_SUITE_P(BundledExchangesTrustableFileBrowserTests,
@@ -285,8 +335,7 @@ IN_PROC_BROWSER_TEST_F(BundledExchangesTrustableFileNotFoundBrowserTest,
   base::RunLoop run_loop;
   FinishNavigationObserver finish_navigation_observer(shell()->web_contents(),
                                                       run_loop.QuitClosure());
-  EXPECT_FALSE(NavigateToURL(shell()->web_contents(), test_data_url(),
-                             GURL("https://test.example.org/")));
+  EXPECT_FALSE(NavigateToURL(shell()->web_contents(), test_data_url()));
   run_loop.Run();
   ASSERT_TRUE(finish_navigation_observer.error_code());
   EXPECT_EQ(net::ERR_INVALID_BUNDLED_EXCHANGES,
@@ -295,14 +344,14 @@ IN_PROC_BROWSER_TEST_F(BundledExchangesTrustableFileNotFoundBrowserTest,
 
 class BundledExchangesFileBrowserTest
     : public testing::WithParamInterface<TestFilePathMode>,
-      public ContentBrowserTest {
+      public BundledExchangesBrowserTestBase {
  protected:
   BundledExchangesFileBrowserTest() = default;
   ~BundledExchangesFileBrowserTest() override = default;
 
   void SetUp() override {
     feature_list_.InitWithFeatures({features::kBundledHTTPExchanges}, {});
-    ContentBrowserTest::SetUp();
+    BundledExchangesBrowserTestBase::SetUp();
   }
 
   GURL GetTestUrlForFile(base::FilePath file_path) const {
@@ -325,12 +374,40 @@ class BundledExchangesFileBrowserTest
 IN_PROC_BROWSER_TEST_P(BundledExchangesFileBrowserTest, BasicNavigation) {
   const GURL test_data_url =
       GetTestUrlForFile(GetTestDataPath("bundled_exchanges_browsertest.wbn"));
-  base::string16 expected_title = base::ASCIIToUTF16("Ready");
-  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
-  EXPECT_TRUE(
-      NavigateToURL(shell()->web_contents(), test_data_url,
-                    GURL(test_data_url.spec() + "?https://test.example.org/")));
-  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  NavigateToBundleAndWaitForReady(
+      test_data_url,
+      bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
+          test_data_url, GURL(kTestPageUrl)));
+}
+
+IN_PROC_BROWSER_TEST_P(BundledExchangesFileBrowserTest, Navigations) {
+  const GURL test_data_url =
+      GetTestUrlForFile(GetTestDataPath("bundled_exchanges_browsertest.wbn"));
+  NavigateToBundleAndWaitForReady(
+      test_data_url,
+      bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
+          test_data_url, GURL(kTestPageUrl)));
+  NavigateToURLAndWaitForTitle(GURL(kTestPage1Url), "Page 1");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
+                test_data_url, GURL(kTestPage1Url)));
+  NavigateToURLAndWaitForTitle(GURL(kTestPage2Url), "Page 2");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
+                test_data_url, GURL(kTestPage2Url)));
+}
+
+IN_PROC_BROWSER_TEST_P(BundledExchangesFileBrowserTest, NavigationWithHash) {
+  const GURL test_data_url =
+      GetTestUrlForFile(GetTestDataPath("bundled_exchanges_browsertest.wbn"));
+  NavigateToBundleAndWaitForReady(
+      test_data_url,
+      bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
+          test_data_url, GURL(kTestPageUrl)));
+  NavigateToURLAndWaitForTitle(GURL(kTestPageForHashUrl), "#hello");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
+                test_data_url, GURL(kTestPageForHashUrl)));
 }
 
 IN_PROC_BROWSER_TEST_P(BundledExchangesFileBrowserTest,
@@ -341,8 +418,7 @@ IN_PROC_BROWSER_TEST_P(BundledExchangesFileBrowserTest,
   base::RunLoop run_loop;
   FinishNavigationObserver finish_navigation_observer(shell()->web_contents(),
                                                       run_loop.QuitClosure());
-  EXPECT_FALSE(NavigateToURL(shell()->web_contents(), test_data_url,
-                             GURL("https://test.example.org/")));
+  EXPECT_FALSE(NavigateToURL(shell()->web_contents(), test_data_url));
   run_loop.Run();
   ASSERT_TRUE(finish_navigation_observer.error_code());
   EXPECT_EQ(net::ERR_INVALID_BUNDLED_EXCHANGES,

@@ -407,7 +407,6 @@ include_rules = [
   "-third_party/blink",
   "+third_party/blink/public/common",
   "+third_party/blink/public/mojom",
-  "+third_party/blink/public/platform/web_cache.h",
   "+third_party/blink/public/platform/web_float_point.h",
   "+third_party/blink/public/platform/web_gesture_event.h",
   "+third_party/blink/public/platform/web_loading_behavior_flag.h",

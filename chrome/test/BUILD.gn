@@ -3665,7 +3665,6 @@ test("unit_tests") {
     # !is_android
     sources += [
       # Badging isn't supported on Android.
-      "../browser/badging/badge_manager_delegate_unittest.cc",
       "../browser/badging/badge_manager_unittest.cc",
       "../browser/badging/test_badge_manager_delegate.cc",
       "../browser/badging/test_badge_manager_delegate.h",

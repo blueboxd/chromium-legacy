@@ -486,6 +486,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirCreateWithContextMenu"),
         TestCase("dirCreateWithKeyboard"),
         TestCase("dirCreateWithoutChangingCurrent"),
+        TestCase("dirCreateMultipleFolders"),
 #if !(defined(ADDRESS_SANITIZER) || !defined(NDEBUG))
         // Zip tests times out too often on ASAN and DEBUG. crbug.com/936429
         // and crbug.com/944697

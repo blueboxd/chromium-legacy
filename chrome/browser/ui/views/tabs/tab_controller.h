@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_CONTROLLER_H_
 
 #include "chrome/browser/ui/tabs/tab_types.h"
-#include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
@@ -14,6 +13,8 @@
 class Tab;
 class TabGroupVisualData;
 class TabGroupId;
+
+enum class BrowserFrameActiveState;
 
 namespace gfx {
 class Point;
@@ -136,7 +137,7 @@ class TabController {
   // |active_state| of the window.
   virtual SkColor GetTabBackgroundColor(
       TabActive active,
-      BrowserNonClientFrameView::ActiveState active_state) const = 0;
+      BrowserFrameActiveState active_state) const = 0;
 
   // Returns the tab foreground color of the the text based on the |tab_state|,
   // the activation state of the window, and the current |background_color|.
@@ -146,7 +147,7 @@ class TabController {
   // Returns the background tab image resource ID if the image has been
   // customized, directly or indirectly, by the theme.
   virtual base::Optional<int> GetCustomBackgroundId(
-      BrowserNonClientFrameView::ActiveState active_state) const = 0;
+      BrowserFrameActiveState active_state) const = 0;
 
   // If the given tab is animating to its target destination, this returns the
   // target bounds. If the tab isn't moving this will return the current bounds

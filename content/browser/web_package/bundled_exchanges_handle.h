@@ -18,6 +18,8 @@ namespace content {
 
 class BundledExchangesSource;
 class BundledExchangesURLLoaderFactory;
+class BundledExchangesHandleTracker;
+class BundledExchangesReader;
 class NavigationLoaderInterceptor;
 
 // A class to provide interfaces to communicate with a BundledExchanges for
@@ -27,6 +29,8 @@ class BundledExchangesHandle {
   static std::unique_ptr<BundledExchangesHandle> CreateForFile();
   static std::unique_ptr<BundledExchangesHandle> CreateForTrustableFile(
       std::unique_ptr<BundledExchangesSource> source);
+  static std::unique_ptr<BundledExchangesHandle> CreateForTrackedNavigation(
+      scoped_refptr<BundledExchangesReader> reader);
 
   ~BundledExchangesHandle();
 
@@ -39,6 +43,11 @@ class BundledExchangesHandle {
   void CreateURLLoaderFactory(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       mojo::Remote<network::mojom::URLLoaderFactory> fallback_factory);
+
+  // Creates a BundledExchangesHandleTracker to track navigations within the
+  // bundled exchanges file. Returns null if not yet succeeded to load the
+  // exchanges file.
+  std::unique_ptr<BundledExchangesHandleTracker> MaybeCreateTracker();
 
   // Checks if a valid BundledExchanges is attached, opened, and ready for use.
   bool IsReadyForLoading();
@@ -60,6 +69,7 @@ class BundledExchangesHandle {
   std::unique_ptr<NavigationLoaderInterceptor> interceptor_;
 
   GURL base_url_override_;
+  scoped_refptr<BundledExchangesReader> reader_;
   std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory_;
 
   base::WeakPtrFactory<BundledExchangesHandle> weak_factory_{this};

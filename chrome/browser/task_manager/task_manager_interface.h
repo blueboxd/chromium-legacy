@@ -20,7 +20,6 @@
 #include "chrome/browser/task_manager/providers/task.h"
 #include "chrome/browser/task_manager/task_manager_observer.h"
 #include "components/sessions/core/session_id.h"
-#include "third_party/blink/public/platform/web_cache.h"
 #include "ui/gfx/image/image_skia.h"
 
 class PrefRegistrySimple;
@@ -195,11 +194,11 @@ class TaskManagerInterface {
                            int64_t* allocated,
                            int64_t* used) const = 0;
 
-  // Gets the Webkit resource cache stats for the task with |task_id|.
+  // Gets the Blink resource cache stats for the task with |task_id|.
   // A return value of false means that task does NOT report WebCache stats.
   virtual bool GetWebCacheStats(
       TaskId task_id,
-      blink::WebCache::ResourceTypeStats* stats) const = 0;
+      blink::WebCacheResourceTypeStats* stats) const = 0;
 
   // Returns the keep-alive counter if the Task is an event page, -1 otherwise.
   virtual int GetKeepaliveCount(TaskId task_id) const = 0;

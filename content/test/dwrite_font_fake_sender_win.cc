@@ -145,11 +145,11 @@ void FakeFontCollection::GetUniqueNameLookupTable(
 void FakeFontCollection::GetUniqueNameLookupTableIfAvailable(
     GetUniqueNameLookupTableIfAvailableCallback callback) {}
 
-void FakeFontCollection::FallbackFamilyNameForCodepoint(
+void FakeFontCollection::FallbackFamilyAndStyleForCodepoint(
     const std::string& base_family_name,
     const std::string& locale_name,
     uint32_t codepoint,
-    FallbackFamilyNameForCodepointCallback callback) {}
+    FallbackFamilyAndStyleForCodepointCallback callback) {}
 
 FakeFontCollection::~FakeFontCollection() = default;
 

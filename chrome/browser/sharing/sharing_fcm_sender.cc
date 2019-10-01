@@ -59,8 +59,6 @@ void SharingFCMSender::DoSendMessageToDevice(Device target,
                                              base::TimeDelta time_to_live,
                                              SharingMessage message,
                                              SendMessageCallback callback) {
-  message.set_sender_guid(device_info_provider_->GetLocalDeviceInfo()->guid());
-
   auto fcm_registration = sync_preference_->GetFCMRegistration();
   if (!fcm_registration) {
     LOG(ERROR) << "Unable to retrieve FCM registration";
@@ -69,7 +67,12 @@ void SharingFCMSender::DoSendMessageToDevice(Device target,
     return;
   }
 
+  const syncer::DeviceInfo* local_device_info =
+      device_info_provider_->GetLocalDeviceInfo();
+  message.set_sender_guid(local_device_info->guid());
+
   if (message.payload_case() != SharingMessage::kAckMessage) {
+    message.set_sender_device_name(local_device_info->client_name());
     auto* sender_info = message.mutable_sender_info();
     sender_info->set_fcm_token(fcm_registration->fcm_token);
     sender_info->set_p256dh(fcm_registration->p256dh);

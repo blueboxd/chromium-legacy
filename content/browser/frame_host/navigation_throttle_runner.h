@@ -72,10 +72,10 @@ class CONTENT_EXPORT NavigationThrottleRunner {
 
   // The NavigationHandle associated with the NavigationThrottles this
   // NavigationThrottleRunner manages.
-  // Note: |handle_| is not defined as a NavigationHandleImpl* so that a
+  // Note: |handle_| is not defined as a NavigationRequest* so that a
   // MockNavigationHandle can be used in unit_tests. Unit tests that use a
   // MockNavigationHandle should never call RegisterNavigationThrottles as this
-  // function expects |handle_| to be a NavigationHandleImpl instead.
+  // function expects |handle_| to be a NavigationRequest instead.
   NavigationHandle* handle_;
 
   // A list of Throttles registered for this navigation.

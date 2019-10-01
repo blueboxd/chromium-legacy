@@ -249,8 +249,8 @@ const base::Feature kDesktopPWAsCacheDuringDefaultInstall{
 
 // Enables local PWA installs to update their app manifest data if the site
 // changes its manifest.
-const base::Feature kDesktopPWAsLocalUpdating{
-    "DesktopPWAsLocalUpdating", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDesktopPWAsLocalUpdating{"DesktopPWAsLocalUpdating",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables use of new Desktop PWAs browser controller (that uses the
 // universal web_app::AppRegistrar) by extensions-based bookmark apps. Note that

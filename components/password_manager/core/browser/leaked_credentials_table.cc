@@ -41,14 +41,15 @@ void InitializeLeakedCredentialsBuilder(SQLTableBuilder* builder) {
 std::vector<LeakedCredentials> StatementToLeakedCredentials(sql::Statement* s) {
   std::vector<LeakedCredentials> results;
   while (s->Step()) {
-    results.push_back(LeakedCredentials());
-    results.back().url = GURL(
+    GURL url(
         s->ColumnString(GetColumnNumber(LeakedCredentialsTableColumn::kUrl)));
-    results.back().username = s->ColumnString16(
+    base::string16 username = s->ColumnString16(
         GetColumnNumber(LeakedCredentialsTableColumn::kUsername));
-    results.back().create_time = base::Time::FromDeltaSinceWindowsEpoch(
+    base::Time create_time = base::Time::FromDeltaSinceWindowsEpoch(
         (base::TimeDelta::FromMicroseconds(s->ColumnInt64(
             GetColumnNumber(LeakedCredentialsTableColumn::kCreateTime)))));
+    results.push_back(
+        LeakedCredentials(std::move(url), std::move(username), create_time));
   }
   return results;
 }

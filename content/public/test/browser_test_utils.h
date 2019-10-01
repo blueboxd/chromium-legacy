@@ -95,7 +95,7 @@ struct FrameVisualProperties;
 class FrameTreeNode;
 class InterstitialPage;
 class NavigationHandle;
-class NavigationHandleImpl;
+class NavigationRequest;
 class RenderFrameMetadataProviderImpl;
 class RenderWidgetHost;
 class RenderWidgetHostView;
@@ -1490,7 +1490,7 @@ class TestNavigationManager : public WebContentsObserver {
   void OnNavigationStateChanged();
 
   const GURL url_;
-  NavigationHandleImpl* handle_;
+  NavigationRequest* request_;
   bool navigation_paused_;
   NavigationState current_state_;
   NavigationState desired_state_;

@@ -50,7 +50,7 @@ const char kImageFetcherUmaClient[] = "AccountFetcherService";
 const char AccountFetcherService::kLastUpdatePref[] =
     "account_tracker_service_last_update";
 
-const int AccountFetcherService::kAccountImageDownloadSize = 64;
+const int AccountFetcherService::kAccountImageDownloadSize = 256;
 
 // AccountFetcherService implementation
 AccountFetcherService::AccountFetcherService() = default;

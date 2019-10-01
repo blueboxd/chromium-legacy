@@ -34,9 +34,9 @@ import android.widget.TextView;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * Contains utility methods for interacting with WebAPKs.
@@ -105,20 +105,29 @@ public class WebApkUtils {
         return returnUrlBuilder.toString();
     }
 
-    /** Returns a set of ResolveInfo for all of the installed browsers. */
-    public static Set<ResolveInfo> getInstalledBrowserResolveInfos(PackageManager packageManager) {
+    /** Returns a browser-package-name->ResolveInfo mapping for all of the installed browsers. */
+    public static Map<String, ResolveInfo> getInstalledBrowserResolveInfos(
+            PackageManager packageManager) {
         Intent browserIntent = getQueryInstalledBrowsersIntent();
         // Note: {@link PackageManager#queryIntentActivities()} does not return ResolveInfos for
         // disabled browsers.
-        Set<ResolveInfo> result = new HashSet<>();
-        List<ResolveInfo> resolveInfosAll =
+        List<ResolveInfo> resolveInfos =
                 packageManager.queryIntentActivities(browserIntent, PackageManager.MATCH_ALL);
-        List<ResolveInfo> resolveInfosDefaultOnly = packageManager.queryIntentActivities(
-                browserIntent, PackageManager.MATCH_DEFAULT_ONLY);
+        resolveInfos.addAll(packageManager.queryIntentActivities(
+                browserIntent, PackageManager.MATCH_DEFAULT_ONLY));
 
-        result.addAll(resolveInfosAll);
-        result.addAll(resolveInfosDefaultOnly);
+        Map<String, ResolveInfo> result = new HashMap<>();
+        for (ResolveInfo resolveInfo : resolveInfos) {
+            result.put(getPackageNameFromResolveInfo(resolveInfo), resolveInfo);
+        }
         return result;
+    }
+
+    /** Returns the package name for the passed-in ResolveInfo. */
+    public static String getPackageNameFromResolveInfo(ResolveInfo resolveInfo) {
+        return (resolveInfo != null && resolveInfo.activityInfo != null)
+                ? resolveInfo.activityInfo.packageName
+                : null;
     }
 
     /** Builds a context for the passed in remote package name. */

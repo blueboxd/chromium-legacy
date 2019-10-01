@@ -758,7 +758,7 @@ void V4L2ImageProcessor::Dequeue() {
         {
           const auto& orig_frame = buffer->GetVideoFrame();
           output_frame = VideoFrame::WrapVideoFrame(
-              *orig_frame, orig_frame->format(), orig_frame->visible_rect(),
+              orig_frame, orig_frame->format(), orig_frame->visible_rect(),
               orig_frame->natural_size());
           output_frame->AddDestructionObserver(BindToCurrentLoop(
               base::BindOnce(&V4L2ImageProcessor::V4L2VFDestructionObserver,

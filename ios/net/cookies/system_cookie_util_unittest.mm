@@ -178,4 +178,39 @@ TEST_F(CookieUtil, SystemCookieFromBadCanonicalCookie) {
   EXPECT_TRUE(system_cookie == nil);
 }
 
+TEST_F(CookieUtil, SystemCookiesFromCanonicalCookieList) {
+  base::Time expire_date = base::Time::Now() + base::TimeDelta::FromHours(2);
+  net::CookieList cookie_list = {
+      net::CanonicalCookie("name1", "value1", "domain1", "path1/",
+                           base::Time(),  // creation
+                           expire_date,
+                           base::Time(),  // last_access
+                           false,         // secure
+                           false,         // httponly
+                           net::CookieSameSite::UNSPECIFIED,
+                           net::COOKIE_PRIORITY_DEFAULT),
+      net::CanonicalCookie("name2", "value2", "domain2", "path2/",
+                           base::Time(),  // creation
+                           expire_date,
+                           base::Time(),  // last_access
+                           false,         // secure
+                           false,         // httponly
+                           net::CookieSameSite::UNSPECIFIED,
+                           net::COOKIE_PRIORITY_DEFAULT),
+  };
+
+  NSArray<NSHTTPCookie*>* system_cookies =
+      SystemCookiesFromCanonicalCookieList(cookie_list);
+
+  ASSERT_EQ(2UL, system_cookies.count);
+  EXPECT_NSEQ(@"name1", system_cookies[0].name);
+  EXPECT_NSEQ(@"value1", system_cookies[0].value);
+  EXPECT_NSEQ(@"domain1", system_cookies[0].domain);
+  EXPECT_NSEQ(@"path1/", system_cookies[0].path);
+  EXPECT_NSEQ(@"name2", system_cookies[1].name);
+  EXPECT_NSEQ(@"value2", system_cookies[1].value);
+  EXPECT_NSEQ(@"domain2", system_cookies[1].domain);
+  EXPECT_NSEQ(@"path2/", system_cookies[1].path);
+}
+
 }  // namespace net

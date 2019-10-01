@@ -450,7 +450,15 @@ class WebRtcVideoDisplayPerfBrowserTest
   std::vector<double> webrtc_decode_latencies_;
 };
 
-INSTANTIATE_TEST_SUITE_P(WebRtcVideoDisplayPerfBrowserTests,
+// TODO(https://crbug.com/993020): Fix flakes on Windows bots.
+#if defined(OS_WIN)
+#define MAYBE_WebRtcVideoDisplayPerfBrowserTests \
+  DISABLED_WebRtcVideoDisplayPerfBrowserTests
+#else
+#define MAYBE_WebRtcVideoDisplayPerfBrowserTests \
+  WebRtcVideoDisplayPerfBrowserTests
+#endif
+INSTANTIATE_TEST_SUITE_P(MAYBE_WebRtcVideoDisplayPerfBrowserTests,
                          WebRtcVideoDisplayPerfBrowserTest,
                          testing::Combine(testing::Values(gfx::Size(1280, 720),
                                                           gfx::Size(1920,

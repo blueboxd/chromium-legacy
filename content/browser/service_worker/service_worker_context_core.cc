@@ -661,6 +661,10 @@ void ServiceWorkerContextCore::ScheduleDeleteAndStartOver() const {
 
 void ServiceWorkerContextCore::DeleteAndStartOver(StatusCallback callback) {
   job_coordinator_->AbortAll();
+
+  observer_list_->Notify(
+      FROM_HERE, &ServiceWorkerContextCoreObserver::OnDeleteAndStartOver);
+
   storage_->DeleteAndStartOver(std::move(callback));
 }
 
@@ -743,6 +747,9 @@ void ServiceWorkerContextCore::OnStorageWiped() {
 
 void ServiceWorkerContextCore::OnRunningStateChanged(
     ServiceWorkerVersion* version) {
+  if (!version->context())
+    return;
+
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnRunningStateChanged,
       version->version_id(), version->running_status());

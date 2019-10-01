@@ -1210,7 +1210,9 @@ int Element::clientWidth() {
 
   if (LayoutBox* layout_object = GetLayoutBox())
     return AdjustForAbsoluteZoom::AdjustLayoutUnit(
-               LayoutUnit(layout_object->PixelSnappedClientWidth()),
+               LayoutUnit(
+                   layout_object
+                       ->PixelSnappedClientWidthWithTableSpecialBehavior()),
                layout_object->StyleRef())
         .Round();
   return 0;
@@ -1246,7 +1248,9 @@ int Element::clientHeight() {
 
   if (LayoutBox* layout_object = GetLayoutBox())
     return AdjustForAbsoluteZoom::AdjustLayoutUnit(
-               LayoutUnit(layout_object->PixelSnappedClientHeight()),
+               LayoutUnit(
+                   layout_object
+                       ->PixelSnappedClientHeightWithTableSpecialBehavior()),
                layout_object->StyleRef())
         .Round();
   return 0;
@@ -2926,7 +2930,12 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
     if (ShadowRoot* root = GetShadowRoot()) {
       if (child_change.TraverseChild(*root))
         root->RecalcStyle(child_change);
-      RecalcDescendantStyles(StyleRecalcChange::kClearEnsured);
+      if (!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled())
+        RecalcDescendantStyles(StyleRecalcChange::kClearEnsured);
+    } else if (auto* slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(this)) {
+      slot->RecalcStyleForSlotChildren(child_change);
+    } else if (auto* insertion_point = DynamicTo<V0InsertionPoint>(this)) {
+      insertion_point->RecalcStyleForInsertionPointChildren(child_change);
     } else {
       RecalcDescendantStyles(child_change);
     }

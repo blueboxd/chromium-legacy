@@ -20,6 +20,7 @@ from core.results_processor.formatters import csv_output
 from core.results_processor.formatters import json3_output
 from core.results_processor.formatters import histograms_output
 from core.results_processor.formatters import html_output
+from core.results_processor import compute_metrics
 from core.results_processor import processor
 from core.results_processor import testing
 
@@ -107,7 +108,7 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
   def testHistogramsOutput(self):
     hist_file = os.path.join(self.output_dir,
-                             histograms_output.HISTOGRAM_DICTS_NAME)
+                             compute_metrics.HISTOGRAM_DICTS_FILE)
     with open(hist_file, 'w') as f:
       json.dump([histogram.Histogram('a', 'unitless').AsDict()], f)
 
@@ -152,7 +153,7 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
   def testHistogramsOutputResetResults(self):
     hist_file = os.path.join(self.output_dir,
-                             histograms_output.HISTOGRAM_DICTS_NAME)
+                             compute_metrics.HISTOGRAM_DICTS_FILE)
     with open(hist_file, 'w') as f:
       json.dump([histogram.Histogram('a', 'unitless').AsDict()], f)
 
@@ -193,7 +194,7 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
   def testHistogramsOutputAppendResults(self):
     hist_file = os.path.join(self.output_dir,
-                             histograms_output.HISTOGRAM_DICTS_NAME)
+                             compute_metrics.HISTOGRAM_DICTS_FILE)
     with open(hist_file, 'w') as f:
       json.dump([histogram.Histogram('a', 'unitless').AsDict()], f)
 
@@ -233,7 +234,7 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
   def testHtmlOutput(self):
     hist_file = os.path.join(self.output_dir,
-                             histograms_output.HISTOGRAM_DICTS_NAME)
+                             compute_metrics.HISTOGRAM_DICTS_FILE)
     with open(hist_file, 'w') as f:
       json.dump([histogram.Histogram('a', 'unitless').AsDict()], f)
 
@@ -333,7 +334,7 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
   def testCsvOutput(self):
     hist_file = os.path.join(self.output_dir,
-                             histograms_output.HISTOGRAM_DICTS_NAME)
+                             compute_metrics.HISTOGRAM_DICTS_FILE)
     test_hist = histogram.Histogram('a', 'ms')
     test_hist.AddSample(3000)
     with open(hist_file, 'w') as f:
@@ -379,7 +380,7 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
   def testCsvOutputResetResults(self):
     hist_file = os.path.join(self.output_dir,
-                             histograms_output.HISTOGRAM_DICTS_NAME)
+                             compute_metrics.HISTOGRAM_DICTS_FILE)
     with open(hist_file, 'w') as f:
       json.dump([histogram.Histogram('a', 'unitless').AsDict()], f)
 
@@ -415,7 +416,7 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
   def testCsvOutputAppendResults(self):
     hist_file = os.path.join(self.output_dir,
-                             histograms_output.HISTOGRAM_DICTS_NAME)
+                             compute_metrics.HISTOGRAM_DICTS_FILE)
     with open(hist_file, 'w') as f:
       json.dump([histogram.Histogram('a', 'unitless').AsDict()], f)
 

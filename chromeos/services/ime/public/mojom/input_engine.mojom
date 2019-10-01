@@ -44,7 +44,6 @@ struct KeypressResponseForRulebased {
 
 // Information about a specific keypress.
 struct KeypressInfoForRulebased {
-
   // Keypress Type (Eg; "keydown", "keyup", etc).
   string type;
 
@@ -55,8 +54,8 @@ struct KeypressInfoForRulebased {
   bool shift;
   bool altgr;
   bool caps;
-  bool ctrl;
-  bool alt;
+  bool ctrl = false; // DEPRECATED
+  bool alt = false; // DEPRECATED
 };
 
 // Manages access to a set of IME engines, implemented by the IME service

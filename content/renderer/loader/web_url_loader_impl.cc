@@ -360,9 +360,12 @@ std::unique_ptr<blink::WebURLLoader> WebURLLoaderFactoryImpl::CreateURLLoader(
     std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle) {
   DCHECK(task_runner_handle);
   DCHECK(resource_dispatcher_);
-  return std::make_unique<WebURLLoaderImpl>(resource_dispatcher_.get(),
-                                            std::move(task_runner_handle),
-                                            loader_factory_);
+  // This default implementation does not support KeepAlive.
+  mojo::PendingRemote<mojom::KeepAliveHandle> keep_alive_handle =
+      mojo::NullRemote();
+  return std::make_unique<WebURLLoaderImpl>(
+      resource_dispatcher_.get(), std::move(task_runner_handle),
+      loader_factory_, std::move(keep_alive_handle));
 }
 
 // This inner class exists since the WebURLLoader may be deleted while inside a
@@ -1006,15 +1009,6 @@ void WebURLLoaderImpl::RequestPeerImpl::OnCompletedRequest(
 }
 
 // WebURLLoaderImpl -----------------------------------------------------------
-
-WebURLLoaderImpl::WebURLLoaderImpl(
-    ResourceDispatcher* resource_dispatcher,
-    std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : WebURLLoaderImpl(resource_dispatcher,
-                       std::move(task_runner_handle),
-                       std::move(url_loader_factory),
-                       mojo::NullRemote()) {}
 
 WebURLLoaderImpl::WebURLLoaderImpl(
     ResourceDispatcher* resource_dispatcher,

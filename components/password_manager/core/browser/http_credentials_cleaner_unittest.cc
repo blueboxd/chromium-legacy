@@ -12,6 +12,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -123,7 +124,12 @@ class HttpCredentialCleanerTest : public ::testing::TestWithParam<TestCase> {
   DISALLOW_COPY_AND_ASSIGN(HttpCredentialCleanerTest);
 };
 
-TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
+#if defined(OS_MACOSX)
+#define MAYBE_ReportHttpMigrationMetrics DISABLED_ReportHttpMigrationMetrics
+#else
+#define MAYBE_ReportHttpMigrationMetrics ReportHttpMigrationMetrics
+#endif
+TEST_P(HttpCredentialCleanerTest, MAYBE_ReportHttpMigrationMetrics) {
   struct Histogram {
     bool test_hsts_enabled;
     HttpCredentialType test_type;

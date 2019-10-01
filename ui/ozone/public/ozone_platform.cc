@@ -58,6 +58,11 @@ OzonePlatform* OzonePlatform::GetInstance() {
 }
 
 // static
+const char* OzonePlatform::GetPlatformName() {
+  return GetOzonePlatformName();
+}
+
+// static
 OzonePlatform* OzonePlatform::EnsureInstance() {
   if (!g_instance) {
     TRACE_EVENT1("ozone",

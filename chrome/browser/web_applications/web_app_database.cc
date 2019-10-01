@@ -12,13 +12,16 @@
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/protocol/web_app_specifics.pb.h"
 
 namespace web_app {
 
-WebAppDatabase::WebAppDatabase(AbstractWebAppDatabaseFactory* database_factory)
-    : database_factory_(database_factory) {
+WebAppDatabase::WebAppDatabase(AbstractWebAppDatabaseFactory* database_factory,
+                               ReportErrorCallback error_callback)
+    : database_factory_(database_factory),
+      error_callback_(std::move(error_callback)) {
   DCHECK(database_factory_);
 }
 
@@ -232,11 +235,14 @@ void WebAppDatabase::OnDatabaseOpened(
     std::unique_ptr<syncer::ModelTypeStore> store) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
+    error_callback_.Run(*error);
     DLOG(ERROR) << "WebApps LevelDB opening error: " << error->ToString();
     return;
   }
 
   store_ = std::move(store);
+  // TODO(loyso): Use ReadAllDataAndPreprocess to parse protos in the background
+  // sequence.
   store_->ReadAllData(base::BindOnce(&WebAppDatabase::OnAllDataRead,
                                      weak_ptr_factory_.GetWeakPtr(),
                                      std::move(callback)));
@@ -248,7 +254,25 @@ void WebAppDatabase::OnAllDataRead(
     std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
-    DLOG(ERROR) << "WebApps LevelDB read error: " << error->ToString();
+    error_callback_.Run(*error);
+    DLOG(ERROR) << "WebApps LevelDB data read error: " << error->ToString();
+    return;
+  }
+
+  store_->ReadAllMetadata(base::BindOnce(
+      &WebAppDatabase::OnAllMetadataRead, weak_ptr_factory_.GetWeakPtr(),
+      std::move(data_records), std::move(callback)));
+}
+
+void WebAppDatabase::OnAllMetadataRead(
+    std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records,
+    RegistryOpenedCallback callback,
+    const base::Optional<syncer::ModelError>& error,
+    std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (error) {
+    error_callback_.Run(*error);
+    DLOG(ERROR) << "WebApps LevelDB metadata read error: " << error->ToString();
     return;
   }
 
@@ -260,7 +284,7 @@ void WebAppDatabase::OnAllDataRead(
       registry.emplace(app_id, std::move(web_app));
   }
 
-  std::move(callback).Run(std::move(registry));
+  std::move(callback).Run(std::move(registry), std::move(metadata_batch));
   opened_ = true;
 }
 
@@ -268,8 +292,10 @@ void WebAppDatabase::OnDataWritten(
     CompletionCallback callback,
     const base::Optional<syncer::ModelError>& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (error)
+  if (error) {
+    error_callback_.Run(*error);
     DLOG(ERROR) << "WebApps LevelDB write error: " << error->ToString();
+  }
 
   std::move(callback).Run(!error);
 }

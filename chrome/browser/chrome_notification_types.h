@@ -198,10 +198,6 @@ enum NotificationType {
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-  // Sent when a bookmark's context menu is shown. Used to notify
-  // tests that the context menu has been created and shown.
-  NOTIFICATION_BOOKMARK_CONTEXT_MENU_SHOWN,
-
   // Notification that the nested loop using during tab dragging has returned.
   // Used for testing.
   NOTIFICATION_TAB_DRAG_LOOP_DONE,

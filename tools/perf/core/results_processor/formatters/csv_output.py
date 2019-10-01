@@ -9,7 +9,6 @@ import csv
 import json
 import os
 
-from core.results_processor.formatters import histograms_output
 from py_utils import tempfile_ext
 from tracing.value import histograms_to_csv
 
@@ -40,11 +39,8 @@ def _WriteCsv(dicts, output_stream):
   csv.writer(output_stream).writerows(rows)
 
 
-def Process(intermediate_results, options):
-  """Process intermediate results and write output in output_dir."""
-  histogram_dicts = histograms_output.Convert(intermediate_results,
-                                              options.results_label)
-
+def ProcessHistogramDicts(histogram_dicts, options):
+  """Convert histogram dicts to CSV and write output in output_dir."""
   with tempfile_ext.NamedTemporaryFile() as hist_file:
     json.dump(histogram_dicts, hist_file)
     hist_file.close()

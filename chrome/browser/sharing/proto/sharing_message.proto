@@ -27,6 +27,9 @@ message SharingMessage {
 
   // RecipientInfo for responding an AckMessage to the sender. optional.
   RecipientInfo sender_info = 6;
+
+  // The name of the device sending this message. optional.
+  string sender_device_name = 7;
 }
 
 // Message for pinging the receiver expecting an acknowledgement.

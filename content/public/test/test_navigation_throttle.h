@@ -80,7 +80,7 @@ class TestNavigationThrottle : public NavigationThrottle {
   // get rid of the following classes:
   // - ResourceLoadingCancellingThrottle in
   //   ads_page_load_metrics_observer_unittest.cc
-  // - DeletingNavigationThrottle in navigation_handle_impl_unittest.cc
+  // - DeletingNavigationThrottle in navigation_request_unittest.cc
   void OnWillRespond();
 
  private:

@@ -149,7 +149,7 @@ class MockBundledExchangesReaderFactoryImpl final
       : MockBundledExchangesReaderFactory() {}
   ~MockBundledExchangesReaderFactoryImpl() override = default;
 
-  std::unique_ptr<BundledExchangesReader> CreateReader(
+  scoped_refptr<BundledExchangesReader> CreateReader(
       const std::string& test_file_data) override {
     if (!temp_dir_.CreateUniqueTempDir() ||
         !CreateTemporaryFileInDir(temp_dir_.GetPath(), &temp_file_path_) ||
@@ -159,9 +159,9 @@ class MockBundledExchangesReaderFactoryImpl final
       return nullptr;
     }
 
-    auto source = BundledExchangesSource::MaybeCreateFromTrustedFileUrl(
-        net::FilePathToFileURL(temp_file_path_));
-    auto reader = std::make_unique<BundledExchangesReader>(*source);
+    auto reader = base::MakeRefCounted<BundledExchangesReader>(
+        BundledExchangesSource::MaybeCreateFromTrustedFileUrl(
+            net::FilePathToFileURL(temp_file_path_)));
 
     std::unique_ptr<MockParserFactory> factory =
         std::make_unique<MockParserFactory>();

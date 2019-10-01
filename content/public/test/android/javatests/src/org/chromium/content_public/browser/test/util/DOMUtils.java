@@ -502,6 +502,30 @@ public class DOMUtils {
     }
 
     /**
+     * Returns the value of a given attribute of type {@code valueType} as a {@code T}.
+     * @param attributeName The attribute to return the value from.
+     * @param webContents The WebContents in which the node lives.
+     * @param nodeId The id of the node.
+     * @param valueType The type of the value to read.
+     * @return the attributes' value.
+     */
+    public static <T> T getNodeAttribute(String attributeName, final WebContents webContents,
+            String nodeId, Class<T> valueType) throws InterruptedException, TimeoutException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(function() {");
+        sb.append("  var node = document.getElementById('" + nodeId + "');");
+        sb.append("  if (!node) return null;");
+        sb.append("  return [ node.getAttribute('" + attributeName + "') ];");
+        sb.append("})();");
+
+        String jsonText =
+                JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents, sb.toString());
+        Assert.assertFalse("Failed to retrieve contents for " + nodeId,
+                jsonText.trim().equalsIgnoreCase("null"));
+        return readValue(jsonText, valueType);
+    }
+
+    /**
      * Returns the next value of type {@code valueType} as a {@code T}.
      * @param jsonText The unparsed json text.
      * @param valueType The type of the value to read.

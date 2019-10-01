@@ -66,12 +66,6 @@ void DesktopWindowTreeHostLinux::SetPendingXVisualId(int x_visual_id) {
   pending_x_visual_id_ = x_visual_id;
 }
 
-void DesktopWindowTreeHostLinux::OnNativeWidgetCreated(
-    const Widget::InitParams& params) {
-  AddNonClientEventFilter();
-  DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(params);
-}
-
 void DesktopWindowTreeHostLinux::Init(const Widget::InitParams& params) {
   DesktopWindowTreeHostPlatform::Init(params);
 
@@ -82,6 +76,26 @@ void DesktopWindowTreeHostLinux::Init(const Widget::InitParams& params) {
             &DesktopWindowTreeHostLinux::OnCompleteSwapWithNewSize,
             base::Unretained(this)));
   }
+}
+
+void DesktopWindowTreeHostLinux::OnNativeWidgetCreated(
+    const Widget::InitParams& params) {
+  AddNonClientEventFilter();
+  DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(params);
+}
+
+std::string DesktopWindowTreeHostLinux::GetWorkspace() const {
+  base::Optional<int> workspace = platform_window()->GetWorkspace();
+  return workspace ? base::NumberToString(workspace.value()) : std::string();
+}
+
+void DesktopWindowTreeHostLinux::SetVisibleOnAllWorkspaces(
+    bool always_visible) {
+  platform_window()->SetVisibleOnAllWorkspaces(always_visible);
+}
+
+bool DesktopWindowTreeHostLinux::IsVisibleOnAllWorkspaces() const {
+  return platform_window()->IsVisibleOnAllWorkspaces();
 }
 
 void DesktopWindowTreeHostLinux::OnDisplayMetricsChanged(
@@ -204,6 +218,10 @@ void DesktopWindowTreeHostLinux::RemoveNonClientEventFilter() {
 
   window()->RemovePreTargetHandler(non_client_window_event_filter_.get());
   non_client_window_event_filter_.reset();
+}
+
+void DesktopWindowTreeHostLinux::OnWorkspaceChanged() {
+  OnHostWorkspaceChanged();
 }
 
 // As DWTHX11 subclasses DWTHPlatform through DWTHLinux now (during transition

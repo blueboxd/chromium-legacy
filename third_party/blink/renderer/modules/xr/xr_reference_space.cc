@@ -50,12 +50,18 @@ XRPose* XRReferenceSpace::getPose(
     XRSpace* other_space,
     const TransformationMatrix* mojo_from_viewer) {
   if (type_ == Type::kTypeViewer) {
-    std::unique_ptr<TransformationMatrix> offsetspace_from_viewer =
+    std::unique_ptr<TransformationMatrix> other_offsetspace_from_viewer =
         other_space->SpaceFromViewerWithDefaultAndOffset(mojo_from_viewer);
-    if (!offsetspace_from_viewer) {
+    if (!other_offsetspace_from_viewer) {
       return nullptr;
     }
-    return MakeGarbageCollected<XRPose>(*offsetspace_from_viewer,
+
+    auto viewer_from_offset = OriginOffsetMatrix();
+
+    auto other_offsetspace_from_offset =
+        *other_offsetspace_from_viewer * viewer_from_offset;
+
+    return MakeGarbageCollected<XRPose>(other_offsetspace_from_offset,
                                         session()->EmulatedPosition());
   } else {
     return XRSpace::getPose(other_space, mojo_from_viewer);

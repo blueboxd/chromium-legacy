@@ -33,8 +33,9 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
   static DOMArrayBuffer* Create(scoped_refptr<SharedBuffer>);
   static DOMArrayBuffer* Create(const Vector<base::span<const char>>&);
 
-  // Only for use by XMLHttpRequest::responseArrayBuffer and
-  // Internals::serializeObject.
+  // Only for use by XMLHttpRequest::responseArrayBuffer,
+  // Internals::serializeObject, and
+  // FetchDataLoaderAsArrayBuffer::OnStateChange.
   static DOMArrayBuffer* CreateUninitializedOrNull(unsigned num_elements,
                                                    unsigned element_byte_size);
 

@@ -67,7 +67,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
   std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
   // Registrar for pref changes notifications.
   PrefChangeRegistrar _prefChangeRegistrar;
-  PrefChangeRegistrar _prefChangeRegistrarApplicationContext;
 
   // Updatable Items
   TableViewDetailIconItem* _handoffDetailItem;
@@ -94,8 +93,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
     PrefService* prefService = _browserState->GetPrefs();
 
     _prefChangeRegistrar.Init(prefService);
-    _prefChangeRegistrarApplicationContext.Init(
-        GetApplicationContext()->GetLocalState());
     _prefObserverBridge.reset(new PrefObserverBridge(self));
     // Register to observe any changes on Perf backed values displayed by the
     // screen.

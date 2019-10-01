@@ -13,7 +13,9 @@
 
 namespace blink {
 
+class NGBoxFragmentBuilder;
 class NGConstraintSpace;
+class NGLayoutResult;
 
 // Join two adjacent break values specified on break-before and/or break-
 // after. avoid* values win over auto values, and forced break values win over
@@ -40,6 +42,13 @@ bool IsAvoidBreakValue(const NGConstraintSpace&, EBreakInside);
 inline bool IsResumingLayout(const NGBlockBreakToken* token) {
   return token && !token->IsBreakBefore();
 }
+
+// Calculate the final "break-between" value at a class A or C breakpoint. This
+// is the combination of all break-before and break-after values that met at the
+// breakpoint.
+EBreakBetween CalculateBreakBetweenValue(NGLayoutInputNode child,
+                                         const NGLayoutResult&,
+                                         const NGBoxFragmentBuilder&);
 
 // Set up a child's constraint space builder for block fragmentation. The child
 // participates in the same fragmentation context as parent_space. If the child

@@ -9,12 +9,6 @@
 const NUMBER_OF_APPS_DISPLAYED_DEFAULT = 4;
 
 /**
- * The maximum number of apps' titles previewed in notification sublabel.
- * @const {number}
- */
-const APP_LIST_PREVIEW_APP_TITLES = 3;
-
-/**
  * Enumeration of the different subpage types within the app management page.
  * @enum {number}
  * @const
@@ -22,7 +16,6 @@ const APP_LIST_PREVIEW_APP_TITLES = 3;
 const PageType = {
   MAIN: 0,
   DETAIL: 1,
-  NOTIFICATIONS: 2,
 };
 
 /**

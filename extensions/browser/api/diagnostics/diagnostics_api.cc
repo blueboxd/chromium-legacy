@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 
 namespace extensions {
 

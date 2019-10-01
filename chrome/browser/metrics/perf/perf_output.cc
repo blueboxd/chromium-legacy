@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
-#include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -15,29 +15,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace metrics {
-
-DebugdClientProvider::DebugdClientProvider()
-    : dbus_task_runner_(base::CreateSingleThreadTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-           base::MayBlock()})),
-      debug_daemon_client_(chromeos::DebugDaemonClient::Create()) {
-  dbus::Bus::Options dbus_options;
-  dbus_options.bus_type = dbus::Bus::SYSTEM;
-  dbus_options.connection_type = dbus::Bus::PRIVATE;
-  dbus_options.dbus_task_runner = dbus_task_runner_;
-  dbus_bus_ = base::MakeRefCounted<dbus::Bus>(dbus_options);
-
-  debug_daemon_client_->Init(dbus_bus_.get());
-}
-
-DebugdClientProvider::~DebugdClientProvider() {
-  DCHECK(debug_daemon_client_);
-  DCHECK(dbus_bus_);
-
-  debug_daemon_client_ = nullptr;
-  dbus_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&dbus::Bus::ShutdownAndBlock, dbus_bus_));
-}
 
 PerfOutputCall::PerfOutputCall(chromeos::DebugDaemonClient* debug_daemon_client,
                                base::TimeDelta duration,

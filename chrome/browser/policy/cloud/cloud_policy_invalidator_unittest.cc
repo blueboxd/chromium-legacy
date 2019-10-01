@@ -1193,8 +1193,7 @@ TEST_P(CloudPolicyInvalidatorUserTypedTest, RefreshMetricsNoInvalidations) {
 }
 
 TEST_P(CloudPolicyInvalidatorUserTypedTest, RefreshMetricsInvalidation) {
-  // Store loads after an invalidation are counted as invalidated, even if
-  // the loads do not result in the invalidation being acknowledged.
+  // Store loads after an invalidation are not counted as invalidated.
   StartInvalidator();
   StorePolicy(POLICY_OBJECT_A);
   AdvanceClock(base::TimeDelta::FromSeconds(
@@ -1216,11 +1215,11 @@ TEST_P(CloudPolicyInvalidatorUserTypedTest, RefreshMetricsInvalidation) {
   StorePolicy(POLICY_OBJECT_A, 0, true /* policy_changed */);
   StorePolicy(POLICY_OBJECT_A, 0, false /* policy_changed */);
 
-  EXPECT_EQ(3, GetCount(METRIC_POLICY_REFRESH_CHANGED));
+  EXPECT_EQ(4, GetCount(METRIC_POLICY_REFRESH_CHANGED));
   EXPECT_EQ(0, GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
-  EXPECT_EQ(4, GetCount(METRIC_POLICY_REFRESH_UNCHANGED));
-  EXPECT_EQ(2, GetCount(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED));
-  EXPECT_EQ(1, GetCount(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED));
+  EXPECT_EQ(5, GetCount(METRIC_POLICY_REFRESH_UNCHANGED));
+  EXPECT_EQ(1, GetCount(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED));
+  EXPECT_EQ(0, GetCount(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED));
 
   EXPECT_EQ(GetCount(METRIC_POLICY_REFRESH_CHANGED),
             is_fcm_enabled() ? GetCountFcm(METRIC_POLICY_REFRESH_CHANGED)

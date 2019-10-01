@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tabs/glow_hover_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
@@ -683,7 +684,7 @@ bool GM2TabStyle::ShouldPaintTabBackgroundColor(
 
 SkColor GM2TabStyle::GetTabBackgroundColor(TabActive active) const {
   SkColor color = tab_->controller()->GetTabBackgroundColor(
-      active, BrowserNonClientFrameView::kUseCurrent);
+      active, BrowserFrameActiveState::kUseCurrent);
 
   return color;
 }
@@ -709,7 +710,7 @@ ShapeModifier GM2TabStyle::GetShapeModifier(PathType path_type) const {
 void GM2TabStyle::PaintInactiveTabBackground(gfx::Canvas* canvas) const {
   PaintTabBackground(canvas, TabActive::kInactive,
                      tab_->controller()->GetCustomBackgroundId(
-                         BrowserNonClientFrameView::kUseCurrent),
+                         BrowserFrameActiveState::kUseCurrent),
                      0);
 }
 

@@ -195,11 +195,35 @@ cca.App.prototype.onKeyPressed_ = function(event) {
 };
 
 /**
+ * Suspends app and hides app window.
+ * @return {!Promise}
+ */
+cca.App.prototype.suspend = async function() {
+  cca.state.set('suspend', true);
+  await this.cameraView_.restart();
+  chrome.app.window.current().hide();
+};
+
+/**
+ * Resumes app from suspension and shows app window.
+ */
+cca.App.prototype.resume = function() {
+  cca.state.set('suspend', false);
+  chrome.app.window.current().show();
+};
+
+/**
  * Singleton of the App object.
  * @type {cca.App}
  * @private
  */
 cca.App.instance_ = null;
+
+/**
+ * Intent associated with current app window.
+ * @type {?cca.intent.Intent}
+ */
+window.intent = window.intent || null;
 
 /**
  * Creates the App object and starts camera stream.
@@ -209,5 +233,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     cca.App.instance_ = new cca.App();
   }
   cca.App.instance_.start();
+  // Register methods called from background.
+  window.ops = {
+    suspend: () => {
+      cca.App.instance_.suspend().then(window.onSuspended);
+    },
+    resume: () => {
+      cca.App.instance_.resume();
+      window.onActive();
+    },
+  };
   chrome.app.window.current().show();
+  window.onActive();
 });

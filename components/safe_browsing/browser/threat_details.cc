@@ -311,17 +311,6 @@ void TrimElements(const std::set<int> target_ids,
   }
 }
 
-void DisableBackForwardCache(content::RenderFrameHost* rfh,
-                             base::StringPiece reason) {
-  content::WebContents::FromRenderFrameHost(rfh)
-      ->GetController()
-      .GetBackForwardCache()
-      .DisableForRenderFrameHost(
-          content::GlobalFrameRoutingId(rfh->GetProcess()->GetID(),
-                                        rfh->GetRoutingID()),
-          reason);
-}
-
 }  // namespace
 
 // The default ThreatDetailsFactory.  Global, made a singleton so we
@@ -652,7 +641,8 @@ void ThreatDetails::StartCollection() {
 }
 
 void ThreatDetails::RequestThreatDOMDetails(content::RenderFrameHost* frame) {
-  DisableBackForwardCache(frame, "safe_browsing::ThreatDetails");
+  content::BackForwardCache::DisableForRenderFrameHost(
+      frame, "safe_browsing::ThreatDetails");
   mojo::Remote<safe_browsing::mojom::ThreatReporter> threat_reporter;
   frame->GetRemoteInterfaces()->GetInterface(
       threat_reporter.BindNewPipeAndPassReceiver());

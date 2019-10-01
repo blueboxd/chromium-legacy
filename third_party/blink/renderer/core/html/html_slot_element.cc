@@ -74,7 +74,8 @@ HTMLSlotElement* HTMLSlotElement::CreateUserAgentCustomAssignSlot(
 HTMLSlotElement::HTMLSlotElement(Document& document)
     : HTMLElement(kSlotTag, document) {
   UseCounter::Count(document, WebFeature::kHTMLSlotElement);
-  SetHasCustomStyleCallbacks();
+  if (!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled())
+    SetHasCustomStyleCallbacks();
 }
 
 // static
@@ -384,9 +385,26 @@ void HTMLSlotElement::RemovedFrom(ContainerNode& insertion_point) {
 }
 
 void HTMLSlotElement::DidRecalcStyle(const StyleRecalcChange change) {
+  DCHECK(!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled());
   if (!change.RecalcChildren())
     return;
   for (auto& node : assigned_nodes_) {
+    if (!change.TraverseChild(*node))
+      continue;
+    if (auto* element = DynamicTo<Element>(node.Get()))
+      element->RecalcStyle(change);
+    else if (auto* text_node = DynamicTo<Text>(node.Get()))
+      text_node->RecalcTextStyle(change);
+  }
+}
+
+void HTMLSlotElement::RecalcStyleForSlotChildren(
+    const StyleRecalcChange change) {
+  if (!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
+    RecalcDescendantStyles(change);
+    return;
+  }
+  for (auto& node : flat_tree_children_) {
     if (!change.TraverseChild(*node))
       continue;
     if (auto* element = DynamicTo<Element>(node.Get()))

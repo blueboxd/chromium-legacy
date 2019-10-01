@@ -1804,6 +1804,11 @@ const char kServiceWorkerLongRunningMessageDescription[] =
     "Messages sent with this method do not timeout, allowing the service "
     "worker to run indefinitely.";
 
+const char kServiceWorkerOnUIName[] = "Service worker on UI thread";
+const char kServiceWorkerOnUIDescription[] =
+    "Enables browser process logic related to service workers to run on the UI "
+    "thread rather than the IO thread.";
+
 const char kSessionRestorePrioritizesBackgroundUseCasesName[] =
     "Session restore prioritizes background use cases.";
 const char kSessionRestorePrioritizesBackgroundUseCasesDescription[] =

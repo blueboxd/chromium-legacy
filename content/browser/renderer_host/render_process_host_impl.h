@@ -546,6 +546,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
     ipc_send_watcher_for_testing_ = std::move(watcher);
   }
 
+  size_t keep_alive_ref_count() const { return keep_alive_ref_count_; }
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
   std::unique_ptr<IPC::ChannelProxy> channel_;

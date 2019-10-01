@@ -336,16 +336,23 @@ scoped_refptr<SimpleFontData> FontCache::GetDWriteFallbackFamily(
     // traversing the language tag stack but only processes the most important
     // one, so we use FallbackLocaleForCharacter() to determine what locale to
     // choose to achieve the best possible result.
-    AtomicString family(GetOutOfProcessFallbackFamily(
-        codepoint, font_description.GenericFamily(),
-        fallback_locale->LocaleForSkFontMgr(), fallback_priority, service_));
 
-    if (family.IsEmpty())
+    String fallback_family;
+    SkFontStyle fallback_style;
+    if (!GetOutOfProcessFallbackFamily(
+            codepoint, font_description.GenericFamily(),
+            fallback_locale->LocaleForSkFontMgr(), fallback_priority, service_,
+            &fallback_family, &fallback_style))
       return nullptr;
 
-    FontFaceCreationParams create_by_family(family);
-    FontPlatformData* data =
-        GetFontPlatformData(font_description, create_by_family);
+    if (fallback_family.IsEmpty())
+      return nullptr;
+
+    FontFaceCreationParams create_by_family((AtomicString(fallback_family)));
+    FontDescription fallback_updated_font_description(font_description);
+    fallback_updated_font_description.UpdateFromSkiaFontStyle(fallback_style);
+    FontPlatformData* data = GetFontPlatformData(
+        fallback_updated_font_description, create_by_family);
     if (!data || !data->FontContainsCharacter(codepoint))
       return nullptr;
     return FontDataFromFontPlatformData(data, kDoNotRetain);

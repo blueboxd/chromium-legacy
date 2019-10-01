@@ -75,7 +75,7 @@ gfx::GpuMemoryBufferHandle TextureRef::ExportGpuMemoryBufferHandle() const {
 scoped_refptr<VideoFrame> TextureRef::ExportVideoFrame(
     gfx::Rect visible_rect) const {
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-  return VideoFrame::WrapVideoFrame(*frame_, frame_->format(), visible_rect,
+  return VideoFrame::WrapVideoFrame(frame_, frame_->format(), visible_rect,
                                     visible_rect.size());
 #else
   return nullptr;

@@ -958,8 +958,14 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                   .empty());
 }
 
+// TODO(crbug.com/1009885): Flaky on Linux MSan builds.
+#if defined(MEMORY_SANITIZER) && defined(OS_LINUX)
+#define MAYBE_FirstMeaningfulPaintRecorded DISABLED_FirstMeaningfulPaintRecorded
+#else
+#define MAYBE_FirstMeaningfulPaintRecorded FirstMeaningfulPaintRecorded
+#endif
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       FirstMeaningfulPaintRecorded) {
+                       MAYBE_FirstMeaningfulPaintRecorded) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsTestWaiter();

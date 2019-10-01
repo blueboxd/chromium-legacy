@@ -80,17 +80,31 @@ gfx::ImageSkia ColorImage(const gfx::ImageSkia& image, SkColor color) {
   return gfx::ImageSkiaOperations::CreateColorMask(image, color);
 }
 
-gfx::ImageSkia CreateCircle(int size, SkColor color = SK_ColorWHITE) {
-  float radius = size / 2.0f;
-  gfx::Canvas canvas(gfx::Size(size, size), /*image_scale=*/1.0f,
-                     /*is_opaque=*/false);
-  cc::PaintFlags flags;
-  flags.setAntiAlias(true);
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setColor(color);
-  canvas.DrawCircle(gfx::PointF(radius, radius), radius, flags);
+class CircleImageSource : public gfx::CanvasImageSource {
+ public:
+  CircleImageSource(int size, SkColor color)
+      : gfx::CanvasImageSource(gfx::Size(size, size)), color_(color) {}
+  ~CircleImageSource() override = default;
 
-  return gfx::ImageSkia::CreateFrom1xBitmap(canvas.GetBitmap());
+  void Draw(gfx::Canvas* canvas) override;
+
+ private:
+  SkColor color_;
+
+  DISALLOW_COPY_AND_ASSIGN(CircleImageSource);
+};
+
+void CircleImageSource::Draw(gfx::Canvas* canvas) {
+  float radius = size().width() / 2.0f;
+  cc::PaintFlags flags;
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setAntiAlias(true);
+  flags.setColor(color_);
+  canvas->DrawCircle(gfx::PointF(radius, radius), radius, flags);
+}
+
+gfx::ImageSkia CreateCircle(int size, SkColor color = SK_ColorWHITE) {
+  return gfx::CanvasImageSource::MakeImageSkia<CircleImageSource>(size, color);
 }
 
 gfx::ImageSkia CropCircle(const gfx::ImageSkia& image) {

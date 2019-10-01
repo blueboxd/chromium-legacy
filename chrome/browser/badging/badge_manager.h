@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/badging/badging.mojom.h"
@@ -46,16 +47,12 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
       content::RenderFrameHost* frame,
       mojo::PendingReceiver<blink::mojom::BadgeService> receiver);
 
-  // Returns whether there is a more specific badge for |url| than |scope|.
-  // Note: This function does not check that there is a badge for |scope|.
-  bool HasMoreSpecificBadgeForUrl(const GURL& scope, const GURL& url);
+  // Gets the badge for |app_id|. This will be base::nullopt if the app is not
+  // badged.
+  base::Optional<BadgeValue> GetBadgeValue(const web_app::AppId& app_id);
 
-  // Gets the most specific badge applying to |scope|. This will be
-  // base::nullopt if the scope is not badged.
-  base::Optional<BadgeValue> GetBadgeValue(const GURL& scope);
-
-  void SetBadgeForTesting(const GURL& scope, BadgeValue value);
-  void ClearBadgeForTesting(const GURL& scope);
+  void SetBadgeForTesting(const web_app::AppId& app_id, BadgeValue value);
+  void ClearBadgeForTesting(const web_app::AppId& app_id);
 
  private:
   // The BindingContext of a mojo request. Allows mojo calls to be tied back to
@@ -68,9 +65,10 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
     int frame_id;
   };
 
-  // Updates the badge for |scope| to be |value|, if it is not base::nullopt.
+  // Updates the badge for |app_id| to be |value|, if it is not base::nullopt.
   // If value is |base::nullopt| then this clears the badge.
-  void UpdateBadge(const GURL& scope, base::Optional<BadgeValue> value);
+  void UpdateBadge(const web_app::AppId& app_id,
+                   base::Optional<BadgeValue> value);
 
   // blink::mojom::BadgeService:
   // Note: These are private to stop them being called outside of mojo as they
@@ -78,13 +76,10 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
   void SetBadge(blink::mojom::BadgeValuePtr value) override;
   void ClearBadge() override;
 
-  // Finds the scope URL of the most specific badge for |scope|. Returns
-  // GURL::EmptyGURL() if no match is found.
-  GURL MostSpecificBadgeForScope(const GURL& scope);
-
-  // Finds the most specific app scope containing |context|. base::nullopt if
-  // no app contains |context|.
-  base::Optional<GURL> GetAppScopeForContext(const BindingContext& context);
+  // Gets the app id to badge, based on the |context|. base::nullopt if
+  // |context| isn't inside an app.
+  base::Optional<web_app::AppId> GetAppIdForBadging(
+      const BindingContext& context);
 
   // All the mojo receivers for the BadgeManager. Keeps track of the
   // render_frame the binding is associated with, so as to not have to rely
@@ -95,8 +90,8 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
   // Note: This is currently only set on Windows and MacOS.
   std::unique_ptr<BadgeManagerDelegate> delegate_;
 
-  // Maps scope to badge contents.
-  std::map<GURL, BadgeValue> badged_scopes_;
+  // Maps app_id to badge contents.
+  std::map<web_app::AppId, BadgeValue> badged_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(BadgeManager);
 };

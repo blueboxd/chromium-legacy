@@ -49,65 +49,8 @@ bool DomDistillerStore::GetEntryByUrl(const GURL& url, ArticleEntry* entry) {
   return model_.GetEntryByUrl(url, entry);
 }
 
-bool DomDistillerStore::AddEntry(const ArticleEntry& entry) {
-  return ChangeEntry(entry, SyncChange::ACTION_ADD);
-}
-
-bool DomDistillerStore::UpdateEntry(const ArticleEntry& entry) {
-  return ChangeEntry(entry, SyncChange::ACTION_UPDATE);
-}
-
-bool DomDistillerStore::RemoveEntry(const ArticleEntry& entry) {
-  return ChangeEntry(entry, SyncChange::ACTION_DELETE);
-}
-
-bool DomDistillerStore::ChangeEntry(const ArticleEntry& entry,
-                                    SyncChange::SyncChangeType changeType) {
-  if (!database_loaded_) {
-    return false;
-  }
-
-  bool hasEntry = model_.GetEntryById(entry.entry_id(), nullptr);
-  if (hasEntry) {
-    if (changeType == SyncChange::ACTION_ADD) {
-      DVLOG(1) << "Already have entry with id " << entry.entry_id() << ".";
-      return false;
-    }
-  } else if (changeType != SyncChange::ACTION_ADD) {
-    DVLOG(1) << "No entry with id " << entry.entry_id() << " found.";
-    return false;
-  }
-
-  SyncChangeList changes_to_apply;
-  changes_to_apply.push_back(
-      SyncChange(FROM_HERE, changeType, CreateLocalData(entry)));
-
-  SyncChangeList changes_applied;
-  SyncChangeList changes_missing;
-
-  ApplyChangesToModel(changes_to_apply, &changes_applied, &changes_missing);
-
-  if (changeType == SyncChange::ACTION_UPDATE && changes_applied.size() != 1) {
-    DVLOG(1) << "Failed to update entry with id " << entry.entry_id() << ".";
-    return false;
-  }
-
-  DCHECK_EQ(size_t(0), changes_missing.size());
-  DCHECK_EQ(size_t(1), changes_applied.size());
-
-  ApplyChangesToDatabase(changes_applied);
-
-  return true;
-}
-
 std::vector<ArticleEntry> DomDistillerStore::GetEntries() const {
   return model_.GetEntries();
-}
-
-void DomDistillerStore::ApplyChangesToModel(const SyncChangeList& changes,
-                                            SyncChangeList* changes_applied,
-                                            SyncChangeList* changes_missing) {
-  model_.ApplyChangesToModel(changes, changes_applied, changes_missing);
 }
 
 void DomDistillerStore::OnDatabaseInit(
@@ -188,7 +131,8 @@ void DomDistillerStore::MergeDataWithModel(const SyncDataList& data,
 
   SyncChangeList changes_to_apply;
   model_.CalculateChangesForMerge(data, &changes_to_apply, changes_missing);
-  ApplyChangesToModel(changes_to_apply, changes_applied, changes_missing);
+  model_.ApplyChangesToModel(changes_to_apply, changes_applied,
+                             changes_missing);
 }
 
 }  // namespace dom_distiller

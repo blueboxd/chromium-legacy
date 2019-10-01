@@ -88,7 +88,7 @@ class FakeTabController : public TabController {
   SkColor GetTabSeparatorColor() const override { return SK_ColorBLACK; }
   SkColor GetTabBackgroundColor(
       TabActive active,
-      BrowserNonClientFrameView::ActiveState active_state) const override {
+      BrowserFrameActiveState active_state) const override {
     return active == TabActive::kActive ? tab_bg_color_active_
                                         : tab_bg_color_inactive_;
   }
@@ -98,7 +98,7 @@ class FakeTabController : public TabController {
                                         : tab_fg_color_inactive_;
   }
   base::Optional<int> GetCustomBackgroundId(
-      BrowserNonClientFrameView::ActiveState active_state) const override {
+      BrowserFrameActiveState active_state) const override {
     return base::nullopt;
   }
   gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override {
@@ -828,7 +828,7 @@ TEST_F(TabTest, TitleTextHasSufficientContrast) {
       tab.UpdateForegroundColors();
       const SkColor fg_color = tab.title_->GetEnabledColor();
       const SkColor bg_color = controller.GetTabBackgroundColor(
-          active, BrowserNonClientFrameView::kUseCurrent);
+          active, BrowserFrameActiveState::kUseCurrent);
       const float contrast = color_utils::GetContrastRatio(fg_color, bg_color);
       EXPECT_GE(contrast, color_utils::kMinimumReadableContrastRatio);
     }

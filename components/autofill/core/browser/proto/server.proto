@@ -337,11 +337,11 @@ message AutofillUploadContents {
   // Whether the password has any lowercase letter.
   optional bool password_has_lowercase_letter = 25;
 
-  // Whether the password has any uppercase letter.
-  optional bool password_has_uppercase_letter = 26;
+  // Deprecated since M80: Whether the password has any uppercase letter.
+  optional bool password_has_uppercase_letter = 26 [deprecated = true];
 
-  // Whether the password has any digit.
-  optional bool password_has_numeric = 27;
+  // Deprecated since M80: Whether the password has any digit.
+  optional bool password_has_numeric = 27 [deprecated = true];
 
   // Whether the password has any special symbol.
   optional bool password_has_special_symbol = 28;

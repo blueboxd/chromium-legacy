@@ -5,6 +5,8 @@
 // https://gpuweb.github.io/gpuweb/
 
 typedef unsigned long long GPUBufferSize;
+typedef (sequence<double> or GPUColorDict) GPUColor;
+typedef (sequence<unsigned long> or GPUExtent3DDict) GPUExtent3D;
 
 [
     RuntimeEnabled=WebGPU

@@ -133,9 +133,6 @@ class TabAndroid {
       const base::android::JavaParamRef<jobject>& jweb_contents,
       jint width,
       jint height);
-  base::android::ScopedJavaLocalRef<jobject> GetProfileAndroid(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
   TabLoadStatus LoadUrl(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

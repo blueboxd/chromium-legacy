@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
 #include "components/subresource_filter/content/browser/subframe_navigation_test_utils.h"
@@ -163,7 +164,12 @@ TEST_F(SubframeNavigationFilteringThrottleTest, FilterOnStart) {
       base::Contains(GetConsoleMessages(), GetFilterConsoleMessage(url)));
 }
 
-TEST_F(SubframeNavigationFilteringThrottleTest, FilterOnRedirect) {
+#if defined(OS_MACOSX)
+#define MAYBE_FilterOnRedirect DISABLED_FilterOnRedirect
+#else
+#define MAYBE_FilterOnRedirect FilterOnRedirect
+#endif
+TEST_F(SubframeNavigationFilteringThrottleTest, MAYBE_FilterOnRedirect) {
   InitializeDocumentSubresourceFilter(GURL("https://example.test"));
   CreateTestSubframeAndInitNavigation(GURL("https://example.test/allowed.html"),
                                       main_rfh());

@@ -412,7 +412,7 @@ bool BrowserTabStripController::IsFrameCondensed() const {
 
 bool BrowserTabStripController::HasVisibleBackgroundTabShapes() const {
   return GetFrameView()->HasVisibleBackgroundTabShapes(
-      BrowserNonClientFrameView::kUseCurrent);
+      BrowserFrameActiveState::kUseCurrent);
 }
 
 bool BrowserTabStripController::EverHasVisibleBackgroundTabShapes() const {
@@ -428,7 +428,7 @@ bool BrowserTabStripController::CanDrawStrokes() const {
 }
 
 SkColor BrowserTabStripController::GetFrameColor(
-    BrowserNonClientFrameView::ActiveState active_state) const {
+    BrowserFrameActiveState active_state) const {
   return GetFrameView()->GetFrameColor(active_state);
 }
 
@@ -437,7 +437,7 @@ SkColor BrowserTabStripController::GetToolbarTopSeparatorColor() const {
 }
 
 base::Optional<int> BrowserTabStripController::GetCustomBackgroundId(
-    BrowserNonClientFrameView::ActiveState active_state) const {
+    BrowserFrameActiveState active_state) const {
   return GetFrameView()->GetCustomBackgroundId(active_state);
 }
 

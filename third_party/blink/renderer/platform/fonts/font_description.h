@@ -350,6 +350,8 @@ class PLATFORM_EXPORT FontDescription {
 
   SkFontStyle SkiaFontStyle() const;
 
+  void UpdateFromSkiaFontStyle(const SkFontStyle& font_style);
+
   int MinimumPrefixWidthToHyphenate() const;
 
   String ToString() const;

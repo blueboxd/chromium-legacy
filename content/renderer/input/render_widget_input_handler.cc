@@ -367,6 +367,9 @@ void RenderWidgetInputHandler::HandleInputEvent(
   ui::LatencyInfo swap_latency_info(latency_info);
   swap_latency_info.AddLatencyNumber(
       ui::LatencyComponentType::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT);
+  cc::LatencyInfoSwapPromiseMonitor swap_promise_monitor(
+      &swap_latency_info, widget_->layer_tree_host()->GetSwapPromiseManager(),
+      nullptr);
 
   bool prevent_default = false;
   bool show_virtual_keyboard_for_mouse = false;
@@ -377,12 +380,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
                  mouse_event.PositionInWidget().x, "y",
                  mouse_event.PositionInWidget().y);
 
-    {
-      cc::LatencyInfoSwapPromiseMonitor swap_promise_monitor(
-          &swap_latency_info,
-          widget_->layer_tree_host()->GetSwapPromiseManager(), nullptr);
-      prevent_default = delegate_->WillHandleMouseEvent(mouse_event);
-    }
+    prevent_default = delegate_->WillHandleMouseEvent(mouse_event);
 
     // Reset the last known cursor if mouse has left this widget. So next
     // time that the mouse enters we always set the cursor accordingly.

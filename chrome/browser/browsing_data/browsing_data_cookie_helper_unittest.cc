@@ -121,9 +121,11 @@ class BrowsingDataCookieHelperTest : public testing::Test {
 
     network::mojom::CookieManager* cookie_manager =
         storage_partition()->GetCookieManagerForBrowserProcess();
-    cookie_manager->SetCanonicalCookie(*cookie1, "https", net::CookieOptions(),
+    cookie_manager->SetCanonicalCookie(*cookie1, "https",
+                                       net::CookieOptions::MakeAllInclusive(),
                                        base::DoNothing());
-    cookie_manager->SetCanonicalCookie(*cookie2, "https", net::CookieOptions(),
+    cookie_manager->SetCanonicalCookie(*cookie2, "https",
+                                       net::CookieOptions::MakeAllInclusive(),
                                        base::DoNothing());
   }
 
@@ -137,9 +139,11 @@ class BrowsingDataCookieHelperTest : public testing::Test {
 
     network::mojom::CookieManager* cookie_manager =
         storage_partition()->GetCookieManagerForBrowserProcess();
-    cookie_manager->SetCanonicalCookie(*cookie1, "https", net::CookieOptions(),
+    cookie_manager->SetCanonicalCookie(*cookie1, "https",
+                                       net::CookieOptions::MakeAllInclusive(),
                                        base::DoNothing());
-    cookie_manager->SetCanonicalCookie(*cookie2, "https", net::CookieOptions(),
+    cookie_manager->SetCanonicalCookie(*cookie2, "https",
+                                       net::CookieOptions::MakeAllInclusive(),
                                        base::DoNothing());
   }
 

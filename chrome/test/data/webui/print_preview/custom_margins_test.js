@@ -231,8 +231,7 @@ cr.define('custom_margins_test', function() {
       const marginValues = setupCustomMargins();
       return finishSetup().then(() => {
         // Simulate setting custom margins.
-        model.set(
-            'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
+        model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
 
         // Validate control positions are set based on the custom values.
         const controls = getControls();
@@ -249,7 +248,7 @@ cr.define('custom_margins_test', function() {
         // Margins should be reset to default and custom margins values should
         // be cleared.
         expectEquals(
-            print_preview.MarginsTypeValue.DEFAULT,
+            print_preview.MarginsType.DEFAULT,
             container.getSettingValue('margins'));
         expectEquals(
             '{}', JSON.stringify(container.getSettingValue('customMargins')));
@@ -279,8 +278,7 @@ cr.define('custom_margins_test', function() {
             let onTransitionEnd = getAllTransitions(controls);
             // Controls become visible when margin type CUSTOM is selected.
             model.set(
-                'settings.margins.value',
-                print_preview.MarginsTypeValue.CUSTOM);
+                'settings.margins.value', print_preview.MarginsType.CUSTOM);
 
             // Wait for the opacity transitions to finish.
             return onTransitionEnd;
@@ -336,8 +334,7 @@ cr.define('custom_margins_test', function() {
         const controls = getControls();
 
         // Simulate setting custom margins from sticky settings.
-        model.set(
-            'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
+        model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
         const marginValues = setupCustomMargins();
         model.notifyPath('settings.customMargins.value');
         Polymer.dom.flush();
@@ -382,8 +379,7 @@ cr.define('custom_margins_test', function() {
 
       return finishSetup().then(() => {
         const controls = getControls();
-        model.set(
-            'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
+        model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
         Polymer.dom.flush();
 
 
@@ -441,8 +437,7 @@ cr.define('custom_margins_test', function() {
         controls.forEach(c => {
           c.getInput().setAttribute('data-timeout-delay', 1);
         });
-        model.set(
-            'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
+        model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
         Polymer.dom.flush();
 
         // Verify entering a new value updates the settings.
@@ -487,8 +482,7 @@ cr.define('custom_margins_test', function() {
         controls.forEach(c => {
           c.getInput().setAttribute('data-timeout-delay', 1);
         });
-        model.set(
-            'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
+        model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
         Polymer.dom.flush();
 
         // Verify entering a new value updates the settings.
@@ -538,8 +532,7 @@ cr.define('custom_margins_test', function() {
       return finishSetup().then(() => {
         // Simulate setting custom margins.
         const controls = getControls();
-        model.set(
-            'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
+        model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
 
         // Validate control positions are set based on the custom values.
         controls.forEach((control, index) => {
@@ -549,8 +542,7 @@ cr.define('custom_margins_test', function() {
         });
 
         // Simulate setting minimum margins.
-        model.set(
-            'settings.margins.value', print_preview.MarginsTypeValue.MINIMUM);
+        model.set('settings.margins.value', print_preview.MarginsType.MINIMUM);
 
         // Validate control positions still reflect the custom values.
         controls.forEach((control, index) => {
@@ -568,8 +560,7 @@ cr.define('custom_margins_test', function() {
           .then(() => {
             // Simulate setting custom margins again.
             model.set(
-                'settings.margins.value',
-                print_preview.MarginsTypeValue.CUSTOM);
+                'settings.margins.value', print_preview.MarginsType.CUSTOM);
 
             // Validate control positions are initialized based on the default
             // values.
@@ -586,8 +577,7 @@ cr.define('custom_margins_test', function() {
     test(assert(TestNames.LayoutClearsCustomMargins), function() {
       return validateMarginsClearedForSetting('layout', true).then(() => {
         // Simulate setting custom margins again
-        model.set(
-            'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
+        model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
 
         // Validate control positions are initialized based on the default
         // values.
@@ -637,8 +627,7 @@ cr.define('custom_margins_test', function() {
 
             // Controls become visible when margin type CUSTOM is selected.
             model.set(
-                'settings.margins.value',
-                print_preview.MarginsTypeValue.CUSTOM);
+                'settings.margins.value', print_preview.MarginsType.CUSTOM);
             container.notifyPath('settings.customMargins.value');
             Polymer.dom.flush();
             return onTransitionEnd;
@@ -683,8 +672,7 @@ cr.define('custom_margins_test', function() {
     test(assert(TestNames.ControlsDisabledOnError), function() {
       return finishSetup().then(() => {
         // Simulate setting custom margins.
-        model.set(
-            'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
+        model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
 
         const controls = getControls();
         controls.forEach(control => assertFalse(control.disabled));

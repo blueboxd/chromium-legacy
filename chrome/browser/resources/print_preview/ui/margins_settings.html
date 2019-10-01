@@ -19,15 +19,19 @@
                              settings.pagesPerSheet.value)]]"
             value="{{selectedValue::change}}">
           <!-- The order of these options must match the natural order of their
-          values, which come from print_preview.MarginsTypeValue. -->
-          <option value="[[MarginsValue.DEFAULT]]" selected>
+          values, which come from print_preview.MarginsType. -->
+          <option value="[[MarginsTypeEnum.DEFAULT]]" selected>
             $i18n{defaultMargins}
           </option>
-          <option value="[[MarginsValue.NO_MARGINS]]">$i18n{noMargins}</option>
-          <option value="[[MarginsValue.MINIMUM]]">
+          <option value="[[MarginsTypeEnum.NO_MARGINS]]">
+            $i18n{noMargins}
+          </option>
+          <option value="[[MarginsTypeEnum.MINIMUM]]">
             $i18n{minimumMargins}
           </option>
-          <option value="[[MarginsValue.CUSTOM]]">$i18n{customMargins}</option>
+          <option value="[[MarginsTypeEnum.CUSTOM]]">
+            $i18n{customMargins}
+          </option>
         </select>
       </div>
     </print-preview-settings-section>

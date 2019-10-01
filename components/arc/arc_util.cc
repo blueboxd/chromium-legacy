@@ -15,7 +15,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/arc/arc_features.h"
 #include "components/exo/shell_surface_util.h"

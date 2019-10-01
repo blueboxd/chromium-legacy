@@ -419,9 +419,9 @@ void FakeShillDeviceClient::SetUsbEthernetMacAddressSource(
     return;
   }
 
-  base::Value* properties = GetDeviceProperties(device_path.value());
-  properties->SetKey(shill::kUsbEthernetMacAddressSourceProperty,
-                     base::Value(source));
+  SetDeviceProperty(device_path.value(),
+                    shill::kUsbEthernetMacAddressSourceProperty,
+                    base::Value(source), /*notify_changed=*/true);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }

@@ -67,8 +67,7 @@ NGLayoutResult::NGLayoutResult(
                      builder,
                      /* cache_space */ false) {}
 
-NGLayoutResult::NGLayoutResult(NGLayoutResultStatus status,
-                               NGBoxFragmentBuilder* builder)
+NGLayoutResult::NGLayoutResult(EStatus status, NGBoxFragmentBuilder* builder)
     : NGLayoutResult(/* physical_fragment */ nullptr,
                      builder,
                      /* cache_space */ false) {

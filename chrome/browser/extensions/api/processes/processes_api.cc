@@ -33,7 +33,6 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/common/error_utils.h"
-#include "third_party/blink/public/platform/web_cache.h"
 
 namespace extensions {
 
@@ -65,7 +64,7 @@ int64_t GetRefreshTypesForProcessOptionalData() {
 }
 
 std::unique_ptr<api::processes::Cache> CreateCacheData(
-    const blink::WebCache::ResourceTypeStat& stat) {
+    const blink::WebCacheResourceTypeStat& stat) {
   std::unique_ptr<api::processes::Cache> cache(new api::processes::Cache());
   cache->size = static_cast<double>(stat.size);
   cache->live_size = static_cast<double>(stat.size);
@@ -168,7 +167,7 @@ void FillProcessData(
         sqlite_bytes)));
   }
 
-  blink::WebCache::ResourceTypeStats cache_stats;
+  blink::WebCacheResourceTypeStats cache_stats;
   if (task_manager->GetWebCacheStats(id, &cache_stats)) {
     out_process->image_cache = CreateCacheData(cache_stats.images);
     out_process->script_cache = CreateCacheData(cache_stats.scripts);

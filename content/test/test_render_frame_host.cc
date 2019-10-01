@@ -11,7 +11,6 @@
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "content/browser/frame_host/frame_tree.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"

@@ -713,14 +713,14 @@ AccountReconcilor::LoadValidAccountsFromTokenService() const {
 
   std::vector<CoreAccountId> chrome_account_ids;
 
-  // Remove any accounts that have an error.  There is no point in trying to
-  // reconcile them, since it won't work anyway.  If the list ends up being
+  // Remove any accounts that have an error. There is no point in trying to
+  // reconcile them, since it won't work anyway. If the list ends up being
   // empty then don't reconcile any accounts.
   for (const auto& chrome_account_with_refresh_tokens :
        chrome_accounts_with_refresh_tokens) {
     if (identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
             chrome_account_with_refresh_tokens.account_id)) {
-      VLOG(1) << "AccountReconcilor::ValidateAccountsFromTokenService: "
+      VLOG(1) << "AccountReconcilor::LoadValidAccountsFromTokenService: "
               << chrome_account_with_refresh_tokens.account_id
               << " has error, don't reconcile";
       continue;
@@ -728,7 +728,7 @@ AccountReconcilor::LoadValidAccountsFromTokenService() const {
     chrome_account_ids.push_back(chrome_account_with_refresh_tokens.account_id);
   }
 
-  VLOG(1) << "AccountReconcilor::ValidateAccountsFromTokenService: "
+  VLOG(1) << "AccountReconcilor::LoadValidAccountsFromTokenService: "
           << "Chrome " << chrome_account_ids.size() << " accounts";
 
   return chrome_account_ids;

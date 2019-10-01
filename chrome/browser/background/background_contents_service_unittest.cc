@@ -68,15 +68,14 @@ class BackgroundContentsServiceTest : public testing::Test {
 class MockBackgroundContents : public BackgroundContents {
  public:
   MockBackgroundContents(BackgroundContentsService* service,
-                         Profile* profile,
                          const std::string& id)
-      : service_(service), appid_(id), profile_(profile) {}
-  MockBackgroundContents(BackgroundContentsService* service, Profile* profile)
-      : MockBackgroundContents(service, profile, "app_id") {}
+      : service_(service), appid_(id) {}
+  explicit MockBackgroundContents(BackgroundContentsService* service)
+      : MockBackgroundContents(service, "app_id") {}
 
   void SendOpenedNotification() {
     BackgroundContentsOpenedDetails details = {this, "background", appid_};
-    service_->BackgroundContentsOpened(&details, profile_);
+    service_->BackgroundContentsOpened(&details);
   }
 
   void Navigate(GURL url) {
@@ -103,9 +102,6 @@ class MockBackgroundContents : public BackgroundContents {
 
   // The ID of our parent application
   std::string appid_;
-
-  // Parent profile
-  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBackgroundContents);
 };
@@ -154,8 +150,7 @@ TEST_F(BackgroundContentsServiceTest, Create) {
 TEST_F(BackgroundContentsServiceTest, BackgroundContentsCreateDestroy) {
   TestingProfile profile;
   BackgroundContentsService service(&profile, command_line_.get());
-  MockBackgroundContents* contents =
-      new MockBackgroundContents(&service, &profile);
+  MockBackgroundContents* contents = new MockBackgroundContents(&service);
   EXPECT_FALSE(service.IsTracked(contents));
   contents->SendOpenedNotification();
   EXPECT_TRUE(service.IsTracked(contents));
@@ -172,7 +167,7 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAdded) {
   GURL url2("http://a/");
   {
     std::unique_ptr<MockBackgroundContents> contents(
-        new MockBackgroundContents(&service, &profile));
+        new MockBackgroundContents(&service));
     EXPECT_EQ(0U, GetPrefs(&profile)->size());
     contents->SendOpenedNotification();
 
@@ -194,8 +189,7 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAddedAndClosed) {
   BackgroundContentsService service(&profile, command_line_.get());
 
   GURL url("http://a/");
-  MockBackgroundContents* contents =
-      new MockBackgroundContents(&service, &profile);
+  MockBackgroundContents* contents = new MockBackgroundContents(&service);
   EXPECT_EQ(0U, GetPrefs(&profile)->size());
   contents->SendOpenedNotification();
   contents->Navigate(url);
@@ -216,7 +210,7 @@ TEST_F(BackgroundContentsServiceTest, RestartBackgroundContents) {
   GURL url("http://a/");
   {
     std::unique_ptr<MockBackgroundContents> contents(
-        new MockBackgroundContents(&service, &profile, "appid"));
+        new MockBackgroundContents(&service, "appid"));
     contents->SendOpenedNotification();
     contents->Navigate(url);
     EXPECT_EQ(1U, GetPrefs(&profile)->size());
@@ -229,7 +223,7 @@ TEST_F(BackgroundContentsServiceTest, RestartBackgroundContents) {
     // Reopen the BackgroundContents to the same URL, we should not register the
     // URL again.
     std::unique_ptr<MockBackgroundContents> contents(
-        new MockBackgroundContents(&service, &profile, "appid"));
+        new MockBackgroundContents(&service, "appid"));
     contents->SendOpenedNotification();
     contents->Navigate(url);
     EXPECT_EQ(1U, GetPrefs(&profile)->size());
@@ -245,9 +239,9 @@ TEST_F(BackgroundContentsServiceTest, TestApplicationIDLinkage) {
 
   EXPECT_EQ(NULL, service.GetAppBackgroundContents("appid"));
   MockBackgroundContents* contents =
-      new MockBackgroundContents(&service, &profile, "appid");
+      new MockBackgroundContents(&service, "appid");
   std::unique_ptr<MockBackgroundContents> contents2(
-      new MockBackgroundContents(&service, &profile, "appid2"));
+      new MockBackgroundContents(&service, "appid2"));
   contents->SendOpenedNotification();
   EXPECT_EQ(contents, service.GetAppBackgroundContents(contents->appid()));
   contents2->SendOpenedNotification();

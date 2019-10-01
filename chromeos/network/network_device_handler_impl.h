@@ -166,8 +166,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
   // Checks whether Device is enabled USB Ethernet adapter.
   bool IsUsbEnabledDevice(const DeviceState* device_state) const;
 
-  // Returns path for primary enabled USB Ethernet device.
-  std::string FindPrimaryEnabledUsbEthernetDevicePath() const;
+  // Updates the primary enabled USB Ethernet device path.
+  void UpdatePrimaryEnabledUsbEthernetDevice();
+
+  // Resets MAC address source property for secondary USB Ethernet devices.
+  void ResetMacAddressSourceForSecondaryUsbEthernetDevices() const;
 
   // Sets the value of |mac_addr_randomization_supported_| based on
   // whether shill thinks it is supported on the wifi device. If it is

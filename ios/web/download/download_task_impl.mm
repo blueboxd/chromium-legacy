@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#import "ios/net/cookies/system_cookie_util.h"
 #import "ios/web/net/cookies/wk_cookie_util.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/download/download_task_observer.h"
@@ -23,7 +24,10 @@
 #include "net/base/io_buffer.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
+#include "net/cookies/cookie_store.h"
 #include "net/url_request/url_fetcher_response_writer.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "url/url_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -402,14 +406,30 @@ NSURLSession* DownloadTaskImpl::CreateSession(NSString* identifier,
 
 void DownloadTaskImpl::GetCookies(
     base::Callback<void(NSArray<NSHTTPCookie*>*)> callback) {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  auto store = WKCookieStoreForBrowserState(web_state_->GetBrowserState());
-  DCHECK(store);
-  [store getAllCookies:^(NSArray<NSHTTPCookie*>* cookies) {
-    // getAllCookies: callback is always called on UI thread.
-    DCHECK_CURRENTLY_ON(WebThread::UI);
-    callback.Run(cookies);
-  }];
+  DCHECK_CURRENTLY_ON(WebThread::UI);
+  scoped_refptr<net::URLRequestContextGetter> context_getter(
+      web_state_->GetBrowserState()->GetRequestContext());
+
+  // net::URLRequestContextGetter must be used in the IO thread.
+  base::PostTask(FROM_HERE, {WebThread::IO},
+                 base::BindOnce(&DownloadTaskImpl::GetCookiesFromContextGetter,
+                                context_getter, callback));
+}
+
+void DownloadTaskImpl::GetCookiesFromContextGetter(
+    scoped_refptr<net::URLRequestContextGetter> context_getter,
+    base::Callback<void(NSArray<NSHTTPCookie*>*)> callback) {
+  DCHECK_CURRENTLY_ON(WebThread::IO);
+  context_getter->GetURLRequestContext()->cookie_store()->GetAllCookiesAsync(
+      base::BindOnce(
+          [](base::Callback<void(NSArray<NSHTTPCookie*>*)> callback,
+             const net::CookieList& cookie_list) {
+            NSArray<NSHTTPCookie*>* cookies =
+                SystemCookiesFromCanonicalCookieList(cookie_list);
+            base::PostTask(FROM_HERE, {WebThread::UI},
+                           base::BindOnce(callback, cookies));
+          },
+          callback));
 }
 
 void DownloadTaskImpl::StartWithCookies(NSArray<NSHTTPCookie*>* cookies) {

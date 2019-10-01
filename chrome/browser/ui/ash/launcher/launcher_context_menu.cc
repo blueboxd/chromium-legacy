@@ -10,6 +10,8 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/metrics/user_metrics.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,6 +24,7 @@
 #include "chrome/browser/ui/ash/launcher/crostini_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/internal_app_shelf_context_menu.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -30,6 +33,14 @@
 namespace {
 
 void UninstallApp(Profile* profile, const std::string& app_id) {
+  if (base::FeatureList::IsEnabled(features::kAppServiceShelf)) {
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile);
+    DCHECK(proxy);
+    proxy->Uninstall(app_id);
+    return;
+  }
+
   // ExtensionUninstall deletes itself when done or aborted.
   ExtensionUninstaller* uninstaller = new ExtensionUninstaller(profile, app_id);
   uninstaller->Run();

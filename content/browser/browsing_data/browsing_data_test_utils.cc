@@ -31,6 +31,7 @@ void CreateCookieForTest(
     const std::string& cookie_domain,
     net::CookieSameSite same_site,
     net::CookieOptions::SameSiteCookieContext cookie_context,
+    bool is_cookie_secure,
     BrowserContext* browser_context) {
   base::RunLoop run_loop;
   net::CookieOptions options;
@@ -39,8 +40,9 @@ void CreateCookieForTest(
   GetCookieManager(browser_context)
       ->SetCanonicalCookie(
           net::CanonicalCookie(cookie_name, "1", cookie_domain, "/",
-                               base::Time(), base::Time(), base::Time(), false,
-                               false, same_site, net::COOKIE_PRIORITY_LOW),
+                               base::Time(), base::Time(), base::Time(),
+                               is_cookie_secure, false, same_site,
+                               net::COOKIE_PRIORITY_LOW),
           "https", options,
           base::BindLambdaForTesting([&](CookieInclusionStatus result) {
             result_out = result.IsInclude();

@@ -35,7 +35,7 @@ class XRReferenceSpace : public XRSpace {
   ~XRReferenceSpace() override;
 
   XRPose* getPose(XRSpace* other_space,
-                  const TransformationMatrix* base_pose_matrix) override;
+                  const TransformationMatrix* mojo_from_viewer) override;
   std::unique_ptr<TransformationMatrix> DefaultViewerPose() override;
   std::unique_ptr<TransformationMatrix> SpaceFromMojo(
       const TransformationMatrix& mojo_from_viewer) override;

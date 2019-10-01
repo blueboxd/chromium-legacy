@@ -8,6 +8,7 @@ source_set("download") {
   deps = [
     ":download_cookies",
     "//base",
+    "//ios/net",
     "//ios/web/net/cookies",
     "//ios/web/public",
     "//ios/web/public/download",

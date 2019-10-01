@@ -726,8 +726,6 @@ callback GetEntryPropertiesCallback =
 // |sourcePath| Source path of the mount.
 callback AddMountCallback = void(DOMString sourcePath);
 
-callback MarkCacheAsMountedCallback = void();
-
 // |volumeMetadataList| The list of VolumeMetadata representing mounted volumes.
 callback GetVolumeMetadataListCallback =
     void(VolumeMetadata[] volumeMetadataList);
@@ -955,16 +953,6 @@ interface Functions {
   // Unmounts a mounted resource.
   // |volumeId| An ID of the volume.
   static void removeMount(DOMString volumeId);
-
-  // Marks a cache file of Drive as mounted or unmounted.
-  // Does nothing if the file is not under Drive directory.
-  // |sourcePath| Mounted source file. Relative file path within external file
-  //     system.
-  // |isMounted| Mark as mounted if true. Mark as unmounted otherwise.
-  // |callback| Completion callback. $(ref:runtime.lastError) will be set if
-  //     there was an error.
-  static void markCacheAsMounted(DOMString sourcePath, boolean isMounted,
-      MarkCacheAsMountedCallback callback);
 
   // Get the list of mounted volumes.
   // |callback|

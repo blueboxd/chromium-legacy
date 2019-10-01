@@ -36,6 +36,10 @@ class AppRegistryController {
   virtual void SetAppLaunchContainer(const AppId& app_id,
                                      LaunchContainer launch_container) = 0;
 
+  virtual void SetAppIsLocallyInstalledForTesting(
+      const AppId& app_id,
+      bool is_locally_installed) = 0;
+
   // Safe downcast:
   virtual WebAppSyncBridge* AsWebAppSyncBridge() = 0;
 

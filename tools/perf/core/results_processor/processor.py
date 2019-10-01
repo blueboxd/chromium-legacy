@@ -12,11 +12,18 @@ import json
 import os
 
 from core.results_processor import command_line
+from core.results_processor import compute_metrics
 from core.results_processor import formatters
+
+from tracing.value.diagnostics import generic_set
+from tracing.value.diagnostics import reserved_infos
+from tracing.value import histogram_set
 
 
 HTML_TRACE_NAME = 'trace.html'
 TELEMETRY_RESULTS = '_telemetry_results.jsonl'
+
+FORMATS_WITH_METRICS = ['csv', 'histograms', 'html']
 
 
 def ProcessResults(options):
@@ -40,12 +47,16 @@ def ProcessResults(options):
 
   _UploadArtifacts(intermediate_results, options.upload_bucket)
 
-  for output_format in options.output_formats:
-    if output_format not in formatters.FORMATTERS:
-      raise NotImplementedError(output_format)
+  if any(fmt in FORMATS_WITH_METRICS for fmt in options.output_formats):
+    histogram_dicts = _ComputeMetrics(intermediate_results,
+                                      options.results_label)
 
+  for output_format in options.output_formats:
     formatter = formatters.FORMATTERS[output_format]
-    formatter.Process(intermediate_results, options)
+    if output_format in FORMATS_WITH_METRICS:
+      formatter.ProcessHistogramDicts(histogram_dicts, options)
+    else:
+      formatter.ProcessIntermediateResults(intermediate_results, options)
 
 
 def _LoadIntermediateResults(intermediate_file):
@@ -93,6 +104,34 @@ def _UploadArtifacts(intermediate_results, upload_bucket):
         # remoteUrls are set.
         # TODO(crbug.com/981349): replace this with actual uploading code
         assert 'remoteUrl' in artifact
+
+
+def _ComputeMetrics(intermediate_results, results_label):
+  histogram_dicts = compute_metrics.ComputeTBMv2Metrics(intermediate_results)
+  histogram_dicts = AddDiagnosticsToHistograms(
+      histogram_dicts, intermediate_results, results_label)
+  return histogram_dicts
+
+
+def AddDiagnosticsToHistograms(histogram_dicts, intermediate_results,
+                                results_label):
+  """Add diagnostics to histogram dicts"""
+  histograms = histogram_set.HistogramSet()
+  histograms.ImportDicts(histogram_dicts)
+  diagnostics = intermediate_results['benchmarkRun'].get('diagnostics', {})
+  for name, diag in diagnostics.items():
+    # For now, we only support GenericSet diagnostics that are serialized
+    # as lists of values.
+    assert isinstance(diag, list)
+    histograms.AddSharedDiagnosticToAllHistograms(
+        name, generic_set.GenericSet(diag))
+
+  if results_label is not None:
+    histograms.AddSharedDiagnosticToAllHistograms(
+        reserved_infos.LABELS.name,
+        generic_set.GenericSet([results_label]))
+
+  return histograms.AsDicts()
 
 
 def main(args=None):

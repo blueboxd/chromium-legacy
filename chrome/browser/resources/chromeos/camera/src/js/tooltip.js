@@ -79,7 +79,14 @@ cca.tooltip.position_ = function() {
  */
 cca.tooltip.show_ = function(element) {
   cca.tooltip.hide();
-  cca.tooltip.wrapper_.textContent = element.getAttribute('aria-label');
+  let message = element.getAttribute('aria-label');
+  if (element.hasAttribute('tooltip-true') && element.checked) {
+    message = element.getAttribute('tooltip-true');
+  }
+  if (element.hasAttribute('tooltip-false') && !element.checked) {
+    message = element.getAttribute('tooltip-false');
+  }
+  cca.tooltip.wrapper_.textContent = message;
   cca.tooltip.hovered_ = element;
   cca.tooltip.position_();
   cca.tooltip.wrapper_.classList.add('visible');

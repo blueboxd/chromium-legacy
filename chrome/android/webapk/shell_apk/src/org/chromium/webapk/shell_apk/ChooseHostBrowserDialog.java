@@ -26,9 +26,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * Shows the dialog to choose a host browser to launch WebAPK. Calls the listener callback when the
@@ -52,14 +51,14 @@ public class ChooseHostBrowserDialog {
         private String mPackageName;
         private CharSequence mApplicationLabel;
         private Drawable mIcon;
-        private boolean mSupportsWebApks;
+        private boolean mEnable;
 
-        public BrowserItem(String packageName, CharSequence applicationLabel, Drawable icon,
-                boolean supportsWebApks) {
+        public BrowserItem(
+                String packageName, CharSequence applicationLabel, Drawable icon, boolean enable) {
             mPackageName = packageName;
             mApplicationLabel = applicationLabel;
             mIcon = icon;
-            mSupportsWebApks = supportsWebApks;
+            mEnable = enable;
         }
 
         /** Returns the package name of a browser. */
@@ -77,9 +76,9 @@ public class ChooseHostBrowserDialog {
             return mIcon;
         }
 
-        /** Returns whether the browser supports WebAPKs. */
-        public boolean supportsWebApks() {
-            return mSupportsWebApks;
+        /** Returns whether to enable the browser list entry. */
+        public boolean enable() {
+            return mEnable;
         }
     }
 
@@ -87,11 +86,11 @@ public class ChooseHostBrowserDialog {
      * Shows the dialog for choosing a host browser.
      * @param context The current Context.
      * @param listener The listener for the dialog.
-     * @param infos The set of ResolvedInfos of the browsers that are shown on the dialog.
+     * @param infos Browser-package-name->ResolveInfo mapping for all of the installed browsers.
      * @param appName The name of the WebAPK for which the dialog is shown.
      */
-    public static void show(Context context, final DialogListener listener, Set<ResolveInfo> infos,
-            String appName) {
+    public static void show(Context context, final DialogListener listener,
+            Map<String, ResolveInfo> infos, String appName) {
         final List<BrowserItem> browserItems =
                 getBrowserInfosForHostBrowserSelection(context.getPackageManager(), infos);
 
@@ -128,7 +127,7 @@ public class ChooseHostBrowserDialog {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 BrowserItem browserItem = browserItems.get(position);
-                if (browserItem.supportsWebApks()) {
+                if (browserItem.enable()) {
                     onDismissCanceler.canceled = true;
                     listener.onHostBrowserSelected(browserItem.getPackageName());
                     dialog.cancel();
@@ -149,18 +148,23 @@ public class ChooseHostBrowserDialog {
 
     /** Returns a list of BrowserItem for all of the installed browsers. */
     private static List<BrowserItem> getBrowserInfosForHostBrowserSelection(
-            PackageManager packageManager, Set<ResolveInfo> resolveInfos) {
+            PackageManager packageManager, Map<String, ResolveInfo> resolveInfos) {
+        boolean hasBrowserSupportingWebApk = false;
+        for (String installedBrowserPackage : resolveInfos.keySet()) {
+            if (HostBrowserUtils.doesBrowserSupportWebApks(installedBrowserPackage)) {
+                hasBrowserSupportingWebApk = true;
+                break;
+            }
+        }
+
         List<BrowserItem> browsers = new ArrayList<>();
-        List<String> browsersSupportingWebApk = HostBrowserUtils.getBrowsersSupportingWebApk();
-        Set<String> packages = new HashSet<>();
-
-        for (ResolveInfo info : resolveInfos) {
-            if (packages.contains(info.activityInfo.packageName)) continue;
-            packages.add(info.activityInfo.packageName);
-
-            browsers.add(new BrowserItem(info.activityInfo.packageName,
-                    info.loadLabel(packageManager), info.loadIcon(packageManager),
-                    browsersSupportingWebApk.contains(info.activityInfo.packageName)));
+        for (Map.Entry<String, ResolveInfo> entry : resolveInfos.entrySet()) {
+            String browserPackage = entry.getKey();
+            ResolveInfo info = entry.getValue();
+            boolean enable = !hasBrowserSupportingWebApk
+                    || HostBrowserUtils.doesBrowserSupportWebApks(browserPackage);
+            browsers.add(new BrowserItem(browserPackage, info.loadLabel(packageManager),
+                    info.loadIcon(packageManager), enable));
         }
 
         if (browsers.size() <= 1) return browsers;
@@ -168,10 +172,10 @@ public class ChooseHostBrowserDialog {
         Collections.sort(browsers, new Comparator<BrowserItem>() {
             @Override
             public int compare(BrowserItem a, BrowserItem b) {
-                if (a.mSupportsWebApks == b.mSupportsWebApks) {
+                if (a.mEnable == b.mEnable) {
                     return a.getPackageName().compareTo(b.getPackageName());
                 }
-                return a.mSupportsWebApks ? -1 : 1;
+                return a.mEnable ? -1 : 1;
             }
         });
 
@@ -205,8 +209,8 @@ public class ChooseHostBrowserDialog {
                     res.getDimensionPixelSize(R.dimen.list_column_padding), 0, 0, 0);
 
             BrowserItem item = mBrowsers.get(position);
-            name.setEnabled(item.supportsWebApks());
-            if (item.supportsWebApks()) {
+            name.setEnabled(item.enable());
+            if (item.enable()) {
                 name.setText(item.getApplicationName());
                 name.setTextColor(WebApkUtils.getColor(res, R.color.black_alpha_87));
                 icon.setAlpha(SUPPORTED_ICON_OPACITY);
@@ -224,13 +228,13 @@ public class ChooseHostBrowserDialog {
                 icon.setAlpha(UNSUPPORTED_ICON_OPACITY);
             }
             icon.setImageDrawable(item.getApplicationIcon());
-            icon.setEnabled(item.supportsWebApks());
+            icon.setEnabled(item.enable());
             return convertView;
         }
 
         @Override
         public boolean isEnabled(int position) {
-            return mBrowsers.get(position).supportsWebApks();
+            return mBrowsers.get(position).enable();
         }
     }
 }

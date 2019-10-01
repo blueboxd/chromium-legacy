@@ -11,9 +11,11 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory_impl.h"
 #include "components/password_manager/core/browser/leak_detection_delegate_helper.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+#include "components/password_manager/core/browser/leaked_credentials_table.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -58,10 +60,24 @@ void LeakDetectionDelegate::OnLeakDetectionDone(bool is_leaked,
     BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
     logger.LogBoolean(Logger::STRING_LEAK_DETECTION_FINISHED, is_leaked);
   }
+
+  password_manager::PasswordStore* password_store =
+      client_->GetProfilePasswordStore();
+  if (base::FeatureList::IsEnabled(password_manager::features::kLeakHistory)) {
+    if (is_leaked) {
+      password_store->AddLeakedCredentials(
+          LeakedCredentials(url, username, base::Time::Now()));
+    } else {
+      // If the credentials are not saved as leaked in the database, this call
+      // will just get ignored.
+      password_store->RemoveLeakedCredentials(url, username);
+    }
+  }
+
   if (is_leaked) {
     if (!client_->GetPasswordFeatureManager()
              ->ShouldCheckReuseOnLeakDetection()) {
-      // If we should not check leaked password reuse, then the
+      // If leaked password reuse should not be checked, then the
       // |CredentialLeakType| needed to show the correct notification is already
       // determined.
       OnShowLeakDetectionNotification(
@@ -73,9 +89,8 @@ void LeakDetectionDelegate::OnLeakDetectionDone(bool is_leaked,
       helper_ = std::make_unique<LeakDetectionDelegateHelper>(base::BindOnce(
           &LeakDetectionDelegate::OnShowLeakDetectionNotification,
           base::Unretained(this)));
-      helper_->GetCredentialLeakType(client_->GetProfilePasswordStore(),
-                                     std::move(url), std::move(username),
-                                     std::move(password));
+      helper_->GetCredentialLeakType(password_store, std::move(url),
+                                     std::move(username), std::move(password));
     }
   }
 }

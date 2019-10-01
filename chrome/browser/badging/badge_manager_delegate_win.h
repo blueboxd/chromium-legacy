@@ -13,10 +13,6 @@
 
 class Profile;
 
-namespace web_app {
-class AppRegistrar;
-}
-
 namespace badging {
 
 class BadgeManager;
@@ -25,8 +21,7 @@ class BadgeManager;
 class BadgeManagerDelegateWin : public BadgeManagerDelegate {
  public:
   explicit BadgeManagerDelegateWin(Profile* profile,
-                                   BadgeManager* badge_manager,
-                                   web_app::AppRegistrar* registrar);
+                                   BadgeManager* badge_manager);
 
   void OnAppBadgeUpdated(const web_app::AppId& app_id) override;
 

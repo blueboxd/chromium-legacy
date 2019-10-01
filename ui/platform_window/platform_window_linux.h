@@ -5,6 +5,7 @@
 #ifndef UI_PLATFORM_WINDOW_PLATFORM_WINDOW_LINUX_H_
 #define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_LINUX_H_
 
+#include "base/optional.h"
 #include "ui/platform_window/platform_window_base.h"
 
 namespace ui {
@@ -21,6 +22,14 @@ class PlatformWindowLinux : public PlatformWindowBase {
   // X11-specific.  Handles CompleteSwapAfterResize event coming from the
   // compositor observer.
   virtual void OnCompleteSwapAfterResize();
+
+  // X11-specific.  Returns the workspace the PlatformWindow is located in.
+  virtual base::Optional<int> GetWorkspace() const;
+  // X11-specific.  Sets the PlatformWindow to be visible on all workspaces.
+  virtual void SetVisibleOnAllWorkspaces(bool always_visible);
+  // X11-specific.  Returns true if the PlatformWindow is visible on all
+  // workspaces.
+  virtual bool IsVisibleOnAllWorkspaces() const;
 };
 
 }  // namespace ui

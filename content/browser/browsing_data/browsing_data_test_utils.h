@@ -21,6 +21,7 @@ void CreateCookieForTest(
     const std::string& cookie_domain,
     net::CookieSameSite same_site,
     net::CookieOptions::SameSiteCookieContext cookie_context,
+    bool is_cookie_secure,
     BrowserContext* browser_context);
 
 std::vector<net::CanonicalCookie> GetAllCookies(

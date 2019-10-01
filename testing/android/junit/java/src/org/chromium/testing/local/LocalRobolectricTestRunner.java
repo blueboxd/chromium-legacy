@@ -7,7 +7,6 @@ package org.chromium.testing.local;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ManifestFactory;
 
 /**
  * A custom Robolectric Junit4 Test Runner with Chromium specific settings.
@@ -33,10 +32,5 @@ public class LocalRobolectricTestRunner extends RobolectricTestRunner {
                 // Shadows to fix robolectric shortcomings.
                 .setShadows(new Class[] {CustomShadowApplicationPackageManager.class})
                 .build();
-    }
-
-    @Override
-    protected ManifestFactory getManifestFactory(Config config) {
-        return new GNManifestFactory();
     }
 }

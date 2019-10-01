@@ -1061,10 +1061,8 @@ void V4L2SliceVideoDecoder::RunOutputCB(scoped_refptr<VideoFrame> frame,
       frame->timestamp() != timestamp) {
     gfx::Size natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio_);
     scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
-        *frame, frame->format(), visible_rect, natural_size);
+        frame, frame->format(), visible_rect, natural_size);
     wrapped_frame->set_timestamp(timestamp);
-    wrapped_frame->AddDestructionObserver(base::BindOnce(
-        base::DoNothing::Once<scoped_refptr<VideoFrame>>(), std::move(frame)));
 
     frame = std::move(wrapped_frame);
   }

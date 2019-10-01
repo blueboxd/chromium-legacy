@@ -668,19 +668,6 @@ chrome.fileManagerPrivate.addMount = function(source, callback) {};
 chrome.fileManagerPrivate.removeMount = function(volumeId) {};
 
 /**
- * Marks a cache file of Drive as mounted or unmounted.
- * Does nothing if the file is not under Drive directory.
- * @param {string} sourcePath Mounted source file. Relative file path within
- *     external file system.
- * @param {boolean} isMounted Mark as mounted if true. Mark as unmounted
- *     otherwise.
- * @param {function()} callback Completion callback. runtime.lastError will be
- *     set if there was an error.
- */
-chrome.fileManagerPrivate.markCacheAsMounted = function(
-    sourcePath, isMounted, callback) {};
-
-/**
  * Get the list of mounted volumes. |callback|
  * @param {function((!Array<!chrome.fileManagerPrivate.VolumeMetadata>|undefined))}
  *     callback Callback with the list of

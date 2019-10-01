@@ -294,7 +294,7 @@ void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
   // new video frame using the same mailbox.
   if (!video_frame->HasTextures()) {
     wrapped_video_frame = VideoFrame::WrapVideoFrame(
-        *video_frame, video_frame->format(), picture.visible_rect(),
+        video_frame, video_frame->format(), picture.visible_rect(),
         picture.visible_rect().size());
   } else {
     gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes];
@@ -319,15 +319,13 @@ void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
   // (e.g. on a resolution change).
   base::OnceClosure reuse_cb = BindToCurrentLoop(
       base::BindOnce(&TestVDAVideoDecoder::ReusePictureBufferTask, weak_this_,
-                     picture.picture_buffer_id(), video_frame));
+                     picture.picture_buffer_id()));
   wrapped_video_frame->AddDestructionObserver(std::move(reuse_cb));
   output_cb_.Run(std::move(wrapped_video_frame));
 }
 
 // Called when a picture buffer is ready to be re-used.
-void TestVDAVideoDecoder::ReusePictureBufferTask(
-    int32_t picture_buffer_id,
-    scoped_refptr<VideoFrame> /*video_frame*/) {
+void TestVDAVideoDecoder::ReusePictureBufferTask(int32_t picture_buffer_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
   DCHECK(decoder_);
   DVLOGF(4) << "Picture buffer ID: " << picture_buffer_id;

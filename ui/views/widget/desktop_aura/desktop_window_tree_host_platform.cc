@@ -453,13 +453,9 @@ ui::ZOrderLevel DesktopWindowTreeHostPlatform::GetZOrderLevel() const {
 }
 
 void DesktopWindowTreeHostPlatform::SetVisibleOnAllWorkspaces(
-    bool always_visible) {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
-}
+    bool always_visible) {}
 
 bool DesktopWindowTreeHostPlatform::IsVisibleOnAllWorkspaces() const {
-  // TODO: needs PlatformWindow support.
   return false;
 }
 

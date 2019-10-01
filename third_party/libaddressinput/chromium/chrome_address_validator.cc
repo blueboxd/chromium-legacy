@@ -183,8 +183,9 @@ void AddressValidator::RulesLoaded(bool success,
     return;
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&AddressValidator::RetryLoadRules,
-                            weak_factory_.GetWeakPtr(), region_code),
+      FROM_HERE,
+      base::BindOnce(&AddressValidator::RetryLoadRules,
+                     weak_factory_.GetWeakPtr(), region_code),
       GetBaseRetryPeriod() * pow(2, attempts_number_[region_code]++));
 }
 

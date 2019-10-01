@@ -412,13 +412,6 @@ void EncodePasswordAttributesVote(
       upload->set_password_has_lowercase_letter(
           password_attributes_vote.second);
       break;
-    case PasswordAttribute::kHasUppercaseLetter:
-      upload->set_password_has_uppercase_letter(
-          password_attributes_vote.second);
-      break;
-    case PasswordAttribute::kHasNumeric:
-      upload->set_password_has_numeric(password_attributes_vote.second);
-      break;
     case PasswordAttribute::kHasSpecialSymbol:
       upload->set_password_has_special_symbol(password_attributes_vote.second);
       if (password_attributes_vote.second)

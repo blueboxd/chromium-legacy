@@ -14,8 +14,8 @@
 namespace content {
 
 WebContents* NavigationHandle::GetWebContents() {
-  // The NavigationHandleImpl cannot access the WebContentsImpl as it would be
-  // a layering violation, hence the cast here.
+  // The NavigationRequest cannot access the WebContentsImpl as it would be a
+  // layering violation, hence the cast here.
   return static_cast<WebContentsImpl*>(
       NavigationRequest::From(this)->GetDelegate());
 }

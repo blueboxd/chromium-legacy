@@ -114,6 +114,8 @@ bool DeviceState::PropertyChanged(const std::string& key,
     return GetBooleanValue(key, value, &link_up_);
   } else if (key == shill::kDeviceBusTypeProperty) {
     return GetStringValue(key, value, &device_bus_type_);
+  } else if (key == shill::kUsbEthernetMacAddressSourceProperty) {
+    return GetStringValue(key, value, &mac_address_source_);
   }
   return false;
 }

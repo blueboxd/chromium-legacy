@@ -10,6 +10,7 @@ import android.support.v4.view.ViewCompat;
 import android.view.LayoutInflater;
 import android.view.Window;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -84,5 +85,10 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
             mDialog.dismiss();
             mDialog = null;
         }
+    }
+
+    @VisibleForTesting
+    public Window getWindow() {
+        return mDialog.getWindow();
     }
 }

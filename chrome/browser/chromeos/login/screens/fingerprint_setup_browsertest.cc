@@ -147,7 +147,8 @@ IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, FingerprintEnrollLimit) {
   WaitForScreenExit();
 }
 
-IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, FingerprintDisabled) {
+// TODO(https://crbug.com/1009916): Fix flakes and re-enable.
+IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, DISABLED_FingerprintDisabled) {
   quick_unlock::EnabledForTesting(false);
   fingerprint_setup_screen_->Show();
 

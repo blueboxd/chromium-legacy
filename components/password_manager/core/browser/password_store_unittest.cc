@@ -1248,15 +1248,12 @@ TEST_F(PasswordStoreTest, ReportMetricsForNonSyncPassword) {
 }
 
 TEST_F(PasswordStoreTest, GetAllLeakedCredentials) {
-  LeakedCredentials leaked_credentials;
-  leaked_credentials.url = GURL("https://example.com");
-  leaked_credentials.username = base::ASCIIToUTF16("username");
-  leaked_credentials.create_time = base::Time::FromTimeT(1);
-
-  LeakedCredentials leaked_credentials2;
-  leaked_credentials2.url = GURL("https://example2.com");
-  leaked_credentials2.username = base::ASCIIToUTF16("username2");
-  leaked_credentials2.create_time = base::Time::FromTimeT(2);
+  LeakedCredentials leaked_credentials(GURL("https://example.com"),
+                                       base::ASCIIToUTF16("username"),
+                                       base::Time::FromTimeT(1));
+  LeakedCredentials leaked_credentials2(GURL("https://example2.com"),
+                                        base::ASCIIToUTF16("username2"),
+                                        base::Time::FromTimeT(2));
 
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);

@@ -50,22 +50,6 @@ std::string LazyDomDistillerService::GetUrlForEntry(
   return instance()->GetUrlForEntry(entry_id);
 }
 
-const std::string LazyDomDistillerService::AddToList(
-    const GURL& url,
-    std::unique_ptr<DistillerPage> distiller_page,
-    const ArticleAvailableCallback& article_cb) {
-  return instance()->AddToList(url, std::move(distiller_page), article_cb);
-}
-
-std::vector<ArticleEntry> LazyDomDistillerService::GetEntries() const {
-  return instance()->GetEntries();
-}
-
-std::unique_ptr<ArticleEntry> LazyDomDistillerService::RemoveEntry(
-    const std::string& entry_id) {
-  return instance()->RemoveEntry(entry_id);
-}
-
 std::unique_ptr<ViewerHandle> LazyDomDistillerService::ViewEntry(
     ViewRequestDelegate* delegate,
     std::unique_ptr<DistillerPage> distiller_page,

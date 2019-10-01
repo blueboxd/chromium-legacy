@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/distiller_page.h"
@@ -20,7 +19,6 @@ class GURL;
 
 namespace dom_distiller {
 
-class DistilledArticleProto;
 class DistilledContentStore;
 class DistillerFactory;
 class DistillerPageFactory;
@@ -37,17 +35,6 @@ class DomDistillerServiceInterface {
   typedef base::Callback<void(bool)> ArticleAvailableCallback;
   virtual ~DomDistillerServiceInterface() {}
 
-  // Distill the article at |url| and add the resulting entry to the DOM
-  // distiller list. |article_cb| is always invoked, and the bool argument to it
-  // represents whether the article is available offline.
-  // Use CreateDefaultDistillerPage() to create a default |distiller_page|.
-  // The provided |distiller_page| is only used if there is not already a
-  // distillation task in progress for the given |url|.
-  virtual const std::string AddToList(
-      const GURL& url,
-      std::unique_ptr<DistillerPage> distiller_page,
-      const ArticleAvailableCallback& article_cb) = 0;
-
   // Returns whether an article stored has the given entry id.
   virtual bool HasEntry(const std::string& entry_id) = 0;
 
@@ -55,13 +42,6 @@ class DomDistillerServiceInterface {
   // multiple pages, this will return the URL of the first page. Returns an
   // empty string if there is no entry associated with the given entry ID.
   virtual std::string GetUrlForEntry(const std::string& entry_id) = 0;
-
-  // Gets the full list of entries.
-  virtual std::vector<ArticleEntry> GetEntries() const = 0;
-
-  // Removes the specified entry from the dom distiller store.
-  virtual std::unique_ptr<ArticleEntry> RemoveEntry(
-      const std::string& entry_id) = 0;
 
   // Request to view an article by entry id. Returns a null pointer if no entry
   // with |entry_id| exists. The ViewerHandle should be destroyed before the
@@ -113,15 +93,8 @@ class DomDistillerService : public DomDistillerServiceInterface {
   ~DomDistillerService() override;
 
   // DomDistillerServiceInterface implementation.
-  const std::string AddToList(
-      const GURL& url,
-      std::unique_ptr<DistillerPage> distiller_page,
-      const ArticleAvailableCallback& article_cb) override;
   bool HasEntry(const std::string& entry_id) override;
   std::string GetUrlForEntry(const std::string& entry_id) override;
-  std::vector<ArticleEntry> GetEntries() const override;
-  std::unique_ptr<ArticleEntry> RemoveEntry(
-      const std::string& entry_id) override;
   std::unique_ptr<ViewerHandle> ViewEntry(
       ViewRequestDelegate* delegate,
       std::unique_ptr<DistillerPage> distiller_page,
@@ -138,9 +111,6 @@ class DomDistillerService : public DomDistillerServiceInterface {
 
  private:
   void CancelTask(TaskTracker* task);
-  void AddDistilledPageToList(const ArticleEntry& entry,
-                              const DistilledArticleProto* article_proto,
-                              bool distillation_succeeded);
 
   TaskTracker* CreateTaskTracker(const ArticleEntry& entry);
 

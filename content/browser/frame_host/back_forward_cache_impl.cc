@@ -10,6 +10,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/page_messages.h"
 #include "content/public/common/content_features.h"
@@ -23,7 +24,7 @@ namespace {
 
 using blink::scheduler::WebSchedulerTrackedFeature;
 
-// The number of pages the BackForwardCache can hold per tab.
+// The number of entries the BackForwardCache can hold per tab.
 static constexpr size_t kBackForwardCacheLimit = 1;
 
 // The default time to live in seconds for documents in BackForwardCache.
@@ -121,6 +122,31 @@ std::string DescribeFeatures(uint64_t blocklisted_features) {
 }
 
 }  // namespace
+
+BackForwardCacheImpl::Entry::Entry(std::unique_ptr<RenderFrameHostImpl> rfh,
+                                   RenderFrameProxyHostMap proxies)
+    : render_frame_host(std::move(rfh)), proxy_hosts(std::move(proxies)) {}
+BackForwardCacheImpl::Entry::~Entry() {}
+
+int BackForwardCacheImpl::Entry::GetNavigationEntryId() {
+  CHECK(render_frame_host);
+  return render_frame_host->nav_entry_id();
+}
+
+bool BackForwardCacheImpl::Entry::IsEvictedFromBackForwardCache() {
+  CHECK(render_frame_host);
+  return render_frame_host->is_evicted_from_back_forward_cache();
+}
+
+void BackForwardCacheImpl::Entry::EvictFromBackForwardCache() {
+  CHECK(render_frame_host);
+  return render_frame_host->EvictFromBackForwardCache();
+}
+
+void BackForwardCacheImpl::Entry::LeaveBackForwardCache() {
+  CHECK(render_frame_host);
+  return render_frame_host->LeaveBackForwardCache();
+}
 
 std::string BackForwardCacheImpl::CanStoreDocumentResult::ToString() {
   using Reason = BackForwardCacheMetrics::CanNotStoreDocumentReason;
@@ -235,8 +261,8 @@ BackForwardCacheImpl::CanStoreDocument(RenderFrameHostImpl* rfh) {
         BackForwardCacheMetrics::CanNotStoreDocumentReason::kHTTPStatusNotOK);
   }
 
-  // Do store main document with non HTTP/HTTPS URL scheme. In particular, this
-  // excludes the new tab page.
+  // Do not store main document with non HTTP/HTTPS URL scheme. In particular,
+  // this excludes the new tab page.
   if (!rfh->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
     return CanStoreDocumentResult::No(
         BackForwardCacheMetrics::CanNotStoreDocumentReason::
@@ -283,13 +309,13 @@ BackForwardCacheImpl::CanStoreRenderFrameHost(RenderFrameHostImpl* rfh,
   return CanStoreDocumentResult::Yes();
 }
 
-void BackForwardCacheImpl::StoreDocument(
-    std::unique_ptr<RenderFrameHostImpl> rfh) {
-  TRACE_EVENT0("navigation", "BackForwardCache::StoreDocument");
-  DCHECK(CanStoreDocument(rfh.get()));
+void BackForwardCacheImpl::StoreEntry(
+    std::unique_ptr<BackForwardCacheImpl::Entry> entry) {
+  TRACE_EVENT0("navigation", "BackForwardCache::StoreEntry");
+  DCHECK(CanStoreDocument(entry->render_frame_host.get()));
 
-  rfh->EnterBackForwardCache();
-  render_frame_hosts_.push_front(std::move(rfh));
+  entry->render_frame_host->EnterBackForwardCache();
+  entries_.push_front(std::move(entry));
 
   size_t size_limit = cache_size_limit_for_testing_
                           ? cache_size_limit_for_testing_
@@ -297,11 +323,11 @@ void BackForwardCacheImpl::StoreDocument(
   // Evict the least recently used documents if the BackForwardCache list is
   // full.
   size_t available_count = 0;
-  for (auto& frame_host : render_frame_hosts_) {
-    if (frame_host->is_evicted_from_back_forward_cache())
+  for (auto& stored_entry : entries_) {
+    if (stored_entry->IsEvictedFromBackForwardCache())
       continue;
     if (++available_count > size_limit)
-      frame_host->EvictFromBackForwardCache();
+      stored_entry->EvictFromBackForwardCache();
   }
 }
 
@@ -320,33 +346,33 @@ void BackForwardCacheImpl::Resume(RenderFrameHostImpl* main_rfh) {
   SetPageFrozenImpl(main_rfh, /*frozen = */ false, &unfrozen_render_view_hosts);
 }
 
-std::unique_ptr<RenderFrameHostImpl> BackForwardCacheImpl::RestoreDocument(
+std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
     int navigation_entry_id) {
-  TRACE_EVENT0("navigation", "BackForwardCache::RestoreDocument");
+  TRACE_EVENT0("navigation", "BackForwardCache::RestoreEntry");
   // Select the RenderFrameHostImpl matching the navigation entry.
-  auto matching_rfh = std::find_if(
-      render_frame_hosts_.begin(), render_frame_hosts_.end(),
-      [navigation_entry_id](std::unique_ptr<RenderFrameHostImpl>& rfh) {
-        return rfh->nav_entry_id() == navigation_entry_id;
+  auto matching_entry = std::find_if(
+      entries_.begin(), entries_.end(),
+      [navigation_entry_id](std::unique_ptr<Entry>& entry) {
+        return entry->GetNavigationEntryId() == navigation_entry_id;
       });
 
   // Not found.
-  if (matching_rfh == render_frame_hosts_.end())
+  if (matching_entry == entries_.end())
     return nullptr;
 
   // Don't restore an evicted frame.
-  if ((*matching_rfh)->is_evicted_from_back_forward_cache())
+  if ((*matching_entry)->IsEvictedFromBackForwardCache())
     return nullptr;
 
-  std::unique_ptr<RenderFrameHostImpl> rfh = std::move(*matching_rfh);
-  render_frame_hosts_.erase(matching_rfh);
-  rfh->LeaveBackForwardCache();
-  return rfh;
+  std::unique_ptr<Entry> entry = std::move(*matching_entry);
+  entries_.erase(matching_entry);
+  entry->LeaveBackForwardCache();
+  return entry;
 }
 
 void BackForwardCacheImpl::Flush() {
   TRACE_EVENT0("navigation", "BackForwardCache::Flush");
-  render_frame_hosts_.clear();
+  entries_.clear();
 }
 
 void BackForwardCacheImpl::PostTaskToDestroyEvictedFrames() {
@@ -366,38 +392,37 @@ void BackForwardCacheImpl::DisableForRenderFrameHost(GlobalFrameRoutingId id,
 void BackForwardCacheImpl::DisableForTesting(DisableForTestingReason reason) {
   is_disabled_for_testing_ = true;
 
-  // This could happen if a test populated some pages in the cache, then
+  // This could happen if a test populated some entries in the cache, then
   // called DisableForTesting(). This is not something we currently expect tests
   // to do.
-  DCHECK(render_frame_hosts_.empty());
+  DCHECK(entries_.empty());
 }
 
-RenderFrameHostImpl* BackForwardCacheImpl::GetDocument(
+BackForwardCacheImpl::Entry* BackForwardCacheImpl::GetEntry(
     int navigation_entry_id) {
-  auto matching_rfh = std::find_if(
-      render_frame_hosts_.begin(), render_frame_hosts_.end(),
-      [navigation_entry_id](std::unique_ptr<RenderFrameHostImpl>& rfh) {
-        return rfh->nav_entry_id() == navigation_entry_id;
+  auto matching_entry = std::find_if(
+      entries_.begin(), entries_.end(),
+      [navigation_entry_id](std::unique_ptr<Entry>& entry) {
+        return entry->GetNavigationEntryId() == navigation_entry_id;
       });
 
-  if (matching_rfh == render_frame_hosts_.end())
+  if (matching_entry == entries_.end())
     return nullptr;
 
   // Don't return the frame if it is evicted.
-  if ((*matching_rfh)->is_evicted_from_back_forward_cache())
+  if ((*matching_entry)->IsEvictedFromBackForwardCache())
     return nullptr;
 
-  return (*matching_rfh).get();
+  return (*matching_entry).get();
 }
 
 void BackForwardCacheImpl::DestroyEvictedFrames() {
   TRACE_EVENT0("navigation", "BackForwardCache::DestroyEvictedFrames");
-  if (render_frame_hosts_.empty())
+  if (entries_.empty())
     return;
-  render_frame_hosts_.erase(
-      std::remove_if(render_frame_hosts_.begin(), render_frame_hosts_.end(),
-                     [](std::unique_ptr<RenderFrameHostImpl>& rfh) {
-                       return rfh->is_evicted_from_back_forward_cache();
-                     }));
+  entries_.erase(std::remove_if(entries_.begin(), entries_.end(),
+                                [](std::unique_ptr<Entry>& entry) {
+                                  return entry->IsEvictedFromBackForwardCache();
+                                }));
 }
 }  // namespace content

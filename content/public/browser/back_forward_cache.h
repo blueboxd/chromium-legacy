@@ -11,6 +11,8 @@
 
 namespace content {
 
+class RenderFrameHost;
+
 // Public API for the BackForwardCache.
 //
 // After the user navigates away from a document, the old one might go into the
@@ -43,6 +45,10 @@ class CONTENT_EXPORT BackForwardCache {
   // |reason|: Free form string to be used in logging and metrics.
   virtual void DisableForRenderFrameHost(GlobalFrameRoutingId id,
                                          base::StringPiece reason) = 0;
+
+  // Convenience static method for calling DisableForRenderFameHost.
+  static void DisableForRenderFrameHost(RenderFrameHost* render_frame_host,
+                                        base::StringPiece reason);
 
   // List of reasons the BackForwardCache was disabled for a specific test. If a
   // test needs to be disabled for a reason not covered below, please add to

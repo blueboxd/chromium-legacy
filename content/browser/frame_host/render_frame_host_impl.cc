@@ -56,7 +56,6 @@
 #include "content/browser/frame_host/ipc_utils.h"
 #include "content/browser/frame_host/keep_alive_handle_factory.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
@@ -104,6 +103,7 @@
 #include "content/browser/speech/speech_synthesis_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_package/bundled_exchanges_handle.h"
+#include "content/browser/web_package/bundled_exchanges_handle_tracker.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
@@ -2029,7 +2029,10 @@ void RenderFrameHostImpl::Init() {
         std::move(pending_navigate_->blob_url_loader_factory),
         std::move(pending_navigate_->navigation_client),
         std::move(pending_navigate_->navigation_initiator),
-        EnsurePrefetchedSignedExchangeCache());
+        EnsurePrefetchedSignedExchangeCache(),
+        bundled_exchanges_handle_
+            ? bundled_exchanges_handle_->MaybeCreateTracker()
+            : nullptr);
     pending_navigate_.reset();
   }
 }
@@ -2580,11 +2583,6 @@ RenderWidgetHostView* RenderFrameHostImpl::GetView() {
 
 GlobalFrameRoutingId RenderFrameHostImpl::GetGlobalFrameRoutingId() {
   return GlobalFrameRoutingId(GetProcess()->GetID(), GetRoutingID());
-}
-
-NavigationHandleImpl* RenderFrameHostImpl::GetNavigationHandle() {
-  return navigation_request() ? navigation_request()->navigation_handle()
-                              : nullptr;
 }
 
 void RenderFrameHostImpl::ResetNavigationRequests() {
@@ -4287,7 +4285,10 @@ void RenderFrameHostImpl::BeginNavigation(
   frame_tree_node()->navigator()->OnBeginNavigation(
       frame_tree_node(), std::move(validated_params), std::move(begin_params),
       std::move(blob_url_loader_factory), std::move(navigation_client),
-      std::move(navigation_initiator), EnsurePrefetchedSignedExchangeCache());
+      std::move(navigation_initiator), EnsurePrefetchedSignedExchangeCache(),
+      bundled_exchanges_handle_
+          ? bundled_exchanges_handle_->MaybeCreateTracker()
+          : nullptr);
 }
 
 void RenderFrameHostImpl::SubresourceResponseStarted(

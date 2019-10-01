@@ -3306,8 +3306,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 
 // A file type that Blink can handle should not be downloaded if there are cross
 // origin redirects in the middle of the redirect chain.
+// TODO(https://crbug.com/1009913): Fix flakes on various bots and re-enable
+// this test.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest,
-                       DownloadAttributeSameOriginRedirectNavigation) {
+                       DISABLED_DownloadAttributeSameOriginRedirectNavigation) {
   net::EmbeddedTestServer origin_one;
   net::EmbeddedTestServer origin_two;
   ASSERT_TRUE(origin_one.InitializeAndListen());

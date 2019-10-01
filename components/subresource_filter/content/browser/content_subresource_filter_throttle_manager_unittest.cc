@@ -20,6 +20,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/subframe_navigation_test_utils.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
@@ -688,7 +689,14 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, ActivationPropagation) {
 }
 
 // Ensure activation propagates through whitelisted documents.
-TEST_P(ContentSubresourceFilterThrottleManagerTest, ActivationPropagation2) {
+// crbug.com/1010000: crashes on win
+#if defined(OS_WIN)
+#define MAYBE_ActivationPropagation2 DISABLED_ActivationPropagation2
+#else
+#define MAYBE_ActivationPropagation2 ActivationPropagation2
+#endif
+TEST_P(ContentSubresourceFilterThrottleManagerTest,
+       MAYBE_ActivationPropagation2) {
   NavigateAndCommitMainFrame(GURL(kTestURLWithActivation));
   ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);
 

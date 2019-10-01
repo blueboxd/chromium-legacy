@@ -102,7 +102,9 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       mojo::PendingRemote<blink::mojom::NavigationInitiator>
           navigation_initiator,
       scoped_refptr<PrefetchedSignedExchangeCache>
-          prefetched_signed_exchange_cache) override;
+          prefetched_signed_exchange_cache,
+      std::unique_ptr<BundledExchangesHandleTracker>
+          bundled_exchanges_handle_tracker) override;
   void RestartNavigationAsCrossDocument(
       std::unique_ptr<NavigationRequest> navigation_request) override;
   void OnAbortNavigation(FrameTreeNode* frame_tree_node) override;

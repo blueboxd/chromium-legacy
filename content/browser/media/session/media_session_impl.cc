@@ -20,6 +20,7 @@
 #include "content/browser/media/session/media_session_service_impl.h"
 #include "content/browser/picture_in_picture/picture_in_picture_window_controller_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/navigation_handle.h"
@@ -1122,6 +1123,9 @@ void MediaSessionImpl::OnServiceCreated(MediaSessionServiceImpl* service) {
   RenderFrameHost* rfh = service->GetRenderFrameHost();
   if (!rfh)
     return;
+
+  content::BackForwardCache::DisableForRenderFrameHost(
+      rfh, "MediaSessionImpl::OnServiceCreated");
 
   services_[rfh] = service;
   UpdateRoutedService();

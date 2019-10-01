@@ -30,11 +30,14 @@ class BundledExchangesSource;
 // A class to handle a BundledExchanges that is specified by |source|.
 // It asks the utility process to parse metadata and response structures, and
 // provides body data based on parsed information.
+// This class is typically owned by BundledExchangesURLLoaderFactory, and also
+// could be co-owned by BundledExchangesHandleTracker during navigations.
 // Running on the UI thread.
-class CONTENT_EXPORT BundledExchangesReader final {
+class CONTENT_EXPORT BundledExchangesReader final
+    : public base::RefCounted<BundledExchangesReader> {
  public:
-  explicit BundledExchangesReader(const BundledExchangesSource& source);
-  ~BundledExchangesReader();
+  explicit BundledExchangesReader(
+      std::unique_ptr<BundledExchangesSource> source);
 
   // Starts parsing, and runs |callback| when meta data gets to be available.
   // |error| is set only on failures.
@@ -67,15 +70,20 @@ class CONTENT_EXPORT BundledExchangesReader final {
   // Should be called after ReadMetadata finishes.
   const GURL& GetPrimaryURL() const;
 
+  // Returns the BundledExchangesSource.
+  const BundledExchangesSource& source() const;
+
   void SetBundledExchangesParserFactoryForTesting(
       mojo::Remote<data_decoder::mojom::BundledExchangesParserFactory> factory);
 
  private:
+  friend class base::RefCounted<BundledExchangesReader>;
+
   // A simple wrapper class to share a single base::File instance among multiple
   // SharedFileDataSource instances.
   class SharedFile final : public base::RefCountedThreadSafe<SharedFile> {
    public:
-    explicit SharedFile(const BundledExchangesSource& source);
+    explicit SharedFile(std::unique_ptr<BundledExchangesSource> source);
     void DuplicateFile(base::OnceCallback<void(base::File)> callback);
     base::File* operator->();
 
@@ -93,6 +101,8 @@ class CONTENT_EXPORT BundledExchangesReader final {
   };
   class SharedFileDataSource;
 
+  ~BundledExchangesReader();
+
   void ReadMetadataInternal(MetadataCallback callback, base::File file);
 
   void OnMetadataParsed(MetadataCallback callback,
@@ -104,13 +114,13 @@ class CONTENT_EXPORT BundledExchangesReader final {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
+  const std::unique_ptr<BundledExchangesSource> source_;
+
   data_decoder::SafeBundledExchangesParser parser_;
   scoped_refptr<SharedFile> file_;
   GURL primary_url_;
   base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> entries_;
   bool metadata_ready_ = false;
-
-  base::WeakPtrFactory<BundledExchangesReader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BundledExchangesReader);
 };

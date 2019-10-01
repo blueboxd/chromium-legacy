@@ -323,19 +323,6 @@ void TabAndroid::OnPhysicalBackingSizeChanged(
   web_contents->GetNativeView()->OnPhysicalBackingSizeChanged(size);
 }
 
-base::android::ScopedJavaLocalRef<jobject> TabAndroid::GetProfileAndroid(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  Profile* profile = GetProfile();
-  if (!profile)
-    return base::android::ScopedJavaLocalRef<jobject>();
-  ProfileAndroid* profile_android = ProfileAndroid::FromProfile(profile);
-  if (!profile_android)
-    return base::android::ScopedJavaLocalRef<jobject>();
-
-  return profile_android->GetJavaObject();
-}
-
 TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

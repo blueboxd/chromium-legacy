@@ -430,6 +430,12 @@ error::Error WebGPUDecoderImpl::InitDawnDeviceAndSetWireServer(
     dawn_native::Adapter* adapter) {
   DCHECK(adapter != nullptr && (*adapter));
 
+  // TODO(jiawei.shao@intel.com): support multiple Dawn devices.
+  if (dawn_device_ != nullptr) {
+    DCHECK(wire_server_);
+    return error::kNoError;
+  }
+
   dawn_device_ = adapter->CreateDevice();
   if (dawn_device_ == nullptr) {
     return error::kLostContext;

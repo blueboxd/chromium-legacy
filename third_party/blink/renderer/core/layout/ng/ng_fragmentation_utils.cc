@@ -90,6 +90,16 @@ bool IsAvoidBreakValue(const NGConstraintSpace& constraint_space,
   return false;
 }
 
+EBreakBetween CalculateBreakBetweenValue(NGLayoutInputNode child,
+                                         const NGLayoutResult& layout_result,
+                                         const NGBoxFragmentBuilder& builder) {
+  if (child.IsInline())
+    return EBreakBetween::kAuto;
+  EBreakBetween break_before = JoinFragmentainerBreakValues(
+      child.Style().BreakBefore(), layout_result.InitialBreakBefore());
+  return builder.JoinedBreakBetweenValue(break_before);
+}
+
 void SetupFragmentation(const NGConstraintSpace& parent_space,
                         LayoutUnit new_bfc_block_offset,
                         NGConstraintSpaceBuilder* builder,

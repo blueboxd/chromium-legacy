@@ -23,7 +23,7 @@ class CONTENT_EXPORT BundledExchangesURLLoaderFactory final
     : public network::mojom::URLLoaderFactory {
  public:
   explicit BundledExchangesURLLoaderFactory(
-      std::unique_ptr<BundledExchangesReader> reader);
+      scoped_refptr<BundledExchangesReader> reader);
   ~BundledExchangesURLLoaderFactory() override;
 
   // Set a |network::mojom::URLLoaderFactory| remote interface used for requests
@@ -43,14 +43,16 @@ class CONTENT_EXPORT BundledExchangesURLLoaderFactory final
                                 traffic_annotation) override;
   void Clone(network::mojom::URLLoaderFactoryRequest request) override;
 
+  const scoped_refptr<BundledExchangesReader>& reader() const {
+    return reader_;
+  }
+
  private:
   class EntryLoader;
   friend class EntryLoader;
 
-  BundledExchangesReader* GetReader() { return reader_.get(); }
-
   mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
-  std::unique_ptr<BundledExchangesReader> reader_;
+  scoped_refptr<BundledExchangesReader> reader_;
   mojo::Remote<network::mojom::URLLoaderFactory> fallback_factory_;
 
   base::WeakPtrFactory<BundledExchangesURLLoaderFactory> weak_factory_{this};

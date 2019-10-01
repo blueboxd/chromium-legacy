@@ -6,11 +6,11 @@
 
 namespace policy {
 
-const char kMetricUserPolicyRefresh[] = "Enterprise.PolicyRefresh";
+const char kMetricUserPolicyRefresh[] = "Enterprise.PolicyRefresh2";
 const char kMetricUserPolicyRefreshFcm[] =
-    "Enterprise.FCMInvalidationService.PolicyRefresh";
+    "Enterprise.FCMInvalidationService.PolicyRefresh2";
 const char kMetricUserPolicyRefreshTicl[] =
-    "Enterprise.TiclInvalidationService.PolicyRefresh";
+    "Enterprise.TiclInvalidationService.PolicyRefresh2";
 
 const char kMetricUserPolicyInvalidations[] = "Enterprise.PolicyInvalidations";
 const char kMetricUserPolicyInvalidationsFcm[] =
@@ -21,11 +21,11 @@ const char kMetricUserPolicyInvalidationsTicl[] =
 const char kMetricUserPolicyChromeOSSessionAbort[] =
     "Enterprise.UserPolicyChromeOS.SessionAbort";
 
-const char kMetricDevicePolicyRefresh[] = "Enterprise.DevicePolicyRefresh";
+const char kMetricDevicePolicyRefresh[] = "Enterprise.DevicePolicyRefresh2";
 const char kMetricDevicePolicyRefreshFcm[] =
-    "Enterprise.FCMInvalidationService.DevicePolicyRefresh";
+    "Enterprise.FCMInvalidationService.DevicePolicyRefresh2";
 const char kMetricDevicePolicyRefreshTicl[] =
-    "Enterprise.TiclInvalidationService.DevicePolicyRefresh";
+    "Enterprise.TiclInvalidationService.DevicePolicyRefresh2";
 
 const char kMetricDevicePolicyInvalidations[] =
     "Enterprise.DevicePolicyInvalidations";

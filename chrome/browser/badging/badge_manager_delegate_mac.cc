@@ -9,20 +9,17 @@
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/common/mac/app_shim.mojom.h"
 
 namespace badging {
 
-BadgeManagerDelegateMac::BadgeManagerDelegateMac(
-    Profile* profile,
-    BadgeManager* badge_manager,
-    web_app::AppRegistrar* registrar)
-    : BadgeManagerDelegate(profile, badge_manager, registrar) {}
+BadgeManagerDelegateMac::BadgeManagerDelegateMac(Profile* profile,
+                                                 BadgeManager* badge_manager)
+    : BadgeManagerDelegate(profile, badge_manager) {}
 
 void BadgeManagerDelegateMac::OnAppBadgeUpdated(const web_app::AppId& app_id) {
   const base::Optional<BadgeManager::BadgeValue>& badge =
-      GetAppBadgeValue(app_id);
+      badge_manager()->GetBadgeValue(app_id);
   SetAppBadgeLabel(app_id, badge ? badging::GetBadgeString(badge.value()) : "");
 }
 

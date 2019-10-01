@@ -102,8 +102,9 @@ void LabelFields(const FieldTypeMap& field_types,
       }
 
       auto vote_type_iter = vote_types.find(field->name);
-      if (vote_type_iter != vote_types.end())
+      if (vote_type_iter != vote_types.end()) {
         field->set_vote_type(vote_type_iter->second);
+      }
       DCHECK(type != autofill::USERNAME ||
              field->vote_type() !=
                  AutofillUploadContents::Field::NO_INFORMATION);
@@ -182,8 +183,9 @@ void VotesUploader::SendVotesOnSave(
     const std::map<base::string16, const PasswordForm*>& best_matches,
     PasswordForm* pending_credentials) {
   if (pending_credentials->times_used == 1 ||
-      IsAddingUsernameToExistingMatch(*pending_credentials, best_matches))
+      IsAddingUsernameToExistingMatch(*pending_credentials, best_matches)) {
     UploadFirstLoginVotes(best_matches, *pending_credentials, submitted_form);
+  }
 
   // Upload credentials the first time they are saved. This data is used
   // by password generation to help determine account creation sites.
@@ -534,8 +536,9 @@ bool VotesUploader::FindCorrectedUsernameElement(
     return false;
   for (const PasswordForm* match : matches) {
     if ((match->password_value == password) &&
-        FindUsernameInOtherPossibleUsernames(*match, username))
+        FindUsernameInOtherPossibleUsernames(*match, username)) {
       return true;
+    }
   }
   return false;
 }
@@ -544,30 +547,25 @@ void VotesUploader::GeneratePasswordAttributesVote(
     const base::string16& password_value,
     FormStructure* form_structure) {
   // Don't crowdsource password attributes for non-ascii passwords.
-  for (const auto& e : password_value)
+  for (const auto& e : password_value) {
     if (!(IsUppercaseLetter(e) || IsLowercaseLetter(e) || IsNumeric(e) ||
-          IsSpecialSymbol(e)))
+          IsSpecialSymbol(e))) {
       return;
+    }
+  }
 
-  // Select a character class attribute to upload.
-  int bucket = base::RandGenerator(9);
+  // Select a character class attribute to upload. Upload special symbols more
+  // often (8 in 9 cases) as most issues are due to missing or wrong special
+  // symbols. Don't upload info about uppercase and numeric characters as all
+  // sites that allow lowercase letters also uppercase letters, and all sites
+  // allow numeric symbols in passwords.
+  autofill::PasswordAttribute character_class_attribute;
   bool (*predicate)(int c) = nullptr;
-  autofill::PasswordAttribute character_class_attribute =
-      autofill::PasswordAttribute::kHasSpecialSymbol;
-  if (bucket == 0) {
+  if (base::RandGenerator(9) == 0) {
     predicate = &IsLowercaseLetter;
     character_class_attribute =
         autofill::PasswordAttribute::kHasLowercaseLetter;
-  } else if (bucket == 1) {
-    predicate = &IsUppercaseLetter;
-    character_class_attribute =
-        autofill::PasswordAttribute::kHasUppercaseLetter;
-  } else if (bucket == 2) {
-    predicate = &IsNumeric;
-    character_class_attribute = autofill::PasswordAttribute::kHasNumeric;
-  } else {  //  3 <= bucket < 9
-    // Upload symbols more often as 2/3rd of issues are because of missing
-    // special symbols.
+  } else {
     predicate = &IsSpecialSymbol;
     character_class_attribute = autofill::PasswordAttribute::kHasSpecialSymbol;
   }
@@ -601,9 +599,10 @@ void VotesUploader::GeneratePasswordAttributesVote(
 void VotesUploader::StoreInitialFieldValues(
     const autofill::FormData& observed_form) {
   for (const auto& field : observed_form.fields) {
-    if (!field.value.empty())
+    if (!field.value.empty()) {
       initial_values_.insert(
           std::make_pair(field.unique_renderer_id, field.value));
+    }
   }
 }
 

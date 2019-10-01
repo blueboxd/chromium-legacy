@@ -14,6 +14,7 @@
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
@@ -138,8 +139,6 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
     GURL app_url = GetAppURL();
     ui_test_utils::NavigateToURL(browser(), app_url);
 
-    auto* provider = WebAppProviderBase::GetProviderBase(browser()->profile());
-
     AppId app_id;
     base::RunLoop run_loop;
     InstallManager::InstallParams params;
@@ -148,7 +147,7 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
     params.add_to_quick_launch_bar = false;
     params.bypass_service_worker_check = true;
     params.require_manifest = false;
-    provider->install_manager().InstallWebAppWithParams(
+    GetProvider().install_manager().InstallWebAppWithParams(
         browser()->tab_strip_model()->GetActiveWebContents(), params,
         WebappInstallSource::OMNIBOX_INSTALL_ICON,
         base::BindLambdaForTesting(
@@ -171,6 +170,10 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
     UpdateCheckResultAwaiter awaiter(browser(), url);
     ui_test_utils::NavigateToURL(browser(), url);
     return std::move(awaiter).AwaitNextResult();
+  }
+
+  WebAppProviderBase& GetProvider() {
+    return *WebAppProviderBase::GetProviderBase(browser()->profile());
   }
 
  private:
@@ -245,9 +248,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
   GURL url = GetAppURL();
   UpdateCheckResultAwaiter awaiter(browser(), url);
   ui_test_utils::NavigateToURL(browser(), url);
-  WebAppProviderBase::GetProviderBase(browser()->profile())
-      ->install_finalizer()
-      .UninstallWebApp(app_id, base::DoNothing());
+  GetProvider().install_finalizer().UninstallWebApp(app_id, base::DoNothing());
   EXPECT_EQ(std::move(awaiter).AwaitNextResult(),
             ManifestUpdateResult::kAppUninstalled);
 }
@@ -368,6 +369,30 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                                        "invalid manifest syntax !@#$%^*&()"});
   EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
             ManifestUpdateResult::kAppDataInvalid);
+}
+
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+                       CheckIgnoresNonLocalApps) {
+  const char* manifest_template = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "standalone",
+      "icons": $1,
+      "theme_color": "$2"
+    }
+  )";
+  OverrideManifest(manifest_template, {kInstallableIconList, "blue"});
+  AppId app_id = InstallWebApp();
+
+  GetProvider().registry_controller().SetAppIsLocallyInstalledForTesting(app_id,
+                                                                         false);
+  EXPECT_FALSE(GetProvider().registrar().IsLocallyInstalled(app_id));
+
+  OverrideManifest(manifest_template, {kInstallableIconList, "red"});
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kNoAppInScope);
 }
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,

@@ -671,6 +671,19 @@ var ENTRIES = {
     typeText: 'Google document'
   }),
 
+  testSharedFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.txt',
+    targetPath: 'test.txt',
+    mimeType: 'text/plain',
+    sharedOption: SharedOption.SHARED,
+    lastModifiedTime: 'Mar 20, 2012, 11:40 PM',
+    nameText: 'test.txt',
+    sizeText: '51 bytes',
+    typeText: 'Plain text',
+    pinned: true
+  }),
+
   newlyAdded: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'music.ogg',

@@ -713,23 +713,7 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->short_name = extension->short_name();
   app->description = extension->description();
   app->version = extension->GetVersionForDisplay();
-
-  IconEffects icon_effects = IconEffects::kNone;
-#if defined(OS_CHROMEOS)
-  icon_effects =
-      static_cast<IconEffects>(icon_effects | IconEffects::kResizeAndPad);
-  if (extensions::util::ShouldApplyChromeBadge(profile_, extension->id())) {
-    icon_effects = static_cast<IconEffects>(icon_effects | IconEffects::kBadge);
-  }
-#endif
-  if (!extensions::util::IsAppLaunchable(extension->id(), profile_)) {
-    icon_effects = static_cast<IconEffects>(icon_effects | IconEffects::kGray);
-  }
-  if (extension->from_bookmark()) {
-    icon_effects =
-        static_cast<IconEffects>(icon_effects | IconEffects::kRoundCorners);
-  }
-  app->icon_key = icon_key_factory_.MakeIconKey(icon_effects);
+  app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffect(extension));
 
   if (profile_) {
     auto* prefs = extensions::ExtensionPrefs::Get(profile_);
@@ -796,6 +780,43 @@ bool ExtensionApps::RunExtensionEnableFlow(
       base::BindOnce(&ExtensionApps::Launch, weak_factory_.GetWeakPtr(), app_id,
                      event_flags, launch_source, display_id));
   return true;
+}
+
+IconEffects ExtensionApps::GetIconEffect(
+    const extensions::Extension* extension) {
+  IconEffects icon_effects = IconEffects::kNone;
+#if defined(OS_CHROMEOS)
+  icon_effects =
+      static_cast<IconEffects>(icon_effects | IconEffects::kResizeAndPad);
+  if (extensions::util::ShouldApplyChromeBadge(profile_, extension->id())) {
+    icon_effects = static_cast<IconEffects>(icon_effects | IconEffects::kBadge);
+  }
+#endif
+  if (!extensions::util::IsAppLaunchable(extension->id(), profile_)) {
+    icon_effects = static_cast<IconEffects>(icon_effects | IconEffects::kGray);
+  }
+  if (extension->from_bookmark()) {
+    icon_effects =
+        static_cast<IconEffects>(icon_effects | IconEffects::kRoundCorners);
+  }
+  return icon_effects;
+}
+
+void ExtensionApps::ApplyChromeBadge(const std::string& app_id) {
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  const extensions::Extension* extension =
+      registry->GetInstalledExtension(app_id);
+  if (!extension || !Accepts(extension)) {
+    return;
+  }
+
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = app_type_;
+  app->app_id = extension->id();
+  app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffect(extension));
+
+  Publish(std::move(app));
 }
 
 }  // namespace apps

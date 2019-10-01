@@ -87,11 +87,6 @@ cr.define('app_management', function() {
         pageType: PageType.DETAIL,
         selectedAppId: action.id,
       };
-    } else if (action.pageType === PageType.NOTIFICATIONS) {
-      return {
-        pageType: PageType.NOTIFICATIONS,
-        selectedAppId: null,
-      };
     } else {
       return {
         pageType: PageType.MAIN,
@@ -134,87 +129,6 @@ cr.define('app_management', function() {
     }
   };
 
-  const NotificationsState = {};
-
-  /**
-   * @param {NotificationsState} notifications
-   * @param {Object} action
-   * @return {NotificationsState}
-   */
-  NotificationsState.addApp = function(notifications, action) {
-    let {allowedIds, blockedIds} = notifications;
-    const allowed = app_management.util.notificationsAllowed(action.app);
-
-    if (allowed === OptionalBool.kUnknown) {
-      return {allowedIds, blockedIds};
-    }
-
-    if (allowed === OptionalBool.kTrue) {
-      allowedIds = app_management.util.addIfNeeded(allowedIds, action.app.id);
-    } else {
-      blockedIds = app_management.util.addIfNeeded(blockedIds, action.app.id);
-    }
-
-    return {allowedIds, blockedIds};
-  };
-
-  /**
-   * @param {NotificationsState} notifications
-   * @param {Object} action
-   * @return {NotificationsState}
-   */
-  NotificationsState.changeApp = function(notifications, action) {
-    let {allowedIds, blockedIds} = notifications;
-    const allowed = app_management.util.notificationsAllowed(action.app);
-    const id = action.app.id;
-
-    if (allowed === OptionalBool.kUnknown) {
-      assert(!blockedIds.has(id) && !allowedIds.has(id));
-      return {allowedIds, blockedIds};
-    }
-
-    if (allowed === OptionalBool.kTrue) {
-      allowedIds = app_management.util.addIfNeeded(allowedIds, id);
-      blockedIds = app_management.util.removeIfNeeded(blockedIds, id);
-    } else {
-      allowedIds = app_management.util.removeIfNeeded(allowedIds, id);
-      blockedIds = app_management.util.addIfNeeded(blockedIds, id);
-    }
-
-    return {allowedIds, blockedIds};
-  };
-
-  /**
-   * @param {NotificationsState} notifications
-   * @param {Object} action
-   * @return {NotificationsState}
-   */
-  NotificationsState.removeApp = function(notifications, action) {
-    let {allowedIds, blockedIds} = notifications;
-    allowedIds = app_management.util.removeIfNeeded(allowedIds, action.id);
-    blockedIds = app_management.util.removeIfNeeded(blockedIds, action.id);
-
-    return {allowedIds, blockedIds};
-  };
-
-  /**
-   * @param {NotificationsState} notifications
-   * @param {Object} action
-   * @return {NotificationsState}
-   */
-  NotificationsState.updateNotifications = function(notifications, action) {
-    switch (action.name) {
-      case 'add-app':
-        return NotificationsState.addApp(notifications, action);
-      case 'change-app':
-        return NotificationsState.changeApp(notifications, action);
-      case 'remove-app':
-        return NotificationsState.removeApp(notifications, action);
-      default:
-        return notifications;
-    }
-  };
-
   const ArcSupported = {};
 
   /**
@@ -244,8 +158,6 @@ cr.define('app_management', function() {
       currentPage: CurrentPageState.updateCurrentPage(
           state.apps, state.currentPage, action),
       arcSupported: ArcSupported.updateArcSupported(state.arcSupported, action),
-      notifications:
-          NotificationsState.updateNotifications(state.notifications, action),
     };
   }
 
@@ -254,6 +166,5 @@ cr.define('app_management', function() {
     AppState: AppState,
     CurrentPageState: CurrentPageState,
     ArcSupported: ArcSupported,
-    NotificationsState: NotificationsState,
   };
 });

@@ -844,7 +844,7 @@ void RecordSuffixedRendererMemoryMetrics(
       memory_metrics.total_allocated_per_render_view_mb);
 }
 
-// See also LOG_NAVIGATION_TIMING_HISTOGRAM in NavigationHandleImpl.
+// See also LOG_NAVIGATION_TIMING_HISTOGRAM in NavigationRequest.
 void RecordReadyToCommitUntilCommitHistogram(base::TimeDelta delay,
                                              ui::PageTransition transition) {
   UMA_HISTOGRAM_TIMES("Navigation.Renderer.ReadyToCommitUntilCommit", delay);

@@ -369,6 +369,8 @@ void ServiceWorkerContextWrapper::OnNoControllees(int64_t version_id,
 void ServiceWorkerContextWrapper::OnRunningStateChanged(
     int64_t version_id,
     EmbeddedWorkerStatus running_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // When |running_status| is RUNNING/STOPPING, the service
   // worker is doing some actual tasks, so we consider the service worker is
   // in a running status.
@@ -383,7 +385,8 @@ void ServiceWorkerContextWrapper::OnRunningStateChanged(
   // process of the service worker is allocated/released, instead of using the
   // running status of the embedded worker.
   if (running_status == EmbeddedWorkerStatus::RUNNING) {
-    running_service_workers_.emplace(version_id);
+    bool inserted = running_service_workers_.emplace(version_id).second;
+    DCHECK(inserted);
     for (auto& observer : observer_list_) {
       observer.OnVersionRunningStatusChanged(this, version_id,
                                              true /* is_running */);
@@ -394,12 +397,23 @@ void ServiceWorkerContextWrapper::OnRunningStateChanged(
   if (running_service_workers_.find(version_id) !=
           running_service_workers_.end() &&
       running_status == EmbeddedWorkerStatus::STOPPED) {
-    running_service_workers_.erase(version_id);
+    size_t removed = running_service_workers_.erase(version_id);
+    DCHECK_EQ(removed, 1u);
     for (auto& observer : observer_list_) {
       observer.OnVersionRunningStatusChanged(this, version_id,
                                              false /* is_running */);
     }
   }
+}
+
+void ServiceWorkerContextWrapper::OnDeleteAndStartOver() {
+  for (int version_id : running_service_workers_) {
+    for (auto& observer : observer_list_) {
+      observer.OnVersionRunningStatusChanged(this, version_id,
+                                             false /* is_running */);
+    }
+  }
+  running_service_workers_.clear();
 }
 
 void ServiceWorkerContextWrapper::OnVersionStateChanged(

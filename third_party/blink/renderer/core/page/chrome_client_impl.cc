@@ -473,9 +473,17 @@ IntRect ChromeClientImpl::ViewportToScreen(
 }
 
 float ChromeClientImpl::WindowToViewportScalar(const float scalar_value) const {
-  // TODO(darin): Change caller to pass LocalFrame. Note, FrameWidgetImpl() can
-  // be null during Scrollbar() construction.
-  WebLocalFrameImpl* local_frame = web_view_->MainFrameImpl();
+  // TODO(darin): Change callers to pass a LocalFrame.
+  return WindowToViewportScalar(web_view_->MainFrameImpl()
+                                    ? web_view_->MainFrameImpl()->GetFrame()
+                                    : nullptr,
+                                scalar_value);
+}
+
+float ChromeClientImpl::WindowToViewportScalar(LocalFrame* frame,
+                                               const float scalar_value) const {
+  // Note, FrameWidgetImpl() can be null during Scrollbar() construction.
+  WebLocalFrameImpl* local_frame = WebLocalFrameImpl::FromFrame(frame);
   if (!local_frame || !local_frame->FrameWidgetImpl())
     return scalar_value;
 
@@ -633,7 +641,7 @@ DateTimeChooser* ChromeClientImpl::OpenDateTimeChooser(
 
   NotifyPopupOpeningObservers();
   if (RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled()) {
-    return MakeGarbageCollected<DateTimeChooserImpl>(this, picker_client,
+    return MakeGarbageCollected<DateTimeChooserImpl>(frame, picker_client,
                                                      parameters);
   }
 

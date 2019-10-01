@@ -476,7 +476,7 @@ class ResourceUsageReporterImpl : public content::mojom::ResourceUsageReporter {
       return;
     }
 
-    blink::WebCache::ResourceTypeStats stats;
+    blink::WebCacheResourceTypeStats stats;
     blink::WebCache::GetResourceTypeStats(&stats);
     usage_data_->web_cache_stats = mojom::ResourceTypeStats::From(stats);
 

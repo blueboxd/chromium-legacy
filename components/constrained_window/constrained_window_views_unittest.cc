@@ -217,7 +217,7 @@ TEST_F(ConstrainedWindowViewsTest, MaximumWebContentsDialogSize) {
 #else
 #define MAYBE_NullModalParent NullModalParent
 #endif
-TEST_F(ConstrainedWindowViewsTest, NullModalParent) {
+TEST_F(ConstrainedWindowViewsTest, MAYBE_NullModalParent) {
   // Use desktop widgets (except on ChromeOS) for extra coverage.
   test_views_delegate()->set_use_desktop_native_widgets(true);
 

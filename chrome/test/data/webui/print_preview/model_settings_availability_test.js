@@ -375,13 +375,11 @@ cr.define('model_settings_availability_test', function() {
       assertTrue(model.settings.headerFooter.available);
 
       // Set margins to NONE
-      model.set(
-          'settings.margins.value', print_preview.MarginsTypeValue.NO_MARGINS);
+      model.set('settings.margins.value', print_preview.MarginsType.NO_MARGINS);
       assertFalse(model.settings.headerFooter.available);
 
       // Custom margins of 0.
-      model.set(
-          'settings.margins.value', print_preview.MarginsTypeValue.CUSTOM);
+      model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
       model.set(
           'settings.customMargins.value',
           {marginTop: 0, marginLeft: 0, marginRight: 0, marginBottom: 0});
@@ -426,8 +424,7 @@ cr.define('model_settings_availability_test', function() {
         ]
       };
       model.set('destination.capabilities', capabilities);
-      model.set(
-          'settings.margins.value', print_preview.MarginsTypeValue.DEFAULT);
+      model.set('settings.margins.value', print_preview.MarginsType.DEFAULT);
 
       // Header/footer should be available for default big label with
       // default margins.

@@ -112,6 +112,7 @@ copy("chrome_camera_app_js") {
     "src/js/background.js",
     "src/js/gallerybutton.js",
     "src/js/google-analytics-bundle.js",
+    "src/js/intent.js",
     "src/js/main.js",
     "src/js/metrics.js",
     "src/js/nav.js",
@@ -247,6 +248,7 @@ copy("chrome_camera_app_mojo_generated") {
 
   deps = [
     "//components/arc/mojom:camera_intent_js",
+    "//components/arc/mojom:mojom_js",
     "//components/chromeos_camera/common:camera_app_helper_js",
     "//media/capture/mojom:image_capture_js",
     "//media/capture/video/chromeos/mojom:cros_camera_js",

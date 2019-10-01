@@ -6586,6 +6586,9 @@ the Bookmarks menu.">
         <message name="IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE" desc="The label of item for shared clipboard in context menu for showing device name when one device is available.">
           Copy to <ph name="DEVICE_NAME">$1<ex>Jimmy's Pixel</ex></ph>
         </message>
+        <message name="IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_TITLE_UNKNOWN_DEVICE" desc="Title text displayed in a shared clipboard notification when the source device name is unknown.">
+          Text shared from other device
+        </message>
         <message name="IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_TITLE" desc="The title of the notification shown when a clipboard was shared.">
           Text shared from <ph name="DEVICE_NAME">$1<ex>Jimmy's Pixel</ex></ph>
         </message>
@@ -6606,6 +6609,9 @@ the Bookmarks menu.">
         </message>
         <message name="IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE" desc="In Title Case: The label of item for shared clipboard in context menu when single device is available.">
           Copy to <ph name="DEVICE_NAME">$1<ex>Jimmy's Pixel</ex></ph>
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_TITLE_UNKNOWN_DEVICE" desc="Title text displayed in a shared clipboard notification when the source device name is unknown.">
+          Text shared from Other Device
         </message>
         <message name="IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_TITLE" desc="In Title Case: The title of the notification shown when a clipboard was shared.">
           Text shared from <ph name="DEVICE_NAME">$1<ex>Jimmy's Pixel</ex></ph>

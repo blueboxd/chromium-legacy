@@ -378,6 +378,18 @@ void X11Window::StackAtTop() {
   XWindow::StackXWindowAtTop();
 }
 
+base::Optional<int> X11Window::GetWorkspace() const {
+  return XWindow::workspace();
+}
+
+void X11Window::SetVisibleOnAllWorkspaces(bool always_visible) {
+  XWindow::SetXWindowVisibleOnAllWorkspaces(always_visible);
+}
+
+bool X11Window::IsVisibleOnAllWorkspaces() const {
+  return XWindow::IsXWindowVisibleOnAllWorkspaces();
+}
+
 bool X11Window::CanDispatchEvent(const PlatformEvent& xev) {
 #if defined(USE_X11)
   return XWindow::IsTargetedBy(*xev);

@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
@@ -298,10 +299,9 @@ void WebAppFrameToolbarView::UpdateStatusIconsVisibility() {
 void WebAppFrameToolbarView::UpdateCaptionColors() {
   const BrowserNonClientFrameView* frame_view =
       browser_view_->frame()->GetFrameView();
-  active_color_ = frame_view->GetCaptionColor(
-      BrowserNonClientFrameView::ActiveState::kActive);
-  inactive_color_ = frame_view->GetCaptionColor(
-      BrowserNonClientFrameView::ActiveState::kInactive);
+  active_color_ = frame_view->GetCaptionColor(BrowserFrameActiveState::kActive);
+  inactive_color_ =
+      frame_view->GetCaptionColor(BrowserFrameActiveState::kInactive);
   UpdateChildrenColor();
 }
 

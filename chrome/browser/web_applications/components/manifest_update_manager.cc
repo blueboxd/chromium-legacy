@@ -36,7 +36,7 @@ void ManifestUpdateManager::MaybeUpdate(const GURL& url,
   if (!base::FeatureList::IsEnabled(features::kDesktopPWAsLocalUpdating))
     return;
 
-  if (app_id.empty()) {
+  if (app_id.empty() || !registrar_->IsLocallyInstalled(app_id)) {
     NotifyResult(url, ManifestUpdateResult::kNoAppInScope);
     return;
   }

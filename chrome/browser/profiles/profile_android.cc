@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_key_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "content/public/browser/web_contents.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
@@ -122,6 +123,23 @@ void ProfileAndroid::Wipe(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 // static
 ScopedJavaLocalRef<jobject> JNI_Profile_GetLastUsedProfile(JNIEnv* env) {
   return ProfileAndroid::GetLastUsedProfile(env);
+}
+
+// static
+ScopedJavaLocalRef<jobject> JNI_Profile_FromWebContents(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jweb_contents) {
+  auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
+  if (!web_contents)
+    return ScopedJavaLocalRef<jobject>();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!profile)
+    return ScopedJavaLocalRef<jobject>();
+  ProfileAndroid* profile_android = ProfileAndroid::FromProfile(profile);
+  if (!profile_android)
+    return ScopedJavaLocalRef<jobject>();
+  return profile_android->GetJavaObject();
 }
 
 ProfileAndroid::ProfileAndroid(Profile* profile)

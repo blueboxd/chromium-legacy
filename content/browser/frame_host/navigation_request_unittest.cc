@@ -192,7 +192,7 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
   TestNavigationThrottle* CreateTestNavigationThrottle(
       NavigationThrottle::ThrottleCheckResult result) {
     TestNavigationThrottle* test_throttle =
-        new TestNavigationThrottle(request_->navigation_handle());
+        new TestNavigationThrottle(request_.get());
     test_throttle->SetResponseForAllMethods(TestNavigationThrottle::SYNCHRONOUS,
                                             result);
     request_->RegisterThrottleForTesting(
@@ -223,13 +223,13 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
         main_test_rfh()->frame_tree_node(), std::move(common_params),
         CreateCommitNavigationParams(), false /* browser-initiated */,
         std::string(), nullptr, nullptr, nullptr, nullptr);
-    request_->CreateNavigationHandle(true);
+    request_->StartNavigation(true);
   }
 
  private:
-  // The callback provided to NavigationHandleImpl::WillStartRequest,
-  // NavigationHandleImpl::WillRedirectRequest, and
-  // NavigationHandleImpl::WillFailRequest during the tests.
+  // The callback provided to NavigationRequest::WillStartRequest,
+  // NavigationRequest::WillRedirectRequest, and
+  // NavigationRequest::WillFailRequest during the tests.
   void UpdateThrottleCheckResult(
       NavigationThrottle::ThrottleCheckResult result) {
     callback_result_ = result;

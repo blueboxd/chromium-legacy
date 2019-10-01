@@ -41,7 +41,7 @@
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/renderer_host/input/synthetic_touchscreen_pinch_gesture.h"
@@ -2849,14 +2849,14 @@ TestNavigationManager::TestNavigationManager(WebContents* web_contents,
                                              const GURL& url)
     : WebContentsObserver(web_contents),
       url_(url),
-      handle_(nullptr),
+      request_(nullptr),
       navigation_paused_(false),
       current_state_(NavigationState::INITIAL),
       desired_state_(NavigationState::STARTED) {}
 
 TestNavigationManager::~TestNavigationManager() {
   if (navigation_paused_)
-    handle_->CallResumeForTesting();
+    request_->CallResumeForTesting();
 }
 
 bool TestNavigationManager::WaitForRequestStart() {
@@ -2874,11 +2874,11 @@ void TestNavigationManager::ResumeNavigation() {
   DCHECK_EQ(current_state_, desired_state_);
   DCHECK(navigation_paused_);
   navigation_paused_ = false;
-  handle_->CallResumeForTesting();
+  request_->CallResumeForTesting();
 }
 
 NavigationHandle* TestNavigationManager::GetNavigationHandle() {
-  return handle_;
+  return request_;
 }
 
 bool TestNavigationManager::WaitForResponse() {
@@ -2895,23 +2895,24 @@ void TestNavigationManager::DidStartNavigation(NavigationHandle* handle) {
   if (!ShouldMonitorNavigation(handle))
     return;
 
-  handle_ = static_cast<NavigationHandleImpl*>(handle);
+  request_ = NavigationRequest::From(handle);
   std::unique_ptr<NavigationThrottle> throttle(
       new TestNavigationManagerThrottle(
-          handle_, base::Bind(&TestNavigationManager::OnWillStartRequest,
-                              weak_factory_.GetWeakPtr()),
+          request_,
+          base::Bind(&TestNavigationManager::OnWillStartRequest,
+                     weak_factory_.GetWeakPtr()),
           base::Bind(&TestNavigationManager::OnWillProcessResponse,
                      weak_factory_.GetWeakPtr())));
-  handle_->RegisterThrottleForTesting(std::move(throttle));
+  request_->RegisterThrottleForTesting(std::move(throttle));
 }
 
 void TestNavigationManager::DidFinishNavigation(NavigationHandle* handle) {
-  if (handle != handle_)
+  if (handle != request_)
     return;
   was_successful_ = handle->HasCommitted() && !handle->IsErrorPage();
   current_state_ = NavigationState::FINISHED;
   navigation_paused_ = false;
-  handle_ = nullptr;
+  request_ = nullptr;
   OnNavigationStateChanged();
 }
 
@@ -2936,7 +2937,7 @@ bool TestNavigationManager::WaitForDesiredState() {
 
   // Resume the navigation if it was paused.
   if (navigation_paused_)
-    handle_->CallResumeForTesting();
+    request_->CallResumeForTesting();
 
   // Wait for the desired state if needed.
   if (current_state_ < desired_state_) {
@@ -2962,11 +2963,11 @@ void TestNavigationManager::OnNavigationStateChanged() {
 
   // Otherwise, the navigation should be resumed if it was previously paused.
   if (navigation_paused_)
-    handle_->CallResumeForTesting();
+    request_->CallResumeForTesting();
 }
 
 bool TestNavigationManager::ShouldMonitorNavigation(NavigationHandle* handle) {
-  if (handle_ || handle->GetURL() != url_)
+  if (request_ || handle->GetURL() != url_)
     return false;
   if (current_state_ != NavigationState::INITIAL)
     return false;

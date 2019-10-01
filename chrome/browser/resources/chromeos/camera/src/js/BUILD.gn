@@ -17,12 +17,20 @@ group("closure_compile") {
 
 js_type_check("compile_resources") {
   deps = [
+    ":background",
+    ":intent",
     ":nav",
     ":resolution_event_broker",
     ":state",
     ":toast",
     ":tooltip",
     ":util",
+  ]
+}
+
+js_library("intent") {
+  deps = [
+    "mojo:chrome_helper",
   ]
 }
 
@@ -37,6 +45,12 @@ js_library("nav") {
 }
 
 js_library("state") {
+}
+
+js_library("background") {
+  deps = [
+    ":intent",
+  ]
 }
 
 js_library("toast") {

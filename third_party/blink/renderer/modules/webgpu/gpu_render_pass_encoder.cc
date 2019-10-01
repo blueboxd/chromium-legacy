@@ -4,10 +4,10 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pass_encoder.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/double_sequence_or_gpu_color_dict.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_color.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pipeline.h"
@@ -61,8 +61,14 @@ void GPURenderPassEncoder::setPipeline(GPURenderPipeline* pipeline) {
   GetProcs().renderPassEncoderSetPipeline(GetHandle(), pipeline->GetHandle());
 }
 
-void GPURenderPassEncoder::setBlendColor(GPUColor* color) {
-  DawnColor dawn_color = AsDawnType(color);
+void GPURenderPassEncoder::setBlendColor(DoubleSequenceOrGPUColorDict& color,
+                                         ExceptionState& exception_state) {
+  if (color.IsDoubleSequence() && color.GetAsDoubleSequence().size() != 4) {
+    exception_state.ThrowRangeError("color size must be 4");
+    return;
+  }
+
+  DawnColor dawn_color = AsDawnType(&color);
   GetProcs().renderPassEncoderSetBlendColor(GetHandle(), &dawn_color);
 }
 

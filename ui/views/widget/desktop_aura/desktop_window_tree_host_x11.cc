@@ -206,11 +206,6 @@ DesktopWindowTreeHostX11::CreateDragDropClient(
   return base::WrapUnique(drag_drop_client_);
 }
 
-std::string DesktopWindowTreeHostX11::GetWorkspace() const {
-  base::Optional<int> workspace = GetXWindow()->workspace();
-  return workspace ? base::NumberToString(workspace.value()) : std::string();
-}
-
 void DesktopWindowTreeHostX11::SetShape(
     std::unique_ptr<Widget::ShapeRects> native_shape) {
   _XRegion* xregion = nullptr;
@@ -238,14 +233,6 @@ void DesktopWindowTreeHostX11::SetShape(
 
 bool DesktopWindowTreeHostX11::IsActive() const {
   return GetXWindow()->IsActive();
-}
-
-void DesktopWindowTreeHostX11::SetVisibleOnAllWorkspaces(bool always_visible) {
-  GetXWindow()->SetVisibleOnAllWorkspaces(always_visible);
-}
-
-bool DesktopWindowTreeHostX11::IsVisibleOnAllWorkspaces() const {
-  return GetXWindow()->IsVisibleOnAllWorkspaces();
 }
 
 Widget::MoveLoopResult DesktopWindowTreeHostX11::RunMoveLoop(
@@ -470,10 +457,6 @@ void DesktopWindowTreeHostX11::OnXWindowUnmapped() {
 
 void DesktopWindowTreeHostX11::OnLostMouseGrab() {
   dispatcher()->OnHostLostMouseGrab();
-}
-
-void DesktopWindowTreeHostX11::OnWorkspaceChanged() {
-  OnHostWorkspaceChanged();
 }
 
 void DesktopWindowTreeHostX11::OnXWindowSelectionEvent(XEvent* xev) {

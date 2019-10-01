@@ -123,8 +123,9 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     // delegate interface.
     set_web_app_frame_toolbar(
         AddChildView(std::make_unique<WebAppFrameToolbarView>(
-            frame, browser_view, GetCaptionColor(kActive),
-            GetCaptionColor(kInactive))));
+            frame, browser_view,
+            GetCaptionColor(BrowserFrameActiveState::kActive),
+            GetCaptionColor(BrowserFrameActiveState::kInactive))));
   }
 
   minimize_button_ =
@@ -180,7 +181,7 @@ int GlassBrowserFrameView::GetThemeBackgroundXInset() const {
 }
 
 bool GlassBrowserFrameView::HasVisibleBackgroundTabShapes(
-    ActiveState active_state) const {
+    BrowserFrameActiveState active_state) const {
   // Pre-Win 8, tabs never match the glass frame appearance.
   if (base::win::GetVersion() < base::win::Version::WIN8)
     return true;
@@ -206,7 +207,8 @@ bool GlassBrowserFrameView::CanDrawStrokes() const {
   return BrowserNonClientFrameView::CanDrawStrokes();
 }
 
-SkColor GlassBrowserFrameView::GetCaptionColor(ActiveState active_state) const {
+SkColor GlassBrowserFrameView::GetCaptionColor(
+    BrowserFrameActiveState active_state) const {
   const SkAlpha title_alpha = ShouldPaintAsActive(active_state)
                                   ? SK_AlphaOPAQUE
                                   : kInactiveTitlebarFeatureAlpha;
@@ -640,7 +642,8 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
   }
 
   if (ShowCustomTitle())
-    window_title_->SetEnabledColor(GetCaptionColor(kUseCurrent));
+    window_title_->SetEnabledColor(
+        GetCaptionColor(BrowserFrameActiveState::kUseCurrent));
 }
 
 void GlassBrowserFrameView::LayoutTitleBar() {

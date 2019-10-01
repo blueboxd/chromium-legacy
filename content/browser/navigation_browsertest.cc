@@ -17,7 +17,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
@@ -668,20 +667,15 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTestReferrerPolicy, ReferrerPolicy) {
     case network::mojom::ReferrerPolicy::
         kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
     case network::mojom::ReferrerPolicy::kSameOrigin:
-      EXPECT_EQ(
-          kReferrerURL,
-          root->navigation_request()->navigation_handle()->GetReferrer().url);
+      EXPECT_EQ(kReferrerURL, root->navigation_request()->GetReferrer().url);
       break;
     case network::mojom::ReferrerPolicy::kNever:
-      EXPECT_EQ(
-          GURL(),
-          root->navigation_request()->navigation_handle()->GetReferrer().url);
+      EXPECT_EQ(GURL(), root->navigation_request()->GetReferrer().url);
       break;
     case network::mojom::ReferrerPolicy::kOrigin:
     case network::mojom::ReferrerPolicy::kStrictOrigin:
-      EXPECT_EQ(
-          kReferrerOrigin.GetURL(),
-          root->navigation_request()->navigation_handle()->GetReferrer().url);
+      EXPECT_EQ(kReferrerOrigin.GetURL(),
+                root->navigation_request()->GetReferrer().url);
       break;
   }
 
@@ -1858,12 +1852,11 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, AddRequestHeaderOnRedirect) {
       base::BindLambdaForTesting(
           [](NavigationHandle* handle) -> std::unique_ptr<NavigationThrottle> {
             auto throttle = std::make_unique<TestNavigationThrottle>(handle);
-            NavigationHandleImpl* handle_impl =
-                static_cast<NavigationHandleImpl*>(handle);
+            NavigationRequest* request = NavigationRequest::From(handle);
             throttle->SetCallback(TestNavigationThrottle::WILL_REDIRECT_REQUEST,
-                                  base::BindLambdaForTesting([handle_impl]() {
-                                    handle_impl->SetRequestHeader(
-                                        "header_name", "header_value");
+                                  base::BindLambdaForTesting([request]() {
+                                    request->SetRequestHeader("header_name",
+                                                              "header_value");
                                   }));
             return throttle;
           }));
@@ -1897,17 +1890,16 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest,
       base::BindLambdaForTesting(
           [](NavigationHandle* handle) -> std::unique_ptr<NavigationThrottle> {
             auto throttle = std::make_unique<TestNavigationThrottle>(handle);
-            NavigationHandleImpl* handle_impl =
-                static_cast<NavigationHandleImpl*>(handle);
+            NavigationRequest* request = NavigationRequest::From(handle);
             throttle->SetCallback(TestNavigationThrottle::WILL_START_REQUEST,
-                                  base::BindLambdaForTesting([handle_impl]() {
-                                    handle_impl->SetRequestHeader(
-                                        "header_name", "header_value");
+                                  base::BindLambdaForTesting([request]() {
+                                    request->SetRequestHeader("header_name",
+                                                              "header_value");
                                   }));
             throttle->SetCallback(TestNavigationThrottle::WILL_REDIRECT_REQUEST,
-                                  base::BindLambdaForTesting([handle_impl]() {
-                                    handle_impl->SetRequestHeader(
-                                        "header_name", "other_value");
+                                  base::BindLambdaForTesting([request]() {
+                                    request->SetRequestHeader("header_name",
+                                                              "other_value");
                                   }));
             return throttle;
           }));
@@ -1940,19 +1932,17 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest,
       shell()->web_contents(),
       base::BindLambdaForTesting(
           [](NavigationHandle* handle) -> std::unique_ptr<NavigationThrottle> {
-            NavigationHandleImpl* handle_impl =
-                static_cast<NavigationHandleImpl*>(handle);
+            NavigationRequest* request = NavigationRequest::From(handle);
             auto throttle = std::make_unique<TestNavigationThrottle>(handle);
             throttle->SetCallback(TestNavigationThrottle::WILL_START_REQUEST,
-                                  base::BindLambdaForTesting([handle_impl]() {
-                                    handle_impl->SetRequestHeader(
-                                        "header_name", "header_value");
+                                  base::BindLambdaForTesting([request]() {
+                                    request->SetRequestHeader("header_name",
+                                                              "header_value");
                                   }));
-            throttle->SetCallback(
-                TestNavigationThrottle::WILL_REDIRECT_REQUEST,
-                base::BindLambdaForTesting([handle_impl]() {
-                  handle_impl->RemoveRequestHeader("header_name");
-                }));
+            throttle->SetCallback(TestNavigationThrottle::WILL_REDIRECT_REQUEST,
+                                  base::BindLambdaForTesting([request]() {
+                                    request->RemoveRequestHeader("header_name");
+                                  }));
             return throttle;
           }));
 

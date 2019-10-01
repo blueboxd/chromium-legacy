@@ -87,7 +87,7 @@ bool BrowserNonClientFrameView::IsFrameCondensed() const {
 }
 
 bool BrowserNonClientFrameView::HasVisibleBackgroundTabShapes(
-    ActiveState active_state) const {
+    BrowserFrameActiveState active_state) const {
   DCHECK(browser_view_->IsTabStripVisible());
 
   TabStrip* const tab_strip = browser_view_->tabstrip();
@@ -128,8 +128,8 @@ bool BrowserNonClientFrameView::HasVisibleBackgroundTabShapes(
 }
 
 bool BrowserNonClientFrameView::EverHasVisibleBackgroundTabShapes() const {
-  return HasVisibleBackgroundTabShapes(kActive) ||
-         HasVisibleBackgroundTabShapes(kInactive);
+  return HasVisibleBackgroundTabShapes(BrowserFrameActiveState::kActive) ||
+         HasVisibleBackgroundTabShapes(BrowserFrameActiveState::kInactive);
 }
 
 bool BrowserNonClientFrameView::CanDrawStrokes() const {
@@ -138,12 +138,12 @@ bool BrowserNonClientFrameView::CanDrawStrokes() const {
 }
 
 SkColor BrowserNonClientFrameView::GetCaptionColor(
-    ActiveState active_state) const {
+    BrowserFrameActiveState active_state) const {
   return color_utils::GetColorWithMaxContrast(GetFrameColor(active_state));
 }
 
 SkColor BrowserNonClientFrameView::GetFrameColor(
-    ActiveState active_state) const {
+    BrowserFrameActiveState active_state) const {
   ThemeProperties::OverwritableByUserThemeProperty color_id;
 
   color_id = ShouldPaintAsActive(active_state)
@@ -182,7 +182,7 @@ SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
 }
 
 base::Optional<int> BrowserNonClientFrameView::GetCustomBackgroundId(
-    ActiveState active_state) const {
+    BrowserFrameActiveState active_state) const {
   const ui::ThemeProvider* tp = GetThemeProvider();
   const bool incognito = browser_view_->IsIncognito();
   const bool active = ShouldPaintAsActive(active_state);
@@ -246,13 +246,14 @@ void BrowserNonClientFrameView::ResetWindowControls() {
 }
 
 bool BrowserNonClientFrameView::ShouldPaintAsActive(
-    ActiveState active_state) const {
-  return (active_state == kUseCurrent) ? ShouldPaintAsActive()
-                                       : (active_state == kActive);
+    BrowserFrameActiveState active_state) const {
+  return (active_state == BrowserFrameActiveState::kUseCurrent)
+             ? ShouldPaintAsActive()
+             : (active_state == BrowserFrameActiveState::kActive);
 }
 
 gfx::ImageSkia BrowserNonClientFrameView::GetFrameImage(
-    ActiveState active_state) const {
+    BrowserFrameActiveState active_state) const {
   const ui::ThemeProvider* tp = GetThemeProviderForProfile();
   const int frame_image_id = ShouldPaintAsActive(active_state)
                                  ? IDR_THEME_FRAME
@@ -264,7 +265,7 @@ gfx::ImageSkia BrowserNonClientFrameView::GetFrameImage(
 }
 
 gfx::ImageSkia BrowserNonClientFrameView::GetFrameOverlayImage(
-    ActiveState active_state) const {
+    BrowserFrameActiveState active_state) const {
   if (browser_view_->IsIncognito() || !browser_view_->IsBrowserTypeNormal())
     return gfx::ImageSkia();
 

@@ -26,6 +26,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_migrator.h"
+#include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/account_manager/account_migration_runner.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -171,7 +172,10 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
       }
 
       // Only for Active Directory accounts on Chrome OS.
-      if (chromeos::features::IsAccountManagerEnabled() &&
+      // TODO(https://crbug.com/993317): Remove the check for
+      // |IsAccountManagerAvailable| after fixing https://crbug.com/1008349 and
+      // https://crbug.com/993317.
+      if (chromeos::IsAccountManagerAvailable(profile) &&
           chromeos::InstallAttributes::Get()->IsActiveDirectoryManaged()) {
         return std::make_unique<
             signin::ActiveDirectoryAccountReconcilorDelegate>();

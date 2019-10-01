@@ -186,8 +186,9 @@ void OpaqueBrowserFrameView::InitViews() {
   if (controller && controller->HasTitlebarToolbar()) {
     set_web_app_frame_toolbar(
         AddChildView(std::make_unique<WebAppFrameToolbarView>(
-            frame(), browser_view(), GetCaptionColor(kActive),
-            GetCaptionColor(kInactive))));
+            frame(), browser_view(),
+            GetCaptionColor(BrowserFrameActiveState::kActive),
+            GetCaptionColor(BrowserFrameActiveState::kInactive))));
   }
 }
 
@@ -497,7 +498,8 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
 
   const bool active = ShouldPaintAsActive();
   SkColor frame_color = GetFrameColor();
-  window_title_->SetEnabledColor(GetCaptionColor(kUseCurrent));
+  window_title_->SetEnabledColor(
+      GetCaptionColor(BrowserFrameActiveState::kUseCurrent));
   window_title_->SetBackgroundColor(frame_color);
   frame_background_->set_frame_color(frame_color);
   frame_background_->set_use_custom_frame(frame()->UseCustomFrame());

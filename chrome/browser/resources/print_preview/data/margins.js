@@ -21,7 +21,7 @@ cr.define('print_preview', function() {
    * printing/print_job_constants.h.
    * @enum {number}
    */
-  const MarginsTypeValue = {
+  const MarginsType = {
     DEFAULT: 0,
     NO_MARGINS: 1,
     MINIMUM: 2,
@@ -30,7 +30,7 @@ cr.define('print_preview', function() {
 
   return {
     CustomMarginsOrientation: CustomMarginsOrientation,
-    MarginsTypeValue: MarginsTypeValue,
+    MarginsType: MarginsType,
   };
 });
 

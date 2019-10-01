@@ -66,11 +66,11 @@ class CONTENT_EXPORT DWriteFontProxyImpl
   void GetUniqueNameLookupTable(
       GetUniqueNameLookupTableCallback callback) override;
 
-  void FallbackFamilyNameForCodepoint(
+  void FallbackFamilyAndStyleForCodepoint(
       const std::string& base_family_name,
       const std::string& locale_name,
       uint32_t codepoint,
-      FallbackFamilyNameForCodepointCallback callback) override;
+      FallbackFamilyAndStyleForCodepointCallback callback) override;
 
   void InitializeDirectWrite();
 

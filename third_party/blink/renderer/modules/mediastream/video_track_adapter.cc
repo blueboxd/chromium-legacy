@@ -71,11 +71,6 @@ struct ComputedSettings {
   base::TimeTicks last_update_timestamp;
 };
 
-// Empty method used for keeping a reference to the original media::VideoFrame
-// in VideoFrameResolutionAdapter::DeliverFrame if cropping is needed.
-// The reference to |frame| is kept in the closure that calls this method.
-void TrackReleaseOriginalFrame(scoped_refptr<media::VideoFrame> frame) {}
-
 int ClampToValidDimension(int dimension) {
   return std::min(static_cast<int>(media::limits::kMaxDimension),
                   std::max(0, dimension));
@@ -337,15 +332,13 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
         media::ComputeLetterboxRegion(frame->visible_rect(), desired_size);
 
     video_frame = media::VideoFrame::WrapVideoFrame(
-        *frame, frame->format(), region_in_frame, desired_size);
+        frame, frame->format(), region_in_frame, desired_size);
     if (!video_frame) {
       PostFrameDroppedToMainTaskRunner(
           media::VideoCaptureFrameDropReason::
               kResolutionAdapterWrappingFrameForCroppingFailed);
       return;
     }
-    video_frame->AddDestructionObserver(ConvertToBaseOnceCallback(
-        CrossThreadBindOnce(&TrackReleaseOriginalFrame, frame)));
 
     DVLOG(3) << "desired size  " << desired_size.ToString()
              << " output natural size "

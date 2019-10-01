@@ -50,7 +50,7 @@
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
 #include "third_party/blink/renderer/modules/exported/web_embedded_worker_impl.h"
 #include "third_party/blink/renderer/modules/filesystem/dragged_isolated_file_system_impl.h"
-#include "third_party/blink/renderer/modules/filesystem/local_file_system_client.h"
+#include "third_party/blink/renderer/modules/filesystem/local_file_system.h"
 #include "third_party/blink/renderer/modules/gamepad/navigator_gamepad.h"
 #include "third_party/blink/renderer/modules/image_downloader/image_downloader_impl.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
@@ -182,7 +182,7 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   ProvidePushMessagingClientTo(
       frame, MakeGarbageCollected<PushMessagingClient>(frame));
   ProvideUserMediaTo(frame);
-  ProvideLocalFileSystemTo(frame, std::make_unique<LocalFileSystemClient>());
+  ProvideLocalFileSystemTo(frame);
 
   ScreenOrientationControllerImpl::ProvideTo(frame);
   if (RuntimeEnabledFeatures::PresentationEnabled())
@@ -200,8 +200,7 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
 
 void ModulesInitializer::ProvideLocalFileSystemToWorker(
     WorkerClients& worker_clients) const {
-  ::blink::ProvideLocalFileSystemToWorker(
-      &worker_clients, std::make_unique<LocalFileSystemClient>());
+  ::blink::ProvideLocalFileSystemToWorker(worker_clients);
 }
 
 MediaControls* ModulesInitializer::CreateMediaControls(

@@ -144,9 +144,7 @@ class TabStripController {
 
   // Returns the color of the browser frame for the given window activation
   // state.
-  virtual SkColor GetFrameColor(
-      BrowserNonClientFrameView::ActiveState active_state =
-          BrowserNonClientFrameView::kUseCurrent) const = 0;
+  virtual SkColor GetFrameColor(BrowserFrameActiveState active_state) const = 0;
 
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.
@@ -155,7 +153,7 @@ class TabStripController {
   // For non-transparent windows, returns the background tab image resource ID
   // if the image has been customized, directly or indirectly, by the theme.
   virtual base::Optional<int> GetCustomBackgroundId(
-      BrowserNonClientFrameView::ActiveState active_state) const = 0;
+      BrowserFrameActiveState active_state) const = 0;
 
   // Returns the accessible tab name.
   virtual base::string16 GetAccessibleTabName(const Tab* tab) const = 0;

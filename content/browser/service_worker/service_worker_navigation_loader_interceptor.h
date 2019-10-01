@@ -84,8 +84,7 @@ class ServiceWorkerNavigationLoaderInterceptor final
       network::mojom::URLLoaderClientPtr client);
 
   // For navigations, |handle_| outlives |this|. It's owned by
-  // NavigationHandleImpl which outlives NavigationURLLoaderImpl which owns
-  // |this|.
+  // NavigationRequest which outlives NavigationURLLoaderImpl which owns |this|.
   // For workers, |handle_| may be destroyed during interception. It's owned by
   // DedicatedWorkerHost or SharedWorkerHost which may be destroyed before
   // WorkerScriptLoader which owns |this|.

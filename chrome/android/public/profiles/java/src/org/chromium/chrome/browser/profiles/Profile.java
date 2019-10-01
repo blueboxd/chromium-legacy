@@ -10,6 +10,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
 import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Wrapper that allows passing a Profile reference around in the Java layer.
@@ -33,6 +34,14 @@ public class Profile {
             throw new IllegalStateException("Browser hasn't finished initialization yet!");
         }
         return (Profile) ProfileJni.get().getLastUsedProfile();
+    }
+
+    /**
+     * @param webContents {@link WebContents} object.
+     * @return {@link Profile} object associated with the given WebContents.
+     */
+    public static Profile fromWebContents(WebContents webContents) {
+        return (Profile) ProfileJni.get().fromWebContents(webContents);
     }
 
     /**
@@ -109,6 +118,7 @@ public class Profile {
     @NativeMethods
     interface Natives {
         Object getLastUsedProfile();
+        Object fromWebContents(WebContents webContents);
         void destroyWhenAppropriate(long nativeProfileAndroid, Profile caller);
         Object getOriginalProfile(long nativeProfileAndroid, Profile caller);
         Object getOffTheRecordProfile(long nativeProfileAndroid, Profile caller);

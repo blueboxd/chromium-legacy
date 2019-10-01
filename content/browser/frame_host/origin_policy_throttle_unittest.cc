@@ -11,7 +11,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"

@@ -1308,7 +1308,9 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
   // RescheduleSiblingInvalidationsAsDescendants() for WholeSubtreeInvalid(). We
   // should instead mark the shadow host for subtree recalc when we traverse the
   // flat tree (and skip non-slotted host children).
-  DCHECK(IsElementNode() || IsTextNode() || IsShadowRoot());
+  DCHECK(IsElementNode() || IsTextNode() ||
+         (IsShadowRoot() &&
+          !RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()));
 
   if (!InActiveDocument())
     return;

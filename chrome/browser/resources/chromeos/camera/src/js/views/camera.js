@@ -162,7 +162,8 @@ cca.views.Camera.prototype = {
    * @return {boolean}
    */
   get suspended() {
-    return this.locked_ || chrome.app.window.current().isMinimized();
+    return this.locked_ || chrome.app.window.current().isMinimized() ||
+        cca.state.get('suspend');
   },
 };
 
@@ -294,6 +295,9 @@ cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
         break;
       }
       for (const constraints of previewCandidates) {
+        if (this.suspended) {
+          throw new cca.views.CameraSuspendedError();
+        }
         try {
           const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
           if (deviceOperator) {

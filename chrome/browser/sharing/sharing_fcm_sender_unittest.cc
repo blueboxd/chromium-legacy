@@ -33,6 +33,7 @@ const char kAuthSecret[] = "auth_secret";
 const std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
     kNoFeaturesEnabled;
 const char kSenderGuid[] = "test_sender_guid";
+const char kSenderDeviceName[] = "sender_device_name";
 const char kSenderFcmToken[] = "sender_fcm_token";
 const char kSenderP256dh[] = "sender_p256dh";
 const char kSenderAuthSecret[] = "sender_auth_secret";
@@ -86,7 +87,7 @@ class FakeLocalDeviceInfoProvider : public syncer::LocalDeviceInfoProvider {
  public:
   FakeLocalDeviceInfoProvider()
       : local_device_info_(kSenderGuid,
-                           "name",
+                           kSenderDeviceName,
                            "chrome_version",
                            "user_agent",
                            sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
@@ -250,6 +251,7 @@ TEST_P(SharingFCMSenderResultTest, ResultTest) {
   message_sent.ParseFromString(fake_gcm_driver_.message().payload);
   EXPECT_EQ(kSenderGuid, message_sent.sender_guid());
   EXPECT_TRUE(message_sent.has_ping_message());
+  EXPECT_EQ(kSenderDeviceName, message_sent.sender_device_name());
   EXPECT_TRUE(message_sent.has_sender_info());
   EXPECT_EQ(kSenderFcmToken, message_sent.sender_info().fcm_token());
   EXPECT_EQ(kSenderP256dh, message_sent.sender_info().p256dh());

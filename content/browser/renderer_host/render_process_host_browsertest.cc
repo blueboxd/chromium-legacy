@@ -59,9 +59,13 @@ std::unique_ptr<net::test_server::HttpResponse> HandleBeacon(
 }
 
 std::unique_ptr<net::test_server::HttpResponse> HandleHungBeacon(
+    const base::RepeatingClosure& on_called,
     const net::test_server::HttpRequest& request) {
   if (request.relative_url != "/beacon")
     return nullptr;
+  if (on_called) {
+    on_called.Run();
+  }
   return std::make_unique<net::test_server::HungResponse>();
 }
 
@@ -987,6 +991,35 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KeepAliveRendererProcess) {
     rph->RemoveObserver(this);
 }
 
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
+                       KeepAliveRendererProcessWithServiceWorker) {
+  base::RunLoop run_loop;
+  embedded_test_server()->RegisterRequestHandler(
+      base::BindRepeating(HandleHungBeacon, run_loop.QuitClosure()));
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL("/workers/service_worker_setup.html")));
+  EXPECT_EQ("ok", EvalJs(shell(), "setup();"));
+
+  RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
+      shell()->web_contents()->GetMainFrame()->GetProcess());
+  // 1 for the service worker.
+  EXPECT_EQ(rph->keep_alive_ref_count(), 1u);
+
+  // We use /workers/send-beacon.html, not send-beacon.html, due to the
+  // service worker scope rule.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/workers/send-beacon.html")));
+
+  run_loop.Run();
+  // We are still using the same process.
+  ASSERT_EQ(shell()->web_contents()->GetMainFrame()->GetProcess(), rph);
+  // 1 for the service worker, 1 for the keepalive fetch.
+  EXPECT_EQ(rph->keep_alive_ref_count(), 2u);
+}
+
 // Test is flaky on Android builders: https://crbug.com/875179
 #if defined(OS_ANDROID)
 #define MAYBE_KeepAliveRendererProcess_Hung \
@@ -997,7 +1030,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KeepAliveRendererProcess) {
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
                        MAYBE_KeepAliveRendererProcess_Hung) {
   embedded_test_server()->RegisterRequestHandler(
-      base::BindRepeating(HandleHungBeacon));
+      base::BindRepeating(HandleHungBeacon, base::RepeatingClosure()));
   ASSERT_TRUE(embedded_test_server()->Start());
 
   EXPECT_TRUE(NavigateToURL(
@@ -1034,7 +1067,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
                        MAYBE_FetchKeepAliveRendererProcess_Hung) {
   embedded_test_server()->RegisterRequestHandler(
-      base::BindRepeating(HandleHungBeacon));
+      base::BindRepeating(HandleHungBeacon, base::RepeatingClosure()));
   ASSERT_TRUE(embedded_test_server()->Start());
 
   EXPECT_TRUE(NavigateToURL(

@@ -18,10 +18,6 @@ cr.define('app_management.util', function() {
         selectedAppId: null,
       },
       arcSupported: false,
-      notifications: {
-        allowedIds: new Set(),
-        blockedIds: new Set(),
-      },
     };
   }
 
@@ -38,18 +34,6 @@ cr.define('app_management.util', function() {
 
     for (const app of apps) {
       initialState.apps[app.id] = app;
-
-      const allowed = notificationsAllowed(app);
-
-      if (allowed === OptionalBool.kUnknown) {
-        continue;
-      }
-
-      if (allowed === OptionalBool.kTrue) {
-        initialState.notifications.allowedIds.add(app.id);
-      } else {
-        initialState.notifications.blockedIds.add(app.id);
-      }
     }
 
     return initialState;
@@ -109,53 +93,6 @@ cr.define('app_management.util', function() {
       set.delete(value);
     }
     return set;
-  }
-
-  /**
-   * This function determines whether the given app should be treated by the
-   * notifications view as having notifications allowed or blocked, or not
-   * having a notifications permission at all.
-   *
-   * There are three possible cases:
-   *  - kUnknown is returned if the given app does not have a notifications
-   *    permission, due to how permissions work for its AppType.
-   *  - kTrue is returned if the notifications permission of the app is allowed.
-   *  - kFalse is returned if the notifications permission of the app is
-   *  - blocked, or set to ask in the case of a tristate permission.
-   *
-   * @param {App} app
-   * @return {OptionalBool}
-   */
-  function notificationsAllowed(app) {
-    const permissionType = notificationsPermissionType(app);
-
-    if (!permissionType) {
-      return OptionalBool.kUnknown;
-    }
-
-    if (getPermissionValueBool(app, permissionType)) {
-      return OptionalBool.kTrue;
-    } else {
-      return OptionalBool.kFalse;
-    }
-  }
-
-  /**
-   * Returns a string corresponding to the notifications value of the
-   * appropriate permission type enum, based on the type of the app.
-   * Returns null if the app type doesn't have a notifications permission.
-   * @param {App} app
-   * @return {?string}
-   */
-  function notificationsPermissionType(app) {
-    switch (app.type) {
-      case AppType.kWeb:
-        return 'CONTENT_SETTINGS_TYPE_NOTIFICATIONS';
-      // TODO(rekanorman): Add another case once notifications permissions
-      // are implemented for ARC.
-      default:
-        return null;
-    }
   }
 
   /**
@@ -264,8 +201,6 @@ cr.define('app_management.util', function() {
     getPermission: getPermission,
     getPermissionValueBool: getPermissionValueBool,
     getSelectedApp: getSelectedApp,
-    notificationsAllowed: notificationsAllowed,
-    notificationsPermissionType: notificationsPermissionType,
     permissionTypeHandle: permissionTypeHandle,
     removeIfNeeded: removeIfNeeded,
     toggleOptionalBool: toggleOptionalBool,

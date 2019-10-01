@@ -27,7 +27,7 @@ MojoCdmProxyService::~MojoCdmProxyService() {
 }
 
 void MojoCdmProxyService::Initialize(
-    mojom::CdmProxyClientAssociatedPtrInfo client,
+    mojo::PendingAssociatedRemote<mojom::CdmProxyClient> client,
     InitializeCallback callback) {
   DVLOG(2) << __func__;
 

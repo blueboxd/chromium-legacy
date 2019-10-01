@@ -11,11 +11,9 @@
 
 namespace badging {
 
-TestBadgeManagerDelegate::TestBadgeManagerDelegate(
-    Profile* profile,
-    BadgeManager* badge_manager,
-    web_app::AppRegistrar* registrar)
-    : BadgeManagerDelegate(profile, badge_manager, registrar) {}
+TestBadgeManagerDelegate::TestBadgeManagerDelegate(Profile* profile,
+                                                   BadgeManager* badge_manager)
+    : BadgeManagerDelegate(profile, badge_manager) {}
 
 TestBadgeManagerDelegate::~TestBadgeManagerDelegate() = default;
 
@@ -24,32 +22,20 @@ void TestBadgeManagerDelegate::SetOnBadgeChanged(
   on_badge_changed_ = on_badge_changed;
 }
 
-void TestBadgeManagerDelegate::OnBadgeUpdated(const GURL& scope) {
-  BadgeManagerDelegate::OnBadgeUpdated(scope);
-
-  const auto& value = badge_manager()->GetBadgeValue(scope);
+void TestBadgeManagerDelegate::OnAppBadgeUpdated(const web_app::AppId& app_id) {
+  const auto& value = badge_manager()->GetBadgeValue(app_id);
   if (!value)
-    cleared_scope_badges_.push_back(scope);
+    cleared_badges_.push_back(app_id);
   else
-    set_scope_badges_.push_back(std::make_pair(scope, value.value()));
+    set_badges_.push_back(std::make_pair(app_id, value.value()));
 
   if (on_badge_changed_)
     on_badge_changed_.Run();
 }
 
-void TestBadgeManagerDelegate::OnAppBadgeUpdated(const web_app::AppId& app_id) {
-  const auto& value = GetAppBadgeValue(app_id);
-  if (!value)
-    cleared_app_badges_.push_back(app_id);
-  else
-    set_app_badges_.push_back(std::make_pair(app_id, value.value()));
-}
-
 void TestBadgeManagerDelegate::ResetBadges() {
-  cleared_app_badges_.clear();
-  set_app_badges_.clear();
-  cleared_scope_badges_.clear();
-  set_scope_badges_.clear();
+  cleared_badges_.clear();
+  set_badges_.clear();
 }
 
 }  // namespace badging

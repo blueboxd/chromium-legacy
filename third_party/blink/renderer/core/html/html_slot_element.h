@@ -104,6 +104,8 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   static AtomicString NormalizeSlotName(const AtomicString&);
 
+  void RecalcStyleForSlotChildren(const StyleRecalcChange);
+
   // For User-Agent Shadow DOM
   static const AtomicString& UserAgentCustomAssignSlotName();
   static const AtomicString& UserAgentDefaultSlotName();

@@ -13,7 +13,10 @@
 // Two-phase shutdown allows keyed services to have a first pass shutdown phase
 // where they drop references. Not all services will need this, so there's a
 // default implementation. Only once every service has been given a chance to
-// drop references are services deleted.
+// drop references are services deleted. In a service's destructor the service
+// should *not* request other services from their factories via the relevant
+// Context object (e.g., Profile), as the association between that Context
+// object and its keyed services is dropped after the shutdown phase.
 class KEYED_SERVICE_EXPORT KeyedService {
  public:
   KeyedService();

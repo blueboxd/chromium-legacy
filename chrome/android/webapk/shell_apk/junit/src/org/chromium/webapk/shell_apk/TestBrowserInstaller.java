@@ -28,9 +28,7 @@ public class TestBrowserInstaller {
      * Changes the installed browsers to the passed-in list.
      */
     public void setInstalledModernBrowsers(String defaultBrowserPackage, String[] newPackages) {
-        while (!mInstalledBrowsers.isEmpty()) {
-            uninstallBrowser(mInstalledBrowsers.iterator().next());
-        }
+        uninstallAllBrowsers();
 
         installModernBrowser(defaultBrowserPackage);
         if (newPackages != null) {
@@ -41,6 +39,14 @@ public class TestBrowserInstaller {
     }
 
     /**
+     * Changes the installed browser to a browser with the passed-in package and version name.
+     */
+    public void setInstalledBrowserWithVersion(String browser, String versionName) {
+        uninstallAllBrowsers();
+        installBrowserWithVersion(browser, versionName);
+    }
+
+    /**
      * Installs browser with the passed-in package name and large version name.
      */
     public void installModernBrowser(String packageName) {
@@ -48,7 +54,7 @@ public class TestBrowserInstaller {
     }
 
     /**
-     * Installs browser with the passed-in package name and version code.
+     * Installs browser with the passed-in package name and version name.
      */
     public void installBrowserWithVersion(String packageName, String versionName) {
         if (mInstalledBrowsers.contains(packageName)) return;
@@ -59,6 +65,15 @@ public class TestBrowserInstaller {
         packageManager.addPackage(newPackageInfo(packageName, versionName));
 
         mInstalledBrowsers.add(packageName);
+    }
+
+    /**
+     * Uninstalls all browsers.
+     */
+    public void uninstallAllBrowsers() {
+        while (!mInstalledBrowsers.isEmpty()) {
+            uninstallBrowser(mInstalledBrowsers.iterator().next());
+        }
     }
 
     /**

@@ -5,10 +5,10 @@
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler_desktop.h"
 
 #include "base/guid.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/sync_device_info/device_info.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -25,18 +25,22 @@ SharedClipboardMessageHandlerDesktop::~SharedClipboardMessageHandlerDesktop() =
     default;
 
 void SharedClipboardMessageHandlerDesktop::ShowNotification(
-    std::unique_ptr<syncer::DeviceInfo> device_info) {
+    const std::string& device_name) {
   DCHECK(notification_display_service_);
-  DCHECK(device_info);
 
   std::string notification_id = base::GenerateGUID();
-  std::string device_name = device_info->client_name();
+
+  base::string16 notification_title =
+      device_name.empty()
+          ? l10n_util::GetStringUTF16(
+                IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_TITLE_UNKNOWN_DEVICE)
+          : l10n_util::GetStringFUTF16(
+                IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_TITLE,
+                base::UTF8ToUTF16(device_name));
 
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
-      l10n_util::GetStringFUTF16(
-          IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_TITLE,
-          base::UTF8ToUTF16(device_name)),
+      notification_title,
       l10n_util::GetStringUTF16(
           IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_DESCRIPTION),
       /* icon= */ gfx::Image(),

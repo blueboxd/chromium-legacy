@@ -13,6 +13,7 @@
 #include "components/autofill_assistant/browser/controller_observer.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/script.h"
+#include "components/autofill_assistant/browser/ui_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -24,6 +25,7 @@ class MockControllerObserver : public ControllerObserver {
 
   MOCK_METHOD1(OnStatusMessageChanged, void(const std::string& message));
   MOCK_METHOD1(OnBubbleMessageChanged, void(const std::string& message));
+  MOCK_METHOD0(CloseCustomTab, void());
   MOCK_METHOD1(OnStateChanged, void(AutofillAssistantState));
   MOCK_METHOD1(OnUserActionsChanged,
                void(const std::vector<UserAction>& user_actions));
@@ -43,9 +45,10 @@ class MockControllerObserver : public ControllerObserver {
   MOCK_METHOD1(OnViewportModeChanged, void(ViewportMode mode));
   MOCK_METHOD1(OnPeekModeChanged,
                void(ConfigureBottomSheetProto::PeekMode peek_mode));
+  MOCK_METHOD1(OnOverlayColorsChanged,
+               void(const UiDelegate::OverlayColors& colors));
   MOCK_METHOD1(OnFormChanged, void(const FormProto* form));
-
-  // TODO(b/141163294): add missing methods and unit tests.
+  MOCK_METHOD1(OnClientSettingsChanged, void(const ClientSettings& settings));
 };
 
 }  // namespace autofill_assistant

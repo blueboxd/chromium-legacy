@@ -22,8 +22,7 @@ class SharedClipboardMessageHandlerDesktop
 
  private:
   // SharedClipboardMessageHandler implementation.
-  void ShowNotification(
-      std::unique_ptr<syncer::DeviceInfo> device_info) override;
+  void ShowNotification(const std::string& device_name) override;
 
   NotificationDisplayService* notification_display_service_ = nullptr;
 

@@ -274,9 +274,9 @@ suite('cr-searchable-drop-down', function() {
   });
 
   // The show-loading attribute should determine whether or not the loading
-  // progress bar is shown.
-  test('progress bar is shown and hidden', function() {
-    const progress = dropDown.$.loading;
+  // spinner and message are shown.
+  test('loading spinner is shown and hidden', function() {
+    const progress = dropDown.shadowRoot.querySelector('#loading-box');
     assertTrue(progress.hidden);
 
     dropDown.showLoading = true;

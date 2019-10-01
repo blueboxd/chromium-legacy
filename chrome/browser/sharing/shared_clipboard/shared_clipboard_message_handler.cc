@@ -30,6 +30,7 @@ void SharedClipboardMessageHandler::OnMessage(
 
   std::unique_ptr<syncer::DeviceInfo> device =
       sharing_service_->GetDeviceByGuid(message.sender_guid());
-  if (device)
-    ShowNotification(std::move(device));
+  const std::string& device_name =
+      device ? device->client_name() : message.sender_device_name();
+  ShowNotification(device_name);
 }

@@ -37,18 +37,9 @@ let Page;
 
 /**
  * @typedef {{
- *   allowedIds: !Set<string>,
- *   blockedIds: !Set<string>,
- * }}
- */
-let NotificationsState;
-
-/**
- * @typedef {{
  *   apps: !AppMap,
  *   currentPage: !Page,
  *   arcSupported: boolean,
- *   notifications: !NotificationsState,
  * }}
  */
 let AppManagementPageState;

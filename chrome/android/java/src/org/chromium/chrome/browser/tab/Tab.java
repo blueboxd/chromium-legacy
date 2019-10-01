@@ -622,8 +622,7 @@ public class Tab {
      * @return The profile associated with this tab.
      */
     public Profile getProfile() {
-        if (mNativeTabAndroid == 0) return null;
-        return TabJni.get().getProfileAndroid(mNativeTabAndroid, Tab.this);
+        return Profile.fromWebContents(getWebContents());
     }
 
     /**
@@ -1898,7 +1897,6 @@ public class Tab {
         void releaseWebContents(long nativeTabAndroid, Tab caller);
         void onPhysicalBackingSizeChanged(
                 long nativeTabAndroid, Tab caller, WebContents webContents, int width, int height);
-        Profile getProfileAndroid(long nativeTabAndroid, Tab caller);
         int loadUrl(long nativeTabAndroid, Tab caller, String url, String initiatorOrigin,
                 String extraHeaders, ResourceRequestBody postData, int transition,
                 String referrerUrl, int referrerPolicy, boolean isRendererInitiated,

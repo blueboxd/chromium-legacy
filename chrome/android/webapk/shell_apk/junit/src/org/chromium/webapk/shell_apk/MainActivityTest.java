@@ -32,13 +32,15 @@ import org.chromium.webapk.test.WebApkTestHelper;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public final class MainActivityTest {
-    private PackageManager mPackageManager;
     private static final String BROWSER_PACKAGE_NAME = "com.android.chrome";
+
+    private PackageManager mPackageManager;
+    private TestBrowserInstaller mBrowserInstaller = new TestBrowserInstaller();
 
     @Before
     public void setUp() {
         mPackageManager = RuntimeEnvironment.application.getPackageManager();
-        new TestBrowserInstaller().installModernBrowser(BROWSER_PACKAGE_NAME);
+        mBrowserInstaller.installModernBrowser(BROWSER_PACKAGE_NAME);
     }
 
     /**
@@ -178,13 +180,40 @@ public final class MainActivityTest {
     }
 
     /**
+     * Tests that if the only installed browser does not support WebAPKs that the browser is
+     * launched in tabbed mode.
+     */
+    @Test
+    public void testShouldLaunchInTabNonChromeBrowser() throws Exception {
+        final String nonChromeBrowserPackageName = "com.crazy.browser";
+        mBrowserInstaller.setInstalledBrowserWithVersion(
+                nonChromeBrowserPackageName, "10000.0.000.0");
+
+        final String startUrl = "https://www.google.com/";
+
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, startUrl);
+        bundle.putString(WebApkMetaDataKeys.SCOPE, startUrl);
+        // Unbound WebAPK, no runtime host.
+        WebApkTestHelper.registerWebApkWithMetaData(
+                WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
+
+        Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(startUrl));
+        Robolectric.buildActivity(MainActivity.class, launchIntent).create();
+
+        Intent startedActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
+        assertTabbedBrowserLaunched(startedActivityIntent, nonChromeBrowserPackageName, startUrl);
+    }
+
+    /**
      * Tests that a WebAPK should be launched as a tab if Chrome's version number is lower than
      * {@link HostBrowserUtils#MINIMUM_REQUIRED_CHROME_VERSION}.
      */
     @Test
     public void testShouldLaunchInTabWhenChromeVersionIsTooLow() throws Exception {
+        mBrowserInstaller.setInstalledBrowserWithVersion(BROWSER_PACKAGE_NAME, "56.0.000.0");
+
         final String startUrl = "https://www.google.com/";
-        final String oldVersionName = "56.0.000.0";
 
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.START_URL, startUrl);
@@ -193,15 +222,11 @@ public final class MainActivityTest {
         WebApkTestHelper.registerWebApkWithMetaData(
                 WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
 
-        mPackageManager.getPackageInfo(BROWSER_PACKAGE_NAME, 0).versionName = oldVersionName;
-
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(startUrl));
         Robolectric.buildActivity(MainActivity.class, launchIntent).create();
 
         Intent startedActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
-        Assert.assertEquals(BROWSER_PACKAGE_NAME, startedActivityIntent.getPackage());
-        Assert.assertEquals(Intent.ACTION_VIEW, startedActivityIntent.getAction());
-        Assert.assertEquals(startUrl, startedActivityIntent.getDataString());
+        assertTabbedBrowserLaunched(startedActivityIntent, BROWSER_PACKAGE_NAME, startUrl);
     }
 
     /**
@@ -210,8 +235,9 @@ public final class MainActivityTest {
      */
     @Test
     public void testShouldNotLaunchInTabWithNewVersionOfChrome() throws Exception {
+        mBrowserInstaller.setInstalledBrowserWithVersion(BROWSER_PACKAGE_NAME, "57.0.000.0");
+
         final String startUrl = "https://www.google.com/";
-        final String newVersionName = "57.0.000.0";
 
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.START_URL, startUrl);
@@ -219,8 +245,6 @@ public final class MainActivityTest {
         bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, BROWSER_PACKAGE_NAME);
         WebApkTestHelper.registerWebApkWithMetaData(
                 WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
-
-        mPackageManager.getPackageInfo(BROWSER_PACKAGE_NAME, 0).versionName = newVersionName;
 
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(startUrl));
         Robolectric.buildActivity(MainActivity.class, launchIntent).create();
@@ -264,6 +288,17 @@ public final class MainActivityTest {
         for (String key : extrasToPropagate.keySet()) {
             Assert.assertEquals(extrasToPropagate.get(key), actualExtras.get(key));
         }
+    }
+
+    /**
+     * Asserts that the passed-in intent is an intent to launch the passed-in browser package in
+     * tabbed mode.
+     */
+    private void assertTabbedBrowserLaunched(
+            Intent intent, String browserPackageName, String expectedStartUrl) {
+        Assert.assertEquals(browserPackageName, intent.getPackage());
+        Assert.assertEquals(Intent.ACTION_VIEW, intent.getAction());
+        Assert.assertEquals(expectedStartUrl, intent.getDataString());
     }
 
     /**

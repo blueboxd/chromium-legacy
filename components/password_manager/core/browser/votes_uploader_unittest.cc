@@ -220,9 +220,9 @@ TEST_F(VotesUploaderTest, InitialValueDetection) {
 TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote) {
   VotesUploader votes_uploader(&client_, true);
   // Checks that randomization distorts information about present and missed
-  // character classess, but a true value is still restorable with aggregation
+  // character classes, but a true value is still restorable with aggregation
   // of many distorted reports.
-  const char* kPasswordSnippets[] = {"abc", "XYZ", "123", "*-_"};
+  const char* kPasswordSnippets[kNumberOfPasswordAttributes] = {"abc", "*-_"};
   for (int test_case = 0; test_case < 10; ++test_case) {
     bool has_password_attribute[kNumberOfPasswordAttributes];
     base::string16 password_value;
@@ -236,8 +236,8 @@ TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote) {
 
     FormData form;
     FormStructure form_structure(form);
-    int reported_false[kNumberOfPasswordAttributes] = {0, 0, 0, 0};
-    int reported_true[kNumberOfPasswordAttributes] = {0, 0, 0, 0};
+    int reported_false[kNumberOfPasswordAttributes] = {0, 0};
+    int reported_true[kNumberOfPasswordAttributes] = {0, 0};
 
     int reported_actual_length = 0;
     int reported_wrong_length = 0;
@@ -290,7 +290,8 @@ TEST_F(VotesUploaderTest, GeneratePasswordSpecialSymbolVote) {
 
   const base::string16 password_value = ASCIIToUTF16("password-withsymbols!");
   const int kNumberOfRuns = 2000;
-  const int kSpecialSymbolsAttribute = 3;
+  const int kSpecialSymbolsAttribute =
+      static_cast<int>(PasswordAttribute::kHasSpecialSymbol);
 
   FormData form;
 

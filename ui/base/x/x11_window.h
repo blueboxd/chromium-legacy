@@ -123,8 +123,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   void SetAspectRatio(const gfx::SizeF& aspect_ratio);
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon);
-  void SetVisibleOnAllWorkspaces(bool visible);
-  bool IsVisibleOnAllWorkspaces() const;
+  void SetXWindowVisibleOnAllWorkspaces(bool visible);
+  bool IsXWindowVisibleOnAllWorkspaces() const;
   void MoveCursorTo(const gfx::Point& location);
   void SetAlwaysOnTop(bool always_on_top);
   void FlashFrame(bool flash_frame);

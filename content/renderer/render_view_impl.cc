@@ -2132,6 +2132,8 @@ void RenderViewImpl::PageImportanceSignalsChanged() {
 }
 
 void RenderViewImpl::DidAutoResize(const blink::WebSize& newSize) {
+  // Auto resize should only happen on local main frames.
+  DCHECK(render_widget_);
   render_widget_->DidAutoResize(newSize);
 }
 

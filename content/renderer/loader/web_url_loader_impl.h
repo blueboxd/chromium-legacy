@@ -49,11 +49,6 @@ class CONTENT_EXPORT WebURLLoaderFactoryImpl
 
 class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
  public:
-  WebURLLoaderImpl(
-      ResourceDispatcher* resource_dispatcher,
-      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-          task_runner_handle,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   // When non-null |keep_alive_handle| is specified, this loader prolongs
   // this render process's lifetime.
   WebURLLoaderImpl(

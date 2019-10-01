@@ -445,7 +445,12 @@ class SubresourceFilterSafeBrowsingActivationThrottleScopeTest
       SubresourceFilterSafeBrowsingActivationThrottleScopeTest);
 };
 
-TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest, NoConfigs) {
+#if defined(OS_MACOSX)
+#define MAYBE_NoConfigs DISABLED_NoConfigs
+#else
+#define MAYBE_NoConfigs NoConfigs
+#endif
+TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest, MAYBE_NoConfigs) {
   scoped_configuration()->ResetConfiguration(std::vector<Configuration>());
   SimulateNavigateAndCommit({GURL(kURL)}, main_rfh());
   EXPECT_EQ(mojom::ActivationLevel::kDisabled,

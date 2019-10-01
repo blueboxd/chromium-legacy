@@ -95,6 +95,14 @@
     "message": "Grid type",
     "description": "Label for the button of grid-type options."
   },
+  "LABEL_30FPS": {
+    "message": "30 FPS",
+    "description": "Label showing current state of 30 FPS on tooltip of toggle 60 FPS recording checkbox."
+  },
+  "LABEL_60FPS": {
+    "message": "60 FPS",
+    "description": "Label showing current state of 60 FPS on tooltip of toggle 60 FPS recording checkbox."
+  },
   "TOGGLE_60FPS_BUTTON": {
     "message": "60 FPS",
     "description": "Label for the checkbox to toggle 60 FPS recording."

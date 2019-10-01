@@ -60,7 +60,7 @@ cr.define('print_preview', function() {
    *                 width_microns: number,
    *                 custom_display_name: (string | undefined),
    *                 is_default: (boolean | undefined)} | undefined),
-   *    marginsType: (print_preview.MarginsTypeValue | undefined),
+   *    marginsType: (print_preview.MarginsType | undefined),
    *    customMargins: (print_preview.MarginsSetting | undefined),
    *    isColorEnabled: (boolean | undefined),
    *    isDuplexEnabled: (boolean | undefined),
@@ -262,8 +262,8 @@ Polymer({
             updatesPreview: true,
           },
           margins: {
-            value: print_preview.MarginsTypeValue.DEFAULT,
-            unavailableValue: print_preview.MarginsTypeValue.DEFAULT,
+            value: print_preview.MarginsType.DEFAULT,
+            unavailableValue: print_preview.MarginsType.DEFAULT,
             valid: true,
             available: true,
             setByPolicy: false,
@@ -790,20 +790,20 @@ Polymer({
     // Otherwise, availability depends on the margins.
     let available = false;
     const marginsType =
-        /** @type {!print_preview.MarginsTypeValue} */ (
+        /** @type {!print_preview.MarginsType} */ (
             this.getSettingValue('margins'));
     switch (marginsType) {
-      case print_preview.MarginsTypeValue.DEFAULT:
+      case print_preview.MarginsType.DEFAULT:
         available = !this.margins ||
             this.margins.get(print_preview.CustomMarginsOrientation.TOP) > 0 ||
             this.margins.get(print_preview.CustomMarginsOrientation.BOTTOM) > 0;
         break;
-      case print_preview.MarginsTypeValue.NO_MARGINS:
+      case print_preview.MarginsType.NO_MARGINS:
         break;
-      case print_preview.MarginsTypeValue.MINIMUM:
+      case print_preview.MarginsType.MINIMUM:
         available = true;
         break;
-      case print_preview.MarginsTypeValue.CUSTOM:
+      case print_preview.MarginsType.CUSTOM:
         const margins = this.getSettingValue('customMargins');
         available = margins.marginTop > 0 || margins.marginBottom > 0;
         break;
@@ -1236,8 +1236,7 @@ Polymer({
       ticket.cloudPrintID = destination.id;
     }
 
-    if (this.getSettingValue('margins') ==
-        print_preview.MarginsTypeValue.CUSTOM) {
+    if (this.getSettingValue('margins') == print_preview.MarginsType.CUSTOM) {
       ticket.marginsCustom = this.getSettingValue('customMargins');
     }
 

@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(SameSiteDataRemoverBrowserTest,
   CreateCookieForTest("TestCookie", "www.google.com",
                       net::CookieSameSite::NO_RESTRICTION,
                       net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
-                      GetBrowserContext());
+                      true /* is_cookie_secure */, GetBrowserContext());
   browsing_data_browsertest_utils::AddServiceWorker(
       "www.google.com", storage_partition, GetHttpsServer());
 
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(SameSiteDataRemoverBrowserTest,
   CreateCookieForTest("TestCookie", "www.google.com",
                       net::CookieSameSite::NO_RESTRICTION,
                       net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
-                      GetBrowserContext());
+                      true /* is_cookie_secure */, GetBrowserContext());
   browsing_data_browsertest_utils::AddServiceWorker(
       "www.google.com", storage_partition, GetHttpsServer());
 

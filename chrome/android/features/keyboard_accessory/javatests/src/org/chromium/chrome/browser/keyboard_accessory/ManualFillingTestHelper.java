@@ -38,7 +38,7 @@ import org.hamcrest.Matcher;
 import org.junit.Assert;
 
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -49,7 +49,7 @@ import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AddressAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.CreditCardAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
@@ -73,7 +73,7 @@ public class ManualFillingTestHelper {
     private static final String USERNAME_NODE_ID = "username_field";
     private static final String SUBMIT_NODE_ID = "input_submit_button";
 
-    private final ChromeTabbedActivityTestRule mActivityTestRule;
+    private final ChromeActivityTestRule mActivityTestRule;
     private final AtomicReference<WebContents> mWebContentsRef = new AtomicReference<>();
     private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
     private PropertyProvider<AccessorySheetData> mSheetSuggestionsProvider =
@@ -85,7 +85,7 @@ public class ManualFillingTestHelper {
         return (FakeKeyboard) mActivityTestRule.getKeyboardDelegate();
     }
 
-    public ManualFillingTestHelper(ChromeTabbedActivityTestRule activityTestRule) {
+    public ManualFillingTestHelper(ChromeActivityTestRule activityTestRule) {
         mActivityTestRule = activityTestRule;
     }
 
@@ -106,7 +106,7 @@ public class ManualFillingTestHelper {
         mActivityTestRule.startMainActivityWithURL(mEmbeddedTestServer.getURL(url));
         setRtlForTesting(isRtl);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ChromeTabbedActivity activity = mActivityTestRule.getActivity();
+            ChromeActivity activity = mActivityTestRule.getActivity();
             mWebContentsRef.set(activity.getActivityTab().getWebContents());
             getManualFillingCoordinator().getMediatorForTesting().setInsetObserverViewSupplier(
                     ()
@@ -283,7 +283,6 @@ public class ManualFillingTestHelper {
                         && popup.getListView().getHeight() != 0;
             }
         });
-
         return popup;
     }
 
@@ -447,10 +446,26 @@ public class ManualFillingTestHelper {
         return onView(matcher);
     }
 
+    public ViewInteraction waitForViewOnRoot(View root, Matcher<View> matcher) {
+        waitForView((ViewGroup) root, allOf(matcher, isDisplayed()));
+        return onView(matcher);
+    }
+
+    public ViewInteraction waitForViewOnActivityRoot(Matcher<View> matcher) {
+        return waitForViewOnRoot(
+                mActivityTestRule.getActivity().findViewById(android.R.id.content).getRootView(),
+                matcher);
+    }
+
     public static void waitToBeHidden(Matcher<View> matcher) {
         onView(isRoot()).check((r, e) -> {
             waitForView((ViewGroup) r, matcher, VIEW_INVISIBLE | VIEW_NULL | VIEW_GONE);
         });
+    }
+
+    public String getAttribute(String node, String attribute)
+            throws InterruptedException, TimeoutException {
+        return DOMUtils.getNodeAttribute(attribute, mWebContentsRef.get(), node, String.class);
     }
 
     // --------------------------------------------

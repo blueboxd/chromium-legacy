@@ -47,7 +47,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/system/statistics_provider.h"
 #include "content/browser/tracing/cros_tracing_agent.h"
 #endif

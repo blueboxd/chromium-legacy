@@ -93,9 +93,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
       theme_provider->GetColor(ThemeProperties::COLOR_FRAME_INACTIVE);
 
   EXPECT_EQ(expected_active_color,
-            frame_view->GetFrameColor(BrowserNonClientFrameView::kActive));
+            frame_view->GetFrameColor(BrowserFrameActiveState::kActive));
   EXPECT_EQ(expected_inactive_color,
-            frame_view->GetFrameColor(BrowserNonClientFrameView::kInactive));
+            frame_view->GetFrameColor(BrowserFrameActiveState::kInactive));
 }
 
 // Tests the frame color for a bookmark app when a theme is applied.
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
   // Note: This is checking for the bookmark app's theme color, not the user's
   // theme color.
   EXPECT_EQ(*app_theme_color_,
-            app_frame_view_->GetFrameColor(BrowserNonClientFrameView::kActive));
+            app_frame_view_->GetFrameColor(BrowserFrameActiveState::kActive));
 }
 
 // Tests the frame color for a bookmark app when a theme is applied, with the
@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
   // Bookmark apps are not affected by browser themes.
   EXPECT_EQ(
       ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_FRAME, false),
-      app_frame_view_->GetFrameColor(BrowserNonClientFrameView::kActive));
+      app_frame_view_->GetFrameColor(BrowserFrameActiveState::kActive));
 }
 
 // Tests the frame color for a bookmark app when the system theme is applied.
@@ -144,10 +144,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
   const SkColor frame_color =
       theme_provider->GetColor(ThemeProperties::COLOR_FRAME);
   EXPECT_EQ(frame_color,
-            app_frame_view_->GetFrameColor(BrowserNonClientFrameView::kActive));
+            app_frame_view_->GetFrameColor(BrowserFrameActiveState::kActive));
 #else
   EXPECT_EQ(*app_theme_color_,
-            app_frame_view_->GetFrameColor(BrowserNonClientFrameView::kActive));
+            app_frame_view_->GetFrameColor(BrowserFrameActiveState::kActive));
 #endif
 }
 

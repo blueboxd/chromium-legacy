@@ -2187,8 +2187,8 @@ bool V4L2SliceVideoDecodeAccelerator::ProcessFrame(
     // We will set a destruction observer to the output frame, so wrap the
     // imported frame into another one that we can destruct.
     scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
-        *output_frame.get(), output_frame->format(),
-        output_frame->visible_rect(), output_frame->coded_size());
+        output_frame, output_frame->format(), output_frame->visible_rect(),
+        output_frame->coded_size());
     DCHECK(output_frame != nullptr);
 
     image_processor_->Process(

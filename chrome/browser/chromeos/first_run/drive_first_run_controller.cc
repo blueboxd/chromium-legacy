@@ -270,8 +270,8 @@ bool DriveWebContentsManager::ShouldCreateWebContents(
   BackgroundContents* contents =
       background_contents_service->CreateBackgroundContents(
           content::SiteInstance::Create(profile_), nullptr, MSG_ROUTING_NONE,
-          MSG_ROUTING_NONE, MSG_ROUTING_NONE, profile_, frame_name, app_id_,
-          partition_id, session_storage_namespace);
+          MSG_ROUTING_NONE, MSG_ROUTING_NONE, frame_name, app_id_, partition_id,
+          session_storage_namespace);
 
   contents->web_contents()->GetController().LoadURL(
       target_url,

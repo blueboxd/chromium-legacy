@@ -9,6 +9,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class GPUTextureDescriptor;
 class GPUTextureView;
 class GPUTextureViewDescriptor;
@@ -18,7 +19,8 @@ class GPUTexture : public DawnObject<DawnTexture> {
 
  public:
   static GPUTexture* Create(GPUDevice* device,
-                            const GPUTextureDescriptor* webgpu_desc);
+                            const GPUTextureDescriptor* webgpu_desc,
+                            ExceptionState& exception_state);
   explicit GPUTexture(GPUDevice* device, DawnTexture texture);
   ~GPUTexture() override;
 

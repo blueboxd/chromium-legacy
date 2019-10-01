@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
-#include "third_party/blink/renderer/modules/filesystem/file_system_client.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_dispatcher.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -110,15 +109,26 @@ void LocalFileSystem::RequestFileSystemCallback(
 void LocalFileSystem::RequestFileSystemAccessInternal(
     ExecutionContext* context,
     base::OnceCallback<void(bool)> callback) {
-  if (!context->IsDocument()) {
-    if (!Client().RequestFileSystemAccessSync(context)) {
-      std::move(callback).Run(false);
-      return;
+  if (context->IsDocument()) {
+    auto* client =
+        To<Document>(context)->GetFrame()->GetContentSettingsClient();
+    if (!client) {
+      std::move(callback).Run(true);
+    } else {
+      client->RequestFileSystemAccessAsync(std::move(callback));
     }
-    std::move(callback).Run(true);
     return;
   }
-  Client().RequestFileSystemAccessAsync(context, std::move(callback));
+  if (context->IsWorkerGlobalScope()) {
+    auto* client = To<WorkerGlobalScope>(context)->ContentSettingsClient();
+    if (!client) {
+      std::move(callback).Run(true);
+    } else {
+      std::move(callback).Run(client->RequestFileSystemAccessSync());
+    }
+    return;
+  }
+  NOTREACHED();
 }
 
 void LocalFileSystem::FileSystemNotAllowedInternal(
@@ -167,17 +177,11 @@ void LocalFileSystem::ResolveURLInternal(
   }
 }
 
-LocalFileSystem::LocalFileSystem(LocalFrame& frame,
-                                 std::unique_ptr<FileSystemClient> client)
-    : Supplement<LocalFrame>(frame), client_(std::move(client)) {
-  DCHECK(client_);
-}
+LocalFileSystem::LocalFileSystem(LocalFrame& frame)
+    : Supplement<LocalFrame>(frame) {}
 
-LocalFileSystem::LocalFileSystem(WorkerClients& worker_clients,
-                                 std::unique_ptr<FileSystemClient> client)
-    : Supplement<WorkerClients>(worker_clients), client_(std::move(client)) {
-  DCHECK(client_);
-}
+LocalFileSystem::LocalFileSystem(WorkerClients& worker_clients)
+    : Supplement<WorkerClients>(worker_clients) {}
 
 void LocalFileSystem::Trace(blink::Visitor* visitor) {
   Supplement<LocalFrame>::Trace(visitor);
@@ -202,17 +206,13 @@ LocalFileSystem* LocalFileSystem::From(ExecutionContext& context) {
   return file_system;
 }
 
-void ProvideLocalFileSystemTo(LocalFrame& frame,
-                              std::unique_ptr<FileSystemClient> client) {
-  frame.ProvideSupplement(
-      MakeGarbageCollected<LocalFileSystem>(frame, std::move(client)));
+void ProvideLocalFileSystemTo(LocalFrame& frame) {
+  frame.ProvideSupplement(MakeGarbageCollected<LocalFileSystem>(frame));
 }
 
-void ProvideLocalFileSystemToWorker(WorkerClients* worker_clients,
-                                    std::unique_ptr<FileSystemClient> client) {
-  Supplement<WorkerClients>::ProvideTo(*worker_clients,
-                                       MakeGarbageCollected<LocalFileSystem>(
-                                           *worker_clients, std::move(client)));
+void ProvideLocalFileSystemToWorker(WorkerClients& worker_clients) {
+  worker_clients.ProvideSupplement(
+      MakeGarbageCollected<LocalFileSystem>(worker_clients));
 }
 
 }  // namespace blink

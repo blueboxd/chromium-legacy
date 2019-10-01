@@ -33,7 +33,7 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
@@ -49,6 +49,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/web_package/bundled_exchanges_handle_tracker.h"
 #include "content/browser/web_package/bundled_exchanges_source.h"
 #include "content/browser/web_package/bundled_exchanges_utils.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
@@ -643,8 +644,12 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     NavigationControllerImpl* controller =
         static_cast<NavigationControllerImpl*>(
             frame_tree_node->navigator()->GetController());
-    rfh_restored_from_back_forward_cache =
-        controller->GetBackForwardCache().GetDocument(entry->GetUniqueID());
+    BackForwardCacheImpl::Entry* restored_entry =
+        controller->GetBackForwardCache().GetEntry(entry->GetUniqueID());
+    if (restored_entry) {
+      rfh_restored_from_back_forward_cache =
+          restored_entry->render_frame_host.get();
+    }
   }
 
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -688,7 +693,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
     mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
     mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator,
     scoped_refptr<PrefetchedSignedExchangeCache>
-        prefetched_signed_exchange_cache) {
+        prefetched_signed_exchange_cache,
+    std::unique_ptr<BundledExchangesHandleTracker>
+        bundled_exchanges_handle_tracker) {
   // Only normal navigations to a different document or reloads are expected.
   // - Renderer-initiated same document navigations never start in the browser.
   // - Restore-navigations are always browser-initiated.
@@ -750,6 +757,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       std::move(blob_url_loader_factory);
   navigation_request->prefetched_signed_exchange_cache_ =
       std::move(prefetched_signed_exchange_cache);
+  navigation_request->bundled_exchanges_handle_tracker_ =
+      std::move(bundled_exchanges_handle_tracker);
   return navigation_request;
 }
 
@@ -818,12 +827,13 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
       nullptr /* navigation_ui_data */, mojo::NullAssociatedRemote(),
       mojo::NullRemote(), nullptr /* rfh_restored_from_back_forward_cache */));
 
+  navigation_request->render_frame_host_ = render_frame_host;
+  navigation_request->StartNavigation(true);
+  DCHECK(navigation_request->IsNavigationStarted());
+
   // Update the state of the NavigationRequest to match the fact that the
   // navigation just committed.
   navigation_request->state_ = RESPONSE_STARTED;
-  navigation_request->render_frame_host_ = render_frame_host;
-  navigation_request->CreateNavigationHandle(true);
-  DCHECK(navigation_request->navigation_handle());
   return navigation_request;
 }
 
@@ -1004,9 +1014,9 @@ NavigationRequest::~NavigationRequest() {
     navigation_handle_proxy_->DidFinish();
 #endif
 
-  if (navigation_handle()) {
-    GetDelegate()->DidFinishNavigation(navigation_handle());
-    TraceNavigationHandleEnd();
+  if (IsNavigationStarted()) {
+    GetDelegate()->DidFinishNavigation(this);
+    TraceNavigationEnd();
   }
 }
 
@@ -1063,7 +1073,7 @@ void NavigationRequest::BeginNavigation() {
   if (net_error != net::OK) {
     // Create a navigation handle so that the correct error code can be set on
     // it by OnRequestFailedInternal().
-    CreateNavigationHandle(false);
+    StartNavigation(false);
     OnRequestFailedInternal(network::URLLoaderCompletionStatus(net_error),
                             false /* skip_throttles */,
                             base::nullopt /* error_page_content */,
@@ -1079,7 +1089,7 @@ void NavigationRequest::BeginNavigation() {
           LegacyProtocolInSubresourceCheckResult::BLOCK_REQUEST) {
     // Create a navigation handle so that the correct error code can be set on
     // it by OnRequestFailedInternal().
-    CreateNavigationHandle(false);
+    StartNavigation(false);
     OnRequestFailedInternal(
         network::URLLoaderCompletionStatus(net::ERR_ABORTED),
         false /* skip_throttles  */, base::nullopt /* error_page_content */,
@@ -1090,7 +1100,7 @@ void NavigationRequest::BeginNavigation() {
     return;
   }
 
-  CreateNavigationHandle(false);
+  StartNavigation(false);
 
   if (CheckAboutSrcDoc() == AboutSrcDocCheckResult::BLOCK_REQUEST) {
     OnRequestFailedInternal(
@@ -1136,8 +1146,7 @@ void NavigationRequest::BeginNavigation() {
 
   common_params_->previews_state =
       GetContentClient()->browser()->DetermineAllowedPreviews(
-          common_params_->previews_state, navigation_handle_.get(),
-          common_params_->url);
+          common_params_->previews_state, this, common_params_->url);
 
   // It's safe to use base::Unretained because this NavigationRequest owns
   // the NavigationHandle where the callback will be stored.
@@ -1154,7 +1163,7 @@ void NavigationRequest::SetWaitingForRendererResponse() {
   state_ = WAITING_FOR_RENDERER_RESPONSE;
 }
 
-void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
+void NavigationRequest::StartNavigation(bool is_for_commit) {
   DCHECK(frame_tree_node_->navigation_request() == this || is_for_commit);
   FrameTreeNode* frame_tree_node = frame_tree_node_;
 
@@ -1210,34 +1219,26 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
         common_params_->url, *common_params_->referrer);
   }
 
-  handle_state_ = NavigationRequest::INITIAL;
+  DCHECK_EQ(handle_state_, NOT_CREATED);
+  handle_state_ = INITIAL;
   navigation_handle_id_ = CreateUniqueHandleID();
 
   request_headers_ = std::move(headers);
   modified_request_headers_.Clear();
   removed_request_headers_.clear();
-  std::unique_ptr<NavigationHandleImpl> navigation_handle =
-      base::WrapUnique(new NavigationHandleImpl(this));
 
-  if (!frame_tree_node->navigation_request() && !is_for_commit) {
-    // A callback could have cancelled this request synchronously in which case
-    // |this| is deleted.
-    return;
-  }
-
-  DCHECK(!navigation_handle_);
-  navigation_handle_ = std::move(navigation_handle);
-  TraceNavigationHandleStart();
-
-  throttle_runner_ = base::WrapUnique(
-      new NavigationThrottleRunner(this, navigation_handle_.get()));
+  // TODO(zetamoo): Refactor NavigationThrottleRunner to accept one argument.
+  throttle_runner_ = base::WrapUnique(new NavigationThrottleRunner(this, this));
 
 #if defined(OS_ANDROID)
-  navigation_handle_proxy_ =
-      std::make_unique<NavigationHandleProxy>(navigation_handle_.get());
+  navigation_handle_proxy_ = std::make_unique<NavigationHandleProxy>(this);
 #endif
 
-  GetDelegate()->DidStartNavigation(navigation_handle_.get());
+  TraceNavigationStart();
+  GetDelegate()->DidStartNavigation(this);
+
+  // The previous call to DidStartNavigation could have cancelled this request
+  // synchronously.
 }
 
 void NavigationRequest::ResetForCrossDocumentRestart() {
@@ -1255,11 +1256,14 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
 
   // It is necessary to call DidFinishNavigation before resetting
   // |navigation_handle_proxy_|. See https://crbug.com/958396.
-  if (navigation_handle()) {
-    GetDelegate()->DidFinishNavigation(navigation_handle());
-    TraceNavigationHandleEnd();
-    navigation_handle_.reset();
+  if (IsNavigationStarted()) {
+    GetDelegate()->DidFinishNavigation(this);
+    TraceNavigationEnd();
   }
+
+  // Reset the states of the NavigationRequest.
+  state_ = NOT_STARTED;
+  handle_state_ = NOT_CREATED;
 
 #if defined(OS_ANDROID)
   if (navigation_handle_proxy_)
@@ -1281,9 +1285,6 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
            mojom::NavigationType::SAME_DOCUMENT);
     common_params_->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
   }
-
-  // Reset the state of the NavigationRequest.
-  state_ = NOT_STARTED;
 }
 
 void NavigationRequest::RegisterSubresourceOverride(
@@ -1485,8 +1486,7 @@ void NavigationRequest::OnRequestRedirected(
   // created.
   common_params_->previews_state =
       GetContentClient()->browser()->DetermineAllowedPreviews(
-          common_params_->previews_state, navigation_handle_.get(),
-          common_params_->url);
+          common_params_->previews_state, this, common_params_->url);
 
   // Check what the process of the SiteInstance is. It will be passed to the
   // NavigationHandle, and informed to expect a navigation to the redirected
@@ -1603,10 +1603,11 @@ void NavigationRequest::OnResponseStarted(
     NavigationControllerImpl* controller =
         static_cast<NavigationControllerImpl*>(
             frame_tree_node_->navigator()->GetController());
-    render_frame_host_ =
-        controller->GetBackForwardCache().GetDocument(nav_entry_id_);
+    render_frame_host_ = controller->GetBackForwardCache()
+                             .GetEntry(nav_entry_id_)
+                             ->render_frame_host.get();
 
-    // The only time GetDocument can return nullptr here, is if the document was
+    // The only time GetEntry can return nullptr here, is if the document was
     // evicted from the BackForwardCache since this navigation started.
     //
     // If the document was evicted, the navigation should have been re-issued
@@ -1646,7 +1647,7 @@ void NavigationRequest::OnResponseStarted(
   // Update the previews state of the request.
   common_params_->previews_state =
       GetContentClient()->browser()->DetermineCommittedPreviews(
-          common_params_->previews_state, navigation_handle_.get(),
+          common_params_->previews_state, this,
           response_head->head.headers.get());
 
   // Store the URLLoaderClient endpoints until checks have been processed.
@@ -1984,19 +1985,29 @@ void NavigationRequest::OnStartChecksComplete(
   }
 
   // Initialize the BundledExchangesHandle.
-  if (bundled_exchanges_utils::CanLoadAsTrustableBundledExchangesFile(
-          common_params_->url)) {
-    auto source = BundledExchangesSource::MaybeCreateFromTrustedFileUrl(
-        common_params_->url);
-    // MaybeCreateFromTrustedFileUrl() returns null when the url contains an
-    // invalid character.
-    if (source) {
-      bundled_exchanges_handle_ =
-          BundledExchangesHandle::CreateForTrustableFile(std::move(source));
+  if (bundled_exchanges_handle_tracker_) {
+    DCHECK(base::FeatureList::IsEnabled(features::kBundledHTTPExchanges) ||
+           base::CommandLine::ForCurrentProcess()->HasSwitch(
+               switches::kTrustableBundledExchangesFileUrl));
+    bundled_exchanges_handle_ =
+        bundled_exchanges_handle_tracker_->MaybeCreateBundledExchangesHandle(
+            common_params_->url);
+  }
+  if (!bundled_exchanges_handle_) {
+    if (bundled_exchanges_utils::CanLoadAsTrustableBundledExchangesFile(
+            common_params_->url)) {
+      auto source = BundledExchangesSource::MaybeCreateFromTrustedFileUrl(
+          common_params_->url);
+      // MaybeCreateFromTrustedFileUrl() returns null when the url contains an
+      // invalid character.
+      if (source) {
+        bundled_exchanges_handle_ =
+            BundledExchangesHandle::CreateForTrustableFile(std::move(source));
+      }
+    } else if (bundled_exchanges_utils::CanLoadAsBundledExchangesFile(
+                   common_params_->url)) {
+      bundled_exchanges_handle_ = BundledExchangesHandle::CreateForFile();
     }
-  } else if (bundled_exchanges_utils::CanLoadAsBundledExchangesFile(
-                 common_params_->url)) {
-    bundled_exchanges_handle_ = BundledExchangesHandle::CreateForFile();
   }
 
   // Mark the fetch_start (Navigation Timing API).
@@ -2294,8 +2305,8 @@ void NavigationRequest::CommitNavigation() {
         static_cast<NavigationControllerImpl*>(
             frame_tree_node_->navigator()->GetController());
 
-    std::unique_ptr<RenderFrameHostImpl> restored_rfh =
-        controller->GetBackForwardCache().RestoreDocument(nav_entry_id_);
+    std::unique_ptr<BackForwardCacheImpl::Entry> restored_bfcache_entry =
+        controller->GetBackForwardCache().RestoreEntry(nav_entry_id_);
 
     // The only time restored_rfh can be nullptr here, is if the
     // document was evicted from the BackForwardCache since this navigation
@@ -2304,18 +2315,19 @@ void NavigationRequest::CommitNavigation() {
     // If the document was evicted, it should have re-issued the navigation
     // (deleting this NavigationRequest), so we should never reach this point
     // without the document still present in the BackForwardCache.
-    CHECK(restored_rfh);
+    CHECK(restored_bfcache_entry);
 
     // Transfer ownership of this NavigationRequest to the restored
     // RenderFrameHost.
     frame_tree_node_->TransferNavigationRequestOwnership(GetRenderFrameHost());
 
-    // Move the restored RenderFrameHost into RenderFrameHostManager, in
+    // Move the restored BackForwardCache Entry into RenderFrameHostManager, in
     // preparation for committing.
     frame_tree_node_->render_manager()->RestoreFromBackForwardCache(
-        std::move(restored_rfh));
+        std::move(restored_bfcache_entry));
 
-    // Commit the restored RenderFrameHost.
+    // Commit the restored BackForwardCache Entry. This includes committing the
+    // RenderFrameHost and restoring extra state, such as proxies, etc.
     // Note that this will delete the NavigationRequest.
     GetRenderFrameHost()->DidCommitBackForwardCacheNavigation(
         this, MakeDidCommitProvisionalLoadParamsForBFCache());
@@ -2698,7 +2710,7 @@ void NavigationRequest::IgnoreCommitInterfaceDisconnection() {
   return commit_navigation_client_.set_disconnect_handler(base::DoNothing());
 }
 
-bool NavigationRequest::IsSameDocument() const {
+bool NavigationRequest::IsSameDocument() {
   return NavigationTypeUtils::IsSameDocument(common_params_->navigation_type);
 }
 
@@ -2824,7 +2836,7 @@ void NavigationRequest::OnWillRedirectRequestProcessed(
 
     // Notify the delegate that a redirect was encountered and will be followed.
     if (GetDelegate())
-      GetDelegate()->DidRedirectNavigation(navigation_handle_.get());
+      GetDelegate()->DidRedirectNavigation(this);
   } else {
     handle_state_ = NavigationRequest::CANCELING;
   }
@@ -2951,8 +2963,7 @@ void NavigationRequest::WillStartRequest(
   // If the content/ embedder did not pass the NavigationUIData at the beginning
   // of the navigation, ask for it now.
   if (!navigation_ui_data_) {
-    navigation_ui_data_ =
-        GetDelegate()->GetNavigationUIData(navigation_handle_.get());
+    navigation_ui_data_ = GetDelegate()->GetNavigationUIData(this);
   }
 
   // Notify each throttle of the request.
@@ -3063,13 +3074,11 @@ void NavigationRequest::DidCommitNavigation(
   // count it as an error page.
   if (params.base_url.spec() == kUnreachableWebDataURL ||
       net_error_ != net::OK) {
-    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle",
-                                 navigation_handle_.get(),
+    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                  "DidCommitNavigation: error page");
     handle_state_ = DID_COMMIT_ERROR_PAGE;
   } else {
-    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle",
-                                 navigation_handle_.get(),
+    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                  "DidCommitNavigation");
     handle_state_ = DID_COMMIT;
   }
@@ -3164,7 +3173,7 @@ void NavigationRequest::SetNavigationClient(
   associated_site_instance_id_ = associated_site_instance_id;
 }
 
-bool NavigationRequest::NeedsUrlLoader() const {
+bool NavigationRequest::NeedsUrlLoader() {
   return IsURLHandledByNetworkStack(common_params_->url) && !IsSameDocument() &&
          !IsForMhtmlSubframe();
 }
@@ -3206,7 +3215,7 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
   SetExpectedProcess(render_frame_host_->GetProcess());
 
   if (!IsSameDocument())
-    GetDelegate()->ReadyToCommitNavigation(navigation_handle_.get());
+    GetDelegate()->ReadyToCommitNavigation(this);
 }
 
 std::unique_ptr<AppCacheNavigationHandle>
@@ -3466,37 +3475,34 @@ bool NavigationRequest::HasPrefetchedAlternativeSubresourceSignedExchange() {
   return !commit_params_->prefetched_signed_exchanges.empty();
 }
 
-void NavigationRequest::TraceNavigationHandleStart() {
-  DCHECK(navigation_handle_);
-  TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationHandle",
-                           navigation_handle_.get(), "frame_tree_node",
-                           GetFrameTreeNodeId(), "url",
+void NavigationRequest::TraceNavigationStart() {
+  TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationRequest", this,
+                           "frame_tree_node", GetFrameTreeNodeId(), "url",
                            common_params_->url.possibly_invalid_spec());
   DCHECK(!common_params_->navigation_start.is_null());
   DCHECK(!IsRendererDebugURL(common_params_->url));
 
   if (IsInMainFrame()) {
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
-        "navigation", "Navigation StartToCommit", navigation_handle_.get(),
+        "navigation", "Navigation StartToCommit", this,
         common_params_->navigation_start, "Initial URL",
         common_params_->url.spec());
   }
 
   if (IsSameDocument()) {
-    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle",
-                                 navigation_handle_.get(), "Same document");
+    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
+                                 "Same document");
   }
 }
 
-void NavigationRequest::TraceNavigationHandleEnd() {
-  DCHECK(navigation_handle_);
+void NavigationRequest::TraceNavigationEnd() {
+  DCHECK(IsNavigationStarted());
   if (IsInMainFrame()) {
-    TRACE_EVENT_ASYNC_END2(
-        "navigation", "Navigation StartToCommit", navigation_handle_.get(),
-        "URL", common_params_->url.spec(), "Net Error Code", net_error_);
+    TRACE_EVENT_ASYNC_END2("navigation", "Navigation StartToCommit", this,
+                           "URL", common_params_->url.spec(), "Net Error Code",
+                           net_error_);
   }
-  TRACE_EVENT_ASYNC_END0("navigation", "NavigationHandle",
-                         navigation_handle_.get());
+  TRACE_EVENT_ASYNC_END0("navigation", "NavigationRequest", this);
 }
 
 int64_t NavigationRequest::GetNavigationId() {
@@ -3620,7 +3626,7 @@ ReloadType NavigationRequest::GetReloadType() {
   return reload_type_;
 }
 
-RestoreType NavigationRequest::GetRestoreType() const {
+RestoreType NavigationRequest::GetRestoreType() {
   return restore_type_;
 }
 
@@ -3675,11 +3681,11 @@ GlobalFrameRoutingId NavigationRequest::GetPreviousRenderFrameHostId() {
 
 // static
 NavigationRequest* NavigationRequest::From(NavigationHandle* handle) {
-  return static_cast<NavigationHandleImpl*>(handle)->navigation_request();
+  return static_cast<NavigationRequest*>(handle);
 }
 
 bool NavigationRequest::IsNavigationStarted() const {
-  return state_ >= STARTED;
+  return handle_state_ >= INITIAL;
 }
 
 }  // namespace content

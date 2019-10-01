@@ -103,28 +103,32 @@ void PendingInvalidations::ScheduleSiblingInvalidationsAsDescendants(
 
   scheduling_parent.SetNeedsStyleInvalidation();
 
+  ContainerNode* subtree_root = &scheduling_parent;
+  if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
+    subtree_root = DynamicTo<Element>(scheduling_parent);
+    if (!subtree_root)
+      subtree_root = &To<ShadowRoot>(scheduling_parent).host();
+  }
+
   for (auto& invalidation_set : invalidation_lists.siblings) {
-    if (invalidation_set->WholeSubtreeInvalid()) {
-      scheduling_parent.SetNeedsStyleRecalc(
+    DescendantInvalidationSet* descendants =
+        To<SiblingInvalidationSet>(*invalidation_set).SiblingDescendants();
+    if (invalidation_set->WholeSubtreeInvalid() ||
+        (descendants && descendants->WholeSubtreeInvalid())) {
+      subtree_root->SetNeedsStyleRecalc(
           kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
                                    style_change_reason::kStyleInvalidator));
       return;
     }
-    if (invalidation_set->InvalidatesSelf() &&
-        !pending_invalidations.Descendants().Contains(invalidation_set))
-      pending_invalidations.Descendants().push_back(invalidation_set);
 
-    if (DescendantInvalidationSet* descendants =
-            To<SiblingInvalidationSet>(*invalidation_set)
-                .SiblingDescendants()) {
-      if (descendants->WholeSubtreeInvalid()) {
-        scheduling_parent.SetNeedsStyleRecalc(
-            kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                                     style_change_reason::kStyleInvalidator));
-        return;
-      }
-      if (!pending_invalidations.Descendants().Contains(descendants))
-        pending_invalidations.Descendants().push_back(descendants);
+    if (invalidation_set->InvalidatesSelf() &&
+        !pending_invalidations.Descendants().Contains(invalidation_set)) {
+      pending_invalidations.Descendants().push_back(invalidation_set);
+    }
+
+    if (descendants &&
+        !pending_invalidations.Descendants().Contains(descendants)) {
+      pending_invalidations.Descendants().push_back(descendants);
     }
   }
 }

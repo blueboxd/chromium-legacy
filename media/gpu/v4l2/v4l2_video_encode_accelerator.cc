@@ -728,7 +728,7 @@ void V4L2VideoEncodeAccelerator::InputImageProcessorTask() {
   if (image_processor_->output_mode() == ImageProcessor::OutputMode::IMPORT) {
     const auto& buf = image_processor_output_buffers_[output_buffer_index];
     auto output_frame = VideoFrame::WrapVideoFrame(
-        *buf, buf->format(), buf->visible_rect(), buf->natural_size());
+        buf, buf->format(), buf->visible_rect(), buf->natural_size());
 
     // Unretained(this) is safe here, because image_processor is destroyed
     // before video_encoder_thread stops.

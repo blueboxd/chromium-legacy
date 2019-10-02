@@ -163,11 +163,10 @@ class PasswordManager : public FormSubmissionObserver {
   PasswordFormManager* GetSubmittedManagerForTest() const {
     return GetSubmittedManager();
   }
-#if !defined(OS_IOS)
+
   void set_leak_factory(std::unique_ptr<LeakDetectionCheckFactory> factory) {
     leak_delegate_.set_leak_factory(std::move(factory));
   }
-#endif  // !defined(OS_IOS)
 
 #endif  // defined(UNIT_TEST)
 
@@ -346,11 +345,9 @@ class PasswordManager : public FormSubmissionObserver {
   // CredentialManagerImpl takes care of it.
   bool store_password_called_ = false;
 
-#if !defined(OS_IOS)
   // Helper for making the requests on leak detection.
   LeakDetectionDelegate leak_delegate_;
 
-#endif  // !defined(OS_IOS)
   base::Optional<PossibleUsernameData> possible_username_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);

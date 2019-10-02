@@ -768,8 +768,12 @@ bool PasswordAutofillAgent::IsUsernameOrPasswordField(
 bool PasswordAutofillAgent::TryToShowTouchToFill(
     const WebFormControlElement& control_element) {
   const WebInputElement* element = ToWebInputElement(&control_element);
-  if (!element || (!base::Contains(web_input_to_password_info_, *element) &&
-                   !base::Contains(password_to_username_, *element))) {
+  WebInputElement username_element;
+  WebInputElement password_element;
+  PasswordInfo* password_info = nullptr;
+  if (!element ||
+      !FindPasswordInfoForElement(*element, &username_element,
+                                  &password_element, &password_info)) {
     return false;
   }
   if (was_touch_to_fill_ui_shown_)

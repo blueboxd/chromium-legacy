@@ -191,11 +191,9 @@ void PasswordManager::RegisterLocalPrefs(PrefRegistrySimple* registry) {
 }
 
 PasswordManager::PasswordManager(PasswordManagerClient* client)
-    : client_(client)
-#if !defined(OS_IOS)
-      ,
+    : client_(client),
       leak_delegate_(client)
-#endif  // !defined(OS_IOS)
+
 {
   DCHECK(client_);
 }
@@ -796,9 +794,7 @@ void PasswordManager::OnLoginSuccessful() {
   DCHECK(submitted_manager->GetSubmittedForm());
 
   client_->GetStoreResultFilter()->ReportFormLoginSuccess(*submitted_manager);
-#if !defined(OS_IOS)
   leak_delegate_.StartLeakCheck(submitted_manager->GetPendingCredentials());
-#endif
 
   auto submission_event =
       submitted_manager->GetSubmittedForm()->submission_event;

@@ -63,7 +63,9 @@ class PerformanceManagerImpl : public PerformanceManager {
   static PerformanceManagerImpl* GetInstance();
 
   // Creates, initializes and registers an instance.
-  static std::unique_ptr<PerformanceManagerImpl> Create();
+  // Invokes |on_start| on the PM sequence.
+  static std::unique_ptr<PerformanceManagerImpl> Create(
+      GraphImplCallback on_start);
 
   // Unregisters |instance| if it's currently registered and arranges for its
   // deletion on its sequence.
@@ -140,8 +142,7 @@ class PerformanceManagerImpl : public PerformanceManager {
   void DeleteNodeImpl(std::unique_ptr<NodeBase> node);
   void BatchDeleteNodesImpl(std::vector<std::unique_ptr<NodeBase>> nodes);
 
-  void OnStart();
-  void OnStartImpl();
+  void OnStartImpl(GraphImplCallback graph_callback);
   void RunCallbackWithGraphImpl(GraphImplCallback graph_callback);
   void RunCallbackWithGraph(GraphCallback graph_callback);
 

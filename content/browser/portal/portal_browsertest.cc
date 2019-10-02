@@ -829,16 +829,9 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivate) {
   input_event_ack_waiter.Wait();
 }
 
-#if defined(OS_MACOSX)
-//  TODO(crbug.com/941824): Test flaky on MAC
-#define MAYBE_TouchAckAfterActivateAndAdopt \
-  DISABLED_TouchAckAfterActivateAndAdopt
-#else
-#define MAYBE_TouchAckAfterActivateAndAdopt TouchAckAfterActivateAndAdopt
-#endif
 // Regression test for crbug.com/973647. Tests that receiving a touch ack
 // after activation and predecessor adoption doesn't cause a crash.
-IN_PROC_BROWSER_TEST_F(PortalBrowserTest, MAYBE_TouchAckAfterActivateAndAdopt) {
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivateAndAdopt) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
   WebContentsImpl* web_contents_impl =
@@ -893,10 +886,15 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, MAYBE_TouchAckAfterActivateAndAdopt) {
 
   std::unique_ptr<SyntheticTapGesture> gesture =
       std::make_unique<SyntheticTapGesture>(params);
-  render_widget_host->QueueSyntheticGesture(
-      std::move(gesture), base::Bind([](SyntheticGesture::Result) {}));
-  portal_interceptor->WaitForActivate();
-  EXPECT_EQ(portal_contents, shell()->web_contents());
+  {
+    PortalCreatedObserver adoption_observer(portal_frame);
+    render_widget_host->QueueSyntheticGesture(
+        std::move(gesture), base::Bind([](SyntheticGesture::Result) {}));
+    portal_interceptor->WaitForActivate();
+    EXPECT_EQ(portal_contents, shell()->web_contents());
+    // Wait for predecessor to be adopted.
+    adoption_observer.WaitUntilPortalCreated();
+  }
 
   // Wait for a touch ack to be sent from the predecessor.
   input_event_ack_waiter.Wait();

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/performance_manager/performance_manager_test_harness.h"
 
+#include "base/bind_helpers.h"
 #include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 
 namespace performance_manager {
@@ -14,7 +15,7 @@ PerformanceManagerTestHarness::~PerformanceManagerTestHarness() = default;
 
 void PerformanceManagerTestHarness::SetUp() {
   Super::SetUp();
-  perf_man_ = PerformanceManagerImpl::Create();
+  perf_man_ = PerformanceManagerImpl::Create(base::DoNothing());
 }
 
 void PerformanceManagerTestHarness::TearDown() {

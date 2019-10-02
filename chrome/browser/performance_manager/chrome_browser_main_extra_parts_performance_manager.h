@@ -13,6 +13,7 @@
 
 namespace performance_manager {
 class BrowserChildProcessWatcher;
+class GraphImpl;
 class PerformanceManagerImpl;
 }  // namespace performance_manager
 
@@ -21,6 +22,9 @@ class ChromeBrowserMainExtraPartsPerformanceManager
  public:
   ChromeBrowserMainExtraPartsPerformanceManager();
   ~ChromeBrowserMainExtraPartsPerformanceManager() override;
+
+  static void CreateDefaultPoliciesAndDecorators(
+      performance_manager::GraphImpl* graph);
 
  private:
   // ChromeBrowserMainExtraParts overrides.

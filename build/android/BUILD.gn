@@ -93,11 +93,15 @@ python_library("test_runner_py") {
     data += [
       "//third_party/android_build_tools/bundletool/bundletool-all-0.10.3.jar",
     ]
-    data_deps +=
-        [ "//third_party/android_platform/development/scripts:stack_py" ]
-  }
-  if (is_asan) {
-    data_deps += [ "//tools/android/asan/third_party:asan_device_setup" ]
+    data_deps += [
+      "//third_party/android_platform/development/scripts:stack_py",
+      "//tools/android/avd:avd_py",
+    ]
+    if (is_asan) {
+      data_deps += [ "//tools/android/asan/third_party:asan_device_setup" ]
+    }
+  } else {
+    pydeps_sources_assignment_filters = [ "../../tools/*" ]
   }
 
   # Proguard is needed only when using apks (rather than native executables).

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/performance_manager/persistence/site_data/unittest_utils.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 
 #include <utility>
@@ -48,7 +49,7 @@ TestWithPerformanceManager::~TestWithPerformanceManager() = default;
 
 void TestWithPerformanceManager::SetUp() {
   EXPECT_EQ(nullptr, PerformanceManagerImpl::GetInstance());
-  performance_manager_ = PerformanceManagerImpl::Create();
+  performance_manager_ = PerformanceManagerImpl::Create(base::DoNothing());
   // Make sure creation registers the created instance.
   EXPECT_EQ(performance_manager_.get(), PerformanceManagerImpl::GetInstance());
 }

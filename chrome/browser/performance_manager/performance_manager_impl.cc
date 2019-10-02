@@ -9,35 +9,16 @@
 #include <utility>
 
 #include "base/containers/flat_set.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "build/build_config.h"
-#include "chrome/browser/performance_manager/decorators/freeze_origin_trial_policy_aggregator.h"
-#include "chrome/browser/performance_manager/decorators/frozen_frame_aggregator.h"
-#include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
-#include "chrome/browser/performance_manager/decorators/process_metrics_decorator.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/graph/policies/policy_features.h"
-#include "chrome/browser/performance_manager/graph/policies/working_set_trimmer_policy.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/graph/worker_node_impl.h"
-#include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
-#include "chrome/browser/performance_manager/observers/metrics_collector.h"
-#include "content/public/common/content_features.h"
-
-#if defined(OS_LINUX)
-#include "base/allocator/buildflags.h"
-#if BUILDFLAG(USE_TCMALLOC)
-#include "chrome/browser/performance_manager/graph/policies/dynamic_tcmalloc_policy_linux.h"
-#include "chrome/common/performance_manager/mojom/tcmalloc.mojom.h"
-#endif  // BUILDFLAG(USE_TCMALLOC)
-#endif  // defined(OS_LINUX)
 
 namespace performance_manager {
 
@@ -106,11 +87,16 @@ PerformanceManagerImpl* PerformanceManagerImpl::GetInstance() {
 }
 
 // static
-std::unique_ptr<PerformanceManagerImpl> PerformanceManagerImpl::Create() {
+std::unique_ptr<PerformanceManagerImpl> PerformanceManagerImpl::Create(
+    GraphImplCallback on_start) {
   std::unique_ptr<PerformanceManagerImpl> instance =
       base::WrapUnique(new PerformanceManagerImpl());
 
-  instance->OnStart();
+  instance->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PerformanceManagerImpl::OnStartImpl,
+                     base::Unretained(instance.get()), std::move(on_start)));
+
   g_performance_manager.Set(instance.get());
 
   return instance;
@@ -291,12 +277,6 @@ void PerformanceManagerImpl::BatchDeleteNodesImpl(
   // When |nodes| goes out of scope, all nodes are deleted.
 }
 
-void PerformanceManagerImpl::OnStart() {
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(&PerformanceManagerImpl::OnStartImpl,
-                                        base::Unretained(this)));
-}
-
 void PerformanceManagerImpl::RunCallbackWithGraphImpl(
     GraphImplCallback graph_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -311,30 +291,11 @@ void PerformanceManagerImpl::RunCallbackWithGraph(
   std::move(graph_callback).Run(&graph_);
 }
 
-void PerformanceManagerImpl::OnStartImpl() {
+void PerformanceManagerImpl::OnStartImpl(GraphImplCallback on_start) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  graph_.PassToGraph(std::make_unique<FreezeOriginTrialPolicyAggregator>());
-  graph_.PassToGraph(std::make_unique<FrozenFrameAggregator>());
-  graph_.PassToGraph(std::make_unique<PageAlmostIdleDecorator>());
-  graph_.PassToGraph(std::make_unique<IsolationContextMetrics>());
-  graph_.PassToGraph(std::make_unique<MetricsCollector>());
-  graph_.PassToGraph(std::make_unique<ProcessMetricsDecorator>());
-
-  if (policies::WorkingSetTrimmerPolicy::PlatformSupportsWorkingSetTrim()) {
-    graph_.PassToGraph(
-        policies::WorkingSetTrimmerPolicy::CreatePolicyForPlatform());
-  }
-
-#if defined(OS_LINUX)
-#if BUILDFLAG(USE_TCMALLOC)
-  if (base::FeatureList::IsEnabled(features::kDynamicTcmallocTuning)) {
-    graph_.PassToGraph(std::make_unique<policies::DynamicTcmallocPolicy>());
-  }
-#endif  // BUILDFLAG(USE_TCMALLOC)
-#endif  // defined(OS_LINUX)
-
   graph_.set_ukm_recorder(ukm::UkmRecorder::Get());
+  std::move(on_start).Run(&graph_);
 }
 
 }  // namespace performance_manager

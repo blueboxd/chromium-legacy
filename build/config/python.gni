@@ -22,6 +22,9 @@
 #
 # Variables
 #   pydeps_file: Path to .pydeps file to read sources from (optional).
+#   pydeps_sources_assignment_filters: Additional sources_assignment_filters to
+#     use when reading the contents of the pydeps file. Unused if pydeps_file
+#     isn't set. (optional)
 #   data: Additional files to include in data. E.g. non-.py files needed by the
 #         library, or .py files that are conditionally / lazily imported.
 #
@@ -44,7 +47,12 @@ template("python_library") {
       _py_files = read_file(invoker.pydeps_file, "list lines")
 
       # Filter out comments.
-      set_sources_assignment_filter([ "#*" ])
+      pydeps_sources_assignment_filters = [ "#*" ]
+      if (defined(invoker.pydeps_sources_assignment_filters)) {
+        pydeps_sources_assignment_filters +=
+            invoker.pydeps_sources_assignment_filters
+      }
+      set_sources_assignment_filter(pydeps_sources_assignment_filters)
       sources = _py_files
 
       # Dependencies are listed relative to the pydeps file directory, but data

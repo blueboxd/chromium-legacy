@@ -7,6 +7,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/mime_sniffer.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/loader/mime_sniffing_url_loader.h"
 
 namespace blink {
@@ -57,8 +58,8 @@ void MimeSniffingThrottle::WillProcessResponse(
 }
 
 void MimeSniffingThrottle::ResumeWithNewResponseHead(
-    const network::ResourceResponseHead& new_response_head) {
-  delegate_->UpdateDeferredResponseHead(new_response_head);
+    network::mojom::URLResponseHeadPtr new_response_head) {
+  delegate_->UpdateDeferredResponseHead(std::move(new_response_head));
   delegate_->Resume();
 }
 

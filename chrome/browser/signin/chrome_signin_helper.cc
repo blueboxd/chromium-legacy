@@ -58,7 +58,6 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
-#include "chromeos/constants/chromeos_features.h"
 #endif
 
 namespace signin {
@@ -185,58 +184,45 @@ void ProcessMirrorHeader(
       AccountReconcilorFactory::GetForProfile(profile);
   account_reconcilor->OnReceivedManageAccountsResponse(service_type);
 #if defined(OS_CHROMEOS)
-  if (chrome::FindBrowserWithWebContents(web_contents) &&
-      service_type == GAIA_SERVICE_TYPE_INCOGNITO) {
-    chrome::NewIncognitoWindow(profile);
-    return;
-  }
   signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
       account_reconcilor->GetState());
 
-  if (chromeos::features::IsAccountManagerEnabled()) {
-    // Chrome OS Account Manager is available. The only allowed operations
-    // are:
-    //
-    // - Going Incognito (already handled in above switch-case).
-    // - Displaying the Account Manager for managing accounts.
-    // - Displaying a reauthentication window: Enterprise GSuite Accounts could
-    // have been forced through an online in-browser sign-in for sensitive
-    // webpages, thereby decreasing their session validity. After their session
-    // expires, they will receive a "Mirror" re-authentication request for all
-    // Google web properties.
+  // Do not do anything if the navigation happened in the "background".
+  if (!chrome::FindBrowserWithWebContents(web_contents))
+    return;
 
-    // Do not display Account Manager if the navigation happened in the
-    // "background".
-    if (!chrome::FindBrowserWithWebContents(web_contents))
-      return;
+  // The only allowed operations are:
+  // - Going Incognito.
+  // - Displaying the Account Manager for managing accounts.
+  // - Displaying a reauthentication window: Enterprise GSuite Accounts could
+  // have been forced through an online in-browser sign-in for sensitive
+  // webpages, thereby decreasing their session validity. After their session
+  // expires, they will receive a "Mirror" re-authentication request for all
+  // Google web properties.
 
-    if (manage_accounts_params.email.empty()) {
-      // Display Account Manager for managing accounts.
-      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-          profile, chrome::kAccountManagerSubPage);
-    } else {
-      // Do not display the re-authentication dialog if this event was triggered
-      // by supervision being enabled for an account.  In this situation, a
-      // complete signout is required.
-      SupervisedUserService* service =
-          SupervisedUserServiceFactory::GetForProfile(profile);
-      if (service && service->signout_required_after_supervision_enabled()) {
-        return;
-      }
-
-      // Display a re-authentication dialog.
-      chromeos::InlineLoginHandlerDialogChromeOS::Show(
-          manage_accounts_params.email);
-    }
+  if (service_type == GAIA_SERVICE_TYPE_INCOGNITO) {
+    chrome::NewIncognitoWindow(profile);
     return;
   }
 
-  // TODO(sinhak): Remove this when Chrome OS Account Manager is released.
-  // Chrome OS does not have an account picker right now. To fix
-  // https://crbug.com/807568, this is a no-op here. This is OK because in
-  // the limited cases where Mirror is available on Chrome OS, 1:1 account
-  // consistency is enforced and adding/removing accounts is not allowed,
-  // GAIA_SERVICE_TYPE_INCOGNITO may be allowed though.
+  if (manage_accounts_params.email.empty()) {
+    // Display Account Manager for managing accounts.
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+        profile, chrome::kAccountManagerSubPage);
+  } else {
+    // Do not display the re-authentication dialog if this event was triggered
+    // by supervision being enabled for an account.  In this situation, a
+    // complete signout is required.
+    SupervisedUserService* service =
+        SupervisedUserServiceFactory::GetForProfile(profile);
+    if (service && service->signout_required_after_supervision_enabled()) {
+      return;
+    }
+
+    // Display a re-authentication dialog.
+    chromeos::InlineLoginHandlerDialogChromeOS::Show(
+        manage_accounts_params.email);
+  }
   return;
 
 #else   // !defined(OS_CHROMEOS)

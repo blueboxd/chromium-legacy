@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/mime_sniffer.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
 
 namespace blink {
@@ -21,7 +22,7 @@ std::tuple<mojo::PendingRemote<network::mojom::URLLoader>,
 MimeSniffingURLLoader::CreateLoader(
     base::WeakPtr<MimeSniffingThrottle> throttle,
     const GURL& response_url,
-    const network::ResourceResponseHead& response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   mojo::PendingRemote<network::mojom::URLLoader> url_loader;
   mojo::PendingRemote<network::mojom::URLLoaderClient> url_loader_client;
@@ -30,7 +31,7 @@ MimeSniffingURLLoader::CreateLoader(
           url_loader_client.InitWithNewPipeAndPassReceiver();
 
   auto loader = base::WrapUnique(new MimeSniffingURLLoader(
-      std::move(throttle), response_url, response_head,
+      std::move(throttle), response_url, std::move(response_head),
       std::move(url_loader_client), std::move(task_runner)));
   MimeSniffingURLLoader* loader_rawptr = loader.get();
   mojo::MakeSelfOwnedReceiver(std::move(loader),
@@ -42,14 +43,14 @@ MimeSniffingURLLoader::CreateLoader(
 MimeSniffingURLLoader::MimeSniffingURLLoader(
     base::WeakPtr<MimeSniffingThrottle> throttle,
     const GURL& response_url,
-    const network::ResourceResponseHead& response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::PendingRemote<network::mojom::URLLoaderClient>
         destination_url_loader_client,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : throttle_(throttle),
       destination_url_loader_client_(std::move(destination_url_loader_client)),
       response_url_(response_url),
-      response_head_(response_head),
+      response_head_(std::move(response_head)),
       task_runner_(task_runner),
       body_consumer_watcher_(FROM_HERE,
                              mojo::SimpleWatcher::ArmingPolicy::MANUAL,
@@ -122,12 +123,12 @@ void MimeSniffingURLLoader::OnComplete(
       // An error occured before receiving any data.
       DCHECK_NE(net::OK, status.error_code);
       state_ = State::kCompleted;
-      response_head_.mime_type = kDefaultMimeType;
+      response_head_->mime_type = kDefaultMimeType;
       if (!throttle_) {
         Abort();
         return;
       }
-      throttle_->ResumeWithNewResponseHead(response_head_);
+      throttle_->ResumeWithNewResponseHead(std::move(response_head_));
       destination_url_loader_client_->OnComplete(status);
       return;
     case State::kSniffing:
@@ -210,10 +211,10 @@ void MimeSniffingURLLoader::OnBodyReadable(MojoResult) {
   std::string new_type;
   bool made_final_decision =
       net::SniffMimeType(buffered_body_.data(), buffered_body_.size(),
-                         response_url_, response_head_.mime_type,
+                         response_url_, response_head_->mime_type,
                          net::ForceSniffFileUrlsForHtml::kDisabled, &new_type);
-  response_head_.mime_type = new_type;
-  response_head_.did_mime_sniff = true;
+  response_head_->mime_type = new_type;
+  response_head_->did_mime_sniff = true;
   if (made_final_decision) {
     CompleteSniffing();
     return;
@@ -235,7 +236,7 @@ void MimeSniffingURLLoader::CompleteSniffing() {
   if (buffered_body_.empty()) {
     // The URLLoader ended before sending any data. There is not enough
     // information to determine the MIME type.
-    response_head_.mime_type = kDefaultMimeType;
+    response_head_->mime_type = kDefaultMimeType;
   }
 
   state_ = State::kSending;
@@ -244,7 +245,7 @@ void MimeSniffingURLLoader::CompleteSniffing() {
     Abort();
     return;
   }
-  throttle_->ResumeWithNewResponseHead(response_head_);
+  throttle_->ResumeWithNewResponseHead(std::move(response_head_));
   mojo::ScopedDataPipeConsumerHandle body_to_send;
   MojoResult result =
       mojo::CreateDataPipe(nullptr, &body_producer_handle_, &body_to_send);

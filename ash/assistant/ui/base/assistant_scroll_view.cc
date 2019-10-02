@@ -88,11 +88,11 @@ void AssistantScrollView::InitLayout() {
   content_view_ = SetContents(std::move(content_view));
 
   // Scroll bars.
-  horizontal_scroll_bar_ = new InvisibleScrollBar(/*horizontal=*/true);
-  SetHorizontalScrollBar(horizontal_scroll_bar_);
+  horizontal_scroll_bar_ = SetHorizontalScrollBar(
+      std::make_unique<InvisibleScrollBar>(/*horizontal=*/true));
 
-  vertical_scroll_bar_ = new InvisibleScrollBar(/*horizontal=*/false);
-  SetVerticalScrollBar(vertical_scroll_bar_);
+  vertical_scroll_bar_ = SetVerticalScrollBar(
+      std::make_unique<InvisibleScrollBar>(/*horizontal=*/false));
 }
 
 }  // namespace ash

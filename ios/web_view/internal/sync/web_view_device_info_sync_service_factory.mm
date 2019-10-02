@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
+#include "base/time/default_clock.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/public/base/device_id_helper.h"
 #include "components/sync/model/model_type_store_service.h"
@@ -87,8 +88,8 @@ WebViewDeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
           version_info::Channel::STABLE, version_info::GetVersionNumber(),
           device_info_sync_client.get());
-  auto device_prefs =
-      std::make_unique<syncer::DeviceInfoPrefs>(browser_state->GetPrefs());
+  auto device_prefs = std::make_unique<syncer::DeviceInfoPrefs>(
+      browser_state->GetPrefs(), base::DefaultClock::GetInstance());
 
   return std::make_unique<syncer::DeviceInfoSyncServiceImpl>(
       WebViewModelTypeStoreServiceFactory::GetForBrowserState(browser_state)

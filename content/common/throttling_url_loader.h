@@ -14,10 +14,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace base {
@@ -144,7 +144,7 @@ class CONTENT_EXPORT ThrottlingURLLoader
       const net::HttpRequestHeaders& modified_request_headers,
       const net::HttpRequestHeaders& modified_cors_exempt_request_headers);
   void UpdateDeferredResponseHead(
-      const network::ResourceResponseHead& new_response_head);
+      network::mojom::URLResponseHeadPtr new_response_head);
   void PauseReadingBodyFromNet(blink::URLLoaderThrottle* throttle);
   void ResumeReadingBodyFromNet(blink::URLLoaderThrottle* throttle);
   void InterceptResponse(
@@ -220,22 +220,21 @@ class CONTENT_EXPORT ThrottlingURLLoader
   std::unique_ptr<StartInfo> start_info_;
 
   struct ResponseInfo {
-    explicit ResponseInfo(
-        const network::ResourceResponseHead& in_response_head);
+    explicit ResponseInfo(network::mojom::URLResponseHeadPtr in_response_head);
     ~ResponseInfo();
 
-    network::ResourceResponseHead response_head;
+    network::mojom::URLResponseHeadPtr response_head;
   };
   // Set if response is deferred.
   std::unique_ptr<ResponseInfo> response_info_;
 
   struct RedirectInfo {
     RedirectInfo(const net::RedirectInfo& in_redirect_info,
-                 const network::ResourceResponseHead& in_response_head);
+                 network::mojom::URLResponseHeadPtr in_response_head);
     ~RedirectInfo();
 
     net::RedirectInfo redirect_info;
-    network::ResourceResponseHead response_head;
+    network::mojom::URLResponseHeadPtr response_head;
   };
   // Set if redirect is deferred.
   std::unique_ptr<RedirectInfo> redirect_info_;

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/time.h"
@@ -296,7 +297,7 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
         std::make_unique<TestLocalDeviceInfoProvider>(),
         ModelTypeStoreTestUtil::FactoryForForwardingStore(store_.get()),
         mock_processor_.CreateForwardingProcessor(),
-        std::make_unique<DeviceInfoPrefs>(&pref_service_));
+        std::make_unique<DeviceInfoPrefs>(&pref_service_, &clock_));
     bridge_->AddObserver(this);
   }
 
@@ -449,6 +450,8 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
   }
 
  private:
+  base::SimpleTestClock clock_;
+
   int change_count_ = 0;
 
   // In memory model type store needs to be able to post tasks.

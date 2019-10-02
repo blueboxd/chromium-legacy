@@ -56,6 +56,7 @@ void WorkerAnimationFrameProvider::BeginFrame(const viz::BeginFrameArgs& args) {
             // we abort the whole process.
             if (!inside_raf_scope.AddOffscreenCanvas(offscreen_canvas)) {
               provider->begin_frame_provider_->FinishBeginFrame(args);
+              provider->begin_frame_provider_->RequestBeginFrame();
               return;
             }
           }

@@ -18,15 +18,19 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
+#include "base/task/task_executor.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
 using base::Thread;
+using ::testing::NotNull;
 
 typedef PlatformTest ThreadTest;
 
@@ -520,6 +524,23 @@ TEST_F(ThreadTest, FlushForTesting) {
 
   // Flushing a stopped thread should be a no-op.
   a.FlushForTesting();
+}
+
+TEST_F(ThreadTest, GetTaskExecutorForCurrentThread) {
+  Thread a("GetTaskExecutorForCurrentThread");
+  ASSERT_TRUE(a.Start());
+
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+
+  a.task_runner()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        EXPECT_THAT(base::GetTaskExecutorForCurrentThread(), NotNull());
+        event.Signal();
+      }));
+
+  event.Wait();
+  a.Stop();
 }
 
 namespace {

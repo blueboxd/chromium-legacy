@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
+#include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -119,8 +120,8 @@ KeyedService* DeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
           chrome::GetChannel(), chrome::GetVersionString(),
           device_info_sync_client.get());
-  auto device_prefs =
-      std::make_unique<syncer::DeviceInfoPrefs>(profile->GetPrefs());
+  auto device_prefs = std::make_unique<syncer::DeviceInfoPrefs>(
+      profile->GetPrefs(), base::DefaultClock::GetInstance());
 
   return new syncer::DeviceInfoSyncServiceImpl(
       ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory(),

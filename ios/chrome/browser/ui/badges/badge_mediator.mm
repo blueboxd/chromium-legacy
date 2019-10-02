@@ -146,10 +146,14 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
   // Get all non-fullscreen badges.
   for (id<BadgeItem> item in self.badges) {
     if (!item.fullScreen) {
+      // Mark each badge as read since the overflow menu is about to be
+      // displayed.
+      item.badgeState |= BadgeStateRead;
       [popupMenuBadges addObject:item];
     }
   }
   [self.dispatcher displayPopupMenuWithBadgeItems:popupMenuBadges];
+  [self updateConsumerReadStatus];
   // TODO(crbug.com/976901): Add metric for this action.
 }
 
@@ -178,6 +182,18 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
 
 #pragma mark - Private
 
+// Directs consumer to update read status depending on the state of the
+// non-fullscreen badges.
+- (void)updateConsumerReadStatus {
+  for (id<BadgeItem> item in self.badges) {
+    if (!item.fullScreen && item.badgeState & BadgeStateRead) {
+      [self.consumer markDisplayedBadgeAsRead:NO];
+      return;
+    }
+  }
+  [self.consumer markDisplayedBadgeAsRead:YES];
+}
+
 // Gets the last fullscreen and non-fullscreen badges.
 // This assumes that there is only ever one fullscreen badge, so the last badge
 // in |badges| should be the only one.
@@ -198,7 +214,7 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
     if (item.fullScreen) {
       fullScreenBadge = item;
     } else {
-      if (item.badgeState == BadgeStatePresented) {
+      if (item.badgeState & BadgeStatePresented) {
         presentingBadge = item;
       }
       displayedBadge = item;
@@ -218,9 +234,14 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
                          ? presentingBadge
                          : [[BadgeTappableItem alloc]
                                initWithBadgeType:BadgeType::kBadgeTypeOverflow];
+  } else {
+    // Since there is only one non-fullscreen badge, it will be fixed as the
+    // displayed badge, so mark it as read.
+    displayedBadge.badgeState |= BadgeStateRead;
   }
   [self.consumer updateDisplayedBadge:displayedBadge
                       fullScreenBadge:fullScreenBadge];
+  [self updateConsumerReadStatus];
 }
 
 - (void)updateNewWebState:(web::WebState*)newWebState

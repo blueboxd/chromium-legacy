@@ -63,7 +63,6 @@ struct RendererPreferences {
   bool use_custom_colors = true;
 
   // Set to false to not send referrers.
-  // The default value should be in sync with blink::PrivacyPreferences.
   bool enable_referrers = true;
 
   // Set to true to allow third-party sub-content to pop-up HTTP basic auth
@@ -71,7 +70,6 @@ struct RendererPreferences {
   bool allow_cross_origin_auth_prompt = false;
 
   // Set to true to indicate that the preference to set DNT to 1 is enabled.
-  // The default value should be in sync with blink::PrivacyPreferences.
   bool enable_do_not_track = false;
 
   // Whether to allow the use of Encrypted Media Extensions (EME), except for

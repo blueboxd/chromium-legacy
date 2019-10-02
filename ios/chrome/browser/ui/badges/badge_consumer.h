@@ -17,6 +17,9 @@
 // |displayedBadgeItem| and |fullscreenBadgeItem|.
 - (void)updateDisplayedBadge:(id<BadgeItem>)displayedBadgeItem
              fullScreenBadge:(id<BadgeItem>)fullscreenBadgeItem;
+// Notifies the consumer whether or not there are unread badges. See
+// BadgeStateRead for more information.
+- (void)markDisplayedBadgeAsRead:(BOOL)read;
 
 @end
 

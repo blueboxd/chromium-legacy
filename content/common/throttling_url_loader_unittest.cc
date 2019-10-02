@@ -66,13 +66,14 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
   }
 
   void NotifyClientOnReceiveResponse() {
-    client_ptr_->OnReceiveResponse(network::ResourceResponseHead());
+    client_ptr_->OnReceiveResponse(network::mojom::URLResponseHead::New());
   }
 
   void NotifyClientOnReceiveRedirect() {
     net::RedirectInfo info;
     info.new_url = redirect_url;
-    client_ptr_->OnReceiveRedirect(info, network::ResourceResponseHead());
+    client_ptr_->OnReceiveRedirect(info,
+                                   network::mojom::URLResponseHead::New());
   }
 
   void NotifyClientOnComplete(int error_code) {

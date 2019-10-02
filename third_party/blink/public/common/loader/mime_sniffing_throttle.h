@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_MIME_SNIFFING_THROTTLE_H_
 
 #include "base/memory/weak_ptr.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
@@ -29,7 +30,7 @@ class BLINK_COMMON_EXPORT MimeSniffingThrottle : public URLLoaderThrottle {
 
   // Called from MimeSniffingURLLoader once mime type is ready.
   void ResumeWithNewResponseHead(
-      const network::ResourceResponseHead& new_response_head);
+      network::mojom::URLResponseHeadPtr new_response_head);
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

@@ -4,19 +4,23 @@
 
 package org.chromium.chrome.browser.metrics;
 
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.JniMocker;
 
 /**
  * Tests for VariationsSession
@@ -24,6 +28,11 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class VariationsSessionTest {
+    @Rule
+    public JniMocker mocker = new JniMocker();
+    @Mock
+    private VariationsSession.Natives mVariationsSessionJniMock;
+
     private TestVariationsSession mSession;
 
     private static class TestVariationsSession extends VariationsSession {
@@ -37,26 +46,24 @@ public class VariationsSessionTest {
         public void runCallback(String value) {
             mCallback.onResult(value);
         }
-
-        @Override
-        protected void nativeStartVariationsSession(String restrictMode) {
-            // No-op for tests.
-        }
     }
 
     @Before
     public void setUp() {
-        mSession = spy(new TestVariationsSession());
+        MockitoAnnotations.initMocks(this);
+        mocker.mock(VariationsSessionJni.TEST_HOOKS, mVariationsSessionJniMock);
+        mSession = new TestVariationsSession();
     }
 
     @Test
     public void testStart() {
         mSession.start();
-        verify(mSession, never()).nativeStartVariationsSession(any(String.class));
+        verify(mVariationsSessionJniMock, never())
+                .startVariationsSession(eq(mSession), any(String.class));
 
         String restrictValue = "test";
         mSession.runCallback(restrictValue);
-        verify(mSession, times(1)).nativeStartVariationsSession(restrictValue);
+        verify(mVariationsSessionJniMock, times(1)).startVariationsSession(mSession, restrictValue);
     }
 
     @Test
@@ -67,9 +74,10 @@ public class VariationsSessionTest {
         });
         String restrictValue = "test";
         mSession.runCallback(restrictValue);
-        verify(mSession, never()).nativeStartVariationsSession(any(String.class));
+        verify(mVariationsSessionJniMock, never())
+                .startVariationsSession(eq(mSession), any(String.class));
 
         mSession.start();
-        verify(mSession, times(1)).nativeStartVariationsSession(restrictValue);
+        verify(mVariationsSessionJniMock, times(1)).startVariationsSession(mSession, restrictValue);
     }
 }

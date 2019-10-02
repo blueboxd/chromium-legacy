@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -87,13 +88,13 @@ class MockDelegate : public blink::URLLoaderThrottle::Delegate {
     is_resumed_ = true;
     // Resume from OnReceiveResponse() with a customized response header.
     destination_loader_client()->OnReceiveResponse(
-        updated_response_head().value());
+        std::move(updated_response_head_));
   }
 
   void SetPriority(net::RequestPriority priority) override { NOTIMPLEMENTED(); }
   void UpdateDeferredResponseHead(
-      const network::ResourceResponseHead& new_response_head) override {
-    updated_response_head_ = new_response_head;
+      network::mojom::URLResponseHeadPtr new_response_head) override {
+    updated_response_head_ = std::move(new_response_head);
   }
   void PauseReadingBodyFromNet() override { NOTIMPLEMENTED(); }
   void ResumeReadingBodyFromNet() override { NOTIMPLEMENTED(); }
@@ -163,11 +164,6 @@ class MockDelegate : public blink::URLLoaderThrottle::Delegate {
   bool is_intercepted() const { return is_intercepted_; }
   bool is_resumed() const { return is_resumed_; }
 
-  const base::Optional<network::ResourceResponseHead>& updated_response_head()
-      const {
-    return updated_response_head_;
-  }
-
   network::TestURLLoaderClient* destination_loader_client() {
     return &destination_loader_client_;
   }
@@ -179,7 +175,7 @@ class MockDelegate : public blink::URLLoaderThrottle::Delegate {
  private:
   bool is_intercepted_ = false;
   bool is_resumed_ = false;
-  base::Optional<network::ResourceResponseHead> updated_response_head_;
+  network::mojom::URLResponseHeadPtr updated_response_head_;
 
   // A pair of a loader and a loader client for destination of the response.
   network::mojom::URLLoaderPtr destination_loader_ptr_;

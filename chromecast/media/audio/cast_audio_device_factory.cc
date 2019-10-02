@@ -65,7 +65,7 @@ class NonSwitchableAudioRendererSink
   void Flush() override { output_device_->Flush(); }
 
  protected:
-  ~NonSwitchableAudioRendererSink() override = default;
+  ~NonSwitchableAudioRendererSink() override { output_device_->Stop(); }
 
  private:
   scoped_refptr<::media::AudioOutputDevice> output_device_;

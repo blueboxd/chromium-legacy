@@ -237,7 +237,10 @@ TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeState) {
   tab_helper()->UpdateBadgeForInfobarAccepted(
       InfobarType::kInfobarTypePasswordSave);
   EXPECT_TRUE(infobar_badge_tab_delegate_.badgeIsTappable);
-  EXPECT_TRUE(infobar_badge_tab_delegate_.badgeState &= BadgeStateAccepted);
+  EXPECT_EQ(BadgeStateAccepted,
+            infobar_badge_tab_delegate_.badgeState & BadgeStateAccepted);
+  EXPECT_EQ(BadgeStateRead,
+            infobar_badge_tab_delegate_.badgeState & BadgeStateRead);
 }
 
 // Test the badge state after doesn't change after adding an Infobar with no

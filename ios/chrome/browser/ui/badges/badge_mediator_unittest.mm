@@ -59,6 +59,7 @@ class FakeInfobarBadgeTabHelper : public InfobarBadgeTabHelper {
 @interface FakeBadgeConsumer : NSObject <BadgeConsumer>
 @property(nonatomic, strong) id<BadgeItem> displayedBadge;
 @property(nonatomic, assign) BOOL hasIncognitoBadge;
+@property(nonatomic, assign) BOOL hasUnreadBadge;
 @end
 
 @implementation FakeBadgeConsumer
@@ -71,6 +72,9 @@ class FakeInfobarBadgeTabHelper : public InfobarBadgeTabHelper {
              fullScreenBadge:(id<BadgeItem>)fullscreenBadgeItem {
   self.hasIncognitoBadge = fullscreenBadgeItem != nil;
   self.displayedBadge = displayedBadgeItem;
+}
+- (void)markDisplayedBadgeAsRead:(BOOL)read {
+  self.hasUnreadBadge = !read;
 }
 @end
 
@@ -163,6 +167,15 @@ TEST_F(BadgeMediatorTest, BadgeMediatorTestRemoveInfobar) {
   ASSERT_TRUE(badge_consumer_.displayedBadge);
   EXPECT_EQ(badge_consumer_.displayedBadge.badgeType,
             BadgeType::kBadgeTypePasswordSave);
+}
+
+TEST_F(BadgeMediatorTest, BadgeMediatorTestMarkAsRead) {
+  AddAndActivateWebState(/*index=*/0, /*incognito=*/false);
+  AddInfobar();
+  AddSecondInfobar();
+  ASSERT_EQ(BadgeType::kBadgeTypeOverflow,
+            badge_consumer_.displayedBadge.badgeType);
+  EXPECT_TRUE(badge_consumer_.hasUnreadBadge);
 }
 
 // Test that the BadgeMediator updates the current badges to none when switching

@@ -115,7 +115,6 @@ source_set("headers") {
     "page/page_zoom.h",
     "peerconnection/webrtc_ip_handling_policy.h",
     "prerender/prerender_rel_type.h",
-    "privacy_preferences.h",
     "scheduler/web_scheduler_tracked_feature.h",
     "screen_orientation/web_screen_orientation_lock_type.h",
     "screen_orientation/web_screen_orientation_type.h",

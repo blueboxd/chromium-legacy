@@ -4,9 +4,8 @@
 
 package org.chromium.chrome.browser.metrics;
 
-import android.content.Context;
-
 import org.chromium.base.Callback;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Sets up communication with the VariationsService. This is primarily used for
@@ -20,14 +19,9 @@ public class VariationsSession {
      * Triggers to the native VariationsService that the application has entered the foreground.
      */
     public void start() {
-        start(null);
-    }
-
-    // TODO(agrieve): Delete after updating downstream.
-    public void start(Context unused) {
         // If |mRestrictModeFetchStarted| is true and |mRestrictMode| is null, then async
-        // initializationn is in progress and nativeStartVariationsSession() will be called
-        // when it completes.
+        // initialization is in progress and VariationsSessionJni.get().startVariationsSession()
+        // will be called when it completes.
         if (mRestrictModeFetchStarted && mRestrictMode == null) {
             return;
         }
@@ -36,7 +30,8 @@ public class VariationsSession {
         getRestrictModeValue(new Callback<String>() {
             @Override
             public void onResult(String restrictMode) {
-                nativeStartVariationsSession(mRestrictMode);
+                VariationsSessionJni.get().startVariationsSession(
+                        VariationsSession.this, mRestrictMode);
             }
         });
     }
@@ -71,11 +66,6 @@ public class VariationsSession {
      * restrict values, which must not be null.
      */
     protected void getRestrictMode(Callback<String> callback) {
-        // TODO(agrieve): Refactor downstream.
-        getRestrictMode(null, callback);
-    }
-
-    protected void getRestrictMode(Context unused, Callback<String> callback) {
         callback.onResult("");
     }
 
@@ -83,9 +73,12 @@ public class VariationsSession {
      * @return The latest country according to the current variations state. Null if not known.
      */
     public String getLatestCountry() {
-        return nativeGetLatestCountry();
+        return VariationsSessionJni.get().getLatestCountry(this);
     }
 
-    protected native void nativeStartVariationsSession(String restrictMode);
-    protected native String nativeGetLatestCountry();
+    @NativeMethods
+    interface Natives {
+        void startVariationsSession(VariationsSession caller, String restrictMode);
+        String getLatestCountry(VariationsSession caller);
+    }
 }

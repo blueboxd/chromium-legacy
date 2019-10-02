@@ -8,7 +8,7 @@
 
 #include <algorithm>
 #include <map>
-#include <set>
+#include <unordered_set>
 #include <utility>
 
 #include "base/bind.h"
@@ -187,6 +187,8 @@ void DeviceInfoSyncBridge::OnSyncStarting(
     const DataTypeActivationRequest& request) {
   // Store the cache GUID, mainly in case MergeSyncData() is executed later.
   local_cache_guid_ = request.cache_guid;
+  // Garbage-collect old local cache GUIDs, for privacy reasons.
+  device_info_prefs_->GarbageCollectExpiredCacheGuids();
   // Add the cache guid to the local prefs.
   device_info_prefs_->AddLocalCacheGuid(local_cache_guid_);
 }

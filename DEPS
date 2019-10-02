@@ -167,11 +167,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'cf0a9a628490ccb52f7257e8c22e1bbf432252f2',
+  'skia_revision': 'a1ea0a96f4906012b37814fe51ed7850ce28709d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '3dc289df77cef949d6677c7bba9afa56113bdd4c',
+  'v8_revision': 'f45ddb9b49eab6d363a7ffa52fdd265fe14984a7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -230,7 +230,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'dbfa96532ab0841252db9df65ef2d7fe3ce41393',
+  'catapult_revision': '4cb8240aaec001f4fd45e0207341430c715caec8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -877,7 +877,7 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '9488a16bbe3da08122d8b42712178aaa84e46d16',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '9b9ccf7ac88ac67a2fe88bf9beeb0b07cf163d76',
       'condition': 'checkout_linux',
   },
 
@@ -1269,7 +1269,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '1e470360678b4c8793f899ee98d530d86c3c9e7c',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '3ad1e2151d99792d5a2d1280cd4a1bbddd475edd',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',

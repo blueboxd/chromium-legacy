@@ -18,10 +18,10 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
@@ -73,14 +73,14 @@ class BLINK_COMMON_EXPORT MimeSniffingURLLoader
                     MimeSniffingURLLoader*>
   CreateLoader(base::WeakPtr<MimeSniffingThrottle> throttle,
                const GURL& response_url,
-               const network::ResourceResponseHead& response_head,
+               network::mojom::URLResponseHeadPtr response_head,
                scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
  private:
   MimeSniffingURLLoader(
       base::WeakPtr<MimeSniffingThrottle> throttle,
       const GURL& response_url,
-      const network::ResourceResponseHead& response_head,
+      network::mojom::URLResponseHeadPtr response_head,
       mojo::PendingRemote<network::mojom::URLLoaderClient>
           destination_url_loader_client,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -133,7 +133,7 @@ class BLINK_COMMON_EXPORT MimeSniffingURLLoader
 
   // Capture the response head to defer to send it to the destination until the
   // mime type is decided.
-  network::ResourceResponseHead response_head_;
+  network::mojom::URLResponseHeadPtr response_head_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

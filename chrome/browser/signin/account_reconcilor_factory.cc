@@ -29,7 +29,6 @@
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/account_manager/account_migration_runner.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/signin/core/browser/active_directory_account_reconcilor_delegate.h"
 #include "components/user_manager/user_manager.h"
@@ -181,15 +180,12 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
             signin::ActiveDirectoryAccountReconcilorDelegate>();
       }
 
-      // TODO(sinhak): Remove the if-condition (and use
-      // |MirrorAccountReconcilorDelegate|) when all Chrome OS users have been
-      // migrated to Account Manager.
-      if (chromeos::features::IsAccountManagerEnabled()) {
-        return std::make_unique<ChromeOSAccountReconcilorDelegate>(
-            IdentityManagerFactory::GetForProfile(profile),
-            chromeos::AccountManagerMigratorFactory::GetForBrowserContext(
-                profile));
-      }
+      // TODO(sinhak): Use |MirrorAccountReconcilorDelegate|) when all Chrome OS
+      // users have been migrated to Account Manager.
+      return std::make_unique<ChromeOSAccountReconcilorDelegate>(
+          IdentityManagerFactory::GetForProfile(profile),
+          chromeos::AccountManagerMigratorFactory::GetForBrowserContext(
+              profile));
 #elif defined(OS_ANDROID)
       if (base::FeatureList::IsEnabled(signin::kMiceFeature))
         return std::make_unique<signin::MiceAccountReconcilorDelegate>();

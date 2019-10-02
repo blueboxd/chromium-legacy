@@ -79,7 +79,6 @@ jumbo_source_set("common") {
     "origin_trials/trial_token_validator.cc",
     "page/page_zoom.cc",
     "peerconnection/webrtc_ip_handling_policy.cc",
-    "privacy_preferences.cc",
     "scheduler/web_scheduler_tracked_feature.cc",
     "service_worker/service_worker_status_code.cc",
     "service_worker/service_worker_type_converters.cc",

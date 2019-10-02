@@ -12,6 +12,8 @@
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace content {
 
@@ -74,11 +76,11 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
   }
 
   void UpdateDeferredResponseHead(
-      const network::ResourceResponseHead& new_response_head) override {
+      network::mojom::URLResponseHeadPtr new_response_head) override {
     if (!loader_)
       return;
     ScopedDelegateCall scoped_delegate_call(this);
-    loader_->UpdateDeferredResponseHead(new_response_head);
+    loader_->UpdateDeferredResponseHead(std::move(new_response_head));
   }
 
   void PauseReadingBodyFromNet() override {
@@ -179,15 +181,16 @@ ThrottlingURLLoader::StartInfo::StartInfo(
 ThrottlingURLLoader::StartInfo::~StartInfo() = default;
 
 ThrottlingURLLoader::ResponseInfo::ResponseInfo(
-    const network::ResourceResponseHead& in_response_head)
-    : response_head(in_response_head) {}
+    network::mojom::URLResponseHeadPtr in_response_head)
+    : response_head(std::move(in_response_head)) {}
 
 ThrottlingURLLoader::ResponseInfo::~ResponseInfo() = default;
 
 ThrottlingURLLoader::RedirectInfo::RedirectInfo(
     const net::RedirectInfo& in_redirect_info,
-    const network::ResourceResponseHead& in_response_head)
-    : redirect_info(in_redirect_info), response_head(in_response_head) {}
+    network::mojom::URLResponseHeadPtr in_response_head)
+    : redirect_info(in_redirect_info),
+      response_head(std::move(in_response_head)) {}
 
 ThrottlingURLLoader::RedirectInfo::~RedirectInfo() = default;
 
@@ -412,7 +415,7 @@ void ThrottlingURLLoader::StartNow() {
     // that's requested.
     start_info_->url_request.url = throttle_will_start_redirect_url_;
 
-    network::ResourceResponseHead response_head;
+    auto response_head = network::mojom::URLResponseHead::New();
     std::string header_string = base::StringPrintf(
         "HTTP/1.1 %i Internal Redirect\n"
         "Location: %s",
@@ -436,10 +439,10 @@ void ThrottlingURLLoader::StartNow() {
       }
     }
 
-    response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+    response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(header_string));
-    response_head.encoded_data_length = header_string.size();
-    OnReceiveRedirect(redirect_info, response_head);
+    response_head->encoded_data_length = header_string.size();
+    OnReceiveRedirect(redirect_info, std::move(response_head));
     return;
   }
 
@@ -610,8 +613,8 @@ void ThrottlingURLLoader::OnReceiveRedirect(
 
     if (deferred) {
       deferred_stage_ = DEFERRED_REDIRECT;
-      redirect_info_ =
-          std::make_unique<RedirectInfo>(redirect_info, response_head);
+      redirect_info_ = std::make_unique<RedirectInfo>(redirect_info,
+                                                      std::move(response_head));
       // |client_binding_| can be unbound if the redirect came from a throttle.
       if (client_binding_.is_bound())
         client_binding_.PauseIncomingMethodCallProcessing();
@@ -745,8 +748,9 @@ void ThrottlingURLLoader::Resume() {
       // the redirect or if it will be cancelled. FollowRedirect would be a more
       // suitable place to set this URL but there we do not have the data.
       response_url_ = redirect_info_->redirect_info.new_url;
-      forwarding_client_->OnReceiveRedirect(redirect_info_->redirect_info,
-                                            redirect_info_->response_head);
+      forwarding_client_->OnReceiveRedirect(
+          redirect_info_->redirect_info,
+          std::move(redirect_info_->response_head));
       // Note: |this| may be deleted here.
       break;
     }
@@ -763,7 +767,8 @@ void ThrottlingURLLoader::Resume() {
     }
     case DEFERRED_RESPONSE: {
       client_binding_.ResumeIncomingMethodCallProcessing();
-      forwarding_client_->OnReceiveResponse(response_info_->response_head);
+      forwarding_client_->OnReceiveResponse(
+          std::move(response_info_->response_head));
       // Note: |this| may be deleted here.
       break;
     }
@@ -808,10 +813,10 @@ void ThrottlingURLLoader::UpdateDeferredRequestHeaders(
 }
 
 void ThrottlingURLLoader::UpdateDeferredResponseHead(
-    const network::ResourceResponseHead& new_response_head) {
+    network::mojom::URLResponseHeadPtr new_response_head) {
   DCHECK(response_info_);
   DCHECK_EQ(DEFERRED_RESPONSE, deferred_stage_);
-  response_info_->response_head = new_response_head;
+  response_info_->response_head = std::move(new_response_head);
 }
 
 void ThrottlingURLLoader::PauseReadingBodyFromNet(

@@ -59,10 +59,15 @@ using ::showcase_utils::Close;
                                           kSCDisplayedBadgeToggleButton)]
       performAction:grey_tap()];
 
-  // Assert that overflow badge is shown and tap on it.
+  // Assert that overflow badge and the unread indicator is shown and tap on it.
   [[EarlGrey selectElementWithMatcher:
                  grey_allOf(grey_accessibilityID(
                                 kBadgeButtonOverflowAccessibilityIdentifier),
+                            grey_sufficientlyVisible(), nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_accessibilityID(
+                                kBadgeUnreadIndicatorAccessibilityIdentifier),
                             grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey
@@ -77,6 +82,18 @@ using ::showcase_utils::Close;
                          kBadgePopupMenuTableViewAccessibilityIdentifier),
                      grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Dismiss popup menu by tapping outside of the menu. Tapping the displayed
+  // badge is sufficient here. Assert that the unread indicator is not there
+  // anymore.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kSCDisplayedBadgeToggleButton)]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_accessibilityID(
+                                kBadgeUnreadIndicatorAccessibilityIdentifier),
+                            grey_sufficientlyVisible(), nil)]
+      assertWithMatcher:grey_notVisible()];
 }
 
 @end

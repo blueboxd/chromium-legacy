@@ -17,6 +17,8 @@ include_rules = [
     "+services/network/public/mojom/url_loader.mojom.h",
     "+services/network/public/mojom/url_loader.mojom-forward.h",
     "+services/network/public/mojom/url_loader_factory.mojom.h",
+    "+services/network/public/mojom/url_response_head.mojom.h",
+    "+services/network/public/mojom/url_response_head.mojom-forward.h",
     "+skia/public/mojom",
     "+third_party/blink/public/common",
     "+third_party/blink/public/mojom",

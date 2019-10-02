@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
+#include "base/time/default_clock.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/send_tab_to_self/features.h"
@@ -109,8 +110,8 @@ DeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
   auto local_device_info_provider =
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
           ::GetChannel(), ::GetVersionString(), device_info_sync_client.get());
-  auto device_prefs =
-      std::make_unique<syncer::DeviceInfoPrefs>(browser_state->GetPrefs());
+  auto device_prefs = std::make_unique<syncer::DeviceInfoPrefs>(
+      browser_state->GetPrefs(), base::DefaultClock::GetInstance());
 
   return std::make_unique<syncer::DeviceInfoSyncServiceImpl>(
       ModelTypeStoreServiceFactory::GetForBrowserState(browser_state)

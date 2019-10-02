@@ -1193,4 +1193,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kGoogleServicesUserAccountId);
   profile_prefs->ClearPref(
       kDataReductionProxySavingsClearedNegativeSystemClock);
+
+  // Added 10/2019.
+  syncer::DeviceInfoPrefs::MigrateRecentLocalCacheGuidsPref(profile_prefs);
 }

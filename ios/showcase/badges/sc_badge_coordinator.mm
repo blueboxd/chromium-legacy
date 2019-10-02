@@ -81,6 +81,7 @@ NSString* const kSCDisplayedBadgeToggleButton =
       initWithBadgeType:BadgeType::kBadgeTypeOverflow];
   [self.consumer setupWithDisplayedBadge:displayedBadge
                          fullScreenBadge:incognitoItem];
+  [self.consumer markDisplayedBadgeAsRead:NO];
 }
 
 @end
@@ -121,6 +122,7 @@ NSString* const kSCDisplayedBadgeToggleButton =
       initWithInfobarType:InfobarType::kInfobarTypePasswordSave] ];
   [self.badgePopupMenuCoordinator setBadgeItemsToShow:badgeItems];
   [self.badgePopupMenuCoordinator start];
+  [self.consumer markDisplayedBadgeAsRead:YES];
 }
 
 @end

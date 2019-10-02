@@ -27,7 +27,7 @@ namespace chromeos {
 class ThrottleService {
  public:
   explicit ThrottleService(content::BrowserContext* context);
-  ~ThrottleService();
+  virtual ~ThrottleService();
 
   // Functions for testing
   void NotifyObserverStateChangedForTesting();

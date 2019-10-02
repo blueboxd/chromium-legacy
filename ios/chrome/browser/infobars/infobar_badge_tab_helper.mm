@@ -33,7 +33,8 @@ void InfobarBadgeTabHelper::SetDelegate(
 
 void InfobarBadgeTabHelper::UpdateBadgeForInfobarAccepted(
     InfobarType infobar_type) {
-  infobar_badge_models_[infobar_type].badgeState |= BadgeStateAccepted;
+  infobar_badge_models_[infobar_type].badgeState |=
+      BadgeStateAccepted | BadgeStateRead;
   [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type]];
 }
 

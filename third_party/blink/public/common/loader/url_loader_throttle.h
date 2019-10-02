@@ -11,6 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "net/base/request_priority.h"
 #include "services/network/public/mojom/url_loader.mojom-forward.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/common/common_export.h"
 
 class GURL;
@@ -68,7 +69,7 @@ class BLINK_COMMON_EXPORT URLLoaderThrottle {
     // URLLoaderThrottle::WillProcessResponse() and before calling
     // Delegate::Resume().
     virtual void UpdateDeferredResponseHead(
-        const network::ResourceResponseHead& new_response_head);
+        network::mojom::URLResponseHeadPtr new_response_head);
 
     // Pauses/resumes reading response body if the resource is fetched from
     // network.

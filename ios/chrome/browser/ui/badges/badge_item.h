@@ -11,13 +11,18 @@
 
 // States for the InfobarBadge.
 typedef NS_OPTIONS(NSUInteger, BadgeState) {
-  // The badge is not accepted.
+  // The badge has not been accepted nor has it been read.
   BadgeStateNone = 0,
+  // This property is set if it is read (i.e. the menu is opened, if it is set
+  // as the displayed badge, or if the user has accepted the badge action).
+  // Not set if the user has not seen the badge yet (e.g. the badge is in the
+  // overflow menu and the user has yet to open the menu).
+  BadgeStateRead = 1 << 0,
   // The badge's banner is currently being presented.
-  BadgeStatePresented = 1 << 0,
+  BadgeStatePresented = 1 << 1,
   // The Infobar Badge is accepted. e.g. The Infobar was accepted/confirmed, and
   // the Infobar action has taken place.
-  BadgeStateAccepted = 1 << 1,
+  BadgeStateAccepted = 1 << 2,
 };
 
 // Holds properties and values the UI needs to configure a badge button.

@@ -11,6 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/simple_task_executor.h"
 
 namespace base {
 
@@ -40,6 +41,7 @@ class BASE_EXPORT SingleThreadTaskExecutor {
   std::unique_ptr<sequence_manager::SequenceManager> sequence_manager_;
   scoped_refptr<sequence_manager::TaskQueue> default_task_queue_;
   MessagePumpType type_;
+  SimpleTaskExecutor simple_task_executor_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleThreadTaskExecutor);
 };

@@ -20,6 +20,9 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 
@@ -28,10 +31,8 @@ import org.chromium.base.VisibleForTesting;
  *
  * This is currently implemented to support minimum viable implementation such that
  * multi-window and JavaScript are enabled by default.
- *
- * TODO(crbug.com/994939): It is currently implemented to support only a single child. Although not
- *                         explicitly stated, there may be some WPT tests that require more than one
- *                         children, which is not supported for now.
+ * Note: multi-window support in this shell is implemented, but due to a bug
+ *       in WebView (https://crbug.com/100272), it does not work properly unless a delay is given.
  */
 public class WebPlatformTestsActivity extends Activity {
     private static final String TAG = "WPTActivity";
@@ -43,55 +44,53 @@ public class WebPlatformTestsActivity extends Activity {
     @VisibleForTesting
     public interface TestCallback {
         /** Called after child layout is added. */
-        void onChildLayoutAdded();
+        void onChildLayoutAdded(WebView webView);
         /** Called after child layout is removed. */
         void onChildLayoutRemoved();
     }
 
+    private BiMap<ViewGroup, WebView> mLayoutToWebViewBiMap = HashBiMap.create();
+
     private LayoutInflater mLayoutInflater;
     private RelativeLayout mRootLayout;
     private WebView mWebView;
-    private WebView mChildWebView;
-    private LinearLayout mChildLayout;
     private TestCallback mTestCallback;
 
     private class MultiWindowWebChromeClient extends WebChromeClient {
         @Override
         public boolean onCreateWindow(
-                WebView webView, boolean isDialog, boolean isUserGesture, Message resultMsg) {
+                WebView parentWebView, boolean isDialog, boolean isUserGesture, Message resultMsg) {
             if (DEBUG) Log.i(TAG, "onCreateWindow");
-            mChildLayout = createChildLayout();
-            mChildWebView = mChildLayout.findViewById(R.id.childWebView);
-            setUpWebSettings(mChildWebView.getSettings());
-            mChildWebView.setWebViewClient(new WebViewClient() {
+            WebView childWebView = createChildLayoutAndGetNewWebView(parentWebView);
+            WebSettings settings = childWebView.getSettings();
+            setUpWebSettings(settings);
+            childWebView.setWebViewClient(new WebViewClient() {
                 @Override
                 public void onPageFinished(WebView childWebView, String url) {
+                    if (DEBUG) Log.i(TAG, "onPageFinished");
                     // Once the view has loaded, display its title for debugging.
-                    TextView childTitleText = mChildLayout.findViewById(R.id.childTitleText);
+                    ViewGroup childLayout = mLayoutToWebViewBiMap.inverse().get(childWebView);
+                    TextView childTitleText = childLayout.findViewById(R.id.childTitleText);
                     childTitleText.setText(childWebView.getTitle());
                 }
             });
-            mChildWebView.setWebChromeClient(new WebChromeClient() {
-                @Override
-                public void onCloseWindow(WebView childWebView) {
-                    closeChild();
-                }
-            });
-            // Add the new WebView to the layout
-            mChildWebView.setLayoutParams(
-                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.MATCH_PARENT));
+            childWebView.setWebChromeClient(new MultiWindowWebChromeClient());
             // Tell the transport about the new view
             WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
-            transport.setWebView(mChildWebView);
+            transport.setWebView(childWebView);
             resultMsg.sendToTarget();
-            if (mTestCallback != null) mTestCallback.onChildLayoutAdded();
+            if (mTestCallback != null) mTestCallback.onChildLayoutAdded(childWebView);
             return true;
         }
 
         @Override
         public void onCloseWindow(WebView webView) {
-            // Ignore window.close() on the test runner window.
+            ViewGroup childLayout = mLayoutToWebViewBiMap.inverse().get(webView);
+            if (childLayout == mRootLayout) {
+                Log.w(TAG, "Ignoring onCloseWindow() on the top-level webview.");
+            } else {
+                closeChild(childLayout);
+            }
         }
     }
 
@@ -115,7 +114,8 @@ public class WebPlatformTestsActivity extends Activity {
         mLayoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         setContentView(R.layout.activity_web_platform_tests);
         mRootLayout = findViewById(R.id.rootLayout);
-        mWebView = findViewById(R.id.webview);
+        mWebView = mRootLayout.findViewById(R.id.rootWebView);
+        mLayoutToWebViewBiMap.put(mRootLayout, mWebView);
 
         String url = getUrlFromIntent();
         if (url == null) {
@@ -134,21 +134,23 @@ public class WebPlatformTestsActivity extends Activity {
         super.onDestroy();
         removeAndDestroyWebView(mWebView);
         mWebView = null;
-        removeAndDestroyWebView(mChildWebView);
-        mChildWebView = null;
     }
 
-    private LinearLayout createChildLayout() {
+    private WebView createChildLayoutAndGetNewWebView(WebView parentWebView) {
+        // Add all the child layouts to the root layout such that we can remove
+        // a child layout without affecting any grand child layout.
+        final ViewGroup parentLayout = mRootLayout;
         // Provide parent such that MATCH_PARENT layout params can work. Ignore the return value
-        // which is mRootLayout.
-        mLayoutInflater.inflate(R.layout.activity_web_platform_tests_child, mRootLayout);
+        // which is parentLayout.
+        mLayoutInflater.inflate(R.layout.activity_web_platform_tests_child, parentLayout);
         // Choose what has just been added.
         LinearLayout childLayout =
-                (LinearLayout) mRootLayout.getChildAt(mRootLayout.getChildCount() - 1);
-
+                (LinearLayout) parentLayout.getChildAt(parentLayout.getChildCount() - 1);
         Button childCloseButton = childLayout.findViewById(R.id.childCloseButton);
-        childCloseButton.setOnClickListener((View v) -> { closeChild(); });
-        return childLayout;
+        childCloseButton.setOnClickListener((View v) -> { closeChild(childLayout); });
+        WebView childWebView = childLayout.findViewById(R.id.childWebView);
+        mLayoutToWebViewBiMap.put(childLayout, childWebView);
+        return childWebView;
     }
 
     private void setUpWebSettings(WebSettings settings) {
@@ -168,15 +170,13 @@ public class WebPlatformTestsActivity extends Activity {
         mWebView.loadUrl(url);
     }
 
-    private void closeChild() {
+    private void closeChild(ViewGroup childLayout) {
         if (DEBUG) Log.i(TAG, "closeChild");
-        removeAndDestroyWebView(mChildWebView);
-        mChildWebView = null;
-
-        assert mChildLayout != null;
-        ViewGroup parent = (ViewGroup) mChildLayout.getParent();
-        parent.removeView(mChildLayout);
-        mChildLayout = null;
+        ViewGroup parent = (ViewGroup) childLayout.getParent();
+        if (parent != null) parent.removeView(childLayout);
+        WebView childWebView = mLayoutToWebViewBiMap.get(childLayout);
+        removeAndDestroyWebView(childWebView);
+        mLayoutToWebViewBiMap.remove(childLayout, childWebView);
         if (mTestCallback != null) mTestCallback.onChildLayoutRemoved();
     }
 

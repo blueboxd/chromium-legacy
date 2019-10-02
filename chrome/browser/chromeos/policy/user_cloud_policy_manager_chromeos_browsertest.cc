@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/assistant/buildflags.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -67,6 +68,11 @@ class UserCloudPolicyManagerTest
   void TearDown() override {
     policy::BrowserPolicyConnector::SetNonEnterpriseDomainForTesting(nullptr);
     MixinBasedInProcessBrowserTest::TearDown();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(chromeos::switches::kOobeSkipPostLogin);
+    MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
   // Sets up fake GAIA for specified user login, and requests login for the user

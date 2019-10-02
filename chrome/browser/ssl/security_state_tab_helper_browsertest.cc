@@ -31,6 +31,8 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
+#include "chrome/browser/ssl/tls_deprecation_config.h"
+#include "chrome/browser/ssl/tls_deprecation_config.pb.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -1862,6 +1864,86 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_EQ(2u, explanation.recommendations.size());
   EXPECT_NE(std::string::npos, explanation.recommendations[0].find("TLS 1.2"));
   EXPECT_NE(std::string::npos, explanation.recommendations[1].find("GCM"));
+}
+
+// Tests that a connection with legacy TLS versions (TLS 1.0/1.1) gets
+// downgraded to SecurityLevel WARNING and |connection_used_legacy_tls| is set.
+IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
+                       LegacyTLSDowngradesSecurityLevel) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      security_state::features::kLegacyTLSWarnings);
+
+  auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  auto* helper = SecurityStateTabHelper::FromWebContents(tab);
+
+  ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string("https://") + kMockNonsecureHostname));
+
+  EXPECT_TRUE(helper->GetVisibleSecurityState()->connection_used_legacy_tls);
+  EXPECT_FALSE(helper->GetVisibleSecurityState()->is_legacy_tls_control_site);
+  EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
+}
+
+// Tests that a site in the set of control sites does not get downgraded to
+// SecurityLevel::WARNING even if it was loaded over TLS 1.0/1.1.
+IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
+                       LegacyTLSControlSiteNotDowngraded) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      security_state::features::kLegacyTLSWarnings);
+
+  // Set up new experiment config proto.
+  auto config =
+      std::make_unique<chrome_browser_ssl::LegacyTLSExperimentConfig>();
+  GURL control_site(std::string("https://") + kMockNonsecureHostname);
+  std::string control_site_hash =
+      "aaa334d67e96314a14d5679b2309e72f96bf30f9fe9b218e5db3d57be8baa94c";
+  config->add_control_site_hashes(control_site_hash);
+  SetRemoteTLSDeprecationConfigProto(std::move(config));
+
+  auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+  auto* helper = SecurityStateTabHelper::FromWebContents(web_contents);
+
+  ui_test_utils::NavigateToURL(browser(), control_site);
+
+  EXPECT_TRUE(helper->GetVisibleSecurityState()->connection_used_legacy_tls);
+  EXPECT_TRUE(helper->GetVisibleSecurityState()->is_legacy_tls_control_site);
+  EXPECT_EQ(helper->GetSecurityLevel(), security_state::SECURE);
+
+  // Reset the config to be empty.
+  auto empty_config =
+      std::make_unique<chrome_browser_ssl::LegacyTLSExperimentConfig>();
+  SetRemoteTLSDeprecationConfigProto(std::move(empty_config));
+  ASSERT_FALSE(IsTLSDeprecationConfigControlSite(control_site));
+}
+
+// Tests that the SSLVersionMin policy can disable the Legacy TLS security
+// warning.
+IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
+                       LegacyTLSPolicyDisabledWarning) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      security_state::features::kLegacyTLSWarnings);
+
+  // Set up the local state prefs::kSSLVersionMin to "tls1.0".
+  std::string original_pref =
+      g_browser_process->local_state()->GetString(prefs::kSSLVersionMin);
+  g_browser_process->local_state()->SetString(prefs::kSSLVersionMin,
+                                              switches::kSSLVersionTLSv1);
+
+  auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+  auto* helper = SecurityStateTabHelper::FromWebContents(web_contents);
+
+  ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string("https://") + kMockNonsecureHostname));
+
+  EXPECT_FALSE(helper->GetVisibleSecurityState()->connection_used_legacy_tls);
+  EXPECT_FALSE(helper->GetVisibleSecurityState()->is_legacy_tls_control_site);
+  EXPECT_EQ(helper->GetSecurityLevel(), security_state::SECURE);
+
+  g_browser_process->local_state()->SetString(prefs::kSSLVersionMin,
+                                              original_pref);
 }
 
 // Tests that the Not Secure chip does not show for error pages on http:// URLs.

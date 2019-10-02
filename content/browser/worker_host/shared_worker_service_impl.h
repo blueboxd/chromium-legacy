@@ -50,7 +50,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
 
   // SharedWorkerService implementation.
   void AddObserver(Observer* observer) override;
-  void RemoveObserver(const Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
   bool TerminateWorker(const GURL& url,
                        const std::string& name,
                        const url::Origin& constructor_origin) override;

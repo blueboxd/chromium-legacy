@@ -27,7 +27,7 @@
 
 #include <memory>
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/modules/speech/speech_grammar_list.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition.h"
@@ -85,7 +85,7 @@ void ProvideSpeechRecognitionTo(LocalFrame& frame) {
 mojo::Remote<mojom::blink::SpeechRecognizer>&
 SpeechRecognitionController::GetSpeechRecognizer() {
   if (!speech_recognizer_) {
-    GetSupplementable()->GetInterfaceProvider().GetInterface(
+    GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
         speech_recognizer_.BindNewPipeAndPassReceiver());
   }
   return speech_recognizer_;

@@ -108,6 +108,35 @@ PlatformFontSkia::PlatformFontSkia(const std::string& font_name,
                   query.weight, gfx::GetFontRenderParams(query, nullptr));
 }
 
+PlatformFontSkia::PlatformFontSkia(
+    sk_sp<SkTypeface> typeface,
+    int font_size_pixels,
+    const base::Optional<FontRenderParams>& params) {
+  DCHECK(typeface);
+
+  SkString family_name;
+  typeface->getFamilyName(&family_name);
+
+  SkFontStyle font_style = typeface->fontStyle();
+  Font::Weight font_weight = FontWeightFromInt(font_style.weight());
+
+  int style = typeface->isItalic() ? Font::ITALIC : Font::NORMAL;
+
+  FontRenderParams actual_render_params;
+  if (!params) {
+    FontRenderParamsQuery query;
+    query.families.push_back(family_name.c_str());
+    query.pixel_size = font_size_pixels;
+    query.weight = font_weight;
+    actual_render_params = gfx::GetFontRenderParams(query, nullptr);
+  } else {
+    actual_render_params = params.value();
+  }
+
+  InitFromDetails(std::move(typeface), family_name.c_str(), font_size_pixels,
+                  style, font_weight, actual_render_params);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontSkia, PlatformFont implementation:
 
@@ -292,27 +321,6 @@ PlatformFontSkia::PlatformFontSkia(sk_sp<SkTypeface> typeface,
                   render_params);
 }
 
-PlatformFontSkia::PlatformFontSkia(sk_sp<SkTypeface> typeface, int size) {
-  TRACE_EVENT0("fonts", "PlatformFontSkia::PlatformFontSkia (from typeface)");
-  DCHECK(typeface);
-
-  SkString family_name;
-  typeface->getFamilyName(&family_name);
-
-  SkFontStyle font_style = typeface->fontStyle();
-  Font::Weight font_weight = FontWeightFromInt(font_style.weight());
-
-  FontRenderParamsQuery query;
-  query.families.push_back(family_name.c_str());
-  query.pixel_size = size;
-  query.weight = font_weight;
-
-  int style = typeface->isItalic() ? Font::ITALIC : Font::NORMAL;
-
-  InitFromDetails(std::move(typeface), family_name.c_str(), size, style,
-                  font_weight, gfx::GetFontRenderParams(query, nullptr));
-}
-
 PlatformFontSkia::~PlatformFontSkia() {}
 
 void PlatformFontSkia::InitFromDetails(sk_sp<SkTypeface> typeface,
@@ -449,10 +457,12 @@ PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
 }
 
 // static
-PlatformFont* PlatformFont::CreateFromSkTypeface(sk_sp<SkTypeface> typeface,
-                                                 int font_size_pixels) {
+PlatformFont* PlatformFont::CreateFromSkTypeface(
+    sk_sp<SkTypeface> typeface,
+    int font_size_pixels,
+    const base::Optional<FontRenderParams>& params) {
   TRACE_EVENT0("fonts", "PlatformFont::CreateFromSkTypeface");
-  return new PlatformFontSkia(typeface, font_size_pixels);
+  return new PlatformFontSkia(typeface, font_size_pixels, params);
 }
 #endif  // !defined(OS_WIN)
 

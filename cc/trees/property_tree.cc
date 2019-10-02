@@ -1725,8 +1725,6 @@ PropertyTrees& PropertyTrees::operator=(const PropertyTrees& from) {
       from.inner_viewport_container_bounds_delta();
   outer_viewport_container_bounds_delta_ =
       from.outer_viewport_container_bounds_delta();
-  inner_viewport_scroll_bounds_delta_ =
-      from.inner_viewport_scroll_bounds_delta();
   transform_tree.SetPropertyTrees(this);
   effect_tree.SetPropertyTrees(this);
   clip_tree.SetPropertyTrees(this);
@@ -1898,11 +1896,6 @@ void PropertyTrees::AnimationScalesChanged(ElementId element_id,
     transform_node->starting_animation_scale = starting_scale;
     UpdateTransformTreeUpdateNumber();
   }
-}
-
-void PropertyTrees::SetInnerViewportScrollBoundsDelta(
-    gfx::Vector2dF bounds_delta) {
-  inner_viewport_scroll_bounds_delta_ = bounds_delta;
 }
 
 void PropertyTrees::UpdateChangeTracking() {

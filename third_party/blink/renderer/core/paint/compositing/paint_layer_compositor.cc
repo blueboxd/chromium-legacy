@@ -333,6 +333,10 @@ void PaintLayerCompositor::ApplyOverlayFullscreenVideoAdjustmentIfNeeded() {
   if (!is_local_root || !video_layer)
     return;
 
+  // Recursively invalidate the paint controllers and related state on the
+  // children being removed. This avoid stale references from display items back
+  // to the layout tree.
+  content_parent->SetNeedsDisplayRecursively();
   content_parent->RemoveAllChildren();
   content_parent->AddChild(video_layer);
 }

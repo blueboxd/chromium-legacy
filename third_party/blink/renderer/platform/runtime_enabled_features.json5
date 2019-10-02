@@ -857,13 +857,6 @@
       status: "stable",
     },
     {
-      // Exposes layout shift scores to Javascript. See explainer:
-      // http://bit.ly/lsm-explainer.
-      name: "LayoutInstabilityAPI",
-      origin_trial_feature_name: "LayoutJankAPI",
-      status: "stable",
-    },
-    {
       name: "LayoutNG",
       implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGFragmentItem", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable"],
       status: "stable",
@@ -1765,6 +1758,7 @@
     },
     {
       name: "WebkitBoxLayoutUsesFlexLayout",
+      status: "stable",
     },
     {
       name: "WebNFC",

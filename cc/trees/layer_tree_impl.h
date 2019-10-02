@@ -277,55 +277,29 @@ class CC_EXPORT LayerTreeImpl {
     return !presentation_callbacks_.empty();
   }
 
-  ScrollNode* CurrentlyScrollingNode();
-  const ScrollNode* CurrentlyScrollingNode() const;
-  int LastScrolledScrollNodeIndex() const;
-  void SetCurrentlyScrollingNode(const ScrollNode* node);
-  void ClearCurrentlyScrollingNode();
+  using ViewportPropertyIds = LayerTreeHost::ViewportPropertyIds;
+  void SetViewportPropertyIds(const ViewportPropertyIds& ids);
 
-  struct ViewportLayerIds {
-    ElementId overscroll_elasticity_element_id;
-    int page_scale = Layer::INVALID_ID;
-    int inner_viewport_container = Layer::INVALID_ID;
-    int outer_viewport_container = Layer::INVALID_ID;
-    int inner_viewport_scroll = Layer::INVALID_ID;
-    int outer_viewport_scroll = Layer::INVALID_ID;
-
-    bool operator==(const ViewportLayerIds& other) {
-      return overscroll_elasticity_element_id ==
-                 other.overscroll_elasticity_element_id &&
-             page_scale == other.page_scale &&
-             inner_viewport_container == other.inner_viewport_container &&
-             outer_viewport_container == other.outer_viewport_container &&
-             inner_viewport_scroll == other.inner_viewport_scroll &&
-             outer_viewport_scroll == other.outer_viewport_scroll;
-    }
-  };
-  void SetViewportLayersFromIds(const ViewportLayerIds& viewport_layer_ids);
-  void ClearViewportLayers();
-  ElementId OverscrollElasticityElementId() const {
-    return viewport_layer_ids_.overscroll_elasticity_element_id;
+  const TransformNode* OverscrollElasticityTransformNode() const;
+  TransformNode* OverscrollElasticityTransformNode() {
+    return const_cast<TransformNode*>(
+        const_cast<const LayerTreeImpl*>(this)
+            ->OverscrollElasticityTransformNode());
   }
-  LayerImpl* PageScaleLayer() const {
-    return LayerById(viewport_layer_ids_.page_scale);
+  const TransformNode* PageScaleTransformNode() const;
+  TransformNode* PageScaleTransformNode() {
+    return const_cast<TransformNode*>(
+        const_cast<const LayerTreeImpl*>(this)->PageScaleTransformNode());
   }
-  LayerImpl* InnerViewportContainerLayer() const {
-    return LayerById(viewport_layer_ids_.inner_viewport_container);
-  }
-  LayerImpl* OuterViewportContainerLayer() const {
-    return LayerById(viewport_layer_ids_.outer_viewport_container);
-  }
-  LayerImpl* InnerViewportScrollLayer() const {
-    return LayerById(viewport_layer_ids_.inner_viewport_scroll);
-  }
-  LayerImpl* OuterViewportScrollLayer() const {
-    return LayerById(viewport_layer_ids_.outer_viewport_scroll);
-  }
-
   const ScrollNode* InnerViewportScrollNode() const;
   ScrollNode* InnerViewportScrollNode() {
     return const_cast<ScrollNode*>(
         const_cast<const LayerTreeImpl*>(this)->InnerViewportScrollNode());
+  }
+  const ClipNode* OuterViewportClipNode() const;
+  ClipNode* OuterViewportClipNode() {
+    return const_cast<ClipNode*>(
+        const_cast<const LayerTreeImpl*>(this)->OuterViewportClipNode());
   }
   const ScrollNode* OuterViewportScrollNode() const;
   ScrollNode* OuterViewportScrollNode() {
@@ -333,10 +307,17 @@ class CC_EXPORT LayerTreeImpl {
         const_cast<const LayerTreeImpl*>(this)->OuterViewportScrollNode());
   }
 
-  void set_viewport_property_ids(
-      const LayerTreeHost::ViewportPropertyIds& ids) {
-    viewport_property_ids_ = ids;
+  LayerTreeHost::ViewportPropertyIds ViewportPropertyIdsForTesting() const {
+    return viewport_property_ids_;
   }
+  LayerImpl* InnerViewportScrollLayerForTesting() const;
+  LayerImpl* OuterViewportScrollLayerForTesting() const;
+
+  ScrollNode* CurrentlyScrollingNode();
+  const ScrollNode* CurrentlyScrollingNode() const;
+  int LastScrolledScrollNodeIndex() const;
+  void SetCurrentlyScrollingNode(const ScrollNode* node);
+  void ClearCurrentlyScrollingNode();
 
   void ApplySentScrollAndScaleDeltasFromAbortedCommit();
 
@@ -692,8 +673,6 @@ class CC_EXPORT LayerTreeImpl {
     return host_impl_->DrawTransform();
   }
 
-  TransformNode* PageScaleTransformNode();
-
  protected:
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;
   void PushPageScaleFactorAndLimits(const float* page_scale_factor,
@@ -726,7 +705,6 @@ class CC_EXPORT LayerTreeImpl {
 
   int last_scrolled_scroll_node_index_;
 
-  ViewportLayerIds viewport_layer_ids_;
   LayerTreeHost::ViewportPropertyIds viewport_property_ids_;
 
   LayerSelection selection_;

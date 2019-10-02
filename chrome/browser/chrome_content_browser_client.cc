@@ -4617,6 +4617,20 @@ void ChromeContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
 }
 
 void ChromeContentBrowserClient::
+    RegisterNonNetworkWorkerMainResourceURLLoaderFactories(
+        content::BrowserContext* browser_context,
+        NonNetworkURLLoaderFactoryMap* factories) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  DCHECK(browser_context);
+  DCHECK(factories);
+  factories->emplace(
+      extensions::kExtensionScheme,
+      extensions::CreateExtensionWorkerMainResourceURLLoaderFactory(
+          browser_context));
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+}
+
+void ChromeContentBrowserClient::
     RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(
         content::BrowserContext* browser_context,
         NonNetworkURLLoaderFactoryMap* factories) {
@@ -4887,6 +4901,8 @@ bool ChromeContentBrowserClient::WillCreateRestrictedCookieManager(
     network::mojom::RestrictedCookieManagerRole role,
     content::BrowserContext* browser_context,
     const url::Origin& origin,
+    const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin,
     bool is_service_worker,
     int process_id,
     int routing_id,
@@ -4896,7 +4912,8 @@ bool ChromeContentBrowserClient::WillCreateRestrictedCookieManager(
   if (origin.scheme() == extensions::kExtensionScheme) {
     DCHECK_EQ(network::mojom::RestrictedCookieManagerRole::SCRIPT, role);
     extensions::ChromeExtensionCookies::Get(browser_context)
-        ->CreateRestrictedCookieManager(origin, std::move(*receiver));
+        ->CreateRestrictedCookieManager(origin, site_for_cookies,
+                                        top_frame_origin, std::move(*receiver));
     return true;
   }
 #endif
@@ -5081,23 +5098,6 @@ ChromeContentBrowserClient::CreateWindowForPictureInPicture(
   // chrome/browser/ui/views code either from here or from other code in
   // chrome/browser.
   return content::OverlayWindow::Create(controller);
-}
-
-bool ChromeContentBrowserClient::IsSafeRedirectTarget(
-    const GURL& url,
-    content::BrowserContext* context) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (url.SchemeIs(extensions::kExtensionScheme)) {
-    const Extension* extension = extensions::ExtensionRegistry::Get(context)
-                                     ->enabled_extensions()
-                                     .GetByID(url.host());
-    if (!extension)
-      return false;
-    return extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
-        extension, url.path());
-  }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-  return true;
 }
 
 void ChromeContentBrowserClient::RegisterRendererPreferenceWatcher(

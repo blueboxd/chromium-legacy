@@ -88,6 +88,13 @@ enum WhitelistType {
 // Callback type which is invoked once the download request is done.
 typedef base::OnceCallback<void(DownloadCheckResult)> CheckDownloadCallback;
 
+// Callback type which is invoked once the download request is done. This is
+// used in cases where asynchronous scanning is allowed, so the callback is
+// triggered multiple times (once when asynchronous scanning begins, once when
+// the final result is ready).
+typedef base::RepeatingCallback<void(DownloadCheckResult)>
+    CheckDownloadRepeatingCallback;
+
 // A type of callback run on the main thread when a ClientDownloadRequest has
 // been formed for a download, or when one has not been formed for a supported
 // download.

@@ -1277,6 +1277,43 @@ TEST_F(PasswordStoreTest, GetAllLeakedCredentials) {
   store->ShutdownOnUIThread();
 }
 
+TEST_F(PasswordStoreTest, RemoveLeakedCredentialsCreatedBetween) {
+  LeakedCredentials leaked_credentials1(GURL("https://example1.com"),
+                                        base::ASCIIToUTF16("username1"),
+                                        base::Time::FromTimeT(100));
+  LeakedCredentials leaked_credentials2(GURL("https://example2.com"),
+                                        base::ASCIIToUTF16("username2"),
+                                        base::Time::FromTimeT(200));
+  LeakedCredentials leaked_credentials3(GURL("https://example3.com"),
+                                        base::ASCIIToUTF16("username3"),
+                                        base::Time::FromTimeT(300));
+
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+
+  store->AddLeakedCredentials(leaked_credentials1);
+  store->AddLeakedCredentials(leaked_credentials2);
+  store->AddLeakedCredentials(leaked_credentials3);
+
+  MockPasswordLeakHistoryConsumer consumer;
+  EXPECT_CALL(consumer, OnGetLeakedCredentials(UnorderedElementsAre(
+                            leaked_credentials1, leaked_credentials2,
+                            leaked_credentials3)));
+  store->GetAllLeakedCredentials(&consumer);
+  WaitForPasswordStore();
+  testing::Mock::VerifyAndClearExpectations(&consumer);
+
+  store->RemoveLeakedCredentialsCreatedBetween(
+      base::Time::FromTimeT(150), base::Time::FromTimeT(250), base::Closure());
+
+  EXPECT_CALL(consumer, OnGetLeakedCredentials(UnorderedElementsAre(
+                            leaked_credentials1, leaked_credentials3)));
+  store->GetAllLeakedCredentials(&consumer);
+  WaitForPasswordStore();
+
+  store->ShutdownOnUIThread();
+}
+
 #endif
 
 }  // namespace password_manager

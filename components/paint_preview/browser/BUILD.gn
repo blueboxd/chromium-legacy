@@ -1,0 +1,45 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+if (!is_ios) {
+  static_library("browser") {
+    sources = [
+      "file_manager.cc",
+      "file_manager.h",
+    ]
+
+    deps = [
+      "//base",
+      "//url",
+    ]
+  }
+
+  source_set("unit_tests") {
+    testonly = true
+
+    sources = [
+      "file_manager_unittest.cc",
+    ]
+
+    deps = [
+      ":browser",
+      "//base",
+      "//base/test:test_support",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//url",
+    ]
+  }
+
+  test("paint_preview_browser_unit_tests") {
+    deps = [
+      ":unit_tests",
+      "//base",
+      "//base/test:test_support",
+      "//components/test:run_all_unittests",
+    ]
+  }
+}

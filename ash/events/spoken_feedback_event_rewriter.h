@@ -11,6 +11,10 @@
 #include "base/macros.h"
 #include "ui/events/event_rewriter.h"
 
+namespace ui {
+class EventRewriterChromeOS;
+}
+
 namespace ash {
 
 class SpokenFeedbackEventRewriterDelegate;
@@ -20,7 +24,8 @@ class SpokenFeedbackEventRewriterDelegate;
 // TODO(http://crbug.com/839541): Avoid reposting unhandled events.
 class ASH_EXPORT SpokenFeedbackEventRewriter : public ui::EventRewriter {
  public:
-  SpokenFeedbackEventRewriter();
+  explicit SpokenFeedbackEventRewriter(
+      ui::EventRewriterChromeOS* event_rewriter_chromeos);
   ~SpokenFeedbackEventRewriter() override;
 
   // Set the delegate used to send key events to the ChromeVox extension.
@@ -52,6 +57,9 @@ class ASH_EXPORT SpokenFeedbackEventRewriter : public ui::EventRewriter {
 
   // Whether to capture all keys.
   bool capture_all_keys_ = false;
+
+  // Weak.
+  ui::EventRewriterChromeOS* event_rewriter_chromeos_;
 
   DISALLOW_COPY_AND_ASSIGN(SpokenFeedbackEventRewriter);
 };

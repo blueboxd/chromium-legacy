@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 #include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
+#include "components/safe_browsing/proto/webprotect.pb.h"
 
 namespace content {
 class WebContents;
@@ -23,9 +24,12 @@ namespace safe_browsing {
 class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
  public:
   // Callback that determines the scan status of the file specified.  To
-  // simulate a file that passes a scan, return true, otherwise return false.
-  // If an empty path is given, this represents the non-file based text data.
-  using StatusCallback = base::RepeatingCallback<bool(const base::FilePath&)>;
+  // simulate a file that passes a scan return a successful response, such
+  // as the value returned by SuccessfulResponse().  To simulate a file that
+  // does not pass a scan return a failed response, such as the value returned
+  // by MalwareResponse() or DlpResponse().
+  using StatusCallback = base::RepeatingCallback<DeepScanningClientResponse(
+      const base::FilePath&)>;
 
   FakeDeepScanningDialogDelegate(base::RepeatingClosure delete_closure,
                                  StatusCallback status_callback,
@@ -45,6 +49,19 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
       content::WebContents* web_contents,
       Data data,
       CompletionCallback callback);
+
+  // Returns a deep scanning response that represents a successful scan.
+  static DeepScanningClientResponse SuccessfulResponse();
+
+  // Returns a deep scanning response with a specific malware verdict,
+  static DeepScanningClientResponse MalwareResponse(
+      MalwareDeepScanningVerdict::Verdict verdict);
+
+  // Returns a deep scanning response with a specific DLP verdict,
+  static DeepScanningClientResponse DlpResponse(
+      DlpDeepScanningVerdict::Status status,
+      const std::string& rule_name,
+      DlpDeepScanningVerdict::TriggeredRule::Action action);
 
  private:
   // Simulates a response from the binary upload service.  the |path| argument

@@ -78,6 +78,12 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     // When this is false contents outside the damaged area might need to be
     // recomposited to the surface.
     bool only_invalidates_damage_rect = true;
+    // Whether the gpu supports surfaceless surface (equivalent of using buffer
+    // queue).
+    bool supports_surfaceless = false;
+    // This is copied over from gpu feature info since there is no easy way to
+    // share that out of skia output surface.
+    bool android_surface_control_feature_enabled = false;
   };
 
   // Constructor for skia-based compositing.

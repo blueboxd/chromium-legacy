@@ -1352,6 +1352,10 @@ TEST(TimeDelta, MaxConversions) {
           .is_max(),
       "");
 
+  static_assert(
+      TimeDelta::FromMicrosecondsD(max_d).is_max(),
+      "Make sure that 2^63 correctly gets clamped to `max` (crbug.com/612601)");
+
   // Floating point arithmetic resulting in infinity isn't constexpr in C++14.
   EXPECT_TRUE(
       TimeDelta::FromMillisecondsD(std::numeric_limits<double>::infinity())

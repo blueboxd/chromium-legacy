@@ -18,7 +18,7 @@
 #include "ipc/ipc_test_sink.h"
 #include "ipc/message_filter.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/service_manager/public/mojom/connector.mojom.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 
@@ -90,7 +90,6 @@ class MockRenderThread : public RenderThread {
   void ReleaseCachedFonts() override;
 #endif
   ServiceManagerConnection* GetServiceManagerConnection() override;
-  service_manager::Connector* GetConnector() override;
   void SetFieldTrialGroup(const std::string& trial_name,
                           const std::string& group_name) override;
 
@@ -181,9 +180,6 @@ class MockRenderThread : public RenderThread {
 
   // Observers to notify.
   base::ObserverList<RenderThreadObserver>::Unchecked observers_;
-
-  std::unique_ptr<service_manager::Connector> connector_;
-  service_manager::mojom::ConnectorRequest pending_connector_request_;
 
   std::unique_ptr<mojom::RenderMessageFilter> mock_render_message_filter_;
 };

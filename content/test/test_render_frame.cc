@@ -272,12 +272,12 @@ void TestRenderFrame::SetHTMLOverrideForNextNavigation(
   next_navigation_html_override_ = html;
 }
 
-void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
+void TestRenderFrame::Navigate(network::mojom::URLResponseHeadPtr head,
                                mojom::CommonNavigationParamsPtr common_params,
                                mojom::CommitNavigationParamsPtr commit_params) {
   if (!IsPerNavigationMojoInterfaceEnabled()) {
-    CommitNavigation(std::move(common_params), std::move(commit_params), head,
-                     mojo::ScopedDataPipeConsumerHandle(),
+    CommitNavigation(std::move(common_params), std::move(commit_params),
+                     std::move(head), mojo::ScopedDataPipeConsumerHandle(),
                      network::mojom::URLLoaderClientEndpointsPtr(),
                      std::make_unique<blink::URLLoaderFactoryBundleInfo>(),
                      base::nullopt,
@@ -291,7 +291,7 @@ void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
         mock_navigation_client_
             .BindNewEndpointAndPassDedicatedReceiverForTesting());
     CommitPerNavigationMojoInterfaceNavigation(
-        std::move(common_params), std::move(commit_params), head,
+        std::move(common_params), std::move(commit_params), std::move(head),
         mojo::ScopedDataPipeConsumerHandle(),
         network::mojom::URLLoaderClientEndpointsPtr(),
         std::make_unique<blink::URLLoaderFactoryBundleInfo>(), base::nullopt,
@@ -306,7 +306,7 @@ void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
 
 void TestRenderFrame::Navigate(mojom::CommonNavigationParamsPtr common_params,
                                mojom::CommitNavigationParamsPtr commit_params) {
-  Navigate(network::ResourceResponseHead(), std::move(common_params),
+  Navigate(network::mojom::URLResponseHead::New(), std::move(common_params),
            std::move(commit_params));
 }
 

@@ -5,7 +5,6 @@
 import("//chromeos/assistant/assistant.gni")
 
 assert(is_chromeos)
-assert(enable_cros_assistant)
 
 component("lib") {
   output_name = "assistant_service"

@@ -232,8 +232,13 @@ class XR final : public EventTargetWithInlineData,
 
   const char* CheckInlineSessionRequestAllowed(
       LocalFrame* frame,
-      Document* doc,
       const PendingRequestSessionQuery& query);
+
+  RequestedXRSessionFeatureSet ParseRequestedFeatures(
+      Document* doc,
+      const HeapVector<ScriptValue>& features,
+      const XRSession::SessionMode& session_mode,
+      mojom::ConsoleMessageLevel error_level);
 
   void RequestImmersiveSession(LocalFrame* frame,
                                Document* doc,
@@ -241,7 +246,6 @@ class XR final : public EventTargetWithInlineData,
                                ExceptionState* exception_state);
 
   void RequestInlineSession(LocalFrame* frame,
-                            Document* doc,
                             PendingRequestSessionQuery* query,
                             ExceptionState* exception_state);
 

@@ -32,4 +32,23 @@ TEST(FileHandlerUtilsTest, GetFileExtensionsFromFileHandlers) {
   }
 }
 
+TEST(FileHandlerUtilsTest, GetMimeTypesFromFileHandlers) {
+  // Construct FileHandlerInfo vector with multiple mime types.
+  const std::vector<std::string> test_mime_types = {
+      "text/plain", "image/png", "application/vnd.my-app.file"};
+  apps::FileHandlerInfo fhi1;
+  apps::FileHandlerInfo fhi2;
+  fhi1.types.insert(test_mime_types[0]);
+  fhi1.types.insert(test_mime_types[1]);
+  fhi2.types.insert(test_mime_types[2]);
+  std::vector<apps::FileHandlerInfo> file_handlers = {fhi1, fhi2};
+  std::set<std::string> mime_types =
+      GetMimeTypesFromFileHandlers(file_handlers);
+
+  EXPECT_EQ(mime_types.size(), test_mime_types.size());
+  for (const auto& test_mime_type : test_mime_types) {
+    EXPECT_TRUE(mime_types.find(test_mime_type) != mime_types.end());
+  }
+}
+
 }  // namespace web_app

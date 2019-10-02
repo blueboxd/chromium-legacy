@@ -126,6 +126,13 @@ public class RenderFrameHostImpl implements RenderFrameHost {
                 mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this);
     }
 
+    @Override
+    public boolean areInputEventsIgnored() {
+        if (mNativeRenderFrameHostAndroid == 0) return false;
+        return RenderFrameHostImplJni.get().isProcessBlocked(
+                mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this);
+    }
+
     @NativeMethods
     interface Natives {
         String getLastCommittedURL(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
@@ -137,5 +144,6 @@ public class RenderFrameHostImpl implements RenderFrameHost {
                 long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
         void notifyUserActivation(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
         boolean isRenderFrameCreated(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
+        boolean isProcessBlocked(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
     }
 }

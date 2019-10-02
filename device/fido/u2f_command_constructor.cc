@@ -53,12 +53,12 @@ base::Optional<std::vector<uint8_t>> ConvertToU2fRegisterCommand(
       request.client_data_hash, is_invidual_attestation);
 }
 
-base::Optional<std::vector<uint8_t>> ConvertToU2fSignCommand(
+base::Optional<std::vector<uint8_t>> ConvertToU2fSignCommandWithBogusChallenge(
     const CtapMakeCredentialRequest& request,
     base::span<const uint8_t> key_handle) {
   return ConstructU2fSignCommand(
       fido_parsing_utils::CreateSHA256Hash(request.rp.id),
-      request.client_data_hash, key_handle);
+      kBogusChallenge, key_handle);
 }
 
 base::Optional<std::vector<uint8_t>> ConvertToU2fSignCommand(

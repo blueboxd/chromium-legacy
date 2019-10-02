@@ -260,7 +260,7 @@ void PrimaryAccountManager::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void PrimaryAccountManager::RemoveObserver(const Observer* observer) {
+void PrimaryAccountManager::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 

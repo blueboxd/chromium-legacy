@@ -158,7 +158,7 @@ class TestLogTaskRunnerWrapper
 class AppInstallEventLogManagerTest : public testing::Test {
  protected:
   AppInstallEventLogManagerTest()
-      : uploader_(&cloud_policy_client_, nullptr),
+      : uploader_(&cloud_policy_client_, /*profile=*/nullptr),
         log_task_runner_(log_task_runner_wrapper_.test_task_runner()),
         log_file_path_(profile_.GetPath().Append(kLogFileName)),
         packages_{std::begin(kPackageNames), std::end(kPackageNames)},
@@ -227,8 +227,8 @@ class AppInstallEventLogManagerTest : public testing::Test {
   }
 
   void BuildReport() {
-    base::Value event_list = ConvertEventsToValue(events_, nullptr);
-    base::Value context = reporting::GetContext(nullptr);
+    base::Value event_list = ConvertEventsToValue(events_, /*profile=*/nullptr);
+    base::Value context = reporting::GetContext(/*profile=*/nullptr);
 
     AppendEventId(&event_list, context);
     events_value_ = RealtimeReportingJobConfiguration::BuildReport(

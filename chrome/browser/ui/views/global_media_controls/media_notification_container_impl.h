@@ -17,10 +17,6 @@ namespace media_message_center {
 class MediaNotificationItem;
 }  // namespace media_message_center
 
-namespace views {
-class ImageButton;
-}  // namespace views
-
 class MediaDialogView;
 class MediaToolbarButtonController;
 
@@ -47,13 +43,17 @@ class MediaNotificationContainerImpl
       const std::set<media_session::mojom::MediaSessionAction>& actions)
       override;
   void OnMediaArtworkChanged(const gfx::ImageSkia& image) override;
-  void OnForegoundColorChanged(SkColor color) override;
+  void OnColorsChanged(SkColor foreground, SkColor background) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
+  class DismissButton;
+
   void UpdateDismissButtonIcon();
+
+  void UpdateDismissButtonBackground();
 
   // Updates the forced expanded state of |view_|.
   void ForceExpandedState();
@@ -69,10 +69,12 @@ class MediaNotificationContainerImpl
   MediaToolbarButtonController* const controller_;
 
   const std::string id_;
-  std::unique_ptr<views::ImageButton> dismiss_button_;
+  std::unique_ptr<views::View> dismiss_button_container_;
+  DismissButton* dismiss_button_;
   std::unique_ptr<media_message_center::MediaNotificationView> view_;
 
   SkColor foreground_color_;
+  SkColor background_color_;
 
   bool has_artwork_ = false;
   bool has_many_actions_ = false;

@@ -2,21 +2,87 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file_util.h"
 #include "chrome/browser/policy/browser_signin_policy_handler.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profile_resetter/profile_resetter_test_base.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/webui/welcome/helpers.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/account_id/account_id.h"
 #include "components/policy/core/common/mock_policy_service.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+class UnittestProfileManager : public ProfileManagerWithoutInit {
+ public:
+  explicit UnittestProfileManager(const base::FilePath& user_data_dir)
+      : ProfileManagerWithoutInit(user_data_dir) {}
+  ~UnittestProfileManager() override = default;
+
+ protected:
+  Profile* CreateProfileHelper(const base::FilePath& file_path) override {
+    if (!base::PathExists(file_path)) {
+      if (!base::CreateDirectory(file_path))
+        return nullptr;
+    }
+    return new TestingProfile(file_path, nullptr);
+  }
+
+  std::unique_ptr<Profile> CreateProfileAsyncHelper(
+      const base::FilePath& path,
+      Delegate* delegate) override {
+    // ThreadTaskRunnerHandle::Get() is TestingProfile's "async" IOTaskRunner
+    // (ref. TestingProfile::GetIOTaskRunner()).
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(base::IgnoreResult(&base::CreateDirectory), path));
+
+    return std::make_unique<TestingProfile>(path, this);
+  }
+};
 
 class StartupBrowserPolicyUnitTest : public testing::Test {
  protected:
   StartupBrowserPolicyUnitTest() = default;
   ~StartupBrowserPolicyUnitTest() override = default;
+  base::ScopedTempDir temp_dir_;
+
+  void SetUp() override {
+    // Create a new temporary directory, and store the path
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  }
+
+  // Helper function to add a profile with |profile_name| to |profile_manager|'s
+  // ProfileAttributesStorage, and return the profile created.
+  Profile* CreateTestingProfile(ProfileManager* profile_manager,
+                                const std::string& profile_name) {
+    ProfileAttributesStorage& storage =
+        profile_manager->GetProfileAttributesStorage();
+    size_t num_profiles = storage.GetNumberOfProfiles();
+    base::FilePath path = temp_dir_.GetPath().AppendASCII(profile_name);
+    storage.AddProfile(path, base::ASCIIToUTF16(profile_name.c_str()),
+                       std::string(), base::string16(), false, 0, std::string(),
+                       EmptyAccountId());
+    EXPECT_EQ(num_profiles + 1u, storage.GetNumberOfProfiles());
+    return profile_manager->GetProfile(path);
+  }
+
+  // Helper function to set profile ephemeral.
+  void SetProfileEphemeral(Profile* profile, bool val) {
+    ProfileAttributesEntry* entry;
+    ProfileAttributesStorage& storage =
+        g_browser_process->profile_manager()->GetProfileAttributesStorage();
+    EXPECT_TRUE(
+        storage.GetProfileAttributesWithPath(profile->GetPath(), &entry));
+    entry->SetIsEphemeral(val);
+  }
 
   std::unique_ptr<policy::MockPolicyService> GetPolicyService(
       policy::PolicyMap& policy_map) {
@@ -97,20 +163,29 @@ TEST_F(StartupBrowserPolicyUnitTest, BrowserSignin) {
 }
 
 TEST_F(StartupBrowserPolicyUnitTest, ForceEphemeralProfiles) {
-  policy::PolicyMap policy_map;
-  TestingProfile::Builder builder;
-  builder.SetPolicyService(GetPolicyService(policy_map));
-  // Needed by the builder when building the profile.
+  // Needed when building the profile.
   content::BrowserTaskEnvironment task_environment;
-  auto profile = builder.Build();
+  TestingPrefServiceSimple local_state;
+  TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state);
+  RegisterLocalState(local_state.registry());
 
-  EXPECT_TRUE(welcome::HasModulesToShow(profile.get()));
+  TestingBrowserProcess::GetGlobal()->SetProfileManager(
+      new UnittestProfileManager(temp_dir_.GetPath()));
 
-  SetPolicy(policy_map, policy::key::kForceEphemeralProfiles, true);
-  EXPECT_FALSE(welcome::HasModulesToShow(profile.get()));
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* profile = CreateTestingProfile(profile_manager, "path_1");
 
-  SetPolicy(policy_map, policy::key::kForceEphemeralProfiles, false);
-  EXPECT_TRUE(welcome::HasModulesToShow(profile.get()));
+  EXPECT_TRUE(welcome::HasModulesToShow(profile));
+
+  SetProfileEphemeral(profile, true);
+  EXPECT_FALSE(welcome::HasModulesToShow(profile));
+
+  SetProfileEphemeral(profile, false);
+  EXPECT_TRUE(welcome::HasModulesToShow(profile));
+
+  TestingBrowserProcess::GetGlobal()->SetProfileManager(nullptr);
+  TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
+  content::RunAllTasksUntilIdle();
 }
 
 TEST_F(StartupBrowserPolicyUnitTest, NewTabPageLocation) {

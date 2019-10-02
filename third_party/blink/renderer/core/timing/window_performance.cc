@@ -425,8 +425,6 @@ void WindowPerformance::DispatchFirstInputTiming(
 void WindowPerformance::AddLayoutShiftValue(double value,
                                             bool input_detected,
                                             base::TimeTicks input_timestamp) {
-  DCHECK(RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(
-      GetExecutionContext()));
   auto* entry = MakeGarbageCollected<LayoutShift>(
       now(), value, input_detected,
       input_detected ? MonotonicTimeToDOMHighResTimeStamp(input_timestamp)

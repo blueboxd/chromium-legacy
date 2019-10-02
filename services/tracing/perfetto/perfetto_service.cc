@@ -79,14 +79,14 @@ void PerfettoService::BindReceiver(
 
 void PerfettoService::ConnectToProducerHost(
     mojo::PendingRemote<mojom::ProducerClient> producer_client,
-    mojom::ProducerHostRequest producer_host_request) {
+    mojo::PendingReceiver<mojom::ProducerHost> producer_host_receiver) {
   auto new_producer = std::make_unique<ProducerHost>();
   uint32_t producer_pid = receivers_.current_context();
   new_producer->Initialize(std::move(producer_client), service_.get(),
                            base::StrCat({mojom::kPerfettoProducerNamePrefix,
                                          base::NumberToString(producer_pid)}));
-  producer_bindings_.AddBinding(std::move(new_producer),
-                                std::move(producer_host_request));
+  producer_receivers_.Add(std::move(new_producer),
+                          std::move(producer_host_receiver));
 }
 
 void PerfettoService::AddActiveServicePid(base::ProcessId pid) {

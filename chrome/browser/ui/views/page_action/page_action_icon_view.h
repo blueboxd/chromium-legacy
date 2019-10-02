@@ -20,6 +20,7 @@
 
 class CommandUpdater;
 class OmniboxView;
+class PageActionIconLoadingIndicatorView;
 
 namespace content {
 class WebContents;
@@ -80,6 +81,10 @@ class PageActionIconView : public IconLabelBubbleView {
 
   void ExecuteForTesting();
 
+  PageActionIconLoadingIndicatorView* loading_indicator_for_testing() {
+    return loading_indicator_;
+  }
+
  protected:
   enum ExecuteSource {
     EXECUTE_SOURCE_MOUSE,
@@ -138,6 +143,15 @@ class PageActionIconView : public IconLabelBubbleView {
   // Updates the icon image after some state has changed.
   virtual void UpdateIconImage();
 
+  // Creates and updates the loading indicator.
+  // TODO(crbug.com/964127): Ideally this should be lazily initialized in
+  // SetIsLoading(), but local card migration icon has a weird behavior that
+  // doing so will cause the indicator being invisible. Investigate and fix.
+  void InstallLoadingIndicator();
+
+  // Set if the page action icon is in the loading state.
+  void SetIsLoading(bool is_loading);
+
   // Returns the associated web contents from the delegate.
   content::WebContents* GetWebContents() const;
 
@@ -168,6 +182,9 @@ class PageActionIconView : public IconLabelBubbleView {
   // subclass, but generally indicates that the associated feature is acting on
   // the web page.
   bool active_ = false;
+
+  // The loading indicator, showing a throbber animation on top of the icon.
+  PageActionIconLoadingIndicatorView* loading_indicator_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PageActionIconView);
 };

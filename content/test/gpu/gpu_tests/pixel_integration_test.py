@@ -254,6 +254,9 @@ class PixelIntegrationTest(
   def ToHexOrNone(self, num):
     return 'None' if num == None else self.ToHex(num)
 
+  def ToNonEmptyStrOrNone(self, val):
+    return 'None' if val == '' else str(val)
+
   def RunActualGpuTest(self, test_path, *args):
     page = args[0]
     # Some pixel tests require non-standard browser arguments. Need to
@@ -362,10 +365,10 @@ class PixelIntegrationTest(
     gpu_keys = {
       'vendor_id': self.ToHexOrNone(img_params.vendor_id),
       'device_id': self.ToHexOrNone(img_params.device_id),
-      'vendor_string': str(img_params.vendor_string),
-      'device_string': str(img_params.device_string),
+      'vendor_string': self.ToNonEmptyStrOrNone(img_params.vendor_string),
+      'device_string': self.ToNonEmptyStrOrNone(img_params.device_string),
       'msaa': str(img_params.msaa),
-      'model_name': str(img_params.model_name),
+      'model_name': self.ToNonEmptyStrOrNone(img_params.model_name),
     }
     json_temp_file = tempfile.NamedTemporaryFile(
         suffix='.json', dir=self._skia_gold_temp_dir).name

@@ -17,7 +17,9 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
+#include "chrome/browser/optimization_guide/optimization_guide_permissions_util.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hint_cache.h"
 #include "components/optimization_guide/hint_cache_store.h"
@@ -153,6 +155,7 @@ const optimization_guide::proto::PageHint* GetPageHintForNavigation(
 
 OptimizationGuideHintsManager::OptimizationGuideHintsManager(
     optimization_guide::OptimizationGuideService* optimization_guide_service,
+    Profile* profile,
     const base::FilePath& profile_path,
     PrefService* pref_service,
     leveldb_proto::ProtoDatabaseProvider* database_provider,
@@ -162,6 +165,7 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
       background_task_runner_(
           base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
                                            base::TaskPriority::BEST_EFFORT})),
+      profile_(profile),
       pref_service_(pref_service),
       hint_cache_(std::make_unique<optimization_guide::HintCache>(
           std::make_unique<optimization_guide::HintCacheStore>(
@@ -410,10 +414,8 @@ void OptimizationGuideHintsManager::SetHintsFetcherForTesting(
 }
 
 void OptimizationGuideHintsManager::MaybeScheduleTopHostsHintsFetch() {
-  if (!optimization_guide::features::IsHintsFetchingEnabled() ||
-      !top_host_provider_) {
+  if (!top_host_provider_ || !IsUserPermittedToFetchHints(profile_))
     return;
-  }
 
   if (optimization_guide::switches::ShouldOverrideFetchHintsTimer()) {
     SetLastHintsFetchAttemptTime(clock_->Now());

@@ -59,6 +59,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -450,9 +451,9 @@ void CloudPrintProxyPolicyStartupTest::WaitForConnect(
 
 void CloudPrintProxyPolicyStartupTest::ShutdownAndWaitForExitWithTimeout(
     base::Process process) {
-  chrome::mojom::ServiceProcessPtr service_process;
+  mojo::Remote<chrome::mojom::ServiceProcess> service_process;
   ServiceProcessControl::GetInstance()->remote_interfaces().GetInterface(
-      &service_process);
+      service_process.BindNewPipeAndPassReceiver());
   service_process->ShutDown();
 
   int exit_code = -100;

@@ -163,7 +163,7 @@ public class UmaUtils {
         int action;
         String userActionSuffix;
 
-        if (menuId == R.id.close_menu_id || menuId == R.id.with_settings_close_menu_id) {
+        if (menuId == R.id.close_menu_id) {
             action = MenuAction.CLOSE;
             userActionSuffix = "Close";
         } else if (menuId == R.id.selection_mode_delete_menu_id) {
@@ -172,7 +172,7 @@ public class UmaUtils {
         } else if (menuId == R.id.selection_mode_share_menu_id) {
             action = MenuAction.MULTI_SHARE;
             userActionSuffix = "MultiShare";
-        } else if (menuId == R.id.with_settings_search_menu_id || menuId == R.id.search_menu_id) {
+        } else if (menuId == R.id.search_menu_id) {
             action = MenuAction.SEARCH;
             userActionSuffix = "Search";
         } else if (menuId == R.id.settings_menu_id) {

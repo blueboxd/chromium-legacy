@@ -571,6 +571,13 @@ bool WorkletAnimation::CanStartOnCompositor() {
   if (!CheckElementComposited(target))
     return false;
 
+  // If the scroll source is not composited, fall back to main thread.
+  if (timeline_->IsScrollTimeline() &&
+      !CheckElementComposited(
+          *ToScrollTimeline(timeline_)->ResolvedScrollSource())) {
+    return false;
+  }
+
   return true;
 }
 

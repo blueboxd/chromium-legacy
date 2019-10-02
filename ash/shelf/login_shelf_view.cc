@@ -91,22 +91,12 @@ LoginMetricsRecorder::ShelfButtonClickTarget GetUserClickTarget(int button_id) {
 
 // The margins of the button contents.
 constexpr int kButtonMarginTopDp = 18;
-constexpr int kButtonMarginTopDpDense = 16;
 constexpr int kButtonMarginLeftDp = 18;
 constexpr int kButtonMarginBottomDp = 18;
-constexpr int kButtonMarginBottomDpDense = 16;
 constexpr int kButtonMarginRightDp = 16;
-
-// The margins of the button background.
-constexpr gfx::Insets kButtonBackgroundMargin(8, 8, 8, 0);
-constexpr gfx::Insets kButtonBackgroundMarginDense(6, 8, 6, 0);
 
 // Spacing between the button image and label.
 constexpr int kImageLabelSpacingDp = 10;
-
-// The border radius of the button background.
-constexpr int kButtonRoundedBorderRadiusDp = 20;
-constexpr int kButtonRoundedBorderRadiusDpDense = 18;
 
 // The color of the button background.
 constexpr SkColor kButtonBackgroundColor =
@@ -122,13 +112,13 @@ std::unique_ptr<SkPath> GetButtonHighlightPath(views::View* view) {
   auto path = std::make_unique<SkPath>();
 
   gfx::Rect rect(view->GetLocalBounds());
-  rect.Inset(chromeos::switches::ShouldShowShelfHotseat()
-                 ? kButtonBackgroundMarginDense
-                 : kButtonBackgroundMargin);
+  int height_inset =
+      (ShelfConfig::Get()->shelf_size() - ShelfConfig::Get()->control_size()) /
+      2;
+  rect.Inset(gfx::Insets(height_inset, ShelfConfig::Get()->button_spacing(),
+                         height_inset, 0));
 
-  int border_radius = chromeos::switches::ShouldShowShelfHotseat()
-                          ? kButtonRoundedBorderRadiusDpDense
-                          : kButtonRoundedBorderRadiusDp;
+  int border_radius = ShelfConfig::Get()->control_border_radius();
   path->addRoundRect(gfx::RectToSkRect(rect), border_radius, border_radius);
   return path;
 }
@@ -185,14 +175,7 @@ class LoginShelfButton : public views::LabelButton {
 
   // views::LabelButton:
   gfx::Insets GetInsets() const override {
-    int top_margin = chromeos::switches::ShouldShowShelfHotseat()
-                         ? kButtonMarginTopDpDense
-                         : kButtonMarginTopDp;
-    int bottom_margin = chromeos::switches::ShouldShowShelfHotseat()
-                            ? kButtonMarginBottomDpDense
-                            : kButtonMarginBottomDp;
-    return gfx::Insets(top_margin, kButtonMarginLeftDp, bottom_margin,
-                       kButtonMarginRightDp);
+    return gfx::Insets(0, kButtonMarginLeftDp, 0, kButtonMarginRightDp);
   }
 
   const char* GetClassName() const override {

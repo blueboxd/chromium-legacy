@@ -100,12 +100,6 @@ public interface TabSwitcher {
          * @return Whether or not the TabSwitcher consumed the event.
          */
         boolean onBackPressed();
-
-        /**
-         * Set the bottom control height to margin the bottom of the TabListRecyclerView.
-         * @param bottomControlsHeight The bottom control height in pixel.
-         */
-        void setBottomControlsHeight(int bottomControlsHeight);
     }
 
     /**

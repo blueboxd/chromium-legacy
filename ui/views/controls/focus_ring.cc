@@ -6,6 +6,7 @@
 
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/focusable_border.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_class_properties.h"
 
@@ -24,6 +25,12 @@ double GetCornerRadius() {
 }
 
 SkPath GetHighlightPathInternal(const View* view) {
+  HighlightPathGenerator* path_generator =
+      view->GetProperty(kHighlightPathGeneratorKey);
+  if (path_generator)
+    return path_generator->GetHighlightPath(view);
+
+  // TODO(pbos): Remove kHighlightPathKey in favor of HighlightPathGenerators.
   SkPath* highlight_path = view->GetProperty(kHighlightPathKey);
   if (highlight_path)
     return *highlight_path;

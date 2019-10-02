@@ -12,6 +12,7 @@
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/portal/portal.h"
+#include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
@@ -248,6 +249,8 @@ class PortalBrowserTest : public ContentBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kValidateInputEventStream);
+    command_line->AppendSwitchASCII("--enable-blink-features",
+                                    "OverscrollCustomization");
   }
 
   void SetUpOnMainThread() override {
@@ -1030,8 +1033,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchStateClearedBeforeActivation) {
         std::make_unique<SyntheticTapGesture>(params);
     InputEventAckWaiter input_event_ack_waiter(
         render_widget_host, blink::WebInputEvent::Type::kTouchCancel);
-    render_widget_host->QueueSyntheticGesture(
-        std::move(gesture), base::Bind([](SyntheticGesture::Result) {}));
+    render_widget_host->QueueSyntheticGestureCompleteImmediately(
+        std::move(gesture));
     // Wait for synthetic cancel event to be sent.
     input_event_ack_waiter.Wait();
     portal_interceptor->WaitForActivate();
@@ -1111,8 +1114,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, GestureCleanedUpBeforeActivation) {
     PortalCreatedObserver adoption_observer(portal_frame);
     std::unique_ptr<SyntheticTapGesture> gesture =
         std::make_unique<SyntheticTapGesture>(params);
-    render_widget_host->QueueSyntheticGesture(
-        std::move(gesture), base::Bind([](SyntheticGesture::Result) {}));
+    render_widget_host->QueueSyntheticGestureCompleteImmediately(
+        std::move(gesture));
     portal_interceptor->WaitForActivate();
     EXPECT_EQ(portal_contents, shell()->web_contents());
     adopted_portal = adoption_observer.WaitUntilPortalCreated();
@@ -1133,6 +1136,122 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, GestureCleanedUpBeforeActivation) {
   // Wait for the tap gesture ack. If the initial gesture wasn't cleaned up, the
   // new gesture created will cause an error in the gesture validator.
   input_event_ack_waiter.Wait();
+}
+#endif
+
+// Touch input transfer is only implemented in the content layer for Aura.
+#if defined(USE_AURA)
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchInputTransferAcrossActivation) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL("portal.test", "/portals/scroll.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+  RenderWidgetHostImpl* render_widget_host = main_frame->GetRenderWidgetHost();
+
+  // Create portal and wait for navigation.
+  Portal* portal = nullptr;
+  {
+    PortalCreatedObserver portal_created_observer(main_frame);
+    GURL portal_url(embedded_test_server()->GetURL(
+        "portal.test", "/portals/scroll-portal.html"));
+    EXPECT_TRUE(ExecJs(
+        main_frame, JsReplace("var portal = document.createElement('portal');"
+                              "portal.src = $1;"
+                              "document.body.appendChild(portal);",
+                              portal_url)));
+    portal = portal_created_observer.WaitUntilPortalCreated();
+  }
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+  RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
+  // The portal should not have navigated yet, wait for the first navigation.
+  TestNavigationObserver navigation_observer(portal_contents);
+  navigation_observer.Wait();
+  WaitForHitTestData(portal_frame);
+
+  // Create and dispatch a synthetic scroll to trigger activation.
+  SyntheticSmoothScrollGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.anchor = gfx::PointF(50, 150);
+  params.distances.push_back(-gfx::Vector2d(0, 100));
+
+  std::unique_ptr<SyntheticSmoothScrollGesture> gesture =
+      std::make_unique<SyntheticSmoothScrollGesture>(params);
+  base::RunLoop run_loop;
+  render_widget_host->QueueSyntheticGesture(
+      std::move(gesture),
+      base::BindLambdaForTesting([&](SyntheticGesture::Result result) {
+        EXPECT_EQ(SyntheticGesture::Result::GESTURE_FINISHED, result);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  // Check if the activated page scrolled.
+  EXPECT_NE(0, EvalJs(portal_frame, "window.scrollY"));
+}
+#endif
+
+// Touch input transfer is only implemented in the content layer for Aura.
+#if defined(USE_AURA)
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
+                       TouchInputTransferAcrossReactivation) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "portal.test",
+                   "/portals/touch-input-transfer-across-reactivation.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+  RenderWidgetHostImpl* render_widget_host = main_frame->GetRenderWidgetHost();
+
+  // Create portal and wait for navigation.
+  Portal* portal = nullptr;
+  {
+    PortalCreatedObserver portal_created_observer(main_frame);
+    GURL portal_url(embedded_test_server()->GetURL(
+        "portal.test", "/portals/reactivate-predecessor.html"));
+    EXPECT_TRUE(ExecJs(
+        main_frame, JsReplace("var portal = document.createElement('portal');"
+                              "portal.src = $1;"
+                              "document.body.appendChild(portal);",
+                              portal_url)));
+    portal = portal_created_observer.WaitUntilPortalCreated();
+  }
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+  // The portal should not have navigated yet, wait for the first navigation.
+  TestNavigationObserver navigation_observer(portal_contents);
+  navigation_observer.Wait();
+
+  PortalInterceptorForTesting* portal_interceptor =
+      PortalInterceptorForTesting::From(portal);
+
+  // Create and dispatch a synthetic scroll to trigger activation.
+  SyntheticSmoothScrollGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.anchor = gfx::PointF(50, 150);
+  params.distances.push_back(-gfx::Vector2d(0, 1000));
+
+  std::unique_ptr<SyntheticSmoothScrollGesture> gesture =
+      std::make_unique<SyntheticSmoothScrollGesture>(params);
+  base::RunLoop run_loop;
+  render_widget_host->QueueSyntheticGesture(
+      std::move(gesture),
+      base::BindLambdaForTesting([&](SyntheticGesture::Result result) {
+        EXPECT_EQ(SyntheticGesture::Result::GESTURE_FINISHED, result);
+        run_loop.Quit();
+      }));
+  // Portal should activate when the gesture begins.
+  portal_interceptor->WaitForActivate();
+  // Wait till the scroll gesture finishes.
+  run_loop.Run();
+  // The predecessor should have been reactivated (we should be back to the
+  // starting page).
+  EXPECT_EQ(web_contents_impl, shell()->web_contents());
+  // The starting page should have scrolled.
+  // NOTE: This assumes that the scroll gesture is long enough that touch events
+  // are still sent after the predecessor is reactivated.
+  EXPECT_NE(0, EvalJs(main_frame, "window.scrollY"));
 }
 #endif
 

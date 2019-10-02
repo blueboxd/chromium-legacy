@@ -54,6 +54,7 @@ class TopHostProvider;
 }  // namespace optimization_guide
 
 class PrefService;
+class Profile;
 
 class OptimizationGuideHintsManager
     : public optimization_guide::OptimizationGuideServiceObserver,
@@ -61,6 +62,7 @@ class OptimizationGuideHintsManager
  public:
   OptimizationGuideHintsManager(
       optimization_guide::OptimizationGuideService* optimization_guide_service,
+      Profile* profile,
       const base::FilePath& profile_path,
       PrefService* pref_service,
       leveldb_proto::ProtoDatabaseProvider* database_provider,
@@ -243,6 +245,9 @@ class OptimizationGuideHintsManager
 
   // Background thread where hints processing should be performed.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
+
+  // A reference to the profile. Not owned.
+  Profile* profile_ = nullptr;
 
   // A reference to the PrefService for this profile. Not owned.
   PrefService* pref_service_ = nullptr;

@@ -3,6 +3,7 @@
     --tabstrip-tab-height: 216px;
     --tabstrip-tab-width: 288px;
     --tabstrip-tab-title-height: 40px;
+    --tabstrip-tab-transition-duration: 250ms;
 
     cursor: pointer;
     height: var(--tabstrip-tab-height);
@@ -10,14 +11,11 @@
     width: var(--tabstrip-tab-width);
   }
 
-  :host([active]) #dragImage {
-    box-shadow: 0 0 0 2px var(--tabstrip-focus-color);
-    outline: none;
-  }
-
   #dragImage {
+    background: var(--tabstrip-tab-background-color);
     border-radius: var(--tabstrip-card-border-radius);
-    box-shadow: var(--tabstrip-elevation-box-shadow);
+    box-shadow: 0 0 0 1px var(--tabstrip-tab-separator-color);
+    color: var(--tabstrip-tab-text-color);
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -25,10 +23,14 @@
     width: 100%;
   }
 
+  :host([active]) #dragImage {
+    box-shadow: 0 0 0 2px var(--tabstrip-focus-color);
+    outline: none;
+  }
+
   #title {
     align-items: center;
-    background: var(--tabstrip-card-background-color);
-    border-block-end: 1px solid var(--tabstrip-separator-color);
+    border-block-end: 1px solid var(--tabstrip-tab-separator-color);
     box-sizing: border-box;
     display: flex;
     height: var(--tabstrip-tab-title-height);
@@ -42,12 +44,14 @@
     height: 100%;
     margin-inline-end: 8px;
     margin-inline-start: 12px;
+    overflow: hidden;
     position: relative;
     width: var(--favicon-size);
   }
 
   #loading,
-  #favicon {
+  #favicon,
+  #crashedIcon {
     height: var(--favicon-size);
     left: 50%;
     position: absolute;
@@ -57,14 +61,25 @@
   }
 
   #loading {
-    -webkit-mask-image: url(chrome://resources/images/throbber_small.svg);
-    background-color: var(--tabstrip-primary-text-color);
+    -webkit-mask:
+        url(chrome://resources/images/throbber_small.svg)
+        center/contain no-repeat;
+    background-color: currentColor;
     display: none;
   }
 
   #favicon {
     background-size: contain;
-    transition: border-radius 250ms;
+    transition: border-radius var(--tabstrip-tab-transition-duration);
+  }
+
+  #crashedIcon {
+    -webkit-mask:
+        url(chrome://theme/IDR_CRASH_SAD_FAVICON@2x)
+        center/contain no-repeat;
+    background-color: currentColor;
+    opacity: 0;
+    transform: translate(-50%, 100%);
   }
 
   :host([loading]) #loading,
@@ -77,6 +92,24 @@
     height: calc(var(--favicon-size) - 6px);
     overflow: hidden;
     width: calc(var(--favicon-size) - 6px);
+  }
+
+  :host([crashed]) #favicon {
+    opacity: 0;
+    transform: translate(-50%, 100%);
+    transition:
+        opacity var(--tabstrip-tab-transition-duration),
+        transform var(--tabstrip-tab-transition-duration);
+  }
+
+  :host([crashed]) #crashedIcon {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+    transition:
+        opacity var(--tabstrip-tab-transition-duration),
+        transform var(--tabstrip-tab-transition-duration);
+    /* Wait until transition for #favicon finishes. */
+    transition-delay: var(--tabstrip-tab-transition-duration);
   }
 
   #titleText {
@@ -92,6 +125,7 @@
     align-items: center;
     background-color: transparent;
     border: 0;
+    color: inherit;
     cursor: pointer;
     display: flex;
     flex-shrink: 0;
@@ -104,8 +138,9 @@
   }
 
   #closeIcon {
-    background:
-        url(chrome://resources/images/icon_clear.svg) center/contain no-repeat;
+    -webkit-mask:
+        url(chrome://resources/images/icon_clear.svg)center/contain no-repeat;
+    background-color: currentColor;
     display: block;
     height: 18px;
     position: relative;
@@ -173,6 +208,7 @@
     <div id="faviconContainer">
       <div id="loading"></div>
       <div id="favicon"></div>
+      <div id="crashedIcon"></div>
     </div>
     <h2 id="titleText"></h2>
     <button id="close">

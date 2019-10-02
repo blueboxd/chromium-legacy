@@ -26,15 +26,6 @@ using SaturationRange = color_utils::SaturationRange;
 
 namespace ash {
 
-namespace {
-
-// Returns the color profile used for the shelf.
-ColorProfile GetShelfColorProfile() {
-  return ColorProfile(LumaRange::DARK, SaturationRange::MUTED);
-}
-
-}  // namespace
-
 ShelfBackgroundAnimator::AnimationValues::AnimationValues() = default;
 
 ShelfBackgroundAnimator::AnimationValues::~AnimationValues() = default;
@@ -118,29 +109,6 @@ void ShelfBackgroundAnimator::AnimationEnded(const gfx::Animation* animation) {
 
   for (auto& observer : observers_)
     observer.OnShelfBackgroundAnimationEnded();
-}
-
-// Gets the target color alpha value of the shelf according to the given
-// |background_type|.
-int ShelfBackgroundAnimator::GetBackgroundAlphaValue(
-    ShelfBackgroundType background_type) const {
-  switch (background_type) {
-    case SHELF_BACKGROUND_DEFAULT:
-    case SHELF_BACKGROUND_OVERVIEW:
-      return ShelfConfig::Get()->shelf_translucent_alpha();
-    case SHELF_BACKGROUND_MAXIMIZED:
-      return ShelfConfig::Get()->shelf_translucent_maximized_window();
-    case SHELF_BACKGROUND_APP_LIST:
-    case SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST:
-      return ShelfConfig::Get()->shelf_translucent_over_app_list();
-    case SHELF_BACKGROUND_OOBE:
-      return SK_AlphaTRANSPARENT;
-    case SHELF_BACKGROUND_LOGIN:
-      return SK_AlphaTRANSPARENT;
-    case SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER:
-      return login_constants::kNonBlurredWallpaperBackgroundAlpha;
-  }
-  return SK_AlphaTRANSPARENT;
 }
 
 void ShelfBackgroundAnimator::OnWallpaperColorsChanged() {
@@ -235,32 +203,23 @@ void ShelfBackgroundAnimator::SetTargetValues(
 void ShelfBackgroundAnimator::GetTargetValues(
     ShelfBackgroundType background_type,
     AnimationValues* shelf_background_values) const {
-  // Fetches wallpaper color and darkens it.
-  auto darken_wallpaper = [&](int darkening_alpha) {
-    if (!wallpaper_controller_)
-      return ShelfConfig::Get()->shelf_default_base_color();
-    SkColor target_color =
-        wallpaper_controller_->GetProminentColor(GetShelfColorProfile());
-    if (target_color == kInvalidWallpaperColor)
-      return ShelfConfig::Get()->shelf_default_base_color();
-    return color_utils::GetResultingPaintColor(
-        SkColorSetA(ShelfConfig::Get()->shelf_default_base_color(),
-                    darkening_alpha),
-        target_color);
-  };
+  shelf_background_values->SetTargetValues(GetBackgroundColor(background_type));
+}
 
-  SkColor shelf_target_color = ShelfConfig::Get()->shelf_default_base_color();
+SkColor ShelfBackgroundAnimator::GetBackgroundColor(
+    ShelfBackgroundType background_type) const {
+  SkColor shelf_target_color = ShelfConfig::Get()->GetDefaultShelfColor();
   switch (background_type) {
-    case SHELF_BACKGROUND_DEFAULT:
     case SHELF_BACKGROUND_APP_LIST:
     case SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST:
+      shelf_target_color = ShelfConfig::Get()->GetShelfWithAppListColor();
+      break;
+    case SHELF_BACKGROUND_DEFAULT:
     case SHELF_BACKGROUND_OVERVIEW:
-      shelf_target_color = darken_wallpaper(
-          ShelfConfig::Get()->shelf_translucent_color_darken_alpha());
+      shelf_target_color = ShelfConfig::Get()->GetDefaultShelfColor();
       break;
     case SHELF_BACKGROUND_MAXIMIZED:
-      shelf_target_color = darken_wallpaper(
-          ShelfConfig::Get()->shelf_opaque_color_darken_alpha());
+      shelf_target_color = ShelfConfig::Get()->GetMaximizedShelfColor();
       break;
     case SHELF_BACKGROUND_OOBE:
       shelf_target_color = SK_ColorTRANSPARENT;
@@ -269,12 +228,12 @@ void ShelfBackgroundAnimator::GetTargetValues(
       shelf_target_color = SK_ColorTRANSPARENT;
       break;
     case SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER:
-      shelf_target_color = login_constants::kDefaultBaseColor;
+      shelf_target_color =
+          SkColorSetA(login_constants::kDefaultBaseColor,
+                      login_constants::kNonBlurredWallpaperBackgroundAlpha);
       break;
   }
-
-  shelf_background_values->SetTargetValues(SkColorSetA(
-      shelf_target_color, GetBackgroundAlphaValue(background_type)));
+  return shelf_target_color;
 }
 
 void ShelfBackgroundAnimator::SetAnimationValues(double t) {

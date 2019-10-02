@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/tracing/perfetto/consumer_host.h"
 #include "services/tracing/public/cpp/perfetto/task_runner.h"
@@ -42,7 +43,8 @@ class PerfettoService : public mojom::PerfettoService {
   // mojom::PerfettoService implementation.
   void ConnectToProducerHost(
       mojo::PendingRemote<mojom::ProducerClient> producer_client,
-      mojom::ProducerHostRequest producer_host) override;
+      mojo::PendingReceiver<mojom::ProducerHost> producer_host_receiver)
+      override;
 
   perfetto::TracingService* GetService() const;
 
@@ -79,7 +81,7 @@ class PerfettoService : public mojom::PerfettoService {
   PerfettoTaskRunner perfetto_task_runner_;
   std::unique_ptr<perfetto::TracingService> service_;
   mojo::ReceiverSet<mojom::PerfettoService, uint32_t> receivers_;
-  mojo::StrongBindingSet<mojom::ProducerHost> producer_bindings_;
+  mojo::UniqueReceiverSet<mojom::ProducerHost> producer_receivers_;
   std::set<ConsumerHost::TracingSession*> tracing_sessions_;  // Not owned.
   std::set<base::ProcessId> active_service_pids_;
   bool active_service_pids_initialized_ = false;

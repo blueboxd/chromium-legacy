@@ -32,7 +32,7 @@
 namespace sandbox {
 
 class LowLevelPolicy;
-class PolicyInfo;
+class PolicyDiagnostic;
 class TargetProcess;
 struct PolicyGlobal;
 
@@ -115,7 +115,7 @@ class PolicyBase final : public TargetPolicy {
 
  private:
   // Allow PolicyInfo to snapshot PolicyBase for diagnostics.
-  friend class PolicyInfo;
+  friend class PolicyDiagnostic;
   ~PolicyBase();
 
   // Sets up interceptions for a new target.

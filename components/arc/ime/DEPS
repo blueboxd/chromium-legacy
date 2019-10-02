@@ -7,4 +7,5 @@ include_rules = [
   "+ui/gfx/geometry",
 # Revisit this dependency when crbug.com/890403 is resovled.
   "+ui/views",
+  "+ui/wm",
 ]

@@ -81,7 +81,7 @@ class DownloadProtectionService {
   // invoked on the UI thread.  This method must be called once the download
   // is finished and written to disk.
   virtual void CheckClientDownload(download::DownloadItem* item,
-                                   CheckDownloadCallback callback);
+                                   CheckDownloadRepeatingCallback callback);
 
   // Checks whether any of the URLs in the redirect chain of the
   // download match the SafeBrowsing bad binary URL list.  The result is

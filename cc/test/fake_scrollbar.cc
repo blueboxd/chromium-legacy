@@ -62,6 +62,10 @@ gfx::Rect FakeScrollbar::ForwardButtonRect() const {
   return forward_button_rect_;
 }
 
+bool FakeScrollbar::SupportsDragSnapBack() const {
+  return false;
+}
+
 int FakeScrollbar::ThumbLength() const {
   return thumb_length_;
 }

@@ -14,7 +14,6 @@
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/shell.h"
-#include "ash/sticky_keys/sticky_keys_controller.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -120,6 +119,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
+#include "chrome/browser/ui/ash/assistant/assistant_client.h"
 #include "chrome/browser/ui/ash/assistant/assistant_state_client.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_manager.h"
@@ -194,16 +194,11 @@
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/chromeos/events/pref_names.h"
 #include "ui/events/event_utils.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"
-#endif
-
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-#include "chrome/browser/ui/ash/assistant/assistant_client.h"
 #endif
 
 namespace chromeos {
@@ -638,13 +633,11 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // Requires UserManager.
   assistant_state_client_ = std::make_unique<AssistantStateClient>();
 
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
   // Assistant has to be initialized before
   // ChromeBrowserMainExtraPartsAsh::session_controller_client_ to avoid race of
   // SessionChanged event and assistant_client initialization. It must come
   // after AssistantStateClient.
   assistant_client_ = std::make_unique<AssistantClient>();
-#endif
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -898,21 +891,23 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 }
 
 void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
-  // Enable the KeyboardDrivenEventRewriter if the OEM manifest flag is on.
-  auto* event_rewriter_controller = ash::EventRewriterController::Get();
-  if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation())
-    event_rewriter_controller->SetKeyboardDrivenEventRewriterEnabled(true);
-
   // Construct a delegate to connect ChromeVox and SpokenFeedbackEventRewriter.
   spoken_feedback_event_rewriter_delegate_ =
       std::make_unique<SpokenFeedbackEventRewriterDelegate>();
 
   event_rewriter_delegate_ = std::make_unique<EventRewriterDelegateImpl>(
       ash::Shell::Get()->activation_client());
-  event_rewriter_controller->AddEventRewriter(
-      std::make_unique<ui::EventRewriterChromeOS>(
-          event_rewriter_delegate_.get(),
-          ash::Shell::Get()->sticky_keys_controller()));
+
+  // Set up the EventRewriterController after ash itself has finished
+  // initialization.
+  auto* event_rewriter_controller = ash::EventRewriterController::Get();
+  event_rewriter_controller->Initialize(
+      event_rewriter_delegate_.get(),
+      spoken_feedback_event_rewriter_delegate_.get());
+
+  // Enable the KeyboardDrivenEventRewriter if the OEM manifest flag is on.
+  if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation())
+    event_rewriter_controller->SetKeyboardDrivenEventRewriterEnabled(true);
 
   // In classic ash must occur after ash::Shell is initialized. Triggers a
   // fetch of the initial CrosSettings DeviceRebootOnShutdown policy.
@@ -963,11 +958,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   arc_service_launcher_->Shutdown();
 
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
   // Assistant has to shut down before voice interaction controller client to
   // correctly remove the observer.
   assistant_client_.reset();
-#endif
 
   assistant_state_client_.reset();
 

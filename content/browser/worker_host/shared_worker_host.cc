@@ -365,6 +365,16 @@ void SharedWorkerHost::CreatePaymentManager(
   worker_process_host->CreatePaymentManager(std::move(receiver));
 }
 
+void SharedWorkerHost::CreateIDBFactory(
+    mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderProcessHost* worker_process_host = GetProcessHost();
+  if (!worker_process_host)
+    return;
+  worker_process_host->BindIndexedDB(url::Origin::Create(instance().url()),
+                                     std::move(receiver));
+}
+
 void SharedWorkerHost::Destruct() {
   // Ask the service to destroy |this| which will terminate the worker.
   service_->DestroyHost(this);

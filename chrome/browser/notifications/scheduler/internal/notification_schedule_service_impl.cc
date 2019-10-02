@@ -50,13 +50,12 @@ UserActionHandler* NotificationScheduleServiceImpl::GetUserActionHandler() {
 }
 
 void NotificationScheduleServiceImpl::OnStartTask(
-    SchedulerTaskTime task_time,
     TaskFinishedCallback callback) {
-  scheduler_->OnStartTask(task_time, std::move(callback));
+  scheduler_->OnStartTask(std::move(callback));
 }
 
-void NotificationScheduleServiceImpl::OnStopTask(SchedulerTaskTime task_time) {
-  scheduler_->OnStopTask(task_time);
+void NotificationScheduleServiceImpl::OnStopTask() {
+  scheduler_->OnStopTask();
 }
 
 void NotificationScheduleServiceImpl::OnUserAction(

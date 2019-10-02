@@ -3471,6 +3471,11 @@
           '--qemu-require-kvm',
         ],
       },
+      'fuchsia-x64-dbg': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'linux-gcc-rel': {
         'additional_compile_targets': [
           'empty_main',

@@ -56,6 +56,7 @@ class WIN_WINDOW_EXPORT WinWindow : public PlatformWindow,
   ZOrderLevel GetZOrderLevel() const override;
   void StackAbove(gfx::AcceleratedWidget widget) override;
   void StackAtTop() override;
+  void FlashFrame(bool flash_frame) override;
 
   bool IsFullscreen() const;
 

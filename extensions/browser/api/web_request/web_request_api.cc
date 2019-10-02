@@ -38,8 +38,8 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/activity_log/web_request_constants.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
+#include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_rules_registry.h"
@@ -97,6 +97,7 @@ namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;
 using URLLoaderFactoryType =
     content::ContentBrowserClient::URLLoaderFactoryType;
+using DNRRequestAction = extensions::declarative_net_request::RequestAction;
 
 namespace extensions {
 
@@ -505,10 +506,9 @@ bool FilterResponseHeaders(net::HttpResponseHeaders* response_headers,
 }
 
 // Helper to record a matched DNR action in RulesetManager's ActionTracker.
-void OnDNRActionMatched(
-    content::BrowserContext* browser_context,
-    const declarative_net_request::RulesetManager::Action& action,
-    int tab_id) {
+void OnDNRActionMatched(content::BrowserContext* browser_context,
+                        const DNRRequestAction& action,
+                        int tab_id) {
   declarative_net_request::ActionTracker& action_tracker =
       declarative_net_request::RulesMonitorService::Get(browser_context)
           ->ruleset_manager()
@@ -520,10 +520,9 @@ void OnDNRActionMatched(
 // Helper to remove request headers based on a matched DNR action. Returns
 // whether or not request headers were actually removed and populates the
 // removed headers in |removed_headers|.
-bool RemoveRequestHeadersForAction(
-    net::HttpRequestHeaders* headers,
-    const declarative_net_request::RulesetManager::Action& action,
-    std::set<std::string>* removed_headers) {
+bool RemoveRequestHeadersForAction(net::HttpRequestHeaders* headers,
+                                   const DNRRequestAction& action,
+                                   std::set<std::string>* removed_headers) {
   bool headers_removed = false;
 
   for (const char* header : action.request_headers_to_remove) {
@@ -1038,12 +1037,10 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     net::CompletionOnceCallback callback,
     GURL* new_url,
     bool* should_collapse_initiator) {
-  using Action = declarative_net_request::RulesetManager::Action;
-
   DCHECK(should_collapse_initiator);
 
   if (ShouldHideEvent(browser_context, *request)) {
-    request->dnr_actions = std::vector<Action>();
+    request->dnr_actions = std::vector<DNRRequestAction>();
     return net::OK;
   }
 
@@ -1094,37 +1091,38 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   // currently only depend on the request url, initiator and resource type,
   // which should stay the same during the diffierent network request stages. A
   // redirect should cause another OnBeforeRequest call.
-  const std::vector<Action>& actions =
+  const std::vector<DNRRequestAction>& actions =
       declarative_net_request::RulesMonitorService::Get(browser_context)
           ->ruleset_manager()
           ->EvaluateRequest(*request, is_incognito_context);
   for (const auto& action : actions) {
     switch (action.type) {
-      case Action::Type::BLOCK:
+      case DNRRequestAction::Type::BLOCK:
         ClearPendingCallbacks(*request);
         DCHECK_EQ(1u, actions.size());
         OnDNRActionMatched(browser_context, action, request->frame_data.tab_id);
         return net::ERR_BLOCKED_BY_CLIENT;
-      case Action::Type::COLLAPSE:
+      case DNRRequestAction::Type::COLLAPSE:
         ClearPendingCallbacks(*request);
         DCHECK_EQ(1u, actions.size());
         OnDNRActionMatched(browser_context, action, request->frame_data.tab_id);
         *should_collapse_initiator = true;
         return net::ERR_BLOCKED_BY_CLIENT;
-      case Action::Type::REDIRECT:
+      case DNRRequestAction::Type::REDIRECT:
         ClearPendingCallbacks(*request);
         DCHECK_EQ(1u, actions.size());
         DCHECK(action.redirect_url);
         OnDNRActionMatched(browser_context, action, request->frame_data.tab_id);
         *new_url = action.redirect_url.value();
         return net::OK;
-      case Action::Type::REMOVE_HEADERS:
+      case DNRRequestAction::Type::REMOVE_HEADERS:
         // Unlike other actions, allow web request extensions to intercept the
         // request here. The headers will be removed during subsequent request
         // stages.
         DCHECK(std::all_of(request->dnr_actions->begin(),
                            request->dnr_actions->end(), [](const auto& action) {
-                             return action.type == Action::Type::REMOVE_HEADERS;
+                             return action.type ==
+                                    DNRRequestAction::Type::REMOVE_HEADERS;
                            }));
         break;
     }
@@ -1246,8 +1244,6 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
-  using Action = declarative_net_request::RulesetManager::Action;
-
   if (ShouldHideEvent(browser_context, *request))
     return net::OK;
 
@@ -1255,10 +1251,10 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
   // headers so that headers removed by Declarative Net Request API are not
   // visible to web request extensions.
   DCHECK(request->dnr_actions);
-  bool should_remove_headers =
-      !request->dnr_actions->empty() &&
-      (*request->dnr_actions)[0].type == Action::Type::REMOVE_HEADERS &&
-      original_response_headers;
+  bool should_remove_headers = !request->dnr_actions->empty() &&
+                               (*request->dnr_actions)[0].type ==
+                                   DNRRequestAction::Type::REMOVE_HEADERS &&
+                               original_response_headers;
 
   scoped_refptr<const net::HttpResponseHeaders> filtered_response_headers;
   if (!should_remove_headers) {

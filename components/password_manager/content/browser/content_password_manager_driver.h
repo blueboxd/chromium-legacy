@@ -54,6 +54,7 @@ class ContentPasswordManagerDriver
           pending_receiver);
 
   // PasswordManagerDriver implementation.
+  int GetId() const override;
   void FillPasswordForm(
       const autofill::PasswordFormFillData& form_data) override;
   void FormEligibleForGenerationFound(
@@ -137,6 +138,8 @@ class ContentPasswordManagerDriver
   // detached and it would be impossible to check whether the frame is a main
   // frame.
   const bool is_main_frame_;
+
+  int id_;
 
   mojo::AssociatedRemote<autofill::mojom::PasswordAutofillAgent>
       password_autofill_agent_;

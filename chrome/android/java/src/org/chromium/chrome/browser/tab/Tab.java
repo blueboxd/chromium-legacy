@@ -1876,14 +1876,6 @@ public class Tab {
         return mIsRendererUnresponsive;
     }
 
-    /**
-     * @return Whether input events from the renderer are ignored on the browser side.
-     */
-    public boolean areRendererInputEventsIgnored() {
-        assert mNativeTabAndroid != 0;
-        return TabJni.get().areRendererInputEventsIgnored(mNativeTabAndroid, Tab.this);
-    }
-
     @NativeMethods
     interface Natives {
         void init(Tab caller);
@@ -1908,6 +1900,5 @@ public class Tab {
         void createHistoricalTab(long nativeTabAndroid, Tab caller);
         void loadOriginalImage(long nativeTabAndroid, Tab caller);
         void attachDetachedTab(long nativeTabAndroid, Tab caller);
-        boolean areRendererInputEventsIgnored(long nativeTabAndroid, Tab caller);
     }
 }

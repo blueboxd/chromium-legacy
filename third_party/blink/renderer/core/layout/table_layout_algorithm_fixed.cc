@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_table_col.h"
 #include "third_party/blink/renderer/core/layout/layout_table_section.h"
+#include "third_party/blink/renderer/platform/geometry/calculation_value.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
@@ -147,10 +148,16 @@ int TableLayoutAlgorithmFixed::CalcWidthArray() {
        cell = cell->NextCell()) {
     Length logical_width = cell->StyleOrColLogicalWidth();
 
-    // FIXME: calc() on tables should be handled consistently with other
-    // lengths. See bug: https://crbug.com/382725
-    if (logical_width.IsCalculated())
-      logical_width = Length();  // Make it Auto
+    if (logical_width.IsCalculated()) {
+      // A calculated width that mixes lengths and percentages in fixed table
+      // layout must be treated as 'auto'.
+      // https://drafts.csswg.org/css-values-4/#calc-computed-value
+      const CalculationValue& calc = logical_width.GetCalculationValue();
+      if (calc.IsExpression() || calc.Pixels())
+        logical_width = Length();
+      else
+        logical_width = Length::Percent(calc.Percent());
+    }
 
     unsigned span = cell->ColSpan();
     int fixed_border_box_logical_width = 0;

@@ -23,6 +23,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safe_browsing.mojom-shared.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/allowlist_checker_client.h"
@@ -563,6 +564,7 @@ void ClientSideDetectionHost::MaybeStartMalwareFeatureExtraction() {
 }
 
 void ClientSideDetectionHost::PhishingDetectionDone(
+    mojom::PhishingDetectorResult result,
     const std::string& verdict_str) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // There is something seriously wrong if there is no service class but
@@ -570,6 +572,10 @@ void ClientSideDetectionHost::PhishingDetectionDone(
   // if there isn't any service class in the browser.
   DCHECK(csd_service_);
   DCHECK(browse_info_.get());
+
+  UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.PhishingDetectorResult", result);
+  if (result != mojom::PhishingDetectorResult::SUCCESS)
+    return;
 
   // We parse the protocol buffer here.  If we're unable to parse it we won't
   // send the verdict further.

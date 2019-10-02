@@ -63,6 +63,7 @@
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "components/security_state/core/features.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/ssl_errors/error_info.h"
 #include "components/strings/grit/components_chromium_strings.h"
@@ -824,6 +825,13 @@ void PageInfo::ComputeUIInputs(
       site_connection_details_.assign(l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_WEAK_ENCRYPTION_CONNECTION_TEXT,
           subject_name));
+    }
+
+    if (base::FeatureList::IsEnabled(
+            security_state::features::kLegacyTLSWarnings) &&
+        visible_security_state.connection_used_legacy_tls &&
+        !visible_security_state.is_legacy_tls_control_site) {
+      site_connection_status_ = SITE_CONNECTION_STATUS_LEGACY_TLS;
     }
 
     ReportAnyInsecureContent(visible_security_state, &site_connection_status_,

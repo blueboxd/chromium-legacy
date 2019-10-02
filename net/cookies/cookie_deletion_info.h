@@ -108,9 +108,6 @@ struct NET_EXPORT CookieDeletionInfo {
   // included for a request of |url|.
   base::Optional<GURL> url;
 
-  // Only used for |url| comparison.
-  CookieOptions cookie_options;
-
   // If this is not empty then any cookie with a domain/ip contained in this
   // will be deleted (assuming other fields match).
   // Domains must not have a leading period. e.g "example.com" and not

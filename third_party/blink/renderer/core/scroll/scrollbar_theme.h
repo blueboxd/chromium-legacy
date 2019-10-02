@@ -114,6 +114,8 @@ class CORE_EXPORT ScrollbarTheme {
     return false;
   }
 
+  virtual bool SupportsDragSnapBack() const { return false; }
+
   // The position of the thumb relative to the track.
   int ThumbPosition(const Scrollbar& scrollbar) {
     return ThumbPosition(scrollbar, scrollbar.CurrentPos());

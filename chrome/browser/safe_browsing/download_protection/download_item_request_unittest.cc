@@ -19,7 +19,9 @@ using ::testing::ReturnRef;
 
 class DownloadItemRequestTest : public ::testing::Test {
  public:
-  DownloadItemRequestTest() : item_(), request_(&item_, base::DoNothing()) {}
+  DownloadItemRequestTest()
+      : item_(),
+        request_(&item_, /*read_immediately=*/false, base::DoNothing()) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

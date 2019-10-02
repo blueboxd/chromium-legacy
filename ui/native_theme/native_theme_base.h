@@ -201,13 +201,13 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   SkColor OutlineColor(SkScalar* hsv1, SkScalar* hsv2) const;
 
   // Paint the common parts of the checkboxes and radio buttons.
-  // borderRadius specifies how rounded the corners should be.
+  // border_radius specifies how rounded the corners should be.
   SkRect PaintCheckboxRadioCommon(cc::PaintCanvas* canvas,
                                   State state,
                                   const gfx::Rect& rect,
                                   const ButtonExtraParams& button,
                                   bool is_checkbox,
-                                  const SkScalar borderRadius,
+                                  const SkScalar border_radius,
                                   ColorScheme color_scheme) const;
 
   // The length of the arrow buttons, 0 means no buttons are drawn.

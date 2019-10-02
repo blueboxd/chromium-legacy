@@ -445,7 +445,7 @@ CertPathBuilder::Result TryBuildPath(
     const scoped_refptr<ParsedCertificate>& target,
     CertIssuerSourceStatic* intermediates,
     SystemTrustStore* ssl_trust_store,
-    base::Time verification_time,
+    const der::GeneralizedTime& der_verification_time,
     base::TimeTicks deadline,
     VerificationType verification_type,
     SimplePathBuilderDelegate::DigestPolicy digest_policy,
@@ -455,13 +455,6 @@ CertPathBuilder::Result TryBuildPath(
     CertNetFetcher* net_fetcher,
     const EVRootCAMetadata* ev_metadata,
     bool* checked_revocation) {
-  der::GeneralizedTime der_verification_time;
-  if (!der::EncodeTimeAsGeneralizedTime(verification_time,
-                                        &der_verification_time)) {
-    // This shouldn't be possible.
-    return CertPathBuilder::Result();
-  }
-
   // Path building will require candidate paths to conform to at least one of
   // the policies in |user_initial_policy_set|.
   std::set<der::Input> user_initial_policy_set;
@@ -612,6 +605,15 @@ int CertVerifyProcBuiltin::VerifyInternal(
   base::Time verification_time = base::Time::Now();
   base::TimeTicks deadline = base::TimeTicks::Now() + kMaxVerificationTime;
 
+  der::GeneralizedTime der_verification_time;
+  if (!der::EncodeTimeAsGeneralizedTime(verification_time,
+                                        &der_verification_time)) {
+    // This shouldn't be possible.
+    // We don't really have a good error code for this type of error.
+    verify_result->cert_status |= CERT_STATUS_AUTHORITY_INVALID;
+    return ERR_CERT_AUTHORITY_INVALID;
+  }
+
   // Parse the target certificate.
   scoped_refptr<ParsedCertificate> target =
       ParseCertificateFromBuffer(input_cert->cert_buffer(), &parsing_errors);
@@ -678,7 +680,7 @@ int CertVerifyProcBuiltin::VerifyInternal(
 
     // Run the attempt through the path builder.
     result = TryBuildPath(
-        target, &intermediates, ssl_trust_store.get(), verification_time,
+        target, &intermediates, ssl_trust_store.get(), der_verification_time,
         deadline, cur_attempt.verification_type, cur_attempt.digest_policy,
         flags, ocsp_response, crl_set, net_fetcher_.get(), ev_metadata,
         &checked_revocation_for_some_path);

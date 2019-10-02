@@ -1233,13 +1233,17 @@ void RTCPeerConnectionHandler::SetLocalDescription(
     reason_str.append(" ");
     reason_str.append(error.description);
     LOG(ERROR) << reason_str;
-    request.RequestFailed(webrtc::RTCError(webrtc::RTCErrorType::INTERNAL_ERROR,
-                                           std::move(reason_str)));
     if (peer_connection_tracker_) {
       peer_connection_tracker_->TrackSessionDescriptionCallback(
           this, PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION,
           "OnFailure", reason_str);
     }
+    // Warning: this line triggers the error callback to be executed, causing
+    // arbitrary JavaScript to be executed synchronously. As a result, it is
+    // possible for |this| to be deleted after this line. See
+    // https://crbug.com/1005251.
+    request.RequestFailed(webrtc::RTCError(webrtc::RTCErrorType::INTERNAL_ERROR,
+                                           std::move(reason_str)));
     return;
   }
 
@@ -1301,13 +1305,17 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
     reason_str.append(" ");
     reason_str.append(error.description);
     LOG(ERROR) << reason_str;
-    request.RequestFailed(webrtc::RTCError(
-        webrtc::RTCErrorType::UNSUPPORTED_OPERATION, std::move(reason_str)));
     if (peer_connection_tracker_) {
       peer_connection_tracker_->TrackSessionDescriptionCallback(
           this, PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION,
           "OnFailure", reason_str);
     }
+    // Warning: this line triggers the error callback to be executed, causing
+    // arbitrary JavaScript to be executed synchronously. As a result, it is
+    // possible for |this| to be deleted after this line. See
+    // https://crbug.com/1005251.
+    request.RequestFailed(webrtc::RTCError(
+        webrtc::RTCErrorType::UNSUPPORTED_OPERATION, std::move(reason_str)));
     return;
   }
 

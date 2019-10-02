@@ -134,6 +134,8 @@ class CreditCardFIDOAuthenticatorTest : public testing::Test {
             autofill_client_.GetIdentityManager(), &personal_data_manager_);
     autofill_client_.set_test_payments_client(
         std::unique_ptr<payments::TestPaymentsClient>(payments_client));
+    autofill_client_.set_test_strike_database(
+        std::make_unique<TestStrikeDatabase>());
     fido_authenticator_ = std::make_unique<CreditCardFIDOAuthenticator>(
         autofill_driver_.get(), &autofill_client_);
   }

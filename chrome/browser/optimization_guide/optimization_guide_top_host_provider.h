@@ -37,8 +37,8 @@ class OptimizationGuideTopHostProvider
                                    base::Clock* time_clock);
   ~OptimizationGuideTopHostProvider() override;
 
-  // Creates a DataSaverTopHostProvider if the user is a Data Saver user and has
-  // also seen the notification.
+  // Creates a OptimizationGuideTopHostProvider if the user is eligible to fetch
+  // hints from the remote Optimization Guide Service.
   static std::unique_ptr<OptimizationGuideTopHostProvider> CreateIfAllowed(
       content::BrowserContext* browser_context);
 

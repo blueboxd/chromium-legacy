@@ -17,13 +17,9 @@
 #include "ui/events/event.h"
 
 SpokenFeedbackEventRewriterDelegate::SpokenFeedbackEventRewriterDelegate() {
-  ash::EventRewriterController::Get()->SetSpokenFeedbackEventRewriterDelegate(
-      this);
 }
 
 SpokenFeedbackEventRewriterDelegate::~SpokenFeedbackEventRewriterDelegate() {
-  if (auto* controller = ash::EventRewriterController::Get())
-    controller->SetSpokenFeedbackEventRewriterDelegate(nullptr);
 }
 
 void SpokenFeedbackEventRewriterDelegate::DispatchKeyEventToChromeVox(

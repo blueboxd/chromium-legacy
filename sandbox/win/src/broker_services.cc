@@ -22,6 +22,7 @@
 #include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
+#include "sandbox/win/src/sandbox_policy_diagnostic.h"
 #include "sandbox/win/src/target_process.h"
 #include "sandbox/win/src/win2k_threadpool.h"
 #include "sandbox/win/src/win_utils.h"
@@ -125,6 +126,26 @@ void WINAPI ProcessEventCallback(PVOID param, BOOLEAN ignored) {
   ::PostQueuedCompletionStatus(tracker->iocp, 0, THREAD_CTRL_PROCESS_SIGNALLED,
                                reinterpret_cast<LPOVERLAPPED>(tracker));
 }
+
+// Helper class to send policy lists
+class PolicyDiagnosticList final : public sandbox::PolicyList {
+ public:
+  PolicyDiagnosticList() {}
+  ~PolicyDiagnosticList() override {}
+  void push_back(std::unique_ptr<sandbox::PolicyInfo> info) {
+    internal_list_.push_back(std::move(info));
+  }
+  std::vector<std::unique_ptr<sandbox::PolicyInfo>>::iterator begin() override {
+    return internal_list_.begin();
+  }
+  std::vector<std::unique_ptr<sandbox::PolicyInfo>>::iterator end() override {
+    return internal_list_.end();
+  }
+  size_t size() const override { return internal_list_.size(); }
+
+ private:
+  std::vector<std::unique_ptr<sandbox::PolicyInfo>> internal_list_;
+};
 
 }  // namespace
 
@@ -335,17 +356,17 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
       receiver.reset(static_cast<PolicyDiagnosticsReceiver*>(
           reinterpret_cast<void*>(ovl)));
       // The PollicyInfo ctor copies essential information from the trackers.
-      auto policy_list = std::make_unique<PolicyList>();
+      auto policy_list = std::make_unique<PolicyDiagnosticList>();
       for (auto&& process_tracker : processes) {
         if (process_tracker->policy) {
-          policy_list->push_back(
-              std::make_unique<PolicyInfo>(process_tracker->policy.get()));
+          policy_list->push_back(std::make_unique<PolicyDiagnostic>(
+              process_tracker->policy.get()));
         }
       }
       for (auto&& job_tracker : jobs) {
         if (job_tracker->policy) {
           policy_list->push_back(
-              std::make_unique<PolicyInfo>(job_tracker->policy.get()));
+              std::make_unique<PolicyDiagnostic>(job_tracker->policy.get()));
         }
       }
       // Receiver should return quickly.

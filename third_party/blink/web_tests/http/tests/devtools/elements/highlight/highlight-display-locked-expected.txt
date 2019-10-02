@@ -85,7 +85,7 @@ container{
   "elementInfo": {
     "tagName": "div",
     "idValue": "container",
-    "nodeWidth": "10",
+    "nodeWidth": "784",
     "nodeHeight": "10"
   }
 }
@@ -174,7 +174,7 @@ child{
   "elementInfo": {
     "tagName": "div",
     "idValue": "container",
-    "nodeWidth": "10",
+    "nodeWidth": "784",
     "nodeHeight": "10",
     "isLockedAncestor": "true"
   }

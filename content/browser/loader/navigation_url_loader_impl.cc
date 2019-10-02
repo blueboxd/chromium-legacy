@@ -4,7 +4,9 @@
 
 #include "content/browser/loader/navigation_url_loader_impl.h"
 
+#include <map>
 #include <memory>
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
@@ -274,15 +276,6 @@ void UnknownSchemeCallback(
     network::mojom::URLLoaderClientPtr client) {
   client->OnComplete(network::URLLoaderCompletionStatus(
       handled_externally ? net::ERR_ABORTED : net::ERR_UNKNOWN_URL_SCHEME));
-}
-
-// Determines whether it is safe to redirect from |from_url| to |to_url|.
-bool IsRedirectSafe(const GURL& from_url,
-                    const GURL& to_url,
-                    BrowserContext* browser_context) {
-  return IsSafeRedirectTarget(from_url, to_url) &&
-         GetContentClient()->browser()->IsSafeRedirectTarget(to_url,
-                                                             browser_context);
 }
 
 }  // namespace
@@ -919,7 +912,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          network::mojom::URLResponseHeadPtr head) override {
     if (!bypass_redirect_checks_ &&
-        !IsRedirectSafe(url_, redirect_info.new_url, browser_context_)) {
+        !IsSafeRedirectTarget(url_, redirect_info.new_url)) {
       // Call CancelWithError instead of OnComplete so that if there is an
       // intercepting URLLoaderFactory (created through the embedder's
       // ContentBrowserClient::WillCreateURLLoaderFactory) it gets notified.

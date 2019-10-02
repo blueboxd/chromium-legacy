@@ -35,9 +35,6 @@ void FakeShillIPConfigClient::RemovePropertyChangedObserver(
     const dbus::ObjectPath& ipconfig_path,
     ShillPropertyChangedObserver* observer) {}
 
-void FakeShillIPConfigClient::Refresh(const dbus::ObjectPath& ipconfig_path,
-                                      VoidDBusMethodCallback callback) {}
-
 void FakeShillIPConfigClient::GetProperties(
     const dbus::ObjectPath& ipconfig_path,
     const DictionaryValueCallback& callback) {

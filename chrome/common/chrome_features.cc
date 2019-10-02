@@ -177,7 +177,7 @@ const base::Feature kImmersiveFullscreen{"ImmersiveFullscreen",
 #if defined(OS_CHROMEOS)
 // Shows a setting that allows disabling mouse acceleration.
 const base::Feature kAllowDisableMouseAcceleration{
-    "AllowDisableMouseAcceleration", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AllowDisableMouseAcceleration", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable project Crostini, Linux VMs on Chrome OS.
 const base::Feature kCrostini{"Crostini", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -412,11 +412,6 @@ const base::Feature kHappinessTrackingSurveysForDesktopDemo{
 // HTTP auth interstitial pages (i.e. HTTP auth prompts initiated cross-origin).
 const base::Feature kHTTPAuthCommittedInterstitials{
     "HTTPAuthCommittedInterstitials", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables security warning UI treatments for sites that use legacy TLS versions
-// (TLS 1.0 or 1.1).
-const base::Feature kLegacyTLSWarnings{"LegacyTLSWarnings",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables navigation suggestions UI for lookalike URLs (e.g. internationalized
 // domain names that are visually similar to popular domains or to domains with

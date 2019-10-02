@@ -37,6 +37,7 @@ class TwoClientThemesSyncTest : public SyncTest {
 // instead verifies the custom theme is pending for install.
 IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
                        E2E_ENABLED(DefaultThenSyncCustom)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync());
   // Wait until sync settles before we override the theme below.
   AwaitQuiescence();
@@ -61,6 +62,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
 // to the system theme.
 IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
                        E2E_ENABLED(CustomThenSyncNative)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupClients());
 
   SetCustomTheme(GetProfile(0));
@@ -83,6 +85,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
 // to the default theme.
 IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
                        E2E_ENABLED(CustomThenSyncDefault)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupClients());
 
   SetCustomTheme(GetProfile(0));
@@ -105,6 +108,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
 // Most other tests have significant coverage of model association.  This test
 // is intended to test steady-state scenarios.
 IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, E2E_ENABLED(CycleOptions)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   // Wait until sync settles before we override the theme below.
   AwaitQuiescence();

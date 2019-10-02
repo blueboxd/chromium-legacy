@@ -106,13 +106,35 @@ interface ThreatReporter {
   GetThreatDOMDetails() => (array<ThreatDOMDetailsNode> nodes);
 };
 
+// Enum representing possible outcomes of the renderer-side classification.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum PhishingDetectorResult {
+  // The feature collection succeeded.
+  SUCCESS = 0,
+
+  // The classifier either did not exist, or was not ready.
+  CLASSIFIER_NOT_READY = 1,
+
+  // Another classification was requesting, cancelling this one.
+  CANCELLED = 2,
+
+  // The last recorded transition was a forward/back in history. Since the
+  // classifier previously ran on this URL, it did not run again.
+  FORWARD_BACK_TRANSITION = 3,
+
+  // The classifier returned an invalid score.
+  INVALID_SCORE = 4,
+};
+
 [EnableIf=full_safe_browsing]
 interface PhishingDetector {
   // Tells the renderer to begin phishing detection for the given toplevel URL
-  // which it has started loading. Returns the serialized request proto. If
-  // the URL is phishing the request proto will have |is_phishing()| set to
-  // true.
-  StartPhishingDetection(url.mojom.Url url) => (string request_proto);
+  // which it has started loading. Returns the serialized request proto and a
+  // |result| enum to indicate failure. If the URL is phishing the request proto
+  // will have |is_phishing()| set to true.
+  StartPhishingDetection(url.mojom.Url url)
+    => (PhishingDetectorResult result, string request_proto);
 };
 
 interface PhishingModelSetter {

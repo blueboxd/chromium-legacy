@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/payments/fido_authentication_strike_database.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -177,6 +178,17 @@ void CreditCardFIDOAuthenticator::SyncUserOptIn(
                                                   is_user_opted_in);
 }
 
+FidoAuthenticationStrikeDatabase*
+CreditCardFIDOAuthenticator::GetOrCreateFidoAuthenticationStrikeDatabase() {
+  if (!fido_authentication_strike_database_) {
+    fido_authentication_strike_database_ =
+        std::make_unique<FidoAuthenticationStrikeDatabase>(
+            FidoAuthenticationStrikeDatabase(
+                autofill_client_->GetStrikeDatabase()));
+  }
+  return fido_authentication_strike_database_.get();
+}
+
 void CreditCardFIDOAuthenticator::GetAssertion(
     PublicKeyCredentialRequestOptionsPtr request_options) {
   if (!authenticator_.is_bound()) {
@@ -260,6 +272,15 @@ void CreditCardFIDOAuthenticator::OnDidGetAssertion(
     // Report failure to |requester_| if card unmasking was requested.
     if (current_flow_ == AUTHENTICATION_FLOW)
       requester_->OnFIDOAuthenticationComplete(/*did_succeed=*/false);
+
+    // Treat failure to perform user verification as a strong signal not to
+    // offer opt-in in the future.
+    if (current_flow_ == OPT_IN_WITH_CHALLENGE_FLOW) {
+      GetOrCreateFidoAuthenticationStrikeDatabase()->AddStrikes(
+          FidoAuthenticationStrikeDatabase::
+              kStrikesToAddWhenUserVerificationFailsOnOptInAttempt);
+    }
+
     current_flow_ = NONE_FLOW;
     return;
   }
@@ -288,6 +309,14 @@ void CreditCardFIDOAuthenticator::OnDidMakeCredential(
     MakeCredentialAuthenticatorResponsePtr attestation_response) {
   // End the flow if there was an authentication error.
   if (status != AuthenticatorStatus::SUCCESS) {
+    // Treat failure to perform user verification as a strong signal not to
+    // offer opt-in in the future.
+    if (current_flow_ == OPT_IN_WITH_CHALLENGE_FLOW) {
+      GetOrCreateFidoAuthenticationStrikeDatabase()->AddStrikes(
+          FidoAuthenticationStrikeDatabase::
+              kStrikesToAddWhenUserVerificationFailsOnOptInAttempt);
+    }
+
     current_flow_ = NONE_FLOW;
     return;
   }
@@ -340,6 +369,8 @@ void CreditCardFIDOAuthenticator::OnWebauthnOfferDialogUserResponse(
     payments_client_->CancelRequest();
     card_authorization_token_ = std::string();
     current_flow_ = NONE_FLOW;
+    GetOrCreateFidoAuthenticationStrikeDatabase()->AddStrikes(
+        FidoAuthenticationStrikeDatabase::kStrikesToAddWhenOptInOfferDeclined);
   }
 }
 

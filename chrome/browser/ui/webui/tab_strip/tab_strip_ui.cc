@@ -13,7 +13,11 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
+#include "chrome/browser/ui/webui/theme_handler.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/tab_strip_resources.h"
 #include "chrome/grit/tab_strip_resources_map.h"
@@ -23,6 +27,8 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "third_party/skia/include/core/SkImageEncoder.h"
 #include "third_party/skia/include/core/SkStream.h"
+#include "ui/base/theme_provider.h"
+#include "ui/gfx/color_utils.h"
 
 namespace {
 
@@ -62,6 +68,9 @@ class TabStripUIHandler : public content::WebUIMessageHandler {
  protected:
   void RegisterMessages() override {
     web_ui()->RegisterMessageCallback(
+        "getThemeColors", base::Bind(&TabStripUIHandler::HandleGetThemeColors,
+                                     base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
         "addTrackedTab",
         base::Bind(&TabStripUIHandler::AddTrackedTab, base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
@@ -70,6 +79,33 @@ class TabStripUIHandler : public content::WebUIMessageHandler {
   }
 
  private:
+  void HandleGetThemeColors(const base::ListValue* args) {
+    AllowJavascript();
+    const base::Value& callback_id = args->GetList()[0];
+
+    const ui::ThemeProvider& tp =
+        ThemeService::GetThemeProviderForProfile(profile_);
+
+    // This should return an object of CSS variables to rgba values so that
+    // the WebUI can use the CSS variables to color the tab strip
+    base::DictionaryValue colors;
+    colors.SetString("--tabstrip-background-color",
+                     color_utils::SkColorToRgbaString(
+                         tp.GetColor(ThemeProperties::COLOR_FRAME)));
+    colors.SetString("--tabstrip-tab-background-color",
+                     color_utils::SkColorToRgbaString(
+                         tp.GetColor(ThemeProperties::COLOR_TOOLBAR)));
+    colors.SetString("--tabstrip-tab-text-color",
+                     color_utils::SkColorToRgbaString(
+                         tp.GetColor(ThemeProperties::COLOR_TAB_TEXT)));
+    colors.SetString("--tabstrip-tab-separator-color",
+                     color_utils::SkColorToRgbaString(SkColorSetA(
+                         tp.GetColor(ThemeProperties::COLOR_TAB_TEXT),
+                         /* 16% opacity */ 0.16 * 255)));
+
+    ResolveJavascriptCallback(callback_id, colors);
+  }
+
   void AddTrackedTab(const base::ListValue* args) {
     AllowJavascript();
 
@@ -154,12 +190,21 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
 
   html_source->SetDefaultResource(IDR_TAB_STRIP_HTML);
 
+  // Add a load time string for the frame color to allow the tab strip to paint
+  // a background color that matches the frame before any content loads
+  const ui::ThemeProvider& tp =
+      ThemeService::GetThemeProviderForProfile(profile);
+  html_source->AddString("frameColor",
+                         color_utils::SkColorToRgbaString(
+                             tp.GetColor(ThemeProperties::COLOR_FRAME)));
+
   content::WebUIDataSource::Add(profile, html_source);
 
   content::URLDataSource::Add(
       profile, std::make_unique<FaviconSource>(
                    profile, chrome::FaviconUrlFormat::kFavicon2));
 
+  web_ui->AddMessageHandler(std::make_unique<ThemeHandler>());
   web_ui->AddMessageHandler(std::make_unique<TabStripUIHandler>(profile));
 }
 

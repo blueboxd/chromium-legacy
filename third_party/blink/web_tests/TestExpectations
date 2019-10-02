@@ -2420,7 +2420,6 @@ crbug.com/626703 [ Linux ] external/wpt/css/css-text/word-break/word-break-norma
 crbug.com/626703 [ Win ] external/wpt/css/css-text/word-break/word-break-normal-lo-000.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/word-break/word-break-normal-tdd-000.html [ Failure ]
 
-crbug.com/972992 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-001.html [ Failure ]
 crbug.com/972992 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-003.html [ Failure ]
 crbug.com/1008029 [ Mac ] external/wpt/css/css-text/white-space/pre-wrap-018.html [ Failure ]
 crbug.com/1008029 external/wpt/css/css-text/white-space/pre-wrap-019.html [ Failure ]
@@ -3600,7 +3599,6 @@ crbug.com/626703 external/wpt/css/css-values/vh-support-atviewport.html [ Failur
 crbug.com/626703 external/wpt/css/CSS2/text/white-space-nowrap-attribute-001.xht [ Failure ]
 
 crbug.com/626703 external/wpt/css/css-text/white-space/pre-wrap-012.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/pre-wrap-014.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/vert-block-size-small-or-larger-than-container-with-min-or-max-content-2b.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/pre-wrap-013.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/white-space-intrinsic-size-003.html [ Failure ]
@@ -4529,7 +4527,7 @@ crbug.com/702837 fast/text/aat-morx.html [ Skip ]
 
 crbug.com/688670 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cue-rendering-after-controls-removed.html [ Pass Failure ]
 
-crbug.com/849670 http/tests/devtools/service-workers/service-worker-v8-cache.js [ Pass Timeout ]
+crbug.com/849670 http/tests/devtools/service-workers/service-worker-v8-cache.js [ Pass Timeout Failure ]
 
 crbug.com/664858 virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Skip ]
@@ -6205,7 +6203,7 @@ crbug.com/1008257 external/wpt/service-workers/service-worker/claim-shared-worke
 crbug.com/1008257 external/wpt/service-workers/service-worker/worker-interception-redirect.https.html [ Pass Crash ]
 
 # Sheriff 2019-09-27
-crbug.com/1008826 [ Mac10.13 ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Pass Failure ]
+crbug.com/1008826 [ Mac10.13 ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Pass Failure Timeout ]
 
 # Sheriff 2019-09-30
 crbug.com/1009016 [ Win10 ] http/tests/devtools/portals/portals-elements-nesting-after-adoption.js [ Pass Failure ]
@@ -6218,4 +6216,5 @@ crbug.com/1010032 [ Win7 ] fast/text/fallback-traits-fixup.html [ Failure ]
 crbug.com/1010032 [ Win7 ] fast/text/international/bold-bengali.html [ Failure ]
 crbug.com/1010032 [ Win7 ] fast/text/selection/khmer-selection.html [ Failure ]
 crbug.com/1010032 [ Win7 ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
+crbug.com/1010170 [ Mac ] media/video-played-reset.html [ Failure ]
 

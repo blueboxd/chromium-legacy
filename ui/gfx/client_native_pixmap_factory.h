@@ -26,7 +26,8 @@ class GFX_EXPORT ClientNativePixmapFactory {
   virtual ~ClientNativePixmapFactory() {}
 
   // Import the native pixmap from |handle| to be used in non-GPU processes.
-  // This function takes ownership of any file descriptors in |handle|.
+  // Implementations must verify that the buffer in |handle| fits an image of
+  // the specified |size| and |format|. Otherwise nullptr is returned.
   virtual std::unique_ptr<ClientNativePixmap> ImportFromHandle(
       gfx::NativePixmapHandle handle,
       const gfx::Size& size,

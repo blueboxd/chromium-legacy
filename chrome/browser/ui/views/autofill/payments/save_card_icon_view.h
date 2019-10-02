@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_SAVE_CARD_ICON_VIEW_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_loading_indicator_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 
 class CommandUpdater;
@@ -29,10 +28,6 @@ class SaveCardIconView : public PageActionIconView {
   bool Update() override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 
-  PageActionIconLoadingIndicatorView* loading_indicator_for_testing() {
-    return loading_indicator_;
-  }
-
  protected:
   // PageActionIconView:
   void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
@@ -44,10 +39,6 @@ class SaveCardIconView : public PageActionIconView {
 
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
-
-  // The loading indicator. Its animation will be triggered when upload save is
-  // in progress.
-  PageActionIconLoadingIndicatorView* loading_indicator_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardIconView);
 };

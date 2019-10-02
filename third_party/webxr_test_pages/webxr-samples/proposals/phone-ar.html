@@ -57,6 +57,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       import {Renderer, createWebGLContext} from '../js/cottontail/src/core/renderer.js';
       import {Gltf2Node} from '../js/cottontail/src/nodes/gltf2.js';
       import {QueryArgs} from '../js/cottontail/src/util/query-args.js';
+      import {Node} from '../js/cottontail/src/core/node.js';
+      import {RayNode} from '../js/cottontail/src/nodes/ray-node.js';
       import {FallbackHelper} from '../js/cottontail/src/util/fallback-helper.js';
 
       // If requested, initialize the WebXR polyfill
@@ -64,9 +66,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         var polyfill = new WebXRPolyfill();
       }
 
+      // Debug constants.
+      const visualiseOrigin = false;
+      const visualiseFloorSpace = false;
+
       // XR globals.
       let xrButton = null;
       let xrRefSpace = null;
+      let xrFloorSpace = null;
 
       // WebGL scene globals.
       let gl = null;
@@ -77,6 +84,33 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // move around the planets more easily.
       solarSystem.scale = [0.1, 0.1, 0.1];
       scene.addNode(solarSystem);
+
+      // Visualise the origin.
+      if(visualiseOrigin) {
+        let xRay = new RayNode({direction : [5, 0, 0], baseColor : [1, 0, 0, 1]});
+        let yRay = new RayNode({direction : [0, 5, 0], baseColor : [0, 1, 0, 1]});
+        let zRay = new RayNode({direction : [0, 0, 5], baseColor : [0, 0, 1, 1]});
+
+        scene.addNode(xRay);
+        scene.addNode(yRay);
+        scene.addNode(zRay);
+      }
+
+      // Visualise the floor space.
+      let floorSpaceNode = new Node();
+      floorSpaceNode.visible = false;
+
+      if(visualiseFloorSpace) {
+        let xRay = new RayNode({direction : [5, 0, 0], baseColor : [1, 0, 0, 1]});
+        let yRay = new RayNode({direction : [0, 5, 0], baseColor : [0, 1, 0, 1]});
+        let zRay = new RayNode({direction : [0, 0, 5], baseColor : [0, 0, 1, 1]});
+
+        floorSpaceNode.addNode(xRay);
+        floorSpaceNode.addNode(yRay);
+        floorSpaceNode.addNode(zRay);
+      }
+
+      scene.addNode(floorSpaceNode);
 
       // No skybox is added to this scene, and we're not clearing the background to
       // black because we want the real world to show through.
@@ -100,7 +134,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         // Test the new XRSessionInit dictionary by asking for a nonexistent
         // optional feature. This should be silently ignored.
-        let options = {optionalFeatures: ['unicorns-and-rainbows']};
+        let options = {
+          requiredFeatures: ['local-floor'],
+          optionalFeatures: ['unicorns-and-rainbows'],
+        };
 
         // Even though this is a non-immersive session, the fact that it's
         // using environment integration means it must be requested in a user
@@ -130,8 +167,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
         session.requestReferenceSpace('local').then((refSpace) => {
-          xrRefSpace = refSpace;
-          session.requestAnimationFrame(onXRFrame);
+          session.requestReferenceSpace('local-floor').then((floorSpace) => {
+            xrRefSpace = refSpace;
+            xrFloorSpace = floorSpace;
+
+            session.requestAnimationFrame(onXRFrame);
+          });
         });
       }
 
@@ -147,6 +188,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       function onXRFrame(t, frame) {
         let session = frame.session;
         let pose = frame.getViewerPose(xrRefSpace);
+
+        let floorSpacePose = xrFloorSpace ? frame.getPose(xrFloorSpace, xrRefSpace) : null;
+
+        if(floorSpacePose && visualiseFloorSpace) {
+          floorSpaceNode.matrix = floorSpacePose.transform.matrix;
+          floorSpaceNode.visible = true;
+        } else {
+          floorSpaceNode.visible = false;
+        }
 
         scene.startFrame();
 

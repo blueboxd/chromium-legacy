@@ -22,10 +22,6 @@ class SingleThreadTaskRunner;
 struct UserMetricsAction;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace content {
 
 class ServiceManagerConnection;
@@ -62,14 +58,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Sender {
   // Returns the ServiceManagerConnection for the thread (from which a
   // service_manager::Connector can be obtained).
   virtual ServiceManagerConnection* GetServiceManagerConnection() = 0;
-
-  // Returns a connector that can be used to bind interfaces exposed by other
-  // services.
-  //
-  // DEPRECATED: Do not introduce new calls to |GetConnector()|. To bind
-  // browser process receivers scoped to this child process, use
-  // |BindHostReceiver()| below.
-  virtual service_manager::Connector* GetConnector() = 0;
 
   // Asks the browser-side process host object to bind |receiver|. Whether or
   // not the interface type encapsulated by |receiver| is supported depends on

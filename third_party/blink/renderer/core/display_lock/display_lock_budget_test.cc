@@ -44,6 +44,18 @@ class DisplayLockBudgetTest : public RenderingTest,
     context->update_budget_ = std::move(budget);
   }
 
+  void LockElement(Element& element, bool update_lifecycle = true) {
+    element.setAttribute(html_names::kRendersubtreeAttr, "invisible");
+    if (update_lifecycle)
+      UpdateAllLifecyclePhasesForTest();
+  }
+
+  void CommitElement(Element& element, bool update_lifecycle = true) {
+    element.setAttribute(html_names::kRendersubtreeAttr, "");
+    if (update_lifecycle)
+      UpdateAllLifecyclePhasesForTest();
+  }
+
  protected:
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
 
@@ -65,11 +77,7 @@ TEST_F(DisplayLockBudgetTest, UnyieldingBudget) {
   )HTML");
 
   auto* element = GetDocument().getElementById("container");
-  {
-    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
-    ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->acquire(script_state, nullptr);
-  }
+  LockElement(*element, false);
 
   ASSERT_TRUE(element->GetDisplayLockContext());
   UnyieldingDisplayLockBudget budget(element->GetDisplayLockContext());
@@ -112,11 +120,7 @@ TEST_F(DisplayLockBudgetTest, StrictYieldingBudget) {
   )HTML");
 
   auto* element = GetDocument().getElementById("container");
-  {
-    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
-    ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->acquire(script_state, nullptr);
-  }
+  LockElement(*element, false);
 
   ASSERT_TRUE(element->GetDisplayLockContext());
   StrictYieldingDisplayLockBudget budget(element->GetDisplayLockContext());
@@ -287,11 +291,7 @@ TEST_F(DisplayLockBudgetTest,
   )HTML");
 
   auto* element = GetDocument().getElementById("container");
-  {
-    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
-    ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->acquire(script_state, nullptr);
-  }
+  LockElement(*element, false);
 
   ASSERT_TRUE(element->GetDisplayLockContext());
   StrictYieldingDisplayLockBudget budget(element->GetDisplayLockContext());
@@ -334,11 +334,7 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
   )HTML");
 
   auto* element = GetDocument().getElementById("container");
-  {
-    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
-    ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->acquire(script_state, nullptr);
-  }
+  LockElement(*element, false);
 
   ASSERT_TRUE(element->GetDisplayLockContext());
   YieldingDisplayLockBudget budget(element->GetDisplayLockContext());
@@ -468,12 +464,7 @@ TEST_F(DisplayLockBudgetTest, YieldingBudgetMarksNextPhase) {
   )HTML");
 
   auto* element = GetDocument().getElementById("container");
-  {
-    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
-    ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->acquire(script_state, nullptr);
-  }
-  UpdateAllLifecyclePhasesForTest();
+  LockElement(*element);
 
   ASSERT_TRUE(element->GetDisplayLockContext());
   ASSERT_TRUE(element->GetDisplayLockContext()->IsLocked());
@@ -485,7 +476,7 @@ TEST_F(DisplayLockBudgetTest, YieldingBudgetMarksNextPhase) {
   {
     auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
     ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->UpdateRendering(script_state);
+    element->GetDisplayLockContext()->UpdateRendering(script_state);
     ResetBudget(std::move(budget_owned), element->GetDisplayLockContext());
   }
 
@@ -563,12 +554,7 @@ TEST_F(DisplayLockBudgetTest, UpdateHappensInLifecycleOnly) {
   )HTML");
 
   auto* element = GetDocument().getElementById("container");
-  {
-    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
-    ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->acquire(script_state, nullptr);
-  }
-  UpdateAllLifecyclePhasesForTest();
+  LockElement(*element);
 
   ASSERT_TRUE(element->GetDisplayLockContext());
   ASSERT_TRUE(element->GetDisplayLockContext()->IsLocked());
@@ -579,7 +565,7 @@ TEST_F(DisplayLockBudgetTest, UpdateHappensInLifecycleOnly) {
   {
     auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
     ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->UpdateRendering(script_state);
+    element->GetDisplayLockContext()->UpdateRendering(script_state);
     ResetBudget(std::move(budget_owned), element->GetDisplayLockContext());
   }
 

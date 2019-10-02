@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_TEST_WEB_APP_INSTALL_OBSERVER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
@@ -26,7 +27,9 @@ class WebAppInstallObserver final : public AppRegistrarObserver {
  private:
   base::RunLoop run_loop_;
   AppId app_id_;
-  ScopedObserver<AppRegistrar, WebAppInstallObserver> observer_{this};
+  ScopedObserver<AppRegistrar, AppRegistrarObserver> observer_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(WebAppInstallObserver);
 };
 
 }  // namespace web_app

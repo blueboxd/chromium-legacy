@@ -31,11 +31,12 @@ class ASH_EXPORT EventRewriterControllerImpl : public EventRewriterController,
   ~EventRewriterControllerImpl() override;
 
   // EventRewriterController:
+  void Initialize(ui::EventRewriterChromeOS::Delegate* event_rewriter_delegate,
+                  ash::SpokenFeedbackEventRewriterDelegate*
+                      spoken_feedback_event_rewriter_delegate) override;
   void AddEventRewriter(std::unique_ptr<ui::EventRewriter> rewriter) override;
   void SetKeyboardDrivenEventRewriterEnabled(bool enabled) override;
   void SetArrowToTabRewritingEnabled(bool enabled) override;
-  void SetSpokenFeedbackEventRewriterDelegate(
-      SpokenFeedbackEventRewriterDelegate* delegate) override;
   void OnUnhandledSpokenFeedbackEvent(
       std::unique_ptr<ui::Event> event) override;
   void CaptureAllKeysForSpokenFeedback(bool capture) override;
@@ -49,10 +50,10 @@ class ASH_EXPORT EventRewriterControllerImpl : public EventRewriterController,
   std::vector<std::unique_ptr<ui::EventRewriter>> rewriters_;
 
   // A weak pointer to the KeyboardDrivenEventRewriter owned in |rewriters_|.
-  KeyboardDrivenEventRewriter* keyboard_driven_event_rewriter_;
+  KeyboardDrivenEventRewriter* keyboard_driven_event_rewriter_ = nullptr;
 
   // A weak pointer to the SpokenFeedbackEventRewriter owned in |rewriters_|.
-  SpokenFeedbackEventRewriter* spoken_feedback_event_rewriter_;
+  SpokenFeedbackEventRewriter* spoken_feedback_event_rewriter_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(EventRewriterControllerImpl);
 };

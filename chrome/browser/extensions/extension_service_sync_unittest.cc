@@ -1952,23 +1952,14 @@ class MockPermissionRequestCreator : public PermissionRequestCreator {
     FAIL();
   }
 
-  void CreateExtensionInstallRequest(
-      const std::string& id,
-      SupervisedUserService::SuccessCallback callback) override {
-    CreateExtensionInstallRequestInternal(id);
-  }
-
   void CreateExtensionUpdateRequest(
       const std::string& id,
       SupervisedUserService::SuccessCallback callback) override {
     CreateExtensionUpdateRequestInternal(id);
   }
 
-  // TODO(crbug.com/729950): These two mock methods can be set to direct calls
-  // once gtest supports move-only objects, since SuccessCallback is move only.
-  MOCK_METHOD1(CreateExtensionInstallRequestInternal,
-               void(const std::string& id));
-
+  // TODO(crbug.com/729950): This mock method can be set to direct calls once
+  // gtest supports move-only objects, since SuccessCallback is move only.
   MOCK_METHOD1(CreateExtensionUpdateRequestInternal,
                void(const std::string& id));
 
@@ -2111,19 +2102,11 @@ TEST_F(ExtensionServiceTestSupervised,
   // Make sure it's enabled.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
 
-  MockPermissionRequestCreator* creator = new MockPermissionRequestCreator;
-  supervised_user_service()->AddPermissionRequestCreator(
-      base::WrapUnique(creator));
   const std::string version("1.0.0.0");
-
-  EXPECT_CALL(*creator, CreateExtensionInstallRequestInternal(
-                            RequestId(good_crx, version)));
 
   // Now make the profile supervised.
   profile()->AsTestingProfile()->SetSupervisedUserId(
       supervised_users::kChildAccountSUID);
-
-  Mock::VerifyAndClearExpectations(creator);
 
   // The extension should not be enabled anymore.
   CheckDisabledForCustodianApproval(id);
@@ -2144,15 +2127,7 @@ TEST_F(ExtensionServiceTestSupervised,
   // Make sure it's enabled.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
 
-  MockPermissionRequestCreator* creator = new MockPermissionRequestCreator;
-  supervised_user_service()->AddPermissionRequestCreator(
-      base::WrapUnique(creator));
   const std::string version("1.0.0.0");
-
-  // No request should be sent because supervised user initiated installs
-  // are disabled.
-  EXPECT_CALL(*creator, CreateExtensionInstallRequestInternal(testing::_))
-      .Times(0);
 
   // Now make the profile supervised.
   profile()->AsTestingProfile()->SetSupervisedUserId(
@@ -2171,10 +2146,6 @@ TEST_F(ExtensionServiceTestSupervised, ExtensionApprovalBeforeInstallation) {
 
   InitServices(true /* profile_is_supervised */);
 
-  MockPermissionRequestCreator* creator = new MockPermissionRequestCreator;
-  supervised_user_service()->AddPermissionRequestCreator(
-      base::WrapUnique(creator));
-
   std::string id = good_crx;
   std::string version("1.0.0.0");
 
@@ -2183,10 +2154,6 @@ TEST_F(ExtensionServiceTestSupervised, ExtensionApprovalBeforeInstallation) {
   // Now install an extension.
   base::FilePath path = data_dir().AppendASCII("good.crx");
   InstallCRX(path, INSTALL_NEW);
-
-  // No approval request should be sent.
-  EXPECT_CALL(*creator, CreateExtensionInstallRequestInternal(testing::_))
-      .Times(0);
 
   // Make sure it's enabled.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
@@ -2350,22 +2317,14 @@ TEST_F(ExtensionServiceTestSupervised, SupervisedUserInitiatedInstalls) {
 
   InitServices(true /* profile_is_supervised */);
 
-  MockPermissionRequestCreator* creator = new MockPermissionRequestCreator;
-  supervised_user_service()->AddPermissionRequestCreator(
-      base::WrapUnique(creator));
-
   base::FilePath path = data_dir().AppendASCII("good.crx");
   std::string version("1.0.0.0");
-
-  EXPECT_CALL(*creator, CreateExtensionInstallRequestInternal(
-                            RequestId(good_crx, version)));
 
   // Should be installed but disabled, a request for approval should be sent.
   const Extension* extension = InstallCRX(path, INSTALL_WITHOUT_LOAD);
   ASSERT_TRUE(extension);
   ASSERT_EQ(extension->id(), good_crx);
   EXPECT_TRUE(registry()->disabled_extensions().Contains(good_crx));
-  Mock::VerifyAndClearExpectations(creator);
   EXPECT_TRUE(IsPendingCustodianApproval(extension->id()));
 
   SimulateCustodianApprovalChangeViaSync(good_crx, version,

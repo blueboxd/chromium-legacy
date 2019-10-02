@@ -41,6 +41,7 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "base/macros.h"
@@ -75,9 +76,14 @@ constexpr int kInitialItems = 34;
 
 // The total height of search box and suggestion chips views, including the
 // vertical margin between them.
-constexpr int kSearchBoxAndSuggestionChipsHeight =
+constexpr int kSearchBoxAndSuggestionChipsHeightDefault =
     48 /* search box height */ +
-    24 /* margin between search box and suggestion chips */ +
+    16 /* margin between search box and suggestion chips */ +
+    32 /* suggestion chips container height */;
+
+constexpr int kSearchBoxAndSuggestionChipsHeightDense =
+    40 /* search box height */ +
+    16 /* margin between search box and suggestion chips */ +
     32 /* suggestion chips container height */;
 
 // The app list grid vertical inset - the height of the view fadeout area.
@@ -300,8 +306,13 @@ class AppListViewTest : public views::ViewsTestBase,
     const int kExpectedGridWidth =
         container_size.width() - 2 * expected_horizontal_margin;
 
+    const int search_box_and_suggestion_chip_height =
+        container_size.height() < 600 + ShelfHeight()
+            ? kSearchBoxAndSuggestionChipsHeightDense
+            : kSearchBoxAndSuggestionChipsHeightDefault;
+
     const int kExpectedGridTop = expected_vertical_margin +
-                                 kSearchBoxAndSuggestionChipsHeight +
+                                 search_box_and_suggestion_chip_height +
                                  kGridVerticalMargin;
     const int kExpectedGridHeight =
         container_size.height() - kExpectedGridTop -
@@ -2175,6 +2186,9 @@ TEST_F(AppListViewTest, AppsGridViewExpandHintingOnReopening) {
 // Tests that going into a folder view, then setting the AppListState to PEEKING
 // hides the folder view.
 TEST_F(AppListViewTest, FolderViewToPeeking) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+                                       {});
   Initialize(false /*is_tablet_mode*/);
   AppListTestModel* model = delegate_->GetTestModel();
   model->PopulateApps(kInitialItems);
@@ -2729,7 +2743,8 @@ TEST_F(AppListViewTest, ExpandArrowNotVisibleInEmbeddedAssistantUI) {
 // in landscape layout.
 TEST_F(AppListViewTest, AppListViewLayoutForSmallLandscapeScreen) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
+                                        ash::features::kEnableBackgroundBlur},
                                        {});
 
   const gfx::Size window_size = gfx::Size(800, 600);
@@ -2753,7 +2768,8 @@ TEST_F(AppListViewTest, AppListViewLayoutForSmallLandscapeScreen) {
 // in portrait layout.
 TEST_F(AppListViewTest, AppListViewLayoutForSmallPortraitScreen) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
+                                        ash::features::kEnableBackgroundBlur},
                                        {});
 
   const gfx::Size window_size = gfx::Size(500, 800);
@@ -2777,7 +2793,8 @@ TEST_F(AppListViewTest, AppListViewLayoutForSmallPortraitScreen) {
 // (width < 1200) in lanscape layout.
 TEST_F(AppListViewTest, AppListViewLayoutForMediumLandscapeScreen) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
+                                        ash::features::kEnableBackgroundBlur},
                                        {});
 
   const gfx::Size window_size = gfx::Size(960, 800);
@@ -2804,7 +2821,8 @@ TEST_F(AppListViewTest, AppListViewLayoutForMediumLandscapeScreen) {
 // (width < 768) in portrait layout.
 TEST_F(AppListViewTest, AppListViewLayoutForMediumPortraitScreen) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
+                                        ash::features::kEnableBackgroundBlur},
                                        {});
 
   const gfx::Size window_size = gfx::Size(700, 800);
@@ -2828,7 +2846,8 @@ TEST_F(AppListViewTest, AppListViewLayoutForMediumPortraitScreen) {
 // (width >= 1200) in landscape layout.
 TEST_F(AppListViewTest, AppListViewLayoutForLargeLandscapeScreen) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
+                                        ash::features::kEnableBackgroundBlur},
                                        {});
 
   const gfx::Size window_size = gfx::Size(1200, 960);
@@ -2855,7 +2874,8 @@ TEST_F(AppListViewTest, AppListViewLayoutForLargeLandscapeScreen) {
 // in portrait layout.
 TEST_F(AppListViewTest, AppListViewLayoutForLargePortraitScreen) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
+                                        ash::features::kEnableBackgroundBlur},
                                        {});
 
   const gfx::Size window_size = gfx::Size(800, 1200);
@@ -2879,7 +2899,8 @@ TEST_F(AppListViewTest, AppListViewLayoutForLargePortraitScreen) {
 // switcher view can fit next to the apps grid.
 TEST_F(AppListViewTest, EnsurePageSwitcherFitsAppsGridMargin) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
+                                        ash::features::kEnableBackgroundBlur},
                                        {});
 
   const gfx::Size window_size = gfx::Size(600, 800);
@@ -2907,7 +2928,8 @@ TEST_F(AppListViewTest, EnsurePageSwitcherFitsAppsGridMargin) {
 // spacing hits that limit.
 TEST_F(AppListViewTest, VerticalAppsGridItemSpacingIsBounded) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
+                                        ash::features::kEnableBackgroundBlur},
                                        {});
 
   const gfx::Size window_size = gfx::Size(960, 1600);
@@ -2924,7 +2946,7 @@ TEST_F(AppListViewTest, VerticalAppsGridItemSpacingIsBounded) {
       (window_size.width() - GetItemGridSizeWithMaxItemMargins(120, 4)) / 2;
   const int expected_vertical_margin =
       (window_size.height() - ShelfHeight() - kGridVerticalInset -
-       kSearchBoxAndSuggestionChipsHeight - kGridVerticalMargin -
+       kSearchBoxAndSuggestionChipsHeightDefault - kGridVerticalMargin -
        GetItemGridSizeWithMaxItemMargins(120, 5)) /
       2;
   VerifyAppsContainerLayout(window_size, 4 /*column_count*/, 5 /*row_count*/,
@@ -2937,7 +2959,8 @@ TEST_F(AppListViewTest, VerticalAppsGridItemSpacingIsBounded) {
 // apps grid fadeout area.
 TEST_F(AppListViewTest, VerticalAppsContainerMarginFitFadeoutArea) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList,
+                                        ash::features::kEnableBackgroundBlur},
                                        {});
 
   const gfx::Size window_size = gfx::Size(650, 500);
@@ -2952,7 +2975,7 @@ TEST_F(AppListViewTest, VerticalAppsContainerMarginFitFadeoutArea) {
   VerifyAppsContainerLayout(
       window_size, 5 /*column_count*/, 4 /*row_count*/,
       window_size.width() / 16 /*expected_horizontal_margin*/,
-      kGridVerticalInset /*expected_vertical_margin*/,
+      kGridVerticalInset + kGridVerticalMargin /*expected_vertical_margin*/,
       80 /*expected_item_size*/);
 }
 

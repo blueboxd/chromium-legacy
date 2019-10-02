@@ -43,6 +43,7 @@ PaintedScrollbarLayerImpl::PaintedScrollbarLayerImpl(
       thumb_ui_resource_id_(0),
       thumb_opacity_(1.f),
       internal_contents_scale_(1.f),
+      supports_drag_snap_back_(false),
       thumb_thickness_(0),
       thumb_length_(0),
       track_start_(0),
@@ -68,6 +69,7 @@ void PaintedScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->set_internal_contents_scale_and_bounds(
       internal_contents_scale_, internal_content_bounds_);
 
+  scrollbar_layer->SetSupportsDragSnapBack(supports_drag_snap_back_);
   scrollbar_layer->SetThumbThickness(thumb_thickness_);
   scrollbar_layer->SetThumbLength(thumb_length_);
   scrollbar_layer->SetTrackStart(track_start_);
@@ -159,6 +161,18 @@ gfx::Rect PaintedScrollbarLayerImpl::GetEnclosingRectInTargetSpace() const {
     return gfx::Rect();
   DCHECK_GT(internal_contents_scale_, 0.f);
   return GetScaledEnclosingRectInTargetSpace(internal_contents_scale_);
+}
+
+void PaintedScrollbarLayerImpl::SetSupportsDragSnapBack(
+    bool supports_drag_snap_back) {
+  if (supports_drag_snap_back_ == supports_drag_snap_back)
+    return;
+  supports_drag_snap_back_ = supports_drag_snap_back;
+  NoteLayerPropertyChanged();
+}
+
+bool PaintedScrollbarLayerImpl::SupportsDragSnapBack() const {
+  return supports_drag_snap_back_;
 }
 
 void PaintedScrollbarLayerImpl::SetThumbThickness(int thumb_thickness) {

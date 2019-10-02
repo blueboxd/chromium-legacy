@@ -132,10 +132,10 @@ void OptimizationGuideKeyedService::Initialize(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(optimization_guide_service);
 
-  top_host_provider_ = GetTopHostProviderIfUserPermitted(browser_context_);
   Profile* profile = Profile::FromBrowserContext(browser_context_);
+  top_host_provider_ = GetTopHostProviderIfUserPermitted(browser_context_);
   hints_manager_ = std::make_unique<OptimizationGuideHintsManager>(
-      optimization_guide_service, profile_path, profile->GetPrefs(),
+      optimization_guide_service, profile, profile_path, profile->GetPrefs(),
       database_provider, top_host_provider_.get(),
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess());

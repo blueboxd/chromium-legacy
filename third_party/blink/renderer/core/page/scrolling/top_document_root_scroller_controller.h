@@ -35,10 +35,6 @@ class CORE_EXPORT TopDocumentRootScrollerController
 
   void Trace(blink::Visitor*);
 
-  // This class needs to be informed of changes to compositing so that it can
-  // update the compositor when the effective root scroller changes.
-  void DidUpdateCompositing(const LocalFrameView&);
-
   // PaintLayerScrollableAreas need to notify this class when they're being
   // disposed so that we can remove them as the root scroller.
   void DidDisposeScrollableArea(ScrollableArea&);

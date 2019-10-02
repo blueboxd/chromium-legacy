@@ -834,7 +834,7 @@ class ViewFocusTracker : public FocusTracker, public views::ViewObserver {
   void OnViewBlurred(views::View* observed_view) override { OnBlurred(); }
 
  private:
-  ScopedObserver<views::View, ViewFocusTracker> scoped_observer_{this};
+  ScopedObserver<views::View, views::ViewObserver> scoped_observer_{this};
 };
 
 }  // namespace

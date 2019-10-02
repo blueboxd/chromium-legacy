@@ -18,6 +18,7 @@ blink_perf.parser,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromi
 blink_perf.shadow_dom,hayato@chromium.org,Blink>DOM>ShadowDOM,https://bit.ly/blink-perf-benchmarks,
 blink_perf.svg,"kouhei@chromium.org, fs@opera.com",Blink>SVG,https://bit.ly/blink-perf-benchmarks,
 components_perftests,csharrison@chromium.org,,,
+dawn_perf_tests,"enga@chromium.org, chrome-gpu-perf-owners@chromium.org",Internals>GPU>Dawn,https://dawn.googlesource.com/dawn/+/HEAD/src/tests/perf_tests/README.md,
 dromaeo,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",Blink>Bindings,,
 dummy_benchmark.noisy_benchmark_1,crouleau@chromium.org,Speed>Telemetry,,
 dummy_benchmark.stable_benchmark_1,crouleau@chromium.org,Speed>Telemetry,,

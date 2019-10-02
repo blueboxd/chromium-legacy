@@ -18,10 +18,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/browser/ssl/tls_deprecation_config.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/secure_origin_whitelist.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/security_state/content/content_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -37,6 +42,7 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 #if defined(OS_CHROMEOS)
@@ -64,6 +70,47 @@ void RecordSecurityLevel(
   }
 }
 
+// Writes the SSL protocol version represented by a string to |version|, if the
+// version string is recognized.
+void SSLProtocolVersionFromString(const std::string& version_str,
+                                  net::SSLVersion* version) {
+  if (version_str == switches::kSSLVersionTLSv1) {
+    *version = net::SSLVersion::SSL_CONNECTION_VERSION_TLS1;
+  } else if (version_str == switches::kSSLVersionTLSv11) {
+    *version = net::SSLVersion::SSL_CONNECTION_VERSION_TLS1_1;
+  } else if (version_str == switches::kSSLVersionTLSv12) {
+    *version = net::SSLVersion::SSL_CONNECTION_VERSION_TLS1_2;
+  } else if (version_str == switches::kSSLVersionTLSv13) {
+    *version = net::SSLVersion::SSL_CONNECTION_VERSION_TLS1_3;
+  }
+  return;
+}
+
+bool IsLegacyTLS(GURL url, int connection_status) {
+  if (!url.SchemeIsCryptographic())
+    return false;
+
+  // Mark the connection as legacy TLS if it is under the minimum version. By
+  // default we treat TLS < 1.2 as Legacy, unless the "SSLVersionMin" policy is
+  // set.
+  std::string ssl_version_min_str = switches::kSSLVersionTLSv12;
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state && local_state->HasPrefPath(prefs::kSSLVersionMin)) {
+    ssl_version_min_str = local_state->GetString(prefs::kSSLVersionMin);
+  }
+
+  // Convert the pref string to an SSLVersion, if it is valid. Otherwise use the
+  // default of TLS1_2.
+  net::SSLVersion ssl_version_min =
+      net::SSLVersion::SSL_CONNECTION_VERSION_TLS1_2;
+  SSLProtocolVersionFromString(ssl_version_min_str, &ssl_version_min);
+
+  net::SSLVersion ssl_version =
+      net::SSLConnectionStatusToVersion(connection_status);
+
+  return ssl_version < ssl_version_min;
+}
+
 }  // namespace
 
 using password_manager::metrics_util::PasswordType;
@@ -84,6 +131,15 @@ security_state::SecurityLevel SecurityStateTabHelper::GetSecurityLevel() const {
 std::unique_ptr<security_state::VisibleSecurityState>
 SecurityStateTabHelper::GetVisibleSecurityState() const {
   auto state = security_state::GetVisibleSecurityState(web_contents());
+
+  if (state->connection_info_initialized) {
+    state->connection_used_legacy_tls =
+        IsLegacyTLS(state->url, state->connection_status);
+    if (state->connection_used_legacy_tls) {
+      state->is_legacy_tls_control_site =
+          IsTLSDeprecationConfigControlSite(state->url);
+    }
+  }
 
   // Malware status might already be known even if connection security
   // information is still being initialized, thus no need to check for that.

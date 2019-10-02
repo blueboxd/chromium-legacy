@@ -71,7 +71,7 @@ void SharedWorkerServiceImpl::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void SharedWorkerServiceImpl::RemoveObserver(const Observer* observer) {
+void SharedWorkerServiceImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 

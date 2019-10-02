@@ -28,6 +28,20 @@ Per-Milestone Binary Size Breakdowns:
  * Forces a `Binary-Size:` footer to be present for commits that are larger than
    16KiB (autorollers exempted).
 
+## Binary Size Gerrit Plugin
+
+ * Currently in development, should hopefully be launched soon.
+ * This bot surfaces the info from the binary size trybot on the cl view page
+   itself.
+ * Surfacing binary size impact for a change allows authors and reviewers
+   to easily assess whether or not it makes sense for the change.
+ * Shows you only the binary size metrics your patchset affects.
+ * Links to SuperSize html and text output for more details on which symbols
+   were changed.
+ * For tips on reducing binary size, see [Debugging Apk Size Increase][debugging-apk-size-increase].
+
+[debugging-apk-size-increase]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/speed/apk_size_regressions.md#debugging-apk-size-increase
+
 ## resource_sizes.py
 
  * [//build/android/resource_sizes.py](https://cs.chromium.org/chromium/src/build/android/resource_sizes.py)

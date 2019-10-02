@@ -152,6 +152,14 @@ SecurityLevel GetSecurityLevel(
     return kRanInsecureContentLevel;
   }
 
+  // Downgrade the security level for pages loaded over legacy TLS versions.
+  if (base::FeatureList::IsEnabled(
+          security_state::features::kLegacyTLSWarnings) &&
+      visible_security_state.connection_used_legacy_tls &&
+      !visible_security_state.is_legacy_tls_control_site) {
+    return WARNING;
+  }
+
   // In most cases, SHA1 use is treated as a certificate error, in which case
   // DANGEROUS will have been returned above. If SHA1 was permitted by policy,
   // downgrade the security level to Neutral.
@@ -218,7 +226,8 @@ VisibleSecurityState::VisibleSecurityState()
       pkp_bypassed(false),
       is_error_page(false),
       is_view_source(false),
-      is_devtools(false) {}
+      is_devtools(false),
+      connection_used_legacy_tls(false) {}
 
 VisibleSecurityState::~VisibleSecurityState() {}
 

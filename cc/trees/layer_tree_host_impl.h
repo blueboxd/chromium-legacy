@@ -574,12 +574,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   virtual void ActivateSyncTree();
 
   // Shortcuts to layers/nodes on the active tree.
-  LayerImpl* PageScaleLayer() const;
-  LayerImpl* InnerViewportContainerLayer() const;
-  LayerImpl* InnerViewportScrollLayer() const;
   ScrollNode* InnerViewportScrollNode() const;
-  LayerImpl* OuterViewportContainerLayer() const;
-  LayerImpl* OuterViewportScrollLayer() const;
   ScrollNode* OuterViewportScrollNode() const;
   ScrollNode* CurrentlyScrollingNode();
   const ScrollNode* CurrentlyScrollingNode() const;
@@ -773,7 +768,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // of these -- we call that the "main" scroll node. When scrolling it, we
   // scroll using the Viewport class which knows how to distribute scroll
   // between the two.
-  LayerImpl* ViewportMainScrollLayer();
   ScrollNode* ViewportMainScrollNode();
 
   void QueueImageDecode(int request_id, const PaintImage& image);

@@ -39,11 +39,10 @@ public class TasksSurfaceCoordinator implements TasksSurface {
                     activity, mView.getTabSwitcherContainer());
         }
 
-        mMediator = new TasksSurfaceMediator(
-                activity, propertyModel, isTabCarousel, activity.getOverviewModeBehavior());
+        mMediator = new TasksSurfaceMediator(activity, propertyModel, isTabCarousel);
 
         LinearLayout mvTilesLayout = mView.findViewById(R.id.mv_tiles_layout);
-        mMostVisitedList = new MostVisitedListCoordinator(activity, mvTilesLayout);
+        mMostVisitedList = new MostVisitedListCoordinator(activity, mvTilesLayout, propertyModel);
     }
 
     /** TasksSurface implementation. */
@@ -65,11 +64,5 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     @Override
     public ViewGroup getContainerView() {
         return mView;
-    }
-
-    @Override
-    public void destroy() {
-        mMediator.destroy();
-        mMostVisitedList.destroy();
     }
 }

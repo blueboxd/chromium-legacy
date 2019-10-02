@@ -196,7 +196,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void DidNavigate() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
   bool CanSynchronizeVisualProperties() override;
-  void CancelActiveTouches() override;
+  std::vector<std::unique_ptr<ui::TouchEvent>> ExtractAndCancelActiveTouches()
+      override;
+  void TransferTouches(
+      const std::vector<std::unique_ptr<ui::TouchEvent>>& touches) override;
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
@@ -570,6 +573,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Called to process a display metrics change.
   void ProcessDisplayMetricsChanged();
+
+  void CancelActiveTouches();
 
   // NOTE: this is null if |is_mus_browser_plugin_guest_| is true.
   aura::Window* window_;

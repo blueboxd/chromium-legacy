@@ -3349,9 +3349,11 @@ chrome.i18n.getAcceptLanguages = function(callback) {};
 /**
  * @param {string} messageName
  * @param {(string|Array<string>)=} opt_args
+ * @param {{escapeLt: boolean}=} opt_options
  * @return {string}
+ * @see https://developer.chrome.com/extensions/i18n#method-getMessage
  */
-chrome.i18n.getMessage = function(messageName, opt_args) {};
+chrome.i18n.getMessage = function(messageName, opt_args, opt_options) {};
 
 
 /**
@@ -6867,6 +6869,61 @@ chrome.system.display.onDisplayChanged;
 
 /**
  * @const
+ * @see https://developer.chrome.com/apps/system_powerSource
+ */
+chrome.system.powerSource = {};
+
+/**
+ * @enum {string}
+ */
+chrome.system.powerSource.PowerSourceType = {
+  UNKNOWN: '',
+  MAINS: '',
+  USB: '',
+};
+
+/**
+ * PowerSourceInfo
+ * @constructor
+ */
+chrome.system.powerSource.PowerSourceInfo = function() {};
+
+/** @type {!chrome.system.powerSource.PowerSourceType} */
+chrome.system.powerSource.PowerSourceInfo.prototype.type;
+
+/** @type {number|undefined} */
+chrome.system.powerSource.PowerSourceInfo.prototype.maxPower;
+
+/** @type {boolean} */
+chrome.system.powerSource.PowerSourceInfo.prototype.active;
+
+/**
+ * Requests information on attached power sources.
+ *
+ * @param {function(!Array<!chrome.system.powerSource.PowerSourceType>):void}
+ *     callback The callback to invoke with the results or undefined if the
+ *     power source information is not known.
+ */
+chrome.system.powerSource.getPowerSourceInfo = function(callback) {};
+
+/**
+ * Requests a power source status update. Resulting power source
+ * status updates are observable using onPowerChanged.
+ */
+chrome.system.powerSource.requestStatusUpdate = function() {};
+
+/**
+ * Event for changes in the set of connected power sources.
+ *
+ * It takes an additional, optional `extraInfoSpec` argument, which we ignore.
+ * @type {!ChromeBaseEvent<function(string,
+ *     !chrome.system.powerSource.PowerSourceInfo): (boolean|undefined)>}
+ */
+chrome.system.powerSource.onPowerChanged;
+
+
+/**
+ * @const
  */
 chrome.types = {};
 
@@ -7689,16 +7746,35 @@ ChromeKeyboardEvent.prototype.capsLock;
  * @see https://developer.chrome.com/extensions/input.ime.html#type-InputContext
  * @constructor
  */
-function InputContext() {}
+chrome.input.ime.InputContext = function() {};
 
 
 /** @type {number} */
-InputContext.prototype.contextID;
+chrome.input.ime.InputContext.prototype.contextID;
 
 
 /** @type {string} */
-InputContext.prototype.type;
+chrome.input.ime.InputContext.prototype.type;
 
+
+/** @type {boolean} */
+chrome.input.ime.InputContext.prototype.autoCorrect;
+
+
+/** @type {boolean} */
+chrome.input.ime.InputContext.prototype.autoComplete;
+
+
+/** @type {string} */
+chrome.input.ime.InputContext.prototype.autoCapitalize;
+
+
+/** @type {boolean} */
+chrome.input.ime.InputContext.prototype.spellCheck;
+
+
+/** @type {boolean} */
+chrome.input.ime.InputContext.prototype.shouldDoLearning;
 
 
 /**
@@ -9780,450 +9856,6 @@ chrome.mediaGalleriesPrivate.GalleryChangeEvent = function() {};
 
 
 /**
- * Externs for networking_private.idl:
- * https://code.google.com/p/chromium/codesearch#chromium/src/extensions/common/api/networking_private.idl
- * WARNING(2015/04/09): This API is still under active development and has a few
- * issues with typing:
- *
- * 1. This API uses the ONC specification:
- *    http://www.chromium.org/chromium-os/chromiumos-design-docs/open-network-configuration
- * 2. The types for getProperties and getManagedProperties are not currently
- *    defined. They correspond to ONC Property dictionaries. They are treated as
- *    Objects rather than types.
- * 3. NetworkStateProperties defines a subset of NetworkProperties used by
- *    getState and getNetworks. Since these match ONC property names they
- *    use ONC PascalCase naming conventions instead of traditional JS
- *    camelCase naming.
- * 4. The types for setProperties and createNetwork are not currently defined.
- *    These use a subset of ONC properties and the complete set (and their
- *    relationship to the type for getProperties) is still being determined.
- *
- * Because of the above issues, this API should not be used as an example for
- * other APIs. Please contact stevenjb@ for questions on and maintenance.
- * @const
- * @see https://developer.chrome.com/extensions/networkingPrivate
- */
-chrome.networkingPrivate = {};
-
-
-/**
- * @constructor
- * @struct
- * @see https://developer.chrome.com/extensions/networkingPrivate#type-CellularStateProperties
- */
-chrome.networkingPrivate.CellularStateProperties = function() {};
-
-
-/**
- * @type {string|undefined}
- */
-chrome.networkingPrivate.CellularStateProperties.prototype.ActivationState;
-
-
-/**
- * @type {string|undefined}
- */
-chrome.networkingPrivate.CellularStateProperties.prototype.NetworkTechnology;
-
-
-/**
- * @type {string|undefined}
- */
-chrome.networkingPrivate.CellularStateProperties.prototype.RoamingState;
-
-
-/**
- * @type {number|undefined}
- */
-chrome.networkingPrivate.CellularStateProperties.prototype.SignalStrength;
-
-
-/**
- * @constructor
- * @struct
- * @see https://developer.chrome.com/extensions/networkingPrivate#type-DeviceStateProperties
- */
-chrome.networkingPrivate.DeviceStateProperties = function() {};
-
-
-/**
- * @type {boolean|undefined}
- */
-chrome.networkingPrivate.DeviceStateProperties.prototype.Scanning;
-
-
-/**
- * @type {string}
- */
-chrome.networkingPrivate.DeviceStateProperties.prototype.State;
-
-
-/**
- * @type {string}
- */
-chrome.networkingPrivate.DeviceStateProperties.prototype.Type;
-
-
-/**
- * @constructor
- * @struct
- * @see https://developer.chrome.com/extensions/networkingPrivate#type-EthernetStateProperties
- */
-chrome.networkingPrivate.EthernetStateProperties = function() {};
-
-
-/**
- * @type {string}
- */
-chrome.networkingPrivate.EthernetStateProperties.prototype.Authentication;
-
-
-/**
- * @constructor
- * @struct
- * @see https://developer.chrome.com/extensions/networkingPrivate#type-IPSecProperties
- */
-chrome.networkingPrivate.IPSecProperties = function() {};
-
-
-/**
- * @type {string}
- */
-chrome.networkingPrivate.IPSecProperties.prototype.AuthenticationType;
-
-
-/**
- * @constructor
- * @struct
- * @see https://developer.chrome.com/extensions/networkingPrivate#type-ThirdPartyVPNProperties
- */
-chrome.networkingPrivate.ThirdPartyVPNProperties = function() {};
-
-
-/**
- * @type {string}
- */
-chrome.networkingPrivate.ThirdPartyVPNProperties.prototype.ExtensionID;
-
-
-/**
- * @constructor
- * @struct
- * @see https://developer.chrome.com/extensions/networkingPrivate#type-VPNStateProperties
- */
-chrome.networkingPrivate.VPNStateProperties = function() {};
-
-
-/**
- * @type {!chrome.networkingPrivate.IPSecProperties|undefined}
- */
-chrome.networkingPrivate.VPNStateProperties.prototype.IPSec;
-
-
-/**
- * @type {!chrome.networkingPrivate.ThirdPartyVPNProperties|undefined}
- */
-chrome.networkingPrivate.VPNStateProperties.prototype.ThirdPartyVPN;
-
-
-/**
- * @type {string}
- */
-chrome.networkingPrivate.VPNStateProperties.prototype.Type;
-
-
-/**
- * @constructor
- * @struct
- * @see https://developer.chrome.com/extensions/networkingPrivate#type-WiFiStateProperties
- */
-chrome.networkingPrivate.WiFiStateProperties = function() {};
-
-
-/**
- * @type {string}
- */
-chrome.networkingPrivate.WiFiStateProperties.prototype.Security;
-
-
-/**
- * @type {number|undefined}
- */
-chrome.networkingPrivate.WiFiStateProperties.prototype.SignalStrength;
-
-
-/**
- * @constructor
- * @struct
- * @see https://developer.chrome.com/extensions/networkingPrivate#type-WiFiStateProperties
- */
-chrome.networkingPrivate.WiMAXStateProperties = function() {};
-
-
-/**
- * @type {number|undefined}
- */
-chrome.networkingPrivate.WiMAXStateProperties.prototype.SignalStrength;
-
-
-/**
- * @typedef {?{
- *   Cellular: (!chrome.networkingPrivate.CellularStateProperties|undefined),
- *   Connectable: (boolean|undefined),
- *   ConnectionState: (string|undefined),
- *   ErrorState: (string|undefined),
- *   Ethernet: (!chrome.networkingPrivate.EthernetStateProperties|undefined),
- *   GUID: string,
- *   Name: (string|undefined),
- *   Priority: (number|undefined),
- *   Source: (string|undefined),
- *   Type: string,
- *   VPN: (!chrome.networkingPrivate.VPNStateProperties|undefined),
- *   WiFi: (!chrome.networkingPrivate.WiFiStateProperties|undefined),
- *   WiMAX: (!chrome.networkingPrivate.WiMAXStateProperties|undefined)
- * }}
- */
-chrome.networkingPrivate.NetworkStateProperties;
-
-
-/**
- * @typedef {?{
- *   certificate: string,
- *   intermediateCertificates: (!Array<string>|undefined),
- *   publicKey: string,
- *   nonce: string,
- *   signedData: string,
- *   deviceSerial: string,
- *   deviceSsid: string,
- *   deviceBssid: string
- * }}
- */
-chrome.networkingPrivate.VerificationProperties;
-
-
-/**
- * @typedef {?{
- *   networkType: string,
- *   visible: (boolean|undefined),
- *   configured: (boolean|undefined),
- *   limit: (number|undefined)
- * }}
- */
-chrome.networkingPrivate.NetworkFilter;
-
-
-/**
- * @param {string} guid
- * @param {function(!Object)} callback
- * @return {undefined}
- */
-chrome.networkingPrivate.getProperties = function(guid, callback) {};
-
-
-/**
- * @param {string} guid
- * @param {function(!Object)} callback
- * @return {undefined}
- */
-chrome.networkingPrivate.getManagedProperties = function(guid, callback) {};
-
-
-/**
- * @param {string} guid
- * @param {function(!chrome.networkingPrivate.NetworkStateProperties)} callback
- * @return {undefined}
- */
-chrome.networkingPrivate.getState = function(guid, callback) {};
-
-
-/**
- * TODO: Use NetworkConfigProperties for |properties| once fully
- * defined.
- * @param {string} guid
- * @param {!Object} properties
- * @param {function()=} opt_callback
- * @return {undefined}
- */
-chrome.networkingPrivate.setProperties = function(
-    guid, properties, opt_callback) {};
-
-
-/**
- * TODO: Use NetworkConfigProperties for |properties| once fully
- * defined.
- * @param {boolean} shared
- * @param {!Object} properties
- * @param {function(string)=} opt_callback Returns guid of the configured
- *     configuration.
- * @return {undefined}
- */
-chrome.networkingPrivate.createNetwork = function(
-    shared, properties, opt_callback) {};
-
-
-/**
- * @param {string} guid
- * @param {function()=} opt_callback Called when the operation has completed.
- * @return {undefined}
- */
-chrome.networkingPrivate.forgetNetwork = function(guid, opt_callback) {};
-
-
-/**
- * @param {!chrome.networkingPrivate.NetworkFilter} filter
- * @param {function(!Array<!chrome.networkingPrivate.NetworkStateProperties>)}
- *     callback
- * @return {undefined}
- */
-chrome.networkingPrivate.getNetworks = function(filter, callback) {};
-
-
-/**
- * @param {string} type
- * @param {function(!Array<!chrome.networkingPrivate.NetworkStateProperties>)}
- *      callback
- * @deprecated Use chrome.networkingPrivate.getNetworks with filter.visible=true
- * @return {undefined}
- */
-chrome.networkingPrivate.getVisibleNetworks = function(type, callback) {};
-
-
-/**
- * @param {function(!Array<string>)} callback
- * @deprecated Use chrome.networkingPrivate.getDeviceStates.
- * @return {undefined}
- */
-chrome.networkingPrivate.getEnabledNetworkTypes = function(callback) {};
-
-
-/**
- * @param {function(!Array<!chrome.networkingPrivate.DeviceStateProperties>)}
- *     callback
- * @return {undefined}
- */
-chrome.networkingPrivate.getDeviceStates = function(callback) {};
-
-
-/**
- * @param {string} networkType
- * @return {undefined}
- */
-chrome.networkingPrivate.enableNetworkType = function(networkType) {};
-
-
-/**
- * @param {string} networkType
- * @return {undefined}
- */
-chrome.networkingPrivate.disableNetworkType = function(networkType) {};
-
-
-/**
- * Requests that the networking subsystem scan for new networks and update the
- * list returned by getVisibleNetworks.
- * @return {undefined}
- */
-chrome.networkingPrivate.requestNetworkScan = function() {};
-
-
-/**
- * @param {string} guid
- * @param {function()=} opt_callback
- * @return {undefined}
- */
-chrome.networkingPrivate.startConnect = function(guid, opt_callback) {};
-
-
-/**
- * @param {string} guid
- * @param {function()=} opt_callback
- * @return {undefined}
- */
-chrome.networkingPrivate.startDisconnect = function(guid, opt_callback) {};
-
-
-/**
- * @param {string} guid
- * @param {(string|function())=} opt_carrierOrCallback
- * @param {function()=} opt_callback
- * @return {undefined}
- */
-chrome.networkingPrivate.startActivate = function(
-    guid, opt_carrierOrCallback, opt_callback) {};
-
-
-/**
- * @param {!chrome.networkingPrivate.VerificationProperties} verificationInfo
- * @param {function(boolean)} callback
- * @return {undefined}
- */
-chrome.networkingPrivate.verifyDestination = function(
-    verificationInfo, callback) {};
-
-
-/**
- * @param {!chrome.networkingPrivate.VerificationProperties} verificationInfo
- * @param {string} guid
- * @param {function(string)} callback
- * @return {undefined}
- */
-chrome.networkingPrivate.verifyAndEncryptCredentials = function(
-    verificationInfo, guid, callback) {};
-
-
-/**
- * @param {!chrome.networkingPrivate.VerificationProperties} verificationInfo
- * @param {string} data
- * @param {function(string)} callback
- * @return {undefined}
- */
-chrome.networkingPrivate.verifyAndEncryptData = function(
-    verificationInfo, data, callback) {};
-
-
-/**
- * @param {string} ipOrMacAddress
- * @param {boolean} enabled
- * @param {function(string)=} opt_callback
- * @return {undefined}
- */
-chrome.networkingPrivate.setWifiTDLSEnabledState = function(
-    ipOrMacAddress, enabled, opt_callback) {};
-
-
-/**
- * @param {string} ipOrMacAddress
- * @param {function(string)} callback
- * @return {undefined}
- */
-chrome.networkingPrivate.getWifiTDLSStatus = function(
-    ipOrMacAddress, callback) {};
-
-
-/**
- * @param {string} guid
- * @param {function(string)} callback
- * @return {undefined}
- */
-chrome.networkingPrivate.getCaptivePortalStatus = function(guid, callback) {};
-
-
-/** @type {!ChromeStringArrayEvent} */
-chrome.networkingPrivate.onNetworksChanged;
-
-
-/** @type {!ChromeStringArrayEvent} */
-chrome.networkingPrivate.onNetworkListChanged;
-
-
-/** @type {!ChromeEvent} */
-chrome.networkingPrivate.onDeviceStateListChanged;
-
-
-/** @type {!ChromeStringStringEvent} */
-chrome.networkingPrivate.onPortalDetectionCompleted;
-
-/**
  * safeBrowsingPrivate is a Private API for observing events and retrieving a
  * referrer chain.
  * @see https://cs.chromium.org/chromium/src/chrome/common/extensions/api/safe_browsing_private.idl
@@ -10754,9 +10386,9 @@ chrome.bluetoothPrivate.onPairing;
 
 /**
  * @param {string} deviceAddress
- * @param {function(number, string): void=} opt_callback
+ * @param {function(): void=} callback
  */
-chrome.bluetoothPrivate.pair = function(deviceAddress, opt_callback) {};
+chrome.bluetoothPrivate.pair = function(deviceAddress, callback) {};
 
 
 /**
@@ -10848,6 +10480,88 @@ chrome.inlineInstallPrivate = {};
  * @return {undefined}
  */
 chrome.inlineInstallPrivate.install = function(id, opt_callback) {};
+
+
+/**
+ * @see https://cs.chromium.org/chromium/src/chrome/common/extensions/api/input_method_private.json
+ */
+chrome.inputMethodPrivate = {};
+
+
+/**
+ * @enum {string}
+ */
+chrome.inputMethodPrivate.InputContextType = {
+  TEXT: '',
+  SEARCH: '',
+  TEL: '',
+  URL: '',
+  EMAIL: '',
+  NUMBER: '',
+  PASSWORD: '',
+};
+
+
+/**
+ * @enum {string}
+ */
+chrome.inputMethodPrivate.AutoCapitalizeType = {
+  OFF: '',
+  CHARACTERS: '',
+  WORDS: '',
+  SENTENCES: '',
+};
+
+
+/**
+ * @enum {string}
+ */
+chrome.inputMethodPrivate.FocusReason = {
+  MOUSE: '',
+  TOUCH: '',
+  PEN: '',
+  OTHER: '',
+};
+
+
+/** @constructor */
+chrome.inputMethodPrivate.InputContext = function() {};
+
+
+/** @type {number} */
+chrome.inputMethodPrivate.InputContext.prototype.contextID;
+
+
+/** @type {chrome.inputMethodPrivate.InputContextType} */
+chrome.inputMethodPrivate.InputContext.prototype.type;
+
+
+/** @type {boolean} */
+chrome.inputMethodPrivate.InputContext.prototype.autoCorrect;
+
+
+/** @type {boolean} */
+chrome.inputMethodPrivate.InputContext.prototype.autoComplete;
+
+
+/** @type {chrome.inputMethodPrivate.AutoCapitalizeType} */
+chrome.inputMethodPrivate.InputContext.prototype.autoCapitalize;
+
+
+/** @type {boolean} */
+chrome.inputMethodPrivate.InputContext.prototype.spellCheck;
+
+
+/** @type {boolean} */
+chrome.inputMethodPrivate.InputContext.prototype.shouldDoLearning;
+
+
+/** @type {chrome.inputMethodPrivate.FocusReason} */
+chrome.inputMethodPrivate.InputContext.prototype.focusReason;
+
+
+/** @type {boolean} */
+chrome.inputMethodPrivate.InputContext.prototype.hasBeenPassword;
 
 
 /**

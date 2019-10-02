@@ -36,10 +36,12 @@
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/wm_event.h"
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -90,6 +92,29 @@ constexpr SkColor kCloseButtonInkDropRippleColor =
     SkColorSetA(kCloseButtonColor, 0x0F);
 constexpr SkColor kCloseButtonInkDropRippleHighlightColor =
     SkColorSetA(kCloseButtonColor, 0x14);
+
+// A self-deleting animation observer that runs the given callback when its
+// associated animation completes.
+class AnimationObserver : public ui::ImplicitAnimationObserver {
+ public:
+  explicit AnimationObserver(base::OnceClosure on_animation_finished)
+      : on_animation_finished_(std::move(on_animation_finished)) {
+    DCHECK(!on_animation_finished_.is_null());
+  }
+
+  ~AnimationObserver() override = default;
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override {
+    std::move(on_animation_finished_).Run();
+    delete this;
+  }
+
+ private:
+  base::OnceClosure on_animation_finished_;
+
+  DISALLOW_COPY_AND_ASSIGN(AnimationObserver);
+};
 
 OverviewAnimationType GetExitOverviewAnimationTypeForMinimizedWindow(
     OverviewSession::EnterExitOverviewType type,
@@ -204,7 +229,8 @@ OverviewItem::OverviewItem(aura::Window* window,
     : root_window_(window->GetRootWindow()),
       transform_window_(this, window),
       overview_session_(overview_session),
-      overview_grid_(overview_grid) {
+      overview_grid_(overview_grid),
+      weak_ptr_factory_(this) {
   CreateWindowLabel();
   for (auto* window_iter : WindowTransientDescendantIteratorRange(
            WindowTransientDescendantIterator(window))) {
@@ -390,18 +416,25 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
     // as it contains a mirror view of the window in its contents. The header
     // will be faded in later to match non minimized windows.
     if (is_first_update) {
-      if (should_animate_when_entering_) {
-        FadeInWidgetAndMaybeSlideOnEnter(
-            item_widget_.get(), OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
-            /*slide=*/false, /*observe=*/true);
-      } else {
+      if (!should_animate_when_entering_) {
         item_widget_->GetNativeWindow()->layer()->SetOpacity(1.f);
+      } else {
+        if (new_animation_type ==
+            OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW) {
+          PerformItemAddedAnimation(item_widget_->GetNativeWindow(),
+                                    gfx::Transform{});
+        } else {
+          FadeInWidgetAndMaybeSlideOnEnter(
+              item_widget_.get(),
+              OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
+              /*slide=*/false, /*observe=*/true);
+        }
       }
     }
   } else {
     // SetItemBounds is called before UpdateHeaderLayout so the header can
     // properly use the updated windows bounds.
-    SetItemBounds(inset_bounds, new_animation_type);
+    SetItemBounds(inset_bounds, new_animation_type, is_first_update);
     UpdateHeaderLayout(is_first_update ? OVERVIEW_ANIMATION_NONE
                                        : new_animation_type);
   }
@@ -458,8 +491,11 @@ void OverviewItem::AnimateAndCloseWindow(bool up) {
     gfx::Transform original_transform = window->transform();
     original_transform.ConcatTransform(transform);
     window->SetTransform(original_transform);
-    if (observe)
-      settings.AddObserver(this);
+    if (observe) {
+      settings.AddObserver(new AnimationObserver{
+          base::BindOnce(&OverviewItem::OnWindowCloseAnimationCompleted,
+                         weak_ptr_factory_.GetWeakPtr())});
+    }
   };
 
   AnimateOpacity(0.0, OVERVIEW_ANIMATION_CLOSE_OVERVIEW_ITEM);
@@ -992,10 +1028,6 @@ void OverviewItem::OnPostWindowStateTypeChange(WindowState* window_state,
   overview_grid_->PositionWindows(/*animate=*/false);
 }
 
-void OverviewItem::OnImplicitAnimationsCompleted() {
-  transform_window_.Close();
-}
-
 views::ImageButton* OverviewItem::GetCloseButtonForTesting() {
   return static_cast<views::ImageButton*>(close_button_);
 }
@@ -1015,8 +1047,58 @@ gfx::Rect OverviewItem::GetShadowBoundsForTesting() {
   return shadow_->content_bounds();
 }
 
+void OverviewItem::OnWindowCloseAnimationCompleted() {
+  transform_window_.Close();
+}
+
+void OverviewItem::OnItemAddedAnimationCompleted() {
+  UpdateRoundedCornersAndShadow();
+  OnDragAnimationCompleted();
+  OnStartingAnimationComplete();
+}
+
+void OverviewItem::PerformItemAddedAnimation(
+    aura::Window* window,
+    const gfx::Transform& target_transform) {
+  constexpr float kInitialScaler = 0.1f;
+  constexpr float kTargetScaler = 1.0f;
+
+  // Scale-up |window| and fade it in along with the |cannot_snap_widget_|'s
+  // window.
+  gfx::Transform initial_transform = target_transform;
+  initial_transform.Scale(kInitialScaler, kInitialScaler);
+  SetTransform(window, initial_transform);
+  transform_window_.SetOpacity(kInitialScaler);
+
+  ScopedOverviewTransformWindow::ScopedAnimationSettings animation_settings;
+  for (auto* window_iter : GetVisibleTransientTreeIterator(window)) {
+    auto settings = std::make_unique<ScopedOverviewAnimationSettings>(
+        OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW, window_iter);
+    settings->DeferPaint();
+    animation_settings.push_back(std::move(settings));
+  }
+
+  if (!animation_settings.empty()) {
+    animation_settings.front()->AddObserver(new AnimationObserver{
+        base::BindOnce(&OverviewItem::OnItemAddedAnimationCompleted,
+                       weak_ptr_factory_.GetWeakPtr())});
+  }
+  SetTransform(window, target_transform);
+  transform_window_.SetOpacity(kTargetScaler);
+
+  if (cannot_snap_widget_) {
+    aura::Window* cannot_snap_window = cannot_snap_widget_->GetNativeWindow();
+    cannot_snap_window->layer()->SetOpacity(kInitialScaler);
+    ScopedOverviewAnimationSettings label_animation_settings(
+        OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW,
+        cannot_snap_window);
+    cannot_snap_window->layer()->SetOpacity(kTargetScaler);
+  }
+}
+
 void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
-                                 OverviewAnimationType animation_type) {
+                                 OverviewAnimationType animation_type,
+                                 bool is_first_update) {
   aura::Window* window = GetWindow();
   DCHECK(root_window_ == window->GetRootWindow());
   gfx::RectF screen_rect = gfx::RectF(GetTargetBoundsInScreen());
@@ -1040,6 +1122,13 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
 
   gfx::Transform transform = ScopedOverviewTransformWindow::GetTransformForRect(
       screen_rect, overview_item_bounds);
+
+  if (is_first_update &&
+      animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW) {
+    PerformItemAddedAnimation(window, transform);
+    return;
+  }
+
   ScopedOverviewTransformWindow::ScopedAnimationSettings animation_settings;
   transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
   SetTransform(window, transform);

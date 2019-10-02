@@ -6,6 +6,7 @@
 
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -40,11 +41,10 @@ std::string GetFileContentsBlocking(base::FilePath path) {
 }  // namespace
 
 DownloadItemRequest::DownloadItemRequest(download::DownloadItem* item,
+                                         bool read_immediately,
                                          BinaryUploadService::Callback callback)
-    : Request(std::move(callback)),
-      item_(item),
-      weakptr_factory_(this) {
-  item_->AddObserver(this);
+    : Request(std::move(callback)), item_(item), weakptr_factory_(this) {
+  read_immediately ? ReadFile() : item_->AddObserver(this);
 }
 
 DownloadItemRequest::~DownloadItemRequest() {

@@ -60,7 +60,6 @@ struct ElementId;
 class LayerTreeMutator;
 class ScopedDeferMainFrameUpdate;
 class PaintImage;
-struct ViewportLayers;
 }
 
 namespace gfx {
@@ -256,11 +255,6 @@ class WebWidgetClient {
 
   // Find in page zooms a rect in the main-frame renderer.
   virtual void ZoomToFindInPageRectInMainFrame(const blink::WebRect& rect) {}
-
-  // Identify key viewport layers to the compositor. Pass a default-constructed
-  // ViewportLayers to clear them.
-  virtual void RegisterViewportLayers(
-      const cc::ViewportLayers& viewport_layers) {}
 
   // Used to update the active selection bounds. Pass a default-constructed
   // LayerSelection to clear it.

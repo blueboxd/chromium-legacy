@@ -253,6 +253,7 @@ void SharedProtoDatabase::Init(
         // then we skip initializing the metadata DB and initialize the shared
         // DB directly.
         DCHECK(metadata_);
+        init_state_ = InitState::kInProgress;
         outstanding_init_requests_.emplace(std::make_unique<InitRequest>(
             std::move(callback), std::move(callback_task_runner),
             client_db_id));
@@ -419,7 +420,7 @@ void SharedProtoDatabase::OnDatabaseInit(bool create_if_missing,
       init_state_ = InitState::kSuccess;
       break;
     case Enums::InitStatus::kInvalidOperation:
-      DCHECK(!create_if_missing);
+      DCHECK(!create_if_missing_);
       init_state_ = InitState::kNotFound;
       break;
     case Enums::InitStatus::kError:

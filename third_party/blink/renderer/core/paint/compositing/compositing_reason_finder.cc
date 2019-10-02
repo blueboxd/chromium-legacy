@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 
-#include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -129,9 +128,6 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
   if (RequiresCompositingForRootScroller(*layer))
     reasons |= CompositingReason::kRootScroller;
 
-  if (RequiresCompositingForScrollTimeline(*layer))
-    reasons |= CompositingReason::kScrollTimelineTarget;
-
   if (RequiresCompositingForScrollDependentPosition(*layer))
     reasons |= CompositingReason::kScrollDependentPosition;
 
@@ -167,9 +163,6 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
 
   if (RequiresCompositingForRootScroller(layer))
     direct_reasons |= CompositingReason::kRootScroller;
-
-  if (RequiresCompositingForScrollTimeline(layer))
-    direct_reasons |= CompositingReason::kScrollTimelineTarget;
 
   // Composite |layer| if it is inside of an ancestor scrolling layer, but that
   // scrolling layer is not on the stacking context ancestor chain of |layer|.
@@ -251,15 +244,6 @@ bool CompositingReasonFinder::RequiresCompositingForRootScroller(
     return false;
 
   return layer.GetLayoutObject().IsGlobalRootScroller();
-}
-
-bool CompositingReasonFinder::RequiresCompositingForScrollTimeline(
-    const PaintLayer& layer) {
-  // TODO(crbug.com/839341): Remove once we support main-thread AnimationWorklet
-  // and don't need to promote the scroll-source.
-  return layer.GetScrollableArea() && layer.GetLayoutObject().GetNode() &&
-         ScrollTimeline::HasActiveScrollTimeline(
-             layer.GetLayoutObject().GetNode());
 }
 
 bool CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(

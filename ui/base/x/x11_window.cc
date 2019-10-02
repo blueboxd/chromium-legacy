@@ -824,7 +824,7 @@ void XWindow::SetAlwaysOnTop(bool always_on_top) {
   SetWMSpecState(always_on_top, gfx::GetAtom("_NET_WM_STATE_ABOVE"), x11::None);
 }
 
-void XWindow::FlashFrame(bool flash_frame) {
+void XWindow::SetFlashFrameHint(bool flash_frame) {
   if (urgency_hint_set_ == flash_frame)
     return;
 
@@ -897,7 +897,7 @@ void XWindow::AfterActivationStateChanged() {
 
   bool is_active = IsActive();
   if (!was_active_ && is_active)
-    FlashFrame(false);
+    SetFlashFrameHint(false);
 
   if (was_active_ != is_active)
     OnXWindowIsActiveChanged(is_active);

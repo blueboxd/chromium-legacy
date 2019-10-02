@@ -52,6 +52,10 @@ const char kTestSessionLSIDCookie[] = "fake-session-LSID-cookie";
 const char kTestOAuthLoginSID[] = "fake-oauth-SID-cookie";
 const char kTestOAuthLoginLSID[] = "fake-oauth-LSID-cookie";
 const char kTestOAuthLoginAuthCode[] = "fake-oauth-auth-code";
+// Add SameSite=None and Secure because these cookies are needed in a
+// cross-site context.
+const char kTestCookieAttributes[] =
+    "; Path=/; HttpOnly; SameSite=None; Secure";
 
 const char kDefaultGaiaId[] = "12345";
 
@@ -93,11 +97,11 @@ void SetCookies(BasicHttpResponse* http_response,
                 const std::string& sid_cookie,
                 const std::string& lsid_cookie) {
   http_response->AddCustomHeader(
-      "Set-Cookie",
-      base::StringPrintf("SID=%s; Path=/; HttpOnly", sid_cookie.c_str()));
+      "Set-Cookie", base::StringPrintf("SID=%s%s", sid_cookie.c_str(),
+                                       kTestCookieAttributes));
   http_response->AddCustomHeader(
-      "Set-Cookie",
-      base::StringPrintf("LSID=%s; Path=/; HttpOnly", lsid_cookie.c_str()));
+      "Set-Cookie", base::StringPrintf("LSID=%s%s", lsid_cookie.c_str(),
+                                       kTestCookieAttributes));
 }
 
 }  // namespace
@@ -195,9 +199,9 @@ void FakeGaia::AddGoogleAccountsSigninHeader(BasicHttpResponse* http_response,
 
 void FakeGaia::SetOAuthCodeCookie(BasicHttpResponse* http_response) const {
   http_response->AddCustomHeader(
-      "Set-Cookie",
-      base::StringPrintf("oauth_code=%s; Path=/; Secure; HttpOnly;",
-                         merge_session_params_.auth_code.c_str()));
+      "Set-Cookie", base::StringPrintf("oauth_code=%s%s",
+                                       merge_session_params_.auth_code.c_str(),
+                                       kTestCookieAttributes));
 }
 
 void FakeGaia::Initialize() {

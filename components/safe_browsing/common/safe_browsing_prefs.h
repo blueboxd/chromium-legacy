@@ -167,7 +167,6 @@ enum PasswordProtectionTrigger {
 // This must be kept in sync with policy_templates.json.
 enum SendFilesForMalwareCheckValues {
   DO_NOT_SCAN = 0,
-  SEND_FILES_DISABLED = 1,
   SEND_DOWNLOADS = 2,
   SEND_UPLOADS = 3,
   SEND_UPLOADS_AND_DOWNLOADS = 4,

@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"

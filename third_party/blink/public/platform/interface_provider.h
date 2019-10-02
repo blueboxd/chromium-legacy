@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_INTERFACE_PROVIDER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_INTERFACE_PROVIDER_H_
 
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -19,11 +18,6 @@ class BLINK_PLATFORM_EXPORT InterfaceProvider {
  public:
   virtual void GetInterface(const char* name,
                             mojo::ScopedMessagePipeHandle) = 0;
-
-  template <typename Interface>
-  void GetInterface(mojo::InterfaceRequest<Interface> ptr) {
-    GetInterface(Interface::Name_, ptr.PassMessagePipe());
-  }
 
   template <typename Interface>
   void GetInterface(mojo::PendingReceiver<Interface> receiver) {

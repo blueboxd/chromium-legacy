@@ -18,13 +18,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_group_visual_data.h"
-#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tabs/tab_switch_event_latency_recorder.h"
 #include "ui/base/models/list_selection_model.h"
@@ -36,6 +36,7 @@
 
 class Profile;
 class TabStripModelDelegate;
+class TabStripModelObserver;
 
 namespace content {
 class WebContents;
@@ -754,5 +755,11 @@ class TabStripModel {
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(TabStripModel);
 };
+
+// Forbid construction of ScopedObserver with TabStripModel:
+// TabStripModelObserver already implements ScopedObserver's functionality
+// natively.
+template <>
+class ScopedObserver<TabStripModel, TabStripModelObserver> {};
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_H_

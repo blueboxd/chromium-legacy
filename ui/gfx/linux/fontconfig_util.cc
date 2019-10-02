@@ -83,13 +83,6 @@ std::string GetFilename(FcPattern* pattern) {
 
 base::FilePath GetFontPath(FcPattern* pattern) {
   std::string filename = GetFilename(pattern);
-  // Paths may be specified with a heading slash (e.g.
-  // /test_fonts/DejaVuSans.ttf).
-  if (!filename.empty() && base::FilePath::IsSeparator(filename[0]))
-    filename = filename.substr(1);
-
-  if (filename.empty())
-    return base::FilePath();
 
   // Obtains the system root directory in 'config' if available. All files
   // (including file properties in patterns) obtained from this 'config' are
@@ -98,6 +91,15 @@ base::FilePath GetFontPath(FcPattern* pattern) {
       reinterpret_cast<const char*>(FcConfigGetSysRoot(nullptr));
   if (!sysroot)
     return base::FilePath(filename);
+
+  // Paths may be specified with a heading slash (e.g.
+  // /test_fonts/DejaVuSans.ttf).
+  if (!filename.empty() && base::FilePath::IsSeparator(filename[0]))
+    filename = filename.substr(1);
+
+  if (filename.empty())
+    return base::FilePath();
+
   return base::FilePath(sysroot).Append(filename);
 }
 

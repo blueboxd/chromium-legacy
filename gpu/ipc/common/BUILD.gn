@@ -169,6 +169,7 @@ if (is_android) {
       "//ui/gl",
     ]
     visibility = [
+      "//android_webview/browser/gfx",
       "//gpu/*",
       "//media/gpu:gpu",
     ]

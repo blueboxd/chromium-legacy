@@ -2394,13 +2394,6 @@ bool LocalFrameView::RunCompositingLifecyclePhase(
 #endif
   }
 
-  // We may be in kCompositingInputsClean clean, which does not need to notify
-  // the global root scroller controller.
-  if (target_state >= DocumentLifecycle::kCompositingClean) {
-    frame_->GetPage()->GlobalRootScrollerController().DidUpdateCompositing(
-        *this);
-  }
-
   return target_state > DocumentLifecycle::kCompositingClean;
 }
 
@@ -2766,9 +2759,25 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
   PaintArtifactCompositor::ViewportProperties viewport_properties;
   if (GetFrame().IsMainFrame()) {
     const auto& viewport = page->GetVisualViewport();
+    viewport_properties.overscroll_elasticity_transform =
+        viewport.GetOverscrollElasticityTransformNode();
     viewport_properties.page_scale = viewport.GetPageScaleNode();
     viewport_properties.inner_scroll_translation =
         viewport.GetScrollTranslationNode();
+
+    if (const auto* root_scroller =
+            GetPage()->GlobalRootScrollerController().GlobalRootScroller()) {
+      if (const auto* layout_object = root_scroller->GetLayoutObject()) {
+        if (const auto* paint_properties =
+                layout_object->FirstFragment().PaintProperties()) {
+          if (paint_properties->Scroll()) {
+            viewport_properties.outer_clip = paint_properties->OverflowClip();
+            viewport_properties.outer_scroll_translation =
+                paint_properties->ScrollTranslation();
+          }
+        }
+      }
+    }
   }
 
   PaintArtifactCompositor::Settings settings;

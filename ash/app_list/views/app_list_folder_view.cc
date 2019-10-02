@@ -599,22 +599,19 @@ void AppListFolderView::UpdatePreferredBounds() {
                         preferred_bounds_.CenterPoint());
 
   gfx::Rect container_bounds = container_view_->GetContentsBounds();
+  const gfx::Size search_box_size =
+      contents_view_->GetSearchBoxSize(ash::AppListState::kStateApps);
   // Adjust for apps container margins.
   if (app_list_features::IsScalableAppListEnabled()) {
     container_bounds.Inset(container_view_->CalculateMarginsForAvailableBounds(
-        container_bounds,
-        contents_view_->GetSearchBoxSize(ash::AppListState::kStateApps),
-        true /*for_full_container_bounds*/));
+        container_bounds, search_box_size, true /*for_full_container_bounds*/));
   } else {
     container_bounds.Inset(
         0, GetAppListConfig().search_box_fullscreen_top_padding(), 0, 0);
   }
   // Avoid overlap with the search box widget.
-  container_bounds.Inset(8,
-                         search_box::kSearchBoxPreferredHeight +
-                             SearchBoxView::GetFocusRingSpacing(),
-                         8, 0);
-
+  container_bounds.Inset(
+      8, search_box_size.height() + SearchBoxView::GetFocusRingSpacing(), 8, 0);
   preferred_bounds_.AdjustToFit(container_bounds);
 
   // Calculate the folder icon's bounds relative to this view.
@@ -724,15 +721,10 @@ void AppListFolderView::CalculateIdealBounds() {
   // Calculate bounds for page_switcher.
   gfx::Rect page_switcher_frame(rect);
   gfx::Size page_switcher_size = page_switcher_->GetPreferredSize();
+  page_switcher_size.set_height(GetAppListConfig().folder_header_height());
   page_switcher_frame.set_x(page_switcher_frame.right() -
                             page_switcher_size.width());
-  // The page switcher has a different height than the folder header, but it
-  // still needs to be aligned with it.
-  const int y_switcher_position =
-      header_frame.y() - (page_switcher_size.height() -
-                          GetAppListConfig().folder_header_height()) /
-                             2;
-  page_switcher_frame.set_y(y_switcher_position);
+  page_switcher_frame.set_y(header_frame.y());
   page_switcher_frame.set_size(page_switcher_size);
   view_model_->set_ideal_bounds(kIndexPageSwitcher, page_switcher_frame);
 }

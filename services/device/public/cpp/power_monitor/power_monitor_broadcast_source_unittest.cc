@@ -23,7 +23,7 @@ class PowerMonitorBroadcastSourceTest : public testing::Test {
         base::SequencedTaskRunnerHandle::Get());
     power_monitor_source_ptr_ = power_monitor_source.get();
     base::PowerMonitor::Initialize(std::move(power_monitor_source));
-    power_monitor_source_ptr_->Init(nullptr);
+    power_monitor_source_ptr_->Init(mojo::NullRemote());
   }
 
   void TearDown() override {

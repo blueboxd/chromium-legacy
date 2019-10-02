@@ -6,6 +6,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -114,8 +115,7 @@ class NotificationSchedulerTest : public testing::Test {
         base::BindOnce([](base::RepeatingClosure quit_closure,
                           bool needs_reschedule) { quit_closure.Run(); },
                        loop.QuitClosure());
-    scheduler()->OnStartTask(SchedulerTaskTime::kMorning,
-                             std::move(task_finish_callback));
+    scheduler()->OnStartTask(std::move(task_finish_callback));
     loop.Run();
   }
 
@@ -148,7 +148,6 @@ class NotificationSchedulerTest : public testing::Test {
   test::MockBackgroundTaskCoordinator* task_coordinator_;
   test::MockDisplayAgent* display_agent_;
   test::MockDisplayDecider* display_decider_;
-
 
   std::unique_ptr<NotificationScheduler> notification_scheduler_;
   DISALLOW_COPY_AND_ASSIGN(NotificationSchedulerTest);
@@ -263,6 +262,7 @@ TEST_F(NotificationSchedulerTest, OnUserAction) {
   UserActionData action_data(SchedulerClientType::kTest1,
                              UserActionType::kButtonClick, kGuid);
   EXPECT_CALL(*impression_tracker(), OnUserAction(action_data));
+  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _)).Times(1);
   EXPECT_CALL(*client(), OnUserAction(_)).WillOnce(InvokeWithoutArgs([&]() {
     loop.Quit();
   }));
@@ -314,7 +314,7 @@ TEST_F(NotificationSchedulerTest, BackgroundTaskStartShowNotification) {
       .WillOnce(SetArgPointee<2>(result));
 
   EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
-  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _));
+  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _, _));
   EXPECT_CALL(*notification_manager(), DisplayNotification(_, _))
       .WillOnce(
           Invoke([&](const std::string& guid,
@@ -344,7 +344,7 @@ TEST_F(NotificationSchedulerTest, BackgroundTaskStartNoEntry) {
       .WillOnce(SetArgPointee<2>(result));
 
   EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
-  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _)).Times(0);
+  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*display_agent(), ShowNotification(_, _)).Times(0);
   EXPECT_CALL(*client(), BeforeShowNotification(_, _)).Times(0);
   EXPECT_CALL(*notification_manager(), DisplayNotification(_, _))
@@ -371,7 +371,7 @@ TEST_F(NotificationSchedulerTest, BackgroundTaskStartNoClient) {
       .WillOnce(SetArgPointee<2>(result));
 
   EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
-  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _)).Times(0);
+  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*display_agent(), ShowNotification(_, _)).Times(0);
   EXPECT_CALL(*client(), BeforeShowNotification(_, _)).Times(0);
   EXPECT_CALL(*notification_manager(), DisplayNotification(_, _))
@@ -410,7 +410,7 @@ TEST_F(NotificationSchedulerTest, ClientDropNotification) {
           }));
 
   EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
-  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _)).Times(0);
+  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*display_agent(), ShowNotification(_, _)).Times(0);
 
   OnStartTask();
@@ -420,7 +420,7 @@ TEST_F(NotificationSchedulerTest, ClientDropNotification) {
 TEST_F(NotificationSchedulerTest, BackgroundTaskStop) {
   Init();
   EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
-  scheduler()->OnStopTask(SchedulerTaskTime::kMorning);
+  scheduler()->OnStopTask();
 }
 
 }  // namespace

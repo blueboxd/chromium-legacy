@@ -2454,7 +2454,8 @@ TEST_F(WindowEventDispatcherTestInHighDPI, TouchMovesHeldOnScroll) {
 // event, and runs a single callback in the nested run loop.
 class TriggerNestedLoopOnRightMousePress : public ui::test::TestEventHandler {
  public:
-  explicit TriggerNestedLoopOnRightMousePress(const base::Closure& callback)
+  explicit TriggerNestedLoopOnRightMousePress(
+      const base::RepeatingClosure& callback)
       : callback_(callback) {}
   ~TriggerNestedLoopOnRightMousePress() override {}
 
@@ -2477,7 +2478,7 @@ class TriggerNestedLoopOnRightMousePress : public ui::test::TestEventHandler {
     }
   }
 
-  base::Closure callback_;
+  base::RepeatingClosure callback_;
   gfx::Point mouse_move_location_;
 
   DISALLOW_COPY_AND_ASSIGN(TriggerNestedLoopOnRightMousePress);
@@ -2495,7 +2496,7 @@ TEST_F(WindowEventDispatcherTestInHighDPI,
   ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, gfx::Point(80, 80),
                             gfx::Point(80, 80), ui::EventTimeForNow(),
                             ui::EF_NONE, ui::EF_NONE);
-  const base::Closure callback_on_right_click = base::Bind(
+  base::RepeatingClosure callback_on_right_click = base::BindRepeating(
       base::IgnoreResult(&WindowEventDispatcherTestInHighDPI::DispatchEvent),
       base::Unretained(this), base::Unretained(&mouse_move));
   TriggerNestedLoopOnRightMousePress handler(callback_on_right_click);

@@ -20,6 +20,8 @@ source_set("declarative_net_request") {
     "indexed_rule.h",
     "parse_info.cc",
     "parse_info.h",
+    "request_action.cc",
+    "request_action.h",
     "rules_monitor_service.cc",
     "rules_monitor_service.h",
     "ruleset_manager.cc",

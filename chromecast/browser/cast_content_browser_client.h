@@ -19,6 +19,7 @@
 #include "chromecast/metrics/cast_metrics_service_client.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/content_browser_client.h"
+#include "media/mojo/mojom/renderer.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-forward.h"
 
@@ -245,6 +246,9 @@ class CastContentBrowserClient
   URLRequestContextFactory* url_request_context_factory() const {
     return url_request_context_factory_.get();
   }
+
+  void BindMediaRenderer(
+      mojo::InterfaceRequest<::media::mojom::Renderer> request);
 
   // Internal implementation overwrites this function to inject real values.
   virtual void GetApplicationMediaInfo(

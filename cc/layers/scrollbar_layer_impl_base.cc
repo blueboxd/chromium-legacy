@@ -284,6 +284,10 @@ bool ScrollbarLayerImplBase::HasFindInPageTickmarks() const {
   return false;
 }
 
+bool ScrollbarLayerImplBase::SupportsDragSnapBack() const {
+  return false;
+}
+
 gfx::Rect ScrollbarLayerImplBase::BackButtonRect() const {
   return gfx::Rect(0, 0);
 }

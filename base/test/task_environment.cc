@@ -376,8 +376,16 @@ TaskEnvironment::TaskEnvironment(
               ? nullptr
               : std::make_unique<RunLoop::ScopedRunTimeoutForTest>(
                     TestTimeouts::action_timeout(),
-                    MakeExpectedNotRunClosure(FROM_HERE,
-                                              "RunLoop::Run() timed out."))) {
+                    BindRepeating(
+                        [](sequence_manager::SequenceManager*
+                               sequence_manager) {
+                          ADD_FAILURE()
+                              << "RunLoop::Run() timed out with the following "
+                                 "pending task(s) in its TaskEnvironment's "
+                                 "main thread queue:\n"
+                              << sequence_manager->DescribeAllPendingTasks();
+                        },
+                        Unretained(sequence_manager_.get())))) {
   CHECK(!base::ThreadTaskRunnerHandle::IsSet());
   // If |subclass_creates_default_taskrunner| is true then initialization is
   // deferred until DeferredInitFromSubclass().

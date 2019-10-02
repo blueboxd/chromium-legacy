@@ -599,6 +599,10 @@ void FormController::RestoreControlStateInternal(ListedElement& control) {
   FormControlState state = TakeStateForControl(control);
   if (state.ValueSize() <= 0)
     return;
+  HTMLElement& element = control.ToHTMLElement();
+  if (element.IsDisabledFormControl() ||
+      element.FastHasAttribute(html_names::kReadonlyAttr))
+    return;
   // If a user already edited the control, we should not overwrite it.
   if (IsDirtyControl(control))
     return;

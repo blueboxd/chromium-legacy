@@ -36,6 +36,7 @@ run_jsbundler("switch_access_copied_files") {
     "back_button_manager.js",
     "background.js",
     "commands.js",
+    "event_helper.js",
     "focus_ring_manager.js",
     "icons/back.svg",
     "icons/copy.svg",
@@ -175,6 +176,7 @@ js_type_check("closure_compile") {
     ":back_button_manager",
     ":background",
     ":commands",
+    ":event_helper",
     ":focus_ring_manager",
     ":menu_manager",
     ":menu_panel",
@@ -203,6 +205,7 @@ js_library("auto_scan_manager") {
 js_library("navigation_manager") {
   deps = [
     ":back_button_manager",
+    ":event_helper",
     ":focus_ring_manager",
     ":menu_manager",
     ":menu_panel_interface",
@@ -242,6 +245,10 @@ js_library("commands") {
   deps = [
     ":switch_access_interface",
   ]
+}
+
+js_library("event_helper") {
+  externs_list = [ "$externs_path/automation.js" ]
 }
 
 js_library("focus_ring_manager") {
@@ -309,11 +316,15 @@ js_library("switch_access_predicate") {
 }
 
 js_library("text_input_manager") {
+  deps = [
+    ":event_helper",
+  ]
   externs_list = [ "$externs_path/accessibility_private.js" ]
 }
 
 js_library("text_navigation_manager") {
   deps = [
+    ":event_helper",
     ":switch_access_constants",
   ]
   externs_list = [ "$externs_path/accessibility_private.js" ]

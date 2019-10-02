@@ -672,14 +672,19 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
       status.AddExclusionReason(
           CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
     }
-    if (!status.IsInclude()) {
-      request_->net_log().AddEvent(
-          NetLogEventType::COOKIE_INCLUSION_STATUS, [&] {
-            return NetLogParamsWithString("exclusion_reason",
-                                          status.GetDebugString());
-          });
-    }
     maybe_sent_cookies.push_back({cookie_with_status.cookie, status});
+  }
+
+  // TODO(crbug.com/1005217): Add cookie name if capture mode includes sensitive
+  // values.
+  if (request_->net_log().IsCapturing()) {
+    for (const auto& cookie_and_status : maybe_sent_cookies) {
+      if (!cookie_and_status.status.IsInclude()) {
+        request_->net_log().AddEventWithStringParams(
+            NetLogEventType::COOKIE_INCLUSION_STATUS, "exclusion_reason",
+            cookie_and_status.status.GetDebugString());
+      }
+    }
   }
 
   request_->set_maybe_sent_cookies(std::move(maybe_sent_cookies));
@@ -757,11 +762,6 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
           CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
     }
     if (!returned_status.IsInclude()) {
-      request_->net_log().AddEvent(
-          NetLogEventType::COOKIE_INCLUSION_STATUS, [&] {
-            return NetLogParamsWithString("exclusion_reason",
-                                          returned_status.GetDebugString());
-          });
       OnSetCookieResult(options, cookie_to_return, std::move(cookie_string),
                         returned_status);
       continue;
@@ -786,6 +786,13 @@ void URLRequestHttpJob::OnSetCookieResult(
     base::Optional<CanonicalCookie> cookie,
     std::string cookie_string,
     CanonicalCookie::CookieInclusionStatus status) {
+  // TODO(crbug.com/1005217): Add cookie name if capture mode includes sensitive
+  // values.
+  if (!status.IsInclude() && request_->net_log().IsCapturing()) {
+    request_->net_log().AddEventWithStringParams(
+        NetLogEventType::COOKIE_INCLUSION_STATUS, "exclusion_reason",
+        status.GetDebugString());
+  }
   set_cookie_status_list_.emplace_back(std::move(cookie),
                                        std::move(cookie_string), status);
 

@@ -1143,8 +1143,9 @@ class PowerButtonControllerWithPositionTest
   DISALLOW_COPY_AND_ASSIGN(PowerButtonControllerWithPositionTest);
 };
 
+// TODO(crbug.com/1010194).
 TEST_P(PowerButtonControllerWithPositionTest,
-       MenuNextToPowerButtonInTabletMode) {
+       DISABLED_MenuNextToPowerButtonInTabletMode) {
   std::string display =
       std::to_string(kDisplayWidth) + "x" + std::to_string(kDisplayHeight);
   UpdateDisplay(display);

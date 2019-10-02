@@ -4237,6 +4237,26 @@ bool HTMLMediaElement::MediaShouldBeOpaque() const {
          EffectivePreloadType() != WebMediaPlayer::kPreloadNone;
 }
 
+WebMediaPlayerClient::Features HTMLMediaElement::GetFeatures() {
+  WebMediaPlayerClient::Features features;
+
+  features.id = FastGetAttribute(kIdAttr);
+  features.width = FastGetAttribute(kWidthAttr);
+
+  if (auto* parent = parentElement())
+    features.parent_id = parent->FastGetAttribute(kIdAttr);
+
+  features.alt_text = AltText();
+  features.is_page_visible = GetDocument().IsPageVisible();
+  features.is_in_main_frame = GetDocument().IsInMainFrame();
+
+  const KURL& url = GetDocument().Url();
+  features.url_host = url.Host();
+  features.url_path = url.GetPath();
+
+  return features;
+}
+
 STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveNothing,
                    HTMLMediaElement::kHaveNothing);
 STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveMetadata,

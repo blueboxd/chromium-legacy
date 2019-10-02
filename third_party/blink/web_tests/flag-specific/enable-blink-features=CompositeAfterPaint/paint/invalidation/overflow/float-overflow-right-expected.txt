@@ -47,22 +47,22 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutDeprecatedFlexibleBox DIV class='outer box'",
+          "object": "LayoutFlexibleBox DIV class='outer box'",
           "rect": [677, 249, 62, 22],
           "reason": "geometry"
         },
         {
-          "object": "LayoutDeprecatedFlexibleBox DIV class='outer box'",
+          "object": "LayoutFlexibleBox DIV class='outer box'",
           "rect": [677, 243, 62, 22],
           "reason": "geometry"
         },
         {
-          "object": "LayoutDeprecatedFlexibleBox DIV class='outer box'",
+          "object": "LayoutFlexibleBox DIV class='outer box'",
           "rect": [677, 210, 62, 22],
           "reason": "geometry"
         },
         {
-          "object": "LayoutDeprecatedFlexibleBox DIV class='outer box'",
+          "object": "LayoutFlexibleBox DIV class='outer box'",
           "rect": [677, 204, 62, 22],
           "reason": "geometry"
         },

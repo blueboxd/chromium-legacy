@@ -20,6 +20,13 @@ static constexpr float kAutoscrollMultiplier = 20.f;
 static constexpr base::TimeDelta kInitialAutoscrollTimerDelay =
     base::TimeDelta::FromMilliseconds(250);
 
+// Constants used to figure the how far out in the non-scrolling direction
+// should trigger the thumb to snap back to its origin.  These calculations are
+// based on observing the behavior of the MSVC8 main window scrollbar + some
+// guessing/extrapolation.
+static constexpr int kOffSideMultiplier = 8;
+static constexpr int kDefaultWinScrollbarThickness = 17;
+
 namespace cc {
 
 enum ScrollbarOrientation { HORIZONTAL, VERTICAL };
@@ -45,6 +52,7 @@ class Scrollbar {
   virtual gfx::Point Location() const = 0;
   virtual bool IsOverlay() const = 0;
   virtual bool HasThumb() const = 0;
+  virtual bool SupportsDragSnapBack() const = 0;
   virtual int ThumbThickness() const = 0;
   virtual int ThumbLength() const = 0;
   virtual gfx::Rect TrackRect() const = 0;

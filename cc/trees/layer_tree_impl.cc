@@ -58,31 +58,33 @@ namespace {
 class ViewportAnchor {
  public:
   ViewportAnchor(ScrollNode* inner_scroll,
-                 LayerImpl* outer_scroll,
+                 ScrollNode* outer_scroll,
                  LayerTreeImpl* tree_impl)
       : inner_(inner_scroll), outer_(outer_scroll), tree_impl_(tree_impl) {
     viewport_in_content_coordinates_ =
         scroll_tree().current_scroll_offset(inner_->element_id);
 
-    if (outer_)
-      viewport_in_content_coordinates_ += outer_->CurrentScrollOffset();
+    if (outer_) {
+      viewport_in_content_coordinates_ +=
+          scroll_tree().current_scroll_offset(outer_->element_id);
+    }
   }
 
   void ResetViewportToAnchoredPosition() {
     DCHECK(outer_);
 
     scroll_tree().ClampScrollToMaxScrollOffset(inner_, tree_impl_);
-    outer_->ClampScrollToMaxScrollOffset();
+    scroll_tree().ClampScrollToMaxScrollOffset(outer_, tree_impl_);
 
     gfx::ScrollOffset viewport_location =
         scroll_tree().current_scroll_offset(inner_->element_id) +
-        outer_->CurrentScrollOffset();
+        scroll_tree().current_scroll_offset(outer_->element_id);
 
     gfx::Vector2dF delta =
         viewport_in_content_coordinates_.DeltaFrom(viewport_location);
 
     delta = scroll_tree().ScrollBy(inner_, delta, tree_impl_);
-    outer_->ScrollBy(delta);
+    scroll_tree().ScrollBy(outer_, delta, tree_impl_);
   }
 
  private:
@@ -91,7 +93,7 @@ class ViewportAnchor {
   }
 
   ScrollNode* inner_;
-  LayerImpl* outer_;
+  ScrollNode* outer_;
   LayerTreeImpl* tree_impl_;
   gfx::ScrollOffset viewport_in_content_coordinates_;
 };
@@ -244,23 +246,27 @@ void LayerTreeImpl::UpdateScrollbarGeometries() {
                                  scroll_node->scrolls_outer_viewport;
     if (is_viewport_scrollbar) {
       gfx::SizeF viewport_bounds(bounds_size);
-      if (scroll_node->scrolls_inner_viewport && OuterViewportScrollLayer()) {
-        // Add offset and bounds contribution of outer viewport.
-        current_offset += OuterViewportScrollLayer()->CurrentScrollOffset();
-        gfx::SizeF outer_viewport_bounds(scroll_tree.container_bounds(
-            OuterViewportScrollLayer()->scroll_tree_index()));
-        viewport_bounds.SetToMin(outer_viewport_bounds);
-
-        // The scrolling size is only determined by the outer viewport.
-        scroll_node = scroll_tree.FindNodeFromElementId(
-            OuterViewportScrollLayer()->element_id());
-        scrolling_size = gfx::SizeF(scroll_node->bounds);
+      if (scroll_node->scrolls_inner_viewport) {
+        DCHECK_EQ(scroll_node, InnerViewportScrollNode());
+        if (auto* outer_scroll_node = OuterViewportScrollNode()) {
+          // Add offset and bounds contribution of outer viewport.
+          current_offset +=
+              scroll_tree.current_scroll_offset(outer_scroll_node->element_id);
+          gfx::SizeF outer_viewport_bounds(
+              scroll_tree.container_bounds(outer_scroll_node->id));
+          viewport_bounds.SetToMin(outer_viewport_bounds);
+          // The scrolling size is only determined by the outer viewport.
+          scrolling_size = gfx::SizeF(outer_scroll_node->bounds);
+        }
       } else {
+        DCHECK_EQ(scroll_node, OuterViewportScrollNode());
+        auto* inner_scroll_node = InnerViewportScrollNode();
+        DCHECK(inner_scroll_node);
         // Add offset and bounds contribution of inner viewport.
-        current_offset += scroll_tree.current_scroll_offset(
-            InnerViewportScrollNode()->element_id);
+        current_offset +=
+            scroll_tree.current_scroll_offset(inner_scroll_node->element_id);
         gfx::SizeF inner_viewport_bounds(
-            scroll_tree.container_bounds(InnerViewportScrollNode()->id));
+            scroll_tree.container_bounds(inner_scroll_node->id));
         viewport_bounds.SetToMin(inner_viewport_bounds);
       }
       viewport_bounds.Scale(1 / current_page_scale_factor());
@@ -346,7 +352,7 @@ void LayerTreeImpl::UpdateViewportContainerSizes() {
   if (!InnerViewportScrollNode())
     return;
 
-  ViewportAnchor anchor(InnerViewportScrollNode(), OuterViewportScrollLayer(),
+  ViewportAnchor anchor(InnerViewportScrollNode(), OuterViewportScrollNode(),
                         this);
 
   // Top/bottom controls always share the same shown ratio.
@@ -378,34 +384,23 @@ void LayerTreeImpl::UpdateViewportContainerSizes() {
 
   property_trees->SetInnerViewportContainerBoundsDelta(bounds_delta);
 
-  ClipNode* inner_clip_node = property_trees->clip_tree.Node(
-      InnerViewportScrollLayer()->clip_tree_index());
-  inner_clip_node->clip.set_height(
-      InnerViewportScrollNode()->container_bounds.height() + bounds_delta.y());
-
   // Adjust the outer viewport container as well, since adjusting only the
   // inner may cause its bounds to exceed those of the outer, causing scroll
   // clamping.
-  if (OuterViewportScrollNode()) {
+  if (auto* outer_scroll = OuterViewportScrollNode()) {
     gfx::Vector2dF scaled_bounds_delta =
         gfx::ScaleVector2d(bounds_delta, 1.f / min_page_scale_factor());
 
     property_trees->SetOuterViewportContainerBoundsDelta(scaled_bounds_delta);
-    property_trees->SetInnerViewportScrollBoundsDelta(scaled_bounds_delta);
+    // outer_viewport_container_bounds_delta and
+    // inner_viewport_scroll_bounds_delta are the same thing.
+    DCHECK_EQ(scaled_bounds_delta,
+              property_trees->inner_viewport_scroll_bounds_delta());
 
-    ClipNode* outer_clip_node = property_trees->clip_tree.Node(
-        OuterViewportScrollLayer()->clip_tree_index());
-
-    float adjusted_container_height =
-        OuterViewportScrollNode()->container_bounds.height() +
-        scaled_bounds_delta.y();
-    outer_clip_node->clip.set_height(adjusted_container_height);
-
-    // Expand all clips between the outer viewport and the inner viewport.
-    auto* outer_ancestor = property_trees->clip_tree.parent(outer_clip_node);
-    while (outer_ancestor && outer_ancestor != inner_clip_node) {
-      outer_ancestor->clip.Union(outer_clip_node->clip);
-      outer_ancestor = property_trees->clip_tree.parent(outer_ancestor);
+    if (auto* outer_clip_node = OuterViewportClipNode()) {
+      float adjusted_container_height =
+          outer_scroll->container_bounds.height() + scaled_bounds_delta.y();
+      outer_clip_node->clip.set_height(adjusted_container_height);
     }
 
     anchor.ResetViewportToAnchoredPosition();
@@ -419,17 +414,6 @@ void LayerTreeImpl::UpdateViewportContainerSizes() {
   // delta.
   SetScrollbarGeometriesNeedUpdate();
   set_needs_update_draw_properties();
-
-  // For pre-BlinkGenPropertyTrees mode, we need to ensure the layers are
-  // appropriately updated.
-  if (!settings().use_layer_lists) {
-    if (OuterViewportContainerLayer())
-      OuterViewportContainerLayer()->NoteLayerPropertyChanged();
-    if (InnerViewportScrollLayer())
-      InnerViewportScrollLayer()->NoteLayerPropertyChanged();
-    if (OuterViewportScrollLayer())
-      OuterViewportScrollLayer()->NoteLayerPropertyChanged();
-  }
 }
 
 bool LayerTreeImpl::IsRootLayer(const LayerImpl* layer) const {
@@ -438,28 +422,26 @@ bool LayerTreeImpl::IsRootLayer(const LayerImpl* layer) const {
 
 gfx::ScrollOffset LayerTreeImpl::TotalScrollOffset() const {
   gfx::ScrollOffset offset;
-  auto& scroll_tree = property_trees()->scroll_tree;
+  const auto& scroll_tree = property_trees()->scroll_tree;
 
-  if (InnerViewportScrollNode()) {
-    offset += scroll_tree.current_scroll_offset(
-        InnerViewportScrollNode()->element_id);
-  }
+  if (auto* inner_scroll = InnerViewportScrollNode())
+    offset += scroll_tree.current_scroll_offset(inner_scroll->element_id);
 
-  if (OuterViewportScrollLayer())
-    offset += OuterViewportScrollLayer()->CurrentScrollOffset();
+  if (auto* outer_scroll = OuterViewportScrollNode())
+    offset += scroll_tree.current_scroll_offset(outer_scroll->element_id);
 
   return offset;
 }
 
 gfx::ScrollOffset LayerTreeImpl::TotalMaxScrollOffset() const {
   gfx::ScrollOffset offset;
-  const ScrollTree& scroll_tree = property_trees()->scroll_tree;
+  const auto& scroll_tree = property_trees()->scroll_tree;
 
-  if (auto* inner_node = InnerViewportScrollNode())
-    offset += scroll_tree.MaxScrollOffset(inner_node->id);
+  if (viewport_property_ids_.inner_scroll != ScrollTree::kInvalidNodeId)
+    offset += scroll_tree.MaxScrollOffset(viewport_property_ids_.inner_scroll);
 
-  if (auto* outer_node = OuterViewportScrollNode())
-    offset += scroll_tree.MaxScrollOffset(outer_node->id);
+  if (viewport_property_ids_.outer_scroll != ScrollTree::kInvalidNodeId)
+    offset += scroll_tree.MaxScrollOffset(viewport_property_ids_.outer_scroll);
 
   return offset;
 }
@@ -550,6 +532,17 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->PassSwapPromises(std::move(swap_promise_list_));
   swap_promise_list_.clear();
 
+  // The page scale factor update can affect scrolling which requires that
+  // these ids are set, so this must be before PushPageScaleFactorAndLimits.
+  // Setting browser controls below also needs viewport scroll properties.
+  target_tree->SetViewportPropertyIds(viewport_property_ids_);
+
+  // Active tree already shares the page_scale_factor object with pending
+  // tree so only the limits need to be provided.
+  target_tree->PushPageScaleFactorAndLimits(nullptr, min_page_scale_factor(),
+                                            max_page_scale_factor());
+  target_tree->SetExternalPageScaleFactor(external_page_scale_factor_);
+
   target_tree->set_browser_controls_shrink_blink_size(
       browser_controls_shrink_blink_size_);
   target_tree->SetTopControlsHeight(top_controls_height_);
@@ -557,17 +550,6 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->PushBrowserControls(nullptr);
 
   target_tree->set_overscroll_behavior(overscroll_behavior_);
-
-  // The page scale factor update can affect scrolling which requires that
-  // these ids are set, so this must be before PushPageScaleFactorAndLimits.
-  target_tree->SetViewportLayersFromIds(viewport_layer_ids_);
-  target_tree->set_viewport_property_ids(viewport_property_ids_);
-
-  // Active tree already shares the page_scale_factor object with pending
-  // tree so only the limits need to be provided.
-  target_tree->PushPageScaleFactorAndLimits(nullptr, min_page_scale_factor(),
-                                            max_page_scale_factor());
-  target_tree->SetExternalPageScaleFactor(external_page_scale_factor_);
 
   target_tree->SetRasterColorSpace(raster_color_space_id_, raster_color_space_);
   target_tree->elastic_overscroll()->PushPendingToActive();
@@ -620,12 +602,12 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 }
 
 void LayerTreeImpl::HandleTickmarksVisibilityChange() {
-  if (!host_impl_->ViewportMainScrollLayer())
+  if (!host_impl_->ViewportMainScrollNode())
     return;
 
   ScrollbarAnimationController* controller =
       host_impl_->ScrollbarAnimationControllerForElementId(
-          OuterViewportScrollLayer()->element_id());
+          host_impl_->ViewportMainScrollNode()->element_id);
 
   if (!controller)
     return;
@@ -788,6 +770,18 @@ LayerTreeImpl::TakePresentationCallbacks() {
   return callbacks;
 }
 
+LayerImpl* LayerTreeImpl::InnerViewportScrollLayerForTesting() const {
+  if (auto* scroll_node = InnerViewportScrollNode())
+    return LayerByElementId(scroll_node->element_id);
+  return nullptr;
+}
+
+LayerImpl* LayerTreeImpl::OuterViewportScrollLayerForTesting() const {
+  if (auto* scroll_node = OuterViewportScrollNode())
+    return LayerByElementId(scroll_node->element_id);
+  return nullptr;
+}
+
 ScrollNode* LayerTreeImpl::CurrentlyScrollingNode() {
   DCHECK(IsActiveTree());
   return property_trees_.scroll_tree.CurrentlyScrollingNode();
@@ -936,26 +930,11 @@ void LayerTreeImpl::UpdateTransformAnimation(ElementId element_id,
   }
 }
 
-TransformNode* LayerTreeImpl::PageScaleTransformNode() {
-  auto* page_scale = PageScaleLayer();
-  if (!page_scale) {
-    // TODO(crbug.com/909750): Check all other callers of PageScaleLayer() and
-    // switch to viewport_property_ids_.page_scale_transform if needed.
-    return property_trees()->transform_tree.Node(
-        viewport_property_ids_.page_scale_transform);
-  }
-
-  return property_trees()->transform_tree.Node(
-      page_scale->transform_tree_index());
-}
-
 void LayerTreeImpl::UpdatePageScaleNode() {
   if (!PageScaleTransformNode()) {
     DCHECK(layer_list_.empty() || current_page_scale_factor() == 1);
     return;
   }
-
-  DCHECK(!IsRootLayer(PageScaleLayer()));
   draw_property_utils::UpdatePageScaleFactor(
       property_trees(), PageScaleTransformNode(), current_page_scale_factor());
 }
@@ -1109,10 +1088,10 @@ void LayerTreeImpl::DidUpdatePageScale() {
       host_impl_->FlashAllScrollbars(true);
       return;
     }
-    if (host_impl_->ViewportMainScrollLayer()) {
+    if (auto* scroll_node = host_impl_->ViewportMainScrollNode()) {
       if (ScrollbarAnimationController* controller =
               host_impl_->ScrollbarAnimationControllerForElementId(
-                  OuterViewportScrollLayer()->element_id()))
+                  scroll_node->element_id))
         controller->DidScrollUpdate();
     }
   }
@@ -1206,14 +1185,14 @@ gfx::SizeF LayerTreeImpl::ScrollableViewportSize() const {
 }
 
 gfx::Rect LayerTreeImpl::RootScrollLayerDeviceViewportBounds() const {
-  LayerImpl* root_scroll_layer = OuterViewportScrollLayer()
-                                     ? OuterViewportScrollLayer()
-                                     : InnerViewportScrollLayer();
-  if (!root_scroll_layer)
+  const ScrollNode* root_scroll_node = OuterViewportScrollNode();
+  if (!root_scroll_node)
+    root_scroll_node = InnerViewportScrollNode();
+  if (!root_scroll_node)
     return gfx::Rect();
   return MathUtil::MapEnclosingClippedRect(
-      root_scroll_layer->ScreenSpaceTransform(),
-      gfx::Rect(root_scroll_layer->bounds()));
+      property_trees()->transform_tree.ToScreen(root_scroll_node->transform_id),
+      gfx::Rect(root_scroll_node->bounds));
 }
 
 void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
@@ -1229,44 +1208,41 @@ void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
   property_trees()->scroll_tree.ApplySentScrollDeltasFromAbortedCommit();
 }
 
-void LayerTreeImpl::SetViewportLayersFromIds(const ViewportLayerIds& ids) {
-  if (viewport_layer_ids_ == ids)
-    return;
+void LayerTreeImpl::SetViewportPropertyIds(const ViewportPropertyIds& ids) {
+  viewport_property_ids_ = ids;
+  // Outer viewport properties exist only if inner viewport property exists.
+  DCHECK(ids.inner_scroll != ScrollTree::kInvalidNodeId ||
+         (ids.outer_scroll == ScrollTree::kInvalidNodeId &&
+          ids.outer_clip == ClipTree::kInvalidNodeId));
 
-  viewport_layer_ids_ = ids;
-
-  // Set the viewport layer types.
-  if (auto* inner_container = InnerViewportContainerLayer())
-    inner_container->SetViewportLayerType(INNER_VIEWPORT_CONTAINER);
-  if (auto* inner_scroll = InnerViewportScrollLayer())
-    inner_scroll->SetViewportLayerType(INNER_VIEWPORT_SCROLL);
-  if (auto* outer_container = OuterViewportContainerLayer())
-    outer_container->SetViewportLayerType(OUTER_VIEWPORT_CONTAINER);
-  if (auto* outer_scroll = OuterViewportScrollLayer())
-    outer_scroll->SetViewportLayerType(OUTER_VIEWPORT_SCROLL);
+  if (auto* inner_scroll = InnerViewportScrollNode()) {
+    if (auto* inner_scroll_layer = LayerByElementId(inner_scroll->element_id))
+      inner_scroll_layer->set_is_inner_viewport_scroll_layer();
+  }
 }
 
-void LayerTreeImpl::ClearViewportLayers() {
-  SetViewportLayersFromIds(ViewportLayerIds());
+const TransformNode* LayerTreeImpl::OverscrollElasticityTransformNode() const {
+  return property_trees()->transform_tree.Node(
+      viewport_property_ids_.overscroll_elasticity_transform);
+}
+
+const TransformNode* LayerTreeImpl::PageScaleTransformNode() const {
+  return property_trees()->transform_tree.Node(
+      viewport_property_ids_.page_scale_transform);
 }
 
 const ScrollNode* LayerTreeImpl::InnerViewportScrollNode() const {
-  auto* inner_scroll = InnerViewportScrollLayer();
-  if (!inner_scroll) {
-    // TODO(crbug.com/909750): Check all other callers of
-    // InnerViewportScrollLayer() and switch to
-    // viewport_property_ids_.inner_scroll if needed.
-    return property_trees()->scroll_tree.Node(
-        viewport_property_ids_.inner_scroll);
-  }
-  return property_trees()->scroll_tree.Node(inner_scroll->scroll_tree_index());
+  return property_trees()->scroll_tree.Node(
+      viewport_property_ids_.inner_scroll);
+}
+
+const ClipNode* LayerTreeImpl::OuterViewportClipNode() const {
+  return property_trees()->clip_tree.Node(viewport_property_ids_.outer_clip);
 }
 
 const ScrollNode* LayerTreeImpl::OuterViewportScrollNode() const {
-  if (!OuterViewportScrollLayer())
-    return nullptr;
   return property_trees()->scroll_tree.Node(
-      OuterViewportScrollLayer()->scroll_tree_index());
+      viewport_property_ids_.outer_scroll);
 }
 
 // For unit tests, we use the layer's id as its element id.
@@ -1442,8 +1418,9 @@ const Region& LayerTreeImpl::UnoccludedScreenSpaceRegion() const {
 }
 
 gfx::SizeF LayerTreeImpl::ScrollableSize() const {
-  auto* scroll_node = OuterViewportScrollNode() ? OuterViewportScrollNode()
-                                                : InnerViewportScrollNode();
+  auto* scroll_node = OuterViewportScrollNode();
+  if (!scroll_node)
+    scroll_node = InnerViewportScrollNode();
   if (!scroll_node)
     return gfx::SizeF();
   const auto& scroll_tree = property_trees()->scroll_tree;

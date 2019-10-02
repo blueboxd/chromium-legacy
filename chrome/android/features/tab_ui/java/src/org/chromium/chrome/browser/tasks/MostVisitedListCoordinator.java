@@ -44,17 +44,14 @@ class MostVisitedListCoordinator implements TileGroup.Observer, TileGroup.TileSe
     // There's a limit of 12 in {@link MostVisitedSitesBridge#setObserver}.
     private static final int MAX_RESULTS = 12;
     private PropertyModelChangeProcessor mModelChangeProcessor;
-    private MostVisitedListMediator mMediator;
     private TileGroup mTileGroup;
     private TileRenderer mRenderer;
     private ViewGroup mParent;
 
-    public MostVisitedListCoordinator(ChromeActivity activity, ViewGroup parent) {
-        PropertyModel propertyModel = new PropertyModel(MostVisitedListProperties.ALL_KEYS);
+    public MostVisitedListCoordinator(
+            ChromeActivity activity, ViewGroup parent, PropertyModel propertyModel) {
         mModelChangeProcessor = PropertyModelChangeProcessor.create(
                 propertyModel, parent, MostVisitedListViewBinder::bind);
-
-        mMediator = new MostVisitedListMediator(propertyModel, activity.getTabModelSelector());
 
         mParent = parent;
         Profile profile = Profile.getLastUsedProfile();
@@ -80,10 +77,6 @@ class MostVisitedListCoordinator implements TileGroup.Observer, TileGroup.TileSe
         mTileGroup = new TileGroup(
                 mRenderer, suggestionsUiDelegate, null, tileGroupDelegate, this, offlinePageBridge);
         mTileGroup.startObserving(MAX_RESULTS);
-    }
-
-    void destroy() {
-        mMediator.destroy();
     }
 
     private void updateTileIcon(Tile tile) {

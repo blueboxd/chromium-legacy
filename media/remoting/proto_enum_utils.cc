@@ -369,6 +369,8 @@ base::Optional<VideoPixelFormat> ToMediaVideoPixelFormat(
       CASE_RETURN_OTHER(PIXEL_FORMAT_ABGR);
       CASE_RETURN_OTHER(PIXEL_FORMAT_XBGR);
       CASE_RETURN_OTHER(PIXEL_FORMAT_P016LE);
+      CASE_RETURN_OTHER(PIXEL_FORMAT_XR30);
+      CASE_RETURN_OTHER(PIXEL_FORMAT_XB30);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }

@@ -206,9 +206,6 @@ class CC_EXPORT LayerImpl {
     return use_parent_backface_visibility_;
   }
 
-  bool IsResizedByBrowserControls() const;
-  void SetIsResizedByBrowserControls(bool resized);
-
   void SetShouldCheckBackfaceVisibility(bool should_check_backface_visibility) {
     should_check_backface_visibility_ = should_check_backface_visibility;
   }
@@ -262,29 +259,9 @@ class CC_EXPORT LayerImpl {
 
   void SetBounds(const gfx::Size& bounds);
   gfx::Size bounds() const;
-  // Like bounds() but doesn't snap to int. Lossy on giant pages (e.g. millions
-  // of pixels) due to use of single precision float.
-  gfx::SizeF BoundsForScrolling() const;
 
-  // Viewport bounds delta are only used for viewport layers and account for
-  // changes in the viewport layers from browser controls and page scale
-  // factors. These deltas are only set on the active tree.
-  // TODO(bokan): These methods should be unneeded now that LTHI sets these
-  // directly on the property trees.
-  void SetViewportBoundsDelta(const gfx::Vector2dF& bounds_delta);
-  gfx::Vector2dF ViewportBoundsDelta() const;
-
-  void SetViewportLayerType(ViewportLayerType type) {
-    // Once set as a viewport layer type, the viewport type should not change.
-    DCHECK(viewport_layer_type() == NOT_VIEWPORT_LAYER ||
-           viewport_layer_type() == type);
-    viewport_layer_type_ = type;
-  }
-  ViewportLayerType viewport_layer_type() const {
-    return static_cast<ViewportLayerType>(viewport_layer_type_);
-  }
-  bool is_viewport_layer_type() const {
-    return viewport_layer_type() != NOT_VIEWPORT_LAYER;
+  void set_is_inner_viewport_scroll_layer() {
+    is_inner_viewport_scroll_layer_ = true;
   }
 
   void SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset);
@@ -532,13 +509,8 @@ class CC_EXPORT LayerImpl {
 
   // Tracks if this layer should participate in hit testing.
   bool hit_testable_ : 1;
-  bool is_resized_by_browser_controls_ : 1;
 
-  // TODO(bokan): This can likely be removed after blink-gen-property-trees
-  // is shipped. https://crbug.com/836884.
-  static_assert(LAST_VIEWPORT_LAYER_TYPE < (1u << 3),
-                "enough bits for ViewportLayerType (viewport_layer_type_)");
-  uint8_t viewport_layer_type_ : 3;  // ViewportLayerType
+  bool is_inner_viewport_scroll_layer_ : 1;
 
   Region non_fast_scrollable_region_;
   TouchActionRegion touch_action_region_;

@@ -34,6 +34,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/backdrop_controller.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
@@ -1921,6 +1922,37 @@ class DesksWithSplitViewTest : public AshTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(DesksWithSplitViewTest);
 };
+
+TEST_F(DesksWithSplitViewTest, SwitchToDeskWithSnappedActiveWindow) {
+  auto* desks_controller = DesksController::Get();
+  auto* overview_controller = Shell::Get()->overview_controller();
+  auto* split_view_controller = Shell::Get()->split_view_controller();
+
+  // Two virtual desks: |desk_1| (active) and |desk_2|.
+  NewDesk();
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  Desk* desk_1 = desks_controller->desks()[0].get();
+  Desk* desk_2 = desks_controller->desks()[1].get();
+
+  // Two windows on |desk_1|: |win0| (snapped) and |win1|.
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
+  WindowState* win0_state = WindowState::Get(win0.get());
+  WMEvent snap_to_left(WM_EVENT_CYCLE_SNAP_LEFT);
+  win0_state->OnWMEvent(&snap_to_left);
+  EXPECT_EQ(WindowStateType::kLeftSnapped, win0_state->GetStateType());
+
+  // Switch to |desk_2| and then back to |desk_1|. Verify that neither split
+  // view nor overview arises.
+  EXPECT_FALSE(split_view_controller->InSplitViewMode());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  ActivateDesk(desk_2);
+  EXPECT_FALSE(split_view_controller->InSplitViewMode());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  ActivateDesk(desk_1);
+  EXPECT_FALSE(split_view_controller->InSplitViewMode());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+}
 
 TEST_F(DesksWithSplitViewTest, SuccessfulDragToDeskRemovesSplitViewIndicators) {
   auto* controller = DesksController::Get();

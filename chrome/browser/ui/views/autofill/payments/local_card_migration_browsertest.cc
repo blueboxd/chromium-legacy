@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_loading_indicator_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -535,8 +536,11 @@ class LocalCardMigrationBrowserTestForStatusChip
 
   void SetUp() override {
     base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
-        features::kAutofillEnableToolbarStatusChip);
+    scoped_feature_list.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillCreditCardUploadFeedback,
+                              features::kAutofillEnableToolbarStatusChip,
+                              features::kAutofillUpstream},
+        /*disabled_features=*/{});
 
     LocalCardMigrationBrowserTest::SetUp();
   }
@@ -1075,6 +1079,44 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
   EXPECT_TRUE(GetLocalCardMigrationIconView()->GetVisible());
   EXPECT_FALSE(GetLocalCardMigrationOfferBubbleViews());
 }
+
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
+                       Feedback_CardSavingAnimation) {
+  SaveLocalCard(kFirstCardNumber);
+  SaveLocalCard(kSecondCardNumber);
+  UseCardAndWaitForMigrationOffer(kFirstCardNumber);
+  // Click the [Continue] button in the bubble.
+  ClickOnOkButton(GetLocalCardMigrationOfferBubbleViews());
+  test_url_loader_factory()->ClearResponses();
+
+  EXPECT_TRUE(GetLocalCardMigrationIconView()->GetVisible());
+  EXPECT_FALSE(GetLocalCardMigrationIconView()
+                   ->loading_indicator_for_testing()
+                   ->IsAnimating());
+
+  // Click the [Save] button in the dialog.
+  ResetEventWaiterForSequence({DialogEvent::SENT_MIGRATE_CARDS_REQUEST});
+  ClickOnOkButton(GetLocalCardMigrationMainDialogView());
+  WaitForObservedEvent();
+
+  // No dialog should be showing, but icon should display throbber animation.
+  EXPECT_EQ(nullptr, GetLocalCardMigrationMainDialogView());
+  EXPECT_TRUE(GetLocalCardMigrationIconView()->GetVisible());
+  EXPECT_TRUE(GetLocalCardMigrationIconView()
+                  ->loading_indicator_for_testing()
+                  ->IsAnimating());
+
+  SetUpMigrateCardsRpcPaymentsAccepts();
+  ResetEventWaiterForSequence({DialogEvent::RECEIVED_MIGRATE_CARDS_RESPONSE});
+  WaitForObservedEvent();
+
+  // Icon animation should stop. Dialog stays hidden.
+  EXPECT_TRUE(GetLocalCardMigrationIconView()->GetVisible());
+  EXPECT_FALSE(GetLocalCardMigrationIconView()
+                   ->loading_indicator_for_testing()
+                   ->IsAnimating());
+}
+
 #endif  // !defined(OS_CHROMEOS)
 
 // TODO(crbug.com/897998):

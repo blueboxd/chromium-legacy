@@ -69,9 +69,14 @@ enum VideoPixelFormat {
 
   PIXEL_FORMAT_P016LE = 29,  // 24bpp NV12, 16 bits per channel
 
+  PIXEL_FORMAT_XR30 =
+      30,  // 32bpp BGRX, 10 bits per channel, 2 bits ignored, 1 plane
+  PIXEL_FORMAT_XB30 =
+      31,  // 32bpp RGBX, 10 bits per channel, 2 bits ignored, 1 plane
+
   // Please update UMA histogram enumeration when adding new formats here.
   PIXEL_FORMAT_MAX =
-      PIXEL_FORMAT_P016LE,  // Must always be equal to largest entry logged.
+      PIXEL_FORMAT_XB30,  // Must always be equal to largest entry logged.
 };
 
 // Returns the name of a Format as a string.

@@ -8960,6 +8960,17 @@ histogram as enum -->
   <int value="4" label="User selection not permitted"/>
 </enum>
 
+<enum name="ClientSidePhishingResult">
+  <summary>
+    Enumerates the possible results from the client side phishing detector.
+  </summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Classifier not ready"/>
+  <int value="2" label="Classification cancelled"/>
+  <int value="3" label="Forward/back transition"/>
+  <int value="4" label="Invalid score"/>
+</enum>
+
 <enum name="ClipboardAction">
   <int value="0" label="Write from non-Incognito"/>
   <int value="1" label="Write from Incognito"/>
@@ -48638,6 +48649,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PluginListError">
+  <obsolete>
+    Removed 10/2019.
+  </obsolete>
   <int value="0" label="NoError"/>
   <int value="1" label="JsonInvalidEscape"/>
   <int value="2" label="JsonSyntaxError"/>
@@ -62198,6 +62212,8 @@ Full version information for the fingerprint enum values:
   <int value="27" label="ABGR"/>
   <int value="28" label="XBGR"/>
   <int value="29" label="P016LE"/>
+  <int value="30" label="XR30"/>
+  <int value="31" label="XB30"/>
 </enum>
 
 <enum name="VideoPlayerCastAPIExtensionStatus">

@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_dialog_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -27,7 +28,12 @@ LocalCardMigrationIconView::LocalCardMigrationIconView(
                          delegate) {
   DCHECK(delegate);
   SetID(VIEW_ID_MIGRATE_LOCAL_CREDIT_CARD_BUTTON);
-  SetUpForInOutAnimation();
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillCreditCardUploadFeedback)) {
+    InstallLoadingIndicator();
+  } else {
+    SetUpForInOutAnimation();
+  }
 }
 
 LocalCardMigrationIconView::~LocalCardMigrationIconView() {}
@@ -78,16 +84,32 @@ bool LocalCardMigrationIconView::Update() {
         // Disable the credit card icon so it does not update if user clicks
         // on it.
         SetEnabled(false);
-        AnimateIn(IDS_AUTOFILL_LOCAL_CARD_MIGRATION_ANIMATION_LABEL);
+        if (base::FeatureList::IsEnabled(
+                features::kAutofillCreditCardUploadFeedback)) {
+          SetIsLoading(/*is_loading=*/true);
+        } else {
+          AnimateIn(IDS_AUTOFILL_LOCAL_CARD_MIGRATION_ANIMATION_LABEL);
+        }
         break;
       }
       case LocalCardMigrationFlowStep::MIGRATION_FINISHED: {
-        UnpauseAnimation();
+        if (base::FeatureList::IsEnabled(
+                features::kAutofillCreditCardUploadFeedback)) {
+          SetIsLoading(/*is_loading=*/false);
+        } else {
+          UnpauseAnimation();
+        }
         SetEnabled(true);
         break;
       }
       case LocalCardMigrationFlowStep::MIGRATION_FAILED: {
-        UnpauseAnimation();
+        if (base::FeatureList::IsEnabled(
+                features::kAutofillCreditCardUploadFeedback)) {
+          UpdateIconImage();
+          SetIsLoading(/*is_loading=*/false);
+        } else {
+          UnpauseAnimation();
+        }
         SetEnabled(true);
         break;
       }

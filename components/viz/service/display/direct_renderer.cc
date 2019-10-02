@@ -119,8 +119,9 @@ void DirectRenderer::Initialize() {
   // Create an overlay validator based on the platform and set it on the newly
   // created processor. This would initialize the strategies on the validator as
   // well.
-  overlay_processor_ =
-      OverlayProcessor::CreateOverlayProcessor(*output_surface_, *settings_);
+  overlay_processor_ = OverlayProcessor::CreateOverlayProcessor(
+      output_surface_->GetSurfaceHandle(), output_surface_->capabilities(),
+      *settings_);
 
   auto* context_provider = output_surface_->context_provider();
 

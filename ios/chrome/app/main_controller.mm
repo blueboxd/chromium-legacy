@@ -1594,7 +1594,8 @@ enum class EnterTabSwitcherSnapshotResult {
     _settingsNavigationController = [SettingsNavigationController
         newUserFeedbackController:_mainBrowserState
                          delegate:self
-               feedbackDataSource:self];
+               feedbackDataSource:self
+                       dispatcher:self];
     [baseViewController presentViewController:_settingsNavigationController
                                      animated:YES
                                    completion:nil];

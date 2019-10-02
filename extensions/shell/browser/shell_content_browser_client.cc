@@ -281,6 +281,18 @@ void ShellContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
 }
 
 void ShellContentBrowserClient::
+    RegisterNonNetworkWorkerMainResourceURLLoaderFactories(
+        content::BrowserContext* browser_context,
+        NonNetworkURLLoaderFactoryMap* factories) {
+  DCHECK(browser_context);
+  DCHECK(factories);
+  factories->emplace(
+      extensions::kExtensionScheme,
+      extensions::CreateExtensionWorkerMainResourceURLLoaderFactory(
+          browser_context));
+}
+
+void ShellContentBrowserClient::
     RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(
         content::BrowserContext* browser_context,
         NonNetworkURLLoaderFactoryMap* factories) {

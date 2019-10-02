@@ -8,10 +8,12 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -44,9 +46,12 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   // PlatformFontWin and PlatformFontSkia, where only the latter provides true
   // wrapping of the provided SkTypeface, while PlatformFontWin creates a
   // PlatformFont object by extracting the family name and falls back to
-  // CreateFromNameAndSize().
-  static PlatformFont* CreateFromSkTypeface(sk_sp<SkTypeface> typeface,
-                                            int size);
+  // CreateFromNameAndSize(). The FontRenderParams can be provided or they
+  // will be determined by using gfx::GetFontRenderParams(...) otherwise.
+  static PlatformFont* CreateFromSkTypeface(
+      sk_sp<SkTypeface> typeface,
+      int font_size,
+      const base::Optional<FontRenderParams>& params);
 
   // Returns a new Font derived from the existing font.
   // |size_delta| is the size in pixels to add to the current font.

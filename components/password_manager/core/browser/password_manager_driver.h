@@ -34,6 +34,9 @@ class PasswordManagerDriver
   PasswordManagerDriver() = default;
   virtual ~PasswordManagerDriver() = default;
 
+  // Returns driver id which is unique in the current tab.
+  virtual int GetId() const = 0;
+
   // Fills forms matching |form_data|.
   virtual void FillPasswordForm(
       const autofill::PasswordFormFillData& form_data) = 0;

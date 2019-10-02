@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/observer_list_types.h"
+
 namespace content {
 class RenderFrameHost;
 }
@@ -15,7 +17,7 @@ namespace extensions {
 class Extension;
 class ExtensionHost;
 
-class ProcessManagerObserver {
+class ProcessManagerObserver : public base::CheckedObserver {
  public:
   // Called immediately after an extension background host is started. This
   // corresponds with the loading of background hosts immediately after profile

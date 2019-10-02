@@ -158,7 +158,7 @@ device::mojom::XRInputSourceStatePtr GvrInputDelegate::GetInputSourceState() {
       device::mojom::XRTargetRayMode::POINTING;
 
   // Controller uses an arm model.
-  state->description->emulated_position = true;
+  state->emulated_position = true;
 
   if (controller_->IsConnected()) {
     // Set the primary button state.

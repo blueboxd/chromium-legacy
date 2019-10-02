@@ -179,6 +179,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojo::PendingReceiver<mojom::RestrictedCookieManager> receiver,
       mojom::RestrictedCookieManagerRole role,
       const url::Origin& origin,
+      const GURL& site_for_cookies,
+      const url::Origin& top_frame_origin,
       bool is_service_worker,
       int32_t process_id,
       int32_t routing_id) override;

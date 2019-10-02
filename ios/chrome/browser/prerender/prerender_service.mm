@@ -39,6 +39,13 @@ void PrerenderService::StartPrerender(const GURL& url,
                                       const web::Referrer& referrer,
                                       ui::PageTransition transition,
                                       bool immediately) {
+  // PrerenderService is not compatible with WKBasedNavigationManager because it
+  // loads the URL in a new WKWebView, which doesn't have the current session
+  // history. TODO(crbug.com/814789): decide whether PrerenderService needs to
+  // be supported after evaluating the performance impact in Finch experiment.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled())
+    return;
+
   [controller_ prerenderURL:url
                    referrer:referrer
                  transition:transition
@@ -55,18 +62,12 @@ bool PrerenderService::MaybeLoadPrerenderedURL(
     return false;
   }
 
-  web::WebState* web_state = web_state_list->GetActiveWebState();
   std::unique_ptr<web::WebState> new_web_state =
-      [controller_ releasePrerenderContentsForWebState:web_state];
-  if (!new_web_state) {
-    CancelPrerender();
-    return false;
-  }
-
+      [controller_ releasePrerenderContents];
   DCHECK_NE(WebStateList::kInvalidIndex, web_state_list->active_index());
 
   web::NavigationManager* active_navigation_manager =
-      web_state->GetNavigationManager();
+      web_state_list->GetActiveWebState()->GetNavigationManager();
   int lastIndex = active_navigation_manager->GetLastCommittedItemIndex();
   UMA_HISTOGRAM_COUNTS_100("Prerender.PrerenderLoadedOnIndex", lastIndex);
 
@@ -78,13 +79,8 @@ bool PrerenderService::MaybeLoadPrerenderedURL(
   web::NavigationManager* new_navigation_manager =
       new_web_state->GetNavigationManager();
 
-  bool slim_navigation_manager_enabled =
-      web::GetWebClient()->IsSlimNavigationManagerEnabled();
-  if (new_navigation_manager->CanPruneAllButLastCommittedItem() ||
-      slim_navigation_manager_enabled) {
-    if (!slim_navigation_manager_enabled) {
-      new_navigation_manager->CopyStateFromAndPrune(active_navigation_manager);
-    }
+  if (new_navigation_manager->CanPruneAllButLastCommittedItem()) {
+    new_navigation_manager->CopyStateFromAndPrune(active_navigation_manager);
     loading_prerender_ = true;
     web_state_list->ReplaceWebStateAt(web_state_list->active_index(),
                                       std::move(new_web_state));

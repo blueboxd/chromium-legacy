@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
+#include "base/cancelable_callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
@@ -126,6 +127,11 @@ class CheckClientDownloadRequestBase {
                                           const std::string& request_data,
                                           const std::string& response_body) = 0;
 
+  // Called when finishing the request, to determine whether asynchronous
+  // scanning is pending.
+  virtual bool ShouldReturnAsynchronousVerdict(
+      DownloadCheckResultReason reason) = 0;
+
   // Called after receiving, or failing to receive a response from the server.
   virtual void MaybeUploadBinary(DownloadCheckResultReason reason) = 0;
 
@@ -145,6 +151,11 @@ class CheckClientDownloadRequestBase {
   std::vector<GURL> tab_redirects_;
 
   CheckDownloadCallback callback_;
+
+  // A cancelable closure used to track the timeout. If we decide to upload the
+  // file for deep scanning, we want to cancel the timeout so it doesn't trigger
+  // in the middle of scanning.
+  base::CancelableOnceClosure timeout_closure_;
 
   std::unique_ptr<network::SimpleURLLoader> loader_;
   std::string client_download_request_data_;

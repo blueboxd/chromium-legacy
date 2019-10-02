@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/internal/identity_manager/primary_account_manager.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -41,8 +42,6 @@ class PrefRegistrySimple;
 class AccountFetcherService;
 class AccountTrackerService;
 class GaiaCookieManagerService;
-class PrimaryAccountManager;
-class ProfileOAuth2TokenService;
 
 namespace signin {
 
@@ -660,10 +659,10 @@ class IdentityManager : public KeyedService,
   std::unique_ptr<DiagnosticsProvider> diagnostics_provider_;
 
   // Scoped observers.
-  ScopedObserver<PrimaryAccountManager, IdentityManager>
-      primary_account_manager_observer_;
-  ScopedObserver<ProfileOAuth2TokenService, IdentityManager>
-      token_service_observer_;
+  ScopedObserver<PrimaryAccountManager, PrimaryAccountManager::Observer>
+      primary_account_manager_observer_{this};
+  ScopedObserver<ProfileOAuth2TokenService, ProfileOAuth2TokenServiceObserver>
+      token_service_observer_{this};
 
   // Lists of observers.
   // Makes sure lists are empty on destruction.

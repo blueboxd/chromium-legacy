@@ -33,7 +33,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, UserLevelNativeMessaging) {
 
 class TestProcessManagerObserver : public ProcessManagerObserver {
  public:
-  TestProcessManagerObserver() : observer_(this) {}
+  TestProcessManagerObserver() = default;
+  ~TestProcessManagerObserver() override = default;
 
   void WaitForProcessShutdown(ProcessManager* process_manager,
                               const std::string& extension_id) {
@@ -57,7 +58,7 @@ class TestProcessManagerObserver : public ProcessManagerObserver {
   }
 
   std::string extension_id_;
-  ScopedObserver<ProcessManager, TestProcessManagerObserver> observer_;
+  ScopedObserver<ProcessManager, ProcessManagerObserver> observer_{this};
   base::OnceClosure quit_;
 
   DISALLOW_COPY_AND_ASSIGN(TestProcessManagerObserver);

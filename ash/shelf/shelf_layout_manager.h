@@ -145,10 +145,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Updates the background of the shelf if it has changed.
   void MaybeUpdateShelfBackground(AnimationChangeType change_type);
 
-  // Handles events from the HotseatWidget.
-  void ProcessGestureEventFromHotseatWidget(ui::GestureEvent* event,
-                                            aura::Window* target);
-
   // Returns whether the shelf should show a blurred background. This may
   // return false even if background blur is enabled depending on the session
   // state.

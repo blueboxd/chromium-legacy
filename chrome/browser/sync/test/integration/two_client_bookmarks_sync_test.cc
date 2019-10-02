@@ -2168,11 +2168,13 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        E2E_ONLY(SanitySetup)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) <<  "SetupSync() failed.";
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        E2E_ONLY(OneClientAddsBookmark)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) <<  "SetupSync() failed.";
   // All profiles should sync same bookmarks.
   ASSERT_TRUE(BookmarksMatchChecker().Wait())
@@ -2223,6 +2225,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        E2E_ONLY(TwoClientsAddBookmarks)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) <<  "SetupSync() failed.";
   // ALl profiles should sync same bookmarks.
   ASSERT_TRUE(BookmarksMatchChecker().Wait())
@@ -2253,6 +2256,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
 // synced to a second client once bookmark syncing is re-enabled.
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        E2E_ENABLED(AddBookmarkWhileDisabled)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(BookmarksMatchChecker().Wait())
       << "Initial bookmark models did not match for all profiles";

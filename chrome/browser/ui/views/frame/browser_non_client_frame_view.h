@@ -8,6 +8,7 @@
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "ui/views/window/non_client_view.h"
@@ -195,7 +196,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Menu button and page status icons. Only used by web-app windows.
   WebAppFrameToolbarView* web_app_frame_toolbar_ = nullptr;
 
-  ScopedObserver<TabStrip, BrowserNonClientFrameView> tab_strip_observer_;
+  ScopedObserver<TabStrip, TabStripObserver> tab_strip_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameView);
 };

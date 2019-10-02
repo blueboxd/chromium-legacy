@@ -479,14 +479,6 @@ void TabAndroid::AttachDetachedTab(
   }
 }
 
-bool TabAndroid::AreRendererInputEventsIgnored(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  content::RenderProcessHost* render_process_host =
-      web_contents()->GetMainFrame()->GetProcess();
-  return render_process_host->IsBlocked();
-}
-
 scoped_refptr<content::DevToolsAgentHost> TabAndroid::GetDevToolsAgentHost() {
   return devtools_host_;
 }

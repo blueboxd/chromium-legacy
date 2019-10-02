@@ -40,7 +40,8 @@ class SessionStateWaiter : public session_manager::SessionManagerObserver {
  private:
   base::Optional<session_manager::SessionState> target_state_;
   base::OnceClosure session_state_callback_;
-  ScopedObserver<session_manager::SessionManager, SessionStateWaiter>
+  ScopedObserver<session_manager::SessionManager,
+                 session_manager::SessionManagerObserver>
       session_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SessionStateWaiter);

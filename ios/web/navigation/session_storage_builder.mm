@@ -67,11 +67,11 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
       &web_state->GetSessionCertificatePolicyCacheImpl());
   web::SerializableUserDataManager* user_data_manager =
       web::SerializableUserDataManager::FromWebState(web_state);
-  [session_storage
-      setSerializableUserData:user_data_manager->CreateSerializableUserData()];
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     web::GetWebClient()->AddSerializableData(user_data_manager, web_state);
   }
+  [session_storage
+      setSerializableUserData:user_data_manager->CreateSerializableUserData()];
 
   return session_storage;
 }

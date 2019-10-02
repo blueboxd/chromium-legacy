@@ -536,10 +536,12 @@ void RenderWidget::CloseForFrame(std::unique_ptr<RenderWidget> widget) {
   // The RenderWidget may be deattached from JS, which in turn may be called
   // in a re-entrant context. We cannot synchronously destroy the object, so we
   // post a task to do so later.
+  //
+  // Unretained(this) stays valid because |this| is owned by the |widget| being
+  // passed to Close().
   GetCleanupTaskRunner()->PostNonNestableTask(
-      FROM_HERE,
-      base::BindOnce(&RenderWidget::Close, close_weak_ptr_factory_.GetWeakPtr(),
-                     std::move(widget)));
+      FROM_HERE, base::BindOnce(&RenderWidget::Close, base::Unretained(this),
+                                std::move(widget)));
 }
 
 void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
@@ -596,22 +598,6 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   mouse_lock_dispatcher_.reset(new RenderWidgetMouseLockDispatcher(this));
 
   RenderThread::Get()->AddRoute(routing_id_, this);
-}
-
-void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget() {
-  RenderWidgetScreenMetricsEmulator* emulator =
-      page_properties_->ScreenMetricsEmulator();
-  if (!emulator)
-    return;
-  // TODO(danakj): Have RenderWidget go directly through the emulator when it
-  // uses these popup variables, and remove the variables.
-  popup_origin_scale_for_emulation_ = emulator->scale();
-  popup_view_origin_for_emulation_ = emulator->applied_widget_rect().origin();
-  popup_screen_origin_for_emulation_ =
-      emulator->original_screen_rect().origin();
-  UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                             CompositorViewportRect(),
-                             emulator->original_screen_info());
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
@@ -738,18 +724,17 @@ void RenderWidget::OnClose() {
 
   // IPCs can be invoked from nested message loops. We must dispatch this
   // task non-nested to avoid re-entrancy issues.
+  //
+  // Unretained(this) stays valid because |this| is owned by the |widget| being
+  // passed to Close().
   GetCleanupTaskRunner()->PostNonNestableTask(
-      FROM_HERE,
-      base::BindOnce(&RenderWidget::Close, close_weak_ptr_factory_.GetWeakPtr(),
-                     base::WrapUnique(this)));
+      FROM_HERE, base::BindOnce(&RenderWidget::Close, base::Unretained(this),
+                                base::WrapUnique(this)));
 }
 
 void RenderWidget::PrepareForClose() {
   DCHECK(RenderThread::IsMainThread());
-  if (closing_)
-    return;
-  for (auto& observer : render_frames_)
-    observer.WidgetWillClose();
+  DCHECK(!closing_);
   closing_ = true;
 
   // Browser correspondence is no longer needed at this point.
@@ -763,27 +748,12 @@ void RenderWidget::PrepareForClose() {
   if (input_event_queue_)
     input_event_queue_->ClearClient();
 
-  // The emulator expects to use the WebWidget and layer_tree_host_, so disable
-  // it after closing the IPC route and before destroying those objects.
-  //
-  // Screen metrics emulation can only be set by the local main frame render
-  // widget.
-  if (delegate() && page_properties_->ScreenMetricsEmulator())
-    page_properties_->ScreenMetricsEmulator()->DisableAndApply();
+  close_weak_ptr_factory_.InvalidateWeakPtrs();
 
-  // TODO(https://crbug.com/995981): This logic is very confusing and should be
-  // fixed. When RenderWidget is owned by a RenderViewImpl, its lifetime is tied
-  // to the RenderViewImpl. In that case the RenderViewImpl takes responsibility
-  // for closing the WebWidget when the main frame is detached.
-  //
-  // For all other RenderWidgets, the RenderWidget is destroyed at the same
-  // time as the WebWidget, and the RenderWidget takes responsibility for doing
-  // that here.
-  if (!delegate())
+  // The |webwidget_| will be null when the main frame RenderWidget is undead.
+  if (webwidget_)
     webwidget_->Close();
   webwidget_ = nullptr;
-
-  close_weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
@@ -2002,9 +1972,18 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
       compositor_deps_->CreateUkmRecorderFactory());
   layer_tree_host_ = layer_tree_view_->layer_tree_host();
 
+  ScreenInfo screen_info = page_properties_->GetScreenInfo();
+  // A popup widget does not get emulated. So we hand it the real screen info
+  // and adjust values it gives back into the emulated space later.
+  if (popup_) {
+    RenderWidgetScreenMetricsEmulator* emulator =
+        page_properties_->ScreenMetricsEmulator();
+    if (emulator)
+      screen_info = emulator->original_screen_info();
+  }
+
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                             CompositorViewportRect(),
-                             page_properties_->GetScreenInfo());
+                             CompositorViewportRect(), screen_info);
   // If the widget is hidden, delay starting the compositor until the user shows
   // it. Also if the RenderWidget is undead, we delay starting the compositor
   // until we expect to use the widget, which will be signaled through
@@ -2092,13 +2071,15 @@ void RenderWidget::CloseWidgetSoon() {
 }
 
 void RenderWidget::Close(std::unique_ptr<RenderWidget> widget) {
+  DCHECK(closing_);  // PrepareForClose() comes first.
+  // At the end of this method, |widget| which points to this is deleted.
+  DCHECK_EQ(widget.get(), this);
+
   layer_tree_view_.reset();
   // Note the ACK is a control message going to the RenderProcessHost.
   RenderThread::Get()->Send(new WidgetHostMsg_Close_ACK(routing_id()));
+  // For the destructor to verify |this| was deleted by Close().
   closed_ = true;
-
-  // At the end of this method, |widget| which points to this is deleted.
-  DCHECK_EQ(widget.get(), this);
 }
 
 blink::WebFrameWidget* RenderWidget::GetFrameWidget() const {
@@ -2125,28 +2106,40 @@ bool RenderWidget::IsForProvisionalFrame() const {
 
 void RenderWidget::ScreenRectToEmulatedIfNeeded(WebRect* window_rect) const {
   DCHECK(window_rect);
-  float scale = popup_origin_scale_for_emulation_;
-  if (!scale)
+
+  if (!popup_)
     return;
+  RenderWidgetScreenMetricsEmulator* emulator =
+      page_properties_->ScreenMetricsEmulator();
+  if (!emulator)
+    return;
+
   window_rect->x =
-      popup_view_origin_for_emulation_.x() +
-      (window_rect->x - popup_screen_origin_for_emulation_.x()) / scale;
+      emulator->ViewRectOrigin().x() +
+      (window_rect->x - emulator->original_screen_rect().origin().x()) /
+          emulator->scale();
   window_rect->y =
-      popup_view_origin_for_emulation_.y() +
-      (window_rect->y - popup_screen_origin_for_emulation_.y()) / scale;
+      emulator->ViewRectOrigin().y() +
+      (window_rect->y - emulator->original_screen_rect().origin().y()) /
+          emulator->scale();
 }
 
 void RenderWidget::EmulatedToScreenRectIfNeeded(WebRect* window_rect) const {
   DCHECK(window_rect);
-  float scale = popup_origin_scale_for_emulation_;
-  if (!scale)
+
+  if (!popup_)
     return;
+  RenderWidgetScreenMetricsEmulator* emulator =
+      page_properties_->ScreenMetricsEmulator();
+  if (!emulator)
+    return;
+
   window_rect->x =
-      popup_screen_origin_for_emulation_.x() +
-      (window_rect->x - popup_view_origin_for_emulation_.x()) * scale;
+      emulator->original_screen_rect().origin().x() +
+      (window_rect->x - emulator->ViewRectOrigin().x()) * emulator->scale();
   window_rect->y =
-      popup_screen_origin_for_emulation_.y() +
-      (window_rect->y - popup_view_origin_for_emulation_.y()) * scale;
+      emulator->original_screen_rect().origin().y() +
+      (window_rect->y - emulator->ViewRectOrigin().y()) * emulator->scale();
 }
 
 WebRect RenderWidget::WindowRect() {
@@ -3417,10 +3410,6 @@ void RenderWidget::ZoomToFindInPageRectInMainFrame(
   DCHECK(!delegate_);
   Send(new WidgetHostMsg_ZoomToFindInPageRectInMainFrame(routing_id(),
                                                          rect_to_zoom));
-}
-
-void RenderWidget::RegisterViewportLayers(const cc::ViewportLayers& layers) {
-  layer_tree_host_->RegisterViewportLayers(layers);
 }
 
 void RenderWidget::RegisterSelection(const cc::LayerSelection& selection) {

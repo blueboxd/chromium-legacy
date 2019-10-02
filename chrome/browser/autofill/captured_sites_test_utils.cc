@@ -668,6 +668,9 @@ bool TestRecipeReplayer::ReplayRecordedActions(
     } else if (base::CompareCaseInsensitiveASCII(*type, "click") == 0) {
       if (!ExecuteClickAction(*action))
         return false;
+    } else if (base::CompareCaseInsensitiveASCII(*type, "closeTab") == 0) {
+      if (!ExecuteCloseTabAction(*action))
+        return false;
     } else if (base::CompareCaseInsensitiveASCII(*type, "coolOff") == 0) {
       if (!ExecuteCoolOffAction(*action))
         return false;
@@ -686,6 +689,9 @@ bool TestRecipeReplayer::ReplayRecordedActions(
     } else if (base::CompareCaseInsensitiveASCII(*type, "pressEscape") == 0) {
       if (!ExecutePressEscapeAction(*action))
         return false;
+    } else if (base::CompareCaseInsensitiveASCII(*type, "pressSpace") == 0) {
+      if (!ExecutePressSpaceAction(*action))
+        return false;
     } else if (base::CompareCaseInsensitiveASCII(*type, "savePassword") == 0) {
       if (!ExecuteSavePasswordAction(*action))
         return false;
@@ -698,8 +704,8 @@ bool TestRecipeReplayer::ReplayRecordedActions(
     } else if (base::CompareCaseInsensitiveASCII(*type, "typePassword") == 0) {
       if (!ExecuteTypePasswordAction(*action))
         return false;
-    } else if (base::CompareCaseInsensitiveASCII(
-                   *type, "updatePassword") == 0) {
+    } else if (base::CompareCaseInsensitiveASCII(*type, "updatePassword") ==
+               0) {
       if (!ExecuteUpdatePasswordAction(*action))
         return false;
     } else if (base::CompareCaseInsensitiveASCII(*type, "validateField") == 0) {
@@ -773,23 +779,12 @@ bool TestRecipeReplayer::InitializeBrowserToExecuteRecipe(
 bool TestRecipeReplayer::ExecuteAutofillAction(
     const base::DictionaryValue& action) {
   std::string xpath;
-  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
-    return false;
-
-  int visibility_enum_val;
-  if (!GetTargetHTMLElementVisibilityEnumFromAction(action,
-                                                    &visibility_enum_val))
-    return false;
-
   content::RenderFrameHost* frame;
-  if (!GetTargetFrameFromAction(action, &frame))
+  if (!ExtractFrameAndVerifyElement(action, &xpath, &frame))
     return false;
 
   std::vector<std::string> frame_path;
   if (!GetIFramePathFromAction(action, &frame_path))
-    return false;
-
-  if (!WaitForElementToBeReady(xpath, visibility_enum_val, frame))
     return false;
 
   VLOG(1) << "Invoking Chrome Autofill on `" << xpath << "`.";
@@ -818,23 +813,8 @@ bool TestRecipeReplayer::ExecuteAutofillAction(
 bool TestRecipeReplayer::ExecuteClickAction(
     const base::DictionaryValue& action) {
   std::string xpath;
-  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
-    return false;
-
-  int visibility_enum_val;
-  if (!GetTargetHTMLElementVisibilityEnumFromAction(action,
-                                                    &visibility_enum_val))
-    return false;
-
   content::RenderFrameHost* frame;
-  if (!GetTargetFrameFromAction(action, &frame))
-    return false;
-
-  std::vector<std::string> frame_path;
-  if (!GetIFramePathFromAction(action, &frame_path))
-    return false;
-
-  if (!WaitForElementToBeReady(xpath, visibility_enum_val, frame))
+  if (!ExtractFrameAndVerifyElement(action, &xpath, &frame))
     return false;
 
   VLOG(1) << "Left mouse clicking `" << xpath << "`.";
@@ -849,6 +829,13 @@ bool TestRecipeReplayer::ExecuteClickAction(
     return false;
 
   page_activity_observer.WaitTillPageIsIdle();
+  return true;
+}
+
+bool TestRecipeReplayer::ExecuteCloseTabAction(
+    const base::DictionaryValue& action) {
+  VLOG(1) << "Closing Active Tab";
+  browser_->tab_strip_model()->CloseSelectedTabs();
   return true;
 }
 
@@ -877,19 +864,8 @@ bool TestRecipeReplayer::ExecuteCoolOffAction(
 bool TestRecipeReplayer::ExecuteHoverAction(
     const base::DictionaryValue& action) {
   std::string xpath;
-  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
-    return false;
-
-  int visibility_enum_val;
-  if (!GetTargetHTMLElementVisibilityEnumFromAction(action,
-                                                    &visibility_enum_val))
-    return false;
-
   content::RenderFrameHost* frame;
-  if (!GetTargetFrameFromAction(action, &frame))
-    return false;
-
-  if (!WaitForElementToBeReady(xpath, visibility_enum_val, frame))
+  if (!ExtractFrameAndVerifyElement(action, &xpath, &frame))
     return false;
 
   VLOG(1) << "Hovering over `" << xpath << "`.";
@@ -934,48 +910,38 @@ bool TestRecipeReplayer::ExecuteForceLoadPage(
 bool TestRecipeReplayer::ExecutePressEnterAction(
     const base::DictionaryValue& action) {
   std::string xpath;
-  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
-    return false;
-
-  int visibility_enum_val;
-  if (!GetTargetHTMLElementVisibilityEnumFromAction(action,
-                                                    &visibility_enum_val))
-    return false;
-
   content::RenderFrameHost* frame;
-  if (!GetTargetFrameFromAction(action, &frame))
-    return false;
-
-  std::vector<std::string> frame_path;
-  if (!GetIFramePathFromAction(action, &frame_path))
-    return false;
-
-  if (!WaitForElementToBeReady(xpath, visibility_enum_val, frame))
+  if (!ExtractFrameAndVerifyElement(action, &xpath, &frame))
     return false;
 
   VLOG(1) << "Pressing 'Enter' on `" << xpath << "`.";
   PageActivityObserver page_activity_observer(frame);
-  if (!PlaceFocusOnElement(xpath, frame_path, frame))
-    return false;
-
-  ui::DomKey key = ui::DomKey::ENTER;
-  ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
-  ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
-  SimulateKeyPress(content::WebContents::FromRenderFrameHost(frame), key, code,
-                   key_code, false, false, false, false);
+  SimulateKeyPressWrapper(content::WebContents::FromRenderFrameHost(frame),
+                          ui::DomKey::ENTER);
   page_activity_observer.WaitTillPageIsIdle();
   return true;
 }
 
 bool TestRecipeReplayer::ExecutePressEscapeAction(
     const base::DictionaryValue& action) {
-  ui::DomKey key = ui::DomKey::ESCAPE;
-  ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
-  ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
-  SimulateKeyPress(GetWebContents(), key, code, key_code, false, false, false,
-                   false);
   VLOG(1) << "Pressing 'Esc' in the current frame";
   PageActivityObserver page_activity_observer(GetWebContents());
+  SimulateKeyPressWrapper(GetWebContents(), ui::DomKey::ESCAPE);
+  page_activity_observer.WaitTillPageIsIdle();
+  return true;
+}
+
+bool TestRecipeReplayer::ExecutePressSpaceAction(
+    const base::DictionaryValue& action) {
+  std::string xpath;
+  content::RenderFrameHost* frame;
+  if (!ExtractFrameAndVerifyElement(action, &xpath, &frame, true))
+    return false;
+
+  PageActivityObserver page_activity_observer(frame);
+  VLOG(1) << "Pressing 'Space' on `" << xpath << "`.";
+  SimulateKeyPressWrapper(content::WebContents::FromRenderFrameHost(frame),
+                          ui::DomKey::FromCharacter(' '));
   page_activity_observer.WaitTillPageIsIdle();
   return true;
 }
@@ -1049,19 +1015,8 @@ bool TestRecipeReplayer::ExecuteSelectDropdownAction(
   }
 
   std::string xpath;
-  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
-    return false;
-
-  int visibility_enum_val;
-  if (!GetTargetHTMLElementVisibilityEnumFromAction(action,
-                                                    &visibility_enum_val))
-    return false;
-
   content::RenderFrameHost* frame;
-  if (!GetTargetFrameFromAction(action, &frame))
-    return false;
-
-  if (!WaitForElementToBeReady(xpath, visibility_enum_val, frame))
+  if (!ExtractFrameAndVerifyElement(action, &xpath, &frame))
     return false;
 
   VLOG(1) << "Select option '" << index.value() << "' from `" << xpath << "`.";
@@ -1088,22 +1043,11 @@ bool TestRecipeReplayer::ExecuteTypeAction(
     return false;
 
   std::string xpath;
-  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
-    return false;
-
-  int visibility_enum_val;
-  if (!GetTargetHTMLElementVisibilityEnumFromAction(action,
-                                                    &visibility_enum_val))
-    return false;
-
   content::RenderFrameHost* frame;
-  if (!GetTargetFrameFromAction(action, &frame))
+  if (!ExtractFrameAndVerifyElement(action, &xpath, &frame))
     return false;
 
-  if (!WaitForElementToBeReady(xpath, visibility_enum_val, frame))
-    return false;
-
-  VLOG(1) << "Typing '" << value << "' inside `" << xpath << "`.";
+  VLOG(1) << "Typing '" << *value << "' inside `" << xpath << "`.";
   PageActivityObserver page_activity_observer(frame);
   if (!ExecuteJavaScriptOnElementByXpath(
           frame, xpath,
@@ -1121,23 +1065,8 @@ bool TestRecipeReplayer::ExecuteTypeAction(
 bool TestRecipeReplayer::ExecuteTypePasswordAction(
     const base::DictionaryValue& action) {
   std::string xpath;
-  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
-    return false;
-
-  int visibility_enum_val;
-  if (!GetTargetHTMLElementVisibilityEnumFromAction(action,
-                                                    &visibility_enum_val))
-    return false;
-
   content::RenderFrameHost* frame;
-  if (!GetTargetFrameFromAction(action, &frame))
-    return false;
-
-  std::vector<std::string> frame_path;
-  if (!GetIFramePathFromAction(action, &frame_path))
-    return false;
-
-  if (!WaitForElementToBeReady(xpath, visibility_enum_val, frame))
+  if (!ExtractFrameAndVerifyElement(action, &xpath, &frame, true))
     return false;
 
   const std::string* value =
@@ -1153,17 +1082,13 @@ bool TestRecipeReplayer::ExecuteTypePasswordAction(
     return false;
   }
 
-  if (!PlaceFocusOnElement(xpath, frame_path, frame))
-    return false;
-
-  VLOG(1) << "Typing '" << value << "' inside `" << xpath << "`.";
-  PageActivityObserver page_activity_observer(frame);
+  VLOG(1) << "Typing '" << *value << "' inside `" << xpath << "`.";
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(frame);
+  PageActivityObserver page_activity_observer(web_contents);
   for (size_t index = 0; index < value->size(); index++) {
-    ui::DomKey key = ui::DomKey::FromCharacter(value->at(index));
-    ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
-    ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
-    SimulateKeyPress(content::WebContents::FromRenderFrameHost(frame), key,
-                     code, key_code, false, false, false, false);
+    SimulateKeyPressWrapper(web_contents,
+                            ui::DomKey::FromCharacter(value->at(index)));
   }
   page_activity_observer.WaitTillPageIsIdle();
   return true;
@@ -1191,26 +1116,8 @@ bool TestRecipeReplayer::ExecuteUpdatePasswordAction(
 bool TestRecipeReplayer::ExecuteValidateFieldValueAction(
     const base::DictionaryValue& action) {
   std::string xpath;
-  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
-    return false;
-
-  int visibility_enum_val;
-  if (!GetTargetHTMLElementVisibilityEnumFromAction(action,
-                                                    &visibility_enum_val))
-    return false;
-
   content::RenderFrameHost* frame;
-  if (!GetTargetFrameFromAction(action, &frame))
-    return false;
-
-  // If we're just validating we don't care about on_top-ness, as copied from
-  // chrome/test/data/web_page_replay_go_helper_scripts/automation_helper.js
-  // to TestRecipeReplayer::DomElementReadyState enum
-  // So remove (DomElementReadyState::kReadyStateOnTop)
-  if (visibility_enum_val & kReadyStateOnTop)
-    visibility_enum_val -= kReadyStateOnTop;
-
-  if (!WaitForElementToBeReady(xpath, visibility_enum_val, frame))
+  if (!ExtractFrameAndVerifyElement(action, &xpath, &frame, false, true))
     return false;
 
   const base::Value* autofill_prediction_container =
@@ -1395,6 +1302,44 @@ bool TestRecipeReplayer::GetTargetFrameFromAction(
     return false;
   }
 
+  return true;
+}
+
+bool TestRecipeReplayer::ExtractFrameAndVerifyElement(
+    const base::DictionaryValue& action,
+    std::string* xpath,
+    content::RenderFrameHost** frame,
+    bool set_focus,
+    bool relaxed_visibility) {
+  if (!GetTargetHTMLElementXpathFromAction(action, xpath))
+    return false;
+
+  int visibility_enum_val;
+  if (!GetTargetHTMLElementVisibilityEnumFromAction(action,
+                                                    &visibility_enum_val))
+    return false;
+
+  if (!GetTargetFrameFromAction(action, frame))
+    return false;
+
+  // If we're just validating we don't care about on_top-ness, as copied from
+  // chrome/test/data/web_page_replay_go_helper_scripts/automation_helper.js
+  // to TestRecipeReplayer::DomElementReadyState enum
+  // So remove (DomElementReadyState::kReadyStateOnTop)
+  if (relaxed_visibility)
+    visibility_enum_val &= ~kReadyStateOnTop;
+
+  if (!WaitForElementToBeReady(*xpath, visibility_enum_val, *frame))
+    return false;
+
+  if (set_focus) {
+    std::vector<std::string> frame_path;
+    if (!GetIFramePathFromAction(action, &frame_path))
+      return false;
+
+    if (!PlaceFocusOnElement(*xpath, frame_path, *frame))
+      return false;
+  }
   return true;
 }
 
@@ -1781,6 +1726,15 @@ bool TestRecipeReplayer::SimulateMouseHoverAt(
     return false;
   }
   return true;
+}
+
+void TestRecipeReplayer::SimulateKeyPressWrapper(
+    content::WebContents* web_contents,
+    ui::DomKey key) {
+  ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
+  ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
+  SimulateKeyPress(web_contents, key, code, key_code, false, false, false,
+                   false);
 }
 
 void TestRecipeReplayer::NavigateAwayAndDismissBeforeUnloadDialog() {

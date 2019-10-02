@@ -43,7 +43,6 @@ test("gcp_unittests") {
     "../eventlog:gcp_eventlog_provider",
     "../gaiacp:gaia1_0",
     "../setup:gcp_setup",
-    "//chrome",
   ]
 
   data = [

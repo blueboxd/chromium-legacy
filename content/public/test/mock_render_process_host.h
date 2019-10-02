@@ -176,8 +176,9 @@ class MockRenderProcessHost : public RenderProcessHost {
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver)
       override {}
-  void BindIndexedDB(mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
-                     const url::Origin& origin) override;
+  void BindIndexedDB(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void BindVideoDecodePerfHistory(
       mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver)
       override {}

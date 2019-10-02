@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_bubble_views.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -26,17 +27,14 @@ SaveCardIconView::SaveCardIconView(CommandUpdater* command_updater,
   DCHECK(delegate);
   SetID(VIEW_ID_SAVE_CREDIT_CARD_BUTTON);
 
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillCreditCardUploadFeedback)) {
+    InstallLoadingIndicator();
+  }
   SetUpForInOutAnimation();
-
-  loading_indicator_ =
-      AddChildView(std::make_unique<PageActionIconLoadingIndicatorView>());
-  loading_indicator_->SetVisible(false);
-  AddObserver(loading_indicator_);
 }
 
-SaveCardIconView::~SaveCardIconView() {
-  RemoveObserver(loading_indicator_);
-}
+SaveCardIconView::~SaveCardIconView() = default;
 
 views::BubbleDialogDelegateView* SaveCardIconView::GetBubble() const {
   SaveCardBubbleController* controller = GetController();
@@ -62,9 +60,9 @@ bool SaveCardIconView::Update() {
 
   if (command_enabled && controller->ShouldShowSavingCardAnimation()) {
     SetEnabled(false);
-    loading_indicator_->ShowAnimation();
+    SetIsLoading(/*is_loading=*/true);
   } else {
-    loading_indicator_->StopAnimation();
+    SetIsLoading(/*is_loading=*/false);
     UpdateIconImage();
     SetEnabled(true);
   }

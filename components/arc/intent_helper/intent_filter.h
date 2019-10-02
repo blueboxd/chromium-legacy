@@ -61,8 +61,6 @@ class IntentFilter {
     mojom::PatternType match_type() const { return match_type_; }
 
    private:
-    bool MatchGlob(const std::string& match) const;
-
     std::string pattern_;
     mojom::PatternType match_type_;
 

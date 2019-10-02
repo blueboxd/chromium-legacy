@@ -687,9 +687,16 @@ std::pair<gfx::RRectF, bool> GetRoundedCornerRRect(
       break;
     }
 
-    // Simply break if we reached a node that has a render surface or is the
-    // render target.
-    if (node->HasRenderSurface() || node->id == target_id)
+    // If the iteration has reached a node in the parent chain that has a render
+    // surface, then break. If this iteration is for a render surface to begin
+    // with, then ensure |node| is a parent of |effect_node|.
+    if (node->HasRenderSurface() &&
+        (!for_render_surface || effect_node != node)) {
+      break;
+    }
+
+    // Simply break if we reached a node that is the render target.
+    if (node->id == target_id)
       break;
 
     node = effect_tree->parent(node);
@@ -1028,23 +1035,22 @@ void RecordRenderSurfaceReasonsForTracing(
   }
 }
 
-void UpdateElasticOverscroll(PropertyTrees* property_trees,
-                             const ElementId overscroll_elasticity_element_id,
-                             const gfx::Vector2dF& elastic_overscroll) {
-  if (!overscroll_elasticity_element_id) {
+void UpdateElasticOverscroll(
+    PropertyTrees* property_trees,
+    TransformNode* overscroll_elasticity_transform_node,
+    const gfx::Vector2dF& elastic_overscroll) {
+  if (!overscroll_elasticity_transform_node) {
     DCHECK(elastic_overscroll.IsZero());
     return;
   }
 
-  TransformNode* node = property_trees->transform_tree.FindNodeFromElementId(
-      overscroll_elasticity_element_id);
-  DCHECK(node);
-
-  if (node->scroll_offset == gfx::ScrollOffset(elastic_overscroll))
+  if (overscroll_elasticity_transform_node->scroll_offset ==
+      gfx::ScrollOffset(elastic_overscroll))
     return;
 
-  node->scroll_offset = gfx::ScrollOffset(elastic_overscroll);
-  node->needs_local_transform_update = true;
+  overscroll_elasticity_transform_node->scroll_offset =
+      gfx::ScrollOffset(elastic_overscroll);
+  overscroll_elasticity_transform_node->needs_local_transform_update = true;
   property_trees->transform_tree.set_needs_update(true);
 }
 
@@ -1295,7 +1301,7 @@ void CalculateDrawProperties(
                         layer_tree_impl->PageScaleTransformNode(),
                         layer_tree_impl->current_page_scale_factor());
   UpdateElasticOverscroll(property_trees,
-                          layer_tree_impl->OverscrollElasticityElementId(),
+                          layer_tree_impl->OverscrollElasticityTransformNode(),
                           layer_tree_impl->current_elastic_overscroll());
   // Similarly, the device viewport and device transform are shared
   // by both trees.

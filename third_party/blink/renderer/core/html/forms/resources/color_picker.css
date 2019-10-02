@@ -181,3 +181,13 @@ submission-button:hover {
   background-color: #F3F3F3;
   border-radius: 2px;
 }
+
+@media (forced-colors: active) {
+  color-viewer {
+    forced-color-adjust: none;
+    border-color: WindowText;
+  }
+  color-selection-ring {
+    forced-color-adjust: none;
+  }
+}

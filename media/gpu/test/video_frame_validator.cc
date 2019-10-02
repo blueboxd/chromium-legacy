@@ -23,9 +23,11 @@ namespace test {
 // static
 std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
     const std::vector<std::string>& expected_frame_checksums,
-    const VideoPixelFormat validation_format) {
+    const VideoPixelFormat validation_format,
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor) {
   auto video_frame_validator = base::WrapUnique(
-      new VideoFrameValidator(expected_frame_checksums, validation_format));
+      new VideoFrameValidator(expected_frame_checksums, validation_format,
+                              std::move(corrupt_frame_processor)));
   if (!video_frame_validator->Initialize()) {
     LOG(ERROR) << "Failed to initialize VideoFrameValidator.";
     return nullptr;
@@ -36,9 +38,11 @@ std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
 
 VideoFrameValidator::VideoFrameValidator(
     std::vector<std::string> expected_frame_checksums,
-    VideoPixelFormat validation_format)
+    VideoPixelFormat validation_format,
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor)
     : expected_frame_checksums_(std::move(expected_frame_checksums)),
       validation_format_(validation_format),
+      corrupt_frame_processor_(std::move(corrupt_frame_processor)),
       num_frames_validating_(0),
       frame_validator_thread_("FrameValidatorThread"),
       frame_validator_cv_(&frame_validator_lock_) {
@@ -97,6 +101,9 @@ bool VideoFrameValidator::WaitUntilDone() {
     frame_validator_cv_.Wait();
   }
 
+  if (corrupt_frame_processor_ && !corrupt_frame_processor_->WaitUntilDone())
+    return false;
+
   if (mismatched_frames_.size() > 0u) {
     LOG(ERROR) << mismatched_frames_.size() << " frames failed to validate.";
     return false;
@@ -148,6 +155,9 @@ void VideoFrameValidator::ProcessVideoFrameTask(
     if (computed_md5 != expected_md5) {
       mismatched_frames_.push_back(
           MismatchedFrameInfo{frame_index, computed_md5, expected_md5});
+      // Perform additional processing on the corrupt video frame if requested.
+      if (corrupt_frame_processor_)
+        corrupt_frame_processor_->ProcessVideoFrame(video_frame, frame_index);
     }
   }
 

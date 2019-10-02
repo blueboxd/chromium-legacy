@@ -129,9 +129,11 @@ class DownloadItemView : public views::InkDropHostView,
   enum State { NORMAL = 0, HOT, PUSHED };
 
   enum Mode {
-    NORMAL_MODE = 0,  // Showing download item.
-    DANGEROUS_MODE,   // Displaying the dangerous download warning.
-    MALICIOUS_MODE    // Displaying the malicious download warning.
+    NORMAL_MODE = 0,    // Showing download item.
+    DANGEROUS_MODE,     // Displaying the dangerous download warning.
+    MALICIOUS_MODE,     // Displaying the malicious download warning.
+    DEEP_SCANNING_MODE  // Displaying information about in progress deep
+                        // scanning.
   };
 
   static constexpr int kTextWidth = 140;
@@ -210,8 +212,14 @@ class DownloadItemView : public views::InkDropHostView,
     return mode_ == DANGEROUS_MODE || mode_ == MALICIOUS_MODE;
   }
 
-  // Clears or shows the warning dialog as per the state of |model_|.
-  void ToggleWarningDialog();
+  // Whether we are in the deep scanning mode.
+  bool IsShowingDeepScanning() const { return mode_ == DEEP_SCANNING_MODE; }
+
+  // Starts showing the normal mode dialog, clearing the existing dialog.
+  void TransitionToNormalMode();
+
+  // Starts showing the warning dialog, clearing the existing dialog.
+  void TransitionToWarningDialog();
 
   // Reverts from dangerous mode to normal download mode.
   void ClearWarningDialog();
@@ -219,6 +227,15 @@ class DownloadItemView : public views::InkDropHostView,
   // Starts displaying the dangerous download warning or the malicious download
   // warning.
   void ShowWarningDialog();
+
+  // Starts showing the deep scanning dialog, clearing the existing dialog.
+  void TransitionToDeepScanningDialog();
+
+  // Reverts from deep scanning mode to normal download mode.
+  void ClearDeepScanningDialog();
+
+  // Starts displaying the deep scanning warning.
+  void ShowDeepScanningDialog();
 
   // Returns the current warning icon (should only be called when the view is
   // actually showing a warning).
@@ -392,6 +409,9 @@ class DownloadItemView : public views::InkDropHostView,
   // item.  Store the path used, so that we can detect a change in the path
   // and reload the icon.
   base::FilePath last_download_item_path_;
+
+  // Deep scanning mode label.
+  views::Label* deep_scanning_label_;
 
   // Method factory used to delay reenabling of the item when opening the
   // downloaded file.

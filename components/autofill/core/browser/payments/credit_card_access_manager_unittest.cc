@@ -69,6 +69,7 @@
 #include "url/gurl.h"
 
 #if !defined(OS_IOS)
+#include "components/autofill/core/browser/payments/fido_authentication_strike_database.h"
 #include "components/autofill/core/browser/payments/test_credit_card_fido_authenticator.h"
 #endif
 
@@ -165,6 +166,8 @@ class CreditCardAccessManagerTest : public testing::Test {
         autofill_client_.GetIdentityManager(), &personal_data_manager_);
     autofill_client_.set_test_payments_client(
         std::unique_ptr<payments::TestPaymentsClient>(payments_client_));
+    autofill_client_.set_test_strike_database(
+        std::make_unique<TestStrikeDatabase>());
     credit_card_access_manager_ = std::make_unique<CreditCardAccessManager>(
         autofill_driver_.get(), &autofill_client_, &personal_data_manager_,
         nullptr);
@@ -242,6 +245,18 @@ class CreditCardAccessManagerTest : public testing::Test {
   }
 
 #if !defined(OS_IOS)
+  void ClearStrikes() {
+    return GetFIDOAuthenticator()
+        ->GetOrCreateFidoAuthenticationStrikeDatabase()
+        ->ClearAllStrikes();
+  }
+
+  int GetStrikes() {
+    return GetFIDOAuthenticator()
+        ->GetOrCreateFidoAuthenticationStrikeDatabase()
+        ->GetStrikes();
+  }
+
   base::Value GetTestRequestOptions() {
     base::Value request_options = base::Value(base::Value::Type::DICTIONARY);
     request_options.SetKey("challenge", base::Value(kTestChallenge));
@@ -708,6 +723,7 @@ TEST_F(CreditCardAccessManagerTest, FIDONewCardAuthorization) {
 // |creation_options|.
 TEST_F(CreditCardAccessManagerTest,
        FIDOEnrollmentSuccess_CreationOptions_Desktop) {
+  ClearStrikes();
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
   GetFIDOAuthenticator()->SetUserVerifiable(true);
@@ -738,6 +754,60 @@ TEST_F(CreditCardAccessManagerTest,
   EXPECT_EQ(kTestChallenge,
             BytesToBase64(GetFIDOAuthenticator()->GetChallenge()));
   EXPECT_TRUE(GetFIDOAuthenticator()->IsUserOptedIn());
+  EXPECT_EQ(0, GetStrikes());
+}
+
+// Ensures that the correct number of strikes are added when the user declines
+// the WebAuthn offer.
+TEST_F(CreditCardAccessManagerTest, FIDOEnrollment_OfferDeclined_Desktop) {
+  ClearStrikes();
+  CreateServerCard(kTestGUID, kTestNumber);
+  CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+  SetUserOptedIn(false);
+  payments_client_->AllowFidoRegistration(true);
+
+  credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
+  InvokeUnmaskDetailsTimeout();
+  WaitForCallbacks();
+
+  // Mock user response.
+  AcceptWebauthnOfferDialog(/*did_accept=*/false);
+  EXPECT_EQ(
+      FidoAuthenticationStrikeDatabase::kStrikesToAddWhenOptInOfferDeclined,
+      GetStrikes());
+}
+
+// Ensures that the correct number of strikes are added when the user fails to
+// complete user-verification for an opt-in attempt.
+TEST_F(CreditCardAccessManagerTest,
+       FIDOEnrollment_UserVerificationFailed_Desktop) {
+  ClearStrikes();
+  CreateServerCard(kTestGUID, kTestNumber);
+  CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+  SetUserOptedIn(false);
+  payments_client_->AllowFidoRegistration(true);
+
+  credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
+  InvokeUnmaskDetailsTimeout();
+  WaitForCallbacks();
+
+  // Mock user and payments response.
+  AcceptWebauthnOfferDialog(/*did_accept=*/true);
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+                                   /*fido_opt_in=*/false));
+  WaitForCallbacks();
+
+  OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/false,
+            /*include_creation_options=*/true);
+
+  // Mock user response and OptChange payments call.
+  TestCreditCardFIDOAuthenticator::MakeCredential(GetFIDOAuthenticator(),
+                                                  /*did_succeed=*/false);
+  EXPECT_EQ(FidoAuthenticationStrikeDatabase::
+                kStrikesToAddWhenUserVerificationFailsOnOptInAttempt,
+            GetStrikes());
 }
 
 // Ensures that the WebAuthn enrollment prompt is invoked after user opts in. In

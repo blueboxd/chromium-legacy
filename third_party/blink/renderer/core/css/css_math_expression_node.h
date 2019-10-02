@@ -46,7 +46,6 @@ class CSSNumericLiteralValue;
 
 // The order of this enum should not change since its elements are used as
 // indices in the addSubtractResult matrix.
-// TODO(crbug.com/825895): Change it to |enum class CSSMathExpressionCategory|.
 enum CalculationCategory {
   kCalcNumber = 0,
   kCalcLength,

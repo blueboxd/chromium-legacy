@@ -8,7 +8,9 @@
 #include <ostream>
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/optional.h"
+#include "chromeos/components/multidevice/software_feature.h"
 
 namespace chromeos {
 
@@ -23,11 +25,11 @@ namespace device_sync {
 // supported but not enabled:
 //   [
 //     message FeatureStatus {
-//       string feature_type = "BetterTogetherHostSupported";
+//       string feature_type = "BETTER_TOGETHER_HOST_SUPPORTED";
 //       bool enabled = true;
 //     },
 //     message FeatureStatus {
-//       string feature_type = "BetterTogetherHostEnabled";
+//       string feature_type = "BETTER_TOGETHER_HOST";
 //       bool enabled = false;
 //     }
 //   ]
@@ -60,18 +62,29 @@ enum class CryptAuthFeatureType {
   kSmsConnectClientEnabled,
 };
 
-// Uniquely maps each enum value to a string used in the protos and understood
-// by CryptAuth.
-std::string CryptAuthFeatureTypeToString(
-    const CryptAuthFeatureType& feature_type);
+// Uniquely maps each CryptAuthFeatureType enum value to a string used in the
+// protos and understood by CryptAuth.
+const char* CryptAuthFeatureTypeToString(CryptAuthFeatureType feature_type);
+
+// Uniquely maps each SoftwareFeature enum value to a string used in the protos
+// and understood by CryptAuth.
+const char* SoftwareFeatureToEnabledCryptAuthFeatureTypeString(
+    multidevice::SoftwareFeature software_feature);
 
 // Returns null if |feature_type_string| does not map to a known
 // CryptAuthFeatureType.
 base::Optional<CryptAuthFeatureType> CryptAuthFeatureTypeFromString(
     const std::string& feature_type_string);
 
+multidevice::SoftwareFeature CryptAuthFeatureTypeStringToSoftwareFeature(
+    const std::string& feature_type_string);
+
+const base::flat_set<std::string>& GetCryptAuthFeatureTypeStrings();
+const base::flat_set<std::string>& GetSupportedCryptAuthFeatureTypeStrings();
+const base::flat_set<std::string>& GetEnabledCryptAuthFeatureTypeStrings();
+
 std::ostream& operator<<(std::ostream& stream,
-                         const CryptAuthFeatureType& feature_type);
+                         CryptAuthFeatureType feature_type);
 
 }  // namespace device_sync
 

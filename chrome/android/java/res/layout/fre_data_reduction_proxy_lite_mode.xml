@@ -57,12 +57,12 @@
                     android:orientation="vertical" >
 
                     <TextView
+                        android:id="@+id/data_reduction_promo_summary_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/fre_vertical_spacing"
                         android:gravity="start"
                         android:lineSpacingMultiplier="1.4"
-                        android:text="@string/data_reduction_promo_summary_lite_mode"
                         android:textAppearance="@style/TextAppearance.BlackHint2" />
 
                     <android.support.v7.widget.SwitchCompat

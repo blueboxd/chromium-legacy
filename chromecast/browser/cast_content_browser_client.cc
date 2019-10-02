@@ -51,6 +51,7 @@
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/cma/backend/cma_backend_factory_impl.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
+#include "chromecast/media/service/cast_renderer.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "components/network_hints/browser/network_hints_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -75,6 +76,7 @@
 #include "media/audio/audio_thread_impl.h"
 #include "media/base/media_switches.h"
 #include "media/mojo/buildflags.h"
+#include "media/mojo/services/mojo_renderer_service.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/service_manager/embedder/descriptors.h"
@@ -134,6 +136,10 @@
 #if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
 #include "chromecast/external_mojo/broker_service/broker_service.h"
 #endif
+
+#if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+#include "chromecast/browser/webview/webview_controller.h"
+#endif  // BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
 
 namespace chromecast {
 namespace shell {
@@ -944,6 +950,13 @@ CastContentBrowserClient::CreateThrottlesForNavigation(
             handle, general_audience_browsing_service_.get()));
   }
 
+#if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+  auto webview_throttle = WebviewController::MaybeGetNavigationThrottle(handle);
+  if (webview_throttle) {
+    throttles.push_back(std::move(webview_throttle));
+  }
+#endif  // BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+
   return throttles;
 }
 
@@ -1027,6 +1040,26 @@ void CastContentBrowserClient::CreateGeneralAudienceBrowsingService() {
   general_audience_browsing_service_ =
       std::make_unique<GeneralAudienceBrowsingService>(
           cast_network_contexts_->GetSystemSharedURLLoaderFactory());
+}
+
+void CastContentBrowserClient::BindMediaRenderer(
+    mojo::InterfaceRequest<::media::mojom::Renderer> request) {
+  auto media_task_runner = GetMediaTaskRunner();
+  if (!media_task_runner->BelongsToCurrentThread()) {
+    media_task_runner->PostTask(
+        FROM_HERE, base::BindOnce(&CastContentBrowserClient::BindMediaRenderer,
+                                  base::Unretained(this), std::move(request)));
+    return;
+  }
+
+  ::media::MojoRendererService::Create(
+      nullptr /* mojo_cdm_service_context */,
+      std::make_unique<media::CastRenderer>(
+          GetCmaBackendFactory(), std::move(media_task_runner),
+          GetVideoModeSwitcher(), GetVideoResolutionPolicy(),
+          media_resource_tracker(), nullptr /* connector */,
+          nullptr /* host_interfaces */),
+      std::move(request));
 }
 
 }  // namespace shell

@@ -715,6 +715,11 @@ void ContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
     NonNetworkURLLoaderFactoryMap* factories) {}
 
 void ContentBrowserClient::
+    RegisterNonNetworkWorkerMainResourceURLLoaderFactories(
+        BrowserContext* browser_context,
+        NonNetworkURLLoaderFactoryMap* factories) {}
+
+void ContentBrowserClient::
     RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(
         BrowserContext* browser_context,
         NonNetworkURLLoaderFactoryMap* factories) {}
@@ -768,6 +773,8 @@ bool ContentBrowserClient::WillCreateRestrictedCookieManager(
     network::mojom::RestrictedCookieManagerRole role,
     BrowserContext* browser_context,
     const url::Origin& origin,
+    const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin,
     bool is_service_worker,
     int process_id,
     int frame_id,
@@ -900,11 +907,6 @@ std::unique_ptr<OverlayWindow>
 ContentBrowserClient::CreateWindowForPictureInPicture(
     PictureInPictureWindowController* controller) {
   return nullptr;
-}
-
-bool ContentBrowserClient::IsSafeRedirectTarget(const GURL& url,
-                                                BrowserContext* context) {
-  return true;
 }
 
 void ContentBrowserClient::RegisterRendererPreferenceWatcher(

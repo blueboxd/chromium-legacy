@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
@@ -30,8 +31,12 @@ class DOMStorageContextWrapperTest : public testing::Test {
     storage_policy_ = new MockSpecialStoragePolicy();
     fake_mojo_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
     auto* session_storage_context = new SessionStorageContextMojo(
-        /*partition_path=*/base::FilePath(), fake_mojo_task_runner_,
-        SessionStorageContextMojo::BackingMode::kNoDisk, /*leveldb_name=*/"");
+        /*partition_path=*/base::FilePath(),
+        base::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::ThreadPool(),
+             base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+        fake_mojo_task_runner_, SessionStorageContextMojo::BackingMode::kNoDisk,
+        /*leveldb_name=*/"");
     session_storage_context->PretendToConnectForTesting();
     context_ = new DOMStorageContextWrapper(
         /*legacy_local_storage_path=*/base::FilePath(), fake_mojo_task_runner_,

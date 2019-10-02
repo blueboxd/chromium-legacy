@@ -34,9 +34,8 @@ class NoopNotificationScheduleService
   UserActionHandler* GetUserActionHandler() override;
 
   // NotificationBackgroundTaskScheduler::Handler implementation.
-  void OnStartTask(SchedulerTaskTime task_time,
-                   TaskFinishedCallback callback) override;
-  void OnStopTask(SchedulerTaskTime task_time) override;
+  void OnStartTask(TaskFinishedCallback callback) override;
+  void OnStopTask() override;
 
   // UserActionHandler implementation.
   void OnUserAction(const UserActionData& action_data) override;

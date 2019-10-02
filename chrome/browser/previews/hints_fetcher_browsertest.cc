@@ -156,6 +156,8 @@ class HintsFetcherDisabledBrowserTest
         hints_server_->base_url().spec());
     cmd->AppendSwitchASCII(optimization_guide::switches::kFetchHintsOverride,
                            "example1.com, example2.com");
+    cmd->AppendSwitch(previews::switches::kDoNotRequireLitePageRedirectInfoBar);
+
     if (GetParam())
       cmd->AppendSwitch(optimization_guide::switches::kFetchHintsOverrideTimer);
   }

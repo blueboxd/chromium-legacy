@@ -14,7 +14,12 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
+#include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/hints_fetcher.h"
@@ -27,6 +32,7 @@
 #include "components/optimization_guide/proto_database_provider_test_base.h"
 #include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/previews/core/previews_switches.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_web_contents_factory.h"
@@ -207,16 +213,22 @@ class OptimizationGuideHintsManagerTest
   void SetUp() override {
     optimization_guide::ProtoDatabaseProviderTestBase::SetUp();
     web_contents_factory_.reset(new content::TestWebContentsFactory);
-    CreateServiceAndHintsManager();
+    drp_test_context_ =
+        data_reduction_proxy::DataReductionProxyTestContext::Builder()
+            .WithMockConfig()
+            .Build();
+    drp_test_context_->DisableWarmupURLFetch();
+    CreateServiceAndHintsManager(/*top_host_provider=*/nullptr);
   }
 
   void TearDown() override {
     optimization_guide::ProtoDatabaseProviderTestBase::TearDown();
+    drp_test_context_->DestroySettings();
     ResetHintsManager();
   }
 
   void CreateServiceAndHintsManager(
-      optimization_guide::TopHostProvider* top_host_provider = nullptr) {
+      optimization_guide::TopHostProvider* top_host_provider) {
     if (hints_manager_) {
       ResetHintsManager();
     }
@@ -231,8 +243,9 @@ class OptimizationGuideHintsManagerTest
             &test_url_loader_factory_);
 
     hints_manager_ = std::make_unique<OptimizationGuideHintsManager>(
-        optimization_guide_service_.get(), temp_dir(), pref_service_.get(),
-        db_provider_.get(), top_host_provider, url_loader_factory_);
+        optimization_guide_service_.get(), &testing_profile_, temp_dir(),
+        pref_service_.get(), db_provider_.get(), top_host_provider,
+        url_loader_factory_);
     hints_manager_->SetClockForTesting(task_environment_.GetMockClock());
 
     // Add observer is called after the HintCache is fully initialized,
@@ -314,16 +327,30 @@ class OptimizationGuideHintsManagerTest
     RunUntilIdle();
   }
 
+  void SetUserPermissions(bool data_saver_enabled, bool has_seen_infobar) {
+    drp_test_context_->SetDataReductionProxyEnabled(data_saver_enabled);
+
+    // Make sure infobar not shown.
+    PreviewsService* previews_service =
+        PreviewsServiceFactory::GetForProfile(&testing_profile_);
+    PreviewsLitePageRedirectDecider* decider =
+        previews_service->previews_lite_page_redirect_decider();
+    // Initialize settings here so Lite Pages Decider checks for the Data Saver
+    // bit.
+    decider->OnSettingsInitialized();
+    if (has_seen_infobar) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          previews::switches::kDoNotRequireLitePageRedirectInfoBar);
+    }
+  }
+
   // Creates a navigation handle with the OptimizationGuideWebContentsObserver
   // attached.
   std::unique_ptr<content::MockNavigationHandle>
   CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
       const GURL& url) {
-    if (!testing_profile_) {
-      testing_profile_ = std::make_unique<TestingProfile>();
-    }
     content::WebContents* web_contents =
-        web_contents_factory_->CreateWebContents(testing_profile_.get());
+        web_contents_factory_->CreateWebContents(&testing_profile_);
     OptimizationGuideWebContentsObserver::CreateForWebContents(web_contents);
     std::unique_ptr<content::MockNavigationHandle> navigation_handle =
         std::make_unique<content::MockNavigationHandle>(web_contents);
@@ -377,7 +404,9 @@ class OptimizationGuideHintsManagerTest
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI,
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  std::unique_ptr<TestingProfile> testing_profile_;
+  TestingProfile testing_profile_;
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
+      drp_test_context_;
   std::unique_ptr<content::TestWebContentsFactory> web_contents_factory_;
   std::unique_ptr<OptimizationGuideHintsManager> hints_manager_;
   std::unique_ptr<TestOptimizationGuideService> optimization_guide_service_;
@@ -408,7 +437,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       optimization_guide::switches::kHintsProtoOverride, encoded_config);
-  CreateServiceAndHintsManager();
+  CreateServiceAndHintsManager(/*top_host_provider=*/nullptr);
 
   // The below histogram should not be recorded since hints weren't coming
   // directly from the component.
@@ -425,7 +454,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       optimization_guide::switches::kHintsProtoOverride, "this-is-not-a-proto");
-  CreateServiceAndHintsManager();
+  CreateServiceAndHintsManager(/*top_host_provider=*/nullptr);
 
   // The below histogram should not be recorded since hints weren't coming
   // directly from the component.
@@ -455,7 +484,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
     base::HistogramTester histogram_tester;
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         optimization_guide::switches::kHintsProtoOverride, encoded_config);
-    CreateServiceAndHintsManager();
+    CreateServiceAndHintsManager(/*top_host_provider=*/nullptr);
     // The below histogram should not be recorded since hints weren't coming
     // directly from the component.
     histogram_tester.ExpectTotalCount("OptimizationGuide.ProcessHintsResult",
@@ -941,10 +970,29 @@ TEST_F(OptimizationGuideHintsManagerTest,
   feature_list.InitWithFeatures(
       {optimization_guide::features::kOptimizationHintsFetching}, {});
 
-  std::unique_ptr<FakeTopHostProvider> top_host_provider =
-      std::make_unique<FakeTopHostProvider>(std::vector<std::string>({}));
-
+  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
   CreateServiceAndHintsManager(/*top_host_provider=*/nullptr);
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
+  InitializeWithDefaultConfig("1.0.0");
+
+  // Force timer to expire and schedule a hints fetch.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_FALSE(hints_fetcher()->hints_fetched());
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       HintsFetchNotAllowedIfFeatureIsEnabledButDataSaverIsNotEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {optimization_guide::features::kOptimizationHintsFetching}, {});
+
+  SetUserPermissions(/*data_saver_enabled=*/false, /*has_seen_infobar=*/true);
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(
+          std::vector<std::string>({"example1.com", "example2.com"}));
+
+  CreateServiceAndHintsManager(top_host_provider.get());
   hints_manager()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
   InitializeWithDefaultConfig("1.0.0");
@@ -956,11 +1004,12 @@ TEST_F(OptimizationGuideHintsManagerTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
-       HintsFetchNotAllowedIfFeatureIsNotEnabledButTopHostProviderIsProvided) {
+       HintsFetchNotAllowedIfFeatureIsNotEnabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       {}, {optimization_guide::features::kOptimizationHintsFetching});
 
+  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
       std::make_unique<FakeTopHostProvider>(
           std::vector<std::string>({"example1.com", "example2.com"}));
@@ -974,7 +1023,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
-       HintsFetchAllowedIfFeatureIsEnabledAndTopHostProviderIsProvided) {
+       HintsFetchAllowedIfFeatureIsEnabledAndDataSaverUserHasNotSeenInfobar) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       {optimization_guide::features::kOptimizationHintsFetching}, {});
@@ -983,6 +1032,30 @@ TEST_F(OptimizationGuideHintsManagerTest,
       std::make_unique<FakeTopHostProvider>(
           std::vector<std::string>({"example1.com", "example2.com"}));
 
+  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/false);
+  CreateServiceAndHintsManager(top_host_provider.get());
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
+  InitializeWithDefaultConfig("1.0.0");
+
+  // Force timer to expire and schedule a hints fetch.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_EQ(0, top_host_provider->get_num_top_hosts_called());
+  EXPECT_FALSE(hints_fetcher()->hints_fetched());
+}
+
+TEST_F(
+    OptimizationGuideHintsManagerTest,
+    HintsFetchAllowedIfFeatureIsEnabledAndUserMeetsAllDataSaverUserCriteria) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {optimization_guide::features::kOptimizationHintsFetching}, {});
+
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(
+          std::vector<std::string>({"example1.com", "example2.com"}));
+
+  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
   CreateServiceAndHintsManager(top_host_provider.get());
   hints_manager()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
@@ -999,6 +1072,7 @@ TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherEnabledNoHostsToFetch) {
   feature_list.InitAndEnableFeature(
       optimization_guide::features::kOptimizationHintsFetching);
 
+  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
       std::make_unique<FakeTopHostProvider>(std::vector<std::string>({}));
   CreateServiceAndHintsManager(top_host_provider.get());
@@ -1018,6 +1092,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   feature_list.InitAndEnableFeature(
       optimization_guide::features::kOptimizationHintsFetching);
 
+  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
       std::make_unique<FakeTopHostProvider>(
           std::vector<std::string>({"example1.com", "example2.com"}));
@@ -1044,6 +1119,7 @@ TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherTimerRetryDelay) {
   feature_list.InitAndEnableFeature(
       optimization_guide::features::kOptimizationHintsFetching);
 
+  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
       std::make_unique<FakeTopHostProvider>(
           std::vector<std::string>({"example1.com", "example2.com"}));
@@ -1072,6 +1148,7 @@ TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherTimerFetchSucceeds) {
   feature_list.InitAndEnableFeature(
       optimization_guide::features::kOptimizationHintsFetching);
 
+  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
       std::make_unique<FakeTopHostProvider>(
           std::vector<std::string>({"example1.com", "example2.com"}));

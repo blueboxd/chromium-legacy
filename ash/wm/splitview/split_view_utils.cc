@@ -227,8 +227,10 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
 }
 
 void MaybeRestoreSplitView(bool refresh_snapped_windows) {
-  if (!ShouldAllowSplitView())
+  if (!ShouldAllowSplitView() ||
+      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     return;
+  }
 
   // Search for snapped windows to detect if the now active user session, or
   // desk were in split view. In case multiple windows were snapped to one side,

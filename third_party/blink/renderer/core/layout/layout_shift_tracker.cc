@@ -303,9 +303,7 @@ void LayoutShiftTracker::ReportShift(double score_delta,
     }
   }
 
-  if (RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(
-          frame.GetDocument()) &&
-      frame.DomWindow()) {
+  if (frame.DomWindow()) {
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*frame.DomWindow());
     if (performance) {

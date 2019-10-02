@@ -47,15 +47,22 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop : public testing::Test {
 
     run_loop_.reset(new base::RunLoop());
 
+    using FakeDelegate = safe_browsing::FakeDeepScanningDialogDelegate;
+    using Verdict = safe_browsing::DlpDeepScanningVerdict;
+    auto callback = base::Bind(
+        [](bool scan_succeeds, const base::FilePath&) {
+          return scan_succeeds ? FakeDelegate::SuccessfulResponse()
+                               : FakeDelegate::DlpResponse(
+                                     Verdict::FAILURE, std::string(),
+                                     Verdict::TriggeredRule::REPORT_ONLY);
+        },
+        scan_succeeds);
+
     safe_browsing::DeepScanningDialogDelegate::SetDMTokenForTesting("dm_token");
     safe_browsing::DeepScanningDialogDelegate::SetFactoryForTesting(
         base::BindRepeating(
             &safe_browsing::FakeDeepScanningDialogDelegate::Create,
-            run_loop_->QuitClosure(),
-            base::Bind([](bool scan_succeeds,
-                          const base::FilePath&) { return scan_succeeds; },
-                       scan_succeeds),
-            "dm_token"));
+            run_loop_->QuitClosure(), callback, "dm_token"));
   }
 
   // Common code for running the test cases.

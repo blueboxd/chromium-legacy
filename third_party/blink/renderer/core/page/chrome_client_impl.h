@@ -235,8 +235,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void ShowVirtualKeyboardOnElementFocus(LocalFrame&) override;
 
-  void RegisterViewportLayers() const override;
-
   TransformationMatrix GetDeviceEmulationTransform() const override;
 
   void OnMouseDown(Node&) override;

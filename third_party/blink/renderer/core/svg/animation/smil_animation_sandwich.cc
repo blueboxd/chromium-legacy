@@ -59,7 +59,7 @@ void SMILAnimationSandwich::UpdateTiming(SMILTime elapsed) {
 
     if (!animation->CurrentIntervalIsActive(elapsed))
       continue;
-    animation->CheckAndUpdateInterval(elapsed);
+    animation->UpdateInterval(elapsed);
     animation->UpdateActiveState(elapsed);
   }
 }

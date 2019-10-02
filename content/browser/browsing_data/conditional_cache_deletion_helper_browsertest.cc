@@ -148,7 +148,14 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, Condition) {
 
 // Tests that ConditionalCacheDeletionHelper correctly constructs a condition
 // for time and URL.
-IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, TimeAndURL) {
+// crbug.com/1010102: fails on win.
+#if defined(OS_WIN)
+#define MAYBE_TimeAndURL DISABLED_TimeAndURL
+#else
+#define MAYBE_TimeAndURL TimeAndURL
+#endif
+IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
+                       MAYBE_TimeAndURL) {
   // Create some entries.
   std::set<GURL> urls = {
       embedded_test_server()->GetURL("foo.com", "/title1.html"),

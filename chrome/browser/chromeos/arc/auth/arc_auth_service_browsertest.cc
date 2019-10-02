@@ -355,6 +355,11 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     auth_service().GetGoogleAccountsInArc(std::move(callback));
   }
 
+  AccountInfo SetupGaiaAccount(const std::string& email) {
+    SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+    return SeedAccountInfo(email);
+  }
+
   void WaitForGoogleAccountsInArcCallback() { run_loop_->RunUntilIdle(); }
 
   Profile* profile() { return profile_.get(); }
@@ -571,33 +576,8 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
             arc_google_accounts()[0]->gaia_id);
 }
 
-// Tests that need Chrome OS Account Manager feature to be enabled.
-// TODO(crbug.com/912537): Merge them in ArcAuthServiceTest when Account Manager
-// is enabled by default on Chrome OS.
-class ArcAuthServiceAccountManagerTest : public ArcAuthServiceTest {
- public:
-  ArcAuthServiceAccountManagerTest() = default;
-  ~ArcAuthServiceAccountManagerTest() override = default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::features::kAccountManager);
-    ArcAuthServiceTest::SetUp();
-  }
-
-  AccountInfo SetupGaiaAccount(const std::string& email) {
-    SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-    return SeedAccountInfo(email);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceAccountManagerTest);
-};
-
 IN_PROC_BROWSER_TEST_F(
-    ArcAuthServiceAccountManagerTest,
+    ArcAuthServiceTest,
     PrimaryAccountReauthIsNotAttemptedJustAfterProvisioning) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
   const int initial_num_calls = auth_instance().num_account_upserted_calls();
@@ -611,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(initial_num_calls, auth_instance().num_account_upserted_calls());
 }
 
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
                        UnAuthenticatedAccountsAreNotPropagated) {
   const AccountInfo account_info = SetupGaiaAccount(kSecondaryAccountEmail);
 
@@ -623,8 +603,7 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
   EXPECT_EQ(initial_num_calls, auth_instance().num_account_upserted_calls());
 }
 
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
-                       AccountUpdatesArePropagated) {
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, AccountUpdatesArePropagated) {
   AccountInfo account_info = SetupGaiaAccount(kSecondaryAccountEmail);
 
   SetInvalidRefreshTokenForAccount(account_info.account_id);
@@ -639,8 +618,7 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
   EXPECT_EQ(kSecondaryAccountEmail, auth_instance().last_upserted_account());
 }
 
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
-                       AccountRemovalsArePropagated) {
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, AccountRemovalsArePropagated) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
   SeedAccountInfo(kSecondaryAccountEmail);
 

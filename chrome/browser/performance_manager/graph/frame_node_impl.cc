@@ -163,6 +163,16 @@ bool FrameNodeImpl::is_ad_frame() const {
   return is_ad_frame_.value();
 }
 
+bool FrameNodeImpl::holds_web_lock() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return holds_web_lock_.value();
+}
+
+bool FrameNodeImpl::holds_indexed_db_lock() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return holds_indexed_db_lock_.value();
+}
+
 const base::flat_set<WorkerNodeImpl*>& FrameNodeImpl::child_worker_nodes()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -198,6 +208,16 @@ void FrameNodeImpl::SetIsCurrent(bool is_current) {
     DCHECK_EQ(1u, current_siblings);
   }
 #endif
+}
+
+void FrameNodeImpl::SetHoldsWebLock(bool holds_web_lock) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  holds_web_lock_.SetAndMaybeNotify(this, holds_web_lock);
+}
+
+void FrameNodeImpl::SetHoldsIndexedDBLock(bool holds_indexed_db_lock) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  holds_indexed_db_lock_.SetAndMaybeNotify(this, holds_indexed_db_lock);
 }
 
 void FrameNodeImpl::OnNavigationCommitted(const GURL& url, bool same_document) {
@@ -332,6 +352,16 @@ bool FrameNodeImpl::GetNetworkAlmostIdle() const {
 bool FrameNodeImpl::IsAdFrame() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return is_ad_frame();
+}
+
+bool FrameNodeImpl::HoldsWebLock() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return holds_web_lock();
+}
+
+bool FrameNodeImpl::HoldsIndexedDBLock() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return holds_indexed_db_lock();
 }
 
 const base::flat_set<const WorkerNode*> FrameNodeImpl::GetChildWorkerNodes()

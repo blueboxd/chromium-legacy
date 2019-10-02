@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL Test PerformanceMark existence and feature detection assert_equals: performance.mark should be void in UserTiming L2. expected "undefined" but got "object"
-FAIL Test PerformanceMeasure existence and feature detection assert_equals: performance.measure should be void in UserTiming L2. expected "undefined" but got "object"
-Harness: the test ran to completion.
-

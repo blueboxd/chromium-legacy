@@ -66,6 +66,9 @@ class SMILTime {
     return base::TimeDelta::Max() - base::TimeDelta::FromMicroseconds(2);
   }
   static constexpr SMILTime Earliest() { return base::TimeDelta::Min(); }
+  static constexpr SMILTime Epsilon() {
+    return base::TimeDelta::FromMicroseconds(1);
+  }
   static constexpr SMILTime FromSecondsD(double seconds) {
     return base::TimeDelta::FromSecondsD(seconds);
   }

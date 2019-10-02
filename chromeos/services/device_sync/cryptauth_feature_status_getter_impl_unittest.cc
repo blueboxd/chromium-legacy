@@ -15,10 +15,10 @@
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
-#include "chromeos/services/device_sync/cryptauth_better_together_feature_types.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
 #include "chromeos/services/device_sync/cryptauth_device.h"
 #include "chromeos/services/device_sync/cryptauth_device_sync_result.h"
+#include "chromeos/services/device_sync/cryptauth_feature_type.h"
 #include "chromeos/services/device_sync/cryptauth_key_bundle.h"
 #include "chromeos/services/device_sync/cryptauth_v2_device_sync_test_devices.h"
 #include "chromeos/services/device_sync/mock_cryptauth_client.h"
@@ -64,10 +64,10 @@ cryptauthv2::DeviceFeatureStatus ConvertDeviceToDeviceFeatureStatus(
   device_feature_status.set_device_id(device.instance_id());
   for (const std::string& feature_type : feature_types) {
     bool is_supported_feature_type =
-        base::Contains(GetSupportedBetterTogetherFeatureTypes(), feature_type);
+        base::Contains(GetSupportedCryptAuthFeatureTypeStrings(), feature_type);
 
     const auto it = device.feature_states.find(
-        BetterTogetherFeatureTypeStringToSoftwareFeature(feature_type));
+        CryptAuthFeatureTypeStringToSoftwareFeature(feature_type));
     bool is_supported =
         it != device.feature_states.end() &&
         it->second != multidevice::SoftwareFeatureState::kNotSupported;
@@ -80,8 +80,8 @@ cryptauthv2::DeviceFeatureStatus ConvertDeviceToDeviceFeatureStatus(
     if (is_supported_feature_type) {
       feature_status->set_enabled(is_supported);
     } else {
-      EXPECT_TRUE(
-          base::Contains(GetEnabledBetterTogetherFeatureTypes(), feature_type));
+      EXPECT_TRUE(base::Contains(GetEnabledCryptAuthFeatureTypeStrings(),
+                                 feature_type));
       feature_status->set_enabled(is_enabled);
     }
   }
@@ -148,7 +148,7 @@ class DeviceSyncCryptAuthFeatureStatusGetterImplTest
               base::flat_set<std::string>(
                   batch_get_feature_statuses_request_->device_ids().begin(),
                   batch_get_feature_statuses_request_->device_ids().end()));
-    EXPECT_EQ(GetBetterTogetherFeatureTypes(),
+    EXPECT_EQ(GetCryptAuthFeatureTypeStrings(),
               base::flat_set<std::string>(
                   batch_get_feature_statuses_request_->feature_types().begin(),
                   batch_get_feature_statuses_request_->feature_types().end()));
@@ -245,7 +245,7 @@ TEST_F(DeviceSyncCryptAuthFeatureStatusGetterImplTest, Success) {
   VerifyBatchGetFeatureStatusesRequest(GetAllTestDeviceIds());
 
   SendCorrectBatchGetFeatureStatusesResponse(GetAllTestDeviceIds(),
-                                             GetBetterTogetherFeatureTypes());
+                                             GetCryptAuthFeatureTypeStrings());
 
   VerifyGetFeatureStatuesResult(
       GetAllTestDeviceIds(), CryptAuthDeviceSyncResult::ResultCode::kSuccess);
@@ -262,7 +262,7 @@ TEST_F(DeviceSyncCryptAuthFeatureStatusGetterImplTest,
   // Include an unknown feature type string in the response. The unknown feature
   // type should be ignored.
   cryptauthv2::DeviceFeatureStatus status = ConvertDeviceToDeviceFeatureStatus(
-      GetLocalDeviceForTest(), GetBetterTogetherFeatureTypes());
+      GetLocalDeviceForTest(), GetCryptAuthFeatureTypeStrings());
   status.add_feature_statuses()->set_feature_type("Unknown_feature_type");
 
   cryptauthv2::BatchGetFeatureStatusesResponse response;
@@ -283,7 +283,7 @@ TEST_F(DeviceSyncCryptAuthFeatureStatusGetterImplTest,
   VerifyBatchGetFeatureStatusesRequest(device_ids);
 
   cryptauthv2::DeviceFeatureStatus status = ConvertDeviceToDeviceFeatureStatus(
-      GetLocalDeviceForTest(), GetBetterTogetherFeatureTypes());
+      GetLocalDeviceForTest(), GetCryptAuthFeatureTypeStrings());
 
   // The BetterTogether host feature is not supported for the local device.
   EXPECT_EQ(multidevice::SoftwareFeatureState::kNotSupported,
@@ -293,26 +293,28 @@ TEST_F(DeviceSyncCryptAuthFeatureStatusGetterImplTest,
                 ->second);
 
   // Ensure that BetterTogether host is marked as not supported in the response.
-  auto beto_host_supported_it =
-      std::find_if(status.mutable_feature_statuses()->begin(),
-                   status.mutable_feature_statuses()->end(),
-                   [](const cryptauthv2::DeviceFeatureStatus::FeatureStatus&
-                          feature_status) {
-                     return feature_status.feature_type() ==
-                            kCryptAuthFeatureTypeBetterTogetherHostSupported;
-                   });
+  auto beto_host_supported_it = std::find_if(
+      status.mutable_feature_statuses()->begin(),
+      status.mutable_feature_statuses()->end(),
+      [](const cryptauthv2::DeviceFeatureStatus::FeatureStatus&
+             feature_status) {
+        return feature_status.feature_type() ==
+               CryptAuthFeatureTypeToString(
+                   CryptAuthFeatureType::kBetterTogetherHostSupported);
+      });
   EXPECT_FALSE(beto_host_supported_it->enabled());
 
   // Erroneously mark the BetterTogether host feature state as enabled in the
   // response though it is not supported.
-  auto beto_host_enabled_it =
-      std::find_if(status.mutable_feature_statuses()->begin(),
-                   status.mutable_feature_statuses()->end(),
-                   [](const cryptauthv2::DeviceFeatureStatus::FeatureStatus&
-                          feature_status) {
-                     return feature_status.feature_type() ==
-                            kCryptAuthFeatureTypeBetterTogetherHostEnabled;
-                   });
+  auto beto_host_enabled_it = std::find_if(
+      status.mutable_feature_statuses()->begin(),
+      status.mutable_feature_statuses()->end(),
+      [](const cryptauthv2::DeviceFeatureStatus::FeatureStatus&
+             feature_status) {
+        return feature_status.feature_type() ==
+               CryptAuthFeatureTypeToString(
+                   CryptAuthFeatureType::kBetterTogetherHostEnabled);
+      });
   beto_host_enabled_it->set_enabled(true);
 
   cryptauthv2::BatchGetFeatureStatusesResponse response;
@@ -337,7 +339,7 @@ TEST_F(DeviceSyncCryptAuthFeatureStatusGetterImplTest,
   // Include features statuses for unrequested devices. These extra devices
   // should be ignored.
   SendCorrectBatchGetFeatureStatusesResponse(GetAllTestDeviceIds(),
-                                             GetBetterTogetherFeatureTypes());
+                                             GetCryptAuthFeatureTypeStrings());
 
   VerifyGetFeatureStatuesResult(
       requested_device_ids,
@@ -355,7 +357,7 @@ TEST_F(DeviceSyncCryptAuthFeatureStatusGetterImplTest,
   // Send duplicate local device entries in the response. These duplicate
   // entries should be ignored.
   cryptauthv2::DeviceFeatureStatus status = ConvertDeviceToDeviceFeatureStatus(
-      GetLocalDeviceForTest(), GetBetterTogetherFeatureTypes());
+      GetLocalDeviceForTest(), GetCryptAuthFeatureTypeStrings());
   cryptauthv2::BatchGetFeatureStatusesResponse response;
   response.add_device_feature_statuses()->CopyFrom(status);
   response.add_device_feature_statuses()->CopyFrom(status);
@@ -376,7 +378,7 @@ TEST_F(DeviceSyncCryptAuthFeatureStatusGetterImplTest,
   base::flat_set<std::string> returned_device_ids = {
       GetLocalDeviceMetadataPacketForTest().device_id()};
   SendCorrectBatchGetFeatureStatusesResponse(returned_device_ids,
-                                             GetBetterTogetherFeatureTypes());
+                                             GetCryptAuthFeatureTypeStrings());
 
   VerifyGetFeatureStatuesResult(
       returned_device_ids,

@@ -301,12 +301,12 @@
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector_chromeos.h"
-#include "chromeos/assistant/buildflags.h"
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/fast_transition_observer.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/arc/arc_prefs.h"
@@ -315,11 +315,6 @@
 #include "components/onc/onc_pref_names.h"
 #include "components/quirks/quirks_manager.h"
 #include "extensions/browser/api/lock_screen_data/lock_screen_item_storage.h"
-
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
-#endif
-
 #else
 #include "chrome/browser/extensions/default_apps.h"
 #endif
@@ -915,6 +910,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   arc::prefs::RegisterProfilePrefs(registry);
   certificate_manager::CertificatesHandler::RegisterProfilePrefs(registry);
   chromeos::AccountManager::RegisterPrefs(registry);
+  chromeos::assistant::prefs::RegisterProfilePrefsForBrowser(registry);
   chromeos::CupsPrintersManager::RegisterProfilePrefs(registry);
   chromeos::first_run::RegisterProfilePrefs(registry);
   chromeos::file_system_provider::RegisterProfilePrefs(registry);
@@ -944,11 +940,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   policy::AppInstallEventLogManagerWrapper::RegisterProfilePrefs(registry);
   policy::StatusCollector::RegisterProfilePrefs(registry);
   ::onc::RegisterProfilePrefs(registry);
-
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-  chromeos::assistant::prefs::RegisterProfilePrefsForBrowser(registry);
-#endif
-
 #endif
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_APP_LIST)

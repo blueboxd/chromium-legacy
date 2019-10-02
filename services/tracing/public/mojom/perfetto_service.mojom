@@ -140,7 +140,7 @@ interface ProducerClient {
 // should implement ProducerClient for callbacks and pass along.
 interface PerfettoService {
   ConnectToProducerHost(pending_remote<ProducerClient> producer_client,
-                        ProducerHost& producer_host);
+                        pending_receiver<ProducerHost> producer_host_receiver);
 };
 
 // The policy for filling the trace buffer.

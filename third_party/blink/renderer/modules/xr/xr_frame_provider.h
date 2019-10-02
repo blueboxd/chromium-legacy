@@ -85,6 +85,8 @@ class XRFrameProvider final : public GarbageCollected<XRFrameProvider> {
 
   base::Optional<gpu::MailboxHolder> buffer_mailbox_holder_;
   bool last_has_focus_ = false;
+
+  bool emulated_position_ = false;
 };
 
 }  // namespace blink

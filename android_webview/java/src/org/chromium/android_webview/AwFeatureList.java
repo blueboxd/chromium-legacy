@@ -63,7 +63,9 @@ public final class AwFeatureList {
         return AwFeatureListJni.get().isEnabled(featureName);
     }
 
-    // Alphabetical:
+    // Deprecated: Use AwFeatures.*
+    // This constant is here temporarily to avoid breaking Clank.
+    @Deprecated
     public static final String WEBVIEW_CONNECTIONLESS_SAFE_BROWSING =
             "WebViewConnectionlessSafeBrowsing";
 

@@ -16,7 +16,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/ozone/buildflags.h"
@@ -94,8 +96,8 @@ class ClipboardOzone::AsyncClipboardOzone {
                                                const std::string& mime_type) {
     // We can use a fastpath if we are the owner of the selection.
     if (platform_clipboard_->IsSelectionOwner(buffer)) {
-      auto it = offered_data_.find(mime_type);
-      if (it == offered_data_.end())
+      auto it = offered_data_[buffer].find(mime_type);
+      if (it == offered_data_[buffer].end())
         return {};
       return base::make_span(it->second.data(), it->second.size());
     }
@@ -104,9 +106,9 @@ class ClipboardOzone::AsyncClipboardOzone {
     request.requested_mime_type = mime_type;
     PerformRequestAndWaitForResult(buffer, &request);
 
-    offered_data_ = std::move(request.data_map);
-    auto it = offered_data_.find(mime_type);
-    if (it == offered_data_.end())
+    offered_data_[buffer] = request.data_map;
+    auto it = offered_data_[buffer].find(mime_type);
+    if (it == offered_data_[buffer].end())
       return {};
     return base::make_span(it->second.data(), it->second.size());
   }
@@ -115,7 +117,7 @@ class ClipboardOzone::AsyncClipboardOzone {
     // We can use a fastpath if we are the owner of the selection.
     if (platform_clipboard_->IsSelectionOwner(buffer)) {
       std::vector<std::string> mime_types;
-      for (const auto& item : offered_data_)
+      for (const auto& item : offered_data_[buffer])
         mime_types.push_back(item.first);
       return mime_types;
     }
@@ -128,7 +130,7 @@ class ClipboardOzone::AsyncClipboardOzone {
   void OfferData(ClipboardBuffer buffer) {
     Request request(RequestType::kOffer);
     request.data_map = data_to_offer_;
-    offered_data_ = std::move(data_to_offer_);
+    offered_data_[buffer] = std::move(data_to_offer_);
     PerformRequestAndWaitForResult(buffer, &request);
 
     UpdateClipboardSequenceNumber(buffer);
@@ -137,11 +139,13 @@ class ClipboardOzone::AsyncClipboardOzone {
   void Clear(ClipboardBuffer buffer) {
     data_to_offer_.clear();
     OfferData(buffer);
+    ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
   }
 
   void InsertData(std::vector<uint8_t> data, const std::string& mime_type) {
     DCHECK_EQ(data_to_offer_.count(mime_type), 0U);
     data_to_offer_[mime_type] = std::move(data);
+    ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
   }
 
   uint64_t GetSequenceNumber(ClipboardBuffer buffer) {
@@ -272,7 +276,7 @@ class ClipboardOzone::AsyncClipboardOzone {
 
   // Clipboard data that had been offered most recently.  Used as a cache to
   // read data if we still own it.
-  PlatformClipboard::DataMap offered_data_;
+  base::flat_map<ClipboardBuffer, PlatformClipboard::DataMap> offered_data_;
 
   // A current pending request being processed.
   Request* pending_request_ = nullptr;
@@ -352,8 +356,18 @@ void ClipboardOzone::ReadAvailableTypes(ClipboardBuffer buffer,
   types->clear();
 
   auto available_types = async_clipboard_ozone_->RequestMimeTypes(buffer);
-  for (auto mime_type : available_types)
-    types->push_back(base::UTF8ToUTF16(mime_type));
+  for (auto& mime_type : available_types) {
+    // Special handling for chromium/x-web-custom-data.
+    // We must read the data and deserialize it to find the list
+    // of mime types to report.
+    if (mime_type == ClipboardFormatType::GetWebCustomDataType().ToString()) {
+      auto data = async_clipboard_ozone_->ReadClipboardDataAndWait(
+          buffer, ClipboardFormatType::GetWebCustomDataType().ToString());
+      ui::ReadCustomDataTypes(data.data(), data.size(), types);
+    } else {
+      types->push_back(base::UTF8ToUTF16(mime_type));
+    }
+  }
 }
 
 void ClipboardOzone::ReadText(ClipboardBuffer buffer,

@@ -236,6 +236,10 @@ template <>
 struct HashTraits<blink::QualifiedName>
     : SimpleClassHashTraits<blink::QualifiedName> {
   static const bool kEmptyValueIsZero = false;
+  static const bool kHasIsEmptyValueFunction = true;
+  static bool IsEmptyValue(const blink::QualifiedName& value) {
+    return value == EmptyValue();
+  }
   static const blink::QualifiedName& EmptyValue() {
     return blink::QualifiedName::Null();
   }

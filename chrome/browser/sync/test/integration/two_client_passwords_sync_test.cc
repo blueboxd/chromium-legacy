@@ -52,6 +52,7 @@ class TwoClientPasswordsSyncTest : public FeatureToggler, public SyncTest {
 };
 
 IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ENABLED(Add)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(SamePasswordFormsChecker().Wait());
 
@@ -64,6 +65,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ENABLED(Add)) {
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ENABLED(Race)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 
@@ -123,6 +125,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, MergeWithTheMostRecent) {
 
 IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
                        E2E_ENABLED(SetPassphraseAndAddPassword)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   GetSyncService(0)->GetUserSettings()->SetEncryptionPassphrase(
@@ -243,6 +246,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ONLY(DeleteTwo)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 
@@ -291,6 +295,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, DeleteAll) {
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ENABLED(Merge)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 
@@ -306,6 +311,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ENABLED(Merge)) {
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ONLY(TwoClientAddPass)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) <<  "SetupSync() failed.";
   // All profiles should sync same passwords.
   ASSERT_TRUE(SamePasswordFormsChecker().Wait())

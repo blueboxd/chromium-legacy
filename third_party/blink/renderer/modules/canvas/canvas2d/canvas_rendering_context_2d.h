@@ -182,7 +182,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   cc::PaintCanvas* ExistingDrawingCanvas() const final;
 
   void DidDraw(const SkIRect& dirty_rect) final;
-  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) const final;
+  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) final;
 
   bool StateHasFilter() final;
   sk_sp<PaintFilter> StateGetFilter() final;

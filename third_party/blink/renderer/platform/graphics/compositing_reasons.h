@@ -39,7 +39,6 @@ using CompositingReasons = uint64_t;
   V(WillChangeOther)                                                          \
   V(BackdropFilter)                                                           \
   V(RootScroller)                                                             \
-  V(ScrollTimelineTarget)                                                     \
                                                                               \
   /* Overlap reasons that require knowing what's behind you in paint-order    \
      before knowing the answer. */                                            \
@@ -129,7 +128,7 @@ class PLATFORM_EXPORT CompositingReason {
     kComboAllDirectNonStyleDeterminedReasons =
         kVideo | kCanvas | kPlugin | kIFrame | kOverflowScrollingParent |
         kOutOfFlowClipping | kVideoOverlay | kRoot | kRootScroller |
-        kScrollDependentPosition | kScrollTimelineTarget,
+        kScrollDependentPosition,
 
     kComboAllDirectReasons = kComboAllDirectStyleDeterminedReasons |
                              kComboAllDirectNonStyleDeterminedReasons,

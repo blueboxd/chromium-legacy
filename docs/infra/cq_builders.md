@@ -48,8 +48,6 @@ These builders must pass before a CL may land.
 
 * [linux-chromeos-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-chromeos-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux-chromeos-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-chromeos-rel))
 
-* [linux-jumbo-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-jumbo-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux-jumbo-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-jumbo-rel))
-
 * [linux-libfuzzer-asan-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-libfuzzer-asan-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux-libfuzzer-asan-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-libfuzzer-asan-rel))
 
 * [linux-ozone-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-ozone-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux-ozone-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-ozone-rel))

@@ -7,19 +7,24 @@
 #include "base/location.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_throbber.h"
 
-PageActionIconLoadingIndicatorView::PageActionIconLoadingIndicatorView() =
-    default;
+PageActionIconLoadingIndicatorView::PageActionIconLoadingIndicatorView(
+    PageActionIconView* parent)
+    : parent_(parent) {
+  parent_->AddObserver(this);
+}
 
-PageActionIconLoadingIndicatorView::~PageActionIconLoadingIndicatorView() =
-    default;
+PageActionIconLoadingIndicatorView::~PageActionIconLoadingIndicatorView() {
+  parent_->RemoveObserver(this);
+}
 
 void PageActionIconLoadingIndicatorView::ShowAnimation() {
-  if (!throbber_start_time_.has_value())
+  if (!throbber_start_time_)
     throbber_start_time_ = base::TimeTicks::Now();
 
   SetVisible(true);
@@ -37,13 +42,15 @@ bool PageActionIconLoadingIndicatorView::IsAnimating() {
 }
 
 void PageActionIconLoadingIndicatorView::OnPaint(gfx::Canvas* canvas) {
+  if (!throbber_start_time_)
+    return;
+
   const SkColor color = GetThemeProvider()->GetColor(
       ThemeProperties::COLOR_TAB_THROBBER_SPINNING);
   constexpr int kThrobberStrokeWidth = 2;
-  gfx::PaintThrobberSpinning(
-      canvas, GetLocalBounds(), color,
-      base::TimeTicks::Now() - throbber_start_time_.value_or(base::TimeTicks()),
-      kThrobberStrokeWidth);
+  gfx::PaintThrobberSpinning(canvas, GetLocalBounds(), color,
+                             base::TimeTicks::Now() - *throbber_start_time_,
+                             kThrobberStrokeWidth);
 }
 
 void PageActionIconLoadingIndicatorView::OnViewBoundsChanged(

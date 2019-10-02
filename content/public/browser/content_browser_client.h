@@ -1189,9 +1189,18 @@ class CONTENT_EXPORT ContentBrowserClient {
       NonNetworkURLLoaderFactoryMap* factories);
 
   // Allows the embedder to register per-scheme URLLoaderFactory
-  // implementations to handle service worker script requests initiated by the
-  // browser process for schemes not handled by the Network Service.
-  // Only called for service worker update check when
+  // implementations to handle dedicated/shared worker main script requests
+  // initiated by the browser process for schemes not handled by the Network
+  // Service. The resulting |factories| must be used only by the browser
+  // process. The caller must not send any of |factories| to any other process.
+  virtual void RegisterNonNetworkWorkerMainResourceURLLoaderFactories(
+      BrowserContext* browser_context,
+      NonNetworkURLLoaderFactoryMap* factories);
+
+  // Allows the embedder to register per-scheme URLLoaderFactory
+  // implementations to handle service worker main/imported script requests
+  // initiated by the browser process for schemes not handled by the Network
+  // Service. Only called for service worker update check when
   // ServiceWorkerImportedScriptUpdateCheck is enabled.
   // The resulting |factories| must be used only by the browser process. The
   // caller must not send any of |factories| to any other process.
@@ -1328,7 +1337,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // preference-following access to cookies. This is primarily used for objects
   // vended to renderer processes for limited, origin-locked (to |origin|),
   // access to script-accessible cookies from JavaScript, so returned objects
-  // should treat their inputs as untrusted.
+  // should treat their inputs as untrusted.  |site_for_cookies| represents
+  // which domains the cookie manager should consider to be first-party, for
+  // purposes of SameSite cookies and any third-party cookie blocking the
+  // embedder may implement (if |site_for_cookies| is empty, no domains are
+  // first-party). |top_frame_origin| represents the domain for top-level frame,
+  // and can be used to look up preferences that are dependent on that.
   //
   // |*receiver| is always valid upon entry.
   //
@@ -1351,6 +1365,8 @@ class CONTENT_EXPORT ContentBrowserClient {
       network::mojom::RestrictedCookieManagerRole role,
       BrowserContext* browser_context,
       const url::Origin& origin,
+      const GURL& site_for_cookies,
+      const url::Origin& top_frame_origin,
       bool is_service_worker,
       int process_id,
       int routing_id,
@@ -1544,10 +1560,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // default implementation provides nullptr OverlayWindow.
   virtual std::unique_ptr<OverlayWindow> CreateWindowForPictureInPicture(
       PictureInPictureWindowController* controller);
-
-  // Returns true if it is safe to redirect to |url|, otherwise returns false.
-  // This is called on the UI thread.
-  virtual bool IsSafeRedirectTarget(const GURL& url, BrowserContext* context);
 
   // Registers the watcher to observe updates in RendererPreferences.
   virtual void RegisterRendererPreferenceWatcher(

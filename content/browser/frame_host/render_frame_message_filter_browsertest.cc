@@ -343,6 +343,8 @@ class CookieStoreContentBrowserClient : public ContentBrowserClient {
       network::mojom::RestrictedCookieManagerRole role,
       content::BrowserContext* browser_context,
       const url::Origin& origin,
+      const GURL& site_for_cookies,
+      const url::Origin& top_frame_origin,
       bool is_service_worker,
       int process_id,
       int routing_id,

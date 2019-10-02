@@ -38,13 +38,6 @@ CookieMonsterChangeDispatcher::Subscription::Subscription(
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(url_.is_valid() || url_.is_empty());
   DCHECK_EQ(url_.is_empty(), domain_key_ == kGlobalDomainKey);
-
-  // The net::CookieOptions are hard-coded for now, but future APIs may set
-  // different options. For example, JavaScript observers will not be allowed to
-  // see HTTP-only changes.
-  options_.set_include_httponly();
-  options_.set_same_site_cookie_context(
-      CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
 }
 
 CookieMonsterChangeDispatcher::Subscription::~Subscription() {
@@ -60,8 +53,12 @@ void CookieMonsterChangeDispatcher::Subscription::DispatchChange(
     net::CookieChangeCause change_cause) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  // The net::CookieOptions are hard-coded for now, but future APIs may set
+  // different options. For example, JavaScript observers will not be allowed to
+  // see HTTP-only changes.
   if (!url_.is_empty() &&
-      !cookie.IncludeForRequestURL(url_, options_).IsInclude()) {
+      !cookie.IncludeForRequestURL(url_, CookieOptions::MakeAllInclusive())
+           .IsInclude()) {
     return;
   }
 

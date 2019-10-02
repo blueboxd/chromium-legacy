@@ -43,4 +43,9 @@ public class MockRenderFrameHost implements RenderFrameHost {
     public boolean isRenderFrameCreated() {
         return false;
     }
+
+    @Override
+    public boolean areInputEventsIgnored() {
+        return false;
+    }
 }

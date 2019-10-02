@@ -60,6 +60,9 @@ class RenderFrameHostAndroid : public base::SupportsUserData::Data {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>&) const;
 
+  jboolean IsProcessBlocked(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>&) const;
+
   RenderFrameHostImpl* render_frame_host() const { return render_frame_host_; }
 
  private:

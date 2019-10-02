@@ -80,8 +80,8 @@ void GetInterfaceImpl(const std::string& interface_name,
         std::move(interface_pipe));
     process->GetStoragePartition()->CreateRestrictedCookieManager(
         network::mojom::RestrictedCookieManagerRole::SCRIPT, origin,
-        true /* is_service_worker */, process_id, MSG_ROUTING_NONE,
-        std::move(receiver));
+        origin.GetURL(), origin, true /* is_service_worker */, process_id,
+        MSG_ROUTING_NONE, std::move(receiver));
     return;
   }
 
@@ -111,6 +111,18 @@ void CreateLockManagerImpl(
     return;
 
   process->CreateLockManager(MSG_ROUTING_NONE, origin, std::move(receiver));
+}
+
+void CreateIDBFactoryImpl(
+    const url::Origin& origin,
+    int process_id,
+    mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* process = RenderProcessHost::FromID(process_id);
+  if (!process)
+    return;
+
+  process->BindIndexedDB(origin, std::move(receiver));
 }
 
 void CreatePermissionServiceImpl(
@@ -1434,6 +1446,17 @@ void ServiceWorkerProviderHost::CreateLockManager(
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
       base::BindOnce(&CreateLockManagerImpl,
+                     running_hosted_version_->script_origin(),
+                     render_process_id_, std::move(receiver)));
+}
+
+void ServiceWorkerProviderHost::CreateIDBFactory(
+    mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK(IsProviderForServiceWorker());
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(&CreateIDBFactoryImpl,
                      running_hosted_version_->script_origin(),
                      render_process_id_, std::move(receiver)));
 }

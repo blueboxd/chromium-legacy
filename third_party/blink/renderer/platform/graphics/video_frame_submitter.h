@@ -9,6 +9,7 @@
 
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -174,6 +175,8 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   base::flat_map<FrameTokenType, base::TimeTicks> frame_token_to_timestamp_map_;
 
   base::OneShotTimer empty_frame_timer_;
+
+  base::Optional<int> last_frame_id_;
 
   THREAD_CHECKER(thread_checker_);
 

@@ -58,6 +58,8 @@ void BluetoothDiscoverySession::Stop(const base::Closure& success_callback,
       base::Bind(&BluetoothDiscoverySession::DeactivateDiscoverySession,
                  weak_ptr_factory_.GetWeakPtr());
 
+  MarkAsInactive();
+
   // Create a callback that runs
   // BluetoothDiscoverySession::DeactivateDiscoverySession if the session
   // still exists, but always runs success_callback.
@@ -69,7 +71,6 @@ void BluetoothDiscoverySession::Stop(const base::Closure& success_callback,
       this, discovery_session_removed_callback,
       base::Bind(&BluetoothDiscoverySession::OnDiscoverySessionRemovalFailed,
                  weak_ptr_factory_.GetWeakPtr(), error_callback));
-  MarkAsInactive();
 }
 
 // static

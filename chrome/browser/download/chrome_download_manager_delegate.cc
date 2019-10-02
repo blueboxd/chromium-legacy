@@ -1202,17 +1202,15 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
     DCHECK_NE(danger_type,
               download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT);
 
-    if (danger_type != download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
-      if (ShouldBlockFile(danger_type, item)) {
-        item->OnContentCheckCompleted(
-            // Specifying a dangerous type here would take precendence over the
-            // blocking of the file.
-            download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-            download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
-      } else {
-        item->OnContentCheckCompleted(danger_type,
-                                      download::DOWNLOAD_INTERRUPT_REASON_NONE);
-      }
+    if (ShouldBlockFile(danger_type, item)) {
+      item->OnContentCheckCompleted(
+          // Specifying a dangerous type here would take precedence over the
+          // blocking of the file.
+          download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+          download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
+    } else {
+      item->OnContentCheckCompleted(danger_type,
+                                    download::DOWNLOAD_INTERRUPT_REASON_NONE);
     }
   }
 

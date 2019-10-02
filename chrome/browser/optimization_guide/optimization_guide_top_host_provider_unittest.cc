@@ -4,6 +4,7 @@
 
 #include "chrome/browser/optimization_guide/optimization_guide_top_host_provider.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
@@ -182,12 +183,19 @@ class OptimizationGuideTopHostProviderTest
 };
 
 TEST_F(OptimizationGuideTopHostProviderTest, CreateIfAllowedNonDataSaverUser) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      {optimization_guide::features::kOptimizationHintsFetching});
   SetDataSaverEnabled(false);
   ASSERT_FALSE(OptimizationGuideTopHostProvider::CreateIfAllowed(profile()));
 }
 
 TEST_F(OptimizationGuideTopHostProviderTest,
        CreateIfAllowedDataSaverUserInfobarNotSeen) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      {optimization_guide::features::kOptimizationHintsFetching});
+
   SetDataSaverEnabled(true);
 
   // Make sure infobar not shown.
@@ -205,6 +213,10 @@ TEST_F(OptimizationGuideTopHostProviderTest,
 
 TEST_F(OptimizationGuideTopHostProviderTest,
        CreateIfAllowedDataSaverUserInfobarSeen) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      {optimization_guide::features::kOptimizationHintsFetching});
+
   SetDataSaverEnabled(true);
 
   // Navigate so infobar is shown.
@@ -218,6 +230,27 @@ TEST_F(OptimizationGuideTopHostProviderTest,
   EXPECT_FALSE(decider->NeedsToNotifyUser());
 
   ASSERT_TRUE(OptimizationGuideTopHostProvider::CreateIfAllowed(profile()));
+}
+
+TEST_F(OptimizationGuideTopHostProviderTest,
+       CreateIfAllowedDataSaverUserInfobarSeenButHintsFetchingNotEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {}, {optimization_guide::features::kOptimizationHintsFetching});
+
+  SetDataSaverEnabled(true);
+
+  // Navigate so infobar is shown.
+  PreviewsUITabHelper::CreateForWebContents(web_contents());
+  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  PreviewsHTTPSNotificationInfoBarDecider* decider =
+      previews_service->previews_https_notification_infobar_decider();
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("http://whatever.com"));
+  EXPECT_FALSE(decider->NeedsToNotifyUser());
+
+  ASSERT_FALSE(OptimizationGuideTopHostProvider::CreateIfAllowed(profile()));
 }
 
 TEST_F(OptimizationGuideTopHostProviderTest, GetTopHostsMaxSites) {

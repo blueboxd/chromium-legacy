@@ -112,7 +112,6 @@ void BrowserPolicyConnectorBase::SetPolicyProviderForTesting(
   // If this function is used by a test then it must be called before the
   // browser is created, and GetPolicyService() gets called.
   CHECK(!g_created_policy_service);
-  DCHECK(!g_testing_provider);
   g_testing_provider = provider;
 }
 

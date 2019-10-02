@@ -1552,13 +1552,6 @@ interface DeviceOrientationEvent : Event
     getter beta
     getter gamma
     method constructor
-interface DisplayLockContext
-    attribute @@toStringTag
-    getter locked
-    method acquire
-    method commit
-    method constructor
-    method updateAndCommit
 interface Document : Node
     attribute @@toStringTag
     attribute @@unscopables
@@ -2020,7 +2013,6 @@ interface Element : Node
     getter clientWidth
     getter computedName
     getter computedRole
-    getter displayLock
     getter elementTiming
     getter firstElementChild
     getter id

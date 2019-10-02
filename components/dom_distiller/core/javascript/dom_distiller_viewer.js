@@ -387,3 +387,30 @@ window.addEventListener('touchmove', pincher.handleTouchMove, {passive: false});
 window.addEventListener('touchend', pincher.handleTouchEnd, {passive: false});
 window.addEventListener(
     'touchcancel', pincher.handleTouchCancel, {passive: false});
+
+document.querySelector('#settingsToggle').addEventListener('click', (e) => {
+  let dialog = document.querySelector('#settingsDialog');
+  if (dialog.open) {
+    dialog.close();
+  } else {
+    dialog.show();
+  }
+});
+
+document.querySelector('#closeSettingsButton')
+    .addEventListener('click', (e) => {
+      document.querySelector('#settingsDialog').close();
+    });
+
+document.querySelector('#themeSelection').addEventListener('change', (e) => {
+  useTheme(e.target.value);
+});
+
+document.querySelector('#fontSizeSelection').addEventListener('change', (e) => {
+  document.body.style.fontSize = e.target.value + 'px';
+});
+
+document.querySelector('#fontFamilySelection')
+    .addEventListener('change', (e) => {
+      useFontFamily(e.target.value);
+    });

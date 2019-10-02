@@ -49,6 +49,7 @@
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/origin.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"
@@ -343,7 +344,7 @@ void DesktopCaptureAccessHandler::HandleRequest(
         content::DesktopStreamsRegistry::GetInstance()->RequestMediaForStreamId(
             request.requested_video_device_id,
             main_frame->GetProcess()->GetID(), main_frame->GetRoutingID(),
-            request.security_origin, nullptr,
+            url::Origin::Create(request.security_origin), nullptr,
             content::kRegistryStreamTypeDesktop);
   }
 

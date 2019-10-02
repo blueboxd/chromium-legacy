@@ -207,6 +207,12 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   mojom::VRDisplayInfoPtr display_info_;
   bool display_info_changed_ = false;
 
+  // True if floor height estimate should be passed to blink via XRFrameData
+  // returned by subsequent call to |GetFrameData()|.
+  bool floor_height_estimate_changed_ = true;
+  // Currently estimated floor height.
+  float floor_height_estimate_ = 1.2;
+
   std::vector<device::mojom::XRInputSourceStatePtr> input_states_;
   gfx::PointF screen_last_touch_;
 

@@ -214,7 +214,7 @@ TEST_F(ShelfBackgroundAnimatorTest, DefaultBackground) {
   PaintBackground(SHELF_BACKGROUND_DEFAULT);
 
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, animator_->target_background_type());
-  EXPECT_EQ(ShelfConfig::Get()->shelf_translucent_alpha(),
+  EXPECT_EQ((int)SkColorGetA(ShelfConfig::Get()->GetDefaultShelfColor()),
             observer_.GetBackgroundAlpha());
 }
 
@@ -223,7 +223,7 @@ TEST_F(ShelfBackgroundAnimatorTest, MaximizedBackground) {
   PaintBackground(SHELF_BACKGROUND_MAXIMIZED);
 
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, animator_->target_background_type());
-  EXPECT_EQ(ShelfConfig::Get()->shelf_translucent_maximized_window(),
+  EXPECT_EQ((int)SkColorGetA(ShelfConfig::Get()->GetMaximizedShelfColor()),
             observer_.GetBackgroundAlpha());
 }
 
@@ -232,7 +232,7 @@ TEST_F(ShelfBackgroundAnimatorTest, FullscreenAppListBackground) {
   PaintBackground(SHELF_BACKGROUND_APP_LIST);
 
   EXPECT_EQ(SHELF_BACKGROUND_APP_LIST, animator_->target_background_type());
-  EXPECT_EQ(ShelfConfig::Get()->shelf_translucent_over_app_list(),
+  EXPECT_EQ((int)SkColorGetA(ShelfConfig::Get()->GetShelfWithAppListColor()),
             observer_.GetBackgroundAlpha());
 }
 
@@ -325,8 +325,7 @@ TEST_F(ShelfBackgroundTargetColorTest, ShelfBackgroundColorUpdatedFromLogin) {
 
   NotifySessionStateChanged(session_manager::SessionState::ACTIVE);
   EXPECT_EQ(test_api.shelf_background_target_color(),
-            SkColorSetA(ShelfConfig::Get()->shelf_default_base_color(),
-                        ShelfConfig::Get()->shelf_translucent_alpha()));
+            ShelfConfig::Get()->GetDefaultShelfColor());
 }
 
 // Verify the target color of the shelf background is updated based on session
@@ -348,8 +347,7 @@ TEST_F(ShelfBackgroundTargetColorTest, ShelfBackgroundColorUpdatedFromOOBE) {
 
   NotifySessionStateChanged(session_manager::SessionState::ACTIVE);
   EXPECT_EQ(test_api.shelf_background_target_color(),
-            SkColorSetA(ShelfConfig::Get()->shelf_default_base_color(),
-                        ShelfConfig::Get()->shelf_translucent_alpha()));
+            ShelfConfig::Get()->GetDefaultShelfColor());
 }
 
 }  // namespace ash

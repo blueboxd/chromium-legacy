@@ -16,6 +16,7 @@
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/permission_helper.h"
@@ -215,11 +216,6 @@ void PopulateHeadersFromMask(uint8_t mask,
 
 }  // namespace
 
-RulesetManager::Action::Action(Action::Type type) : type(type) {}
-RulesetManager::Action::~Action() = default;
-RulesetManager::Action::Action(Action&&) = default;
-RulesetManager::Action& RulesetManager::Action::operator=(Action&&) = default;
-
 RulesetManager::RulesetManager(content::BrowserContext* browser_context)
     : browser_context_(browser_context),
       prefs_(ExtensionPrefs::Get(browser_context)),
@@ -326,7 +322,7 @@ void RulesetManager::UpdateAllowedPages(const ExtensionId& extension_id,
   ClearRendererCacheOnNavigation();
 }
 
-const std::vector<RulesetManager::Action>& RulesetManager::EvaluateRequest(
+const std::vector<RequestAction>& RulesetManager::EvaluateRequest(
     const WebRequestInfo& request,
     bool is_incognito_context) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -359,7 +355,7 @@ bool RulesetManager::HasAnyExtraHeadersMatcher() const {
 bool RulesetManager::HasExtraHeadersMatcherForRequest(
     const WebRequestInfo& request,
     bool is_incognito_context) const {
-  const std::vector<Action>& actions =
+  const std::vector<RequestAction>& actions =
       EvaluateRequest(request, is_incognito_context);
 
   // We only support removing a subset of extra headers currently. If that
@@ -369,7 +365,7 @@ bool RulesetManager::HasExtraHeadersMatcherForRequest(
                 "is updated as new actions are added.");
 
   for (const auto& action : actions) {
-    if (action.type == Action::Type::REMOVE_HEADERS)
+    if (action.type == RequestAction::Type::REMOVE_HEADERS)
       return true;
   }
 
@@ -404,14 +400,14 @@ bool RulesetManager::ExtensionRulesetData::operator<(
          std::tie(other.extension_install_time, other.extension_id);
 }
 
-base::Optional<RulesetManager::Action> RulesetManager::GetBlockOrCollapseAction(
+base::Optional<RequestAction> RulesetManager::GetBlockOrCollapseAction(
     const std::vector<const ExtensionRulesetData*>& rulesets,
     const RequestParams& params) const {
   for (const ExtensionRulesetData* ruleset : rulesets) {
     if (ruleset->matcher->ShouldBlockRequest(params)) {
-      Action action = ShouldCollapseResourceType(params.element_type)
-                          ? Action(Action::Type::COLLAPSE)
-                          : Action(Action::Type::BLOCK);
+      RequestAction action = ShouldCollapseResourceType(params.element_type)
+                                 ? RequestAction(RequestAction::Type::COLLAPSE)
+                                 : RequestAction(RequestAction::Type::BLOCK);
       action.extension_id = ruleset->extension_id;
       return action;
     }
@@ -419,8 +415,7 @@ base::Optional<RulesetManager::Action> RulesetManager::GetBlockOrCollapseAction(
   return base::nullopt;
 }
 
-base::Optional<RulesetManager::Action>
-RulesetManager::GetRedirectOrUpgradeAction(
+base::Optional<RequestAction> RulesetManager::GetRedirectOrUpgradeAction(
     const std::vector<const ExtensionRulesetData*>& rulesets,
     const WebRequestInfo& request,
     const int tab_id,
@@ -457,7 +452,7 @@ RulesetManager::GetRedirectOrUpgradeAction(
     if (!redirect_action.redirect_url)
       continue;
 
-    Action action(Action::Type::REDIRECT);
+    RequestAction action(RequestAction::Type::REDIRECT);
     action.redirect_url = std::move(redirect_action.redirect_url);
     action.extension_id = ruleset->extension_id;
     return action;
@@ -466,10 +461,10 @@ RulesetManager::GetRedirectOrUpgradeAction(
   return base::nullopt;
 }
 
-std::vector<RulesetManager::Action> RulesetManager::GetRemoveHeadersActions(
+std::vector<RequestAction> RulesetManager::GetRemoveHeadersActions(
     const std::vector<const ExtensionRulesetData*>& rulesets,
     const RequestParams& params) const {
-  std::vector<Action> remove_headers_actions;
+  std::vector<RequestAction> remove_headers_actions;
 
   // Keep a combined mask of all headers to be removed to be passed into
   // GetRemoveHeadersMask. This is done to ensure the ruleset matchers will skip
@@ -481,7 +476,7 @@ std::vector<RulesetManager::Action> RulesetManager::GetRemoveHeadersActions(
     if (!ruleset_mask)
       continue;
 
-    Action action(Action::Type::REMOVE_HEADERS);
+    RequestAction action(RequestAction::Type::REMOVE_HEADERS);
     PopulateHeadersFromMask(ruleset_mask, &action.request_headers_to_remove,
                             &action.response_headers_to_remove);
     action.extension_id = ruleset->extension_id;
@@ -492,13 +487,13 @@ std::vector<RulesetManager::Action> RulesetManager::GetRemoveHeadersActions(
   return remove_headers_actions;
 }
 
-std::vector<RulesetManager::Action> RulesetManager::EvaluateRequestInternal(
+std::vector<RequestAction> RulesetManager::EvaluateRequestInternal(
     const WebRequestInfo& request,
     bool is_incognito_context) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!request.dnr_actions);
 
-  std::vector<Action> actions;
+  std::vector<RequestAction> actions;
 
   if (!ShouldEvaluateRequest(request))
     return actions;
@@ -545,7 +540,7 @@ std::vector<RulesetManager::Action> RulesetManager::EvaluateRequestInternal(
   }
 
   // If the request is blocked, no further modifications can happen.
-  base::Optional<Action> action =
+  base::Optional<RequestAction> action =
       GetBlockOrCollapseAction(rulesets_to_evaluate, params);
   if (action) {
     actions.push_back(std::move(std::move(*action)));
@@ -564,7 +559,7 @@ std::vector<RulesetManager::Action> RulesetManager::EvaluateRequestInternal(
   // Removing headers doesn't require host permissions.
   // Note: If we add other "non-destructive" actions (i.e., actions that don't
   // end the request), we should combine them with the remove-headers action.
-  std::vector<Action> remove_headers_actions =
+  std::vector<RequestAction> remove_headers_actions =
       GetRemoveHeadersActions(rulesets_to_evaluate, params);
 
   if (!remove_headers_actions.empty())

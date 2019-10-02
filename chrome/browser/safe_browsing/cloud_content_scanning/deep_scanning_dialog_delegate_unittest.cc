@@ -4,7 +4,7 @@
 
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 
-#include <set>
+#include <map>
 #include <vector>
 
 #include "base/bind.h"
@@ -184,17 +184,6 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareNoPref2) {
   EXPECT_FALSE(data.do_malware_scan);
 }
 
-TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareNoPref3) {
-  EnableFeatures({kDeepScanningOfUploads});
-  SetDMToken(kDmToken);
-  SetMalwarePolicy(SEND_FILES_DISABLED);
-
-  DeepScanningDialogDelegate::Data data;
-  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(profile(), GURL(), &data));
-  EXPECT_FALSE(data.do_dlp_scan);
-  EXPECT_FALSE(data.do_malware_scan);
-}
-
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareNoPref4) {
   EnableFeatures({kDeepScanningOfUploads});
   SetDMToken(kDmToken);
@@ -253,8 +242,9 @@ class DeepScanningDialogDelegateAuditOnlyTest : public BaseTest {
     return web_contents_.get();
   }
 
-  void PathFailsDeepScan(base::FilePath path) {
-    failures_.insert(std::move(path));
+  void PathFailsDeepScan(base::FilePath path,
+                         DeepScanningClientResponse response) {
+    failures_.insert({std::move(path), std::move(response)});
   }
 
  private:
@@ -273,16 +263,20 @@ class DeepScanningDialogDelegateAuditOnlyTest : public BaseTest {
         kDmToken));
   }
 
-  bool StatusCallback(const base::FilePath& path) {
+  DeepScanningClientResponse StatusCallback(const base::FilePath& path) {
     // The path succeeds if it is not in the |failures_| maps.
-    return failures_.find(path) == failures_.end();
+    auto it = failures_.find(path);
+    return it != failures_.end()
+               ? it->second
+               : FakeDeepScanningDialogDelegate::SuccessfulResponse();
   }
 
   base::RunLoop run_loop_;
   std::unique_ptr<content::WebContents> web_contents_;
 
   // Paths in this map will be consider to have failed deep scan checks.
-  std::set<base::FilePath> failures_;
+  // The actual failure response is given for each path.
+  std::map<base::FilePath, DeepScanningClientResponse> failures_;
 };
 
 TEST_F(DeepScanningDialogDelegateAuditOnlyTest, Empty) {
@@ -451,8 +445,26 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, StringFileDataPartialSuccess) {
 
   data.text.emplace_back(base::UTF8ToUTF16("foo"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_malware_1"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_malware_2"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_dlp_status"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_dlp_rule"));
 
-  PathFailsDeepScan(data.paths[0]);
+  // Mark some files with failed scans.
+  PathFailsDeepScan(data.paths[1],
+                    FakeDeepScanningDialogDelegate::MalwareResponse(
+                        MalwareDeepScanningVerdict::UWS));
+  PathFailsDeepScan(data.paths[2],
+                    FakeDeepScanningDialogDelegate::MalwareResponse(
+                        MalwareDeepScanningVerdict::MALWARE));
+  PathFailsDeepScan(data.paths[3],
+                    FakeDeepScanningDialogDelegate::DlpResponse(
+                        DlpDeepScanningVerdict::FAILURE, "",
+                        DlpDeepScanningVerdict::TriggeredRule::REPORT_ONLY));
+  PathFailsDeepScan(data.paths[4],
+                    FakeDeepScanningDialogDelegate::DlpResponse(
+                        DlpDeepScanningVerdict::SUCCESS, "rule",
+                        DlpDeepScanningVerdict::TriggeredRule::BLOCK));
 
   bool called = false;
   DeepScanningDialogDelegate::ShowForWebContents(
@@ -461,11 +473,15 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, StringFileDataPartialSuccess) {
           [](bool* called, const DeepScanningDialogDelegate::Data& data,
              const DeepScanningDialogDelegate::Result& result) {
             EXPECT_EQ(1u, data.text.size());
-            EXPECT_EQ(1u, data.paths.size());
+            EXPECT_EQ(5u, data.paths.size());
             ASSERT_EQ(1u, result.text_results.size());
-            ASSERT_EQ(1u, result.paths_results.size());
+            ASSERT_EQ(5u, result.paths_results.size());
             EXPECT_TRUE(result.text_results[0]);
-            EXPECT_FALSE(result.paths_results[0]);
+            EXPECT_TRUE(result.paths_results[0]);
+            EXPECT_FALSE(result.paths_results[1]);
+            EXPECT_FALSE(result.paths_results[2]);
+            EXPECT_FALSE(result.paths_results[3]);
+            EXPECT_FALSE(result.paths_results[4]);
             *called = true;
           },
           &called));

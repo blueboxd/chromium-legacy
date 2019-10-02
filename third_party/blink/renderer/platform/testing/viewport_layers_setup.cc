@@ -17,6 +17,7 @@
 namespace blink {
 
 ViewportLayersSetup::ViewportLayersSetup() {
+  // TODO(wangxianzhu): Don't create unnecessary layers.
   clip_layer_ = std::make_unique<FakeGraphicsLayer>(client_);
   scroll_elasticity_layer_ = std::make_unique<FakeGraphicsLayer>(client_);
   page_scale_layer_ = std::make_unique<FakeGraphicsLayer>(client_);
@@ -30,16 +31,6 @@ ViewportLayersSetup::ViewportLayersSetup() {
   layer_tree_ = std::make_unique<LayerTreeHostEmbedder>();
   layer_tree_->layer_tree_host()->SetRootLayer(clip_layer_->CcLayer());
 
-  scroll_elasticity_layer_->SetElementId(cc::LayerIdToElementIdForTesting(
-      scroll_elasticity_layer_->CcLayer()->id()));
-
-  cc::ViewportLayers viewport_layers;
-  viewport_layers.overscroll_elasticity_element_id =
-      scroll_elasticity_layer_->CcLayer()->element_id();
-  viewport_layers.page_scale = page_scale_layer_->CcLayer();
-  viewport_layers.inner_viewport_container = clip_layer_->CcLayer();
-  viewport_layers.inner_viewport_scroll = graphics_layer_->CcLayer();
-  layer_tree_->layer_tree_host()->RegisterViewportLayers(viewport_layers);
   layer_tree_->layer_tree_host()->SetViewportRectAndScale(
       gfx::Rect(1, 1), /*device_scale_factor=*/1.f,
       viz::LocalSurfaceIdAllocation());

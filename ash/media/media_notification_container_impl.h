@@ -45,7 +45,7 @@ class ASH_EXPORT MediaNotificationContainerImpl
       const std::set<media_session::mojom::MediaSessionAction>& actions)
       override {}
   void OnMediaArtworkChanged(const gfx::ImageSkia& image) override {}
-  void OnForegoundColorChanged(SkColor color) override {}
+  void OnColorsChanged(SkColor foreground, SkColor background) override {}
 
   // views::View:
   void OnMouseEvent(ui::MouseEvent* event) override;

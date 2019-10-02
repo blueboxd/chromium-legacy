@@ -111,13 +111,6 @@ class LauncherAnimationsTestBase : public UIPerformanceTest,
   DISALLOW_COPY_AND_ASSIGN(LauncherAnimationsTestBase);
 };
 
-// TODO(crbug.com/1009459): many of these tests are failing on MSan builds.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_Run DISABLED_Run
-#else
-#define MAYBE_Run Run
-#endif
-
 class LauncherAnimationsFullscreenTest : public LauncherAnimationsTestBase {
  public:
   LauncherAnimationsFullscreenTest() = default;
@@ -133,7 +126,7 @@ class LauncherAnimationsFullscreenTest : public LauncherAnimationsTestBase {
   DISALLOW_COPY_AND_ASSIGN(LauncherAnimationsFullscreenTest);
 };
 
-IN_PROC_BROWSER_TEST_P(LauncherAnimationsFullscreenTest, MAYBE_Run) {
+IN_PROC_BROWSER_TEST_P(LauncherAnimationsFullscreenTest, Run) {
   SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, true,
                          ash::AppListViewState::kFullscreenAllApps);
   SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, true,
@@ -159,7 +152,7 @@ class LauncherAnimationsExpandToFullscreenTest
   DISALLOW_COPY_AND_ASSIGN(LauncherAnimationsExpandToFullscreenTest);
 };
 
-IN_PROC_BROWSER_TEST_P(LauncherAnimationsExpandToFullscreenTest, MAYBE_Run) {
+IN_PROC_BROWSER_TEST_P(LauncherAnimationsExpandToFullscreenTest, Run) {
   SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, false,
                          ash::AppListViewState::kPeeking);
   SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, true,
@@ -187,7 +180,7 @@ class LauncherAnimationsPeekingTest : public LauncherAnimationsTestBase {
   DISALLOW_COPY_AND_ASSIGN(LauncherAnimationsPeekingTest);
 };
 
-IN_PROC_BROWSER_TEST_P(LauncherAnimationsPeekingTest, MAYBE_Run) {
+IN_PROC_BROWSER_TEST_P(LauncherAnimationsPeekingTest, Run) {
   SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, false,
                          ash::AppListViewState::kPeeking);
   SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, false,

@@ -20,9 +20,11 @@ namespace media {
 namespace test {
 
 VideoFrameFileWriter::VideoFrameFileWriter(const base::FilePath& output_folder,
-                                           OutputFormat output_format)
+                                           OutputFormat output_format,
+                                           size_t output_limit)
     : output_folder_(output_folder),
       output_format_(output_format),
+      output_limit_(output_limit),
       num_frames_writing_(0),
       frame_writer_thread_("FrameWriterThread"),
       frame_writer_cv_(&frame_writer_lock_) {
@@ -40,7 +42,8 @@ VideoFrameFileWriter::~VideoFrameFileWriter() {
 // static
 std::unique_ptr<VideoFrameFileWriter> VideoFrameFileWriter::Create(
     const base::FilePath& output_folder,
-    OutputFormat output_format) {
+    OutputFormat output_format,
+    size_t output_limit) {
   // If the directory is not absolute, consider it relative to our working dir.
   base::FilePath resolved_output_folder(output_folder);
   if (!resolved_output_folder.IsAbsolute()) {
@@ -58,8 +61,8 @@ std::unique_ptr<VideoFrameFileWriter> VideoFrameFileWriter::Create(
     return nullptr;
   }
 
-  auto frame_file_writer = base::WrapUnique(
-      new VideoFrameFileWriter(resolved_output_folder, output_format));
+  auto frame_file_writer = base::WrapUnique(new VideoFrameFileWriter(
+      resolved_output_folder, output_format, output_limit));
   if (!frame_file_writer->Initialize()) {
     LOG(ERROR) << "Failed to initialize VideoFrameFileWriter";
     return nullptr;
@@ -80,6 +83,12 @@ bool VideoFrameFileWriter::Initialize() {
 void VideoFrameFileWriter::ProcessVideoFrame(
     scoped_refptr<const VideoFrame> video_frame,
     size_t frame_index) {
+  // Don't write more frames than the specified output limit.
+  if (num_frames_writes_requested_ >= output_limit_)
+    return;
+
+  num_frames_writes_requested_++;
+
   base::AutoLock auto_lock(frame_writer_lock_);
   num_frames_writing_++;
 

@@ -1220,24 +1220,27 @@ void WebViewImpl::Close() {
   DCHECK(AllInstances().Contains(this));
   AllInstances().erase(this);
 
+  if (does_composite_) {
+    // This must occur before WillBeDestroyed, since detaching the main frame
+    // will also destroy the WebWidgetClient and the AnimationHost.
+    // TODO(danakj): Since the AnimationHost will be destroyed anyways, there
+    // is probably no good reason to do this at all.
+    GetPage()->WillCloseAnimationHost(nullptr);
+  }
+
   // Initiate shutdown for the entire frameset.  This will cause a lot of
   // notifications to be sent. This will detach all frames in this WebView's
   // frame tree.
   AsView().page->WillBeDestroyed();
 
-  // The WebWidget should be closed in response to the main frame being detached
+  // The main frame being detached in WillBeDestroyed() will make use of this
   // which happens in Page::WillBeDestroyed(). But since the RenderWidget lives
+  // |animation_host_| through its WebFrameWidget, before causing the
   // forever (https://crbug.com/419087), the WebWidget is not closed elsewhere.
+  // WebWidgetClient and the AnimationHost to be destroyed. So this is nulled
   // So we close it here but try to simulate the same ordering by closing it
-  // after the main frame is detached but before the Page is destroyed. This
-  // means the main frame's WebWidget remains valid while the main frame is
-  // being detached (and in particular while its unload handlers run).
-  {
-    if (does_composite_)
-      GetPage()->WillCloseAnimationHost(nullptr);
-
-    animation_host_ = nullptr;
-  }
+  // out after detaching the main frame.
+  animation_host_ = nullptr;
 
   // TODO(bokan): Temporary debugging added to diagnose
   // https://crbug.com/992315. Somehow we're synchronously calling
@@ -3221,47 +3224,6 @@ bool WebViewImpl::TabsToLinks() const {
   return tabs_to_links_;
 }
 
-void WebViewImpl::RegisterViewportLayersWithCompositor() {
-  DCHECK(does_composite_);
-
-  if (!GetPage()->MainFrame() || !GetPage()->MainFrame()->IsLocalFrame())
-    return;
-
-  Document* document = GetPage()->DeprecatedLocalMainFrame()->GetDocument();
-
-  DCHECK(document);
-
-  // Get the outer viewport scroll layers.
-  GraphicsLayer* layout_viewport_container_layer =
-      GetPage()->GlobalRootScrollerController().RootContainerLayer();
-  cc::Layer* layout_viewport_container_cc_layer =
-      layout_viewport_container_layer
-          ? layout_viewport_container_layer->CcLayer()
-          : nullptr;
-
-  GraphicsLayer* layout_viewport_scroll_layer =
-      GetPage()->GlobalRootScrollerController().RootScrollerLayer();
-  cc::Layer* layout_viewport_scroll_cc_layer =
-      layout_viewport_scroll_layer ? layout_viewport_scroll_layer->CcLayer()
-                                   : nullptr;
-
-  VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
-
-  cc::ViewportLayers viewport_layers;
-  viewport_layers.overscroll_elasticity_element_id =
-      visual_viewport.GetCompositorOverscrollElasticityElementId();
-  viewport_layers.page_scale = visual_viewport.PageScaleLayer()->CcLayer();
-  viewport_layers.inner_viewport_container =
-      visual_viewport.ContainerLayer()->CcLayer();
-  viewport_layers.outer_viewport_container = layout_viewport_container_cc_layer;
-  viewport_layers.inner_viewport_scroll =
-      visual_viewport.ScrollLayer()->CcLayer();
-  viewport_layers.outer_viewport_scroll = layout_viewport_scroll_cc_layer;
-
-  MainFrameImpl()->FrameWidgetImpl()->Client()->RegisterViewportLayers(
-      viewport_layers);
-}
-
 void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
   DCHECK(MainFrameImpl());
 
@@ -3276,9 +3238,6 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
     root_layer_ = root_graphics_layer_->CcLayer();
     UpdateDeviceEmulationTransform();
     MainFrameImpl()->FrameWidgetImpl()->Client()->SetRootLayer(root_layer_);
-    // We register viewport layers here since there may not be a layer
-    // tree view prior to this point.
-    RegisterViewportLayersWithCompositor();
   } else {
     root_graphics_layer_ = nullptr;
     visual_viewport_container_layer_ = nullptr;
@@ -3286,7 +3245,6 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
     WebWidgetClient* widget_client =
         MainFrameImpl()->FrameWidgetImpl()->Client();
     widget_client->SetRootLayer(nullptr);
-    widget_client->RegisterViewportLayers(cc::ViewportLayers());
 
     // When the document in an already-attached main frame is being replaced by
     // a navigation then SetRootGraphicsLayer(nullptr) will be called. Since we

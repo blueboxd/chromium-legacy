@@ -837,13 +837,7 @@ constexpr TimeDelta TimeDelta::Min() {
 
 // static
 constexpr TimeDelta TimeDelta::FromDouble(double value) {
-  // TODO(crbug.com/612601): Use saturated_cast<int64_t>(value) once we sort out
-  // the Min() behavior.
-  return value > std::numeric_limits<int64_t>::max()
-             ? Max()
-             : value < std::numeric_limits<int64_t>::min()
-                   ? Min()
-                   : TimeDelta(static_cast<int64_t>(value));
+  return TimeDelta(saturated_cast<int64_t>(value));
 }
 
 // static

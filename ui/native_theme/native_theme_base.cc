@@ -37,51 +37,87 @@ const int kCheckboxAndRadioHeight = 13;
 const int kSliderThumbWidth = 11;
 const int kSliderThumbHeight = 21;
 
-constexpr SkColor kThumbActiveColor = SkColorSetRGB(0xF4, 0xF4, 0xF4);
-constexpr SkColor kThumbInactiveColor = SkColorSetRGB(0xEA, 0xEA, 0xEA);
-constexpr SkColor kTrackColor = SkColorSetRGB(0xD3, 0xD3, 0xD3);
-
-const SkColor kSliderTrackBackgroundColor =
-    SkColorSetRGB(0xe3, 0xdd, 0xd8);
-const SkColor kSliderThumbLightGrey = SkColorSetRGB(0xf4, 0xf2, 0xef);
-const SkColor kSliderThumbDarkGrey = SkColorSetRGB(0xea, 0xe5, 0xe0);
-const SkColor kSliderThumbBorderDarkGrey =
-    SkColorSetRGB(0x9d, 0x96, 0x8e);
-
-const SkColor kTextBorderColor = SkColorSetRGB(0xa9, 0xa9, 0xa9);
-
-const SkColor kProgressBorderColor = kTextBorderColor;
-const SkColor kProgressTickColor = SkColorSetRGB(0xED, 0xED, 0xED);
-const SkColor kProgressValueColor = gfx::kGoogleBlue300;
-
-const SkColor kMenuPopupBackgroundColor = SkColorSetRGB(210, 225, 246);
-
 const int kDefaultScrollbarWidth = 15;
 const int kDefaultScrollbarButtonLength = 14;
 
-const SkColor kCheckboxTinyColor = SK_ColorGRAY;
-const SkColor kCheckboxShadowColor = SkColorSetARGB(0x15, 0, 0, 0);
-const SkColor kCheckboxShadowHoveredColor = SkColorSetARGB(0x1F, 0, 0, 0);
-const SkColor kCheckboxShadowDisabledColor = SkColorSetARGB(0, 0, 0, 0);
-const SkColor kCheckboxGradientColors[] = {
-    SkColorSetRGB(0xed, 0xed, 0xed),
-    SkColorSetRGB(0xde, 0xde, 0xde) };
-const SkColor kCheckboxGradientPressedColors[] = {
-    SkColorSetRGB(0xe7, 0xe7, 0xe7),
-    SkColorSetRGB(0xd7, 0xd7, 0xd7) };
-const SkColor kCheckboxGradientHoveredColors[] = {
-    SkColorSetRGB(0xf0, 0xf0, 0xf0),
-    SkColorSetRGB(0xe0, 0xe0, 0xe0) };
-const SkColor kCheckboxGradientDisabledColors[] = {
-    SkColorSetARGB(0x80, 0xed, 0xed, 0xed),
-    SkColorSetARGB(0x80, 0xde, 0xde, 0xde) };
-const SkColor kCheckboxBorderColor = SkColorSetARGB(0x40, 0, 0, 0);
-const SkColor kCheckboxBorderHoveredColor = SkColorSetARGB(0x4D, 0, 0, 0);
-const SkColor kCheckboxBorderDisabledColor = SkColorSetARGB(0x20, 0, 0, 0);
-const SkColor kCheckboxStrokeColor = SkColorSetARGB(0xB3, 0, 0, 0);
-const SkColor kCheckboxStrokeDisabledColor = SkColorSetARGB(0x59, 0, 0, 0);
-const SkColor kRadioDotColor = SkColorSetRGB(0x66, 0x66, 0x66);
-const SkColor kRadioDotDisabledColor = SkColorSetARGB(0x80, 0x66, 0x66, 0x66);
+// Color constant pairs for light/default and dark color-schemes below.
+// TODO(futhark): replace kPlaceholderColor with appropriate colors for
+// color-scheme:dark.
+constexpr SkColor kThumbActiveColor[2] = {SkColorSetRGB(0xF4, 0xF4, 0xF4),
+                                          gfx::kPlaceholderColor};
+constexpr SkColor kThumbInactiveColor[2] = {SkColorSetRGB(0xEA, 0xEA, 0xEA),
+                                            gfx::kPlaceholderColor};
+constexpr SkColor kTrackColor[2] = {SkColorSetRGB(0xD3, 0xD3, 0xD3),
+                                    gfx::kPlaceholderColor};
+constexpr SkColor kSliderTrackBackgroundColor[2] = {
+    SkColorSetRGB(0xE3, 0xDD, 0xD8), gfx::kPlaceholderColor};
+constexpr SkColor kSliderThumbBrightColor[2] = {SkColorSetRGB(0xF4, 0xF2, 0xEF),
+                                                gfx::kPlaceholderColor};
+constexpr SkColor kSliderThumbShadedColor[2] = {SkColorSetRGB(0xEA, 0xE5, 0xE0),
+                                                gfx::kPlaceholderColor};
+constexpr SkColor kSliderThumbHoveredBrightColor[2] = {SK_ColorWHITE,
+                                                       gfx::kPlaceholderColor};
+constexpr SkColor kSliderThumbHoveredShadedColor[2] = {
+    SkColorSetRGB(0xF4, 0xF2, 0xEF), gfx::kPlaceholderColor};
+constexpr SkColor kSliderThumbBorder[2] = {SkColorSetRGB(0x9D, 0x96, 0x8E),
+                                           gfx::kPlaceholderColor};
+constexpr SkColor kTextBorderColor[2] = {SkColorSetRGB(0xA9, 0xA9, 0xA9),
+                                         gfx::kPlaceholderColor};
+constexpr SkColor kProgressBorderColor[2] = {SkColorSetRGB(0xA9, 0xA9, 0xA9),
+                                             gfx::kPlaceholderColor};
+constexpr SkColor kProgressTickColor[2] = {SkColorSetRGB(0xED, 0xED, 0xED),
+                                           gfx::kPlaceholderColor};
+constexpr SkColor kProgressValueColor[2] = {gfx::kGoogleBlue300,
+                                            gfx::kPlaceholderColor};
+constexpr SkColor kMenuPopupBackgroundColor[2] = {SkColorSetRGB(210, 225, 246),
+                                                  gfx::kPlaceholderColor};
+constexpr SkColor kCheckboxTinyColor[2] = {SK_ColorGRAY,
+                                           gfx::kPlaceholderColor};
+constexpr SkColor kCheckboxShadowColor[2] = {SkColorSetA(SK_ColorBLACK, 0x15),
+                                             gfx::kPlaceholderColor};
+constexpr SkColor kCheckboxShadowHoveredColor[2] = {
+    SkColorSetA(SK_ColorBLACK, 0x1F), gfx::kPlaceholderColor};
+constexpr SkColor kCheckboxShadowDisabledColor[2] = {
+    SkColorSetA(SK_ColorBLACK, 0), gfx::kPlaceholderColor};
+constexpr SkColor kCheckboxGradientStartColor[2] = {
+    SkColorSetRGB(0xED, 0xED, 0xED), gfx::kPlaceholderColor};
+constexpr SkColor kCheckboxGradientEndColor[2] = {
+    SkColorSetRGB(0xDE, 0xDE, 0xDE), gfx::kPlaceholderColor};
+constexpr U8CPU kCheckboxDisabledGradientAlpha = 0x80;
+constexpr SkColor kCheckboxPressedGradientStartColor[2] = {
+    SkColorSetRGB(0xE7, 0xE7, 0xE7), gfx::kPlaceholderColor};
+constexpr SkColor kCheckboxPressedGradientEndColor[2] = {
+    SkColorSetRGB(0xD7, 0xD7, 0xD7), gfx::kPlaceholderColor};
+const SkColor kCheckboxHoveredGradientStartColor[2] = {
+    SkColorSetRGB(0xF0, 0xF0, 0xF0), gfx::kPlaceholderColor};
+const SkColor kCheckboxHoveredGradientEndColor[2] = {
+    SkColorSetRGB(0xE0, 0xE0, 0xE0), gfx::kPlaceholderColor};
+constexpr SkColor kCheckboxBorderColor[2] = {SkColorSetA(SK_ColorBLACK, 0x40),
+                                             gfx::kPlaceholderColor};
+constexpr SkColor kCheckboxBorderHoveredColor[2] = {
+    SkColorSetA(SK_ColorBLACK, 0x4D), gfx::kPlaceholderColor};
+constexpr SkColor kCheckboxBorderDisabledColor[2] = {
+    SkColorSetA(SK_ColorBLACK, 0x20), gfx::kPlaceholderColor};
+constexpr SkColor kCheckboxStrokeColor[2] = {SkColorSetA(SK_ColorBLACK, 0xB3),
+                                             gfx::kPlaceholderColor};
+constexpr SkColor kCheckboxStrokeDisabledColor[2] = {
+    SkColorSetA(SK_ColorBLACK, 0x59), gfx::kPlaceholderColor};
+constexpr SkColor kRadioDotColor[2] = {SkColorSetRGB(0x66, 0x66, 0x66),
+                                       gfx::kPlaceholderColor};
+constexpr SkColor kRadioDotDisabledColor[2] = {
+    SkColorSetARGB(0x80, 0x66, 0x66, 0x66), gfx::kPlaceholderColor};
+constexpr SkColor kArrowDisabledColor[2] = {SK_ColorBLACK,
+                                            gfx::kPlaceholderColor};
+constexpr SkColor kButtonBorderColor[2] = {SK_ColorBLACK,
+                                           gfx::kPlaceholderColor};
+constexpr SkColor kProgressBackgroundColor[2] = {SK_ColorWHITE,
+                                                 gfx::kPlaceholderColor};
+
+// Get a color constant based on color-scheme
+SkColor GetColor(const SkColor colors[2],
+                 ui::NativeTheme::ColorScheme color_scheme) {
+  return colors[color_scheme == ui::NativeTheme::ColorScheme::kDark ? 1 : 0];
+}
 
 // Get lightness adjusted color.
 SkColor BrightenColor(const color_utils::HSL& hsl, SkAlpha alpha,
@@ -294,24 +330,24 @@ void NativeThemeBase::PaintArrowButton(
   cc::PaintFlags flags;
 
   // Calculate button color.
-  SkScalar trackHSV[3];
-  SkColorToHSV(kTrackColor, trackHSV);
-  SkColor buttonColor = SaturateAndBrighten(trackHSV, 0, 0.2f);
-  SkColor backgroundColor = buttonColor;
+  SkScalar track_hsv[3];
+  SkColorToHSV(GetColor(kTrackColor, color_scheme), track_hsv);
+  SkColor button_color = SaturateAndBrighten(track_hsv, 0, 0.2f);
+  SkColor background_color = button_color;
   if (state == kPressed) {
-    SkScalar buttonHSV[3];
-    SkColorToHSV(buttonColor, buttonHSV);
-    buttonColor = SaturateAndBrighten(buttonHSV, 0, -0.1f);
+    SkScalar button_hsv[3];
+    SkColorToHSV(button_color, button_hsv);
+    button_color = SaturateAndBrighten(button_hsv, 0, -0.1f);
   } else if (state == kHovered) {
-    SkScalar buttonHSV[3];
-    SkColorToHSV(buttonColor, buttonHSV);
-    buttonColor = SaturateAndBrighten(buttonHSV, 0, 0.05f);
+    SkScalar button_hsv[3];
+    SkColorToHSV(button_color, button_hsv);
+    button_color = SaturateAndBrighten(button_hsv, 0, 0.05f);
   }
 
   SkIRect skrect;
   skrect.setXYWH(rect.x(), rect.y(), rect.width(), rect.height());
   // Paint the background (the area visible behind the rounded corners).
-  flags.setColor(backgroundColor);
+  flags.setColor(background_color);
   canvas->drawIRect(skrect, flags);
 
   // Paint the button's outline and fill the middle
@@ -355,14 +391,14 @@ void NativeThemeBase::PaintArrowButton(
   outline.close();
 
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setColor(buttonColor);
+  flags.setColor(button_color);
   canvas->drawPath(outline, flags);
 
   flags.setAntiAlias(true);
   flags.setStyle(cc::PaintFlags::kStroke_Style);
-  SkScalar thumbHSV[3];
-  SkColorToHSV(kThumbInactiveColor, thumbHSV);
-  flags.setColor(OutlineColor(trackHSV, thumbHSV));
+  SkScalar thumb_hsv[3];
+  SkColorToHSV(GetColor(kThumbInactiveColor, color_scheme), thumb_hsv);
+  flags.setColor(OutlineColor(track_hsv, thumb_hsv));
   canvas->drawPath(outline, flags);
 
   PaintArrow(canvas, rect, direction, GetArrowColor(state, color_scheme));
@@ -437,12 +473,12 @@ void NativeThemeBase::PaintScrollbarTrack(
 
   skrect.setLTRB(rect.x(), rect.y(), rect.right(), rect.bottom());
   SkScalar track_hsv[3];
-  SkColorToHSV(kTrackColor, track_hsv);
+  SkColorToHSV(GetColor(kTrackColor, color_scheme), track_hsv);
   flags.setColor(SaturateAndBrighten(track_hsv, 0, 0));
   canvas->drawIRect(skrect, flags);
 
   SkScalar thumb_hsv[3];
-  SkColorToHSV(kThumbInactiveColor, thumb_hsv);
+  SkColorToHSV(GetColor(kThumbInactiveColor, color_scheme), thumb_hsv);
 
   flags.setColor(OutlineColor(track_hsv, thumb_hsv));
   DrawBox(canvas, rect, flags);
@@ -460,7 +496,9 @@ void NativeThemeBase::PaintScrollbarThumb(cc::PaintCanvas* canvas,
   const bool vertical = part == kScrollbarVerticalThumb;
 
   SkScalar thumb[3];
-  SkColorToHSV(hovered ? kThumbActiveColor : kThumbInactiveColor, thumb);
+  SkColorToHSV(
+      GetColor(hovered ? kThumbActiveColor : kThumbInactiveColor, color_scheme),
+      thumb);
 
   cc::PaintFlags flags;
   flags.setColor(SaturateAndBrighten(thumb, 0, 0.02f));
@@ -486,7 +524,7 @@ void NativeThemeBase::PaintScrollbarThumb(cc::PaintCanvas* canvas,
   canvas->drawIRect(skrect, flags);
 
   SkScalar track[3];
-  SkColorToHSV(kTrackColor, track);
+  SkColorToHSV(GetColor(kTrackColor, color_scheme), track);
   flags.setColor(OutlineColor(track, thumb));
   DrawBox(canvas, rect, flags);
 
@@ -528,10 +566,9 @@ void NativeThemeBase::PaintCheckbox(cc::PaintCanvas* canvas,
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setStyle(cc::PaintFlags::kStroke_Style);
-    if (state == kDisabled)
-      flags.setColor(kCheckboxStrokeDisabledColor);
-    else
-      flags.setColor(kCheckboxStrokeColor);
+    flags.setColor(GetColor(state == kDisabled ? kCheckboxStrokeDisabledColor
+                                               : kCheckboxStrokeColor,
+                            color_scheme));
     if (button.indeterminate) {
       SkPath dash;
       dash.moveTo(skrect.x() + skrect.width() * 0.16,
@@ -561,7 +598,7 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
     const gfx::Rect& rect,
     const ButtonExtraParams& button,
     bool is_checkbox,
-    const SkScalar borderRadius,
+    const SkScalar border_radius,
     ColorScheme color_scheme) const {
   SkRect skrect = gfx::RectToSkRect(rect);
 
@@ -578,7 +615,7 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
   // or underflow.
   if (skrect.width() <= 2) {
     cc::PaintFlags flags;
-    flags.setColor(kCheckboxTinyColor);
+    flags.setColor(GetColor(kCheckboxTinyColor, color_scheme));
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->drawRect(skrect, flags);
     // Too small to draw anything more.
@@ -592,16 +629,16 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
   if (state != kPressed) {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    SkRect shadowRect = skrect;
-    shadowRect.offset(0, 1);
+    SkRect shadow_rect = skrect;
+    shadow_rect.offset(0, 1);
     if (state == kDisabled)
-      flags.setColor(kCheckboxShadowDisabledColor);
+      flags.setColor(GetColor(kCheckboxShadowDisabledColor, color_scheme));
     else if (state == kHovered)
-      flags.setColor(kCheckboxShadowHoveredColor);
+      flags.setColor(GetColor(kCheckboxShadowHoveredColor, color_scheme));
     else
-      flags.setColor(kCheckboxShadowColor);
+      flags.setColor(GetColor(kCheckboxShadowColor, color_scheme));
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    canvas->drawRoundRect(shadowRect, borderRadius, borderRadius, flags);
+    canvas->drawRoundRect(shadow_rect, border_radius, border_radius, flags);
   }
 
   // Draw the gradient-filled rectangle
@@ -609,35 +646,42 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
   gradient_bounds[0].set(skrect.x(), skrect.y());
   gradient_bounds[1].set(skrect.x(), skrect.y() + skrect.height() * 0.38);
   gradient_bounds[2].set(skrect.x(), skrect.bottom());
-  const SkColor* startEndColors;
-  if (state == kPressed)
-    startEndColors = kCheckboxGradientPressedColors;
-  else if (state == kHovered)
-    startEndColors = kCheckboxGradientHoveredColors;
-  else if (state == kDisabled)
-    startEndColors = kCheckboxGradientDisabledColors;
-  else /* kNormal */
-    startEndColors = kCheckboxGradientColors;
-  SkColor colors[3] = {startEndColors[0], startEndColors[0], startEndColors[1]};
+  SkColor start_color;
+  SkColor end_color;
+  if (state == kPressed) {
+    start_color = GetColor(kCheckboxPressedGradientStartColor, color_scheme);
+    end_color = GetColor(kCheckboxPressedGradientEndColor, color_scheme);
+  } else if (state == kHovered) {
+    start_color = GetColor(kCheckboxHoveredGradientStartColor, color_scheme);
+    end_color = GetColor(kCheckboxHoveredGradientEndColor, color_scheme);
+  } else /* kNormal or kDisabled */ {
+    start_color = GetColor(kCheckboxGradientStartColor, color_scheme);
+    end_color = GetColor(kCheckboxGradientEndColor, color_scheme);
+    if (state == kDisabled) {
+      start_color = SkColorSetA(start_color, kCheckboxDisabledGradientAlpha);
+      end_color = SkColorSetA(end_color, kCheckboxDisabledGradientAlpha);
+    }
+  }
+  SkColor colors[3] = {start_color, start_color, end_color};
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setShader(cc::PaintShader::MakeLinearGradient(
       gradient_bounds, colors, nullptr, 3, SkTileMode::kClamp));
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  canvas->drawRoundRect(skrect, borderRadius, borderRadius, flags);
+  canvas->drawRoundRect(skrect, border_radius, border_radius, flags);
   flags.setShader(nullptr);
 
   // Draw the border.
   if (state == kHovered)
-    flags.setColor(kCheckboxBorderHoveredColor);
+    flags.setColor(GetColor(kCheckboxBorderHoveredColor, color_scheme));
   else if (state == kDisabled)
-    flags.setColor(kCheckboxBorderDisabledColor);
+    flags.setColor(GetColor(kCheckboxBorderDisabledColor, color_scheme));
   else
-    flags.setColor(kCheckboxBorderColor);
+    flags.setColor(GetColor(kCheckboxBorderColor, color_scheme));
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(SkIntToScalar(1));
   skrect.inset(SkFloatToScalar(.5f), SkFloatToScalar(.5f));
-  canvas->drawRoundRect(skrect, borderRadius, borderRadius, flags);
+  canvas->drawRoundRect(skrect, border_radius, border_radius, flags);
 
   // Return the rectangle excluding the drop shadow for drawing any additional
   // decorations.
@@ -660,10 +704,9 @@ void NativeThemeBase::PaintRadio(cc::PaintCanvas* canvas,
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    if (state == kDisabled)
-      flags.setColor(kRadioDotDisabledColor);
-    else
-      flags.setColor(kRadioDotColor);
+    flags.setColor(
+        GetColor(state == kDisabled ? kRadioDotDisabledColor : kRadioDotColor,
+                 color_scheme));
     skrect.inset(skrect.width() * 0.25, skrect.height() * 0.25);
     // Use drawRoundedRect instead of drawOval to be completely consistent
     // with the border in PaintCheckboxRadioNewCommon.
@@ -683,7 +726,7 @@ void NativeThemeBase::PaintButton(cc::PaintCanvas* canvas,
   color_utils::HSL base_hsl;
   color_utils::SkColorToHSL(base_color, &base_hsl);
 
-  // Our standard gradient is from 0xdd to 0xf8. This is the amount of
+  // Our standard gradient is from 0xDD to 0xF8. This is the amount of
   // increased luminance between those values.
   SkColor light_color(BrightenColor(base_hsl, SkColorGetA(base_color), 0.105));
 
@@ -694,7 +737,7 @@ void NativeThemeBase::PaintButton(cc::PaintCanvas* canvas,
     return;
   }
 
-  flags.setColor(SK_ColorBLACK);
+  flags.setColor(GetColor(kButtonBorderColor, color_scheme));
   SkPoint gradient_bounds[2] = {
     gfx::PointToSkPoint(rect.origin()),
     gfx::PointToSkPoint(rect.bottom_left() - gfx::Vector2d(0, 1))
@@ -714,7 +757,7 @@ void NativeThemeBase::PaintButton(cc::PaintCanvas* canvas,
   if (button.has_border) {
     int border_alpha = state == kHovered ? 0x80 : 0x55;
     if (button.is_focused) {
-      border_alpha = 0xff;
+      border_alpha = 0xFF;
       flags.setColor(GetSystemColor(kColorId_FocusedBorderColor, color_scheme));
     }
     flags.setStyle(cc::PaintFlags::kStroke_Style);
@@ -742,7 +785,7 @@ void NativeThemeBase::PaintTextField(cc::PaintCanvas* canvas,
   // border: 1px solid #a9a9a9
   cc::PaintFlags stroke_flags;
   stroke_flags.setStyle(cc::PaintFlags::kStroke_Style);
-  stroke_flags.setColor(kTextBorderColor);
+  stroke_flags.setColor(GetColor(kTextBorderColor, color_scheme));
   canvas->drawRect(bounds, stroke_flags);
 }
 
@@ -788,7 +831,8 @@ void NativeThemeBase::PaintMenuPopupBackground(
     const gfx::Size& size,
     const MenuBackgroundExtraParams& menu_background,
     ColorScheme color_scheme) const {
-  canvas->drawColor(kMenuPopupBackgroundColor, SkBlendMode::kSrc);
+  canvas->drawColor(GetColor(kMenuPopupBackgroundColor, color_scheme),
+                    SkBlendMode::kSrc);
 }
 
 void NativeThemeBase::PaintMenuItemBackground(
@@ -821,7 +865,7 @@ void NativeThemeBase::PaintSliderTrack(cc::PaintCanvas* canvas,
   const int kMidY = rect.y() + rect.height() / 2;
 
   cc::PaintFlags flags;
-  flags.setColor(kSliderTrackBackgroundColor);
+  flags.setColor(GetColor(kSliderTrackBackgroundColor, color_scheme));
 
   SkRect skrect;
   if (slider.vertical) {
@@ -844,7 +888,9 @@ void NativeThemeBase::PaintSliderThumb(cc::PaintCanvas* canvas,
   const int kMidY = rect.y() + rect.height() / 2;
 
   cc::PaintFlags flags;
-  flags.setColor(hovered ? SK_ColorWHITE : kSliderThumbLightGrey);
+  flags.setColor(GetColor(
+      hovered ? kSliderThumbHoveredBrightColor : kSliderThumbBrightColor,
+      color_scheme));
 
   SkIRect skrect;
   if (slider.vertical)
@@ -854,7 +900,9 @@ void NativeThemeBase::PaintSliderThumb(cc::PaintCanvas* canvas,
 
   canvas->drawIRect(skrect, flags);
 
-  flags.setColor(hovered ? kSliderThumbLightGrey : kSliderThumbDarkGrey);
+  flags.setColor(GetColor(
+      hovered ? kSliderThumbHoveredShadedColor : kSliderThumbShadedColor,
+      color_scheme));
 
   if (slider.vertical)
     skrect.setLTRB(kMidX + 1, rect.y(), rect.right(), rect.bottom());
@@ -863,7 +911,7 @@ void NativeThemeBase::PaintSliderThumb(cc::PaintCanvas* canvas,
 
   canvas->drawIRect(skrect, flags);
 
-  flags.setColor(kSliderThumbBorderDarkGrey);
+  flags.setColor(GetColor(kSliderThumbBorder, color_scheme));
   DrawBox(canvas, rect, flags);
 
   if (rect.height() > 10 && rect.width() > 10) {
@@ -909,7 +957,7 @@ void NativeThemeBase::PaintProgressBar(
     ColorScheme color_scheme) const {
   DCHECK(!rect.IsEmpty());
 
-  canvas->drawColor(SK_ColorWHITE);
+  canvas->drawColor(GetColor(kProgressBackgroundColor, color_scheme));
 
   // Draw the tick marks. The spacing between the tick marks is adjusted to
   // evenly divide into the width.
@@ -923,7 +971,7 @@ void NativeThemeBase::PaintProgressBar(
     path.rLineTo(0, rect.height());
   }
   cc::PaintFlags stroke_flags;
-  stroke_flags.setColor(kProgressTickColor);
+  stroke_flags.setColor(GetColor(kProgressTickColor, color_scheme));
   stroke_flags.setStyle(cc::PaintFlags::kStroke_Style);
   stroke_flags.setStrokeWidth(stroke_width);
   canvas->drawPath(path, stroke_flags);
@@ -933,14 +981,14 @@ void NativeThemeBase::PaintProgressBar(
                           progress_bar.value_rect_width,
                           progress_bar.value_rect_height);
   cc::PaintFlags progress_flags;
-  progress_flags.setColor(kProgressValueColor);
+  progress_flags.setColor(GetColor(kProgressValueColor, color_scheme));
   progress_flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->drawRect(gfx::RectToSkRect(progress_rect), progress_flags);
 
   // Draw the border.
   gfx::RectF border_rect(rect);
   border_rect.Inset(stroke_width / 2.0f, stroke_width / 2.0f);
-  stroke_flags.setColor(kProgressBorderColor);
+  stroke_flags.setColor(GetColor(kProgressBorderColor, color_scheme));
   canvas->drawRect(gfx::RectFToSkRect(border_rect), stroke_flags);
 }
 
@@ -977,12 +1025,13 @@ SkColor NativeThemeBase::SaturateAndBrighten(SkScalar* hsv,
 SkColor NativeThemeBase::GetArrowColor(State state,
                                        ColorScheme color_scheme) const {
   if (state != kDisabled)
-    return SK_ColorBLACK;
+    return GetColor(kArrowDisabledColor, color_scheme);
 
   SkScalar track_hsv[3];
-  SkColorToHSV(kTrackColor, track_hsv);
+  SkColorToHSV(GetColor(kTrackColor, color_scheme), track_hsv);
+
   SkScalar thumb_hsv[3];
-  SkColorToHSV(kThumbInactiveColor, thumb_hsv);
+  SkColorToHSV(GetColor(kThumbInactiveColor, color_scheme), thumb_hsv);
   return OutlineColor(track_hsv, thumb_hsv);
 }
 

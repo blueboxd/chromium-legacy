@@ -119,8 +119,10 @@ XRPose* XRFrame::getPose(XRSpace* space_A,
   return space_A->getPose(space_B, mojo_from_viewer_.get());
 }
 
-void XRFrame::SetMojoFromViewer(const TransformationMatrix& mojo_from_viewer) {
+void XRFrame::SetMojoFromViewer(const TransformationMatrix& mojo_from_viewer,
+                                bool emulated_position) {
   mojo_from_viewer_ = std::make_unique<TransformationMatrix>(mojo_from_viewer);
+  emulated_position_ = emulated_position;
 }
 
 void XRFrame::Deactivate() {

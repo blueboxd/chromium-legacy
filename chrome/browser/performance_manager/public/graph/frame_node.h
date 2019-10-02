@@ -131,6 +131,13 @@ class FrameNode : public Node {
   // true.
   virtual bool IsAdFrame() const = 0;
 
+  // Returns true if this frame holds at least one Web Lock.
+  virtual bool HoldsWebLock() const = 0;
+
+  // Returns true if this frame holds at least one IndexedDB lock. An IndexedDB
+  // lock is held by an active transaction or an active DB open request.
+  virtual bool HoldsIndexedDBLock() const = 0;
+
   // Returns the child workers of this frame. These are either dedicated workers
   // or shared workers created by this frame, or a service worker that handles
   // this frame's network requests.
@@ -185,6 +192,13 @@ class FrameNodeObserver {
   // Invoked when the IsAdFrame property changes.
   virtual void OnIsAdFrameChanged(const FrameNode* frame_node) = 0;
 
+  // Invoked when the HoldsWebLock() property changes.
+  virtual void OnFrameHoldsWebLockChanged(const FrameNode* frame_node) = 0;
+
+  // Invoked when the HoldsIndexedDBLock() property changes.
+  virtual void OnFrameHoldsIndexedDBLockChanged(
+      const FrameNode* frame_node) = 0;
+
   // Invoked when the frame priority and reason changes.
   virtual void OnPriorityAndReasonChanged(const FrameNode* frame_node) = 0;
 
@@ -218,6 +232,8 @@ class FrameNode::ObserverDefaultImpl : public FrameNodeObserver {
   void OnURLChanged(const FrameNode* frame_node,
                     const GURL& previous_value) override {}
   void OnIsAdFrameChanged(const FrameNode* frame_node) override {}
+  void OnFrameHoldsWebLockChanged(const FrameNode* frame_node) override {}
+  void OnFrameHoldsIndexedDBLockChanged(const FrameNode* frame_node) override {}
   void OnNonPersistentNotificationCreated(
       const FrameNode* frame_node) override {}
   void OnPriorityAndReasonChanged(const FrameNode* frame_node) override {}

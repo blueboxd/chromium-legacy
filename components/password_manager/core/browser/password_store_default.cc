@@ -244,6 +244,15 @@ PasswordStoreDefault::GetAllLeakedCredentialsImpl() {
                    : std::vector<LeakedCredentials>();
 }
 
+void PasswordStoreDefault::RemoveLeakedCredentialsCreatedBetweenImpl(
+    base::Time remove_begin,
+    base::Time remove_end) {
+  if (login_db_) {
+    login_db_->leaked_credentials_table().RemoveRowsCreatedBetween(remove_begin,
+                                                                   remove_end);
+  }
+}
+
 bool PasswordStoreDefault::BeginTransaction() {
   if (login_db_)
     return login_db_->BeginTransaction();

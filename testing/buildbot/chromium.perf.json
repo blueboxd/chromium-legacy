@@ -301,6 +301,43 @@
       {
         "args": [
           "--gtest-benchmark-name",
+          "dawn_perf_tests"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "override_compile_targets": [
+          "dawn_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 43200,
+          "ignore_task_failure": false,
+          "io_timeout": 21600,
+          "shards": 1
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "requires_simultaneous_shard_dispatch": true,
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      },
+      {
+        "args": [
+          "--gtest-benchmark-name",
           "load_library_perf_tests"
         ],
         "isolate_name": "load_library_perf_tests",
@@ -1539,6 +1576,43 @@
       {
         "args": [
           "--gtest-benchmark-name",
+          "dawn_perf_tests"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "override_compile_targets": [
+          "dawn_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3",
+              "os": "Ubuntu",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 43200,
+          "ignore_task_failure": false,
+          "io_timeout": 21600,
+          "shards": 1
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "requires_simultaneous_shard_dispatch": true,
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      },
+      {
+        "args": [
+          "--gtest-benchmark-name",
           "load_library_perf_tests"
         ],
         "isolate_name": "load_library_perf_tests",
@@ -1925,6 +1999,43 @@
       {
         "args": [
           "--gtest-benchmark-name",
+          "dawn_perf_tests"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "override_compile_targets": [
+          "dawn_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "os": "Mac-10.13",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 43200,
+          "ignore_task_failure": false,
+          "io_timeout": 21600,
+          "shards": 1
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "requires_simultaneous_shard_dispatch": true,
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      },
+      {
+        "args": [
+          "--gtest-benchmark-name",
           "media_perftests"
         ],
         "isolate_name": "media_perftests",
@@ -2209,6 +2320,45 @@
         "name": "components_perftests",
         "override_compile_targets": [
           "components_perftests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-23.20.16.4877",
+              "os": "Windows-10-16299.309",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "OptiPlex 7050 (Dell Inc.)"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 43200,
+          "ignore_task_failure": false,
+          "io_timeout": 21600,
+          "shards": 1
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "requires_simultaneous_shard_dispatch": true,
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      },
+      {
+        "args": [
+          "--gtest-benchmark-name",
+          "dawn_perf_tests",
+          "--shard-timeout=300"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "override_compile_targets": [
+          "dawn_perf_tests"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,

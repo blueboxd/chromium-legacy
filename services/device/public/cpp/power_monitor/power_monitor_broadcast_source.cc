@@ -8,10 +8,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
 
@@ -29,12 +26,13 @@ PowerMonitorBroadcastSource::~PowerMonitorBroadcastSource() {
   task_runner_->DeleteSoon(FROM_HERE, client_.release());
 }
 
-void PowerMonitorBroadcastSource::Init(service_manager::Connector* connector) {
-  if (connector) {
+void PowerMonitorBroadcastSource::Init(
+    mojo::PendingRemote<mojom::PowerMonitor> remote_monitor) {
+  if (remote_monitor) {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&PowerMonitorBroadcastSource::Client::Init,
                                   base::Unretained(client_.get()),
-                                  base::Passed(connector->Clone())));
+                                  std::move(remote_monitor)));
   }
 }
 
@@ -47,14 +45,11 @@ PowerMonitorBroadcastSource::Client::Client() = default;
 PowerMonitorBroadcastSource::Client::~Client() {}
 
 void PowerMonitorBroadcastSource::Client::Init(
-    std::unique_ptr<service_manager::Connector> connector) {
+    mojo::PendingRemote<mojom::PowerMonitor> remote_monitor) {
   base::AutoLock auto_lock(is_shutdown_lock_);
   if (is_shutdown_)
     return;
-  connector_ = std::move(connector);
-  mojo::Remote<device::mojom::PowerMonitor> power_monitor;
-  connector_->Connect(device::mojom::kServiceName,
-                      power_monitor.BindNewPipeAndPassReceiver());
+  mojo::Remote<mojom::PowerMonitor> power_monitor(std::move(remote_monitor));
   power_monitor->AddClient(receiver_.BindNewPipeAndPassRemote());
 }
 

@@ -9,6 +9,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/layout/fill_layout.h"
@@ -19,15 +21,36 @@ namespace {
 constexpr int kWidth = 400;
 constexpr gfx::Size kNormalSize = gfx::Size(kWidth, 100);
 constexpr gfx::Size kExpandedSize = gfx::Size(kWidth, 150);
-constexpr gfx::Size kDismissButtonSize = gfx::Size(24, 24);
+constexpr gfx::Size kDismissButtonSize = gfx::Size(30, 30);
 constexpr int kDismissButtonIconSize = 20;
+constexpr int kDismissButtonBackgroundRadius = 15;
 constexpr SkColor kDefaultForegroundColor = SK_ColorBLACK;
+constexpr SkColor kDefaultBackgroundColor = SK_ColorTRANSPARENT;
 
 // The minimum number of enabled and visible user actions such that we should
 // force the MediaNotificationView to be expanded.
 constexpr int kMinVisibleActionsForExpanding = 4;
 
 }  // anonymous namespace
+
+class MediaNotificationContainerImpl::DismissButton
+    : public views::ImageButton {
+ public:
+  explicit DismissButton(views::ButtonListener* listener)
+      : views::ImageButton(listener) {
+    views::ConfigureVectorImageButton(this);
+  }
+
+  ~DismissButton() override = default;
+
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
+    return std::make_unique<views::CircleInkDropMask>(
+        size(), GetLocalBounds().CenterPoint(), kDismissButtonBackgroundRadius);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DismissButton);
+};
 
 MediaNotificationContainerImpl::MediaNotificationContainerImpl(
     MediaDialogView* parent,
@@ -37,7 +60,8 @@ MediaNotificationContainerImpl::MediaNotificationContainerImpl(
     : parent_(parent),
       controller_(controller),
       id_(id),
-      foreground_color_(kDefaultForegroundColor) {
+      foreground_color_(kDefaultForegroundColor),
+      background_color_(kDefaultBackgroundColor) {
   DCHECK(parent_);
   DCHECK(controller_);
 
@@ -45,16 +69,23 @@ MediaNotificationContainerImpl::MediaNotificationContainerImpl(
 
   SetPreferredSize(kNormalSize);
 
-  dismiss_button_ = views::CreateVectorImageButton(this);
-  dismiss_button_->SetPreferredSize(kDismissButtonSize);
-  dismiss_button_->SetTooltipText(l10n_util::GetStringUTF16(
+  dismiss_button_container_ = std::make_unique<views::View>();
+  dismiss_button_container_->set_owned_by_client();
+  dismiss_button_container_->SetPreferredSize(kDismissButtonSize);
+  dismiss_button_container_->SetLayoutManager(
+      std::make_unique<views::FillLayout>());
+  dismiss_button_container_->SetVisible(true);
+
+  auto dismiss_button = std::make_unique<DismissButton>(this);
+  dismiss_button->SetPreferredSize(kDismissButtonSize);
+  dismiss_button->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_GLOBAL_MEDIA_CONTROLS_DISMISS_ICON_TOOLTIP_TEXT));
-  dismiss_button_->set_owned_by_client();
-  dismiss_button_->SetVisible(false);
+  dismiss_button_ =
+      dismiss_button_container_->AddChildView(std::move(dismiss_button));
   UpdateDismissButtonIcon();
 
   view_ = std::make_unique<media_message_center::MediaNotificationView>(
-      this, std::move(item), dismiss_button_.get(), base::string16());
+      this, std::move(item), dismiss_button_container_.get(), base::string16());
   view_->set_owned_by_client();
   ForceExpandedState();
 
@@ -71,7 +102,7 @@ void MediaNotificationContainerImpl::OnExpanded(bool expanded) {
 
 void MediaNotificationContainerImpl::OnMediaSessionInfoChanged(
     const media_session::mojom::MediaSessionInfoPtr& session_info) {
-  dismiss_button_->SetVisible(
+  dismiss_button_container_->SetVisible(
       !session_info || session_info->playback_state !=
                            media_session::mojom::MediaPlaybackState::kPlaying);
 }
@@ -85,24 +116,43 @@ void MediaNotificationContainerImpl::OnVisibleActionsChanged(
 void MediaNotificationContainerImpl::OnMediaArtworkChanged(
     const gfx::ImageSkia& image) {
   has_artwork_ = !image.isNull();
+
+  UpdateDismissButtonBackground();
   ForceExpandedState();
 }
 
-void MediaNotificationContainerImpl::OnForegoundColorChanged(SkColor color) {
-  foreground_color_ = color;
-  UpdateDismissButtonIcon();
+void MediaNotificationContainerImpl::OnColorsChanged(SkColor foreground,
+                                                     SkColor background) {
+  if (foreground_color_ != foreground) {
+    foreground_color_ = foreground;
+    UpdateDismissButtonIcon();
+  }
+  if (background_color_ != background) {
+    background_color_ = background;
+    UpdateDismissButtonBackground();
+  }
 }
 
 void MediaNotificationContainerImpl::ButtonPressed(views::Button* sender,
                                                    const ui::Event& event) {
-  DCHECK_EQ(dismiss_button_.get(), sender);
+  DCHECK_EQ(dismiss_button_, sender);
   controller_->OnDismissButtonClicked(id_);
 }
 
 void MediaNotificationContainerImpl::UpdateDismissButtonIcon() {
-  views::SetImageFromVectorIcon(dismiss_button_.get(),
-                                vector_icons::kCloseRoundedIcon,
-                                kDismissButtonIconSize, foreground_color_);
+  views::SetImageFromVectorIconWithColor(
+      dismiss_button_, vector_icons::kCloseRoundedIcon, kDismissButtonIconSize,
+      foreground_color_);
+}
+
+void MediaNotificationContainerImpl::UpdateDismissButtonBackground() {
+  if (!has_artwork_) {
+    dismiss_button_container_->SetBackground(nullptr);
+    return;
+  }
+
+  dismiss_button_container_->SetBackground(views::CreateRoundedRectBackground(
+      background_color_, kDismissButtonBackgroundRadius));
 }
 
 void MediaNotificationContainerImpl::ForceExpandedState() {

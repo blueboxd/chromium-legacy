@@ -106,7 +106,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon) override;
   void InitModalType(ui::ModalType modal_type) override;
-  void FlashFrame(bool flash_frame) override;
   bool IsAnimatingClosed() const override;
   bool IsTranslucentWindowOpacitySupported() const override;
   void SizeConstraintsChanged() override;

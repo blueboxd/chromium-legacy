@@ -1421,7 +1421,7 @@ void PictureLayerImpl::UpdateIdealScales() {
   DCHECK_GT(min_contents_scale, 0.f);
 
   ideal_device_scale_ = layer_tree_impl()->device_scale_factor();
-  if (layer_tree_impl()->PageScaleLayer()) {
+  if (layer_tree_impl()->PageScaleTransformNode()) {
     ideal_page_scale_ = IsAffectedByPageScale()
                             ? layer_tree_impl()->current_page_scale_factor()
                             : 1.f;

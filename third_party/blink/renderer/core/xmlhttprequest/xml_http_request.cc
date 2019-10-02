@@ -1155,7 +1155,9 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
           forbidden_syncxhr_pagedismissal_histogram.Count(pagedismissal);
           HandleNetworkError();
           ThrowForLoadFailureIfNeeded(exception_state,
-                                      "Synchronous XHR in page dismissal.");
+                                      "Synchronous XHR in page dismissal. See "
+                                      "https://www.chromestatus.com/feature/"
+                                      "4664843055398912 for more details.");
           return;
         } else {
           UseCounter::Count(&execution_context,

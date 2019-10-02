@@ -996,14 +996,12 @@ ExplicitlySetAttrElementsMap* Document::GetExplicitlySetAttrElementsMap(
     Element* element) {
   DCHECK(element);
   DCHECK(element->GetDocument() == this);
-  auto iter = element_explicitly_set_attr_elements_map_.find(element);
-  if (iter != element_explicitly_set_attr_elements_map_.end()) {
-    return iter->value;
-    element_explicitly_set_attr_elements_map_.insert(
-        element, MakeGarbageCollected<ExplicitlySetAttrElementsMap>());
+  auto add_result =
+      element_explicitly_set_attr_elements_map_.insert(element, nullptr);
+  if (add_result.is_new_entry) {
+    add_result.stored_value->value =
+        MakeGarbageCollected<ExplicitlySetAttrElementsMap>();
   }
-  auto add_result = element_explicitly_set_attr_elements_map_.insert(
-      element, MakeGarbageCollected<ExplicitlySetAttrElementsMap>());
   return add_result.stored_value->value;
 }
 

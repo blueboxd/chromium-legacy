@@ -66,23 +66,14 @@ CreateOverlayCandidateValidatorWin(const OutputSurface::Capabilities& caps) {
 #if defined(OS_ANDROID)
 std::unique_ptr<OverlayCandidateValidatorAndroid>
 CreateOverlayCandidateValidatorAndroid(
-    const ContextProvider* context_provider) {
-  // TODO(weiliangc): Make this not depend on ContextProvider so it will work
-  // for SkiaRenderer as well.
-  if (!context_provider)
-    return nullptr;
-
+    const OutputSurface::Capabilities& caps) {
   // When SurfaceControl is enabled, any resource backed by an
   // AHardwareBuffer can be marked as an overlay candidate but it requires
   // that we use a SurfaceControl backed GLSurface. If we're creating a
   // native window backed GLSurface, the overlay processing code will
   // incorrectly assume these resources can be overlaid. So we disable all
   // overlay processing for this OutputSurface.
-  const auto& gpu_feature_info = context_provider->GetGpuFeatureInfo();
-  const bool allow_overlays =
-      gpu_feature_info
-          .status_values[gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] !=
-      gpu::kGpuFeatureStatusEnabled;
+  const bool allow_overlays = !caps.android_surface_control_feature_enabled;
 
   if (allow_overlays) {
     return std::make_unique<OverlayCandidateValidatorAndroid>();
@@ -95,14 +86,14 @@ CreateOverlayCandidateValidatorAndroid(
 
 std::unique_ptr<OverlayCandidateValidator> OverlayCandidateValidator::Create(
     gpu::SurfaceHandle surface_handle,
-    const OutputSurface& output_surface,
+    const OutputSurface::Capabilities& capabilities,
     const RendererSettings& renderer_settings) {
+  // Do not support overlay for offscreen. WebView will not get overlay support
+  // due to this check as well.
   if (surface_handle == gpu::kNullSurfaceHandle)
     return nullptr;
 
-  const ContextProvider* context_provider = output_surface.context_provider();
-
-  if (context_provider && context_provider->ContextCapabilities().surfaceless) {
+  if (capabilities.supports_surfaceless) {
 #if defined(USE_OZONE)
     return CreateOverlayCandidateValidatorOzone(surface_handle,
                                                 renderer_settings);
@@ -116,9 +107,9 @@ std::unique_ptr<OverlayCandidateValidator> OverlayCandidateValidator::Create(
 #endif
   } else {
 #if defined(OS_WIN)
-    return CreateOverlayCandidateValidatorWin(output_surface.capabilities());
+    return CreateOverlayCandidateValidatorWin(capabilities);
 #elif defined(OS_ANDROID)
-    return CreateOverlayCandidateValidatorAndroid(context_provider);
+    return CreateOverlayCandidateValidatorAndroid(capabilities);
 #elif defined(USE_OZONE)
     // Chromecast could either be backed by Ozone-DRM, which is covered by
     // Surfaceless code path above, or Ozone-Cast, which is the type of Ozone

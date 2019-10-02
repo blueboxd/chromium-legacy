@@ -64,6 +64,16 @@ class CC_EXPORT ScrollbarController {
     ScrollbarPart pressed_scrollbar_part;
   };
 
+  struct CC_EXPORT DragState {
+    // This is used to track the pointer location relative to the thumb origin
+    // when a drag has started.
+    gfx::Vector2dF anchor_relative_to_thumb_;
+
+    // This is needed for thumb snapping when the pointer moves too far away
+    // from the track while scrolling.
+    float scroll_position_at_start_;
+  };
+
   // Helper to convert scroll offset to autoscroll velocity.
   float InitialDeltaToAutoscrollVelocity(gfx::ScrollOffset scroll_offset) const;
 
@@ -87,6 +97,10 @@ class CC_EXPORT ScrollbarController {
   // Makes position_in_widget relative to the scrollbar.
   gfx::PointF GetScrollbarRelativePosition(const gfx::PointF position_in_widget,
                                            bool* clipped);
+
+  // Decides if the scroller should snap to the offset that it was originally at
+  // (i.e the offset before the thumb drag).
+  bool SnapToDragOrigin(const gfx::PointF pointer_position_in_widget);
 
   // Decides whether a track autoscroll should be aborted (or restarted) due to
   // the thumb reaching the pointer or the pointer leaving (or re-entering) the
@@ -127,9 +141,9 @@ class CC_EXPORT ScrollbarController {
   // only if an autoscroll is *not* in progress.
   base::Optional<AutoScrollState> autoscroll_state_;
 
-  // This is used to track the pointer location relative to the thumb origin
-  // when a drag has started. It is empty if a thumb drag is *not* in progress.
-  base::Optional<gfx::Vector2dF> drag_anchor_relative_to_thumb_;
+  // Holds information pertaining to thumb drags. Useful while making decisions
+  // about thumb anchoring/snapping.
+  base::Optional<DragState> drag_state_;
 
   // Used to track if a GSU was processed for the current frame or not. Without
   // this, thumb drag will appear jittery. The reason this happens is because

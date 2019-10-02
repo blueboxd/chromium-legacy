@@ -2638,4 +2638,464 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest,
   console_delegate_2->Wait();
 }
 
+// Test how cookies are inherited in about:srcdoc iframes.
+//
+// Regression test: https://crbug.com/1003167.
+IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedSrcDoc) {
+  using Response = net::test_server::ControllableHttpResponse;
+  Response response_1(embedded_test_server(), "/response_1");
+  Response response_2(embedded_test_server(), "/response_2");
+  Response response_3(embedded_test_server(), "/response_3");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+
+  EXPECT_TRUE(ExecJs(shell(), R"(
+    let iframe = document.createElement("iframe");
+    iframe.srcdoc = "foo";
+    document.body.appendChild(iframe);
+  )"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  RenderFrameHostImpl* main_document = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  RenderFrameHostImpl* sub_document_1 =
+      main_document->child_at(0)->current_frame_host();
+  EXPECT_EQ(url::kAboutSrcdocURL, sub_document_1->GetLastCommittedURL());
+  EXPECT_EQ(url::Origin::Create(url_a),
+            sub_document_1->GetLastCommittedOrigin());
+  EXPECT_EQ(main_document->GetSiteInstance(),
+            sub_document_1->GetSiteInstance());
+
+  // 0. The default state doesn't contain any cookies.
+  EXPECT_EQ("", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("", EvalJs(sub_document_1, "document.cookie"));
+
+  // 1. Set a cookie in the main document, it affects its child too.
+  EXPECT_TRUE(ExecJs(main_document, "document.cookie = 'a=0';"));
+
+  EXPECT_EQ("a=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("a=0", EvalJs(sub_document_1, "document.cookie"));
+
+  // 2. Set a cookie in the child, it affects its parent too.
+  EXPECT_TRUE(ExecJs(sub_document_1, "document.cookie = 'b=0';"));
+
+  EXPECT_EQ("a=0; b=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("a=0; b=0", EvalJs(sub_document_1, "document.cookie"));
+
+  // 3. Checks cookies are sent while requesting resources.
+  EXPECT_TRUE(ExecJs(sub_document_1, "fetch('/response_1');"));
+  response_1.WaitForRequest();
+  EXPECT_EQ("a=0; b=0", response_1.http_request()->headers.at("Cookie"));
+
+  // 4. Navigate the iframe elsewhere.
+  EXPECT_TRUE(ExecJs(sub_document_1, JsReplace("location.href = $1", url_b)));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  RenderFrameHostImpl* sub_document_2 =
+      main_document->child_at(0)->current_frame_host();
+
+  EXPECT_EQ("a=0; b=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("", EvalJs(sub_document_2, "document.cookie"));
+
+  // 5. Set a cookie in the main document. It doesn't affect its child.
+  EXPECT_TRUE(ExecJs(main_document, "document.cookie = 'c=0';"));
+
+  EXPECT_EQ("a=0; b=0; c=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("", EvalJs(sub_document_2, "document.cookie"));
+
+  // 6. Set a cookie in the child. It doesn't affect its parent.
+  EXPECT_TRUE(ExecJs(sub_document_2, "document.cookie = 'd=0';"));
+
+  EXPECT_EQ("a=0; b=0; c=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("d=0", EvalJs(sub_document_2, "document.cookie"));
+
+  // 7. Checks cookies are sent while requesting resources.
+  EXPECT_TRUE(ExecJs(sub_document_2, "fetch('/response_2');"));
+  response_2.WaitForRequest();
+  EXPECT_EQ("d=0", response_2.http_request()->headers.at("Cookie"));
+
+  // 8. Navigate the iframe back to about:srcdoc.
+  shell()->web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  RenderFrameHostImpl* sub_document_3 =
+      main_document->child_at(0)->current_frame_host();
+  EXPECT_EQ(url_a, main_document->GetLastCommittedURL());
+  EXPECT_EQ(url::kAboutSrcdocURL, sub_document_3->GetLastCommittedURL());
+  EXPECT_EQ(url::Origin::Create(url_a),
+            sub_document_3->GetLastCommittedOrigin());
+  EXPECT_EQ(main_document->GetSiteInstance(),
+            sub_document_3->GetSiteInstance());
+
+  // TODO(https://crbug.com/1003167) The cookies in the srcdoc iframe should be
+  // inherited from its parent.
+  EXPECT_EQ("a=0; b=0; c=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("", EvalJs(sub_document_3, "document.cookie"));
+
+  // 9. Set cookie in the main document. It should be inherited by the child.
+  EXPECT_TRUE(ExecJs(main_document, "document.cookie = 'e=0';"));
+
+  // TODO(https://crbug.com/1003167) The cookies in the srcdoc iframe should be
+  // inherited from its parent.
+  EXPECT_EQ("a=0; b=0; c=0; e=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("", EvalJs(sub_document_3, "document.cookie"));
+
+  // 11. Set cookie in the child document. It should be reflected on its parent.
+  EXPECT_TRUE(ExecJs(sub_document_3, "document.cookie = 'f=0';"));
+
+  // TODO(https://crbug.com/1003167) The cookies in the srcdoc iframe should be
+  // reflected in its parent.
+  EXPECT_EQ("a=0; b=0; c=0; e=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("", EvalJs(sub_document_3, "document.cookie"));
+
+  // 12. Checks cookies are sent while requesting resources.
+  EXPECT_TRUE(ExecJs(sub_document_3, "fetch('/response_3');"));
+  response_3.WaitForRequest();
+  EXPECT_EQ("a=0; b=0; c=0; e=0",
+            response_3.http_request()->headers.at("Cookie"));
+}
+
+// Test how cookies are inherited in about:blank iframes.
+IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedAboutBlank) {
+  // This test expects several cross-site navigation to happen.
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  using Response = net::test_server::ControllableHttpResponse;
+  Response response_1(embedded_test_server(), "/response_1");
+  Response response_2(embedded_test_server(), "/response_2");
+  Response response_3(embedded_test_server(), "/response_3");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+
+  EXPECT_TRUE(
+      ExecJs(shell(), JsReplace("let iframe = document.createElement('iframe');"
+                                "iframe.src = $1;"
+                                "document.body.appendChild(iframe);",
+                                url_b)));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_TRUE(ExecJs(shell(), R"(
+    document.querySelector('iframe').src = "about:blank"
+  )"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  RenderFrameHostImpl* main_document = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  RenderFrameHostImpl* sub_document_1 =
+      main_document->child_at(0)->current_frame_host();
+
+  EXPECT_EQ(url::kAboutBlankURL, sub_document_1->GetLastCommittedURL());
+  EXPECT_EQ(url::Origin::Create(url_a),
+            sub_document_1->GetLastCommittedOrigin());
+  EXPECT_EQ(main_document->GetSiteInstance(),
+            sub_document_1->GetSiteInstance());
+
+  // 0. The default state doesn't contain any cookies.
+  EXPECT_EQ("", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("", EvalJs(sub_document_1, "document.cookie"));
+
+  // 1. Set a cookie in the main document, it affects its child too.
+  EXPECT_TRUE(ExecJs(main_document, "document.cookie = 'a=0';"));
+
+  EXPECT_EQ("a=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("a=0", EvalJs(sub_document_1, "document.cookie"));
+
+  // 2. Set a cookie in the child, it affects its parent too.
+  EXPECT_TRUE(ExecJs(sub_document_1, "document.cookie = 'b=0';"));
+
+  EXPECT_EQ("a=0; b=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("a=0; b=0", EvalJs(sub_document_1, "document.cookie"));
+
+  // 3. Checks cookies are sent while requesting resources.
+  GURL url_response_1 = embedded_test_server()->GetURL("a.com", "/response_1");
+  EXPECT_TRUE(ExecJs(sub_document_1, JsReplace("fetch($1)", url_response_1)));
+  response_1.WaitForRequest();
+  EXPECT_EQ("a=0; b=0", response_1.http_request()->headers.at("Cookie"));
+
+  // 4. Navigate the iframe elsewhere.
+  EXPECT_TRUE(ExecJs(sub_document_1, JsReplace("location.href = $1", url_b)));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  RenderFrameHostImpl* sub_document_2 =
+      main_document->child_at(0)->current_frame_host();
+
+  EXPECT_EQ("a=0; b=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("", EvalJs(sub_document_2, "document.cookie"));
+
+  // 5. Set a cookie in the main document. It doesn't affect its child.
+  EXPECT_TRUE(ExecJs(main_document, "document.cookie = 'c=0';"));
+
+  EXPECT_EQ("a=0; b=0; c=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("", EvalJs(sub_document_2, "document.cookie"));
+
+  // 6. Set a cookie in the child. It doesn't affect its parent.
+  EXPECT_TRUE(ExecJs(sub_document_2, "document.cookie = 'd=0';"));
+
+  EXPECT_EQ("a=0; b=0; c=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("d=0", EvalJs(sub_document_2, "document.cookie"));
+
+  // 7. Checks cookies are sent while requesting resources.
+  EXPECT_TRUE(ExecJs(sub_document_2, "fetch('/response_2');"));
+  response_2.WaitForRequest();
+  EXPECT_EQ("d=0", response_2.http_request()->headers.at("Cookie"));
+
+  // 8. Navigate the iframe back to about:blank.
+  shell()->web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  RenderFrameHostImpl* sub_document_3 =
+      main_document->child_at(0)->current_frame_host();
+  EXPECT_EQ(url_a, main_document->GetLastCommittedURL());
+  EXPECT_EQ(url::kAboutBlankURL, sub_document_3->GetLastCommittedURL());
+  EXPECT_EQ(url::Origin::Create(url_a),
+            sub_document_3->GetLastCommittedOrigin());
+  EXPECT_EQ(main_document->GetSiteInstance(),
+            sub_document_3->GetSiteInstance());
+
+  EXPECT_EQ("a=0; b=0; c=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("", EvalJs(sub_document_3, "document.cookie"));
+
+  // 9. Set cookie in the main document. It doesn't affect the iframe anymore.
+  EXPECT_TRUE(ExecJs(main_document, "document.cookie = 'e=0';"));
+
+  EXPECT_EQ("a=0; b=0; c=0; e=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("", EvalJs(sub_document_3, "document.cookie"));
+
+  // 10. Set cookie in the iframe. It doesn't really work.
+  // TODO(https://crbug.com/1009963): document.cookie should work.
+  EXPECT_TRUE(ExecJs(sub_document_3, "document.cookie = 'f=0';"));
+  EXPECT_EQ("a=0; b=0; c=0; e=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("", EvalJs(sub_document_3, "document.cookie"));
+
+  // 11. Even if document.cookie is empty, cookies are sent.
+  EXPECT_TRUE(ExecJs(sub_document_3, "fetch('/response_3');"));
+  response_3.WaitForRequest();
+  EXPECT_EQ("a=0; b=0; c=0; e=0",
+            response_3.http_request()->headers.at("Cookie"));
+}
+
+// Test how cookies are inherited in about:blank iframes.
+//
+// This is a variation of NavigationBaseBrowserTest.CookiesInheritedAboutBlank.
+// Instead of requesting an history navigation, a new navigation is requested
+// from the main frame. The navigation is cross-site instead of being same-site.
+IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedAboutBlank2) {
+  // This test expects several cross-site navigation to happen.
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  using Response = net::test_server::ControllableHttpResponse;
+  Response response_1(embedded_test_server(), "/response_1");
+  Response response_2(embedded_test_server(), "/response_2");
+  Response response_3(embedded_test_server(), "/response_3");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+
+  EXPECT_TRUE(
+      ExecJs(shell(), JsReplace("let iframe = document.createElement('iframe');"
+                                "iframe.src = $1;"
+                                "document.body.appendChild(iframe);",
+                                url_b)));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_TRUE(ExecJs(shell(), R"(
+    document.querySelector('iframe').src = "about:blank"
+  )"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  RenderFrameHostImpl* main_document = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  RenderFrameHostImpl* sub_document_1 =
+      main_document->child_at(0)->current_frame_host();
+  EXPECT_EQ(url::kAboutBlankURL, sub_document_1->GetLastCommittedURL());
+  EXPECT_EQ(url::Origin::Create(url_a),
+            sub_document_1->GetLastCommittedOrigin());
+  EXPECT_EQ(main_document->GetSiteInstance(),
+            sub_document_1->GetSiteInstance());
+
+  // 0. The default state doesn't contain any cookies.
+  EXPECT_EQ("", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("", EvalJs(sub_document_1, "document.cookie"));
+
+  // 1. Set a cookie in the main document, it affects its child too.
+  EXPECT_TRUE(ExecJs(main_document, "document.cookie = 'a=0';"));
+
+  EXPECT_EQ("a=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("a=0", EvalJs(sub_document_1, "document.cookie"));
+
+  // 2. Set a cookie in the child, it affects its parent too.
+  EXPECT_TRUE(ExecJs(sub_document_1, "document.cookie = 'b=0';"));
+
+  EXPECT_EQ("a=0; b=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("a=0; b=0", EvalJs(sub_document_1, "document.cookie"));
+
+  // 3. Checks cookies are sent while requesting resources.
+  EXPECT_TRUE(ExecJs(sub_document_1, "fetch('/response_1');"));
+  response_1.WaitForRequest();
+  EXPECT_EQ("a=0; b=0", response_1.http_request()->headers.at("Cookie"));
+
+  // 4. Navigate the iframe elsewhere.
+  EXPECT_TRUE(ExecJs(sub_document_1, JsReplace("location.href = $1", url_b)));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  RenderFrameHostImpl* sub_document_2 =
+      main_document->child_at(0)->current_frame_host();
+
+  EXPECT_EQ("a=0; b=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("", EvalJs(sub_document_2, "document.cookie"));
+
+  // 5. Set a cookie in the main document. It doesn't affect its child.
+  EXPECT_TRUE(ExecJs(main_document, "document.cookie = 'c=0';"));
+
+  EXPECT_EQ("a=0; b=0; c=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("", EvalJs(sub_document_2, "document.cookie"));
+
+  // 6. Set a cookie in the child. It doesn't affect its parent.
+  EXPECT_TRUE(ExecJs(sub_document_2, "document.cookie = 'd=0';"));
+
+  EXPECT_EQ("a=0; b=0; c=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("d=0", EvalJs(sub_document_2, "document.cookie"));
+
+  // 7. Checks cookies are sent while requesting resources.
+  EXPECT_TRUE(ExecJs(sub_document_2, "fetch('/response_2');"));
+  response_2.WaitForRequest();
+  EXPECT_EQ("d=0", response_2.http_request()->headers.at("Cookie"));
+
+  // 8. Ask the top-level, a.com frame to navigate the subframe to about:blank.
+  EXPECT_TRUE(ExecJs(shell(), R"(
+    document.querySelector('iframe').src = "about:blank";
+  )"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  RenderFrameHostImpl* sub_document_3 =
+      main_document->child_at(0)->current_frame_host();
+  EXPECT_EQ(url::kAboutBlankURL, sub_document_3->GetLastCommittedURL());
+  EXPECT_EQ(url::Origin::Create(url_a),
+            sub_document_3->GetLastCommittedOrigin());
+  EXPECT_EQ(main_document->GetSiteInstance(),
+            sub_document_3->GetSiteInstance());
+
+  EXPECT_EQ("a=0; b=0; c=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("a=0; b=0; c=0", EvalJs(sub_document_3, "document.cookie"));
+
+  // 9. Set cookie in the main document.
+  EXPECT_TRUE(ExecJs(main_document, "document.cookie = 'e=0';"));
+
+  EXPECT_EQ("a=0; b=0; c=0; e=0", EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("a=0; b=0; c=0; e=0", EvalJs(sub_document_3, "document.cookie"));
+
+  // 10. Set cookie in the child document.
+  EXPECT_TRUE(ExecJs(sub_document_3, "document.cookie = 'f=0';"));
+
+  EXPECT_EQ("a=0; b=0; c=0; e=0; f=0",
+            EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("a=0; b=0; c=0; e=0; f=0",
+            EvalJs(sub_document_3, "document.cookie"));
+
+  // 11. Checks cookies are sent while requesting resources.
+  EXPECT_TRUE(ExecJs(sub_document_3, "fetch('/response_3');"));
+  response_3.WaitForRequest();
+  EXPECT_EQ("a=0; b=0; c=0; e=0; f=0",
+            response_3.http_request()->headers.at("Cookie"));
+}
+
+// Test how cookies are inherited in data-URL iframes.
+IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedDataUrl) {
+  using Response = net::test_server::ControllableHttpResponse;
+  Response response_1(embedded_test_server(), "/response_1");
+  Response response_2(embedded_test_server(), "/response_2");
+  Response response_3(embedded_test_server(), "/response_3");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+
+  EXPECT_TRUE(ExecJs(shell(), R"(
+    let iframe = document.createElement("iframe");
+    iframe.src = "data:text/html,";
+    document.body.appendChild(iframe);
+  )"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  RenderFrameHostImpl* main_document = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  RenderFrameHostImpl* sub_document_1 =
+      main_document->child_at(0)->current_frame_host();
+  EXPECT_EQ("data:text/html,", sub_document_1->GetLastCommittedURL());
+  EXPECT_TRUE(sub_document_1->GetLastCommittedOrigin().opaque());
+  EXPECT_EQ(main_document->GetSiteInstance(),
+            sub_document_1->GetSiteInstance());
+
+  // 1. Writing a cookie inside a data-URL document is forbidden.
+  auto console_delegate_1 = std::make_unique<ConsoleObserverDelegate>(
+      shell()->web_contents(),
+      "*Failed to set the 'cookie' property on 'Document': Cookies are "
+      "disabled inside 'data:' URLs.*");
+  shell()->web_contents()->SetDelegate(console_delegate_1.get());
+  ExecuteScriptAsync(sub_document_1, "document.cookie = 'a=0';");
+  console_delegate_1->Wait();
+
+  // 2. Reading a cookie inside a data-URL document is forbidden.
+  auto console_delegate_2 = std::make_unique<ConsoleObserverDelegate>(
+      shell()->web_contents(),
+      "*Failed to read the 'cookie' property from 'Document': Cookies are "
+      "disabled inside 'data:' URLs.*");
+  shell()->web_contents()->SetDelegate(console_delegate_2.get());
+  ExecuteScriptAsync(sub_document_1, "document.cookie");
+  console_delegate_2->Wait();
+
+  // 3. Set cookie in the main document. No cookies are sent when requested from
+  // the data-URL.
+  EXPECT_TRUE(ExecJs(main_document, "document.cookie = 'a=0;SameSite=Lax'"));
+  EXPECT_TRUE(ExecJs(main_document, "document.cookie = 'b=0;SameSite=Strict'"));
+  GURL url_response_1 = embedded_test_server()->GetURL("a.com", "/response_1");
+  EXPECT_TRUE(ExecJs(sub_document_1, JsReplace("fetch($1)", url_response_1)));
+  response_1.WaitForRequest();
+  EXPECT_EQ(0u, response_1.http_request()->headers.count("Cookie"));
+
+  // 4. Navigate the iframe elsewhere and back using history navigation.
+  EXPECT_TRUE(ExecJs(sub_document_1, JsReplace("location.href = $1", url_b)));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  shell()->web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  RenderFrameHostImpl* sub_document_2 =
+      main_document->child_at(0)->current_frame_host();
+  EXPECT_EQ(url_a, main_document->GetLastCommittedURL());
+  EXPECT_EQ("data:text/html,", sub_document_2->GetLastCommittedURL());
+  EXPECT_TRUE(sub_document_2->GetLastCommittedOrigin().opaque());
+  EXPECT_EQ(main_document->GetSiteInstance(),
+            sub_document_2->GetSiteInstance());
+
+  // 5. Writing a cookie inside a data-URL document is still forbidden.
+  auto console_delegate_3 = std::make_unique<ConsoleObserverDelegate>(
+      shell()->web_contents(),
+      "*Failed to set the 'cookie' property on 'Document': Cookies are "
+      "disabled inside 'data:' URLs.*");
+  shell()->web_contents()->SetDelegate(console_delegate_3.get());
+  ExecuteScriptAsync(sub_document_2, "document.cookie = 'c=0';");
+  console_delegate_3->Wait();
+
+  // 6. Reading a cookie inside a data-URL document is still forbidden.
+  auto console_delegate_4 = std::make_unique<ConsoleObserverDelegate>(
+      shell()->web_contents(),
+      "*Failed to read the 'cookie' property from 'Document': Cookies are "
+      "disabled inside 'data:' URLs.*");
+  shell()->web_contents()->SetDelegate(console_delegate_4.get());
+  ExecuteScriptAsync(sub_document_2, "document.cookie");
+  console_delegate_4->Wait();
+
+  // 7. No cookies are sent when requested from the data-URL.
+  GURL url_response_2 = embedded_test_server()->GetURL("a.com", "/response_2");
+  EXPECT_TRUE(ExecJs(sub_document_2, JsReplace("fetch($1)", url_response_2)));
+  response_2.WaitForRequest();
+  EXPECT_EQ(0u, response_2.http_request()->headers.count("Cookie"));
+}
+
 }  // namespace content

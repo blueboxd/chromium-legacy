@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/containers/adapters.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
@@ -533,11 +534,13 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
   // object is placed on, we need to keep track of if there is any inline-level
   // content preceeding it.
   bool has_preceding_inline_level_content = false;
+  bool has_rtl_block_level_out_of_flow_objects = false;
+  bool is_ltr = IsLtr(line_info.BaseDirection());
 
   for (NGLineBoxFragmentBuilder::Child& child : line_box_) {
     has_preceding_inline_level_content |= child.HasInFlowFragment();
 
-    LayoutObject* box = child.out_of_flow_positioned_box;
+    const LayoutObject* box = child.out_of_flow_positioned_box;
     if (!box)
       continue;
 
@@ -557,13 +560,34 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
         container_builder_.AddAdjoiningObjectTypes(kAdjoiningInlineOutOfFlow);
     } else {
       // A block-level OOF element positions itself on the "next" line. However
-      // only shifts down if there is inline-level content.
+      // only shifts down if there is preceding inline-level content.
       static_offset.inline_offset = block_level_inline_offset;
-      if (has_preceding_inline_level_content)
-        static_offset.block_offset += line_height;
+      if (is_ltr) {
+        if (has_preceding_inline_level_content)
+          static_offset.block_offset += line_height;
+      } else {
+        // "Preceding" is in logical order, but this loop is in visual order. In
+        // RTL, move objects down in the reverse-order loop below.
+        has_rtl_block_level_out_of_flow_objects = true;
+      }
     }
 
     child.offset = static_offset;
+  }
+
+  if (UNLIKELY(has_rtl_block_level_out_of_flow_objects)) {
+    has_preceding_inline_level_content = false;
+    for (NGLineBoxFragmentBuilder::Child& child : base::Reversed(line_box_)) {
+      const LayoutObject* box = child.out_of_flow_positioned_box;
+      if (!box) {
+        has_preceding_inline_level_content |= child.HasInFlowFragment();
+        continue;
+      }
+      if (has_preceding_inline_level_content &&
+          !box->StyleRef().IsOriginalDisplayInlineType()) {
+        child.offset.block_offset += line_height;
+      }
+    }
   }
 }
 

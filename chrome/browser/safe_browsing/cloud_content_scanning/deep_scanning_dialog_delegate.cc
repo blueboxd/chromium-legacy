@@ -131,6 +131,20 @@ void StringSourceRequest::GetRequestData(DataCallback callback) {
   std::move(callback).Run(result_, data_);
 }
 
+bool DlpTriggeredRulesOK(
+    const ::safe_browsing::DlpDeepScanningVerdict& verdict) {
+  if (verdict.status() != DlpDeepScanningVerdict::SUCCESS)
+    return false;
+
+  for (int i = 0; i < verdict.triggered_rules_size(); ++i) {
+    if (verdict.triggered_rules(i).action() ==
+        DlpDeepScanningVerdict::TriggeredRule::BLOCK) {
+      return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 // A BinaryUploadService::Request implementation that gets the data to scan
@@ -352,7 +366,7 @@ void DeepScanningDialogDelegate::StringRequestCallback(
 
   text_request_complete_ = true;
   bool text_complies = (result == BinaryUploadService::Result::SUCCESS &&
-                        response.dlp_scan_verdict().triggered_rules().empty());
+                        DlpTriggeredRulesOK(response.dlp_scan_verdict()));
   std::fill(result_.text_results.begin(), result_.text_results.end(),
             text_complies);
   MaybeCompleteScanRequest();
@@ -372,7 +386,7 @@ void DeepScanningDialogDelegate::FileRequestCallback(
       web_contents_->GetLastCommittedURL(), path.AsUTF8Unsafe(), sha256_[index],
       result, response);
 
-  bool dlp_ok = response.dlp_scan_verdict().triggered_rules().empty();
+  bool dlp_ok = DlpTriggeredRulesOK(response.dlp_scan_verdict());
   bool malware_ok = response.malware_scan_verdict().verdict() !=
                         MalwareDeepScanningVerdict::UWS &&
                     response.malware_scan_verdict().verdict() !=

@@ -169,7 +169,8 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
       std::unique_ptr<VisualFeatures> visual_features);
 
   // Called when the DOM feature extraction is complete.
-  void OnGetDomFeatures(const std::string& verdict);
+  void OnGetDomFeatures(mojom::PhishingDetectorResult result,
+                        const std::string& verdict);
 
   // Called when the DOM feature extraction times out.
   void OnGetDomFeatureTimeout();

@@ -22,6 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/switches.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
@@ -172,11 +173,33 @@ bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
 // static
 std::unique_ptr<gfx::ClientNativePixmap>
 ClientNativePixmapDmaBuf::ImportFromDmabuf(gfx::NativePixmapHandle handle,
-                                           const gfx::Size& size) {
+                                           const gfx::Size& size,
+                                           gfx::BufferFormat format) {
   std::array<PlaneInfo, kMaxPlanes> plane_info;
+
+  size_t expected_planes = gfx::NumberOfPlanesForLinearBufferFormat(format);
+  if (expected_planes == 0 || handle.planes.size() != expected_planes) {
+    return nullptr;
+  }
 
   const size_t page_size = base::GetPageSize();
   for (size_t i = 0; i < handle.planes.size(); ++i) {
+    // Verify that the plane buffer has appropriate size.
+    size_t min_stride = 0;
+    size_t subsample_factor = SubsamplingFactorForBufferFormat(format, i);
+    base::CheckedNumeric<size_t> plane_height =
+        (base::CheckedNumeric<size_t>(size.height()) + subsample_factor - 1) /
+        subsample_factor;
+    if (!gfx::RowSizeForBufferFormatChecked(size.width(), format, i,
+                                            &min_stride) ||
+        handle.planes[i].stride < min_stride) {
+      return nullptr;
+    }
+    base::CheckedNumeric<size_t> min_size =
+        base::CheckedNumeric<size_t>(handle.planes[i].stride) * plane_height;
+    if (!min_size.IsValid() || handle.planes[i].size < min_size.ValueOrDie())
+      return nullptr;
+
     // mmap() fails if the offset argument is not page-aligned.
     // Since handle.planes[i].offset is possibly not page-aligned, we
     // have to map with an additional offset to be aligned to the page.

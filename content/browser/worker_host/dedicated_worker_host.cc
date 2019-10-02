@@ -444,6 +444,15 @@ void DedicatedWorkerHost::CreatePaymentManager(
   worker_process_host->CreatePaymentManager(std::move(receiver));
 }
 
+void DedicatedWorkerHost::CreateIDBFactory(
+    mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderProcessHost* worker_process_host = GetProcessHost();
+  if (!worker_process_host)
+    return;
+  worker_process_host->BindIndexedDB(GetOrigin(), std::move(receiver));
+}
+
 void DedicatedWorkerHost::BindSmsReceiverReceiver(
     mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver) {
   RenderFrameHostImpl* ancestor_render_frame_host =
@@ -518,6 +527,7 @@ void DedicatedWorkerHost::UpdateSubresourceLoaderFactories() {
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       subresource_loader_factories =
           WorkerScriptFetchInitiator::CreateFactoryBundle(
+              WorkerScriptFetchInitiator::LoaderType::kSubResource,
               worker_process_id_, storage_partition_impl, storage_domain,
               file_url_support_, /*filesystem_url_support=*/true);
 

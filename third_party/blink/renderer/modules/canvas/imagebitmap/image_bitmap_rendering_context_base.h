@@ -45,7 +45,7 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
   void SetImage(ImageBitmap*);
   // The acceleration hing here is ignored as GetImage(AccelerationHint) only
   // calls to image_layer_bridge->GetImage(), without giving it a hint
-  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) const final;
+  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) final;
   // This function resets the internal image resource to a image of the same
   // size than the original, with the same properties, but completely black.
   // This is used to follow the standard regarding transferToBitmap

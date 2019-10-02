@@ -28,7 +28,7 @@ void SetupRootProperties(LayerImpl* root);
 void CopyProperties(const Layer* from, Layer* to);
 void CopyProperties(const LayerImpl* from, LayerImpl* to);
 
-// Each of the following methods creates a property node for the layer,
+// Each of the following functions creates a property node for the layer,
 // and sets the new node as the layer's property node of the type.
 // The new property node's parent will be |parent_id| if it's specified.
 // Otherwise the layer's current property node of the corresponding type will
@@ -50,6 +50,14 @@ ScrollNode& CreateScrollNode(Layer*,
                              int parent_id = ScrollTree::kInvalidNodeId);
 ScrollNode& CreateScrollNode(LayerImpl*,
                              int parent_id = ScrollTree::kInvalidNodeId);
+
+// These functions create property nodes not associated with layers.
+TransformNode& CreateTransformNode(PropertyTrees*, int parent_id);
+ClipNode& CreateClipNode(PropertyTrees*, int parent_id, int transform_id);
+EffectNode& CreateEffectNode(PropertyTrees*,
+                             int parent_id,
+                             int transform_id,
+                             int clip_id);
 
 void SetupMaskProperties(LayerImpl* masked_layer, PictureLayerImpl* mask_layer);
 void SetupMaskProperties(Layer* masked_layer, PictureLayer* mask_layer);
@@ -172,9 +180,6 @@ void SetupViewport(LayerImpl* root,
 
 // Returns the RenderSurfaceImpl into which the given layer draws.
 RenderSurfaceImpl* GetRenderSurface(const LayerImpl* layer);
-
-// TODO(wangxianzhu): Add functions to create property nodes not based on
-// layers when needed.
 
 }  // namespace cc
 

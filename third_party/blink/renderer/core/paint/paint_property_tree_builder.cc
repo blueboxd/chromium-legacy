@@ -275,9 +275,6 @@ static bool NeedsScrollNode(const LayoutObject& object,
       return true;
   }
 
-  if (direct_compositing_reasons & CompositingReason::kScrollTimelineTarget)
-    return true;
-
   return ToLayoutBox(object).GetScrollableArea()->ScrollsOverflow();
 }
 
@@ -1934,8 +1931,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
           context_.current.should_flatten_inherited_transform;
       state.direct_compositing_reasons =
           full_context_.direct_compositing_reasons &
-          (CompositingReason::kRootScroller |
-           CompositingReason::kScrollTimelineTarget);
+          CompositingReason::kRootScroller;
       state.rendering_context_id = context_.current.rendering_context_id;
       state.scroll = properties_->Scroll();
       auto effective_change_type = properties_->UpdateScrollTranslation(

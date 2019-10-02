@@ -46,6 +46,13 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
   capabilities_.supports_gpu_vsync = gl_surface_->SupportsGpuVSync();
   capabilities_.supports_dc_layers = gl_surface_->SupportsDCLayers();
   capabilities_.supports_dc_video_overlays = gl_surface_->UseOverlaysForVideo();
+#if defined(OS_ANDROID)
+  // TODO(weiliangc): This capability is used to check whether we should do
+  // overlay. Since currently none of the other overlay system is implemented,
+  // only update this for Android.
+  // This output device is never offscreen.
+  capabilities_.supports_surfaceless = gl_surface_->IsSurfaceless();
+#endif
 }
 
 void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,

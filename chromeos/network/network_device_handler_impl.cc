@@ -71,44 +71,6 @@ void HandleShillCallFailure(
       shill_error_name, shill_error_message);
 }
 
-void IPConfigRefreshCallback(const std::string& ipconfig_path, bool result) {
-  if (!result) {
-    NET_LOG(ERROR) << "IPConfigs.Refresh Failed: " << ipconfig_path;
-  } else {
-    NET_LOG(EVENT) << "IPConfigs.Refresh Succeeded: " << ipconfig_path;
-  }
-}
-
-void RefreshIPConfigsCallback(
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback,
-    const std::string& device_path,
-    const base::DictionaryValue& properties) {
-  const base::ListValue* ip_configs;
-  if (!properties.GetListWithoutPathExpansion(shill::kIPConfigsProperty,
-                                              &ip_configs)) {
-    network_handler::ShillErrorCallbackFunction(
-        "RequestRefreshIPConfigs Failed", device_path, error_callback,
-        std::string("Missing ") + shill::kIPConfigsProperty, "");
-    return;
-  }
-
-  for (size_t i = 0; i < ip_configs->GetSize(); i++) {
-    std::string ipconfig_path;
-    if (!ip_configs->GetString(i, &ipconfig_path))
-      continue;
-    ShillIPConfigClient::Get()->Refresh(
-        dbus::ObjectPath(ipconfig_path),
-        base::BindOnce(&IPConfigRefreshCallback, ipconfig_path));
-  }
-  // It is safe to invoke |callback| here instead of waiting for the
-  // IPConfig.Refresh callbacks to complete because the Refresh DBus calls will
-  // be executed in order and thus before any further DBus requests that
-  // |callback| may issue.
-  if (!callback.is_null())
-    callback.Run();
-}
-
 void SetDevicePropertyInternal(
     const std::string& device_path,
     const std::string& property_name,
@@ -297,16 +259,6 @@ void NetworkDeviceHandlerImpl::SetDeviceProperty(
 
   SetDevicePropertyInternal(device_path, property_name, value, callback,
                             error_callback);
-}
-
-void NetworkDeviceHandlerImpl::RequestRefreshIPConfigs(
-    const std::string& device_path,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {
-  GetDeviceProperties(
-      device_path,
-      base::Bind(&RefreshIPConfigsCallback, callback, error_callback),
-      error_callback);
 }
 
 void NetworkDeviceHandlerImpl::RegisterCellularNetwork(

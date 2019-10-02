@@ -194,7 +194,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
   void GetScreenInfo(ScreenInfo* screen_info) override;
-  void CancelActiveTouches() override;
+  std::vector<std::unique_ptr<ui::TouchEvent>> ExtractAndCancelActiveTouches()
+      override;
+  void TransferTouches(
+      const std::vector<std::unique_ptr<ui::TouchEvent>>& touches) override;
 
   // ui::EventHandlerAndroid implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& m) override;

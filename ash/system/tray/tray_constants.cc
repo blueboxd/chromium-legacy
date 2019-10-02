@@ -27,8 +27,6 @@ const int kTrayPopupItemMinEndWidth =
 
 const int kTrayPopupLabelRightPadding = 8;
 
-const int kTrayRoundedBorderRadius = 2;
-
 const int kTrayToggleButtonWidth = 68;
 
 const int kMenuIconSize = 20;

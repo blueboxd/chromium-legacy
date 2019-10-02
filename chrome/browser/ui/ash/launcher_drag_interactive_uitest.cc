@@ -85,14 +85,7 @@ IN_PROC_BROWSER_TEST_P(LauncherDragTest, Open) {
       ash::AppListViewState::kFullscreenAllApps);
 }
 
-// Drag to close the launcher.
-// TODO(crbug.com/1009459): many of these tests are failing on MSan builds.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_Close DISABLED_Close
-#else
-#define MAYBE_Close Close
-#endif
-IN_PROC_BROWSER_TEST_P(LauncherDragTest, MAYBE_Close) {
+IN_PROC_BROWSER_TEST_P(LauncherDragTest, Close) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
   ash::ShellTestApi shell_test_api;

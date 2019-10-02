@@ -4,7 +4,6 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -47,8 +46,12 @@ Profile* CreateProfile() {
 class ExpectBrowserActivationForProfile : public BrowserListObserver {
  public:
   explicit ExpectBrowserActivationForProfile(Profile* profile)
-      : profile_(profile), scoped_observer_(this) {
-    scoped_observer_.Add(BrowserList::GetInstance());
+      : profile_(profile) {
+    BrowserList::AddObserver(this);
+  }
+
+  ~ExpectBrowserActivationForProfile() override {
+    BrowserList::RemoveObserver(this);
   }
 
   void Wait() {
@@ -64,7 +67,6 @@ class ExpectBrowserActivationForProfile : public BrowserListObserver {
  private:
   Profile* profile_;
   base::RunLoop loop_;
-  ScopedObserver<BrowserList, BrowserListObserver> scoped_observer_;
 };
 
 }  // namespace

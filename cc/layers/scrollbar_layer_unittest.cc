@@ -847,17 +847,9 @@ TEST_F(ScrollbarLayerTest, SubPixelCanScrollOrientation) {
 
 TEST_F(ScrollbarLayerTest, LayerChangesAffectingScrollbarGeometries) {
   LayerTreeImplTestBase impl;
+  SetupViewport(impl.root_layer(), gfx::Size(), gfx::Size(900, 900));
 
-  LayerImpl* clip_layer = impl.AddLayer<LayerImpl>();
-  LayerImpl* scroll_layer = impl.AddLayer<LayerImpl>();
-  scroll_layer->SetElementId(LayerIdToElementIdForTesting(scroll_layer->id()));
-
-  // Make clip_layer the inner viewport container layer. This ensures the later
-  // call to |SetViewportBoundsDelta| will be on a viewport layer.
-  LayerTreeImpl::ViewportLayerIds viewport_ids;
-  viewport_ids.inner_viewport_container = clip_layer->id();
-  impl.host_impl()->active_tree()->SetViewportLayersFromIds(viewport_ids);
-
+  auto* scroll_layer = impl.OuterViewportScrollLayer();
   const int kTrackStart = 0;
   const int kThumbThickness = 10;
   const bool kIsLeftSideVerticalScrollbar = false;
@@ -880,28 +872,16 @@ TEST_F(ScrollbarLayerTest, LayerChangesAffectingScrollbarGeometries) {
   EXPECT_TRUE(impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
   impl.host_impl()->active_tree()->UpdateScrollbarGeometries();
 
-  clip_layer->SetBounds(gfx::Size(900, 900));
-  // The clip layer for scrolling is managed independently of the scroll
-  // container bounds so changing the clip does not require an update.
-  EXPECT_FALSE(
-      impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
-
   scroll_layer->SetBounds(gfx::Size(980, 980));
   // Changes to the bounds should also require an update.
   EXPECT_TRUE(impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
   impl.host_impl()->active_tree()->UpdateScrollbarGeometries();
 
-  clip_layer->SetViewportBoundsDelta(gfx::Vector2dF(1, 2));
-  EXPECT_TRUE(impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
-  impl.host_impl()->active_tree()->UpdateScrollbarGeometries();
-
   // Not changing the current value should not require an update.
   scroll_layer->SetScrollable(gfx::Size(900, 900));
-  clip_layer->SetBounds(gfx::Size(900, 900));
   scroll_layer->SetBounds(gfx::Size(980, 980));
-  clip_layer->SetViewportBoundsDelta(gfx::Vector2dF(1, 2));
-  EXPECT_TRUE(
-      !impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
+  EXPECT_FALSE(
+      impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
 }
 
 TEST_F(AuraScrollbarLayerTest, ScrollbarLayerCreateAfterSetScrollable) {

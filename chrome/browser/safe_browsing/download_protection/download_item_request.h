@@ -17,7 +17,13 @@ namespace safe_browsing {
 class DownloadItemRequest : public BinaryUploadService::Request,
                             download::DownloadItem::Observer {
  public:
+  // Create a DownloadItemRequest for the given |item|. If |read_immediately| is
+  // true, try to read the file contents right away. Otherwise, wait until the
+  // file has been renamed to its final path. If the caller expects |item| to be
+  // renamed imminently, it's recommended to set |read_immediately| to false,
+  // to avoid race conditions while reading the file.
   DownloadItemRequest(download::DownloadItem* item,
+                      bool read_immediately,
                       BinaryUploadService::Callback callback);
   ~DownloadItemRequest() override;
 

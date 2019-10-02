@@ -713,7 +713,7 @@
         <item name="android:layout_gravity">center</item>
         <item name="android:gravity">center</item>
         <item name="android:orientation">vertical</item>
-        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
     </style>
     <style name="BottomToolbarLabel">
         <item name="android:layout_width">match_parent</item>

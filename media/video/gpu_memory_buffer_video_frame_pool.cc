@@ -286,12 +286,14 @@ VideoPixelFormat VideoFormat(
     case GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB:
     case GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB:
       return PIXEL_FORMAT_NV12;
-    case GpuVideoAcceleratorFactories::OutputFormat::XR30:
     case GpuVideoAcceleratorFactories::OutputFormat::BGRA:
       return PIXEL_FORMAT_ARGB;
-    case GpuVideoAcceleratorFactories::OutputFormat::XB30:
     case GpuVideoAcceleratorFactories::OutputFormat::RGBA:
       return PIXEL_FORMAT_ABGR;
+    case GpuVideoAcceleratorFactories::OutputFormat::XR30:
+      return PIXEL_FORMAT_XR30;
+    case GpuVideoAcceleratorFactories::OutputFormat::XB30:
+      return PIXEL_FORMAT_XB30;
     case GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED:
       NOTREACHED();
       break;
@@ -602,6 +604,8 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     case PIXEL_FORMAT_ABGR:
     case PIXEL_FORMAT_XBGR:
     case PIXEL_FORMAT_P016LE:
+    case PIXEL_FORMAT_XR30:
+    case PIXEL_FORMAT_XB30:
     case PIXEL_FORMAT_UNKNOWN:
       if (is_software_backed_video_frame) {
         UMA_HISTOGRAM_ENUMERATION(

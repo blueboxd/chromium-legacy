@@ -638,7 +638,6 @@ class CC_EXPORT PropertyTrees final {
                               float starting_scale);
   void SetInnerViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetOuterViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
-  void SetInnerViewportScrollBoundsDelta(gfx::Vector2dF bounds_delta);
   void UpdateChangeTracking();
   void PushChangeTrackingTo(PropertyTrees* tree);
   void ResetAllChangeTracking();
@@ -646,13 +645,13 @@ class CC_EXPORT PropertyTrees final {
   gfx::Vector2dF inner_viewport_container_bounds_delta() const {
     return inner_viewport_container_bounds_delta_;
   }
-
-  gfx::Vector2dF outer_viewport_container_bounds_delta() const {
+  gfx::Vector2dF inner_viewport_scroll_bounds_delta() const {
+    // Inner viewport scroll bounds are always the same as outer viewport
+    // container bounds.
     return outer_viewport_container_bounds_delta_;
   }
-
-  gfx::Vector2dF inner_viewport_scroll_bounds_delta() const {
-    return inner_viewport_scroll_bounds_delta_;
+  gfx::Vector2dF outer_viewport_container_bounds_delta() const {
+    return outer_viewport_container_bounds_delta_;
   }
 
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
@@ -684,7 +683,6 @@ class CC_EXPORT PropertyTrees final {
  private:
   gfx::Vector2dF inner_viewport_container_bounds_delta_;
   gfx::Vector2dF outer_viewport_container_bounds_delta_;
-  gfx::Vector2dF inner_viewport_scroll_bounds_delta_;
 
   // GetDrawTransforms may change the value of cached_data_.
   DrawTransforms& GetDrawTransforms(int transform_id, int effect_id) const;

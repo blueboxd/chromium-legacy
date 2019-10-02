@@ -54,20 +54,7 @@ class TextInputManager {
     const x = node.location.left + Math.round(node.location.width / 2);
     const y = node.location.top + Math.round(node.location.height / 2);
 
-    chrome.accessibilityPrivate.sendSyntheticMouseEvent({
-      type: chrome.accessibilityPrivate.SyntheticMouseEventType.PRESS,
-      x: x,
-      y: y
-    });
-
-    setTimeout(
-        () => chrome.accessibilityPrivate.sendSyntheticMouseEvent({
-          type: chrome.accessibilityPrivate.SyntheticMouseEventType.RELEASE,
-          x: x,
-          y: y
-        }),
-        SAConstants.KEY_PRESS_DURATION_MS);
-
+    EventHelper.simulateMouseClick(x, y, SAConstants.VK_KEY_PRESS_DURATION_MS);
     return true;
   }
 
@@ -108,8 +95,7 @@ class TextInputManager {
    * @public
    */
   cut() {
-    this.navigationManager_.simulateKeyPress(
-        SAConstants.KeyCode.X, {ctrl: true});
+    EventHelper.simulateKeyPress(EventHelper.KeyCode.X, {ctrl: true});
   }
 
   /**
@@ -118,8 +104,7 @@ class TextInputManager {
    * @public
    */
   copy() {
-    this.navigationManager_.simulateKeyPress(
-        SAConstants.KeyCode.C, {ctrl: true});
+    EventHelper.simulateKeyPress(EventHelper.KeyCode.C, {ctrl: true});
   }
 
   /**
@@ -128,7 +113,6 @@ class TextInputManager {
    * @public
    */
   paste() {
-    this.navigationManager_.simulateKeyPress(
-        SAConstants.KeyCode.V, {ctrl: true});
+    EventHelper.simulateKeyPress(EventHelper.KeyCode.V, {ctrl: true});
   }
 }

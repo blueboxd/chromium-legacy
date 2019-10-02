@@ -544,11 +544,6 @@ TEST_P(QuicChromiumClientStreamTest, OnError) {
 }
 
 TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
-  // TODO(vasilvv): reenable this for v99.
-  if (GetParam() == quic::QUIC_VERSION_99) {
-    return;
-  }
-
   InitializeHeaders();
   ProcessHeadersFull(headers_);
 
@@ -578,7 +573,9 @@ TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
 
   spdy::SpdyHeaderBlock trailers;
   trailers["bar"] = "foo";
-  trailers[quic::kFinalOffsetHeaderKey] = base::NumberToString(strlen(data));
+  if (GetParam() != quic::QUIC_VERSION_99) {
+    trailers[quic::kFinalOffsetHeaderKey] = base::NumberToString(strlen(data));
+  }
 
   auto t = ProcessTrailers(trailers);
 
@@ -601,11 +598,6 @@ TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
 // Tests that trailers are marked as consumed only before delegate is to be
 // immediately notified about trailers.
 TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
-  // TODO(vasilvv): reenable this for v99.
-  if (GetParam() == quic::QUIC_VERSION_99) {
-    return;
-  }
-
   InitializeHeaders();
   ProcessHeadersFull(headers_);
 
@@ -640,7 +632,9 @@ TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
 
   spdy::SpdyHeaderBlock trailers;
   trailers["bar"] = "foo";
-  trailers[quic::kFinalOffsetHeaderKey] = base::NumberToString(strlen(data));
+  if (GetParam() != quic::QUIC_VERSION_99) {
+    trailers[quic::kFinalOffsetHeaderKey] = base::NumberToString(strlen(data));
+  }
   quic::QuicHeaderList t = ProcessTrailers(trailers);
   EXPECT_FALSE(stream_->IsDoneReading());
 
@@ -665,11 +659,6 @@ TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
 // are received but not yet delivered, Read() will return ERR_IO_PENDING instead
 // of 0 (EOF).
 TEST_P(QuicChromiumClientStreamTest, ReadAfterTrailersReceivedButNotDelivered) {
-  // TODO(vasilvv): reenable this for v99.
-  if (GetParam() == quic::QUIC_VERSION_99) {
-    return;
-  }
-
   InitializeHeaders();
   ProcessHeadersFull(headers_);
 
@@ -700,7 +689,9 @@ TEST_P(QuicChromiumClientStreamTest, ReadAfterTrailersReceivedButNotDelivered) {
   // Deliver trailers. Delegate notification is posted asynchronously.
   spdy::SpdyHeaderBlock trailers;
   trailers["bar"] = "foo";
-  trailers[quic::kFinalOffsetHeaderKey] = base::NumberToString(strlen(data));
+  if (GetParam() != quic::QUIC_VERSION_99) {
+    trailers[quic::kFinalOffsetHeaderKey] = base::NumberToString(strlen(data));
+  }
 
   quic::QuicHeaderList t = ProcessTrailers(trailers);
 

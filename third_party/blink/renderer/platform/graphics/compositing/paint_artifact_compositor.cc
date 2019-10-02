@@ -806,20 +806,33 @@ static void UpdateCompositorViewportProperties(
     PropertyTreeManager& property_tree_manager,
     cc::LayerTreeHost* layer_tree_host) {
   cc::LayerTreeHost::ViewportPropertyIds ids;
-  // This is also needed by pre-CompositeAfterPaint, so is not guarded by
-  // CompositeAfterPaintEnabled().
+  if (properties.overscroll_elasticity_transform) {
+    ids.overscroll_elasticity_transform =
+        property_tree_manager.EnsureCompositorTransformNode(
+            *properties.overscroll_elasticity_transform);
+  }
   if (properties.page_scale) {
     ids.page_scale_transform =
         property_tree_manager.EnsureCompositorPageScaleTransformNode(
             *properties.page_scale);
   }
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    if (properties.inner_scroll_translation) {
-      ids.inner_scroll = property_tree_manager.EnsureCompositorScrollNode(
-          *properties.inner_scroll_translation);
+  if (properties.inner_scroll_translation) {
+    ids.inner_scroll = property_tree_manager.EnsureCompositorScrollNode(
+        *properties.inner_scroll_translation);
+    if (properties.outer_clip) {
+      ids.outer_clip = property_tree_manager.EnsureCompositorClipNode(
+          *properties.outer_clip);
     }
-    layer_tree_host->RegisterViewportPropertyIds(ids);
+    if (properties.outer_scroll_translation) {
+      ids.outer_scroll = property_tree_manager.EnsureCompositorScrollNode(
+          *properties.outer_scroll_translation);
+    }
+  } else {
+    // Outer viewport properties exist only if inner viewport property exists.
+    DCHECK(!properties.outer_clip);
+    DCHECK(!properties.outer_scroll_translation);
   }
+  layer_tree_host->RegisterViewportPropertyIds(ids);
 }
 
 // Walk the pending layer list and build up a table of transform nodes that

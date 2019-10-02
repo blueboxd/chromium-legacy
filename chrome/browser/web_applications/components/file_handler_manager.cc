@@ -5,7 +5,7 @@
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 
 #include "base/feature_list.h"
-#include "chrome/browser/web_applications/components/web_app_file_extension_registration.h"
+#include "chrome/browser/web_applications/components/web_app_file_handler_registration.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace web_app {
@@ -31,8 +31,10 @@ void FileHandlerManager::OnWebAppInstalled(const AppId& installed_app_id) {
     return;
   std::set<std::string> file_extensions =
       GetFileExtensionsFromFileHandlers(*file_handlers);
+  std::set<std::string> mime_types =
+      GetMimeTypesFromFileHandlers(*file_handlers);
   RegisterFileHandlersForWebApp(installed_app_id, app_name, *profile_,
-                                file_extensions);
+                                file_extensions, mime_types);
 }
 
 void FileHandlerManager::OnWebAppUninstalled(const AppId& installed_app_id) {
@@ -61,6 +63,16 @@ std::set<std::string> GetFileExtensionsFromFileHandlers(
       file_extensions.insert(file_ext);
   }
   return file_extensions;
+}
+
+std::set<std::string> GetMimeTypesFromFileHandlers(
+    const std::vector<apps::FileHandlerInfo>& file_handlers) {
+  std::set<std::string> mime_types;
+  for (const auto& file_handler : file_handlers) {
+    for (const auto& mime_type : file_handler.types)
+      mime_types.insert(mime_type);
+  }
+  return mime_types;
 }
 
 }  // namespace web_app

@@ -108,9 +108,7 @@ class WaitForNextWalletUpdateChecker : public StatusChangeChecker,
                                        public syncer::SyncServiceObserver {
  public:
   explicit WaitForNextWalletUpdateChecker(syncer::SyncService* service)
-      : service_(service),
-        initial_marker_(GetInitialMarker(service)),
-        scoped_observer_(this) {
+      : service_(service), initial_marker_(GetInitialMarker(service)) {
     scoped_observer_.Add(service);
   }
 
@@ -154,8 +152,8 @@ class WaitForNextWalletUpdateChecker : public StatusChangeChecker,
 
   const syncer::SyncService* service_;
   const std::string initial_marker_;
-  ScopedObserver<syncer::SyncService, WaitForNextWalletUpdateChecker>
-      scoped_observer_;
+  ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
+      scoped_observer_{this};
 };
 
 std::vector<std::unique_ptr<CreditCard>> GetServerCards(

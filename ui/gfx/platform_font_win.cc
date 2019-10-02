@@ -650,11 +650,13 @@ PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
 }
 
 // static
-PlatformFont* PlatformFont::CreateFromSkTypeface(sk_sp<SkTypeface> typeface,
-                                                 int size) {
+PlatformFont* PlatformFont::CreateFromSkTypeface(
+    sk_sp<SkTypeface> typeface,
+    int font_size,
+    const base::Optional<FontRenderParams>& params) {
   TRACE_EVENT0("fonts", "PlatformFont::CreateFromSkTypeface");
   if (base::FeatureList::IsEnabled(kPlatformFontSkiaOnWindows))
-    return new PlatformFontSkia(typeface, size);
+    return new PlatformFontSkia(typeface, font_size, params);
 
   // This is a transitional code path until we complete migrating to
   // PlatformFontSkia on Windows. Being unable to wrap the SkTypeface into a
@@ -664,7 +666,7 @@ PlatformFont* PlatformFont::CreateFromSkTypeface(sk_sp<SkTypeface> typeface,
   // compare https://crbug.com/1003829.
   SkString family_name;
   typeface->getFamilyName(&family_name);
-  return new PlatformFontWin(family_name.c_str(), size);
+  return new PlatformFontWin(family_name.c_str(), font_size);
 }
 
 }  // namespace gfx

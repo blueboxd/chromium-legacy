@@ -4629,7 +4629,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if !defined(OS_ANDROID)
     {"show-legacy-tls-warnings", flag_descriptions::kLegacyTLSWarningsName,
      flag_descriptions::kLegacyTLSWarningsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kLegacyTLSWarnings)},
+     FEATURE_VALUE_TYPE(security_state::features::kLegacyTLSWarnings)},
 #endif
 
 #if defined(OS_CHROMEOS)

@@ -233,8 +233,63 @@ testcase.fileDisplayUsbPartition = async () => {
 };
 
 /**
- * Tests partitions display in the file table when root removable entry
- * is selected. Checks file system type is displayed.
+ * Tests that the file system type is properly displayed in the type
+ * column. Checks that the entries can be properly sorted by type.
+ * crbug.com/973743
+ */
+testcase.fileDisplayUsbPartitionSort = async () => {
+  const removableGroup = '#directory-tree [root-type-icon="removable"]';
+
+  // Open Files app on local downloads.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Mount removable device with partitions.
+  await sendTestMessage({name: 'mountUsbWithMultiplePartitionTypes'});
+
+  // Wait and select the removable group by clicking the label.
+  await remoteCall.waitAndClickElement(appId, removableGroup);
+
+  // Wait for partitions to appear in the file table list.
+  let expectedRows = [
+    ['partition-3', '--', 'vfat'],
+    ['partition-2', '--', 'ext4'],
+    ['partition-1', '--', 'ntfs'],
+  ];
+  const options = {orderCheck: true, ignoreLastModifiedTime: true};
+  await remoteCall.waitForFiles(appId, expectedRows, options);
+
+  // Sort by type in ascending order.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['.table-header-cell:nth-of-type(4)']);
+  await remoteCall.waitForElement(appId, '.table-header-sort-image-asc');
+
+  // Check that partitions are sorted in ascending order based on the partition
+  // type.
+  expectedRows = [
+    ['partition-2', '--', 'ext4'],
+    ['partition-1', '--', 'ntfs'],
+    ['partition-3', '--', 'vfat'],
+  ];
+  await remoteCall.waitForFiles(appId, expectedRows, options);
+
+  // Sort by type in descending order.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['.table-header-cell:nth-of-type(4)']);
+  await remoteCall.waitForElement(appId, '.table-header-sort-image-desc');
+
+  // Check that partitions are sorted in descending order based on the partition
+  // type.
+  expectedRows = [
+    ['partition-3', '--', 'vfat'],
+    ['partition-1', '--', 'ntfs'],
+    ['partition-2', '--', 'ext4'],
+  ];
+  await remoteCall.waitForFiles(appId, expectedRows, options);
+};
+
+/**
+ * Tests display of partitions in file list after mounting a removable USB
+ * volume.
  */
 testcase.fileDisplayPartitionFileTable = async () => {
   const removableGroup = '#directory-tree [root-type-icon="removable"]';
@@ -259,7 +314,7 @@ testcase.fileDisplayPartitionFileTable = async () => {
 
   const partitionTwo = await remoteCall.waitForElement(
       appId, '#file-list [file-name="partition-2"] .type');
-  chrome.test.assertEq('ext4', partitionOne.text);
+  chrome.test.assertEq('ext4', partitionTwo.text);
 };
 
 /**

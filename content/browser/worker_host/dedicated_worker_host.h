@@ -80,6 +80,8 @@ class DedicatedWorkerHost final
       mojo::PendingReceiver<blink::mojom::IdleManager> receiver);
   void CreatePaymentManager(
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver);
+  void CreateIDBFactory(
+      mojo::PendingReceiver<blink::mojom::IDBFactory> receiver);
   void BindSmsReceiverReceiver(
       mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver);
 

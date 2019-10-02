@@ -102,15 +102,14 @@ void SessionStorageErrorResponse(base::OnceClosure callback,
 
 SessionStorageContextMojo::SessionStorageContextMojo(
     const base::FilePath& partition_directory,
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     scoped_refptr<base::SequencedTaskRunner> memory_dump_task_runner,
     BackingMode backing_mode,
     std::string leveldb_name)
     : backing_mode_(backing_mode),
       leveldb_name_(std::move(leveldb_name)),
       partition_directory_(partition_directory),
-      leveldb_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+      leveldb_task_runner_(std::move(blocking_task_runner)),
       memory_dump_id_(base::StringPrintf("SessionStorage/0x%" PRIXPTR,
                                          reinterpret_cast<uintptr_t>(this))),
       is_low_end_device_(base::SysInfo::IsLowEndDevice()) {

@@ -1082,7 +1082,7 @@ class TestDownloadProtectionService
 
   void CheckClientDownload(
       DownloadItem* download_item,
-      safe_browsing::CheckDownloadCallback callback) override {
+      safe_browsing::CheckDownloadRepeatingCallback callback) override {
     std::move(callback).Run(MockCheckClientDownload());
   }
   MOCK_METHOD0(MockCheckClientDownload, safe_browsing::DownloadCheckResult());
@@ -1345,23 +1345,17 @@ TEST_P(ChromeDownloadManagerDelegateTestWithSafeBrowsing, CheckClientDownload) {
         .SetDangerLevel(kParameters.initial_danger_level);
   }
 
-  if (kParameters.expected_danger_type !=
-      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
-    if (kParameters.blocked) {
-      EXPECT_CALL(*download_item,
-                  OnContentCheckCompleted(
-                      // Specifying a dangerous type here would take precendence
-                      // over the blocking of the file.
-                      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-                      download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED));
-    } else {
-      EXPECT_CALL(
-          *download_item,
-          OnContentCheckCompleted(kParameters.expected_danger_type,
-                                  download::DOWNLOAD_INTERRUPT_REASON_NONE));
-    }
+  if (kParameters.blocked) {
+    EXPECT_CALL(*download_item,
+                OnContentCheckCompleted(
+                    // Specifying a dangerous type here would take precedence
+                    // over the blocking of the file.
+                    download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                    download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED));
   } else {
-    EXPECT_CALL(*download_item, OnContentCheckCompleted(_, _)).Times(0);
+    EXPECT_CALL(*download_item, OnContentCheckCompleted(
+                                    kParameters.expected_danger_type,
+                                    download::DOWNLOAD_INTERRUPT_REASON_NONE));
   }
 
   pref_service()->SetInteger(

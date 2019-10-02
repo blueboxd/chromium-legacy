@@ -39,19 +39,16 @@ class NotificationSchedulerImpl;
 class InitHelper {
  public:
   using InitCallback = base::OnceCallback<void(bool)>;
-  InitHelper()
-      : context_(nullptr),
-        impression_tracker_delegate_(nullptr) {}
+  InitHelper() : context_(nullptr), impression_tracker_delegate_(nullptr) {}
 
   ~InitHelper() = default;
 
   // Initializes subsystems in notification scheduler, |callback| will be
   // invoked if all initializations finished or anyone of them failed. The
   // object should be destroyed along with the |callback|.
-  void Init(
-      NotificationSchedulerContext* context,
-      ImpressionHistoryTracker::Delegate* impression_tracker_delegate,
-      InitCallback callback) {
+  void Init(NotificationSchedulerContext* context,
+            ImpressionHistoryTracker::Delegate* impression_tracker_delegate,
+            InitCallback callback) {
     // TODO(xingliu): Initialize the databases in parallel, we currently
     // initialize one by one to work around a shared db issue. See
     // https://crbug.com/978680.
@@ -162,7 +159,8 @@ class DisplayHelper {
     // Tracks user impression on the notification to be shown.
     context_->impression_tracker()->AddImpression(
         entry->type, entry->guid, entry->schedule_params.impression_mapping,
-        updated_notification_data->custom_data);
+        updated_notification_data->custom_data,
+        entry->schedule_params.custom_suppression_duration);
 
     stats::LogNotificationShow(*updated_notification_data, entry->type);
 
@@ -203,8 +201,7 @@ class NotificationSchedulerImpl : public NotificationScheduler,
  public:
   NotificationSchedulerImpl(
       std::unique_ptr<NotificationSchedulerContext> context)
-      : context_(std::move(context)),
-        task_start_time_(SchedulerTaskTime::kUnknown) {}
+      : context_(std::move(context)) {}
 
   ~NotificationSchedulerImpl() override = default;
 
@@ -276,34 +273,28 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   }
 
   // NotificationBackgroundTaskScheduler::Handler implementation.
-  void OnStartTask(SchedulerTaskTime task_time,
-                   TaskFinishedCallback callback) override {
+  void OnStartTask(TaskFinishedCallback callback) override {
     stats::LogBackgroundTaskEvent(stats::BackgroundTaskEvent::kStart);
-
-    task_start_time_ = task_time;
 
     // Updates the impression data to compute daily notification shown budget.
     context_->impression_tracker()->AnalyzeImpressionHistory();
 
     // Show notifications.
-    FindNotificationToShow(task_start_time_, std::move(callback));
+    FindNotificationToShow(std::move(callback));
   }
 
-  void OnStopTask(SchedulerTaskTime task_time) override {
+  void OnStopTask() override {
     stats::LogBackgroundTaskEvent(stats::BackgroundTaskEvent::kStopByOS);
-    task_start_time_ = task_time;
     ScheduleBackgroundTask();
   }
 
   // ImpressionHistoryTracker::Delegate implementation.
   void OnImpressionUpdated() override {
-    // TODO(xingliu): Fix duplicate ScheduleBackgroundTask() call.
-    ScheduleBackgroundTask();
+    // TODO(xingliu): Remove ImpressionHistoryTracker::Delegate, and add a
+    // browser test for user action hooks.
   }
 
-  // TODO(xingliu): Remove |task_start_time|.
-  void FindNotificationToShow(SchedulerTaskTime task_start_time,
-                              TaskFinishedCallback task_finish_callback) {
+  void FindNotificationToShow(TaskFinishedCallback task_finish_callback) {
     DisplayDecider::Results results;
     ScheduledNotificationManager::Notifications notifications;
     context_->notification_manager()->GetAllNotifications(&notifications);
@@ -347,7 +338,7 @@ class NotificationSchedulerImpl : public NotificationScheduler,
 
   void OnUserAction(const UserActionData& action_data) override {
     context_->impression_tracker()->OnUserAction(action_data);
-
+    ScheduleBackgroundTask();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&NotificationSchedulerImpl::NotifyClientAfterUserAction,
@@ -375,10 +366,6 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   std::unique_ptr<NotificationSchedulerContext> context_;
   std::unique_ptr<InitHelper> init_helper_;
   std::unique_ptr<DisplayHelper> display_helper_;
-
-  // The start time of the background task. SchedulerTaskTime::kUnknown if
-  // currently not running in a background task.
-  SchedulerTaskTime task_start_time_;
 
   base::WeakPtrFactory<NotificationSchedulerImpl> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(NotificationSchedulerImpl);

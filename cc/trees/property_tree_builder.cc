@@ -55,14 +55,7 @@ class PropertyTreeBuilderContext {
         transform_tree_(property_trees_.transform_tree),
         clip_tree_(property_trees_.clip_tree),
         effect_tree_(property_trees_.effect_tree),
-        scroll_tree_(property_trees_.scroll_tree) {
-    // This class is for UI compositor only
-    DCHECK(!layer_tree_host->page_scale_layer());
-    DCHECK(!layer_tree_host->inner_viewport_scroll_layer());
-    DCHECK(!layer_tree_host->outer_viewport_scroll_layer());
-    DCHECK(!layer_tree_host->overscroll_elasticity_element_id());
-    DCHECK(layer_tree_host->elastic_overscroll().IsZero());
-  }
+        scroll_tree_(property_trees_.scroll_tree) {}
 
   void BuildPropertyTrees();
 

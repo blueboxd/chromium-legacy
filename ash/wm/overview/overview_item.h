@@ -14,9 +14,9 @@
 #include "ash/wm/window_state_observer.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/controls/button/button.h"
@@ -38,8 +38,7 @@ class RoundedLabelWidget;
 class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
                                 public views::ButtonListener,
                                 public aura::WindowObserver,
-                                public WindowStateObserver,
-                                public ui::ImplicitAnimationObserver {
+                                public WindowStateObserver {
  public:
   OverviewItem(aura::Window* window,
                OverviewSession* overview,
@@ -212,9 +211,6 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   void OnPostWindowStateTypeChange(WindowState* window_state,
                                    WindowStateType old_type) override;
 
-  // ui::ImplicitAnimationObserver:
-  void OnImplicitAnimationsCompleted() override;
-
   const gfx::RectF& target_bounds() const { return target_bounds_; }
 
   views::Widget* item_widget() { return item_widget_.get(); }
@@ -266,10 +262,26 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   FRIEND_TEST_ALL_PREFIXES(SplitViewOverviewSessionTest,
                            OverviewUnsnappableIndicatorVisibility);
 
+  // Functions to be called back when their associated animations complete.
+  void OnWindowCloseAnimationCompleted();
+  void OnItemAddedAnimationCompleted();
+
+  // Performs the add-item-to-overview animation (which is a fade-in plus
+  // scale-up animation), on the given |window|. |target_transform| is the final
+  // transform that should be applied to |window| at the end of the animation.
+  // |window| is either the real window associated with this item (from
+  // GetWindow()), or the `item_widget_->GetNativeWindow()` if the associated
+  // window is minimized.
+  void PerformItemAddedAnimation(aura::Window* window,
+                                 const gfx::Transform& target_transform);
+
   // Sets the bounds of this overview item to |target_bounds| in |root_window_|.
   // The bounds change will be animated as specified by |animation_type|.
+  // |is_first_update| is true when we set this item's bounds for the first
+  // time.
   void SetItemBounds(const gfx::RectF& target_bounds,
-                     OverviewAnimationType animation_type);
+                     OverviewAnimationType animation_type,
+                     bool is_first_update);
 
   // Creates the window label.
   void CreateWindowLabel();
@@ -381,6 +393,8 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // |item_widget_|. Done here instead of on the original window because of the
   // rounded edges mask applied on entering overview window.
   std::unique_ptr<ui::Shadow> shadow_;
+
+  base::WeakPtrFactory<OverviewItem> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewItem);
 };

@@ -2367,6 +2367,9 @@ void NavigationRequest::CommitNavigation() {
   }
   auto common_params = common_params_->Clone();
   auto commit_params = commit_params_.Clone();
+  network::mojom::URLResponseHeadPtr response_head;
+  if (response_head_)
+    response_head = response_head_->head;
   if (subresource_loader_params_ &&
       !subresource_loader_params_->prefetched_signed_exchanges.empty()) {
     commit_params->prefetched_signed_exchanges =
@@ -2376,7 +2379,7 @@ void NavigationRequest::CommitNavigation() {
   AddNetworkServiceDebugEvent("COM");
   render_frame_host_->CommitNavigation(
       this, std::move(common_params), std::move(commit_params),
-      response_head_.get(), std::move(response_body_),
+      std::move(response_head), std::move(response_body_),
       std::move(url_loader_client_endpoints_), is_view_source_,
       std::move(subresource_loader_params_), std::move(subresource_overrides_),
       std::move(service_worker_provider_info), devtools_navigation_token_,

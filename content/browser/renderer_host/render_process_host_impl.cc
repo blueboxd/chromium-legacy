@@ -200,6 +200,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/power_monitor.mojom.h"
 #include "services/device/public/mojom/screen_orientation.mojom.h"
 #include "services/device/public/mojom/time_zone_monitor.mojom.h"
 #include "services/metrics/public/mojom/constants.mojom.h"
@@ -1219,6 +1220,13 @@ size_t GetPlatformProcessLimit() {
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
+RenderProcessHost::BindHostReceiverInterceptor&
+GetBindHostReceiverInterceptor() {
+  static base::NoDestructor<RenderProcessHost::BindHostReceiverInterceptor>
+      interceptor;
+  return *interceptor;
+}
+
 }  // namespace
 
 // A RenderProcessHostImpl's IO thread implementation of the
@@ -1249,6 +1257,13 @@ class RenderProcessHostImpl::IOThreadHostImpl
 
   // mojom::ChildProcessHost implementation:
   void BindHostReceiver(mojo::GenericPendingReceiver receiver) override {
+    const auto& interceptor = GetBindHostReceiverInterceptor();
+    if (interceptor) {
+      interceptor.Run(render_process_id_, &receiver);
+      if (!receiver)
+        return;
+    }
+
 #if defined(OS_LINUX)
     if (auto font_receiver = receiver.As<font_service::mojom::FontService>()) {
       ConnectToFontService(std::move(font_receiver));
@@ -1900,8 +1915,8 @@ void RenderProcessHostImpl::BindCacheStorage(
 }
 
 void RenderProcessHostImpl::BindIndexedDB(
-    mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
-    const url::Origin& origin) {
+    const url::Origin& origin,
+    mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (origin.opaque()) {
@@ -2015,6 +2030,11 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&ForwardRequest<device::mojom::TimeZoneMonitor>,
+                          device::mojom::kServiceName));
+
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(&ForwardRequest<device::mojom::PowerMonitor>,
                           device::mojom::kServiceName));
 
   AddUIThreadInterface(
@@ -4695,6 +4715,12 @@ void RenderProcessHostImpl::OnBindHostReceiver(
     mojo::GenericPendingReceiver receiver) {
   GetContentClient()->browser()->BindHostReceiverForRenderer(
       this, std::move(receiver));
+}
+
+// static
+void RenderProcessHost::InterceptBindHostReceiverForTesting(
+    BindHostReceiverInterceptor callback) {
+  GetBindHostReceiverInterceptor() = std::move(callback);
 }
 
 }  // namespace content

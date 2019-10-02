@@ -553,7 +553,7 @@ ParsedInputState MixedRealityInputHelper::ParseWindowsSourceState(
       device::mojom::XRInputSourceDescription::New();
 
   // If we've gotten this far we've gotten the real position.
-  description->emulated_position = false;
+  source_state->emulated_position = false;
   description->pointer_offset = grip_from_pointer;
 
   if (is_voice) {

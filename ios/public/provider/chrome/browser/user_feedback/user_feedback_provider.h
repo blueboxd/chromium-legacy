@@ -43,6 +43,15 @@ class UserFeedbackProvider {
   // Returns true if user feedback is enabled.
   virtual bool IsUserFeedbackEnabled();
   // Returns view controller to present to the user to collect their feedback.
+  // |data_source| provides the information to initialize the view controller
+  // and |dispatcher| is an object from the embedder that can perform operations
+  // on behalf of the UserFeedbackProvider.
+  virtual UIViewController* CreateViewController(
+      id<UserFeedbackDataSource> data_source,
+      id<ApplicationCommands> dispatcher);
+  // DEPRECATED: CreateViewController(data_source) is deprecated.
+  // Use CreateViewController(data_source, tab_opener) instead. This will be
+  // removed once all implementers of UserFeedbackProvider stopped using this.
   virtual UIViewController* CreateViewController(
       id<UserFeedbackDataSource> data_source);
   // Uploads collected feedback reports.

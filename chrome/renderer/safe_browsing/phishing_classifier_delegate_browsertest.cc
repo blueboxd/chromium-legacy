@@ -13,6 +13,7 @@
 #include "chrome/renderer/safe_browsing/scorer.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
+#include "components/safe_browsing/common/safe_browsing.mojom-shared.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -91,7 +92,11 @@ class PhishingClassifierDelegateTest : public ChromeRenderViewTest {
     delegate_->last_main_frame_transition_ = ui::PAGE_TRANSITION_FORWARD_BACK;
   }
 
-  void VerifyRequestProto(const std::string& request_proto) {
+  void VerifyRequestProto(mojom::PhishingDetectorResult result,
+                          const std::string& request_proto) {
+    if (result != mojom::PhishingDetectorResult::SUCCESS)
+      return;
+
     ClientPhishingRequest verdict;
     ASSERT_TRUE(verdict.ParseFromString(request_proto));
     EXPECT_EQ("http://host.test/", verdict.url());
@@ -242,13 +247,16 @@ TEST_F(PhishingClassifierDelegateTest, NoScorer) {
   OnStartPhishingDetection(url2);
   delegate_->PageCaptured(&page_text, false);
 
-  // Now set a scorer, which should cause a classifier to be created and
-  // the classification to proceed.
+  // Now set a scorer, which should cause a classifier to be created,
+  // but no classification will start.
   page_text = ASCIIToUTF16("dummy");
-  EXPECT_CALL(*classifier_, BeginClassification(Pointee(page_text), _));
   MockScorer scorer;
   delegate_->SetPhishingScorer(&scorer);
   Mock::VerifyAndClearExpectations(classifier_);
+
+  // Manually start a classification.
+  EXPECT_CALL(*classifier_, BeginClassification(Pointee(page_text), _));
+  OnStartPhishingDetection(url2);
 
   // If we set a new scorer while a classification is going on the
   // classification should be cancelled.
@@ -276,13 +284,16 @@ TEST_F(PhishingClassifierDelegateTest, NoScorer_Ref) {
   OnStartPhishingDetection(url);
   delegate_->PageCaptured(&page_text, false);
 
-  // Now set a scorer, which should cause a classifier to be created and
-  // the classification to proceed.
+  // Now set a scorer, which should cause a classifier to be created,
+  // but no classification will start.
   page_text = ASCIIToUTF16("dummy");
-  EXPECT_CALL(*classifier_, BeginClassification(Pointee(page_text), _));
   MockScorer scorer;
   delegate_->SetPhishingScorer(&scorer);
   Mock::VerifyAndClearExpectations(classifier_);
+
+  // Manually start a classification.
+  EXPECT_CALL(*classifier_, BeginClassification(Pointee(page_text), _));
+  OnStartPhishingDetection(url);
 
   // If we set a new scorer while a classification is going on the
   // classification should be cancelled.

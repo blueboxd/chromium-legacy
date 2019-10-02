@@ -789,8 +789,8 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
 
   gfx::ScrollOffset scroll_total = active_tree_->TotalScrollOffset();
   gfx::SizeF scrollable_size = active_tree_->ScrollableSize();
-  gfx::SizeF viewport_size =
-      gfx::SizeF(active_tree_->InnerViewportContainerLayer()->bounds());
+  gfx::SizeF viewport_size(
+      active_tree_->InnerViewportScrollNode()->container_bounds);
 
   // TODO(miletus) : Pass in ScrollOffset.
   page_scale_animation_ =
@@ -823,9 +823,7 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingViewport() const {
   auto* node = CurrentlyScrollingNode();
   if (!node)
     return false;
-  if (!viewport()->MainScrollLayer())
-    return false;
-  return node->id == viewport()->MainScrollLayer()->scroll_tree_index();
+  return node == viewport()->MainScrollNode();
 }
 
 bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
@@ -2855,28 +2853,8 @@ void LayerTreeHostImpl::SetNeedsCommit() {
   client_->SetNeedsCommitOnImplThread();
 }
 
-LayerImpl* LayerTreeHostImpl::PageScaleLayer() const {
-  return active_tree_->PageScaleLayer();
-}
-
-LayerImpl* LayerTreeHostImpl::InnerViewportContainerLayer() const {
-  return active_tree_->InnerViewportContainerLayer();
-}
-
-LayerImpl* LayerTreeHostImpl::InnerViewportScrollLayer() const {
-  return active_tree_->InnerViewportScrollLayer();
-}
-
 ScrollNode* LayerTreeHostImpl::InnerViewportScrollNode() const {
   return active_tree_->InnerViewportScrollNode();
-}
-
-LayerImpl* LayerTreeHostImpl::OuterViewportContainerLayer() const {
-  return active_tree_->OuterViewportContainerLayer();
-}
-
-LayerImpl* LayerTreeHostImpl::OuterViewportScrollLayer() const {
-  return active_tree_->OuterViewportScrollLayer();
 }
 
 ScrollNode* LayerTreeHostImpl::OuterViewportScrollNode() const {
@@ -3304,16 +3282,8 @@ void LayerTreeHostImpl::SetPaintWorkletLayerPainter(
   paint_worklet_painter_ = std::move(painter);
 }
 
-LayerImpl* LayerTreeHostImpl::ViewportMainScrollLayer() {
-  return viewport()->MainScrollLayer();
-}
-
 ScrollNode* LayerTreeHostImpl::ViewportMainScrollNode() {
-  if (!ViewportMainScrollLayer())
-    return nullptr;
-
-  return active_tree_->property_trees()->scroll_tree.Node(
-      ViewportMainScrollLayer()->scroll_tree_index());
+  return viewport()->MainScrollNode();
 }
 
 void LayerTreeHostImpl::QueueImageDecode(int request_id,
@@ -4238,8 +4208,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
       }
 
       bool scrolls_main_viewport_scroll_layer =
-          viewport()->MainScrollLayer() &&
-          viewport()->MainScrollLayer()->scroll_tree_index() == scroll_node->id;
+          scroll_node == viewport()->MainScrollNode();
       if (scrolls_main_viewport_scroll_layer) {
         // Flash the overlay scrollbar even if the scroll dalta is 0.
         if (settings_.scrollbar_flash_after_any_scroll_update) {
@@ -4822,7 +4791,7 @@ void LayerTreeHostImpl::SetSynchronousInputHandlerRootScrollOffset(
   if (!changed)
     return;
 
-  ShowScrollbarsForImplScroll(OuterViewportScrollLayer()->element_id());
+  ShowScrollbarsForImplScroll(OuterViewportScrollNode()->element_id);
   client_->SetNeedsCommitOnImplThread();
   // After applying the synchronous input handler's scroll offset, tell it what
   // we ended up with.
@@ -4874,16 +4843,10 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
 
 gfx::ScrollOffset LayerTreeHostImpl::GetVisualScrollOffset(
     const ScrollNode& scroll_node) const {
-  const ScrollTree& scroll_tree = active_tree()->property_trees()->scroll_tree;
-
-  bool scrolls_main_viewport_scroll_layer =
-      viewport()->MainScrollLayer() &&
-      viewport()->MainScrollLayer()->scroll_tree_index() == scroll_node.id;
-
-  if (scrolls_main_viewport_scroll_layer)
+  if (&scroll_node == viewport()->MainScrollNode())
     return viewport()->TotalScrollOffset();
-  else
-    return scroll_tree.current_scroll_offset(scroll_node.element_id);
+  return active_tree()->property_trees()->scroll_tree.current_scroll_offset(
+      scroll_node.element_id);
 }
 
 bool LayerTreeHostImpl::GetSnapFlingInfo(
@@ -5035,9 +4998,9 @@ InputHandlerPointerResult LayerTreeHostImpl::MouseMoveAt(
       scroll_element_id = scroll_node->element_id;
 
     // Scrollbars for the viewport are registered with the outer viewport layer.
-    if (InnerViewportScrollNode() && OuterViewportScrollLayer() &&
+    if (InnerViewportScrollNode() && OuterViewportScrollNode() &&
         scroll_element_id == InnerViewportScrollNode()->element_id)
-      scroll_element_id = OuterViewportScrollLayer()->element_id();
+      scroll_element_id = OuterViewportScrollNode()->element_id;
   }
 
   ScrollbarAnimationController* new_animation_controller =
@@ -5363,16 +5326,16 @@ LayerTreeHostImpl::ScrollbarAnimationControllerForElementId(
   // The viewport layers have only one set of scrollbars. On Android, these are
   // registered with the inner viewport, otherwise they're registered with the
   // outer viewport. If a controller for one exists, the other shouldn't.
-  if (InnerViewportScrollNode() && OuterViewportScrollLayer()) {
+  if (InnerViewportScrollNode() && OuterViewportScrollNode()) {
     if (scroll_element_id == InnerViewportScrollNode()->element_id ||
-        scroll_element_id == OuterViewportScrollLayer()->element_id()) {
+        scroll_element_id == OuterViewportScrollNode()->element_id) {
       auto itr = scrollbar_animation_controllers_.find(
           InnerViewportScrollNode()->element_id);
       if (itr != scrollbar_animation_controllers_.end())
         return itr->second.get();
 
       itr = scrollbar_animation_controllers_.find(
-          OuterViewportScrollLayer()->element_id());
+          OuterViewportScrollNode()->element_id);
       if (itr != scrollbar_animation_controllers_.end())
         return itr->second.get();
 

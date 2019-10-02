@@ -2635,9 +2635,19 @@ bool RenderWidgetHostViewAura::CanSynchronizeVisualProperties() {
   return !needs_to_update_display_metrics_;
 }
 
-void RenderWidgetHostViewAura::CancelActiveTouches() {
+std::vector<std::unique_ptr<ui::TouchEvent>>
+RenderWidgetHostViewAura::ExtractAndCancelActiveTouches() {
   aura::Env* env = aura::Env::GetInstance();
-  env->gesture_recognizer()->CancelActiveTouches(window());
+  std::vector<std::unique_ptr<ui::TouchEvent>> touches =
+      env->gesture_recognizer()->ExtractTouches(window());
+  CancelActiveTouches();
+  return touches;
+}
+
+void RenderWidgetHostViewAura::TransferTouches(
+    const std::vector<std::unique_ptr<ui::TouchEvent>>& touches) {
+  aura::Env* env = aura::Env::GetInstance();
+  env->gesture_recognizer()->TransferTouches(window(), touches);
 }
 
 void RenderWidgetHostViewAura::InvalidateLocalSurfaceIdOnEviction() {
@@ -2650,6 +2660,11 @@ void RenderWidgetHostViewAura::ProcessDisplayMetricsChanged() {
   current_cursor_.SetDisplayInfo(
       display::Screen::GetScreen()->GetDisplayNearestWindow(window_));
   UpdateCursorIfOverSelf();
+}
+
+void RenderWidgetHostViewAura::CancelActiveTouches() {
+  aura::Env* env = aura::Env::GetInstance();
+  env->gesture_recognizer()->CancelActiveTouches(window());
 }
 
 }  // namespace content

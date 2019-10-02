@@ -17,11 +17,11 @@ test(t => {
 
 test(() => {
   if (OriginTrialsHelper.is_runtime_flag_enabled('webXREnabled')) {
-    assert_in_array('xr', document.featurePolicy.features());
+    assert_in_array('xr-spatial-tracking', document.featurePolicy.features());
   } else {
-    assert_equals(document.featurePolicy.features().indexOf("xr"), -1);
+    assert_equals(document.featurePolicy.features().indexOf("xr-spatial-tracking"), -1);
   }
-}, 'document.featurePolicy.features does not advertise xr without a token or flag.');
+}, 'document.featurePolicy.features does not advertise xr-spatial-tracking without a token or flag.');
 
 // Add the token, which was generated with the following command:
 // tools/origin_trials/generate_token.py http://127.0.0.1:8000 WebXRDeviceM76 --expire-timestamp=2000000000
@@ -34,8 +34,8 @@ test(t => {
 }, "WebXR's entrypoint properties are available with origin trial token.");
 
 test(() => {
-  assert_in_array('xr', document.featurePolicy.features());
-}, 'document.featurePolicy.features advertises xr after token added.');
+  assert_in_array('xr-spatial-tracking', document.featurePolicy.features());
+}, 'document.featurePolicy.features advertises xr-spatial-tracking after token added.');
 
 // Ensure Gamepad Extensions are NOT enabled by the WebXR origin trial token.
 test(t => {

@@ -185,6 +185,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetPaintingPhase(GraphicsLayerPaintingPhase);
 
   void SetNeedsDisplay();
+  void SetNeedsDisplayRecursively();
   void SetContentsNeedsDisplay();
 
   // Set that the position/size of the contents (image or video).

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tasks;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MORE_TABS_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
-import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.TOP_PADDING;
 
 import android.view.View;
 
@@ -23,8 +22,6 @@ class TasksViewBinder {
             view.setMoreTabsOnClickListener(model.get(MORE_TABS_CLICK_LISTENER));
         } else if (propertyKey == MV_TILES_VISIBLE) {
             view.setMostVisitedVisibility(model.get(MV_TILES_VISIBLE) ? View.VISIBLE : View.GONE);
-        } else if (propertyKey == TOP_PADDING) {
-            view.setPadding(0, model.get(TOP_PADDING), 0, 0);
         }
     }
 }

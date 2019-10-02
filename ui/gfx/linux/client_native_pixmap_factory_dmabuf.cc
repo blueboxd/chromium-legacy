@@ -61,7 +61,7 @@ class ClientNativePixmapFactoryDmabuf : public ClientNativePixmapFactory {
       case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
       case gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE:
         return ClientNativePixmapDmaBuf::ImportFromDmabuf(std::move(handle),
-                                                          size);
+                                                          size, format);
       case gfx::BufferUsage::GPU_READ:
       case gfx::BufferUsage::SCANOUT:
       case gfx::BufferUsage::SCANOUT_VDA_WRITE:

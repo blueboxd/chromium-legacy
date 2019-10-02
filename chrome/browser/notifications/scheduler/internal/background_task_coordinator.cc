@@ -154,13 +154,13 @@ class BackgroundTaskCoordinatorHelper {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kNotificationSchedulerImmediateBackgroundTask)) {
       background_task_->Schedule(
-          SchedulerTaskTime::kMorning, base::TimeDelta(),
+          base::TimeDelta(),
           base::TimeDelta() + base::TimeDelta::FromMinutes(1));
       return;
     }
 
     background_task_->Schedule(
-        SchedulerTaskTime::kMorning, window_start_time,
+        window_start_time,
         window_start_time + config_->background_task_window_duration);
   }
 

@@ -2227,13 +2227,8 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
   if (CompositingReasonFinder::RequiresCompositingForRootScroller(*layer))
     return true;
 
-  // TODO(crbug.com/839341): Remove ScrollTimeline check once we support
-  // main-thread AnimationWorklet and don't need to promote the scroll-source.
-  Node* node = layer->GetLayoutObject().GetNode();
-  if (!layer->ScrollsOverflow() &&
-      !ScrollTimeline::HasActiveScrollTimeline(node)) {
+  if (!layer->ScrollsOverflow())
     return false;
-  }
 
   if (layer->Size().IsEmpty())
     return false;
@@ -2257,10 +2252,7 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
           true) &&
       !layer->CompositesWithTransform() && !layer->CompositesWithOpacity();
 
-  // TODO(crbug.com/839341): Remove ScrollTimeline check once we support
-  // main-thread AnimationWorklet and don't need to promote the scroll-source.
-  if (!ScrollTimeline::HasActiveScrollTimeline(node) &&
-      !layer_has_been_composited &&
+  if (!layer_has_been_composited &&
       !layer->Compositor()->PreferCompositingToLCDTextEnabled() &&
       !background_supports_lcd_text) {
     if (layer->CompositesWithOpacity()) {

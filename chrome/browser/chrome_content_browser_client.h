@@ -456,6 +456,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void RegisterNonNetworkNavigationURLLoaderFactories(
       int frame_tree_node_id,
       NonNetworkURLLoaderFactoryMap* factories) override;
+  void RegisterNonNetworkWorkerMainResourceURLLoaderFactories(
+      content::BrowserContext* browser_context,
+      NonNetworkURLLoaderFactoryMap* factories) override;
   void RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(
       content::BrowserContext* browser_context,
       NonNetworkURLLoaderFactoryMap* factories) override;
@@ -492,6 +495,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       network::mojom::RestrictedCookieManagerRole role,
       content::BrowserContext* browser_context,
       const url::Origin& origin,
+      const GURL& site_for_cookies,
+      const url::Origin& top_frame_origin,
       bool is_service_worker,
       int process_id,
       int routing_id,
@@ -545,8 +550,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       network::mojom::URLLoaderFactoryPtr* out_factory) override;
   std::unique_ptr<content::OverlayWindow> CreateWindowForPictureInPicture(
       content::PictureInPictureWindowController* controller) override;
-  bool IsSafeRedirectTarget(const GURL& url,
-                            content::BrowserContext* context) override;
   void RegisterRendererPreferenceWatcher(
       content::BrowserContext* browser_context,
       mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher)

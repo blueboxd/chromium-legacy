@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/scoped_observer.h"
 #include "chrome/browser/ui/tabs/tab_change_type.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "ui/base/models/list_selection_model.h"
@@ -215,12 +214,6 @@ struct TabStripSelectionChange {
 
   int reason = 0;
 };
-
-// Forbid construction of ScopedObserver with TabStripModel:
-// TabStripModelObserver already implements ScopedObserver's functionality
-// natively.
-template <class U>
-class ScopedObserver<TabStripModel, U> {};
 
 ////////////////////////////////////////////////////////////////////////////////
 //

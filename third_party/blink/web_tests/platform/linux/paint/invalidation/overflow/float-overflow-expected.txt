@@ -58,22 +58,22 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutDeprecatedFlexibleBox DIV class='outer box'",
+          "object": "LayoutFlexibleBox DIV class='outer box'",
           "rect": [61, 249, 62, 22],
           "reason": "geometry"
         },
         {
-          "object": "LayoutDeprecatedFlexibleBox DIV class='outer box'",
+          "object": "LayoutFlexibleBox DIV class='outer box'",
           "rect": [61, 243, 62, 22],
           "reason": "geometry"
         },
         {
-          "object": "LayoutDeprecatedFlexibleBox DIV class='outer box'",
+          "object": "LayoutFlexibleBox DIV class='outer box'",
           "rect": [61, 210, 62, 22],
           "reason": "geometry"
         },
         {
-          "object": "LayoutDeprecatedFlexibleBox DIV class='outer box'",
+          "object": "LayoutFlexibleBox DIV class='outer box'",
           "rect": [61, 204, 62, 22],
           "reason": "geometry"
         },

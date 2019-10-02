@@ -78,9 +78,18 @@ InputHandlerPointerResult ScrollbarController::HandlePointerDown(
       shift_modifier);
   last_known_pointer_position_ = position_in_widget;
   scrollbar_scroll_is_active_ = true;
-  if (scrollbar_part == ScrollbarPart::THUMB)
-    drag_anchor_relative_to_thumb_ = GetThumbRelativePoint(position_in_widget);
   scroll_result.scroll_units = Granularity(scrollbar_part, shift_modifier);
+  if (scrollbar_part == ScrollbarPart::THUMB) {
+    drag_state_ = DragState();
+    drag_state_->anchor_relative_to_thumb_ =
+        GetThumbRelativePoint(position_in_widget);
+
+    // Record the current scroller offset. This will be needed to snap the
+    // thumb back to its original position if the pointer moves too far away
+    // from the track during a thumb drag.
+    drag_state_->scroll_position_at_start_ =
+        currently_captured_scrollbar_->current_pos();
+  }
 
   if (!scroll_result.scroll_offset.IsZero()) {
     // Thumb drag is the only scrollbar manipulation that cannot produce an
@@ -101,6 +110,68 @@ InputHandlerPointerResult ScrollbarController::HandlePointerDown(
                           kInitialAutoscrollTimerDelay);
   }
   return scroll_result;
+}
+
+bool ScrollbarController::SnapToDragOrigin(
+    const gfx::PointF pointer_position_in_widget) {
+  // Consult the ScrollbarTheme to check if thumb snapping is supported on the
+  // current platform.
+  if (!currently_captured_scrollbar_->SupportsDragSnapBack())
+    return false;
+
+  bool clipped = false;
+  const gfx::PointF pointer_position_in_layer =
+      GetScrollbarRelativePosition(pointer_position_in_widget, &clipped);
+
+  if (clipped)
+    return false;
+
+  layer_tree_host_impl_->active_tree()->UpdateScrollbarGeometries();
+  const ScrollbarOrientation orientation =
+      currently_captured_scrollbar_->orientation();
+  const gfx::Rect forward_track_rect =
+      currently_captured_scrollbar_->ForwardTrackRect();
+
+  // When dragging the thumb, there needs to exist "gutters" on either side of
+  // the track. The thickness of these gutters is a multiple of the track (or
+  // thumb) thickness. As long as the pointer remains within the bounds of these
+  // gutters in the non-scrolling direction, thumb drag proceeds as expected.
+  // The moment the pointer moves outside the bounds, the scroller needs to snap
+  // back to the drag_origin (aka the scroll offset of the parent scroller
+  // before the thumb drag initiated).
+  int track_thickness = orientation == ScrollbarOrientation::VERTICAL
+                            ? forward_track_rect.width()
+                            : forward_track_rect.height();
+
+  if (!track_thickness) {
+    // For overlay scrollbars (or for tests that do not set up a track
+    // thickness), use the thumb_thickness instead to determine the gutters.
+    const int thumb_thickness = currently_captured_scrollbar_->ThumbThickness();
+
+    // If the thumb doesn't have thickness, the gutters can't be determined.
+    // Snapping shouldn't occur in this case.
+    if (!thumb_thickness)
+      return false;
+
+    track_thickness = thumb_thickness;
+  }
+
+  const float gutter_thickness = kOffSideMultiplier * track_thickness;
+  const float gutter_min_bound =
+      orientation == ScrollbarOrientation::VERTICAL
+          ? (forward_track_rect.x() - gutter_thickness)
+          : (forward_track_rect.y() - gutter_thickness);
+  const float gutter_max_bound =
+      orientation == ScrollbarOrientation::VERTICAL
+          ? (forward_track_rect.x() + track_thickness + gutter_thickness)
+          : (forward_track_rect.y() + track_thickness + gutter_thickness);
+
+  const float pointer_location = orientation == ScrollbarOrientation::VERTICAL
+                                     ? pointer_position_in_layer.x()
+                                     : pointer_position_in_layer.y();
+
+  return pointer_location < gutter_min_bound ||
+         pointer_location > gutter_max_bound;
 }
 
 ui::input_types::ScrollGranularity ScrollbarController::Granularity(
@@ -155,10 +226,20 @@ gfx::ScrollOffset ScrollbarController::GetScrollOffsetForDragPosition(
     const gfx::PointF pointer_position_in_widget) {
   layer_tree_host_impl_->active_tree()->UpdateScrollbarGeometries();
 
+  const ScrollbarOrientation orientation =
+      currently_captured_scrollbar_->orientation();
+  if (SnapToDragOrigin(pointer_position_in_widget)) {
+    const float delta = currently_captured_scrollbar_->current_pos() -
+                        drag_state_->scroll_position_at_start_;
+    return orientation == ScrollbarOrientation::VERTICAL
+               ? gfx::ScrollOffset(0, -delta)
+               : gfx::ScrollOffset(-delta, 0);
+  }
+
   const gfx::Rect thumb_rect(
       currently_captured_scrollbar_->ComputeThumbQuadRect());
   const gfx::PointF drag_position_relative_to_layer =
-      gfx::PointF(thumb_rect.origin()) + drag_anchor_relative_to_thumb_.value();
+      gfx::PointF(thumb_rect.origin()) + drag_state_->anchor_relative_to_thumb_;
 
   bool clipped = false;
   const gfx::PointF pointer_position_in_layer =
@@ -170,9 +251,6 @@ gfx::ScrollOffset ScrollbarController::GetScrollOffsetForDragPosition(
   // Calculate the delta based on the previously known thumb drag point.
   const gfx::Vector2dF pointer_delta =
       pointer_position_in_layer - drag_position_relative_to_layer;
-
-  const ScrollbarOrientation orientation =
-      currently_captured_scrollbar_->orientation();
 
   float scaled_scroller_to_scrollbar_ratio = GetScrollerToScrollbarRatio();
   float current_scroll_position = currently_captured_scrollbar_->current_pos();
@@ -193,7 +271,6 @@ gfx::ScrollOffset ScrollbarController::GetScrollOffsetForDragPosition(
                            scaled_scroller_to_scrollbar_ratio -
                        current_scroll_position;
 
-  // gfx::ScrollOffset scaled_thumb_drag_delta;
   gfx::ScrollOffset scaled_thumb_drag_delta;
 
   // Scroll delta floored to match main thread per pixel behavior
@@ -214,8 +291,7 @@ InputHandlerPointerResult ScrollbarController::HandlePointerMove(
   // If a thumb drag is not in progress or if a GSU was already produced for a
   // thumb drag in this frame, there's no point in continuing on. Please see the
   // header file for details.
-  if (!drag_anchor_relative_to_thumb_.has_value() ||
-      drag_processed_for_current_frame_)
+  if (!drag_state_.has_value() || drag_processed_for_current_frame_)
     return scroll_result;
 
   const ScrollNode* currently_scrolling_node =
@@ -224,7 +300,7 @@ InputHandlerPointerResult ScrollbarController::HandlePointerMove(
   // Thumb drag needs a scroll_node. Clear the thumb drag state and exit if it
   // is unset.
   if (currently_scrolling_node == nullptr) {
-    drag_anchor_relative_to_thumb_ = base::nullopt;
+    drag_state_ = base::nullopt;
     return scroll_result;
   }
 
@@ -407,7 +483,7 @@ void ScrollbarController::StartAutoScrollAnimation(
     ScrollbarPart pressed_scrollbar_part) {
   // Autoscroll and thumb drag are mutually exclusive. Both can't be active at
   // the same time.
-  DCHECK(!drag_anchor_relative_to_thumb_.has_value());
+  DCHECK(!drag_state_.has_value());
   DCHECK_NE(velocity, 0);
 
   // scroll_node is set up while handling GSB. If there's no node to scroll, we
@@ -471,7 +547,7 @@ InputHandlerPointerResult ScrollbarController::HandlePointerUp(
     cancelable_autoscroll_task_.reset();
   }
 
-  drag_anchor_relative_to_thumb_ = base::nullopt;
+  drag_state_ = base::nullopt;
   autoscroll_state_ = base::nullopt;
   return scroll_result;
 }

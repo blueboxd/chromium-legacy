@@ -213,16 +213,14 @@ void UsbDeviceAndroid::OnReadDescriptors(
     return;
   }
 
-  // Keep following members in original |device_info_| because they will
-  // not be updated in the new |descriptor->device_info|:
-  //   |bus_number|, |port_number|,
-  //   |manufacturer_string|, |product_string|, |serial_number|.
-  descriptor->device_info->bus_number = device_info_->bus_number,
-  descriptor->device_info->port_number = device_info_->port_number,
-  descriptor->device_info->manufacturer_name = device_info_->manufacturer_name,
-  descriptor->device_info->product_name = device_info_->product_name,
-  descriptor->device_info->serial_number = device_info_->serial_number,
-  device_info_ = std::move(descriptor->device_info);
+  // ReadUsbDescriptors() is called to read properties which aren't always
+  // available from the Android OS. The other properties should be left alone.
+  device_info_->usb_version_major = descriptor->device_info->usb_version_major;
+  device_info_->usb_version_minor = descriptor->device_info->usb_version_minor;
+  device_info_->usb_version_subminor =
+      descriptor->device_info->usb_version_subminor;
+  device_info_->configurations =
+      std::move(descriptor->device_info->configurations);
 
   if (usb_version() >= 0x0210) {
     ReadWebUsbDescriptors(

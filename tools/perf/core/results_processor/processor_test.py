@@ -232,6 +232,42 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.assertIn(['label1'], diag_values)
     self.assertIn(['label2'], diag_values)
 
+  def testHistogramsOutputNoMetricsFromTelemetry(self):
+    trace_file = os.path.join(self.output_dir, compute_metrics.HTML_TRACE_NAME)
+    with open(trace_file, 'w') as f:
+      pass
+
+    self.SerializeIntermediateResults(
+        test_results=[
+            testing.TestResult(
+                'benchmark/story',
+                artifacts={
+                    compute_metrics.HTML_TRACE_NAME:
+                        testing.Artifact(trace_file, 'gs://trace.html')},
+                tags=['tbmv2:sampleMetric'],
+            ),
+        ],
+    )
+
+    processor.main([
+        '--output-format', 'histograms',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+    ])
+
+    with open(os.path.join(
+        self.output_dir, histograms_output.OUTPUT_FILENAME)) as f:
+      results = json.load(f)
+
+    out_histograms = histogram_set.HistogramSet()
+    out_histograms.ImportDicts(results)
+    self.assertEqual(len(out_histograms), 4)
+    self.assertIsNotNone(out_histograms.GetHistogramNamed('foo'))
+
+    diag_values = [list(v) for v in  out_histograms.shared_diagnostics]
+    self.assertEqual(len(diag_values), 1)
+    self.assertIn(['gs://trace.html'], diag_values)
+
   def testHtmlOutput(self):
     hist_file = os.path.join(self.output_dir,
                              compute_metrics.HISTOGRAM_DICTS_FILE)

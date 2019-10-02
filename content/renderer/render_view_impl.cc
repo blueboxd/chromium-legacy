@@ -79,6 +79,7 @@
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
+#include "content/renderer/render_widget_screen_metrics_emulator.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/savable_resources.h"
 #include "content/renderer/v8_value_converter_impl.h"
@@ -553,7 +554,10 @@ void RenderViewImpl::Initialize(
 }
 
 RenderViewImpl::~RenderViewImpl() {
+  DCHECK(destroying_);  // Always deleted through Destroy().
   DCHECK(!frame_widget_);
+
+  g_routing_id_view_map.Get().erase(routing_id_);
   RenderThread::Get()->RemoveRoute(routing_id_);
 
 #ifndef NDEBUG
@@ -1042,7 +1046,21 @@ RenderViewImpl* RenderViewImpl::Create(
 }
 
 void RenderViewImpl::Destroy() {
-  render_widget_->PrepareForClose();
+  destroying_ = true;
+
+  // If there is no local main frame, then destroying the WebView will not
+  // detach anything, and the RenderWidget will not be destroyed. So we have
+  // to do it here.
+  bool close_render_widget_here = !main_render_frame_;
+
+  // Disable emulation before destroying everything. Turning off emulation
+  // accesses the WebViewImpl and the main frame (if it exists).
+  // TODO(danakj): Since we are being destroyed, is there even a reason to turn
+  // emulation off before closing?
+  if (page_properties()->ScreenMetricsEmulator()) {
+    page_properties()->ScreenMetricsEmulator()->DisableAndApply();
+    page_properties()->SetScreenMetricsEmulator(nullptr);
+  }
 
   webview_->Close();
   // The webview_ is already destroyed by the time we get here, remove any
@@ -1050,14 +1068,22 @@ void RenderViewImpl::Destroy() {
   g_view_map.Get().erase(webview_);
   webview_ = nullptr;
 
-  // We pass ownership of |render_widget_| to itself. Grab a raw pointer to call
-  // the Close() method on so we don't have to be a C++ expert to know whether
-  // we will end up with a nullptr where we didn't intend due to order of
-  // execution.
-  RenderWidget* closing_widget = render_widget_.get();
-  closing_widget->Close(std::move(render_widget_));
-
-  g_routing_id_view_map.Get().erase(GetRoutingID());
+  // We do this after WebView has closed, though it should not matter. WebView
+  // only uses the RenderWidget through WebWidgetClient that it accesses through
+  // a main frame. So it should not be able to see this happening when there is
+  // no local main frame.
+  if (close_render_widget_here) {
+    // TODO(danakj): Go through CloseForFrame()? But we don't need/want to post-
+    // task the Close step here, do we? Since we're inside RenderViewImpl
+    // destruction?
+    render_widget_->PrepareForClose();
+    // We pass ownership of |render_widget_| to itself. Grab a raw pointer to
+    // call the Close() method on so we don't have to be a C++ expert to know
+    // whether we will end up with a nullptr where we didn't intend due to order
+    // of execution.
+    RenderWidget* closing_widget = render_widget_.get();
+    closing_widget->Close(std::move(render_widget_));
+  }
 
   delete this;
 }
@@ -1432,7 +1458,7 @@ WebView* RenderViewImpl::CreateView(
                      base::Unretained(creator_frame), opened_by_user_gesture);
 
   RenderViewImpl* view = RenderViewImpl::Create(
-      render_widget_->compositor_deps(), std::move(view_params),
+      page_properties_.GetCompositorDependencies(), std::move(view_params),
       std::move(show_callback),
       creator->GetTaskRunner(blink::TaskType::kInternalDefault));
 
@@ -1486,11 +1512,6 @@ blink::WebPagePopup* RenderViewImpl::CreatePopupAndGetWidget(
   // WebWidget which doesn't apply to this case. So we verify. This can go away
   // when RenderWidget::GetWebWidget() is just a simple accessor.
   DCHECK_EQ(popup_widget->GetWebWidget(), popup_web_widget);
-
-  // Devtools emulation, which may be currently applied to the
-  // |view_render_widget|, should also apply to the new popup. This doesn't
-  // happen automatically.
-  popup_widget->ApplyEmulatedScreenMetricsForPopupWidget();
 
   if (output_widget)
     *output_widget = popup_widget;
@@ -1554,17 +1575,39 @@ void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
 }
 
 void RenderViewImpl::DetachWebFrameWidget() {
-  // We should detach when making the RenderWidget undead so we don't expect it
-  // to be undead already. But when it is recycled for a provisional frame, then
-  // we can detach when closing the provisional frame.
-  DCHECK(render_widget_->IsUndeadOrProvisional() ||
-         render_widget_->is_closing());
   DCHECK(frame_widget_);
-  frame_widget_->Close();
-  frame_widget_ = nullptr;
 
-  // This just clears the webwidget_internal_ member from RenderWidget.
-  render_widget_->SetWebWidgetInternal(nullptr);
+  if (destroying_) {
+    // We are inside RenderViewImpl::Destroy() and the main frame is being
+    // detached as part of shutdown. So we can destroy the RenderWidget.
+
+    // The RenderWidget is closed and it will close the WebWidget stored in
+    // |frame_widget_|. We just want to drop raw pointer here.
+    frame_widget_ = nullptr;
+    // TODO(danakj): Go through CloseForFrame()? But we don't need/want to post-
+    // task the Close step here, do we? Since we're inside RenderViewImpl
+    // destruction?
+    render_widget_->PrepareForClose();
+    // We pass ownership of |render_widget_| to itself. Grab a raw pointer to
+    // call the Close() method on so we don't have to be a C++ expert to know
+    // whether we will end up with a nullptr where we didn't intend due to order
+    // of execution.
+    RenderWidget* closing_widget = render_widget_.get();
+    closing_widget->Close(std::move(render_widget_));
+  } else {
+    // We are not inside RenderViewImpl::Destroy(), the main frame is being
+    // detached and replaced with a remote frame proxy. We can't close the
+    // RenderWidget, and it is marked undead instead, but we do need to close
+    // the WebFrameWidget and remove it from the RenderWidget.
+
+    DCHECK(render_widget_->IsUndeadOrProvisional());
+    // The WebWidget needs to be closed even though the RenderWidget won't be
+    // here (since it is marked undead instead).
+    frame_widget_->Close();
+    frame_widget_ = nullptr;
+    // This just clears the webwidget_internal_ member from RenderWidget.
+    render_widget_->SetWebWidgetInternal(nullptr);
+  }
 }
 
 bool RenderViewImpl::SetZoomLevel(double zoom_level) {

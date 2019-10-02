@@ -207,9 +207,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
       const std::string& dbus_error_name,
       const std::string& dbus_error_message);
 
-  // Signals the device handler to request an IP config refresh.
-  void RequestRefreshIPConfigs(const std::string& service_path);
-
   // Removes network configuration for |service_path| from the profile specified
   // by |profile_path|. If |profile_path| is not set, the network is removed
   // from all the profiles that include it.

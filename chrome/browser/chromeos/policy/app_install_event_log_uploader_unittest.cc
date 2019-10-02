@@ -101,7 +101,8 @@ class AppInstallEventLogUploaderTest : public testing::Test {
   }
 
   void CreateUploader() {
-    uploader_ = std::make_unique<AppInstallEventLogUploader>(&client_, nullptr);
+    uploader_ = std::make_unique<AppInstallEventLogUploader>(
+        &client_, /*profile=*/nullptr);
     uploader_->SetDelegate(&delegate_);
   }
 
@@ -129,7 +130,8 @@ class AppInstallEventLogUploaderTest : public testing::Test {
   void CompleteUpload(bool success) {
     ClearReportDict();
     value_report_ = RealtimeReportingJobConfiguration::BuildReport(
-        ConvertProtoToValue(&log_, nullptr), reporting::GetContext(nullptr));
+        ConvertProtoToValue(&log_, /*profile=*/nullptr),
+        reporting::GetContext(/*profile=*/nullptr));
 
     EXPECT_CALL(client_, UploadRealtimeReport(MatchValue(&value_report_), _))
         .WillOnce(WithArgs<1>(
@@ -141,7 +143,8 @@ class AppInstallEventLogUploaderTest : public testing::Test {
   void CaptureUpload(CloudPolicyClient::StatusCallback* callback) {
     ClearReportDict();
     value_report_ = RealtimeReportingJobConfiguration::BuildReport(
-        ConvertProtoToValue(&log_, nullptr), reporting::GetContext(nullptr));
+        ConvertProtoToValue(&log_, /*profile=*/nullptr),
+        reporting::GetContext(/*profile=*/nullptr));
 
     CloudPolicyClient::StatusCallback status_callback;
     EXPECT_CALL(client_, UploadRealtimeReport(MatchValue(&value_report_), _))

@@ -128,11 +128,7 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOriginWithLayerList
     gfx::Size layer_size(100, 100);
     SetupViewport(root, gfx::Size(50, 50), layer_size);
 
-    auto* container = layer_tree_host()->outer_viewport_container_layer();
-    auto* scroll = layer_tree_host()->outer_viewport_scroll_layer();
-    container->SetMasksToBounds(true);
-    CreateClipNode(container);
-    scroll->SetClipTreeIndex(container->clip_tree_index());
+    auto* scroll = layer_tree_host()->OuterViewportScrollLayerForTesting();
     SetScrollOffset(scroll, gfx::ScrollOffset(50, 50));
 
     client_.set_bounds(root->bounds());

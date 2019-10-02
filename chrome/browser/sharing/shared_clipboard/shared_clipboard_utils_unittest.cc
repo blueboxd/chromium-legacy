@@ -37,8 +37,7 @@ const char kText[] = "Some text to copy to phone device.";
 class MockSharingService : public SharingService {
  public:
   explicit MockSharingService(std::unique_ptr<SharingFCMHandler> fcm_handler)
-      : SharingService(/* pref_service= */ nullptr,
-                       /* sync_prefs= */ nullptr,
+      : SharingService(/* sync_prefs= */ nullptr,
                        /* vapid_key_manager= */ nullptr,
                        /* sharing_device_registration= */ nullptr,
                        /* fcm_sender= */ nullptr,

@@ -34,6 +34,7 @@ class FakeScrollbar : public Scrollbar {
   int ThumbThickness() const override;
   gfx::Rect BackButtonRect() const override;
   gfx::Rect ForwardButtonRect() const override;
+  bool SupportsDragSnapBack() const override;
   int ThumbLength() const override;
   gfx::Rect TrackRect() const override;
   float ThumbOpacity() const override;

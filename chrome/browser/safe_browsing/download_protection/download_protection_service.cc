@@ -168,7 +168,7 @@ bool DownloadProtectionService::IsHashManuallyBlacklisted(
 
 void DownloadProtectionService::CheckClientDownload(
     download::DownloadItem* item,
-    CheckDownloadCallback callback) {
+    CheckDownloadRepeatingCallback callback) {
   if (item->GetDangerType() ==
       download::DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY) {
     std::move(callback).Run(DownloadCheckResult::WHITELISTED_BY_POLICY);

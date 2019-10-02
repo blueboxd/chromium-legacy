@@ -22,8 +22,9 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
   // TODO(weiliangc): Replace OutputSurface with OutputSurface::Capabilities.
   static std::unique_ptr<OverlayCandidateValidator> Create(
       gpu::SurfaceHandle surface_handle,
-      const OutputSurface& output_surface,
+      const OutputSurface::Capabilities& capabilities,
       const RendererSettings& renderer_settings);
+
   virtual ~OverlayCandidateValidator();
 
   // A primary plane is generated when |OutputSurface|'s buffer is supplied by

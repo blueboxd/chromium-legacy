@@ -43,6 +43,9 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
   float scale() const { return scale_; }
   const gfx::Rect& applied_widget_rect() const { return applied_widget_rect_; }
 
+  // Emulated position of the main frame widget (aka view) rect.
+  gfx::Point ViewRectOrigin();
+
   // Disables emulation and applies non-emulated values to the RenderWidget.
   // Call this before destroying the RenderWidgetScreenMetricsEmulator.
   void DisableAndApply();

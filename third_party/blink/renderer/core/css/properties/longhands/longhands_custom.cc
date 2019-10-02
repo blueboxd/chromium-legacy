@@ -5013,12 +5013,9 @@ const CSSValue* Rotate::CSSValueFromComputedStyleInternal(
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (style.Rotate()->X() != 0 || style.Rotate()->Y() != 0 ||
       style.Rotate()->Z() != 1) {
-    list->Append(*CSSNumericLiteralValue::Create(
-        style.Rotate()->X(), CSSPrimitiveValue::UnitType::kNumber));
-    list->Append(*CSSNumericLiteralValue::Create(
-        style.Rotate()->Y(), CSSPrimitiveValue::UnitType::kNumber));
-    list->Append(*CSSNumericLiteralValue::Create(
-        style.Rotate()->Z(), CSSPrimitiveValue::UnitType::kNumber));
+    const CSSAxisValue* axis = MakeGarbageCollected<CSSAxisValue>(
+        style.Rotate()->X(), style.Rotate()->Y(), style.Rotate()->Z());
+    list->Append(*axis);
   }
   list->Append(*CSSNumericLiteralValue::Create(
       style.Rotate()->Angle(), CSSPrimitiveValue::UnitType::kDegrees));

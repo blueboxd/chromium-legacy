@@ -127,7 +127,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   bool IsXWindowVisibleOnAllWorkspaces() const;
   void MoveCursorTo(const gfx::Point& location);
   void SetAlwaysOnTop(bool always_on_top);
-  void FlashFrame(bool flash_frame);
+  void SetFlashFrameHint(bool flash_frame);
   void UpdateMinAndMaxSize();
   void SetUseNativeFrame(bool use_native_frame);
   void SetShape(_XRegion* xregion);

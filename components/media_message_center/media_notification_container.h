@@ -36,8 +36,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationContainer {
   // Called when the media artwork changes.
   virtual void OnMediaArtworkChanged(const gfx::ImageSkia& image) = 0;
 
-  // Called when MediaNotificationView's foreground color changes.
-  virtual void OnForegoundColorChanged(SkColor color) = 0;
+  // Called when MediaNotificationView's colors change.
+  virtual void OnColorsChanged(SkColor foreground, SkColor background) = 0;
 
  protected:
   virtual ~MediaNotificationContainer() = default;

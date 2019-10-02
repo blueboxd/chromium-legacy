@@ -290,6 +290,9 @@ std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(
                                                   controller_state, handedness);
     state->gamepad = input_source_data.gamepad;
 
+    // OpenVR controller are fully 6DoF.
+    state->emulated_position = false;
+
     // Re-send the controller's description if it's newly active or if the
     // handedness or profile strings have changed.
     if (newly_active ||
@@ -303,9 +306,6 @@ std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(
 
       desc->handedness = handedness;
       input_active_state.controller_role = controller_role;
-
-      // OpenVR controller are fully 6DoF.
-      desc->emulated_position = false;
 
       // Tweak the pointer transform so that it's angled down from the
       // grip. This should be a bit more ergonomic.

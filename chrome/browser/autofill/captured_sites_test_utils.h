@@ -298,10 +298,12 @@ class TestRecipeReplayer {
   bool ExecuteAutofillAction(const base::DictionaryValue& action);
   bool ExecuteClickAction(const base::DictionaryValue& action);
   bool ExecuteCoolOffAction(const base::DictionaryValue& action);
+  bool ExecuteCloseTabAction(const base::DictionaryValue& action);
   bool ExecuteHoverAction(const base::DictionaryValue& action);
   bool ExecuteForceLoadPage(const base::DictionaryValue& action);
   bool ExecutePressEnterAction(const base::DictionaryValue& action);
   bool ExecutePressEscapeAction(const base::DictionaryValue& action);
+  bool ExecutePressSpaceAction(const base::DictionaryValue& action);
   bool ExecuteRunCommandAction(const base::DictionaryValue& action);
   bool ExecuteSavePasswordAction(const base::DictionaryValue& action);
   bool ExecuteSelectDropdownAction(const base::DictionaryValue& action);
@@ -322,6 +324,11 @@ class TestRecipeReplayer {
   bool GetTargetHTMLElementVisibilityEnumFromAction(
       const base::DictionaryValue& action,
       int* visibility_enum_val);
+  bool ExtractFrameAndVerifyElement(const base::DictionaryValue& action,
+                                    std::string* xpath,
+                                    content::RenderFrameHost** frame,
+                                    bool set_focus = false,
+                                    bool relaxed_visibility = false);
   bool WaitForElementToBeReady(const std::string& xpath,
                                const int visibility_enum_val,
                                content::RenderFrameHost* frame);
@@ -347,6 +354,8 @@ class TestRecipeReplayer {
       const std::string& expected_value,
       const std::string& validation_field,
       const bool ignoreCase = false);
+  void SimulateKeyPressWrapper(content::WebContents* web_contents,
+                               ui::DomKey key);
   void NavigateAwayAndDismissBeforeUnloadDialog();
   bool HasChromeStoredCredential(const base::DictionaryValue& action,
                                  bool* stored_cred);

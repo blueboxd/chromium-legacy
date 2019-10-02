@@ -26,6 +26,10 @@ extern const char kMarkHttpAsFeatureParameterName[];
 extern const char kMarkHttpAsParameterDangerous[];
 extern const char kMarkHttpAsParameterWarningAndDangerousOnFormEdits[];
 
+// This feature enables security warning UI treatments for sites that use legacy
+// TLS version (TLS 1.0 or 1.1).
+extern const base::Feature kLegacyTLSWarnings;
+
 }  // namespace features
 }  // namespace security_state
 

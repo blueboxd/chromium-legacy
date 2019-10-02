@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.IntegrationTest;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
@@ -107,6 +108,7 @@ public class PasswordGenerationIntegrationTest {
 
     @Test
     @IntegrationTest
+    @DisabledTest(message = "crbug.com/1010344")
     public void testAutomaticGenerationUsePassword() throws InterruptedException, TimeoutException {
         waitForGenerationLabel();
         focusField(PASSWORD_NODE_ID);

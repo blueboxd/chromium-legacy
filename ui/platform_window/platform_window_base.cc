@@ -24,4 +24,6 @@ void PlatformWindowBase::StackAbove(gfx::AcceleratedWidget widget) {}
 
 void PlatformWindowBase::StackAtTop() {}
 
+void PlatformWindowBase::FlashFrame(bool flash_frame) {}
+
 }  // namespace ui

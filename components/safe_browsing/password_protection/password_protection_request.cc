@@ -292,9 +292,18 @@ void PasswordProtectionRequest::FillRequestProto() {
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-void PasswordProtectionRequest::OnGetDomFeatures(const std::string& verdict) {
+void PasswordProtectionRequest::OnGetDomFeatures(
+    mojom::PhishingDetectorResult result,
+    const std::string& verdict) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (dom_features_collection_complete_)
+    return;
+
+  UMA_HISTOGRAM_ENUMERATION("PasswordProtection.RendererDomFeatureResult",
+                            result);
+
+  if (result != mojom::PhishingDetectorResult::SUCCESS &&
+      result != mojom::PhishingDetectorResult::INVALID_SCORE)
     return;
 
   dom_features_collection_complete_ = true;

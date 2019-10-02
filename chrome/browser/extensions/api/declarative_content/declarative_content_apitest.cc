@@ -534,8 +534,9 @@ IN_PROC_BROWSER_TEST_P(ParameterizedShowActionDeclarativeContentApiTest,
   TestShowAction(ActionInfo::TYPE_BROWSER);
 }
 
+// crbug.com/1010061: disabled due to flakiness.
 IN_PROC_BROWSER_TEST_P(ParameterizedShowActionDeclarativeContentApiTest,
-                       ActionInManifest) {
+                       DISABLED_ActionInManifest) {
   TestShowAction(ActionInfo::TYPE_ACTION);
 }
 

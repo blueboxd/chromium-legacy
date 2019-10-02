@@ -98,12 +98,12 @@ void WorkerScriptFetchInitiator::Start(
   // subresource loading.
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       factory_bundle_for_browser = CreateFactoryBundle(
-          worker_process_id, storage_partition, storage_domain,
-          constructor_uses_file_url, filesystem_url_support);
+          LoaderType::kMainResource, worker_process_id, storage_partition,
+          storage_domain, constructor_uses_file_url, filesystem_url_support);
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       subresource_loader_factories = CreateFactoryBundle(
-          worker_process_id, storage_partition, storage_domain,
-          constructor_uses_file_url, filesystem_url_support);
+          LoaderType::kSubResource, worker_process_id, storage_partition,
+          storage_domain, constructor_uses_file_url, filesystem_url_support);
 
   // Create a resource request for initiating worker script fetch from the
   // browser process.
@@ -177,6 +177,7 @@ void WorkerScriptFetchInitiator::Start(
 
 std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
 WorkerScriptFetchInitiator::CreateFactoryBundle(
+    LoaderType loader_type,
     int worker_process_id,
     StoragePartitionImpl* storage_partition,
     const std::string& storage_domain,
@@ -196,10 +197,21 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
             worker_process_id, RenderFrameHost::kNoFrameTreeNodeId,
             storage_partition->GetFileSystemContext(), storage_domain);
   }
-  GetContentClient()
-      ->browser()
-      ->RegisterNonNetworkSubresourceURLLoaderFactories(
-          worker_process_id, MSG_ROUTING_NONE, &non_network_factories);
+
+  switch (loader_type) {
+    case LoaderType::kMainResource:
+      GetContentClient()
+          ->browser()
+          ->RegisterNonNetworkWorkerMainResourceURLLoaderFactories(
+              storage_partition->browser_context(), &non_network_factories);
+      break;
+    case LoaderType::kSubResource:
+      GetContentClient()
+          ->browser()
+          ->RegisterNonNetworkSubresourceURLLoaderFactories(
+              worker_process_id, MSG_ROUTING_NONE, &non_network_factories);
+      break;
+  }
 
   auto factory_bundle = std::make_unique<blink::URLLoaderFactoryBundleInfo>();
   for (auto& pair : non_network_factories) {

@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/manifest_update_task.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -22,7 +23,6 @@ class WebContents;
 
 namespace web_app {
 
-class AppRegistrar;
 class WebAppUiManager;
 class InstallManager;
 

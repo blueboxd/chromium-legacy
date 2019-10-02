@@ -65,12 +65,12 @@ class WriterDelegate {
 class ZipReader {
  public:
   // A callback that is called when the operation is successful.
-  typedef base::Closure SuccessCallback;
+  using SuccessCallback = base::OnceClosure;
   // A callback that is called when the operation fails.
-  typedef base::Closure FailureCallback;
+  using FailureCallback = base::OnceClosure;
   // A callback that is called periodically during the operation with the number
   // of bytes that have been processed so far.
-  typedef base::Callback<void(int64_t)> ProgressCallback;
+  using ProgressCallback = base::RepeatingCallback<void(int64_t)>;
 
   // This class represents information of an entry (file or directory) in
   // a zip file.
@@ -175,8 +175,8 @@ class ZipReader {
   // Callbacks will be posted to the current MessageLoop in-order.
   void ExtractCurrentEntryToFilePathAsync(
       const base::FilePath& output_file_path,
-      const SuccessCallback& success_callback,
-      const FailureCallback& failure_callback,
+      SuccessCallback success_callback,
+      FailureCallback failure_callback,
       const ProgressCallback& progress_callback);
 
   // Extracts the current entry into memory. If the current entry is a
@@ -214,8 +214,8 @@ class ZipReader {
   // Extracts a chunk of the file to the target.  Will post a task for the next
   // chunk and success/failure/progress callbacks as necessary.
   void ExtractChunk(base::File target_file,
-                    const SuccessCallback& success_callback,
-                    const FailureCallback& failure_callback,
+                    SuccessCallback success_callback,
+                    FailureCallback failure_callback,
                     const ProgressCallback& progress_callback,
                     const int64_t offset);
 

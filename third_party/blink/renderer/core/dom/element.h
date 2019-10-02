@@ -929,7 +929,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   EnsureResizeObserverData();
   void SetNeedsResizeObserverUpdate();
 
-  DisplayLockContext* getDisplayLockForBindings();
   DisplayLockContext* GetDisplayLockContext() const;
   DisplayLockContext& EnsureDisplayLockContext();
 

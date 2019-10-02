@@ -14,10 +14,14 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/policy/browser_signin_policy_handler.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/chrome_switches.h"
@@ -60,20 +64,18 @@ const base::FeatureParam<bool> kShowGoogleApp{&kFeature,
 const base::FeatureParam<bool> kForceEnabledShowGoogleApp = {
     &kForceEnabled, "app-variation-enabled", false};
 
+bool IsPolicySetAndFalse(const policy::PolicyMap& policies,
+                         const std::string& policy_name) {
+  const base::Value* policy = policies.GetValue(policy_name);
+  return policy && policy->is_bool() && !policy->GetBool();
+}
+
 bool CanShowGoogleAppModule(const policy::PolicyMap& policies) {
-  const base::Value* bookmark_bar_enabled_value =
-      policies.GetValue(policy::key::kBookmarkBarEnabled);
-
-  if (bookmark_bar_enabled_value && !bookmark_bar_enabled_value->GetBool()) {
+  if (IsPolicySetAndFalse(policies, policy::key::kBookmarkBarEnabled))
     return false;
-  }
 
-  const base::Value* edit_bookmarks_value =
-      policies.GetValue(policy::key::kEditBookmarksEnabled);
-
-  if (edit_bookmarks_value && !edit_bookmarks_value->GetBool()) {
+  if (IsPolicySetAndFalse(policies, policy::key::kEditBookmarksEnabled))
     return false;
-  }
 
   return true;
 }
@@ -86,10 +88,10 @@ bool CanShowNTPBackgroundModule(const policy::PolicyMap& policies,
 }
 
 bool CanShowSetDefaultModule(const policy::PolicyMap& policies) {
-  const base::Value* set_default_value =
-      policies.GetValue(policy::key::kDefaultBrowserSettingEnabled);
+  if (IsPolicySetAndFalse(policies, policy::key::kDefaultBrowserSettingEnabled))
+    return false;
 
-  return !set_default_value || set_default_value->GetBool();
+  return true;
 }
 
 bool CanShowSigninModule(const policy::PolicyMap& policies) {
@@ -220,12 +222,12 @@ std::vector<std::string> GetAvailableModules(Profile* profile) {
 }
 
 bool HasModulesToShow(Profile* profile) {
-  const base::Value* force_ephemeral_profiles_value =
-      GetPoliciesFromProfile(profile).GetValue(
-          policy::key::kForceEphemeralProfiles);
-  // Modules won't have a lasting effect if profile is ephemeral.
-  if (force_ephemeral_profiles_value &&
-      force_ephemeral_profiles_value->GetBool()) {
+  // Modules won't have lasting effect if profile is ephemeral, so we can skip.
+  ProfileAttributesStorage& storage =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage();
+  ProfileAttributesEntry* entry = nullptr;
+  if (storage.GetProfileAttributesWithPath(profile->GetPath(), &entry) &&
+      entry->IsEphemeral()) {
     return false;
   }
 

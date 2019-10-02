@@ -62,8 +62,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       draws_content_(false),
       contributes_to_drawn_render_surface_(false),
       hit_testable_(false),
-      is_resized_by_browser_controls_(false),
-      viewport_layer_type_(NOT_VIEWPORT_LAYER),
+      is_inner_viewport_scroll_layer_(false),
       background_color_(0),
       safe_opaque_background_color_(0),
       transform_tree_index_(TransformTree::kInvalidNodeId),
@@ -420,14 +419,6 @@ bool LayerImpl::IsAffectedByPageScale() const {
       ->in_subtree_of_page_scale_layer;
 }
 
-bool LayerImpl::IsResizedByBrowserControls() const {
-  return is_resized_by_browser_controls_;
-}
-
-void LayerImpl::SetIsResizedByBrowserControls(bool resized) {
-  is_resized_by_browser_controls_ = resized;
-}
-
 std::unique_ptr<base::DictionaryValue> LayerImpl::LayerAsJson() const {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   result->SetInteger("LayerId", id());
@@ -540,21 +531,13 @@ bool LayerImpl::IsActive() const {
 }
 
 gfx::Size LayerImpl::bounds() const {
-  // As an optimization, we do not need to include the viewport bounds delta if
-  // the layer is not a viewport layer.
-  if (viewport_layer_type_ == NOT_VIEWPORT_LAYER) {
-    DCHECK(ViewportBoundsDelta().IsZero());
+  if (!is_inner_viewport_scroll_layer_)
     return bounds_;
-  }
-  auto viewport_bounds_delta = gfx::ToCeiledVector2d(ViewportBoundsDelta());
+
+  auto viewport_bounds_delta = gfx::ToCeiledVector2d(
+      GetPropertyTrees()->inner_viewport_scroll_bounds_delta());
   return gfx::Size(bounds_.width() + viewport_bounds_delta.x(),
                    bounds_.height() + viewport_bounds_delta.y());
-}
-
-gfx::SizeF LayerImpl::BoundsForScrolling() const {
-  auto viewport_bounds_delta = ViewportBoundsDelta();
-  return gfx::SizeF(bounds_.width() + viewport_bounds_delta.x(),
-                    bounds_.height() + viewport_bounds_delta.y());
 }
 
 void LayerImpl::SetBounds(const gfx::Size& bounds) {
@@ -568,61 +551,6 @@ void LayerImpl::SetBounds(const gfx::Size& bounds) {
     layer_tree_impl()->SetScrollbarGeometriesNeedUpdate();
 
   NoteLayerPropertyChanged();
-}
-
-void LayerImpl::SetViewportBoundsDelta(const gfx::Vector2dF& bounds_delta) {
-  DCHECK(IsActive());
-
-  if (bounds_delta == ViewportBoundsDelta())
-    return;
-
-  PropertyTrees* property_trees = GetPropertyTrees();
-  switch (viewport_layer_type_) {
-    case (INNER_VIEWPORT_CONTAINER):
-      property_trees->SetInnerViewportContainerBoundsDelta(bounds_delta);
-      break;
-    case (OUTER_VIEWPORT_CONTAINER):
-      property_trees->SetOuterViewportContainerBoundsDelta(bounds_delta);
-      break;
-    case (INNER_VIEWPORT_SCROLL):
-      property_trees->SetInnerViewportScrollBoundsDelta(bounds_delta);
-      break;
-    case (OUTER_VIEWPORT_SCROLL):
-      // OUTER_VIEWPORT_SCROLL should not have viewport bounds deltas.
-      NOTREACHED();
-  }
-
-  // Viewport scrollbar positions are determined using the viewport bounds
-  // delta.
-  layer_tree_impl()->SetScrollbarGeometriesNeedUpdate();
-
-  if (masks_to_bounds()) {
-    // If layer is clipping, then update the clip node using the new bounds.
-    ClipNode* clip_node = property_trees->clip_tree.Node(clip_tree_index());
-    CHECK(clip_node);
-    DCHECK_EQ(clip_node->id, clip_tree_index());
-    clip_node->clip = gfx::RectF(gfx::PointF() + offset_to_transform_parent(),
-                                 gfx::SizeF(bounds()));
-    property_trees->clip_tree.set_needs_update(true);
-
-    property_trees->full_tree_damaged = true;
-    layer_tree_impl()->set_needs_update_draw_properties();
-  } else {
-    NoteLayerPropertyChanged();
-  }
-}
-
-gfx::Vector2dF LayerImpl::ViewportBoundsDelta() const {
-  switch (viewport_layer_type_) {
-    case (INNER_VIEWPORT_CONTAINER):
-      return GetPropertyTrees()->inner_viewport_container_bounds_delta();
-    case (OUTER_VIEWPORT_CONTAINER):
-      return GetPropertyTrees()->outer_viewport_container_bounds_delta();
-    case (INNER_VIEWPORT_SCROLL):
-      return GetPropertyTrees()->inner_viewport_scroll_bounds_delta();
-    default:
-      return gfx::Vector2dF();
-  }
 }
 
 ScrollbarLayerImplBase* LayerImpl::ToScrollbarLayer() {

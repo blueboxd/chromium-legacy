@@ -4,18 +4,24 @@
 
 package org.chromium.chrome.browser.firstrun;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.SwitchCompat;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.ui.text.NoUnderlineClickableSpan;
+import org.chromium.ui.text.SpanApplier;
+import org.chromium.ui.text.SpanApplier.SpanInfo;
 
 /**
  * The First Run Experience fragment that allows the user to opt in to Data Saver.
@@ -39,6 +45,8 @@ public class DataReductionProxyFirstRunFragment extends Fragment implements Firs
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        final TextView promoSummaryTextView =
+                (TextView) view.findViewById(R.id.data_reduction_promo_summary_text);
         final SwitchCompat enableDataSaverSwitch = (SwitchCompat) view
                 .findViewById(R.id.enable_data_saver_switch);
         Button nextButton = (Button) view.findViewById(R.id.next_button);
@@ -56,6 +64,19 @@ public class DataReductionProxyFirstRunFragment extends Fragment implements Firs
                 }
             }
         });
+
+        // Setup Promo Text Learn More Link
+        Resources resources = getResources();
+        NoUnderlineClickableSpan clickablePromoLearnMoreSpan =
+                new NoUnderlineClickableSpan(resources, (view1) -> {
+                    if (!isAdded()) return;
+                    getPageDelegate().showInfoPage(R.string.data_reduction_promo_learn_more_url);
+                });
+
+        promoSummaryTextView.setMovementMethod(LinkMovementMethod.getInstance());
+        promoSummaryTextView.setText(
+                SpanApplier.applySpans(getString(R.string.data_reduction_promo_summary_lite_mode),
+                        new SpanInfo("<link>", "</link>", clickablePromoLearnMoreSpan)));
 
         nextButton.setOnClickListener(new OnClickListener() {
             @Override

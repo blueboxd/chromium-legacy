@@ -10,6 +10,7 @@
 
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/system/sys_info.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/client_native_pixmap.h"
 #include "ui/gfx/client_native_pixmap_factory.h"
 #include "ui/gfx/native_pixmap_handle.h"
@@ -107,6 +108,48 @@ class ScenicClientNativePixmapFactory : public gfx::ClientNativePixmapFactory {
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override {
+    // |planes| may be empty for non-mappable pixmaps. No need to validate the
+    // handle in that case.
+    if (handle.planes.empty())
+      return std::make_unique<ClientNativePixmapFuchsia>(std::move(handle));
+
+    size_t expected_planes = gfx::NumberOfPlanesForLinearBufferFormat(format);
+    if (handle.planes.size() != expected_planes)
+      return nullptr;
+
+    base::CheckedNumeric<size_t> vmo_size_checked =
+        base::CheckedNumeric<size_t>(handle.planes.back().offset) +
+        handle.planes.back().size;
+    if (!vmo_size_checked.IsValid()) {
+      return nullptr;
+    }
+    size_t vmo_size = vmo_size_checked.ValueOrDie();
+
+    // Validate plane layout and buffer size.
+    for (size_t i = 0; i < handle.planes.size(); ++i) {
+      size_t min_stride = 0;
+      size_t subsample_factor = SubsamplingFactorForBufferFormat(format, i);
+      base::CheckedNumeric<size_t> plane_height =
+          (base::CheckedNumeric<size_t>(size.height()) + subsample_factor - 1) /
+          subsample_factor;
+      if (!gfx::RowSizeForBufferFormatChecked(size.width(), format, i,
+                                              &min_stride) ||
+          handle.planes[i].stride < min_stride) {
+        return nullptr;
+      }
+
+      base::CheckedNumeric<size_t> min_size =
+          base::CheckedNumeric<size_t>(handle.planes[i].stride) * plane_height;
+      if (!min_size.IsValid() || handle.planes[i].size < min_size.ValueOrDie())
+        return nullptr;
+
+      base::CheckedNumeric<size_t> end_pos =
+          base::CheckedNumeric<size_t>(handle.planes[i].offset) +
+          handle.planes[i].size;
+      if (!end_pos.IsValid() || end_pos.ValueOrDie() > vmo_size)
+        return nullptr;
+    }
+
     return std::make_unique<ClientNativePixmapFuchsia>(std::move(handle));
   }
 

@@ -93,6 +93,7 @@ message AsyncPageEvent {
   int32 stopped_error_code = 2;
   bool resource_load_failed = 3;
   bool did_first_visually_non_empty_paint = 4;
+  string url = 5;
 }
 
 message StopPageRequest {
@@ -168,7 +169,19 @@ message SetAutoMediaPlaybackPolicyRequest {
   bool require_user_gesture = 1;
 }
 
+message NavigationRequestEvent {
+  string url = 1;
+}
+
+enum NavigationDecision {
+  PREVENT = 0;
+  NAVIGATE = 1;
+}
 message WebviewRequest {
+  // Unique identifier for the request. For requests that will have a response,
+  // the response id will match the request id.
+  // Valid ID values must be greater than 0.
+  int64 id = 18;
   oneof type {
     // This must be the first message.
     WebviewCreateRequest create = 1;
@@ -204,10 +217,16 @@ message WebviewRequest {
     GetTitleRequest get_title = 16;
     // No response.
     SetAutoMediaPlaybackPolicyRequest set_auto_media_playback_policy = 17;
+    // Response to a navigation request.
+    NavigationDecision navigation_decision = 19;
   }
 }
 
 message WebviewResponse {
+  // Unique identifier. The value will match that of the request.
+  // Responses that do not have an associated request (such as page status
+  // event), the ID is meaningless.
+  int64 id = 8;
   oneof type {
     WebviewCreateResponse create_response = 1;
     AsyncPageEvent page_event = 2;
@@ -216,6 +235,8 @@ message WebviewResponse {
     CanGoBackResponse can_go_back = 5;
     CanGoForwardResponse can_go_forward = 6;
     GetTitleResponse get_title = 7;
+    // Triggered by web navigation events inside the webview.
+    NavigationRequestEvent navigation_event = 9;
   }
 }
 

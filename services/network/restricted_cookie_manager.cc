@@ -19,6 +19,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
@@ -161,6 +162,8 @@ RestrictedCookieManager::RestrictedCookieManager(
     net::CookieStore* cookie_store,
     const CookieSettings* cookie_settings,
     const url::Origin& origin,
+    const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin,
     mojom::NetworkContextClient* network_context_client,
     bool is_service_worker,
     int32_t process_id,
@@ -169,6 +172,8 @@ RestrictedCookieManager::RestrictedCookieManager(
       cookie_store_(cookie_store),
       cookie_settings_(cookie_settings),
       origin_(origin),
+      site_for_cookies_(site_for_cookies),
+      top_frame_origin_(top_frame_origin),
       network_context_client_(network_context_client),
       is_service_worker_(is_service_worker),
       process_id_(process_id),
@@ -196,7 +201,7 @@ void RestrictedCookieManager::GetAllForUrl(
     GetAllForUrlCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!ValidateAccessToCookiesAt(url)) {
+  if (!ValidateAccessToCookiesAt(url, site_for_cookies, top_frame_origin)) {
     std::move(callback).Run({});
     return;
   }
@@ -296,7 +301,7 @@ void RestrictedCookieManager::SetCanonicalCookie(
     const url::Origin& top_frame_origin,
     SetCanonicalCookieCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!ValidateAccessToCookiesAt(url)) {
+  if (!ValidateAccessToCookiesAt(url, site_for_cookies, top_frame_origin)) {
     std::move(callback).Run(false);
     return;
   }
@@ -385,7 +390,7 @@ void RestrictedCookieManager::AddChangeListener(
     mojo::PendingRemote<mojom::CookieChangeListener> mojo_listener,
     AddChangeListenerCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!ValidateAccessToCookiesAt(url)) {
+  if (!ValidateAccessToCookiesAt(url, site_for_cookies, top_frame_origin)) {
     std::move(callback).Run();
     return;
   }
@@ -462,7 +467,7 @@ void RestrictedCookieManager::CookiesEnabledFor(
     const GURL& site_for_cookies,
     const url::Origin& top_frame_origin,
     CookiesEnabledForCallback callback) {
-  if (!ValidateAccessToCookiesAt(url)) {
+  if (!ValidateAccessToCookiesAt(url, site_for_cookies, top_frame_origin)) {
     std::move(callback).Run(false);
     return;
   }
@@ -477,31 +482,41 @@ void RestrictedCookieManager::RemoveChangeListener(Listener* listener) {
   delete listener;
 }
 
-bool RestrictedCookieManager::ValidateAccessToCookiesAt(const GURL& url) {
+bool RestrictedCookieManager::ValidateAccessToCookiesAt(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin) {
+  bool site_for_cookies_ok = true;
+  if (!site_for_cookies.is_empty() && !site_for_cookies_.is_empty()) {
+    site_for_cookies_ok = net::registry_controlled_domains::SameDomainOrHost(
+        site_for_cookies, site_for_cookies_,
+        net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+
+    DCHECK(site_for_cookies_ok)
+        << "site_for_cookies from renderer='" << site_for_cookies
+        << "' from browser='" << site_for_cookies_ << "';";
+  }
+
+  bool top_frame_origin_ok = (top_frame_origin == top_frame_origin_);
+  DCHECK(top_frame_origin_ok)
+      << "top_frame_origin from renderer='" << top_frame_origin
+      << "' from browser='" << top_frame_origin_ << "';";
+
+  UMA_HISTOGRAM_BOOLEAN("Net.RestrictedCookieManager.SiteForCookiesOK",
+                        site_for_cookies_ok);
+  UMA_HISTOGRAM_BOOLEAN("Net.RestrictedCookieManager.TopFrameOriginOK",
+                        top_frame_origin_ok);
+
   if (origin_.IsSameOriginWith(url::Origin::Create(url)))
     return true;
-
-  // TODO(https://crbug.com/983090): Remove the crash keys once fixed.
-  static base::debug::CrashKeyString* bound_origin =
-      base::debug::AllocateCrashKeyString(
-          "restricted_cookie_manager_bound_origin",
-          base::debug::CrashKeySize::Size256);
-  base::debug::SetCrashKeyString(bound_origin, origin_.GetDebugString());
-
-  static base::debug::CrashKeyString* url_origin =
-      base::debug::AllocateCrashKeyString(
-          "restricted_cookie_manager_url_origin",
-          base::debug::CrashKeySize::Size256);
-  base::debug::SetCrashKeyString(url_origin,
-                                 url::Origin::Create(url).GetDebugString());
 
   if (url.IsAboutBlank() || url.IsAboutSrcdoc()) {
     // Temporary mitigation for 983090, classification improvement for parts of
     // 992587.
-    base::debug::DumpWithoutCrashing();
-  } else {
-    mojo::ReportBadMessage("Incorrect url origin");
+    return false;
   }
+
+  mojo::ReportBadMessage("Incorrect url origin");
   return false;
 }
 

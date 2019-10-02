@@ -32,6 +32,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/infobar.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/security_state/core/features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/ssl_status.h"
@@ -840,6 +841,63 @@ TEST_F(PageInfoTest, HTTPSSHA1) {
             PageInfoUI::GetIdentityIconID(page_info()->site_identity_status()));
 #endif
 }
+
+#if !defined(OS_ANDROID)
+// Tests that the site connection status is correctly set for Legacy TLS sites
+// when the kLegacyTLSWarnings feature is enabled.
+TEST_F(PageInfoTest, LegacyTLS) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      security_state::features::kLegacyTLSWarnings);
+
+  security_level_ = security_state::WARNING;
+  visible_security_state_.url = GURL("https://scheme-is-cryptographic.test");
+  visible_security_state_.certificate = cert();
+  visible_security_state_.cert_status = 0;
+  int status = 0;
+  status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
+  status = SetSSLVersion(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
+  visible_security_state_.connection_status = status;
+  visible_security_state_.connection_info_initialized = true;
+  visible_security_state_.connection_used_legacy_tls = true;
+  visible_security_state_.is_legacy_tls_control_site = false;
+
+  SetDefaultUIExpectations(mock_ui());
+
+  EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_LEGACY_TLS,
+            page_info()->site_connection_status());
+  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_CERT,
+            page_info()->site_identity_status());
+}
+
+// Tests that the site connection status is not set to LEGACY_TLS when a site
+// using legacy TLS is marked as a control site in the visible security state,
+// when the kLegacyTLSWarnings feature is enabled.
+TEST_F(PageInfoTest, LegacyTLSControlSite) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      security_state::features::kLegacyTLSWarnings);
+
+  security_level_ = security_state::SECURE;
+  visible_security_state_.url = GURL("https://scheme-is-cryptographic.test");
+  visible_security_state_.certificate = cert();
+  visible_security_state_.cert_status = 0;
+  int status = 0;
+  status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
+  status = SetSSLVersion(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
+  visible_security_state_.connection_status = status;
+  visible_security_state_.connection_info_initialized = true;
+  visible_security_state_.connection_used_legacy_tls = true;
+  visible_security_state_.is_legacy_tls_control_site = true;
+
+  SetDefaultUIExpectations(mock_ui());
+
+  EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED,
+            page_info()->site_connection_status());
+  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_CERT,
+            page_info()->site_identity_status());
+}
+#endif
 
 #if !defined(OS_ANDROID)
 TEST_F(PageInfoTest, NoInfoBar) {

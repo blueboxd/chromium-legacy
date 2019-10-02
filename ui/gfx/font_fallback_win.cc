@@ -262,7 +262,7 @@ bool GetFallbackFont(const Font& font,
   // font handles and is not guaranteed to result in the correct typeface, see
   // https://crbug.com/1003829
   *result = Font(PlatformFont::CreateFromSkTypeface(
-      std::move(fallback_typeface), font.GetFontSize()));
+      std::move(fallback_typeface), font.GetFontSize(), base::nullopt));
   return true;
 }
 

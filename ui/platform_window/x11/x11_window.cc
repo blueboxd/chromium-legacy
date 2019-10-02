@@ -390,6 +390,10 @@ bool X11Window::IsVisibleOnAllWorkspaces() const {
   return XWindow::IsXWindowVisibleOnAllWorkspaces();
 }
 
+void X11Window::FlashFrame(bool flash_frame) {
+  XWindow::SetFlashFrameHint(flash_frame);
+}
+
 bool X11Window::CanDispatchEvent(const PlatformEvent& xev) {
 #if defined(USE_X11)
   return XWindow::IsTargetedBy(*xev);

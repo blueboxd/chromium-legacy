@@ -134,12 +134,14 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(
   caps->SetString("browserName", "chrome");
   caps->SetString(session->w3c_compliant ? "browserVersion" : "version",
                   session->chrome->GetBrowserInfo()->browser_version);
-  if (session->w3c_compliant)
-    caps->SetString(
-        "platformName",
-        base::ToLowerASCII(session->chrome->GetOperatingSystemName()));
-  else
-    caps->SetString("platform", session->chrome->GetOperatingSystemName());
+  std::string operatingSystemName = session->chrome->GetOperatingSystemName();
+  if (operatingSystemName.find("Windows") != std::string::npos)
+    operatingSystemName = "Windows";
+  if (session->w3c_compliant) {
+    caps->SetString("platformName", base::ToLowerASCII(operatingSystemName));
+  } else {
+    caps->SetString("platform", operatingSystemName);
+  }
   caps->SetString("pageLoadStrategy", session->chrome->page_load_strategy());
   caps->SetBoolean("acceptInsecureCerts", capabilities.accept_insecure_certs);
   const base::Value* proxy = desired_caps.FindKey("proxy");

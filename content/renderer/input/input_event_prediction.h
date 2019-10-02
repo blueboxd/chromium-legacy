@@ -63,7 +63,11 @@ class CONTENT_EXPORT InputEventPrediction {
 
   // Get time interval of a pointer. Default to mouse predictor if there is no
   // predictor for pointer.
-  base::TimeDelta GetPredictionTimeInterval(WebPointerProperties* event) const;
+  base::TimeDelta GetPredictionTimeInterval(
+      const WebPointerProperties& event) const;
+
+  // Returns a pointer to the predictor for given WebPointerProperties.
+  ui::InputPredictor* GetPredictor(const WebPointerProperties& event) const;
 
   // Get single predictor based on event id and type, and update the predictor
   // with new events coords.

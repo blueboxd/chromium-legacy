@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -1789,12 +1790,15 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginNoFlagOverrideTest,
 // are configured at startup (isolated.foo.com and isolated.bar.com).
 class DynamicIsolatedOriginTest : public IsolatedOriginTest {
  public:
-  DynamicIsolatedOriginTest() {}
+  DynamicIsolatedOriginTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
   ~DynamicIsolatedOriginTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     IsolatedOriginTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableSiteIsolation);
+    // This is necessary to use https with arbitrary hostnames.
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
 
     if (AreAllSitesIsolatedForTesting()) {
       LOG(WARNING) << "This test should be run without strict site isolation. "
@@ -1802,7 +1806,18 @@ class DynamicIsolatedOriginTest : public IsolatedOriginTest {
     }
   }
 
+  void SetUpOnMainThread() override {
+    https_server()->AddDefaultHandlers(GetTestDataFilePath());
+    ASSERT_TRUE(https_server()->Start());
+    IsolatedOriginTest::SetUpOnMainThread();
+  }
+
+  // Need an https server because third-party cookies are used, and
+  // SameSite=None cookies must be Secure.
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
  private:
+  net::EmbeddedTestServer https_server_;
   DISALLOW_COPY_AND_ASSIGN(DynamicIsolatedOriginTest);
 };
 
@@ -2124,15 +2139,14 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest,
   RenderProcessHost::SetMaxRendererProcessCount(1);
 
   // Start on a non-isolated origin with same-site iframe.
-  GURL foo_url(
-      embedded_test_server()->GetURL("foo.com", "/page_with_iframe.html"));
+  GURL foo_url(https_server()->GetURL("foo.com", "/page_with_iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), foo_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child = root->child_at(0);
 
   // Navigate iframe cross-site.
-  GURL bar_url(embedded_test_server()->GetURL("bar.com", "/title1.html"));
+  GURL bar_url(https_server()->GetURL("bar.com", "/title1.html"));
   NavigateIframeToURL(web_contents(), "test_iframe", bar_url);
   EXPECT_EQ(child->current_url(), bar_url);
 
@@ -2184,7 +2198,8 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest,
 
   // Make sure the bar.com iframe in the old foo.com process can still access
   // bar.com cookies.
-  EXPECT_TRUE(ExecuteScript(child, "document.cookie = 'foo=bar';"));
+  EXPECT_TRUE(ExecuteScript(
+      child, "document.cookie = 'foo=bar;SameSite=None;Secure';"));
   EXPECT_EQ("foo=bar", EvalJs(child, "document.cookie"));
 }
 

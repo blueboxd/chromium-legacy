@@ -1170,7 +1170,7 @@ class FakeDownloadProtectionService
 
   void CheckClientDownload(
       DownloadItem* download_item,
-      safe_browsing::CheckDownloadCallback callback) override {
+      safe_browsing::CheckDownloadRepeatingCallback callback) override {
     std::move(callback).Run(safe_browsing::DownloadCheckResult::UNCOMMON);
   }
 };
@@ -3219,7 +3219,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SaveLinkAsVsCrossOriginResourcePolicy) {
 
 // This test ensures that the Referer header is properly sanitized when
 // Save Image As is chosen from the context menu.
-// TODO(crbug.com/1005586): Re-enable this test.
 IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
                        DISABLED_SaveImageAsReferrerPolicy) {
   embedded_test_server()->RegisterRequestHandler(
@@ -3300,10 +3299,8 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
 
 // This test ensures that a cross-domain download correctly sets the referrer
 // according to the referrer policy.
-//
-// Disabled because flaky. See https://crbug.com/1009022.
 IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
-                       DISABLED_DownloadCrossDomainReferrerPolicy) {
+                       DownloadCrossDomainReferrerPolicy) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&ServerRedirectRequestHandler));
   embedded_test_server()->RegisterRequestHandler(
@@ -4172,7 +4169,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SafeSupportedFile) {
 
   DownloadItem* download = downloads[0];
   EXPECT_FALSE(download->IsDangerous());
-  EXPECT_EQ(download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+  EXPECT_EQ(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
             download->GetDangerType());
 
   download->Cancel(true);

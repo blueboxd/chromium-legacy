@@ -167,6 +167,12 @@ class OptimizationGuideKeyedServiceBrowserTest
         net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   }
 
+  void TearDown() override {
+    scoped_feature_list_.Reset();
+
+    OptimizationGuideKeyedServiceDisabledBrowserTest::TearDown();
+  }
+
   void TearDownOnMainThread() override {
     EXPECT_TRUE(https_server_->ShutdownAndWaitUntilComplete());
 
@@ -544,6 +550,19 @@ class OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest
   ~OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest() override =
       default;
 
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        optimization_guide::features::kOptimizationHintsFetching);
+
+    OptimizationGuideKeyedServiceBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+    OptimizationGuideKeyedServiceBrowserTest::TearDown();
+
+    scoped_feature_list_.Reset();
+  }
+
   void SetUpOnMainThread() override {
     OptimizationGuideKeyedServiceBrowserTest::SetUpOnMainThread();
 
@@ -590,6 +609,8 @@ class OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest
                          optimization_guide::prefs::
                              HintsFetcherTopHostBlacklistState::kInitialized));
   }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(

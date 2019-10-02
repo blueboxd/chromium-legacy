@@ -432,8 +432,6 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   // Input method editor related functions.
   virtual void ShowVirtualKeyboardOnElementFocus(LocalFrame&) {}
 
-  virtual void RegisterViewportLayers() const {}
-
   virtual TransformationMatrix GetDeviceEmulationTransform() const {
     return TransformationMatrix();
   }

@@ -101,7 +101,7 @@ static char** g_argv;
 }
 
 // Returns true if the gtest output should be redirected to a file, then sent
-// to NSLog when compleete. This redirection is used because gtest only writes
+// to NSLog when complete. This redirection is used because gtest only writes
 // output to stdout, but results must be written to NSLog in order to show up in
 // the device log that is retrieved from the device by the host.
 - (BOOL)shouldRedirectOutputToFile {
@@ -183,8 +183,6 @@ static char** g_argv;
 
   // If a test app is too fast, it will exit before Instruments has has a
   // a chance to initialize and no test results will be seen.
-  // TODO(crbug.com/137010): Figure out how much time is actually needed, and
-  // sleep only to make sure that much time has elapsed since launch.
   [NSThread sleepUntilDate:[NSDate dateWithTimeIntervalSinceNow:2.0]];
   _window.reset();
 

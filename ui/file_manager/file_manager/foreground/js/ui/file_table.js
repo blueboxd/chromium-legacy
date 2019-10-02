@@ -961,12 +961,6 @@ class FileTable extends cr.ui.Table {
             .contentMimeType;
     div.textContent =
         FileListModel.getFileTypeString(FileType.getType(entry, mimeType));
-
-    // For removable partitions, display file system type.
-    if (!mimeType && entry.volumeInfo && entry.volumeInfo.diskFileSystemType) {
-      div.textContent = entry.volumeInfo.diskFileSystemType;
-    }
-
     return div;
   }
 

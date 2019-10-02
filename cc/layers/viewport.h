@@ -74,9 +74,8 @@ class CC_EXPORT Viewport {
   // false if it should be scrolled directly.
   bool ShouldScroll(const ScrollNode& scroll_node);
 
-  // Returns the "representative" viewport layer/node. That is, the one that's
-  // set as the currently scrolling layer/node when the viewport scrolls.
-  LayerImpl* MainScrollLayer() const;
+  // Returns the "representative" viewport scroll node. That is, the one that's
+  // set as the currently scrolling node when the viewport scrolls.
   ScrollNode* MainScrollNode() const;
 
  private:

@@ -5,12 +5,17 @@
 #include "ash/public/cpp/shelf_config.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 
 namespace ash {
 
@@ -19,6 +24,11 @@ namespace {
 // When any edge of the primary display is less than or equal to this threshold,
 // dense shelf will be active.
 const int kDenseShelfScreenSizeThreshold = 600;
+
+// Returns whether tablet mode is currently active.
+bool IsTabletMode() {
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
+}
 
 }  // namespace
 
@@ -39,15 +49,9 @@ ShelfConfig::ShelfConfig()
       workspace_area_visible_inset_(2),
       workspace_area_auto_hide_inset_(5),
       hidden_shelf_in_screen_portion_(3),
-      shelf_default_base_color_(gfx::kGoogleGrey900),
       shelf_ink_drop_base_color_(SK_ColorWHITE),
       shelf_ink_drop_visible_opacity_(0.2f),
       shelf_icon_color_(SK_ColorWHITE),
-      shelf_translucent_over_app_list_(51),      // 20%
-      shelf_translucent_alpha_(189),             // 74%
-      shelf_translucent_maximized_window_(254),  // ~100%
-      shelf_translucent_color_darken_alpha_(178),
-      shelf_opaque_color_darken_alpha_(178),
       status_indicator_offset_from_shelf_edge_(1),
       shelf_tooltip_preview_height_(128),
       shelf_tooltip_preview_max_width_(192),
@@ -129,7 +133,7 @@ int ShelfConfig::shelf_size() const {
     return 56;
 
   // In clamshell mode, the shelf always has the same size.
-  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+  if (!IsTabletMode())
     return 48;
 
   if (is_in_app())
@@ -143,8 +147,7 @@ int ShelfConfig::in_app_shelf_size() const {
 }
 
 int ShelfConfig::hotseat_size() const {
-  if (!chromeos::switches::ShouldShowShelfHotseat() ||
-      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+  if (!chromeos::switches::ShouldShowShelfHotseat() || !IsTabletMode()) {
     return shelf_size();
   }
   return is_dense_ ? 48 : 56;
@@ -170,7 +173,7 @@ int ShelfConfig::control_size() const {
   if (!chromeos::switches::ShouldShowShelfHotseat())
     return 40;
 
-  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+  if (!IsTabletMode())
     return 36;
 
   if (is_dense_)
@@ -213,7 +216,7 @@ void ShelfConfig::UpdateIsDense() {
 
   const bool new_is_dense =
       chromeos::switches::ShouldShowShelfHotseat() &&
-      (!Shell::Get()->tablet_mode_controller()->InTabletMode() ||
+      (!IsTabletMode() ||
        (screen_size.width() <= kDenseShelfScreenSizeThreshold ||
         screen_size.height() <= kDenseShelfScreenSizeThreshold));
   if (new_is_dense == is_dense_)
@@ -221,6 +224,55 @@ void ShelfConfig::UpdateIsDense() {
 
   is_dense_ = new_is_dense;
   OnShelfConfigUpdated();
+}
+
+SkColor ShelfConfig::GetShelfControlButtonColor() const {
+  if (chromeos::switches::ShouldShowShelfHotseat() && IsTabletMode() &&
+      Shell::Get()->session_controller()->GetSessionState() ==
+          session_manager::SessionState::ACTIVE)
+    return is_in_app() ? SK_ColorTRANSPARENT : GetDefaultShelfColor();
+  return shelf_control_permanent_highlight_background_;
+}
+
+SkColor ShelfConfig::GetShelfWithAppListColor() const {
+  return SkColorSetA(SK_ColorBLACK, 20);  // 8% opacity
+}
+
+SkColor ShelfConfig::GetMaximizedShelfColor() const {
+  // Using 0xFF causes clipping on the overlay candidate content, which prevent
+  // HW overlay, probably due to a bug in compositor. Fix it and use 0xFF.
+  // crbug.com/901538
+  return SkColorSetA(GetDefaultShelfColor(), 254);  // ~100% opacity
+}
+
+SkColor ShelfConfig::GetDefaultShelfColor() const {
+  if (!features::IsBackgroundBlurEnabled() ||
+      chromeos::switches::ShouldShowShelfHotseat()) {
+    return AshColorProvider::Get()->GetBaseLayerColor(
+        AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
+        AshColorProvider::AshColorMode::kDark);
+  }
+
+  SkColor final_color = AshColorProvider::Get()->GetBaseLayerColor(
+      AshColorProvider::BaseLayerType::kTransparentWithBlur,
+      AshColorProvider::AshColorMode::kDark);
+
+  if (!Shell::Get()->wallpaper_controller())
+    return final_color;
+
+  SkColor dark_muted_color =
+      Shell::Get()->wallpaper_controller()->GetProminentColor(
+          color_utils::ColorProfile(color_utils::LumaRange::DARK,
+                                    color_utils::SaturationRange::MUTED));
+
+  if (dark_muted_color == kInvalidWallpaperColor)
+    return final_color;
+
+  // Combine SK_ColorBLACK at 70% opacity with |dark_muted_color|.
+  final_color = color_utils::GetResultingPaintColor(
+      SkColorSetA(SK_ColorBLACK, 178), dark_muted_color);
+
+  return SkColorSetA(final_color, 189);  // 74% opacity
 }
 
 void ShelfConfig::OnShelfConfigUpdated() {

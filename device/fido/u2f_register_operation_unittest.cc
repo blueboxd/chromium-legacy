@@ -155,17 +155,19 @@ TEST_F(U2fRegisterOperationTest, TestRegistrationWithExclusionList) {
   auto device = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
   device->ExpectWinkedAtLeastOnce();
-  // DeviceTransact() will be called three times including two check only sign-
-  // in calls and one registration call. For the first two calls, device will
-  // invoke MockFidoDevice::WrongData/WrongLength as the authenticator did not
-  // create the two key handles provided in the exclude list. At the third call,
-  // MockFidoDevice::NoErrorRegister will be invoked after registration.
+  // DeviceTransact() will be called three times including two sign-in calls
+  // with bogus challenges and one registration call. For the first two calls,
+  // device will invoke MockFidoDevice::WrongData/WrongLength as the
+  // authenticator did not create the two key handles provided in the exclude
+  // list. At the third call, MockFidoDevice::NoErrorRegister will be invoked
+  // after registration.
   ::testing::InSequence s;
   device->ExpectRequestAndRespondWith(
-      test_data::kU2fSignCommandApduWithKeyAlpha,
+      test_data::kU2fSignCommandApduWithKeyAlphaAndBogusChallenge,
       test_data::kU2fWrongDataApduResponse);
-  device->ExpectRequestAndRespondWith(test_data::kU2fSignCommandApduWithKeyBeta,
-                                      test_data::kU2fWrongLengthApduResponse);
+  device->ExpectRequestAndRespondWith(
+      test_data::kU2fSignCommandApduWithKeyBetaAndBogusChallenge,
+      test_data::kU2fWrongLengthApduResponse);
   device->ExpectRequestAndRespondWith(
       test_data::kU2fRegisterCommandApdu,
       test_data::kApduEncodedNoErrorRegisterResponse);
@@ -210,12 +212,15 @@ TEST_F(U2fRegisterOperationTest, TestRegistrationWithDuplicateHandle) {
   // request is concluded with Ctap2ErrCredentialExcluded.
   ::testing::InSequence s;
   device->ExpectRequestAndRespondWith(
-      test_data::kU2fSignCommandApduWithKeyAlpha,
+      test_data::kU2fSignCommandApduWithKeyAlphaAndBogusChallenge,
       test_data::kU2fWrongDataApduResponse);
-  device->ExpectRequestAndRespondWith(test_data::kU2fSignCommandApduWithKeyBeta,
-                                      test_data::kU2fWrongDataApduResponse);
   device->ExpectRequestAndRespondWith(
-      test_data::kU2fSignCommandApduWithKeyGamma,
+      test_data::kU2fSignCommandApduWithKeyBetaAndBogusChallenge,
+      test_data::kU2fWrongDataApduResponse);
+  // The signature in the response is intentionally incorrect since nothing
+  // should depend on it being correct.
+  device->ExpectRequestAndRespondWith(
+      test_data::kU2fSignCommandApduWithKeyGammaAndBogusChallenge,
       test_data::kApduEncodedNoErrorSignResponse);
 
   auto u2f_register = std::make_unique<U2fRegisterOperation>(

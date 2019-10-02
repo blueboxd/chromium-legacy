@@ -10,8 +10,10 @@
 #include "chromecast/browser/cast_web_contents_impl.h"
 #include "chromecast/browser/webview/proto/webview.pb.h"
 #include "chromecast/browser/webview/webview_layout_manager.h"
+#include "chromecast/browser/webview/webview_navigation_throttle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/web_preferences.h"
@@ -21,11 +23,32 @@
 
 namespace chromecast {
 
+namespace {
+
+const void* kWebviewResponseUserDataKey = &kWebviewResponseUserDataKey;
+
+class WebviewUserData : public base::SupportsUserData::Data {
+ public:
+  explicit WebviewUserData(WebviewController* controller);
+  ~WebviewUserData() override;
+
+  std::unique_ptr<Data> Clone() override;
+
+  WebviewController* controller() const { return controller_; }
+
+ private:
+  WebviewController* controller_;
+};
+
+}  // namespace
+
 WebviewController::WebviewController(content::BrowserContext* browser_context,
                                      Client* client)
     : client_(client) {
   content::WebContents::CreateParams create_params(browser_context, nullptr);
   contents_ = content::WebContents::Create(create_params);
+  contents_->SetUserData(kWebviewResponseUserDataKey,
+                         std::make_unique<WebviewUserData>(this));
   CastWebContents::InitParams cast_contents_init;
   cast_contents_init.is_root_window = true;
   cast_contents_init.enabled_for_dev = CAST_IS_DEBUG_BUILD();
@@ -43,6 +66,20 @@ WebviewController::WebviewController(content::BrowserContext* browser_context,
 }
 
 WebviewController::~WebviewController() {}
+
+std::unique_ptr<content::NavigationThrottle>
+WebviewController::MaybeGetNavigationThrottle(
+    content::NavigationHandle* handle) {
+  auto* web_contents = handle->GetWebContents();
+  auto* webview_user_data = static_cast<WebviewUserData*>(
+      web_contents->GetUserData(kWebviewResponseUserDataKey));
+  if (webview_user_data &&
+      webview_user_data->controller()->has_navigation_delegate_) {
+    return std::make_unique<WebviewNavigationThrottle>(
+        handle, webview_user_data->controller());
+  }
+  return nullptr;
+}
 
 void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
   switch (request.type_case()) {
@@ -70,7 +107,7 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
 
     case webview::WebviewRequest::kEvaluateJavascript:
       if (request.has_evaluate_javascript()) {
-        HandleEvaluateJavascript(request.evaluate_javascript());
+        HandleEvaluateJavascript(request.id(), request.evaluate_javascript());
       } else {
         client_->OnError("evaluate_javascript() not supplied");
       }
@@ -93,15 +130,15 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
       break;
 
     case webview::WebviewRequest::kGetCurrentUrl:
-      HandleGetCurrentUrl();
+      HandleGetCurrentUrl(request.id());
       break;
 
     case webview::WebviewRequest::kCanGoBack:
-      HandleCanGoBack();
+      HandleCanGoBack(request.id());
       break;
 
     case webview::WebviewRequest::kCanGoForward:
-      HandleCanGoForward();
+      HandleCanGoForward(request.id());
       break;
 
     case webview::WebviewRequest::kGoBack:
@@ -131,7 +168,7 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
       break;
 
     case webview::WebviewRequest::kGetTitle:
-      HandleGetTitle();
+      HandleGetTitle(request.id());
       break;
 
     case webview::WebviewRequest::kSetAutoMediaPlaybackPolicy:
@@ -142,11 +179,27 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
         client_->OnError("set_auto_media_playback_policy() not supplied");
       }
       break;
-
+    case webview::WebviewRequest::kNavigationDecision:
+      if (current_navigation_throttle_) {
+        current_navigation_throttle_->ProcessNavigationDecision(
+            request.navigation_decision());
+        current_navigation_throttle_ = nullptr;
+      }
+      break;
     default:
       client_->OnError("Unknown request code");
       break;
   }
+}
+
+void WebviewController::SendNavigationEvent(WebviewNavigationThrottle* throttle,
+                                            const GURL& gurl) {
+  DCHECK(!current_navigation_throttle_);
+  std::unique_ptr<webview::WebviewResponse> response =
+      std::make_unique<webview::WebviewResponse>();
+  response->mutable_navigation_event()->set_url(gurl.spec());
+  current_navigation_throttle_ = throttle;
+  client_->EnqueueSend(std::move(response));
 }
 
 void WebviewController::ClosePage() {
@@ -215,21 +268,23 @@ void WebviewController::ProcessInputEvent(const webview::InputEvent& ev) {
   }
 }
 
-void WebviewController::JavascriptCallback(base::Value result) {
+void WebviewController::JavascriptCallback(int64_t id, base::Value result) {
   std::string json;
   base::JSONWriter::Write(result, &json);
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
+  response->set_id(id);
   response->mutable_evaluate_javascript()->set_json(json);
   client_->EnqueueSend(std::move(response));
 }
 
 void WebviewController::HandleEvaluateJavascript(
+    int64_t id,
     const webview::EvaluateJavascriptRequest& request) {
   contents_->GetMainFrame()->ExecuteJavaScript(
       base::UTF8ToUTF16(request.javascript_blob()),
       base::BindOnce(&WebviewController::JavascriptCallback,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), id));
 }
 
 void WebviewController::HandleAddJavascriptChannels(
@@ -244,27 +299,30 @@ void WebviewController::HandleRemoveJavascriptChannels(
   client_->OnError("Unimplemented remove_javascript_channels()");
 }
 
-void WebviewController::HandleGetCurrentUrl() {
+void WebviewController::HandleGetCurrentUrl(int64_t id) {
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
 
+  response->set_id(id);
   response->mutable_get_current_url()->set_url(contents_->GetURL().spec());
   client_->EnqueueSend(std::move(response));
 }
 
-void WebviewController::HandleCanGoBack() {
+void WebviewController::HandleCanGoBack(int64_t id) {
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
 
+  response->set_id(id);
   response->mutable_can_go_back()->set_can_go_back(
       contents_->GetController().CanGoBack());
   client_->EnqueueSend(std::move(response));
 }
 
-void WebviewController::HandleCanGoForward() {
+void WebviewController::HandleCanGoForward(int64_t id) {
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
 
+  response->set_id(id);
   response->mutable_can_go_forward()->set_can_go_forward(
       contents_->GetController().CanGoForward());
   client_->EnqueueSend(std::move(response));
@@ -286,10 +344,11 @@ void WebviewController::HandleClearCache() {
                       content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB);
 }
 
-void WebviewController::HandleGetTitle() {
+void WebviewController::HandleGetTitle(int64_t id) {
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
 
+  response->set_id(id);
   response->mutable_get_title()->set_title(
       base::UTF16ToUTF8(contents_->GetTitle()));
   client_->EnqueueSend(std::move(response));
@@ -302,7 +361,7 @@ void WebviewController::HandleUpdateSettings(
   prefs.javascript_enabled = request.javascript_enabled();
   contents_->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
 
-  // TODO(dnicoara): Add support for |has_navigation_delegate|.
+  has_navigation_delegate_ = request.has_navigation_delegate();
 
   // Given that cast_shell enables devtools unconditionally there isn't
   // anything that needs to be done for |request.debugging_enabled()|. Though,
@@ -335,6 +394,7 @@ void WebviewController::OnPageStateChanged(CastWebContents* cast_web_contents) {
     std::unique_ptr<webview::WebviewResponse> response =
         std::make_unique<webview::WebviewResponse>();
     auto* event = response->mutable_page_event();
+    event->set_url(contents_->GetURL().spec());
     event->set_current_page_state(current_state());
     client_->EnqueueSend(std::move(response));
   }
@@ -347,6 +407,7 @@ void WebviewController::OnPageStopped(CastWebContents* cast_web_contents,
     std::unique_ptr<webview::WebviewResponse> response =
         std::make_unique<webview::WebviewResponse>();
     auto* event = response->mutable_page_event();
+    event->set_url(contents_->GetURL().spec());
     event->set_current_page_state(current_state());
     event->set_stopped_error_code(error_code);
     client_->EnqueueSend(std::move(response));
@@ -361,6 +422,7 @@ void WebviewController::ResourceLoadFailed(CastWebContents* cast_web_contents) {
     std::unique_ptr<webview::WebviewResponse> response =
         std::make_unique<webview::WebviewResponse>();
     auto* event = response->mutable_page_event();
+    event->set_url(contents_->GetURL().spec());
     event->set_current_page_state(current_state());
     event->set_resource_load_failed(true);
     client_->EnqueueSend(std::move(response));
@@ -377,6 +439,15 @@ void WebviewController::Destroy() {
     // This will eventually call OnPageStopped.
     cast_web_contents_->ClosePage();
   }
+}
+
+WebviewUserData::WebviewUserData(WebviewController* controller)
+    : controller_(controller) {}
+
+WebviewUserData::~WebviewUserData() = default;
+
+std::unique_ptr<base::SupportsUserData::Data> WebviewUserData::Clone() {
+  return std::make_unique<WebviewUserData>(controller_);
 }
 
 }  // namespace chromecast

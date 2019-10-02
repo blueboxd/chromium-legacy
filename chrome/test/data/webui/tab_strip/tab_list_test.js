@@ -3,8 +3,13 @@
 // found in the LICENSE file.
 
 import 'chrome://tab-strip/tab_list.js';
+
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
+import {ThemeProxy} from 'chrome://tab-strip/theme_proxy.js';
+
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
+import {TestThemeProxy} from './test_theme_proxy.js';
 
 class MockDataTransfer extends DataTransfer {
   constructor() {
@@ -48,6 +53,7 @@ suite('TabList', () => {
   let optionsCalled;
   let tabList;
   let testTabsApiProxy;
+  let testThemeProxy;
 
   const currentWindow = {
     id: 1001,
@@ -98,12 +104,37 @@ suite('TabList', () => {
     testTabsApiProxy.setCurrentWindow(currentWindow);
     TabsApiProxy.instance_ = testTabsApiProxy;
 
+    testThemeProxy = new TestThemeProxy();
+    testThemeProxy.setColors({
+      '--background-color': 'white',
+      '--foreground-color': 'black',
+    });
+    ThemeProxy.instance_ = testThemeProxy;
+
     callbackRouter = testTabsApiProxy.callbackRouter;
 
     tabList = document.createElement('tabstrip-tab-list');
     document.body.appendChild(tabList);
 
     return testTabsApiProxy.whenCalled('getCurrentWindow');
+  });
+
+  test('sets theme colors on init', async () => {
+    await testThemeProxy.whenCalled('getColors');
+    assertEquals(tabList.style.getPropertyValue('--background-color'), 'white');
+    assertEquals(tabList.style.getPropertyValue('--foreground-color'), 'black');
+  });
+
+  test('updates theme colors when theme changes', async () => {
+    testThemeProxy.resetResolver('getColors');
+    testThemeProxy.setColors({
+      '--background-color': 'pink',
+      '--foreground-color': 'blue',
+    });
+    webUIListenerCallback('theme-changed');
+    await testThemeProxy.whenCalled('getColors');
+    assertEquals(tabList.style.getPropertyValue('--background-color'), 'pink');
+    assertEquals(tabList.style.getPropertyValue('--foreground-color'), 'blue');
   });
 
   test('creates a tab element for each tab', () => {

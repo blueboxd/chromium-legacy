@@ -46,6 +46,11 @@ GLOutputSurface::GLOutputSurface(
   capabilities_.supports_dc_layers = context_capabilities.dc_layers;
   capabilities_.supports_dc_video_overlays =
       context_capabilities.use_dc_overlays_for_video;
+  capabilities_.supports_surfaceless = context_capabilities.surfaceless;
+  capabilities_.android_surface_control_feature_enabled =
+      context_provider->GetGpuFeatureInfo()
+          .status_values[gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] ==
+      gpu::kGpuFeatureStatusEnabled;
 }
 
 GLOutputSurface::~GLOutputSurface() {

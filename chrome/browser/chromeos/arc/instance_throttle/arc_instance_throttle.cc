@@ -4,13 +4,12 @@
 
 #include "chrome/browser/chromeos/arc/instance_throttle/arc_instance_throttle.h"
 
-#include <string>
-
 #include "base/logging.h"
-#include "base/memory/singleton.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
-#include "chrome/browser/chromeos/throttle_observer.h"
+#include "chrome/browser/chromeos/arc/instance_throttle/arc_active_window_throttle_observer.h"
+#include "chrome/browser/chromeos/arc/instance_throttle/arc_boot_phase_throttle_observer.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_util.h"
 
@@ -46,11 +45,13 @@ class ArcInstanceThrottleFactory
  public:
   static constexpr const char* kName = "ArcInstanceThrottleFactory";
   static ArcInstanceThrottleFactory* GetInstance() {
-    return base::Singleton<ArcInstanceThrottleFactory>::get();
+    static base::NoDestructor<ArcInstanceThrottleFactory> instance;
+    return instance.get();
   }
 
  private:
-  friend struct base::DefaultSingletonTraits<ArcInstanceThrottleFactory>;
+  friend class base::NoDestructor<ArcInstanceThrottleFactory>;
+
   ArcInstanceThrottleFactory() {
     DependsOn(ArcBootPhaseMonitorBridgeFactory::GetInstance());
   }
@@ -73,62 +74,22 @@ ArcInstanceThrottle* ArcInstanceThrottle::GetForBrowserContextForTesting(
 
 ArcInstanceThrottle::ArcInstanceThrottle(content::BrowserContext* context,
                                          ArcBridgeService* bridge_service)
-    : context_(context),
-      delegate_(std::make_unique<DefaultDelegateImpl>()),
-      weak_ptr_factory_(this) {
-  auto callback =
-      base::BindRepeating(&ArcInstanceThrottle::OnObserverStateChanged,
-                          weak_ptr_factory_.GetWeakPtr());
-  for (auto* observer : GetAllObservers())
-    observer->StartObserving(context, callback);
+    : ThrottleService(context),
+      delegate_(std::make_unique<DefaultDelegateImpl>()) {
+  AddObserver(std::make_unique<ArcActiveWindowThrottleObserver>());
+  AddObserver(std::make_unique<ArcBootPhaseThrottleObserver>());
+  StartObservers();
 }
 
 ArcInstanceThrottle::~ArcInstanceThrottle() = default;
 
 void ArcInstanceThrottle::Shutdown() {
-  for (auto* observer : GetAllObservers())
-    observer->StopObserving();
-}
-
-void ArcInstanceThrottle::OnObserverStateChanged() {
-  chromeos::ThrottleObserver::PriorityLevel max_level =
-      chromeos::ThrottleObserver::PriorityLevel::LOW;
-  chromeos::ThrottleObserver* effective_observer = nullptr;
-  std::string active_observers;
-
-  for (auto* observer : GetAllObservers()) {
-    if (!observer->active())
-      continue;
-    active_observers += (" " + observer->GetDebugDescription());
-    if (observer->level() >= max_level) {
-      max_level = observer->level();
-      effective_observer = observer;
-    }
-  }
-
-  DVLOG_IF(1, !active_observers.empty())
-      << "Active Throttle Observers: " << active_observers;
-
-  if (effective_observer != last_effective_observer_) {
-    // If there is a new effective observer, record the duration that the last
-    // effective observer was active.
-    if (last_effective_observer_)
-      delegate_->RecordCpuRestrictionDisabledUMA(
-          last_effective_observer_->name(),
-          base::TimeTicks::Now() - last_throttle_transition_);
-    last_throttle_transition_ = base::TimeTicks::Now();
-    last_effective_observer_ = effective_observer;
-  }
-
-  ThrottleInstance(max_level);
+  StopObservers();
 }
 
 void ArcInstanceThrottle::ThrottleInstance(
     chromeos::ThrottleObserver::PriorityLevel level) {
-  if (level_ == level)
-    return;
-  level_ = level;
-  switch (level_) {
+  switch (level) {
     case chromeos::ThrottleObserver::PriorityLevel::CRITICAL:
     case chromeos::ThrottleObserver::PriorityLevel::IMPORTANT:
     case chromeos::ThrottleObserver::PriorityLevel::NORMAL:
@@ -141,26 +102,10 @@ void ArcInstanceThrottle::ThrottleInstance(
   }
 }
 
-std::vector<chromeos::ThrottleObserver*>
-ArcInstanceThrottle::GetAllObservers() {
-  if (!observers_for_testing_.empty())
-    return observers_for_testing_;
-  return {&active_window_throttle_observer_, &boot_phase_throttle_observer_};
+void ArcInstanceThrottle::RecordCpuRestrictionDisabledUMA(
+    const std::string& observer_name,
+    base::TimeDelta delta) {
+  delegate_->RecordCpuRestrictionDisabledUMA(observer_name, delta);
 }
 
-void ArcInstanceThrottle::NotifyObserverStateChangedForTesting() {
-  OnObserverStateChanged();
-}
-
-void ArcInstanceThrottle::SetObserversForTesting(
-    const std::vector<chromeos::ThrottleObserver*>& observers) {
-  for (auto* observer : GetAllObservers())
-    observer->StopObserving();
-  observers_for_testing_ = observers;
-  auto callback =
-      base::BindRepeating(&ArcInstanceThrottle::OnObserverStateChanged,
-                          weak_ptr_factory_.GetWeakPtr());
-  for (auto* observer : GetAllObservers())
-    observer->StartObserving(context_, callback);
-}
 }  // namespace arc

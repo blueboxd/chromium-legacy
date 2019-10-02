@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "android_webview/browser/aw_content_browser_client.h"
-#include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/aw_media_url_interceptor.h"
 #include "android_webview/browser/gfx/browser_view_renderer.h"
 #include "android_webview/browser/gfx/gpu_service_web_view.h"
@@ -15,6 +14,7 @@
 #include "android_webview/browser/scoped_add_feature_flags.h"
 #include "android_webview/browser/tracing/aw_trace_event_args_whitelist.h"
 #include "android_webview/common/aw_descriptors.h"
+#include "android_webview/common/aw_features.h"
 #include "android_webview/common/aw_paths.h"
 #include "android_webview/common/aw_resource_bundle.h"
 #include "android_webview/common/aw_switches.h"

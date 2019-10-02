@@ -586,6 +586,7 @@ class WebMediaPlayerMSTest
   void RequestPlay() override {}
   void RequestPause() override {}
   void RequestMuted(bool muted) override {}
+  Features GetFeatures() override { return Features(); }
 
   // Implementation of cc::VideoFrameProvider::Client
   void StopUsingProvider() override;

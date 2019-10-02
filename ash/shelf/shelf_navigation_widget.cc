@@ -247,13 +247,9 @@ void ShelfNavigationWidget::UpdateLayout() {
       tablet_mode ? GetSecondButtonBounds() : GetFirstButtonBounds());
   GetBackButton()->SetBoundsRect(GetFirstButtonBounds());
 
-  if (IsTabletMode() && ShelfConfig::Get()->is_in_app()) {
-    delegate_->SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
-  } else {
-    delegate_->SetBackground(views::CreateRoundedRectBackground(
-        ShelfConfig::Get()->shelf_control_permanent_highlight_background(),
-        ShelfConfig::Get()->control_border_radius()));
-  }
+  delegate_->SetBackground(views::CreateRoundedRectBackground(
+      ShelfConfig::Get()->GetShelfControlButtonColor(),
+      ShelfConfig::Get()->control_border_radius()));
 }
 
 }  // namespace ash

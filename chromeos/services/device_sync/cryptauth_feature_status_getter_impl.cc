@@ -15,8 +15,8 @@
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
 #include "chromeos/services/device_sync/async_execution_time_metrics_logger.h"
-#include "chromeos/services/device_sync/cryptauth_better_together_feature_types.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
+#include "chromeos/services/device_sync/cryptauth_feature_type.h"
 
 namespace chromeos {
 
@@ -80,7 +80,7 @@ ConvertFeatureStatusesToSoftwareFeatureMap(
        feature_statuses) {
     // TODO(https://crbug.com/936273): Add metrics to track unknown feature type
     // occurrences.
-    if (!base::Contains(GetBetterTogetherFeatureTypes(),
+    if (!base::Contains(GetCryptAuthFeatureTypeStrings(),
                         status.feature_type())) {
       PA_LOG(ERROR) << "Unknown feature type: " << status.feature_type();
       *did_non_fatal_error_occur = true;
@@ -88,16 +88,16 @@ ConvertFeatureStatusesToSoftwareFeatureMap(
     }
 
     multidevice::SoftwareFeature feature =
-        BetterTogetherFeatureTypeStringToSoftwareFeature(status.feature_type());
+        CryptAuthFeatureTypeStringToSoftwareFeature(status.feature_type());
 
-    if (base::Contains(GetSupportedBetterTogetherFeatureTypes(),
+    if (base::Contains(GetSupportedCryptAuthFeatureTypeStrings(),
                        status.feature_type()) &&
         status.enabled()) {
       marked_supported.insert(feature);
       continue;
     }
 
-    if (base::Contains(GetEnabledBetterTogetherFeatureTypes(),
+    if (base::Contains(GetEnabledCryptAuthFeatureTypeStrings(),
                        status.feature_type()) &&
         status.enabled()) {
       marked_enabled.insert(feature);
@@ -184,8 +184,8 @@ void CryptAuthFeatureStatusGetterImpl::OnAttemptStarted(
   cryptauthv2::BatchGetFeatureStatusesRequest request;
   request.mutable_context()->CopyFrom(request_context);
   *request.mutable_device_ids() = {device_ids.begin(), device_ids.end()};
-  *request.mutable_feature_types() = {GetBetterTogetherFeatureTypes().begin(),
-                                      GetBetterTogetherFeatureTypes().end()};
+  *request.mutable_feature_types() = {GetCryptAuthFeatureTypeStrings().begin(),
+                                      GetCryptAuthFeatureTypeStrings().end()};
 
   start_get_feature_statuses_timestamp_ = base::TimeTicks::Now();
 

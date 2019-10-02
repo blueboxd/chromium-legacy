@@ -96,6 +96,11 @@ class PlatformWindowBase : public PropertyHandler {
   // Asks the PlatformWindow to stack itself on top of |widget|.
   virtual void StackAbove(gfx::AcceleratedWidget widget);
   virtual void StackAtTop();
+
+  // Flashes the frame of the window to draw attention to it. If |flash_frame|
+  // is set, the PlatformWindow must draw attention to it. If |flash_frame| is
+  // not set, flashing must be stopped.
+  virtual void FlashFrame(bool flash_frame);
 };
 
 }  // namespace ui

@@ -21,6 +21,15 @@ Polymer({
       reflectToAttribute: true,
       observer: 'disabledChanged_',
     },
+
+     /**
+     * Flag used for formatting ripples on circle shaped cr-buttons.
+     * @private
+     */
+    circleRipple: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   hostAttributes: {
@@ -149,5 +158,22 @@ Polymer({
    *     longer uses tap event at least with addEventListener().
    * @private
    */
-  onTap_: function() {}
+  onTap_: function() {},
+
+  //
+  /**
+   * Customize the element's ripple. Overriding the '_createRipple' function
+   * from PaperRippleBehavior.
+   * @return {PaperRippleElement}
+   */
+  _createRipple: function() {
+    const ripple = Polymer.PaperRippleBehavior._createRipple();
+
+    if (this.circleRipple) {
+      ripple.setAttribute('center', '');
+      ripple.classList.add('circle');
+    }
+
+    return ripple;
+  },
 });

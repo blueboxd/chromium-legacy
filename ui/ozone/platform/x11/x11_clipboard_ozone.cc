@@ -306,7 +306,7 @@ bool X11ClipboardOzone::OnSetSelectionOwnerNotify(XEvent* xev) {
     QueryTargets(event->selection);
   }
 
-  // Increase the sequence number always.
+  // Increase the sequence number if the callback is set.
   if (update_sequence_cb_)
     update_sequence_cb_.Run(BufferForSelectionAtom(event->selection));
 
@@ -430,9 +430,11 @@ void X11ClipboardOzone::GetAvailableMimeTypes(
 bool X11ClipboardOzone::IsSelectionOwner(ClipboardBuffer buffer) {
   // If we are not using xfixes, then we are always the owner.
   // TODO(joelhockey): Make clipboard work without xfixes.
-  return !using_xfixes_ ||
-         XGetSelectionOwner(x_display_, SelectionAtomForBuffer(buffer)) ==
-             x_window_;
+  if (!using_xfixes_)
+    return true;
+
+  return XGetSelectionOwner(x_display_, SelectionAtomForBuffer(buffer)) ==
+         x_window_;
 }
 
 void X11ClipboardOzone::SetSequenceNumberUpdateCb(

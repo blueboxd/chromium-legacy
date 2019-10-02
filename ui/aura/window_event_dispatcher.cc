@@ -591,7 +591,8 @@ void WindowEventDispatcher::DispatchSyntheticTouchEvent(ui::TouchEvent* event) {
   // The synthetic event's location is based on the last known location of
   // the pointer, in dips. OnEventFromSource expects events with co-ordinates
   // in raw pixels, so we convert back to raw pixels here.
-  DCHECK(event->type() == ui::ET_TOUCH_CANCELLED);
+  DCHECK(event->type() == ui::ET_TOUCH_CANCELLED ||
+         event->type() == ui::ET_TOUCH_PRESSED);
   event->UpdateForRootTransform(
       host_->GetRootTransform(),
       host_->GetRootTransformForLocalEventCoordinates());

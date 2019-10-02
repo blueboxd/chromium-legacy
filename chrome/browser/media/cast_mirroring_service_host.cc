@@ -39,6 +39,7 @@
 #include "services/viz/public/mojom/gpu.mojom.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 
@@ -144,7 +145,7 @@ void CastMirroringServiceHost::GetForDesktop(
             desktop_stream_id,
             initiator_contents->GetMainFrame()->GetProcess()->GetID(),
             initiator_contents->GetMainFrame()->GetRoutingID(),
-            initiator_contents->GetVisibleURL().GetOrigin(),
+            url::Origin::Create(initiator_contents->GetVisibleURL()),
             &original_extension_name, content::kRegistryStreamTypeDesktop);
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<CastMirroringServiceHost>(media_id),

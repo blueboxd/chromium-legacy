@@ -99,7 +99,7 @@ WebView also defines its own flags and Features:
    counterpart](https://cs.chromium.org/chromium/src/android_webview/common/aw_switches.h))
  * [AwFeatureList.java](https://cs.chromium.org/chromium/src/android_webview/java/src/org/chromium/android_webview/AwFeatureList.java)
    (and its [native
-   counterpart](https://cs.chromium.org/chromium/src/android_webview/browser/aw_feature_list.h))
+   counterpart](https://cs.chromium.org/chromium/src/android_webview/common/aw_features.h))
 
 ## Implementation
 

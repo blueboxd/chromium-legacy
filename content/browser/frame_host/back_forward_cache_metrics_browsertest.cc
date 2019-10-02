@@ -14,6 +14,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,6 +34,9 @@ constexpr uint64_t kHasScriptableFramesInMultipleTabsFeature =
 constexpr uint64_t kRequestedGeolocationPermissionFeature =
     static_cast<uint64_t>(blink::scheduler::WebSchedulerTrackedFeature::
                               kRequestedGeolocationPermission);
+
+constexpr uint64_t kOutstandingNetworkRequest = static_cast<uint64_t>(
+    blink::scheduler::WebSchedulerTrackedFeature::kOutstandingNetworkRequest);
 
 ukm::SourceId ToSourceId(int64_t navigation_id) {
   return ukm::ConvertToSourceId(navigation_id,
@@ -91,11 +95,18 @@ class BackForwardCacheMetricsBrowserTest : public ContentBrowserTest,
         std::make_unique<device::ScopedGeolocationOverrider>(1.0, 1.0);
   }
 
+  WebContentsImpl* web_contents() const {
+    return static_cast<WebContentsImpl*>(shell()->web_contents());
+  }
+
+  RenderFrameHostImpl* current_frame_host() const {
+    return web_contents()->GetFrameTree()->root()->current_frame_host();
+  }
+
  protected:
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(embedded_test_server());
-    ASSERT_TRUE(embedded_test_server()->Start());
     WebContentsObserver::Observe(shell()->web_contents());
   }
 
@@ -110,6 +121,7 @@ class BackForwardCacheMetricsBrowserTest : public ContentBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, UKM) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   ukm::TestAutoSetUkmRecorder recorder;
 
   const GURL url1(
@@ -188,6 +200,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, UKM) {
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
                        NavigatedToTheMostRecentEntry) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   ukm::TestAutoSetUkmRecorder recorder;
 
   const GURL url1(
@@ -235,6 +248,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, CloneAndGoBack) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   ukm::TestAutoSetUkmRecorder recorder;
 
   const GURL url1(embedded_test_server()->GetURL("/title1.html"));
@@ -343,6 +357,7 @@ std::vector<FeatureUsage> GetFeatureUsageMetrics(
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, Features_MainFrame) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   ukm::TestAutoSetUkmRecorder recorder;
 
   const GURL url1(embedded_test_server()->GetURL(
@@ -370,6 +385,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, Features_MainFrame) {
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
                        Features_MainFrame_CrossOriginNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   ukm::TestAutoSetUkmRecorder recorder;
 
   const GURL url1(embedded_test_server()->GetURL(
@@ -397,6 +413,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
                        Features_SameOriginSubframes) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   ukm::TestAutoSetUkmRecorder recorder;
 
   const GURL url1(embedded_test_server()->GetURL(
@@ -425,6 +442,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
                        Features_SameOriginSubframes_CrossOriginNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   ukm::TestAutoSetUkmRecorder recorder;
 
   const GURL url1(embedded_test_server()->GetURL(
@@ -453,6 +471,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
                        Features_CrossOriginSubframes) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   ukm::TestAutoSetUkmRecorder recorder;
 
   const GURL url1(embedded_test_server()->GetURL(
@@ -481,6 +500,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, DedicatedWorker) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   ukm::TestAutoSetUkmRecorder recorder;
 
   const GURL url(embedded_test_server()->GetURL(
@@ -504,6 +524,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, DedicatedWorker) {
 #define MAYBE_SharedWorker SharedWorker
 #endif
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, MAYBE_SharedWorker) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   const GURL url(embedded_test_server()->GetURL(
       "/back_forward_cache/page_with_shared_worker.html"));
 
@@ -519,6 +541,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, MAYBE_SharedWorker) {
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
                        WindowOpen_SameOrigin) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   ukm::TestAutoSetUkmRecorder recorder;
 
   const GURL url1(embedded_test_server()->GetURL("/title1.html"));
@@ -553,6 +576,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
                        WindowOpen_CrossOrigin) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   ukm::TestAutoSetUkmRecorder recorder;
 
   const GURL url1(embedded_test_server()->GetURL("/title1.html"));
@@ -592,6 +616,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
                        WindowOpen_SameOrigin_Openee) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   ukm::TestAutoSetUkmRecorder recorder;
 
   const GURL url1(embedded_test_server()->GetURL("/title1.html"));
@@ -630,6 +655,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, Geolocation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url1(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url1));
 
@@ -644,6 +670,72 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, Geolocation) {
   )"));
   EXPECT_TRUE(main_frame->scheduler_tracked_features() &
               (1 << kRequestedGeolocationPermissionFeature));
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, Fetch) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/fetch");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHostImpl* main_frame = current_frame_host();
+  // Ensure that there are no lingering requests from page load itself.
+  EXPECT_FALSE(main_frame->scheduler_tracked_features() &
+               (1ull << kOutstandingNetworkRequest));
+
+  EXPECT_TRUE(ExecJs(main_frame, "fetch('/fetch');"));
+  response.WaitForRequest();
+
+  // Ensure that we are tracking fetch() as a network request here.
+  EXPECT_TRUE(main_frame->scheduler_tracked_features() &
+              (1ull << kOutstandingNetworkRequest));
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, XHR) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/xhr");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHostImpl* main_frame = current_frame_host();
+  // Ensure that there are no lingering requests from page load itself.
+  EXPECT_FALSE(main_frame->scheduler_tracked_features() &
+               (1ull << kOutstandingNetworkRequest));
+
+  EXPECT_TRUE(ExecJs(main_frame, R"(
+    var req = new XMLHttpRequest();
+    req.open("GET", "/xhr");
+    req.send();
+  )"));
+  response.WaitForRequest();
+
+  // Ensure that we are tracking XHR as a network request here.
+  EXPECT_TRUE(main_frame->scheduler_tracked_features() &
+              (1ull << kOutstandingNetworkRequest));
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
+                       NetworkRequest_Script) {
+  net::test_server::ControllableHttpResponse response(
+      embedded_test_server(),
+      "/back_forward_cache/script-which-does-not-exist.js");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL url(embedded_test_server()->GetURL(
+      "/back_forward_cache/page_with_nonexistent_script.html"));
+  shell()->LoadURL(url);
+
+  RenderFrameHostImpl* main_frame = current_frame_host();
+  response.WaitForRequest();
+
+  // Ensure that we are tracking subresource (in this case, a script as a
+  // network request).
+  EXPECT_TRUE(main_frame->scheduler_tracked_features() &
+              (1ull << kOutstandingNetworkRequest));
 }
 
 }  // namespace content

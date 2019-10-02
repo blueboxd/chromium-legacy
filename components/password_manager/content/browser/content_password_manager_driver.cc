@@ -65,6 +65,8 @@ ContentPasswordManagerDriver::ContentPasswordManagerDriver(
       password_autofill_manager_(this, autofill_client, client),
       is_main_frame_(render_frame_host->GetParent() == nullptr),
       password_manager_receiver_(this) {
+  static unsigned next_free_id = 0;
+  id_ = next_free_id++;
   // For some frames |this| may be instantiated before log manager creation, so
   // here we can not send logging state to renderer process for them. For such
   // cases, after the log manager got ready later,
@@ -79,8 +81,7 @@ ContentPasswordManagerDriver::ContentPasswordManagerDriver(
   }
 }
 
-ContentPasswordManagerDriver::~ContentPasswordManagerDriver() {
-}
+ContentPasswordManagerDriver::~ContentPasswordManagerDriver() = default;
 
 // static
 ContentPasswordManagerDriver*
@@ -96,6 +97,10 @@ void ContentPasswordManagerDriver::BindPendingReceiver(
     mojo::PendingAssociatedReceiver<autofill::mojom::PasswordManagerDriver>
         pending_receiver) {
   password_manager_receiver_.Bind(std::move(pending_receiver));
+}
+
+int ContentPasswordManagerDriver::GetId() const {
+  return id_;
 }
 
 void ContentPasswordManagerDriver::FillPasswordForm(

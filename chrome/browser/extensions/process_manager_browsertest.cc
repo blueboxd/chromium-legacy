@@ -1390,8 +1390,8 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
       "/server-redirect?" + inaccessible_extension_resource.spec()));
   content::WebContents* sneaky_popup =
       OpenPopup(main_frame, redirect_to_inaccessible, false);
-  EXPECT_EQ(redirect_to_inaccessible,
-            sneaky_popup->GetLastCommittedURL().spec());
+  EXPECT_EQ(inaccessible_extension_resource,
+            sneaky_popup->GetLastCommittedURL());
   EXPECT_EQ(
       content::PAGE_TYPE_ERROR,
       sneaky_popup->GetController().GetLastCommittedEntry()->GetPageType());
@@ -1401,8 +1401,8 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   // Adding "noopener" to the navigation shouldn't make it work either.
   content::WebContents* sneaky_noopener_popup =
       OpenPopupNoOpener(main_frame, redirect_to_inaccessible);
-  EXPECT_EQ(redirect_to_inaccessible,
-            sneaky_noopener_popup->GetLastCommittedURL().spec());
+  EXPECT_EQ(inaccessible_extension_resource,
+            sneaky_noopener_popup->GetLastCommittedURL());
   EXPECT_EQ(content::PAGE_TYPE_ERROR, sneaky_noopener_popup->GetController()
                                           .GetLastCommittedEntry()
                                           ->GetPageType());
@@ -1467,17 +1467,18 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   const GURL sneaky_extension2_manifest(embedded_test_server()->GetURL(
       "/server-redirect?" + extension2_manifest.spec()));
   {
-    content::RenderFrameDeletedObserver frame_deleted_observer(
-        ChildFrameAt(main_frame, 1));
+    content::TestNavigationObserver nav_observer(tab, 1);
     EXPECT_TRUE(ExecuteScript(
         tab, base::StringPrintf("frames[1].location.href = '%s';",
                                 sneaky_extension2_manifest.spec().c_str())));
-    WaitForLoadStop(tab);
-    frame_deleted_observer.WaitUntilDeleted();
-    EXPECT_EQ(sneaky_extension2_manifest,
-              ChildFrameAt(main_frame, 1)->GetLastCommittedURL())
+    nav_observer.Wait();
+    EXPECT_FALSE(nav_observer.last_navigation_succeeded())
         << "The initial navigation should be allowed, but not the server "
            "redirect to extension2's manifest";
+    EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, nav_observer.last_net_error_code());
+    EXPECT_EQ(extension2_manifest, nav_observer.last_navigation_url());
+    EXPECT_EQ(extension2_manifest,
+              ChildFrameAt(main_frame, 1)->GetLastCommittedURL());
     EXPECT_EQ(1u, pm->GetAllFrames().size());
     EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
     EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());

@@ -43,6 +43,14 @@ namespace {
 constexpr float kExpandArrowOpacityStartProgress = 0.61;
 constexpr float kExpandArrowOpacityEndProgress = 1;
 
+bool ShouldShowDenseLayout(int height,
+                           ash::AppListViewState target_view_state) {
+  return (height < 600 &&
+          (app_list_features::IsScalableAppListEnabled() ||
+           target_view_state == ash::AppListViewState::kFullscreenAllApps ||
+           target_view_state == ash::AppListViewState::kFullscreenSearch));
+}
+
 }  // namespace
 
 ContentsView::ContentsView(AppListView* app_list_view)
@@ -359,7 +367,9 @@ void ContentsView::InitializeSearchBoxAnimation(
   if (!search_box->GetWidget())
     return;
 
-  search_box->UpdateLayout(1.f, current_state, target_state);
+  search_box->UpdateLayout(
+      1.f, current_state, GetSearchBoxSize(current_state).height(),
+      target_state, GetSearchBoxSize(target_state).height());
   search_box->UpdateBackground(1.f, current_state, target_state);
 
   gfx::Rect target_bounds = GetSearchBoxBounds(target_state);
@@ -515,12 +525,9 @@ gfx::Size ContentsView::GetSearchBoxSize(ash::AppListState state) const {
   // Reduce the search box size in fullscreen view state when the work area
   // height is less than 600 dip - the goal is to increase the amount of space
   // available to the apps grid.
-  if (GetContentsBounds().height() < 600 &&
-      !app_list_features::IsScalableAppListEnabled() &&
-      (target_view_state_ == ash::AppListViewState::kFullscreenAllApps ||
-       target_view_state_ == ash::AppListViewState::kFullscreenSearch)) {
+  if (ShouldShowDenseLayout(GetContentsBounds().height(), target_view_state_)) {
     preferred_size.set_height(
-        AppListConfig::instance().search_box_preferred_size_for_dense_layout());
+        AppListConfig::instance().search_box_height_for_dense_layout());
   }
 
   return preferred_size;
@@ -618,7 +625,7 @@ void ContentsView::Layout() {
   // the state of the PaginationModel).
   int current_page = std::max(0, pagination_model_.selected_page());
   ash::AppListState current_state = GetStateForPageIndex(current_page);
-  gfx::Rect search_box_bounds = GetSearchBoxBounds(current_state);
+  const gfx::Rect search_box_bounds = GetSearchBoxBounds(current_state);
 
   // Update app list pages.
   for (AppListPage* page : app_list_pages_) {
@@ -631,10 +638,12 @@ void ContentsView::Layout() {
   // Update the searchbox bounds.
   auto* search_box = GetSearchBoxView();
   // Convert search box bounds to the search box widget's coordinate system.
-  search_box_bounds = search_box->GetViewBoundsForSearchBoxContentsBounds(
-      ConvertRectToWidgetWithoutTransform(search_box_bounds));
-  search_box->GetWidget()->SetBounds(search_box_bounds);
-  search_box->UpdateLayout(1.f, current_state, current_state);
+  const gfx::Rect search_box_widget_bounds =
+      search_box->GetViewBoundsForSearchBoxContentsBounds(
+          ConvertRectToWidgetWithoutTransform(search_box_bounds));
+  search_box->GetWidget()->SetBounds(search_box_widget_bounds);
+  search_box->UpdateLayout(1.f, current_state, search_box_bounds.height(),
+                           current_state, search_box_bounds.height());
   search_box->UpdateBackground(1.f, current_state, current_state);
   // Reset the transform which can be set through animation.
   search_box->GetWidget()->GetLayer()->SetTransform(gfx::Transform());

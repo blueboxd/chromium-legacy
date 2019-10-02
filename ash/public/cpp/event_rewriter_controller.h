@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ui/chromeos/events/event_rewriter_chromeos.h"
 
 namespace ui {
 class Event;
@@ -24,6 +25,12 @@ class ASH_EXPORT EventRewriterController {
   // Returns the singleton EventRewriterController instance.
   static EventRewriterController* Get();
 
+  // Initializes this controller after ash::Shell finishes initialization.
+  virtual void Initialize(
+      ui::EventRewriterChromeOS::Delegate* event_rewriter_delegate,
+      ash::SpokenFeedbackEventRewriterDelegate*
+          spoken_feedback_event_rewriter_delegate) = 0;
+
   // Takes ownership of |rewriter| and adds it to the current event sources.
   virtual void AddEventRewriter(
       std::unique_ptr<ui::EventRewriter> rewriter) = 0;
@@ -35,10 +42,6 @@ class ASH_EXPORT EventRewriterController {
   // If true, Shift + Arrow keys are rewritten to Tab/Shift-Tab keys.
   // This only applies when the KeyboardDrivenEventRewriter is active.
   virtual void SetArrowToTabRewritingEnabled(bool enabled) = 0;
-
-  // Set the delegate used by the spoken feedback event rewriter.
-  virtual void SetSpokenFeedbackEventRewriterDelegate(
-      SpokenFeedbackEventRewriterDelegate* delegate) = 0;
 
   // Continue dispatch of key events that were unhandled by ChromeVox.
   // TODO(crbug.com/839541): ChromeVox should not repost unhandled events.

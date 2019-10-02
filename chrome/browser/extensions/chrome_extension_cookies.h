@@ -52,6 +52,8 @@ class ChromeExtensionCookies
   // storage or not depends on the Profile |this| was created for.
   void CreateRestrictedCookieManager(
       const url::Origin& origin,
+      const GURL& site_for_cookies,
+      const url::Origin& top_frame_origin,
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver);
 
   // Deletes all cookies matching the host of |origin|.
@@ -74,6 +76,8 @@ class ChromeExtensionCookies
 
     void CreateRestrictedCookieManager(
         const url::Origin& origin,
+        const GURL& site_for_cookies,
+        const url::Origin& top_frame_origin,
         mojo::PendingReceiver<network::mojom::RestrictedCookieManager>
             receiver);
     void ClearCookies(const GURL& origin);

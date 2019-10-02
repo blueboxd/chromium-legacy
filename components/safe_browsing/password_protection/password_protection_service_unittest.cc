@@ -106,7 +106,8 @@ class TestPhishingDetector : public mojom::PhishingDetector {
     ClientPhishingRequest verdict;
     verdict.set_is_phishing(false);
     verdict.set_client_score(0.1);
-    std::move(callback).Run(verdict.SerializeAsString());
+    std::move(callback).Run(mojom::PhishingDetectorResult::SUCCESS,
+                            verdict.SerializeAsString());
   }
 
   void set_should_timeout(bool timeout) { should_timeout_ = timeout; }

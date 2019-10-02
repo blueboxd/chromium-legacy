@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_aura.h"
 
 #include "build/build_config.h"
+#include "cc/input/scrollbar.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -145,6 +146,17 @@ ScrollbarTheme& ScrollbarTheme::NativeTheme() {
 
   DEFINE_STATIC_LOCAL(ScrollbarThemeAura, theme, ());
   return theme;
+}
+
+bool ScrollbarThemeAura::SupportsDragSnapBack() const {
+// Disable snapback on desktop Linux to better integrate with the desktop
+// behavior. Typically, Linux apps do not implement scrollbar snapback (this
+// is true for at least GTK and QT apps).
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  return false;
+#endif
+
+  return true;
 }
 
 int ScrollbarThemeAura::ScrollbarThickness(ScrollbarControlSize control_size) {
@@ -350,27 +362,15 @@ bool ScrollbarThemeAura::ShouldCenterOnThumb(const Scrollbar& scrollbar,
 bool ScrollbarThemeAura::ShouldSnapBackToDragOrigin(
     const Scrollbar& scrollbar,
     const WebMouseEvent& event) {
-// Disable snapback on desktop Linux to better integrate with the desktop
-// behavior.  Typically, Linux apps do not implement scrollbar snapback (this is
-// true for at least GTK and QT apps).
-#if (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  return false;
-#endif
+  if (!SupportsDragSnapBack())
+    return false;
 
   // There is a drag rect around the scrollbar outside of which the scrollbar
   // thumb should snap back to its origin.  This rect is infinitely large in
   // the scrollbar's scrolling direction and an expansion of the scrollbar's
-  // width or height in the non-scrolling direction.
-
-  // Constants used to figure the how far out in the non-scrolling direction
-  // should trigger the thumb to snap back to its origin.  These calculations
-  // are based on observing the behavior of the MSVC8 main window scrollbar +
-  // some guessing/extrapolation.
-  static const int kOffSideMultiplier = 8;
-  static const int kDefaultWinScrollbarThickness = 17;
-
-  // As only one axis triggers snapping back, the code below only uses the
-  // thickness of the scrollbar for its calculations.
+  // width or height in the non-scrolling direction. As only one axis triggers
+  // snapping back, the code below only uses the thickness of the scrollbar for
+  // its calculations.
   bool is_horizontal = scrollbar.Orientation() == kHorizontalScrollbar;
   int thickness = is_horizontal ? TrackRect(scrollbar).Height()
                                 : TrackRect(scrollbar).Width();

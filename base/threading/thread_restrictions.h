@@ -186,6 +186,7 @@ namespace media {
 class AudioInputDevice;
 class AudioOutputDevice;
 class BlockingUrlProtocol;
+class PaintCanvasVideoRenderer;
 }
 namespace memory_instrumentation {
 class OSMetrics;
@@ -471,6 +472,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class content::SynchronousCompositorSyncCallBridge;
   friend class media::AudioInputDevice;
   friend class media::AudioOutputDevice;
+  friend class media::PaintCanvasVideoRenderer;
   friend class mojo::SyncCallRestrictions;
   friend class net::NetworkConfigWatcherMacThread;
   friend class viz::HostGpuMemoryBufferManager;

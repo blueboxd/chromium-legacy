@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/optional.h"
 #include "base/strings/string_util.h"
+#include "components/services/app_service/public/cpp/intent_util.h"
 
 namespace {
 
@@ -47,8 +48,7 @@ bool ConditionValueMatches(
       return base::StartsWith(value, condition_value->value,
                               base::CompareCase::INSENSITIVE_ASCII);
     case apps::mojom::PatternMatchType::kGlob:
-      // TODO(crbug.com/853604): Implement glob pattern match.
-      return false;
+      return MatchGlob(value, condition_value->value);
   }
 }
 

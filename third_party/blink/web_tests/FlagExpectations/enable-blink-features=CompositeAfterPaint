@@ -348,9 +348,6 @@ crbug.com/931486 virtual/compositor_threaded_scrollbar_scrolling/paint/invalidat
 Bug(none) paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Failure ]
 
 Bug(none) paint/pagination/composited-paginated-outlined-box.html [ Failure ]
-
-crbug.com/882075 compositing/overflow/composited-sticky-element-with-non-integer-relative-position-to-container.html [ Failure ]
-
 Bug(none) paint/invalidation/clip/mask-clip-change-stacking-child.html [ Failure ]
 Bug(none) paint/invalidation/media-audio-no-spurious-repaints.html [ Failure ]
 Bug(none) paint/invalidation/subpixel-shadow-included-in-invalidation.html [ Failure ]

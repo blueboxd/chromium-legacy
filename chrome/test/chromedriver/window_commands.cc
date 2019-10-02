@@ -1757,33 +1757,12 @@ Status ExecuteScreenshot(Session* session,
   Status status = session->chrome->ActivateWebView(web_view->GetId());
   if (status.IsError())
     return status;
-  std::unique_ptr<base::Value> browser_info;
-  status = web_view->EvaluateScript(
-      std::string(),
-      "({x: document.documentElement.scrollLeft || document.body.scrollLeft,"
-      "  y: document.documentElement.scrollTop || document.body.scrollTop,"
-      "  height: window.innerHeight,"
-      "  width: window.innerWidth,"
-      "  device_pixel_ratio: window.devicePixelRatio})",
-      &browser_info);
-
-  std::unique_ptr<base::DictionaryValue> clip_dict =
-                                     std::make_unique<base::DictionaryValue>();
-  clip_dict->SetDouble("x", browser_info->FindKey("x")->GetDouble());
-  clip_dict->SetDouble("y", browser_info->FindKey("y")->GetDouble());
-  clip_dict->SetDouble("height", browser_info->FindKey("height")->GetDouble());
-  clip_dict->SetDouble("width", browser_info->FindKey("width")->GetDouble());
-  clip_dict->SetDouble(
-      "scale",
-      1 / browser_info->FindKey("device_pixel_ratio")->GetDouble());
-  base::DictionaryValue screenshot_params;
-  screenshot_params.SetDictionary("clip", std::move(clip_dict));
 
   std::string screenshot;
-  status = web_view->CaptureScreenshot(&screenshot, screenshot_params);
+  status = web_view->CaptureScreenshot(&screenshot, base::DictionaryValue());
   if (status.IsError()) {
     LOG(WARNING) << "screenshot failed, retrying";
-    status = web_view->CaptureScreenshot(&screenshot, screenshot_params);
+    status = web_view->CaptureScreenshot(&screenshot, base::DictionaryValue());
   }
   if (status.IsError())
     return status;

@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -102,7 +103,8 @@ class SessionStorageContextMojoTest : public testing::Test {
   SessionStorageContextMojo* context() {
     if (!context_) {
       context_ = new SessionStorageContextMojo(
-          temp_path(), base::SequencedTaskRunnerHandle::Get(), backing_mode_,
+          temp_path(), blocking_task_runner_,
+          base::SequencedTaskRunnerHandle::Get(), backing_mode_,
           kSessionStorageDirectory);
     }
     return context_;
@@ -179,6 +181,10 @@ class SessionStorageContextMojoTest : public testing::Test {
   TestBrowserContext browser_context_;
   SessionStorageContextMojo::BackingMode backing_mode_ =
       SessionStorageContextMojo::BackingMode::kRestoreDiskState;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_{
+      base::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::ThreadPool(),
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})};
   SessionStorageContextMojo* context_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStorageContextMojoTest);
@@ -242,7 +248,7 @@ TEST_F(SessionStorageContextMojoTest, MigrationV0ToV1) {
                                key_as_vector, String16ToUint8Vector(value))));
 }
 
-TEST_F(SessionStorageContextMojoTest, DISABLED_StartupShutdownSave) {
+TEST_F(SessionStorageContextMojoTest, StartupShutdownSave) {
   std::string namespace_id1 = base::GenerateGUID();
   url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
   context()->CreateSessionNamespace(namespace_id1);
@@ -479,7 +485,7 @@ TEST_F(SessionStorageContextMojoTest, ImmediateCloning) {
   EXPECT_TRUE(bad_message_called_);
 }
 
-TEST_F(SessionStorageContextMojoTest, DISABLED_Scavenging) {
+TEST_F(SessionStorageContextMojoTest, Scavenging) {
   // Create our namespace, destroy our context and leave that namespace on disk,
   // and verify that it is scavenged if we re-create the context without calling
   // CreateSessionNamespace.
@@ -1028,7 +1034,7 @@ TEST_F(SessionStorageContextMojoTest, PurgeInactiveWrappers) {
 }
 
 // TODO(https://crbug.com/1008697): Flakes when verifying no data found.
-TEST_F(SessionStorageContextMojoTest, DISABLED_ClearDiskState) {
+TEST_F(SessionStorageContextMojoTest, ClearDiskState) {
   SetBackingMode(SessionStorageContextMojo::BackingMode::kClearDiskStateOnOpen);
   std::string namespace_id1 = base::GenerateGUID();
   url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));

@@ -51,8 +51,15 @@ CreateExtensionNavigationURLLoaderFactory(
     bool is_web_view_request);
 
 // Creates a new network::mojom::URLLoaderFactory implementation suitable for
-// handling service worker script requests initiated by the browser process to
-// extension URLs during service worker update check when
+// handling dedicated/shared worker main script requests initiated by the
+// browser process to extension URLs.
+std::unique_ptr<network::mojom::URLLoaderFactory>
+CreateExtensionWorkerMainResourceURLLoaderFactory(
+    content::BrowserContext* browser_context);
+
+// Creates a new network::mojom::URLLoaderFactory implementation suitable for
+// handling service worker main/imported script requests initiated by the
+// browser process to extension URLs during service worker update check when
 // ServiceWorkerImportedScriptUpdateCheck is enabled.
 std::unique_ptr<network::mojom::URLLoaderFactory>
 CreateExtensionServiceWorkerScriptURLLoaderFactory(

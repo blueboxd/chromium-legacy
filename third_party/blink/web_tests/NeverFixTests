@@ -92,6 +92,19 @@ fast/harness/results.html [ WontFix ]
 [ Mac ] virtual/mouseevent_fractional/fast/events/menu-key-context-menu-reveal-focus.html [ WontFix ]
 [ Mac ] virtual/mouseevent_fractional/fast/events/menu-key-context-menu.html [ WontFix ]
 
+# Thumb snapping is not supported on Linux and Mac.
+[ Linux ] fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
+[ Mac ]   fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
+[ Linux ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
+[ Mac ]   virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
+[ Linux ] virtual/scroll_customization/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
+[ Mac ]   virtual/scroll_customization/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
+[ Linux ] virtual/threaded/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
+[ Mac ]   virtual/threaded/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
+[ Linux ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
+[ Mac ]   virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ WontFix ]
+
+
 # These tests are specific to Linux.
  [ Mac ] editing/input/linux_ltr_composition_underline.html [ WontFix ]
  [ Win ] editing/input/linux_ltr_composition_underline.html [ WontFix ]

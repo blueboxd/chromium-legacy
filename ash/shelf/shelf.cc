@@ -150,6 +150,9 @@ void Shelf::CreateShelfWidget(aura::Window* root) {
       root->GetChildById(kShellWindowId_StatusContainer);
   shelf_widget_->CreateStatusAreaWidget(status_container);
   shelf_widget_->Initialize(shelf_container);
+
+  // The Hotseat should be above everything in the shelf.
+  shelf_widget_->hotseat_widget()->StackAtTop();
 }
 
 void Shelf::ShutdownShelfWidget() {

@@ -7,3 +7,7 @@
 #mainContent {
   max-width: 35em;
 }
+
+.desktopOnly {
+  display: none;
+}

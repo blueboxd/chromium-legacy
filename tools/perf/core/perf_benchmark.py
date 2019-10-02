@@ -116,11 +116,6 @@ class PerfBenchmark(benchmark.Benchmark):
       browser_options.AppendExtraBrowserArgs(
           '--disable-features=VizDisplayCompositor')
 
-    # Switch Chrome to use Perfetto instead of TraceLog as the tracing backend,
-    # needed until the feature gets turned on by default everywhere.
-    if browser_options.browser_type != 'reference':
-      browser_options.AppendExtraBrowserArgs('--enable-perfetto')
-
     self.SetExtraBrowserOptions(browser_options)
 
   @staticmethod

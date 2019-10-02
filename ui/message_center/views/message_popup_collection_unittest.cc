@@ -775,6 +775,38 @@ TEST_F(MessagePopupCollectionTest, TooTallNotification) {
   EXPECT_TRUE(GetPopup(id2));
 }
 
+TEST_F(MessagePopupCollectionTest, TooTallNotificationInverse) {
+  popup_collection()->set_inverse();
+
+  SetDisplayInfo(gfx::Rect(0, 0, 800, 470),  // taskbar at the bottom.
+                 gfx::Rect(0, 0, 800, 480));
+
+  // 2 popus shall fit. 3 popups shall not.
+  popup_collection()->set_new_popup_height(200);
+
+  std::string id0 = AddNotification();
+  std::string id1 = AddNotification();
+
+  AnimateUntilIdle();
+
+  EXPECT_EQ(2u, GetPopupCounts());
+
+  std::string id2 = AddNotification();
+
+  EXPECT_FALSE(IsAnimating());
+  EXPECT_EQ(2u, GetPopupCounts());
+  EXPECT_TRUE(GetPopup(id0));
+  EXPECT_TRUE(GetPopup(id1));
+  EXPECT_FALSE(GetPopup(id2));
+
+  MessageCenter::Get()->MarkSinglePopupAsShown(id0, false);
+  AnimateUntilIdle();
+  EXPECT_EQ(2u, GetPopupCounts());
+  EXPECT_FALSE(GetPopup(id0));
+  EXPECT_TRUE(GetPopup(id1));
+  EXPECT_TRUE(GetPopup(id2));
+}
+
 TEST_F(MessagePopupCollectionTest, DisplaySizeChanged) {
   std::string id0 = AddNotification();
   AnimateToEnd();

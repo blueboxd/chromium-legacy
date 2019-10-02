@@ -36,9 +36,4 @@ public interface TasksSurface {
      * @return The surface's container {@link ViewGroup}.
      */
     ViewGroup getContainerView();
-
-    /**
-     * Perform any necessary cleanup.
-     */
-    void destroy();
 }

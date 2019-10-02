@@ -234,10 +234,6 @@ bool Viewport::ShouldScroll(const ScrollNode& scroll_node) {
          scroll_node.scrolls_outer_viewport;
 }
 
-LayerImpl* Viewport::MainScrollLayer() const {
-  return host_impl_->OuterViewportScrollLayer();
-}
-
 ScrollNode* Viewport::MainScrollNode() const {
   return host_impl_->OuterViewportScrollNode();
 }

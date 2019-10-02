@@ -11,7 +11,6 @@
 #include "components/signin/internal/identity_manager/account_fetcher_service.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
-#include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/internal/identity_manager/ubertoken_fetcher_impl.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
@@ -51,9 +50,7 @@ IdentityManager::IdentityManager(
                         std::move(accounts_mutator),
                         std::move(accounts_cookie_mutator),
                         std::move(device_accounts_synchronizer)),
-      diagnostics_provider_(std::move(diagnostics_provider)),
-      primary_account_manager_observer_(this),
-      token_service_observer_(this) {
+      diagnostics_provider_(std::move(diagnostics_provider)) {
   DCHECK(account_fetcher_service_);
   DCHECK(diagnostics_provider_);
 

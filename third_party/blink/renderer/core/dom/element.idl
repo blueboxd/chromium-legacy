@@ -143,8 +143,6 @@ callback ScrollStateCallback = void (ScrollState scrollState);
     attribute EventHandler onbeforepaste;
     attribute EventHandler onsearch;
 
-    // Display locking. Returns a display lock context.
-    [RuntimeEnabled=DisplayLocking, ImplementedAs=getDisplayLockForBindings] readonly attribute DisplayLockContext displayLock;
     // Declarative display locking.
     [RuntimeEnabled=DisplayLocking, CEReactions, CustomElementCallbacks, Reflect] attribute DOMString renderSubtree;
     [RuntimeEnabled=DisplayLocking, CallWith=ScriptState] Promise<any> updateRendering();

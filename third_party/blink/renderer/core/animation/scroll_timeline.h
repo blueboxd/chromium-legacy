@@ -89,11 +89,6 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
 
   void Trace(blink::Visitor*) override;
 
-  // For the AnimationWorklet origin trial, we need to automatically composite
-  // elements that are targets of ScrollTimelines (http://crbug.com/776533). We
-  // expose a static lookup method to enable this.
-  //
-  // TODO(crbug.com/839341): Remove once WorkletAnimations can run on main.
   static bool HasActiveScrollTimeline(Node* node);
 
  private:

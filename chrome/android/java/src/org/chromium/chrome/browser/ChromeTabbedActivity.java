@@ -2208,7 +2208,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         if (keyCode == KeyEvent.KEYCODE_BACK && !isTablet()) {
             mHandler.removeCallbacks(mShowHistoryRunnable);
             mShowHistoryRunnable = null;
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.N
                     && event.getEventTime() - event.getDownTime()
                             >= ViewConfiguration.getLongPressTimeout()) {
                 return true;

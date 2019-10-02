@@ -199,20 +199,6 @@ Document* TopDocumentRootScrollerController::TopDocument() const {
   return main_local_frame ? main_local_frame->GetDocument() : nullptr;
 }
 
-void TopDocumentRootScrollerController::DidUpdateCompositing(
-    const LocalFrameView& frame_view) {
-  if (!page_)
-    return;
-
-  // The only other way to get here is from a local root OOPIF but we ignore
-  // that case since the global root can't cross remote frames today.
-  if (!frame_view.GetFrame().IsMainFrame())
-    return;
-
-  // Let the compositor-side counterpart know about this change.
-  page_->GetChromeClient().RegisterViewportLayers();
-}
-
 void TopDocumentRootScrollerController::DidDisposeScrollableArea(
     ScrollableArea& area) {
   if (!TopDocument() || !TopDocument()->View())

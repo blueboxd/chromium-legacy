@@ -22,11 +22,6 @@ void FakeNetworkDeviceHandler::SetDeviceProperty(
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {}
 
-void FakeNetworkDeviceHandler::RequestRefreshIPConfigs(
-    const std::string& device_path,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {}
-
 void FakeNetworkDeviceHandler::RegisterCellularNetwork(
     const std::string& device_path,
     const std::string& network_id,

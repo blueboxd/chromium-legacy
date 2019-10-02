@@ -4,6 +4,8 @@
 
 #include "extensions/browser/extension_navigation_throttle.h"
 
+#include <string>
+
 #include "components/guest_view/browser/guest_view_base.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -185,13 +187,7 @@ ExtensionNavigationThrottle::WillStartRequest() {
 
 content::NavigationThrottle::ThrottleCheckResult
 ExtensionNavigationThrottle::WillRedirectRequest() {
-  ThrottleCheckResult result = WillStartOrRedirectRequest();
-  if (result.action() == BLOCK_REQUEST) {
-    // TODO(nick): https://crbug.com/695421 means that BLOCK_REQUEST does not
-    // work here. Just return |result|.
-    return CANCEL;
-  }
-  return result;
+  return WillStartOrRedirectRequest();
 }
 
 const char* ExtensionNavigationThrottle::GetNameForLogging() {

@@ -142,9 +142,9 @@ bool GamepadService::RemoveConsumer(GamepadConsumer* consumer) {
   auto it = consumers_.find(consumer);
   if (it == consumers_.end())
     return false;
-  DCHECK_GT(num_active_consumers_, 0);
   if (it->is_active && --num_active_consumers_ == 0)
     provider_->Pause();
+  DCHECK_GE(num_active_consumers_, 0);
   consumers_.erase(it);
   inactive_consumer_state_.erase(consumer);
   return true;

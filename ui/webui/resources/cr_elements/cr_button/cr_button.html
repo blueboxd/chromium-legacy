@@ -151,6 +151,12 @@
 
       paper-ripple {
         color: var(--ink-color);
+        height: var(--paper-ripple-height);
+        width: var(--paper-ripple-width);
+        /* Fallback to 0 to match the values in paper-ripple.html. Falls back
+         * to null without this. */
+        left: var(--paper-ripple-left, 0);
+        top: var(--paper-ripple-top, 0);
       }
     </style>
     <slot></slot>

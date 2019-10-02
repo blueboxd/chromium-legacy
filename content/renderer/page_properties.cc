@@ -56,4 +56,8 @@ const ScreenInfo& PageProperties::GetOriginalScreenInfo() const {
              : GetScreenInfo();
 }
 
+CompositorDependencies* PageProperties::GetCompositorDependencies() {
+  return compositor_deps_;
+}
+
 }  // namespace content

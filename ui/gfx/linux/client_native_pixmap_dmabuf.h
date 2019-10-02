@@ -27,7 +27,8 @@ class ClientNativePixmapDmaBuf : public gfx::ClientNativePixmap {
 
   static std::unique_ptr<gfx::ClientNativePixmap> ImportFromDmabuf(
       gfx::NativePixmapHandle handle,
-      const gfx::Size& size);
+      const gfx::Size& size,
+      gfx::BufferFormat format);
 
   ~ClientNativePixmapDmaBuf() override;
 

@@ -149,6 +149,12 @@ ChromeVoxLanguageSwitchingTest.prototype = {
     <span lang="it">Ciao amico.</span>
   */},
 
+  japaneseAndInvalidLanguageLabeledDoc: function() {/*!
+    <meta charset="utf-8">
+    <p lang="ja">どうぞよろしくお願いします</p>
+    <p lang="invalid-code">Test</p>
+  */},
+
   nestedLanguagesLabeledDoc: function() {/*!
     <p id="breakfast" lang="en">In the morning, I sometimes eat breakfast.</p>
     <p id="lunch" lang="fr">Dans l'apres-midi, je dejeune.</p>
@@ -548,4 +554,19 @@ TEST_F('ChromeVoxLanguageSwitchingTest', 'LanguageSwitchingOffTest', function() 
         .expectSpeechWithLanguage(undefined, 'Ciao amico.')
     mockFeedback.replay();
   });
+});
+
+TEST_F('ChromeVoxLanguageSwitchingTest', 'DefaultToUILanguageTest', function() {
+    var mockFeedback = this.createMockFeedback();
+    this.runWithLoadedTree(this.japaneseAndInvalidLanguageLabeledDoc, function(root) {
+      localStorage['languageSwitching'] = 'true';
+      LanguageSwitching.sub_node_level_switching_enabled_ = false;
+      // Default to browser UI language, 'en-us', instead of defaulting to the
+      // language we last switched to.
+      mockFeedback.call(doCmd('jumpToTop'))
+          .expectSpeechWithLanguage('ja', '日本語: どうぞよろしくお願いします')
+          .call(doCmd('nextObject'))
+          .expectSpeechWithLanguage('en-us', 'English: Test');
+      mockFeedback.replay();
+    });
 });

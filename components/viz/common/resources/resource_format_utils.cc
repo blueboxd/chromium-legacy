@@ -39,6 +39,9 @@ SkColorType ResourceFormatToClosestSkColorType(bool gpu_compositing,
     case RGBX_8888:
     case ETC1:
       return kRGB_888x_SkColorType;
+    case RGBX_1010102:
+    case BGRX_1010102:
+      return kRGBA_1010102_SkColorType;
 
     // YUV images are sampled as RGB.
     case YVU_420:
@@ -53,8 +56,6 @@ SkColorType ResourceFormatToClosestSkColorType(bool gpu_compositing,
     case BGR_565:
     case RG_88:
     case BGRX_8888:
-    case RGBX_1010102:
-    case BGRX_1010102:
     case P010:
       return kN32_SkColorType;
 
@@ -315,10 +316,10 @@ unsigned int TextureStorageFormat(ResourceFormat format) {
     case ETC1:
       return GL_RGB8_OES;
     case RGBX_1010102:
+    case BGRX_1010102:
       return GL_RGB10_A2_EXT;
     case BGR_565:
     case BGRX_8888:
-    case BGRX_1010102:
     case YVU_420:
     case YUV_420_BIPLANAR:
     case P010:
@@ -465,9 +466,9 @@ VkFormat ToVkFormat(ResourceFormat format) {
     case BGRX_8888:
       return VK_FORMAT_B8G8R8A8_UNORM;
     case RGBX_1010102:
-      return VK_FORMAT_A2R10G10B10_UNORM_PACK32;
-    case BGRX_1010102:
       return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
+    case BGRX_1010102:
+      return VK_FORMAT_A2R10G10B10_UNORM_PACK32;
     case ALPHA_8:
       return VK_FORMAT_R8_UNORM;
     case LUMINANCE_8:

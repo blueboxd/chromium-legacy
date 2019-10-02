@@ -214,7 +214,6 @@ class TestWebWidgetClient : public WebWidgetClient {
   // WebWidgetClient implementation.
   void ScheduleAnimation() override { animation_scheduled_ = true; }
   void SetRootLayer(scoped_refptr<cc::Layer> layer) override;
-  void RegisterViewportLayers(const cc::ViewportLayers& layOAers) override;
   void RegisterSelection(const cc::LayerSelection& selection) override;
   void SetBackgroundColor(SkColor color) override;
   void SetPageScaleStateAndLimits(float page_scale_factor,

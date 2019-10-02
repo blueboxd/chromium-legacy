@@ -88,6 +88,65 @@ bool VideoFrame::IsStorageTypeMappable(VideoFrame::StorageType storage_type) {
        storage_type == VideoFrame::STORAGE_MOJO_SHARED_BUFFER);
 }
 
+// static
+bool VideoFrame::IsValidPlane(VideoPixelFormat format, size_t plane) {
+  DCHECK_LE(NumPlanes(format), static_cast<size_t>(kMaxPlanes));
+  return plane < NumPlanes(format);
+}
+
+// static
+gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
+  DCHECK(IsValidPlane(format, plane));
+
+  switch (plane) {
+    case kYPlane:  // and kARGBPlane:
+    case kAPlane:
+      return gfx::Size(1, 1);
+
+    case kUPlane:  // and kUVPlane:
+    case kVPlane:
+      switch (format) {
+        case PIXEL_FORMAT_I444:
+        case PIXEL_FORMAT_YUV444P9:
+        case PIXEL_FORMAT_YUV444P10:
+        case PIXEL_FORMAT_YUV444P12:
+        case PIXEL_FORMAT_Y16:
+          return gfx::Size(1, 1);
+
+        case PIXEL_FORMAT_I422:
+        case PIXEL_FORMAT_YUV422P9:
+        case PIXEL_FORMAT_YUV422P10:
+        case PIXEL_FORMAT_YUV422P12:
+          return gfx::Size(2, 1);
+
+        case PIXEL_FORMAT_YV12:
+        case PIXEL_FORMAT_I420:
+        case PIXEL_FORMAT_I420A:
+        case PIXEL_FORMAT_NV12:
+        case PIXEL_FORMAT_NV21:
+        case PIXEL_FORMAT_YUV420P9:
+        case PIXEL_FORMAT_YUV420P10:
+        case PIXEL_FORMAT_YUV420P12:
+        case PIXEL_FORMAT_P016LE:
+          return gfx::Size(2, 2);
+
+        case PIXEL_FORMAT_UNKNOWN:
+        case PIXEL_FORMAT_YUY2:
+        case PIXEL_FORMAT_ARGB:
+        case PIXEL_FORMAT_XRGB:
+        case PIXEL_FORMAT_RGB24:
+        case PIXEL_FORMAT_MJPEG:
+        case PIXEL_FORMAT_ABGR:
+        case PIXEL_FORMAT_XBGR:
+        case PIXEL_FORMAT_XR30:
+        case PIXEL_FORMAT_XB30:
+          break;
+      }
+  }
+  NOTREACHED();
+  return gfx::Size();
+}
+
 // Checks if |source_format| can be wrapped into a |target_format| frame.
 static bool AreValidPixelFormatsForWrap(VideoPixelFormat source_format,
                                         VideoPixelFormat target_format) {
@@ -110,6 +169,8 @@ static bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
     case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_ABGR:
     case PIXEL_FORMAT_XBGR:
+    case PIXEL_FORMAT_XR30:
+    case PIXEL_FORMAT_XB30:
       return false;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
@@ -240,7 +301,7 @@ bool VideoFrame::IsValidConfig(VideoPixelFormat format,
     return true;
 
   // Make sure new formats are properly accounted for in the method.
-  static_assert(PIXEL_FORMAT_MAX == 29,
+  static_assert(PIXEL_FORMAT_MAX == 31,
                 "Added pixel format, please review IsValidConfig()");
 
   if (format == PIXEL_FORMAT_UNKNOWN) {
@@ -299,7 +360,8 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTextures(
     base::TimeDelta timestamp) {
   if (format != PIXEL_FORMAT_ARGB && format != PIXEL_FORMAT_XRGB &&
       format != PIXEL_FORMAT_NV12 && format != PIXEL_FORMAT_I420 &&
-      format != PIXEL_FORMAT_ABGR) {
+      format != PIXEL_FORMAT_ABGR && format != PIXEL_FORMAT_XR30 &&
+      format != PIXEL_FORMAT_XB30) {
     DLOG(ERROR) << "Unsupported pixel format: "
                 << VideoPixelFormatToString(format);
     return nullptr;
@@ -740,7 +802,7 @@ size_t VideoFrame::AllocationSize(VideoPixelFormat format,
 gfx::Size VideoFrame::PlaneSize(VideoPixelFormat format,
                                 size_t plane,
                                 const gfx::Size& coded_size) {
-  DCHECK(IsValidPlane(plane, format));
+  DCHECK(IsValidPlane(format, plane));
 
   int width = coded_size.width();
   int height = coded_size.height();
@@ -762,7 +824,7 @@ gfx::Size VideoFrame::PlaneSize(VideoPixelFormat format,
 // static
 int VideoFrame::PlaneHorizontalBitsPerPixel(VideoPixelFormat format,
                                             size_t plane) {
-  DCHECK(IsValidPlane(plane, format));
+  DCHECK(IsValidPlane(format, plane));
   const int bits_per_element = 8 * BytesPerElement(format, plane);
   const int horiz_pixels_per_element = SampleSize(format, plane).width();
   DCHECK_EQ(bits_per_element % horiz_pixels_per_element, 0);
@@ -771,25 +833,27 @@ int VideoFrame::PlaneHorizontalBitsPerPixel(VideoPixelFormat format,
 
 // static
 int VideoFrame::PlaneBitsPerPixel(VideoPixelFormat format, size_t plane) {
-  DCHECK(IsValidPlane(plane, format));
+  DCHECK(IsValidPlane(format, plane));
   return PlaneHorizontalBitsPerPixel(format, plane) /
       SampleSize(format, plane).height();
 }
 
 // static
 size_t VideoFrame::RowBytes(size_t plane, VideoPixelFormat format, int width) {
-  DCHECK(IsValidPlane(plane, format));
+  DCHECK(IsValidPlane(format, plane));
   return BytesPerElement(format, plane) * Columns(plane, format, width);
 }
 
 // static
 int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
-  DCHECK(IsValidPlane(plane, format));
+  DCHECK(IsValidPlane(format, plane));
   switch (format) {
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_ABGR:
     case PIXEL_FORMAT_XBGR:
+    case PIXEL_FORMAT_XR30:
+    case PIXEL_FORMAT_XB30:
       return 4;
     case PIXEL_FORMAT_RGB24:
       return 3;
@@ -845,14 +909,14 @@ std::vector<int32_t> VideoFrame::ComputeStrides(VideoPixelFormat format,
 
 // static
 size_t VideoFrame::Rows(size_t plane, VideoPixelFormat format, int height) {
-  DCHECK(IsValidPlane(plane, format));
+  DCHECK(IsValidPlane(format, plane));
   const int sample_height = SampleSize(format, plane).height();
   return base::bits::Align(height, sample_height) / sample_height;
 }
 
 // static
 size_t VideoFrame::Columns(size_t plane, VideoPixelFormat format, int width) {
-  DCHECK(IsValidPlane(plane, format));
+  DCHECK(IsValidPlane(format, plane));
   const int sample_width = SampleSize(format, plane).width();
   return base::bits::Align(width, sample_width) / sample_width;
 }
@@ -949,7 +1013,7 @@ int VideoFrame::rows(size_t plane) const {
 }
 
 const uint8_t* VideoFrame::visible_data(size_t plane) const {
-  DCHECK(IsValidPlane(plane, format()));
+  DCHECK(IsValidPlane(format(), plane));
   DCHECK(IsMappable());
 
   // Calculate an offset that is properly aligned for all planes.
@@ -975,7 +1039,7 @@ uint8_t* VideoFrame::visible_data(size_t plane) {
 const gpu::MailboxHolder&
 VideoFrame::mailbox_holder(size_t texture_index) const {
   DCHECK(HasTextures());
-  DCHECK(IsValidPlane(texture_index, format()));
+  DCHECK(IsValidPlane(format(), texture_index));
   return wrapped_frame_ ? wrapped_frame_->mailbox_holders_[texture_index]
                         : mailbox_holders_[texture_index];
 }
@@ -1107,12 +1171,6 @@ std::string VideoFrame::ConfigToString(const VideoPixelFormat format,
 }
 
 // static
-bool VideoFrame::IsValidPlane(size_t plane, VideoPixelFormat format) {
-  DCHECK_LE(NumPlanes(format), static_cast<size_t>(kMaxPlanes));
-  return (plane < NumPlanes(format));
-}
-
-// static
 gfx::Size VideoFrame::DetermineAlignedSize(VideoPixelFormat format,
                                            const gfx::Size& dimensions) {
   const gfx::Size alignment = CommonAlignment(format);
@@ -1166,57 +1224,6 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrameWithLayout(
       std::move(layout), storage, visible_rect, natural_size, timestamp));
   frame->AllocateMemory(zero_initialize_memory);
   return frame;
-}
-
-// static
-gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
-  DCHECK(IsValidPlane(plane, format));
-
-  switch (plane) {
-    case kYPlane:  // and kARGBPlane:
-    case kAPlane:
-      return gfx::Size(1, 1);
-
-    case kUPlane:  // and kUVPlane:
-    case kVPlane:
-      switch (format) {
-        case PIXEL_FORMAT_I444:
-        case PIXEL_FORMAT_YUV444P9:
-        case PIXEL_FORMAT_YUV444P10:
-        case PIXEL_FORMAT_YUV444P12:
-        case PIXEL_FORMAT_Y16:
-          return gfx::Size(1, 1);
-
-        case PIXEL_FORMAT_I422:
-        case PIXEL_FORMAT_YUV422P9:
-        case PIXEL_FORMAT_YUV422P10:
-        case PIXEL_FORMAT_YUV422P12:
-          return gfx::Size(2, 1);
-
-        case PIXEL_FORMAT_YV12:
-        case PIXEL_FORMAT_I420:
-        case PIXEL_FORMAT_I420A:
-        case PIXEL_FORMAT_NV12:
-        case PIXEL_FORMAT_NV21:
-        case PIXEL_FORMAT_YUV420P9:
-        case PIXEL_FORMAT_YUV420P10:
-        case PIXEL_FORMAT_YUV420P12:
-        case PIXEL_FORMAT_P016LE:
-          return gfx::Size(2, 2);
-
-        case PIXEL_FORMAT_UNKNOWN:
-        case PIXEL_FORMAT_YUY2:
-        case PIXEL_FORMAT_ARGB:
-        case PIXEL_FORMAT_XRGB:
-        case PIXEL_FORMAT_RGB24:
-        case PIXEL_FORMAT_MJPEG:
-        case PIXEL_FORMAT_ABGR:
-        case PIXEL_FORMAT_XBGR:
-          break;
-      }
-  }
-  NOTREACHED();
-  return gfx::Size();
 }
 
 // static
@@ -1295,7 +1302,7 @@ std::vector<size_t> VideoFrame::CalculatePlaneSize() const {
     // overreads by one line in some cases, see libavcodec/utils.c:
     // avcodec_align_dimensions2() and libavcodec/x86/h264_chromamc.asm:
     // put_h264_chroma_mc4_ssse3().
-    DCHECK(IsValidPlane(kUPlane, format()));
+    DCHECK(IsValidPlane(format(), kUPlane));
     plane_size.back() += std::abs(stride(kUPlane)) + kFrameSizePadding;
   }
   return plane_size;

@@ -710,6 +710,11 @@ bool RenderWidgetHostViewBase::CanSynchronizeVisualProperties() {
   return true;
 }
 
+std::vector<std::unique_ptr<ui::TouchEvent>>
+RenderWidgetHostViewBase::ExtractAndCancelActiveTouches() {
+  return {};
+}
+
 void RenderWidgetHostViewBase::TextInputStateChanged(
     const TextInputState& text_input_state) {
   if (GetTextInputManager())

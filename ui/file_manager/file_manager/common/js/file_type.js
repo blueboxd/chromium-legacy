@@ -494,6 +494,17 @@ FileType.getTypeForName = name => {
  */
 FileType.getType = (entry, opt_mimeType) => {
   if (entry.isDirectory) {
+    // For removable partitions, use the file system type.
+    if (/** @type {VolumeEntry}*/ (entry).volumeInfo &&
+        /** @type {VolumeEntry}*/ (entry).volumeInfo.diskFileSystemType) {
+      return {
+        name: '',
+        type: 'partition',
+        subtype:
+            /** @type {VolumeEntry}*/ (entry).volumeInfo.diskFileSystemType,
+        icon: '',
+      };
+    }
     return FileType.DIRECTORY;
   }
 

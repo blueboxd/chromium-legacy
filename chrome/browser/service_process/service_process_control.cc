@@ -131,7 +131,8 @@ void ServiceProcessControl::SetMojoHandle(
       &ServiceProcessControl::OnChannelError, base::Unretained(this)));
 
   // TODO(hclam): Handle error connecting to channel.
-  remote_interfaces_.GetInterface(&service_process_);
+  remote_interfaces_.GetInterface(
+      service_process_.BindNewPipeAndPassReceiver());
   service_process_->Hello(base::BindOnce(
       &ServiceProcessControl::OnChannelConnected, base::Unretained(this)));
 }

@@ -131,11 +131,6 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
   FcPatternAddString(pattern, FC_FAMILY,
                      reinterpret_cast<const FcChar8*>(font_family.c_str()));
 
-  FcValue family;
-  family.type = FcTypeString;
-  family.u.s = reinterpret_cast<const FcChar8*>(font_family.c_str());
-  FcPatternAdd(pattern, FC_FAMILY, family, FcFalse);
-
   if (FcConfigSubstitute(nullptr, pattern, FcMatchPattern) == FcTrue) {
     FcDefaultSubstitute(pattern);
     FcResult result;
@@ -143,12 +138,9 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
     if (fonts) {
       std::set<std::string> fallback_names;
       for (int i = 0; i < fonts->nfont; ++i) {
-        char* name = nullptr;
-        FcPatternGetString(fonts->fonts[i], FC_FAMILY, 0,
-            reinterpret_cast<FcChar8**>(&name));
-        if (name == nullptr)
+        std::string name_str = GetFontName(fonts->fonts[i]);
+        if (name_str.empty())
           continue;
-        std::string name_str = name;
 
         // FontConfig returns multiple fonts with the same family name and
         // different configurations. Check to prevent duplicate family names.

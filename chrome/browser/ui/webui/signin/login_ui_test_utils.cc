@@ -298,7 +298,7 @@ bool SignInWithUI(Browser* browser,
   return false;
 #else
   SignInObserver signin_observer;
-  ScopedObserver<signin::IdentityManager, SignInObserver>
+  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
       scoped_signin_observer(&signin_observer);
   scoped_signin_observer.Add(
       IdentityManagerFactory::GetForProfile(browser->profile()));

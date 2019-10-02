@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
@@ -41,9 +40,7 @@ constexpr int BrowserNonClientFrameView::kMinimumDragHeight;
 
 BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
                                                      BrowserView* browser_view)
-    : frame_(frame),
-      browser_view_(browser_view),
-      tab_strip_observer_(this) {
+    : frame_(frame), browser_view_(browser_view) {
   // The profile manager may by null in tests.
   if (g_browser_process->profile_manager()) {
     g_browser_process->profile_manager()->

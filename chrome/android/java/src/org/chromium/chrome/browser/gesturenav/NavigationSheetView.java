@@ -35,13 +35,6 @@ public class NavigationSheetView extends RelativeLayout {
         return v == null ? 0 : -(v.getTop() - mListView.getPaddingTop());
     }
 
-    /**
-     * Request layout for the containing listview.
-     */
-    void requestListViewLayout() {
-        mListView.requestLayout();
-    }
-
     @Override
     public void onFinishInflate() {
         super.onFinishInflate();

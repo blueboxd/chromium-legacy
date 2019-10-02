@@ -4,9 +4,9 @@
 
 #include "android_webview/browser/network_service/android_stream_reader_url_loader.h"
 
-#include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/input_stream.h"
 #include "android_webview/browser/network_service/input_stream_reader.h"
+#include "android_webview/common/aw_features.h"
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/callback.h"

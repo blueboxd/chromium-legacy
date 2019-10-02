@@ -21,13 +21,16 @@ ObjectWatcher::~ObjectWatcher() {
   StopWatching();
 }
 
-bool ObjectWatcher::StartWatchingOnce(HANDLE object, Delegate* delegate) {
-  return StartWatchingInternal(object, delegate, true);
+bool ObjectWatcher::StartWatchingOnce(HANDLE object,
+                                      Delegate* delegate,
+                                      const Location& from_here) {
+  return StartWatchingInternal(object, delegate, true, from_here);
 }
 
 bool ObjectWatcher::StartWatchingMultipleTimes(HANDLE object,
-                                               Delegate* delegate) {
-  return StartWatchingInternal(object, delegate, false);
+                                               Delegate* delegate,
+                                               const Location& from_here) {
+  return StartWatchingInternal(object, delegate, false, from_here);
 }
 
 bool ObjectWatcher::StopWatching() {
@@ -63,17 +66,20 @@ void CALLBACK ObjectWatcher::DoneWaiting(void* param, BOOLEAN timed_out) {
   // The destructor blocks on any callbacks that are in flight, so we know that
   // that is always a pointer to a valid ObjectWater.
   ObjectWatcher* that = static_cast<ObjectWatcher*>(param);
-  that->task_runner_->PostTask(FROM_HERE, that->callback_);
+  that->task_runner_->PostTask(that->location_, that->callback_);
   if (that->run_once_)
     that->callback_.Reset();
 }
 
-bool ObjectWatcher::StartWatchingInternal(HANDLE object, Delegate* delegate,
-                                          bool execute_only_once) {
+bool ObjectWatcher::StartWatchingInternal(HANDLE object,
+                                          Delegate* delegate,
+                                          bool execute_only_once,
+                                          const Location& from_here) {
   DCHECK(delegate);
   DCHECK(!wait_object_) << "Already watching an object";
   DCHECK(SequencedTaskRunnerHandle::IsSet());
 
+  location_ = from_here;
   task_runner_ = SequencedTaskRunnerHandle::Get();
 
   run_once_ = execute_only_once;
@@ -112,6 +118,7 @@ void ObjectWatcher::Signal(Delegate* delegate) {
 
 void ObjectWatcher::Reset() {
   callback_.Reset();
+  location_ = {};
   object_ = nullptr;
   wait_object_ = nullptr;
   task_runner_ = nullptr;

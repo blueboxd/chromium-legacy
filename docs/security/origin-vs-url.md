@@ -68,9 +68,9 @@ Use the following datatypes to represent origins:
   or even better
   [avoid sending origins](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/security/mojo.md#Do-not-send-unnecessary-or-privilege_presuming-data)
   in the first place.
-- Java: TBD - we need to figure this out as part of exposing
-  `GetLastCommittedOrigin` to Java - see also
-  [issue 971339](https://crbug.com/971339).
+- Java: `org.chromium.url.Origin`
+  (see also `url::Origin::FromJavaObject`
+  and `url::Origin::CreateJavaObject`).
 
 
 ## Avoid converting URLs to origins.

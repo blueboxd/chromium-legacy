@@ -18,7 +18,6 @@
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/aw_devtools_manager_delegate.h"
-#include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/aw_feature_list_creator.h"
 #include "android_webview/browser/aw_http_auth_handler.h"
 #include "android_webview/browser/aw_quota_permission_context.h"
@@ -35,6 +34,7 @@
 #include "android_webview/browser/tracing/aw_tracing_delegate.h"
 #include "android_webview/common/aw_content_client.h"
 #include "android_webview/common/aw_descriptors.h"
+#include "android_webview/common/aw_features.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
@@ -1007,6 +1007,8 @@ bool AwContentBrowserClient::WillCreateRestrictedCookieManager(
     network::mojom::RestrictedCookieManagerRole role,
     content::BrowserContext* browser_context,
     const url::Origin& origin,
+    const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin,
     bool is_service_worker,
     int process_id,
     int routing_id,

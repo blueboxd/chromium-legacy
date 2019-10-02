@@ -160,7 +160,9 @@
 #include "net/http/http_util.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
@@ -896,7 +898,7 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
     mojom::FrameNavigationControl::CommitNavigationCallback commit_callback,
     mojom::NavigationClient::CommitNavigationCallback
         per_navigation_mojo_interface_commit_callback,
-    const network::ResourceResponseHead* head,
+    const network::mojom::URLResponseHead* head,
     std::unique_ptr<NavigationClient> navigation_client,
     int request_id,
     bool was_initiated_in_this_frame) {
@@ -1055,7 +1057,7 @@ void FillMiscNavigationParams(
 // Fills in the origin policy associated with this response, if any is present.
 // Converts it into a format that blink understands: WebOriginPolicy.
 void FillNavigationParamsOriginPolicy(
-    const network::ResourceResponseHead& head,
+    const network::mojom::URLResponseHead& head,
     blink::WebNavigationParams* navigation_params) {
   if (head.origin_policy.has_value() && head.origin_policy.value().contents) {
     navigation_params->origin_policy = blink::WebOriginPolicy();
@@ -3374,8 +3376,9 @@ void RenderFrameImpl::CommitNavigation(
   // IsPerNavigationMojoInterfaceEnabled() == true, for non-committed
   // interstitials where no NavigationRequest was created. Therefore, no DCHECK.
   CommitNavigationInternal(
-      std::move(common_params), std::move(commit_params), response_head,
-      std::move(response_body), std::move(url_loader_client_endpoints),
+      std::move(common_params), std::move(commit_params),
+      std::move(response_head), std::move(response_body),
+      std::move(url_loader_client_endpoints),
       std::move(subresource_loader_factories), std::move(subresource_overrides),
       std::move(controller_service_worker_info), std::move(provider_info),
       std::move(prefetch_loader_factory), devtools_navigation_token,
@@ -3386,7 +3389,7 @@ void RenderFrameImpl::CommitNavigation(
 void RenderFrameImpl::CommitPerNavigationMojoInterfaceNavigation(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::CommitNavigationParamsPtr commit_params,
-    const network::ResourceResponseHead& response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
@@ -3403,8 +3406,9 @@ void RenderFrameImpl::CommitPerNavigationMojoInterfaceNavigation(
   DCHECK(navigation_client_impl_);
   DCHECK(IsPerNavigationMojoInterfaceEnabled());
   CommitNavigationInternal(
-      std::move(common_params), std::move(commit_params), response_head,
-      std::move(response_body), std::move(url_loader_client_endpoints),
+      std::move(common_params), std::move(commit_params),
+      std::move(response_head), std::move(response_body),
+      std::move(url_loader_client_endpoints),
       std::move(subresource_loader_factories), std::move(subresource_overrides),
       std::move(controller_service_worker_info), std::move(provider_info),
       std::move(prefetch_loader_factory), devtools_navigation_token,
@@ -3415,7 +3419,7 @@ void RenderFrameImpl::CommitPerNavigationMojoInterfaceNavigation(
 void RenderFrameImpl::CommitNavigationInternal(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::CommitNavigationParamsPtr commit_params,
-    const network::ResourceResponseHead& response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
@@ -3460,9 +3464,10 @@ void RenderFrameImpl::CommitNavigationInternal(
   // document state. In view source mode, we effectively let the user
   // see the source of the server's error page instead of using custom
   // one derived from the metrics saved to document state.
-  const network::ResourceResponseHead* document_state_response_head =
-      (!frame_->Parent() && !frame_->IsViewSourceModeEnabled()) ? &response_head
-                                                                : nullptr;
+  const network::mojom::URLResponseHead* document_state_response_head =
+      (!frame_->Parent() && !frame_->IsViewSourceModeEnabled())
+          ? response_head.get()
+          : nullptr;
   int request_id = ResourceDispatcher::MakeRequestID();
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
       *common_params, *commit_params, base::TimeTicks::Now(),
@@ -3532,14 +3537,14 @@ void RenderFrameImpl::CommitNavigationInternal(
         !frame_->Parent(), navigation_params.get());
   }
 
-  FillNavigationParamsOriginPolicy(response_head, navigation_params.get());
+  FillNavigationParamsOriginPolicy(*response_head, navigation_params.get());
 
   // The MHTML mime type should be same as the one we check in the browser
   // process's download_utils::MustDownload.
   bool is_mhtml_archive =
-      base::LowerCaseEqualsASCII(response_head.mime_type,
+      base::LowerCaseEqualsASCII(response_head->mime_type,
                                  "multipart/related") ||
-      base::LowerCaseEqualsASCII(response_head.mime_type, "message/rfc822");
+      base::LowerCaseEqualsASCII(response_head->mime_type, "message/rfc822");
   if (is_mhtml_archive && navigation_params->body_loader) {
     // Load full mhtml archive before committing navigation.
     // We need this to retrieve the document mime type prior to committing.
@@ -5456,11 +5461,12 @@ void RenderFrameImpl::DidLoadResourceFromMemoryCache(
 void RenderFrameImpl::DidStartResponse(
     const GURL& response_url,
     int request_id,
-    const network::ResourceResponseHead& response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     content::ResourceType resource_type,
     PreviewsState previews_state) {
   for (auto& observer : observers_)
-    observer.DidStartResponse(response_url, request_id, response_head,
+    observer.DidStartResponse(response_url, request_id,
+                              network::ResourceResponseHead(response_head),
                               resource_type, previews_state);
 }
 
@@ -5785,11 +5791,6 @@ void RenderFrameImpl::WasShown() {
   for (auto* plugin : active_pepper_instances_)
     plugin->PageVisibilityChanged(true);
 #endif  // ENABLE_PLUGINS
-}
-
-void RenderFrameImpl::WidgetWillClose() {
-  for (auto& observer : observers_)
-    observer.WidgetWillClose();
 }
 
 bool RenderFrameImpl::IsMainFrame() {

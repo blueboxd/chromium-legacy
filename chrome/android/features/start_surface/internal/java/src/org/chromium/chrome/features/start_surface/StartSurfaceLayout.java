@@ -146,10 +146,6 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         if (mController != null) {
             mController.removeOverviewModeObserver(this);
         }
-
-        if (mStartSurface != null) {
-            mStartSurface.destroy();
-        }
     }
 
     @Override

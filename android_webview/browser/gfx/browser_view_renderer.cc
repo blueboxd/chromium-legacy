@@ -7,11 +7,11 @@
 #include <memory>
 #include <utility>
 
-#include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/gfx/browser_view_renderer_client.h"
 #include "android_webview/browser/gfx/compositor_frame_consumer.h"
 #include "android_webview/browser/gfx/root_frame_sink.h"
 #include "android_webview/browser/gfx/root_frame_sink_proxy.h"
+#include "android_webview/common/aw_features.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"

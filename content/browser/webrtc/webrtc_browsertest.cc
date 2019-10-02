@@ -60,7 +60,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CanSetupAudioAndVideoCall) {
   MakeTypicalPeerConnectionCall("call({video: true, audio: true});");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, NetworkProcessCrashRecovery) {
+// crbug.com:1010061: disabled due to flakiness.
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
+                       DISABLED_NetworkProcessCrashRecovery) {
   if (!IsOutOfProcessNetworkService())
     return;
   MakeTypicalPeerConnectionCall("call({video: true, audio: true});");
@@ -148,8 +150,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CanForwardRemoteStream) {
       "callAndForwardRemoteStream({video: true, audio: true});");
 }
 
+// crbug.com:1010061: disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       NoCrashWhenConnectChromiumSinkToRemoteTrack) {
+                       DISABLED_NoCrashWhenConnectChromiumSinkToRemoteTrack) {
   MakeTypicalPeerConnectionCall("ConnectChromiumSinkToRemoteAudioTrack();");
 }
 
@@ -158,15 +161,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 // video is playing for the call even if the initiating client don't support
 // MSID. http://tools.ietf.org/html/draft-alvestrand-rtcweb-msid-02
 // Fails with TSAN. https://crbug.com/756568
-#if defined(THREAD_SANITIZER)
-#define MAYBE_CanSetupAudioAndVideoCallWithoutMsidAndBundle \
-  DISABLED_CanSetupAudioAndVideoCallWithoutMsidAndBundle
-#else
-#define MAYBE_CanSetupAudioAndVideoCallWithoutMsidAndBundle \
-  CanSetupAudioAndVideoCallWithoutMsidAndBundle
-#endif
+// crbug.com:1010061: disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MAYBE_CanSetupAudioAndVideoCallWithoutMsidAndBundle) {
+                       DISABLED_CanSetupAudioAndVideoCallWithoutMsidAndBundle) {
   MakeTypicalPeerConnectionCall("callWithoutMsidAndBundle();");
 }
 
@@ -206,7 +203,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CallAndModifyStream) {
       "callWithNewVideoMediaStreamLaterSwitchToAudio();");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, AddTwoMediaStreamsToOnePC) {
+// crbug.com:1010061: disabled due to flakiness.
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
+                       DISABLED_AddTwoMediaStreamsToOnePC) {
   MakeTypicalPeerConnectionCall("addTwoMediaStreamsToOneConnection();");
 }
 

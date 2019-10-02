@@ -300,11 +300,6 @@ void NetworkConfigurationHandler::SetShillProperties(
                  base::Passed(&properties_copy), callback),
       base::Bind(&NetworkConfigurationHandler::SetPropertiesErrorCallback,
                  weak_ptr_factory_.GetWeakPtr(), service_path, error_callback));
-
-  // If we set the StaticIPConfig property, request an IP config refresh
-  // after calling SetProperties.
-  if (properties_to_set->HasKey(shill::kStaticIPConfigProperty))
-    RequestRefreshIPConfigs(service_path);
 }
 
 void NetworkConfigurationHandler::ClearShillProperties(
@@ -658,19 +653,6 @@ void NetworkConfigurationHandler::ClearPropertiesErrorCallback(
       dbus_error_name, dbus_error_message);
   // Some properties may have changed so request an update regardless.
   network_state_handler_->RequestUpdateForNetwork(service_path);
-}
-
-void NetworkConfigurationHandler::RequestRefreshIPConfigs(
-    const std::string& service_path) {
-  if (!network_device_handler_)
-    return;
-  const NetworkState* network_state =
-      network_state_handler_->GetNetworkState(service_path);
-  if (!network_state || network_state->device_path().empty())
-    return;
-  network_device_handler_->RequestRefreshIPConfigs(
-      network_state->device_path(), base::DoNothing(),
-      network_handler::ErrorCallback());
 }
 
 // static

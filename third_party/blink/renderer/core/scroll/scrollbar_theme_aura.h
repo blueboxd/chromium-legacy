@@ -73,6 +73,11 @@ class CORE_EXPORT ScrollbarThemeAura : public ScrollbarTheme {
       float new_position) const override;
 
   bool ShouldCenterOnThumb(const Scrollbar&, const WebMouseEvent&) override;
+
+  // During a thumb drag, if the pointer moves outside a certain threshold in
+  // the non-scrolling direction, the scroller is expected to "snap back" to the
+  // location where the drag first originated from.
+  bool SupportsDragSnapBack() const override;
   bool ShouldSnapBackToDragOrigin(const Scrollbar&,
                                   const WebMouseEvent&) override;
 

@@ -197,6 +197,10 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // frame is going away.
   void DetachWebFrameWidget();
 
+  // Called early before detaching begins for the main frame, and objects begin
+  // tearing down.
+  void PrepareForDetach();
+
   // Starts a timer to send an UpdateState message on behalf of |frame|, if the
   // timer isn't already running. This allows multiple state changing events to
   // be coalesced into one update.
@@ -551,6 +555,9 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // ADDING NEW FUNCTIONS? Please keep private functions alphabetized and put
   // it in the same order in the .cc file as it was in the header.
   // ---------------------------------------------------------------------------
+
+  // Becomes true when Destroy() is called.
+  bool destroying_ = false;
 
   // This is the |render_widget_| for the main frame.
   //

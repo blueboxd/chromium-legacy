@@ -52,9 +52,6 @@ struct Impression {
   // rate.
   bool integrated = false;
 
-  // The task start time when this impression is generated.
-  SchedulerTaskTime task_start_time = SchedulerTaskTime::kUnknown;
-
   // The unique identifier of the notification.
   std::string guid;
 
@@ -69,6 +66,10 @@ struct Impression {
   // Custom data associated with a notification. Send back to the client when
   // the user interacts with the notification.
   CustomData custom_data;
+
+  // Custom suppresion duration in days. It will override |suppression_duration|
+  // in config.
+  base::Optional<base::TimeDelta> custom_suppression_duration;
 };
 
 // Contains details about supression and recovery after suppression expired.

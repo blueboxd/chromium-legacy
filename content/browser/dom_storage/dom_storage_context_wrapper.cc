@@ -136,7 +136,11 @@ scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
       legacy_localstorage_path, new_localstorage_path, special_storage_policy);
   SessionStorageContextMojo* mojo_session_state = nullptr;
   mojo_session_state = new SessionStorageContextMojo(
-      data_path, mojo_task_runner,
+      data_path,
+      base::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::ThreadPool(),
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+      mojo_task_runner,
 #if defined(OS_ANDROID)
       // On Android there is no support for session storage restoring, and
       // since the restoring code is responsible for database cleanup, we must

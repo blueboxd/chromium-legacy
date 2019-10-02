@@ -80,6 +80,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
 
   // Snapshot of properties taken in UpdateThumbAndTrackGeometry and used in
   // PushPropertiesTo.
+  bool supports_drag_snap_back_;
   int thumb_thickness_;
   int thumb_length_;
   gfx::Point location_;

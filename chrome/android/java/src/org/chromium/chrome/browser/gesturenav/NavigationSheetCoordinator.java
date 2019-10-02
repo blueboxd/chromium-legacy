@@ -59,7 +59,6 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     // his finger. Any delta smaller than (or equal to) than this are ignored.
     private static final float DELTA_IGNORE = 2.f;
 
-    private final NavigationSheetView mContentView;
     private final View mToolbarView;
     private final LayoutInflater mLayoutInflater;
     private final Supplier<BottomSheetController> mBottomSheetController;
@@ -97,6 +96,8 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         }
     }
 
+    private NavigationSheetView mContentView;
+
     private boolean mForward;
 
     private boolean mShowCloseIndicator;
@@ -119,8 +120,6 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         Context context = parent.getContext();
         mLayoutInflater = LayoutInflater.from(context);
         mToolbarView = mLayoutInflater.inflate(R.layout.navigation_sheet_toolbar, null);
-        mContentView =
-                (NavigationSheetView) mLayoutInflater.inflate(R.layout.navigation_sheet, null);
         mMediator = new NavigationSheetMediator(context, mModelList, (position, index) -> {
             mDelegate.navigateToIndex(index);
             close(false);
@@ -134,8 +133,6 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         mModelAdapter.registerType(NAVIGATION_LIST_ITEM_TYPE_ID, () -> {
             return mLayoutInflater.inflate(R.layout.navigation_popup_item, null);
         }, NavigationItemViewBinder::bind);
-        ListView listview = (ListView) mContentView.findViewById(R.id.navigation_entries);
-        listview.setAdapter(mModelAdapter);
         mOpenSheetRunnable = () -> {
             if (isHidden()) openSheet(false, true);
         };
@@ -154,9 +151,12 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     // Transition to either peeked or expanded state.
     private void openSheet(boolean fullyExpand, boolean animate) {
+        mContentView =
+                (NavigationSheetView) mLayoutInflater.inflate(R.layout.navigation_sheet, null);
+        ListView listview = (ListView) mContentView.findViewById(R.id.navigation_entries);
+        listview.setAdapter(mModelAdapter);
         NavigationHistory history = mDelegate.getHistory(mForward);
         mMediator.populateEntries(history);
-        mContentView.requestListViewLayout();
         mBottomSheetController.get().requestShowContent(this, true);
         mBottomSheetController.get().getBottomSheet().addObserver(mSheetObserver);
         mSheetTriggered = true;

@@ -76,6 +76,8 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD2(RemoveLeakedCredentialsImpl,
                void(const GURL&, const base::string16&));
   MOCK_METHOD0(GetAllLeakedCredentialsImpl, std::vector<LeakedCredentials>());
+  MOCK_METHOD2(RemoveLeakedCredentialsCreatedBetweenImpl,
+               void(base::Time, base::Time));
   MOCK_CONST_METHOD0(IsAbleToSavePasswords, bool());
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)

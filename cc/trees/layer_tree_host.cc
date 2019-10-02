@@ -201,10 +201,6 @@ LayerTreeHost::~LayerTreeHost() {
   // Clear any references into the LayerTreeHost.
   mutator_host_->SetMutatorHostClient(nullptr);
 
-  // We must clear any pointers into the layer tree prior to destroying it.
-  if (IsUsingLayerLists())
-    RegisterViewportLayers(ViewportLayers());
-
   if (root_layer_) {
     root_layer_->SetLayerTreeHost(nullptr);
 
@@ -699,6 +695,7 @@ void LayerTreeHost::Composite(base::TimeTicks frame_begin_time, bool raster) {
 bool LayerTreeHost::UpdateLayers() {
   if (!root_layer()) {
     property_trees_.clear();
+    viewport_property_ids_ = ViewportPropertyIds();
     return false;
   }
 
@@ -889,10 +886,13 @@ void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
   // Preemptively apply the scroll offset and scale delta here before sending
   // it to the client.  If the client comes back and sets it to the same
   // value, then the layer can early out without needing a full commit.
-  if (viewport_layers_.inner_viewport_scroll) {
-    viewport_layers_.inner_viewport_scroll->SetScrollOffsetFromImplSide(
-        viewport_layers_.inner_viewport_scroll->CurrentScrollOffset() +
-        inner_viewport_scroll_delta);
+  if (auto* inner_scroll = property_trees()->scroll_tree.Node(
+          viewport_property_ids_.inner_scroll)) {
+    if (auto* inner_scroll_layer = LayerByElementId(inner_scroll->element_id)) {
+      inner_scroll_layer->SetScrollOffsetFromImplSide(
+          inner_scroll_layer->CurrentScrollOffset() +
+          inner_viewport_scroll_delta);
+    }
   }
 
   ApplyPageScaleDeltaFromImplSide(info.page_scale_delta);
@@ -1091,31 +1091,26 @@ void LayerTreeHost::SetNonBlinkManagedRootLayer(
     force_use_property_tree_builder_ = true;
 }
 
-void LayerTreeHost::RegisterViewportLayers(const ViewportLayers& layers) {
-  DCHECK(!layers.inner_viewport_scroll ||
-         layers.inner_viewport_scroll != layers.outer_viewport_scroll);
-  // The page scale layer only affects the innter viewport scroll layer. The
-  // page scale layer should be sandwiched between the inner viewport scroll and
-  // inner viewport container layers:
-  //   inner viewport container
-  //     overscroll elasticity (optional)
-  //       page scale
-  //         inner viewport scroll
-  DCHECK(IsUsingLayerLists());
-  viewport_layers_.overscroll_elasticity_element_id =
-      layers.overscroll_elasticity_element_id;
-  viewport_layers_.page_scale = layers.page_scale;
-  viewport_layers_.inner_viewport_container = layers.inner_viewport_container;
-  viewport_layers_.outer_viewport_container = layers.outer_viewport_container;
-  viewport_layers_.inner_viewport_scroll = layers.inner_viewport_scroll;
-  viewport_layers_.outer_viewport_scroll = layers.outer_viewport_scroll;
-}
-
 void LayerTreeHost::RegisterViewportPropertyIds(
     const ViewportPropertyIds& ids) {
-  DCHECK(!viewport_layers_.inner_viewport_scroll);
   DCHECK(IsUsingLayerLists());
   viewport_property_ids_ = ids;
+  // Outer viewport properties exist only if inner viewport property exists.
+  DCHECK(ids.inner_scroll != ScrollTree::kInvalidNodeId ||
+         (ids.outer_scroll == ScrollTree::kInvalidNodeId &&
+          ids.outer_clip == ClipTree::kInvalidNodeId));
+}
+
+Layer* LayerTreeHost::InnerViewportScrollLayerForTesting() const {
+  auto* scroll_node =
+      property_trees()->scroll_tree.Node(viewport_property_ids_.inner_scroll);
+  return scroll_node ? LayerByElementId(scroll_node->element_id) : nullptr;
+}
+
+Layer* LayerTreeHost::OuterViewportScrollLayerForTesting() const {
+  auto* scroll_node =
+      property_trees()->scroll_tree.Node(viewport_property_ids_.outer_scroll);
+  return scroll_node ? LayerByElementId(scroll_node->element_id) : nullptr;
 }
 
 void LayerTreeHost::RegisterSelection(const LayerSelection& selection) {
@@ -1540,32 +1535,7 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
       EventListenerClass::kTouchEndOrCancel,
       event_listener_properties(EventListenerClass::kTouchEndOrCancel));
 
-  if (viewport_layers_.inner_viewport_scroll) {
-    LayerTreeImpl::ViewportLayerIds ids;
-    if (viewport_layers_.overscroll_elasticity_element_id) {
-      ids.overscroll_elasticity_element_id =
-          viewport_layers_.overscroll_elasticity_element_id;
-    }
-    if (viewport_layers_.page_scale) {
-      ids.page_scale = viewport_layers_.page_scale->id();
-    }
-    if (viewport_layers_.inner_viewport_container) {
-      ids.inner_viewport_container =
-          viewport_layers_.inner_viewport_container->id();
-    }
-    if (viewport_layers_.outer_viewport_container) {
-      ids.outer_viewport_container =
-          viewport_layers_.outer_viewport_container->id();
-    }
-    ids.inner_viewport_scroll = viewport_layers_.inner_viewport_scroll->id();
-    if (viewport_layers_.outer_viewport_scroll)
-      ids.outer_viewport_scroll = viewport_layers_.outer_viewport_scroll->id();
-    tree_impl->SetViewportLayersFromIds(ids);
-  } else {
-    tree_impl->ClearViewportLayers();
-  }
-
-  tree_impl->set_viewport_property_ids(viewport_property_ids_);
+  tree_impl->SetViewportPropertyIds(viewport_property_ids_);
 
   tree_impl->RegisterSelection(selection_);
 

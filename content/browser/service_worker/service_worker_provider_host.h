@@ -36,6 +36,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom-forward.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-forward.h"
@@ -425,21 +426,14 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // For service worker execution contexts. Forwards |receiver| to the process
   // host on the UI thread.
-  void BindVideoDecodePerfHistory(
-      mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver);
-
-  // For service worker execution contexts. Forwards |receiver| to the process
-  // host on the UI thread.
   void CreateLockManager(
       mojo::PendingReceiver<blink::mojom::LockManager> receiver);
-
-  // For service worker execution contexts. Forwards |receiver| to the process
-  // host on the UI thread.
+  void CreateIDBFactory(
+      mojo::PendingReceiver<blink::mojom::IDBFactory> receiver);
+  void BindVideoDecodePerfHistory(
+      mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver);
   void CreatePermissionService(
       mojo::PendingReceiver<blink::mojom::PermissionService> receiver);
-
-  // For service worker execution contexts. Forwards |receiver| to the process
-  // host on the UI thread.
   void CreatePaymentManager(
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver);
 

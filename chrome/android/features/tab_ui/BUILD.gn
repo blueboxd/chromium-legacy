@@ -78,9 +78,7 @@ android_resources("java_resources") {
 android_library("java") {
   java_files = [
     "java/src/org/chromium/chrome/browser/tasks/MostVisitedListCoordinator.java",
-    "java/src/org/chromium/chrome/browser/tasks/MostVisitedListMediator.java",
     "java/src/org/chromium/chrome/browser/tasks/MostVisitedListViewBinder.java",
-    "java/src/org/chromium/chrome/browser/tasks/MostVisitedListProperties.java",
     "java/src/org/chromium/chrome/browser/tasks/TasksSurfaceMediator.java",
     "java/src/org/chromium/chrome/browser/tasks/TasksSurfaceCoordinator.java",
     "java/src/org/chromium/chrome/browser/tasks/TasksView.java",

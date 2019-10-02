@@ -45,6 +45,11 @@ struct ScheduleParams {
   // The end time of the deliver time window of the notification. Use in pair
   // with |deliver_time_start|.
   base::Optional<base::Time> deliver_time_end;
+
+  // Support a custom suppression duration(in days) for the notification.
+  // If client sets this field, it will override |suppression_duration| in
+  // config.
+  base::Optional<base::TimeDelta> custom_suppression_duration;
 };
 
 }  // namespace notifications

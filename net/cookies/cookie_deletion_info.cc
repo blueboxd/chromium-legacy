@@ -75,14 +75,7 @@ CookieDeletionInfo::CookieDeletionInfo()
 
 CookieDeletionInfo::CookieDeletionInfo(base::Time start_time,
                                        base::Time end_time)
-    : creation_range(start_time, end_time) {
-  // Options to use for deletion of cookies associated with
-  // a particular URL.  These options will make sure that all
-  // cookies associated with the URL are deleted.
-  cookie_options.set_include_httponly();
-  cookie_options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
-}
+    : creation_range(start_time, end_time) {}
 
 CookieDeletionInfo::CookieDeletionInfo(CookieDeletionInfo&& other) = default;
 
@@ -120,8 +113,12 @@ bool CookieDeletionInfo::Matches(const CanonicalCookie& cookie) const {
     return false;
   }
 
+  // |CookieOptions::MakeAllInclusive()| options will make sure that all
+  // cookies associated with the URL are deleted.
   if (url.has_value() &&
-      !cookie.IncludeForRequestURL(url.value(), cookie_options).IsInclude()) {
+      !cookie
+           .IncludeForRequestURL(url.value(), CookieOptions::MakeAllInclusive())
+           .IsInclude()) {
     return false;
   }
 

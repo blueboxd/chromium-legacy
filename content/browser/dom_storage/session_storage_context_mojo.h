@@ -75,7 +75,8 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   SessionStorageContextMojo(
       const base::FilePath& partition_directory,
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> memory_dump_task_runner,
       BackingMode backing_option,
       std::string leveldb_name);
 

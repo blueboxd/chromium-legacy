@@ -56,6 +56,10 @@ class FileHandlerManager : public AppRegistrarObserver {
 std::set<std::string> GetFileExtensionsFromFileHandlers(
     const std::vector<apps::FileHandlerInfo>& file_handlers);
 
+// Compute the set of mime types specified in |file_handlers|.
+std::set<std::string> GetMimeTypesFromFileHandlers(
+    const std::vector<apps::FileHandlerInfo>& file_handlers);
+
 }  // namespace web_app
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_FILE_HANDLER_MANAGER_H_

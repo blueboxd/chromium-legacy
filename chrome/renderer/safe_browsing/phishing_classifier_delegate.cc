@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -17,6 +18,8 @@
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
 #include "chrome/renderer/safe_browsing/scorer.h"
+#include "components/safe_browsing/common/safe_browsing.mojom-forward.h"
+#include "components/safe_browsing/common/safe_browsing.mojom-shared.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
@@ -127,9 +130,6 @@ void PhishingClassifierDelegate::SetPhishingScorer(
     CancelPendingClassification(NEW_PHISHING_SCORER);
   }
   classifier_->set_phishing_scorer(scorer);
-  // Start classifying the current page if all conditions are met.
-  // See MaybeStartClassification() for details.
-  MaybeStartClassification();
 }
 
 void PhishingClassifierDelegate::PhishingDetectorReceiver(
@@ -146,6 +146,9 @@ void PhishingClassifierDelegate::OnInterfaceRequestForFrame(
 void PhishingClassifierDelegate::StartPhishingDetection(
     const GURL& url,
     StartPhishingDetectionCallback callback) {
+  if (!callback_.is_null())
+    std::move(callback_).Run(mojom::PhishingDetectorResult::CANCELLED, "");
+
   last_url_received_from_browser_ = StripRef(url);
   callback_ = std::move(callback);
   // Start classifying the current page if all conditions are met.
@@ -194,6 +197,10 @@ void PhishingClassifierDelegate::PageCaptured(base::string16* page_text,
     return;
   }
 
+  UMA_HISTOGRAM_BOOLEAN(
+      "SBClientPhishing.PageCapturedMatchesBrowserURL",
+      (last_url_received_from_browser_ == stripped_last_load_url));
+
   MaybeStartClassification();
 }
 
@@ -216,10 +223,16 @@ void PhishingClassifierDelegate::ClassificationDone(
     const ClientPhishingRequest& verdict) {
   DVLOG(2) << "Phishy verdict = " << verdict.is_phishing()
            << " score = " << verdict.client_score();
-  if (verdict.client_score() != PhishingClassifier::kInvalidScore &&
-      !callback_.is_null()) {
+  if (callback_.is_null())
+    return;
+
+  if (verdict.client_score() != PhishingClassifier::kInvalidScore) {
     DCHECK_EQ(last_url_sent_to_classifier_.spec(), verdict.url());
-    std::move(callback_).Run(verdict.SerializeAsString());
+    std::move(callback_).Run(mojom::PhishingDetectorResult::SUCCESS,
+                             verdict.SerializeAsString());
+  } else {
+    std::move(callback_).Run(mojom::PhishingDetectorResult::INVALID_SCORE,
+                             verdict.SerializeAsString());
   }
 }
 
@@ -239,6 +252,9 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
   if (!classifier_->is_ready()) {
     DVLOG(2) << "Not starting classification, no Scorer created.";
     // Keep classifier_page_text_, in case a Scorer is set later.
+    if (!callback_.is_null())
+      std::move(callback_).Run(
+          mojom::PhishingDetectorResult::CLASSIFIER_NOT_READY, "");
     return;
   }
 
@@ -250,6 +266,9 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
     last_url_sent_to_classifier_ = last_finished_load_url_;
     classifier_page_text_.clear();  // we won't need this.
     have_page_text_ = false;
+    if (!callback_.is_null())
+      std::move(callback_).Run(
+          mojom::PhishingDetectorResult::FORWARD_BACK_TRANSITION, "");
     return;
   }
 

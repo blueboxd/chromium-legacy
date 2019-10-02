@@ -181,11 +181,6 @@ class TabAndroid {
 
   void AttachDetachedTab(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
-
-  bool AreRendererInputEventsIgnored(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
  private:
   JavaObjectWeakGlobalRef weak_java_tab_;
 

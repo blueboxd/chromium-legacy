@@ -11,6 +11,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.IS_VISIBLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.SHADOW_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_CONTROLS_HEIGHT;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_PADDING;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.VISIBILITY_LISTENER;
 
 import android.graphics.Bitmap;
@@ -248,7 +249,10 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
         // Container view takes care of padding and margin in start surface.
         if (mode != TabListCoordinator.TabListMode.CAROUSEL) {
+            // TODO(crbug.com/1010310): Remove the start surface check when tasks-only start surface
+            //  can replace the omnibox check.
             int topControlsHeight = ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher()
+                            && FeatureUtilities.isStartSurfaceEnabled()
                     ? 0
                     : fullscreenManager.getTopControlsHeight();
             mContainerViewModel.set(TOP_CONTROLS_HEIGHT, topControlsHeight);
@@ -258,9 +262,17 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
             int toolbarHeight =
                     ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
                             R.dimen.toolbar_height_no_shadow);
-            mContainerViewModel.set(SHADOW_TOP_MARGIN,
-                    ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher() ? 0
-                                                                                   : toolbarHeight);
+
+            if (ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher()
+                    && !FeatureUtilities.isStartSurfaceEnabled()) {
+                // TODO(crbug.com/1010310): Remove this and the TOP_PADDING property once this can
+                //  be replaced by tasks-only start surface mode.
+                mContainerViewModel.set(TOP_PADDING, toolbarHeight);
+                mContainerViewModel.set(SHADOW_TOP_MARGIN, 2 * toolbarHeight);
+            } else {
+                mContainerViewModel.set(SHADOW_TOP_MARGIN,
+                        FeatureUtilities.isStartSurfaceEnabled() ? 0 : toolbarHeight);
+            }
         }
 
         mContainerView = containerView;
@@ -502,11 +514,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         onTabSelecting(mTabModelSelector.getCurrentTabId());
 
         return true;
-    }
-
-    @Override
-    public void setBottomControlsHeight(int bottomControlsHeight) {
-        mContainerViewModel.set(BOTTOM_CONTROLS_HEIGHT, bottomControlsHeight);
     }
 
     /**

@@ -6,6 +6,7 @@ import(
     "//chrome/android/features/start_surface/public/start_surface_public_java_sources.gni")
 
 public_tab_management_java_sources = [
+  "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/MostVisitedListProperties.java",
   "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/TasksSurface.java",
   "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/TasksSurfaceProperties.java",
   "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_groups/TabGroupModelFilter.java",
@@ -31,7 +32,6 @@ tab_management_test_java_sources = [
 ]
 
 tab_management_junit_java_sources = [
-  "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/MostVisitedListMediatorUnitTest.java",
   "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/MostVisitedListViewBinderUnitTest.java",
   "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/tab_groups/TabGroupModelFilterUnitTest.java",
   "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/tab_management/TabSwitcherMediatorUnitTest.java",

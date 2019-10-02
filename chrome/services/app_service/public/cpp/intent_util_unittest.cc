@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,4 +87,4 @@ TEST_F(IntentUtilTest, PrefixMatchType) {
   EXPECT_TRUE(apps_util::ConditionValueMatches("/ABC", condition_value));
   EXPECT_FALSE(apps_util::ConditionValueMatches("/d", condition_value));
 }
-// TODO(crbug.com/853604): Test glob pattern match when implemented.
+// TODO(crbug.com/853604): Test glob pattern match.

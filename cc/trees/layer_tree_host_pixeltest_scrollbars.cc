@@ -52,6 +52,7 @@ class PaintedScrollbar : public Scrollbar {
   gfx::Rect TrackRect() const override { return rect_; }
   gfx::Rect BackButtonRect() const override { return rect_; }
   gfx::Rect ForwardButtonRect() const override { return rect_; }
+  bool SupportsDragSnapBack() const override { return false; }
   float ThumbOpacity() const override { return 1.f; }
   bool NeedsPaintPart(ScrollbarPart part) const override { return true; }
   bool HasTickmarks() const override { return false; }

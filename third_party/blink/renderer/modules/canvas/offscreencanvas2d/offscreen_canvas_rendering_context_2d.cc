@@ -198,7 +198,7 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
 }
 
 scoped_refptr<StaticBitmapImage> OffscreenCanvasRenderingContext2D::GetImage(
-    AccelerationHint hint) const {
+    AccelerationHint hint) {
   if (!IsPaintable())
     return nullptr;
   scoped_refptr<StaticBitmapImage> image =

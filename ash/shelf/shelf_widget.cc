@@ -437,7 +437,7 @@ ShelfBackgroundType ShelfWidget::GetBackgroundType() const {
 
 int ShelfWidget::GetBackgroundAlphaValue(
     ShelfBackgroundType background_type) const {
-  return background_animator_.GetBackgroundAlphaValue(background_type);
+  return SkColorGetA(background_animator_.GetBackgroundColor(background_type));
 }
 
 void ShelfWidget::OnShelfAlignmentChanged() {
@@ -449,6 +449,7 @@ void ShelfWidget::OnShelfAlignmentChanged() {
 }
 
 void ShelfWidget::OnTabletModeChanged() {
+  delegate_view_->UpdateOpaqueBackground();
   hotseat_widget()->OnTabletModeChanged();
   shelf_layout_manager()->UpdateVisibilityState();
 }

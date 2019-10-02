@@ -1348,9 +1348,10 @@ TEST_F(LayerTreeImplTest,
       gfx::Rect(scaled_bounds_for_root));
 
   host_impl().active_tree()->SetDeviceScaleFactor(device_scale_factor);
-  LayerTreeImpl::ViewportLayerIds viewport_ids;
-  viewport_ids.page_scale = page_scale_layer->id();
-  host_impl().active_tree()->SetViewportLayersFromIds(viewport_ids);
+  LayerTreeImpl::ViewportPropertyIds viewport_property_ids;
+  viewport_property_ids.page_scale_transform =
+      page_scale_layer->transform_tree_index();
+  host_impl().active_tree()->SetViewportPropertyIds(viewport_property_ids);
   host_impl().active_tree()->PushPageScaleFromMainThread(
       page_scale_factor, page_scale_factor, max_page_scale_factor);
   host_impl().active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
@@ -1432,7 +1433,8 @@ TEST_F(LayerTreeImplTest,
   // is also the root layer.
   page_scale_factor *= 1.5f;
   host_impl().active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
-  EXPECT_EQ(page_scale_layer, host_impl().active_tree()->PageScaleLayer());
+  EXPECT_EQ(page_scale_layer->transform_tree_index(),
+            host_impl().active_tree()->PageScaleTransformNode()->id);
 
   test_point = gfx::PointF(35.f, 35.f);
   test_point =
@@ -1900,9 +1902,10 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
   gfx::Size scaled_bounds_for_root = gfx::ScaleToCeiledSize(
       root->bounds(), device_scale_factor * page_scale_factor);
 
-  LayerTreeImpl::ViewportLayerIds viewport_ids;
-  viewport_ids.page_scale = page_scale_layer->id();
-  host_impl().active_tree()->SetViewportLayersFromIds(viewport_ids);
+  LayerTreeImpl::ViewportPropertyIds viewport_property_ids;
+  viewport_property_ids.page_scale_transform =
+      page_scale_layer->transform_tree_index();
+  host_impl().active_tree()->SetViewportPropertyIds(viewport_property_ids);
   host_impl().active_tree()->SetDeviceViewportRect(
       gfx::Rect(scaled_bounds_for_root));
   host_impl().active_tree()->SetDeviceScaleFactor(device_scale_factor);
@@ -2140,28 +2143,6 @@ TEST_F(LayerTreeImplTest, HitTestingCorrectLayerWheelListener) {
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
 
   EXPECT_EQ(left_child, result_layer);
-}
-
-// When using layer lists, we may not have layers for the outer viewport. This
-// test verifies that scroll size can be calculated using property tree nodes.
-TEST_F(LayerTreeImplTest, ScrollSizeWithoutLayers) {
-  const gfx::Size inner_viewport_size(1000, 1000);
-  const gfx::Size outer_viewport_size(1000, 1000);
-  const gfx::Size scroll_layer_size(2000, 2000);
-
-  auto* tree_impl = host_impl().active_tree();
-  root_layer()->SetBounds(inner_viewport_size);
-  SetupViewport(root_layer(), outer_viewport_size, scroll_layer_size);
-
-  // With viewport layers the scrollable size should be correct.
-  EXPECT_EQ(gfx::SizeF(scroll_layer_size), tree_impl->ScrollableSize());
-
-  // The scrollable size should be correct without non-outer viewport layers.
-  LayerTreeImpl::ViewportLayerIds updated_viewport_ids;
-  updated_viewport_ids.outer_viewport_scroll =
-      tree_impl->OuterViewportScrollLayer()->id();
-  tree_impl->SetViewportLayersFromIds(updated_viewport_ids);
-  EXPECT_EQ(gfx::SizeF(scroll_layer_size), tree_impl->ScrollableSize());
 }
 
 namespace {

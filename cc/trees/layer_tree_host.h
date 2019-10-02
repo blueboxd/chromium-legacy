@@ -324,36 +324,23 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // caller inform blink about the layer and remove the function.
   void SetNonBlinkManagedRootLayer(scoped_refptr<Layer> root_layer);
 
-  // Sets or gets the collection of viewport Layers, defined to allow pinch-zoom
-  // transformations on the compositor thread.
-  void RegisterViewportLayers(const ViewportLayers& viewport_layers);
-  ElementId overscroll_elasticity_element_id() const {
-    return viewport_layers_.overscroll_elasticity_element_id;
-  }
-  Layer* page_scale_layer() const { return viewport_layers_.page_scale.get(); }
-  Layer* inner_viewport_container_layer() const {
-    return viewport_layers_.inner_viewport_container.get();
-  }
-  Layer* outer_viewport_container_layer() const {
-    return viewport_layers_.outer_viewport_container.get();
-  }
-  Layer* inner_viewport_scroll_layer() const {
-    return viewport_layers_.inner_viewport_scroll.get();
-  }
-  Layer* outer_viewport_scroll_layer() const {
-    return viewport_layers_.outer_viewport_scroll.get();
-  }
-
-  // Counterpart of ViewportLayers for CompositeAfterPaint which doesn't create
-  // viewport layers.
   struct ViewportPropertyIds {
+    int overscroll_elasticity_transform = TransformTree::kInvalidNodeId;
     int page_scale_transform = TransformTree::kInvalidNodeId;
     int inner_scroll = ScrollTree::kInvalidNodeId;
-    // TODO(crbug.com/909750): Switch other usages of viewport layers to
-    // property ids for CompositeAfterPaint.
+    int outer_clip = ClipTree::kInvalidNodeId;
+    int outer_scroll = ScrollTree::kInvalidNodeId;
   };
 
+  // Sets the collection of viewport property ids, defined to allow viewport
+  // pinch-zoom etc. on the compositor thread.
   void RegisterViewportPropertyIds(const ViewportPropertyIds&);
+
+  LayerTreeHost::ViewportPropertyIds ViewportPropertyIdsForTesting() const {
+    return viewport_property_ids_;
+  }
+  Layer* InnerViewportScrollLayerForTesting() const;
+  Layer* OuterViewportScrollLayerForTesting() const;
 
   // Sets or gets the position of touch handles for a text selection. These are
   // submitted to the display compositor along with the Layer tree's contents
@@ -783,8 +770,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   scoped_refptr<Layer> root_layer_;
 
-  ViewportLayers viewport_layers_;
-  // For CompositeAfterPaint.
   ViewportPropertyIds viewport_property_ids_;
 
   float top_controls_height_ = 0.f;

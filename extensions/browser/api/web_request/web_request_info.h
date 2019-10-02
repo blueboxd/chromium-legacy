@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/values.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
+#include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/web_request/web_request_resource_type.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "ipc/ipc_message.h"
@@ -170,8 +170,7 @@ struct WebRequestInfo {
   // since this is lazily computed. Cached to avoid redundant computations.
   // Valid when not null. In case no actions are taken, populated with an empty
   // vector.
-  mutable base::Optional<
-      std::vector<declarative_net_request::RulesetManager::Action>>
+  mutable base::Optional<std::vector<declarative_net_request::RequestAction>>
       dnr_actions;
 
   const bool is_service_worker_script;

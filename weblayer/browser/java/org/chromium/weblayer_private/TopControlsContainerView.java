@@ -126,6 +126,7 @@ class TopControlsContainerView extends FrameLayout {
      * Called from ViewAndroidDelegate, see it for details.
      */
     public void onTopControlsChanged(int topControlsOffsetY, int topContentOffsetY) {
+        if (mView == null) return;
         if (topContentOffsetY == getHeight()) {
             finishTopControlsScroll(topContentOffsetY);
             return;

@@ -86,6 +86,10 @@ gfx::Rect ScrollbarLayerDelegate::TrackRect() const {
   return track_rect;
 }
 
+bool ScrollbarLayerDelegate::SupportsDragSnapBack() const {
+  return theme_.SupportsDragSnapBack();
+}
+
 gfx::Rect ScrollbarLayerDelegate::BackButtonRect() const {
   IntRect back_button_rect =
       theme_.BackButtonRect(*scrollbar_, blink::kBackButtonStartPart);

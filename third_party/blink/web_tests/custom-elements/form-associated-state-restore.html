@@ -17,6 +17,9 @@ function doneTest() {
     assert_equals(d.querySelector('my-control-2').lastRestoreMode, 'restore');
     assert_equals(d.querySelector('#focus').value, 'initial');
     assert_equals(d.querySelector('#nested-focus').value, 'initial');
+    assert_equals(d.querySelector('#disabled').value, 'initial');
+    assert_equals(d.querySelector('#readonly').value, 'initial');
+    assert_equals(d.querySelector('#fieldset-disabled').value, 'initial');
     t.done();
   });
 }

@@ -482,6 +482,9 @@ int MessagePopupCollection::GetNextEdge(const PopupItem& item) const {
   int base = 0;
   if (popup_items_.empty()) {
     base = GetBaseline();
+  } else if (inverse_) {
+    base = IsTopDown() ? popup_items_.front().bounds.bottom()
+                       : popup_items_.front().bounds.y();
   } else {
     base = IsTopDown() ? popup_items_.back().bounds.bottom()
                        : popup_items_.back().bounds.y();

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/web_applications/components/manifest_update_manager.h"
 
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/common/chrome_features.h"
 

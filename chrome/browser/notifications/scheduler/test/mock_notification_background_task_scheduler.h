@@ -16,10 +16,7 @@ class MockNotificationBackgroundTaskScheduler
  public:
   MockNotificationBackgroundTaskScheduler();
   ~MockNotificationBackgroundTaskScheduler() override;
-  MOCK_METHOD3(Schedule,
-               void(notifications::SchedulerTaskTime,
-                    base::TimeDelta,
-                    base::TimeDelta));
+  MOCK_METHOD2(Schedule, void(base::TimeDelta, base::TimeDelta));
   MOCK_METHOD0(Cancel, void());
 
  private:

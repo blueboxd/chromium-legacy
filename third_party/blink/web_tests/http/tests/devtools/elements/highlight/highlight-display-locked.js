@@ -8,16 +8,16 @@
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
-      <div id="container"
-        style="contain: style layout;">
+      <div id="container" renderSubtree="invisible" style="content-size: 10px;">
         <div id="child" style="width: 50px; height: 50px;"></div>
       </div>
     `);
-  await TestRunner.evaluateInPagePromise(`
-    container.displayLock.acquire({timeout: Infinity, size: [10, 10]});
-    // force layout so that acquire finishes.
-    container.offsetTop;
-  `);
+  //await TestRunner.evaluateInPagePromise(`
+  //  container.renderSubtree = "invisible";
+  //  await requestAnimationFrame(() => {});
+  //  //// force layout so that acquire finishes.
+  //  //container.offsetTop;
+  //`);
 
   function dumpChild() {
     ElementsTestRunner.dumpInspectorHighlightJSON('child', TestRunner.completeTest.bind(TestRunner));

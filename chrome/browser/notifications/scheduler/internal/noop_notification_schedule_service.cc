@@ -32,10 +32,9 @@ UserActionHandler* NoopNotificationScheduleService::GetUserActionHandler() {
 }
 
 void NoopNotificationScheduleService::OnStartTask(
-    SchedulerTaskTime task_time,
     TaskFinishedCallback callback) {}
 
-void NoopNotificationScheduleService::OnStopTask(SchedulerTaskTime task_time) {}
+void NoopNotificationScheduleService::OnStopTask() {}
 
 void NoopNotificationScheduleService::OnUserAction(
     const UserActionData& action_data) {}

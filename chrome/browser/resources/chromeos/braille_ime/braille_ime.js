@@ -202,7 +202,7 @@ BrailleIme.prototype = {
 
   /**
    * Called by the IME framework when a text field receives focus.
-   * @param {InputContext} context Input field context.
+   * @param {chrome.input.ime.InputContext} context Input field context.
    * @private
    */
   onFocus_: function(context) {
@@ -222,7 +222,7 @@ BrailleIme.prototype = {
 
   /**
    * Called by the IME framework when the current input context is updated.
-   * @param {InputContext} context Input field context.
+   * @param {chrome.input.ime.InputContext} context Input field context.
    * @private
    */
   onInputContextUpdate_: function(context) {
@@ -415,8 +415,8 @@ BrailleIme.prototype = {
 
   /**
    * Sends the given input context to ChromeVox.
-   * @param {InputContext} context Input context, or null when there's no input
-   *    context.
+   * @param {chrome.input.ime.InputContext} context Input context, or null when
+   *    there's no input context.
    * @private
    */
   sendInputContext_: function(context) {

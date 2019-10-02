@@ -37,8 +37,9 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
  public:
   MockPasswordManagerDriver() {}
 
-  ~MockPasswordManagerDriver() override {}
+  ~MockPasswordManagerDriver() override = default;
 
+  MOCK_CONST_METHOD0(GetId, int());
   MOCK_METHOD1(FillPasswordForm, void(const PasswordFormFillData&));
   MOCK_METHOD0(InformNoSavedCredentials, void());
   MOCK_METHOD1(ShowInitialPasswordAccountSuggestions,

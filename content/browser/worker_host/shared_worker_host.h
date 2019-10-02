@@ -115,6 +115,8 @@ class CONTENT_EXPORT SharedWorkerHost
       mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver);
   void CreatePaymentManager(
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver);
+  void CreateIDBFactory(
+      mojo::PendingReceiver<blink::mojom::IDBFactory> receiver);
 
   // Causes this instance to be deleted, which will terminate the worker. May
   // be done based on a UI action.

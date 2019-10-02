@@ -86,10 +86,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime SimpleDuration() const;
 
   bool CurrentIntervalIsActive(SMILTime elapsed);
-  void DiscardOrRevalidateCurrentInterval(SMILTime presentation_time);
-  // Check if the current interval is still current, and if not compute the
-  // next interval.
-  void CheckAndUpdateInterval(SMILTime elapsed);
+  void UpdateInterval(SMILTime presentation_time);
   void UpdateActiveState(SMILTime elapsed);
   void UpdateSyncBases();
 
@@ -131,7 +128,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
  protected:
   enum BeginOrEnd { kBegin, kEnd };
 
-  void AddInstanceTime(BeginOrEnd, SMILTime, SMILTimeOrigin);
+  void AddInstanceTimeAndUpdate(BeginOrEnd, SMILTime, SMILTimeOrigin);
 
   void SetInactive() { active_state_ = kInactive; }
 
@@ -164,11 +161,18 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   SMILInterval ResolveInterval(SMILTime begin_after, SMILTime end_after) const;
   bool ResolveFirstInterval();
+  // Check if the current interval is still current, and if not compute the
+  // next interval.
+  base::Optional<SMILInterval> CheckAndUpdateInterval(SMILTime elapsed);
+  void DiscardOrRevalidateCurrentInterval(SMILTime presentation_time);
   SMILTime ResolveActiveEnd(SMILTime resolved_begin,
                             SMILTime resolved_end) const;
   SMILTime RepeatingDuration() const;
   const SMILInterval& GetActiveInterval(SMILTime elapsed) const;
 
+  void AddInstanceTime(BeginOrEnd begin_or_end,
+                       SMILTime time,
+                       SMILTimeOrigin origin);
   void InstanceListChanged();
 
   // This represents conditions on elements begin or end list that need to be
@@ -236,8 +240,12 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     return static_cast<ActiveState>(active_state_);
   }
   ActiveState DetermineActiveState(SMILTime elapsed) const;
-  float CalculateAnimationPercent(SMILTime elapsed) const;
-  unsigned CalculateAnimationRepeat(SMILTime elapsed) const;
+
+  struct ProgressState {
+    float progress;
+    unsigned repeat;
+  };
+  ProgressState CalculateProgressState(SMILTime presentation_time) const;
 
   Member<SVGElement> target_element_;
   Member<IdTargetObserver> target_id_observer_;
@@ -278,6 +286,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   mutable SMILTime cached_max_;
 
   bool interval_has_changed_;
+  bool instance_lists_have_changed_;
   bool is_notifying_dependents_;
 
   friend class ConditionEventListener;

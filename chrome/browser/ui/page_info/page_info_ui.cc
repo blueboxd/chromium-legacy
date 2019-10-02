@@ -325,6 +325,10 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
           return CreateSecurityDescription(SecuritySummaryColor::RED,
                                            IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY,
                                            IDS_PAGE_INFO_MIXED_CONTENT_DETAILS);
+        case PageInfo::SITE_CONNECTION_STATUS_LEGACY_TLS:
+          return CreateSecurityDescription(SecuritySummaryColor::RED,
+                                           IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY,
+                                           IDS_PAGE_INFO_LEGACY_TLS_DETAILS);
         default:
           return CreateSecurityDescription(SecuritySummaryColor::GREEN,
                                            IDS_PAGE_INFO_SECURE_SUMMARY,
@@ -506,6 +510,7 @@ int PageInfoUI::GetConnectionIconID(PageInfo::SiteConnectionStatus status) {
       break;
     case PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
     case PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION:
+    case PageInfo::SITE_CONNECTION_STATUS_LEGACY_TLS:
       resource_id = IDR_PAGEINFO_WARNING_MINOR;
       break;
     case PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED:

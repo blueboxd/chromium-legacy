@@ -8,6 +8,7 @@ import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
 import {CustomElement} from './custom_element.js';
 import {TabElement} from './tab.js';
 import {TabsApiProxy} from './tabs_api_proxy.js';
+import {ThemeProxy} from './theme_proxy.js';
 
 /**
  * The amount of padding to leave between the edge of the screen and the active
@@ -78,8 +79,14 @@ class TabListElement extends CustomElement {
         /** @type {!Element} */ (
             this.shadowRoot.querySelector('#tabsContainer'));
 
+    /** @private {!ThemeProxy} */
+    this.themeProxy_ = ThemeProxy.getInstance();
+
     /** @private {number} */
     this.windowId_;
+
+    addWebUIListener('theme-changed', () => this.fetchAndUpdateColors_());
+    this.themeProxy_.startObserving();
 
     addWebUIListener(
         'tab-thumbnail-updated', this.tabThumbnailUpdated_.bind(this));
@@ -101,6 +108,7 @@ class TabListElement extends CustomElement {
   }
 
   connectedCallback() {
+    this.fetchAndUpdateColors_();
     this.tabsApi_.getCurrentWindow().then((currentWindow) => {
       this.windowId_ = currentWindow.id;
 
@@ -159,6 +167,15 @@ class TabListElement extends CustomElement {
   findTabElement_(tabId) {
     return /** @type {?TabElement} */ (
         this.shadowRoot.querySelector(`tabstrip-tab[data-tab-id="${tabId}"]`));
+  }
+
+  /** @private */
+  fetchAndUpdateColors_() {
+    this.themeProxy_.getColors().then(colors => {
+      for (const [cssVariable, rgbaValue] of Object.entries(colors)) {
+        this.style.setProperty(cssVariable, rgbaValue);
+      }
+    });
   }
 
   /**

@@ -561,9 +561,15 @@ void OverviewGrid::AddItem(aura::Window* window,
       window_list_.begin() + index,
       std::make_unique<OverviewItem>(window, overview_session_, this));
   window_list_[index]->PrepareForOverview();
-  // The item is added after overview enter animation is complete, so
-  // just call OnStartingAnimationComplete.
-  window_list_[index]->OnStartingAnimationComplete();
+
+  if (!animate) {
+    // The item is added after overview enter animation is complete, so
+    // just call OnStartingAnimationComplete() only if we won't animate it,
+    // otherwise, OnStartingAnimationComplete() will be called when the
+    // add-item-to-overview animation completes
+    // (See OverviewItem::OnItemAddedAnimationCompleted()).
+    window_list_[index]->OnStartingAnimationComplete();
+  }
 
   if (reposition)
     PositionWindows(animate, ignored_items);

@@ -67,9 +67,14 @@
       paper-spinner-lite {
         @apply --cr-icon-height-width;
       }
+
       .warning {
           color: var(--cr-secondary-text-color);
           margin-inline-start: var(--settings-controlled-by-spacing);
+      }
+
+      #mac-address-container {
+        border-top: none;
       }
     </style>
     <!-- Title section: Icon + name + connection state. -->
@@ -324,6 +329,7 @@
 
           <!-- MAC Address. -->
           <div class="settings-box two-line single-column stretch indented"
+              id="mac-address-container"
               hidden$="[[!deviceState_.macAddress]]">
             <div>$i18n{OncMacAddress}</div>
             <div class="secondary">[[deviceState_.macAddress]]</div>

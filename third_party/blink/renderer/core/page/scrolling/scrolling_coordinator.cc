@@ -491,11 +491,6 @@ void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
     }
   }
 
-  // Update the viewport layer registration if the outer viewport may have
-  // changed.
-  if (IsForRootLayer(scrollable_area))
-    page_->GetChromeClient().RegisterViewportLayers();
-
   CompositorAnimationTimeline* timeline;
   // LocalFrameView::CompositorAnimationTimeline() can indirectly return
   // m_programmaticScrollAnimatorTimeline if it does not have its own

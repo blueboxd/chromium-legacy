@@ -51,8 +51,6 @@ extern const int kTrayPopupItemMinEndWidth;
 // item. This applies to all labels in the system menu.
 extern const int kTrayPopupLabelRightPadding;
 
-extern const int kTrayRoundedBorderRadius;
-
 // The width of ToggleButton views including any border padding.
 extern const int kTrayToggleButtonWidth;
 

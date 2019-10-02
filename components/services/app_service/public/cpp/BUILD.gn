@@ -8,3 +8,14 @@ source_set("app_file_handling") {
     "file_handler_info.h",
   ]
 }
+
+source_set("intent_util") {
+  sources = [
+    "intent_util.cc",
+    "intent_util.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}

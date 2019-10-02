@@ -479,7 +479,8 @@ void ExternalVkImageBacking::Destroy() {
   if (texture_) {
     // Ensure that a context is current before removing the ref and calling
     // glDeleteTextures.
-    context_state()->MakeCurrent(nullptr, true /* need_gl */);
+    if (!gl::GLContext::GetCurrent())
+      context_state()->MakeCurrent(nullptr, true /* need_gl */);
     texture_->RemoveLightweightRef(have_context());
   }
 }
@@ -895,7 +896,7 @@ void ExternalVkImageBacking::CopyPixelsFromGLTexture() {
 
   // Make sure a gl context is current, since textures are shared between all gl
   // contexts, we don't care which gl context is current.
-  if (!gl::g_current_gl_context &&
+  if (!gl::GLContext::GetCurrent() &&
       !context_state_->MakeCurrent(nullptr, true /* needs_gl */))
     return;
 

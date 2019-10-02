@@ -57,9 +57,11 @@ void U2fRegisterOperation::TrySign() {
   if (probing_alternative_rp_id_) {
     CtapMakeCredentialRequest sign_request(request());
     sign_request.rp.id = *request().app_id;
-    sign_command = ConvertToU2fSignCommand(sign_request, excluded_key_handle());
+    sign_command = ConvertToU2fSignCommandWithBogusChallenge(
+      sign_request, excluded_key_handle());
   } else {
-    sign_command = ConvertToU2fSignCommand(request(), excluded_key_handle());
+    sign_command = ConvertToU2fSignCommandWithBogusChallenge(
+      request(), excluded_key_handle());
   }
 
   DispatchDeviceRequest(

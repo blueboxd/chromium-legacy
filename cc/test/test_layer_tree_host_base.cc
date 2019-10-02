@@ -129,9 +129,10 @@ void TestLayerTreeHostBase::SetupPendingTree(
     CreateTransformNode(pending_layer_);
     CreateScrollNode(pending_layer_);
 
-    LayerTreeImpl::ViewportLayerIds viewport_ids;
-    viewport_ids.page_scale = page_scale_layer->id();
-    pending_tree->SetViewportLayersFromIds(viewport_ids);
+    auto viewport_property_ids = pending_tree->ViewportPropertyIdsForTesting();
+    viewport_property_ids.page_scale_transform =
+        page_scale_layer->transform_tree_index();
+    pending_tree->SetViewportPropertyIds(viewport_property_ids);
   } else {
     pending_layer_ = old_pending_layer_;
     old_pending_layer_ = nullptr;

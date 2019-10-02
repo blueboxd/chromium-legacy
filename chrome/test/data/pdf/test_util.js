@@ -116,23 +116,6 @@ function MockDocumentDimensions(width, height, layoutOptions) {
   };
 }
 
-function animationFrame() {
-  return new Promise(resolve => requestAnimationFrame(resolve));
-}
-
-function contentElement() {
-  return document.elementFromPoint(innerWidth / 2, innerHeight / 2);
-}
-
-async function testAsync(f) {
-  try {
-    await f();
-    chrome.test.succeed();
-  } catch (e) {
-    chrome.test.fail(e);
-  }
-}
-
 /**
  * @return {!HTMLElement} An element containing a dom-repeat of bookmarks, for
  *     testing the bookmarks outside of the toolbar.

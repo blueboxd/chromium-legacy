@@ -105,11 +105,6 @@ class SyncSetupService : public KeyedService {
   // Returns true if the user finished the Sync setup flow.
   bool IsFirstSetupComplete() const;
 
-  // Commits the current state of the configuration to the sync backend.
-  // This method should only be used with UnifiedConsent flag off. This method
-  // is kept to not change the pre-Unity behavior.
-  void PreUnityCommitChanges();
-
   // Commits all the pending configuration changes to Sync.
   // This method should only be used with UnifiedConsent flag.
   void CommitSyncChanges();

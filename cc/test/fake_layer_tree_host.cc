@@ -79,20 +79,6 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
   active_tree()->property_trees()->scroll_tree.PushScrollUpdatesFromMainThread(
       property_trees(), active_tree());
 
-  LayerTreeImpl::ViewportLayerIds ids;
-  ids.overscroll_elasticity_element_id = overscroll_elasticity_element_id();
-  if (page_scale_layer())
-    ids.page_scale = page_scale_layer()->id();
-  if (inner_viewport_container_layer())
-    ids.inner_viewport_container = inner_viewport_container_layer()->id();
-  if (outer_viewport_container_layer())
-    ids.outer_viewport_container = outer_viewport_container_layer()->id();
-  if (inner_viewport_scroll_layer())
-    ids.inner_viewport_scroll = inner_viewport_scroll_layer()->id();
-  if (outer_viewport_scroll_layer())
-    ids.outer_viewport_scroll = outer_viewport_scroll_layer()->id();
-  active_tree()->SetViewportLayersFromIds(ids);
-
   return active_tree()->root_layer();
 }
 

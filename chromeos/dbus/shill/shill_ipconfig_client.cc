@@ -45,8 +45,6 @@ class ShillIPConfigClientImpl : public ShillIPConfigClient {
       ShillPropertyChangedObserver* observer) override {
     GetHelper(ipconfig_path)->RemovePropertyChangedObserver(observer);
   }
-  void Refresh(const dbus::ObjectPath& ipconfig_path,
-               VoidDBusMethodCallback callback) override;
   void GetProperties(const dbus::ObjectPath& ipconfig_path,
                      const DictionaryValueCallback& callback) override;
   void SetProperty(const dbus::ObjectPath& ipconfig_path,
@@ -92,13 +90,6 @@ void ShillIPConfigClientImpl::GetProperties(
   dbus::MethodCall method_call(shill::kFlimflamIPConfigInterface,
                                shill::kGetPropertiesFunction);
   GetHelper(ipconfig_path)->CallDictionaryValueMethod(&method_call, callback);
-}
-
-void ShillIPConfigClientImpl::Refresh(const dbus::ObjectPath& ipconfig_path,
-                                      VoidDBusMethodCallback callback) {
-  dbus::MethodCall method_call(shill::kFlimflamIPConfigInterface,
-                               shill::kRefreshFunction);
-  GetHelper(ipconfig_path)->CallVoidMethod(&method_call, std::move(callback));
 }
 
 void ShillIPConfigClientImpl::SetProperty(const dbus::ObjectPath& ipconfig_path,

@@ -267,11 +267,6 @@ class MockPermissionRequestCreator : public PermissionRequestCreator {
     callbacks_.push_back(std::move(callback));
   }
 
-  void CreateExtensionInstallRequest(const std::string& extension_id,
-                                     SuccessCallback callback) override {
-    FAIL();
-  }
-
   void CreateExtensionUpdateRequest(const std::string& id,
                                     SuccessCallback callback) override {
     FAIL();
@@ -541,9 +536,9 @@ TEST_F(SupervisedUserServiceExtensionTest,
     EXPECT_FALSE(error_3.empty());
 
     base::string16 error_4;
-    EXPECT_TRUE(supervised_user_service->UserMayModifySettings(extension.get(),
-                                                               &error_4));
-    EXPECT_TRUE(error_4.empty());
+    EXPECT_FALSE(supervised_user_service->UserMayModifySettings(extension.get(),
+                                                                &error_4));
+    EXPECT_FALSE(error_4.empty());
   }
 
   {

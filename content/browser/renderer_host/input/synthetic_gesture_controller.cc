@@ -51,6 +51,13 @@ void SyntheticGestureController::EnsureRendererInitialized(
       SyntheticGestureParams::DEFAULT_INPUT, std::move(wrapper));
 }
 
+void SyntheticGestureController::UpdateSyntheticGestureTarget(
+    std::unique_ptr<SyntheticGestureTarget> gesture_target,
+    Delegate* delegate) {
+  gesture_target_ = std::move(gesture_target);
+  delegate_ = delegate;
+}
+
 void SyntheticGestureController::QueueSyntheticGesture(
     std::unique_ptr<SyntheticGesture> synthetic_gesture,
     OnGestureCompleteCallback completion_callback) {

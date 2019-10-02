@@ -558,6 +558,8 @@ class CORE_EXPORT HTMLMediaElement
 
   void DefaultEventHandler(Event&) override;
 
+  Features GetFeatures() override;
+
   TaskRunnerTimer<HTMLMediaElement> load_timer_;
   TaskRunnerTimer<HTMLMediaElement> progress_event_timer_;
   TaskRunnerTimer<HTMLMediaElement> playback_progress_timer_;

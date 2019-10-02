@@ -134,15 +134,10 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/printing/printer_metrics_provider.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/metrics/assistant_service_metrics_provider.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chrome/browser/signin/signin_status_metrics_provider_chromeos.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_metrics_provider.h"
-#include "chromeos/assistant/buildflags.h"
-
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-#include "chrome/browser/metrics/assistant_service_metrics_provider.h"
-#endif
-
 #endif
 
 #if defined(OS_WIN)
@@ -736,6 +731,9 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   // Using WrapUnique to access a private constructor.
   metrics_service_->RegisterMetricsProvider(
       base::WrapUnique(new app_list::AppListLaunchMetricsProvider()));
+
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<AssistantServiceMetricsProvider>());
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_CHROMEOS)
@@ -766,13 +764,6 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<PowerMetricsProvider>());
 #endif
-
-#if defined(OS_CHROMEOS)
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-  metrics_service_->RegisterMetricsProvider(
-      std::make_unique<AssistantServiceMetricsProvider>());
-#endif  // BUILDFLAG(ENABLE_CROS_ASSISTANT)
-#endif  // defined(OS_CHROMEOS)
 }
 
 void ChromeMetricsServiceClient::RegisterUKMProviders() {

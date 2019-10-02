@@ -72,14 +72,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) = 0;
 
-  // Requests a refresh of the IP configuration for the device specified by
-  // |device_path| if it exists. This will apply any newly configured
-  // properties and renew the DHCP lease.
-  virtual void RequestRefreshIPConfigs(
-      const std::string& device_path,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
-
   // Tells the device specified by |device_path| to register to the cellular
   // network with id |network_id|. If |network_id| is empty then registration
   // will proceed in automatic mode, which will cause the modem to register

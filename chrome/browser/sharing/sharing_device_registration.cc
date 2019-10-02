@@ -17,10 +17,8 @@
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
-#include "chrome/common/pref_names.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
-#include "components/prefs/pref_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "crypto/ec_private_key.h"
@@ -33,13 +31,11 @@ using instance_id::InstanceID;
 using sync_pb::SharingSpecificFields;
 
 SharingDeviceRegistration::SharingDeviceRegistration(
-    PrefService* pref_service,
     SharingSyncPreference* sharing_sync_preference,
     instance_id::InstanceIDDriver* instance_id_driver,
     VapidKeyManager* vapid_key_manager,
     syncer::LocalDeviceInfoProvider* local_device_info_provider)
-    : pref_service_(pref_service),
-      sharing_sync_preference_(sharing_sync_preference),
+    : sharing_sync_preference_(sharing_sync_preference),
       instance_id_driver_(instance_id_driver),
       vapid_key_manager_(vapid_key_manager),
       local_device_info_provider_(local_device_info_provider) {}
@@ -225,11 +221,6 @@ bool SharingDeviceRegistration::IsClickToCallSupported() const {
 }
 
 bool SharingDeviceRegistration::IsSharedClipboardSupported() const {
-  // Check the enterprise policy for Shared Clipboard.
-  if (pref_service_ &&
-      !pref_service_->GetBoolean(prefs::kSharedClipboardEnabled)) {
-    return false;
-  }
   return base::FeatureList::IsEnabled(kSharedClipboardReceiver);
 }
 

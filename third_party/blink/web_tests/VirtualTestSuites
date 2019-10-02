@@ -990,11 +990,6 @@
              "--enable-blink-features=ForcedColors"]
   },
   {
-    "prefix": "user-timing-l2",
-    "base": "external/wpt/user-timing",
-    "args": ["--disable-blink-features=CustomUserTiming"]
-  },
-  {
     "prefix": "legacy-samesite",
     "base": "external/wpt/cookies/samesite",
     "args": ["--disable-features=SameSiteByDefaultCookies,CookiesWithoutSameSiteMustBeSecure"]

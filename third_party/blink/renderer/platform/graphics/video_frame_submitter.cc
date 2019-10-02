@@ -143,6 +143,7 @@ void VideoFrameSubmitter::OnContextLost() {
     context_provider_->RemoveObserver(this);
 
   waiting_for_compositor_ack_ = false;
+  last_frame_id_.reset();
 
   resource_provider_->OnContextLost();
 
@@ -206,16 +207,10 @@ void VideoFrameSubmitter::OnBeginFrame(
     return;
   }
 
-  scoped_refptr<media::VideoFrame> video_frame =
-      video_frame_provider_->GetCurrentFrame();
-
   // We do have a new frame that we could display.  See if we're supposed to
   // actually submit a frame or not, and try to submit one.
-  //
-  // Not submitting a frame when waiting for a previous ack saves memory by
-  // not building up unused remote side resources. See https://crbug.com/830828.
-  if (waiting_for_compositor_ack_ ||
-      !SubmitFrame(current_begin_frame_ack, std::move(video_frame))) {
+  auto video_frame = video_frame_provider_->GetCurrentFrame();
+  if (!SubmitFrame(current_begin_frame_ack, std::move(video_frame))) {
     compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack);
     return;
   }
@@ -391,6 +386,15 @@ bool VideoFrameSubmitter::SubmitFrame(
   if (!compositor_frame_sink_ || !ShouldSubmit())
     return false;
 
+  // Not submitting a frame when waiting for a previous ack saves memory by
+  // not building up unused remote side resources. See https://crbug.com/830828.
+  //
+  // Similarly we don't submit the same frame multiple times.
+  if (waiting_for_compositor_ack_ || last_frame_id_ == video_frame->unique_id())
+    return false;
+
+  last_frame_id_ = video_frame->unique_id();
+
   gfx::Size frame_size(video_frame->natural_size());
   if (rotation_ == media::VIDEO_ROTATION_90 ||
       rotation_ == media::VIDEO_ROTATION_270) {
@@ -434,16 +438,21 @@ void VideoFrameSubmitter::SubmitEmptyFrame() {
   DCHECK(!frame_size_.IsEmpty());
   TRACE_EVENT0("media", "VideoFrameSubmitter::SubmitEmptyFrame");
 
-  if (!compositor_frame_sink_)
+  // If there's nothing to submit to or we've already submitted an empty frame,
+  // don't submit another one.
+  if (!compositor_frame_sink_ || !last_frame_id_.has_value())
     return;
 
+  last_frame_id_.reset();
   compositor_frame_sink_->SubmitCompositorFrame(
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
           .local_surface_id(),
       CreateCompositorFrame(viz::BeginFrameAck::CreateManualAckWithDamage(),
                             nullptr),
       nullptr, 0);
-  waiting_for_compositor_ack_ = true;
+
+  // We don't set |waiting_for_compositor_ack_| here since we want to allow a
+  // subsequent real frame to replace it at any time if needed.
 }
 
 void VideoFrameSubmitter::SubmitSingleFrame() {
@@ -461,10 +470,10 @@ void VideoFrameSubmitter::SubmitSingleFrame() {
   if (!video_frame)
     return;
 
-  SubmitFrame(viz::BeginFrameAck::CreateManualAckWithDamage(),
-              std::move(video_frame));
-
-  video_frame_provider_->PutCurrentFrame();
+  if (SubmitFrame(viz::BeginFrameAck::CreateManualAckWithDamage(),
+                  std::move(video_frame))) {
+    video_frame_provider_->PutCurrentFrame();
+  }
 }
 
 bool VideoFrameSubmitter::ShouldSubmit() const {
@@ -526,6 +535,8 @@ viz::CompositorFrame VideoFrameSubmitter::CreateCompositorFrame(
 }
 
 void VideoFrameSubmitter::GenerateNewSurfaceId() {
+  last_frame_id_.reset();
+
   // We need a new id in the event of context loss.
   child_local_surface_id_allocator_.GenerateId();
 

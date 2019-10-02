@@ -98,7 +98,6 @@ class CONTENT_EXPORT ChildThreadImpl
   void RecordAction(const base::UserMetricsAction& action) override;
   void RecordComputedAction(const std::string& action) override;
   ServiceManagerConnection* GetServiceManagerConnection() override;
-  service_manager::Connector* GetConnector() override;
   void BindHostReceiver(mojo::GenericPendingReceiver receiver) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;
   void SetFieldTrialGroup(const std::string& trial_name,

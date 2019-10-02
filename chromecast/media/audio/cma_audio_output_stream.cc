@@ -190,6 +190,7 @@ void CmaAudioOutputStream::Close(base::OnceClosure closure) {
     cma_backend_->Stop();
   }
   push_in_progress_ = false;
+  source_callback_ = nullptr;
   cma_backend_state_ = CmaBackendState::kPendingClose;
 
   cma_backend_task_runner_.reset();
@@ -279,11 +280,12 @@ void CmaAudioOutputStream::OnPushBufferComplete(BufferStatus status) {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
   DCHECK_NE(status, CmaBackend::BufferStatus::kBufferPending);
 
-  DCHECK(push_in_progress_);
   push_in_progress_ = false;
 
   if (!source_callback_ || encountered_error_)
     return;
+
+  DCHECK_EQ(cma_backend_state_, CmaBackendState::kStarted);
 
   if (status != CmaBackend::BufferStatus::kBufferSuccess) {
     source_callback_->OnError();

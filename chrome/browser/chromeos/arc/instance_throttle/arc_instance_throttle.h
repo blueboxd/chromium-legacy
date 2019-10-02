@@ -6,15 +6,12 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_INSTANCE_THROTTLE_ARC_INSTANCE_THROTTLE_H_
 
 #include <memory>
+#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
-#include "chrome/browser/chromeos/arc/instance_throttle/arc_active_window_throttle_observer.h"
-#include "chrome/browser/chromeos/arc/instance_throttle/arc_boot_phase_throttle_observer.h"
 #include "chrome/browser/chromeos/throttle_observer.h"
+#include "chrome/browser/chromeos/throttle_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -27,7 +24,8 @@ class ArcBridgeService;
 // This class holds a number of observers which watch for several conditions
 // (window activation, mojom instance connection, etc) and adjusts the
 // throttling state of the ARC container on a change in conditions.
-class ArcInstanceThrottle : public KeyedService {
+class ArcInstanceThrottle : public KeyedService,
+                            public chromeos::ThrottleService {
  public:
   class Delegate {
    public:
@@ -57,33 +55,22 @@ class ArcInstanceThrottle : public KeyedService {
   // KeyedService:
   void Shutdown() override;
 
-  // Functions for testing
-  void NotifyObserverStateChangedForTesting();
-  void SetObserversForTesting(
-      const std::vector<chromeos::ThrottleObserver*>& observers);
-
   void set_delegate_for_testing(std::unique_ptr<Delegate> delegate) {
     delegate_ = std::move(delegate);
   }
 
+  void set_level_for_testing(chromeos::ThrottleObserver::PriorityLevel level) {
+    SetLevel(level);
+  }
+
  private:
-  std::vector<chromeos::ThrottleObserver*> GetAllObservers();
-  void OnObserverStateChanged();
-  void ThrottleInstance(chromeos::ThrottleObserver::PriorityLevel level);
+  // chromeos::ThrottleService:
+  void ThrottleInstance(
+      chromeos::ThrottleObserver::PriorityLevel level) override;
+  void RecordCpuRestrictionDisabledUMA(const std::string& observer_name,
+                                       base::TimeDelta delta) override;
 
-  content::BrowserContext* context_;
-  std::vector<chromeos::ThrottleObserver*> observers_for_testing_;
   std::unique_ptr<Delegate> delegate_;
-  chromeos::ThrottleObserver::PriorityLevel level_{
-      chromeos::ThrottleObserver::PriorityLevel::UNKNOWN};
-  chromeos::ThrottleObserver* last_effective_observer_ = nullptr;
-  base::TimeTicks last_throttle_transition_;
-
-  // Throttle Observers
-  ArcActiveWindowThrottleObserver active_window_throttle_observer_;
-  ArcBootPhaseThrottleObserver boot_phase_throttle_observer_;
-
-  base::WeakPtrFactory<ArcInstanceThrottle> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcInstanceThrottle);
 };

@@ -187,6 +187,20 @@ namespace blink {
   return os << "WebFloatPoint: [" << point.x << ", " << point.y << "]";
 }
 
+namespace {
+
+template <typename Function>
+void ForAllGraphicsLayers(GraphicsLayer& layer, const Function& function) {
+  bool recurse = function(layer);
+  if (!recurse)
+    return;
+  for (auto* child : layer.Children()) {
+    ForAllGraphicsLayers(*child, function);
+  }
+}
+
+}  // namespace
+
 const int kTouchPointPadding = 32;
 
 class WebFrameTest : public testing::Test {
@@ -8321,6 +8335,11 @@ TEST_F(WebFrameTest, OverlayFullscreenVideo) {
       web_view_helper.InitializeAndLoad(base_url_ + "fullscreen_video.html",
                                         nullptr, nullptr, &web_widget_client);
 
+  // Ensure that the local frame view has a paint artifact compositor. It's
+  // created lazily, and doing so after entering fullscreen would undo the
+  // overlay video layer modification.
+  UpdateAllLifecyclePhases(web_view_impl);
+
   const cc::LayerTreeHost* layer_tree_host =
       web_widget_client.layer_tree_host();
 
@@ -8339,6 +8358,52 @@ TEST_F(WebFrameTest, OverlayFullscreenVideo) {
   EXPECT_TRUE(video->IsFullscreen());
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()),
             SK_AlphaTRANSPARENT);
+
+  // Check that the sibling div layer is invalidated. It should have its own
+  // graphics layer since it has a transform.
+  GraphicsLayer* div_layer =
+      ToLayoutBoxModelObject(
+          frame->GetDocument()->getElementById("other")->GetLayoutObject())
+          ->Layer()
+          ->GetCompositedLayerMapping()
+          ->MainGraphicsLayer();
+  EXPECT_TRUE(div_layer->GetPaintController().CacheIsAllInvalid());
+
+  // Verify that the video layer is present in the painted graphics layer tree
+  // and that the non-video graphics layers (if any) don't paint anything. The
+  // goal is that the body text and sibling div content should not be visible.
+  // This test should be independent of the mechanism used to accomplish this,
+  // i.e. it could be done by deleting layers, marking them as not drawing, or
+  // by overriding the paint root.
+  GraphicsLayer* video_layer = ToLayoutBoxModelObject(video->GetLayoutObject())
+                                   ->Layer()
+                                   ->GetCompositedLayerMapping()
+                                   ->MainGraphicsLayer();
+  EXPECT_TRUE(video_layer);
+  GraphicsLayer* root_layer =
+      frame->View()->GetLayoutView()->Compositor()->PaintRootGraphicsLayer();
+  EXPECT_TRUE(root_layer);
+  int actively_painting_layers = 0;
+  bool found_video_layer = false;
+  ForAllGraphicsLayers(*root_layer, [&](GraphicsLayer& layer) -> bool {
+    // The video layer is expected to be present, but don't recurse into it.
+    if (&layer == video_layer) {
+      found_video_layer = true;
+      return false;
+    }
+    if (!layer.PaintsContentOrHitTest() || !layer.HasLayerState() ||
+        !layer.DrawsContent()) {
+      // Recurse into non-drawing layers, but don't check if they paint.
+      return true;
+    }
+    layer.CapturePaintRecord();
+    if (layer.GetPaintController().GetDisplayItemList().size() > 0 ||
+        layer.GetPaintController().PaintChunks().size() > 0)
+      ++actively_painting_layers;
+    return true;
+  });
+  EXPECT_EQ(actively_painting_layers, 0);
+  EXPECT_TRUE(found_video_layer);
 
   web_view_impl->MainFrameWidget()->DidExitFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);

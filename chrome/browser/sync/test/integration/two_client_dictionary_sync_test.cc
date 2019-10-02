@@ -30,6 +30,7 @@ class TwoClientDictionarySyncTest : public SyncTest {
 };
 
 IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, E2E_ENABLED(Sanity)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
   ASSERT_TRUE(DictionaryMatchChecker().Wait());
@@ -60,6 +61,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, E2E_ENABLED(Sanity)) {
 
 IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest,
                        E2E_ENABLED(SimultaneousAdd)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
   ASSERT_TRUE(DictionaryMatchChecker().Wait());
@@ -72,6 +74,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest,
 
 IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest,
                        E2E_ENABLED(SimultaneousRemove)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
   ASSERT_TRUE(DictionaryMatchChecker().Wait());
@@ -89,6 +92,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest,
 
 IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest,
                        E2E_ENABLED(AddDifferentToEach)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
   ASSERT_TRUE(DictionaryMatchChecker().Wait());
@@ -103,6 +107,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest,
 
 IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest,
                        E2E_ENABLED(RemoveOnAAddOnB)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
   ASSERT_TRUE(DictionaryMatchChecker().Wait());

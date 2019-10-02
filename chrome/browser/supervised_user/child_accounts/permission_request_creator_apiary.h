@@ -40,8 +40,6 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator {
   bool IsEnabled() const override;
   void CreateURLAccessRequest(const GURL& url_requested,
                               SuccessCallback callback) override;
-  void CreateExtensionInstallRequest(const std::string& id,
-                                     SuccessCallback callback) override;
   void CreateExtensionUpdateRequest(const std::string& id,
                                     SuccessCallback callback) override;
 

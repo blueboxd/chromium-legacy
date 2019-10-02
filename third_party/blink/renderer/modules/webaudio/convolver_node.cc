@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/modules/webaudio/convolver_options.h"
 #include "third_party/blink/renderer/platform/audio/reverb.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 
 // Note about empirical tuning:
 // The maximum FFT size affects reverb performance and accuracy.
@@ -132,6 +133,12 @@ void ConvolverHandler::SetBuffer(AudioBuffer* buffer,
         "The buffer must have 1, 2, or 4 channels, not " +
             String::Number(number_of_channels));
     return;
+  }
+
+  {
+    // Get some statistics on the size of the impulse response.
+    UMA_HISTOGRAM_LONG_TIMES("WebAudio.ConvolverNode.ImpulseResponseLength",
+                             base::TimeDelta::FromSecondsD(buffer->duration()));
   }
 
   // Wrap the AudioBuffer by an AudioBus. It's an efficient pointer set and not

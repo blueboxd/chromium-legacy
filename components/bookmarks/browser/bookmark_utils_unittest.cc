@@ -261,7 +261,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesConjunction) {
 
 // Copy and paste is not yet supported on iOS. http://crbug.com/228147
 #if !defined(OS_IOS)
-TEST_F(BookmarkUtilsTest, PasteBookmarkFromURL) {
+TEST_F(BookmarkUtilsTest, DISABLED_PasteBookmarkFromURL) {
   std::unique_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
   const base::string16 url_text = ASCIIToUTF16("http://www.google.com/");
   const BookmarkNode* new_folder = model->AddFolder(

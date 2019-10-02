@@ -45,7 +45,7 @@ class GPUCanvasContext : public CanvasRenderingContext {
   // CanvasRenderingContext implementation
   ContextType GetContextType() const override;
   void SetCanvasGetContextResult(RenderingContext&) final;
-  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) const final {
+  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) final {
     return nullptr;
   }
   void SetIsHidden(bool) override {}

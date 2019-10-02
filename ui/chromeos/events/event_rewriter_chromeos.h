@@ -87,7 +87,7 @@ class EventRewriterChromeOS : public ui::EventRewriter {
     Delegate() {}
     virtual ~Delegate() {}
 
-    // Retruns true if we want to rewrite modifier keys.
+    // Returns true if we want to rewrite modifier keys.
     virtual bool RewriteModifierKeys() = 0;
 
     // Returns true if get keyboard remapped preference value successfully and
@@ -171,6 +171,11 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   static bool HasAssistantKeyOnKeyboard(const base::FilePath& device_path,
                                         bool* has_assistant_key);
 
+  // Part of rewrite phases below. This method is public only so that
+  // SpokenFeedbackRewriter can ask for rewritten modifiers. Returns true when
+  // the input |state| has key |ui::DomKey::ALT_GRAPH_LATCH| and is remapped.
+  bool RewriteModifierKeys(const ui::KeyEvent& event, MutableKeyState* state);
+
  private:
   struct DeviceInfo {
     DeviceType type;
@@ -233,7 +238,6 @@ class EventRewriterChromeOS : public ui::EventRewriter {
 
   // Rewriter phases. These can inspect the original |event|, but operate using
   // the current |state|, which may have been modified by previous phases.
-  bool RewriteModifierKeys(const ui::KeyEvent& event, MutableKeyState* state);
   void RewriteNumPadKeys(const ui::KeyEvent& event, MutableKeyState* state);
   void RewriteExtendedKeys(const ui::KeyEvent& event, MutableKeyState* state);
   void RewriteFunctionKeys(const ui::KeyEvent& event, MutableKeyState* state);

@@ -109,12 +109,6 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
         static_cast<RenderProcessHostImpl*>(host)->BindCacheStorage(
             std::move(receiver), origin);
       }));
-  parameterized_binder_registry_.AddInterface(base::BindRepeating(
-      [](mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
-         RenderProcessHost* host, const url::Origin& origin) {
-        static_cast<RenderProcessHostImpl*>(host)->BindIndexedDB(
-            std::move(receiver), origin);
-      }));
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
     parameterized_binder_registry_.AddInterface(base::BindRepeating(
         [](mojo::PendingReceiver<blink::mojom::NativeFileSystemManager>

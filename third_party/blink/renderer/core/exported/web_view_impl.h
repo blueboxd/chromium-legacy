@@ -310,7 +310,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   LocalDOMWindow* PagePopupWindow() const;
 
   GraphicsLayer* RootGraphicsLayer();
-  void RegisterViewportLayersWithCompositor();
   PaintLayerCompositor* Compositor() const;
 
   PageScheduler* Scheduler() const override;

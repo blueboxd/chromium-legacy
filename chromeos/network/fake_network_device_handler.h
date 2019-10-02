@@ -36,11 +36,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkDeviceHandler
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) override;
 
-  void RequestRefreshIPConfigs(
-      const std::string& device_path,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) override;
-
   void RegisterCellularNetwork(
       const std::string& device_path,
       const std::string& network_id,

@@ -86,7 +86,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
 
   const CanvasColorParams& ColorParams() const { return color_params_; }
 
-  virtual scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) const = 0;
+  virtual scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) = 0;
   virtual ContextType GetContextType() const = 0;
   virtual bool IsComposited() const = 0;
   virtual bool IsAccelerated() const = 0;

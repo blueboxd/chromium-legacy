@@ -44,7 +44,6 @@ class SyncService;
 }  // namespace syncer
 
 class NotificationDisplayService;
-class PrefService;
 class SharingFCMHandler;
 class SharingMessageHandler;
 class SharingSyncPreference;
@@ -73,7 +72,6 @@ class SharingService : public KeyedService,
   };
 
   SharingService(
-      PrefService* pref_service,
       std::unique_ptr<SharingSyncPreference> sync_prefs,
       std::unique_ptr<VapidKeyManager> vapid_key_manager,
       std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
@@ -156,7 +154,6 @@ class SharingService : public KeyedService,
   // in transitioning state.
   bool IsSyncDisabled() const;
 
-  PrefService* pref_service_;
   std::unique_ptr<SharingSyncPreference> sync_prefs_;
   std::unique_ptr<VapidKeyManager> vapid_key_manager_;
   std::unique_ptr<SharingDeviceRegistration> sharing_device_registration_;

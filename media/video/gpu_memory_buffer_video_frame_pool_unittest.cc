@@ -316,7 +316,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareXR30Frame) {
   RunUntilIdle();
 
   EXPECT_NE(software_frame.get(), frame.get());
-  EXPECT_EQ(PIXEL_FORMAT_ARGB, frame->format());
+  EXPECT_EQ(PIXEL_FORMAT_XR30, frame->format());
   EXPECT_EQ(1u, frame->NumTextures());
   EXPECT_EQ(1u, sii_->shared_image_count());
   EXPECT_TRUE(frame->metadata()->IsTrue(
@@ -341,7 +341,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareXR30FrameBT709) {
   RunUntilIdle();
 
   EXPECT_NE(software_frame.get(), frame.get());
-  EXPECT_EQ(PIXEL_FORMAT_ARGB, frame->format());
+  EXPECT_EQ(PIXEL_FORMAT_XR30, frame->format());
   EXPECT_EQ(1u, frame->NumTextures());
   EXPECT_EQ(1u, sii_->shared_image_count());
   EXPECT_TRUE(frame->metadata()->IsTrue(
@@ -366,7 +366,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareXR30FrameBT601) {
   RunUntilIdle();
 
   EXPECT_NE(software_frame.get(), frame.get());
-  EXPECT_EQ(PIXEL_FORMAT_ARGB, frame->format());
+  EXPECT_EQ(PIXEL_FORMAT_XR30, frame->format());
   EXPECT_EQ(1u, frame->NumTextures());
   EXPECT_EQ(1u, sii_->shared_image_count());
   EXPECT_TRUE(frame->metadata()->IsTrue(
@@ -390,7 +390,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareXB30Frame) {
   RunUntilIdle();
 
   EXPECT_NE(software_frame.get(), frame.get());
-  EXPECT_EQ(PIXEL_FORMAT_ABGR, frame->format());
+  EXPECT_EQ(PIXEL_FORMAT_XB30, frame->format());
   EXPECT_EQ(1u, frame->NumTextures());
   EXPECT_EQ(1u, sii_->shared_image_count());
   EXPECT_TRUE(frame->metadata()->IsTrue(

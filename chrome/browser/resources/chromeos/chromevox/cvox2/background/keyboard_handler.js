@@ -48,7 +48,8 @@ BackgroundKeyboardHandler.prototype = {
     // Defer first to the math handler, if it exists, then ordinary keyboard
     // commands.
     if (!MathHandler.onKeyDown(evt) ||
-        !cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt)) {
+        !cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt) ||
+        evt.metaKey || evt.keyCode == 91) {
       evt.preventDefault();
       evt.stopPropagation();
       this.eatenKeyDowns_.add(evt.keyCode);

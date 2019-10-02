@@ -3232,7 +3232,8 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest {
     EXPECT_EQ(gfx::ScrollOffset(50, 50), args.inner_delta);
     EXPECT_EQ(2, args.page_scale_delta);
 
-    auto* scroll_layer = layer_tree_host()->inner_viewport_scroll_layer();
+    auto* scroll_layer =
+        layer_tree_host()->InnerViewportScrollLayerForTesting();
     EXPECT_EQ(gfx::ScrollOffset(50, 50), scroll_layer->CurrentScrollOffset());
     EndTest();
   }
@@ -5411,7 +5412,7 @@ class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
     scoped_refptr<Layer> content_layer = FakePictureLayer::Create(&client_);
     content_layer_id_ = content_layer->id();
     content_layer->SetBounds(gfx::Size(10, 10));
-    CopyProperties(layer_tree_host()->outer_viewport_scroll_layer(),
+    CopyProperties(layer_tree_host()->OuterViewportScrollLayerForTesting(),
                    content_layer.get());
     root_layer_->AddChild(content_layer);
 
@@ -6874,7 +6875,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     layer->SetContentsOpaque(true);
     // Avoid LCD text on the layer so we don't cause extra commits when we
     // pinch.
-    CopyProperties(layer_tree_host()->inner_viewport_scroll_layer(),
+    CopyProperties(layer_tree_host()->InnerViewportScrollLayerForTesting(),
                    layer.get());
     root->AddChild(layer);
 
@@ -7168,7 +7169,7 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
                                                     std::move(recording));
     layer->SetBounds(gfx::Size(500, 500));
     layer->SetContentsOpaque(true);
-    CopyProperties(layer_tree_host()->inner_viewport_scroll_layer(),
+    CopyProperties(layer_tree_host()->InnerViewportScrollLayerForTesting(),
                    layer.get());
     root->AddChild(layer);
 
@@ -7530,18 +7531,12 @@ class LayerTreeTestPageScaleFlags : public LayerTreeTest {
     root->AddChild(post_page_scale);
 
     affected_by_page_scale_.push_back(
-        layer_tree_host()->page_scale_layer()->id());
+        layer_tree_host()->InnerViewportScrollLayerForTesting()->id());
     affected_by_page_scale_.push_back(
-        layer_tree_host()->inner_viewport_scroll_layer()->id());
-    affected_by_page_scale_.push_back(
-        layer_tree_host()->outer_viewport_container_layer()->id());
-    affected_by_page_scale_.push_back(
-        layer_tree_host()->outer_viewport_scroll_layer()->id());
+        layer_tree_host()->OuterViewportScrollLayerForTesting()->id());
 
     not_affected_by_page_scale_.push_back(root->id());
     not_affected_by_page_scale_.push_back(pre_page_scale->id());
-    not_affected_by_page_scale_.push_back(
-        layer_tree_host()->inner_viewport_container_layer()->id());
     not_affected_by_page_scale_.push_back(post_page_scale->id());
   }
 
@@ -8764,6 +8759,7 @@ class LayerTreeHostTopControlsDeltaTriggersViewportUpdate
     // Set up scrollable root.
     root_layer->SetBounds(gfx::Size(100, 100));
     SetupViewport(root_layer, gfx::Size(50, 50), root_layer->bounds());
+    layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 1.f, 1.f);
     // Set browser controls to be partially shown.
     layer_tree_host()->SetBrowserControlsHeight(kTopControlsHeight, 0.0f,
                                                 true /* shrink */);

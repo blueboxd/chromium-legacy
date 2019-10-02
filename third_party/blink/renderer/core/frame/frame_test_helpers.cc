@@ -696,11 +696,6 @@ void TestWebWidgetClient::StopDeferringCommits(
   layer_tree_host()->StopDeferringCommits(trigger);
 }
 
-void TestWebWidgetClient::RegisterViewportLayers(
-    const cc::ViewportLayers& layers) {
-  layer_tree_host()->RegisterViewportLayers(layers);
-}
-
 void TestWebWidgetClient::RegisterSelection(
     const cc::LayerSelection& selection) {
   layer_tree_host()->RegisterSelection(selection);

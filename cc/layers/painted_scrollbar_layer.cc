@@ -33,6 +33,7 @@ PaintedScrollbarLayer::PaintedScrollbarLayer(
     : scrollbar_(std::move(scrollbar)),
       scroll_element_id_(scroll_element_id),
       internal_contents_scale_(1.f),
+      supports_drag_snap_back_(false),
       thumb_thickness_(scrollbar_->ThumbThickness()),
       thumb_length_(scrollbar_->ThumbLength()),
       is_overlay_(scrollbar_->IsOverlay()),
@@ -65,6 +66,7 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->set_internal_contents_scale_and_bounds(
       internal_contents_scale_, internal_content_bounds_);
 
+  scrollbar_layer->SetSupportsDragSnapBack(supports_drag_snap_back_);
   scrollbar_layer->SetThumbThickness(thumb_thickness_);
   scrollbar_layer->SetBackButtonRect(back_button_rect_);
   scrollbar_layer->SetForwardButtonRect(forward_button_rect_);
@@ -128,6 +130,7 @@ gfx::Rect PaintedScrollbarLayer::OriginThumbRect() const {
 }
 
 void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
+  UpdateProperty(scrollbar_->SupportsDragSnapBack(), &supports_drag_snap_back_);
   UpdateProperty(scrollbar_->TrackRect(), &track_rect_);
   UpdateProperty(scrollbar_->BackButtonRect(), &back_button_rect_);
   UpdateProperty(scrollbar_->ForwardButtonRect(), &forward_button_rect_);

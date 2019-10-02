@@ -4,10 +4,154 @@
 
 /* This file should contain style used on desktop but not Android or iOS. */
 
+fieldset {
+  border: none;
+  background: transparent;
+}
+
+#mainContent h1 {
+  font-size: 1.5em;
+}
+
+#mainContent article {
+  margin-top: 2em;
+}
+
+.screenReaderOnly {
+  display: block;
+  color: transparent;
+  height: 0px;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
 #mainContent {
-  width: 75%;
-  box-shadow: 0 0 5px 1px rgba(0, 0, 0, 0.4);
+  width: 35em;
   padding: 1em;
   margin-top: 1em;
   margin-bottom: 1em;
+}
+
+#settingsContainer {
+  position: absolute;
+  width: inherit;
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: flex-end;
+  border-bottom: thin solid gray;
+}
+
+#settingsContainer button {
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: darkslategray;
+}
+
+#settingsContainer button:hover {
+  background-color: rgba(0,0,0,0.1);
+}
+
+
+#settingsToggle {
+  border-radius: 16px;
+}
+
+.dark #settingsToggle {
+  color: #E0E0E0;
+}
+
+.dark #settingsToggle:hover {
+  background-color: rgba(255,255,255, 0.1);
+}
+
+#settingsDialog {
+  top: 3em;
+  left: auto;
+  border: none;
+  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3),
+              0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  width: 320px;
+  height: 144px;
+  padding: 16px;
+  box-sizing: border-box;
+  font-size: 16px;
+  font-family: 'Roboto', sans-serif;
+}
+
+#settingsDialog h2 {
+  font-size: 1em;
+}
+
+#settingsHeader {
+  margin-bottom: 16px;
+}
+
+#settingsHeader > * {
+  display: inline;
+}
+
+#closeSettingsButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+}
+
+#closeSettingsButton > * {
+  font-size: 18px;
+  margin: 0;
+}
+
+
+#settingsFields {
+  width: 100%;
+  display: grid;
+  grid-row-gap: 12px;
+  grid-template:
+    "style color" 32px
+    "size size"  32px
+    / 50% 50%;
+}
+
+select#fontFamilySelection {
+  background: transparent;
+  border: 1px solid silver;
+  border-radius: 2px;
+  width: 100%;
+  height: 32px;
+}
+
+#themeSelection ul {
+  list-style-type: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.themeOption {
+  display: block;
+}
+
+.themeOption input[type="radio"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid gray;
+}
+
+.themeOption input[type="radio"]:checked {
+  border: 2px solid blue;
+}
+
+#fontSizeWrapper {
+  grid-area: size;
+}
+
+#fontSizeSelection {
+  width: 100%;
 }

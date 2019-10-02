@@ -72,11 +72,9 @@ class CORE_EXPORT NGLineBreaker {
 
   // Compute NGInlineItemResult for an open tag item.
   // Returns true if this item has edge and may have non-zero inline size.
-  static bool ComputeOpenTagResult(
-      const NGInlineItem&,
-      const NGConstraintSpace&,
-      NGInlineItemResult*,
-      base::Optional<NGLineBoxStrut> margins = base::nullopt);
+  static bool ComputeOpenTagResult(const NGInlineItem&,
+                                   const NGConstraintSpace&,
+                                   NGInlineItemResult*);
 
   // This enum is private, except for |WhitespaceStateForTesting()|. See
   // |whitespace_| member.
@@ -115,6 +113,10 @@ class CORE_EXPORT NGLineBreaker {
   enum class LineBreakState {
     // The line breaking is complete.
     kDone,
+
+    // Overflow is detected without any earlier break opportunities. This line
+    // should break at the earliest break opportunity.
+    kOverflow,
 
     // Should complete the line at the earliest possible point.
     // Trailing spaces, <br>, or close tags should be included to the line even
@@ -173,11 +175,16 @@ class CORE_EXPORT NGLineBreaker {
                    Vector<LayoutObject*>* out_floats_for_min_max,
                    NGLineInfo*);
 
-  bool HandleOpenTag(const NGInlineItem&, NGLineInfo*);
+  void HandleOpenTag(const NGInlineItem&, NGLineInfo*);
   void HandleCloseTag(const NGInlineItem&, NGLineInfo*);
 
   void HandleOverflow(NGLineInfo*);
   void Rewind(unsigned new_end, NGLineInfo*);
+  void ResetRewindLoopDetector() {
+#if DCHECK_IS_ON()
+    last_rewind_from_item_index_ = last_rewind_to_item_index_ = 0;
+#endif
+  }
 
   const ComputedStyle& ComputeCurrentStyle(unsigned item_result_index,
                                            NGLineInfo*) const;

@@ -32,6 +32,7 @@ class ImpressionHistoryTracker : public UserActionHandler {
       std::map<SchedulerClientType, std::unique_ptr<ClientState>>;
   using InitCallback = base::OnceCallback<void(bool)>;
 
+  // TODO(xingliu): Delete this.
   class Delegate {
    public:
     Delegate() = default;
@@ -54,7 +55,8 @@ class ImpressionHistoryTracker : public UserActionHandler {
       SchedulerClientType type,
       const std::string& guid,
       const Impression::ImpressionResultMap& impression_map,
-      const Impression::CustomData& custom_data) = 0;
+      const Impression::CustomData& custom_data,
+      const base::Optional<base::TimeDelta>& custom_suppression_duration) = 0;
 
   // Analyzes the impression history for all notification clients, and adjusts
   // the |current_max_daily_show|.
@@ -99,7 +101,9 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
   void AddImpression(SchedulerClientType type,
                      const std::string& guid,
                      const Impression::ImpressionResultMap& impression_mapping,
-                     const Impression::CustomData& custom_data) override;
+                     const Impression::CustomData& custom_data,
+                     const base::Optional<base::TimeDelta>&
+                         custom_suppression_duration) override;
   void AnalyzeImpressionHistory() override;
   void GetClientStates(std::map<SchedulerClientType, const ClientState*>*
                            client_states) const override;

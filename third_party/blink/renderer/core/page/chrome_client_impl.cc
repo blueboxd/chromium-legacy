@@ -1260,11 +1260,6 @@ void ChromeClientImpl::AjaxSucceeded(LocalFrame* frame) {
     fill_client->AjaxSucceeded();
 }
 
-void ChromeClientImpl::RegisterViewportLayers() const {
-  if (web_view_->RootGraphicsLayer())
-    web_view_->RegisterViewportLayersWithCompositor();
-}
-
 TransformationMatrix ChromeClientImpl::GetDeviceEmulationTransform() const {
   return web_view_->GetDeviceEmulationTransform();
 }

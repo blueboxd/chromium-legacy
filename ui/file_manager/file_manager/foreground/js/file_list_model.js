@@ -76,6 +76,11 @@ class FileListModel extends cr.ui.ArrayDataModel {
    * @return {string} Localized string representation of file type.
    */
   static getFileTypeString(fileType) {
+    // Partitions on removable volumes are treated separately, they don't
+    // have translatable names.
+    if (fileType.type === 'partition') {
+      return fileType.subtype;
+    }
     if (fileType.subtype) {
       return strf(fileType.name, fileType.subtype);
     } else {

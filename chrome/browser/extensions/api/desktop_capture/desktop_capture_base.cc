@@ -30,6 +30,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/switches.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/origin.h"
 
 using content::DesktopMediaID;
 using extensions::api::desktop_capture::ChooseDesktopMedia::Results::Options;
@@ -176,8 +177,9 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::OnPickerDialogResults(
     // http://crbug.com/304341
     content::RenderFrameHost* const main_frame = web_contents->GetMainFrame();
     result = content::DesktopStreamsRegistry::GetInstance()->RegisterStream(
-        main_frame->GetProcess()->GetID(), main_frame->GetRoutingID(), origin,
-        source, extension()->name(), content::kRegistryStreamTypeDesktop);
+        main_frame->GetProcess()->GetID(), main_frame->GetRoutingID(),
+        url::Origin::Create(origin), source, extension()->name(),
+        content::kRegistryStreamTypeDesktop);
   }
 
   Options options;

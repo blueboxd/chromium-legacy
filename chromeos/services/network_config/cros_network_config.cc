@@ -309,8 +309,7 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
 
       const DeviceState* cellular_device =
           network_state_handler->GetDeviceState(network->device_path());
-      cellular->sim_locked = !cellular_device->IsSimAbsent() &&
-                             cellular_device->sim_lock_enabled();
+      cellular->sim_locked = cellular_device->IsSimLocked();
       result->type_state =
           mojom::NetworkTypeStateProperties::NewCellular(std::move(cellular));
       break;
@@ -1946,6 +1945,8 @@ void CrosNetworkConfig::SetProperties(const std::string& guid,
     std::move(callback).Run(false, kErrorInvalidONCConfiguration);
     return;
   }
+
+  NET_LOG(DEBUG) << "Configuring properties for " << guid << ": " << *onc;
 
   int callback_id = callback_id_++;
   set_properties_callbacks_[callback_id] = std::move(callback);

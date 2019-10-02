@@ -4,7 +4,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Generates the following tree of certificates:
+# Generates the following trees of certificates:
+#
+#     client_root (self-signed root)
+#     \   \
+#      \   \--> client_1_ca --> client_1 (end-entity)
+#       \
+#        \----> client_2_ca --> client_2 (end-entity)
+#
 #     root (self-signed root)
 #     \   \
 #      \   \--> l1_leaf (end-entity)
@@ -19,6 +26,135 @@ export CA_CERT_UTIL_OUT_DIR="./out/"
 try rm -rf out
 try mkdir out
 
+
+# Create client_root
+
+try openssl genrsa -out out/client_root.key 2048
+
+COMMON_NAME="Client Root CA" \
+  ID=client_root \
+  try openssl req \
+    -new \
+    -key out/client_root.key \
+    -config client-certs.cnf \
+    -out out/client_root.csr
+
+COMMON_NAME="Client Root CA" \
+  ID=client_root \
+  try openssl x509 \
+    -req -days 3650 \
+    -in out/client_root.csr \
+    -extensions ca_cert \
+    -extfile client-certs.cnf \
+    -signkey out/client_root.key \
+    -out out/client_root.pem
+
+echo 1000 > out/client_root-serial
+
+touch out/client_root-index.txt
+
+
+for i in 1 2
+do
+
+  # Create client_{1,2}_ca
+
+  try openssl genrsa -out "out/client_${i}_ca.key" 2048
+
+  COMMON_NAME="Client Cert ${i} CA" \
+    ID="client_${i}_ca" \
+    try openssl req \
+      -new \
+      -key "out/client_${i}_ca.key" \
+      -config client-certs.cnf \
+      -out "out/client_${i}_ca.csr"
+
+  COMMON_NAME="Client Cert ${i} CA" \
+    ID=client_root \
+    try openssl ca \
+      -batch \
+      -extensions ca_cert \
+      -in "out/client_${i}_ca.csr" \
+      -config client-certs.cnf \
+      -out "out/client_${i}_ca.pem"
+
+  echo $(expr 1000 + ${i}) > "out/client_${i}_ca-serial"
+
+  touch "out/client_${i}_ca-index.txt"
+
+
+  # Create client_{1,2}
+
+  try openssl genrsa -out "out/client_${i}.key" 2048
+
+  COMMON_NAME="Client Cert ${i}" \
+    ID="client_${i}" \
+    try openssl req \
+      -new \
+      -key "out/client_${i}.key" \
+      -config client-certs.cnf \
+      -out "out/client_${i}.csr"
+
+  COMMON_NAME="Client Cert ${i}" \
+    ID="client_${i}_ca" \
+    try openssl ca \
+      -batch \
+      -extensions user_cert \
+      -in "out/client_${i}.csr" \
+      -config client-certs.cnf \
+      -out "client_${i}.pem"
+
+  try openssl pkcs8 \
+    -topk8 -nocrypt \
+    -in "out/client_${i}.key" \
+    -outform DER \
+    -out "client_${i}.pk8"
+
+  try openssl x509 \
+    -in "client_${i}.pem" \
+    -outform DER \
+    -out "client_${i}.der"
+
+done
+
+
+# Create additional files for client_1
+
+try openssl rsa \
+  -in "out/client_1.key" \
+  -inform PEM \
+  -pubout \
+  -outform DER \
+  -out client_1_spki.der
+
+try openssl asn1parse \
+  -in client_1.der \
+  -inform DER \
+  -strparse 32 \
+  -out client_1_issuer_dn.der
+
+
+# Create signatures using client_{1,2}
+
+for i in 1 2
+do
+  try openssl dgst \
+    -sha1 \
+    -sign "out/client_${i}.key" \
+    -out "signature_client${i}_sha1_pkcs" \
+    data
+done
+
+try openssl rsautl \
+  -inkey "out/client_1.key" \
+  -sign \
+  -in data \
+  -pkcs \
+  -out signature_nohash_pkcs
+
+
+# Create root, l1_interm, l{1,2}_leaf
+
 CN=root \
   try root_cert root
 
@@ -30,5 +166,6 @@ CA_ID=root CN=l1_interm \
 
 CA_ID=l1_interm CN=l2_leaf \
   try issue_cert l2_leaf leaf_cert_san_dns as_der
+
 
 try rm -rf out

@@ -76,6 +76,7 @@ struct PaintPropertyTreeBuilderFragmentContext;
 // When attached, the layer tree will look like this:
 // (pre-CompositeAfterPaint only)
 //
+// TODO(wangxianzhu): Remove unnecessary layers.
 //  root_transform_layer_
 //  +- container_layer_ (transform: DET_or_parent)
 //     +- page_scale_layer_ (transform: page_scale_node_)

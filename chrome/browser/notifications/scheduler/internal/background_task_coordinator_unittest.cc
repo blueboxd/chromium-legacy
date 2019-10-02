@@ -131,7 +131,7 @@ class BackgroundTaskCoordinatorTest : public testing::Test {
 // And current task should be canceled.
 TEST_F(BackgroundTaskCoordinatorTest, NoNotification) {
   EXPECT_CALL(*background_task(), Cancel());
-  EXPECT_CALL(*background_task(), Schedule(_, _, _)).Times(0);
+  EXPECT_CALL(*background_task(), Schedule(_, _)).Times(0);
   TestData test_data;
   test_data.impression_test_data = kSingleClientImpressionTestData;
   ScheduleTask(test_data);
@@ -145,7 +145,7 @@ TEST_F(BackgroundTaskCoordinatorTest, OneNotification) {
       CreateNotification(SchedulerClientType::kTest1, kGuid,
                          kDeliverTimeWindowStart, kDeliverTimeWindowEnd)};
   EXPECT_CALL(*background_task(),
-              Schedule(_, GetTime(kDeliverTimeWindowStart) - GetTime(kNow), _));
+              Schedule(GetTime(kDeliverTimeWindowStart) - GetTime(kNow), _));
   EXPECT_CALL(*background_task(), Cancel()).Times(0);
   ScheduleTask(test_data);
 }
@@ -159,7 +159,7 @@ TEST_F(BackgroundTaskCoordinatorTest, ThrottlePerType) {
   test_data.notification_entries = {
       CreateNotification(SchedulerClientType::kTest1, kGuid,
                          kDeliverTimeWindowStart, kDeliverTimeWindowEnd)};
-  EXPECT_CALL(*background_task(), Schedule(_, _, _)).Times(0);
+  EXPECT_CALL(*background_task(), Schedule(_, _)).Times(0);
   EXPECT_CALL(*background_task(), Cancel()).Times(0);
   ScheduleTask(test_data);
 }
@@ -174,7 +174,7 @@ TEST_F(BackgroundTaskCoordinatorTest, ThrottleAllType) {
   test_data.notification_entries = {
       CreateNotification(SchedulerClientType::kTest1, kGuid,
                          kDeliverTimeWindowStart, kDeliverTimeWindowEnd)};
-  EXPECT_CALL(*background_task(), Schedule(_, _, _)).Times(0);
+  EXPECT_CALL(*background_task(), Schedule(_, _)).Times(0);
   EXPECT_CALL(*background_task(), Cancel()).Times(0);
   ScheduleTask(test_data);
 }
@@ -192,7 +192,7 @@ TEST_F(BackgroundTaskCoordinatorTest, ThrottlePerTypeNextDay) {
       CreateNotification(SchedulerClientType::kTest1, kGuid,
                          "04/25/1984 23:59:00 PM", "04/26/1984 08:00:00 AM")};
   EXPECT_CALL(*background_task(),
-              Schedule(_, GetTime(kTommorow) - GetTime(kNow), _));
+              Schedule(GetTime(kTommorow) - GetTime(kNow), _));
   EXPECT_CALL(*background_task(), Cancel()).Times(0);
   ScheduleTask(test_data);
 }
@@ -205,7 +205,7 @@ TEST_F(BackgroundTaskCoordinatorTest, DeliverWindowPassed) {
   test_data.notification_entries = {
       CreateNotification(SchedulerClientType::kTest1, kGuid,
                          "04/24/1984 23:59:00 PM", "04/24/1984 08:00:00 AM")};
-  EXPECT_CALL(*background_task(), Schedule(_, _, _)).Times(0);
+  EXPECT_CALL(*background_task(), Schedule(_, _)).Times(0);
   EXPECT_CALL(*background_task(), Cancel()).Times(0);
   ScheduleTask(test_data);
 }
@@ -221,7 +221,7 @@ TEST_F(BackgroundTaskCoordinatorTest, Suppression) {
   test_data.impression_test_data.front().suppression_info =
       SuppressionInfo(clock()->Now() - base::TimeDelta::FromHours(1),
                       base::TimeDelta::FromDays(7));
-  EXPECT_CALL(*background_task(), Schedule(_, _, _)).Times(0);
+  EXPECT_CALL(*background_task(), Schedule(_, _)).Times(0);
   EXPECT_CALL(*background_task(), Cancel()).Times(0);
   ScheduleTask(test_data);
 }
@@ -238,9 +238,8 @@ TEST_F(BackgroundTaskCoordinatorTest, DeliverTimeAfterSuppressionExpired) {
   test_data.impression_test_data.front().suppression_info =
       SuppressionInfo(clock()->Now() - base::TimeDelta::FromDays(1),
                       base::TimeDelta::FromDays(2));
-  EXPECT_CALL(
-      *background_task(),
-      Schedule(_, GetTime("04/26/1984 06:00:00 AM") - GetTime(kNow), _));
+  EXPECT_CALL(*background_task(),
+              Schedule(GetTime("04/26/1984 06:00:00 AM") - GetTime(kNow), _));
   EXPECT_CALL(*background_task(), Cancel()).Times(0);
   ScheduleTask(test_data);
 }
@@ -258,7 +257,7 @@ TEST_F(BackgroundTaskCoordinatorTest, MutipleNotifications) {
 
   test_data.notification_entries = {entry0, entry1};
   EXPECT_CALL(*background_task(),
-              Schedule(_, GetTime(kDeliverTimeWindowStart) - GetTime(kNow), _));
+              Schedule(GetTime(kDeliverTimeWindowStart) - GetTime(kNow), _));
   EXPECT_CALL(*background_task(), Cancel()).Times(0);
   ScheduleTask(test_data);
 }
@@ -276,7 +275,7 @@ TEST_F(BackgroundTaskCoordinatorTest, NoThrottleNotifications) {
   entry.schedule_params.priority = ScheduleParams::Priority::kNoThrottle;
   test_data.notification_entries = {entry};
   EXPECT_CALL(*background_task(),
-              Schedule(_, GetTime(kDeliverTimeWindowStart) - GetTime(kNow), _));
+              Schedule(GetTime(kDeliverTimeWindowStart) - GetTime(kNow), _));
   EXPECT_CALL(*background_task(), Cancel()).Times(0);
   ScheduleTask(test_data);
 }

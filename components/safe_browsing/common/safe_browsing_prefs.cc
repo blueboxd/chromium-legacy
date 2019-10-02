@@ -197,7 +197,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kSafeBrowsingTriggerEventTimestamps);
   registry->RegisterBooleanPref(prefs::kUnsafeEventsReportingEnabled, false);
   registry->RegisterIntegerPref(prefs::kBlockLargeFileTransfer, 0);
-  registry->RegisterIntegerPref(prefs::kDelayDeliveryUntilVerdict, 0);
+  registry->RegisterIntegerPref(prefs::kDelayDeliveryUntilVerdict, DELAY_NONE);
   registry->RegisterIntegerPref(
       prefs::kAllowPasswordProtectedFiles,
       AllowPasswordProtectedFilesValues::ALLOW_UPLOADS_AND_DOWNLOADS);

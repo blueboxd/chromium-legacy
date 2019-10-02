@@ -61,7 +61,8 @@ void ImpressionHistoryTrackerImpl::AddImpression(
     SchedulerClientType type,
     const std::string& guid,
     const Impression::ImpressionResultMap& impression_mapping,
-    const Impression::CustomData& custom_data) {
+    const Impression::CustomData& custom_data,
+    const base::Optional<base::TimeDelta>& custom_suppression_duration) {
   DCHECK(initialized_);
   auto it = client_states_.find(type);
   if (it == client_states_.end())
@@ -70,6 +71,7 @@ void ImpressionHistoryTrackerImpl::AddImpression(
   Impression impression(type, guid, clock_->Now());
   impression.impression_mapping = impression_mapping;
   impression.custom_data = custom_data;
+  impression.custom_suppression_duration = custom_suppression_duration;
   it->second->impressions.emplace_back(std::move(impression));
 
   impression_map_.emplace(guid, &it->second->impressions.back());
@@ -373,7 +375,10 @@ void ImpressionHistoryTrackerImpl::ApplyNegativeImpression(
 
   // Suppress the notification, the user will not see this type of notification
   // for a while.
-  SuppressionInfo supression_info(clock_->Now(), config_.suppression_duration);
+  SuppressionInfo supression_info(
+      clock_->Now(), impression->custom_suppression_duration.has_value()
+                         ? impression->custom_suppression_duration.value()
+                         : config_.suppression_duration);
   client_state->suppression_info = std::move(supression_info);
   client_state->current_max_daily_show = 0;
   stats::LogImpressionEvent(stats::ImpressionEvent::kNewSuppression);

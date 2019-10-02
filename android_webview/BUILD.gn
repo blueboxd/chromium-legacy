@@ -376,6 +376,8 @@ grit("generate_components_strings") {
 source_set("webview_entry_point") {
   deps = [
     ":common",
+    "//base",
+    "//weblayer:weblayer_lib",
   ]
   sources = [
     "lib/webview_entry_point.cc",
@@ -527,6 +529,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/AwCookieManager.java",
     "java/src/org/chromium/android_webview/AwDebug.java",
     "java/src/org/chromium/android_webview/AwDevToolsServer.java",
+    "java/src/org/chromium/android_webview/AwFeatures.java",
     "java/src/org/chromium/android_webview/AwFeatureList.java",
     "java/src/org/chromium/android_webview/AwFirebaseConfig.java",
     "java/src/org/chromium/android_webview/AwFormDatabase.java",

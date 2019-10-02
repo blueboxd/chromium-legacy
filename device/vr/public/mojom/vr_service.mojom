@@ -115,7 +115,6 @@ struct XRPresentationConnection {
 struct XRInputSourceDescription {
   XRTargetRayMode target_ray_mode;
   XRHandedness handedness;
-  bool emulated_position;
 
   // Transform from the grip matrix to the pointer's origin and orientation.
   gfx.mojom.Transform? pointer_offset;
@@ -136,6 +135,10 @@ struct XRInputSourceState {
 
   // Transform to the controllers grip (users palm) from start space origin.
   gfx.mojom.Transform? grip;
+
+  // True when position is estimated by something like a neck or arm model.
+  // False when position is based on sensors tracking a 6DoF pose.
+  bool emulated_position;
 
   // Describes the current state of the primary input.
   bool primary_input_pressed;
@@ -173,6 +176,10 @@ struct VRFieldOfView {
 struct VRPose {
   gfx.mojom.Quaternion? orientation;
   gfx.mojom.Point3F? position;
+
+  // True when position is estimated by something like a neck or arm model.
+  // False when position is based on sensors tracking a 6DoF pose.
+  bool emulated_position;
 
   // Velocity/Acceleration is in global coordinates, as rad/s.
   gfx.mojom.Vector3dF? angular_velocity;

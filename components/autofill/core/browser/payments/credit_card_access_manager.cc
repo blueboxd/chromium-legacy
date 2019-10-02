@@ -28,6 +28,10 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(OS_IOS)
+#include "components/autofill/core/browser/payments/fido_authentication_strike_database.h"
+#endif
+
 namespace autofill {
 
 namespace {
@@ -71,7 +75,13 @@ CreditCardAccessManager::CreditCardAccessManager(
           base::WaitableEvent::ResetPolicy::AUTOMATIC,
           base::WaitableEvent::InitialState::NOT_SIGNALED),
       can_fetch_unmask_details_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                                base::WaitableEvent::InitialState::SIGNALED) {}
+                                base::WaitableEvent::InitialState::SIGNALED) {
+#if !defined(OS_IOS)
+  // This is to initialize StrikeDatabase is if it hasn't been already, so that
+  // its cache would be loaded and ready to use when the first CCAM is created.
+  client_->GetStrikeDatabase();
+#endif
+}
 
 CreditCardAccessManager::~CreditCardAccessManager() {}
 
@@ -280,6 +290,10 @@ void CreditCardAccessManager::FIDOAuthOptChange(bool opt_in) {
         /*card_authorization_token=*/std::string());
   } else {
     GetOrCreateFIDOAuthenticator()->OptOut();
+    GetOrCreateFIDOAuthenticator()
+        ->GetOrCreateFidoAuthenticationStrikeDatabase()
+        ->AddStrikes(
+            FidoAuthenticationStrikeDatabase::kStrikesToAddWhenUserOptsOut);
   }
 #endif
 }
@@ -354,7 +368,11 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
   // Opt-in was already offered at this point for Android.
   bool should_offer_fido_auth = false;
 #elif !defined(OS_IOS)
-  bool should_offer_fido_auth = unmask_details_.offer_fido_opt_in;
+  bool should_offer_fido_auth =
+      unmask_details_.offer_fido_opt_in &&
+      !GetOrCreateFIDOAuthenticator()
+           ->GetOrCreateFidoAuthenticationStrikeDatabase()
+           ->IsMaxStrikesLimitReached();
 #endif
 
 #if !defined(OS_IOS)

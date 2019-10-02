@@ -166,7 +166,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:shared_worker", "renderer",
               std::set<const char*>{
-                  "blink.mojom.CacheStorage", "blink.mojom.IDBFactory",
+                  "blink.mojom.CacheStorage",
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.QuotaDispatcherHost",
@@ -176,7 +176,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
               std::set<const char*>{
                   "blink.mojom.CacheStorage",
                   "blink.mojom.DedicatedWorkerHostFactory",
-                  "blink.mojom.IDBFactory",
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.QuotaDispatcherHost",
@@ -186,7 +185,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
               "navigation:service_worker", "renderer",
               std::set<const char*>{
                   "blink.mojom.CacheStorage", "blink.mojom.CookieStore",
-                  "blink.mojom.IDBFactory",
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.QuotaDispatcherHost",
@@ -203,7 +201,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.DisplayCutoutHost",
                   "blink.mojom.DedicatedWorkerHostFactory",
                   "blink.mojom.GeolocationService",
-                  "blink.mojom.IDBFactory",
                   "blink.mojom.InsecureInputService",
                   "blink.mojom.MediaDevicesDispatcherHost",
                   "blink.mojom.MediaStreamDispatcherHost",
@@ -213,7 +210,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.PrefetchURLLoaderService",
                   "blink.mojom.QuotaDispatcherHost",
                   "blink.mojom.SharedWorkerConnector",
-                  "blink.mojom.SpeechRecognizer",
                   "blink.mojom.TextSuggestionHost",
                   "blink.mojom.UnhandledTapNotifier",
                   "blink.mojom.WebUsbService",

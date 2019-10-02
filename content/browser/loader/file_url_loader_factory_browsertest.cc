@@ -19,12 +19,14 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -101,7 +103,13 @@ class TestFileAccessContentBrowserClient : public TestContentBrowserClient {
 // This class contains integration tests for file URLs.
 class FileURLLoaderFactoryBrowserTest : public ContentBrowserTest {
  public:
-  FileURLLoaderFactoryBrowserTest() {
+  FileURLLoaderFactoryBrowserTest() = default;
+
+  // ContentBrowserTest implementation:
+  void SetUpOnMainThread() override {
+    base::FilePath test_data_path;
+    EXPECT_TRUE(base::PathService::Get(DIR_TEST_DATA, &test_data_path));
+    embedded_test_server()->ServeFilesFromDirectory(test_data_path);
     EXPECT_TRUE(embedded_test_server()->Start());
   }
 
@@ -111,6 +119,11 @@ class FileURLLoaderFactoryBrowserTest : public ContentBrowserTest {
         ->GetSiteInstance()
         ->GetBrowserContext()
         ->GetPath();
+  }
+
+  GURL RedirectToFileURL() const {
+    return embedded_test_server()->GetURL(
+        "/server-redirect?" + net::FilePathToFileURL(TestFilePath()).spec());
   }
 };
 
@@ -311,6 +324,80 @@ IN_PROC_BROWSER_TEST_F(FileURLLoaderFactoryBrowserTest, ResolveShortcutTest) {
 }
 
 #endif  // defined(OS_WIN)
+
+IN_PROC_BROWSER_TEST_F(FileURLLoaderFactoryBrowserTest,
+                       RedirectToFileUrlMainFrame) {
+  TestFileAccessContentBrowserClient test_browser_client;
+
+  TestNavigationObserver navigation_observer(shell()->web_contents());
+  EXPECT_FALSE(NavigateToURL(shell(), RedirectToFileURL()));
+  EXPECT_FALSE(navigation_observer.last_navigation_succeeded());
+  EXPECT_THAT(navigation_observer.last_net_error_code(),
+              net::test::IsError(net::ERR_UNSAFE_REDIRECT));
+  // The redirect should not have been followed. This is important so that a
+  // reload will show the same error.
+  EXPECT_EQ(RedirectToFileURL(), shell()->web_contents()->GetURL());
+  EXPECT_EQ(base::ASCIIToUTF16(kErrorTitle),
+            shell()->web_contents()->GetTitle());
+  // There should never have been a request for the file URL.
+  EXPECT_TRUE(test_browser_client.access_allowed_args().empty());
+
+  // Reloading returns the same error.
+  TestNavigationObserver navigation_observer2(shell()->web_contents());
+  shell()->Reload();
+  navigation_observer2.Wait();
+  EXPECT_FALSE(navigation_observer2.last_navigation_succeeded());
+  EXPECT_THAT(navigation_observer2.last_net_error_code(),
+              net::test::IsError(net::ERR_UNSAFE_REDIRECT));
+  EXPECT_EQ(RedirectToFileURL(), shell()->web_contents()->GetURL());
+  EXPECT_EQ(base::ASCIIToUTF16(kErrorTitle),
+            shell()->web_contents()->GetTitle());
+  // There should never have been a request for the file URL.
+  EXPECT_TRUE(test_browser_client.access_allowed_args().empty());
+}
+
+IN_PROC_BROWSER_TEST_F(FileURLLoaderFactoryBrowserTest,
+                       RedirectToFileUrlFetch) {
+  TestFileAccessContentBrowserClient test_browser_client;
+
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+  std::string fetch_redirect_to_file = base::StringPrintf(
+      "(async () => {"
+      "  try {"
+      "    var resp = (await fetch('%s'));"
+      "    return 'ok';"
+      "  } catch (error) {"
+      "    return 'error';"
+      "  }"
+      "})();",
+      RedirectToFileURL().spec().c_str());
+  // Unfortunately, fetch doesn't provide a way to unambiguously know if the
+  // request failed due to the redirect being unsafe.
+  EXPECT_EQ("error", EvalJs(shell()->web_contents()->GetMainFrame(),
+                            fetch_redirect_to_file));
+  // There should never have been a request for the file URL.
+  EXPECT_TRUE(test_browser_client.access_allowed_args().empty());
+}
+
+IN_PROC_BROWSER_TEST_F(FileURLLoaderFactoryBrowserTest,
+                       RedirectToFileUrlSubFrame) {
+  TestFileAccessContentBrowserClient test_browser_client;
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/page_with_iframe.html")));
+  LOG(WARNING) << embedded_test_server()->GetURL("/page_with_iframe.html");
+
+  TestNavigationObserver navigation_observer(shell()->web_contents());
+  EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(), "test_iframe",
+                                  RedirectToFileURL()));
+  navigation_observer.Wait();
+  EXPECT_FALSE(navigation_observer.last_navigation_succeeded());
+  EXPECT_THAT(navigation_observer.last_net_error_code(),
+              net::test::IsError(net::ERR_UNSAFE_REDIRECT));
+  // There should never have been a request for the file URL.
+  EXPECT_TRUE(test_browser_client.access_allowed_args().empty());
+}
 
 }  // namespace
 }  // namespace content

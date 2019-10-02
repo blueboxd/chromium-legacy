@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // https://wicg.github.io/layout-instability/#sec-layout-shift
-[Exposed=Window, RuntimeEnabled=LayoutInstabilityAPI]
+[Exposed=Window]
 interface LayoutShift : PerformanceEntry {
     readonly attribute double value;
     readonly attribute boolean hadRecentInput;

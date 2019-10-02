@@ -596,7 +596,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   };
 
   scoped_refptr<StaticBitmapImage> GetImage(
-      AccelerationHint = kPreferAcceleration) const override;
+      AccelerationHint = kPreferAcceleration) override;
   void SetFilterQuality(SkFilterQuality) override;
   bool IsWebGL2OrHigher() {
     return context_type_ == Platform::kWebGL2ContextType ||
@@ -1740,7 +1740,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool ContextCreatedOnXRCompatibleAdapter();
 
   bool CopyRenderingResultsFromDrawingBuffer(CanvasResourceProvider*,
-                                             SourceDrawingBuffer) const;
+                                             SourceDrawingBuffer);
   void HoldReferenceToDrawingBuffer(DrawingBuffer*);
 
   static void InitializeWebGLContextLimits(

@@ -654,20 +654,6 @@ void ShelfLayoutManager::MaybeUpdateShelfBackground(AnimationChangeType type) {
     observer.OnBackgroundUpdated(shelf_background_type_, type);
 }
 
-void ShelfLayoutManager::ProcessGestureEventFromHotseatWidget(
-    ui::GestureEvent* event,
-    aura::Window* target) {
-  if (!IsHotseatEnabled())
-    return;
-
-  ui::GestureEvent event_in_screen(*event);
-  gfx::Point location_in_screen(event->location());
-  ::wm::ConvertPointToScreen(target, &location_in_screen);
-  event_in_screen.set_location(location_in_screen);
-  if (ProcessGestureEvent(event_in_screen))
-    event->StopPropagation();
-}
-
 bool ShelfLayoutManager::ShouldBlurShelfBackground() {
   return is_background_blur_enabled_ &&
          shelf_background_type_ == SHELF_BACKGROUND_DEFAULT &&

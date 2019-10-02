@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"

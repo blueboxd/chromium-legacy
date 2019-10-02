@@ -42,7 +42,7 @@ class TestRenderFrame : public RenderFrameImpl {
   // FrameLoader will always carry out the load renderer-side.
   void SetHTMLOverrideForNextNavigation(const std::string& html);
 
-  void Navigate(const network::ResourceResponseHead& head,
+  void Navigate(network::mojom::URLResponseHeadPtr head,
                 mojom::CommonNavigationParamsPtr common_params,
                 mojom::CommitNavigationParamsPtr commit_params);
   void Navigate(mojom::CommonNavigationParamsPtr common_params,

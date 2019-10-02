@@ -95,12 +95,14 @@ newSavePasswordsController:(ios::ChromeBrowserState*)browserState
 
 // Creates and displays a new UIViewController for user to report an issue.
 // |browserState| is used to personalize some settings aspects and should not
-// be nil. |dataSource| is used to populate the UIViewController. |delegate|
-// may be nil.
+// be nil. |dataSource| is used to populate the UIViewController. |dispatcher|,
+// which can be nil, is an object that can perform operations for the view
+// controller. |delegate| may be nil.
 + (SettingsNavigationController*)
-newUserFeedbackController:(ios::ChromeBrowserState*)browserState
-                 delegate:(id<SettingsNavigationControllerDelegate>)delegate
-       feedbackDataSource:(id<UserFeedbackDataSource>)dataSource;
+    newUserFeedbackController:(ios::ChromeBrowserState*)browserState
+                     delegate:(id<SettingsNavigationControllerDelegate>)delegate
+           feedbackDataSource:(id<UserFeedbackDataSource>)dataSource
+                   dispatcher:(id<ApplicationCommands>)dispatcher;
 
 // Creates and displays a new ImportDataTableViewController. |browserState|
 // should not be nil.

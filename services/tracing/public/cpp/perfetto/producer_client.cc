@@ -38,14 +38,16 @@ void ProducerClient::Connect(
     mojo::PendingRemote<mojom::PerfettoService> perfetto_service) {
   mojo::PendingRemote<mojom::ProducerClient> client;
   auto client_receiver = client.InitWithNewPipeAndPassReceiver();
-  mojom::ProducerHostPtrInfo host_info;
+  mojo::PendingRemote<mojom::ProducerHost> producer_host_remote;
   mojo::Remote<mojom::PerfettoService>(std::move(perfetto_service))
-      ->ConnectToProducerHost(std::move(client), mojo::MakeRequest(&host_info));
+      ->ConnectToProducerHost(
+          std::move(client),
+          producer_host_remote.InitWithNewPipeAndPassReceiver());
   task_runner()->GetOrCreateTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ProducerClient::BindClientAndHostPipesOnSequence,
                      base::Unretained(this), std::move(client_receiver),
-                     std::move(host_info)));
+                     std::move(producer_host_remote)));
 }
 
 void ProducerClient::BindClientAndHostPipesForTesting(

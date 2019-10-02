@@ -10,7 +10,9 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/events/keyboard_driven_event_rewriter.h"
 #include "ash/events/spoken_feedback_event_rewriter.h"
+#include "ash/public/cpp/spoken_feedback_event_rewriter_delegate.h"
 #include "ash/shell.h"
+#include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_sink.h"
@@ -27,16 +29,6 @@ EventRewriterController* EventRewriterController::Get() {
 EventRewriterControllerImpl::EventRewriterControllerImpl() {
   // Add the controller as an observer for new root windows.
   aura::Env::GetInstance()->AddObserver(this);
-
-  std::unique_ptr<KeyboardDrivenEventRewriter> keyboard_driven_event_rewriter =
-      std::make_unique<KeyboardDrivenEventRewriter>();
-  keyboard_driven_event_rewriter_ = keyboard_driven_event_rewriter.get();
-  AddEventRewriter(std::move(keyboard_driven_event_rewriter));
-
-  std::unique_ptr<SpokenFeedbackEventRewriter> spoken_feedback_event_rewriter =
-      std::make_unique<SpokenFeedbackEventRewriter>();
-  spoken_feedback_event_rewriter_ = spoken_feedback_event_rewriter.get();
-  AddEventRewriter(std::move(spoken_feedback_event_rewriter));
 }
 
 EventRewriterControllerImpl::~EventRewriterControllerImpl() {
@@ -47,6 +39,31 @@ EventRewriterControllerImpl::~EventRewriterControllerImpl() {
       window->GetHost()->GetEventSource()->RemoveEventRewriter(rewriter.get());
   }
   rewriters_.clear();
+}
+
+void EventRewriterControllerImpl::Initialize(
+    ui::EventRewriterChromeOS::Delegate* event_rewriter_delegate,
+    ash::SpokenFeedbackEventRewriterDelegate*
+        spoken_feedback_event_rewriter_delegate) {
+  std::unique_ptr<KeyboardDrivenEventRewriter> keyboard_driven_event_rewriter =
+      std::make_unique<KeyboardDrivenEventRewriter>();
+  keyboard_driven_event_rewriter_ = keyboard_driven_event_rewriter.get();
+
+  std::unique_ptr<ui::EventRewriterChromeOS> event_rewriter_chromeos =
+      std::make_unique<ui::EventRewriterChromeOS>(
+          event_rewriter_delegate, ash::Shell::Get()->sticky_keys_controller());
+
+  std::unique_ptr<SpokenFeedbackEventRewriter> spoken_feedback_event_rewriter =
+      std::make_unique<SpokenFeedbackEventRewriter>(
+          event_rewriter_chromeos.get());
+  spoken_feedback_event_rewriter_ = spoken_feedback_event_rewriter.get();
+  spoken_feedback_event_rewriter_->set_delegate(
+      spoken_feedback_event_rewriter_delegate);
+
+  // EventRewriters are notified in the order they are added.
+  AddEventRewriter(std::move(spoken_feedback_event_rewriter));
+  AddEventRewriter(std::move(keyboard_driven_event_rewriter));
+  AddEventRewriter(std::move(event_rewriter_chromeos));
 }
 
 void EventRewriterControllerImpl::AddEventRewriter(
@@ -72,11 +89,6 @@ void EventRewriterControllerImpl::SetKeyboardDrivenEventRewriterEnabled(
 
 void EventRewriterControllerImpl::SetArrowToTabRewritingEnabled(bool enabled) {
   keyboard_driven_event_rewriter_->set_arrow_to_tab_rewriting_enabled(enabled);
-}
-
-void EventRewriterControllerImpl::SetSpokenFeedbackEventRewriterDelegate(
-    SpokenFeedbackEventRewriterDelegate* delegate) {
-  spoken_feedback_event_rewriter_->set_delegate(delegate);
 }
 
 void EventRewriterControllerImpl::OnUnhandledSpokenFeedbackEvent(

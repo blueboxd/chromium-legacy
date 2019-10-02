@@ -71,14 +71,19 @@ class BASE_EXPORT ObjectWatcher {
   // where StartWatchingOnce is called. The ObjectWatcher is not responsible for
   // deleting the delegate.
   // Returns whether watching was successfully initiated.
-  bool StartWatchingOnce(HANDLE object, Delegate* delegate);
+  bool StartWatchingOnce(HANDLE object,
+                         Delegate* delegate,
+                         const Location& from_here = Location::Current());
 
   // Notifies the delegate, on the sequence where this method is called, each
   // time the object is set. By definition, the handle must be an auto-reset
   // object. The caller must ensure that it (or any Windows system code) doesn't
   // reset the event or else the delegate won't be called.
   // Returns whether watching was successfully initiated.
-  bool StartWatchingMultipleTimes(HANDLE object, Delegate* delegate);
+  bool StartWatchingMultipleTimes(
+      HANDLE object,
+      Delegate* delegate,
+      const Location& from_here = Location::Current());
 
   // Stops watching.  Does nothing if the watch has already completed.  If the
   // watch is still active, then it is canceled, and the associated delegate is
@@ -98,12 +103,16 @@ class BASE_EXPORT ObjectWatcher {
   static void CALLBACK DoneWaiting(void* param, BOOLEAN timed_out);
 
   // Helper used by StartWatchingOnce and StartWatchingMultipleTimes.
-  bool StartWatchingInternal(HANDLE object, Delegate* delegate,
-                             bool execute_only_once);
+  bool StartWatchingInternal(HANDLE object,
+                             Delegate* delegate,
+                             bool execute_only_once,
+                             const Location& from_here);
 
   void Signal(Delegate* delegate);
 
   void Reset();
+
+  Location location_;
 
   // A callback pre-bound to Signal() that is posted to the caller's task runner
   // when the wait completes.

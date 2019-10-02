@@ -139,6 +139,10 @@ EnumTraits<media::mojom::VideoCapturePixelFormat,
       return media::mojom::VideoCapturePixelFormat::XBGR;
     case media::VideoPixelFormat::PIXEL_FORMAT_P016LE:
       return media::mojom::VideoCapturePixelFormat::P016LE;
+    case media::VideoPixelFormat::PIXEL_FORMAT_XR30:
+      return media::mojom::VideoCapturePixelFormat::XR30;
+    case media::VideoPixelFormat::PIXEL_FORMAT_XB30:
+      return media::mojom::VideoCapturePixelFormat::XB30;
   }
   NOTREACHED();
   return media::mojom::VideoCapturePixelFormat::I420;
@@ -227,6 +231,12 @@ bool EnumTraits<media::mojom::VideoCapturePixelFormat,
       return true;
     case media::mojom::VideoCapturePixelFormat::P016LE:
       *output = media::PIXEL_FORMAT_P016LE;
+      return true;
+    case media::mojom::VideoCapturePixelFormat::XR30:
+      *output = media::PIXEL_FORMAT_XR30;
+      return true;
+    case media::mojom::VideoCapturePixelFormat::XB30:
+      *output = media::PIXEL_FORMAT_XB30;
       return true;
   }
   NOTREACHED();

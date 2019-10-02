@@ -36,9 +36,10 @@ void NavigationClient::CommitNavigation(
   // unexpectedly abort the ongoing navigation. Remove when the races are fixed.
   ResetDisconnectionHandler();
   render_frame_->CommitPerNavigationMojoInterfaceNavigation(
-      std::move(common_params), std::move(commit_params), response_head,
-      std::move(response_body), std::move(url_loader_client_endpoints),
-      std::move(subresource_loaders), std::move(subresource_overrides),
+      std::move(common_params), std::move(commit_params),
+      std::move(response_head), std::move(response_body),
+      std::move(url_loader_client_endpoints), std::move(subresource_loaders),
+      std::move(subresource_overrides),
       std::move(controller_service_worker_info), std::move(provider_info),
       std::move(prefetch_loader_factory), devtools_navigation_token,
       std::move(callback));

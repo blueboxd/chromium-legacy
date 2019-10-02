@@ -71,9 +71,6 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void WasHidden() {}
   virtual void WasShown() {}
 
-  // Called when associated widget is about to close.
-  virtual void WidgetWillClose() {}
-
   // Navigation callbacks.
   //
   // Each navigation starts with a DidStartNavigation call. Then it may be

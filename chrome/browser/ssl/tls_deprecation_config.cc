@@ -9,7 +9,9 @@
 #include <utility>
 
 #include "base/no_destructor.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/ssl/tls_deprecation_config.pb.h"
 #include "crypto/sha2.h"
 #include "url/gurl.h"
@@ -51,7 +53,10 @@ bool IsTLSDeprecationConfigControlSite(const GURL& url) {
   if (!proto)
     return false;
 
-  std::string host_hash = crypto::SHA256HashString(url.host_piece());
+  // Convert bytes from crypto::SHA256 so we can compare to the proto contents.
+  std::string host_hash_bytes = crypto::SHA256HashString(url.host_piece());
+  std::string host_hash = base::ToLowerASCII(
+      base::HexEncode(host_hash_bytes.c_str(), host_hash_bytes.size()));
   const auto& control_site_hashes = proto->control_site_hashes();
 
   // Perform binary search on the sorted list of control site hashes to check

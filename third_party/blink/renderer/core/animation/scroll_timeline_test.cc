@@ -20,49 +20,6 @@ class ScrollTimelineTest : public RenderingTest {
   }
 };
 
-TEST_F(ScrollTimelineTest,
-       AttachingAndDetachingAnimationCausesCompositingUpdate) {
-
-  SetBodyInnerHTML(R"HTML(
-    <style>#scroller { overflow: scroll; width: 100px; height: 100px; }</style>
-    <div id='scroller'></div>
-  )HTML");
-
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
-  ASSERT_TRUE(scroller);
-
-  // Invariant: the scroller is not composited by default.
-  EXPECT_EQ(DocumentLifecycle::kPaintClean,
-            GetDocument().Lifecycle().GetState());
-  EXPECT_EQ(kNotComposited, scroller->Layer()->GetCompositingState());
-
-  // Create the ScrollTimeline. This shouldn't cause the scrollSource to need
-  // compositing, as it isn't attached to any animation yet.
-  ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
-  options->setTimeRange(time_range);
-  options->setScrollSource(GetElementById("scroller"));
-  ScrollTimeline* scroll_timeline =
-      ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
-  EXPECT_EQ(DocumentLifecycle::kPaintClean,
-            GetDocument().Lifecycle().GetState());
-  EXPECT_EQ(kNotComposited, scroller->Layer()->GetCompositingState());
-
-  // Now attach an animation. This should require a compositing update.
-  scroll_timeline->AnimationAttached(nullptr);
-
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_NE(scroller->Layer()->GetCompositingState(), kNotComposited);
-
-  // Now detach an animation. This should again require a compositing update.
-  scroll_timeline->AnimationDetached(nullptr);
-
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(scroller->Layer()->GetCompositingState(), kNotComposited);
-}
-
 TEST_F(ScrollTimelineTest, CurrentTimeIsNullIfScrollSourceIsNotScrollable) {
   SetBodyInnerHTML(R"HTML(
     <style>#scroller { width: 100px; height: 100px; }</style>

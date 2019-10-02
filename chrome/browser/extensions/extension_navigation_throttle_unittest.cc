@@ -67,8 +67,7 @@ class ExtensionNavigationThrottleUnitTest
 
   // Checks that trying to navigate the given |host| to |extension_url| results
   // in the |expected_will_start_result|, and also that navigating to
-  // |extension_url| via http redirect will cancel the request unless
-  // |expected_will_start_result| is PROCEED.
+  // |extension_url| via http redirect gives the same result.
   void CheckTestCase(
       content::RenderFrameHost* host,
       const GURL& extension_url,
@@ -87,18 +86,11 @@ class ExtensionNavigationThrottleUnitTest
     GURL http_url("https://example.com");
     test_handle.set_url(http_url);
 
-    // TODO(nick): https://crbug.com/695421 It should be possible to support
-    // return values other than PROCEED and CANCEL from
-    // ExtensionNavigationThrottle::WillRedirectRequest.
-    NavigationThrottle::ThrottleAction expected_will_redirect_result =
-        (expected_will_start_result == NavigationThrottle::PROCEED)
-            ? NavigationThrottle::PROCEED
-            : NavigationThrottle::CANCEL;
     EXPECT_EQ(NavigationThrottle::PROCEED,
               throttle->WillStartRequest().action())
         << http_url;
     test_handle.set_url(extension_url);
-    EXPECT_EQ(expected_will_redirect_result,
+    EXPECT_EQ(expected_will_start_result,
               throttle->WillRedirectRequest().action())
         << extension_url;
   }

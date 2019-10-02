@@ -510,7 +510,7 @@ void MediaNotificationView::UpdateForegroundColor() {
     button->SchedulePaint();
   }
 
-  container_->OnForegoundColorChanged(foreground);
+  container_->OnColorsChanged(foreground, background);
 }
 
 }  // namespace media_message_center

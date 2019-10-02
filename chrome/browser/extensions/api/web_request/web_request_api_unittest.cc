@@ -87,7 +87,7 @@ using helpers::ResponseHeader;
 using helpers::ResponseHeaders;
 using helpers::StringToCharList;
 using testing::ElementsAre;
-using Action = extensions::declarative_net_request::RulesetManager::Action;
+using DNRRequestAction = extensions::declarative_net_request::RequestAction;
 
 namespace extensions {
 
@@ -771,7 +771,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   headers0.MergeFrom(base_headers);
   WebRequestInfoInitParams info_params;
   WebRequestInfo info(std::move(info_params));
-  info.dnr_actions = std::vector<Action>();
+  info.dnr_actions = std::vector<DNRRequestAction>();
   MergeOnBeforeSendHeadersResponses(info, deltas, &headers0, &ignored_actions,
                                     &ignore1, &ignore2,
                                     &request_headers_modified0);
@@ -880,9 +880,10 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   net::HttpRequestHeaders headers4;
   headers4.MergeFrom(base_headers);
 
-  Action remove_headers_action(Action::Type::REMOVE_HEADERS);
+  DNRRequestAction remove_headers_action(
+      DNRRequestAction::Type::REMOVE_HEADERS);
   remove_headers_action.request_headers_to_remove = {"key5"};
-  info.dnr_actions = std::vector<Action>();
+  info.dnr_actions = std::vector<DNRRequestAction>();
   info.dnr_actions->push_back(std::move(remove_headers_action));
   MergeOnBeforeSendHeadersResponses(info, deltas, &headers4, &ignored_actions,
                                     &ignore1, &ignore2,
@@ -930,7 +931,7 @@ TEST(ExtensionWebRequestHelpersTest,
 
   WebRequestInfoInitParams info_params;
   WebRequestInfo info(std::move(info_params));
-  info.dnr_actions = std::vector<Action>();
+  info.dnr_actions = std::vector<DNRRequestAction>();
   helpers::IgnoredActions ignored_actions;
   std::set<std::string> removed_headers, set_headers;
   bool request_headers_modified = false;
@@ -1273,7 +1274,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   WebRequestInfoInitParams info_params;
   info_params.url = GURL(kExampleUrl);
   WebRequestInfo info(std::move(info_params));
-  info.dnr_actions = std::vector<Action>();
+  info.dnr_actions = std::vector<DNRRequestAction>();
 
   MergeOnHeadersReceivedResponses(info, deltas, base_headers.get(),
                                   &new_headers0, &allowed_unsafe_redirect_url0,
@@ -1353,9 +1354,10 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
 
   // Ensure headers removed by Declarative Net Request API can't be added by web
   // request extensions and result in a conflict.
-  Action remove_headers_action(Action::Type::REMOVE_HEADERS);
+  DNRRequestAction remove_headers_action(
+      DNRRequestAction::Type::REMOVE_HEADERS);
   remove_headers_action.response_headers_to_remove = {"key3"};
-  info.dnr_actions = std::vector<Action>();
+  info.dnr_actions = std::vector<DNRRequestAction>();
   info.dnr_actions->push_back(std::move(remove_headers_action));
 
   ignored_actions.clear();
@@ -1412,7 +1414,7 @@ TEST(ExtensionWebRequestHelpersTest,
   WebRequestInfoInitParams info_params;
   info_params.url = GURL(kExampleUrl);
   WebRequestInfo info(std::move(info_params));
-  info.dnr_actions = std::vector<Action>();
+  info.dnr_actions = std::vector<DNRRequestAction>();
 
   MergeOnHeadersReceivedResponses(info, deltas, base_headers.get(),
                                   &new_headers1, &allowed_unsafe_redirect_url1,

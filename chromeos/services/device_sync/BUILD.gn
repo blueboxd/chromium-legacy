@@ -10,8 +10,6 @@ static_library("device_sync") {
     "async_execution_time_metrics_logger.h",
     "cryptauth_api_call_flow.cc",
     "cryptauth_api_call_flow.h",
-    "cryptauth_better_together_feature_types.cc",
-    "cryptauth_better_together_feature_types.h",
     "cryptauth_client.h",
     "cryptauth_client_impl.cc",
     "cryptauth_client_impl.h",

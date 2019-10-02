@@ -90,6 +90,7 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   base::Optional<int> GetWorkspace() const override;
   void SetVisibleOnAllWorkspaces(bool always_visible) override;
   bool IsVisibleOnAllWorkspaces() const override;
+  void FlashFrame(bool flash_frame) override;
 
  protected:
   PlatformWindowDelegateLinux* platform_window_delegate() const {

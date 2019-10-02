@@ -2944,12 +2944,9 @@ bool PaintLayer::ChildBackgroundIsKnownToBeOpaqueInRect(
 }
 
 bool PaintLayer::ShouldBeSelfPaintingLayer() const {
-  // TODO(crbug.com/839341): Remove ScrollTimeline check once we support
-  // main-thread AnimationWorklet and don't need to promote the scroll-source.
   return GetLayoutObject().LayerTypeRequired() == kNormalPaintLayer ||
          (scrollable_area_ && scrollable_area_->HasOverlayScrollbars()) ||
-         ScrollsOverflow() ||
-         ScrollTimeline::HasActiveScrollTimeline(GetLayoutObject().GetNode());
+         ScrollsOverflow();
 }
 
 void PaintLayer::UpdateSelfPaintingLayer() {

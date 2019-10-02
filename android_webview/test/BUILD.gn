@@ -349,7 +349,7 @@ source_set("webview_instrumentation_test_native_jni_impl") {
 
   deps = [
     ":webview_instrumentation_test_native_jni",
-    "//android_webview:common",
+    "//android_webview/browser",
     "//base",
     "//base/test:test_support",
   ]
@@ -360,8 +360,11 @@ test("android_webview_unittests") {
     ":android_webview_unittests_assets",
     ":android_webview_unittests_java",
     ":android_webview_unittests_jni",
-    "//android_webview:common",
+    "//android_webview/browser",
+    "//android_webview/browser/gfx",
     "//base/test:test_support",
+    "//components/autofill/core/browser",
+    "//components/metrics",
     "//components/prefs:prefs",
     "//components/prefs:test_support",
     "//content:content",
@@ -369,6 +372,7 @@ test("android_webview_unittests") {
     "//mojo/core/embedder",
     "//net:net",
     "//net:test_support",
+    "//services/network:test_support",
     "//ui/base:ui_base_jni_headers",
     "//ui/gl",
     "//ui/gl:test_support",

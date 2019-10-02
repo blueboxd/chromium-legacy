@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_display_lock_options.h"
 #include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
@@ -2279,6 +2278,7 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
     } else if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
                name == html_names::kRendersubtreeAttr &&
                params.old_value != params.new_value) {
+      // This is needed to ensure that proper containment is put in place.
       SetNeedsStyleRecalc(kLocalStyleChange,
                           StyleChangeReasonForTracing::FromAttribute(name));
       SpaceSplitString tokens(params.new_value.LowerASCII());
@@ -4519,11 +4519,6 @@ void Element::SetNeedsResizeObserverUpdate() {
     for (auto& observation : data->Values())
       observation->ElementSizeChanged();
   }
-}
-
-DisplayLockContext* Element::getDisplayLockForBindings() {
-  return EnsureElementRareData().EnsureDisplayLockContext(
-      this, GetExecutionContext());
 }
 
 DisplayLockContext* Element::GetDisplayLockContext() const {

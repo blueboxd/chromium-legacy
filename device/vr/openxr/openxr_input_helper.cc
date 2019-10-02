@@ -163,6 +163,7 @@ std::vector<mojom::XRInputSourceStatePtr> OpenXRInputHelper::GetInputState(
 
     state->grip = controller->GetMojoFromGripTransform(predicted_display_time,
                                                        local_space_);
+    state->emulated_position = false;
     state->primary_input_pressed = trigger_button.value().pressed;
     state->primary_input_clicked =
         controller_states_[i].primary_button_pressed &&

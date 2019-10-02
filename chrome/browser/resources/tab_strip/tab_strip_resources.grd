@@ -45,6 +45,11 @@
           use_base_dir="false"
           type="chrome_html"
           compress="gzip"/>
+      <structure
+          name="IDR_TAB_STRIP_THEME_PROXY_JS"
+          file="theme_proxy.js"
+          type="chrome_html"
+          compress="gzip"/>
     </structures>
 
     <includes>

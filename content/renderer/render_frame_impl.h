@@ -72,6 +72,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -142,10 +143,6 @@ class Range;
 
 namespace media {
 class MediaPermission;
-}
-
-namespace network {
-struct ResourceResponseHead;
 }
 
 namespace service_manager {
@@ -326,7 +323,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Notifications from RenderWidget.
   void WasHidden();
   void WasShown();
-  void WidgetWillClose();
 
   // Start/Stop loading notifications.
   // TODO(nasko): Those are page-level methods at this time and come from
@@ -574,7 +570,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void CommitPerNavigationMojoInterfaceNavigation(
       mojom::CommonNavigationParamsPtr common_params,
       mojom::CommitNavigationParamsPtr commit_params,
-      const network::ResourceResponseHead& response_head,
+      network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
@@ -987,7 +983,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void DidStartResponse(const GURL& response_url,
                         int request_id,
-                        const network::ResourceResponseHead& response_head,
+                        network::mojom::URLResponseHeadPtr response_head,
                         content::ResourceType resource_type,
                         PreviewsState previews_state);
   void DidCompleteResponse(int request_id,
@@ -1430,7 +1426,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void CommitNavigationInternal(
       mojom::CommonNavigationParamsPtr common_params,
       mojom::CommitNavigationParamsPtr commit_params,
-      const network::ResourceResponseHead& response_head,
+      network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>

@@ -614,7 +614,7 @@ base::Value ManagementUIHandler::GetThreatProtectionInfo(
       chrome_policies.GetValue(policy::key::kSendFilesForMalwareCheck);
   if (send_files_for_malware_check_value &&
       send_files_for_malware_check_value->GetInt() >
-          safe_browsing::SEND_FILES_DISABLED &&
+          safe_browsing::DO_NOT_SCAN &&
       send_files_for_malware_check_value->GetInt() <=
           safe_browsing::SEND_FILES_FOR_MALWARE_CHECK_MAX) {
     base::Value value(base::Value::Type::DICTIONARY);

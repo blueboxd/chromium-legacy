@@ -50,15 +50,13 @@ constexpr int KScrollOffsetThreshold = 20;
 // Horizontal size of the tap areafor the overflow arrow button.
 constexpr int kArrowButtonTapAreaHorizontal = 32;
 
+// Length of the fade in/out zone.
+constexpr int kGradientZoneLength = 24;
+
 // Sum of the shelf button size and the gap between shelf buttons.
 int GetUnit() {
   return ShelfConfig::Get()->button_size() +
          ShelfConfig::Get()->button_spacing();
-}
-
-// Length of the fade in/out zone.
-int GetFadeZoneLength() {
-  return GetUnit() - kArrowButtonGroupWidth;
 }
 
 // Decides whether the current first visible shelf icon of the scrollable shelf
@@ -77,13 +75,6 @@ int GetAppIconEndPadding() {
     return 0;
 
   return 4;
-}
-
-// Calculates the padding for overflow.
-int CalculateOverflowPadding(int available_size) {
-  return (available_size - kArrowButtonGroupWidth -
-          ShelfConfig::Get()->button_size() - GetAppIconEndPadding()) %
-         GetUnit();
 }
 
 }  // namespace
@@ -642,10 +633,12 @@ void ScrollableShelfView::Layout() {
 }
 
 void ScrollableShelfView::ChildPreferredSizeChanged(views::View* child) {
-  if (GetShelf()->IsHorizontalAlignment())
-    ScrollByXOffset(0, /*animate=*/false);
-  else
-    ScrollByYOffset(0, /*animate=*/false);
+  // Add/remove a shelf icon may change the layout strategy.
+  Layout();
+
+  // Ensures that the app icons are shown correctly when the layout strategy
+  // changes.
+  AdjustOffsetAfterScrolling();
 }
 
 void ScrollableShelfView::OnMouseEvent(ui::MouseEvent* event) {
@@ -773,10 +766,9 @@ gfx::Insets ScrollableShelfView::CalculateEdgePadding() const {
       (GetShelf()->IsHorizontalAlignment() ? width() : height()) -
       2 * ShelfConfig::Get()->app_icon_group_margin();
 
-  int gap =
-      CanFitAllAppsWithoutScrolling()
-          ? available_size_for_app_icons - icons_size  // shelf centering
-          : CalculateOverflowPadding(available_size_for_app_icons);  // overflow
+  int gap = CanFitAllAppsWithoutScrolling()
+                ? available_size_for_app_icons - icons_size  // shelf centering
+                : 0;                                         // overflow
 
   // Calculates the paddings before/after the visible area of scrollable shelf.
   const int before_padding = base_padding + gap / 2;
@@ -883,31 +875,8 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
     return true;
   }
 
-  // Make sure that no visible shelf button is partially shown after gestures.
   if (event.type() == ui::ET_GESTURE_END) {
-    // The type of scrolling offset is float to ensure that ScrollableShelfView
-    // is responsive to slow gesture scrolling. However, when the gesture ends,
-    // the scrolling offset should be floored.
-    scroll_offset_ = gfx::ToFlooredVector2d(scroll_offset_);
-
-    int actual_scroll_distance = GetActualScrollOffset();
-
-    // Returns early when it does not need to adjust the shelf view's location.
-    if (actual_scroll_distance == CalculateScrollUpperBound())
-      return true;
-
-    const int residue = actual_scroll_distance % GetUnit();
-    int offset =
-        residue > GetGestureDragThreshold() ? GetUnit() - residue : -residue;
-
-    // Returns early when it does not need to adjust the shelf view's location.
-    if (!offset)
-      return true;
-
-    if (GetShelf()->IsHorizontalAlignment())
-      ScrollByXOffset(offset, /*animate=*/true);
-    else
-      ScrollByYOffset(offset, /*animate=*/true);
+    AdjustOffsetAfterScrolling();
     return true;
   }
 
@@ -1009,12 +978,43 @@ void ScrollableShelfView::ScrollToYOffset(float y_target_offset,
 }
 
 float ScrollableShelfView::CalculatePageScrollingOffset(bool forward) const {
+  DCHECK_NE(kNotShowArrowButtons, layout_strategy_);
+
   // Implement the arrow button handler in the same way with the gesture
   // scrolling. The key is to calculate the suitable scroll distance.
-  float offset = GetSpaceForIcons() - kArrowButtonGroupWidth -
-                 ShelfConfig::Get()->button_size() - GetAppIconEndPadding();
-  if (layout_strategy_ == kShowRightArrowButton)
-    offset -= (kArrowButtonGroupWidth - GetAppIconEndPadding());
+
+  float offset;
+
+  // The available space for icons excluding the area taken by arrow button(s).
+  int space_excluding_arrow;
+
+  if (layout_strategy_ == kShowRightArrowButton) {
+    space_excluding_arrow = GetSpaceForIcons() - kArrowButtonGroupWidth;
+
+    // After scrolling, the left arrow button will show. Adapts the offset
+    // to the extra arrow button.
+    const int offset_for_extra_arrow =
+        kArrowButtonGroupWidth - GetAppIconEndPadding();
+
+    const int mod = space_excluding_arrow % GetUnit();
+    offset = space_excluding_arrow - mod - offset_for_extra_arrow;
+  } else if (layout_strategy_ == kShowButtons ||
+             layout_strategy_ == kShowLeftArrowButton) {
+    space_excluding_arrow = GetSpaceForIcons() - 2 * kArrowButtonGroupWidth;
+    const int mod = space_excluding_arrow % GetUnit();
+    offset = space_excluding_arrow - mod;
+
+    // Layout of kShowLeftArrowButton can be regarded as the layout of
+    // kShowButtons with extra offset.
+    if (layout_strategy_ == kShowLeftArrowButton) {
+      const int extra_offset =
+          -ShelfConfig::Get()->button_spacing() -
+          (GetSpaceForIcons() - kArrowButtonGroupWidth) % GetUnit() +
+          GetAppIconEndPadding();
+      offset += extra_offset;
+    }
+  }
+
   DCHECK_GT(offset, 0);
 
   if (!forward)
@@ -1034,7 +1034,6 @@ ScrollableShelfView::FadeZone ScrollableShelfView::CalculateStartGradientZone()
     const {
   gfx::Rect zone_rect;
   bool fade_in = false;
-  const int zone_length = GetFadeZoneLength();
   const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
   const gfx::Rect left_arrow_bounds = left_arrow_->bounds();
 
@@ -1048,13 +1047,14 @@ ScrollableShelfView::FadeZone ScrollableShelfView::CalculateStartGradientZone()
     if (ShouldAdaptToRTL()) {
       const gfx::Rect mirrored_left_arrow_bounds =
           GetMirroredRect(left_arrow_bounds);
-      x = mirrored_left_arrow_bounds.x() - zone_length;
+      x = mirrored_left_arrow_bounds.x() - kGradientZoneLength;
     } else {
       x = left_arrow_bounds.right();
     }
-    zone_rect = gfx::Rect(x, 0, zone_length, height());
+    zone_rect = gfx::Rect(x, 0, kGradientZoneLength, height());
   } else {
-    zone_rect = gfx::Rect(0, left_arrow_bounds.bottom(), width(), zone_length);
+    zone_rect =
+        gfx::Rect(0, left_arrow_bounds.bottom(), width(), kGradientZoneLength);
   }
 
   fade_in = !ShouldAdaptToRTL();
@@ -1066,7 +1066,6 @@ ScrollableShelfView::FadeZone ScrollableShelfView::CalculateEndGradientZone()
     const {
   gfx::Rect zone_rect;
   bool fade_in = false;
-  const int zone_length = GetFadeZoneLength();
   const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
   const gfx::Rect right_arrow_bounds = right_arrow_->bounds();
 
@@ -1082,12 +1081,12 @@ ScrollableShelfView::FadeZone ScrollableShelfView::CalculateEndGradientZone()
           GetMirroredRect(right_arrow_bounds);
       x = mirrored_right_arrow_bounds.right();
     } else {
-      x = right_arrow_bounds.x() - zone_length;
+      x = right_arrow_bounds.x() - kGradientZoneLength;
     }
-    zone_rect = gfx::Rect(x, 0, zone_length, height());
+    zone_rect = gfx::Rect(x, 0, kGradientZoneLength, height());
   } else {
-    zone_rect = gfx::Rect(0, right_arrow_bounds.y() - zone_length, width(),
-                          zone_length);
+    zone_rect = gfx::Rect(0, right_arrow_bounds.y() - kGradientZoneLength,
+                          width(), kGradientZoneLength);
   }
 
   fade_in = ShouldAdaptToRTL();
@@ -1136,7 +1135,7 @@ void ScrollableShelfView::UpdateTappableIconIndices() {
   int shelf_container_available_space =
       (GetShelf()->IsHorizontalAlignment() ? shelf_container_view_->width()
                                            : shelf_container_view_->height()) -
-      GetFadeZoneLength();
+      kGradientZoneLength;
   if (layout_strategy_ == kShowRightArrowButton ||
       layout_strategy_ == kShowButtons) {
     first_tappable_app_index_ = actual_scroll_distance / GetUnit();
@@ -1191,6 +1190,33 @@ bool ScrollableShelfView::ShouldHandleScroll(const gfx::Vector2dF& offset,
   const int threshold = is_gesture_scrolling ? kGestureFlingVelocityThreshold
                                              : KScrollOffsetThreshold;
   return abs(main_axis_offset) > threshold;
+}
+
+void ScrollableShelfView::AdjustOffsetAfterScrolling() {
+  // The type of scrolling offset is float to ensure that ScrollableShelfView
+  // is responsive to slow gesture scrolling. However, when scrolling ends, the
+  // scrolling offset should be floored.
+  scroll_offset_ = gfx::ToFlooredVector2d(scroll_offset_);
+
+  // Returns early when it does not need to adjust the shelf view's location.
+  const int scroll_distance = GetShelf()->IsHorizontalAlignment()
+                                  ? scroll_offset_.x()
+                                  : scroll_offset_.y();
+  if (scroll_distance >= CalculateScrollUpperBound())
+    return;
+
+  const int residue = GetActualScrollOffset() % GetUnit();
+  int offset =
+      residue > GetGestureDragThreshold() ? GetUnit() - residue : -residue;
+
+  // Returns early when it does not need to adjust the shelf view's location.
+  if (!offset)
+    return;
+
+  if (GetShelf()->IsHorizontalAlignment())
+    ScrollByXOffset(offset, /*animate=*/true);
+  else
+    ScrollByYOffset(offset, /*animate=*/true);
 }
 
 }  // namespace ash

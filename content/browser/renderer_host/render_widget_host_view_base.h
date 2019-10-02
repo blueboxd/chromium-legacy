@@ -60,6 +60,7 @@ class WebMouseWheelEvent;
 namespace ui {
 enum class DomCode;
 class LatencyInfo;
+class TouchEvent;
 struct DidOverscrollParams;
 }
 
@@ -431,9 +432,15 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // synchronization, the default implementation returns true.
   virtual bool CanSynchronizeVisualProperties();
 
-  // Cancels any existing active pointers by dispatching synthetic cancel
-  // events.
-  virtual void CancelActiveTouches() {}
+  // Extracts information about any active pointers and cancels any existing
+  // active pointers by dispatching synthetic cancel events.
+  virtual std::vector<std::unique_ptr<ui::TouchEvent>>
+  ExtractAndCancelActiveTouches();
+
+  // Used to transfer pointer state from one view to another. It recreates the
+  // pointer state by dispatching touch down events.
+  virtual void TransferTouches(
+      const std::vector<std::unique_ptr<ui::TouchEvent>>& touches) {}
 
   //----------------------------------------------------------------------------
   // The following methods are related to IME.

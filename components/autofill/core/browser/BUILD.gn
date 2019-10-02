@@ -319,6 +319,8 @@ jumbo_static_library("browser") {
       "autofill_policy_handler.h",
       "payments/credit_card_fido_authenticator.cc",
       "payments/credit_card_fido_authenticator.h",
+      "payments/fido_authentication_strike_database.cc",
+      "payments/fido_authentication_strike_database.h",
     ]
   }
 

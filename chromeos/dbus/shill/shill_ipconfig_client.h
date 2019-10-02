@@ -70,11 +70,6 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillIPConfigClient {
       const dbus::ObjectPath& ipconfig_path,
       ShillPropertyChangedObserver* observer) = 0;
 
-  // Refreshes the active IP configuration after service property changes and
-  // renews the DHCP lease, if any.
-  virtual void Refresh(const dbus::ObjectPath& ipconfig_path,
-                       VoidDBusMethodCallback callback) = 0;
-
   // Calls GetProperties method.
   // |callback| is called after the method call succeeds.
   virtual void GetProperties(const dbus::ObjectPath& ipconfig_path,

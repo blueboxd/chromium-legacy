@@ -38,12 +38,9 @@ namespace sandbox {
 
 class BrokerServices;
 class PolicyDiagnosticsReceiver;
-class PolicyInfo;
 class ProcessState;
 class TargetPolicy;
 class TargetServices;
-
-using PolicyList = std::vector<std::unique_ptr<PolicyInfo>>;
 
 // BrokerServices exposes all the broker API.
 // The basic use is to start the target(s) and wait for them to end.
@@ -163,6 +160,24 @@ class TargetServices {
 
  protected:
   ~TargetServices() {}
+};
+
+class PolicyInfo {
+ public:
+  // Returns a JSON representation of the policy snapshot.
+  // This pointer has the same lifetime as this PolicyInfo object.
+  virtual const char* JsonString() = 0;
+  virtual ~PolicyInfo() {}
+};
+
+// This is returned by BrokerServices::GetPolicyDiagnostics().
+// PolicyInfo entries need not be ordered.
+class PolicyList {
+ public:
+  virtual std::vector<std::unique_ptr<PolicyInfo>>::iterator begin() = 0;
+  virtual std::vector<std::unique_ptr<PolicyInfo>>::iterator end() = 0;
+  virtual size_t size() const = 0;
+  virtual ~PolicyList() {}
 };
 
 // This class mediates calls to BrokerServices::GetPolicyDiagnostics().

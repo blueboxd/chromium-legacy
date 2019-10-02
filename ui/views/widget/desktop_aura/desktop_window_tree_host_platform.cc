@@ -575,8 +575,7 @@ void DesktopWindowTreeHostPlatform::InitModalType(ui::ModalType modal_type) {
 }
 
 void DesktopWindowTreeHostPlatform::FlashFrame(bool flash_frame) {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+  platform_window()->FlashFrame(flash_frame);
 }
 
 bool DesktopWindowTreeHostPlatform::IsAnimatingClosed() const {

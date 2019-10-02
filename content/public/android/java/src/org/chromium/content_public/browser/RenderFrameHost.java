@@ -62,4 +62,9 @@ public interface RenderFrameHost {
      * @return {@code true} if render frame is created.
      */
     boolean isRenderFrameCreated();
+
+    /**
+     * @return Whether input events from the renderer are ignored on the browser side.
+     */
+    boolean areInputEventsIgnored();
 }

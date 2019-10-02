@@ -1586,10 +1586,6 @@ void RenderViewContextMenu::AppendSharedClipboardItems() {
   if (!ShouldOfferSharedClipboard(browser_context_, params_.selection_text))
     return;
 
-  // Do not show shared clipboard items for item that show click to call.
-  if (ShouldOfferClickToCallForURL(browser_context_, params_.link_url))
-    return;
-
   if (!shared_clipboard_context_menu_observer_) {
     shared_clipboard_context_menu_observer_ =
         std::make_unique<SharedClipboardContextMenuObserver>(this);

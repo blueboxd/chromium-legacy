@@ -109,8 +109,10 @@ void SMILTimeContainer::Schedule(SVGSMILElement* animation,
 
   SMILTime latest_update = CurrentDocumentTime();
   if (animation->IntervalBegin() <= latest_update ||
-      animation->NextProgressTime(latest_update).IsFinite())
-    NotifyIntervalsChanged();
+      animation->NextProgressTime(latest_update).IsFinite()) {
+    MarkIntervalsDirty();
+    ScheduleIntervalUpdate();
+  }
 }
 
 void SMILTimeContainer::Unschedule(SVGSMILElement* animation,
@@ -145,12 +147,12 @@ bool SMILTimeContainer::HasPendingSynchronization() const {
          wakeup_timer_.IsActive() && wakeup_timer_.NextFireInterval().is_zero();
 }
 
-void SMILTimeContainer::NotifyIntervalsChanged() {
-  intervals_dirty_ = true;
+void SMILTimeContainer::ScheduleIntervalUpdate() {
   if (!IsStarted())
     return;
-  // Schedule updateAnimations() to be called asynchronously so multiple
-  // intervals can change with updateAnimations() only called once at the end.
+  // Schedule UpdateAnimations...() to be called asynchronously so multiple
+  // intervals can change with UpdateAnimations...() only called once at the
+  // end.
   if (HasPendingSynchronization())
     return;
   CancelAnimationFrame();

@@ -116,7 +116,7 @@ TEST_F(PreloadControllerTest, DontPreloadNonWebURLs) {
                    referrer:kReferrer
                  transition:kTransition
                 immediately:YES];
-  EXPECT_FALSE([controller_ releasePrerenderContentsForWebState:nil]);
+  EXPECT_FALSE([controller_ releasePrerenderContents]);
 
   // Attempt to prerender the NTP and verify that no WebState was created
   // to preload.
@@ -124,7 +124,7 @@ TEST_F(PreloadControllerTest, DontPreloadNonWebURLs) {
                    referrer:kReferrer
                  transition:kTransition
                 immediately:YES];
-  EXPECT_FALSE([controller_ releasePrerenderContentsForWebState:nil]);
+  EXPECT_FALSE([controller_ releasePrerenderContents]);
 
   // Attempt to prerender the flags UI and verify that no WebState was created
   // to preload.
@@ -132,7 +132,7 @@ TEST_F(PreloadControllerTest, DontPreloadNonWebURLs) {
                    referrer:kReferrer
                  transition:kTransition
                 immediately:YES];
-  EXPECT_FALSE([controller_ releasePrerenderContentsForWebState:nil]);
+  EXPECT_FALSE([controller_ releasePrerenderContents]);
 }
 
 TEST_F(PreloadControllerTest, TestIsPrerenderingEnabled_preloadAlways) {

@@ -237,6 +237,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileDisplayMtp"),
         TestCase("fileDisplayUsb"),
         TestCase("fileDisplayUsbPartition"),
+        TestCase("fileDisplayUsbPartitionSort"),
         TestCase("fileDisplayPartitionFileTable"),
         TestCase("fileSearch"),
         TestCase("fileDisplayWithoutDownloadsVolume").DontMountVolumes(),

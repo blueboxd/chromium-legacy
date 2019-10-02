@@ -143,34 +143,6 @@ ImpressionResult FromImpressionResult(
   NOTREACHED();
 }
 
-// Converts ImpressionResult to its associated enum in proto buffer.
-proto::Impression_SchedulerTaskTime ToSchedulerTaskTime(
-    SchedulerTaskTime time) {
-  switch (time) {
-    case SchedulerTaskTime::kUnknown:
-      return proto::Impression_SchedulerTaskTime_UNKNOWN_TASK_TIME;
-    case SchedulerTaskTime::kMorning:
-      return proto::Impression_SchedulerTaskTime_MORNING;
-    case SchedulerTaskTime::kEvening:
-      return proto::Impression_SchedulerTaskTime_EVENING;
-  }
-  NOTREACHED();
-}
-
-// Converts ImpressionResult from its associated enum in proto buffer.
-SchedulerTaskTime FromSchedulerTaskTime(
-    proto::Impression_SchedulerTaskTime time) {
-  switch (time) {
-    case proto::Impression_SchedulerTaskTime_UNKNOWN_TASK_TIME:
-      return SchedulerTaskTime::kUnknown;
-    case proto::Impression_SchedulerTaskTime_MORNING:
-      return SchedulerTaskTime::kMorning;
-    case proto::Impression_SchedulerTaskTime_EVENING:
-      return SchedulerTaskTime::kEvening;
-  }
-  NOTREACHED();
-}
-
 proto::IconType ToIconType(IconType type) {
   switch (type) {
     case IconType::kUnknownType:
@@ -348,8 +320,6 @@ void ClientStateToProto(ClientState* client_state,
     impression_ptr->set_feedback(ToUserFeedback(impression.feedback));
     impression_ptr->set_impression(ToImpressionResult(impression.impression));
     impression_ptr->set_integrated(impression.integrated);
-    impression_ptr->set_task_start_time(
-        ToSchedulerTaskTime(impression.task_start_time));
     impression_ptr->set_guid(impression.guid);
 
     for (const auto& mapping : impression.impression_mapping) {
@@ -392,8 +362,6 @@ void ClientStateFromProto(proto::ClientState* proto,
     impression.feedback = FromUserFeedback(proto_impression.feedback());
     impression.impression = FromImpressionResult(proto_impression.impression());
     impression.integrated = proto_impression.integrated();
-    impression.task_start_time =
-        FromSchedulerTaskTime(proto_impression.task_start_time());
     impression.guid = proto_impression.guid();
     impression.type = client_state->type;
 

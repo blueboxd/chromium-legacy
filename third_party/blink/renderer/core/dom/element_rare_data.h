@@ -236,7 +236,7 @@ class ElementRareData : public NodeRareData {
 
   Member<AccessibleNode> accessible_node_;
 
-  WeakMember<DisplayLockContext> display_lock_context_;
+  Member<DisplayLockContext> display_lock_context_;
   bool did_attach_internals_ = false;
   bool should_force_legacy_layout_for_child_ = false;
   bool style_should_force_legacy_layout_ = false;

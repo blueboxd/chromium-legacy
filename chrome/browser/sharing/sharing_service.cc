@@ -27,17 +27,14 @@
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
-#include "chrome/common/pref_names.h"
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "components/gcm_driver/gcm_driver.h"
-#include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "content/public/browser/browser_task_traits.h"
 
 SharingService::SharingService(
-    PrefService* pref_service,
     std::unique_ptr<SharingSyncPreference> sync_prefs,
     std::unique_ptr<VapidKeyManager> vapid_key_manager,
     std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
@@ -48,8 +45,7 @@ SharingService::SharingService(
     syncer::LocalDeviceInfoProvider* local_device_info_provider,
     syncer::SyncService* sync_service,
     NotificationDisplayService* notification_display_service)
-    : pref_service_(pref_service),
-      sync_prefs_(std::move(sync_prefs)),
+    : sync_prefs_(std::move(sync_prefs)),
       vapid_key_manager_(std::move(vapid_key_manager)),
       sharing_device_registration_(std::move(sharing_device_registration)),
       fcm_sender_(std::move(fcm_sender)),
@@ -95,9 +91,7 @@ SharingService::SharingService(
           this, notification_display_service);
 #endif  // defined(OS_ANDROID)
 
-  if (pref_service_ &&
-      !pref_service_->GetBoolean(prefs::kSharedClipboardEnabled) &&
-      base::FeatureList::IsEnabled(kSharedClipboardReceiver)) {
+  if (base::FeatureList::IsEnabled(kSharedClipboardReceiver)) {
     fcm_handler_->AddSharingHandler(
         chrome_browser_sharing::SharingMessage::kSharedClipboardMessage,
         shared_clipboard_message_handler_.get());

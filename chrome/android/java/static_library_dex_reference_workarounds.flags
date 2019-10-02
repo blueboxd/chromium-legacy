@@ -9,6 +9,8 @@
 # This list of classes can be found by running
 # //build/android/gyp/validate_static_library_dex_references.py.
 
+-keep,allowobfuscation class android.support.design.widget.BaseTransientBottomBar$SnackbarBaseLayout { *; }
+-keep,allowobfuscation class android.support.design.widget.BaseTransientBottomBar$SnackbarBaseLayout$** { *; }
 -keep,allowobfuscation class android.support.design.widget.TabLayout { *; }
 -keep,allowobfuscation class android.support.design.widget.TabLayout$AdapterChangeListener { *; }
 -keep,allowobfuscation class android.support.v7.app.MediaRouteControllerDialog { *; }
@@ -31,14 +33,11 @@
 -keep,allowobfuscation class org.chromium.chrome.browser.firstrun.FirstRunPagerAdapter { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.init.ChromeBrowserInitializer$** { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.init.ProcessInitializationHandler$** { *; }
--keep,allowobfuscation class org.chromium.chrome.browser.init.ProcessInitializationHandler$** { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.media.ui.MediaImageCallback { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.media.ui.MediaImageManager { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.media.ui.MediaNotificationInfo$Builder { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.media.ui.MediaNotificationListener { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.media.ui.MediaSessionTabHelper { *; }
--keep,allowobfuscation class org.chromium.chrome.browser.media.ui.MediaSessionTabHelper$** { *; }
--keep,allowobfuscation class org.chromium.chrome.browser.media.ui.MediaSessionTabHelper$** { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.media.ui.MediaSessionTabHelper$** { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.payments.AndroidPaymentApp { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.payments.AndroidPaymentApp$** { *; }
@@ -54,5 +53,8 @@
 -keep,allowobfuscation class org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataTabsFragment$ClearBrowsingDataPagerAdapter { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.profiles.Profile { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.tab.Tab { *; }
+-keep,allowobfuscation class org.chromium.chrome.browser.usage_stats.NotificationSuspender$** { *; }
+-keep,allowobfuscation class org.chromium.chrome.browser.usage_stats.SuspensionTracker { *; }
+-keep,allowobfuscation class org.chromium.chrome.browser.usage_stats.UsageStatsService { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.util.IntentUtils { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.vr.ArImmersiveOverlay { *; }

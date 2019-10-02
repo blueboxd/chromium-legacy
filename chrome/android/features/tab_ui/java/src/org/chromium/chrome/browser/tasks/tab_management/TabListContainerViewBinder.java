@@ -11,6 +11,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.IS_VISIBLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.SHADOW_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_CONTROLS_HEIGHT;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_PADDING;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.VISIBILITY_LISTENER;
 
 import android.support.v7.widget.LinearLayoutManager;
@@ -57,6 +58,9 @@ class TabListContainerViewBinder {
             view.requestLayout();
         } else if (SHADOW_TOP_MARGIN == propertyKey) {
             view.setShadowTopMargin(model.get(SHADOW_TOP_MARGIN));
+        } else if (TOP_PADDING == propertyKey) {
+            view.setPadding(view.getPaddingLeft(), model.get(TOP_PADDING), view.getPaddingRight(),
+                    view.getPaddingBottom());
         }
     }
 }

@@ -19,7 +19,6 @@
 #include "extensions/common/extension_id.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern_set.h"
-#include "url/gurl.h"
 
 namespace content {
 class BrowserContext;
@@ -32,6 +31,7 @@ struct WebRequestInfo;
 
 namespace declarative_net_request {
 class CompositeMatcher;
+struct RequestAction;
 struct RequestParams;
 
 // Manages the set of active rulesets for the Declarative Net Request API. Can
@@ -39,39 +39,6 @@ struct RequestParams;
 // same sequence.
 class RulesetManager {
  public:
-  struct Action {
-    enum class Type {
-      // Block the network request.
-      BLOCK,
-      // Block the network request and collapse the corresponding DOM element.
-      COLLAPSE,
-      // Redirect the network request.
-      REDIRECT,
-      // Remove request/response headers.
-      REMOVE_HEADERS,
-    };
-
-    explicit Action(Type type);
-    ~Action();
-    Action(Action&&);
-    Action& operator=(Action&&);
-
-    Type type = Type::BLOCK;
-
-    // Valid iff |type| is |REDIRECT|.
-    base::Optional<GURL> redirect_url;
-
-    // The id of the extension the action is attributed to.
-    ExtensionId extension_id;
-
-    // Valid iff |type| is |REMOVE_HEADERS|. The vectors point to strings of
-    // static storage duration.
-    std::vector<const char*> request_headers_to_remove;
-    std::vector<const char*> response_headers_to_remove;
-
-    DISALLOW_COPY_AND_ASSIGN(Action);
-  };
-
   explicit RulesetManager(content::BrowserContext* browser_context);
   ~RulesetManager();
 
@@ -110,8 +77,9 @@ class RulesetManager {
   // Precedence order: Allow > Blocking > Redirect rules.
   // For redirect rules, most recently installed extensions are given
   // preference.
-  const std::vector<Action>& EvaluateRequest(const WebRequestInfo& request,
-                                             bool is_incognito_context) const;
+  const std::vector<RequestAction>& EvaluateRequest(
+      const WebRequestInfo& request,
+      bool is_incognito_context) const;
 
   // Returns true if there is an active matcher which modifies "extraHeaders".
   bool HasAnyExtraHeadersMatcher() const;
@@ -150,22 +118,23 @@ class RulesetManager {
     DISALLOW_COPY_AND_ASSIGN(ExtensionRulesetData);
   };
 
-  base::Optional<Action> GetBlockOrCollapseAction(
+  base::Optional<RequestAction> GetBlockOrCollapseAction(
       const std::vector<const ExtensionRulesetData*>& rulesets,
       const RequestParams& params) const;
-  base::Optional<Action> GetRedirectOrUpgradeAction(
+  base::Optional<RequestAction> GetRedirectOrUpgradeAction(
       const std::vector<const ExtensionRulesetData*>& rulesets,
       const WebRequestInfo& request,
       const int tab_id,
       const bool crosses_incognito,
       const RequestParams& params) const;
-  std::vector<Action> GetRemoveHeadersActions(
+  std::vector<RequestAction> GetRemoveHeadersActions(
       const std::vector<const ExtensionRulesetData*>& rulesets,
       const RequestParams& params) const;
 
   // Helper for EvaluateRequest.
-  std::vector<Action> EvaluateRequestInternal(const WebRequestInfo& request,
-                                              bool is_incognito_context) const;
+  std::vector<RequestAction> EvaluateRequestInternal(
+      const WebRequestInfo& request,
+      bool is_incognito_context) const;
 
   // Returns true if the given |request| should be evaluated for
   // blocking/redirection.

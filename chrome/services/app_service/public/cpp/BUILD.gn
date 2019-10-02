@@ -52,6 +52,7 @@ source_set("intents") {
   deps = [
     "//base",
     "//chrome/services/app_service/public/mojom",
+    "//components/services/app_service/public/cpp:intent_util",
   ]
 }
 

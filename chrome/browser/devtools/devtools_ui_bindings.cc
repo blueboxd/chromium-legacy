@@ -313,7 +313,7 @@ std::string SanitizeFrontendQueryParam(
   // Convert boolean flags to true.
   if (key == "can_dock" || key == "debugFrontend" || key == "experiments" ||
       key == "isSharedWorker" || key == "v8only" || key == "remoteFrontend" ||
-      key == "nodeFrontend" || key == "hasOtherClients")
+      key == "nodeFrontend" || key == "hasOtherClients" || key == "uiDevTools")
     return "true";
 
   // Pass connection endpoints as is.

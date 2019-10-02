@@ -77,6 +77,9 @@ class PasswordStoreDefault : public PasswordStore {
   void RemoveLeakedCredentialsImpl(const GURL& url,
                                    const base::string16& username) override;
   std::vector<LeakedCredentials> GetAllLeakedCredentialsImpl() override;
+  void RemoveLeakedCredentialsCreatedBetweenImpl(
+      base::Time remove_begin,
+      base::Time remove_end) override;
 
   // Implements PasswordStoreSync interface.
   bool BeginTransaction() override;

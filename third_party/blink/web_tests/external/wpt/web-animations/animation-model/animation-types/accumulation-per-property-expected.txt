@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 563 tests; 532 PASS, 31 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 563 tests; 533 PASS, 30 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAccumulation function
 PASS align-content: "flex-end" onto "flex-start"
@@ -530,7 +530,7 @@ PASS transform-style: "preserve-3d" onto "flat"
 PASS transform-style: "flat" onto "preserve-3d"
 PASS rotate (type: rotateList) has testAccumulation function
 PASS rotate without rotation axes
-FAIL rotate with underlying transform assert_equals: The value should be x 45deg at 0ms expected "x 45deg" but got "1 0 0 45deg"
+PASS rotate with underlying transform
 FAIL rotate with different rotation axes assert_approx_equals: expected 0.707107 0 0.707107 90deg but got 1 0 1 90deg: The value should be 0.707107 0 0.707107 90deg at 500ms but got 1 0 1 90deg expected 0.707107 +/- 0.0001 but got 1
 PASS translate (type: translateList) has testAccumulation function
 PASS translate

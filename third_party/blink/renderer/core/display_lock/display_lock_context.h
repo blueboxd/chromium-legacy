@@ -18,18 +18,14 @@ namespace blink {
 
 class DisplayLockSuspendedHandle;
 class Element;
-class DisplayLockOptions;
 class DisplayLockScopedLogger;
-class TaskHandle;
 
 enum class DisplayLockLifecycleTarget { kSelf, kChildren };
 
 class CORE_EXPORT DisplayLockContext final
-    : public ScriptWrappable,
-      public ActiveScriptWrappable<DisplayLockContext>,
+    : public GarbageCollected<DisplayLockContext>,
       public ContextLifecycleObserver,
       public LocalFrameView::LifecycleNotificationObserver {
-  DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DisplayLockContext);
   USING_PRE_FINALIZER(DisplayLockContext, Dispose);
 
@@ -88,7 +84,7 @@ class CORE_EXPORT DisplayLockContext final
   };
 
   DisplayLockContext(Element*, ExecutionContext*);
-  ~DisplayLockContext() override;
+  ~DisplayLockContext();
 
   // GC functions.
   void Trace(blink::Visitor*) override;
@@ -96,15 +92,6 @@ class CORE_EXPORT DisplayLockContext final
 
   // ContextLifecycleObserver overrides.
   void ContextDestroyed(ExecutionContext*) override;
-  // ActiveScriptWrappable overrides. This keeps the context alive as long as we
-  // have an element and we're not unlocked.
-  bool HasPendingActivity() const final;
-
-  // JavaScript interface implementation. See display_lock_context.idl for
-  // description.
-  ScriptPromise acquire(ScriptState*, DisplayLockOptions*);
-  ScriptPromise commit(ScriptState*);
-  ScriptPromise updateAndCommit(ScriptState*);
 
   void SetActivatable(bool activatable);
 
@@ -198,14 +185,9 @@ class CORE_EXPORT DisplayLockContext final
     needs_prepaint_subtree_walk_ = true;
   }
 
-  LayoutUnit GetLockedContentLogicalWidth() const {
-    return is_horizontal_writing_mode_ ? locked_content_logical_size_.Width()
-                                       : locked_content_logical_size_.Height();
-  }
-  LayoutUnit GetLockedContentLogicalHeight() const {
-    return is_horizontal_writing_mode_ ? locked_content_logical_size_.Height()
-                                       : locked_content_logical_size_.Width();
-  }
+  // TODO(vmpstr): These are deprecated and will be removed soon.
+  LayoutUnit GetLockedContentLogicalWidth() const { return LayoutUnit(); }
+  LayoutUnit GetLockedContentLogicalHeight() const { return LayoutUnit(); }
 
  private:
   friend class DisplayLockContextTest;
@@ -264,22 +246,11 @@ class CORE_EXPORT DisplayLockContext final
   // frame.
   void ScheduleAnimation();
 
-  // Timeout implementation. When the lock is acquired, we kick off a timeout
-  // task that will trigger a commit (which can be canceled by other calls to
-  // schedule or by a call to commit). Note that calling RescheduleTimeoutTask()
-  // will cancel any previously scheduled task.
-  void RescheduleTimeoutTask(double delay);
-  void CancelTimeoutTask();
-  void TriggerTimeout();
-
   // Helper functions to resolve the update/commit promises.
   enum ResolverState { kResolve, kReject, kDetach };
   void MakeResolver(ScriptState*, Member<ScriptPromiseResolver>*);
   bool HasResolver();
   void FinishUpdateResolver(ResolverState, const char* reject_reason = nullptr);
-  void FinishCommitResolver(ResolverState, const char* reject_reason = nullptr);
-  void FinishAcquireResolver(ResolverState,
-                             const char* reject_reason = nullptr);
   void FinishResolver(Member<ScriptPromiseResolver>*,
                       ResolverState,
                       const char* reject_reason);
@@ -309,9 +280,7 @@ class CORE_EXPORT DisplayLockContext final
 
   std::unique_ptr<DisplayLockBudget> update_budget_;
 
-  Member<ScriptPromiseResolver> commit_resolver_;
   Member<ScriptPromiseResolver> update_resolver_;
-  Member<ScriptPromiseResolver> acquire_resolver_;
   WeakMember<Element> element_;
   WeakMember<Document> document_;
 
@@ -325,12 +294,10 @@ class CORE_EXPORT DisplayLockContext final
   HeapHashSet<Member<Element>> whitespace_reattach_set_;
 
   StateChangeHelper state_;
-  LayoutSize locked_content_logical_size_;
 
   bool update_forced_ = false;
   bool activatable_ = false;
 
-  bool is_locked_after_connect_ = false;
   StyleType blocked_style_traversal_type_ = kStyleUpdateNotRequired;
   // Signifies whether we've blocked a layout tree reattachment on |element_|'s
   // descendants or not, so that we can mark |element_| for reattachment when
@@ -346,8 +313,6 @@ class CORE_EXPORT DisplayLockContext final
   // layout run where the descendants of the locked element are allowed to be
   // traversed into, we will traverse to the children of the locked element.
   bool child_layout_was_blocked_ = false;
-
-  TaskHandle timeout_task_handle_;
 };
 
 }  // namespace blink

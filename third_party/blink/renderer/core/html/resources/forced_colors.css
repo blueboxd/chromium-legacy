@@ -91,6 +91,10 @@
     border-color: GrayText;
   }
 
+  input[type="color"] {
+    forced-color-adjust: none;
+  }
+
   button,
   input[type="button"],
   input[type="submit"],

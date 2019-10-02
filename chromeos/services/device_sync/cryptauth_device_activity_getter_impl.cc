@@ -15,7 +15,6 @@
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
-#include "chromeos/services/device_sync/cryptauth_better_together_feature_types.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
 #include "chromeos/services/device_sync/cryptauth_key_bundle.h"
 #include "chromeos/services/device_sync/device_sync_type_converters.h"

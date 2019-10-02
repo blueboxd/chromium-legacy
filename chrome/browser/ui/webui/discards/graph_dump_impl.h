@@ -74,8 +74,15 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   // Ignored.
   void OnIsAdFrameChanged(
       const performance_manager::FrameNode* frame_node) override {}
+  // Ignored.
+  void OnFrameHoldsWebLockChanged(
+      const performance_manager::FrameNode* frame_node) override {}
+  // Ignored.
+  void OnFrameHoldsIndexedDBLockChanged(
+      const performance_manager::FrameNode* frame_node) override {}
+  // Ignored.
   void OnNonPersistentNotificationCreated(
-      const performance_manager::FrameNode* frame_node) override {}  // Ignored.
+      const performance_manager::FrameNode* frame_node) override {}
   // Ignored.
   void OnPriorityAndReasonChanged(
       const performance_manager::FrameNode* frame_node) override {}

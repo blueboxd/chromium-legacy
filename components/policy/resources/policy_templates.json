@@ -17664,18 +17664,13 @@
       'owners': ['drubery@chromium.org', 'chrome-safebrowsing-team@chromium.org'],
       'schema': {
         'type': 'integer',
-        'enum': [0, 1, 2, 3, 4],
+        'enum': [0, 2, 3, 4],
       },
       'items': [
         {
           'name': 'DoNotScan',
           'value': 0,
           'caption': '''Do not scan files'''
-        },
-        {
-          'name': 'SendFilesDisabled',
-          'value': 1,
-          'caption': '''Forbid the scanning of files'''
         },
         {
           'name': 'SendDownloads',
@@ -17703,8 +17698,6 @@
       'caption': '''Scan users downloads with Safe Browsing''',
       'tags': ['google-sharing', 'admin-sharing'],
       'desc': '''This policy controls the deep scanning of user downloads with Safe Browsing. If unset, or set to the default, 'Do not scan files', user downloads will not be scanned by Safe Browsing.
-
-      If set to 'Forbids the scanning of files.', users will be forbidden from scanning their downloads. This differs from the default, since certain users (e.g. Advanced Protection users) are able to send their downloads for scanning. This setting will prevent these users from scanning.
 
       If set to 'Send user downloads for scanning', users downloads will be sent over the network to Safe Browsing for malware scanning.
 

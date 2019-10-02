@@ -225,6 +225,8 @@ message VideoDecoderConfig {
     PIXEL_FORMAT_ABGR = 27;
     PIXEL_FORMAT_XBGR = 28;
     PIXEL_FORMAT_P016LE = 29;
+    PIXEL_FORMAT_XR30 = 30;
+    PIXEL_FORMAT_XB30 = 31;
   };
 
   // Proto version of media::ColorSpace.

@@ -173,6 +173,11 @@ struct VisibleSecurityState {
   bool is_view_source;
   // True if the page is a devtools page.
   bool is_devtools;
+  // True if the page was loaded over a legacy TLS version.
+  bool connection_used_legacy_tls;
+  // True if the page should be excluded from a UI treatment for legacy TLS
+  // (used for control group in an experimental UI rollout).
+  bool is_legacy_tls_control_site;
   // Contains information about input events that may impact the security
   // level of the page.
   InsecureInputEventData insecure_input_events;

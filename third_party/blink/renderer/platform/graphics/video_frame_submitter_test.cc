@@ -221,6 +221,12 @@ class VideoFrameSubmitterTest : public testing::Test {
                                           std::move(context_provider));
   }
 
+  void AckSubmittedFrame() {
+    WTF::Vector<viz::ReturnedResource> resources;
+    EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
+    submitter_->DidReceiveCompositorFrameAck(resources);
+  }
+
  protected:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
@@ -289,12 +295,14 @@ TEST_F(VideoFrameSubmitterTest, StopRenderingSkipsUpdateCurrentFrame) {
       BEGINFRAME_FROM_HERE, now_src_.get());
   submitter_->OnBeginFrame(args, {});
   task_environment_.RunUntilIdle();
+  AckSubmittedFrame();
 
   // StopRendering submits one more frame.
   EXPECT_SUBMISSION(SubmissionType::kStateChange);
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
   submitter_->StopRendering();
   task_environment_.RunUntilIdle();
+  AckSubmittedFrame();
 
   // No frames should be produced after StopRendering().
   EXPECT_CALL(*sink_, DidNotProduceFrame(_));
@@ -366,6 +374,7 @@ TEST_F(VideoFrameSubmitterTest, ShouldSubmitPreventsSubmission) {
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
   submitter_->SetIsSurfaceVisible(true);
   task_environment_.RunUntilIdle();
+  AckSubmittedFrame();
 
   EXPECT_TRUE(ShouldSubmit());
 
@@ -375,7 +384,14 @@ TEST_F(VideoFrameSubmitterTest, ShouldSubmitPreventsSubmission) {
   task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(ShouldSubmit());
-  EXPECT_GET_PUT_FRAME();
+
+  // We should only see a GetCurrentFrame() without a PutCurrentFrame() since
+  // we drop the submission because !ShouldSubmit().
+  EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
+      .WillOnce(Return(media::VideoFrame::CreateFrame(
+          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+          gfx::Size(8, 8), base::TimeDelta())));
+
   SubmitSingleFrame();
 }
 
@@ -391,6 +407,7 @@ TEST_F(VideoFrameSubmitterTest, SetForceSubmitForcesSubmission) {
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
   EXPECT_SUBMISSION(SubmissionType::kStateChange);
   submitter_->SetForceSubmit(true);
+  AckSubmittedFrame();
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
   submitter_->StartRendering();
@@ -401,12 +418,14 @@ TEST_F(VideoFrameSubmitterTest, SetForceSubmitForcesSubmission) {
   submitter_->SetIsSurfaceVisible(true);
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(ShouldSubmit());
+  AckSubmittedFrame();
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
   EXPECT_SUBMISSION(SubmissionType::kStateChange);
   submitter_->SetIsSurfaceVisible(false);
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(ShouldSubmit());
+  AckSubmittedFrame();
 
   EXPECT_SUBMISSION(SubmissionType::kManual);
   SubmitSingleFrame();
@@ -432,12 +451,7 @@ TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
 
   submitter_->DidReceiveFrame();
   task_environment_.RunUntilIdle();
-
-  {
-    WTF::Vector<viz::ReturnedResource> resources;
-    EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
-    submitter_->DidReceiveCompositorFrameAck(resources);
-  }
+  AckSubmittedFrame();
 
   // Check to see if an update to rotation just before rendering is
   // communicated.
@@ -446,12 +460,7 @@ TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
   submitter_->StartRendering();
   task_environment_.RunUntilIdle();
-
-  {
-    WTF::Vector<viz::ReturnedResource> resources;
-    EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
-    submitter_->DidReceiveCompositorFrameAck(resources);
-  }
+  AckSubmittedFrame();
 
   EXPECT_CALL(*video_frame_provider_, UpdateCurrentFrame(_, _))
       .WillOnce(Return(true));
@@ -470,12 +479,7 @@ TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
       BEGINFRAME_FROM_HERE, now_src_.get());
   submitter_->OnBeginFrame(args, {});
   task_environment_.RunUntilIdle();
-
-  {
-    WTF::Vector<viz::ReturnedResource> resources;
-    EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
-    submitter_->DidReceiveCompositorFrameAck(resources);
-  }
+  AckSubmittedFrame();
 
   // Check to see if changing rotation while rendering is handled.
   submitter_->SetRotation(media::VideoRotation::VIDEO_ROTATION_270);
@@ -559,9 +563,7 @@ TEST_F(VideoFrameSubmitterTest, NotRenderingDoesNotProduceFrame) {
 }
 
 TEST_F(VideoFrameSubmitterTest, ReturnsResourceOnCompositorAck) {
-  WTF::Vector<viz::ReturnedResource> resources;
-  EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
-  submitter_->DidReceiveCompositorFrameAck(resources);
+  AckSubmittedFrame();
   task_environment_.RunUntilIdle();
 }
 
@@ -592,6 +594,28 @@ TEST_F(VideoFrameSubmitterTest, WaitingForAckPreventsNewFrame) {
   args = begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
                                                    new_time.get());
   submitter_->OnBeginFrame(args, {});
+  task_environment_.RunUntilIdle();
+}
+
+// Similar to above but verifies the single-frame paint path.
+TEST_F(VideoFrameSubmitterTest, WaitingForAckPreventsSubmitSingleFrame) {
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
+
+  submitter_->StartRendering();
+  task_environment_.RunUntilIdle();
+
+  EXPECT_SUBMISSION(SubmissionType::kManual);
+  submitter_->DidReceiveFrame();
+  task_environment_.RunUntilIdle();
+
+  // GetCurrentFrame() should be called, but PutCurrentFrame() should not, since
+  // the frame is dropped waiting for the ack.
+  EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
+      .WillOnce(Return(media::VideoFrame::CreateFrame(
+          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+          gfx::Size(8, 8), base::TimeDelta())));
+
+  submitter_->DidReceiveFrame();
   task_environment_.RunUntilIdle();
 }
 
@@ -671,6 +695,7 @@ TEST_F(VideoFrameSubmitterTest, FrameSizeChangeUpdatesLocalSurfaceId) {
     EXPECT_EQ(viz::kInitialChildSequenceNumber,
               local_surface_id.child_sequence_number());
     EXPECT_EQ(gfx::Size(8, 8), frame_size());
+    AckSubmittedFrame();
   }
 
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
@@ -733,11 +758,7 @@ TEST_F(VideoFrameSubmitterTest, VideoRotationOutputRect) {
     EXPECT_EQ(sink_->last_submitted_compositor_frame().size_in_pixels(),
               rotated_size);
 
-    // submitter_->DidReceiveFrame();
-
-    WTF::Vector<viz::ReturnedResource> resources;
-    EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
-    submitter_->DidReceiveCompositorFrameAck(resources);
+    AckSubmittedFrame();
   }
 
   {
@@ -765,9 +786,7 @@ TEST_F(VideoFrameSubmitterTest, VideoRotationOutputRect) {
     EXPECT_EQ(sink_->last_submitted_compositor_frame().size_in_pixels(),
               natural_size);
 
-    WTF::Vector<viz::ReturnedResource> resources;
-    EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
-    submitter_->DidReceiveCompositorFrameAck(resources);
+    AckSubmittedFrame();
   }
 
   {
@@ -794,9 +813,7 @@ TEST_F(VideoFrameSubmitterTest, VideoRotationOutputRect) {
     EXPECT_EQ(sink_->last_submitted_compositor_frame().size_in_pixels(),
               rotated_size);
 
-    WTF::Vector<viz::ReturnedResource> resources;
-    EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
-    submitter_->DidReceiveCompositorFrameAck(resources);
+    AckSubmittedFrame();
   }
 }
 
@@ -843,6 +860,61 @@ TEST_F(VideoFrameSubmitterTest, PreferredInterval) {
   EXPECT_EQ(sink_->last_submitted_compositor_frame()
                 .metadata.preferred_frame_interval,
             video_frame_provider_->preferred_interval);
+}
+
+TEST_F(VideoFrameSubmitterTest, NoDuplicateFramesOnBeginFrame) {
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
+  submitter_->StartRendering();
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(IsRendering());
+
+  auto vf = media::VideoFrame::CreateFrame(
+      media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+      gfx::Size(8, 8), base::TimeDelta());
+
+  EXPECT_CALL(*video_frame_provider_, UpdateCurrentFrame(_, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*video_frame_provider_, GetCurrentFrame()).WillOnce(Return(vf));
+  EXPECT_CALL(*video_frame_provider_, PutCurrentFrame());
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
+  EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _, _));
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
+  EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
+  viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
+      BEGINFRAME_FROM_HERE, now_src_.get());
+  submitter_->OnBeginFrame(args, {});
+  task_environment_.RunUntilIdle();
+  AckSubmittedFrame();
+
+  // Trying to submit the same frame again does nothing... even if
+  // UpdateCurrentFrame() lies about there being a new frame.
+  EXPECT_CALL(*video_frame_provider_, UpdateCurrentFrame(_, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*video_frame_provider_, GetCurrentFrame()).WillOnce(Return(vf));
+  EXPECT_CALL(*sink_, DidNotProduceFrame(_));
+  submitter_->OnBeginFrame(args, {});
+  task_environment_.RunUntilIdle();
+}
+
+TEST_F(VideoFrameSubmitterTest, NoDuplicateFramesDidReceiveFrame) {
+  auto vf = media::VideoFrame::CreateFrame(
+      media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+      gfx::Size(8, 8), base::TimeDelta());
+
+  EXPECT_CALL(*video_frame_provider_, GetCurrentFrame()).WillOnce(Return(vf));
+  EXPECT_CALL(*video_frame_provider_, PutCurrentFrame());
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
+  EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _, _));
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
+  EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
+  submitter_->DidReceiveFrame();
+  task_environment_.RunUntilIdle();
+  AckSubmittedFrame();
+
+  // Trying to submit the same frame again does nothing...
+  EXPECT_CALL(*video_frame_provider_, GetCurrentFrame()).WillOnce(Return(vf));
+  submitter_->DidReceiveFrame();
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace blink

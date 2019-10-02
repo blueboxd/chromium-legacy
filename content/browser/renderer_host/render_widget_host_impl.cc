@@ -1518,6 +1518,17 @@ void RenderWidgetHostImpl::EnsureReadyForSyntheticGestures(
   }
 }
 
+void RenderWidgetHostImpl::TakeSyntheticGestureController(
+    RenderWidgetHostImpl* host) {
+  DCHECK(!synthetic_gesture_controller_);
+  if (host->synthetic_gesture_controller_) {
+    synthetic_gesture_controller_ =
+        std::move(host->synthetic_gesture_controller_);
+    synthetic_gesture_controller_->UpdateSyntheticGestureTarget(
+        view_->CreateSyntheticGestureTarget(), this);
+  }
+}
+
 void RenderWidgetHostImpl::SetCursor(const WebCursor& cursor) {
   if (!view_)
     return;

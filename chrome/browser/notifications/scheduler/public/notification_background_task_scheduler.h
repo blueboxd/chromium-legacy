@@ -20,14 +20,13 @@ class NotificationBackgroundTaskScheduler {
    public:
     using TaskFinishedCallback = base::OnceCallback<void(bool)>;
     // Called when the background task is started.
-    virtual void OnStartTask(SchedulerTaskTime task_time,
-                             TaskFinishedCallback callback) = 0;
+    virtual void OnStartTask(TaskFinishedCallback callback) = 0;
 
     // Called when the background task is stopped by the OS when it wants to
     // reallocate resources, our task is not finished yet in this case. The
     // handler implementation should explicitly decide whether the task should
     // be rescheduled and run later.
-    virtual void OnStopTask(SchedulerTaskTime task_time) = 0;
+    virtual void OnStopTask() = 0;
 
    protected:
     Handler() = default;
@@ -39,10 +38,8 @@ class NotificationBackgroundTaskScheduler {
 
   // Schedules a background task in a time window between |window_start| and
   // |window_end|. This will update the current background task. Only one
-  // background task exists for notification scheduler. |scheduler_task_time|
-  // tag is passed to background task go support arbitrary time background task.
-  virtual void Schedule(notifications::SchedulerTaskTime scheduler_task_time,
-                        base::TimeDelta window_start,
+  // background task exists for notification scheduler.
+  virtual void Schedule(base::TimeDelta window_start,
                         base::TimeDelta window_end) = 0;
 
   // Cancels the background task.

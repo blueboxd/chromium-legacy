@@ -65,20 +65,8 @@ public final class ReturnToChromeExperimentsUtil {
         return ChromeFeatureList.isInitialized()
                 && (FeatureUtilities.isGridTabSwitcherEnabled()
                         || FeatureUtilities.isTabGroupsAndroidEnabled())
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.START_SURFACE_ANDROID);
-    }
-
-    /**
-     * TODO(mattsimmons): Merge this with the one above once all the surface variations work
-     *  correctly with mv tiles, omnibox, etc. (both should be true when != NO_START_SURFACE)
-     * @return Whether we show the most visited tiles on the tab switcher.
-     */
-    public static boolean shouldShowMostVisitedOnTabSwitcher() {
-        return ChromeFeatureList.isInitialized()
-                && ChromeFeatureList
-                           .getFieldTrialParamByFeature(ChromeFeatureList.START_SURFACE_ANDROID,
-                                   "start_surface_variation")
-                           .equals("tasksonly");
+                && (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_SWITCHER_ON_RETURN)
+                        || FeatureUtilities.isStartSurfaceEnabled());
     }
 
     /**

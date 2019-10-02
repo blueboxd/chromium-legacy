@@ -242,6 +242,12 @@ TestPasswordStore::GetAllLeakedCredentialsImpl() {
   return std::vector<LeakedCredentials>();
 }
 
+void TestPasswordStore::RemoveLeakedCredentialsCreatedBetweenImpl(
+    base::Time remove_begin,
+    base::Time remove_end) {
+  NOTIMPLEMENTED();
+}
+
 bool TestPasswordStore::BeginTransaction() {
   return true;
 }

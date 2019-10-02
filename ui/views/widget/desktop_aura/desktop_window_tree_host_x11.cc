@@ -307,10 +307,6 @@ void DesktopWindowTreeHostX11::InitModalType(ui::ModalType modal_type) {
   }
 }
 
-void DesktopWindowTreeHostX11::FlashFrame(bool flash_frame) {
-  GetXWindow()->FlashFrame(flash_frame);
-}
-
 bool DesktopWindowTreeHostX11::IsAnimatingClosed() const {
   return false;
 }

@@ -154,79 +154,6 @@ TEST_F(LayerImplTest, VerifyPendingLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetBounds(root->bounds()));
 }
 
-TEST_F(LayerImplTest, VerifyActiveLayerChangesAreTrackedProperly) {
-  LayerImpl* root = root_layer();
-  LayerImpl* scroll = AddLayer<LayerImpl>();
-  scroll->SetBounds(gfx::Size(500, 500));
-  scroll->SetScrollable(gfx::Size(100, 100));
-  scroll->SetElementId(LayerIdToElementIdForTesting(scroll->id()));
-  CopyProperties(root, scroll);
-  CreateTransformNode(scroll);
-  CreateScrollNode(scroll).scrolls_outer_viewport = true;
-
-  LayerImpl* child = AddLayer<LayerImpl>();
-  CopyProperties(scroll, child);
-
-  UpdateActiveTreeDrawProperties();
-
-  // Make |scroll| the outer viewport container layer. This ensures the later
-  // call to |SetViewportBoundsDelta| will be on a viewport layer.
-  LayerTreeImpl::ViewportLayerIds viewport_ids;
-  viewport_ids.outer_viewport_container = scroll->id();
-  host_impl()->active_tree()->SetViewportLayersFromIds(viewport_ids);
-
-  scroll->SetMasksToBounds(true);
-  CreateClipNode(scroll);
-  child->SetClipTreeIndex(scroll->clip_tree_index());
-  UpdateActiveTreeDrawProperties();
-  root->layer_tree_impl()->ResetAllChangeTracking();
-
-  // SetViewportBoundsDelta changes subtree only when masks_to_bounds is true.
-  scroll->SetViewportBoundsDelta(gfx::Vector2d(222, 333));
-  EXPECT_TRUE(scroll->LayerPropertyChanged());
-  EXPECT_TRUE(scroll->LayerPropertyChangedFromPropertyTrees());
-  EXPECT_FALSE(scroll->LayerPropertyChangedNotFromPropertyTrees());
-  EXPECT_TRUE(host_impl()->active_tree()->property_trees()->full_tree_damaged);
-
-  scroll->SetMasksToBounds(false);
-  scroll->SetClipTreeIndex(root->clip_tree_index());
-  child->SetClipTreeIndex(root->clip_tree_index());
-  UpdateActiveTreeDrawProperties();
-  root->layer_tree_impl()->ResetAllChangeTracking();
-
-  // SetViewportBoundsDelta does not change the subtree without masks_to_bounds.
-  scroll->SetViewportBoundsDelta(gfx::Vector2d(333, 444));
-  EXPECT_TRUE(scroll->LayerPropertyChanged());
-  EXPECT_FALSE(scroll->LayerPropertyChangedFromPropertyTrees());
-  EXPECT_TRUE(scroll->LayerPropertyChangedNotFromPropertyTrees());
-  EXPECT_FALSE(host_impl()->active_tree()->property_trees()->full_tree_damaged);
-
-  UpdateActiveTreeDrawProperties();
-  root->layer_tree_impl()->ResetAllChangeTracking();
-
-  // Ensure some node is affected by the outer viewport bounds delta. This
-  // ensures the later call to |SetViewportBoundsDelta| will require a
-  // transform tree update.
-  TransformTree& transform_tree =
-      host_impl()->active_tree()->property_trees()->transform_tree;
-  transform_tree.AddNodeAffectedByOuterViewportBoundsDelta(
-      child->transform_tree_index());
-  EXPECT_FALSE(transform_tree.needs_update());
-  scroll->SetViewportBoundsDelta(gfx::Vector2d(111, 222));
-  EXPECT_TRUE(transform_tree.needs_update());
-
-  UpdateActiveTreeDrawProperties();
-  root->layer_tree_impl()->ResetAllChangeTracking();
-
-  // Ensure scrolling changes the transform tree but does not damage all trees.
-  scroll->ScrollBy(gfx::Vector2d(7, 9));
-  EXPECT_TRUE(transform_tree.needs_update());
-  EXPECT_TRUE(scroll->LayerPropertyChanged());
-  EXPECT_TRUE(scroll->LayerPropertyChangedFromPropertyTrees());
-  EXPECT_FALSE(scroll->LayerPropertyChangedNotFromPropertyTrees());
-  EXPECT_FALSE(host_impl()->active_tree()->property_trees()->full_tree_damaged);
-}
-
 TEST_F(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   LayerImpl* root = root_layer();
   LayerImpl* layer = AddLayer<LayerImpl>();
@@ -584,12 +511,14 @@ TEST_F(LayerImplTest, JitterTest) {
   auto* root_layer = EnsureRootLayerInPendingTree();
   root_layer->SetBounds(gfx::Size(50, 50));
   SetupViewport(root_layer, gfx::Size(100, 100), gfx::Size(100, 100));
-  auto* scroll_layer = host_impl()->pending_tree()->InnerViewportScrollLayer();
+  auto* scroll_layer =
+      host_impl()->pending_tree()->InnerViewportScrollLayerForTesting();
   auto* content_layer = AddLayerInPendingTree<LayerImpl>();
   content_layer->SetBounds(gfx::Size(100, 100));
   content_layer->SetDrawsContent(true);
-  CopyProperties(host_impl()->pending_tree()->OuterViewportScrollLayer(),
-                 content_layer);
+  CopyProperties(
+      host_impl()->pending_tree()->OuterViewportScrollLayerForTesting(),
+      content_layer);
   UpdatePendingTreeDrawProperties();
 
   host_impl()->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
@@ -598,8 +527,9 @@ TEST_F(LayerImplTest, JitterTest) {
   for (int i = 0; i < LayerTreeImpl::kFixedPointHitsThreshold + 1; ++i) {
     host_impl()->ActivateSyncTree();
     accumulated_scroll += scroll;
-    SetScrollOffset(host_impl()->InnerViewportScrollLayer(),
-                    gfx::ScrollOffset(0, accumulated_scroll));
+    SetScrollOffset(
+        host_impl()->active_tree()->InnerViewportScrollLayerForTesting(),
+        gfx::ScrollOffset(0, accumulated_scroll));
     UpdateActiveTreeDrawProperties();
 
     host_impl()->CreatePendingTree();

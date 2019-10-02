@@ -352,6 +352,13 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // static
   static bool IsStorageTypeMappable(VideoFrame::StorageType storage_type);
 
+  // Returns true if |plane| is a valid plane index for the given |format|.
+  static bool IsValidPlane(VideoPixelFormat format, size_t plane);
+
+  // Returns the pixel size of each subsample for a given |plane| and |format|.
+  // E.g. 2x2 for the U-plane in PIXEL_FORMAT_I420.
+  static gfx::Size SampleSize(VideoPixelFormat format, size_t plane);
+
   // A video frame wrapping external data may be backed by an unsafe shared
   // memory region. These methods are used to appropriately transform a
   // VideoFrame created with WrapExternalData, WrapExternalYuvaData, etc. The
@@ -424,7 +431,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   const gfx::Size& natural_size() const { return natural_size_; }
 
   int stride(size_t plane) const {
-    DCHECK(IsValidPlane(plane, format()));
+    DCHECK(IsValidPlane(format(), plane));
     DCHECK_LT(plane, layout_.num_planes());
     return layout_.planes()[plane].stride;
   }
@@ -440,12 +447,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // IsMappable() frame type. The memory is owned by VideoFrame object and must
   // not be freed by the caller.
   const uint8_t* data(size_t plane) const {
-    DCHECK(IsValidPlane(plane, format()));
+    DCHECK(IsValidPlane(format(), plane));
     DCHECK(IsMappable());
     return data_[plane];
   }
   uint8_t* data(size_t plane) {
-    DCHECK(IsValidPlane(plane, format()));
+    DCHECK(IsValidPlane(format(), plane));
     DCHECK(IsMappable());
     return data_[plane];
   }
@@ -569,15 +576,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
                                     const gfx::Rect& visible_rect,
                                     const gfx::Size& natural_size);
 
-  // Returns true if |plane| is a valid plane index for the given |format|.
-  static bool IsValidPlane(size_t plane, VideoPixelFormat format);
-
   // Returns |dimensions| adjusted to appropriate boundaries based on |format|.
   static gfx::Size DetermineAlignedSize(VideoPixelFormat format,
                                         const gfx::Size& dimensions);
 
   void set_data(size_t plane, uint8_t* ptr) {
-    DCHECK(IsValidPlane(plane, format()));
+    DCHECK(IsValidPlane(format(), plane));
     DCHECK(ptr);
     data_[plane] = ptr;
   }
@@ -590,10 +594,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Size& natural_size,
       base::TimeDelta timestamp,
       bool zero_initialize_memory);
-
-  // Returns the pixel size of each subsample for a given |plane| and |format|.
-  // E.g. 2x2 for the U-plane in PIXEL_FORMAT_I420.
-  static gfx::Size SampleSize(VideoPixelFormat format, size_t plane);
 
   // Return the alignment for the whole frame, calculated as the max of the
   // alignment for each individual plane.

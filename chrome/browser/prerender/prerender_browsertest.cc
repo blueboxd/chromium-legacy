@@ -179,8 +179,7 @@ const char kPrefetchJpeg[] = "/prerender/image.jpeg";
 
 class FaviconUpdateWatcher : public favicon::FaviconDriverObserver {
  public:
-  explicit FaviconUpdateWatcher(content::WebContents* web_contents)
-      : seen_(false), running_(false), scoped_observer_(this) {
+  explicit FaviconUpdateWatcher(content::WebContents* web_contents) {
     scoped_observer_.Add(
         favicon::ContentFaviconDriver::FromWebContents(web_contents));
   }
@@ -208,9 +207,10 @@ class FaviconUpdateWatcher : public favicon::FaviconDriverObserver {
     running_ = false;
   }
 
-  bool seen_;
-  bool running_;
-  ScopedObserver<favicon::FaviconDriver, FaviconUpdateWatcher> scoped_observer_;
+  bool seen_ = false;
+  bool running_ = false;
+  ScopedObserver<favicon::FaviconDriver, favicon::FaviconDriverObserver>
+      scoped_observer_{this};
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconUpdateWatcher);

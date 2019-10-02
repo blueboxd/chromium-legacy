@@ -58,6 +58,8 @@ class CONTENT_EXPORT PageProperties {
   // When emulated, this returns the original (non-emulated) ScreenInfo.
   const ScreenInfo& GetOriginalScreenInfo() const;
 
+  CompositorDependencies* GetCompositorDependencies();
+
  private:
   // Properties of the screen hosting the page.
   ScreenInfo screen_info_;

@@ -114,15 +114,17 @@ newAccountsController:(ios::ChromeBrowserState*)browserState
 }
 
 + (SettingsNavigationController*)
-newUserFeedbackController:(ios::ChromeBrowserState*)browserState
-                 delegate:(id<SettingsNavigationControllerDelegate>)delegate
-       feedbackDataSource:(id<UserFeedbackDataSource>)dataSource {
+    newUserFeedbackController:(ios::ChromeBrowserState*)browserState
+                     delegate:(id<SettingsNavigationControllerDelegate>)delegate
+           feedbackDataSource:(id<UserFeedbackDataSource>)dataSource
+                   dispatcher:(id<ApplicationCommands>)dispatcher {
   DCHECK(ios::GetChromeBrowserProvider()
              ->GetUserFeedbackProvider()
              ->IsUserFeedbackEnabled());
-  UIViewController* controller = ios::GetChromeBrowserProvider()
-                                     ->GetUserFeedbackProvider()
-                                     ->CreateViewController(dataSource);
+  UIViewController* controller =
+      ios::GetChromeBrowserProvider()
+          ->GetUserFeedbackProvider()
+          ->CreateViewController(dataSource, dispatcher);
   DCHECK(controller);
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller

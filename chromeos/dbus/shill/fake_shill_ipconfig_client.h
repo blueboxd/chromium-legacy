@@ -28,8 +28,6 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillIPConfigClient
   void RemovePropertyChangedObserver(
       const dbus::ObjectPath& ipconfig_path,
       ShillPropertyChangedObserver* observer) override;
-  void Refresh(const dbus::ObjectPath& ipconfig_path,
-               VoidDBusMethodCallback callback) override;
   void GetProperties(const dbus::ObjectPath& ipconfig_path,
                      const DictionaryValueCallback& callback) override;
   void SetProperty(const dbus::ObjectPath& ipconfig_path,

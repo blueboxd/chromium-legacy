@@ -347,8 +347,8 @@ device::mojom::XRInputSourceStatePtr OculusRenderLoop::GetTouchData(
       break;
   }
 
-  // Touch controller are fully 6DoF.
-  desc->emulated_position = false;
+  // Touch controllers are fully 6DoF.
+  state->emulated_position = false;
 
   // The grip pose will be rotated and translated back a bit from the pointer
   // pose, which is what the Oculus API returns.

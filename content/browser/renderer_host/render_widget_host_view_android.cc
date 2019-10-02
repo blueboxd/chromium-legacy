@@ -2480,8 +2480,15 @@ void RenderWidgetHostViewAndroid::GetScreenInfo(ScreenInfo* screen_info) {
                                    window->GetDisplayWithWindowColorSpace());
 }
 
-void RenderWidgetHostViewAndroid::CancelActiveTouches() {
+std::vector<std::unique_ptr<ui::TouchEvent>>
+RenderWidgetHostViewAndroid::ExtractAndCancelActiveTouches() {
   ResetGestureDetection();
+  return {};
+}
+
+void RenderWidgetHostViewAndroid::TransferTouches(
+    const std::vector<std::unique_ptr<ui::TouchEvent>>& touches) {
+  // Touch transfer for Android is not implemented in content/.
 }
 
 void RenderWidgetHostViewAndroid::WasEvicted() {

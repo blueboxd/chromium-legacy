@@ -42,19 +42,53 @@ FakeDeepScanningDialogDelegate::Create(base::RepeatingClosure delete_closure,
   return ret;
 }
 
+// static
+DeepScanningClientResponse
+FakeDeepScanningDialogDelegate::SuccessfulResponse() {
+  DeepScanningClientResponse response;
+  response.mutable_dlp_scan_verdict()->set_status(
+      DlpDeepScanningVerdict::SUCCESS);
+  response.mutable_malware_scan_verdict()->set_verdict(
+      MalwareDeepScanningVerdict::CLEAN);
+  return response;
+}
+
+// static
+DeepScanningClientResponse FakeDeepScanningDialogDelegate::MalwareResponse(
+    MalwareDeepScanningVerdict::Verdict verdict) {
+  DeepScanningClientResponse response;
+  response.mutable_dlp_scan_verdict()->set_status(
+      DlpDeepScanningVerdict::SUCCESS);
+  response.mutable_malware_scan_verdict()->set_verdict(verdict);
+  return response;
+}
+
+// static
+DeepScanningClientResponse FakeDeepScanningDialogDelegate::DlpResponse(
+    DlpDeepScanningVerdict::Status status,
+    const std::string& rule_name,
+    DlpDeepScanningVerdict::TriggeredRule::Action action) {
+  DeepScanningClientResponse response;
+  response.mutable_dlp_scan_verdict()->set_status(status);
+  response.mutable_malware_scan_verdict()->set_verdict(
+      MalwareDeepScanningVerdict::CLEAN);
+
+  if (!rule_name.empty()) {
+    DlpDeepScanningVerdict::TriggeredRule* rule =
+        response.mutable_dlp_scan_verdict()->add_triggered_rules();
+    rule->set_rule_name(rule_name);
+    rule->set_action(action);
+  }
+
+  return response;
+}
+
 void FakeDeepScanningDialogDelegate::Response(
     base::FilePath path,
     std::unique_ptr<BinaryUploadService::Request> request) {
-  DeepScanningClientResponse response;
-  bool status = status_callback_.is_null() ? false : status_callback_.Run(path);
-  if (!status) {
-    // If the scan should fail, mark both the DLP and malware as failed.
-    // for DLP, just add a rule to the triggered list., does not matter what
-    // the rule is.  For malware, just set the verdict to MALWARE.
-    response.mutable_dlp_scan_verdict()->mutable_triggered_rules()->Add();
-    response.mutable_malware_scan_verdict()->set_verdict(
-        MalwareDeepScanningVerdict::MALWARE);
-  }
+  DeepScanningClientResponse response = status_callback_.is_null()
+                                            ? DeepScanningClientResponse()
+                                            : status_callback_.Run(path);
 
   if (path.empty()) {
     StringRequestCallback(BinaryUploadService::Result::SUCCESS, response);

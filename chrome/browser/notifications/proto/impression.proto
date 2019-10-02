@@ -13,7 +13,7 @@ import "notification_data.proto";
 // Contains data to determine when a notification should be shown to the user
 // and the user impression towards this notification. Should match Impression in
 // impression_types.h.
-// Next tag: 9
+// Next tag: 8
 message Impression {
   // The type of user feedback from a displayed notification. Should match
   // UserFeedback in notification_scheduler_types.h.
@@ -33,14 +33,6 @@ message Impression {
     POSITIVE = 1;
     NEGATIVE = 2;
     NEUTRAL = 3;
-  }
-
-  // Enum to describe the time to process scheduled notification data. Should
-  // match SchedulerTaskTime in internal_types.h.
-  enum SchedulerTaskTime {
-    UNKNOWN_TASK_TIME = 0;
-    MORNING = 1;
-    EVENING = 2;
   }
 
   // Used to override default user action and impression mapping.
@@ -63,15 +55,12 @@ message Impression {
   // rate.
   optional bool integrated = 4;
 
-  // The task start time when the notification is shown.
-  optional SchedulerTaskTime task_start_time = 5;
-
   // The unique identifier of the notification.
-  optional string guid = 6;
+  optional string guid = 5;
 
   // Used to generate impression result.
-  repeated ImpressionMapping impression_mapping = 7;
+  repeated ImpressionMapping impression_mapping = 6;
 
   // Custom data associated with a notification.
-  repeated CustomData custom_data = 8;
+  repeated CustomData custom_data = 7;
 }

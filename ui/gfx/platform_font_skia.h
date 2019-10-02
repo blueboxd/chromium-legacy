@@ -26,7 +26,9 @@ class GFX_EXPORT PlatformFontSkia : public PlatformFont {
   PlatformFontSkia(const std::string& font_name, int font_size_pixels);
 
   // Wraps the provided SkTypeface without triggering a font rematch.
-  PlatformFontSkia(sk_sp<SkTypeface> typeface, int font_size_pixels);
+  PlatformFontSkia(sk_sp<SkTypeface> typeface,
+                   int font_size_pixels,
+                   const base::Optional<FontRenderParams>& params);
 
   // Initials the default PlatformFont. Returns true if this is successful, or
   // false if fonts resources are not available. If this returns false, the

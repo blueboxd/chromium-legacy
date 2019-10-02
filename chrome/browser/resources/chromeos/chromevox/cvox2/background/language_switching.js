@@ -11,12 +11,21 @@
 goog.provide('LanguageSwitching');
 
 /**
+ * The UI language of the browser. This corresponds to the system language
+ * set by the user. Behind the scenes, the getUIlanguage() API retrieves the
+ * locale that was passed from the browser to the renderer via the --lang
+ * command line flag.
+ * @private {string}
+ */
+LanguageSwitching.browserUILanguage_ =
+    chrome.i18n.getUILanguage().toLowerCase();
+
+/**
  * The current output language. Initialize to the language of the browser or
  * empty string if the former is unavailable.
  * @private {string}
  */
-LanguageSwitching.currentLanguage_ =
-    chrome.i18n.getUILanguage().toLowerCase() || '';
+LanguageSwitching.currentLanguage_ = LanguageSwitching.browserUILanguage_ || '';
 
 /**
  * Confidence threshold to meet before assigning sub-node language.
@@ -62,7 +71,11 @@ LanguageSwitching.assignLanguagesForStringAttribute = function(
     node, stringAttribute, appendStringWithLanguage) {
   if (!node)
     return;
+
   var stringAttributeValue = node[stringAttribute];
+  if (!stringAttributeValue)
+    return;
+
   var languageAnnotation;
   // Quick note:
   // The decideNewLanguage function, which contains the core language switching
@@ -83,12 +96,10 @@ LanguageSwitching.assignLanguagesForStringAttribute = function(
   }
 
   // If no language annotation is found, append entire stringAttributeValue to
-  // buffer and do not switch languages.
-  // TODO(akihiroota): Decide if we simply want to return if
-  // stringAttributeValue is null.
+  // buffer and default to the browser UI language.
   if (!languageAnnotation || languageAnnotation.length === 0) {
     appendStringWithLanguage(
-        stringAttributeValue || '', LanguageSwitching.currentLanguage_);
+        stringAttributeValue, LanguageSwitching.browserUILanguage_);
     return;
   }
 
@@ -99,7 +110,7 @@ LanguageSwitching.assignLanguagesForStringAttribute = function(
     var speechProps = new Output.SpeechProperties();
     var startIndex = languageAnnotation[i].startIndex;
     var endIndex = languageAnnotation[i].endIndex;
-    var language = languageAnnotation[i].language;
+    var language = languageAnnotation[i].language.toLowerCase();
     var probability = languageAnnotation[i].probability;
 
     var outputString = LanguageSwitching.buildOutputString(
@@ -134,42 +145,25 @@ LanguageSwitching.decideNewLanguage = function(
   // 2. Node-level detected language.
   // 3. Author-provided language. This language is also assigned at the node
   // level.
-  // 4. LanguageSwitching.currentLanguage_. If we do not have enough language
-  // data, then we should not switch languages.
+  // 4. UI language of the browser. This is the language the user has chosen to
+  // display their content in.
 
   // Use subNodeLanguage if probability exceeds threshold.
   if (probability > LanguageSwitching.PROBABILITY_THRESHOLD_)
-    return subNodeLanguage.toLowerCase();
+    return subNodeLanguage;
 
-  // Use detected language as nodeLevelLanguage, if present.
-  // If no detected language, use author-provided language.
   var nodeLevelLanguage = node.detectedLanguage || node.language;
-  // If nodeLevelLanguage is null, then do not switch languages.
   // We do not have enough information to make a confident language assignment,
-  // so we will just stick with the current language.
+  // so we fall back on the UI language of the browser.
   if (!nodeLevelLanguage)
-    return LanguageSwitching.currentLanguage_;
+    return LanguageSwitching.browserUILanguage_;
 
   nodeLevelLanguage = nodeLevelLanguage.toLowerCase();
 
-  // TODO(akihiroota): Move validation into separate function.
-  // Validate nodeLevelLanguage, since there's the possibility that it comes
-  // from the author.
-  // There are five possible components of a language code. See link for more
-  // details: http://userguide.icu-project.org/locale
-  // The TTS Engine handles parsing language codes, but it needs to have a
-  // valid language component for the engine not to crash.
-  // For example, given the language code 'en-US', 'en' is the language
-  // component.
-  var langComponentArray = nodeLevelLanguage.split('-');
-  if (!langComponentArray || (langComponentArray.length === 0))
-    return LanguageSwitching.currentLanguage_;
+  if (LanguageSwitching.isValidLanguageCode(nodeLevelLanguage))
+    return nodeLevelLanguage;
 
-  // The language component should have length of either two or three.
-  if (langComponentArray[0].length !== 2 && langComponentArray[0].length !== 3)
-    return LanguageSwitching.currentLanguage_;
-
-  return nodeLevelLanguage;
+  return LanguageSwitching.browserUILanguage_;
 };
 
 /**
@@ -211,4 +205,27 @@ LanguageSwitching.didLanguageSwitch = function(newLanguage) {
   if (newLanguageComponents[0] !== currentLanguageComponents[0])
     return true;
   return false;
+};
+
+/**
+ * Runs validation on language code and returns true if it's properly formatted.
+ * @param {string} languageCode
+ * @return {boolean}
+ */
+LanguageSwitching.isValidLanguageCode = function(languageCode) {
+  // There are five possible components of a language code. See link for more
+  // details: http://userguide.icu-project.org/locale
+  // The TTS Engine handles parsing language codes, but it needs to have a
+  // valid language component for the engine not to crash.
+  // For example, given the language code 'en-US', 'en' is the language
+  // component.
+  var langComponentArray = languageCode.split('-');
+  if (!langComponentArray || (langComponentArray.length === 0))
+    return false;
+
+  // The language component should have length of either two or three.
+  if (langComponentArray[0].length !== 2 && langComponentArray[0].length !== 3)
+    return false;
+
+  return true;
 };

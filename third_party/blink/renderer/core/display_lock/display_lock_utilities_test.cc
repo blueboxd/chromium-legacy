@@ -6,7 +6,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
-#include "third_party/blink/renderer/core/display_lock/display_lock_options.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -20,6 +19,25 @@ class DisplayLockUtilitiesTest : public RenderingTest,
   DisplayLockUtilitiesTest()
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
         ScopedDisplayLockingForTest(true) {}
+
+  void LockElement(Element& element,
+                   bool activatable,
+                   bool update_lifecycle = true) {
+    StringBuilder value;
+    value.Append("invisible");
+    if (activatable)
+      value.Append(" activatable");
+    element.setAttribute(html_names::kRendersubtreeAttr,
+                         value.ToAtomicString());
+    if (update_lifecycle)
+      UpdateAllLifecyclePhasesForTest();
+  }
+
+  void CommitElement(Element& element, bool update_lifecycle = true) {
+    element.setAttribute(html_names::kRendersubtreeAttr, "");
+    if (update_lifecycle)
+      UpdateAllLifecyclePhasesForTest();
+  }
 };
 
 TEST_F(DisplayLockUtilitiesTest, ActivatableLockedInclusiveAncestors) {
@@ -50,17 +68,7 @@ TEST_F(DisplayLockUtilitiesTest, ActivatableLockedInclusiveAncestors) {
   shadow_root.SetInnerHTMLFromString("<div id='shadowDiv'>shadow!</div>");
   Element& shadow_div = *shadow_root.getElementById("shadowDiv");
 
-  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
-
-  DisplayLockOptions options;
-  options.setActivatable(true);
-  // Lock outer with activatable flag.
-  {
-    ScriptState::Scope scope(script_state);
-    outer.getDisplayLockForBindings()->acquire(script_state, &options);
-  }
-
-  UpdateAllLifecyclePhasesForTest();
+  LockElement(outer, true);
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
   // Querying from every element gives |outer|.
@@ -90,12 +98,7 @@ TEST_F(DisplayLockUtilitiesTest, ActivatableLockedInclusiveAncestors) {
   EXPECT_EQ(result_for_shadow_div.at(0), outer);
 
   // Lock innermost with activatable flag.
-  {
-    ScriptState::Scope scope(script_state);
-    innermost.getDisplayLockForBindings()->acquire(script_state, &options);
-  }
-
-  UpdateAllLifecyclePhasesForTest();
+  LockElement(innermost, true);
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 2);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
 
@@ -126,13 +129,8 @@ TEST_F(DisplayLockUtilitiesTest, ActivatableLockedInclusiveAncestors) {
   EXPECT_EQ(result_for_shadow_div.at(0), outer);
 
   // Unlock everything.
-  {
-    ScriptState::Scope scope(script_state);
-    innermost.getDisplayLockForBindings()->commit(script_state);
-    outer.getDisplayLockForBindings()->commit(script_state);
-  }
-
-  UpdateAllLifecyclePhasesForTest();
+  CommitElement(innermost, false);
+  CommitElement(outer);
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
 
@@ -187,18 +185,8 @@ TEST_F(DisplayLockUtilitiesTest, LockedSubtreeCrossingFrames) {
   ASSERT_TRUE(parent);
   ASSERT_TRUE(child);
 
-  auto* child_frame_state =
-      ToScriptStateForMainWorld(ChildDocument().GetFrame());
-  auto* parent_frame_state =
-      ToScriptStateForMainWorld(GetDocument().GetFrame());
-
   // Lock parent.
-  {
-    ScriptState::Scope scope(child_frame_state);
-    parent->getDisplayLockForBindings()->acquire(child_frame_state, nullptr);
-  }
-
-  UpdateAllLifecyclePhasesForTest();
+  LockElement(*parent, false);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
   EXPECT_EQ(ChildDocument().LockedDisplayLockCount(), 1);
@@ -209,13 +197,7 @@ TEST_F(DisplayLockUtilitiesTest, LockedSubtreeCrossingFrames) {
   EXPECT_TRUE(DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(*child));
 
   // Lock grandparent.
-  {
-    ScriptState::Scope scope(parent_frame_state);
-    grandparent->getDisplayLockForBindings()->acquire(parent_frame_state,
-                                                      nullptr);
-  }
-
-  UpdateAllLifecyclePhasesForTest();
+  LockElement(*grandparent, false);
 
   EXPECT_FALSE(
       DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(*grandparent));
@@ -223,12 +205,7 @@ TEST_F(DisplayLockUtilitiesTest, LockedSubtreeCrossingFrames) {
   EXPECT_TRUE(DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(*child));
 
   // Unlock parent.
-  {
-    ScriptState::Scope scope(child_frame_state);
-    parent->getDisplayLockForBindings()->commit(child_frame_state);
-  }
-
-  UpdateAllLifecyclePhasesForTest();
+  CommitElement(*parent);
 
   EXPECT_FALSE(
       DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(*grandparent));
@@ -236,12 +213,7 @@ TEST_F(DisplayLockUtilitiesTest, LockedSubtreeCrossingFrames) {
   EXPECT_TRUE(DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(*child));
 
   // Unlock grandparent.
-  {
-    ScriptState::Scope scope(parent_frame_state);
-    grandparent->getDisplayLockForBindings()->commit(parent_frame_state);
-  }
-
-  UpdateAllLifecyclePhasesForTest();
+  CommitElement(*grandparent);
 
   EXPECT_FALSE(
       DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(*grandparent));

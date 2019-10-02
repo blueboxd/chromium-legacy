@@ -114,7 +114,6 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   int hidden_shelf_in_screen_portion() const {
     return hidden_shelf_in_screen_portion_;
   }
-  SkColor shelf_default_base_color() const { return shelf_default_base_color_; }
   SkColor shelf_ink_drop_base_color() const {
     return shelf_ink_drop_base_color_;
   }
@@ -122,19 +121,6 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
     return shelf_ink_drop_visible_opacity_;
   }
   SkColor shelf_icon_color() const { return shelf_icon_color_; }
-  int shelf_translucent_over_app_list() const {
-    return shelf_translucent_over_app_list_;
-  }
-  int shelf_translucent_alpha() const { return shelf_translucent_alpha_; }
-  int shelf_translucent_maximized_window() const {
-    return shelf_translucent_maximized_window_;
-  }
-  int shelf_translucent_color_darken_alpha() const {
-    return shelf_translucent_color_darken_alpha_;
-  }
-  int shelf_opaque_color_darken_alpha() const {
-    return shelf_opaque_color_darken_alpha_;
-  }
   int status_indicator_offset_from_shelf_edge() const {
     return status_indicator_offset_from_shelf_edge_;
   }
@@ -150,6 +136,19 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   float shelf_tooltip_preview_min_ratio() const {
     return shelf_tooltip_preview_min_ratio_;
   }
+
+  // Gets the current color for the shelf control buttons.
+  SkColor GetShelfControlButtonColor() const;
+
+  // Gets the shelf color when the app list is open, used in clamshell mode.
+  SkColor GetShelfWithAppListColor() const;
+
+  // Gets the shelf color when a window is maximized.
+  SkColor GetMaximizedShelfColor() const;
+
+  // Gets the default shelf color, calculated using the wallpaper color if
+  // available.
+  SkColor GetDefaultShelfColor() const;
 
  private:
   friend class ShelfConfigTest;
@@ -201,10 +200,6 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // Portion of the shelf that's within the screen bounds when auto-hidden.
   const int hidden_shelf_in_screen_portion_;
 
-  // The default base color of the shelf to which different alpha values are
-  // applied based on the desired shelf opacity level.
-  const SkColor shelf_default_base_color_;
-
   // Ink drop color for shelf items.
   const SkColor shelf_ink_drop_base_color_;
 
@@ -214,21 +209,6 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // The foreground color of the icons used in the shelf (launcher,
   // notifications, etc).
   const SkColor shelf_icon_color_;
-
-  // The alpha value for the shelf background.
-  const int shelf_translucent_over_app_list_;
-  const int shelf_translucent_alpha_;
-  // Using 0xFF causes clipping on the overlay candidate content, which prevent
-  // HW overlay, probably due to a bug in compositor. Fix it and use 0xFF.
-  // crbug.com/901538
-  const int shelf_translucent_maximized_window_;
-
-  // The alpha value used to darken a colorized shelf when the shelf is
-  // translucent.
-  const int shelf_translucent_color_darken_alpha_;
-
-  // The alpha value used to darken a colorized shelf when the shelf is opaque.
-  const int shelf_opaque_color_darken_alpha_;
 
   // The distance between the edge of the shelf and the status indicators.
   const int status_indicator_offset_from_shelf_edge_;

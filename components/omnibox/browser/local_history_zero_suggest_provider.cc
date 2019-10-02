@@ -36,10 +36,6 @@ namespace {
 // Default relevance for the LocalHistoryZeroSuggestProvider query suggestions.
 const int kLocalHistoryZeroSuggestRelevance = 500;
 
-// ZeroSuggestVariant field trial param value for the local history query
-// suggestions.
-const char kZeroSuggestLocalVariant[] = "Local";
-
 // ProviderHistoryDBTask wraps two non-null callbacks into a HistoryDBTask to
 // passed to HistoryService::ScheduleDBTask. |request_callback| gets invoked on
 // the history backend thread when the on-disk history database becomes
@@ -116,6 +112,10 @@ base::string16 GetSearchTermsFromURL(const GURL& url,
 }  // namespace
 
 // static
+const char LocalHistoryZeroSuggestProvider::kZeroSuggestLocalVariant[] =
+    "Local";
+
+// static
 LocalHistoryZeroSuggestProvider* LocalHistoryZeroSuggestProvider::Create(
     AutocompleteProviderClient* client,
     AutocompleteProviderListener* listener) {
@@ -127,8 +127,8 @@ void LocalHistoryZeroSuggestProvider::Start(const AutocompleteInput& input,
   TRACE_EVENT0("omnibox", "LocalHistoryZeroSuggestProvider::Start");
 
   history_task_tracker_.TryCancel(history_db_task_id_);
+  done_ = true;
   matches_.clear();
-  Stop(true, false);
 
   // Allow local history query suggestions only when the user is unauthenticated
   // and is not in an off-the-record context.
@@ -176,6 +176,7 @@ void LocalHistoryZeroSuggestProvider::Start(const AutocompleteInput& input,
         google_search_url, max_matches_, url_db);
     OnQueryURLDatabaseComplete(input, std::move(url_matches));
   } else {
+    done_ = false;
     history_db_task_id_ = history_service->ScheduleDBTask(
         FROM_HERE,
         std::make_unique<ProviderHistoryDBTask>(
@@ -230,6 +231,8 @@ void LocalHistoryZeroSuggestProvider::DeleteMatch(
                      weak_ptr_factory_.GetWeakPtr(), match.contents),
       &history_task_tracker_);
 
+  // Prevent the deleted suggestion from being resuggested until the
+  // corresponding URLs are asynchronously deleted.
   deleted_suggestions_set_.insert(match.contents);
 }
 

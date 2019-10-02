@@ -146,7 +146,7 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
 
   // Adds and removes observers.
   void AddObserver(Observer* observer);
-  void RemoveObserver(const Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Provides access to the core information of the user's unconsented primary
   // account. Returns an empty info, if there is no such account.

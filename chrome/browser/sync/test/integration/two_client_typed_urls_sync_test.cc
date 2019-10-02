@@ -85,6 +85,7 @@ class TwoClientTypedUrlsSyncTest : public SyncTest {
 };
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2E_ENABLED(Add)) {
+  ResetSyncForPrimaryAccount();
   // Use a randomized URL to prevent test collisions.
   const base::string16 kHistoryUrl = ASCIIToUTF16(base::StringPrintf(
       "http://www.add-history.google.com/%s", base::GenerateGUID().c_str()));
@@ -363,6 +364,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddThenExpireVisitByVisit) {
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2E_ENABLED(AddThenDelete)) {
+  ResetSyncForPrimaryAccount();
   // Use a randomized URL to prevent test collisions.
   const base::string16 kHistoryUrl = ASCIIToUTF16(base::StringPrintf(
       "http://www.add-history.google.com/%s", base::GenerateGUID().c_str()));
@@ -423,6 +425,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
                        E2E_ENABLED(DisableEnableSync)) {
+  ResetSyncForPrimaryAccount();
   const base::string16 kUrl1(ASCIIToUTF16("http://history1.google.com/"));
   const base::string16 kUrl2(ASCIIToUTF16("http://history2.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -614,6 +617,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, UpdateToNonTypedURL) {
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
                        E2E_ENABLED(DontSyncUpdatedNonTypedURLs)) {
+  ResetSyncForPrimaryAccount();
   // Checks if a non-typed URL that has been updated (modified) doesn't get
   // synced. This is a regression test after fixing a bug where adding a
   // non-typed URL was guarded against but later modifying it was not. Since
@@ -652,10 +656,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
                        E2E_ENABLED(SyncTypedRedirects)) {
+  ResetSyncForPrimaryAccount();
   const base::string16 kHistoryUrl(ASCIIToUTF16("http://typed.google.com/"));
   const base::string16 kRedirectedHistoryUrl(
       ASCIIToUTF16("http://www.typed.google.com/"));
-  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Simulate a typed address that gets redirected by the server to a different

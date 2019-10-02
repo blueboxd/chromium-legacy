@@ -355,12 +355,16 @@ public class TabModalPresenter
         if (isShowing) mActiveTab.exitFullscreenMode();
 
         // Also need to update browser control state after dismissal to refresh the constraints.
-        if (isShowing && mActiveTab.areRendererInputEventsIgnored()) {
+        if (isShowing && areRendererInputEventsIgnored()) {
             mChromeFullscreenManager.showAndroidControls(true);
         } else {
             TabBrowserControlsState.update(mActiveTab, BrowserControlsState.SHOWN,
                     !mChromeFullscreenManager.offsetOverridden());
         }
+    }
+
+    private boolean areRendererInputEventsIgnored() {
+        return mActiveTab.getWebContents().getMainFrame().areInputEventsIgnored();
     }
 
     /**

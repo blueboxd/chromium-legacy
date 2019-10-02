@@ -24,14 +24,7 @@ void ShelfContainerView::Initialize() {
 }
 
 gfx::Size ShelfContainerView::CalculatePreferredSize() const {
-  const int width =
-      ShelfView::GetSizeOfAppIcons(shelf_view_->last_visible_index() -
-                                       shelf_view_->first_visible_index() + 1,
-                                   false);
-  const int height = ShelfConfig::Get()->button_size();
-  return shelf_view_->shelf()->IsHorizontalAlignment()
-             ? gfx::Size(width, height)
-             : gfx::Size(height, width);
+  return CalculateIdealSize();
 }
 
 void ShelfContainerView::ChildPreferredSizeChanged(views::View* child) {
@@ -39,7 +32,11 @@ void ShelfContainerView::ChildPreferredSizeChanged(views::View* child) {
 }
 
 void ShelfContainerView::Layout() {
-  shelf_view_->SetBoundsRect(gfx::Rect(shelf_view_->GetPreferredSize()));
+  // Should not use ShelfView::GetPreferredSize in replace of
+  // CalculateIdealSize. Because ShelfView::CalculatePreferredSize relies on the
+  // bounds of app icon. Meanwhile, the icon's bounds may be updated by
+  // animation.
+  shelf_view_->SetBoundsRect(gfx::Rect(CalculateIdealSize()));
 }
 
 const char* ShelfContainerView::GetClassName() const {
@@ -50,6 +47,17 @@ void ShelfContainerView::TranslateShelfView(const gfx::Vector2dF& offset) {
   gfx::Transform transform_matrix;
   transform_matrix.Translate(-offset);
   shelf_view_->SetTransform(transform_matrix);
+}
+
+gfx::Size ShelfContainerView::CalculateIdealSize() const {
+  const int width =
+      ShelfView::GetSizeOfAppIcons(shelf_view_->last_visible_index() -
+                                       shelf_view_->first_visible_index() + 1,
+                                   false);
+  const int height = ShelfConfig::Get()->button_size();
+  return shelf_view_->shelf()->IsHorizontalAlignment()
+             ? gfx::Size(width, height)
+             : gfx::Size(height, width);
 }
 
 }  // namespace ash

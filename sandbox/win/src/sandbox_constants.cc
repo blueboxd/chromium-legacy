@@ -5,7 +5,7 @@
 #include "sandbox/win/src/sandbox_constants.h"
 
 namespace sandbox {
-// Strings used as keys in base::Value snapshots of Policies.
-extern const char kProcessIds[] = "process_ids";
+// Strings used as keys in base::Value snapshots of Policies for WebUI.
+extern const char kProcessIds[] = "processIds";
 
 }  // namespace sandbox

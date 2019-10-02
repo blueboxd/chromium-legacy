@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/payments/fido_authentication_strike_database.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "device/fido/fido_constants.h"
@@ -106,6 +107,10 @@ class CreditCardFIDOAuthenticator
 
   // Ensures that local user opt-in pref is in-sync with payments server.
   void SyncUserOptIn(AutofillClient::UnmaskDetails& unmask_details);
+
+  // Retrieves the strike database for offering FIDO authentication.
+  FidoAuthenticationStrikeDatabase*
+  GetOrCreateFidoAuthenticationStrikeDatabase();
 
   // Returns the current flow.
   Flow current_flow() { return current_flow_; }
@@ -230,6 +235,11 @@ class CreditCardFIDOAuthenticator
 
   // Weak pointer to object that is requesting authentication.
   base::WeakPtr<Requester> requester_;
+
+  // Strike database to ensure we limit the number of times we offer fido
+  // authentication.
+  std::unique_ptr<FidoAuthenticationStrikeDatabase>
+      fido_authentication_strike_database_;
 
   // Set when callback for IsUserVerifiable() is invoked with passed value.
   base::Optional<bool> user_is_verifiable_ = base::nullopt;

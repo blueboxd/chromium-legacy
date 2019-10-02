@@ -17,6 +17,7 @@ const char kTestDomain[] = "http://example.com";
 const char kTestDomain2[] = "http://test.com";
 const char kUsername[] = "user";
 const char kUsername2[] = "user2";
+const char kUsername3[] = "user3";
 
 using testing::ElementsAre;
 using testing::IsEmpty;
@@ -95,6 +96,76 @@ TEST_F(LeakedCredentialsTableTest, SameUrlAndUsernameDifferentTime) {
   // record in the database.
   EXPECT_TRUE(db()->AddRow(leaked_credentials2));
   EXPECT_THAT(db()->GetAllRows(), ElementsAre(leaked_credentials1));
+}
+
+TEST_F(LeakedCredentialsTableTest, RemoveRowsCreatedBetween) {
+  LeakedCredentials leaked_credentials1 = test_data();
+  LeakedCredentials leaked_credentials2 = test_data();
+  LeakedCredentials leaked_credentials3 = test_data();
+  leaked_credentials2.username = base::ASCIIToUTF16(kUsername2);
+  leaked_credentials3.username = base::ASCIIToUTF16(kUsername3);
+  leaked_credentials1.create_time = base::Time::FromTimeT(10);
+  leaked_credentials2.create_time = base::Time::FromTimeT(20);
+  leaked_credentials3.create_time = base::Time::FromTimeT(30);
+
+  EXPECT_TRUE(db()->AddRow(leaked_credentials1));
+  EXPECT_TRUE(db()->AddRow(leaked_credentials2));
+  EXPECT_TRUE(db()->AddRow(leaked_credentials3));
+
+  EXPECT_THAT(db()->GetAllRows(),
+              ElementsAre(leaked_credentials1, leaked_credentials2,
+                          leaked_credentials3));
+
+  EXPECT_TRUE(db()->RemoveRowsCreatedBetween(base::Time::FromTimeT(15),
+                                             base::Time::FromTimeT(25)));
+
+  EXPECT_THAT(db()->GetAllRows(),
+              ElementsAre(leaked_credentials1, leaked_credentials3));
+}
+
+TEST_F(LeakedCredentialsTableTest, RemoveRowsCreatedBetweenEdgeCase) {
+  base::Time begin_time = base::Time::FromTimeT(10);
+  base::Time end_time = base::Time::FromTimeT(20);
+  LeakedCredentials leaked_credentials_begin = test_data();
+  LeakedCredentials leaked_credentials_end = test_data();
+  leaked_credentials_begin.create_time = begin_time;
+  leaked_credentials_end.create_time = end_time;
+  leaked_credentials_end.username = base::ASCIIToUTF16(kUsername2);
+
+  EXPECT_TRUE(db()->AddRow(leaked_credentials_begin));
+  EXPECT_TRUE(db()->AddRow(leaked_credentials_end));
+
+  EXPECT_THAT(db()->GetAllRows(),
+              ElementsAre(leaked_credentials_begin, leaked_credentials_end));
+
+  EXPECT_TRUE(db()->RemoveRowsCreatedBetween(begin_time, end_time));
+  // RemoveRowsCreatedBetween takes |begin_time| inclusive and |end_time|
+  // exclusive, hence the credentials with |end_time| should remain in the
+  // database.
+  EXPECT_THAT(db()->GetAllRows(), ElementsAre(leaked_credentials_end));
+}
+
+TEST_F(LeakedCredentialsTableTest, RemoveRowsCreatedUpUntilNow) {
+  LeakedCredentials leaked_credentials1 = test_data();
+  LeakedCredentials leaked_credentials2 = test_data();
+  LeakedCredentials leaked_credentials3 = test_data();
+  leaked_credentials2.username = base::ASCIIToUTF16(kUsername2);
+  leaked_credentials3.username = base::ASCIIToUTF16(kUsername3);
+  leaked_credentials1.create_time = base::Time::FromTimeT(42);
+  leaked_credentials2.create_time = base::Time::FromTimeT(780);
+  leaked_credentials3.create_time = base::Time::FromTimeT(3000);
+
+  EXPECT_TRUE(db()->AddRow(leaked_credentials1));
+  EXPECT_TRUE(db()->AddRow(leaked_credentials2));
+  EXPECT_TRUE(db()->AddRow(leaked_credentials3));
+
+  EXPECT_THAT(db()->GetAllRows(),
+              ElementsAre(leaked_credentials1, leaked_credentials2,
+                          leaked_credentials3));
+
+  EXPECT_TRUE(db()->RemoveRowsCreatedBetween(base::Time(), base::Time()));
+
+  EXPECT_THAT(db()->GetAllRows(), IsEmpty());
 }
 
 TEST_F(LeakedCredentialsTableTest, BadURL) {

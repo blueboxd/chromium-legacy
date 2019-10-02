@@ -75,8 +75,9 @@ class CachedFontRenderParams {
         params_->subpixel_rendering = GetSubpixelRenderingGeometry();
       }
     }
-    singleton_hwnd_observer_ = std::make_unique<SingletonHwndObserver>(
-        base::Bind(&CachedFontRenderParams::OnWndProc, base::Unretained(this)));
+    singleton_hwnd_observer_ =
+        std::make_unique<SingletonHwndObserver>(base::BindRepeating(
+            &CachedFontRenderParams::OnWndProc, base::Unretained(this)));
     return *params_;
   }
 

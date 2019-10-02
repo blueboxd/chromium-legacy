@@ -9,6 +9,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_loading_indicator_view.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -62,7 +63,7 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
   UpdateBorder();
 }
 
-PageActionIconView::~PageActionIconView() {}
+PageActionIconView::~PageActionIconView() = default;
 
 bool PageActionIconView::IsBubbleShowing() const {
   // If the bubble is being destroyed, it's considered showing though it may be
@@ -209,6 +210,23 @@ void PageActionIconView::UpdateIconImage() {
                            : icon_color_;
   SetImage(gfx::CreateVectorIconWithBadge(GetVectorIcon(), icon_size_,
                                           icon_color, GetVectorIconBadge()));
+}
+
+void PageActionIconView::InstallLoadingIndicator() {
+  if (loading_indicator_)
+    return;
+
+  loading_indicator_ =
+      AddChildView(std::make_unique<PageActionIconLoadingIndicatorView>(this));
+  loading_indicator_->SetVisible(false);
+}
+
+void PageActionIconView::SetIsLoading(bool is_loading) {
+  if (!loading_indicator_)
+    return;
+
+  is_loading ? loading_indicator_->ShowAnimation()
+             : loading_indicator_->StopAnimation();
 }
 
 content::WebContents* PageActionIconView::GetWebContents() const {

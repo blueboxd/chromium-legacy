@@ -38,6 +38,7 @@ class CORE_EXPORT ScrollbarLayerDelegate : public cc::Scrollbar {
   gfx::Point Location() const override;
   int ThumbThickness() const override;
   int ThumbLength() const override;
+  bool SupportsDragSnapBack() const override;
 
   // Returns the track rect relative to the scrollbar's origin.
   gfx::Rect TrackRect() const override;

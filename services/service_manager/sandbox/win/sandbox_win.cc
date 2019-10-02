@@ -24,7 +24,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
-#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
@@ -34,25 +33,22 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "base/values.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
-#include "sandbox/constants.h"
 #include "sandbox/win/src/app_container_profile.h"
 #include "sandbox/win/src/job.h"
 #include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_nt_util.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
-#include "sandbox/win/src/sandbox_policy_info.h"
 #include "sandbox/win/src/win_utils.h"
 #include "services/service_manager/sandbox/features.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "services/service_manager/sandbox/win/sandbox_diagnostics.h"
 
 namespace service_manager {
 namespace {
@@ -668,60 +664,6 @@ sandbox::ResultCode SetupAppContainerProfile(
 
   return sandbox::SBOX_ALL_OK;
 }
-
-// Runs on a non-sandbox thread to ensure that response callback is not
-// invoked from sandbox process and job tracker thread, and that conversion
-// work does not block process or job registration. Converts |policies|
-// into base::Value form, then invokes |response| on the same thread.
-static void ConvertToValuesAndRespond(
-    std::unique_ptr<sandbox::PolicyList> policies,
-    base::OnceCallback<void(base::Value)> response) {
-  base::Value policy_values(base::Value::Type::LIST);
-  for (auto&& item : *policies) {
-    base::Value policy_value = item->GetValue();
-    policy_values.GetList().push_back(std::move(policy_value));
-  }
-  std::move(response).Run(std::move(policy_values));
-}
-
-// Runs on a non-sandbox thread to ensure that response callback is not
-// invoked from sandbox process and job tracker thread.
-static void RespondWithEmptyList(
-    base::OnceCallback<void(base::Value)> response) {
-  base::Value empty(base::Value::Type::LIST);
-  std::move(response).Run(std::move(empty));
-}
-
-// Mediates response from sandbox::BrokerServices->GetPolicyDiagnostics.
-class ServiceManagerDiagnosticsReceiver
-    : public sandbox::PolicyDiagnosticsReceiver {
- public:
-  ~ServiceManagerDiagnosticsReceiver() final {}
-  ServiceManagerDiagnosticsReceiver(
-      scoped_refptr<base::SequencedTaskRunner> origin_task_runner,
-      base::OnceCallback<void(base::Value)> response)
-      : response_(std::move(response)),
-        origin_task_runner_(origin_task_runner) {}
-  // This is called by the sandbox's process and job tracking thread and must
-  // return quickly.
-  void ReceiveDiagnostics(
-      std::unique_ptr<sandbox::PolicyList> policies) override {
-    // Need to run the conversion work on the origin thread.
-    origin_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&ConvertToValuesAndRespond,
-                                  std::move(policies), std::move(response_)));
-  }
-  // This is called by the sandbox's process and job tracking thread and must
-  // return quickly so we post to the origin thread.
-  void OnError(sandbox::ResultCode error) override {
-    origin_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&RespondWithEmptyList, std::move(response_)));
-  }
-
- private:
-  base::OnceCallback<void(base::Value)> response_;
-  scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
-};
 
 }  // namespace
 

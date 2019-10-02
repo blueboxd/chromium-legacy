@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "android_webview/browser/aw_feature_list.h"
+#include "android_webview/common/aw_features.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/containers/queue.h"

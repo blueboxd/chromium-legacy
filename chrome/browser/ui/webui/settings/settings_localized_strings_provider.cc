@@ -890,7 +890,8 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"mouseSpeed", IDS_SETTINGS_MOUSE_SPEED_LABEL},
       {"mouseSwapButtons", IDS_SETTINGS_MOUSE_SWAP_BUTTONS_LABEL},
       {"mouseReverseScroll", IDS_SETTINGS_MOUSE_REVERSE_SCROLL_LABEL},
-      {"pointerAccelerationLabel", IDS_SETTINGS_POINTER_ACCELERATION_LABEL},
+      {"mouseAccelerationLabel", IDS_SETTINGS_MOUSE_ACCELERATION_LABEL},
+      {"touchpadAccelerationLabel", IDS_SETTINGS_TOUCHPAD_ACCELERATION_LABEL},
   };
   AddLocalizedStringsBulk(html_source, kPointersStrings,
                           base::size(kPointersStrings));

@@ -27,7 +27,6 @@
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/window_factory.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -129,22 +128,13 @@ class TrayBackground : public views::Background {
     gfx::ScopedCanvas scoped_canvas(canvas);
     cc::PaintFlags background_flags;
     background_flags.setAntiAlias(true);
-    int border_radius = kTrayRoundedBorderRadius;
-    const bool tablet_mode =
-        Shell::Get()->tablet_mode_controller() &&
-        Shell::Get()->tablet_mode_controller()->InTabletMode();
-    background_flags.setColor(
-        (chromeos::switches::ShouldShowShelfHotseat() && tablet_mode &&
-         ShelfConfig::Get()->is_in_app())
-            ? SK_ColorTRANSPARENT
-            : ShelfConfig::Get()
-                  ->shelf_control_permanent_highlight_background());
-    border_radius = ShelfConfig::Get()->control_border_radius();
+    background_flags.setColor(ShelfConfig::Get()->GetShelfControlButtonColor());
 
     gfx::Rect bounds = tray_background_view_->GetBackgroundBounds();
     const float dsf = canvas->UndoDeviceScaleFactor();
     canvas->DrawRoundRect(gfx::ScaleToRoundedRect(bounds, dsf),
-                          border_radius * dsf, background_flags);
+                          ShelfConfig::Get()->control_border_radius() * dsf,
+                          background_flags);
   }
 
   // Reference to the TrayBackgroundView for which this is a background.

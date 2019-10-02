@@ -93,7 +93,7 @@ class MockMediaNotificationContainer : public MediaNotificationContainer {
   MOCK_METHOD1(OnVisibleActionsChanged,
                void(const std::set<MediaSessionAction>& actions));
   MOCK_METHOD1(OnMediaArtworkChanged, void(const gfx::ImageSkia& image));
-  MOCK_METHOD1(OnForegoundColorChanged, void(SkColor color));
+  MOCK_METHOD2(OnColorsChanged, void(SkColor foreground, SkColor background));
 
   MediaNotificationView* view() const { return view_.get(); }
   void SetView(std::unique_ptr<MediaNotificationView> view) {
@@ -763,7 +763,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, UpdateArtworkFromItem) {
   const SkColor accent = header_row()->accent_color_for_testing();
   gfx::Size size = view()->size();
   EXPECT_CALL(container(), OnMediaArtworkChanged(_)).Times(2);
-  EXPECT_CALL(container(), OnForegoundColorChanged(_)).Times(2);
+  EXPECT_CALL(container(), OnColorsChanged(_, _)).Times(2);
 
   SkBitmap image;
   image.allocN32Pixels(10, 10);
@@ -974,7 +974,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, Freezing_DoNotUpdateImage) {
   image.allocN32Pixels(10, 10);
   image.eraseColor(SK_ColorMAGENTA);
   EXPECT_CALL(container(), OnMediaArtworkChanged(_)).Times(0);
-  EXPECT_CALL(container(), OnForegoundColorChanged(_)).Times(0);
+  EXPECT_CALL(container(), OnColorsChanged(_, _)).Times(0);
 
   GetItem()->Freeze();
   GetItem()->MediaControllerImageChanged(

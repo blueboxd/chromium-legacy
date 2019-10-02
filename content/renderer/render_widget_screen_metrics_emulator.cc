@@ -40,6 +40,16 @@ void RenderWidgetScreenMetricsEmulator::ChangeEmulationParams(
   Apply();
 }
 
+gfx::Point RenderWidgetScreenMetricsEmulator::ViewRectOrigin() {
+  gfx::Point widget_pos = original_screen_rect().origin();
+  if (emulation_params_.view_position)
+    widget_pos = *emulation_params_.view_position;
+  else if (emulation_params_.screen_position !=
+           blink::WebDeviceEmulationParams::kDesktop)
+    widget_pos = gfx::Point();
+  return widget_pos;
+}
+
 void RenderWidgetScreenMetricsEmulator::Apply() {
   ScreenInfo screen_info = original_screen_info_;
 

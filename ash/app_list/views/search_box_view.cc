@@ -59,7 +59,6 @@ namespace app_list {
 
 namespace {
 
-constexpr int kPaddingSearchResult = 16;
 constexpr int kSearchBoxFocusRingWidth = 2;
 
 // Padding between the focus ring and the search box view
@@ -76,13 +75,6 @@ constexpr float kOpacityEndFraction = 1.0f;
 
 // Minimum amount of characters required to enable autocomplete.
 constexpr int kMinimumLengthToAutocomplete = 2;
-
-// Gets the box layout inset horizontal padding for the state of AppListModel.
-int GetBoxLayoutPaddingForState(ash::AppListState state) {
-  if (state == ash::AppListState::kStateSearchResults)
-    return kPaddingSearchResult;
-  return search_box::kPadding;
-}
 
 float GetAssistantButtonOpacityForState(ash::AppListState state) {
   if (state == ash::AppListState::kStateSearchResults)
@@ -337,10 +329,14 @@ void SearchBoxView::UpdateBackground(double progress,
 
 void SearchBoxView::UpdateLayout(double progress,
                                  ash::AppListState current_state,
-                                 ash::AppListState target_state) {
+                                 int current_state_height,
+                                 ash::AppListState target_state,
+                                 int target_state_height) {
+  // Horizontal margins are selected to match search box icon's vertical
+  // margins.
   const int horizontal_spacing = gfx::Tween::LinearIntValueBetween(
-      progress, GetBoxLayoutPaddingForState(current_state),
-      GetBoxLayoutPaddingForState(target_state));
+      progress, (current_state_height - search_box::kIconSize) / 2,
+      (target_state_height - search_box::kIconSize) / 2);
   const int horizontal_right_padding =
       horizontal_spacing -
       (search_box::kButtonSizeDip - search_box::kIconSize) / 2;

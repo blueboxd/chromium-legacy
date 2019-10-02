@@ -8,14 +8,11 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
-
-namespace syncer {
-class ProfileSyncService;
-}  // namespace syncer
 
 // This class provides some common functionality for StatusChangeCheckers that
 // observe many ProfileSyncServices.  This class is abstract.  Its descendants
@@ -44,8 +41,10 @@ class MultiClientStatusChangeChecker : public StatusChangeChecker,
 
  private:
   std::vector<syncer::ProfileSyncService*> services_;
-  ScopedObserver<syncer::ProfileSyncService, MultiClientStatusChangeChecker>
-      scoped_observer_;
+  ScopedObserver<syncer::ProfileSyncService, syncer::SyncServiceObserver>
+      scoped_observer_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(MultiClientStatusChangeChecker);
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_MULTI_CLIENT_STATUS_CHANGE_CHECKER_H_

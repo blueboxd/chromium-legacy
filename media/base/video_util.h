@@ -17,8 +17,7 @@ namespace media {
 class VideoFrame;
 
 // Computes the pixel aspect ratio of a given |visible_rect| from its
-// |natural_size|. This describes the shape of a coded pixel as the ratio
-// of its width to its height.
+// |natural_size|.
 //
 // See https://en.wikipedia.org/wiki/Pixel_aspect_ratio for a detailed
 // definition.

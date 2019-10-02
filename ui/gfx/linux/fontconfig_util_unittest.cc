@@ -65,6 +65,31 @@ TEST(FontConfigUtilTest, GetFontPathWithSysRoot) {
   }
 }
 
+TEST(FontConfigUtilTest, GetFontPathWithoutSysRoot) {
+  ScopedFcPattern pattern(FcPatternCreate());
+
+  // Save the old sysroot, if specified.
+  std::string old_sysroot;
+  const FcChar8* old_sysroot_ptr = FcConfigGetSysRoot(nullptr);
+  if (old_sysroot_ptr)
+    old_sysroot = reinterpret_cast<const char*>(old_sysroot_ptr);
+
+  // Override (remove) the sysroot.
+  FcConfigSetSysRoot(nullptr, nullptr);
+
+  // Check that the filename is not changed without a sysroot present.
+  const char kFileName[] = "/var/opt/font/fonts/arial.ttf";
+  FcPatternAddString(pattern.get(), FC_FILE,
+                     reinterpret_cast<const FcChar8*>(kFileName));
+  EXPECT_EQ(base::FilePath(kFileName), GetFontPath(pattern.get()));
+
+  // Restore the old sysroot, if specified.
+  if (old_sysroot_ptr) {
+    FcConfigSetSysRoot(nullptr,
+                       reinterpret_cast<const FcChar8*>(old_sysroot.c_str()));
+  }
+}
+
 TEST(FontConfigUtilTest, GetFontRenderParamsFromFcPatternWithEmptyPattern) {
   ScopedFcPattern pattern(FcPatternCreate());
 

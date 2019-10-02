@@ -508,39 +508,7 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
 
   if (!new_child->IsInline() && !new_child->IsFloatingOrOutOfFlowPositioned() &&
       !new_child->IsTablePart()) {
-    // We are placing a block inside an inline. We have to perform a split of
-    // this inline into continuations. This involves creating an anonymous
-    // block box to hold |newChild|. We then make that block box a continuation
-    // of this inline. We take all of the children after |beforeChild| and put
-    // them in a clone of this object.
-    scoped_refptr<ComputedStyle> new_style =
-        ComputedStyle::CreateAnonymousStyleWithDisplay(StyleRef(),
-                                                       EDisplay::kBlock);
-    const LayoutBlock* containing_block = ContainingBlock();
-    // The anon block we create here doesn't exist in the CSS spec, so
-    // we need to ensure that any blocks it contains inherit properly
-    // from its true parent. This means they must use the direction set by the
-    // anon block's containing block, so we need to prevent the anon block
-    // from inheriting direction from the inline. If there are any other
-    // inheritable properties that apply to block and inline elements
-    // but only affect the layout of children we will want to special-case
-    // them here too. Writing-mode would be one if it didn't create a
-    // formatting context of its own, removing the need for continuations.
-    new_style->SetDirection(containing_block->StyleRef().Direction());
-
-    // If inside an inline affected by in-flow positioning the block needs to be
-    // affected by it too. Giving the block a layer like this allows it to
-    // collect the x/y offsets from inline parents later.
-    if (LayoutObject* positioned_ancestor =
-            InFlowPositionedInlineAncestor(this))
-      new_style->SetPosition(positioned_ancestor->StyleRef().GetPosition());
-
-    LegacyLayout legacy = containing_block->ForceLegacyLayout()
-                              ? LegacyLayout::kForce
-                              : LegacyLayout::kAuto;
-
-    LayoutBlockFlow* new_box = LayoutBlockFlow::CreateAnonymous(
-        &GetDocument(), std::move(new_style), legacy);
+    LayoutBlockFlow* new_box = CreateAnonymousContainerForBlockChildren();
     LayoutBoxModelObject* old_continuation = Continuation();
     SetContinuation(new_box);
 
@@ -729,6 +697,41 @@ void LayoutInline::SplitFlow(LayoutObject* before_child,
       layout_invalidation_reason::kAnonymousBlockChange);
   post->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kAnonymousBlockChange);
+}
+
+LayoutBlockFlow* LayoutInline::CreateAnonymousContainerForBlockChildren() {
+  // We are placing a block inside an inline. We have to perform a split of this
+  // inline into continuations. This involves creating an anonymous block box to
+  // hold |newChild|. We then make that block box a continuation of this
+  // inline. We take all of the children after |beforeChild| and put them in a
+  // clone of this object.
+  scoped_refptr<ComputedStyle> new_style =
+      ComputedStyle::CreateAnonymousStyleWithDisplay(StyleRef(),
+                                                     EDisplay::kBlock);
+  const LayoutBlock* containing_block = ContainingBlock();
+  // The anon block we create here doesn't exist in the CSS spec, so we need to
+  // ensure that any blocks it contains inherit properly from its true
+  // parent. This means they must use the direction set by the anon block's
+  // containing block, so we need to prevent the anon block from inheriting
+  // direction from the inline. If there are any other inheritable properties
+  // that apply to block and inline elements but only affect the layout of
+  // children we will want to special-case them here too. Writing-mode would be
+  // one if it didn't create a formatting context of its own, removing the need
+  // for continuations.
+  new_style->SetDirection(containing_block->StyleRef().Direction());
+
+  // If inside an inline affected by in-flow positioning the block needs to be
+  // affected by it too. Giving the block a layer like this allows it to collect
+  // the x/y offsets from inline parents later.
+  if (LayoutObject* positioned_ancestor = InFlowPositionedInlineAncestor(this))
+    new_style->SetPosition(positioned_ancestor->StyleRef().GetPosition());
+
+  LegacyLayout legacy = containing_block->ForceLegacyLayout()
+                            ? LegacyLayout::kForce
+                            : LegacyLayout::kAuto;
+
+  return LayoutBlockFlow::CreateAnonymous(&GetDocument(), std::move(new_style),
+                                          legacy);
 }
 
 void LayoutInline::AddChildToContinuation(LayoutObject* new_child,
@@ -1474,8 +1477,7 @@ PaintLayerType LayoutInline::LayerTypeRequired() const {
 
 void LayoutInline::ChildBecameNonInline(LayoutObject* child) {
   // We have to split the parent flow.
-  auto* new_box =
-      To<LayoutBlockFlow>(ContainingBlock()->CreateAnonymousBlock());
+  LayoutBlockFlow* new_box = CreateAnonymousContainerForBlockChildren();
   LayoutBoxModelObject* old_continuation = Continuation();
   SetContinuation(new_box);
   LayoutObject* before_child = child->NextSibling();

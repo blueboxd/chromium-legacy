@@ -465,15 +465,6 @@ TEST_F(NetworkDeviceHandlerTest, GetWifiTDLSStatus) {
   EXPECT_EQ(NetworkDeviceHandler::kErrorDeviceMissing, result_);
 }
 
-TEST_F(NetworkDeviceHandlerTest, RequestRefreshIPConfigs) {
-  network_device_handler_->RequestRefreshIPConfigs(
-      kDefaultWifiDevicePath, success_callback_, error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kResultSuccess, result_);
-  // TODO(stevenjb): Add test interface to ShillIPConfigClient and test
-  // refresh calls.
-}
-
 TEST_F(NetworkDeviceHandlerTest, RequirePin) {
   // Test that the success callback gets called.
   network_device_handler_->RequirePin(kDefaultCellularDevicePath, true,

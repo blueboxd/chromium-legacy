@@ -194,6 +194,9 @@ void ArcUsbHostBridge::GetDeviceInfo(const std::string& guid,
 
   device::mojom::UsbDeviceInfoPtr info = iter->second->Clone();
   // b/69295049 the other side doesn't like optional strings.
+  info->manufacturer_name = info->manufacturer_name.value_or(base::string16());
+  info->product_name = info->product_name.value_or(base::string16());
+  info->serial_number = info->serial_number.value_or(base::string16());
   for (const device::mojom::UsbConfigurationInfoPtr& cfg :
        info->configurations) {
     cfg->configuration_name =

@@ -106,6 +106,19 @@ bool LeakedCredentialsTable::RemoveRow(const GURL& url,
   return s.Run();
 }
 
+bool LeakedCredentialsTable::RemoveRowsCreatedBetween(base::Time remove_begin,
+                                                      base::Time remove_end) {
+  sql::Statement s(
+      db_->GetCachedStatement(SQL_FROM_HERE,
+                              "DELETE FROM leaked_credentials WHERE "
+                              "create_time >= ? AND create_time < ?"));
+  s.BindInt64(0, remove_begin.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  s.BindInt64(1, remove_end.is_null()
+                     ? std::numeric_limits<int64_t>::max()
+                     : remove_end.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  return s.Run();
+}
+
 std::vector<LeakedCredentials> LeakedCredentialsTable::GetAllRows() {
   static constexpr char query[] =
       "SELECT url, username, create_time FROM leaked_credentials";

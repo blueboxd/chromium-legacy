@@ -56,6 +56,10 @@ class CONTENT_EXPORT SyntheticGestureController {
 
   void EnsureRendererInitialized(base::OnceClosure on_completed);
 
+  void UpdateSyntheticGestureTarget(
+      std::unique_ptr<SyntheticGestureTarget> gesture_target,
+      Delegate* delegate);
+
  private:
   friend class SyntheticGestureControllerTestBase;
 
@@ -72,7 +76,7 @@ class CONTENT_EXPORT SyntheticGestureController {
   void GestureCompleted(SyntheticGesture::Result result);
   void ResolveCompletionCallback();
 
-  Delegate* const delegate_;
+  Delegate* delegate_;
   std::unique_ptr<SyntheticGestureTarget> gesture_target_;
 
   // A queue of gesture/callback/bool tuples.  Implemented as multiple queues to

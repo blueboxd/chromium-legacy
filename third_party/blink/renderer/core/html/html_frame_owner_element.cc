@@ -314,9 +314,10 @@ void HTMLFrameOwnerElement::PointerEventsChanged() {
 
 void HTMLFrameOwnerElement::FrameOwnerPropertiesChanged() {
   // Don't notify about updates if ContentFrame() is null, for example when
-  // the subframe hasn't been created yet.
-  if (ContentFrame()) {
-    DCHECK(!is_swapping_frames_);
+  // the subframe hasn't been created yet; or if we are in the middle of
+  // swapping one frame for another, in which case the final state of
+  // properties will be propagated at the end of the swapping operation.
+  if (!is_swapping_frames_ && ContentFrame()) {
     GetDocument().GetFrame()->Client()->DidChangeFrameOwnerProperties(this);
   }
 }
@@ -369,8 +370,7 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
     }
   }
 
-  if (!is_swapping_frames_)
-    FrameOwnerPropertiesChanged();
+  FrameOwnerPropertiesChanged();
 
   GetDocument().GetRootScrollerController().DidUpdateIFrameFrameView(*this);
 

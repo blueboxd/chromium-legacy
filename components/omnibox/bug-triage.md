@@ -39,8 +39,9 @@ labeled as such (*Needs=Feedback* or *Needs=TestConfirmation*).
 * Every week on Thursday, the triage engineer looks over all alerts sent to
   [chrome-omnibox-team-alerts@](https://groups.google.com/a/google.com/forum/#!forum/chrome-omnibox-team-alerts)
   and, for each, either files a bug or replies to the message indicating why
-  filing a bug is not appropriate.  These bugs **must have an owner** for
-  follow-up; they cannot be left "Available*.  More details available
+  filing a bug is not appropriate.  These bugs should be set to "Untriaged",
+  so that the current triage engineer sees them, until a root cause has been
+  identified and an owner assigned (or closed.) More details available
   [below](#How-to-triage-alerts).
 * Every week on Thursday, the triage engineer should
   look over [all bugs with *Needs=Feedback*](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3AUI%3EBrowser%3EOmnibox+Needs%3DFeedback+&colspec=ID+Pri+M+Stars+ReleaseBlock+Component+Status+Owner+Summary+OS+Modified&x=m&y=releaseblock&cells=ids)

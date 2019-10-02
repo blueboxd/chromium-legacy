@@ -55,7 +55,6 @@ Impression CreateImpression(const base::Time& create_time,
                             UserFeedback feedback,
                             ImpressionResult impression,
                             bool integrated,
-                            SchedulerTaskTime task_time,
                             const std::string& guid,
                             SchedulerClientType type);
 

@@ -14,8 +14,6 @@
 #include "third_party/blink/public/platform/web_common.h"
 
 #if INSIDE_BLINK
-#include "mojo/public/cpp/bindings/associated_interface_request.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"  // nogncheck
@@ -49,35 +47,12 @@ class BLINK_PLATFORM_EXPORT InterfaceRegistry {
 #if INSIDE_BLINK
   template <typename Interface>
   void AddInterface(
-      base::RepeatingCallback<void(mojo::InterfaceRequest<Interface>)>
-          factory) {
-    AddInterface(
-        Interface::Name_,
-        WTF::BindRepeating(&InterfaceRegistry::ForwardToInterfaceFactory<
-                               mojo::InterfaceRequest<Interface>>,
-                           std::move(factory)));
-  }
-
-  template <typename Interface>
-  void AddInterface(
       base::RepeatingCallback<void(mojo::PendingReceiver<Interface>)> factory) {
     AddInterface(
         Interface::Name_,
         WTF::BindRepeating(&InterfaceRegistry::ForwardToInterfaceFactory<
                                mojo::PendingReceiver<Interface>>,
                            std::move(factory)));
-  }
-
-  template <typename Interface>
-  void AddInterface(WTF::CrossThreadRepeatingFunction<
-                        void(mojo::InterfaceRequest<Interface>)> factory,
-                    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-    AddInterface(Interface::Name_,
-                 ConvertToBaseCallback(CrossThreadBind(
-                     &InterfaceRegistry::ForwardToCrossThreadInterfaceFactory<
-                         mojo::InterfaceRequest<Interface>>,
-                     std::move(factory))),
-                 std::move(task_runner));
   }
 
   template <typename Interface>
@@ -90,18 +65,6 @@ class BLINK_PLATFORM_EXPORT InterfaceRegistry {
                          mojo::PendingReceiver<Interface>>,
                      std::move(factory))),
                  std::move(task_runner));
-  }
-
-  template <typename Interface>
-  void AddAssociatedInterface(
-      base::RepeatingCallback<void(mojo::AssociatedInterfaceRequest<Interface>)>
-          factory) {
-    AddAssociatedInterface(
-        Interface::Name_,
-        WTF::BindRepeating(
-            &InterfaceRegistry::ForwardToAssociatedInterfaceFactory<
-                mojo::AssociatedInterfaceRequest<Interface>>,
-            std::move(factory)));
   }
 
   template <typename Interface>

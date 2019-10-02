@@ -131,7 +131,7 @@ const base::string16& StructTraits<
 const base::string16& StructTraits<
     chrome::mojom::InspectionResultDataView,
     ModuleInspectionResult>::version(const ModuleInspectionResult& input) {
-  return input.basename;
+  return input.version;
 }
 // static
 chrome::mojom::CertificateType

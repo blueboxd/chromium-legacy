@@ -26,6 +26,7 @@ class TwoClientSearchEnginesSyncTest : public SyncTest {
 };
 
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, E2E_ENABLED(Add)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   // TODO(crbug.com/953711): Ideally we could immediately assert
   // search_engines_helper::AllServicesMatch(), but that's not possible today
@@ -43,6 +44,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, E2E_ENABLED(Add)) {
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, E2E_ENABLED(Delete)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   // TODO(crbug.com/953711): Ideally we could immediately assert
   // search_engines_helper::AllServicesMatch(), but that's not possible today
@@ -66,6 +68,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, E2E_ENABLED(Delete)) {
 
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
                        E2E_ENABLED(AddMultiple)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   // TODO(crbug.com/953711): Ideally we could immediately assert
   // search_engines_helper::AllServicesMatch(), but that's not possible today
@@ -101,6 +104,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, Duplicates) {
 
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
                        E2E_ENABLED(UpdateKeyword)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   // TODO(crbug.com/953711): Ideally we could immediately assert
   // search_engines_helper::AllServicesMatch(), but that's not possible today
@@ -120,6 +124,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, E2E_ENABLED(UpdateUrl)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   // TODO(crbug.com/953711): Ideally we could immediately assert
   // search_engines_helper::AllServicesMatch(), but that's not possible today
@@ -140,6 +145,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, E2E_ENABLED(UpdateUrl)) {
 
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
                        E2E_ENABLED(UpdateName)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   // TODO(crbug.com/953711): Ideally we could immediately assert
   // search_engines_helper::AllServicesMatch(), but that's not possible today
@@ -228,6 +234,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, DisableSync) {
 
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
                        E2E_ENABLED(SyncDefault)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   // TODO(crbug.com/953711): Ideally we could immediately assert
   // search_engines_helper::AllServicesMatch(), but that's not possible today
@@ -248,6 +255,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
 // without putting the clients out of sync.
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
                        E2E_ENABLED(DeleteSyncedDefault)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   // TODO(crbug.com/953711): Ideally we could immediately assert
   // search_engines_helper::AllServicesMatch(), but that's not possible today

@@ -201,7 +201,6 @@ device::mojom::XRInputSourceDescriptionPtr OpenXrController::GetDescription(
   if (!description_) {
     description_ = device::mojom::XRInputSourceDescription::New();
     description_->handedness = GetHandness();
-    description_->emulated_position = false;
     description_->target_ray_mode = device::mojom::XRTargetRayMode::POINTING;
     // TODO(crbug.com/1006072):
     // Query  USB vendor and product ID From OpenXR.

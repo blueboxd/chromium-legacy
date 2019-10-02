@@ -833,8 +833,6 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
   if (anchor_origin_ &&
       pose_->TryGetViewTransform(anchor_origin_.get(), &view)) {
     got_view = true;
-    // TODO(http://crbug.com/931393): Send down emulated_position_, and report
-    // reset events when this changes.
     emulated_position_ = false;
     ABI::Windows::Foundation::Numerics::Matrix4x4 origin_from_attached;
     if (attached_coordinates->TryGetTransformTo(anchor_origin_.get(),
@@ -909,6 +907,8 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
 
   ret->pose->input_state =
       input_helper_->GetInputState(anchor_origin_.get(), timestamp_.get());
+
+  ret->pose->emulated_position = emulated_position_;
 
   if (emulated_position_ && last_origin_from_attached_) {
     gfx::DecomposedTransform attached_from_view_decomp;

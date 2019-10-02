@@ -363,7 +363,7 @@ class ProcessManager : public KeyedService,
   // True if we have created the startup set of background hosts.
   bool startup_background_hosts_created_;
 
-  base::ObserverList<ProcessManagerObserver>::Unchecked observer_list_;
+  base::ObserverList<ProcessManagerObserver> observer_list_;
 
   // ID Counter used to set ProcessManager::BackgroundPageData close_sequence_id
   // members. These IDs are tracked per extension in background_page_data_ and

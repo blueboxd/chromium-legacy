@@ -19,6 +19,7 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/menu_button_controller.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/grid_layout.h"
@@ -79,6 +80,8 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   SetButtonController(std::make_unique<HoverButtonController>(
       this, listener_,
       std::make_unique<views::Button::DefaultButtonControllerDelegate>(this)));
+
+  views::InstallRectHighlightPathGenerator(this);
 
   SetInstallFocusRingOnFocus(false);
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -347,12 +350,6 @@ views::View* HoverButton::GetTooltipHandlerForPoint(const gfx::Point& point) {
 }
 
 void HoverButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // HoverButtons use a rectangular highlight to encompass the full width of
-  // their parent.
-  auto path = std::make_unique<SkPath>();
-  path->addRect(RectToSkRect(GetLocalBounds()));
-  SetProperty(views::kHighlightPathKey, path.release());
-
   if (title_) {
     SetTooltipAndAccessibleName(this, title_, subtitle_, GetLocalBounds(),
                                 taken_width_, auto_compute_tooltip_);

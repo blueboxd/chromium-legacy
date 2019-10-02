@@ -55,7 +55,9 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
 
   void Schedule(SVGSMILElement*, SVGElement*, const QualifiedName&);
   void Unschedule(SVGSMILElement*, SVGElement*, const QualifiedName&);
-  void NotifyIntervalsChanged();
+
+  void MarkIntervalsDirty() { intervals_dirty_ = true; }
+  void ScheduleIntervalUpdate();
 
   // Returns the time we are currently updating.
   SMILTime Elapsed() const;

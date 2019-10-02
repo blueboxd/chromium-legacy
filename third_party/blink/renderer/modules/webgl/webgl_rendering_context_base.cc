@@ -777,9 +777,11 @@ WebGLRenderingContextBase::GetStaticBitmapImage(
 }
 
 scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
-    AccelerationHint hint) const {
+    AccelerationHint hint) {
   if (!GetDrawingBuffer())
     return nullptr;
+
+  ScopedFramebufferRestorer fbo_restorer(this);
   GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
   // Use the drawing buffer size here instead of the canvas size to ensure that
   // sizing is consistent for the GetStaticBitmapImage() result. The forced
@@ -1619,7 +1621,7 @@ bool WebGLRenderingContextBase::ContextCreatedOnXRCompatibleAdapter() {
 
 bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
     CanvasResourceProvider* resource_provider,
-    SourceDrawingBuffer source_buffer) const {
+    SourceDrawingBuffer source_buffer) {
   if (!drawing_buffer_)
     return false;
   if (resource_provider->IsAccelerated()) {

@@ -85,9 +85,9 @@ void TableLayoutAlgorithmAuto::RecalcColumn(unsigned eff_col) {
           // FIXME: Other browsers have a lower limit for the cell's max width.
           const int kCCellMaxWidth = 32760;
           Length cell_logical_width = cell->StyleOrColLogicalWidth();
-          // TODO(crbug.com/382725): CSS math function results on tables should
-          // be handled consistently with other lengths. Currently, only calc(%
-          // + 0px) case is handled as calc(%).
+          // A calculated width that mixes lengths and percentages in fixed
+          // table layout must be treated as 'auto'.
+          // https://drafts.csswg.org/css-values-4/#calc-computed-value
           if (cell_logical_width.IsCalculated()) {
             const CalculationValue& calc =
                 cell_logical_width.GetCalculationValue();
@@ -182,8 +182,6 @@ void TableLayoutAlgorithmAuto::FullRecalc() {
       group_logical_width = column->StyleRef().LogicalWidth();
     } else {
       Length col_logical_width = column->StyleRef().LogicalWidth();
-      // FIXME: calc() on tables should be handled consistently with other
-      // lengths. See bug: https://crbug.com/382725
       if (col_logical_width.IsCalculated() || col_logical_width.IsAuto())
         col_logical_width = group_logical_width;
       // TODO(alancutter): Make this work correctly for calc lengths.
@@ -391,8 +389,6 @@ int TableLayoutAlgorithmAuto::CalcEffectiveLogicalWidth() {
     unsigned span = cell->ColSpan();
 
     Length cell_logical_width = cell->StyleOrColLogicalWidth();
-    // FIXME: calc() on tables should be handled consistently with other
-    // lengths. See bug: https://crbug.com/382725
     if (cell_logical_width.IsZero() || cell_logical_width.IsCalculated())
       cell_logical_width = Length();  // Make it Auto
 

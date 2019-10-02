@@ -105,8 +105,8 @@ def GetDiffFiles(dcmp, base_dir):
                           (dcmp.diff_files, dcmp.left, dcmp.right))
 
   if len(dcmp.funny_files) > 0:
-    ApkMergeFailure('found uncomparable files: %s in %s and %s' %
-                    (dcmp.funny_files, dcmp.left, dcmp.right))
+    raise ApkMergeFailure('found uncomparable files: %s in %s and %s' %
+                          (dcmp.funny_files, dcmp.left, dcmp.right))
 
   for sub_dcmp in dcmp.subdirs.itervalues():
     copy_files.extend(GetDiffFiles(sub_dcmp, base_dir))

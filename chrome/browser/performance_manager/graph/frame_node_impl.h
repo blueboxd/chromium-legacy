@@ -96,11 +96,15 @@ class FrameNodeImpl
   bool is_current() const;
   bool network_almost_idle() const;
   bool is_ad_frame() const;
+  bool holds_web_lock() const;
+  bool holds_indexed_db_lock() const;
   const base::flat_set<WorkerNodeImpl*>& child_worker_nodes() const;
   const PriorityAndReason& priority_and_reason() const;
 
   // Setters are not thread safe.
   void SetIsCurrent(bool is_current);
+  void SetHoldsWebLock(bool holds_web_lock);
+  void SetHoldsIndexedDBLock(bool holds_indexed_db_lock);
 
   // Invoked when a navigation is committed in the frame.
   void OnNavigationCommitted(const GURL& url, bool same_document);
@@ -133,6 +137,9 @@ class FrameNodeImpl
   bool IsCurrent() const override;
   bool GetNetworkAlmostIdle() const override;
   bool IsAdFrame() const override;
+  bool HoldsWebLock() const override;
+  bool HoldsIndexedDBLock() const override;
+
   const base::flat_set<const WorkerNode*> GetChildWorkerNodes() const override;
   const PriorityAndReason& GetPriorityAndReason() const override;
 
@@ -210,6 +217,18 @@ class FrameNodeImpl
   ObservedProperty::
       NotifiesOnlyOnChanges<bool, &FrameNodeObserver::OnIsAdFrameChanged>
           is_ad_frame_{false};
+
+  // Locks held by a frame are tracked independently from navigation
+  // (specifically, a few tasks must run in the Web Lock and IndexedDB
+  // subsystems after a navigation for locks to be released).
+  ObservedProperty::NotifiesOnlyOnChanges<
+      bool,
+      &FrameNodeObserver::OnFrameHoldsWebLockChanged>
+      holds_web_lock_{false};
+  ObservedProperty::NotifiesOnlyOnChanges<
+      bool,
+      &FrameNodeObserver::OnFrameHoldsIndexedDBLockChanged>
+      holds_indexed_db_lock_{false};
 
   ObservedProperty::
       NotifiesOnlyOnChanges<bool, &FrameNodeObserver::OnIsCurrentChanged>

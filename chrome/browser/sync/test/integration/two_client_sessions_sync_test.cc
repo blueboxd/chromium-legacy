@@ -67,6 +67,7 @@ static const char* kURLTemplate =
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
                        E2E_ENABLED(SingleClientChanged)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Open tab and access a url on client 0
@@ -99,6 +100,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, SingleClientClosed) {
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, E2E_ENABLED(AllChanged)) {
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Open tabs on all clients and retain window information.

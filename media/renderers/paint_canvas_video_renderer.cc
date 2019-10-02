@@ -7,9 +7,15 @@
 #include <GLES3/gl3.h>
 #include <limits>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/checked_math.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/system/sys_info.h"
+#include "base/task/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_image_builder.h"
@@ -278,6 +284,8 @@ GLuint ImportVideoFrameSingleMailbox(gpu::gles2::GLES2Interface* gl,
          PIXEL_FORMAT_XRGB == video_frame->format() ||
          PIXEL_FORMAT_RGB24 == video_frame->format() ||
          PIXEL_FORMAT_ABGR == video_frame->format() ||
+         PIXEL_FORMAT_XB30 == video_frame->format() ||
+         PIXEL_FORMAT_XR30 == video_frame->format() ||
          PIXEL_FORMAT_NV12 == video_frame->format())
       << "Format: " << VideoPixelFormatToString(video_frame->format());
 
@@ -378,6 +386,167 @@ void SynchronizeVideoFrameRead(scoped_refptr<VideoFrame> video_frame,
     context_support->SignalQuery(
         query_id, base::BindOnce(&OnQueryDone, video_frame, gl, query_id));
   }
+}
+
+// TODO(thomasanderson): Remove these and use std::gcd and std::lcm once we're
+// building with C++17.
+size_t GCD(size_t a, size_t b) {
+  return a == 0 ? b : GCD(b % a, a);
+}
+size_t LCM(size_t a, size_t b) {
+  return a / GCD(a, b) * b;
+}
+
+void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
+                                      void* rgb_pixels,
+                                      size_t row_bytes,
+                                      size_t task_index,
+                                      size_t n_tasks,
+                                      base::RepeatingClosure* done) {
+  size_t rows_per_chunk = 1;
+  for (size_t plane = 0; plane < VideoFrame::kMaxPlanes; ++plane) {
+    if (VideoFrame::IsValidPlane(video_frame->format(), plane)) {
+      rows_per_chunk =
+          LCM(rows_per_chunk,
+              VideoFrame::SampleSize(video_frame->format(), plane).height());
+    }
+  }
+
+  int width = video_frame->visible_rect().width();
+  int height = video_frame->visible_rect().height();
+
+  base::CheckedNumeric<size_t> chunks = height / rows_per_chunk;
+  DCHECK_EQ(height % rows_per_chunk, 0UL);
+  size_t chunk_start = (chunks * task_index / n_tasks).ValueOrDie();
+  size_t chunk_end = (chunks * (task_index + 1) / n_tasks).ValueOrDie();
+
+  struct {
+    int stride;
+    const uint8_t* data;
+  } plane_meta[VideoFrame::kMaxPlanes];
+
+  for (size_t plane = 0; plane < VideoFrame::kMaxPlanes; ++plane) {
+    if (VideoFrame::IsValidPlane(video_frame->format(), plane)) {
+      auto& meta = plane_meta[plane];
+      meta.stride = video_frame->stride(plane);
+
+      const uint8_t* data = video_frame->visible_data(plane);
+      int rows = video_frame->rows(plane);
+      meta.data =
+          data + meta.stride * chunk_start * rows_per_chunk * rows / height;
+    }
+  }
+
+  uint8_t* pixels = static_cast<uint8_t*>(rgb_pixels) +
+                    row_bytes * chunk_start * rows_per_chunk;
+  size_t rows = (chunk_end - chunk_start) * rows_per_chunk;
+
+  // TODO(hubbe): This should really default to the rec709 colorspace.
+  // https://crbug.com/828599
+  SkYUVColorSpace color_space = kRec601_SkYUVColorSpace;
+  video_frame->ColorSpace().ToSkYUVColorSpace(&color_space);
+
+  auto convert_yuv = [&](auto&& func) {
+    func(plane_meta[VideoFrame::kYPlane].data,
+         plane_meta[VideoFrame::kYPlane].stride,
+         plane_meta[VideoFrame::kUPlane].data,
+         plane_meta[VideoFrame::kUPlane].stride,
+         plane_meta[VideoFrame::kVPlane].data,
+         plane_meta[VideoFrame::kVPlane].stride, pixels, row_bytes, width,
+         rows);
+  };
+
+  switch (video_frame->format()) {
+    case PIXEL_FORMAT_YV12:
+    case PIXEL_FORMAT_I420:
+      switch (color_space) {
+        case kJPEG_SkYUVColorSpace:
+          convert_yuv(LIBYUV_J420_TO_ARGB);
+          break;
+        case kRec709_SkYUVColorSpace: {
+          convert_yuv(LIBYUV_H420_TO_ARGB);
+          break;
+        }
+        case kRec601_SkYUVColorSpace:
+          convert_yuv(LIBYUV_I420_TO_ARGB);
+          break;
+        default:
+          NOTREACHED();
+      }
+      break;
+    case PIXEL_FORMAT_I422:
+      convert_yuv(LIBYUV_I422_TO_ARGB);
+      break;
+
+    case PIXEL_FORMAT_I420A:
+      LIBYUV_I420ALPHA_TO_ARGB(
+          plane_meta[VideoFrame::kYPlane].data,
+          plane_meta[VideoFrame::kYPlane].stride,
+          plane_meta[VideoFrame::kUPlane].data,
+          plane_meta[VideoFrame::kUPlane].stride,
+          plane_meta[VideoFrame::kVPlane].data,
+          plane_meta[VideoFrame::kVPlane].stride,
+          plane_meta[VideoFrame::kAPlane].data,
+          plane_meta[VideoFrame::kAPlane].stride, pixels, row_bytes, width,
+          rows,
+          1);  // 1 = enable RGB premultiplication by Alpha.
+      break;
+
+    case PIXEL_FORMAT_I444:
+      convert_yuv(LIBYUV_I444_TO_ARGB);
+      break;
+
+    case PIXEL_FORMAT_YUV420P10:
+      (color_space == kRec709_SkYUVColorSpace
+           ? LIBYUV_H010_TO_ARGB
+           : LIBYUV_I010_TO_ARGB)(reinterpret_cast<const uint16_t*>(
+                                      plane_meta[VideoFrame::kYPlane].data),
+                                  plane_meta[VideoFrame::kYPlane].stride / 2,
+                                  reinterpret_cast<const uint16_t*>(
+                                      plane_meta[VideoFrame::kUPlane].data),
+                                  plane_meta[VideoFrame::kUPlane].stride / 2,
+                                  reinterpret_cast<const uint16_t*>(
+                                      plane_meta[VideoFrame::kVPlane].data),
+                                  plane_meta[VideoFrame::kVPlane].stride / 2,
+                                  pixels, row_bytes, width, rows);
+      break;
+
+    case PIXEL_FORMAT_YUV420P9:
+    case PIXEL_FORMAT_YUV422P9:
+    case PIXEL_FORMAT_YUV444P9:
+    case PIXEL_FORMAT_YUV422P10:
+    case PIXEL_FORMAT_YUV444P10:
+    case PIXEL_FORMAT_YUV420P12:
+    case PIXEL_FORMAT_YUV422P12:
+    case PIXEL_FORMAT_YUV444P12:
+    case PIXEL_FORMAT_Y16:
+      NOTREACHED() << "These cases should be handled above";
+      break;
+
+    case PIXEL_FORMAT_NV12:
+      LIBYUV_NV12_TO_ARGB(plane_meta[VideoFrame::kYPlane].data,
+                          plane_meta[VideoFrame::kYPlane].stride,
+                          plane_meta[VideoFrame::kUPlane].data,
+                          plane_meta[VideoFrame::kUPlane].stride, pixels,
+                          row_bytes, width, rows);
+      break;
+
+    case PIXEL_FORMAT_NV21:
+    case PIXEL_FORMAT_YUY2:
+    case PIXEL_FORMAT_ARGB:
+    case PIXEL_FORMAT_XRGB:
+    case PIXEL_FORMAT_RGB24:
+    case PIXEL_FORMAT_MJPEG:
+    case PIXEL_FORMAT_ABGR:
+    case PIXEL_FORMAT_XBGR:
+    case PIXEL_FORMAT_P016LE:
+    case PIXEL_FORMAT_XR30:
+    case PIXEL_FORMAT_XB30:
+    case PIXEL_FORMAT_UNKNOWN:
+      NOTREACHED() << "Only YUV formats and Y16 are supported, got: "
+                   << media::VideoPixelFormatToString(video_frame->format());
+  }
+  done->Run();
 }
 
 }  // anonymous namespace
@@ -878,122 +1047,9 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     return;
   }
 
-  // TODO(hubbe): This should really default to the rec709 colorspace.
-  // https://crbug.com/828599
-  SkYUVColorSpace color_space = kRec601_SkYUVColorSpace;
-  video_frame->ColorSpace().ToSkYUVColorSpace(&color_space);
-
+  scoped_refptr<VideoFrame> temporary_frame;
+  // TODO(thomasanderson): Parallelize converting these formats.
   switch (video_frame->format()) {
-    case PIXEL_FORMAT_YV12:
-    case PIXEL_FORMAT_I420:
-      switch (color_space) {
-        case kJPEG_SkYUVColorSpace:
-          LIBYUV_J420_TO_ARGB(video_frame->visible_data(VideoFrame::kYPlane),
-                              video_frame->stride(VideoFrame::kYPlane),
-                              video_frame->visible_data(VideoFrame::kUPlane),
-                              video_frame->stride(VideoFrame::kUPlane),
-                              video_frame->visible_data(VideoFrame::kVPlane),
-                              video_frame->stride(VideoFrame::kVPlane),
-                              static_cast<uint8_t*>(rgb_pixels), row_bytes,
-                              video_frame->visible_rect().width(),
-                              video_frame->visible_rect().height());
-          break;
-        case kRec709_SkYUVColorSpace:
-          LIBYUV_H420_TO_ARGB(video_frame->visible_data(VideoFrame::kYPlane),
-                              video_frame->stride(VideoFrame::kYPlane),
-                              video_frame->visible_data(VideoFrame::kUPlane),
-                              video_frame->stride(VideoFrame::kUPlane),
-                              video_frame->visible_data(VideoFrame::kVPlane),
-                              video_frame->stride(VideoFrame::kVPlane),
-                              static_cast<uint8_t*>(rgb_pixels), row_bytes,
-                              video_frame->visible_rect().width(),
-                              video_frame->visible_rect().height());
-          break;
-        case kRec601_SkYUVColorSpace:
-          LIBYUV_I420_TO_ARGB(video_frame->visible_data(VideoFrame::kYPlane),
-                              video_frame->stride(VideoFrame::kYPlane),
-                              video_frame->visible_data(VideoFrame::kUPlane),
-                              video_frame->stride(VideoFrame::kUPlane),
-                              video_frame->visible_data(VideoFrame::kVPlane),
-                              video_frame->stride(VideoFrame::kVPlane),
-                              static_cast<uint8_t*>(rgb_pixels), row_bytes,
-                              video_frame->visible_rect().width(),
-                              video_frame->visible_rect().height());
-          break;
-        default:
-          NOTREACHED();
-      }
-      break;
-    case PIXEL_FORMAT_I422:
-      LIBYUV_I422_TO_ARGB(video_frame->visible_data(VideoFrame::kYPlane),
-                          video_frame->stride(VideoFrame::kYPlane),
-                          video_frame->visible_data(VideoFrame::kUPlane),
-                          video_frame->stride(VideoFrame::kUPlane),
-                          video_frame->visible_data(VideoFrame::kVPlane),
-                          video_frame->stride(VideoFrame::kVPlane),
-                          static_cast<uint8_t*>(rgb_pixels), row_bytes,
-                          video_frame->visible_rect().width(),
-                          video_frame->visible_rect().height());
-      break;
-
-    case PIXEL_FORMAT_I420A:
-      LIBYUV_I420ALPHA_TO_ARGB(
-          video_frame->visible_data(VideoFrame::kYPlane),
-          video_frame->stride(VideoFrame::kYPlane),
-          video_frame->visible_data(VideoFrame::kUPlane),
-          video_frame->stride(VideoFrame::kUPlane),
-          video_frame->visible_data(VideoFrame::kVPlane),
-          video_frame->stride(VideoFrame::kVPlane),
-          video_frame->visible_data(VideoFrame::kAPlane),
-          video_frame->stride(VideoFrame::kAPlane),
-          static_cast<uint8_t*>(rgb_pixels), row_bytes,
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height(),
-          1);  // 1 = enable RGB premultiplication by Alpha.
-      break;
-
-    case PIXEL_FORMAT_I444:
-      LIBYUV_I444_TO_ARGB(video_frame->visible_data(VideoFrame::kYPlane),
-                          video_frame->stride(VideoFrame::kYPlane),
-                          video_frame->visible_data(VideoFrame::kUPlane),
-                          video_frame->stride(VideoFrame::kUPlane),
-                          video_frame->visible_data(VideoFrame::kVPlane),
-                          video_frame->stride(VideoFrame::kVPlane),
-                          static_cast<uint8_t*>(rgb_pixels), row_bytes,
-                          video_frame->visible_rect().width(),
-                          video_frame->visible_rect().height());
-      break;
-
-    case PIXEL_FORMAT_YUV420P10:
-      if (color_space == kRec709_SkYUVColorSpace) {
-        LIBYUV_H010_TO_ARGB(reinterpret_cast<const uint16_t*>(
-                                video_frame->visible_data(VideoFrame::kYPlane)),
-                            video_frame->stride(VideoFrame::kYPlane) / 2,
-                            reinterpret_cast<const uint16_t*>(
-                                video_frame->visible_data(VideoFrame::kUPlane)),
-                            video_frame->stride(VideoFrame::kUPlane) / 2,
-                            reinterpret_cast<const uint16_t*>(
-                                video_frame->visible_data(VideoFrame::kVPlane)),
-                            video_frame->stride(VideoFrame::kVPlane) / 2,
-                            static_cast<uint8_t*>(rgb_pixels), row_bytes,
-                            video_frame->visible_rect().width(),
-                            video_frame->visible_rect().height());
-      } else {
-        LIBYUV_I010_TO_ARGB(reinterpret_cast<const uint16_t*>(
-                                video_frame->visible_data(VideoFrame::kYPlane)),
-                            video_frame->stride(VideoFrame::kYPlane) / 2,
-                            reinterpret_cast<const uint16_t*>(
-                                video_frame->visible_data(VideoFrame::kUPlane)),
-                            video_frame->stride(VideoFrame::kUPlane) / 2,
-                            reinterpret_cast<const uint16_t*>(
-                                video_frame->visible_data(VideoFrame::kVPlane)),
-                            video_frame->stride(VideoFrame::kVPlane) / 2,
-                            static_cast<uint8_t*>(rgb_pixels), row_bytes,
-                            video_frame->visible_rect().width(),
-                            video_frame->visible_rect().height());
-      }
-      break;
-
     case PIXEL_FORMAT_YUV420P9:
     case PIXEL_FORMAT_YUV422P9:
     case PIXEL_FORMAT_YUV444P9:
@@ -1001,43 +1057,41 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     case PIXEL_FORMAT_YUV444P10:
     case PIXEL_FORMAT_YUV420P12:
     case PIXEL_FORMAT_YUV422P12:
-    case PIXEL_FORMAT_YUV444P12: {
-      scoped_refptr<VideoFrame> temporary_frame =
-          DownShiftHighbitVideoFrame(video_frame);
-      ConvertVideoFrameToRGBPixels(temporary_frame.get(), rgb_pixels,
-                                   row_bytes);
+    case PIXEL_FORMAT_YUV444P12:
+      temporary_frame = DownShiftHighbitVideoFrame(video_frame);
+      video_frame = temporary_frame.get();
       break;
-    }
-
     case PIXEL_FORMAT_Y16:
-      // Since it is grayscale conversion, we disregard SK_PMCOLOR_BYTE_ORDER
-      // and always use GL_RGBA.
+      // Since it is grayscale conversion, we disregard
+      // SK_PMCOLOR_BYTE_ORDER and always use GL_RGBA.
       FlipAndConvertY16(video_frame, static_cast<uint8_t*>(rgb_pixels), GL_RGBA,
                         GL_UNSIGNED_BYTE, false /*flip_y*/, row_bytes);
+      return;
+    default:
       break;
+  }
 
-    case PIXEL_FORMAT_NV12:
-      LIBYUV_NV12_TO_ARGB(video_frame->visible_data(VideoFrame::kYPlane),
-                          video_frame->stride(VideoFrame::kYPlane),
-                          video_frame->visible_data(VideoFrame::kUVPlane),
-                          video_frame->stride(VideoFrame::kUVPlane),
-                          static_cast<uint8_t*>(rgb_pixels), row_bytes,
-                          video_frame->visible_rect().width(),
-                          video_frame->visible_rect().height());
-      break;
+  constexpr size_t task_bytes = 1024 * 1024;  // 1 MiB
+  size_t frame_bytes = row_bytes * video_frame->visible_rect().height();
+  size_t n_tasks =
+      std::min<size_t>(std::max<size_t>(1, frame_bytes / task_bytes),
+                       base::SysInfo::NumberOfProcessors());
+  base::WaitableEvent event;
+  base::RepeatingClosure barrier = base::BarrierClosure(
+      n_tasks,
+      base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&event)));
 
-    case PIXEL_FORMAT_NV21:
-    case PIXEL_FORMAT_YUY2:
-    case PIXEL_FORMAT_ARGB:
-    case PIXEL_FORMAT_XRGB:
-    case PIXEL_FORMAT_RGB24:
-    case PIXEL_FORMAT_MJPEG:
-    case PIXEL_FORMAT_ABGR:
-    case PIXEL_FORMAT_XBGR:
-    case PIXEL_FORMAT_P016LE:
-    case PIXEL_FORMAT_UNKNOWN:
-      NOTREACHED() << "Only YUV formats and Y16 are supported, got: "
-                   << media::VideoPixelFormatToString(video_frame->format());
+  for (size_t i = 1; i < n_tasks; ++i) {
+    base::PostTask(FROM_HERE,
+                   base::BindOnce(ConvertVideoFrameToRGBPixelsTask,
+                                  base::Unretained(video_frame), rgb_pixels,
+                                  row_bytes, i, n_tasks, &barrier));
+  }
+  ConvertVideoFrameToRGBPixelsTask(video_frame, rgb_pixels, row_bytes, 0,
+                                   n_tasks, &barrier);
+  {
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
+    event.Wait();
   }
 }
 

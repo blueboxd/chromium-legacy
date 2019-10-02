@@ -83,6 +83,13 @@ class LayerTreeImplTestBase {
     host_impl()->active_tree()->SetElementIdsForTesting();
   }
 
+  LayerImpl* InnerViewportScrollLayer() {
+    return host_impl()->active_tree()->InnerViewportScrollLayerForTesting();
+  }
+  LayerImpl* OuterViewportScrollLayer() {
+    return host_impl()->active_tree()->OuterViewportScrollLayerForTesting();
+  }
+
   // These functions sets device scale factor and update device viewport rect
   // before calling the global UpdateDrawProperties() with
   // update_layer_impl_list_.

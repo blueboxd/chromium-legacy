@@ -90,7 +90,7 @@ SAConstants.Focus.BUFFER = 4;
  * @type {number}
  * @const
  */
-SAConstants.KEY_PRESS_DURATION_MS = 100;
+SAConstants.VK_KEY_PRESS_DURATION_MS = 100;
 
 /**
  * Preferences that are configurable in Switch Access.
@@ -174,23 +174,4 @@ SAConstants.EMPTY_LOCATION = {
   top: 0,
   width: 0,
   height: 0
-};
-
-/**
- * Defines the key codes of all key events to be sent.
- * Currently used for text navigation actions and cut/copy/paste.
- * @enum {number}
- * @const
- */
-SAConstants.KeyCode = {
-  END: 35,
-  HOME: 36,
-  LEFT_ARROW: 37,
-  UP_ARROW: 38,
-  RIGHT_ARROW: 39,
-  DOWN_ARROW: 40,
-  // Key codes for X, C, V used for cut, copy, and paste synthetic key events.
-  C: 67,
-  V: 86,
-  X: 88
 };

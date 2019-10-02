@@ -14,5 +14,8 @@ const char kMarkHttpAsParameterDangerous[] = "dangerous";
 const char kMarkHttpAsParameterWarningAndDangerousOnFormEdits[] =
     "warning-and-dangerous-on-form-edits";
 
+const base::Feature kLegacyTLSWarnings{"LegacyTLSWarnings",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace security_state

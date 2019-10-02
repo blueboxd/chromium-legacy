@@ -39,13 +39,3 @@
 # TODO(crbug.com/977749): Enable this.
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.OverviewMode/0
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.OverviewMode/1
-
-# TODO(crbug.com/976987): Enable this.
--UserCloudPolicyManagerTest.ErrorLoadingPolicyForUnmanagedUser/0
--UserCloudPolicyManagerTest.ErrorLoadingPolicyForUnmanagedUser/1
--UserCloudPolicyManagerTest.NoPolicyForNonEnterpriseUser/0
--UserCloudPolicyManagerTest.NoPolicyForNonEnterpriseUser/1
--UserCloudPolicyManagerTest.PolicyForChildUser/0
--UserCloudPolicyManagerTest.PolicyForChildUser/1
--UserCloudPolicyManagerTest.StartSession/0
--UserCloudPolicyManagerTest.StartSession/1

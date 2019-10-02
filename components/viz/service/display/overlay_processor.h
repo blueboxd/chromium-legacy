@@ -92,7 +92,8 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   using StrategyList = std::vector<std::unique_ptr<Strategy>>;
 
   static std::unique_ptr<OverlayProcessor> CreateOverlayProcessor(
-      const OutputSurface& output_surface,
+      gpu::SurfaceHandle surface_handle,
+      const OutputSurface::Capabilities& capabilities,
       const RendererSettings& renderer_settings);
 
   virtual ~OverlayProcessor();

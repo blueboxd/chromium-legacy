@@ -77,7 +77,6 @@
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/embedder/switches.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 
@@ -655,9 +654,7 @@ void ChildThreadImpl::Init(const Options& options) {
   }
 
   // In single process mode we may already have initialized the power monitor,
-  // also for some edge cases where there is no ServiceManagerConnection, we do
-  // not create the power monitor.
-  if (!base::PowerMonitor::IsInitialized() && service_manager_connection_) {
+  if (!base::PowerMonitor::IsInitialized()) {
     auto power_monitor_source =
         std::make_unique<device::PowerMonitorBroadcastSource>(
             GetIOTaskRunner());
@@ -667,7 +664,9 @@ void ChildThreadImpl::Init(const Options& options) {
     // PowerMonitor is set before the power monitor source receives incoming
     // communication from the browser process (see https://crbug.com/821790 for
     // details)
-    source_ptr->Init(GetConnector());
+    mojo::PendingRemote<device::mojom::PowerMonitor> remote_power_monitor;
+    BindHostReceiver(remote_power_monitor.InitWithNewPipeAndPassReceiver());
+    source_ptr->Init(std::move(remote_power_monitor));
   }
 
 #if defined(OS_POSIX)
@@ -790,10 +789,6 @@ void ChildThreadImpl::RecordComputedAction(const std::string& action) {
 
 ServiceManagerConnection* ChildThreadImpl::GetServiceManagerConnection() {
   return service_manager_connection_.get();
-}
-
-service_manager::Connector* ChildThreadImpl::GetConnector() {
-  return service_manager_connection_->GetConnector();
 }
 
 void ChildThreadImpl::BindHostReceiver(mojo::GenericPendingReceiver receiver) {

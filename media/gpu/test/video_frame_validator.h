@@ -47,9 +47,15 @@ class VideoFrameValidator : public VideoFrameProcessor {
   // Create an instance of the video frame validator. The calculated checksums
   // will be compared to the values in |expected_frame_checksums|. If no
   // checksums are provided only checksum calculation will be done.
+  // |validation_format| specifies the pixel format used when calculating the
+  // checksum. Pixel format conversion will be performed if required. The
+  // |corrupt_frame_processor| is an optional video frame processor that will be
+  // called on each frame that fails validation. Ownership of the corrupt frame
+  // processor will be transferred to the frame validator.
   static std::unique_ptr<VideoFrameValidator> Create(
       const std::vector<std::string>& expected_frame_checksums,
-      const VideoPixelFormat validation_format = PIXEL_FORMAT_I420);
+      const VideoPixelFormat validation_format = PIXEL_FORMAT_I420,
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr);
 
   ~VideoFrameValidator() override;
 
@@ -71,8 +77,10 @@ class VideoFrameValidator : public VideoFrameProcessor {
   bool WaitUntilDone() override;
 
  private:
-  VideoFrameValidator(std::vector<std::string> expected_frame_checksums,
-                      VideoPixelFormat validation_format);
+  VideoFrameValidator(
+      std::vector<std::string> expected_frame_checksums,
+      VideoPixelFormat validation_format,
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor);
 
   // Start the frame validation thread.
   bool Initialize();
@@ -97,6 +105,10 @@ class VideoFrameValidator : public VideoFrameProcessor {
 
   // VideoPixelFormat the VideoFrame will be converted to for validation.
   const VideoPixelFormat validation_format_;
+
+  // An optional video frame processor that all corrupted frames will be
+  // forwarded to. This can be used to e.g. write corrupted frames to disk.
+  const std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor_;
 
   // The number of frames currently queued for validation.
   size_t num_frames_validating_ GUARDED_BY(frame_validator_lock_);

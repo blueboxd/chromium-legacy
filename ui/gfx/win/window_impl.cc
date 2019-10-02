@@ -170,8 +170,8 @@ WindowImpl::~WindowImpl() {
 // static
 void WindowImpl::UnregisterClassesAtExit() {
   base::AtExitManager::RegisterTask(
-      base::Bind(&ClassRegistrar::UnregisterClasses,
-                 base::Unretained(ClassRegistrar::GetInstance())));
+      base::BindOnce(&ClassRegistrar::UnregisterClasses,
+                     base::Unretained(ClassRegistrar::GetInstance())));
 }
 
 void WindowImpl::Init(HWND parent, const Rect& bounds) {

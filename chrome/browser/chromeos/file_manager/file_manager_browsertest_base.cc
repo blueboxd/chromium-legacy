@@ -2000,6 +2000,35 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "mountUsbWithMultiplePartitionTypes") {
+    // Create a device path to mimic a realistic device path.
+    constexpr char kDevicePath[] =
+        "sys/devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.2/1-2.2:1.0/host0/"
+        "target0:0:0/0:0:0:0";
+    const base::FilePath device_path(kDevicePath);
+
+    // Create partition volumes with the same device path.
+    partition_1_ = std::make_unique<RemovableTestVolume>(
+        "partition-1", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
+        chromeos::DEVICE_TYPE_USB, device_path, "Drive Label", "ntfs");
+    partition_2_ = std::make_unique<RemovableTestVolume>(
+        "partition-2", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
+        chromeos::DEVICE_TYPE_USB, device_path, "Drive Label", "ext4");
+    partition_3_ = std::make_unique<RemovableTestVolume>(
+        "partition-3", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
+        chromeos::DEVICE_TYPE_USB, device_path, "Drive Label", "vfat");
+
+    // Create fake entries on partitions.
+    ASSERT_TRUE(partition_1_->PrepareTestEntries(profile()));
+    ASSERT_TRUE(partition_2_->PrepareTestEntries(profile()));
+    ASSERT_TRUE(partition_3_->PrepareTestEntries(profile()));
+
+    ASSERT_TRUE(partition_1_->Mount(profile()));
+    ASSERT_TRUE(partition_2_->Mount(profile()));
+    ASSERT_TRUE(partition_3_->Mount(profile()));
+    return;
+  }
+
   if (name == "unmountPartitions") {
     DCHECK(partition_1_);
     DCHECK(partition_2_);

@@ -18,7 +18,6 @@
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/job.h"
 #include "sandbox/win/src/sandbox.h"
-#include "sandbox/win/src/sandbox_policy_info.h"
 #include "sandbox/win/src/sharedmem_ipc_server.h"
 #include "sandbox/win/src/win2k_threadpool.h"
 #include "sandbox/win/src/win_utils.h"

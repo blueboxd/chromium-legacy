@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request_base.h"
 
 #include "base/bind.h"
+#include "base/cancelable_callback.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/prefs/pref_service.h"
@@ -24,6 +26,7 @@
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -206,10 +209,15 @@ void CheckClientDownloadRequestBase::FinishRequest(
 
   MaybeUploadBinary(reason);
 
-  std::move(callback_).Run(result);
-  NotifyRequestFinished(result, reason);
-  service()->RequestFinished(this);
-  // DownloadProtectionService::RequestFinished may delete us.
+  if (ShouldReturnAsynchronousVerdict(reason)) {
+    std::move(callback_).Run(DownloadCheckResult::ASYNC_SCANNING);
+    timeout_closure_.Cancel();
+  } else {
+    std::move(callback_).Run(result);
+    NotifyRequestFinished(result, reason);
+    service()->RequestFinished(this);
+    // DownloadProtectionService::RequestFinished may delete us.
+  }
 }
 
 bool CheckClientDownloadRequestBase::ShouldSampleWhitelistedDownload() {
@@ -377,13 +385,13 @@ void CheckClientDownloadRequestBase::OnFileFeatureExtractionDone(
 void CheckClientDownloadRequestBase::StartTimeout() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   timeout_start_time_ = base::TimeTicks::Now();
-  base::PostDelayedTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&CheckClientDownloadRequestBase::FinishRequest,
-                     GetWeakPtr(), DownloadCheckResult::UNKNOWN,
-                     REASON_REQUEST_CANCELED),
-      base::TimeDelta::FromMilliseconds(
-          service_->download_request_timeout_ms()));
+  timeout_closure_.Reset(base::BindOnce(
+      &CheckClientDownloadRequestBase::FinishRequest, GetWeakPtr(),
+      DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED));
+  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
+                        timeout_closure_.callback(),
+                        base::TimeDelta::FromMilliseconds(
+                            service_->download_request_timeout_ms()));
 }
 
 void CheckClientDownloadRequestBase::OnCertificateWhitelistCheckDone(

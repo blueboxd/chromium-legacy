@@ -158,6 +158,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   std::unique_ptr<FakeTestVolume> mtp_volume_;
   std::unique_ptr<RemovableTestVolume> partition_1_;
   std::unique_ptr<RemovableTestVolume> partition_2_;
+  std::unique_ptr<RemovableTestVolume> partition_3_;
   std::unique_ptr<DocumentsProviderTestVolume> documents_provider_volume_;
   std::unique_ptr<MediaViewTestVolume> media_view_images_;
   std::unique_ptr<MediaViewTestVolume> media_view_videos_;

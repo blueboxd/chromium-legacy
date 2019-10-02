@@ -581,9 +581,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
         render_frame, subresource_filter_ruleset_dealer_.get(),
         std::move(ad_resource_tracker));
   }
-  if (base::FeatureList::IsEnabled(
-          blink::features::kSendPreviewsLoadingHintsBeforeCommit) &&
-      render_frame->IsMainFrame()) {
+  if (render_frame->IsMainFrame()) {
     new previews::ResourceLoadingHintsAgent(
         render_frame_observer->associated_interfaces(), render_frame);
   }

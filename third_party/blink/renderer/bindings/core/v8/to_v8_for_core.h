@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
+#include "third_party/blink/renderer/platform/heap/disallow_new_wrapper.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -62,6 +63,14 @@ inline v8::Local<v8::Value> ToV8(const ScriptValue& value,
   if (value.IsEmpty())
     return v8::Undefined(isolate);
   return value.V8Value();
+}
+
+inline v8::Local<v8::Value> ToV8(const DisallowNewWrapper<ScriptValue>* value,
+                                 v8::Local<v8::Object> creation_context,
+                                 v8::Isolate* isolate) {
+  if (value->Value().IsEmpty())
+    return v8::Undefined(isolate);
+  return value->Value().V8Value();
 }
 
 // Cannot define in ScriptValue because of the circular dependency between toV8

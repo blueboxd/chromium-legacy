@@ -149,7 +149,8 @@ SyncSetupService::SyncServiceState SyncSetupService::GetSyncServiceState() {
   }
   if (sync_service_->HasUnrecoverableError())
     return kSyncServiceUnrecoverableError;
-  if (sync_service_->GetUserSettings()->IsPassphraseRequiredForDecryption())
+  if (sync_service_->GetUserSettings()
+          ->IsPassphraseRequiredForPreferredDataTypes())
     return kSyncServiceNeedsPassphrase;
   if (!IsFirstSetupComplete() && IsSyncEnabled())
     return kSyncSettingsNotConfirmed;

@@ -69,6 +69,7 @@ TEST_F(DisplayUtilTest, DisplayZoomsWithInternalDsf) {
         checks |= 0x01;
       if (WithinEpsilon(zoom_values[j], 1.f))
         checks |= 0x02;
+      EXPECT_LT(0.0f, zoom_values[j]);
     }
     EXPECT_TRUE(checks & 0x01) << "Inverse of " << dsf << " not on the list.";
     EXPECT_TRUE(checks & 0x02) << "Zoom level of unity is not on the list.";

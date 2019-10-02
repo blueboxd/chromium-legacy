@@ -293,9 +293,11 @@ cr.define('cr.ui.login', function() {
      * @param {number} height client area height
      */
     setClientAreaSize: function(width, height) {
-      var clientArea = $('outer-container');
-      var bottom = parseInt(window.getComputedStyle(clientArea).bottom);
-      clientArea.style.minHeight = cr.ui.toCssPx(height - bottom);
+      if (!cr.isChromeOS) {
+        var clientArea = $('outer-container');
+        var bottom = parseInt(window.getComputedStyle(clientArea).bottom);
+        clientArea.style.minHeight = cr.ui.toCssPx(height - bottom);
+      }
     },
 
     /**

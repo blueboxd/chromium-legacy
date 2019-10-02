@@ -107,6 +107,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
             mojom::ConsoleMessageLevel,
             std::unique_ptr<SourceLocation>) override;
   void Disconnect() override;
+  void CancelHandshake() override;
   void ApplyBackpressure() override;
   void RemoveBackpressure() override;
 

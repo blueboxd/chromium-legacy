@@ -74,6 +74,16 @@ void DebugInfoEventListener::OnPassphraseAccepted() {
   CreateAndAddEvent(sync_pb::SyncEnums::PASSPHRASE_ACCEPTED);
 }
 
+void DebugInfoEventListener::OnTrustedVaultKeyRequired() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CreateAndAddEvent(sync_pb::SyncEnums::TRUSTED_VAULT_KEY_REQUIRED);
+}
+
+void DebugInfoEventListener::OnTrustedVaultKeyAccepted() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CreateAndAddEvent(sync_pb::SyncEnums::TRUSTED_VAULT_KEY_ACCEPTED);
+}
+
 void DebugInfoEventListener::OnBootstrapTokenUpdated(
     const std::string& bootstrap_token,
     BootstrapTokenType type) {

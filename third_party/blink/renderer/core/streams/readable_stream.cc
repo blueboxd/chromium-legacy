@@ -5,9 +5,7 @@
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 
 #include "third_party/blink/renderer/core/streams/readable_stream_native.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -34,26 +32,15 @@ ReadableStream* ReadableStream::Create(ScriptState* script_state,
                                        ScriptValue underlying_source,
                                        ScriptValue strategy,
                                        ExceptionState& exception_state) {
-  if (RuntimeEnabledFeatures::StreamsNativeEnabled()) {
-    return ReadableStreamNative::Create(script_state, underlying_source,
-                                        strategy, exception_state);
-  }
-
-  return ReadableStreamWrapper::Create(script_state, underlying_source,
-                                       strategy, exception_state);
+  return ReadableStreamNative::Create(script_state, underlying_source, strategy,
+                                      exception_state);
 }
 
 ReadableStream* ReadableStream::CreateWithCountQueueingStrategy(
     ScriptState* script_state,
     UnderlyingSourceBase* underlying_source,
     size_t high_water_mark) {
-  if (RuntimeEnabledFeatures::StreamsNativeEnabled()) {
-    return ReadableStreamNative::CreateWithCountQueueingStrategy(
-        script_state, underlying_source, high_water_mark);
-  }
-
-  // TODO(ricea): Select implementation based on StreamsNative feature here.
-  return ReadableStreamWrapper::CreateWithCountQueueingStrategy(
+  return ReadableStreamNative::CreateWithCountQueueingStrategy(
       script_state, underlying_source, high_water_mark);
 }
 
@@ -61,13 +48,7 @@ ReadableStream* ReadableStream::CreateWithCountQueueingStrategy(
 ReadableStream* ReadableStream::Deserialize(ScriptState* script_state,
                                             MessagePort* port,
                                             ExceptionState& exception_state) {
-  if (RuntimeEnabledFeatures::StreamsNativeEnabled()) {
-    return ReadableStreamNative::Deserialize(script_state, port,
-                                             exception_state);
-  }
-
-  return ReadableStreamWrapper::Deserialize(script_state, port,
-                                            exception_state);
+  return ReadableStreamNative::Deserialize(script_state, port, exception_state);
 }
 
 }  // namespace blink

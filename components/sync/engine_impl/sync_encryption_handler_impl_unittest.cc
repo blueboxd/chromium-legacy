@@ -72,6 +72,8 @@ class SyncEncryptionHandlerObserverMock
                     const KeyDerivationParams&,
                     const sync_pb::EncryptedData&));  // NOLINT
   MOCK_METHOD0(OnPassphraseAccepted, void());         // NOLINT
+  MOCK_METHOD0(OnTrustedVaultKeyRequired, void());    // NOLINT
+  MOCK_METHOD0(OnTrustedVaultKeyAccepted, void());    // NOLINT
   MOCK_METHOD2(OnBootstrapTokenUpdated,
                void(const std::string&, BootstrapTokenType type));  // NOLINT
   MOCK_METHOD2(OnEncryptedTypesChanged, void(ModelTypeSet, bool));  // NOLINT

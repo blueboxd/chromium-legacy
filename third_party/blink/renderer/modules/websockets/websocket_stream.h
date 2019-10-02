@@ -108,6 +108,7 @@ class MODULES_EXPORT WebSocketStream final
   void CloseInternal(int code,
                      const String& reason,
                      ExceptionState& exception_state);
+  void OnAbort();
 
   v8::Local<v8::Value> CreateNetworkErrorDOMException();
   static WebSocketCloseInfo* MakeCloseInfo(uint16_t code, const String& reason);

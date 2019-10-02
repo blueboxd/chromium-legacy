@@ -95,7 +95,6 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
-#include "third_party/blink/renderer/core/loader/previews_resource_loading_hints_receiver_impl.h"
 #include "third_party/blink/renderer/core/page/drag_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/plugin_data.h"
@@ -430,7 +429,6 @@ void LocalFrame::DidAttachDocument() {
   GetInputMethodController().DidAttachDocument(document);
   GetSpellChecker().DidAttachDocument(document);
   GetTextSuggestionController().DidAttachDocument(document);
-  previews_resource_loading_hints_receiver_.reset();
 }
 
 void LocalFrame::Reload(WebFrameLoadType load_type) {
@@ -1500,15 +1498,6 @@ void LocalFrame::ResumeSubresourceLoading() {
 
 void LocalFrame::AnimateSnapFling(base::TimeTicks monotonic_time) {
   GetEventHandler().AnimateSnapFling(monotonic_time);
-}
-
-void LocalFrame::BindPreviewsResourceLoadingHintsReceiver(
-    mojo::PendingReceiver<
-        blink::mojom::blink::PreviewsResourceLoadingHintsReceiver> receiver) {
-  DCHECK(!previews_resource_loading_hints_receiver_);
-  previews_resource_loading_hints_receiver_ =
-      std::make_unique<PreviewsResourceLoadingHintsReceiverImpl>(
-          std::move(receiver), GetDocument());
 }
 
 SmoothScrollSequencer& LocalFrame::GetSmoothScrollSequencer() {

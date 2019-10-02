@@ -166,6 +166,13 @@ class Port : public base::RefCountedThreadSafe<Port> {
   // non-zero cyclic routing distance) receiving Port has been closed.
   bool peer_closed;
 
+  // Indicates that this Port lost its peer unexpectedly (e.g. via process death
+  // rather than receiving an ObserveClosure event). In this case
+  // |peer_closed| will be true but |last_sequence_num_to_receive| cannot be
+  // known. Such ports will continue to make message available until their
+  // message queue is empty.
+  bool peer_lost_unexpectedly;
+
   Port(uint64_t next_sequence_num_to_send,
        uint64_t next_sequence_num_to_receive);
 

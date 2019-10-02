@@ -634,32 +634,6 @@ void DesktopWindowTreeHostPlatform::HideImpl() {
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(false);
 }
 
-void DesktopWindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
-#if defined(USE_OZONE)
-  // Make sure the |event| is marked as a non-client if it's a non-client
-  // mouse down event. This is needed to make sure the WindowEventDispatcher
-  // does not set a |mouse_pressed_handler_| for such events, because they are
-  // not always followed with non-client mouse up events in case of
-  // Ozone/Wayland or Ozone/X11.
-  //
-  // Also see the comment in WindowEventDispatcher::PreDispatchMouseEvent..
-  aura::Window* content_window = desktop_native_widget_aura_->content_window();
-  if (content_window && content_window->delegate()) {
-    if (event->IsMouseEvent()) {
-      ui::MouseEvent* mouse_event = event->AsMouseEvent();
-      int flags = mouse_event->flags();
-      int hit_test_code = content_window->delegate()->GetNonClientComponent(
-          mouse_event->location());
-      if (hit_test_code != HTCLIENT && hit_test_code != HTNOWHERE)
-        flags |= ui::EF_IS_NON_CLIENT;
-      mouse_event->set_flags(flags);
-    }
-  }
-#endif
-
-  WindowTreeHostPlatform::DispatchEvent(event);
-}
-
 void DesktopWindowTreeHostPlatform::OnClosed() {
   SetPlatformWindow(nullptr);
   desktop_native_widget_aura_->OnHostClosed();

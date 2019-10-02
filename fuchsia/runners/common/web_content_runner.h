@@ -26,10 +26,16 @@ class WebContentRunner : public fuchsia::sys::Runner {
   static fuchsia::web::ContextPtr CreateDefaultWebContext(
       fuchsia::web::ContextFeatureFlags features);
 
-  // Creates and returns an incognito web.Context  with access to the same
-  // services as this Runner. The returned binding is configured to exit this
-  // process on error.
-  static fuchsia::web::ContextPtr CreateIncognitoWebContext(
+  // Creates and returns a web.Context built with |create_params|.
+  // The returned binding is configured to exit this process on error.
+  static fuchsia::web::ContextPtr CreateWebContext(
+      fuchsia::web::CreateContextParams create_params);
+
+  // Returns a CreateContextParams that can be used as a base for creating a
+  // web.Context with a custom configuration.
+  // An incognito web.Context will be created if |data_directory| is unbound.
+  static fuchsia::web::CreateContextParams BuildCreateContextParams(
+      fidl::InterfaceHandle<fuchsia::io::Directory> data_directory,
       fuchsia::web::ContextFeatureFlags features);
 
   // |outgoing_directory|: OutgoingDirectory into which this Runner will be

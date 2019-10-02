@@ -225,7 +225,7 @@ Polymer({
 
   /** @private */
   onFocus_: function() {
-    if (!this.focusInput_()) {
+    if (!this.focusInput()) {
       return;
     }
     // Always select the <input> element on focus. TODO(stevenjb/scottchen):
@@ -235,10 +235,12 @@ Polymer({
   },
 
   /**
+   * Focuses the input element.
+   * TODO(crbug.com/882612): Replace this with focus() after resolving the text
+   * selection issue described in onFocus_().
    * @return {boolean} Whether the <input> element was focused.
-   * @private
    */
-  focusInput_: function() {
+  focusInput: function() {
     if (this.shadowRoot.activeElement == this.inputElement) {
       return false;
     }
@@ -346,7 +348,7 @@ Polymer({
    * @param {number=} end
    */
   select: function(start, end) {
-    this.focusInput_();
+    this.focusInput();
     if (start !== undefined && end !== undefined) {
       this.inputElement.setSelectionRange(start, end);
     } else {

@@ -1535,7 +1535,6 @@ jumbo_source_set("unit_tests") {
     "scroll/scrollbar_theme_overlay_test.cc",
     "streams/miscellaneous_operations_test.cc",
     "streams/queue_with_sizes_test.cc",
-    "streams/readable_stream_operations_test.cc",
     "streams/readable_stream_test.cc",
     "streams/stream_promise_resolver_test.cc",
     "streams/test_underlying_source.h",

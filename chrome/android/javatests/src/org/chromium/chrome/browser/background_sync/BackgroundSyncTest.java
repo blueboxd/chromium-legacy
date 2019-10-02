@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
+import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskInfo;
@@ -81,6 +82,10 @@ public final class BackgroundSyncTest {
                 .when(mTaskScheduler)
                 .schedule(eq(ContextUtils.getApplicationContext()), any(TaskInfo.class));
 
+        // loadNativeLibraryAndInitBrowserProcess will access AccountManagerFacade, so it should
+        // be initialized beforehand.
+        SigninTestUtil.setUpAuthForTest();
+
         // This is necessary because our test devices don't have Google Play Services up to date,
         // and BackgroundSync requires that. Remove this once https://crbug.com/514449 has been
         // fixed.
@@ -102,6 +107,7 @@ public final class BackgroundSyncTest {
     @After
     public void tearDown() {
         if (mTestServer != null) mTestServer.stopAndDestroyServer();
+        SigninTestUtil.tearDownAuthForTest();
     }
 
     @Test

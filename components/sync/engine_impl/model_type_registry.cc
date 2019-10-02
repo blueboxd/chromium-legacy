@@ -329,6 +329,16 @@ void ModelTypeRegistry::OnPassphraseAccepted() {
   }
 }
 
+void ModelTypeRegistry::OnTrustedVaultKeyRequired() {}
+
+void ModelTypeRegistry::OnTrustedVaultKeyAccepted() {
+  for (const auto& worker : model_type_workers_) {
+    if (encrypted_types_.Has(worker->GetModelType())) {
+      worker->EncryptionAcceptedMaybeApplyUpdates();
+    }
+  }
+}
+
 void ModelTypeRegistry::OnBootstrapTokenUpdated(
     const std::string& bootstrap_token,
     BootstrapTokenType type) {}

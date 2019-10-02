@@ -39,13 +39,6 @@ void PrerenderService::StartPrerender(const GURL& url,
                                       const web::Referrer& referrer,
                                       ui::PageTransition transition,
                                       bool immediately) {
-  // PrerenderService is not compatible with WKBasedNavigationManager because it
-  // loads the URL in a new WKWebView, which doesn't have the current session
-  // history. TODO(crbug.com/814789): decide whether PrerenderService needs to
-  // be supported after evaluating the performance impact in Finch experiment.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled())
-    return;
-
   [controller_ prerenderURL:url
                    referrer:referrer
                  transition:transition
@@ -64,6 +57,11 @@ bool PrerenderService::MaybeLoadPrerenderedURL(
 
   std::unique_ptr<web::WebState> new_web_state =
       [controller_ releasePrerenderContents];
+  if (!new_web_state) {
+    CancelPrerender();
+    return false;
+  }
+
   DCHECK_NE(WebStateList::kInvalidIndex, web_state_list->active_index());
 
   web::NavigationManager* active_navigation_manager =
@@ -79,8 +77,13 @@ bool PrerenderService::MaybeLoadPrerenderedURL(
   web::NavigationManager* new_navigation_manager =
       new_web_state->GetNavigationManager();
 
-  if (new_navigation_manager->CanPruneAllButLastCommittedItem()) {
-    new_navigation_manager->CopyStateFromAndPrune(active_navigation_manager);
+  bool slim_navigation_manager_enabled =
+      web::GetWebClient()->IsSlimNavigationManagerEnabled();
+  if (new_navigation_manager->CanPruneAllButLastCommittedItem() ||
+      slim_navigation_manager_enabled) {
+    if (!slim_navigation_manager_enabled) {
+      new_navigation_manager->CopyStateFromAndPrune(active_navigation_manager);
+    }
     loading_prerender_ = true;
     web_state_list->ReplaceWebStateAt(web_state_list->active_index(),
                                       std::move(new_web_state));

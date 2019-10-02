@@ -74,8 +74,8 @@ TEST_F(QueryContentProtectionTaskTest, QueryInternalDisplay) {
 
   QueryContentProtectionTask task(
       &layout_manager, &display_delegate_, 1,
-      base::Bind(&QueryContentProtectionTaskTest::ResponseCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&QueryContentProtectionTaskTest::ResponseCallback,
+                     base::Unretained(this)));
   task.Run();
 
   ASSERT_TRUE(response_);
@@ -92,8 +92,8 @@ TEST_F(QueryContentProtectionTaskTest, QueryUnknownDisplay) {
 
   QueryContentProtectionTask task(
       &layout_manager, &display_delegate_, 1,
-      base::Bind(&QueryContentProtectionTaskTest::ResponseCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&QueryContentProtectionTaskTest::ResponseCallback,
+                     base::Unretained(this)));
   task.Run();
 
   ASSERT_TRUE(response_);
@@ -111,8 +111,8 @@ TEST_F(QueryContentProtectionTaskTest, QueryDisplayThatCannotGetHdcp) {
 
   QueryContentProtectionTask task(
       &layout_manager, &display_delegate_, 1,
-      base::Bind(&QueryContentProtectionTaskTest::ResponseCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&QueryContentProtectionTaskTest::ResponseCallback,
+                     base::Unretained(this)));
   task.Run();
 
   ASSERT_TRUE(response_);
@@ -128,8 +128,8 @@ TEST_F(QueryContentProtectionTaskTest, QueryDisplayWithHdcpDisabled) {
 
   QueryContentProtectionTask task(
       &layout_manager, &display_delegate_, 1,
-      base::Bind(&QueryContentProtectionTaskTest::ResponseCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&QueryContentProtectionTaskTest::ResponseCallback,
+                     base::Unretained(this)));
   task.Run();
 
   ASSERT_TRUE(response_);
@@ -147,8 +147,8 @@ TEST_F(QueryContentProtectionTaskTest, QueryDisplayWithHdcpEnabled) {
 
   QueryContentProtectionTask task(
       &layout_manager, &display_delegate_, 1,
-      base::Bind(&QueryContentProtectionTaskTest::ResponseCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&QueryContentProtectionTaskTest::ResponseCallback,
+                     base::Unretained(this)));
   task.Run();
 
   ASSERT_TRUE(response_);
@@ -166,8 +166,8 @@ TEST_F(QueryContentProtectionTaskTest, QueryInMultiDisplayMode) {
 
   QueryContentProtectionTask task(
       &layout_manager, &display_delegate_, 1,
-      base::Bind(&QueryContentProtectionTaskTest::ResponseCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&QueryContentProtectionTaskTest::ResponseCallback,
+                     base::Unretained(this)));
   task.Run();
 
   ASSERT_TRUE(response_);
@@ -185,8 +185,8 @@ TEST_F(QueryContentProtectionTaskTest, QueryInMirroringMode) {
 
   QueryContentProtectionTask task(
       &layout_manager, &display_delegate_, 1,
-      base::Bind(&QueryContentProtectionTaskTest::ResponseCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&QueryContentProtectionTaskTest::ResponseCallback,
+                     base::Unretained(this)));
   task.Run();
 
   ASSERT_TRUE(response_);
@@ -205,8 +205,8 @@ TEST_F(QueryContentProtectionTaskTest, QueryAnalogDisplay) {
 
   QueryContentProtectionTask task(
       &layout_manager, &display_delegate_, 1,
-      base::Bind(&QueryContentProtectionTaskTest::ResponseCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&QueryContentProtectionTaskTest::ResponseCallback,
+                     base::Unretained(this)));
   task.Run();
 
   ASSERT_TRUE(response_);
@@ -226,8 +226,8 @@ TEST_F(QueryContentProtectionTaskTest, QueryAnalogDisplayMirror) {
 
   QueryContentProtectionTask task1(
       &layout_manager, &display_delegate_, 1,
-      base::Bind(&QueryContentProtectionTaskTest::ResponseCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&QueryContentProtectionTaskTest::ResponseCallback,
+                     base::Unretained(this)));
   task1.Run();
 
   ASSERT_TRUE(response_);
@@ -241,8 +241,8 @@ TEST_F(QueryContentProtectionTaskTest, QueryAnalogDisplayMirror) {
 
   QueryContentProtectionTask task2(
       &layout_manager, &display_delegate_, 2,
-      base::Bind(&QueryContentProtectionTaskTest::ResponseCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&QueryContentProtectionTaskTest::ResponseCallback,
+                     base::Unretained(this)));
   task2.Run();
 
   ASSERT_TRUE(response_);

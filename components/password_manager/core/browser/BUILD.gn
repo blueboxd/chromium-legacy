@@ -102,6 +102,8 @@ jumbo_static_library("browser") {
     "import/password_csv_reader.h",
     "import/password_importer.cc",
     "import/password_importer.h",
+    "leak_detection_dialog_utils.cc",
+    "leak_detection_dialog_utils.h",
     "leaked_credentials_table.cc",
     "leaked_credentials_table.h",
     "login_database.cc",
@@ -231,6 +233,7 @@ jumbo_static_library("browser") {
     ":password_generator",
     ":password_hash_data",
     ":proto",
+    "//base",
     "//base:i18n",
     "//components/autofill/core/browser",
     "//components/autofill/core/browser/proto",
@@ -247,6 +250,7 @@ jumbo_static_library("browser") {
     "//components/security_state/core",
     "//components/signin/public/identity_manager",
     "//components/strings",
+    "//components/strings:components_strings",
     "//components/sync",
     "//components/sync_preferences",
     "//components/url_formatter",
@@ -262,6 +266,7 @@ jumbo_static_library("browser") {
     "//third_party/re2",
     "//ui/base",
     "//ui/gfx",
+    "//ui/gfx/range",
     "//url",
   ]
 
@@ -275,8 +280,6 @@ jumbo_static_library("browser") {
       "leak_detection_delegate.h",
       "leak_detection_delegate_helper.cc",
       "leak_detection_delegate_helper.h",
-      "leak_detection_dialog_utils.cc",
-      "leak_detection_dialog_utils.h",
     ]
     deps += [
       "//components/password_manager/core/browser/leak_detection:leak_detection",
@@ -514,6 +517,7 @@ source_set("unit_tests") {
     "import/csv_reader_unittest.cc",
     "import/password_csv_reader_unittest.cc",
     "import/password_importer_unittest.cc",
+    "leak_detection_dialog_utils_unittest.cc",
     "leaked_credentials_table_unittest.cc",
     "login_database_unittest.cc",
     "multi_store_form_fetcher_unittest.cc",
@@ -603,6 +607,7 @@ source_set("unit_tests") {
     "//components/sync:test_support",
     "//components/sync_preferences:test_support",
     "//components/ukm:test_support",
+    "//components/url_formatter",
     "//components/variations",
     "//google_apis:google_apis",
     "//net:test_support",

@@ -142,6 +142,13 @@ void FakeBluetoothAdapterClient::StartDiscovery(
     return;
   }
 
+  if (set_start_discovery_should_fail_) {
+    set_start_discovery_should_fail_ = false;
+    PostDelayedTask(
+        base::BindOnce(std::move(callback), Error(kUnknownAdapterError, "")));
+    return;
+  }
+
   ++discovering_count_;
   VLOG(1) << "StartDiscovery: " << object_path.value() << ", "
           << "count is now " << discovering_count_;
@@ -232,6 +239,10 @@ void FakeBluetoothAdapterClient::RemoveDevice(
 
 void FakeBluetoothAdapterClient::MakeSetDiscoveryFilterFail() {
   set_discovery_filter_should_fail_ = true;
+}
+
+void FakeBluetoothAdapterClient::MakeStartDiscoveryFail() {
+  set_start_discovery_should_fail_ = true;
 }
 
 void FakeBluetoothAdapterClient::SetDiscoveryFilter(

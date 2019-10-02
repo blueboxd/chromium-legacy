@@ -7,6 +7,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 group("closure_compile") {
   deps = [
     ":compile_resources",
+    "camera:compile_resources",
   ]
 }
 

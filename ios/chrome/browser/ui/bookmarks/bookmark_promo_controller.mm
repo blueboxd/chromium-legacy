@@ -67,7 +67,7 @@
 }
 
 - (void)dealloc {
-  [_signinPromoViewMediator signinPromoViewRemoved];
+  [_signinPromoViewMediator signinPromoViewIsRemoved];
 }
 
 - (void)hidePromoCell {
@@ -103,7 +103,7 @@
 
 // Called when a user signs into Google services such as sync.
 - (void)onPrimaryAccountSet:(const CoreAccountInfo&)primaryAccountInfo {
-  if (!self.signinPromoViewMediator.isSigninInProgress)
+  if (!self.signinPromoViewMediator.signinInProgress)
     self.shouldShowSigninPromo = NO;
 }
 

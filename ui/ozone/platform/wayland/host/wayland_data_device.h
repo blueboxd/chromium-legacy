@@ -17,8 +17,10 @@
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
+#include "ui/ozone/platform/wayland/host/internal/wayland_data_device_base.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_offer.h"
 #include "ui/ozone/platform/wayland/host/wayland_shm_buffer.h"
+#include "ui/ozone/public/platform_clipboard.h"
 
 class SkBitmap;
 
@@ -31,18 +33,17 @@ class WaylandWindow;
 
 // This class provides access to inter-client data transfer mechanisms
 // such as copy-and-paste and drag-and-drop mechanisms.
-class WaylandDataDevice {
+class WaylandDataDevice : public internal::WaylandDataDeviceBase {
  public:
   WaylandDataDevice(WaylandConnection* connection, wl_data_device* data_device);
-  ~WaylandDataDevice();
-
-  bool RequestSelectionData(const std::string& mime_type);
+  ~WaylandDataDevice() override;
 
   // Requests the data to the platform when Chromium gets drag-and-drop started
   // by others. Once reading the data from platform is done, |callback| should
   // be called with the data.
-  void RequestDragData(const std::string& mime_type,
-                       base::OnceCallback<void(const std::string&)> callback);
+  void RequestDragData(
+      const std::string& mime_type,
+      base::OnceCallback<void(const PlatformClipboard::Data&)> callback);
   // Delivers the data owned by Chromium which initiates drag-and-drop. |buffer|
   // is an output parameter and it should be filled with the data corresponding
   // to mime_type.
@@ -53,21 +54,14 @@ class WaylandDataDevice {
   // Resets |source_data_| when the dragging is finished.
   void ResetSourceData();
 
-  std::vector<std::string> GetAvailableMimeTypes();
-
   wl_data_device* data_device() const { return data_device_.get(); }
 
   bool IsDragEntered() { return drag_offer_ != nullptr; }
 
  private:
-  void ReadClipboardDataFromFD(base::ScopedFD fd, const std::string& mime_type);
-
   void ReadDragDataFromFD(
       base::ScopedFD fd,
-      base::OnceCallback<void(const std::string&)> callback);
-
-  // Helper function to read data from fd.
-  void ReadDataFromFD(base::ScopedFD fd, std::string* contents);
+      base::OnceCallback<void(const PlatformClipboard::Data&)> callback);
 
   // If source_data_ is not set, data is being dragged from an external
   // application (non-chromium).
@@ -108,21 +102,12 @@ class WaylandDataDevice {
                           wl_data_device* data_device,
                           wl_data_offer* id);
 
-  // Registers DeferredReadCallback as display sync callback listener, to
-  // ensure there is no pending operation to be performed by the compositor,
-  // otherwise read(..) could block awaiting data to be sent to pipe. It is
-  // reset once it's called.
-  void RegisterDeferredReadCallback();
-  static void DeferredReadCallback(void* data,
-                                   struct wl_callback* cb,
-                                   uint32_t time);
-
   // Returns the drag icon bitmap and creates and wayland surface to draw it
   // on, if a valid drag image is present in |data|; otherwise returns null.
   const SkBitmap* PrepareDragIcon(const OSExchangeData& data);
   void DrawDragIcon(const SkBitmap* bitmap);
 
-  void OnDragDataReceived(const std::string& contents);
+  void OnDragDataReceived(const PlatformClipboard::Data& contents);
 
   // HandleUnprocessedMimeTypes asynchronously request and read data for every
   // negotiated mime type, one after another (OnDragDataReceived calls back
@@ -141,10 +126,6 @@ class WaylandDataDevice {
   // The wl_data_device wrapped by this WaylandDataDevice.
   wl::Object<wl_data_device> data_device_;
 
-  // Used to call out to WaylandConnection once clipboard data
-  // has been successfully read.
-  WaylandConnection* connection_ = nullptr;
-
   // There are two separate data offers at a time, the drag offer and the
   // selection offer, each with independent lifetimes. When we receive a new
   // offer, it is not immediately possible to know whether the new offer is the
@@ -152,19 +133,11 @@ class WaylandDataDevice {
   // of new data offers temporarily until its identity becomes known.
   std::unique_ptr<WaylandDataOffer> new_offer_;
 
-  // Offer that holds the most-recent clipboard selection, or null if no
-  // clipboard data is available.
-  std::unique_ptr<WaylandDataOffer> selection_offer_;
-
   // Offer to receive data from another process via drag-and-drop, or null if no
   // drag-and-drop from another process is in progress.
   std::unique_ptr<WaylandDataOffer> drag_offer_;
 
   WaylandWindow* window_ = nullptr;
-
-  // Make sure server has written data on the pipe, before block on read().
-  base::OnceClosure deferred_read_closure_;
-  wl::Object<wl_callback> deferred_read_callback_;
 
   bool is_handling_dropped_data_ = false;
   bool is_leaving_ = false;

@@ -398,9 +398,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
   WebRuntimeFeatures::EnableCooperativeScheduling(
       base::FeatureList::IsEnabled(features::kCooperativeScheduling));
 
-  WebRuntimeFeatures::EnableStreamsNative(
-      base::FeatureList::IsEnabled(blink::features::kStreamsNative));
-
   WebRuntimeFeatures::EnableMouseSubframeNoImplicitCapture(
       base::FeatureList::IsEnabled(features::kMouseSubframeNoImplicitCapture));
 

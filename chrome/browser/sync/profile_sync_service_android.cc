@@ -278,11 +278,12 @@ void ProfileSyncServiceAndroid::EnableEncryptEverything(
   sync_service_->GetUserSettings()->EnableEncryptEverything();
 }
 
-jboolean ProfileSyncServiceAndroid::IsPassphraseRequiredForDecryption(
+jboolean ProfileSyncServiceAndroid::IsPassphraseRequiredForPreferredDataTypes(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return sync_service_->GetUserSettings()->IsPassphraseRequiredForDecryption();
+  return sync_service_->GetUserSettings()
+      ->IsPassphraseRequiredForPreferredDataTypes();
 }
 
 jboolean ProfileSyncServiceAndroid::IsUsingSecondaryPassphrase(

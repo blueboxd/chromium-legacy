@@ -47,11 +47,13 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 @property(nonatomic, strong)
     GoogleServicesSettingsCoordinator* googleServicesSettingsCoordinator;
 
-// Current SettingsViewController being presented by this Navigation Controller.
+// Current UIViewController being presented by this Navigation Controller.
 // If nil it means the Navigation Controller is not presenting anything, or the
-// VC being presented is not a SettingsRootTableViewController.
+// VC being presented doesn't conform to
+// UIAdaptivePresentationControllerDelegate.
 @property(nonatomic, weak)
-    SettingsRootTableViewController* currentPresentedSettingsViewController;
+    UIViewController<UIAdaptivePresentationControllerDelegate>*
+        currentPresentedViewController;
 
 // The SettingsNavigationControllerDelegate for this NavigationController.
 @property(nonatomic, weak) id<SettingsNavigationControllerDelegate>
@@ -376,14 +378,51 @@ initWithRootViewController:(UIViewController*)rootViewController
 
 - (BOOL)presentationControllerShouldDismiss:
     (UIPresentationController*)presentationController {
-  return [self.currentPresentedSettingsViewController
-              shouldDismissViewControllerBySwipeDown];
+  if (@available(iOS 13, *)) {
+    if ([self.currentPresentedViewController
+            respondsToSelector:@selector
+            (presentationControllerShouldDismiss:)]) {
+      return [self.currentPresentedViewController
+          presentationControllerShouldDismiss:presentationController];
+    }
+  }
+  return NO;
 }
 
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
+  if (@available(iOS 13, *)) {
+    if ([self.currentPresentedViewController
+            respondsToSelector:@selector(presentationControllerDidDismiss:)]) {
+      [self.currentPresentedViewController
+          presentationControllerDidDismiss:presentationController];
+    }
+  }
   // Call settingsWasDismissed to make sure any necessary cleanup is performed.
   [self.settingsNavigationDelegate settingsWasDismissed];
+}
+
+- (void)presentationControllerDidAttemptToDismiss:
+    (UIPresentationController*)presentationController {
+  if (@available(iOS 13, *)) {
+    if ([self.currentPresentedViewController
+            respondsToSelector:@selector
+            (presentationControllerDidAttemptToDismiss:)]) {
+      [self.currentPresentedViewController
+          presentationControllerDidAttemptToDismiss:presentationController];
+    }
+  }
+}
+
+- (void)presentationControllerWillDismiss:
+    (UIPresentationController*)presentationController {
+  if (@available(iOS 13, *)) {
+    if ([self.currentPresentedViewController
+            respondsToSelector:@selector(presentationControllerWillDismiss:)]) {
+      [self.currentPresentedViewController
+          presentationControllerWillDismiss:presentationController];
+    }
+  }
 }
 
 #pragma mark - Accessibility
@@ -407,8 +446,9 @@ initWithRootViewController:(UIViewController*)rootViewController
 - (void)navigationController:(UINavigationController*)navigationController
       willShowViewController:(UIViewController*)viewController
                     animated:(BOOL)animated {
-  self.currentPresentedSettingsViewController =
-      base::mac::ObjCCast<SettingsRootTableViewController>(viewController);
+  self.currentPresentedViewController = base::mac::ObjCCast<
+      UIViewController<UIAdaptivePresentationControllerDelegate>>(
+      viewController);
 }
 
 #pragma mark - UIResponder

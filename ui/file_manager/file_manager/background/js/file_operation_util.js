@@ -645,7 +645,8 @@ fileOperationUtil.Task = class {
       numRemainingItems: this.numRemainingItems,
       totalBytes: this.totalBytes,
       processedBytes: this.processedBytes,
-      processingEntryName: processingEntry ? processingEntry.name : ''
+      processingEntryName: processingEntry ? processingEntry.name : '',
+      targetDirEntryName: this.targetDirEntry.name
     };
   }
 

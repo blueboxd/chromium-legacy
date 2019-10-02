@@ -303,9 +303,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
-#pragma mark - SettingsRootTableViewController
+#pragma mark - UIAdaptivePresentationControllerDelegate
 
-- (BOOL)shouldDismissViewControllerBySwipeDown {
+- (BOOL)presentationControllerShouldDismiss:
+    (UIPresentationController*)presentationController {
   return !self.tableView.editing;
 }
 

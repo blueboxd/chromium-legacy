@@ -417,6 +417,18 @@ void WebSocketChannelImpl::Disconnect() {
   Dispose();
 }
 
+void WebSocketChannelImpl::CancelHandshake() {
+  NETWORK_DVLOG(1) << this << " CancelHandshake()";
+  if (GetState() != State::kConnecting)
+    return;
+
+  // This may still disconnect even if the handshake is complete if we haven't
+  // got the message yet.
+  // TODO(ricea): Plumb it through to the network stack to fix the race
+  // condition.
+  Disconnect();
+}
+
 void WebSocketChannelImpl::ApplyBackpressure() {
   backpressure_ = true;
 }

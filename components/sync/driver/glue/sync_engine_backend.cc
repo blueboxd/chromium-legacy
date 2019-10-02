@@ -433,6 +433,12 @@ void SyncEngineBackend::DoSetEncryptionPassphrase(
   sync_manager_->GetEncryptionHandler()->SetEncryptionPassphrase(passphrase);
 }
 
+void SyncEngineBackend::DoAddTrustedVaultDecryptionKeys(
+    const std::vector<std::string>& keys) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  sync_manager_->GetEncryptionHandler()->AddTrustedVaultDecryptionKeys(keys);
+}
+
 void SyncEngineBackend::DoInitialProcessControlTypes() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

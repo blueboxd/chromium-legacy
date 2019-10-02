@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/passwords/credential_leak_dialog_controller_impl.h"
 
-#include "chrome/browser/ui/passwords/credential_leak_dialog_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_leak_dialog_delegate.h"
+#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
 using password_manager::CredentialLeakFlags;
@@ -37,7 +37,7 @@ bool CredentialLeakDialogControllerImpl::IsShowingAccountChooser() const {
 
 void CredentialLeakDialogControllerImpl::OnCancelDialog() {
   LogLeakDialogTypeAndDismissalReason(
-      leak_dialog_utils::GetLeakDialogType(leak_type_),
+      password_manager::GetLeakDialogType(leak_type_),
       LeakDialogDismissalReason::kClickedClose);
   delegate_->OnLeakDialogHidden();
 }
@@ -45,12 +45,12 @@ void CredentialLeakDialogControllerImpl::OnCancelDialog() {
 void CredentialLeakDialogControllerImpl::OnAcceptDialog() {
   if (ShouldCheckPasswords()) {
     LogLeakDialogTypeAndDismissalReason(
-        leak_dialog_utils::GetLeakDialogType(leak_type_),
+        password_manager::GetLeakDialogType(leak_type_),
         LeakDialogDismissalReason::kClickedCheckPasswords);
     delegate_->NavigateToPasswordCheckup();
   } else {
     LogLeakDialogTypeAndDismissalReason(
-        leak_dialog_utils::GetLeakDialogType(leak_type_),
+        password_manager::GetLeakDialogType(leak_type_),
         LeakDialogDismissalReason::kClickedOk);
   }
   delegate_->OnLeakDialogHidden();
@@ -58,40 +58,40 @@ void CredentialLeakDialogControllerImpl::OnAcceptDialog() {
 
 void CredentialLeakDialogControllerImpl::OnCloseDialog() {
   LogLeakDialogTypeAndDismissalReason(
-      leak_dialog_utils::GetLeakDialogType(leak_type_),
+      password_manager::GetLeakDialogType(leak_type_),
       LeakDialogDismissalReason::kNoDirectInteraction);
   delegate_->OnLeakDialogHidden();
 }
 
 base::string16 CredentialLeakDialogControllerImpl::GetAcceptButtonLabel()
     const {
-  return leak_dialog_utils::GetAcceptButtonLabel(leak_type_);
+  return password_manager::GetAcceptButtonLabel(leak_type_);
 }
 
 base::string16 CredentialLeakDialogControllerImpl::GetCancelButtonLabel()
     const {
-  return leak_dialog_utils::GetCancelButtonLabel();
+  return password_manager::GetCancelButtonLabel();
 }
 
 base::string16 CredentialLeakDialogControllerImpl::GetDescription() const {
-  return leak_dialog_utils::GetDescription(leak_type_, origin_);
+  return password_manager::GetDescription(leak_type_, origin_);
 }
 
 base::string16 CredentialLeakDialogControllerImpl::GetTitle() const {
-  return leak_dialog_utils::GetTitle(leak_type_);
+  return password_manager::GetTitle(leak_type_);
 }
 
 bool CredentialLeakDialogControllerImpl::ShouldCheckPasswords() const {
-  return leak_dialog_utils::ShouldCheckPasswords(leak_type_);
+  return password_manager::ShouldCheckPasswords(leak_type_);
 }
 
 bool CredentialLeakDialogControllerImpl::ShouldShowCancelButton() const {
-  return leak_dialog_utils::ShouldShowCancelButton(leak_type_);
+  return password_manager::ShouldShowCancelButton(leak_type_);
 }
 
 gfx::Range CredentialLeakDialogControllerImpl::GetChangePasswordBoldRange()
     const {
-  return leak_dialog_utils::GetChangePasswordBoldRange(leak_type_, origin_);
+  return password_manager::GetChangePasswordBoldRange(leak_type_, origin_);
 }
 
 void CredentialLeakDialogControllerImpl::ResetDialog() {

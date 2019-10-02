@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_websocket_close_info.h"
+#include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller_interface.h"
@@ -598,7 +599,21 @@ void WebSocketStream::Connect(ScriptState* script_state,
   DVLOG(1) << "WebSocketStream " << this << " Connect() url=" << url
            << " options=" << options;
 
-  // TODO(ricea): Support AbortSignal.
+  auto* signal = options->signal();
+  if (signal && signal->aborted()) {
+    auto exception = V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kAbortError,
+        "WebSocket handshake was aborted");
+    connection_resolver_->Reject(exception);
+    closed_resolver_->Reject(exception);
+    return;
+  }
+
+  if (signal) {
+    signal->AddAlgorithm(
+        WTF::Bind(&WebSocketStream::OnAbort, WrapWeakPersistent(this)));
+  }
+
   auto result = common_.Connect(
       ExecutionContext::From(script_state), url,
       options->hasProtocols() ? options->protocols() : Vector<String>(),
@@ -678,6 +693,22 @@ v8::Local<v8::Value> WebSocketStream::CreateNetworkErrorDOMException() {
   return V8ThrowDOMException::CreateOrEmpty(script_state_->GetIsolate(),
                                             DOMExceptionCode::kNetworkError,
                                             "A network error occurred");
+}
+
+void WebSocketStream::OnAbort() {
+  DVLOG(1) << "WebSocketStream " << this << " OnAbort()";
+
+  if (was_ever_connected_ || !channel_)
+    return;
+
+  channel_->CancelHandshake();
+  channel_ = nullptr;
+
+  auto exception = V8ThrowDOMException::CreateOrEmpty(
+      script_state_->GetIsolate(), DOMExceptionCode::kAbortError,
+      "WebSocket handshake was aborted");
+  connection_resolver_->Reject(exception);
+  closed_resolver_->Reject(exception);
 }
 
 WebSocketCloseInfo* WebSocketStream::MakeCloseInfo(uint16_t code,

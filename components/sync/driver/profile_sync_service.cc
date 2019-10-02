@@ -1045,7 +1045,7 @@ void ProfileSyncService::OnConfigureDone(
 
   // We should never get in a state where we have no encrypted datatypes
   // enabled, and yet we still think we require a passphrase for decryption.
-  DCHECK(!user_settings_->IsPassphraseRequiredForDecryption() ||
+  DCHECK(!user_settings_->IsPassphraseRequiredForPreferredDataTypes() ||
          user_settings_->IsEncryptedDatatypeEnabled());
 
   // Notify listeners that configuration is done.
@@ -1332,11 +1332,6 @@ UserShare* ProfileSyncService::GetUserShare() const {
 SyncCycleSnapshot ProfileSyncService::GetLastCycleSnapshotForDebugging() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return last_snapshot_;
-}
-
-PassphraseRequiredReason
-ProfileSyncService::GetPassphraseRequiredReasonForTest() const {
-  return crypto_.passphrase_required_reason();
 }
 
 void ProfileSyncService::HasUnsyncedItemsForTest(

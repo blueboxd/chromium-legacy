@@ -16,7 +16,10 @@ import("//third_party/blink/renderer/platform/platform_generated.gni")
 import("//v8/gni/v8.gni")
 
 # Most targets in this file are private actions so use that as the default.
-visibility = [ ":*" ]
+visibility = [
+  ":*",
+  "//third_party/blink/renderer/platform/heap:test_support",
+]
 
 blink_platform_avx_files = [
   "audio/cpu/x86/vector_math_avx.cc",
@@ -1224,9 +1227,7 @@ jumbo_component("platform") {
     "mojo/interface_invalidator.cc",
     "mojo/interface_invalidator.h",
     "mojo/mojo_helper.h",
-    "mojo/revocable_binding.h",
     "mojo/revocable_interface_ptr.h",
-    "mojo/revocable_strong_binding.h",
     "mojo/string16_mojom_traits.cc",
     "mojo/string16_mojom_traits.h",
     "p2p/empty_network_manager.cc",

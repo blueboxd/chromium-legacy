@@ -19,9 +19,10 @@ namespace extensions {
 
 namespace api {
 namespace certificate_provider {
-// The maximum number of times per 10 minutes, extension is allowed to show PIN
-// dialog again after user closed the previous one.
-extern const int kMaxClosedDialogsPer10Mins;
+// The maximum number of times in the given interval the extension is allowed to
+// show the PIN dialog again after user closed the previous one.
+extern const int kMaxClosedDialogsPerMinute;
+extern const int kMaxClosedDialogsPer10Minutes;
 
 struct CertificateInfo;
 }

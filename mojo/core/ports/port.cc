@@ -18,7 +18,8 @@ Port::Port(uint64_t next_sequence_num_to_send,
       sequence_num_to_acknowledge(0),
       message_queue(next_sequence_num_to_receive),
       remove_proxy_on_last_message(false),
-      peer_closed(false) {}
+      peer_closed(false),
+      peer_lost_unexpectedly(false) {}
 
 Port::~Port() {}
 

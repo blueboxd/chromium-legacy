@@ -49,13 +49,6 @@ void ResourceLoadingHintsWebContentsObserver::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  // When kSendPreviewsLoadingHintsBeforeCommit is disabled, resource
-  // loading hints are sent in DidFinishNavigation.
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kSendPreviewsLoadingHintsBeforeCommit)) {
-    return;
-  }
-
   if (!navigation_handle->IsInMainFrame() ||
       navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage()) {
     return;
@@ -75,15 +68,6 @@ void ResourceLoadingHintsWebContentsObserver::DidFinishNavigation(
   }
 
   ReportRedirects(navigation_handle);
-
-  // When kSendPreviewsLoadingHintsBeforeCommit is enabled, resource
-  // loading hints are sent in ReadyToCommitNavigation.
-  if (base::FeatureList::IsEnabled(
-          blink::features::kSendPreviewsLoadingHintsBeforeCommit)) {
-    return;
-  }
-
-  SendResourceLoadingHints(navigation_handle);
 }
 
 void ResourceLoadingHintsWebContentsObserver::SendResourceLoadingHints(
@@ -112,13 +96,6 @@ void ResourceLoadingHintsWebContentsObserver::SendResourceLoadingHints(
   mojo::Remote<blink::mojom::PreviewsResourceLoadingHintsReceiver>
       hints_receiver;
 
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kSendPreviewsLoadingHintsBeforeCommit)) {
-    // Hints should be sent only after the renderer frame has committed.
-    DCHECK(navigation_handle->HasCommitted());
-    web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
-        hints_receiver.BindNewPipeAndPassReceiver());
-  }
   blink::mojom::PreviewsResourceLoadingHintsPtr hints_ptr =
       blink::mojom::PreviewsResourceLoadingHints::New();
 
@@ -142,14 +119,9 @@ void ResourceLoadingHintsWebContentsObserver::SendResourceLoadingHints(
   for (const std::string& hint : hints)
     hints_ptr->subresources_to_block.push_back(hint);
 
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kSendPreviewsLoadingHintsBeforeCommit)) {
-    hints_receiver->SetResourceLoadingHints(std::move(hints_ptr));
-  } else {
     auto hints_receiver_associated =
         GetResourceLoadingHintsReceiver(navigation_handle);
     hints_receiver_associated->SetResourceLoadingHints(std::move(hints_ptr));
-  }
 }
 
 const std::vector<std::string> ResourceLoadingHintsWebContentsObserver::

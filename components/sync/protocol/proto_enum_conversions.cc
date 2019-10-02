@@ -255,7 +255,7 @@ const char* ProtoEnumToString(
 const char* ProtoEnumToString(
     sync_pb::SyncEnums::SingletonDebugEventType type) {
   ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, SingletonDebugEventType,
-                     CONNECTION_STATUS_CHANGE, BOOTSTRAP_TOKEN_UPDATED);
+                     CONNECTION_STATUS_CHANGE, TRUSTED_VAULT_KEY_ACCEPTED);
   switch (type) {
     ENUM_CASE(sync_pb::SyncEnums, CONNECTION_STATUS_CHANGE);
     ENUM_CASE(sync_pb::SyncEnums, UPDATED_TOKEN);
@@ -270,6 +270,8 @@ const char* ProtoEnumToString(
     ENUM_CASE(sync_pb::SyncEnums, KEYSTORE_TOKEN_UPDATED);
     ENUM_CASE(sync_pb::SyncEnums, CONFIGURE_COMPLETE);
     ENUM_CASE(sync_pb::SyncEnums, BOOTSTRAP_TOKEN_UPDATED);
+    ENUM_CASE(sync_pb::SyncEnums, TRUSTED_VAULT_KEY_REQUIRED);
+    ENUM_CASE(sync_pb::SyncEnums, TRUSTED_VAULT_KEY_ACCEPTED);
   }
   NOTREACHED();
   return "";

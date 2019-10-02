@@ -23,14 +23,6 @@
 #error "This file requires ARC support."
 #endif
 
-// Callback for the download of favicon.
-using ImageDownloadCallback =
-    base::Callback<void(int image_id,
-                        int http_status_code,
-                        const GURL& image_url,
-                        const std::vector<SkBitmap>& bitmaps,
-                        const std::vector<gfx::Size>& sizes)>;
-
 namespace favicon {
 
 // static

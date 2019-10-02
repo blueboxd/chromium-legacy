@@ -368,7 +368,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
         _signinPromoViewMediator.consumer = self;
       }
     } else {
-      [_signinPromoViewMediator signinPromoViewRemoved];
+      [_signinPromoViewMediator signinPromoViewIsRemoved];
       _signinPromoViewMediator = nil;
     }
     [model addItem:[self signInTextItem]
@@ -377,7 +377,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
     // Account section
     [model addSectionWithIdentifier:SectionIdentifierAccount];
     _hasRecordedSigninImpression = NO;
-    [_signinPromoViewMediator signinPromoViewRemoved];
+    [_signinPromoViewMediator signinPromoViewIsRemoved];
     _signinPromoViewMediator = nil;
     [model addItem:[self accountCellItem]
         toSectionWithIdentifier:SectionIdentifierAccount];
@@ -456,7 +456,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
     signinPromoItem.configurator =
         [_signinPromoViewMediator createConfigurator];
     signinPromoItem.delegate = _signinPromoViewMediator;
-    [_signinPromoViewMediator signinPromoViewVisible];
+    [_signinPromoViewMediator signinPromoViewIsVisible];
     return signinPromoItem;
   }
   if (!_hasRecordedSigninImpression) {
@@ -1096,7 +1096,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   _googleServicesSettingsCoordinator = nil;
   _settingsHasBeenDismissed = YES;
   [self.signinInteractionCoordinator cancel];
-  [_signinPromoViewMediator signinPromoViewRemoved];
+  [_signinPromoViewMediator signinPromoViewIsRemoved];
   _signinPromoViewMediator = nil;
   [self stopBrowserStateServiceObservers];
 }

@@ -66,7 +66,7 @@ Polymer({
   /** @private */
   onCollapseChanged_: function() {
     if (this.pinEnabled_) {
-      /** @type {!CrInputElement} */ (this.$.pinValue).inputElement.focus();
+      /** @type {!CrInputElement} */ (this.$.pinValue).focusInput();
     }
   },
 

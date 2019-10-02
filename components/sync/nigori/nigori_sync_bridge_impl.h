@@ -60,6 +60,8 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   bool Init() override;
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   void SetDecryptionPassphrase(const std::string& passphrase) override;
+  void AddTrustedVaultDecryptionKeys(
+      const std::vector<std::string>& keys) override;
   void EnableEncryptEverything() override;
   bool IsEncryptEverythingEnabled() const override;
   base::Time GetKeystoreMigrationTime() const override;
@@ -101,6 +103,12 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
 
   void UpdateCryptographerFromNonKeystoreNigori(
       const sync_pb::EncryptedData& keybag);
+
+  // Uses the cryptographer to try to decrypt pending keys. If success, the
+  // newly decrypted keys are put in the cryptographer's keybag, pending keys
+  // are cleared and the function returns true. Otherwise, it returns false and
+  // the state remains unchanged. It does not change the default key.
+  bool TryDecryptPendingKeys();
 
   base::Time GetExplicitPassphraseTime() const;
 

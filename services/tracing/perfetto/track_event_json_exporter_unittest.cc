@@ -414,7 +414,8 @@ TEST_F(TrackEventJsonExporterTest, EmptyProcessDescriptor) {
   FinalizePackets(trace_packet_protos);
   // No traceEvents or data was emitted but a process descriptor without extra
   // data should just be an empty array and not cause crashes.
-  EXPECT_EQ("{\"traceEvents\":[]}", unparsed_trace_data_);
+  EXPECT_THAT(unparsed_trace_data_,
+              testing::StartsWith("{\"traceEvents\":[],"));
 }
 
 TEST_F(TrackEventJsonExporterTest, SortIndexProcessDescriptor) {
@@ -575,7 +576,8 @@ TEST_F(TrackEventJsonExporterTest, EmptyThreadDescriptor) {
   FinalizePackets(trace_packet_protos);
   // No traceEvents or data was emitted but a thread descriptor should be an
   // empty array and not cause crashes.
-  EXPECT_EQ("{\"traceEvents\":[]}", unparsed_trace_data_);
+  EXPECT_THAT(unparsed_trace_data_,
+              testing::StartsWith("{\"traceEvents\":[],"));
 }
 
 TEST_F(TrackEventJsonExporterTest, SortIndexThreadDescriptor) {
@@ -715,7 +717,8 @@ TEST_F(TrackEventJsonExporterTest, JustInternedData) {
                             &trace_packet_protos);
   FinalizePackets(trace_packet_protos);
   // Interned data by itself does not call any trace events to be emitted.
-  EXPECT_EQ("{\"traceEvents\":[]}", unparsed_trace_data_);
+  EXPECT_THAT(unparsed_trace_data_,
+              testing::StartsWith("{\"traceEvents\":[],"));
 }
 
 TEST_F(TrackEventJsonExporterTest, LegacyEventBasicTest) {
@@ -1758,10 +1761,11 @@ TEST_F(TrackEventJsonExporterTest, TestTraceStats) {
   // base class. See json_trace_exporter_unittest for a more complete test.
   trace_packet_protos.back().mutable_trace_stats();
   FinalizePackets(trace_packet_protos);
-  EXPECT_TRUE(base::StartsWith(unparsed_trace_data_,
-                               "{\"traceEvents\":[],"
-                               "\"metadata\":{\"perfetto_trace_stats\":{\"",
-                               base::CompareCase::SENSITIVE));
+
+  EXPECT_THAT(unparsed_trace_data_, testing::StartsWith("{\"traceEvents\":[],"
+                                                        "\"metadata\":{"));
+  EXPECT_THAT(unparsed_trace_data_,
+              testing::HasSubstr("\"perfetto_trace_stats\":{\""));
 }
 
 TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {

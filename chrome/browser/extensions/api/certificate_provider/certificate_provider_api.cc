@@ -77,7 +77,8 @@ const char kCertificateProviderNoUserInput[] = "No user input received";
 
 }  // namespace
 
-const int api::certificate_provider::kMaxClosedDialogsPer10Mins = 2;
+const int api::certificate_provider::kMaxClosedDialogsPerMinute = 10;
+const int api::certificate_provider::kMaxClosedDialogsPer10Minutes = 30;
 
 CertificateProviderInternalReportCertificatesFunction::
     ~CertificateProviderInternalReportCertificatesFunction() {}
@@ -258,10 +259,17 @@ bool CertificateProviderRequestPinFunction::ShouldSkipQuotaLimiting() const {
 void CertificateProviderRequestPinFunction::GetQuotaLimitHeuristics(
     extensions::QuotaLimitHeuristics* heuristics) const {
   QuotaLimitHeuristic::Config short_limit_config = {
-      api::certificate_provider::kMaxClosedDialogsPer10Mins,
-      base::TimeDelta::FromMinutes(10)};
+      api::certificate_provider::kMaxClosedDialogsPerMinute,
+      base::TimeDelta::FromMinutes(1)};
   heuristics->push_back(std::make_unique<QuotaService::TimedLimit>(
       short_limit_config, new QuotaLimitHeuristic::SingletonBucketMapper(),
+      "MAX_PIN_DIALOGS_CLOSED_PER_MINUTE"));
+
+  QuotaLimitHeuristic::Config long_limit_config = {
+      api::certificate_provider::kMaxClosedDialogsPer10Minutes,
+      base::TimeDelta::FromMinutes(10)};
+  heuristics->push_back(std::make_unique<QuotaService::TimedLimit>(
+      long_limit_config, new QuotaLimitHeuristic::SingletonBucketMapper(),
       "MAX_PIN_DIALOGS_CLOSED_PER_10_MINUTES"));
 }
 

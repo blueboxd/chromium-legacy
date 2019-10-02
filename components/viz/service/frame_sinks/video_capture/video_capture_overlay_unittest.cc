@@ -23,6 +23,8 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -62,8 +64,9 @@ class VideoCaptureOverlayTest : public testing::Test {
   NiceMock<MockFrameSource>* frame_source() { return &frame_source_; }
 
   std::unique_ptr<VideoCaptureOverlay> CreateOverlay() {
+    mojo::Remote<mojom::FrameSinkVideoCaptureOverlay> overlay_remote;
     return std::make_unique<VideoCaptureOverlay>(
-        frame_source(), mojom::FrameSinkVideoCaptureOverlayRequest());
+        frame_source(), overlay_remote.BindNewPipeAndPassReceiver());
   }
 
   void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
@@ -399,8 +402,9 @@ constexpr gfx::Size VideoCaptureOverlayRenderTest::kSourceSize;
 // not scaled.
 TEST_P(VideoCaptureOverlayRenderTest, FullCover_NoScaling) {
   StrictMock<MockFrameSource> frame_source;
+  mojo::Remote<mojom::FrameSinkVideoCaptureOverlay> overlay_remote;
   VideoCaptureOverlay overlay(&frame_source,
-                              mojom::FrameSinkVideoCaptureOverlayRequest());
+                              overlay_remote.BindNewPipeAndPassReceiver());
 
   EXPECT_CALL(frame_source, GetSourceSize())
       .WillRepeatedly(Return(kSourceSize));
@@ -424,8 +428,9 @@ TEST_P(VideoCaptureOverlayRenderTest, FullCover_NoScaling) {
 // scaled.
 TEST_P(VideoCaptureOverlayRenderTest, FullCover_WithScaling) {
   StrictMock<MockFrameSource> frame_source;
+  mojo::Remote<mojom::FrameSinkVideoCaptureOverlay> overlay_remote;
   VideoCaptureOverlay overlay(&frame_source,
-                              mojom::FrameSinkVideoCaptureOverlayRequest());
+                              overlay_remote.BindNewPipeAndPassReceiver());
 
   EXPECT_CALL(frame_source, GetSourceSize())
       .WillRepeatedly(Return(kSourceSize));
@@ -452,8 +457,9 @@ TEST_P(VideoCaptureOverlayRenderTest, MovesAround) {
   NiceMock<MockFrameSource> frame_source;
   EXPECT_CALL(frame_source, GetSourceSize())
       .WillRepeatedly(Return(kSourceSize));
+  mojo::Remote<mojom::FrameSinkVideoCaptureOverlay> overlay_remote;
   VideoCaptureOverlay overlay(&frame_source,
-                              mojom::FrameSinkVideoCaptureOverlayRequest());
+                              overlay_remote.BindNewPipeAndPassReceiver());
 
   const SkBitmap test_bitmap = MakeTestBitmap(0);
   const gfx::Size frame_size(test_bitmap.width() * 4, test_bitmap.height() * 4);
@@ -517,8 +523,9 @@ TEST_P(VideoCaptureOverlayRenderTest, ClipsToContentBounds) {
   NiceMock<MockFrameSource> frame_source;
   EXPECT_CALL(frame_source, GetSourceSize())
       .WillRepeatedly(Return(kSourceSize));
+  mojo::Remote<mojom::FrameSinkVideoCaptureOverlay> overlay_remote;
   VideoCaptureOverlay overlay(&frame_source,
-                              mojom::FrameSinkVideoCaptureOverlayRequest());
+                              overlay_remote.BindNewPipeAndPassReceiver());
 
   const SkBitmap test_bitmap = MakeTestBitmap(0);
   const gfx::Size frame_size(test_bitmap.width() * 4, test_bitmap.height() * 4);

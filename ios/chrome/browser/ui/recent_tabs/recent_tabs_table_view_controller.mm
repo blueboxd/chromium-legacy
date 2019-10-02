@@ -141,7 +141,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 }
 
 - (void)dealloc {
-  [_signinPromoViewMediator signinPromoViewRemoved];
+  [_signinPromoViewMediator signinPromoViewIsRemoved];
 }
 
 - (void)viewDidLoad {
@@ -541,7 +541,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   if ((newSessionState == self.sessionState &&
        self.sessionState !=
            SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) ||
-      self.signinPromoViewMediator.isSigninInProgress) {
+      self.signinPromoViewMediator.signinInProgress) {
     // No need to refresh the sections since all states other than
     // USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS only have static content. This means
     // that if the previous State is the same as the new one the static content
@@ -576,7 +576,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   // table updates rely on knowing the previous state.
   self.sessionState = newSessionState;
   if (self.sessionState != SessionsSyncUserState::USER_SIGNED_OUT) {
-    [self.signinPromoViewMediator signinPromoViewRemoved];
+    [self.signinPromoViewMediator signinPromoViewIsRemoved];
     self.signinPromoViewMediator.consumer = nil;
     self.signinPromoViewMediator = nil;
   }
@@ -665,7 +665,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       [self.tableViewModel itemTypeForIndexPath:indexPath];
   // If SigninPromo will be shown, |self.signinPromoViewMediator| must know.
   if (itemTypeSelected == ItemTypeOtherDevicesSigninPromo) {
-    [self.signinPromoViewMediator signinPromoViewVisible];
+    [self.signinPromoViewMediator signinPromoViewIsVisible];
   }
   // Retrieve favicons for closed tabs and remote sessions.
   if (itemTypeSelected == ItemTypeRecentlyClosed ||

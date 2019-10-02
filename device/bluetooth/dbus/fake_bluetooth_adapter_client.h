@@ -91,6 +91,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
   // Make SetDiscoveryFilter fail when called next time.
   void MakeSetDiscoveryFilterFail();
 
+  // Make StartDiscovery fail when called next time.
+  void MakeStartDiscoveryFail();
+
   // Mark the adapter and second adapter as visible or invisible.
   void SetVisible(bool visible);
   void SetSecondVisible(bool visible);
@@ -144,6 +147,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
 
   // When set, next call to SetDiscoveryFilter would fail.
   bool set_discovery_filter_should_fail_;
+
+  // When set, next call to StartDiscovery would fail.
+  bool set_start_discovery_should_fail_ = false;
 
   // Current timeout interval used when posting delayed tasks.
   int simulation_interval_ms_;

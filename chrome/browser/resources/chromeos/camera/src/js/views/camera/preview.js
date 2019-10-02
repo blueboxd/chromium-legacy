@@ -123,6 +123,7 @@ cca.views.camera.Preview.prototype.toString = function() {
 cca.views.camera.Preview.prototype.setSource_ = function(stream) {
   var video = document.createElement('video');
   video.id = 'preview-video';
+  video.classList = this.video_.classList;
   video.muted = true; // Mute to avoid echo from the captured audio.
   return new Promise((resolve) => {
     var handler = () => {
@@ -184,27 +185,6 @@ cca.views.camera.Preview.prototype.stop = function() {
     this.stream_ = null;
   }
   cca.state.set('streaming', false);
-};
-
-/**
- * Creates an image blob of the current frame.
- * @return {!Promise<Blob>} Promise for the result.
- */
-cca.views.camera.Preview.prototype.toImage = function() {
-  var canvas = document.createElement('canvas');
-  var ctx = canvas.getContext('2d');
-  canvas.width = this.video_.videoWidth;
-  canvas.height = this.video_.videoHeight;
-  ctx.drawImage(this.video_, 0, 0);
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) {
-        resolve(blob);
-      } else {
-        reject(new Error('Photo blob error.'));
-      }
-    }, 'image/jpeg');
-  });
 };
 
 /**

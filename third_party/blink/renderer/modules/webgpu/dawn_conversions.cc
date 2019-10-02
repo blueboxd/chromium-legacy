@@ -8,7 +8,7 @@
 
 #include "third_party/blink/renderer/bindings/modules/v8/double_sequence_or_gpu_color_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_extent_3d_dict.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_origin_3d.h"
+#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_origin_3d_dict.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_pipeline_stage_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -767,13 +767,30 @@ DawnExtent3D AsDawnType(
   return dawn_extent;
 }
 
-DawnOrigin3D AsDawnType(const GPUOrigin3D* webgpu_origin) {
+DawnOrigin3D AsDawnType(
+    const UnsignedLongSequenceOrGPUOrigin3DDict* webgpu_origin) {
   DCHECK(webgpu_origin);
 
   DawnOrigin3D dawn_origin = {};
-  dawn_origin.x = webgpu_origin->x();
-  dawn_origin.y = webgpu_origin->y();
-  dawn_origin.z = webgpu_origin->z();
+
+  if (webgpu_origin->IsUnsignedLongSequence()) {
+    const Vector<uint32_t>& webgpu_origin_sequence =
+        webgpu_origin->GetAsUnsignedLongSequence();
+    DCHECK_EQ(webgpu_origin_sequence.size(), 3UL);
+    dawn_origin.x = webgpu_origin_sequence[0];
+    dawn_origin.y = webgpu_origin_sequence[1];
+    dawn_origin.z = webgpu_origin_sequence[2];
+
+  } else if (webgpu_origin->IsGPUOrigin3DDict()) {
+    const GPUOrigin3DDict* webgpu_origin_3d_dict =
+        webgpu_origin->GetAsGPUOrigin3DDict();
+    dawn_origin.x = webgpu_origin_3d_dict->x();
+    dawn_origin.y = webgpu_origin_3d_dict->y();
+    dawn_origin.z = webgpu_origin_3d_dict->z();
+
+  } else {
+    NOTREACHED();
+  }
 
   return dawn_origin;
 }

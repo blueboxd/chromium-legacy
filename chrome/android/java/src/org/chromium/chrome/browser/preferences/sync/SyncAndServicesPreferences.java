@@ -401,7 +401,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     @Override
     public boolean onPassphraseEntered(String passphrase) {
         if (!mProfileSyncService.isEngineInitialized()
-                || !mProfileSyncService.isPassphraseRequiredForDecryption()) {
+                || !mProfileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
             // If the engine was shut down since the dialog was opened, or the passphrase isn't
             // required anymore, do nothing.
             return false;
@@ -438,7 +438,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         }
 
         if (mProfileSyncService.isEngineInitialized()
-                && mProfileSyncService.isPassphraseRequiredForDecryption()) {
+                && mProfileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
             return SyncError.PASSPHRASE_REQUIRED;
         }
 
@@ -557,7 +557,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
 
     private void updateSyncPreferences() {
         if (!mProfileSyncService.isEngineInitialized()
-                || !mProfileSyncService.isPassphraseRequiredForDecryption()) {
+                || !mProfileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
             closeDialogIfOpen(FRAGMENT_ENTER_PASSPHRASE);
         }
 

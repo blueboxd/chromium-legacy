@@ -1868,10 +1868,6 @@ crbug.com/591099 external/wpt/css/css-flexbox/flexbox_align-items-stretch-3.html
 ### virtual/layout_ng_experimental/css3/flexbox/
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/auto-height-column-with-border-and-padding.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/box-sizing-min-max-sizes.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/columns-center-with-margins-and-wrap.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/columns-center-with-margins.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-baseline.html [ Skip ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-end.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-vertical-writing-mode.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align.html [ Failure ]
@@ -1902,7 +1898,6 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/order-painting.html
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/overflow-auto-resizes-correctly.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/percentage-height-replaced-element.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/position-absolute-child.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/relayout-align-items.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/relpos-with-percentage-top.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/style-change.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/true-centering.html [ Failure ]
@@ -1913,13 +1908,8 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/mozilla/flexbox-ite
 
 ### virtual/layout_ng_experimental/external/wpt/css/css-flexbox/
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/Flexible-order.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-items-001.htm [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-items-003.htm [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-items-004.htm [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-self-002.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-self-003.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-self-008.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-self-009.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-items-baseline-overflow-non-visible.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/anonymous-flex-item-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/anonymous-flex-item-003.html [ Failure ]
 crbug.com/807497 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
@@ -1929,7 +1919,6 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/css
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/css-flexbox-column-wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/css-flexbox-row-reverse-wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/css-flexbox-row-wrap-reverse.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-align-items-center.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-basis-010.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-direction-row-vertical.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-flow-003.html [ Failure ]
@@ -1938,7 +1927,6 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/fle
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-flow-010.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-flow-011.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-flow-012.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-items-flexibility.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-004.xht [ Failure ]
 crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-005.xht [ Failure ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-006.xht [ Failure ]
@@ -1953,16 +1941,6 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/fle
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox-flex-direction-column-reverse.htm [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox-flex-wrap-wrap-reverse.htm [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-items-baseline.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-items-center-2.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-items-center.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-items-flexend-2.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-items-flexend.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-self-auto.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-self-baseline.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-self-center.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-self-flexend.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-self-flexstart.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-self-stretch.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_direction-column-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_flow-column-reverse-wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_flow-column-reverse-wrap.html [ Failure ]
@@ -3410,11 +3388,11 @@ crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-all-001
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-002-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-ui/webkit-appearance-button-bevel-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-all-002-manual.html [ Skip ]
-crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.html [ Timeout ]
+crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.tentative.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-ui/webkit-appearance-auto-001.html [ Failure ]
 crbug.com/626703 external/wpt/web-animations/interfaces/Animation/persist.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-004-manual.html [ Skip ]
-crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.html [ Timeout ]
+crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.tentative.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/preload/preload-with-type.html [ Failure Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/preload/preload-with-type.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/preload/onload-event.html [ Failure Timeout ]
@@ -5505,7 +5483,6 @@ crbug.com/919587 [ Linux ] virtual/threaded/fast/idle-callback/idle_periods.html
 crbug.com/923244 external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass ]
 # WebRTC Plan B
 crbug.com/920979 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-remote-track-mute.https.html [ Timeout ]
-crbug.com/997201 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-iceConnectionState.https.html [ Pass Failure ]
 crbug.com/920979 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCTrackEvent-fire.html [ Timeout ]
 # WebRTC codec tests - software H.264 not present on webkit bot family
 crbug.com/840659 external/wpt/webrtc/protocol/video-codecs.https.html [ Pass Failure ]
@@ -5865,6 +5842,7 @@ crbug.com/959693 external/wpt/trusted-types/WorkerGlobalScope-importScripts.http
 # Allow failure until its appearance gets stable.
 crbug.com/972476 std-switch/switch-appearance.html [ Failure ]
 crbug.com/972476 std-switch/switch-appearance-customization.html [ Failure ]
+crbug.com/972476 std-switch/switch-appearance-theme.html [ Failure ]
 
 # Sheriff 2019-05-20
 crbug.com/965389 [ Mac ] media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
@@ -6035,7 +6013,6 @@ crbug.com/989717 [ Fuchsia ] http/tests/preload/avoid_delaying_onload_link_prelo
 crbug.com/988074 [ Linux ] virtual/omt-worker-fetch/http/tests/security/cors-rfc1918/addressspace-serviceworker-basic.html [ Pass Failure ]
 
 # Sheriff 2019-08-05
-crbug.com/981522 [ Linux ] external/wpt/svg/animations/correct-events-for-short-animations-with-syncbases.html [ Pass Failure Timeout ]
 crbug.com/991243 [ Linux ] external/wpt/workers/semantics/multiple-workers/003.html [ Pass Timeout ]
 crbug.com/991243 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/semantics/multiple-workers/003.html [ Pass Timeout ]
 
@@ -6217,4 +6194,10 @@ crbug.com/1010032 [ Win7 ] fast/text/international/bold-bengali.html [ Failure ]
 crbug.com/1010032 [ Win7 ] fast/text/selection/khmer-selection.html [ Failure ]
 crbug.com/1010032 [ Win7 ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
 crbug.com/1010170 [ Mac ] media/video-played-reset.html [ Failure ]
+
+# Sheriff 2019-10-02
+crbug.com/1010472 [ Linux Mac Debug ] fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Timeout Pass ]
+crbug.com/1010483 [ Win ] fast/parser/residual-style-dom.html [ Crash Pass ]
+crbug.com/1010483 [ Win ] fast/parser/residual-style-hang.html [ Crash Pass ]
+crbug.com/1010483 [ Win ] fast/selectors/specificity-overflow.html [ Crash Pass ]
 

@@ -122,7 +122,7 @@ bool TestSyncUserSettings::IsPassphraseRequired() const {
   return passphrase_required_;
 }
 
-bool TestSyncUserSettings::IsPassphraseRequiredForDecryption() const {
+bool TestSyncUserSettings::IsPassphraseRequiredForPreferredDataTypes() const {
   return passphrase_required_for_decryption_;
 }
 

@@ -25,6 +25,7 @@ enum ManifestUpdateResult {
   kThrottled,
   kWebContentsDestroyed,
   kAppUninstalled,
+  kAppIsPlaceholder,
   kAppUpToDate,
   kAppDataInvalid,
   kAppUpdateFailed,

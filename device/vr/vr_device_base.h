@@ -13,7 +13,9 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_export.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "ui/display/display.h"
 
 namespace device {
@@ -28,7 +30,7 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
 
   // VRDevice Implementation
   void ListenToDeviceChanges(
-      mojom::XRRuntimeEventListenerAssociatedPtrInfo listener,
+      mojo::PendingAssociatedRemote<mojom::XRRuntimeEventListener> listener,
       mojom::XRRuntime::ListenToDeviceChangesCallback callback) final;
   void SetListeningForActivate(bool is_listening) override;
   void EnsureInitialized(EnsureInitializedCallback callback) override;
@@ -75,7 +77,7 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
   // TODO(https://crbug.com/842227): Rename methods to HandleOnXXX
   virtual void OnListeningForActivate(bool listening);
 
-  mojom::XRRuntimeEventListenerAssociatedPtr listener_;
+  mojo::AssociatedRemote<mojom::XRRuntimeEventListener> listener_;
 
   bool presenting_ = false;
 

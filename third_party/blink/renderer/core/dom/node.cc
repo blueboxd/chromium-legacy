@@ -1209,10 +1209,10 @@ void Node::MarkAncestorsWithChildNeedsDistributionRecalc() {
 }
 
 void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
-  ContainerNode* ancestor = ParentOrShadowHostNode();
+  ContainerNode* ancestor = GetStyleRecalcParent();
   bool parent_dirty = ancestor && ancestor->NeedsStyleRecalc();
   for (; ancestor && !ancestor->ChildNeedsStyleRecalc();
-       ancestor = ancestor->ParentOrShadowHostNode()) {
+       ancestor = ancestor->GetStyleRecalcParent()) {
     if (!ancestor->isConnected())
       return;
     ancestor->SetChildNeedsStyleRecalc();
@@ -1242,7 +1242,7 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
       GetDocument().LockedDisplayLockCount() > 0) {
     for (auto* ancestor_copy = ancestor; ancestor_copy;
-         ancestor_copy = ancestor_copy->ParentOrShadowHostNode()) {
+         ancestor_copy = ancestor_copy->GetStyleRecalcParent()) {
       auto* ancestor_copy_element = DynamicTo<Element>(ancestor_copy);
       if (ancestor_copy_element &&
           ancestor_copy_element->StyleRecalcBlockedByDisplayLock(
@@ -1256,12 +1256,12 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
-Element* Node::GetReattachParent() const {
+Element* Node::FlatTreeParentForChildDirty() const {
   if (IsPseudoElement())
     return ParentOrShadowHostElement();
   if (IsChildOfV1ShadowHost()) {
-    if (HTMLSlotElement* slot = AssignedSlot())
-      return slot;
+    if (auto* data = GetFlatTreeNodeData())
+      return data->AssignedSlot();
   }
   if (IsInV0ShadowTree() || IsChildOfV0ShadowHost()) {
     if (ShadowRootWhereNodeCanBeDistributedForV0(*this)) {
@@ -1272,6 +1272,12 @@ Element* Node::GetReattachParent() const {
     }
   }
   return ParentOrShadowHostElement();
+}
+
+ContainerNode* Node::GetStyleRecalcParent() const {
+  if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled())
+    return FlatTreeParentForChildDirty();
+  return ParentOrShadowHostNode();
 }
 
 void Node::MarkAncestorsWithChildNeedsReattachLayoutTree() {

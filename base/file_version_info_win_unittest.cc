@@ -152,4 +152,7 @@ TYPED_TEST(FileVersionInfoTest, CustomProperties) {
       version_info_win->GetValue(STRING16_LITERAL("Unknown property"), &str));
   EXPECT_EQ(base::string16(), version_info_win->GetStringValue(
                                   STRING16_LITERAL("Unknown property")));
+
+  EXPECT_EQ(base::Version(std::vector<uint32_t>{1, 0, 0, 1}),
+            version_info_win->GetFileVersion());
 }

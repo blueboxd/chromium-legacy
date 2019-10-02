@@ -10,8 +10,8 @@
 # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_test_expectations.md
 
 external/wpt/.codecov.yml [ Skip ]
+external/wpt/.github [ Skip ]
 external/wpt/.gitmodules [ Skip ]
-external/wpt/.travis.yml [ Skip ]
 external/wpt/CODEOWNERS [ Skip ]
 external/wpt/WebIDL/invalid [ Skip ]
 external/wpt/WebIDL/readme.txt [ Skip ]

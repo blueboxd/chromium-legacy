@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -44,6 +45,9 @@ class FakeSyncEngine : public SyncEngine {
   void SetEncryptionPassphrase(const std::string& passphrase) override;
 
   void SetDecryptionPassphrase(const std::string& passphrase) override;
+
+  void AddTrustedVaultDecryptionKeys(
+      const std::vector<std::string>& keys) override;
 
   void StopSyncingForShutdown() override;
 

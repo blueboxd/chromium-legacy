@@ -62,7 +62,7 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
                     GoogleServiceAuthError.getMessageID(mProfileSyncService.getAuthError()),
                     createSettingsIntent());
         } else if (mProfileSyncService.isEngineInitialized()
-                && mProfileSyncService.isPassphraseRequiredForDecryption()) {
+                && mProfileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
             if (mProfileSyncService.isPassphrasePrompted()) {
                 return;
             }

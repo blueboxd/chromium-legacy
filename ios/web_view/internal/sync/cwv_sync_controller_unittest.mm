@@ -233,7 +233,7 @@ TEST_F(CWVSyncControllerTest, Consent) {
 // Verifies CWVSyncController's passphrase API.
 TEST_F(CWVSyncControllerTest, Passphrase) {
   EXPECT_CALL(*mock_sync_service()->GetMockUserSettings(),
-              IsPassphraseRequiredForDecryption())
+              IsPassphraseRequiredForPreferredDataTypes())
       .WillOnce(Return(true));
   EXPECT_TRUE(sync_controller_.passphraseNeeded);
   EXPECT_CALL(*mock_sync_service()->GetMockUserSettings(),

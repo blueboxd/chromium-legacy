@@ -359,6 +359,17 @@ void JSONTraceExporter::SetTraceStatsMetadata(
   metadata_->SetDictionary("perfetto_trace_stats", std::move(dict));
 }
 
+void JSONTraceExporter::AddMetadata(const std::string& entry_name,
+                                    std::unique_ptr<base::Value> value) {
+  if (!metadata_filter_predicate_.is_null() &&
+      !metadata_filter_predicate_.Run(entry_name)) {
+    metadata_->SetString(entry_name, kStrippedArgument);
+    return;
+  }
+
+  metadata_->Set(entry_name, std::move(value));
+}
+
 JSONTraceExporter::ScopedJSONTraceEventAppender
 JSONTraceExporter::AddTraceEvent(const char* name,
                                  const char* categories,

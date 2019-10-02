@@ -9,9 +9,36 @@ import * as style from './style.mjs';
 import {SwitchTrack} from './track.mjs';
 
 const generateStyleSheet = style.styleSheetFactory();
+const generateMaterialStyleSheet = style.materialStyleSheetFactory();
 
 // https://github.com/tkent-google/std-switch/issues/2
 const STATE_ATTR = 'on';
+
+function parentOrHostElement(element) {
+  const parent = element.parentNode;
+  if (!parent) {
+    return null;
+  }
+  if (parent.nodeType === Node.ELEMENT_NODE) {
+    return parent;
+  }
+  if (parent.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+    return parent.host;
+  }
+  return null;
+}
+
+function shouldUsePlatformTheme(element) {
+  for (; element; element = parentOrHostElement(element)) {
+    const themeValue = element.getAttribute('theme');
+    if (themeValue === 'match-platform') {
+      return true;
+    } else if (themeValue === 'platform-agnostic') {
+      return false;
+    }
+  }
+  return false;
+}
 
 export class StdSwitchElement extends HTMLElement {
   // TODO(tkent): The following should be |static fooBar = value;|
@@ -27,6 +54,7 @@ export class StdSwitchElement extends HTMLElement {
   #track;
   #containerElement;
   #inUserAction = false;
+  #shadowRoot;
 
   constructor() {
     super();
@@ -62,6 +90,11 @@ export class StdSwitchElement extends HTMLElement {
   }
 
   connectedCallback() {
+    // The element might have been disconnected when the callback is invoked.
+    if (!this.isConnected) {
+      return;
+    }
+
     // TODO(tkent): We should not add tabindex attribute.
     // https://github.com/w3c/webcomponents/issues/762
     if (!this.hasAttribute('tabindex')) {
@@ -75,6 +108,15 @@ export class StdSwitchElement extends HTMLElement {
       if (!this.hasAttribute('role')) {
         this.setAttribute('role', 'switch');
       }
+    }
+
+    if (shouldUsePlatformTheme(this)) {
+      // TODO(tkent): Should we apply Cocoa-like on macOS and Fluent-like
+      // on Windows?
+      this.#shadowRoot.adoptedStyleSheets =
+          [generateStyleSheet(), generateMaterialStyleSheet()];
+    } else {
+      this.#shadowRoot.adoptedStyleSheets = [generateStyleSheet()];
     }
   }
 
@@ -100,7 +142,7 @@ export class StdSwitchElement extends HTMLElement {
     thumbElement.id = 'thumb';
     thumbElement.part.add('thumb');
 
-    root.adoptedStyleSheets = [generateStyleSheet()];
+    this.#shadowRoot = root;
   };
 
   #onClick = () => {

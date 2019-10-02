@@ -146,17 +146,6 @@ TestDiskInfo kTestDisks[] = {{"file_path1",
                               "exfat",
                               ""}};
 
-void DispatchDirectoryChangeEventImpl(
-    int* counter,
-    const base::FilePath& virtual_path,
-    const drive::FileChange* list,
-    bool got_error,
-    const std::vector<std::string>& extension_ids) {
-  ++(*counter);
-}
-
-void AddFileWatchCallback(bool success) {}
-
 void AddLocalFileSystem(Profile* profile, base::FilePath root) {
   const char kLocalMountPointName[] = "local";
   const char kTestFileContent[] = "The five boxing wizards jumped quickly";
@@ -459,81 +448,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Permissions) {
   ASSERT_EQ(1u, extension->install_warnings().size());
   const extensions::InstallWarning& warning = extension->install_warnings()[0];
   EXPECT_EQ("fileManagerPrivate", warning.key);
-}
-
-IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, OnFileChanged) {
-  // In drive volume, deletion of a directory is notified via OnFileChanged.
-  // Local changes directly come to HandleFileWatchNotification from
-  // FileWatcher.
-  typedef drive::FileChange FileChange;
-  typedef drive::FileChange::FileType FileType;
-  typedef drive::FileChange::ChangeType ChangeType;
-
-  int counter = 0;
-  event_router_->SetDispatchDirectoryChangeEventImplForTesting(
-      base::Bind(&DispatchDirectoryChangeEventImpl, &counter));
-
-  // /a/b/c and /a/d/e are being watched.
-  event_router_->AddFileWatch(
-      base::FilePath(FILE_PATH_LITERAL("/no-existing-fs/root/a/b/c")),
-      base::FilePath(FILE_PATH_LITERAL("/no-existing-fs-virtual/root/a/b/c")),
-      "extension_1", base::Bind(&AddFileWatchCallback));
-
-  event_router_->AddFileWatch(
-      base::FilePath(FILE_PATH_LITERAL("/no-existing-fs/root/a/d/e")),
-      base::FilePath(FILE_PATH_LITERAL("/no-existing-fs-hash/root/a/d/e")),
-      "extension_2", base::Bind(&AddFileWatchCallback));
-
-  event_router_->AddFileWatch(
-      base::FilePath(FILE_PATH_LITERAL("/no-existing-fs/root/aaa")),
-      base::FilePath(FILE_PATH_LITERAL("/no-existing-fs-hash/root/aaa")),
-      "extension_3", base::Bind(&AddFileWatchCallback));
-
-  // event_router->addFileWatch create some tasks which are performed on
-  // ThreadPool. Wait until they are done.
-  base::ThreadPoolInstance::Get()->FlushForTesting();
-  // We also wait the UI thread here, since some tasks which are performed
-  // above message loop back results to the UI thread.
-  base::RunLoop().RunUntilIdle();
-
-  // When /a is deleted (1 and 2 is notified).
-  FileChange first_change;
-  first_change.Update(
-      base::FilePath(FILE_PATH_LITERAL("/no-existing-fs/root/a")),
-      FileType::FILE_TYPE_DIRECTORY, ChangeType::CHANGE_TYPE_DELETE);
-  event_router_->OnFileChanged(first_change);
-  EXPECT_EQ(2, counter);
-
-  // When /a/b/c is deleted (1 is notified).
-  FileChange second_change;
-  second_change.Update(
-      base::FilePath(FILE_PATH_LITERAL("/no-existing-fs/root/a/b/c")),
-      FileType::FILE_TYPE_DIRECTORY, ChangeType::CHANGE_TYPE_DELETE);
-  event_router_->OnFileChanged(second_change);
-  EXPECT_EQ(3, counter);
-
-  // When /z/y is deleted (Not notified).
-  FileChange third_change;
-  third_change.Update(
-      base::FilePath(FILE_PATH_LITERAL("/no-existing-fs/root/z/y")),
-      FileType::FILE_TYPE_DIRECTORY, ChangeType::CHANGE_TYPE_DELETE);
-  event_router_->OnFileChanged(third_change);
-  EXPECT_EQ(3, counter);
-
-  // Remove file watchers.
-  event_router_->RemoveFileWatch(
-      base::FilePath(FILE_PATH_LITERAL("/no-existing-fs/root/a/b/c")),
-      "extension_1");
-  event_router_->RemoveFileWatch(
-      base::FilePath(FILE_PATH_LITERAL("/no-existing-fs/root/a/d/e")),
-      "extension_2");
-  event_router_->RemoveFileWatch(
-      base::FilePath(FILE_PATH_LITERAL("/no-existing-fs/root/aaa")),
-      "extension_3");
-
-  // event_router->addFileWatch create some tasks which are performed on
-  // ThreadPool. Wait until they are done.
-  base::ThreadPoolInstance::Get()->FlushForTesting();
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, ContentChecksum) {

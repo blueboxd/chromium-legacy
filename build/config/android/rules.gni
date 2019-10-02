@@ -373,14 +373,16 @@ if (enable_java_templates) {
   template("generate_jni_registration") {
     action_with_pydeps(target_name) {
       forward_variables_from(invoker, [ "testonly" ])
-      _build_config = get_label_info(invoker.target, "target_gen_dir") + "/" +
-                      get_label_info(invoker.target, "name") + ".build_config"
+      _build_config = get_label_info("${invoker.target}($default_toolchain)",
+                                     "target_gen_dir") + "/" +
+                      get_label_info("${invoker.target}($default_toolchain)",
+                                     "name") + ".build_config"
       _rebased_build_config = rebase_path(_build_config, root_build_dir)
       _srcjar_output = "$target_gen_dir/$target_name.srcjar"
 
       script = "//base/android/jni_generator/jni_registration_generator.py"
       deps = [
-        "${invoker.target}$build_config_target_suffix",
+        "${invoker.target}$build_config_target_suffix($default_toolchain)",
       ]
       inputs = [
         _build_config,

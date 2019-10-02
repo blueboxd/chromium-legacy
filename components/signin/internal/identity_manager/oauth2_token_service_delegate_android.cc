@@ -41,8 +41,10 @@ typedef base::Callback<
 
 class AndroidAccessTokenFetcher : public OAuth2AccessTokenFetcher {
  public:
-  AndroidAccessTokenFetcher(OAuth2AccessTokenConsumer* consumer,
-                            const std::string& account_id);
+  AndroidAccessTokenFetcher(
+      OAuth2TokenServiceDelegateAndroid* oauth2_token_service_delegate,
+      OAuth2AccessTokenConsumer* consumer,
+      const std::string& account_id);
   ~AndroidAccessTokenFetcher() override;
 
   // Overrides from OAuth2AccessTokenFetcher:
@@ -59,6 +61,7 @@ class AndroidAccessTokenFetcher : public OAuth2AccessTokenFetcher {
  private:
   std::string CombineScopes(const std::vector<std::string>& scopes);
 
+  OAuth2TokenServiceDelegateAndroid* oauth2_token_service_delegate_;
   std::string account_id_;
   bool request_was_cancelled_;
   base::WeakPtrFactory<AndroidAccessTokenFetcher> weak_factory_;
@@ -67,9 +70,11 @@ class AndroidAccessTokenFetcher : public OAuth2AccessTokenFetcher {
 };
 
 AndroidAccessTokenFetcher::AndroidAccessTokenFetcher(
+    OAuth2TokenServiceDelegateAndroid* oauth2_token_service_delegate,
     OAuth2AccessTokenConsumer* consumer,
     const std::string& account_id)
     : OAuth2AccessTokenFetcher(consumer),
+      oauth2_token_service_delegate_(oauth2_token_service_delegate),
       account_id_(account_id),
       request_was_cancelled_(false),
       weak_factory_(this) {}
@@ -91,7 +96,7 @@ void AndroidAccessTokenFetcher::Start(const std::string& client_id,
 
   // Call into Java to get a new token.
   Java_OAuth2TokenService_getAccessTokenFromNative(
-      env, j_username, j_scope,
+      env, oauth2_token_service_delegate_->GetJavaObject(), j_username, j_scope,
       reinterpret_cast<intptr_t>(heap_callback.release()));
 }
 
@@ -132,19 +137,24 @@ std::string AndroidAccessTokenFetcher::CombineScopes(
 
 }  // namespace
 
+// TODO(crbug.com/1009957) Remove disable_interation_with_system_accounts_
+// from OAuth2TokenServiceDelegateAndroid
 bool OAuth2TokenServiceDelegateAndroid::
     disable_interaction_with_system_accounts_ = false;
 
 OAuth2TokenServiceDelegateAndroid::OAuth2TokenServiceDelegateAndroid(
-    AccountTrackerService* account_tracker_service)
+    AccountTrackerService* account_tracker_service,
+    const base::android::JavaRef<jobject>& account_manager_facade)
     : account_tracker_service_(account_tracker_service),
       fire_refresh_token_loaded_(RT_LOAD_NOT_START) {
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ctor";
   DCHECK(account_tracker_service_);
+
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> local_java_ref =
       Java_OAuth2TokenService_create(env, reinterpret_cast<intptr_t>(this),
-                                     account_tracker_service_->GetJavaObject());
+                                     account_tracker_service_->GetJavaObject(),
+                                     account_manager_facade);
   java_ref_.Reset(env, local_java_ref.obj());
 
   if (account_tracker_service_->GetMigrationState() ==
@@ -173,6 +183,10 @@ ScopedJavaLocalRef<jobject> OAuth2TokenServiceDelegateAndroid::GetJavaObject() {
 
 bool OAuth2TokenServiceDelegateAndroid::RefreshTokenIsAvailable(
     const CoreAccountId& account_id) const {
+  DCHECK(!disable_interaction_with_system_accounts_)
+      << __FUNCTION__
+      << " needs to interact with system accounts and cannot be used with "
+         "disable_interaction_with_system_accounts_";
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::RefreshTokenIsAvailable"
            << " account= " << account_id;
   std::string account_name = MapAccountIdToAccountName(account_id);
@@ -187,7 +201,8 @@ bool OAuth2TokenServiceDelegateAndroid::RefreshTokenIsAvailable(
   ScopedJavaLocalRef<jstring> j_account_id =
       ConvertUTF8ToJavaString(env, account_name);
   jboolean refresh_token_is_available =
-      Java_OAuth2TokenService_hasOAuth2RefreshToken(env, j_account_id);
+      Java_OAuth2TokenService_hasOAuth2RefreshToken(env, java_ref_,
+                                                    j_account_id);
   return refresh_token_is_available == JNI_TRUE;
 }
 
@@ -226,6 +241,7 @@ std::vector<CoreAccountId> OAuth2TokenServiceDelegateAndroid::GetAccounts()
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> j_accounts =
       Java_OAuth2TokenService_getAccounts(env);
+  ;
   // TODO(fgorski): We may decide to filter out some of the accounts.
   base::android::AppendJavaStringArrayToStringVector(env, j_accounts,
                                                      &accounts);
@@ -234,10 +250,14 @@ std::vector<CoreAccountId> OAuth2TokenServiceDelegateAndroid::GetAccounts()
 
 std::vector<std::string>
 OAuth2TokenServiceDelegateAndroid::GetSystemAccountNames() {
+  DCHECK(!disable_interaction_with_system_accounts_)
+      << __FUNCTION__
+      << " needs to interact with system accounts and cannot be used with "
+         "disable_interaction_with_system_accounts_";
   std::vector<std::string> account_names;
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> j_accounts =
-      Java_OAuth2TokenService_getSystemAccountNames(env);
+      Java_OAuth2TokenService_getSystemAccountNames(env, java_ref_);
   base::android::AppendJavaStringArrayToStringVector(env, j_accounts,
                                                      &account_names);
   return account_names;
@@ -284,7 +304,8 @@ OAuth2TokenServiceDelegateAndroid::CreateAccessTokenFetcher(
   std::string account_name = MapAccountIdToAccountName(account_id);
   DCHECK(!account_name.empty())
       << "Cannot find account name for account id " << account_id;
-  return std::make_unique<AndroidAccessTokenFetcher>(consumer, account_name);
+  return std::make_unique<AndroidAccessTokenFetcher>(this, consumer,
+                                                     account_name);
 }
 
 void OAuth2TokenServiceDelegateAndroid::OnAccessTokenInvalidated(
@@ -292,11 +313,15 @@ void OAuth2TokenServiceDelegateAndroid::OnAccessTokenInvalidated(
     const std::string& client_id,
     const OAuth2AccessTokenManager::ScopeSet& scopes,
     const std::string& access_token) {
+  DCHECK(!disable_interaction_with_system_accounts_)
+      << __FUNCTION__
+      << " needs to interact with system accounts and cannot be used with "
+         "disable_interaction_with_system_accounts_";
   ValidateAccountId(account_id);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_access_token =
       ConvertUTF8ToJavaString(env, access_token);
-  Java_OAuth2TokenService_invalidateAccessToken(env, j_access_token);
+  Java_OAuth2TokenService_invalidateAccessToken(env, java_ref_, j_access_token);
 }
 
 void OAuth2TokenServiceDelegateAndroid::UpdateAccountList(

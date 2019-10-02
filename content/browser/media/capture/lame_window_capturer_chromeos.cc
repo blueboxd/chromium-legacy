@@ -106,15 +106,15 @@ void LameWindowCapturerChromeOS::ChangeTarget(
 }
 
 void LameWindowCapturerChromeOS::Start(
-    viz::mojom::FrameSinkVideoConsumerPtr consumer) {
+    mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumer> consumer) {
   DCHECK(consumer);
 
   Stop();
 
-  consumer_ = std::move(consumer);
+  consumer_.Bind(std::move(consumer));
   // In the future, if the connection to the consumer is lost before a call to
   // Stop(), make that call on its behalf.
-  consumer_.set_connection_error_handler(base::BindOnce(
+  consumer_.set_disconnect_handler(base::BindOnce(
       &LameWindowCapturerChromeOS::Stop, base::Unretained(this)));
 
   timer_.Start(FROM_HERE, capture_period_, this,
@@ -141,11 +141,11 @@ void LameWindowCapturerChromeOS::RequestRefreshFrame() {
 
 void LameWindowCapturerChromeOS::CreateOverlay(
     int32_t stacking_index,
-    viz::mojom::FrameSinkVideoCaptureOverlayRequest request) {
+    mojo::PendingReceiver<viz::mojom::FrameSinkVideoCaptureOverlay> receiver) {
   // LameWindowCapturerChromeOS only supports one overlay at a time. If one
   // already exists, the following will cause it to be dropped.
   overlay_ =
-      std::make_unique<LameCaptureOverlayChromeOS>(this, std::move(request));
+      std::make_unique<LameCaptureOverlayChromeOS>(this, std::move(receiver));
 }
 
 class LameWindowCapturerChromeOS::InFlightFrame

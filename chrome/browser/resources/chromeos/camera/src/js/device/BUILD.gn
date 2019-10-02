@@ -9,6 +9,7 @@ js_type_check("closure_compile") {
     ":camera3_device_info",
     ":constraints_preferrer",
     ":device_info_updater",
+    ":error",
   ]
 }
 
@@ -31,6 +32,10 @@ js_library("device_info_updater") {
   deps = [
     ":camera3_device_info",
     ":constraints_preferrer",
+    ":error",
     "..:state",
   ]
+}
+
+js_library("error") {
 }

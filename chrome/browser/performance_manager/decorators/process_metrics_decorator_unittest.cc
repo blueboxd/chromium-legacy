@@ -134,11 +134,11 @@ TEST_F(ProcessMetricsDecoratorTest, RefreshTimer) {
   MockSystemNodeObserver sys_node_observer;
 
   graph()->AddSystemNodeObserver(&sys_node_observer);
-  auto memory_dump = base::make_optional(std::move(
+  auto memory_dump = base::make_optional(
       GenerateMemoryDump({{mock_graph()->process->process_id(),
                            kFakeResidentSetKb, kFakePrivateFootprintKb},
                           {mock_graph()->other_process->process_id(),
-                           kFakeResidentSetKb, kFakePrivateFootprintKb}})));
+                           kFakeResidentSetKb, kFakePrivateFootprintKb}}));
 
   EXPECT_CALL(*decorator(), GetMemoryDump())
       .WillOnce(testing::Return(testing::ByMove(std::move(memory_dump))));

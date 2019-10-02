@@ -6,6 +6,8 @@
 
 import unittest
 
+import mock
+
 from core.results_processor import processor
 from core.results_processor import testing
 
@@ -37,3 +39,56 @@ class ResultsProcessorUnitTests(unittest.TestCase):
     self.assertIn(['linux'], diag_values)
     self.assertIn([['documentation', 'url']], diag_values)
     self.assertIn(['label'], diag_values)
+
+  def testUploadArtifacts(self):
+    in_results = testing.IntermediateResults(
+        test_results=[
+            testing.TestResult(
+                'benchmark/story',
+                artifacts={'log': testing.Artifact('/log.log')},
+            ),
+            testing.TestResult(
+                'benchmark/story',
+                artifacts={
+                  'trace.html': testing.Artifact('/trace.html'),
+                  'screenshot': testing.Artifact('/screenshot.png'),
+                },
+            ),
+        ],
+    )
+
+    with mock.patch('py_utils.cloud_storage.Insert') as cloud_patch:
+      cloud_patch.return_value = 'gs://url'
+      processor.UploadArtifacts(in_results, 'bucket', None)
+      cloud_patch.assert_has_calls([
+          mock.call('bucket', mock.ANY, '/log.log'),
+          mock.call('bucket', mock.ANY, '/trace.html'),
+          mock.call('bucket', mock.ANY, '/screenshot.png'),
+        ],
+        any_order=True,
+      )
+
+    for result in in_results['testResults']:
+      for artifact in result['artifacts'].itervalues():
+        self.assertEqual(artifact['remoteUrl'], 'gs://url')
+
+  def testUploadArtifacts_CheckRemoteUrl(self):
+    in_results = testing.IntermediateResults(
+        test_results=[
+            testing.TestResult(
+                'benchmark/story',
+                artifacts={'trace.html': testing.Artifact('/trace.html')},
+            ),
+        ],
+        start_time='2019-10-01T12:00:00.123456Z',
+    )
+
+    with mock.patch('py_utils.cloud_storage.Insert') as cloud_patch:
+      with mock.patch('random.randint') as randint_patch:
+        randint_patch.return_value = 54321
+        processor.UploadArtifacts(in_results, 'bucket', 'src@abc + 123')
+        cloud_patch.assert_called_once_with(
+            'bucket',
+            'src_abc_123_20191001T120000_54321/benchmark/story/trace.html',
+            '/trace.html'
+        )

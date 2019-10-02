@@ -9,8 +9,12 @@ the standalone version of Results Processor.
 """
 
 import json
+import logging
 import os
+import random
+import re
 
+from py_utils import cloud_storage
 from core.results_processor import command_line
 from core.results_processor import compute_metrics
 from core.results_processor import formatters
@@ -43,7 +47,8 @@ def ProcessResults(options):
 
   _AggregateTraces(intermediate_results)
 
-  _UploadArtifacts(intermediate_results, options.upload_bucket)
+  UploadArtifacts(
+      intermediate_results, options.upload_bucket, options.results_label)
 
   if any(fmt in FORMATS_WITH_METRICS for fmt in options.output_formats):
     histogram_dicts = _ComputeMetrics(intermediate_results,
@@ -88,20 +93,48 @@ def _AggregateTraces(intermediate_results):
         del artifacts[trace]
 
 
-def _UploadArtifacts(intermediate_results, upload_bucket):
+def _RemoteName(results_label, start_time, test_path, artifact_name):
+  """Construct a name for a given artifact, under which it will be
+  stored in the cloud.
+  """
+  if results_label:
+    identifier_parts = [re.sub(r'\W+', '_', results_label)]
+  else:
+    identifier_parts = []
+  # Time is rounded to seconds and delimiters are removed.
+  # The first 19 chars of the string match 'YYYY-MM-DDTHH:MM:SS'.
+  identifier_parts.append(re.sub(r'\W+', '', start_time[:19]))
+  identifier_parts.append(str(random.randint(1, 1e5)))
+  run_identifier = '_'.join(identifier_parts)
+  return '/'.join([run_identifier, test_path, artifact_name])
+
+
+def UploadArtifacts(intermediate_results, upload_bucket, results_label):
   """Upload all artifacts to cloud.
 
   For each test run, uploads all its artifacts to cloud and sets remoteUrl
   fields in intermediate_results.
   """
-  if upload_bucket is not None:
-    for result in intermediate_results['testResults']:
-      artifacts = result.get('artifacts', {})
-      for artifact in artifacts.values():
-        # For now, the uploading is done by Telemetry, so we just check that
-        # remoteUrls are set.
-        # TODO(crbug.com/981349): replace this with actual uploading code
-        assert 'remoteUrl' in artifact
+  if upload_bucket is None:
+    return
+
+  start_time = intermediate_results['benchmarkRun']['startTime']
+  for result in intermediate_results['testResults']:
+    artifacts = result.get('artifacts', {})
+    for name, artifact in artifacts.iteritems():
+      if 'remoteUrl' in artifact:
+        continue
+      # TODO(crbug.com/981349): Remove this check after Telemetry does not
+      # save histograms as an artifact anymore.
+      if name == compute_metrics.HISTOGRAM_DICTS_FILE:
+        continue
+      artifact['remoteUrl'] = cloud_storage.Insert(
+          upload_bucket,
+          _RemoteName(results_label, start_time, result['testPath'], name),
+          artifact['filePath'],
+      )
+      logging.info('Uploaded %s of %s to %s\n' % (
+          name, result['testPath'], artifact['remoteUrl']))
 
 
 def _ComputeMetrics(intermediate_results, results_label):

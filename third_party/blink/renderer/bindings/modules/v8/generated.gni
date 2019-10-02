@@ -96,6 +96,8 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/unsigned_long_or_unsigned_long_sequence.h",
   "$bindings_modules_v8_output_dir/unsigned_long_sequence_or_gpu_extent_3d_dict.cc",
   "$bindings_modules_v8_output_dir/unsigned_long_sequence_or_gpu_extent_3d_dict.h",
+  "$bindings_modules_v8_output_dir/unsigned_long_sequence_or_gpu_origin_3d_dict.cc",
+  "$bindings_modules_v8_output_dir/unsigned_long_sequence_or_gpu_origin_3d_dict.h",
   "$bindings_modules_v8_output_dir/webgl_rendering_context_or_webgl2_rendering_context.cc",
   "$bindings_modules_v8_output_dir/webgl_rendering_context_or_webgl2_rendering_context.h",
 ]

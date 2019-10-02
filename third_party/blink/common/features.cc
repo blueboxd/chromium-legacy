@@ -271,12 +271,6 @@ const base::Feature kDecodeJpeg420ImagesToYUV{
 const base::Feature kDecodeLossyWebPImagesToYUV{
     "DecodeLossyWebPImagesToYUV", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables usage of render frame observer as the receiver of the resource
-// loading hints in the render process.
-// https://crbug.com/891328.
-const base::Feature kSendPreviewsLoadingHintsBeforeCommit{
-    "SendPreviewsLoadingHintsBeforeCommit", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables cache-aware WebFonts loading. See https://crbug.com/570205.
 // The feature is disabled on Android for WebView API issue discussed at
 // https://crbug.com/942440.
@@ -351,11 +345,6 @@ const base::FeatureParam<int> kForceDarkBackgroundLightnessThresholdParam{
 
 const base::Feature kCanvasAlwaysDeferral{"CanvasAlwaysDeferral",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Use the new C++ implementation of WHATWG Streams. See
-// https://crbug.com/977500.
-const base::Feature kStreamsNative{"StreamsNative",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Blink garbage collection.
 // Enables compaction of backing stores on Blink's heap.

@@ -366,7 +366,7 @@ using base::UserMetricsAction;
 
 - (void)identityDiscTapped {
   base::RecordAction(base::UserMetricsAction("MobileNTPIdentityDiscTapped"));
-  [self.dispatcher showGoogleServicesSettingsFromViewController:self];
+  [self.dispatcher showGoogleServicesSettingsFromViewController:nil];
 }
 
 // TODO(crbug.com/807330) The fakebox is currently a collection of views spread

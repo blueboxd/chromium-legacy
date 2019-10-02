@@ -56,7 +56,7 @@ public class FakeProfileSyncService extends ProfileSyncService {
     }
 
     @Override
-    public boolean isPassphraseRequiredForDecryption() {
+    public boolean isPassphraseRequiredForPreferredDataTypes() {
         return mPassphraseRequiredForDecryption;
     }
 

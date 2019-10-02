@@ -94,17 +94,17 @@ void TrackEventJSONExporter::ProcessPackets(
     // and wait for the first state_clear before emitting anything.
     if (packet.trusted_packet_sequence_id() !=
         current_state_->trusted_packet_sequence_id) {
+      stats_.sequences_seen++;
       StartNewState(packet.trusted_packet_sequence_id(),
                     packet.incremental_state_cleared());
     } else if (packet.incremental_state_cleared()) {
+      stats_.incremental_state_resets++;
       ResetIncrementalState();
     } else if (packet.previous_packet_dropped()) {
       // If we've lost packets we can no longer trust any timestamp data and
       // other state which might have been dropped. We will keep skipping events
       // until we start a new sequence.
-      LOG_IF(ERROR, current_state_->incomplete)
-          << "Previous packet was dropped. Skipping TraceEvents until reset or "
-          << "new sequence.";
+      stats_.packets_with_previous_packet_dropped++;
       current_state_->incomplete = true;
     }
 
@@ -136,6 +136,7 @@ void TrackEventJSONExporter::ProcessPackets(
   }
   if (!has_more) {
     EmitThreadDescriptorIfNeeded();
+    EmitStats();
   }
 }
 
@@ -227,6 +228,7 @@ void TrackEventJSONExporter::HandleInternedData(
 
   // InternedData is only emitted on sequences with incremental state.
   if (current_state_->incomplete) {
+    stats_.packets_dropped_invalid_incremental_state++;
     return;
   }
 
@@ -311,6 +313,7 @@ void TrackEventJSONExporter::HandleProcessDescriptor(
 
   // ProcessDescriptor is only emitted on sequences with incremental state.
   if (current_state_->incomplete) {
+    stats_.packets_dropped_invalid_incremental_state++;
     return;
   }
 
@@ -388,6 +391,7 @@ void TrackEventJSONExporter::HandleThreadDescriptor(
 
   // ThreadDescriptor is only emitted on sequences with incremental state.
   if (current_state_->incomplete) {
+    stats_.packets_dropped_invalid_incremental_state++;
     return;
   }
 
@@ -472,6 +476,7 @@ void TrackEventJSONExporter::HandleTrackEvent(const ChromeTracePacket& packet) {
 
   // TrackEvents need incremental state.
   if (current_state_->incomplete) {
+    stats_.packets_dropped_invalid_incremental_state++;
     return;
   }
 
@@ -500,12 +505,8 @@ void TrackEventJSONExporter::HandleTrackEvent(const ChromeTracePacket& packet) {
   const std::string joined_categories = base::JoinString(all_categories, ",");
 
   DCHECK(track.has_legacy_event()) << "required field legacy_event missing";
-  auto maybe_builder =
+  auto builder =
       HandleLegacyEvent(track.legacy_event(), joined_categories, timestamp_us);
-  if (!maybe_builder) {
-    return;
-  }
-  auto& builder = *maybe_builder;
 
   if (thread_time_us) {
     builder.AddThreadTimestamp(*thread_time_us);
@@ -532,7 +533,12 @@ void TrackEventJSONExporter::HandleTrackEvent(const ChromeTracePacket& packet) {
 
 void TrackEventJSONExporter::HandleStreamingProfilePacket(
     const perfetto::protos::StreamingProfilePacket& profile_packet) {
-  if (current_state_->incomplete || !ShouldOutputTraceEvents()) {
+  if (current_state_->incomplete) {
+    stats_.packets_dropped_invalid_incremental_state++;
+    return;
+  }
+
+  if (!ShouldOutputTraceEvents()) {
     return;
   }
 
@@ -701,7 +707,7 @@ void TrackEventJSONExporter::HandleTaskExecution(
   }
 }
 
-base::Optional<JSONTraceExporter::ScopedJSONTraceEventAppender>
+JSONTraceExporter::ScopedJSONTraceEventAppender
 TrackEventJSONExporter::HandleLegacyEvent(const TrackEvent::LegacyEvent& event,
                                           const std::string& categories,
                                           int64_t timestamp_us) {
@@ -791,4 +797,17 @@ TrackEventJSONExporter::HandleLegacyEvent(const TrackEvent::LegacyEvent& event,
   builder.AddFlags(flags, id, event.id_scope());
   return builder;
 }
+
+void TrackEventJSONExporter::EmitStats() {
+  auto value = std::make_unique<base::DictionaryValue>();
+  value->SetInteger("sequences_seen", stats_.sequences_seen);
+  value->SetInteger("incremental_state_resets",
+                    stats_.incremental_state_resets);
+  value->SetInteger("packets_dropped_invalid_incremental_state",
+                    stats_.packets_dropped_invalid_incremental_state);
+  value->SetInteger("packets_with_previous_packet_dropped",
+                    stats_.packets_with_previous_packet_dropped);
+  AddMetadata("json_exporter_stats", std::move(value));
+}
+
 }  // namespace tracing

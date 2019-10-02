@@ -60,6 +60,7 @@ var global = {
     isLocaleRTL: false,
     isFormControlsRefreshEnabled: false,
     mode: 'date',
+    isAMPMFirst: false,
     hasAMPM: false,
     hasSecond: false,
     hasMillisecond: false,

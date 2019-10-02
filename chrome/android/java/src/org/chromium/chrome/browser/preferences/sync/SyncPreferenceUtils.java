@@ -60,7 +60,7 @@ public class SyncPreferenceUtils {
             }
 
             if (profileSyncService.isSyncActive()
-                    && profileSyncService.isPassphraseRequiredForDecryption()) {
+                    && profileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
                 return true;
             }
         }
@@ -115,7 +115,7 @@ public class SyncPreferenceUtils {
                 return res.getString(R.string.sync_setup_progress);
             }
 
-            if (profileSyncService.isPassphraseRequiredForDecryption()) {
+            if (profileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
                 return res.getString(R.string.sync_need_passphrase);
             }
             return context.getString(R.string.sync_and_services_summary_sync_on);
@@ -149,7 +149,7 @@ public class SyncPreferenceUtils {
         if (profileSyncService.isEngineInitialized()
                 && (profileSyncService.hasUnrecoverableError()
                         || profileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE
-                        || profileSyncService.isPassphraseRequiredForDecryption())) {
+                        || profileSyncService.isPassphraseRequiredForPreferredDataTypes())) {
             return UiUtils.getTintedDrawable(
                     context, R.drawable.ic_sync_error_40dp, R.color.default_red);
         }

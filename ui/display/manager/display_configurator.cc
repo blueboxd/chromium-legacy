@@ -661,8 +661,8 @@ void DisplayConfigurator::TakeControl(DisplayControlCallback callback) {
 
   display_control_changing_ = true;
   native_display_delegate_->TakeDisplayControl(
-      base::Bind(&DisplayConfigurator::OnDisplayControlTaken,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+      base::BindOnce(&DisplayConfigurator::OnDisplayControlTaken,
+                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
 void DisplayConfigurator::OnDisplayControlTaken(DisplayControlCallback callback,
@@ -705,8 +705,8 @@ void DisplayConfigurator::RelinquishControl(DisplayControlCallback callback) {
   // them for output.
   SetDisplayPowerInternal(
       chromeos::DISPLAY_POWER_ALL_OFF, kSetDisplayPowerNoFlags,
-      base::Bind(&DisplayConfigurator::SendRelinquishDisplayControl,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+      base::BindOnce(&DisplayConfigurator::SendRelinquishDisplayControl,
+                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
 void DisplayConfigurator::SendRelinquishDisplayControl(
@@ -716,9 +716,9 @@ void DisplayConfigurator::SendRelinquishDisplayControl(
     // Set the flag early such that an incoming configuration event won't start
     // while we're releasing control of the displays.
     display_externally_controlled_ = true;
-    native_display_delegate_->RelinquishDisplayControl(
-        base::Bind(&DisplayConfigurator::OnDisplayControlRelinquished,
-                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+    native_display_delegate_->RelinquishDisplayControl(base::BindOnce(
+        &DisplayConfigurator::OnDisplayControlRelinquished,
+        weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
   } else {
     display_control_changing_ = false;
     std::move(callback).Run(false);
@@ -753,8 +753,8 @@ void DisplayConfigurator::ForceInitialConfigure() {
       native_display_delegate_.get(), layout_manager_.get(),
       requested_display_state_, GetRequestedPowerState(),
       kSetDisplayPowerForceProbe, /*force_configure=*/true,
-      base::Bind(&DisplayConfigurator::OnConfigured,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DisplayConfigurator::OnConfigured,
+                     weak_ptr_factory_.GetWeakPtr()));
   configuration_task_->Run();
 }
 
@@ -794,7 +794,7 @@ void DisplayConfigurator::PrepareForExit() {
 void DisplayConfigurator::SetDisplayPowerInternal(
     chromeos::DisplayPowerState power_state,
     int flags,
-    const ConfigurationCallback& callback) {
+    ConfigurationCallback callback) {
   // Only skip if the current power state is the same and the latest requested
   // power state is the same. If |pending_power_state_ != current_power_state_|
   // then there is a current task pending or the last configuration failed. In
@@ -803,14 +803,14 @@ void DisplayConfigurator::SetDisplayPowerInternal(
   if (power_state == current_power_state_ &&
       power_state == pending_power_state_ &&
       !(flags & kSetDisplayPowerForceProbe)) {
-    callback.Run(true);
+    std::move(callback).Run(true);
     return;
   }
 
   pending_power_state_ = power_state;
   has_pending_power_state_ = true;
   pending_power_flags_ = flags;
-  queued_configuration_callbacks_.push_back(callback);
+  queued_configuration_callbacks_.push_back(std::move(callback));
 
   if (configure_timer_.IsRunning()) {
     // If there is a configuration task scheduled, avoid performing
@@ -826,9 +826,9 @@ void DisplayConfigurator::SetDisplayPowerInternal(
 void DisplayConfigurator::SetDisplayPower(
     chromeos::DisplayPowerState power_state,
     int flags,
-    const ConfigurationCallback& callback) {
+    ConfigurationCallback callback) {
   if (configurator_disabled()) {
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
@@ -838,7 +838,7 @@ void DisplayConfigurator::SetDisplayPower(
           << (configure_timer_.IsRunning() ? "Running" : "Stopped");
 
   requested_power_state_ = power_state;
-  SetDisplayPowerInternal(*requested_power_state_, flags, callback);
+  SetDisplayPowerInternal(*requested_power_state_, flags, std::move(callback));
 }
 
 void DisplayConfigurator::SetDisplayMode(MultipleDisplayState new_state) {
@@ -892,10 +892,9 @@ void DisplayConfigurator::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void DisplayConfigurator::SuspendDisplays(
-    const ConfigurationCallback& callback) {
+void DisplayConfigurator::SuspendDisplays(ConfigurationCallback callback) {
   if (configurator_disabled()) {
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
@@ -910,7 +909,7 @@ void DisplayConfigurator::SuspendDisplays(
   // unless explicitly requested by lucid sleep code). Use
   // SetDisplayPowerInternal so requested_power_state_ is maintained.
   SetDisplayPowerInternal(chromeos::DISPLAY_POWER_ALL_OFF,
-                          kSetDisplayPowerNoFlags, callback);
+                          kSetDisplayPowerNoFlags, std::move(callback));
 }
 
 void DisplayConfigurator::ResumeDisplays() {
@@ -968,8 +967,8 @@ void DisplayConfigurator::RunPendingConfiguration() {
       native_display_delegate_.get(), layout_manager_.get(),
       requested_display_state_, pending_power_state_, pending_power_flags_,
       force_configure_,
-      base::Bind(&DisplayConfigurator::OnConfigured,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DisplayConfigurator::OnConfigured,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   // Reset the flags before running the task; otherwise it may end up scheduling
   // another configuration.
@@ -1049,15 +1048,15 @@ bool DisplayConfigurator::ShouldRunConfigurationTask() const {
 }
 
 void DisplayConfigurator::CallAndClearInProgressCallbacks(bool success) {
-  for (const auto& callback : in_progress_configuration_callbacks_)
-    callback.Run(success);
+  for (auto& callback : in_progress_configuration_callbacks_)
+    std::move(callback).Run(success);
 
   in_progress_configuration_callbacks_.clear();
 }
 
 void DisplayConfigurator::CallAndClearQueuedCallbacks(bool success) {
-  for (const auto& callback : queued_configuration_callbacks_)
-    callback.Run(success);
+  for (auto& callback : queued_configuration_callbacks_)
+    std::move(callback).Run(success);
 
   queued_configuration_callbacks_.clear();
 }

@@ -36,7 +36,7 @@ Element& StyleRecalcRoot::RootElement() const {
 
 #if DCHECK_IS_ON()
 ContainerNode* StyleRecalcRoot::Parent(const Node& node) const {
-  return node.ParentOrShadowHostNode();
+  return node.GetStyleRecalcParent();
 }
 
 bool StyleRecalcRoot::IsChildDirty(const ContainerNode& node) const {
@@ -50,7 +50,7 @@ bool StyleRecalcRoot::IsDirty(const Node& node) const {
 
 void StyleRecalcRoot::ClearChildDirtyForAncestors(ContainerNode& parent) const {
   for (ContainerNode* ancestor = &parent; ancestor;
-       ancestor = ancestor->ParentOrShadowHostNode()) {
+       ancestor = ancestor->GetStyleRecalcParent()) {
     ancestor->ClearChildNeedsStyleRecalc();
     DCHECK(!ancestor->NeedsStyleRecalc());
   }

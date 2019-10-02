@@ -1473,8 +1473,8 @@ TEST_F(CloudPolicyClientTest, UploadRealtimeReport) {
   event_list.Append(std::move(event));
 
   client_->UploadRealtimeReport(
-      std::move(policy::RealtimeReportingJobConfiguration::BuildReport(
-          std::move(event_list), std::move(context))),
+      policy::RealtimeReportingJobConfiguration::BuildReport(
+          std::move(event_list), std::move(context)),
       callback);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(

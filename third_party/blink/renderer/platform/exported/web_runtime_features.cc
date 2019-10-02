@@ -686,10 +686,6 @@ void WebRuntimeFeatures::EnableCooperativeScheduling(bool enable) {
   RuntimeEnabledFeatures::SetCooperativeSchedulingEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableStreamsNative(bool enable) {
-  RuntimeEnabledFeatures::SetStreamsNativeEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableMouseSubframeNoImplicitCapture(bool enable) {
   RuntimeEnabledFeatures::SetMouseSubframeNoImplicitCaptureEnabled(enable);
 }

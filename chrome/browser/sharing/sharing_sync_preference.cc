@@ -22,7 +22,6 @@ const char kDeviceFcmToken[] = "device_fcm_token";
 const char kDeviceP256dh[] = "device_p256dh";
 const char kDeviceAuthSecret[] = "device_auth_secret";
 const char kDeviceCapabilities[] = "device_capabilities";
-const char kDeviceLastUpdated[] = "device_last_updated";
 
 const char kRegistrationAuthorizedEntity[] = "registration_authorized_entity";
 const char kRegistrationFcmToken[] = "registration_fcm_token";
@@ -162,16 +161,12 @@ SharingSyncPreference::GetSyncedDevice(const std::string& guid) const {
 void SharingSyncPreference::SetSyncDevice(const std::string& guid,
                                           const Device& device) {
   DictionaryPrefUpdate update(prefs_, prefs::kSharingSyncedDevices);
-  update->SetKey(guid, DeviceToValue(device, base::Time::Now()));
+  update->SetKey(guid, DeviceToValue(device));
 }
 
 void SharingSyncPreference::RemoveDevice(const std::string& guid) {
   DictionaryPrefUpdate update(prefs_, prefs::kSharingSyncedDevices);
-  // Clear all values of device with |guid| by setting its value to an empty
-  // entry that only contains a timestamp so other devices can merge it.
-  base::Value cleared(base::Value::Type::DICTIONARY);
-  cleared.SetKey(kDeviceLastUpdated, base::CreateTimeValue(base::Time::Now()));
-  update->SetKey(guid, std::move(cleared));
+  update->RemoveKey(guid);
 }
 
 base::Optional<SharingSyncPreference::FCMRegistration>
@@ -226,8 +221,7 @@ void SharingSyncPreference::ClearFCMRegistration() {
 }
 
 // static
-base::Value SharingSyncPreference::DeviceToValue(const Device& device,
-                                                 base::Time timestamp) {
+base::Value SharingSyncPreference::DeviceToValue(const Device& device) {
   std::string base64_p256dh, base64_auth_secret;
   base::Base64Encode(device.p256dh, &base64_p256dh);
   base::Base64Encode(device.auth_secret, &base64_auth_secret);
@@ -243,7 +237,6 @@ base::Value SharingSyncPreference::DeviceToValue(const Device& device,
   result.SetStringKey(kDeviceP256dh, base64_p256dh);
   result.SetStringKey(kDeviceAuthSecret, base64_auth_secret);
   result.SetIntKey(kDeviceCapabilities, capabilities);
-  result.SetKey(kDeviceLastUpdated, base::CreateTimeValue(timestamp));
   return result;
 }
 

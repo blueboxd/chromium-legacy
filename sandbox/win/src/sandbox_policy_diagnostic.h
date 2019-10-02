@@ -13,7 +13,10 @@
 
 #include "base/macros.h"
 #include "base/values.h"
+#include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/security_level.h"
+#include "sandbox/win/src/sid.h"
 
 namespace sandbox {
 
@@ -33,6 +36,12 @@ class PolicyDiagnostic final : public PolicyInfo {
   // |json_string_| is lazily constructed.
   std::unique_ptr<std::string> json_string_;
   std::vector<uint32_t> process_ids_;
+  TokenLevel lockdown_level_ = USER_LAST;
+  JobLevel job_level_ = JOB_NONE;
+  IntegrityLevel desired_integrity_level_ = INTEGRITY_LEVEL_LAST;
+  MitigationFlags desired_mitigations_ = 0;
+  std::unique_ptr<Sid> app_container_sid_ = nullptr;
+  std::unique_ptr<Sid> lowbox_sid_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyDiagnostic);
 };

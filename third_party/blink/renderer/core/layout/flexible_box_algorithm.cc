@@ -261,6 +261,54 @@ void FlexItem::ComputeStretchedSize() {
   }
 }
 
+// static
+LayoutUnit FlexItem::AlignmentOffset(LayoutUnit available_free_space,
+                                     ItemPosition position,
+                                     LayoutUnit ascent,
+                                     LayoutUnit max_ascent,
+                                     bool is_wrap_reverse,
+                                     bool is_deprecated_webkit_box) {
+  switch (position) {
+    case ItemPosition::kLegacy:
+    case ItemPosition::kAuto:
+    case ItemPosition::kNormal:
+      NOTREACHED();
+      break;
+    case ItemPosition::kStretch:
+      // Actual stretching must be handled by the caller. Since wrap-reverse
+      // flips cross start and cross end, stretch children should be aligned
+      // with the cross end. This matters because applyStretchAlignment
+      // doesn't always stretch or stretch fully (explicit cross size given, or
+      // stretching constrained by max-height/max-width). For flex-start and
+      // flex-end this is handled by alignmentForChild().
+      if (is_wrap_reverse)
+        return available_free_space;
+      break;
+    case ItemPosition::kFlexStart:
+      break;
+    case ItemPosition::kFlexEnd:
+      return available_free_space;
+    case ItemPosition::kCenter: {
+      const LayoutUnit result = (available_free_space / 2);
+      return is_deprecated_webkit_box ? result.ClampNegativeToZero() : result;
+    }
+    case ItemPosition::kBaseline:
+      // FIXME: If we get here in columns, we want the use the descent, except
+      // we currently can't get the ascent/descent of orthogonal children.
+      // https://bugs.webkit.org/show_bug.cgi?id=98076
+      return max_ascent - ascent;
+    case ItemPosition::kLastBaseline:
+    case ItemPosition::kSelfStart:
+    case ItemPosition::kSelfEnd:
+    case ItemPosition::kStart:
+    case ItemPosition::kEnd:
+    case ItemPosition::kLeft:
+    case ItemPosition::kRight:
+      // TODO(jferanndez): Implement these (https://crbug.com/722287).
+      break;
+  }
+  return LayoutUnit();
+}
 void FlexLine::FreezeViolations(ViolationsVector& violations) {
   const ComputedStyle& flex_box_style = algorithm->StyleRef();
   for (size_t i = 0; i < violations.size(); ++i) {
@@ -652,6 +700,62 @@ void FlexLayoutAlgorithm::AlignFlexLines(LayoutUnit cross_axis_content_extent) {
 
     line_offset += ContentDistributionSpaceBetweenChildren(
         available_cross_axis_space, align_content, flex_lines_.size());
+  }
+}
+
+void FlexLayoutAlgorithm::AlignChildren() {
+  // Keep track of the space between the baseline edge and the after edge of
+  // the box for each line.
+  Vector<LayoutUnit> min_margin_after_baselines;
+
+  for (FlexLine& line_context : flex_lines_) {
+    LayoutUnit min_margin_after_baseline = LayoutUnit::Max();
+    LayoutUnit max_ascent = line_context.max_ascent;
+
+    for (FlexItem& flex_item : line_context.line_items) {
+      DCHECK(!flex_item.box->IsOutOfFlowPositioned());
+
+      if (flex_item.UpdateAutoMarginsInCrossAxis(
+              std::max(LayoutUnit(), flex_item.AvailableAlignmentSpace()))) {
+        continue;
+      }
+
+      ItemPosition position = flex_item.Alignment();
+      if (position == ItemPosition::kStretch)
+        flex_item.ComputeStretchedSize();
+      LayoutUnit available_space = flex_item.AvailableAlignmentSpace();
+      LayoutUnit offset = FlexItem::AlignmentOffset(
+          available_space, position, flex_item.MarginBoxAscent(), max_ascent,
+          StyleRef().FlexWrap() == EFlexWrap::kWrapReverse,
+          StyleRef().IsDeprecatedWebkitBox());
+      flex_item.desired_location.Move(LayoutUnit(), offset);
+      if (position == ItemPosition::kBaseline &&
+          StyleRef().FlexWrap() == EFlexWrap::kWrapReverse) {
+        min_margin_after_baseline =
+            std::min(min_margin_after_baseline,
+                     flex_item.AvailableAlignmentSpace() - offset);
+      }
+    }
+    min_margin_after_baselines.push_back(min_margin_after_baseline);
+  }
+
+  if (StyleRef().FlexWrap() != EFlexWrap::kWrapReverse)
+    return;
+
+  // wrap-reverse flips the cross axis start and end. For baseline alignment,
+  // this means we need to align the after edge of baseline elements with the
+  // after edge of the flex line.
+  wtf_size_t line_number = 0;
+  for (FlexLine& line_context : flex_lines_) {
+    LayoutUnit min_margin_after_baseline =
+        min_margin_after_baselines[line_number++];
+    for (FlexItem& flex_item : line_context.line_items) {
+      if (flex_item.Alignment() == ItemPosition::kBaseline &&
+          !flex_item.HasAutoMarginsInCrossAxis() && min_margin_after_baseline) {
+        flex_item.desired_location.Move(LayoutUnit(),
+                                        min_margin_after_baseline);
+      }
+    }
   }
 }
 

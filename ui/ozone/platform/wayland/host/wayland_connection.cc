@@ -34,6 +34,7 @@ namespace ui {
 
 namespace {
 constexpr uint32_t kMaxCompositorVersion = 4;
+constexpr uint32_t kMaxGtkPrimarySelectionDeviceManagerVersion = 1;
 constexpr uint32_t kMaxLinuxDmabufVersion = 3;
 constexpr uint32_t kMaxSeatVersion = 4;
 constexpr uint32_t kMaxShmVersion = 1;
@@ -168,7 +169,7 @@ void WaylandConnection::DeliverDragData(const std::string& mime_type,
 
 void WaylandConnection::RequestDragData(
     const std::string& mime_type,
-    base::OnceCallback<void(const std::string&)> callback) {
+    base::OnceCallback<void(const std::vector<uint8_t>&)> callback) {
   data_device_->RequestDragData(mime_type, std::move(callback));
 }
 
@@ -234,8 +235,15 @@ void WaylandConnection::EnsureDataDevice() {
   DCHECK(!data_device_);
   wl_data_device* data_device = data_device_manager_->GetDevice();
   data_device_ = std::make_unique<WaylandDataDevice>(this, data_device);
-  clipboard_ = std::make_unique<WaylandClipboard>(data_device_manager_.get(),
-                                                  data_device_.get());
+
+  if (primary_selection_device_manager_) {
+    primary_selection_device_ = std::make_unique<GtkPrimarySelectionDevice>(
+        this, primary_selection_device_manager_->GetDevice());
+  }
+
+  clipboard_ = std::make_unique<WaylandClipboard>(
+      data_device_manager_.get(), data_device_.get(),
+      primary_selection_device_manager_.get(), primary_selection_device_.get());
 }
 
 bool WaylandConnection::BeginWatchingFd(
@@ -352,6 +360,14 @@ void WaylandConnection::Global(void* data,
         std::make_unique<WaylandDataDeviceManager>(
             data_device_manager.release(), connection);
     connection->EnsureDataDevice();
+  } else if (!connection->primary_selection_device_manager_ &&
+             strcmp(interface, "gtk_primary_selection_device_manager") == 0) {
+    wl::Object<gtk_primary_selection_device_manager> manager =
+        wl::Bind<gtk_primary_selection_device_manager>(
+            registry, name, kMaxGtkPrimarySelectionDeviceManagerVersion);
+    connection->primary_selection_device_manager_ =
+        std::make_unique<GtkPrimarySelectionDeviceManager>(manager.release(),
+                                                           connection);
   } else if (!connection->zwp_dmabuf_ &&
              (strcmp(interface, "zwp_linux_dmabuf_v1") == 0)) {
     wl::Object<zwp_linux_dmabuf_v1> zwp_linux_dmabuf =

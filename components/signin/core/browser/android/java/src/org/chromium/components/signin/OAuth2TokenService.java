@@ -65,32 +65,40 @@ public final class OAuth2TokenService
 
     private final long mNativeOAuth2TokenServiceDelegate;
     private final AccountTrackerService mAccountTrackerService;
+    private final AccountManagerFacade mAccountManagerFacade;
 
     private boolean mPendingUpdate;
 
-    private OAuth2TokenService(
-            long nativeOAuth2TokenServiceDelegate, AccountTrackerService accountTrackerService) {
+    @VisibleForTesting
+    public OAuth2TokenService(long nativeOAuth2TokenServiceDelegate,
+            AccountTrackerService accountTrackerService,
+            AccountManagerFacade accountManagerFacade) {
         mNativeOAuth2TokenServiceDelegate = nativeOAuth2TokenServiceDelegate;
         mAccountTrackerService = accountTrackerService;
+        mAccountManagerFacade = accountManagerFacade;
 
-        mAccountTrackerService.addSystemAccountsSeededListener(this);
+        // AccountTrackerService might be null in tests.
+        if (mAccountTrackerService != null) {
+            mAccountTrackerService.addSystemAccountsSeededListener(this);
+        }
     }
 
     @CalledByNative
-    private static OAuth2TokenService create(
-            long nativeOAuth2TokenServiceDelegate, AccountTrackerService accountTrackerService) {
-        ThreadUtils.assertOnUiThread();
-        return new OAuth2TokenService(nativeOAuth2TokenServiceDelegate, accountTrackerService);
+    private static OAuth2TokenService create(long nativeOAuth2TokenServiceDelegate,
+            AccountTrackerService accountTrackerService,
+            AccountManagerFacade accountManagerFacade) {
+        assert nativeOAuth2TokenServiceDelegate != 0;
+        return new OAuth2TokenService(
+                nativeOAuth2TokenServiceDelegate, accountTrackerService, accountManagerFacade);
     }
 
-    private static Account getAccountOrNullFromUsername(String username) {
+    private Account getAccountOrNullFromUsername(String username) {
         if (username == null) {
             Log.e(TAG, "Username is null");
             return null;
         }
 
-        AccountManagerFacade accountManagerFacade = AccountManagerFacade.get();
-        Account account = accountManagerFacade.getAccountFromName(username);
+        Account account = mAccountManagerFacade.getAccountFromName(username);
         if (account == null) {
             Log.e(TAG, "Account not found for provided username.");
             return null;
@@ -103,11 +111,11 @@ public final class OAuth2TokenService
      */
     @VisibleForTesting
     @CalledByNative
-    public static String[] getSystemAccountNames() {
+    public String[] getSystemAccountNames() {
         // TODO(https://crbug.com/768366): Remove this after adding cache to account manager facade.
         // This function is called by native code on UI thread.
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            List<String> accountNames = AccountManagerFacade.get().tryGetGoogleAccountNames();
+            List<String> accountNames = mAccountManagerFacade.tryGetGoogleAccountNames();
             return accountNames.toArray(new String[accountNames.size()]);
         }
     }
@@ -118,6 +126,7 @@ public final class OAuth2TokenService
      * from the OS. updateAccountList should be called to keep these two
      * in sync.
      */
+    @VisibleForTesting
     @CalledByNative
     public static String[] getAccounts() {
         return getStoredAccounts();
@@ -131,7 +140,7 @@ public final class OAuth2TokenService
      */
     @MainThread
     @CalledByNative
-    private static void getAccessTokenFromNative(
+    private void getAccessTokenFromNative(
             String username, String scope, final long nativeCallback) {
         Account account = getAccountOrNullFromUsername(username);
         if (account == null) {
@@ -163,12 +172,11 @@ public final class OAuth2TokenService
      * @param callback called on successful and unsuccessful fetching of auth token.
      */
     @MainThread
-    public static void getAccessToken(
-            Account account, String scope, GetAccessTokenCallback callback) {
+    public void getAccessToken(Account account, String scope, GetAccessTokenCallback callback) {
         ConnectionRetry.runAuthTask(new AuthTask<String>() {
             @Override
             public String run() throws AuthException {
-                return AccountManagerFacade.get().getAccessToken(account, scope);
+                return mAccountManagerFacade.getAccessToken(account, scope);
             }
             @Override
             public void onSuccess(String token) {
@@ -187,14 +195,14 @@ public final class OAuth2TokenService
      */
     @MainThread
     @CalledByNative
-    public static void invalidateAccessToken(String accessToken) {
+    public void invalidateAccessToken(String accessToken) {
         if (TextUtils.isEmpty(accessToken)) {
             return;
         }
         ConnectionRetry.runAuthTask(new AuthTask<Boolean>() {
             @Override
             public Boolean run() throws AuthException {
-                AccountManagerFacade.get().invalidateAccessToken(accessToken);
+                mAccountManagerFacade.invalidateAccessToken(accessToken);
                 return true;
             }
             @Override
@@ -238,8 +246,8 @@ public final class OAuth2TokenService
      * Called by native to check whether the account has an OAuth2 refresh token.
      */
     @CalledByNative
-    public static boolean hasOAuth2RefreshToken(String accountName) {
-        if (!AccountManagerFacade.get().isCachePopulated()) {
+    private boolean hasOAuth2RefreshToken(String accountName) {
+        if (!mAccountManagerFacade.isCachePopulated()) {
             return false;
         }
 
@@ -304,12 +312,12 @@ public final class OAuth2TokenService
         return accounts == null ? new String[] {} : accounts.toArray(new String[0]);
     }
 
-    @CalledByNative
     /**
      * Called by native to save the account IDs that have associated OAuth2 refresh tokens.
      * This is called during updateAccountList to sync with getSystemAccountNames.
      * @param accounts IDs to save.
      */
+    @CalledByNative
     private static void setAccounts(String[] accounts) {
         Set<String> set = new HashSet<>(Arrays.asList(accounts));
         ContextUtils.getAppSharedPreferences()

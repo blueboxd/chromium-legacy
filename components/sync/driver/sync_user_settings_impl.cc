@@ -125,11 +125,10 @@ void SyncUserSettingsImpl::EnableEncryptEverything() {
 }
 
 bool SyncUserSettingsImpl::IsPassphraseRequired() const {
-  return crypto_->passphrase_required_reason() !=
-         REASON_PASSPHRASE_NOT_REQUIRED;
+  return crypto_->IsPassphraseRequired();
 }
 
-bool SyncUserSettingsImpl::IsPassphraseRequiredForDecryption() const {
+bool SyncUserSettingsImpl::IsPassphraseRequiredForPreferredDataTypes() const {
   // If there is an encrypted datatype enabled and we don't have the proper
   // passphrase, we must prompt the user for a passphrase. The only way for the
   // user to avoid entering their passphrase is to disable the encrypted types.

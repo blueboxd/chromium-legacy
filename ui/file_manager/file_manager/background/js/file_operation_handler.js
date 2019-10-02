@@ -63,6 +63,9 @@ class FileOperationHandler {
         item.id = event.taskId;
         item.type = FileOperationHandler.getType_(event.status.operationType);
         item.message = FileOperationHandler.getMessage_(event);
+        item.itemCount = event.status.numRemainingItems;
+        item.sourceMessage = event.status.processingEntryName;
+        item.destinationMessage = event.status.targetDirEntryName;
         item.progressMax = event.status.totalBytes;
         item.progressValue = event.status.processedBytes;
         item.cancelCallback = this.fileOperationManager_.requestTaskCancel.bind(

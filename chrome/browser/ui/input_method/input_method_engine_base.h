@@ -197,10 +197,10 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
                        const std::string& request_id,
                        bool handled);
 
-  // Adds unprocessed key event to |request_map_|.
-  std::string AddRequest(
+  // Returns the request ID for this key event.
+  std::string AddPendingKeyEvent(
       const std::string& component_id,
-      ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data);
+      ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback);
 
   int GetContextIdForTesting() const { return context_id_; }
 
@@ -210,6 +210,20 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   }
 
  protected:
+  struct PendingKeyEvent {
+    PendingKeyEvent(
+        const std::string& component_id,
+        ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback);
+    PendingKeyEvent(PendingKeyEvent&& other);
+    ~PendingKeyEvent();
+
+    std::string component_id;
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(PendingKeyEvent);
+  };
+
   // Returns true if this IME is active, false if not.
   virtual bool IsActive() const = 0;
 
@@ -253,13 +267,8 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
 
   Profile* profile_;
 
-  using RequestMap =
-      std::map<std::string,
-               std::pair<std::string,
-                         ui::IMEEngineHandlerInterface::KeyEventDoneCallback>>;
-
-  unsigned int next_request_id_;
-  RequestMap request_map_;
+  unsigned int next_request_id_ = 1;
+  std::map<std::string, PendingKeyEvent> pending_key_events_;
 
   // The composition text to be set from calling input.ime.setComposition API.
   ui::CompositionText composition_;

@@ -47,7 +47,7 @@ class DisplayManagerTestApi;
 class DISPLAY_MANAGER_EXPORT DisplayConfigurator
     : public NativeDisplayObserver {
  public:
-  using ConfigurationCallback = base::Callback<void(bool /* success */)>;
+  using ConfigurationCallback = base::OnceCallback<void(bool /* success */)>;
   using DisplayControlCallback = base::OnceCallback<void(bool success)>;
 
   using DisplayStateList = std::vector<DisplaySnapshot*>;
@@ -227,7 +227,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // operation.
   void SetDisplayPower(chromeos::DisplayPowerState power_state,
                        int flags,
-                       const ConfigurationCallback& callback);
+                       ConfigurationCallback callback);
 
   // Force switching the display mode to |new_state|. Returns false if
   // switching failed (possibly because |new_state| is invalid for the
@@ -245,7 +245,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // configure them for their resume state. This allows faster resume on
   // machines where display configuration is slow. On completion of the display
   // configuration |callback| is executed synchronously or asynchronously.
-  void SuspendDisplays(const ConfigurationCallback& callback);
+  void SuspendDisplays(ConfigurationCallback callback);
 
   // Reprobes displays to handle changes made while the system was
   // suspended.
@@ -291,7 +291,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // invoked (perhaps synchronously) on completion.
   void SetDisplayPowerInternal(chromeos::DisplayPowerState power_state,
                                int flags,
-                               const ConfigurationCallback& callback);
+                               ConfigurationCallback callback);
 
   // Configures displays. Invoked by |configure_timer_|.
   void ConfigureDisplays();

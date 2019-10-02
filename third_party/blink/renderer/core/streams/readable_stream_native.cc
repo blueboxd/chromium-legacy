@@ -1241,8 +1241,6 @@ ScriptValue ReadableStreamNative::pipeThrough(ScriptState* script_state,
   PipeOptions pipe_options;
   UnpackPipeOptions(script_state, options, &pipe_options, exception_state);
 
-  DCHECK(RuntimeEnabledFeatures::StreamsNativeEnabled());
-
   // This cast is safe because the following code will only be run when the
   // native version of WritableStream is in use.
   WritableStreamNative* writable_native =
@@ -1284,8 +1282,6 @@ ScriptPromise ReadableStreamNative::pipeTo(ScriptState* script_state,
 
   PipeOptions pipe_options;
   UnpackPipeOptions(script_state, options, &pipe_options, exception_state);
-
-  DCHECK(RuntimeEnabledFeatures::StreamsNativeEnabled());
 
   // This cast is safe because the following code will only be run when the
   // native version of WritableStream is in use.

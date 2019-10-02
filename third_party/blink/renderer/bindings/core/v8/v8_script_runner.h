@@ -103,26 +103,12 @@ class CORE_EXPORT V8ScriptRunner final {
                                        const String& file_name,
                                        const WTF::TextPosition&);
 
-  // Calls a function on the V8 extras binding object.
-  template <uint32_t N>
-  static v8::MaybeLocal<v8::Value> CallExtra(ScriptState* script_state,
-                                             const char* name,
-                                             v8::Local<v8::Value> (&args)[N]) {
-    return CallExtraHelper(script_state, name, N, args);
-  }
-
   // Reports an exception to the message handler, as if it were an uncaught
   // exception. Can only be called on the main thread.
   //
   // TODO(adamk): This should live on V8ThrowException, but it depends on
   // V8Initializer and so can't trivially move to platform/bindings.
   static void ReportException(v8::Isolate*, v8::Local<v8::Value> exception);
-
- private:
-  static v8::MaybeLocal<v8::Value> CallExtraHelper(ScriptState*,
-                                                   const char* name,
-                                                   uint32_t num_args,
-                                                   v8::Local<v8::Value>* args);
 };
 
 }  // namespace blink

@@ -63,9 +63,6 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnPassphraseRequired) {
   base::DictionaryValue reason_encryption_details;
   base::DictionaryValue reason_decryption_details;
 
-  reason_passphrase_not_required_details.SetString(
-      "reason",
-      PassphraseRequiredReasonToString(REASON_PASSPHRASE_NOT_REQUIRED));
   reason_encryption_details.SetString(
       "reason", PassphraseRequiredReasonToString(REASON_ENCRYPTION));
   reason_decryption_details.SetString(
@@ -73,18 +70,11 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnPassphraseRequired) {
 
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onPassphraseRequired",
-                            HasDetailsAsDictionary(
-                                reason_passphrase_not_required_details)));
-  EXPECT_CALL(mock_js_event_handler_,
-              HandleJsEvent("onPassphraseRequired",
                             HasDetailsAsDictionary(reason_encryption_details)));
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onPassphraseRequired",
                             HasDetailsAsDictionary(reason_decryption_details)));
 
-  js_sync_encryption_handler_observer_.OnPassphraseRequired(
-      REASON_PASSPHRASE_NOT_REQUIRED, KeyDerivationParams::CreateForPbkdf2(),
-      sync_pb::EncryptedData());
   js_sync_encryption_handler_observer_.OnPassphraseRequired(
       REASON_ENCRYPTION, KeyDerivationParams::CreateForPbkdf2(),
       sync_pb::EncryptedData());

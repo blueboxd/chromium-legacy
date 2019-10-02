@@ -43,7 +43,7 @@ bool VRDeviceBase::HasExclusiveSession() {
 }
 
 void VRDeviceBase::ListenToDeviceChanges(
-    mojom::XRRuntimeEventListenerAssociatedPtrInfo listener_info,
+    mojo::PendingAssociatedRemote<mojom::XRRuntimeEventListener> listener_info,
     mojom::XRRuntime::ListenToDeviceChangesCallback callback) {
   listener_.Bind(std::move(listener_info));
   std::move(callback).Run(display_info_.Clone());

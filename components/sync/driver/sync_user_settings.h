@@ -93,7 +93,7 @@ class SyncUserSettings : public syncer::DataTypeEncryptionHandler {
   bool IsPassphraseRequired() const override = 0;
   // Whether a passphrase is required to decrypt the data for any currently
   // enabled data type.
-  virtual bool IsPassphraseRequiredForDecryption() const = 0;
+  virtual bool IsPassphraseRequiredForPreferredDataTypes() const = 0;
   // Whether a "secondary" passphrase is in use (aka explicit passphrase), which
   // means either a custom or a frozen implicit passphrase.
   virtual bool IsUsingSecondaryPassphrase() const = 0;
@@ -108,6 +108,8 @@ class SyncUserSettings : public syncer::DataTypeEncryptionHandler {
   // Asynchronously decrypts pending keys using |passphrase|. Returns false
   // immediately if the passphrase could not be used to decrypt a locally cached
   // copy of encrypted keys; returns true otherwise.
+  // TODO(crbug.com/1010189): Introduce a dedicated API for trusted vault
+  // decryption keys.
   virtual bool SetDecryptionPassphrase(const std::string& passphrase)
       WARN_UNUSED_RESULT = 0;
 };

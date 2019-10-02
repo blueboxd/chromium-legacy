@@ -48,6 +48,24 @@ void JsSyncEncryptionHandlerObserver::OnPassphraseAccepted() {
   HandleJsEvent(FROM_HERE, "onPassphraseAccepted", JsEventDetails(&details));
 }
 
+void JsSyncEncryptionHandlerObserver::OnTrustedVaultKeyRequired() {
+  if (!event_handler_.IsInitialized()) {
+    return;
+  }
+  base::DictionaryValue details;
+  HandleJsEvent(FROM_HERE, "OnTrustedVaultKeyRequired",
+                JsEventDetails(&details));
+}
+
+void JsSyncEncryptionHandlerObserver::OnTrustedVaultKeyAccepted() {
+  if (!event_handler_.IsInitialized()) {
+    return;
+  }
+  base::DictionaryValue details;
+  HandleJsEvent(FROM_HERE, "OnTrustedVaultKeyAccepted",
+                JsEventDetails(&details));
+}
+
 void JsSyncEncryptionHandlerObserver::OnBootstrapTokenUpdated(
     const std::string& boostrap_token,
     BootstrapTokenType type) {

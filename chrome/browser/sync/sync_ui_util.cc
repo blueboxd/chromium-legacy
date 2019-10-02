@@ -161,7 +161,8 @@ MessageType GetStatusLabelsImpl(
 
   if (service->GetUserSettings()->IsFirstSetupComplete()) {
     // Check for a passphrase error.
-    if (service->GetUserSettings()->IsPassphraseRequiredForDecryption()) {
+    if (service->GetUserSettings()
+            ->IsPassphraseRequiredForPreferredDataTypes()) {
       if (status_label) {
         *status_label =
             l10n_util::GetStringUTF16(IDS_SYNC_STATUS_NEEDS_PASSWORD);
@@ -344,7 +345,8 @@ bool ShouldRequestSyncConfirmation(const syncer::SyncService* service) {
 
 bool ShouldShowPassphraseError(const syncer::SyncService* service) {
   return service->GetUserSettings()->IsFirstSetupComplete() &&
-         service->GetUserSettings()->IsPassphraseRequiredForDecryption();
+         service->GetUserSettings()
+             ->IsPassphraseRequiredForPreferredDataTypes();
 }
 
 }  // namespace sync_ui_util

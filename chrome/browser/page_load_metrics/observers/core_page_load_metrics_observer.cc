@@ -120,9 +120,9 @@ const char kHistogramFirstInputDelaySkipFilteringComparison[] =
 const char kHistogramFirstInputTimestampSkipFilteringComparison[] =
     "PageLoad.InteractiveTiming.FirstInputTimestamp.SkipFilteringComparison";
 const char kHistogramLongestInputDelay[] =
-    "PageLoad.InteractiveTiming.LongestInputDelay3";
+    "PageLoad.InteractiveTiming.LongestInputDelay4";
 const char kHistogramLongestInputTimestamp[] =
-    "PageLoad.InteractiveTiming.LongestInputTimestamp3";
+    "PageLoad.InteractiveTiming.LongestInputTimestamp4";
 const char kHistogramParseStartToFirstMeaningfulPaint[] =
     "PageLoad.Experimental.PaintTiming.ParseStartToFirstMeaningfulPaint";
 const char kHistogramParseStartToFirstContentfulPaint[] =

@@ -1311,6 +1311,38 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MessagePipeStatusChangeInTransitClient,
     CloseHandle(handles[i]);
 }
 
+TEST_P(MultiprocessMessagePipeTestWithPeerSupport,
+       ReceiveMessagesSentJustBeforeProcessDeath) {
+  // Regression test for https://crbug.com/1005510. The client will write a
+  // message to the pipe it gives us and then it will die immediately. We should
+  // always be able to read the message received on that pipe.
+  RunTestClient("SpotaneouslyDyingProcess", [&](MojoHandle child) {
+    MojoHandle receiver;
+    EXPECT_EQ("receiver", ReadMessageWithHandles(child, &receiver, 1));
+    EXPECT_EQ("ok", ReadMessage(receiver));
+  });
+}
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(SpotaneouslyDyingProcess,
+                                  MultiprocessMessagePipeTest,
+                                  parent) {
+  MojoHandle sender;
+  MojoHandle receiver;
+  CreateMessagePipe(&sender, &receiver);
+
+  WriteMessageWithHandles(parent, "receiver", &receiver, 1);
+
+  // Wait for the pipe to actually appear as remote. Before this happens, it's
+  // possible for message transmission to be deferred to the IO thread, and
+  // sudden termination might preempt that work.
+  WaitForSignals(sender, MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+
+  WriteMessage(sender, "ok");
+
+  // Here process termination is imminent. If the bug reappears this test will
+  // fail flakily.
+}
+
 TEST_F(MultiprocessMessagePipeTest, MessagePipeStatusChangeInTransit) {
   MojoHandle local_handles[4];
   MojoHandle sent_handles[4];

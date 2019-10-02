@@ -206,8 +206,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioClearVideo_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-a.webm");
 }
 
-// crbug.com/1010061: disabled due to flakiness.
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_Playback_VideoAudio_WebM) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoAudio_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-av.webm");
 }
 
@@ -227,9 +226,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-v.webm");
 }
 
-// crbug.com/1010061: disabled due to flakiness.
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
-                       DISABLED_Playback_AudioOnly_WebM_Opus) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM_Opus) {
 #if defined(OS_ANDROID)
   if (!media::MediaCodecUtil::IsOpusDecoderAvailable())
     return;
@@ -365,8 +362,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Encryption_CENS) {
                       media::kError);
 }
 
-// crbug.com/1010061: disabled due to flakiness.
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_Playback_Encryption_CBCS) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Encryption_CBCS) {
   std::string expected_result =
       BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME) ? media::kEnded : media::kError;
   RunMultipleFileTest("bear-640x360-v_frag-cbcs.mp4",

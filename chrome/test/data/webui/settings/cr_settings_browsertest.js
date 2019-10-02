@@ -588,8 +588,7 @@ CrSettingsPeoplePageAccountManagerTest.prototype = {
 
   /** @override */
   featureList: {
-    enabled: ['chromeos::features::kAccountManager'],
-    disabled: ['chromeos::features::kSplitSettings']
+    disabled: ['chromeos::features::kSplitSettings'],
   },
 
   /** @override */

@@ -854,7 +854,7 @@ modules_dictionary_idl_files =
           "webgpu/gpu_fence_descriptor.idl",
           "webgpu/gpu_limits.idl",
           "webgpu/gpu_object_descriptor_base.idl",
-          "webgpu/gpu_origin_3d.idl",
+          "webgpu/gpu_origin_3d_dict.idl",
           "webgpu/gpu_pipeline_descriptor_base.idl",
           "webgpu/gpu_pipeline_layout_descriptor.idl",
           "webgpu/gpu_pipeline_stage_descriptor.idl",

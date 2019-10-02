@@ -1518,26 +1518,6 @@ void BluetoothAdapterBlueZ::StartScanWithFilter(
 
   BLUETOOTH_LOG(EVENT) << __func__;
 
-#if defined(OS_CHROMEOS)
-  device::BluetoothAdapterFactory::BleScanParserCallback
-      ble_scan_parser_callback =
-          device::BluetoothAdapterFactory::GetBleScanParserCallback();
-  if (ble_scan_parser_callback) {
-    // To avoid repeatedly restarting a crashed data decoder service,
-    // don't add a connection error handler here. Wait to establish a
-    // new connection after all discovery sessions are stopped.
-    ble_scan_parser_.Bind(ble_scan_parser_callback.Run());
-  } else {
-#if DCHECK_IS_ON()
-    static bool logged_once = false;
-    DLOG_IF(ERROR, !logged_once)
-        << "Attempted to connect to "
-           "unconfigured BluetoothAdapterFactory::GetBleScanParserCallback()";
-    logged_once = true;
-#endif  // DCHECK_IS_ON()
-  }
-#endif  // defined(OS_CHROMEOS)
-
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
 
   if (discovery_filter && !discovery_filter->IsDefault()) {
@@ -1678,6 +1658,27 @@ void BluetoothAdapterBlueZ::OnStartDiscovery(
     DiscoverySessionErrorCallback error_callback) {
   // Report success on the original request and increment the count.
   BLUETOOTH_LOG(EVENT) << __func__;
+
+#if defined(OS_CHROMEOS)
+  device::BluetoothAdapterFactory::BleScanParserCallback
+      ble_scan_parser_callback =
+          device::BluetoothAdapterFactory::GetBleScanParserCallback();
+  if (ble_scan_parser_callback) {
+    // To avoid repeatedly restarting a crashed data decoder service,
+    // don't add a connection error handler here. Wait to establish a
+    // new connection after all discovery sessions are stopped.
+    ble_scan_parser_.Bind(ble_scan_parser_callback.Run());
+  } else {
+#if DCHECK_IS_ON()
+    static bool logged_once = false;
+    DLOG_IF(ERROR, !logged_once)
+        << "Attempted to connect to "
+           "unconfigured BluetoothAdapterFactory::GetBleScanParserCallback()";
+    logged_once = true;
+#endif  // DCHECK_IS_ON()
+  }
+#endif  // defined(OS_CHROMEOS)
+
   if (IsPresent()) {
     callback.Run();
   } else {

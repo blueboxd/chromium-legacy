@@ -63,10 +63,10 @@ void ColorProfileReader::UpdateIfNeeded() {
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&ColorProfileReader::ReadProfilesOnBackgroundThread,
-                 new_device_to_path_map),
-      base::Bind(&ColorProfileReader::ReadProfilesCompleted,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ColorProfileReader::ReadProfilesOnBackgroundThread,
+                     new_device_to_path_map),
+      base::BindOnce(&ColorProfileReader::ReadProfilesCompleted,
+                     weak_factory_.GetWeakPtr()));
 }
 
 // static

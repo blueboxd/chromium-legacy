@@ -23,10 +23,10 @@ LameCaptureOverlayChromeOS::Owner::~Owner() = default;
 
 LameCaptureOverlayChromeOS::LameCaptureOverlayChromeOS(
     Owner* owner,
-    viz::mojom::FrameSinkVideoCaptureOverlayRequest request)
-    : binding_(this, std::move(request)) {
+    mojo::PendingReceiver<viz::mojom::FrameSinkVideoCaptureOverlay> receiver)
+    : receiver_(this, std::move(receiver)) {
   if (owner) {
-    binding_.set_connection_error_handler(base::BindOnce(
+    receiver_.set_disconnect_handler(base::BindOnce(
         &Owner::OnOverlayConnectionLost, base::Unretained(owner), this));
   }
 }

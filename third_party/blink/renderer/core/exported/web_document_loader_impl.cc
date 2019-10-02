@@ -152,11 +152,6 @@ void WebDocumentLoaderImpl::SetSubresourceFilter(
 
 void WebDocumentLoaderImpl::SetLoadingHintsProvider(
     std::unique_ptr<blink::WebLoadingHintsProvider> loading_hints_provider) {
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kSendPreviewsLoadingHintsBeforeCommit)) {
-    return;
-  }
-
   DocumentLoader::SetPreviewsResourceLoadingHints(
       PreviewsResourceLoadingHints::CreateFromLoadingHintsProvider(
           *GetFrame()->GetDocument(), std::move(loading_hints_provider)));

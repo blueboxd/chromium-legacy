@@ -17,6 +17,7 @@
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
+#include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper.h"
 #include "chrome/common/chrome_features.h"
@@ -111,20 +112,27 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
 
   std::unique_ptr<net::test_server::HttpResponse> RequestHandlerOverride(
       const net::test_server::HttpRequest& request) {
-    if (request.GetURL() != override_url_)
-      return nullptr;
-    auto http_response =
-        std::make_unique<net::test_server::BasicHttpResponse>();
-    http_response->set_code(net::HTTP_FOUND);
-    http_response->set_content(override_content_);
-    return std::move(http_response);
+    if (request_override_)
+      return request_override_.Run(request);
+    return nullptr;
   }
 
   void OverrideManifest(const char* manifest_template,
                         const std::vector<std::string>& substitutions) {
-    override_url_ = GetManifestURL();
-    override_content_ = base::ReplaceStringPlaceholders(manifest_template,
-                                                        substitutions, nullptr);
+    std::string content = base::ReplaceStringPlaceholders(
+        manifest_template, substitutions, nullptr);
+    request_override_ = base::BindLambdaForTesting(
+        [this, content = std::move(content)](
+            const net::test_server::HttpRequest& request)
+            -> std::unique_ptr<net::test_server::HttpResponse> {
+          if (request.GetURL() != GetManifestURL())
+            return nullptr;
+          auto http_response =
+              std::make_unique<net::test_server::BasicHttpResponse>();
+          http_response->set_code(net::HTTP_FOUND);
+          http_response->set_content(content);
+          return std::move(http_response);
+        });
   }
 
   GURL GetAppURL() const {
@@ -176,12 +184,12 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
     return *WebAppProviderBase::GetProviderBase(browser()->profile());
   }
 
+  net::EmbeddedTestServer::HandleRequestCallback request_override_;
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
   net::EmbeddedTestServer http_server_;
-  GURL override_url_;
-  std::string override_content_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestUpdateManagerBrowserTest);
 };
@@ -393,6 +401,61 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
   OverrideManifest(manifest_template, {kInstallableIconList, "red"});
   EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
             ManifestUpdateResult::kNoAppInScope);
+}
+
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+                       CheckIgnoresPlaceholderApps) {
+  // Set up app URL to redirect to force placeholder app to install.
+  const GURL app_url = GetAppURL();
+  request_override_ = base::BindLambdaForTesting(
+      [&app_url](const net::test_server::HttpRequest& request)
+          -> std::unique_ptr<net::test_server::HttpResponse> {
+        if (request.GetURL() != app_url)
+          return nullptr;
+        auto http_response =
+            std::make_unique<net::test_server::BasicHttpResponse>();
+        http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+        http_response->AddCustomHeader("Location", "/defaultresponse");
+        http_response->set_content("redirect page");
+        return std::move(http_response);
+      });
+
+  // Install via PendingAppManager, the redirect should cause it to install a
+  // placeholder app.
+  base::RunLoop run_loop;
+  ExternalInstallOptions install_options(
+      app_url, LaunchContainer::kWindow,
+      ExternalInstallSource::kExternalPolicy);
+  install_options.add_to_applications_menu = false;
+  install_options.add_to_desktop = false;
+  install_options.add_to_quick_launch_bar = false;
+  install_options.install_placeholder = true;
+  GetProvider().pending_app_manager().Install(
+      std::move(install_options),
+      base::BindLambdaForTesting(
+          [&](const GURL& installed_app_url, InstallResultCode code) {
+            EXPECT_EQ(installed_app_url, app_url);
+            EXPECT_EQ(code, InstallResultCode::kSuccessNewInstall);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+  AppId app_id = GetProvider().registrar().LookupExternalAppId(app_url).value();
+  EXPECT_TRUE(GetProvider().registrar().IsPlaceholderApp(app_id));
+
+  // Manifest updating should ignore non-redirect loads for placeholder apps
+  // because the PendingAppManager will handle these.
+  const char* manifest_template = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "standalone",
+      "icons": $1
+    }
+  )";
+  OverrideManifest(manifest_template, {kInstallableIconList});
+  EXPECT_EQ(GetResultAfterPageLoad(app_url, &app_id),
+            ManifestUpdateResult::kAppIsPlaceholder);
 }
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,

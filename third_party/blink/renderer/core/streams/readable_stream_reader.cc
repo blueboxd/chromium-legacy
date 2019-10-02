@@ -19,7 +19,6 @@ ReadableStreamReader* ReadableStreamReader::Create(
     ScriptState* script_state,
     ReadableStream* stream,
     ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::StreamsNativeEnabled());
   auto* stream_native = static_cast<ReadableStreamNative*>(stream);
   auto* reader = MakeGarbageCollected<ReadableStreamReader>(
       script_state, stream_native, exception_state);

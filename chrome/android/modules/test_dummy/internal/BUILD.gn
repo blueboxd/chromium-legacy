@@ -30,6 +30,7 @@ component("test_dummy") {
     "entrypoints.cc",
   ]
   deps = [
+    ":jni_registration",
     "//base",
     "//chrome/android/features/test_dummy/internal:native",
   ]
@@ -37,12 +38,6 @@ component("test_dummy") {
   # Test dummy native entrypoints belong in the partition.
   if (use_native_modules) {
     cflags = [ "-fsymbol-partition=libtest_dummy.so" ]
-  }
-
-  if (current_toolchain != default_toolchain) {
-    deps += [ ":jni_registration_secondary($default_toolchain)" ]
-  } else {
-    deps += [ ":jni_registration($default_toolchain)" ]
   }
 }
 
@@ -55,26 +50,9 @@ component("test_dummy") {
 # including a registration stub, as Chrome's base library does. That requires
 # two sets of registration targets, so that the feature module template can
 # selectively pull in the real version or a stub.
-if (current_toolchain == default_toolchain) {
-  generate_jni_registration("jni_registration") {
-    target =
-        "//chrome/android:chrome_modern_public_bundle__test_dummy_bundle_module"
-    header_output = "$target_gen_dir/jni_registration.h"
-    namespace = "test_dummy"
-  }
-
-  # Note also: We cannot currently build JNI registration on secondary ABI
-  # toolchain (dependency issues). Therefore, for Monochrome's 32-bit library,
-  # we need to use the 64-bit side registration header that ChromeModern uses.
-  # However, it's in the 64-bit output directory. We need to also generate a copy
-  # for the 32-bit directory.
-  if (android_64bit_target_cpu) {
-    generate_jni_registration("jni_registration_secondary") {
-      target = "//chrome/android:chrome_modern_public_bundle__test_dummy_bundle_module"
-      header_output =
-          get_label_info(":native($android_secondary_abi_toolchain)",
-                         "target_gen_dir") + "/jni_registration.h"
-      namespace = "test_dummy"
-    }
-  }
+generate_jni_registration("jni_registration") {
+  target =
+      "//chrome/android:chrome_modern_public_bundle__test_dummy_bundle_module"
+  header_output = "$target_gen_dir/jni_registration.h"
+  namespace = "test_dummy"
 }

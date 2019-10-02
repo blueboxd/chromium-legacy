@@ -226,8 +226,9 @@ void FaviconHandler::FetchFavicon(const GURL& page_url, bool is_same_document) {
   // we get <link rel="icon"> candidates (FaviconHandler::OnUpdateCandidates()).
   service_->GetFaviconForPageURL(
       last_page_url_, icon_types_, preferred_icon_size(),
-      base::Bind(&FaviconHandler::OnFaviconDataForInitialURLFromFaviconService,
-                 base::Unretained(this)),
+      base::BindOnce(
+          &FaviconHandler::OnFaviconDataForInitialURLFromFaviconService,
+          base::Unretained(this)),
       &cancelable_task_tracker_for_page_url_);
 }
 
@@ -360,8 +361,9 @@ void FaviconHandler::OnUpdateCandidates(
   // mappings only if the manifest URL is cached.
   GetFaviconAndUpdateMappingsUnlessIncognito(
       /*icon_url=*/manifest_url_, favicon_base::IconType::kWebManifestIcon,
-      base::Bind(&FaviconHandler::OnFaviconDataForManifestFromFaviconService,
-                 base::Unretained(this)));
+      base::BindOnce(
+          &FaviconHandler::OnFaviconDataForManifestFromFaviconService,
+          base::Unretained(this)));
 }
 
 void FaviconHandler::OnFaviconDataForManifestFromFaviconService(
@@ -621,7 +623,7 @@ void FaviconHandler::DownloadCurrentCandidateOrAskFaviconService() {
   } else {
     GetFaviconAndUpdateMappingsUnlessIncognito(
         icon_url, icon_type,
-        base::Bind(&FaviconHandler::OnFaviconData, base::Unretained(this)));
+        base::BindOnce(&FaviconHandler::OnFaviconData, base::Unretained(this)));
   }
 }
 

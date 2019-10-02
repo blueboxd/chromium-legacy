@@ -13,7 +13,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/viz_host_export.h"
 #include "media/base/video_types.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -152,7 +152,7 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
   mojom::FrameSinkVideoConsumer* consumer_ = nullptr;
   EstablishConnectionCallback establish_connection_callback_;
   mojom::FrameSinkVideoCapturerPtr capturer_;
-  mojo::Binding<mojom::FrameSinkVideoConsumer> consumer_binding_;
+  mojo::Receiver<mojom::FrameSinkVideoConsumer> consumer_receiver_{this};
 
   base::WeakPtrFactory<ClientFrameSinkVideoCapturer> weak_factory_{this};
 };

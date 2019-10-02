@@ -34,6 +34,7 @@ public class OAuth2TokenServiceTest {
 
     @Rule
     public AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
+    private OAuth2TokenService mOAuth2TokenService;
 
     /**
      * Class handling GetAccessToken callbacks and providing a blocking {@link
@@ -72,6 +73,8 @@ public class OAuth2TokenServiceTest {
     @Before
     public void setUp() {
         mContext = new AdvancedMockContext(InstrumentationRegistry.getTargetContext());
+        mOAuth2TokenService = new OAuth2TokenService(0 /*nativeOAuth2TokenServiceDelegate*/,
+                null /* AccountTrackerService */, AccountManagerFacade.get());
     }
 
     @After
@@ -95,7 +98,7 @@ public class OAuth2TokenServiceTest {
         AccountHolder accountHolder1 = AccountHolder.builder(account1).build();
         mAccountManagerTestRule.addAccount(accountHolder1);
 
-        String[] sysAccounts = OAuth2TokenService.getSystemAccountNames();
+        String[] sysAccounts = mOAuth2TokenService.getSystemAccountNames();
         Assert.assertEquals("There should be one registered account", 1, sysAccounts.length);
         Assert.assertEquals("The account should be " + account1, account1.name, sysAccounts[0]);
 
@@ -114,7 +117,7 @@ public class OAuth2TokenServiceTest {
         AccountHolder accountHolder2 = AccountHolder.builder(account2).build();
         mAccountManagerTestRule.addAccount(accountHolder2);
 
-        String[] sysAccounts = OAuth2TokenService.getSystemAccountNames();
+        String[] sysAccounts = mOAuth2TokenService.getSystemAccountNames();
         Assert.assertEquals("There should be one registered account", 2, sysAccounts.length);
         Assert.assertTrue("The list should contain " + account1,
                 Arrays.asList(sysAccounts).contains(account1.name));
@@ -155,7 +158,7 @@ public class OAuth2TokenServiceTest {
         mAccountManagerTestRule.addAccount(accountHolder);
         GetAccessTokenCallbackForTest callback = new GetAccessTokenCallbackForTest();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { OAuth2TokenService.getAccessToken(account, scope, callback); });
+                () -> { mOAuth2TokenService.getAccessToken(account, scope, callback); });
         Assert.assertEquals(expectedToken, callback.getToken());
     }
 }

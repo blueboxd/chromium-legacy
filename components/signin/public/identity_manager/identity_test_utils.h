@@ -164,7 +164,8 @@ void UpdatePersistentErrorOfRefreshTokenForAccount(
 void DisableAccessTokenFetchRetries(IdentityManager* identity_manager);
 
 #if defined(OS_ANDROID)
-// Disables interaction with system accounts, which requires special permission.
+// Disables interaction with system accounts, which requires special
+// initialization of the java subsystems (AccountManagerFacade).
 void DisableInteractionWithSystemAccounts();
 #endif
 

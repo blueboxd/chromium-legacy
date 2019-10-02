@@ -766,6 +766,12 @@ void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
   FinishSetPassphrase(success, bootstrap_token, &trans, &node);
 }
 
+void SyncEncryptionHandlerImpl::AddTrustedVaultDecryptionKeys(
+    const std::vector<std::string>& keys) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  NOTIMPLEMENTED();
+}
+
 void SyncEncryptionHandlerImpl::EnableEncryptEverything() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   WriteTransaction trans(FROM_HERE, user_share_);

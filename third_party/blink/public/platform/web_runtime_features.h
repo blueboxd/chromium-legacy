@@ -239,7 +239,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void
   EnablePauseExecutionContextOnBackgroundFreeze(bool);
   BLINK_PLATFORM_EXPORT static void EnableConsolidatedMovementXY(bool);
-  BLINK_PLATFORM_EXPORT static void EnableStreamsNative(bool);
   BLINK_PLATFORM_EXPORT static void EnableMouseSubframeNoImplicitCapture(bool);
   BLINK_PLATFORM_EXPORT static void EnableBackForwardCache(bool);
 

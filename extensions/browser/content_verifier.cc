@@ -588,7 +588,7 @@ void ContentVerifier::OnFetchComplete(
   ExtensionId extension_id = content_hash->extension_id();
   if (g_content_verifier_test_observer) {
     g_content_verifier_test_observer->OnFetchComplete(
-        extension_id, content_hash->has_verified_contents());
+        extension_id, content_hash->succeeded());
   }
 
   VLOG(1) << "OnFetchComplete " << extension_id

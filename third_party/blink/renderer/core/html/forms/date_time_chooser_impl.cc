@@ -178,6 +178,7 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   AddProperty("isFormControlsRefreshEnabled",
               RuntimeEnabledFeatures::FormControlsRefreshEnabled(), data);
   AddProperty("mode", parameters_->type.GetString(), data);
+  AddProperty("isAMPMFirst", parameters_->is_ampm_first, data);
   AddProperty("hasAMPM", parameters_->has_ampm, data);
   AddProperty("hasSecond", parameters_->has_second, data);
   AddProperty("hasMillisecond", parameters_->has_millisecond, data);

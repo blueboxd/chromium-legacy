@@ -291,7 +291,13 @@ TEST_F(BookmarkUtilsTest, DISABLED_PasteBookmarkFromURL) {
             ASCIIToUTF16(new_folder->children().front()->url().spec()));
 }
 
-TEST_F(BookmarkUtilsTest, CopyPaste) {
+// TODO(https://crbug.com/1010182): Fix flakes and re-enable this test.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_CopyPaste DISABLED_CopyPaste
+#else
+#define MAYBE_CopyPaste CopyPaste
+#endif
+TEST_F(BookmarkUtilsTest, MAYBE_CopyPaste) {
   std::unique_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
   const BookmarkNode* node = model->AddURL(model->other_node(),
                                            0,

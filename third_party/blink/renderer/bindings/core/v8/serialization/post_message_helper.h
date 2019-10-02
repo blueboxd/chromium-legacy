@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_POST_MESSAGE_HELPER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/mojom/messaging/user_activation_snapshot.mojom-blink.h"
+#include "third_party/blink/public/mojom/messaging/user_activation_snapshot.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "v8/include/v8.h"

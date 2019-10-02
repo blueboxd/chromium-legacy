@@ -525,22 +525,4 @@ void V8ScriptRunner::ReportException(v8::Isolate* isolate,
     V8Initializer::MessageHandlerInWorker(message, exception);
 }
 
-v8::MaybeLocal<v8::Value> V8ScriptRunner::CallExtraHelper(
-    ScriptState* script_state,
-    const char* name,
-    uint32_t num_args,
-    v8::Local<v8::Value>* args) {
-  v8::Isolate* isolate = script_state->GetIsolate();
-  v8::Local<v8::Value> function_value;
-  v8::Local<v8::Context> context = script_state->GetContext();
-  if (!context->GetExtrasBindingObject()
-           ->Get(context, V8AtomicString(isolate, name))
-           .ToLocal(&function_value))
-    return v8::MaybeLocal<v8::Value>();
-  v8::Local<v8::Function> function = function_value.As<v8::Function>();
-  return V8ScriptRunner::CallInternalFunction(
-      isolate, ToMicrotaskQueue(script_state), function, v8::Undefined(isolate),
-      num_args, args);
-}
-
 }  // namespace blink

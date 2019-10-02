@@ -30,6 +30,8 @@
 #include "media/base/video_frame.h"
 #include "media/capture/content/video_capture_oracle.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -106,11 +108,12 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
                                 bool use_fixed_aspect_ratio) final;
   void SetAutoThrottlingEnabled(bool enabled) final;
   void ChangeTarget(const base::Optional<FrameSinkId>& frame_sink_id) final;
-  void Start(mojom::FrameSinkVideoConsumerPtr consumer) final;
+  void Start(mojo::PendingRemote<mojom::FrameSinkVideoConsumer> consumer) final;
   void Stop() final;
   void RequestRefreshFrame() final;
   void CreateOverlay(int32_t stacking_index,
-                     mojom::FrameSinkVideoCaptureOverlayRequest request) final;
+                     mojo::PendingReceiver<mojom::FrameSinkVideoCaptureOverlay>
+                         receiver) final;
 
   // Default configuration.
   static constexpr media::VideoPixelFormat kDefaultPixelFormat =
@@ -256,7 +259,7 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
 
   // The current video frame consumer. This is set when Start() is called and
   // cleared when Stop() is called.
-  mojom::FrameSinkVideoConsumerPtr consumer_;
+  mojo::Remote<mojom::FrameSinkVideoConsumer> consumer_;
 
   // The portion of the source content that has changed, but has not yet been
   // captured.

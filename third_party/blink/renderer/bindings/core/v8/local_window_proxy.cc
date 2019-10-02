@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/local_window_proxy.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/initialize_v8_extras_binding.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
@@ -215,10 +214,6 @@ void LocalWindowProxy::Initialize() {
   }
 
   InstallConditionalFeatures();
-
-  // This needs to go after everything else since it accesses the window object.
-  // WARNING: May modify the global object!
-  InitializeV8ExtrasBinding(script_state_);
 
   if (World().IsMainWorld()) {
     GetFrame()->Loader().DispatchDidClearWindowObjectInMainWorld();

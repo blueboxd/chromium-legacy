@@ -15,6 +15,10 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/ui/webui/sandbox/sandbox_handler.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "chrome/common/sandbox_status_extension_android.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -79,6 +83,10 @@ content::WebUIDataSource* CreateDataSource() {
 
 SandboxInternalsUI::SandboxInternalsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
+#if defined(OS_WIN)
+  web_ui->AddMessageHandler(
+      std::make_unique<sandbox_handler::SandboxHandler>());
+#endif
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateDataSource());
 }

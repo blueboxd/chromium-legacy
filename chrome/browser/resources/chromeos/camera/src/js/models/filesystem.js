@@ -37,6 +37,12 @@ cca.models.FileSystem.THUMBNAIL_PREFIX = 'thumb-';
 cca.models.FileSystem.internalDir = null;
 
 /**
+ * Temporary directory in the internal file system.
+ * @type {DirectoryEntry}
+ */
+cca.models.FileSystem.internalTempDir = null;
+
+/**
  * Directory in the external file system.
  * @type {DirectoryEntry}
  */
@@ -49,7 +55,21 @@ cca.models.FileSystem.externalDir = null;
  */
 cca.models.FileSystem.initInternalDir_ = function() {
   return new Promise((resolve, reject) => {
-    webkitRequestFileSystem(window.PERSISTENT, 768 * 1024 * 1024 /* 768MB */,
+    webkitRequestFileSystem(
+        window.PERSISTENT, 768 * 1024 * 1024 /* 768MB */,
+        (fs) => resolve(fs.root), reject);
+  });
+};
+
+/**
+ * Initializes the temporary directory in the internal file system.
+ * @return {!Promise<DirectoryEntry>} Promise for the directory result.
+ * @private
+ */
+cca.models.FileSystem.initInternalTempDir_ = function() {
+  return new Promise((resolve, reject) => {
+    webkitRequestFileSystem(
+        window.TEMPORARY, 768 * 1024 * 1024 /* 768MB */,
         (fs) => resolve(fs.root), reject);
   });
 };
@@ -118,48 +138,59 @@ cca.models.FileSystem.initialize = function(promptMigrate) {
   var doneMigrate = () => chrome.chromeosInfoPrivate &&
       chrome.chromeosInfoPrivate.set('cameraMediaConsolidated', true);
 
-  return Promise.all([
-    cca.models.FileSystem.initInternalDir_(),
-    cca.models.FileSystem.initExternalDir_(),
-    checkAcked,
-    checkMigrated,
-  ]).then(([internalDir, externalDir, acked, migrated]) => {
-    cca.models.FileSystem.internalDir = internalDir;
-    cca.models.FileSystem.externalDir = externalDir;
-    if (migrated && !externalDir) {
-      throw new Error('External file system should be available.');
-    }
-    // Check if acknowledge-prompt and migrate-pictures are needed.
-    if (migrated || !cca.models.FileSystem.externalDir) {
-      return [false, false];
-    }
-    // Check if any internal picture other than thumbnail needs migration.
-    // Pictures taken by old Camera App may not have IMG_ or VID_ prefix.
-    var dir = cca.models.FileSystem.internalDir;
-    return cca.models.FileSystem.readDir_(dir).then((entries) => {
-      return entries.some(
-          (entry) => !cca.models.FileSystem.hasThumbnailPrefix_(entry));
-    }).then((migrateNeeded) => {
-      if (migrateNeeded) {
-        return [!acked, true];
-      }
-      // If the external file system is supported and there is already no
-      // picture in the internal file system, it implies done migration and
-      // then doesn't need acknowledge-prompt.
-      ackMigrate();
-      doneMigrate();
-      return [false, false];
-    });
-  }).then(([promptNeeded, migrateNeeded]) => { // Prompt to migrate if needed.
-    return !promptNeeded ? migrateNeeded : promptMigrate().then(() => {
-      ackMigrate();
-      return migrateNeeded;
-    });
-  }).then((migrateNeeded) => { // Migrate pictures if needed.
-    const external = cca.models.FileSystem.externalDir != null;
-    return !migrateNeeded ? external : cca.models.FileSystem.migratePictures()
-        .then(doneMigrate).then(() => external);
-  });
+  return Promise
+      .all([
+        cca.models.FileSystem.initInternalDir_(),
+        cca.models.FileSystem.initInternalTempDir_(),
+        cca.models.FileSystem.initExternalDir_(),
+        checkAcked,
+        checkMigrated,
+      ])
+      .then(([internalDir, internalTempDir, externalDir, acked, migrated]) => {
+        cca.models.FileSystem.internalDir = internalDir;
+        cca.models.FileSystem.internalTempDir = internalTempDir;
+        cca.models.FileSystem.externalDir = externalDir;
+        if (migrated && !externalDir) {
+          throw new Error('External file system should be available.');
+        }
+        // Check if acknowledge-prompt and migrate-pictures are needed.
+        if (migrated || !cca.models.FileSystem.externalDir) {
+          return [false, false];
+        }
+        // Check if any internal picture other than thumbnail needs migration.
+        // Pictures taken by old Camera App may not have IMG_ or VID_ prefix.
+        var dir = cca.models.FileSystem.internalDir;
+        return cca.models.FileSystem.readDir_(dir)
+            .then((entries) => {
+              return entries.some(
+                  (entry) => !cca.models.FileSystem.hasThumbnailPrefix_(entry));
+            })
+            .then((migrateNeeded) => {
+              if (migrateNeeded) {
+                return [!acked, true];
+              }
+              // If the external file system is supported and there is already
+              // no picture in the internal file system, it implies done
+              // migration and then doesn't need acknowledge-prompt.
+              ackMigrate();
+              doneMigrate();
+              return [false, false];
+            });
+      })
+      .then(
+          ([promptNeeded, migrateNeeded]) => {  // Prompt to migrate if needed.
+            return !promptNeeded ? migrateNeeded : promptMigrate().then(() => {
+              ackMigrate();
+              return migrateNeeded;
+            });
+          })
+      .then((migrateNeeded) => {  // Migrate pictures if needed.
+        const external = cca.models.FileSystem.externalDir != null;
+        return !migrateNeeded ? external :
+                                cca.models.FileSystem.migratePictures()
+                                    .then(doneMigrate)
+                                    .then(() => external);
+      });
 };
 
 /**
@@ -298,6 +329,26 @@ cca.models.FileSystem.createTempVideoFile = async function() {
   const file = await cca.models.FileSystem.getFile(dir, filename, true);
   if (file === null) {
     throw new Error('Failed to create video temp file.');
+  }
+  return file;
+};
+
+/**
+ * @const {string}
+ */
+cca.models.FileSystem.PRIVATE_TEMPFILE_NAME = 'video-intent.mkv';
+
+/**
+ * @return {!Promise<!FileEntry>} Newly created temporary file.
+ * @throws {Error} If failed to create video temp file.
+ */
+cca.models.FileSystem.createPrivateTempVideoFile = async function() {
+  // TODO(inker): Handles running out of space case.
+  const dir = cca.models.FileSystem.internalTempDir;
+  const file = await cca.models.FileSystem.getFile(
+      dir, cca.models.FileSystem.PRIVATE_TEMPFILE_NAME, true);
+  if (file === null) {
+    throw new Error('Failed to create private video temp file.');
   }
   return file;
 };

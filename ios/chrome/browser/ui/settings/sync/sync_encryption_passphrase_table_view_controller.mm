@@ -189,7 +189,10 @@ const CGFloat kSpinnerButtonPadding = 18;
       forSectionWithIdentifier:SectionIdentifierPassphrase];
 }
 
-- (BOOL)shouldDismissViewControllerBySwipeDown {
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (BOOL)presentationControllerShouldDismiss:
+    (UIPresentationController*)presentationController {
   return ![passphrase_.text length];
 }
 

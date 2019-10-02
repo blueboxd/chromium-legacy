@@ -255,6 +255,9 @@ class JSONTraceExporter {
                                              int32_t pid,
                                              int32_t tid);
 
+  void AddMetadata(const std::string& entry_name,
+                   std::unique_ptr<base::Value> value);
+
  private:
   // Used by the implementation to ensure the proper separators exist between
   // trace events in the array.

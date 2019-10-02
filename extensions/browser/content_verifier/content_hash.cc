@@ -121,7 +121,7 @@ void ContentHash::ForceBuildComputedHashes(
 ContentHash::TreeHashVerificationResult ContentHash::VerifyTreeHashRoot(
     const base::FilePath& relative_path,
     const std::string* root) const {
-  DCHECK(status_ >= Status::kHasVerifiedContents && verified_contents_);
+  DCHECK(verified_contents_);
   if (!verified_contents_->HasTreeHashRoot(relative_path))
     return TreeHashVerificationResult::NO_ENTRY;
 
@@ -132,7 +132,7 @@ ContentHash::TreeHashVerificationResult ContentHash::VerifyTreeHashRoot(
 }
 
 const ComputedHashes::Reader& ContentHash::computed_hashes() const {
-  DCHECK(status_ == Status::kSucceeded && computed_hashes_);
+  DCHECK(succeeded_ && computed_hashes_);
   return *computed_hashes_;
 }
 
@@ -145,12 +145,7 @@ ContentHash::ContentHash(
       extension_root_(root),
       verified_contents_(std::move(verified_contents)),
       computed_hashes_(std::move(computed_hashes)) {
-  if (!verified_contents_)
-    status_ = Status::kInvalid;
-  else if (!computed_hashes_)
-    status_ = Status::kHasVerifiedContents;
-  else
-    status_ = Status::kSucceeded;
+  succeeded_ = verified_contents_ != nullptr && computed_hashes_ != nullptr;
 }
 
 ContentHash::~ContentHash() = default;
@@ -309,7 +304,7 @@ bool ContentHash::CreateHashes(const base::FilePath& hashes_file,
                       timer.Elapsed());
 
   if (result)
-    status_ = Status::kSucceeded;
+    succeeded_ = true;
 
   return result;
 }
@@ -344,7 +339,7 @@ void ContentHash::BuildComputedHashes(bool attempted_fetching_verified_contents,
       // will_create = true;
     } else {
       // Read successful.
-      status_ = Status::kSucceeded;
+      succeeded_ = true;
       computed_hashes_ = std::move(computed_hashes);
       return;
     }
@@ -364,7 +359,7 @@ void ContentHash::BuildComputedHashes(bool attempted_fetching_verified_contents,
     return;
 
   // Read successful.
-  status_ = Status::kSucceeded;
+  succeeded_ = true;
   computed_hashes_ = std::move(computed_hashes);
 }
 

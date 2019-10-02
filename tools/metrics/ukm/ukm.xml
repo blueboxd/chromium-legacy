@@ -5569,6 +5569,25 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="InteractiveTiming.LongestInputDelay3">
+    <obsolete>
+      Removed on September 2019 in favor of InteractiveTiming.LongestInputDelay4
+      which includes events which otherwise would have been filtered.
+    </obsolete>
+    <summary>
+      Measures longest Input Delay, the longest duration between the hardware
+      timestamp and the start of event processing on the main thread for the
+      meaningful input per navigation. In ms.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="InteractiveTiming.LongestInputDelay4">
     <summary>
       Measures longest Input Delay, the longest duration between the hardware
       timestamp and the start of event processing on the main thread for the
@@ -5606,6 +5625,17 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="InteractiveTiming.LongestInputTimestamp3">
+    <obsolete>
+      Removed on February 2019 in favor of
+      InteractiveTiming.LongestInputTimestamp4 which includes inputs which would
+      have previously been filtered.
+    </obsolete>
+    <summary>
+      The duration between navigation start and the hardware timestamp of the
+      meaningful input with longest queuing delay per navigation. In ms.
+    </summary>
+  </metric>
+  <metric name="InteractiveTiming.LongestInputTimestamp4">
     <summary>
       The duration between navigation start and the hardware timestamp of the
       meaningful input with longest queuing delay per navigation. In ms.

@@ -30,6 +30,7 @@ blink_platform_sources("heap") {
     "blink_gc_memory_dump_provider.h",
     "cancelable_task_scheduler.cc",
     "cancelable_task_scheduler.h",
+    "disallow_new_wrapper.h",
     "finalizer_traits.h",
     "garbage_collected.h",
     "gc_info.cc",
@@ -100,6 +101,7 @@ jumbo_source_set("test_support") {
   deps = [
     "//testing/gtest",
     "//third_party/blink/public/mojom:mojom_platform_blink_headers",
+    "//third_party/blink/renderer/platform:bindings_buildflags",
   ]
 }
 

@@ -128,26 +128,6 @@ BackForwardCacheImpl::Entry::Entry(std::unique_ptr<RenderFrameHostImpl> rfh,
     : render_frame_host(std::move(rfh)), proxy_hosts(std::move(proxies)) {}
 BackForwardCacheImpl::Entry::~Entry() {}
 
-int BackForwardCacheImpl::Entry::GetNavigationEntryId() {
-  CHECK(render_frame_host);
-  return render_frame_host->nav_entry_id();
-}
-
-bool BackForwardCacheImpl::Entry::IsEvictedFromBackForwardCache() {
-  CHECK(render_frame_host);
-  return render_frame_host->is_evicted_from_back_forward_cache();
-}
-
-void BackForwardCacheImpl::Entry::EvictFromBackForwardCache() {
-  CHECK(render_frame_host);
-  return render_frame_host->EvictFromBackForwardCache();
-}
-
-void BackForwardCacheImpl::Entry::LeaveBackForwardCache() {
-  CHECK(render_frame_host);
-  return render_frame_host->LeaveBackForwardCache();
-}
-
 std::string BackForwardCacheImpl::CanStoreDocumentResult::ToString() {
   using Reason = BackForwardCacheMetrics::CanNotStoreDocumentReason;
 
@@ -324,10 +304,10 @@ void BackForwardCacheImpl::StoreEntry(
   // full.
   size_t available_count = 0;
   for (auto& stored_entry : entries_) {
-    if (stored_entry->IsEvictedFromBackForwardCache())
+    if (stored_entry->render_frame_host->is_evicted_from_back_forward_cache())
       continue;
     if (++available_count > size_limit)
-      stored_entry->EvictFromBackForwardCache();
+      stored_entry->render_frame_host->EvictFromBackForwardCache();
   }
 }
 
@@ -353,7 +333,7 @@ std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
   auto matching_entry = std::find_if(
       entries_.begin(), entries_.end(),
       [navigation_entry_id](std::unique_ptr<Entry>& entry) {
-        return entry->GetNavigationEntryId() == navigation_entry_id;
+        return entry->render_frame_host->nav_entry_id() == navigation_entry_id;
       });
 
   // Not found.
@@ -361,12 +341,13 @@ std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
     return nullptr;
 
   // Don't restore an evicted frame.
-  if ((*matching_entry)->IsEvictedFromBackForwardCache())
+  if ((*matching_entry)
+          ->render_frame_host->is_evicted_from_back_forward_cache())
     return nullptr;
 
   std::unique_ptr<Entry> entry = std::move(*matching_entry);
   entries_.erase(matching_entry);
-  entry->LeaveBackForwardCache();
+  entry->render_frame_host->LeaveBackForwardCache();
   return entry;
 }
 
@@ -403,14 +384,15 @@ BackForwardCacheImpl::Entry* BackForwardCacheImpl::GetEntry(
   auto matching_entry = std::find_if(
       entries_.begin(), entries_.end(),
       [navigation_entry_id](std::unique_ptr<Entry>& entry) {
-        return entry->GetNavigationEntryId() == navigation_entry_id;
+        return entry->render_frame_host->nav_entry_id() == navigation_entry_id;
       });
 
   if (matching_entry == entries_.end())
     return nullptr;
 
   // Don't return the frame if it is evicted.
-  if ((*matching_entry)->IsEvictedFromBackForwardCache())
+  if ((*matching_entry)
+          ->render_frame_host->is_evicted_from_back_forward_cache())
     return nullptr;
 
   return (*matching_entry).get();
@@ -420,9 +402,9 @@ void BackForwardCacheImpl::DestroyEvictedFrames() {
   TRACE_EVENT0("navigation", "BackForwardCache::DestroyEvictedFrames");
   if (entries_.empty())
     return;
-  entries_.erase(std::remove_if(entries_.begin(), entries_.end(),
-                                [](std::unique_ptr<Entry>& entry) {
-                                  return entry->IsEvictedFromBackForwardCache();
-                                }));
+  entries_.erase(std::remove_if(
+      entries_.begin(), entries_.end(), [](std::unique_ptr<Entry>& entry) {
+        return entry->render_frame_host->is_evicted_from_back_forward_cache();
+      }));
 }
 }  // namespace content

@@ -45,7 +45,7 @@
   [[mediator createConfigurator]
       configureSigninPromoView:signinPromoCell.signinPromoView];
   signinPromoCell.selectionStyle = UITableViewCellSelectionStyleNone;
-  [mediator signinPromoViewVisible];
+  [mediator signinPromoViewIsVisible];
 }
 
 @end

@@ -70,7 +70,10 @@ source_set("identity_manager") {
   ]
 
   if (is_android) {
-    deps += [ "//components/signin/core/browser/android:jni_headers" ]
+    deps += [
+      "//components/signin/core/browser/android:jni_headers",
+      "//components/signin/internal/base",
+    ]
   } else {
     sources += [
       "mutable_profile_oauth2_token_service_delegate.cc",

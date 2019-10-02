@@ -22,6 +22,8 @@
 #include "media/base/limits.h"
 #include "media/base/video_util.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -117,7 +119,7 @@ class MockFrameSinkManager : public FrameSinkVideoCapturerManager {
 
 class MockConsumer : public mojom::FrameSinkVideoConsumer {
  public:
-  MockConsumer() : binding_(this) {}
+  MockConsumer() {}
 
   MOCK_METHOD0(OnFrameCapturedMock, void());
   MOCK_METHOD0(OnStopped, void());
@@ -131,10 +133,8 @@ class MockConsumer : public mojom::FrameSinkVideoConsumer {
     PropagateMojoTasks();
   }
 
-  mojom::FrameSinkVideoConsumerPtr BindVideoConsumer() {
-    mojom::FrameSinkVideoConsumerPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
+  mojo::PendingRemote<mojom::FrameSinkVideoConsumer> BindVideoConsumer() {
+    return receiver_.BindNewPipeAndPassRemote();
   }
 
  private:
@@ -178,7 +178,7 @@ class MockConsumer : public mojom::FrameSinkVideoConsumer {
                        std::move(callbacks)));
   }
 
-  mojo::Binding<mojom::FrameSinkVideoConsumer> binding_;
+  mojo::Receiver<mojom::FrameSinkVideoConsumer> receiver_{this};
   std::vector<scoped_refptr<VideoFrame>> frames_;
   std::vector<base::OnceClosure> done_callbacks_;
 };

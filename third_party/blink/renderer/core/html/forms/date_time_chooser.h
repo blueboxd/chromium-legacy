@@ -63,6 +63,9 @@ struct DateTimeChooserParameters {
   bool required;
   bool is_anchor_element_rtl;
   // The fields below are used for type="time".
+  // For some locales the am/pm is the first field, so is_ampm_first informs
+  // the time popup when the am/pm column should be the first one.
+  bool is_ampm_first;
   bool has_ampm;
   bool has_second;
   bool has_millisecond;

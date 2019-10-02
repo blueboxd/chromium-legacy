@@ -44,13 +44,6 @@ class SharingSyncPreferenceTest : public testing::Test {
                                       kDeviceAuthToken, kClickToCallEnabled));
   }
 
-  static base::Value CreateRandomDevice(base::Time timestamp) {
-    return SharingSyncPreference::DeviceToValue(
-        {base::GenerateGUID(), kDeviceP256dh, kDeviceAuthToken,
-         kClickToCallEnabled},
-        timestamp);
-  }
-
   sync_preferences::TestingPrefServiceSyncable prefs_;
   SharingSyncPreference sharing_sync_preference_;
 };

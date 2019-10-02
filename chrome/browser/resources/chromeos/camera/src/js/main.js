@@ -14,6 +14,10 @@ var cca = cca || {};
  * @constructor
  */
 cca.App = function() {
+  const shouldHandleIntentResult =
+      window.intent !== null && window.intent.shouldHandleResult;
+  cca.state.set('should-handle-intent-result', shouldHandleIntentResult);
+
   /**
    * @type {cca.models.Gallery}
    * @private
@@ -63,9 +67,13 @@ cca.App = function() {
    * @type {cca.views.Camera}
    * @private
    */
-  this.cameraView_ = new cca.views.Camera(
-      this.gallery_, this.infoUpdater_, this.photoPreferrer_,
-      this.videoPreferrer_);
+  this.cameraView_ = shouldHandleIntentResult ?
+      new cca.views.CameraIntent(
+          window.intent, this.infoUpdater_, this.photoPreferrer_,
+          this.videoPreferrer_) :
+      new cca.views.Camera(
+          this.gallery_, this.infoUpdater_, this.photoPreferrer_,
+          this.videoPreferrer_);
 
   // End of properties. Seal the object.
   Object.seal(this);
@@ -110,8 +118,10 @@ cca.App.prototype.setupToggles_ = function() {
   cca.proxy.browserProxy.localStorageGet(
       {expert: false}, ({expert}) => cca.state.set('expert', expert));
   document.querySelectorAll('input').forEach((element) => {
-    element.addEventListener('keypress', (event) =>
-        cca.util.getShortcutIdentifier(event) == 'Enter' && element.click());
+    element.addEventListener(
+        'keypress',
+        (event) => cca.util.getShortcutIdentifier(event) == 'Enter' &&
+            element.click());
 
     var css = element.getAttribute('data-state');
     var key = element.getAttribute('data-key');
@@ -129,14 +139,15 @@ cca.App.prototype.setupToggles_ = function() {
         if (element.type == 'radio' && element.checked) {
           // Handle unchecked grouped sibling radios.
           var grouped = `input[type=radio][name=${element.name}]:not(:checked)`;
-          document.querySelectorAll(grouped).forEach((radio) =>
-              radio.dispatchEvent(new Event('change')) && radio.save());
+          document.querySelectorAll(grouped).forEach(
+              (radio) =>
+                  radio.dispatchEvent(new Event('change')) && radio.save());
         }
       }
     });
     element.toggleChecked = (checked) => {
       element.checked = checked;
-      element.dispatchEvent(new Event('change')); // Trigger toggling css.
+      element.dispatchEvent(new Event('change'));  // Trigger toggling css.
     };
     element.save = () => {
       return key && cca.proxy.browserProxy.localStorageSet(payload());
@@ -154,34 +165,38 @@ cca.App.prototype.setupToggles_ = function() {
  */
 cca.App.prototype.start = function() {
   var ackMigrate = false;
-  cca.models.FileSystem.initialize(() => {
-    // Prompt to migrate pictures if needed.
-    var message = chrome.i18n.getMessage('migrate_pictures_msg');
-    return cca.nav.open('message-dialog', {message, cancellable: false})
-        .then((acked) => {
-          if (!acked) {
-            throw new Error('no-migrate');
-          }
-          ackMigrate = true;
-        });
-  }).then((external) => {
-    cca.state.set('ext-fs', external);
-    this.gallery_.addObserver(this.galleryButton_);
-    if (!cca.App.useGalleryApp()) {
-      this.gallery_.addObserver(this.browserView_);
-    }
-    this.gallery_.load();
-    cca.nav.open('camera');
-  }).catch((error) => {
-    console.error(error);
-    if (error && error.message == 'no-migrate') {
-      chrome.app.window.current().close();
-      return;
-    }
-    cca.nav.open('warning', 'filesystem-failure');
-  }).finally(() => {
-    cca.metrics.log(cca.metrics.Type.LAUNCH, ackMigrate);
-  });
+  cca.models.FileSystem
+      .initialize(() => {
+        // Prompt to migrate pictures if needed.
+        var message = chrome.i18n.getMessage('migrate_pictures_msg');
+        return cca.nav.open('message-dialog', {message, cancellable: false})
+            .then((acked) => {
+              if (!acked) {
+                throw new Error('no-migrate');
+              }
+              ackMigrate = true;
+            });
+      })
+      .then((external) => {
+        cca.state.set('ext-fs', external);
+        this.gallery_.addObserver(this.galleryButton_);
+        if (!cca.App.useGalleryApp()) {
+          this.gallery_.addObserver(this.browserView_);
+        }
+        this.gallery_.load();
+        cca.nav.open('camera');
+      })
+      .catch((error) => {
+        console.error(error);
+        if (error && error.message == 'no-migrate') {
+          chrome.app.window.current().close();
+          return;
+        }
+        cca.nav.open('warning', 'filesystem-failure');
+      })
+      .finally(() => {
+        cca.metrics.log(cca.metrics.Type.LAUNCH, ackMigrate);
+      });
 };
 
 /**
@@ -190,7 +205,7 @@ cca.App.prototype.start = function() {
  * @private
  */
 cca.App.prototype.onKeyPressed_ = function(event) {
-  cca.tooltip.hide(); // Hide shown tooltip on any keypress.
+  cca.tooltip.hide();  // Hide shown tooltip on any keypress.
   cca.nav.onKeyPressed(event);
 };
 

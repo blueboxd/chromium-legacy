@@ -1375,9 +1375,12 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
   DCHECK(output_wait_map_.empty());
   output_buffer_map_.resize(buffers.size());
 
-  if (image_processor_device_ && !CreateImageProcessor()) {
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return;
+  // In import mode we will create the IP when importing the first buffer.
+  if (image_processor_device_ && output_mode_ == Config::OutputMode::ALLOCATE) {
+    if (!CreateImageProcessor()) {
+      NOTIFY_ERROR(PLATFORM_FAILURE);
+      return;
+    }
   }
 
   // Reserve all buffers until ImportBufferForPictureTask() is called
@@ -1426,8 +1429,11 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
         }
       }
 
-      ImportBufferForPictureTask(output_record.picture_id,
-                                 std::move(passed_dmabuf_fds));
+      int plane_horiz_bits_per_pixel = VideoFrame::PlaneHorizontalBitsPerPixel(
+          V4L2Device::V4L2PixFmtToVideoPixelFormat(gl_image_format_fourcc_), 0);
+      ImportBufferForPictureTask(
+          output_record.picture_id, std::move(passed_dmabuf_fds),
+          gl_image_size_.width() * plane_horiz_bits_per_pixel / 8);
     }  // else we'll get triggered via ImportBufferForPicture() from client.
     DVLOGF(3) << "buffer[" << i << "]: picture_id=" << output_record.picture_id;
   }
@@ -1492,35 +1498,25 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
   DVLOGF(3) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
-  std::vector<base::ScopedFD> dmabuf_fds;
-#if defined(USE_OZONE)
-  // If the driver does not accept as many fds as we received from the client,
-  // we have to check if the additional fds are actually duplicated fds pointing
-  // to previous planes; if so, we can close the duplicates and keep only the
-  // original fd(s).
-  // Assume that an fd is a duplicate of a previous plane's fd if offset != 0.
-  // Otherwise, if offset == 0, return error as it may be pointing to a new
-  // plane.
-  for (auto& plane : gpu_memory_buffer_handle.native_pixmap_handle.planes) {
-    dmabuf_fds.push_back(std::move(plane.fd));
-  }
-  for (size_t i = dmabuf_fds.size() - 1; i >= gl_image_planes_count_; i--) {
-    if (gpu_memory_buffer_handle.native_pixmap_handle.planes[i].offset == 0) {
-      VLOGF(1) << "The dmabuf fd points to a new buffer, ";
-      NOTIFY_ERROR(INVALID_ARGUMENT);
-      return;
-    }
-    // Drop safely, because this fd is duplicate dmabuf fd pointing to previous
-    // buffer and the appropriate address can be accessed by associated offset.
-    dmabuf_fds.pop_back();
-  }
-#endif
-
   if (output_mode_ != Config::OutputMode::IMPORT) {
     VLOGF(1) << "Cannot import in non-import mode";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
+
+  decoder_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureForImportTask,
+          base::Unretained(this), picture_buffer_id, pixel_format,
+          std::move(gpu_memory_buffer_handle.native_pixmap_handle)));
+}
+
+void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureForImportTask(
+    int32_t picture_buffer_id,
+    VideoPixelFormat pixel_format,
+    gfx::NativePixmapHandle handle) {
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
   if (pixel_format !=
       V4L2Device::V4L2PixFmtToVideoPixelFormat(gl_image_format_fourcc_)) {
@@ -1530,16 +1526,38 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
     return;
   }
 
-  decoder_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask,
-          base::Unretained(this), picture_buffer_id, std::move(dmabuf_fds)));
+  std::vector<base::ScopedFD> dmabuf_fds;
+  for (auto& plane : handle.planes) {
+    dmabuf_fds.push_back(std::move(plane.fd));
+  }
+
+  // If the driver does not accept as many fds as we received from the client,
+  // we have to check if the additional fds are actually duplicated fds pointing
+  // to previous planes; if so, we can close the duplicates and keep only the
+  // original fd(s).
+  // Assume that an fd is a duplicate of a previous plane's fd if offset != 0.
+  // Otherwise, if offset == 0, return error as it may be pointing to a new
+  // plane.
+  while (dmabuf_fds.size() > gl_image_planes_count_) {
+    const size_t idx = dmabuf_fds.size() - 1;
+    if (handle.planes[idx].offset == 0) {
+      VLOGF(1) << "The dmabuf fd points to a new buffer, ";
+      NOTIFY_ERROR(INVALID_ARGUMENT);
+      return;
+    }
+    // Drop safely, because this fd is duplicate dmabuf fd pointing to previous
+    // buffer and the appropriate address can be accessed by associated offset.
+    dmabuf_fds.pop_back();
+  }
+
+  ImportBufferForPictureTask(picture_buffer_id, std::move(dmabuf_fds),
+                             handle.planes[0].stride);
 }
 
 void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
     int32_t picture_buffer_id,
-    std::vector<base::ScopedFD> passed_dmabuf_fds) {
+    std::vector<base::ScopedFD> passed_dmabuf_fds,
+    int32_t stride) {
   DVLOGF(3) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
@@ -1566,6 +1584,34 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
+
+  // TODO(crbug.com/982172): This must be done in AssignPictureBuffers().
+  // However the size of PictureBuffer might not be adjusted by ARC++. So we
+  // keep this until ARC++ side is fixed.
+  int plane_horiz_bits_per_pixel = VideoFrame::PlaneHorizontalBitsPerPixel(
+      V4L2Device::V4L2PixFmtToVideoPixelFormat(gl_image_format_fourcc_), 0);
+  if (plane_horiz_bits_per_pixel == 0 ||
+      (stride * 8) % plane_horiz_bits_per_pixel != 0) {
+    VLOGF(1) << "Invalid format " << gl_image_format_fourcc_ << " or stride "
+             << stride;
+    NOTIFY_ERROR(INVALID_ARGUMENT);
+    return;
+  }
+  int adjusted_coded_width = stride * 8 / plane_horiz_bits_per_pixel;
+  if (image_processor_device_ && !image_processor_) {
+    DCHECK_EQ(kAwaitingPictureBuffers, state_);
+    // This is the first buffer import. Create the image processor and change
+    // the decoder state. The client may adjust the coded width. We don't have
+    // the final coded size in AssignPictureBuffers yet. Use the adjusted coded
+    // width to create the image processor.
+    DVLOGF(3) << "Original gl_image_size=" << gl_image_size_.ToString()
+              << ", adjusted coded width=" << adjusted_coded_width;
+    DCHECK_GE(adjusted_coded_width, gl_image_size_.width());
+    gl_image_size_.set_width(adjusted_coded_width);
+    if (!CreateImageProcessor())
+      return;
+  }
+  DCHECK_EQ(gl_image_size_.width(), adjusted_coded_width);
 
   // If in import mode, build output_frame from the passed DMABUF FDs.
   if (output_mode_ == Config::OutputMode::IMPORT) {

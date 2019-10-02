@@ -7,6 +7,7 @@
 namespace ui {
 
 const char kMimeTypeText[] = "text/plain";
+const char kMimeTypeTextUtf8[] = "text/plain;charset=utf-8";
 const char kMimeTypeURIList[] = "text/uri-list";
 const char kMimeTypeMozillaURL[] = "text/x-moz-url";
 const char kMimeTypeDownloadURL[] = "downloadurl";

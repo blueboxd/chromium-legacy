@@ -24,6 +24,11 @@ bool AppRegistrar::IsLocallyInstalled(const GURL& start_url) const {
   return IsLocallyInstalled(GenerateAppIdFromURL(start_url));
 }
 
+bool AppRegistrar::IsPlaceholderApp(const AppId& app_id) const {
+  return ExternallyInstalledWebAppPrefs(profile_->GetPrefs())
+      .IsPlaceholderApp(app_id);
+}
+
 void AppRegistrar::AddObserver(AppRegistrarObserver* observer) {
   observers_.AddObserver(observer);
 }

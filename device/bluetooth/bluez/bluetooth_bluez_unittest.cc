@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -35,6 +36,12 @@
 #include "device/bluetooth/test/test_pairing_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+#if defined(OS_CHROMEOS)
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "services/data_decoder/public/mojom/ble_scan_parser.mojom.h"
+#endif
 
 using device::BluetoothAdapter;
 using device::BluetoothAdapterFactory;
@@ -68,6 +75,22 @@ int GetDeviceIndexByAddress(const BluetoothAdapter::DeviceList& devices,
   }
   return -1;
 }
+
+#if defined(OS_CHROMEOS)
+class FakeBleScanParserImpl : public data_decoder::mojom::BleScanParser {
+ public:
+  FakeBleScanParserImpl() = default;
+  ~FakeBleScanParserImpl() override = default;
+
+  // mojom::BleScanParser:
+  void Parse(const std::vector<uint8_t>& advertisement_data,
+             ParseCallback callback) override {
+    std::move(callback).Run(nullptr);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(FakeBleScanParserImpl);
+};
+#endif
 
 class FakeBluetoothProfileServiceProviderDelegate
     : public bluez::BluetoothProfileServiceProvider::Delegate {
@@ -128,6 +151,18 @@ class BluetoothBlueZTest : public testing::Test {
 
     fake_bluetooth_adapter_client_->SetSimulationIntervalMs(10);
 
+#if defined(OS_CHROMEOS)
+    device::BluetoothAdapterFactory::SetBleScanParserCallback(
+        base::BindLambdaForTesting([&]() {
+          mojo::PendingRemote<data_decoder::mojom::BleScanParser>
+              ble_scan_parser;
+          mojo::MakeSelfOwnedReceiver(
+              std::make_unique<FakeBleScanParserImpl>(),
+              ble_scan_parser.InitWithNewPipeAndPassReceiver());
+          return ble_scan_parser;
+        }));
+#endif
+
     callback_count_ = 0;
     error_callback_count_ = 0;
     last_connect_error_ = BluetoothDevice::ERROR_UNKNOWN;
@@ -135,6 +170,11 @@ class BluetoothBlueZTest : public testing::Test {
   }
 
   void TearDown() override {
+#if defined(OS_CHROMEOS)
+    device::BluetoothAdapterFactory::SetBleScanParserCallback(
+        base::NullCallback());
+#endif
+
     for (const auto& session : discovery_sessions_) {
       if (!session->IsActive())
         continue;
@@ -4207,6 +4247,37 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
   adapter_->RemovePairingDelegate(&pairing_delegate2);
 }
 
+TEST_F(BluetoothBlueZTest, StartDiscovery_DiscoveringStopped_StartAgain) {
+  GetAdapter();
+  BluetoothAdapterBlueZ* adapter_bluez =
+      static_cast<BluetoothAdapterBlueZ*>(adapter_.get());
+  {
+    base::RunLoop loop;
+    adapter_->StartDiscoverySession(
+        base::BindLambdaForTesting(
+            [&](std::unique_ptr<BluetoothDiscoverySession> session) {
+              loop.Quit();
+            }),
+        base::BindRepeating([]() {
+          ADD_FAILURE() << "Unexpected discovery session start error.";
+        }));
+    loop.Run();
+  }
+  adapter_bluez->DiscoveringChanged(false);
+  {
+    base::RunLoop loop;
+    adapter_->StartDiscoverySession(
+        base::BindLambdaForTesting(
+            [&](std::unique_ptr<BluetoothDiscoverySession> session) {
+              loop.Quit();
+            }),
+        base::BindRepeating([]() {
+          ADD_FAILURE() << "Unexpected discovery session start error.";
+        }));
+    loop.Run();
+  }
+}
+
 // Verifies post-Shutdown of discovery sessions and OnStartDiscovery.
 TEST_F(BluetoothBlueZTest, Shutdown_OnStartDiscovery) {
   const int kNumberOfDiscoverySessions = 10;
@@ -4312,6 +4383,35 @@ TEST_F(BluetoothBlueZTest, Shutdown_OnStopDiscoveryError) {
   // and is therefore not discovering(also stop always returns success).
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(kNumberOfDiscoverySessions, error_callback_count_);
+}
+
+TEST_F(BluetoothBlueZTest, StartDiscoveryError_ThenStartAgain) {
+  GetAdapter();
+  fake_bluetooth_adapter_client_->MakeStartDiscoveryFail();
+
+  {
+    base::RunLoop loop;
+    adapter_->StartDiscoverySession(
+        base::BindRepeating(
+            [](std::unique_ptr<BluetoothDiscoverySession> session) {
+              ADD_FAILURE() << "Unexpected discovery session start success.";
+            }),
+        loop.QuitClosure());
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+    adapter_->StartDiscoverySession(
+        base::BindLambdaForTesting(
+            [&](std::unique_ptr<BluetoothDiscoverySession> session) {
+              loop.Quit();
+            }),
+        base::BindRepeating([]() {
+          ADD_FAILURE() << "Unexpected discovery session start error.";
+        }));
+    loop.Run();
+  }
 }
 
 TEST_F(BluetoothBlueZTest, ManufacturerDataChanged) {

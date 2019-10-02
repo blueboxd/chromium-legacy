@@ -9,6 +9,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "components/content_capture/browser/content_capture_receiver_manager.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
@@ -492,7 +493,15 @@ TEST_F(ContentCaptureReceiverTest, RenderFrameHostGone) {
   DidRemoveContent(expected_removed_ids());
 }
 
-TEST_F(ContentCaptureReceiverTest, ChildFrameCaptureContentFirst) {
+// TODO(https://crbug.com/1010416): Fix flakes on win10_chromium_x64_rel_ng and
+// re-enable this test.
+#if defined(OS_WIN)
+#define MAYBE_ChildFrameCaptureContentFirst \
+  DISABLED_ChildFrameCaptureContentFirst
+#else
+#define MAYBE_ChildFrameCaptureContentFirst ChildFrameCaptureContentFirst
+#endif
+TEST_F(ContentCaptureReceiverTest, MAYBE_ChildFrameCaptureContentFirst) {
   // Simulate add child frame.
   SetupChildFrame();
   // Simulate to capture the content from child frame.
@@ -635,8 +644,16 @@ class ContentCaptureReceiverMultipleFrameTest
   void TearDown() override { content::RenderViewHostTestHarness::TearDown(); }
 };
 
+// TODO(https://crbug.com/1010417): Fix flakes on win10_chromium_x64_rel_ng and
+// re-enable this test.
+#if defined(OS_WIN)
+#define MAYBE_ReceiverCreatedForExistingFrame \
+  DISABLED_ReceiverCreatedForExistingFrame
+#else
+#define MAYBE_ReceiverCreatedForExistingFrame ReceiverCreatedForExistingFrame
+#endif
 TEST_F(ContentCaptureReceiverMultipleFrameTest,
-       ReceiverCreatedForExistingFrame) {
+       MAYBE_ReceiverCreatedForExistingFrame) {
   EXPECT_EQ(
       2u,
       content_capture_receiver_manager_helper()->GetFrameMapSizeForTesting());

@@ -131,4 +131,12 @@ bool DrawBitmap(const SkBitmap& bitmap, ui::WaylandShmBuffer* out_buffer) {
   return true;
 }
 
+void ReadDataFromFD(base::ScopedFD fd, std::vector<uint8_t>* contents) {
+  DCHECK(contents);
+  uint8_t buffer[1 << 10];  // 1 kB in bytes.
+  ssize_t length;
+  while ((length = read(fd.get(), buffer, sizeof(buffer))) > 0)
+    contents->insert(contents->end(), buffer, buffer + length);
+}
+
 }  // namespace wl

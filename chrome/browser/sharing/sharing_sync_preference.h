@@ -125,7 +125,7 @@ class SharingSyncPreference {
  private:
   friend class SharingSyncPreferenceTest;
 
-  static base::Value DeviceToValue(const Device& device, base::Time timestamp);
+  static base::Value DeviceToValue(const Device& device);
 
   static base::Optional<Device> ValueToDevice(const base::Value& value);
 

@@ -14,8 +14,6 @@
   display: flex;
   justify-content: center;
   left: 0;
-  /* This enables scrolling. Min resolution: 1024x768 */
-  min-height: calc(768px - var(--shelf-area-height));
   perspective: 1px; /* Workaround, see http://crbug.com/360567 */
   position: absolute;
   right: 0;

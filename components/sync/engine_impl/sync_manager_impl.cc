@@ -430,6 +430,14 @@ void SyncManagerImpl::OnPassphraseAccepted() {
   // Does nothing.
 }
 
+void SyncManagerImpl::OnTrustedVaultKeyRequired() {
+  // Does nothing.
+}
+
+void SyncManagerImpl::OnTrustedVaultKeyAccepted() {
+  // Does nothing.
+}
+
 void SyncManagerImpl::OnBootstrapTokenUpdated(
     const std::string& bootstrap_token,
     BootstrapTokenType type) {

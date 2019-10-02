@@ -39,6 +39,9 @@ if (closure_compile) {
         "welcome:closure_compile",
       ]
     }
+    if (is_win) {
+      deps += [ "sandbox_internals:closure_compile" ]
+    }
     if (is_chromeos) {
       deps += [ "chromeos:closure_compile" ]
     }

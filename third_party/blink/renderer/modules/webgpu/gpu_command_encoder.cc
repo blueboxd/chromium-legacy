@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/modules/v8/double_sequence_or_gpu_color_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_extent_3d_dict.h"
+#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_origin_3d_dict.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer_copy_view.h"
@@ -15,7 +16,6 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pass_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pass_encoder.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_origin_3d.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pass_color_attachment_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pass_depth_stencil_attachment_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pass_descriptor.h"
@@ -32,6 +32,23 @@ bool ValidateCopySize(UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
       copy_size.GetAsUnsignedLongSequence().size() != 3) {
     exception_state.ThrowRangeError("copySize length must be 3");
     return false;
+  }
+  return true;
+}
+
+bool ValidateTextureCopyView(GPUTextureCopyView* texture_copy_view,
+                             ExceptionState& exception_state) {
+  DCHECK(texture_copy_view);
+
+  if (texture_copy_view->hasOrigin()) {
+    const UnsignedLongSequenceOrGPUOrigin3DDict origin =
+        texture_copy_view->origin();
+    if (origin.IsUnsignedLongSequence() &&
+        origin.GetAsUnsignedLongSequence().size() != 3) {
+      exception_state.ThrowRangeError(
+          "texture copy view origin length must be 3");
+      return false;
+    }
   }
   return true;
 }
@@ -139,7 +156,11 @@ DawnTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view) {
   dawn_view.texture = webgpu_view->texture()->GetHandle();
   dawn_view.mipLevel = webgpu_view->mipLevel();
   dawn_view.arrayLayer = webgpu_view->arrayLayer();
-  dawn_view.origin = AsDawnType(webgpu_view->origin());
+  if (webgpu_view->hasOrigin()) {
+    dawn_view.origin = AsDawnType(&webgpu_view->origin());
+  } else {
+    dawn_view.origin = DawnOrigin3D{};
+  }
 
   return dawn_view;
 }
@@ -262,7 +283,8 @@ void GPUCommandEncoder::copyBufferToTexture(
     GPUTextureCopyView* destination,
     UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
     ExceptionState& exception_state) {
-  if (!ValidateCopySize(copy_size, exception_state)) {
+  if (!ValidateCopySize(copy_size, exception_state) ||
+      !ValidateTextureCopyView(destination, exception_state)) {
     return;
   }
 
@@ -279,7 +301,8 @@ void GPUCommandEncoder::copyTextureToBuffer(
     GPUBufferCopyView* destination,
     UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
     ExceptionState& exception_state) {
-  if (!ValidateCopySize(copy_size, exception_state)) {
+  if (!ValidateCopySize(copy_size, exception_state) ||
+      !ValidateTextureCopyView(source, exception_state)) {
     return;
   }
 
@@ -296,7 +319,9 @@ void GPUCommandEncoder::copyTextureToTexture(
     GPUTextureCopyView* destination,
     UnsignedLongSequenceOrGPUExtent3DDict& copy_size,
     ExceptionState& exception_state) {
-  if (!ValidateCopySize(copy_size, exception_state)) {
+  if (!ValidateCopySize(copy_size, exception_state) ||
+      !ValidateTextureCopyView(source, exception_state) ||
+      !ValidateTextureCopyView(destination, exception_state)) {
     return;
   }
 

@@ -24,6 +24,17 @@ const TimeColumnType = {
   MINUTE: 2,
   SECOND: 3,
   MILLISECOND: 4,
+  AMPM: 5,
+};
+
+
+/**
+ * Supported label types.
+ * @enum {number}
+ */
+const Label = {
+  AM: 0,
+  PM: 1,
 };
 
 /**
@@ -65,10 +76,13 @@ class Time {
     }
   };
 
-  value = (columnType) => {
+  value = (columnType, hasAMPM) => {
     switch (columnType) {
       case TimeColumnType.HOUR:
-        return this.hour_.toString().padStart(2, '0');
+        let hour = hasAMPM ?
+            (this.hour_ % Time.Maximum_Hour_AMPM || Time.Maximum_Hour_AMPM) :
+            this.hour_;
+        return hour.toString().padStart(2, '0');
       case TimeColumnType.MINUTE:
         return this.minute_.toString().padStart(2, '0');
       case TimeColumnType.SECOND:
@@ -88,6 +102,16 @@ class Time {
       value += `.${this.value(TimeColumnType.MILLISECOND)}`;
     }
     return value;
+  };
+
+  clone =
+      () => {
+        return new Time(
+            this.hour_, this.minute_, this.second_, this.millisecond_);
+      }
+
+  isAM = () => {
+    return this.hour_ < Time.Maximum_Hour_AMPM;
   };
 
   static parse = (str) => {
@@ -112,10 +136,10 @@ class Time {
         currentDate.getSeconds(), currentDate.getMilliseconds());
   };
 
-  static numberOfValues = (columnType) => {
+  static numberOfValues = (columnType, hasAMPM) => {
     switch (columnType) {
       case TimeColumnType.HOUR:
-        return Time.HOUR_VALUES;
+        return hasAMPM ? Time.HOUR_VALUES_AMPM : Time.HOUR_VALUES;
       case TimeColumnType.MINUTE:
         return Time.MINUTE_VALUES;
       case TimeColumnType.SECOND:
@@ -128,8 +152,11 @@ class Time {
 // See platform/date_components.h.
 Time.Minimum = new Time(0, 0, 0, 0);
 Time.Maximum = new Time(23, 59, 59, 999);
+Time.Maximum_Hour_AMPM = 12;
 Time.ISOStringRegExp = /^(\d+):(\d+):?(\d*).?(\d*)/;
+// Number of values for each column.
 Time.HOUR_VALUES = 24;
+Time.HOUR_VALUES_AMPM = 12;
 Time.MINUTE_VALUES = 60;
 Time.SECOND_VALUES = 60;
 Time.MILLISECOND_VALUES = 10;
@@ -159,6 +186,7 @@ class TimePicker extends HTMLElement {
                                           : Time.currentTime();
     this.hasSecond_ = config.hasSecond;
     this.hasMillisecond_ = config.hasMillisecond;
+    this.hasAMPM_ = config.hasAMPM;
   }
 
   onSubmitButtonClick_ = () => {
@@ -182,6 +210,10 @@ class TimePicker extends HTMLElement {
 
   get hasMillisecond() {
     return this.hasMillisecond_;
+  }
+
+  get hasAMPM() {
+    return this.hasAMPM_;
   }
 
   get width() {
@@ -215,10 +247,18 @@ class TimeColumns extends HTMLElement {
 
     this.className = TimeColumns.ClassName;
     this.hourColumn_ = new TimeColumn(TimeColumnType.HOUR, timePicker);
-    this.width_ = TimePicker.ColumnWidth;
+    this.width_ = 0;
     this.minuteColumn_ = new TimeColumn(TimeColumnType.MINUTE, timePicker);
-    this.append(this.hourColumn_, this.minuteColumn_);
-    this.width_ += TimePicker.ColumnWidth;
+    if (timePicker.hasAMPM) {
+      this.ampmColumn_ = new TimeColumn(TimeColumnType.AMPM, timePicker);
+    }
+    if (timePicker.hasAMPM && global.params.isAMPMFirst) {
+      this.append(this.ampmColumn_, this.hourColumn_, this.minuteColumn_);
+      this.width_ += 3 * TimePicker.ColumnWidth;
+    } else {
+      this.append(this.hourColumn_, this.minuteColumn_);
+      this.width_ += 2 * TimePicker.ColumnWidth;
+    }
     if (timePicker.hasSecond) {
       this.secondColumn_ = new TimeColumn(TimeColumnType.SECOND, timePicker);
       this.append(this.secondColumn_);
@@ -230,6 +270,10 @@ class TimeColumns extends HTMLElement {
       this.append(this.millisecondColumn_);
       this.width_ += TimePicker.ColumnWidth;
     }
+    if (timePicker.hasAMPM && !global.params.isAMPMFirst) {
+      this.append(this.ampmColumn_);
+      this.width_ += TimePicker.ColumnWidth;
+    }
   }
 
   get width() {
@@ -237,7 +281,7 @@ class TimeColumns extends HTMLElement {
   }
 
   selectedValue = () => {
-    const hour = parseInt(this.hourColumn_.selectedTimeCell.value, 10);
+    let hour = parseInt(this.hourColumn_.selectedTimeCell.value, 10);
     const minute = parseInt(this.minuteColumn_.selectedTimeCell.value, 10);
     const second = this.secondColumn_ ?
         parseInt(this.secondColumn_.selectedTimeCell.value, 10) :
@@ -245,6 +289,15 @@ class TimeColumns extends HTMLElement {
     const millisecond = this.millisecondColumn_ ?
         parseInt(this.millisecondColumn_.selectedTimeCell.value, 10) :
         0;
+    if (this.ampmColumn_) {
+      const isAM = this.ampmColumn_.selectedTimeCell.textContent ==
+          global.params.ampmLabels[Label.AM];
+      if (isAM && hour == Time.Maximum_Hour_AMPM) {
+        hour = 0;
+      } else if (!isAM && hour != Time.Maximum_Hour_AMPM) {
+        hour += Time.Maximum_Hour_AMPM;
+      }
+    }
     return new Time(hour, minute, second, millisecond);
   }
 }
@@ -260,22 +313,44 @@ class TimeColumn extends HTMLUListElement {
 
     this.className = TimeColumn.ClassName;
     this.columnType_ = columnType;
-    this.createAndInitializeCells_(timePicker);
+    if (this.columnType_ == TimeColumnType.AMPM) {
+      this.createAndInitializeAMPMCells_(timePicker);
+    } else {
+      this.createAndInitializeCells_(timePicker);
+    }
 
     this.addEventListener('click', this.onClick_);
   }
 
   createAndInitializeCells_ = (timePicker) => {
-    const totalCells = Time.numberOfValues(this.columnType_);
-    let currentTime = timePicker.selectedTime;
+    const totalCells = Time.numberOfValues(this.columnType_, timePicker.hasAMPM);
+    let currentTime = timePicker.selectedTime.clone();
     let cells = [];
     for (let i = 0; i < totalCells; i++) {
-      let timeCell = new TimeCell(currentTime.value(this.columnType_));
+      let value = currentTime.value(this.columnType_, timePicker.hasAMPM);
+      let timeCell = new TimeCell(value, localizeNumber(value));
       cells.push(timeCell);
       currentTime.next(this.columnType_);
     }
     this.selectedTimeCell = cells[0];
     this.append(...cells);
+  }
+
+  createAndInitializeAMPMCells_ = (timePicker) => {
+    let cells = [];
+    for (let i = 0; i < 2; i++) {
+      let value = global.params.ampmLabels[i];
+      let timeCell = new TimeCell(value, value);
+      cells.push(timeCell);
+    }
+
+    if (timePicker.selectedTime.isAM()) {
+      this.append(cells[Label.AM], cells[Label.PM]);
+      this.selectedTimeCell = cells[Label.AM];
+    } else {
+      this.append(cells[Label.PM], cells[Label.AM]);
+      this.selectedTimeCell = cells[Label.PM];
+    }
   }
 
   onClick_ = (event) => {
@@ -301,11 +376,11 @@ window.customElements.define('time-column', TimeColumn, {extends: 'ul'});
  * TimeCell: List item with a custom look that displays a time value.
  */
 class TimeCell extends HTMLLIElement {
-  constructor(value) {
+  constructor(value, localizedValue) {
     super();
 
     this.className = TimeCell.ClassName;
-    this.textContent = localizeNumber(value);
+    this.textContent = localizedValue;
     this.value = value;
   }
 }

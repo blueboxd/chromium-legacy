@@ -2288,6 +2288,10 @@
     "label": "//printing:printing_unittests",
     "type": "console_test_launcher",
   },
+  "profile_provider_unittest": {
+    "label": "//chrome/browser/metrics/perf:profile_provider_unittest",
+    "type": "raw",
+  },
   "prtime_fuzzer": {
     "label": "//testing/libfuzzer/fuzzers:prtime_fuzzer",
     "type": "fuzzer",

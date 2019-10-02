@@ -20,6 +20,8 @@
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -104,9 +106,10 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
     MockChangeTarget(frame_sink_id ? *frame_sink_id : viz::FrameSinkId());
   }
   MOCK_METHOD1(MockChangeTarget, void(const viz::FrameSinkId& frame_sink_id));
-  void Start(viz::mojom::FrameSinkVideoConsumerPtr consumer) final {
+  void Start(
+      mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumer> consumer) final {
     DCHECK_NOT_ON_DEVICE_THREAD();
-    consumer_ = std::move(consumer);
+    consumer_.Bind(std::move(consumer));
     MockStart(consumer_.get());
   }
   MOCK_METHOD1(MockStart, void(viz::mojom::FrameSinkVideoConsumer* consumer));
@@ -117,13 +120,15 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
   }
   MOCK_METHOD0(MockStop, void());
   MOCK_METHOD0(RequestRefreshFrame, void());
-  MOCK_METHOD2(CreateOverlay,
-               void(int32_t stacking_index,
-                    viz::mojom::FrameSinkVideoCaptureOverlayRequest request));
+  MOCK_METHOD2(
+      CreateOverlay,
+      void(int32_t stacking_index,
+           mojo::PendingReceiver<viz::mojom::FrameSinkVideoCaptureOverlay>
+               receiver));
 
  private:
   mojo::Binding<viz::mojom::FrameSinkVideoCapturer> binding_;
-  viz::mojom::FrameSinkVideoConsumerPtr consumer_;
+  mojo::Remote<viz::mojom::FrameSinkVideoConsumer> consumer_;
 };
 
 // Represents the FrameSinkVideoConsumerFrameCallbacks instance in the VIZ

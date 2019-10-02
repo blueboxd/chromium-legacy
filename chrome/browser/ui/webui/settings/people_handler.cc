@@ -619,8 +619,8 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
   bool passphrase_failed = false;
   if (!configuration.passphrase.empty()) {
     // We call IsPassphraseRequired() here (instead of
-    // IsPassphraseRequiredForDecryption()) because the user may try to enter
-    // a passphrase even though no encrypted data types are enabled.
+    // IsPassphraseRequiredForPreferredDataTypes()) because the user may try to
+    // enter a passphrase even though no encrypted data types are enabled.
     if (service->GetUserSettings()->IsPassphraseRequired()) {
       // If we have pending keys, try to decrypt them with the provided
       // passphrase. We track if this succeeds or fails because a failed
@@ -642,7 +642,7 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
   }
 
   if (passphrase_failed ||
-      service->GetUserSettings()->IsPassphraseRequiredForDecryption()) {
+      service->GetUserSettings()->IsPassphraseRequiredForPreferredDataTypes()) {
     // If the user doesn't enter any passphrase, we won't call
     // SetDecryptionPassphrase() (passphrase_failed == false), but we still
     // want to display an error message to let the user know that their blank
@@ -1097,8 +1097,8 @@ void PeopleHandler::PushSyncPrefs() {
                   sync_user_settings->IsEncryptEverythingAllowed());
 
   // We call IsPassphraseRequired() here, instead of calling
-  // IsPassphraseRequiredForDecryption(), because we want to show the passphrase
-  // UI even if no encrypted data types are enabled.
+  // IsPassphraseRequiredForPreferredDataTypes(), because we want to show the
+  // passphrase UI even if no encrypted data types are enabled.
   args.SetBoolean("passphraseRequired",
                   sync_user_settings->IsPassphraseRequired());
 

@@ -18,11 +18,15 @@
 // may also be forwarded directly to a settings navigation controller.
 @protocol ApplicationSettingsCommands
 
-// Shows the accounts settings UI, presenting from |baseViewController|.
+// TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
+// Shows the accounts settings UI, presenting from |baseViewController|. If
+// |baseViewController| is nil BVC will be used as presenterViewController.
 - (void)showAccountsSettingsFromViewController:
     (UIViewController*)baseViewController;
 
+// TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
 // Shows the Google services settings UI, presenting from |baseViewController|.
+// If |baseViewController| is nil BVC will be used as presenterViewController.
 - (void)showGoogleServicesSettingsFromViewController:
     (UIViewController*)baseViewController;
 

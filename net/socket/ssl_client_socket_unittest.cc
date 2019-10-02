@@ -87,6 +87,7 @@
 #include "third_party/boringssl/src/include/openssl/bio.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/pem.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -830,6 +831,11 @@ class SSLClientSocketTest : public PlatformTest, public WithTaskEnvironment {
     return embedded_test_server_.get();
   }
 
+  void SetServerConfig(SSLServerConfig server_config) {
+    embedded_test_server()->ResetSSLConfig(net::EmbeddedTestServer::CERT_OK,
+                                           server_config);
+  }
+
   // The SpawnedTestServer object, after calling StartTestServer().
   const SpawnedTestServer* spawned_test_server() const {
     return spawned_test_server_.get();
@@ -1353,11 +1359,6 @@ class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
   void RegisterEmbeddedTestServerHandlers(EmbeddedTestServer* server) override {
     SSLClientSocketTest::RegisterEmbeddedTestServerHandlers(server);
     server->RegisterRequestHandler(base::BindRepeating(&HandleZeroRTTRequest));
-  }
-
-  void SetServerConfig(SSLServerConfig server_config) {
-    embedded_test_server()->ResetSSLConfig(net::EmbeddedTestServer::CERT_OK,
-                                           server_config);
   }
 
   FakeBlockingStreamSocket* MakeClient(bool early_data_enabled) {
@@ -5784,6 +5785,142 @@ TEST_P(SSLHandshakeDetailsTest, Metrics) {
 
     histograms.ExpectUniqueSample("Net.SSLHandshakeDetails",
                                   GetParam().expected_resume, 1);
+  }
+}
+
+TEST_F(SSLClientSocketTest, EarlyDataReason) {
+  const char kReasonHistogram[] = "Net.SSLHandshakeEarlyDataReason";
+
+  // Enable all test features in the server.
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  server_config.early_data_enabled = true;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+  SSLContextConfig client_context_config;
+  client_context_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  ssl_config_service_->UpdateSSLConfigAndNotify(client_context_config);
+
+  SSLConfig client_config;
+  client_config.early_data_enabled = true;
+
+  // Make the initial connection.
+  {
+    base::HistogramTester histograms;
+    int rv;
+    ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+    EXPECT_THAT(rv, IsOk());
+
+    // Sanity check
+    SSLInfo info;
+    ASSERT_TRUE(sock_->GetSSLInfo(&info));
+    EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, info.handshake_type);
+
+    // TLS 1.2 with False Start and TLS 1.3 cause the ticket to arrive later, so
+    // use the socket to ensure the session ticket has been picked up.
+    EXPECT_THAT(MakeHTTPRequest(sock_.get()), IsOk());
+
+    histograms.ExpectUniqueSample(kReasonHistogram,
+                                  ssl_early_data_no_session_offered, 1);
+  }
+
+  // Make a resumption connection.
+  {
+    int rv;
+    ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+    EXPECT_THAT(rv, IsOk());
+
+    // Sanity check
+    SSLInfo info;
+    ASSERT_TRUE(sock_->GetSSLInfo(&info));
+    EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, info.handshake_type);
+
+    base::HistogramTester histograms;
+    TestCompletionCallback callback;
+    EXPECT_THAT(
+        callback.GetResult(sock_->ConfirmHandshake(callback.callback())),
+        IsOk());
+    histograms.ExpectUniqueSample(kReasonHistogram, ssl_early_data_accepted, 1);
+  }
+
+  // Reset the server's state: this will mean the server declines to resume
+  // the session and, in particular, 0-RTT.
+  SetServerConfig(server_config);
+
+  {
+    int rv;
+    ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+    EXPECT_THAT(rv, IsOk());
+
+    // Sanity check
+    SSLInfo info;
+    ASSERT_TRUE(sock_->GetSSLInfo(&info));
+    EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, info.handshake_type);
+
+    base::HistogramTester histograms;
+    TestCompletionCallback callback;
+    EXPECT_EQ(callback.GetResult(sock_->ConfirmHandshake(callback.callback())),
+              ERR_EARLY_DATA_REJECTED);
+    histograms.ExpectUniqueSample(kReasonHistogram,
+                                  ssl_early_data_session_not_resumed, 1);
+  }
+}
+
+// Test that we correctly log 0-RTT handshake results when
+// the handshake concludes while we're reading the ServerHello.
+TEST_F(SSLClientSocketTest, EarlyDataReasonReadServerHello) {
+  const char kReasonHistogram[] = "Net.SSLHandshakeEarlyDataReason";
+
+  // Enable all test features in the server.
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  server_config.early_data_enabled = true;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+  SSLContextConfig client_context_config;
+  client_context_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  ssl_config_service_->UpdateSSLConfigAndNotify(client_context_config);
+
+  SSLConfig client_config;
+  client_config.early_data_enabled = true;
+
+  // Make the initial connection.
+  {
+    base::HistogramTester histograms;
+    int rv;
+    ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+    EXPECT_THAT(rv, IsOk());
+
+    // Sanity check
+    SSLInfo info;
+    ASSERT_TRUE(sock_->GetSSLInfo(&info));
+    EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, info.handshake_type);
+
+    // TLS 1.2 with False Start and TLS 1.3 cause the ticket to arrive later, so
+    // use the socket to ensure the session ticket has been picked up.
+    EXPECT_THAT(MakeHTTPRequest(sock_.get()), IsOk());
+  }
+
+  // Make a resumption connection with early data.
+  {
+    int rv;
+    ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+    EXPECT_THAT(rv, IsOk());
+
+    // Sanity check
+    SSLInfo info;
+    ASSERT_TRUE(sock_->GetSSLInfo(&info));
+    EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, info.handshake_type);
+
+    base::HistogramTester histograms;
+    TestCompletionCallback callback;
+
+    // Conclude the handshake by reading the ServerHello and make sure
+    // we still logged the result.
+    EXPECT_THAT(MakeHTTPRequest(sock_.get()), IsOk());
+    histograms.ExpectUniqueSample(kReasonHistogram, ssl_early_data_accepted, 1);
   }
 }
 

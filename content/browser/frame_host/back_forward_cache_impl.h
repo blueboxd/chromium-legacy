@@ -43,14 +43,6 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
           RenderFrameProxyHostMap proxy_hosts);
     ~Entry();
 
-    // These functions forward to the underlying render_frame_host. Do not call
-    // just before storing or right after restoring, as the Entry will be in an
-    // invalid state.
-    int GetNavigationEntryId();
-    bool IsEvictedFromBackForwardCache();
-    void EvictFromBackForwardCache();
-    void LeaveBackForwardCache();
-
     // The main document being stored.
     std::unique_ptr<RenderFrameHostImpl> render_frame_host;
 

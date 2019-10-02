@@ -151,7 +151,6 @@ InputMethodEngineBase::InputMethodEngineBase()
       context_id_(0),
       next_context_id_(1),
       profile_(nullptr),
-      next_request_id_(1),
       composition_changed_(false),
       text_(""),
       commit_text_changed_(false),
@@ -458,26 +457,37 @@ void InputMethodEngineBase::KeyEventHandled(const std::string& extension_id,
     composition_changed_ = false;
   }
 
-  auto request = request_map_.find(request_id);
-  if (request == request_map_.end()) {
+  const auto it = pending_key_events_.find(request_id);
+  if (it == pending_key_events_.end()) {
     LOG(ERROR) << "Request ID not found: " << request_id;
     return;
   }
 
-  std::move(request->second.second).Run(handled);
-  request_map_.erase(request);
+  std::move(it->second.callback).Run(handled);
+  pending_key_events_.erase(it);
 }
 
-std::string InputMethodEngineBase::AddRequest(
+std::string InputMethodEngineBase::AddPendingKeyEvent(
     const std::string& component_id,
-    ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) {
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback) {
   std::string request_id = base::NumberToString(next_request_id_);
   ++next_request_id_;
 
-  request_map_[request_id] = std::make_pair(component_id, std::move(key_data));
+  pending_key_events_.emplace(
+      request_id, PendingKeyEvent(component_id, std::move(callback)));
 
   return request_id;
 }
+
+InputMethodEngineBase::PendingKeyEvent::PendingKeyEvent(
+    const std::string& component_id,
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback)
+    : component_id(component_id), callback(std::move(callback)) {}
+
+InputMethodEngineBase::PendingKeyEvent::PendingKeyEvent(
+    PendingKeyEvent&& other) = default;
+
+InputMethodEngineBase::PendingKeyEvent::~PendingKeyEvent() = default;
 
 void InputMethodEngineBase::DeleteSurroundingTextToInputContext(
     int offset,

@@ -233,15 +233,15 @@ void FrameSinkVideoCapturerImpl::ChangeTarget(
 }
 
 void FrameSinkVideoCapturerImpl::Start(
-    mojom::FrameSinkVideoConsumerPtr consumer) {
+    mojo::PendingRemote<mojom::FrameSinkVideoConsumer> consumer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(consumer);
 
   Stop();
-  consumer_ = std::move(consumer);
+  consumer_.Bind(std::move(consumer));
   // In the future, if the connection to the consumer is lost before a call to
   // Stop(), make that call on its behalf.
-  consumer_.set_connection_error_handler(base::BindOnce(
+  consumer_.set_disconnect_handler(base::BindOnce(
       &FrameSinkVideoCapturerImpl::Stop, base::Unretained(this)));
   RefreshEntireSourceSoon();
 }
@@ -275,13 +275,13 @@ void FrameSinkVideoCapturerImpl::RequestRefreshFrame() {
 
 void FrameSinkVideoCapturerImpl::CreateOverlay(
     int32_t stacking_index,
-    mojom::FrameSinkVideoCaptureOverlayRequest request) {
+    mojo::PendingReceiver<mojom::FrameSinkVideoCaptureOverlay> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // This will cause an existing overlay with the same stacking index to be
   // dropped, per mojom-documented behavior.
   overlays_.emplace(stacking_index, std::make_unique<VideoCaptureOverlay>(
-                                        this, std::move(request)));
+                                        this, std::move(receiver)));
 }
 
 void FrameSinkVideoCapturerImpl::ScheduleRefreshFrame() {

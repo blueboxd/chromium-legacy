@@ -277,12 +277,13 @@ const int kMaxBookmarksSearchResults = 50;
     [self.sharedState.tableViewModel
                         addItem:item
         toSectionWithIdentifier:BookmarkHomeSectionIdentifierPromo];
-    [mediator signinPromoViewVisible];
+    [mediator signinPromoViewIsVisible];
   } else {
-    if (![mediator isInvalidClosedOrNeverVisible]) {
+    if (!mediator.invalidClosedOrNeverVisible) {
       // When the sign-in view is closed, the promo state changes, but
-      // -[SigninPromoViewMediator signinPromoViewHidden] should not be called.
-      [mediator signinPromoViewHidden];
+      // -[SigninPromoViewMediator signinPromoViewIsHidden] should not be
+      // called.
+      [mediator signinPromoViewIsHidden];
     }
 
     DCHECK([self.sharedState.tableViewModel

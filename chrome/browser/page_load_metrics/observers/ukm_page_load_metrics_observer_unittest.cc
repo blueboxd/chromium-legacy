@@ -863,11 +863,11 @@ TEST_F(UkmPageLoadMetricsObserverTest, LongestInputDelayAndTimestamp) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
                                                 GURL(kTestUrl1));
     test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(), PageLoad::kInteractiveTiming_LongestInputDelay3Name,
+        kv.second.get(), PageLoad::kInteractiveTiming_LongestInputDelay4Name,
         50);
     test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(),
-        PageLoad::kInteractiveTiming_LongestInputTimestamp3Name, 712);
+        PageLoad::kInteractiveTiming_LongestInputTimestamp4Name, 712);
   }
 }
 

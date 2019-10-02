@@ -151,6 +151,7 @@ class ResourceRequestBody;
 namespace content {
 class AppCacheNavigationHandle;
 class AuthenticatorImpl;
+class BackForwardCacheMetrics;
 class BundledExchangesHandle;
 class FrameTree;
 class FrameTreeNode;
@@ -1895,6 +1896,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Evicts the document from the BackForwardCache if it is in the cache,
   // and ineligible for caching.
   void MaybeEvictFromBackForwardCache();
+
+  // Returns the BackForwardCacheMetrics associated with the last
+  // NavigationEntry this RenderFrameHostImpl committed.
+  BackForwardCacheMetrics* GetBackForwardCacheMetrics();
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //

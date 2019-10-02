@@ -21,7 +21,6 @@ namespace {
 
 const char kChromeSelection[] = "CHROME_SELECTION";
 const char kClipboard[] = "CLIPBOARD";
-const char kMimeTypeUtf8[] = "text/plain;charset=utf-8";
 const char kString[] = "STRING";
 const char kTargets[] = "TARGETS";
 const char kTimestamp[] = "TIMESTAMP";
@@ -31,7 +30,7 @@ const char kUtf8String[] = "UTF8_STRING";
 void ExpandTypes(std::vector<std::string>* list) {
   bool has_mime_type_text = Contains(*list, ui::kMimeTypeText);
   bool has_string = Contains(*list, kString);
-  bool has_mime_type_utf8 = Contains(*list, kMimeTypeUtf8);
+  bool has_mime_type_utf8 = Contains(*list, kMimeTypeTextUtf8);
   bool has_utf8_string = Contains(*list, kUtf8String);
   if (has_mime_type_text && !has_string)
     list->push_back(kString);
@@ -40,7 +39,7 @@ void ExpandTypes(std::vector<std::string>* list) {
   if (has_mime_type_utf8 && !has_utf8_string)
     list->push_back(kUtf8String);
   if (has_utf8_string && !has_mime_type_utf8)
-    list->push_back(kMimeTypeUtf8);
+    list->push_back(kMimeTypeTextUtf8);
 }
 
 XID FindXEventTarget(const XEvent& xev) {
@@ -188,7 +187,7 @@ bool X11ClipboardOzone::OnSelectionRequest(
     std::string key = target_name;
     // Allow conversions for text/plain[;charset=utf-8] <=> [UTF8_]STRING.
     if (key == kUtf8String && !Contains(offer_data_map, kUtf8String)) {
-      key = kMimeTypeUtf8;
+      key = kMimeTypeTextUtf8;
     } else if (key == kString && !Contains(offer_data_map, kString)) {
       key = kMimeTypeText;
     }
@@ -355,7 +354,7 @@ void X11ClipboardOzone::ReadRemoteClipboard(XAtom selection) {
   if (!Contains(selection_state.mime_types, target)) {
     if (target == kMimeTypeText) {
       target = kString;
-    } else if (target == kMimeTypeUtf8) {
+    } else if (target == kMimeTypeTextUtf8) {
       target = kUtf8String;
     }
   }

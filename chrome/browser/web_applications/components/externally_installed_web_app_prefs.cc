@@ -210,4 +210,14 @@ void ExternallyInstalledWebAppPrefs::SetIsPlaceholder(const GURL& url,
   app_entry->SetBoolKey(kIsPlaceholder, is_placeholder);
 }
 
+bool ExternallyInstalledWebAppPrefs::IsPlaceholderApp(
+    const AppId& app_id) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  const base::Value* app_prefs = GetPreferenceValue(pref_service_, app_id);
+  if (!app_prefs || !app_prefs->is_dict())
+    return false;
+  return app_prefs->FindBoolKey(kIsPlaceholder).value_or(false);
+}
+
 }  // namespace web_app

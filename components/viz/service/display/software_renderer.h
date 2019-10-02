@@ -79,8 +79,8 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
   void DrawTextureQuad(const TextureDrawQuad* quad);
   void DrawTileQuad(const TileDrawQuad* quad);
   void DrawUnsupportedQuad(const DrawQuad* quad);
-  bool ShouldApplyBackdropFilters(
-      const cc::FilterOperations* backdrop_filters) const;
+  bool ShouldApplyBackdropFilters(const cc::FilterOperations* backdrop_filters,
+                                  const RenderPassDrawQuad* quad) const;
   sk_sp<SkImage> ApplyImageFilter(SkImageFilter* filter,
                                   const RenderPassDrawQuad* quad,
                                   const SkBitmap& to_filter,

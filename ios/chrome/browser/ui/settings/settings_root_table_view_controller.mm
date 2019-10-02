@@ -353,7 +353,10 @@ NSString* const kSettingsToolbarDeleteButtonId =
   self.savedBarButtonItemPosition = kUndefinedBarButtonItemPosition;
 }
 
-- (BOOL)shouldDismissViewControllerBySwipeDown {
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (BOOL)presentationControllerShouldDismiss:
+    (UIPresentationController*)presentationController {
   return YES;
 }
 

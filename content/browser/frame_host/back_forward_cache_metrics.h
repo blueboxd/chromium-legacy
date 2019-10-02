@@ -18,6 +18,7 @@ class Origin;
 
 namespace content {
 class NavigationEntryImpl;
+class NavigationRequest;
 class RenderFrameHostImpl;
 
 // Helper class for recording metrics around history navigations.
@@ -40,6 +41,16 @@ class BackForwardCacheMetrics
     kWasGrantedMediaAccess,
     kBlocklistedFeatures,
     kDisableForRenderFrameHostCalled
+  };
+
+  // Please keep in sync with BackForwardCacheHistoryNavigationOutcome in
+  // tools/metrics/histograms/enums.xml.
+  enum class HistoryNavigationOutcome {
+    kRestored = 0,
+    kNotCached = 1,
+    kEvicted = 2,
+    kNotCachedDueToExperimentCondition = 3,
+    kMaxValue = kNotCachedDueToExperimentCondition,
   };
 
   // Creates a potential new metrics object for the navigation.
@@ -68,9 +79,7 @@ class BackForwardCacheMetrics
   void MainFrameDidStartNavigationToDocument();
 
   // Notifies that an associated entry has committed a navigation.
-  void DidCommitNavigation(int64_t navigation_id,
-                           int64_t navigation_entry_id,
-                           bool is_main_frame_navigation);
+  void DidCommitNavigation(NavigationRequest* navigation_request);
 
   // Records when another navigation commits away from the most recent entry
   // associated with |this|.  This is the point in time that the previous
@@ -81,6 +90,10 @@ class BackForwardCacheMetrics
   // It should be called at the same time when the document might have been
   // placed in the back-forward cache.
   void RecordFeatureUsage(RenderFrameHostImpl* main_frame);
+
+  // Marks when the page is evicted.
+  // TODO(hajimehoshi): Add the parameter representing the reason.
+  void MarkEvictedFromBackForwardCache();
 
   // Injects a clock for mocking time.
   // Should be called only from the UI thread.
@@ -120,6 +133,8 @@ class BackForwardCacheMetrics
 
   base::Optional<base::TimeTicks> started_navigation_timestamp_;
   base::Optional<base::TimeTicks> navigated_away_from_main_document_timestamp_;
+
+  bool evicted_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BackForwardCacheMetrics);
 };

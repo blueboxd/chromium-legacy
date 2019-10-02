@@ -4,7 +4,9 @@
 
 #include "content/browser/frame_host/back_forward_cache_metrics.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -91,21 +93,37 @@ void BackForwardCacheMetrics::MainFrameDidStartNavigationToDocument() {
 }
 
 void BackForwardCacheMetrics::DidCommitNavigation(
-    int64_t navigation_id,
-    int64_t navigation_entry_id,
-    bool is_main_frame_navigation) {
+    NavigationRequest* navigation) {
+  bool is_history_navigation =
+      navigation->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK;
+  if (navigation->IsInMainFrame() && !navigation->IsSameDocument() &&
+      is_history_navigation) {
+    // TODO(hajimehoshi): Use kNotCachedDueToExperimentCondition if the
+    // experiment condition does not match.
+    HistoryNavigationOutcome outcome = HistoryNavigationOutcome::kNotCached;
+    if (navigation->is_served_from_back_forward_cache())
+      outcome = HistoryNavigationOutcome::kRestored;
+    if (evicted_ || last_committed_main_frame_navigation_id_ == -1) {
+      DCHECK(!navigation->is_served_from_back_forward_cache());
+      outcome = HistoryNavigationOutcome::kEvicted;
+    }
+    UMA_HISTOGRAM_ENUMERATION("BackForwardCache.HistoryNavigationOutcome",
+                              outcome, HistoryNavigationOutcome::kMaxValue);
+    evicted_ = false;
+  }
+
   if (last_committed_main_frame_navigation_id_ != -1 &&
-      is_main_frame_navigation) {
+      navigation->IsInMainFrame()) {
     // We've visited an entry associated with this main frame document before,
     // so record metrics to determine whether it might be a back-forward cache
     // hit.
     ukm::builders::HistoryNavigation builder(ukm::ConvertToSourceId(
-        navigation_id, ukm::SourceIdType::NAVIGATION_ID));
+        navigation->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID));
     builder.SetLastCommittedSourceIdForTheSameDocument(
         ukm::ConvertToSourceId(last_committed_main_frame_navigation_id_,
                                ukm::SourceIdType::NAVIGATION_ID));
     builder.SetNavigatedToTheMostRecentEntryForDocument(
-        navigation_entry_id == last_committed_navigation_entry_id_);
+        navigation->nav_entry_id() == last_committed_navigation_entry_id_);
     builder.SetMainFrameFeatures(main_frame_features_);
     builder.SetSameOriginSubframesFeatures(same_origin_frames_features_);
     builder.SetCrossOriginSubframesFeatures(cross_origin_frames_features_);
@@ -121,9 +139,9 @@ void BackForwardCacheMetrics::DidCommitNavigation(
     }
     builder.Record(ukm::UkmRecorder::Get());
   }
-  if (is_main_frame_navigation)
-    last_committed_main_frame_navigation_id_ = navigation_id;
-  last_committed_navigation_entry_id_ = navigation_entry_id;
+  if (navigation->IsInMainFrame())
+    last_committed_main_frame_navigation_id_ = navigation->GetNavigationId();
+  last_committed_navigation_entry_id_ = navigation->nav_entry_id();
 
   navigated_away_from_main_document_timestamp_ = base::nullopt;
   started_navigation_timestamp_ = base::nullopt;
@@ -165,6 +183,10 @@ void BackForwardCacheMetrics::CollectFeatureUsageFromSubtree(
     CollectFeatureUsageFromSubtree(rfh->child_at(i)->current_frame_host(),
                                    main_frame_origin);
   }
+}
+
+void BackForwardCacheMetrics::MarkEvictedFromBackForwardCache() {
+  evicted_ = true;
 }
 
 }  // namespace content

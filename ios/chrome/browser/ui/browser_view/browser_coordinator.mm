@@ -35,6 +35,7 @@
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/open_in/open_in_mediator.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
+#import "ios/chrome/browser/ui/passwords/password_breach_coordinator.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
@@ -114,6 +115,10 @@
 
 // Coordinator for the PassKit UI presentation.
 @property(nonatomic, strong) PassKitCoordinator* passKitCoordinator;
+
+// Coordinator for the password breach UI presentation.
+@property(nonatomic, strong)
+    PasswordBreachCoordinator* passwordBreachCoordinator;
 
 // Used to display the Print UI. Nil if not visible.
 // TODO(crbug.com/910017): Convert to coordinator.
@@ -215,6 +220,8 @@
   [self.readingListCoordinator stop];
   self.readingListCoordinator = nil;
 
+  [self.passwordBreachCoordinator stop];
+
   [self.viewController clearPresentedStateWithCompletion:completion
                                           dismissOmnibox:dismissOmnibox];
 }
@@ -313,6 +320,9 @@
   self.passKitCoordinator = [[PassKitCoordinator alloc]
       initWithBaseViewController:self.viewController];
 
+  self.passwordBreachCoordinator = [[PasswordBreachCoordinator alloc]
+      initWithBaseViewController:self.viewController];
+
   self.printController = [[PrintController alloc]
       initWithContextGetter:self.browserState->GetRequestContext()];
 
@@ -360,6 +370,9 @@
 
   [self.passKitCoordinator stop];
   self.passKitCoordinator = nil;
+
+  [self.passwordBreachCoordinator stop];
+  self.passwordBreachCoordinator = nil;
 
   self.printController = nil;
 

@@ -38,7 +38,14 @@ cca.views.camera.Layout = function() {
    * @private
    */
   this.squareVideo_ =
-      cca.views.camera.Layout.cssStyle_('body.square-preview #preview-video');
+      cca.views.camera.Layout.cssStyle_('body.square-preview .preview-content');
+
+  /**
+   * CSS style of what is currently put as camera preview.
+   * @type {CSSStyleDeclaration}
+   * @private
+   */
+  this.previewContent_ = cca.views.camera.Layout.cssStyle_('.preview-content');
 
   // End of properties, seal the object.
   Object.seal(this);
@@ -73,7 +80,9 @@ cca.views.camera.Layout.prototype.updatePreviewSize_ = function() {
   // it may fill up the window or be letterboxed when fullscreen/maximized.
   // Don't use app-window.innerBounds' width/height properties during resizing
   // as they are not updated immediately.
-  var video = document.querySelector('#preview-video');
+  const video = document.querySelector('#preview-video');
+  let contentWidth = 0;
+  let contentHeight = 0;
   if (video.videoHeight) {
     var scale = cca.state.get('square-mode') ?
         Math.min(window.innerHeight, window.innerWidth) /
@@ -81,15 +90,19 @@ cca.views.camera.Layout.prototype.updatePreviewSize_ = function() {
         Math.min(
             window.innerHeight / video.videoHeight,
             window.innerWidth / video.videoWidth);
-    video.width = scale * video.videoWidth;
-    video.height = scale * video.videoHeight;
+    contentWidth = scale * video.videoWidth;
+    contentHeight = scale * video.videoHeight;
+    this.previewContent_.setProperty('width', `${contentWidth}px`);
+    this.previewContent_.setProperty('height', `${contentHeight}px`);
   }
-  var [viewportW, viewportH] = [video.width, video.height];
+  var [viewportW, viewportH] = [contentWidth, contentHeight];
   cca.state.set('square-preview', cca.state.get('square-mode'));
   if (cca.state.get('square-mode')) {
-    viewportW = viewportH = Math.min(video.width, video.height);
-    this.squareVideo_.setProperty('left', `${(viewportW - video.width) / 2}px`);
-    this.squareVideo_.setProperty('top', `${(viewportH - video.height) / 2}px`);
+    viewportW = viewportH = Math.min(contentWidth, contentHeight);
+    this.squareVideo_.setProperty(
+        'left', `${(viewportW - contentWidth) / 2}px`);
+    this.squareVideo_.setProperty(
+        'top', `${(viewportH - contentHeight) / 2}px`);
     this.squareViewport_.setProperty('width', `${viewportW}px`);
     this.squareViewport_.setProperty('height', `${viewportH}px`);
   }

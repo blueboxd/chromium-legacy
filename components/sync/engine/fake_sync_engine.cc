@@ -46,6 +46,9 @@ void FakeSyncEngine::SetEncryptionPassphrase(const std::string& passphrase) {}
 
 void FakeSyncEngine::SetDecryptionPassphrase(const std::string& passphrase) {}
 
+void FakeSyncEngine::AddTrustedVaultDecryptionKeys(
+    const std::vector<std::string>& keys) {}
+
 void FakeSyncEngine::StopSyncingForShutdown() {}
 
 void FakeSyncEngine::Shutdown(ShutdownReason reason) {}

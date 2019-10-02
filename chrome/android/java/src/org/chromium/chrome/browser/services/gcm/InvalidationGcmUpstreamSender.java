@@ -22,6 +22,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.components.sync.SyncConstants;
@@ -67,7 +68,8 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
         }
 
         // Attempt to retrieve a token for the user.
-        OAuth2TokenService.getAccessToken(account, SyncConstants.CHROME_SYNC_OAUTH2_SCOPE,
+        IdentityServicesProvider.getOAuth2TokenService().getAccessToken(account,
+                SyncConstants.CHROME_SYNC_OAUTH2_SCOPE,
                 new OAuth2TokenService.GetAccessTokenCallback() {
                     @Override
                     public void onGetTokenSuccess(final String token) {

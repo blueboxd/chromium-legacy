@@ -5,14 +5,13 @@
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 
 #include "base/files/file_util.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
 namespace ui {
-
-constexpr char kTextMimeType[] = "text/plain";
-constexpr char kTextMimeTypeUtf8[] = "text/plain;charset=utf-8";
 
 WaylandDataSource::WaylandDataSource(wl_data_source* data_source,
                                      WaylandConnection* connection)
@@ -30,8 +29,8 @@ void WaylandDataSource::WriteToClipboard(
     const PlatformClipboard::DataMap& data_map) {
   for (const auto& data : data_map) {
     wl_data_source_offer(data_source_.get(), data.first.c_str());
-    if (strcmp(data.first.c_str(), kTextMimeType) == 0)
-      wl_data_source_offer(data_source_.get(), kTextMimeTypeUtf8);
+    if (strcmp(data.first.c_str(), kMimeTypeText) == 0)
+      wl_data_source_offer(data_source_.get(), kMimeTypeTextUtf8);
   }
   wl_data_device_set_selection(connection_->data_device(), data_source_.get(),
                                connection_->serial());
@@ -39,16 +38,25 @@ void WaylandDataSource::WriteToClipboard(
   connection_->ScheduleFlush();
 }
 
-void WaylandDataSource::UpdateDataMap(
-    const PlatformClipboard::DataMap& data_map) {
-  data_map_ = data_map;
-}
-
 void WaylandDataSource::Offer(const ui::OSExchangeData& data) {
-  // TODO(jkim): Handle mime types based on data.
+  // Drag'n'drop manuals usually suggest putting data in order so the more
+  // specific a MIME type is, the earlier it occurs in the list.  Wayland specs
+  // don't say anything like that, but here we follow that common practice:
+  // begin with URIs and end with plain text.  Just in case.
   std::vector<std::string> mime_types;
-  mime_types.push_back(kTextMimeType);
-  mime_types.push_back(kTextMimeTypeUtf8);
+  if (data.HasFile()) {
+    mime_types.push_back(kMimeTypeURIList);
+  }
+  if (data.HasURL(ui::OSExchangeData::FilenameToURLPolicy::CONVERT_FILENAMES)) {
+    mime_types.push_back(kMimeTypeMozillaURL);
+  }
+  if (data.HasHtml()) {
+    mime_types.push_back(kMimeTypeHTML);
+  }
+  if (data.HasString()) {
+    mime_types.push_back(kMimeTypeTextUtf8);
+    mime_types.push_back(kMimeTypeText);
+  }
 
   source_window_ =
       connection_->wayland_window_manager()->GetCurrentFocusedWindow();
@@ -94,8 +102,8 @@ void WaylandDataSource::OnSend(void* data,
   } else {
     base::Optional<std::vector<uint8_t>> mime_data;
     self->GetClipboardData(mime_type, &mime_data);
-    if (!mime_data.has_value() && strcmp(mime_type, kTextMimeTypeUtf8) == 0)
-      self->GetClipboardData(kTextMimeType, &mime_data);
+    if (!mime_data.has_value() && strcmp(mime_type, kMimeTypeTextUtf8) == 0)
+      self->GetClipboardData(kMimeTypeText, &mime_data);
     contents.assign(mime_data->begin(), mime_data->end());
   }
   bool result =
@@ -113,7 +121,8 @@ void WaylandDataSource::OnCancel(void* data, wl_data_source* source) {
     self->connection_->FinishDragSession(self->dnd_action_,
                                          self->source_window_);
   } else {
-    self->connection_->clipboard()->DataSourceCancelled();
+    self->connection_->clipboard()->DataSourceCancelled(
+        ClipboardBuffer::kCopyPaste);
   }
 }
 
@@ -131,17 +140,6 @@ void WaylandDataSource::OnAction(void* data,
                                  uint32_t dnd_action) {
   WaylandDataSource* self = static_cast<WaylandDataSource*>(data);
   self->dnd_action_ = dnd_action;
-}
-
-void WaylandDataSource::GetClipboardData(
-    const std::string& mime_type,
-    base::Optional<std::vector<uint8_t>>* data) {
-  auto it = data_map_.find(mime_type);
-  if (it != data_map_.end()) {
-    data->emplace(it->second);
-    // TODO: return here?
-    return;
-  }
 }
 
 void WaylandDataSource::GetDragData(const std::string& mime_type,

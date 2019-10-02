@@ -128,9 +128,9 @@ void JsJavaConfiguratorHost::NotifyFrame(
             render_frame_host,
             pending_remote.InitWithNewEndpointAndPassReceiver(),
             js_object.listener_ref_, js_object.allowed_origin_rules_));
-    js_objects.push_back(std::move(
-        mojom::JsObject::New(js_object.name_, std::move(pending_remote),
-                             js_object.allowed_origin_rules_)));
+    js_objects.push_back(mojom::JsObject::New(js_object.name_,
+                                              std::move(pending_remote),
+                                              js_object.allowed_origin_rules_));
   }
   configurator_remote->SetJsObjects(std::move(js_objects));
 }

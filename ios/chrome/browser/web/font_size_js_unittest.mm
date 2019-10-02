@@ -59,16 +59,8 @@ class FontSizeJsTest : public web::WebJsTest<web::WebTestWithWebState> {
 
 // Tests that __gCrWeb.accessibility.adjustFontSize works for any scale.
 TEST_F(FontSizeJsTest, TestAdjustFontSizeForScale) {
-  // TODO(crbug.com/983776): This test fails when compiled with Xcode 10 and
-  // running on iOS 13 because expected font size and actual font size don't
-  // match. Re-enable this test when Xcode 11 is used for compiling.
-#if !defined(__IPHONE_13_0) || (__IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_13_0)
-  if (base::ios::IsRunningOnIOS13OrLater()) {
-    return;
-  }
-#endif
-  // TODO(crbug.com/983776): This test also appears to be generally broken on
-  // iPads with beta 5.  It appears to be a simulator bug.  Re-enable on beta 6.
+  // TODO(crbug.com/983776): This test fails on ipad since beta5 due to a
+  // simulator bug. Re-enable this once the bug is fixed.
   if (base::ios::IsRunningOnIOS13OrLater() &&
       ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
     return;
@@ -188,16 +180,8 @@ TEST_F(FontSizeJsTest, TestAdjustFontSizeForScale) {
 
 // Tests that __gCrWeb.accessibility.adjustFontSize works for any CSS unit.
 TEST_F(FontSizeJsTest, TestAdjustFontSizeForUnit) {
-  // TODO(crbug.com/983776): This test fails when compiled with Xcode 10 and
-  // running on iOS 13 because expected font size and actual font size don't
-  // match. Re-enable this test when Xcode 11 is used for compiling.
-#if !defined(__IPHONE_13_0) || (__IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_13_0)
-  if (base::ios::IsRunningOnIOS13OrLater()) {
-    return;
-  }
-#endif
-  // TODO(crbug.com/983776): This test also appears to be generally broken on
-  // iPads with beta 5.  It appears to be a simulator bug.  Re-enable on beta 6.
+  // TODO(crbug.com/983776): This test fails on ipad since beta5 due to a
+  // simulator bug. Re-enable this once the bug is fixed.
   if (base::ios::IsRunningOnIOS13OrLater() &&
       ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
     return;
@@ -269,16 +253,8 @@ TEST_F(FontSizeJsTest, TestAdjustFontSizeForUnit) {
 
 // Tests that __gCrWeb.accessibility.adjustFontSize works for nested elements.
 TEST_F(FontSizeJsTest, TestAdjustFontSizeForNestedElements) {
-  // TODO(crbug.com/983776): This test fails when compiled with Xcode 10 and
-  // running on iOS 13 because expected font size and actual font size don't
-  // match. Re-enable this test when Xcode 11 is used for compiling.
-#if !defined(__IPHONE_13_0) || (__IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_13_0)
-  if (base::ios::IsRunningOnIOS13OrLater()) {
-    return;
-  }
-#endif
-  // TODO(crbug.com/983776): This test also appears to be generally broken on
-  // iPads with beta 5.  It appears to be a simulator bug.  Re-enable on beta 6.
+  // TODO(crbug.com/983776): This test fails on ipad since beta5 due to a
+  // simulator bug. Re-enable this once the bug is fixed.
   if (base::ios::IsRunningOnIOS13OrLater() &&
       ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
     return;

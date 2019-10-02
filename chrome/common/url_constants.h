@@ -150,9 +150,6 @@ extern const char kGoogleAccountChooserURL[];
 // URL of the Google Password Manager.
 extern const char kGooglePasswordManagerURL[];
 
-// URL for Password Checkup.
-extern const char kPasswordCheckupURL[];
-
 // The URL for the "Learn more" page for the usage/crash reporting option in the
 // first run dialog.
 extern const char kLearnMoreReportingURL[];

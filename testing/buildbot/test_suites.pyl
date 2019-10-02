@@ -423,6 +423,7 @@
       'ozone_unittests': {},
       'pdf_unittests': {},
       'printing_unittests': {},
+      'profile_provider_unittest': {},
       'sandbox_linux_unittests': {},
       'sql_unittests': {},
       'url_unittests': {},

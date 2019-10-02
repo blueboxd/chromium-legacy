@@ -222,8 +222,6 @@ class ProfileSyncService : public SyncService,
   bool IsPassphrasePrompted() const;
   void SetPassphrasePrompted(bool prompted);
 
-  PassphraseRequiredReason GetPassphraseRequiredReasonForTest() const;
-
   // Returns whether or not the underlying sync engine has made any
   // local changes to items that have not yet been synced with the
   // server.

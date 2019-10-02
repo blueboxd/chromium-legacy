@@ -8,6 +8,10 @@
 #include <wayland-client-core.h>
 #include <memory>
 
+struct gtk_primary_selection_device;
+struct gtk_primary_selection_device_manager;
+struct gtk_primary_selection_offer;
+struct gtk_primary_selection_source;
 struct wl_buffer;
 struct wl_callback;
 struct wl_compositor;
@@ -45,6 +49,30 @@ namespace wl {
 
 template <typename T>
 struct ObjectTraits;
+
+template <>
+struct ObjectTraits<gtk_primary_selection_device_manager> {
+  static const wl_interface* interface;
+  static void (*deleter)(gtk_primary_selection_device_manager*);
+};
+
+template <>
+struct ObjectTraits<gtk_primary_selection_device> {
+  static const wl_interface* interface;
+  static void (*deleter)(gtk_primary_selection_device*);
+};
+
+template <>
+struct ObjectTraits<gtk_primary_selection_offer> {
+  static const wl_interface* interface;
+  static void (*deleter)(gtk_primary_selection_offer*);
+};
+
+template <>
+struct ObjectTraits<gtk_primary_selection_source> {
+  static const wl_interface* interface;
+  static void (*deleter)(gtk_primary_selection_source*);
+};
 
 template <>
 struct ObjectTraits<wl_buffer> {

@@ -1546,6 +1546,12 @@ config("default_warnings") {
           cflags += [
             # TODO(https://crbug.com/1010111): Evaluate and possible enable.
             "-Wno-enum-compare-conditional",
+
+            # TODO(https://crbug.com/1010458): Figure out plan forward,
+            # see bug. Depending on how many instances there are, either
+            # turn off warning when rolling this in, then fix and turn back on,
+            # or fix before the roll.
+            "-Wno-error=pessimizing-move",
           ]
         }
       }

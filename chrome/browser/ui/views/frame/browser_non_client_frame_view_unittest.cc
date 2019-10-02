@@ -51,14 +51,7 @@ class BrowserNonClientFrameViewPopupTest
       : BrowserNonClientFrameViewTest(Browser::TYPE_POPUP) {}
 };
 
-// TODO(crbug.com/998369): Flaky on Linux TSAN and ASAN.
-#if defined(OS_LINUX) && \
-    (defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER))
-#define MAYBE_HitTestPopupTopChrome DISABLED_HitTestPopupTopChrome
-#else
-#define MAYBE_HitTestPopupTopChrome HitTestPopupTopChrome
-#endif
-TEST_F(BrowserNonClientFrameViewPopupTest, MAYBE_HitTestPopupTopChrome) {
+TEST_F(BrowserNonClientFrameViewPopupTest, HitTestPopupTopChrome) {
   EXPECT_FALSE(frame_view_->HitTestRect(gfx::Rect(-1, 4, 1, 1)));
   EXPECT_FALSE(frame_view_->HitTestRect(gfx::Rect(4, -1, 1, 1)));
   const int top_inset = frame_view_->GetTopInset(false);

@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/disallow_new_wrapper.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -146,8 +147,8 @@ class BodyJsonConsumer final : public BodyConsumerBase {
     if (v8::JSON::Parse(Resolver()->GetScriptState()->GetContext(),
                         input_string)
             .ToLocal(&parsed)) {
-      ResolveLater(
-          ScriptValue(Resolver()->GetScriptState()->GetIsolate(), parsed));
+      ResolveLater(WrapPersistent(WrapDisallowNew(
+          ScriptValue(Resolver()->GetScriptState()->GetIsolate(), parsed))));
     } else
       Resolver()->Reject(trycatch.Exception());
   }

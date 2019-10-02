@@ -40,8 +40,12 @@ void ManifestUpdateManager::MaybeUpdate(const GURL& url,
     return;
   }
 
-  std::unique_ptr<ManifestUpdateTask>& current_task = tasks_[app_id];
-  if (current_task)
+  if (registrar_->IsPlaceholderApp(app_id)) {
+    NotifyResult(url, ManifestUpdateResult::kAppIsPlaceholder);
+    return;
+  }
+
+  if (base::Contains(tasks_, app_id))
     return;
 
   if (!MaybeConsumeUpdateCheck(app_id)) {
@@ -49,12 +53,13 @@ void ManifestUpdateManager::MaybeUpdate(const GURL& url,
     return;
   }
 
-  current_task = std::make_unique<ManifestUpdateTask>(
-      url, app_id, web_contents,
-      base::Bind(&ManifestUpdateManager::OnUpdateStopped,
-                 base::Unretained(this)),
-      hang_update_checks_for_testing_, *registrar_, ui_manager_,
-      install_manager_);
+  tasks_.insert_or_assign(
+      app_id, std::make_unique<ManifestUpdateTask>(
+                  url, app_id, web_contents,
+                  base::Bind(&ManifestUpdateManager::OnUpdateStopped,
+                             base::Unretained(this)),
+                  hang_update_checks_for_testing_, *registrar_, ui_manager_,
+                  install_manager_));
 }
 
 // AppRegistrarObserver:

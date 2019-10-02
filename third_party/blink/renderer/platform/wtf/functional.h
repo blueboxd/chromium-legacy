@@ -209,6 +209,9 @@ struct CheckGCedTypeRestriction {
                 "GCed types are forbidden as bound parameters.");
   static_assert(!WTF::IsStackAllocatedType<T>::value,
                 "Stack allocated types are forbidden as bound parameters.");
+  static_assert(
+      !(WTF::IsDisallowNew<T>::value && WTF::IsTraceable<T>::value),
+      "Traceable disallow new types are forbidden as bound parameters.");
 };
 
 template <typename Index, typename... Args>

@@ -527,10 +527,36 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
+void NGFlexLayoutAlgorithm::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
+  WritingMode child_writing_mode =
+      flex_item.ng_input_node.Style().GetWritingMode();
+  NGConstraintSpaceBuilder space_builder(ConstraintSpace(), child_writing_mode,
+                                         /* is_new_fc */ true);
+  SetOrthogonalFallbackInlineSizeIfNeeded(Style(), flex_item.ng_input_node,
+                                          &space_builder);
+
+  LogicalSize available_size(
+      flex_item.flexed_content_size + flex_item.main_axis_border_padding,
+      flex_item.cross_axis_size);
+  if (is_column_) {
+    available_size.Transpose();
+    if (!IsColumnContainerMainSizeDefinite() &&
+        !IsItemMainSizeDefinite(flex_item.ng_input_node)) {
+      space_builder.SetIsFixedBlockSizeIndefinite(true);
+    }
+  }
+  space_builder.SetAvailableSize(available_size);
+  space_builder.SetPercentageResolutionSize(content_box_size_);
+  space_builder.SetIsFixedInlineSize(true);
+  space_builder.SetIsFixedBlockSize(true);
+  NGConstraintSpace child_space = space_builder.ToConstraintSpace();
+  flex_item.layout_result =
+      flex_item.ng_input_node.Layout(child_space, /* break_token */ nullptr);
+}
+
 void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
-  // TODO(dgrogan): This needs to eventually encompass all of the behavior in
-  // LayoutFlexibleBox::RepositionLogicalHeightDependentFlexItems. It currently
-  // does AlignFlexLines and the stretch part of AlignChildren.
+  // TODO(dgrogan): Implement the behavior from
+  // LayoutFlexibleBox::LayoutColumnReverse here.
   LayoutUnit final_content_cross_size =
       is_column_ ? container_builder_.InlineSize() -
                        border_scrollbar_padding_.InlineSum()
@@ -541,46 +567,18 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
 
   algorithm_->AlignFlexLines(final_content_cross_size);
 
+  algorithm_->AlignChildren();
+
+  // TODO(dgrogan): Implement behavior from legacy's FlipForWrapReverse and
+  // FlipForRightToLeftColumn here.
+
   for (FlexLine& line_context : algorithm_->FlexLines()) {
     for (wtf_size_t child_number = 0;
          child_number < line_context.line_items.size(); ++child_number) {
       FlexItem& flex_item = line_context.line_items[child_number];
 
-      // UpdateAutoMarginsInCrossAxis updates the flex_item's desired_location
-      // if the auto margins have an effect.
-      if (!flex_item.UpdateAutoMarginsInCrossAxis(
-              std::max(LayoutUnit(), flex_item.AvailableAlignmentSpace())) &&
-          flex_item.Alignment() == ItemPosition::kStretch) {
-        flex_item.ComputeStretchedSize();
-
-        WritingMode child_writing_mode =
-            flex_item.ng_input_node.Style().GetWritingMode();
-        NGConstraintSpaceBuilder space_builder(ConstraintSpace(),
-                                               child_writing_mode,
-                                               /* is_new_fc */ true);
-        SetOrthogonalFallbackInlineSizeIfNeeded(
-            Style(), flex_item.ng_input_node, &space_builder);
-
-        LogicalSize available_size(
-            flex_item.flexed_content_size + flex_item.main_axis_border_padding,
-            flex_item.cross_axis_size);
-        if (is_column_) {
-          available_size.Transpose();
-          if (!IsColumnContainerMainSizeDefinite() &&
-              !IsItemMainSizeDefinite(flex_item.ng_input_node)) {
-            space_builder.SetIsFixedBlockSizeIndefinite(true);
-          }
-        }
-        space_builder.SetAvailableSize(available_size);
-        space_builder.SetPercentageResolutionSize(content_box_size_);
-        space_builder.SetIsFixedInlineSize(true);
-        space_builder.SetIsFixedBlockSize(true);
-        NGConstraintSpace child_space = space_builder.ToConstraintSpace();
-        flex_item.layout_result = flex_item.ng_input_node.Layout(
-            child_space, /* break_token */ nullptr);
-      }
-      // TODO(dgrogan): Add an extra pass for kColumnReverse containers like
-      // legacy does in LayoutColumnReverse.
+      if (DoesItemStretch(flex_item.ng_input_node))
+        ApplyStretchAlignmentToChild(flex_item);
 
       // flex_item.desired_location stores the main axis offset in X and the
       // cross axis offset in Y. But AddChild wants offset from parent

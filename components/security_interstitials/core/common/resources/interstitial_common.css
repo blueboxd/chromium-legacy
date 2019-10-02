@@ -132,7 +132,7 @@ input[type=checkbox]:focus ~ .checkbox:after {
 
 #extended-reporting-opt-in {
   font-size: .875em;
-  margin-top: 39px;
+  margin-top: 32px;
 }
 
 #extended-reporting-opt-in label {
@@ -167,7 +167,7 @@ input[type=checkbox]:focus ~ .checkbox:after {
   display: block;
   height: 1em;
   left: -1em;
-  padding: var(--padding);
+  padding-inline-start: var(--padding);
   position: absolute;
   right: 0;
   top: -.5em;
@@ -293,7 +293,7 @@ input[type=checkbox]:checked ~ .checkbox::before {
   body .nav-wrapper {
     background: var(--background-color);
     bottom: 0;
-    box-shadow: 0 -22px 40px var(--background-color);
+    box-shadow: 0 -12px 24px var(--background-color);
     left: 0;
     margin: 0 auto;
     max-width: 736px;
@@ -331,7 +331,8 @@ input[type=checkbox]:checked ~ .checkbox::before {
 
   button,
   [dir='rtl'] button,
-  button.small-link {
+  button.small-link,
+  .nav-wrapper .secondary-button {
     font-family: Roboto-Regular,Helvetica;
     font-size: .933em;
     margin: 6px 0;
@@ -418,6 +419,12 @@ input[type=checkbox]:checked ~ .checkbox::before {
   }
 }
 
+@media (max-height: 560px) and (min-height: 240px) and (orientation:landscape) {
+  .extended-reporting-has-checkbox #details {
+    padding-bottom: 80px;
+  }
+}
+
 @media (min-height: 500px) and (max-height: 650px) and (max-width: 414px) and
        (orientation: portrait) {
   .interstitial-wrapper {
@@ -461,7 +468,8 @@ input[type=checkbox]:checked ~ .checkbox::before {
     width: 100%;
   }
 
-  button {
+  button,
+  .nav-wrapper .secondary-button {
     padding: 16px 24px;
   }
 

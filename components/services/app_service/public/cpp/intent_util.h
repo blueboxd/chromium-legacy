@@ -22,6 +22,8 @@ namespace apps_util {
 // used as an escape. This essentially provides only the '*' wildcard part
 // of a normal regexp.
 // This function is transcribed from android's PatternMatcher#matchPattern.
+// See
+// https://android.googlesource.com/platform/frameworks/base.git/+/e93165456c3c28278f275566bd90bfbcf1a0e5f7/core/java/android/os/PatternMatcher.java#186
 bool MatchGlob(const std::string& value, const std::string& pattern);
 
 }  // namespace apps_util

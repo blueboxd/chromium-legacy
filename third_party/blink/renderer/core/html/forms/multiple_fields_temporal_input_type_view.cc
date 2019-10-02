@@ -314,6 +314,7 @@ bool MultipleFieldsTemporalInputTypeView::SetupDateTimeChooserParameters(
     DateTimeChooserParameters& parameters) {
   // TODO(iopopesc): Get the field information by parsing the datetime format.
   if (DateTimeEditElement* edit = GetDateTimeEditElement()) {
+    parameters.is_ampm_first = edit->IsFirstFieldAMPM();
     parameters.has_ampm = edit->HasField(DateTimeField::kAMPM);
     parameters.has_second = edit->HasField(DateTimeField::kSecond);
     parameters.has_millisecond = edit->HasField(DateTimeField::kMillisecond);

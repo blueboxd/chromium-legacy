@@ -178,7 +178,8 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
 #pragma mark - Public Methods
 
 - (BOOL)isPassphraseNeeded {
-  return _syncService->GetUserSettings()->IsPassphraseRequiredForDecryption();
+  return _syncService->GetUserSettings()
+      ->IsPassphraseRequiredForPreferredDataTypes();
 }
 
 - (BOOL)isConsentNeeded {

@@ -5,8 +5,7 @@
 // https://streams.spec.whatwg.org/#rs-class
 [
     Exposed=(Window,Worker,Worklet),
-    // TODO(yhirano): Remove CustomConstructor. See https://crbug.com/906476.
-    CustomConstructor(optional any underlyingSource, optional any strategy),
+    Constructor(optional any underlyingSource, optional any strategy),
     RaisesException=Constructor,
     ConstructorCallWith=ScriptState
 ] interface ReadableStream {

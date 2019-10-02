@@ -699,11 +699,6 @@ TEST_F('OSSettingsMultideviceSubpageTest', 'AllJsTests', () => {
 var OSSettingsPeoplePageAccountManagerTest =
     class extends OSSettingsBrowserTest {
   /** @override */
-  get featureList() {
-    return {enabled: ['chromeos::features::kAccountManager']};
-  }
-
-  /** @override */
   get browsePreload() {
     return super.browsePreload + 'people_page/account_manager.html';
   }

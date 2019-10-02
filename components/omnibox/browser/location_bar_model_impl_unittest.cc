@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "components/omnibox/browser/location_bar_model_delegate.h"
 #include "components/omnibox/browser/test_omnibox_client.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -110,7 +111,14 @@ TEST_F(LocationBarModelImplTest,
             model()->GetURLForDisplay());
 }
 
-TEST_F(LocationBarModelImplTest, PreventElisionWorks) {
+// TODO(https://crbug.com/1010418): Fix flakes on linux_chromium_asan_rel_ng and
+// re-enable this test.
+#if defined(OS_LINUX)
+#define MAYBE_PreventElisionWorks DISABLED_PreventElisionWorks
+#else
+#define MAYBE_PreventElisionWorks PreventElisionWorks
+#endif
+TEST_F(LocationBarModelImplTest, MAYBE_PreventElisionWorks) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       {omnibox::kHideSteadyStateUrlScheme,

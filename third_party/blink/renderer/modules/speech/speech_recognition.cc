@@ -60,9 +60,8 @@ void SpeechRecognition::start(ExceptionState& exception_state) {
       GetExecutionContext()->GetTaskRunner(blink::TaskType::kMiscPlatformAPI);
   mojo::PendingRemote<mojom::blink::SpeechRecognitionSessionClient>
       session_client;
-  binding_.Bind(session_client.InitWithNewPipeAndPassReceiver(),
-                GetExecutionContext()->GetInterfaceInvalidator(), task_runner);
-  binding_.set_connection_error_handler(WTF::Bind(
+  receiver_.Bind(session_client.InitWithNewPipeAndPassReceiver(), task_runner);
+  receiver_.set_disconnect_handler(WTF::Bind(
       &SpeechRecognition::OnConnectionError, WrapWeakPersistent(this)));
 
   mojo::PendingReceiver<mojom::blink::SpeechRecognitionSession>
@@ -175,7 +174,7 @@ void SpeechRecognition::Ended() {
   started_ = false;
   stopping_ = false;
   session_.reset();
-  binding_.Close();
+  receiver_.reset();
   DispatchEvent(*Event::Create(event_type_names::kEnd));
 }
 
@@ -189,6 +188,7 @@ ExecutionContext* SpeechRecognition::GetExecutionContext() const {
 
 void SpeechRecognition::ContextDestroyed(ExecutionContext*) {
   controller_ = nullptr;
+  receiver_.reset();
 }
 
 bool SpeechRecognition::HasPendingActivity() const {
@@ -222,7 +222,7 @@ SpeechRecognition::SpeechRecognition(LocalFrame* frame,
       controller_(SpeechRecognitionController::From(frame)),
       started_(false),
       stopping_(false),
-      binding_(this) {}
+      receiver_(this) {}
 
 SpeechRecognition::~SpeechRecognition() = default;
 

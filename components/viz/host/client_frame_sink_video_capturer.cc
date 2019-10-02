@@ -21,7 +21,7 @@ constexpr base::TimeDelta kReEstablishConnectionDelay =
 
 ClientFrameSinkVideoCapturer::ClientFrameSinkVideoCapturer(
     EstablishConnectionCallback callback)
-    : establish_connection_callback_(callback), consumer_binding_(this) {
+    : establish_connection_callback_(callback) {
   EstablishConnection();
 }
 
@@ -101,7 +101,7 @@ void ClientFrameSinkVideoCapturer::StopAndResetConsumer() {
 
   Stop();
   consumer_ = nullptr;
-  consumer_binding_.Close();
+  consumer_receiver_.reset();
 }
 
 void ClientFrameSinkVideoCapturer::RequestRefreshFrame() {
@@ -201,11 +201,9 @@ void ClientFrameSinkVideoCapturer::OnConnectionError() {
 }
 
 void ClientFrameSinkVideoCapturer::StartInternal() {
-  if (consumer_binding_)
-    consumer_binding_.Close();
-  mojom::FrameSinkVideoConsumerPtr consumer;
-  consumer_binding_.Bind(mojo::MakeRequest(&consumer));
-  capturer_->Start(std::move(consumer));
+  if (consumer_receiver_.is_bound())
+    consumer_receiver_.reset();
+  capturer_->Start(consumer_receiver_.BindNewPipeAndPassRemote());
 }
 
 void ClientFrameSinkVideoCapturer::OnOverlayDestroyed(Overlay* overlay) {

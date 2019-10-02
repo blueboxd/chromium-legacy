@@ -367,7 +367,9 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardFolderWithChildren) {
   EXPECT_EQ(base::ASCIIToUTF16("g1"), clipboard_result);
 }
 
-TEST_F(BookmarkNodeDataTest, WriteToClipboardFolderAndURL) {
+// TODO(https://crbug.com/1010415): This test is flaky on various platforms, fix
+// and re-enable it.
+TEST_F(BookmarkNodeDataTest, DISABLED_WriteToClipboardFolderAndURL) {
   BookmarkNodeData data;
   GURL url(GURL("http://foo.com"));
   const base::string16 title(ASCIIToUTF16("blah"));

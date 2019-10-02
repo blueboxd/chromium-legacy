@@ -152,16 +152,13 @@ class TestMirroringController
 class ConfigurationWaiter {
  public:
   explicit ConfigurationWaiter(DisplayConfigurator::TestApi* test_api)
-      : on_configured_callback_(base::Bind(&ConfigurationWaiter::OnConfigured,
-                                           base::Unretained(this))),
-        test_api_(test_api),
-        callback_result_(CALLBACK_NOT_CALLED) {}
+      : test_api_(test_api), callback_result_(CALLBACK_NOT_CALLED) {}
 
   ~ConfigurationWaiter() = default;
 
-  const DisplayConfigurator::ConfigurationCallback& on_configuration_callback()
-      const {
-    return on_configured_callback_;
+  DisplayConfigurator::ConfigurationCallback on_configuration_callback() {
+    return base::BindOnce(&ConfigurationWaiter::OnConfigured,
+                          base::Unretained(this));
   }
 
   CallbackResult callback_result() const { return callback_result_; }
@@ -189,9 +186,6 @@ class ConfigurationWaiter {
     CHECK_EQ(callback_result_, CALLBACK_NOT_CALLED);
     callback_result_ = status ? CALLBACK_SUCCESS : CALLBACK_FAILURE;
   }
-
-  // Passed with configuration requests to run OnConfigured().
-  const DisplayConfigurator::ConfigurationCallback on_configured_callback_;
 
   DisplayConfigurator::TestApi* test_api_;  // Not owned.
 

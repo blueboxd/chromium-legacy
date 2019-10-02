@@ -87,6 +87,8 @@ bool CanAcceptMoreMessages(const Port* port) {
   if (port->state == Port::kClosed)
     return false;
   if (port->peer_closed || port->remove_proxy_on_last_message) {
+    if (port->peer_lost_unexpectedly)
+      return port->message_queue.HasNextMessage();
     if (port->last_sequence_num_to_receive == next_sequence_num - 1)
       return false;
   }
@@ -1538,9 +1540,7 @@ void Node::DestroyAllPortsWithPeer(const NodeName& node_name,
           // messages.
 
           port->peer_closed = true;
-          port->last_sequence_num_to_receive =
-              port->message_queue.next_sequence_num() - 1;
-
+          port->peer_lost_unexpectedly = true;
           if (port->state == Port::kReceiving)
             ports_to_notify.push_back(local_port_ref);
         }

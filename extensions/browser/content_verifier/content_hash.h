@@ -120,11 +120,9 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
 
   const ComputedHashes::Reader& computed_hashes() const;
 
-  bool has_verified_contents() const {
-    return status_ >= Status::kHasVerifiedContents;
-  }
-
-  bool succeeded() const { return status_ >= Status::kSucceeded; }
+  // Returns whether or not computed_hashes.json (and, if needed,
+  // verified_contents.json too) was read correctly and is ready to use.
+  bool succeeded() const { return succeeded_; }
 
   // If ContentHash creation writes computed_hashes.json, then this returns the
   // FilePaths whose content hash didn't match expected hashes.
@@ -138,23 +136,12 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
   // for |this| to succeed.
   // TODO(lazyboy): Remove this once https://crbug.com/819832 is fixed.
   bool might_require_computed_hashes_force_creation() const {
-    return !succeeded() && has_verified_contents() &&
+    return !succeeded() && verified_contents_ != nullptr &&
            !did_attempt_creating_computed_hashes_;
   }
 
  private:
   friend class base::RefCountedThreadSafe<ContentHash>;
-
-  enum class Status {
-    // Retrieving hashes failed.
-    kInvalid,
-    // Retrieved valid verified_contents.json, but there was no
-    // computed_hashes.json.
-    kHasVerifiedContents,
-    // Both verified_contents.json and computed_hashes.json were read
-    // correctly.
-    kSucceeded,
-  };
 
   ContentHash(const ExtensionId& id,
               const base::FilePath& root,
@@ -198,7 +185,7 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
   const ExtensionId extension_id_;
   const base::FilePath extension_root_;
 
-  Status status_ = Status::kInvalid;
+  bool succeeded_ = false;
 
   bool did_attempt_creating_computed_hashes_ = false;
 

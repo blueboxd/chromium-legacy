@@ -420,8 +420,10 @@ class ProgressCenterPanel {
             this.generateSourceString_(item, panelItem.userData);
         panelItem.setAttribute('primary-text', primaryText);
         panelItem.setAttribute('data-progress-id', item.id);
-        if (item.subMessage) {
-          panelItem.setAttribute('secondary-text', item.subMessage);
+        if (item.destinationMessage) {
+          panelItem.setAttribute(
+              'secondary-text',
+              strf('TO_FOLDER_NAME', item.destinationMessage));
         }
         // On progress panels, make the cancel button aria-lable more useful.
         const cancelLabel = strf('CANCEL_ACTIVITY_LABEL', primaryText);

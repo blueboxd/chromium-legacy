@@ -36,6 +36,14 @@ void NigoriHandlerProxy::OnPassphraseAccepted() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
+void NigoriHandlerProxy::OnTrustedVaultKeyRequired() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+void NigoriHandlerProxy::OnTrustedVaultKeyAccepted() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
 void NigoriHandlerProxy::OnBootstrapTokenUpdated(
     const std::string& bootrstrap_token,
     BootstrapTokenType type) {

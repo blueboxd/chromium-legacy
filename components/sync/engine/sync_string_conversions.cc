@@ -25,7 +25,6 @@ const char* ConnectionStatusToString(ConnectionStatus status) {
 // Helper function that converts a PassphraseRequiredReason value to a string.
 const char* PassphraseRequiredReasonToString(PassphraseRequiredReason reason) {
   switch (reason) {
-    ENUM_CASE(REASON_PASSPHRASE_NOT_REQUIRED);
     ENUM_CASE(REASON_ENCRYPTION);
     ENUM_CASE(REASON_DECRYPTION);
   }

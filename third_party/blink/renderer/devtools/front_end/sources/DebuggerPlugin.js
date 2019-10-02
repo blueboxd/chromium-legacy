@@ -435,6 +435,12 @@ Sources.DebuggerPlugin = class extends Sources.UISourceCodeFrame.Plugin {
     let startHighlight;
     let endHighlight;
 
+    const selectedCallFrame =
+        /** @type {!SDK.DebuggerModel.CallFrame} */ (UI.context.flavor(SDK.DebuggerModel.CallFrame));
+    if (!selectedCallFrame) {
+      return null;
+    }
+
     if (textSelection && !textSelection.isEmpty()) {
       if (textSelection.startLine !== textSelection.endLine || textSelection.startLine !== mouseLine ||
           mouseColumn < textSelection.startColumn || mouseColumn > textSelection.endColumn) {
@@ -476,7 +482,41 @@ Sources.DebuggerPlugin = class extends Sources.UISourceCodeFrame.Plugin {
         if (tokenBefore.type === 'js-meta') {
           break;
         }
+        if (tokenBefore.type === 'js-string-2') {
+          // If we hit a template literal, find the opening ` in this line.
+          // TODO(bmeurer): We should eventually replace this tokenization
+          // approach with a proper soluation based on parsing, maybe reusing
+          // the Parser and AST inside V8 for this (or potentially relying on
+          // acorn to do the job).
+          if (tokenBefore.endColumn < 2) {
+            return null;
+          }
+          startHighlight = line.lastIndexOf('`', tokenBefore.endColumn - 2);
+          if (startHighlight < 0) {
+            return null;
+          }
+          break;
+        }
         startHighlight = tokenBefore.startColumn;
+      }
+    }
+
+    // The eager evaluation on works sort of reliably within the top-most scope of
+    // the selected call frame, so don't even try outside the top-most scope.
+    const [scope] = selectedCallFrame.scopeChain();
+    if (scope && scope.startLocation() && scope.endLocation()) {
+      if (editorLineNumber < scope.startLocation().lineNumber) {
+        return null;
+      }
+      if (editorLineNumber === scope.startLocation().lineNumber &&
+          startHighlight < scope.startLocation().columnNumber) {
+        return null;
+      }
+      if (editorLineNumber > scope.endLocation().lineNumber) {
+        return null;
+      }
+      if (editorLineNumber === scope.endLocation().lineNumber && endHighlight > scope.endLocation().columnNumber) {
+        return null;
       }
     }
 
@@ -486,14 +526,9 @@ Sources.DebuggerPlugin = class extends Sources.UISourceCodeFrame.Plugin {
     return {
       box: anchorBox,
       show: async popover => {
-        const selectedCallFrame = UI.context.flavor(SDK.DebuggerModel.CallFrame);
-        if (!selectedCallFrame) {
-          return false;
-        }
         const evaluationText = this._textEditor.line(editorLineNumber).substring(startHighlight, endHighlight + 1);
         const resolvedText = await Sources.SourceMapNamesResolver.resolveExpression(
-            /** @type {!SDK.DebuggerModel.CallFrame} */ (selectedCallFrame), evaluationText, this._uiSourceCode,
-            editorLineNumber, startHighlight, endHighlight);
+            selectedCallFrame, evaluationText, this._uiSourceCode, editorLineNumber, startHighlight, endHighlight);
         const result = await selectedCallFrame.evaluate({
           expression: resolvedText || evaluationText,
           objectGroup: 'popover',

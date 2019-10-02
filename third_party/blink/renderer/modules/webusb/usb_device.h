@@ -116,6 +116,7 @@ class USBDevice : public ScriptWrappable, public ContextLifecycleObserver {
   wtf_size_t FindAlternateIndex(wtf_size_t interface_index,
                                 uint8_t alternate_setting) const;
   bool IsProtectedInterfaceClass(wtf_size_t interface_index) const;
+  bool EnsureNoDeviceChangeInProgress(ScriptPromiseResolver*) const;
   bool EnsureNoDeviceOrInterfaceChangeInProgress(ScriptPromiseResolver*) const;
   bool EnsureDeviceConfigured(ScriptPromiseResolver*) const;
   bool EnsureInterfaceClaimed(uint8_t interface_number,

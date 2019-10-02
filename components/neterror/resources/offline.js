@@ -93,7 +93,14 @@ var FPS = 60;
 var IS_HIDPI = window.devicePixelRatio > 1;
 
 /** @const */
-var IS_IOS = /iPad|iPhone|iPod/.test(window.navigator.platform);
+// iPads are returning "MacIntel" for iOS 13 (devices & simulators).
+// Chrome on macOS also returns "MacIntel" for navigator.platform,
+// but navigator.userAgent includes /Safari/.
+// TODO(crbug.com/998999): Fix navigator.userAgent such that it reliably
+// returns an agent string containing "CriOS".
+var IS_IOS = /iPad|iPhone|iPod|MacIntel/.test(navigator.platform) &&
+    !(/Safari/.test(navigator.userAgent));
+
 
 /** @const */
 var IS_MOBILE = /Android/.test(window.navigator.userAgent) || IS_IOS;

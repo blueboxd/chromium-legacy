@@ -156,17 +156,6 @@ const char kGoogleAccountChooserURL[] =
 
 const char kGooglePasswordManagerURL[] = "https://passwords.google.com";
 
-const char kPasswordCheckupURL[] =
-#if defined(OS_ANDROID)
-    "https://passwords.google.com/checkup/"
-    "start?utm_source=chrome&utm_medium=android&utm_campaign=leak_dialog&crch="
-    "true";
-#else
-    "https://passwords.google.com/checkup/"
-    "start?utm_source=chrome&utm_medium=desktop&utm_campaign=leak_dialog&crch="
-    "true";
-#endif
-
 const char kLearnMoreReportingURL[] =
     "https://support.google.com/chrome/?p=ui_usagestat";
 

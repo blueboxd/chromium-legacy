@@ -334,12 +334,6 @@
   }
 }
 
-#pragma mark - SettingsRootTableViewController
-
-- (BOOL)shouldDismissViewControllerBySwipeDown {
-  return !self.chromeActivityOverlayCoordinator.started;
-}
-
 #pragma mark - TableViewTextLinkCellDelegate
 
 - (void)tableViewTextLinkCell:(TableViewTextLinkCell*)cell
@@ -436,8 +430,8 @@
 
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
-  // Call dismiss to clean up state and  stop the Coordinator.
-  [self dismiss];
+  // Call prepareForDismissal to clean up state and  stop the Coordinator.
+  [self prepareForDismissal];
 }
 
 - (BOOL)presentationControllerShouldDismiss:

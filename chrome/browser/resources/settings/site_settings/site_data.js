@@ -75,15 +75,6 @@ Polymer({
 
     /** @private */
     listBlurred_: Boolean,
-
-    /** @private */
-    enableRemovingAllThirdPartyCookies_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableRemovingAllThirdPartyCookies') &&
-            (this.sites.length > 0);
-      }
-    },
   },
 
   /** @private {settings.LocalDataBrowserProxy} */
@@ -286,5 +277,14 @@ Polymer({
         settings.routes.SITE_SETTINGS_DATA_DETAILS,
         new URLSearchParams('site=' + event.model.item.site));
     this.lastSelected_ = event.model;
+  },
+
+  /**
+   * @private
+   * @return {boolean}
+   */
+  showRemoveThirdPartyCookies_: function() {
+    return loadTimeData.getBoolean('enableRemovingAllThirdPartyCookies') &&
+        this.sites.length > 0 && this.filter.length == 0;
   },
 });

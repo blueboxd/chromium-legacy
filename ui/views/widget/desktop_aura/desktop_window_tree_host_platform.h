@@ -96,7 +96,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   void HideImpl() override;
 
   // PlatformWindowDelegateBase:
-  void DispatchEvent(ui::Event* event) override;
   void OnClosed() override;
   void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
   void OnCloseRequest() override;

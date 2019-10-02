@@ -419,7 +419,7 @@ void LayoutFlexibleBox::RepositionLogicalHeightDependentFlexItems(
 
   AlignFlexLines(algorithm);
 
-  AlignChildren(line_contexts);
+  AlignChildren(algorithm);
 
   if (StyleRef().FlexWrap() == EFlexWrap::kWrapReverse)
     FlipForWrapReverse(line_contexts, cross_axis_start_edge);
@@ -1208,54 +1208,6 @@ void LayoutFlexibleBox::ConstructAndAppendFlexItem(
                           border_and_padding, margin);
 }
 
-static LayoutUnit AlignmentOffset(LayoutUnit available_free_space,
-                                  ItemPosition position,
-                                  LayoutUnit ascent,
-                                  LayoutUnit max_ascent,
-                                  bool is_wrap_reverse,
-                                  bool is_deprecated_webkit_box) {
-  switch (position) {
-    case ItemPosition::kLegacy:
-    case ItemPosition::kAuto:
-    case ItemPosition::kNormal:
-      NOTREACHED();
-      break;
-    case ItemPosition::kStretch:
-      // Actual stretching must be handled by the caller. Since wrap-reverse
-      // flips cross start and cross end, stretch children should be aligned
-      // with the cross end. This matters because applyStretchAlignment
-      // doesn't always stretch or stretch fully (explicit cross size given, or
-      // stretching constrained by max-height/max-width). For flex-start and
-      // flex-end this is handled by alignmentForChild().
-      if (is_wrap_reverse)
-        return available_free_space;
-      break;
-    case ItemPosition::kFlexStart:
-      break;
-    case ItemPosition::kFlexEnd:
-      return available_free_space;
-    case ItemPosition::kCenter: {
-      const LayoutUnit result = (available_free_space / 2);
-      return is_deprecated_webkit_box ? result.ClampNegativeToZero() : result;
-    }
-    case ItemPosition::kBaseline:
-      // FIXME: If we get here in columns, we want the use the descent, except
-      // we currently can't get the ascent/descent of orthogonal children.
-      // https://bugs.webkit.org/show_bug.cgi?id=98076
-      return max_ascent - ascent;
-    case ItemPosition::kLastBaseline:
-    case ItemPosition::kSelfStart:
-    case ItemPosition::kSelfEnd:
-    case ItemPosition::kStart:
-    case ItemPosition::kEnd:
-    case ItemPosition::kLeft:
-    case ItemPosition::kRight:
-      // TODO(jferanndez): Implement these (https://crbug.com/722287).
-      break;
-  }
-  return LayoutUnit();
-}
-
 void LayoutFlexibleBox::SetOverrideMainAxisContentSizeForChild(FlexItem& item) {
   if (MainAxisIsInlineAxis(*item.box)) {
     item.box->SetOverrideLogicalWidth(item.FlexedBorderBoxSize());
@@ -1283,7 +1235,7 @@ LayoutUnit LayoutFlexibleBox::StaticCrossAxisPositionForPositionedChild(
     const LayoutBox& child) {
   LayoutUnit available_space =
       CrossAxisContentExtent() - CrossAxisExtentForChild(child);
-  return AlignmentOffset(
+  return FlexItem::AlignmentOffset(
       available_space,
       FlexLayoutAlgorithm::AlignmentForChild(StyleRef(), child.StyleRef()),
       LayoutUnit(), LayoutUnit(),
@@ -1588,60 +1540,17 @@ void LayoutFlexibleBox::ResetAlignmentForChild(
       child, {FlowAwareLocationForChild(child).X(), new_cross_axis_position});
 }
 
-void LayoutFlexibleBox::AlignChildren(Vector<FlexLine>& line_contexts) {
-  // Keep track of the space between the baseline edge and the after edge of
-  // the box for each line.
-  // TODO(cbiesinger): This should be stored in FlexLine
-  Vector<LayoutUnit> min_margin_after_baselines;
+void LayoutFlexibleBox::AlignChildren(FlexLayoutAlgorithm& algorithm) {
+  Vector<FlexLine>& line_contexts = algorithm.FlexLines();
 
-  for (FlexLine& line_context : line_contexts) {
-    LayoutUnit min_margin_after_baseline = LayoutUnit::Max();
-    LayoutUnit max_ascent = line_context.max_ascent;
-
+  algorithm.AlignChildren();
+  for (unsigned line_number = 0; line_number < line_contexts.size();
+       ++line_number) {
+    FlexLine& line_context = line_contexts[line_number];
     for (FlexItem& flex_item : line_context.line_items) {
-      DCHECK(!flex_item.box->IsOutOfFlowPositioned());
-
-      if (flex_item.UpdateAutoMarginsInCrossAxis(
-              std::max(LayoutUnit(), flex_item.AvailableAlignmentSpace()))) {
-        ResetAlignmentForChild(*flex_item.box, flex_item.desired_location.Y());
-        continue;
-      }
-
-      ItemPosition position = flex_item.Alignment();
-      if (position == ItemPosition::kStretch) {
-        flex_item.ComputeStretchedSize();
+      if (flex_item.Alignment() == ItemPosition::kStretch)
         ApplyStretchAlignmentToChild(flex_item);
-      }
-      LayoutUnit available_space = flex_item.AvailableAlignmentSpace();
-      LayoutUnit offset = AlignmentOffset(
-          available_space, position, flex_item.MarginBoxAscent(), max_ascent,
-          StyleRef().FlexWrap() == EFlexWrap::kWrapReverse,
-          StyleRef().IsDeprecatedWebkitBox());
-      AdjustAlignmentForChild(*flex_item.box, offset);
-      if (position == ItemPosition::kBaseline &&
-          StyleRef().FlexWrap() == EFlexWrap::kWrapReverse) {
-        min_margin_after_baseline =
-            std::min(min_margin_after_baseline,
-                     flex_item.AvailableAlignmentSpace() - offset);
-      }
-    }
-    min_margin_after_baselines.push_back(min_margin_after_baseline);
-  }
-
-  if (StyleRef().FlexWrap() != EFlexWrap::kWrapReverse)
-    return;
-
-  // wrap-reverse flips the cross axis start and end. For baseline alignment,
-  // this means we need to align the after edge of baseline elements with the
-  // after edge of the flex line.
-  wtf_size_t line_number = 0;
-  for (FlexLine& line_context : line_contexts) {
-    LayoutUnit min_margin_after_baseline =
-        min_margin_after_baselines[line_number++];
-    for (FlexItem& flex_item : line_context.line_items) {
-      if (flex_item.Alignment() == ItemPosition::kBaseline &&
-          !flex_item.HasAutoMarginsInCrossAxis() && min_margin_after_baseline)
-        AdjustAlignmentForChild(*flex_item.box, min_margin_after_baseline);
+      ResetAlignmentForChild(*flex_item.box, flex_item.desired_location.Y());
     }
   }
 }

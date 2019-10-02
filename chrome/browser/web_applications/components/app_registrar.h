@@ -93,6 +93,10 @@ class AppRegistrar {
   // that fall within the scope.
   bool IsLocallyInstalled(const GURL& start_url) const;
 
+  // Returns whether the app is pending successful navigation in order to
+  // complete installation via the PendingAppManager.
+  bool IsPlaceholderApp(const AppId& app_id) const;
+
   void AddObserver(AppRegistrarObserver* observer);
   void RemoveObserver(AppRegistrarObserver* observer);
 

@@ -7,7 +7,6 @@
 // https://streams.spec.whatwg.org/#default-reader-class-definition
 [
     Exposed=(Window,Worker,Worklet),
-    RuntimeEnabled=StreamsNative,
     RaisesException=Constructor,
     ConstructorCallWith=ScriptState,
     Constructor(ReadableStream stream)

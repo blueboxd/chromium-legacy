@@ -231,7 +231,7 @@ cca.device.DeviceInfoUpdater = class {
   async getDeviceResolutions(deviceId) {
     const devices = await this.getCamera3DevicesInfo();
     if (!devices) {
-      throw new Error('HALv1-api');
+      throw new cca.device.LegacyVCDError();
     }
     const info = devices.find((info) => info.deviceId === deviceId);
     return [info.photoResols, info.videoResols];

@@ -81,9 +81,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kDecodeJpeg420ImagesToYUV;
 BLINK_COMMON_EXPORT extern const base::Feature kDecodeLossyWebPImagesToYUV;
 
 BLINK_COMMON_EXPORT extern const base::Feature
-    kSendPreviewsLoadingHintsBeforeCommit;
-
-BLINK_COMMON_EXPORT extern const base::Feature
     kWebFontsCacheAwareTimeoutAdaption;
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlockingFocusWithoutUserActivation;
@@ -107,8 +104,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 BLINK_COMMON_EXPORT bool IsPlzDedicatedWorkerEnabled();
 
 BLINK_COMMON_EXPORT extern const base::Feature kCanvasAlwaysDeferral;
-
-BLINK_COMMON_EXPORT extern const base::Feature kStreamsNative;
 
 // Blink garbage collection.
 BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapCompaction;

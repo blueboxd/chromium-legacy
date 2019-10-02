@@ -23,7 +23,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
@@ -33,9 +32,9 @@ namespace {
 using ::testing::_;
 using ::testing::Mock;
 
-class TransformStreamTest : public ::testing::TestWithParam<bool> {
+class TransformStreamTest : public ::testing::Test {
  public:
-  TransformStreamTest() : feature_(GetParam()) {}
+  TransformStreamTest() {}
 
   TransformStream* Stream() const { return stream_; }
 
@@ -67,7 +66,6 @@ class TransformStreamTest : public ::testing::TestWithParam<bool> {
 
  private:
   Persistent<TransformStream> stream_;
-  ScopedStreamsNativeForTest feature_;
 };
 
 class IdentityTransformer final : public TransformStreamTransformer {
@@ -120,14 +118,14 @@ class MockTransformStreamTransformer : public TransformStreamTransformer {
 };
 
 // If this doesn't work then nothing else will.
-TEST_P(TransformStreamTest, Construct) {
+TEST_F(TransformStreamTest, Construct) {
   V8TestingScope scope;
   Init(MakeGarbageCollected<IdentityTransformer>(scope.GetScriptState()),
        scope.GetScriptState(), ASSERT_NO_EXCEPTION);
   EXPECT_TRUE(Stream());
 }
 
-TEST_P(TransformStreamTest, Accessors) {
+TEST_F(TransformStreamTest, Accessors) {
   V8TestingScope scope;
   Init(MakeGarbageCollected<IdentityTransformer>(scope.GetScriptState()),
        scope.GetScriptState(), ASSERT_NO_EXCEPTION);
@@ -137,7 +135,7 @@ TEST_P(TransformStreamTest, Accessors) {
   EXPECT_TRUE(writable);
 }
 
-TEST_P(TransformStreamTest, TransformIsCalled) {
+TEST_F(TransformStreamTest, TransformIsCalled) {
   V8TestingScope scope;
   auto* mock = MakeGarbageCollected<MockTransformStreamTransformer>(
       scope.GetScriptState());
@@ -158,7 +156,7 @@ TEST_P(TransformStreamTest, TransformIsCalled) {
   Mock::AllowLeak(mock);
 }
 
-TEST_P(TransformStreamTest, FlushIsCalled) {
+TEST_F(TransformStreamTest, FlushIsCalled) {
   V8TestingScope scope;
   auto* mock = MakeGarbageCollected<MockTransformStreamTransformer>(
       scope.GetScriptState());
@@ -217,7 +215,7 @@ bool IsTypeError(ScriptState* script_state,
   return Has("name", "TypeError") && Has("message", message);
 }
 
-TEST_P(TransformStreamTest, EnqueueFromTransform) {
+TEST_F(TransformStreamTest, EnqueueFromTransform) {
   V8TestingScope scope;
   auto* script_state = scope.GetScriptState();
   Init(MakeGarbageCollected<IdentityTransformer>(scope.GetScriptState()),
@@ -238,7 +236,7 @@ TEST_P(TransformStreamTest, EnqueueFromTransform) {
   EXPECT_TRUE(IsIteratorForStringMatching(script_state, tester.Value(), "a"));
 }
 
-TEST_P(TransformStreamTest, EnqueueFromFlush) {
+TEST_F(TransformStreamTest, EnqueueFromFlush) {
   class EnqueueFromFlushTransformer : public TransformStreamTransformer {
    public:
     explicit EnqueueFromFlushTransformer(ScriptState* script_state)
@@ -280,7 +278,7 @@ TEST_P(TransformStreamTest, EnqueueFromFlush) {
   EXPECT_TRUE(IsIteratorForStringMatching(script_state, tester.Value(), "a"));
 }
 
-TEST_P(TransformStreamTest, ThrowFromTransform) {
+TEST_F(TransformStreamTest, ThrowFromTransform) {
   static constexpr char kMessage[] = "errorInTransform";
   class ThrowFromTransformTransformer : public TransformStreamTransformer {
    public:
@@ -331,7 +329,7 @@ TEST_P(TransformStreamTest, ThrowFromTransform) {
   EXPECT_TRUE(IsTypeError(script_state, write_tester.Value(), kMessage));
 }
 
-TEST_P(TransformStreamTest, ThrowFromFlush) {
+TEST_F(TransformStreamTest, ThrowFromFlush) {
   static constexpr char kMessage[] = "errorInFlush";
   class ThrowFromFlushTransformer : public TransformStreamTransformer {
    public:
@@ -380,7 +378,7 @@ TEST_P(TransformStreamTest, ThrowFromFlush) {
   EXPECT_TRUE(IsTypeError(script_state, write_tester.Value(), kMessage));
 }
 
-TEST_P(TransformStreamTest, CreateFromReadableWritablePair) {
+TEST_F(TransformStreamTest, CreateFromReadableWritablePair) {
   V8TestingScope scope;
   ReadableStream* readable =
       ReadableStream::Create(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
@@ -390,8 +388,6 @@ TEST_P(TransformStreamTest, CreateFromReadableWritablePair) {
   EXPECT_EQ(readable, transform.Readable());
   EXPECT_EQ(writable, transform.Writable());
 }
-
-INSTANTIATE_TEST_SUITE_P(, TransformStreamTest, ::testing::Values(false, true));
 
 }  // namespace
 }  // namespace blink

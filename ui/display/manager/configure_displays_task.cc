@@ -46,10 +46,10 @@ DisplayConfigureRequest::DisplayConfigureRequest(DisplaySnapshot* display,
 ConfigureDisplaysTask::ConfigureDisplaysTask(
     NativeDisplayDelegate* delegate,
     const std::vector<DisplayConfigureRequest>& requests,
-    const ResponseCallback& callback)
+    ResponseCallback callback)
     : delegate_(delegate),
       requests_(requests),
-      callback_(callback),
+      callback_(std::move(callback)),
       is_configuring_(false),
       num_displays_configured_(0),
       task_status_(SUCCESS) {
@@ -76,16 +76,17 @@ void ConfigureDisplaysTask::Run() {
       size_t index = pending_request_indexes_.front();
       DisplayConfigureRequest* request = &requests_[index];
       pending_request_indexes_.pop();
-      delegate_->Configure(*request->display, request->mode, request->origin,
-                           base::Bind(&ConfigureDisplaysTask::OnConfigured,
-                                      weak_ptr_factory_.GetWeakPtr(), index));
+      delegate_->Configure(
+          *request->display, request->mode, request->origin,
+          base::BindOnce(&ConfigureDisplaysTask::OnConfigured,
+                         weak_ptr_factory_.GetWeakPtr(), index));
     }
   }
 
   // Nothing should be modified after the |callback_| is called since the
   // task may be deleted in the callback.
   if (num_displays_configured_ == requests_.size())
-    callback_.Run(task_status_);
+    std::move(callback_).Run(task_status_);
 }
 
 void ConfigureDisplaysTask::OnConfigurationChanged() {}

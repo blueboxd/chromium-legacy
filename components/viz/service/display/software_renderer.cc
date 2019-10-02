@@ -649,8 +649,11 @@ void SoftwareRenderer::GenerateMipmap() {
 }
 
 bool SoftwareRenderer::ShouldApplyBackdropFilters(
-    const cc::FilterOperations* backdrop_filters) const {
+    const cc::FilterOperations* backdrop_filters,
+    const RenderPassDrawQuad* quad) const {
   if (!backdrop_filters)
+    return false;
+  if (quad->shared_quad_state->opacity == 0.f)
     return false;
   DCHECK(!backdrop_filters->IsEmpty());
   return true;
@@ -755,7 +758,7 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
     SkTileMode content_tile_mode) const {
   const cc::FilterOperations* backdrop_filters =
       BackdropFiltersForPass(quad->render_pass_id);
-  if (!ShouldApplyBackdropFilters(backdrop_filters))
+  if (!ShouldApplyBackdropFilters(backdrop_filters, quad))
     return nullptr;
   base::Optional<gfx::RRectF> backdrop_filter_bounds_input =
       BackdropFilterBoundsForPass(quad->render_pass_id);

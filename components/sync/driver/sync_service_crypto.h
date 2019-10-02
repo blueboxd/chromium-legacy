@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -35,11 +36,13 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
 
   // See the SyncService header.
   base::Time GetExplicitPassphraseTime() const;
+  bool IsPassphraseRequired() const;
   bool IsUsingSecondaryPassphrase() const;
   void EnableEncryptEverything();
   bool IsEncryptEverythingEnabled() const;
   void SetEncryptionPassphrase(const std::string& passphrase);
   bool SetDecryptionPassphrase(const std::string& passphrase);
+  void AddTrustedVaultDecryptionKeys(const std::vector<std::string>& keys);
 
   // Returns the actual passphrase type being used for encryption.
   PassphraseType GetPassphraseType() const;
@@ -53,6 +56,8 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
       const KeyDerivationParams& key_derivation_params,
       const sync_pb::EncryptedData& pending_keys) override;
   void OnPassphraseAccepted() override;
+  void OnTrustedVaultKeyRequired() override;
+  void OnTrustedVaultKeyAccepted() override;
   void OnBootstrapTokenUpdated(const std::string& bootstrap_token,
                                BootstrapTokenType type) override;
   void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
@@ -69,12 +74,16 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   // Creates a proxy observer object that will post calls to this thread.
   std::unique_ptr<SyncEncryptionHandler::Observer> GetEncryptionObserverProxy();
 
-  PassphraseRequiredReason passphrase_required_reason() const {
-    return state_.passphrase_required_reason;
-  }
   bool encryption_pending() const { return state_.encryption_pending; }
 
  private:
+  enum class RequiredUserAction {
+    kNone,
+    kPassphraseRequiredForDecryption,
+    kPassphraseRequiredForEncryption,
+    kTrustedVaultKeyRequired,
+  };
+
   // Calls SyncServiceBase::NotifyObservers(). Never null.
   const base::RepeatingClosure notify_observers_;
 
@@ -95,11 +104,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
     // Not-null when the engine is initialized.
     SyncEngine* engine = nullptr;
 
-    // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
-    // was required for encryption, decryption with a cached passphrase, or
-    // because a new passphrase is required?
-    PassphraseRequiredReason passphrase_required_reason =
-        REASON_PASSPHRASE_NOT_REQUIRED;
+    RequiredUserAction required_user_action = RequiredUserAction::kNone;
 
     // The current set of encrypted types. Always a superset of
     // Cryptographer::SensitiveTypes().

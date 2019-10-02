@@ -4691,6 +4691,13 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="Overlay Insecure Non-player-element Fullscreen"/>
 </enum>
 
+<enum name="BackForwardCacheHistoryNavigationOutcome">
+  <int value="0" label="Restored"/>
+  <int value="1" label="Not cached"/>
+  <int value="2" label="Evicted"/>
+  <int value="3" label="Not cached due to the experiment condition"/>
+</enum>
+
 <enum name="BackForwardNavigationType">
   <int value="0" label="Fast back navigation with WKBackForwardList"/>
   <int value="1" label="Slow back navigation"/>
@@ -57738,6 +57745,34 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="TLS 1.3 full handshake (1-RTT, usually)"/>
   <int value="4" label="TLS 1.3 resumption handshake (1-RTT, usually)"/>
   <int value="5" label="TLS 1.3 0-RTT handshake (0-RTT)"/>
+</enum>
+
+<enum name="SSLHandshakeEarlyDataReason">
+<!-- Corresponds to //third_party/boringssl's ssl_early_data_reason_t -->
+
+  <int value="0"
+      label="The handshake has not progressed far enough for the 0-RTT status
+             to be known."/>
+  <int value="1" label="0-RTT is disabled for this connection."/>
+  <int value="2" label="0-RTT was accepted."/>
+  <int value="3"
+      label="The negotiated protocol version does not support 0-RTT."/>
+  <int value="4"
+      label="The peer declined to offer or accept 0-RTT for an unknown
+             reason."/>
+  <int value="5" label="The client did not offer a session."/>
+  <int value="6" label="The server declined to resume the session."/>
+  <int value="7" label="The session does not support 0-RTT."/>
+  <int value="8" label="The server sent a HelloRetryRequest."/>
+  <int value="9"
+      label="The negotiated ALPN protocol did not match the session."/>
+  <int value="10"
+      label="The connection negotiated Channel ID, which is incompatible with
+             0-RTT."/>
+  <int value="11"
+      label="The connection negotiated token binding, which is incompatible
+             with 0-RTT."/>
+  <int value="12" label="The client and server ticket age were too far apart."/>
 </enum>
 
 <enum name="SSLHashAlgorithm">

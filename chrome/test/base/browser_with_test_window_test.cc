@@ -212,6 +212,18 @@ std::unique_ptr<Browser> BrowserWithTestWindowTest::CreateBrowser(
   return std::make_unique<Browser>(params);
 }
 
+#if defined(OS_CHROMEOS)
+chromeos::ScopedCrosSettingsTestHelper*
+BrowserWithTestWindowTest::GetCrosSettingsHelper() {
+  return &cros_settings_test_helper_;
+}
+
+chromeos::StubInstallAttributes*
+BrowserWithTestWindowTest::GetInstallAttributes() {
+  return GetCrosSettingsHelper()->InstallAttributes();
+}
+#endif  // defined(OS_CHROMEOS)
+
 BrowserWithTestWindowTest::BrowserWithTestWindowTest(
     std::unique_ptr<content::BrowserTaskEnvironment> task_environment,
     Browser::Type browser_type,

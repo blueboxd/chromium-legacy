@@ -6,7 +6,6 @@
 
 [
     Exposed=(Window,Worker,Worklet),
-    RuntimeEnabled=StreamsNative,
     ConstructorCallWith=ScriptState,
     Constructor([PermissiveDictionaryConversion] QueuingStrategyInit init)
 ] interface CountQueuingStrategy {

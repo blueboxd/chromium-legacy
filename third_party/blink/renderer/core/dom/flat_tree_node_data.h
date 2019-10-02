@@ -47,6 +47,7 @@ class FlatTreeNodeData final : public GarbageCollected<FlatTreeNodeData> {
   friend class FlatTreeTraversal;
   friend class HTMLSlotElement;
   friend HTMLSlotElement* Node::AssignedSlot() const;
+  friend Element* Node::FlatTreeParentForChildDirty() const;
 
   WeakMember<HTMLSlotElement> assigned_slot_;
   WeakMember<Node> previous_in_assigned_nodes_;

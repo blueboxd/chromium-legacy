@@ -506,7 +506,10 @@ Polymer({
       case settings.PageStatus.PASSPHRASE_FAILED:
         if (this.pageStatus_ == this.pages_.CONFIGURE && this.syncPrefs &&
             this.syncPrefs.passphraseRequired) {
-          this.$$('#existingPassphraseInput').invalid = true;
+          const passphraseInput = /** @type {!CrInputElement} */ (
+              this.$$('#existingPassphraseInput'));
+          passphraseInput.invalid = true;
+          passphraseInput.focusInput();
         }
         return;
     }

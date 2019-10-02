@@ -80,3 +80,17 @@
 # In debug mode. The FrameHostInterceptor fails, because it doesn't take into
 # account pages in the BackForwardCache.
 -SecurityExploitBrowserTest.InvalidBeginNavigationInitiator
+
+# NOTREACHED() is hit in RenderFrameHostManager::GetFrameHostForNavigation,
+# because, "A frame that's pending deletion should never be navigated.".
+-NavigationControllerBrowserTest.PageStateWithIframeAfterForwardInCompetingFrames
+-SitePerProcessBrowserTest.TwoCrossSitePendingNavigationsAndMainFrameWins
+
+# Failing on android only, need to be triaged, see https://crbug.com/1006267.
+-BackForwardCacheMetricsBrowserTest.Fetch
+-BackForwardCacheMetricsBrowserTest.XHR
+-MSE_ClearKey/EncryptedMediaTest.ConfigChangeVideo_ClearToEncrypted/0
+-TouchpadPinchBrowserTest.WheelListenerPreventingPinch/1
+-WebRtcBrowserTest.CanSetupH264VideoCallOnSupportedDevice
+-WithoutCORBProtectionSniffing/CrossSiteDocumentBlockingTest.AllowImagesWithSniffing/0
+-WithCORBProtectionSniffing/CrossSiteDocumentBlockingTest.AllowImagesWithSniffing/0

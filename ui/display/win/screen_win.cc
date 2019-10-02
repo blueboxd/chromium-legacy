@@ -679,9 +679,8 @@ void ScreenWin::UpdateFromDisplayInfos(
 
 void ScreenWin::Initialize() {
   color_profile_reader_->UpdateIfNeeded();
-  singleton_hwnd_observer_.reset(
-      new gfx::SingletonHwndObserver(
-          base::Bind(&ScreenWin::OnWndProc, base::Unretained(this))));
+  singleton_hwnd_observer_.reset(new gfx::SingletonHwndObserver(
+      base::BindRepeating(&ScreenWin::OnWndProc, base::Unretained(this))));
   UpdateFromDisplayInfos(GetDisplayInfosFromSystem());
   RecordDisplayScaleFactors();
 

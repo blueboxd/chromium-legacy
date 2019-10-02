@@ -257,12 +257,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
       device::BluetoothDevice::PairingDelegate* pairing_delegate) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BluetoothBlueZTest, Shutdown);
+  FRIEND_TEST_ALL_PREFIXES(BluetoothBlueZTest, Shutdown_OnStartDiscovery);
+  FRIEND_TEST_ALL_PREFIXES(BluetoothBlueZTest, Shutdown_OnStartDiscoveryError);
+  FRIEND_TEST_ALL_PREFIXES(BluetoothBlueZTest, Shutdown_OnStopDiscovery);
+  FRIEND_TEST_ALL_PREFIXES(BluetoothBlueZTest, Shutdown_OnStopDiscoveryError);
+  FRIEND_TEST_ALL_PREFIXES(BluetoothBlueZTest,
+                           StartDiscovery_DiscoveringStopped_StartAgain);
   friend class BluetoothBlueZTest;
-  friend class BluetoothBlueZTest_Shutdown_Test;
-  friend class BluetoothBlueZTest_Shutdown_OnStartDiscovery_Test;
-  friend class BluetoothBlueZTest_Shutdown_OnStartDiscoveryError_Test;
-  friend class BluetoothBlueZTest_Shutdown_OnStopDiscovery_Test;
-  friend class BluetoothBlueZTest_Shutdown_OnStopDiscoveryError_Test;
   friend class device::BluetoothTestBlueZ;
 
   // typedef for callback parameters that are passed to AddDiscoverySession

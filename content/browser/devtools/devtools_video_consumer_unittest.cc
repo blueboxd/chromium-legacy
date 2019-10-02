@@ -13,7 +13,10 @@
 #include "media/base/limits.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -83,9 +86,10 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
     MockChangeTarget(frame_sink_id_);
   }
   MOCK_METHOD1(MockChangeTarget, void(const viz::FrameSinkId& frame_sink_id));
-  void Start(viz::mojom::FrameSinkVideoConsumerPtr consumer) final {
+  void Start(
+      mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumer> consumer) final {
     DCHECK(!consumer_);
-    consumer_ = std::move(consumer);
+    consumer_.Bind(std::move(consumer));
     MockStart(consumer_.get());
   }
   MOCK_METHOD1(MockStart, void(viz::mojom::FrameSinkVideoConsumer* consumer));
@@ -96,9 +100,11 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
   }
   MOCK_METHOD0(MockStop, void());
   MOCK_METHOD0(RequestRefreshFrame, void());
-  MOCK_METHOD2(CreateOverlay,
-               void(int32_t stacking_index,
-                    viz::mojom::FrameSinkVideoCaptureOverlayRequest request));
+  MOCK_METHOD2(
+      CreateOverlay,
+      void(int32_t stacking_index,
+           mojo::PendingReceiver<viz::mojom::FrameSinkVideoCaptureOverlay>
+               receiver));
 
   // Const accessors to get the cached variables.
   base::TimeDelta min_capture_period() const { return min_capture_period_; }
@@ -115,7 +121,7 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
   gfx::Size min_frame_size_;
   gfx::Size max_frame_size_;
   viz::FrameSinkId frame_sink_id_;
-  viz::mojom::FrameSinkVideoConsumerPtr consumer_;
+  mojo::Remote<viz::mojom::FrameSinkVideoConsumer> consumer_;
 
   mojo::Receiver<viz::mojom::FrameSinkVideoCapturer> receiver_{this};
 };

@@ -135,8 +135,6 @@ jumbo_split_static_library("ui") {
     "page_info/page_info_ui.h",
     "passwords/account_avatar_fetcher.cc",
     "passwords/account_avatar_fetcher.h",
-    "passwords/credential_leak_dialog_utils.cc",
-    "passwords/credential_leak_dialog_utils.h",
     "passwords/manage_passwords_state.cc",
     "passwords/manage_passwords_state.h",
     "passwords/manage_passwords_view_utils.cc",
@@ -613,10 +611,17 @@ jumbo_split_static_library("ui") {
     ]
   }
 
-  if (is_android || is_linux) {
+  if (is_win || is_android || is_linux) {
     sources += [
       "webui/sandbox_internals_ui.cc",
       "webui/sandbox_internals_ui.h",
+    ]
+  }
+
+  if (is_win) {
+    sources += [
+      "webui/sandbox/sandbox_handler.cc",
+      "webui/sandbox/sandbox_handler.h",
     ]
   }
 

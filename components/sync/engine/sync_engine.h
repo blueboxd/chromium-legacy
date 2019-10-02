@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -133,6 +134,14 @@ class SyncEngine : public ModelTypeConfigurer {
   // may be triggered at a later time. It is an error to call this when there
   // are no pending keys.
   virtual void SetDecryptionPassphrase(const std::string& passphrase) = 0;
+
+  // Analogous to SetDecryptionPassphrase but specifically for
+  // TRUSTED_VAULT_PASSPHRASE: it provides new decryption keys that could
+  // allow decrypting pending Nigori keys. Notifies observers of the result of
+  // the operation via OnTrustedVaultKeyAccepted if the provided keys
+  // successfully decrypted pending keys.
+  virtual void AddTrustedVaultDecryptionKeys(
+      const std::vector<std::string>& keys) = 0;
 
   // Kick off shutdown procedure. Attempts to cut short any long-lived or
   // blocking sync thread tasks so that the shutdown on sync thread task that

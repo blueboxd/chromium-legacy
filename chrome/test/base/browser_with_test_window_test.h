@@ -24,6 +24,7 @@
 #include "ash/test/ash_test_views_delegate.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #else
 #include "ui/views/test/scoped_views_test_helper.h"
 #endif
@@ -190,6 +191,11 @@ class BrowserWithTestWindowTest : public testing::Test {
     return views_test_helper_->test_views_delegate();
 #endif
   }
+#endif
+
+#if defined(OS_CHROMEOS)
+  chromeos::ScopedCrosSettingsTestHelper* GetCrosSettingsHelper();
+  chromeos::StubInstallAttributes* GetInstallAttributes();
 #endif
 
  private:

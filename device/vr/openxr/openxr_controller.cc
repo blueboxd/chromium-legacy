@@ -232,7 +232,7 @@ std::vector<mojom::XRGamepadButtonPtr> OpenXrController::GetWebVrButtons()
     base::Optional<GamepadButton> button =
         GetButton(static_cast<OpenXrButtonType>(i));
     if (button) {
-      buttons.push_back(std::move(GetXRGamepadButtonPtr(button.value())));
+      buttons.push_back(GetXRGamepadButtonPtr(button.value()));
     } else {
       return {};
     }

@@ -13,7 +13,7 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/test/fake_vr_device.h"
 #include "device/vr/vr_device_base.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,8 +52,8 @@ class VRDeviceBaseForTesting : public VRDeviceBase {
 
 class StubVRDeviceEventListener : public mojom::XRRuntimeEventListener {
  public:
-  StubVRDeviceEventListener() : binding_(this) {}
-  ~StubVRDeviceEventListener() override {}
+  StubVRDeviceEventListener() = default;
+  ~StubVRDeviceEventListener() override = default;
 
   MOCK_METHOD1(DoOnChanged, void(mojom::VRDisplayInfo* vr_device_info));
   void OnDisplayInfoChanged(mojom::VRDisplayInfoPtr vr_device_info) override {
@@ -75,13 +75,12 @@ class StubVRDeviceEventListener : public mojom::XRRuntimeEventListener {
   MOCK_METHOD1(OnDeviceIdle, void(mojom::VRDisplayEventReason));
   MOCK_METHOD0(OnInitialized, void());
 
-  mojom::XRRuntimeEventListenerAssociatedPtrInfo BindPtrInfo() {
-    mojom::XRRuntimeEventListenerAssociatedPtrInfo ret;
-    binding_.Bind(mojo::MakeRequest(&ret));
-    return ret;
+  mojo::PendingAssociatedRemote<mojom::XRRuntimeEventListener>
+  BindPendingRemote() {
+    return receiver_.BindNewEndpointAndPassRemote();
   }
 
-  mojo::AssociatedBinding<mojom::XRRuntimeEventListener> binding_;
+  mojo::AssociatedReceiver<mojom::XRRuntimeEventListener> receiver_{this};
 };
 
 }  // namespace
@@ -119,7 +118,7 @@ TEST_F(VRDeviceTest, DeviceChangedDispatched) {
   auto device_ptr = device->BindXRRuntimePtr();
   StubVRDeviceEventListener listener;
   device_ptr->ListenToDeviceChanges(
-      listener.BindPtrInfo(),
+      listener.BindPendingRemote(),
       base::DoNothing());  // TODO: consider getting initial info
   base::RunLoop().RunUntilIdle();
   EXPECT_CALL(listener, DoOnChanged(testing::_)).Times(1);
@@ -134,7 +133,7 @@ TEST_F(VRDeviceTest, DisplayActivateRegsitered) {
   auto device_ptr = device->BindXRRuntimePtr();
   StubVRDeviceEventListener listener;
   device_ptr->ListenToDeviceChanges(
-      listener.BindPtrInfo(),
+      listener.BindPendingRemote(),
       base::DoNothing());  // TODO: consider getting initial data
   base::RunLoop().RunUntilIdle();
 

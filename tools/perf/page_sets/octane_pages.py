@@ -53,7 +53,8 @@ DESCRIPTIONS = {
 
 
 class OctaneStory(press_story.PressStory):
-  URL='http://chromium.github.io/octane/index.html?auto=1'
+  URL = 'http://chromium.github.io/octane/index.html?auto=1'
+  NAME = 'Octane'
 
   def RunNavigateSteps(self, action_runner):
     total_memory = (
@@ -97,8 +98,8 @@ class OctaneStory(press_story.PressStory):
         # Collect all test scores to compute geometric mean.
         all_scores.append(score)
     total = statistics.GeometricMean(all_scores)
-    self.AddJavascriptMetricSummaryValue(
-        scalar.ScalarValue(None, 'Total.Score', 'score', total,
+    self.AddJavascriptMetricValue(
+        scalar.ScalarValue(self, 'Total.Score', 'score', total,
                            description='Geometric mean of the scores of each '
                            'individual benchmark in the Octane '
                            'benchmark collection.'))

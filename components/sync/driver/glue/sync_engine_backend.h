@@ -116,8 +116,11 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   // Called to set the passphrase for encryption.
   void DoSetEncryptionPassphrase(const std::string& passphrase);
 
-  // Called to decrypt the pending keys.
+  // Called to decrypt the pending keys using user-entered passphrases.
   void DoSetDecryptionPassphrase(const std::string& passphrase);
+
+  // Called to decrypt the pending keys using trusted vault keys.
+  void DoAddTrustedVaultDecryptionKeys(const std::vector<std::string>& keys);
 
   // Called to turn on encryption of all sync data as well as
   // reencrypt everything.

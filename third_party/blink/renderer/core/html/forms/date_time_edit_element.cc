@@ -841,6 +841,11 @@ bool DateTimeEditElement::HasField(DateTimeField type) const {
   return false;
 }
 
+bool DateTimeEditElement::IsFirstFieldAMPM() const {
+  const auto* first_field = FieldAt(0);
+  return first_field && first_field->Type() == DateTimeField::kAMPM;
+}
+
 bool DateTimeEditElement::HasFocusedField() {
   return FocusedFieldIndex() != kInvalidFieldIndex;
 }

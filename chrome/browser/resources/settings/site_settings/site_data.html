@@ -44,7 +44,7 @@
       </cr-button>
       <cr-button disabled$="[[isLoading_]]" id="removeThirdPartyCookies"
           on-click="onRemoveThirdPartyCookiesTap_"
-          hidden$="[[!enableRemovingAllThirdPartyCookies_]]">
+          hidden$="[[!showRemoveThirdPartyCookies_(sites.length, filter)]]">
           $i18n{siteSettingsCookieRemoveAllThirdParty}
       </cr-button>
     </div>

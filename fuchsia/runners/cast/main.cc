@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fuchsia/sys/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
 
 #include "base/command_line.h"
@@ -34,9 +35,17 @@ int main(int argc, char** argv) {
   if (!BUILDFLAG(ENABLE_SOFTWARE_VIDEO_DECODERS))
     features |= fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER_ONLY;
 
+  fuchsia::web::CreateContextParams create_context_params =
+      WebContentRunner::BuildCreateContextParams(
+          fidl::InterfaceHandle<fuchsia::io::Directory>(), features);
+
+  // TODO(b/141956135): Use CrKey version provided by the Agent.
+  create_context_params.set_user_agent_product("CrKey");
+  create_context_params.set_user_agent_version("0");
+
   CastRunner runner(
       base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get(),
-      WebContentRunner::CreateIncognitoWebContext(features));
+      WebContentRunner::CreateWebContext(std::move(create_context_params)));
 
   base::fuchsia::ComponentContextForCurrentProcess()
       ->outgoing()

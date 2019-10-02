@@ -450,7 +450,7 @@ class GTestTest(RemoteTest):
       ])
 
     test_invocation = (
-        './%s --test-launcher-shard-index=%d '
+        'LD_LIBRARY_PATH=./ ./%s --test-launcher-shard-index=%d '
         '--test-launcher-total-shards=%d' % (
             self._test_exe, self._test_launcher_shard_index,
             self._test_launcher_total_shards)

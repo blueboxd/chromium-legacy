@@ -93,6 +93,9 @@ RESOURCES = \
 	src/images/camera_button_timer_on_10s.svg \
 	src/images/camera_button_timer_on_3s.svg \
 	src/images/camera_focus_aim.svg \
+	src/images/camera_intent_play_video.svg \
+	src/images/camera_intent_result_cancel.svg \
+	src/images/camera_intent_result_confirm.svg \
 	src/images/camera_mode_photo.svg \
 	src/images/camera_mode_portrait.svg \
 	src/images/camera_mode_square.svg \
@@ -119,16 +122,19 @@ RESOURCES = \
 	src/js/device/camera3_device_info.js \
 	src/js/device/constraints_preferrer.js \
 	src/js/device/device_info_updater.js \
+	src/js/device/error.js \
 	src/js/gallerybutton.js \
 	src/js/google-analytics-bundle.js \
 	src/js/intent.js \
 	src/js/main.js \
 	src/js/metrics.js \
+	src/js/models/file_video_saver.js \
 	src/js/models/filenamer.js \
 	src/js/models/filesystem.js \
 	src/js/models/gallery.js \
+	src/js/models/intent_video_saver.js \
 	src/js/models/result_saver.js \
-	src/js/models/video_saver.js \
+	src/js/models/video_saver_interface.js \
 	src/js/mojo/chrome_helper.js \
 	src/js/mojo/device_operator.js \
 	src/js/mojo/image_capture.js \
@@ -142,11 +148,13 @@ RESOURCES = \
 	src/js/util.js \
 	src/js/views/browser.js \
 	src/js/views/camera.js \
+	src/js/views/camera_intent.js \
 	src/js/views/camera/layout.js \
 	src/js/views/camera/modes.js \
 	src/js/views/camera/options.js \
 	src/js/views/camera/preview.js \
 	src/js/views/camera/recordtime.js \
+	src/js/views/camera/review_result.js \
 	src/js/views/camera/timertick.js \
 	src/js/views/dialog.js \
 	src/js/views/gallery_base.js \

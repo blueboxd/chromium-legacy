@@ -12,6 +12,7 @@
     <script src="../js/browser_proxy/browser_proxy.js"></script>
     <script src="../js/google-analytics-bundle.js"></script>
     <script src="../js/metrics.js"></script>
+    <script src="../js/intent.js"></script>
     <script src="../js/util.js"></script>
     <script src="../js/resolution_event_broker.js"></script>
     <script src="../js/toast.js"></script>
@@ -20,6 +21,7 @@
     <script src="../js/sound.js"></script>
     <script src="../js/scrollbar.js"></script>
     <script src="../js/gallerybutton.js"></script>
+    <script src="../js/device/error.js"></script>
     <script src="../js/device/camera3_device_info.js"></script>
     <script src="../js/device/constraints_preferrer.js"></script>
     <script src="../js/device/device_info_updater.js"></script>
@@ -27,7 +29,9 @@
     <script src="../js/models/gallery.js"></script>
     <script src="../js/models/filesystem.js"></script>
     <script src="../js/models/result_saver.js"></script>
-    <script src="../js/models/video_saver.js"></script>
+    <script src="../js/models/video_saver_interface.js"></script>
+    <script src="../js/models/file_video_saver.js"></script>
+    <script src="../js/models/intent_video_saver.js"></script>
     <script src="../js/mojo/mojo_bindings_lite.js"></script>
     <script src="../js/mojo/camera_metadata_tags.mojom-lite.js"></script>
     <script src="../js/mojo/camera_metadata.mojom-lite.js"></script>
@@ -44,10 +48,12 @@
     <script src="../js/views/view.js"></script>
     <script src="../js/views/gallery_base.js"></script>
     <script src="../js/views/camera.js"></script>
+    <script src="../js/views/camera_intent.js"></script>
     <script src="../js/views/camera/layout.js"></script>
     <script src="../js/views/camera/options.js"></script>
     <script src="../js/views/camera/preview.js"></script>
     <script src="../js/views/camera/recordtime.js"></script>
+    <script src="../js/views/camera/review_result.js"></script>
     <script src="../js/views/camera/timertick.js"></script>
     <script src="../js/views/camera/modes.js"></script>
     <script src="../js/views/dialog.js"></script>
@@ -60,7 +66,12 @@
   <body class="sound mirror mic _3x3">
     <div id="camera">
       <div id="preview-wrapper" aria-hidden="true">
-        <video id="preview-video"></video>
+        <img id="review-photo-result" class="preview-content">
+        <video id="review-video-result" class="preview-content"></video>
+        <div class="buttons circle centered-overlay">
+          <button id="play-result-video"></button>
+        </div>
+        <video id="preview-video" class="preview-content"></video>
         <div id="preview-metadata">
           <div id="preview-stat" class="metadata-row mode-on">
             <span class="metadata-category">Stat</span>
@@ -138,6 +149,10 @@
       <div class="bottom-stripe right-stripe buttons circle">
         <button id="gallery-enter" tabindex="0"
                 i18n-label="gallery_button" hidden></button>
+      </div>
+      <div id="confirm-result-groups" class="buttons right-stripe circle">
+        <button id="confirm-result"></button>
+        <button id="cancel-result"></button>
       </div>
       <div class="bottom-stripe left-stripe buttons circle">
         <button id="switch-device" tabindex="0"

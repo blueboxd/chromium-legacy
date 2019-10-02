@@ -64,8 +64,8 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToInternalDisplay) {
   request[1] = CONTENT_PROTECTION_METHOD_HDCP;
   ApplyContentProtectionTask task(
       &layout_manager, &display_delegate_, request,
-      base::Bind(&ApplyContentProtectionTaskTest::ResponseCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ApplyContentProtectionTaskTest::ResponseCallback,
+                     base::Unretained(this)));
   task.Run();
 
   EXPECT_EQ(Response::SUCCESS, response_);
@@ -82,8 +82,8 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToExternalDisplay) {
   request[1] = CONTENT_PROTECTION_METHOD_HDCP;
   ApplyContentProtectionTask task(
       &layout_manager, &display_delegate_, request,
-      base::Bind(&ApplyContentProtectionTaskTest::ResponseCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ApplyContentProtectionTaskTest::ResponseCallback,
+                     base::Unretained(this)));
   task.Run();
 
   EXPECT_EQ(Response::SUCCESS, response_);
@@ -101,8 +101,8 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToUnknownDisplay) {
   request[1] = CONTENT_PROTECTION_METHOD_HDCP;
   ApplyContentProtectionTask task(
       &layout_manager, &display_delegate_, request,
-      base::Bind(&ApplyContentProtectionTaskTest::ResponseCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ApplyContentProtectionTaskTest::ResponseCallback,
+                     base::Unretained(this)));
   task.Run();
 
   EXPECT_EQ(Response::FAILURE, response_);
@@ -120,8 +120,8 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToDisplayThatCannotGetHdcp) {
   request[1] = CONTENT_PROTECTION_METHOD_HDCP;
   ApplyContentProtectionTask task(
       &layout_manager, &display_delegate_, request,
-      base::Bind(&ApplyContentProtectionTaskTest::ResponseCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ApplyContentProtectionTaskTest::ResponseCallback,
+                     base::Unretained(this)));
   task.Run();
 
   EXPECT_EQ(Response::FAILURE, response_);
@@ -139,8 +139,8 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToDisplayThatCannotSetHdcp) {
   request[1] = CONTENT_PROTECTION_METHOD_HDCP;
   ApplyContentProtectionTask task(
       &layout_manager, &display_delegate_, request,
-      base::Bind(&ApplyContentProtectionTaskTest::ResponseCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ApplyContentProtectionTaskTest::ResponseCallback,
+                     base::Unretained(this)));
   task.Run();
 
   EXPECT_EQ(Response::FAILURE, response_);
@@ -159,8 +159,8 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyNoProtectionToExternalDisplay) {
   request[1] = CONTENT_PROTECTION_METHOD_NONE;
   ApplyContentProtectionTask task(
       &layout_manager, &display_delegate_, request,
-      base::Bind(&ApplyContentProtectionTaskTest::ResponseCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ApplyContentProtectionTaskTest::ResponseCallback,
+                     base::Unretained(this)));
   task.Run();
 
   EXPECT_EQ(Response::SUCCESS, response_);

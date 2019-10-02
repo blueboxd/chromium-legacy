@@ -371,7 +371,7 @@ public class ProfileSyncService {
      * running (isEngineInitialized() returns true) before calling this function.
      * <p/>
      * This method should only be used if you want to know the raw value. For checking whether
-     * we should ask the user for a passphrase, use isPassphraseRequiredForDecryption().
+     * we should ask the user for a passphrase, use isPassphraseRequiredForPreferredDataTypes().
      */
     public @Passphrase.Type int getPassphraseType() {
         assert isEngineInitialized();
@@ -442,9 +442,9 @@ public class ProfileSyncService {
      *
      * @return true if we need a passphrase.
      */
-    public boolean isPassphraseRequiredForDecryption() {
+    public boolean isPassphraseRequiredForPreferredDataTypes() {
         assert isEngineInitialized();
-        return ProfileSyncServiceJni.get().isPassphraseRequiredForDecryption(
+        return ProfileSyncServiceJni.get().isPassphraseRequiredForPreferredDataTypes(
                 mNativeProfileSyncServiceAndroid, ProfileSyncService.this);
     }
 
@@ -646,7 +646,7 @@ public class ProfileSyncService {
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
         void enableEncryptEverything(
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
-        boolean isPassphraseRequiredForDecryption(
+        boolean isPassphraseRequiredForPreferredDataTypes(
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
         boolean isUsingSecondaryPassphrase(
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller);

@@ -41,7 +41,6 @@
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -403,10 +402,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
     return client_hints_preferences_;
   }
 
-  void BindPreviewsResourceLoadingHintsReceiver(
-      mojo::PendingReceiver<
-          blink::mojom::blink::PreviewsResourceLoadingHintsReceiver> receiver);
-
   SmoothScrollSequencer& GetSmoothScrollSequencer();
 
   const mojo::Remote<mojom::blink::ReportingServiceProxy>& GetReportingService()
@@ -570,9 +565,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   // Per-frame URLLoader factory.
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
-
-  std::unique_ptr<mojom::blink::PreviewsResourceLoadingHintsReceiver>
-      previews_resource_loading_hints_receiver_;
 
   ClientHintsPreferences client_hints_preferences_;
 

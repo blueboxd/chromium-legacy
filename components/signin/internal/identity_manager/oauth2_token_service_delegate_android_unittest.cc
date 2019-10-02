@@ -23,7 +23,7 @@ class OAuth2TokenServiceDelegateAndroidForTest
  public:
   OAuth2TokenServiceDelegateAndroidForTest(
       AccountTrackerService* account_tracker_service)
-      : OAuth2TokenServiceDelegateAndroid(account_tracker_service) {}
+      : OAuth2TokenServiceDelegateAndroid(account_tracker_service, nullptr) {}
   MOCK_METHOD1(SetAccounts, void(const std::vector<CoreAccountId>&));
 };
 
@@ -45,8 +45,6 @@ class OAuth2TokenServiceDelegateAndroidTest : public testing::Test {
     testing::Test::SetUp();
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     account_tracker_service_.Initialize(&pref_service_, base::FilePath());
-    OAuth2TokenServiceDelegateAndroid::
-        set_disable_interaction_with_system_accounts();
     delegate_ = std::make_unique<OAuth2TokenServiceDelegateAndroidForTest>(
         &account_tracker_service_);
     delegate_->AddObserver(&observer_);

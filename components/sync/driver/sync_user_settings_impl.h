@@ -53,7 +53,7 @@ class SyncUserSettingsImpl : public SyncUserSettings {
 
   ModelTypeSet GetEncryptedDataTypes() const override;
   bool IsPassphraseRequired() const override;
-  bool IsPassphraseRequiredForDecryption() const override;
+  bool IsPassphraseRequiredForPreferredDataTypes() const override;
   bool IsUsingSecondaryPassphrase() const override;
   base::Time GetExplicitPassphraseTime() const override;
   PassphraseType GetPassphraseType() const override;

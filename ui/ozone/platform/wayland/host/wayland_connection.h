@@ -16,6 +16,8 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
+#include "ui/ozone/platform/wayland/host/gtk_primary_selection_device.h"
+#include "ui/ozone/platform/wayland/host/gtk_primary_selection_device_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_clipboard.h"
 #include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device.h"
@@ -54,6 +56,9 @@ class WaylandConnection : public PlatformEventSource,
   zxdg_shell_v6* shell_v6() const { return shell_v6_.get(); }
   wl_seat* seat() const { return seat_.get(); }
   wl_data_device* data_device() const { return data_device_->data_device(); }
+  gtk_primary_selection_device* primary_selection_device() const {
+    return primary_selection_device_->data_device();
+  }
   wp_presentation* presentation() const { return presentation_.get(); }
   zwp_text_input_manager_v1* text_input_manager_v1() const {
     return text_input_manager_v1_.get();
@@ -114,8 +119,9 @@ class WaylandConnection : public PlatformEventSource,
   // Requests the data to the platform when Chromium gets drag-and-drop started
   // by others. Once reading the data from platform is done, |callback| should
   // be called with the data.
-  void RequestDragData(const std::string& mime_type,
-                       base::OnceCallback<void(const std::string&)> callback);
+  void RequestDragData(
+      const std::string& mime_type,
+      base::OnceCallback<void(const std::vector<uint8_t>&)> callback);
 
   // Returns true when dragging is entered or started.
   bool IsDragInProgress();
@@ -187,6 +193,10 @@ class WaylandConnection : public PlatformEventSource,
   std::unique_ptr<WaylandZwpLinuxDmabuf> zwp_dmabuf_;
   std::unique_ptr<WaylandShm> shm_;
   std::unique_ptr<WaylandBufferManagerHost> buffer_manager_host_;
+
+  std::unique_ptr<GtkPrimarySelectionDeviceManager>
+      primary_selection_device_manager_;
+  std::unique_ptr<GtkPrimarySelectionDevice> primary_selection_device_;
 
   // Manages Wayland windows.
   WaylandWindowManager wayland_window_manager_;

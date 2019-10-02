@@ -1617,9 +1617,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
 // Tests that a cross-site iframe runs its beforeunload handler when closing a
 // tab.  See https://crbug.com/853021.
-// crbug.com/1010061: disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
-                       DISABLED_TabCloseWithCrossSiteBeforeUnloadIframe) {
+                       TabCloseWithCrossSiteBeforeUnloadIframe) {
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
   content::WebContents* first_web_contents =
       tab_strip_model->GetActiveWebContents();

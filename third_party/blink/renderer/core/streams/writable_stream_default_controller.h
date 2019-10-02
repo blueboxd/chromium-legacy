@@ -87,7 +87,7 @@ class WritableStreamDefaultController final : public ScriptWrappable {
                     double chunk_size);
 
   // https://streams.spec.whatwg.org/#writable-stream-default-controller-error
-  // TODO(yhirano): Make this private once we ship StreamsNative.
+  // TODO(ricea): Make this private.
   static void Error(ScriptState*,
                     WritableStreamDefaultController*,
                     v8::Local<v8::Value> error);

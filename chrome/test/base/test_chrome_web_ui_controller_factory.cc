@@ -65,7 +65,8 @@ TestChromeWebUIControllerFactory::CreateWebUIControllerForURL(
                      web_ui, webui_url);
   // Add an empty callback since managed-footnote always sends this message.
   web_ui->RegisterMessageCallback("observeManagedUI", base::DoNothing());
-  content::URLDataSource::Add(profile, std::make_unique<TestDataSource>());
+  content::URLDataSource::Add(profile,
+                              std::make_unique<TestDataSource>("webui"));
   return controller;
 }
 

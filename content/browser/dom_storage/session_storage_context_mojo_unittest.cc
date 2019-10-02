@@ -613,7 +613,9 @@ TEST_F(SessionStorageContextMojoTest, InvalidVersionOnDisk) {
   ShutdownContext();
 }
 
-TEST_F(SessionStorageContextMojoTest, CorruptionOnDisk) {
+// TODO(https://crbug.com/1010414): This test is flaky on various Linux bots and
+// fuchsia_x64 (does that count as OS_LINUX or not?); fix and re-enable.
+TEST_F(SessionStorageContextMojoTest, DISABLED_CorruptionOnDisk) {
   std::string namespace_id = base::GenerateGUID();
   url::Origin origin = url::Origin::Create(GURL("http://foobar.com"));
 

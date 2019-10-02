@@ -3519,6 +3519,11 @@ void RenderFrameHostImpl::EvictFromBackForwardCache() {
     DCHECK_EQ(top_document->is_in_back_forward_cache(), in_back_forward_cache);
   }
 
+  if (BackForwardCacheMetrics* metrics =
+          top_document->GetBackForwardCacheMetrics()) {
+    metrics->MarkEvictedFromBackForwardCache();
+  }
+
   if (!in_back_forward_cache) {
     // A document is evicted from the BackForwardCache, but it has already been
     // restored. The current document should be reloaded, because it is not
@@ -7666,6 +7671,16 @@ void RenderFrameHostImpl::EnableMojoJsBindings() {
   if (!frame_bindings_control_)
     GetRemoteAssociatedInterfaces()->GetInterface(&frame_bindings_control_);
   frame_bindings_control_->EnableMojoJsBindings();
+}
+
+BackForwardCacheMetrics* RenderFrameHostImpl::GetBackForwardCacheMetrics() {
+  NavigationEntryImpl* navigation_entry =
+      static_cast<NavigationControllerImpl*>(
+          frame_tree_node_->navigator()->GetController())
+          ->GetEntryWithUniqueID(nav_entry_id());
+  if (!navigation_entry)
+    return nullptr;
+  return navigation_entry->back_forward_cache_metrics();
 }
 
 }  // namespace content

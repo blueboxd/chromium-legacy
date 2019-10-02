@@ -2308,7 +2308,7 @@ void NavigationRequest::CommitNavigation() {
     std::unique_ptr<BackForwardCacheImpl::Entry> restored_bfcache_entry =
         controller->GetBackForwardCache().RestoreEntry(nav_entry_id_);
 
-    // The only time restored_rfh can be nullptr here, is if the
+    // The only time restored_bfcache_entry can be nullptr here, is if the
     // document was evicted from the BackForwardCache since this navigation
     // started.
     //

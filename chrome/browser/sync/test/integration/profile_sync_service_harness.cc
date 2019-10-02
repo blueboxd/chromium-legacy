@@ -6,6 +6,7 @@
 
 #include <cstddef>
 #include <sstream>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
@@ -98,8 +99,13 @@ class SyncSetupChecker : public SingleClientStatusChangeChecker {
     if (HasAuthError(service())) {
       return true;
     }
-    if (service()->GetPassphraseRequiredReasonForTest() ==
-        syncer::REASON_DECRYPTION) {
+    // TODO(crbug.com/1010397): The verification of INITIALIZING is only needed
+    // due to SyncEncryptionHandlerImpl issuing an unnecessary
+    // OnPassphraseRequired() during initialization.
+    if (service()
+            ->GetUserSettings()
+            ->IsPassphraseRequiredForPreferredDataTypes() &&
+        transport_state != syncer::SyncService::TransportState::INITIALIZING) {
       LOG(FATAL)
           << "A passphrase is required for decryption but was not provided. "
              "Waiting for sync to become available won't succeed. Make sure "
@@ -658,9 +664,8 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
        << ", server conflicts: " << snap.num_server_conflicts()
        << ", num_updates_downloaded : "
        << snap.model_neutral_state().num_updates_downloaded_total
-       << ", passphrase_required_reason: "
-       << syncer::PassphraseRequiredReasonToString(
-              service()->GetPassphraseRequiredReasonForTest())
+       << ", passphrase_required: "
+       << service()->GetUserSettings()->IsPassphraseRequired()
        << ", notifications_enabled: " << status.notifications_enabled
        << ", service_is_active: " << service()->IsSyncFeatureActive();
   } else {

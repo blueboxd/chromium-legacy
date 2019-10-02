@@ -3283,7 +3283,6 @@ test("unit_tests") {
     "../browser/ui/find_bar/find_backend_unittest.cc",
     "../browser/ui/login/login_handler_unittest.cc",
     "../browser/ui/page_info/page_info_unittest.cc",
-    "../browser/ui/passwords/credential_leak_dialog_utils_unittest.cc",
     "../browser/ui/passwords/manage_passwords_state_unittest.cc",
     "../browser/ui/passwords/manage_passwords_view_utils_unittest.cc",
     "../browser/ui/passwords/password_generation_popup_controller_impl_unittest.cc",

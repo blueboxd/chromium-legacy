@@ -88,11 +88,15 @@ cca.models.Gallery.Picture.parseTimestamp_ = function(pictureEntry) {
   var name = cca.models.FileSystem.regulatePictureName(pictureEntry);
   // Match numeric parts from filenames, e.g. IMG_'yyyyMMdd_HHmmss (n)'.jpg.
   // Assume no more than one picture taken within one millisecond.
+  // Use String.raw instead of /...regex.../ here to avoid breaking syntax
+  // highlight on gerrit.
   var match = name.match(
-      /_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?: \((\d+)\))?/);
-  return match ? new Date(num(match[1]), num(match[2]) - 1, num(match[3]),
-      num(match[4]), num(match[5]), num(match[6]),
-      match[7] ? num(match[7]) : 0) : new Date(0);
+      String.raw`_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?: \((\d+)\))?/`);
+  return match ?
+      new Date(
+          num(match[1]), num(match[2]) - 1, num(match[3]), num(match[4]),
+          num(match[5]), num(match[6]), match[7] ? num(match[7]) : 0) :
+      new Date(0);
 };
 
 cca.models.Gallery.Picture.prototype = {
@@ -313,7 +317,7 @@ cca.models.Gallery.prototype.savePhoto = function(blob, name) {
  */
 cca.models.Gallery.prototype.startSaveVideo = async function() {
   const tempFile = await cca.models.FileSystem.createTempVideoFile();
-  return cca.models.VideoSaver.create(tempFile);
+  return cca.models.FileVideoSaver.create(tempFile);
 };
 
 /**

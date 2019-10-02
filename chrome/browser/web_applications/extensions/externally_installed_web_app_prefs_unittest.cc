@@ -176,4 +176,26 @@ TEST_F(ExternallyInstalledWebAppPrefsTest, BasicOps) {
             GetAppUrls(ExternalInstallSource::kExternalPolicy));
 }
 
+TEST_F(ExternallyInstalledWebAppPrefsTest, IsPlaceholderApp) {
+  const GURL url("https://example.com");
+  const AppId app_id = "app_id_string";
+  ExternallyInstalledWebAppPrefs prefs(profile()->GetPrefs());
+  prefs.Insert(url, app_id, ExternalInstallSource::kExternalPolicy);
+  EXPECT_FALSE(ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
+                   .IsPlaceholderApp(app_id));
+  prefs.SetIsPlaceholder(url, true);
+  EXPECT_TRUE(ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
+                  .IsPlaceholderApp(app_id));
+}
+
+TEST_F(ExternallyInstalledWebAppPrefsTest, OldPrefFormat) {
+  // Set up the old format for this pref {url -> app_id}.
+  DictionaryPrefUpdate update(profile()->GetPrefs(),
+                              prefs::kWebAppsExtensionIDs);
+  update->SetKey("https://example.com", base::Value("add_id_string"));
+  // This should not crash on invalid pref data.
+  EXPECT_FALSE(ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
+                   .IsPlaceholderApp("app_id_string"));
+}
+
 }  // namespace web_app

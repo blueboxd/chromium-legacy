@@ -119,6 +119,11 @@ void FakeSyncEncryptionHandler::SetDecryptionPassphrase(
   // Do nothing.
 }
 
+void FakeSyncEncryptionHandler::AddTrustedVaultDecryptionKeys(
+    const std::vector<std::string>& encryption_keys) {
+  // Do nothing.
+}
+
 void FakeSyncEncryptionHandler::EnableEncryptEverything() {
   if (encrypt_everything_)
     return;

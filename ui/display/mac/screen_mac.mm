@@ -143,8 +143,8 @@ class ScreenMac : public Screen {
   ScreenMac()
       : configure_timer_(FROM_HERE,
                          base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
-                         base::Bind(&ScreenMac::ConfigureTimerFired,
-                                    base::Unretained(this))) {
+                         base::BindRepeating(&ScreenMac::ConfigureTimerFired,
+                                             base::Unretained(this))) {
     old_displays_ = displays_ = BuildDisplaysFromQuartz();
     CGDisplayRegisterReconfigurationCallback(
         ScreenMac::DisplayReconfigurationCallBack, this);

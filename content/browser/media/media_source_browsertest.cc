@@ -61,10 +61,9 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioOnly_AAC_ADTS) {
 }
 #endif
 
-// crbug.com/1010061: disabled due to flakiness.
 // Opus is not supported in Android as of now.
 #if !defined(OS_ANDROID)
-IN_PROC_BROWSER_TEST_F(MediaSourceTest, DISABLED_Playback_AudioOnly_Opus_WebM) {
+IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioOnly_Opus_WebM) {
   TestSimplePlayback("bear-opus.webm", media::kEnded);
 }
 #endif
@@ -87,10 +86,8 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, ConfigChangeVideo) {
                    true);
 }
 
-// crbug.com/1010061: disabled due to flakiness.
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-IN_PROC_BROWSER_TEST_F(MediaSourceTest,
-                       DISABLED_Playback_Video_MP4_Audio_WEBM) {
+IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_MP4_Audio_WEBM) {
   auto query_params = GetAudioVideoQueryParams("bear-320x240-audio-only.webm",
                                                "bear-640x360-v_frag.mp4");
   RunMediaTestPage("mse_different_containers.html", std::move(query_params),
@@ -106,8 +103,7 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_WEBM_Audio_MP4) {
 
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
-// crbug.com/1010061: disabled due to flakiness.
-IN_PROC_BROWSER_TEST_F(MediaSourceTest, DISABLED_Playback_AudioOnly_FLAC_MP4) {
+IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioOnly_FLAC_MP4) {
   TestSimplePlayback("bear-flac_frag.mp4", media::kEnded);
 }
 

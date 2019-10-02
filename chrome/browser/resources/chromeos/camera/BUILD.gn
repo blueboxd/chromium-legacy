@@ -79,6 +79,9 @@ copy("chrome_camera_app_images") {
     "src/images/camera_button_timer_on_10s.svg",
     "src/images/camera_button_timer_on_3s.svg",
     "src/images/camera_focus_aim.svg",
+    "src/images/camera_intent_play_video.svg",
+    "src/images/camera_intent_result_cancel.svg",
+    "src/images/camera_intent_result_confirm.svg",
     "src/images/camera_mode_photo.svg",
     "src/images/camera_mode_portrait.svg",
     "src/images/camera_mode_square.svg",
@@ -145,6 +148,7 @@ copy("chrome_camera_app_js_device") {
     "src/js/device/camera3_device_info.js",
     "src/js/device/constraints_preferrer.js",
     "src/js/device/device_info_updater.js",
+    "src/js/device/error.js",
   ]
 
   outputs = [
@@ -154,11 +158,13 @@ copy("chrome_camera_app_js_device") {
 
 copy("chrome_camera_app_js_models") {
   sources = [
+    "src/js/models/file_video_saver.js",
     "src/js/models/filenamer.js",
     "src/js/models/filesystem.js",
     "src/js/models/gallery.js",
+    "src/js/models/intent_video_saver.js",
     "src/js/models/result_saver.js",
-    "src/js/models/video_saver.js",
+    "src/js/models/video_saver_interface.js",
   ]
 
   outputs = [
@@ -182,6 +188,7 @@ copy("chrome_camera_app_js_views") {
   sources = [
     "src/js/views/browser.js",
     "src/js/views/camera.js",
+    "src/js/views/camera_intent.js",
     "src/js/views/dialog.js",
     "src/js/views/gallery_base.js",
     "src/js/views/settings.js",
@@ -201,6 +208,7 @@ copy("chrome_camera_app_js_views_camera") {
     "src/js/views/camera/options.js",
     "src/js/views/camera/preview.js",
     "src/js/views/camera/recordtime.js",
+    "src/js/views/camera/review_result.js",
     "src/js/views/camera/timertick.js",
   ]
 

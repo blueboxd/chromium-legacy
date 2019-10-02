@@ -183,6 +183,14 @@ base::string16 FileVersionInfoWin::GetStringValue(const base::char16* name) {
     return base::string16();
 }
 
+base::Version FileVersionInfoWin::GetFileVersion() const {
+  return base::Version(
+      std::vector<uint32_t>{HIWORD(fixed_file_info_->dwFileVersionMS),
+                            LOWORD(fixed_file_info_->dwFileVersionMS),
+                            HIWORD(fixed_file_info_->dwFileVersionLS),
+                            LOWORD(fixed_file_info_->dwFileVersionLS)});
+}
+
 FileVersionInfoWin::FileVersionInfoWin(std::vector<uint8_t>&& data,
                                        WORD language,
                                        WORD code_page)

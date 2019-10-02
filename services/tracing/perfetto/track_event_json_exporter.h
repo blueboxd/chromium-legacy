@@ -154,16 +154,26 @@ class TrackEventJSONExporter : public JSONTraceExporter {
                            ArgumentBuilder* args_builder);
 
   // Used to handle the LegacyEvent message found inside the TrackEvent proto.
-  base::Optional<ScopedJSONTraceEventAppender> HandleLegacyEvent(
+  ScopedJSONTraceEventAppender HandleLegacyEvent(
       const perfetto::protos::TrackEvent_LegacyEvent& event,
       const std::string& categories,
       int64_t timestamp_us);
+
+  void EmitStats();
 
   // Tracks all the interned state in the current sequence.
   std::unique_ptr<ProducerWriterState> current_state_;
 
   // Tracks out-of-order seqeuence data.
   std::map<uint32_t, UnorderedProducerWriterState> unordered_state_data_;
+
+  struct Stats {
+    int sequences_seen = 0;
+    int incremental_state_resets = 0;
+    int packets_dropped_invalid_incremental_state = 0;
+    int packets_with_previous_packet_dropped = 0;
+  };
+  Stats stats_;
 
   DISALLOW_COPY_AND_ASSIGN(TrackEventJSONExporter);
 };

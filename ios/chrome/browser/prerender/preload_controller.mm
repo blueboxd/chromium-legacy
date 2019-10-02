@@ -32,6 +32,7 @@
 #import "ios/web/public/navigation/web_state_policy_decider_bridge.h"
 #include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/ui/java_script_dialog_presenter.h"
+#include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
@@ -322,7 +323,8 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
 }
 
 - (std::unique_ptr<web::WebState>)releasePrerenderContents {
-  if (!_webState)
+  if (!_webState ||
+      _webState->GetNavigationManager()->IsRestoreSessionInProgress())
     return nullptr;
 
   self.successfulPrerendersPerSessionCount++;
@@ -495,13 +497,20 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
   self.prerenderedURL = self.scheduledURL;
   std::unique_ptr<PrerenderRequest> request = std::move(_scheduledRequest);
 
-  if (!self.prerenderedURL.is_valid()) {
+  web::WebState* webStateToReplace = [self.delegate webStateToReplace];
+  if (!self.prerenderedURL.is_valid() || !webStateToReplace) {
     [self destroyPreviewContents];
     return;
   }
 
   web::WebState::CreateParams createParams(self.browserState);
-  _webState = web::WebState::Create(createParams);
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    _webState = web::WebState::CreateWithStorageSession(
+        createParams, webStateToReplace->BuildSessionStorage());
+  } else {
+    _webState = web::WebState::Create(createParams);
+  }
+
   // Add the preload controller as a policyDecider before other tab helpers, so
   // that it can block the navigation if needed before other policy deciders
   // execute thier side effects (eg. AppLauncherTabHelper launching app).

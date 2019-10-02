@@ -27,6 +27,7 @@ extern NSString* const kWebCustomDataPboardType;
 
 // MIME type constants.
 COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) extern const char kMimeTypeText[];
+COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) extern const char kMimeTypeTextUtf8[];
 COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) extern const char kMimeTypeURIList[];
 COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) extern const char kMimeTypeDownloadURL[];
 COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) extern const char kMimeTypeMozillaURL[];

@@ -12,10 +12,10 @@
 #include "content/public/browser/url_data_source.h"
 #include "url/gurl.h"
 
-// Serves files at chrome://test/ from //src/chrome/test/data/webui.
+// Serves files at chrome://test/ from //src/chrome/test/data/<root>.
 class TestDataSource : public content::URLDataSource {
  public:
-  TestDataSource() = default;
+  explicit TestDataSource(std::string root);
   ~TestDataSource() override = default;
 
  private:

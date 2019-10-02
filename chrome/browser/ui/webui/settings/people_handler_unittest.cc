@@ -816,7 +816,7 @@ TEST_F(PeopleHandlerTest, TestSyncEverything) {
   list_args.AppendString(kTestCallbackId);
   list_args.AppendString(args);
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsPassphraseRequiredForDecryption())
+          IsPassphraseRequiredForPreferredDataTypes())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
       .WillByDefault(Return(false));
@@ -835,7 +835,7 @@ TEST_F(PeopleHandlerTest, TestPassphraseStillRequired) {
   list_args.AppendString(kTestCallbackId);
   list_args.AppendString(args);
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsPassphraseRequiredForDecryption())
+          IsPassphraseRequiredForPreferredDataTypes())
       .WillByDefault(Return(true));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
       .WillByDefault(Return(true));
@@ -864,7 +864,7 @@ TEST_F(PeopleHandlerTest, EnterExistingFrozenImplicitPassword) {
               IsPassphraseRequired())
       .WillOnce(Return(true));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsPassphraseRequiredForDecryption())
+          IsPassphraseRequiredForPreferredDataTypes())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
           IsUsingSecondaryPassphrase())
@@ -890,7 +890,7 @@ TEST_F(PeopleHandlerTest, SetNewCustomPassphrase) {
           IsEncryptEverythingAllowed())
       .WillByDefault(Return(true));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsPassphraseRequiredForDecryption())
+          IsPassphraseRequiredForPreferredDataTypes())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
       .WillByDefault(Return(false));
@@ -914,7 +914,7 @@ TEST_F(PeopleHandlerTest, EnterWrongExistingPassphrase) {
   list_args.AppendString(kTestCallbackId);
   list_args.AppendString(args);
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsPassphraseRequiredForDecryption())
+          IsPassphraseRequiredForPreferredDataTypes())
       .WillByDefault(Return(true));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
       .WillByDefault(Return(true));
@@ -945,7 +945,7 @@ TEST_F(PeopleHandlerTest, EnterBlankExistingPassphrase) {
   list_args.AppendString(kTestCallbackId);
   list_args.AppendString(args);
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsPassphraseRequiredForDecryption())
+          IsPassphraseRequiredForPreferredDataTypes())
       .WillByDefault(Return(true));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
       .WillByDefault(Return(true));
@@ -976,7 +976,7 @@ TEST_F(PeopleHandlerTest, TestSyncIndividualTypes) {
     list_args.AppendString(kTestCallbackId);
     list_args.AppendString(args);
     ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-            IsPassphraseRequiredForDecryption())
+            IsPassphraseRequiredForPreferredDataTypes())
         .WillByDefault(Return(false));
     ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
         .WillByDefault(Return(false));
@@ -1001,7 +1001,7 @@ TEST_F(PeopleHandlerTest, TestSyncAllManually) {
   list_args.AppendString(kTestCallbackId);
   list_args.AppendString(args);
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsPassphraseRequiredForDecryption())
+          IsPassphraseRequiredForPreferredDataTypes())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
       .WillByDefault(Return(false));
@@ -1240,7 +1240,7 @@ TEST_F(PeopleHandlerTest, ShowSetupEncryptAllDisallowed) {
 
 TEST_F(PeopleHandlerTest, TurnOnEncryptAllDisallowed) {
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsPassphraseRequiredForDecryption())
+          IsPassphraseRequiredForPreferredDataTypes())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
       .WillByDefault(Return(false));

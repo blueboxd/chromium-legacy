@@ -1684,7 +1684,7 @@ enum class EnterTabSwitcherSnapshotResult {
     DCHECK_EQ(self.currentBVC, self.mainCoordinator.activeViewController);
     baseViewController = self.currentBVC;
   }
-  DCHECK(![baseViewController presentedViewController]);
+
   if ([self currentBrowserState]->IsOffTheRecord()) {
     NOTREACHED();
     return;
@@ -1710,7 +1710,7 @@ enum class EnterTabSwitcherSnapshotResult {
     DCHECK_EQ(self.currentBVC, self.mainCoordinator.activeViewController);
     baseViewController = self.currentBVC;
   }
-  DCHECK(![baseViewController presentedViewController]);
+
   if (_settingsNavigationController) {
     // Navigate to the Google services settings if the settings dialog is
     // already opened.

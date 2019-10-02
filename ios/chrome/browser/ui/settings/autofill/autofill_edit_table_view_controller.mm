@@ -73,7 +73,10 @@
   return YES;
 }
 
-- (BOOL)shouldDismissViewControllerBySwipeDown {
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (BOOL)presentationControllerShouldDismiss:
+    (UIPresentationController*)presentationController {
   return !self.tableView.editing;
 }
 

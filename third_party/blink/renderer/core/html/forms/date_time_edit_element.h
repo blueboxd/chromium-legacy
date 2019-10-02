@@ -111,6 +111,7 @@ class DateTimeEditElement final : public HTMLDivElement,
   String Value() const;
   DateTimeFieldsState ValueAsDateTimeFieldsState() const;
   bool HasField(DateTimeField) const;
+  bool IsFirstFieldAMPM() const;
 
  private:
   static const wtf_size_t kInvalidFieldIndex = UINT_MAX;

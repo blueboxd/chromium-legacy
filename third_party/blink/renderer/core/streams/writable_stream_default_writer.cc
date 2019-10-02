@@ -66,7 +66,6 @@ WritableStreamDefaultWriter* WritableStreamDefaultWriter::Create(
     ScriptState* script_state,
     WritableStream* stream,
     ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::StreamsNativeEnabled());
   auto* writer = MakeGarbageCollected<WritableStreamDefaultWriter>(
       script_state, static_cast<WritableStreamNative*>(stream),
       exception_state);

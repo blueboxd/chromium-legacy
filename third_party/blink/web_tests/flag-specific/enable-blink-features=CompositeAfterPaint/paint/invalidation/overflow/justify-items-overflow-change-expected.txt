@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='item1'",
+          "object": "LayoutNGBlockFlow DIV class='item1'",
           "rect": [0, 52, 160, 300],
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow DIV class='item1'",
+          "object": "LayoutNGBlockFlow DIV class='item1'",
           "rect": [0, 52, 100, 300],
           "reason": "geometry"
         }

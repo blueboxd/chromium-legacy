@@ -626,6 +626,14 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Viewport) {
   RunTestsInFile("viewport_test.js", "test.pdf");
 }
 
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Layout3) {
+  RunTestsInFile("layout_test.js", "test-layout3.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Layout4) {
+  RunTestsInFile("layout_test.js", "test-layout4.pdf");
+}
+
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Bookmark) {
   RunTestsInFile("bookmarks_test.js", "test-bookmarks.pdf");
 }

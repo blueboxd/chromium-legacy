@@ -26,7 +26,7 @@ class Target : public service_manager::Service,
   explicit Target(service_manager::mojom::ServiceRequest request)
       : service_binding_(this, std::move(request)) {
     registry_.AddInterface<ConnectTestService>(
-        base::Bind(&Target::Create, base::Unretained(this)));
+        base::BindRepeating(&Target::Create, base::Unretained(this)));
   }
 
   ~Target() override = default;

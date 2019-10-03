@@ -316,6 +316,7 @@ ShellSurfaceBase::~ShellSurfaceBase() {
   WMHelper::GetInstance()->RemoveActivationObserver(this);
   if (widget_) {
     widget_->GetNativeWindow()->RemoveObserver(this);
+    widget_->RemoveObserver(this);
     // Remove transient children so they are not automatically destroyed.
     for (auto* child : wm::GetTransientChildren(widget_->GetNativeWindow()))
       wm::RemoveTransientChild(widget_->GetNativeWindow(), child);
@@ -759,6 +760,26 @@ void ShellSurfaceBase::OnCaptureChanged(aura::Window* lost_capture,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// views::WidgetObserver overrides:
+
+void ShellSurfaceBase::OnWidgetClosing(views::Widget* widget) {
+  DCHECK(widget_ == widget);
+  // To force the widget to close we first disconnect this shell surface from
+  // its underlying surface, by asserting to it that the surface destroyed
+  // itself. After that, it is safe to call CloseNow() on the widget.
+  //
+  // TODO(crbug.com/1010326): This only closes the aura/exo pieces, but we
+  // should go one level deeper and destroy the wayland stuff. Some options:
+  //  - Invoke xkill under-the-hood, which will only work for x11 and won't
+  //    work if the container itself is stuck.
+  //  - Close the wl connection to the client (i.e. wlkill) this is
+  //    problematic with X11 as all of xwayland shares the same client.
+  //  - Transitively kill all the wl_resources rooted at this window's
+  //    wl_surface, which is not really supported in wayland.
+  OnSurfaceDestroying(root_surface());
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // views::Views overrides:
 
 gfx::Size ShellSurfaceBase::CalculatePreferredSize() const {
@@ -894,6 +915,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   // Note: NativeWidget owns this widget.
   widget_ = new ShellSurfaceWidget;
   widget_->Init(std::move(params));
+  widget_->AddObserver(this);
 
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName("ExoShellSurface");

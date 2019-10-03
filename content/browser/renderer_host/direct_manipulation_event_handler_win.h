@@ -22,7 +22,7 @@ class WindowEventTarget;
 namespace content {
 
 class DirectManipulationHelper;
-class DirectManipulationBrowserTest;
+class DirectManipulationBrowserTestBase;
 class DirectManipulationUnitTest;
 
 // DirectManipulationEventHandler receives status update and gesture events from
@@ -48,7 +48,7 @@ class DirectManipulationEventHandler
   void SetDirectManipulationHelper(DirectManipulationHelper* helper);
 
  private:
-  friend class DirectManipulationBrowserTest;
+  friend class DirectManipulationBrowserTestBase;
   friend DirectManipulationUnitTest;
 
   // DirectManipulationEventHandler();

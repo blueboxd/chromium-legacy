@@ -23,7 +23,8 @@ class ShutdownClientApp : public Service,
   explicit ShutdownClientApp(mojom::ServiceRequest request)
       : service_binding_(this, std::move(request)) {
     registry_.AddInterface<mojom::ShutdownTestClientController>(
-        base::Bind(&ShutdownClientApp::Create, base::Unretained(this)));
+        base::BindRepeating(&ShutdownClientApp::Create,
+                            base::Unretained(this)));
   }
   ~ShutdownClientApp() override = default;
 

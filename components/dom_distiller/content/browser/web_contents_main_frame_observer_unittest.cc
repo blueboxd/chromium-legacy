@@ -4,6 +4,7 @@
 
 #include "components/dom_distiller/content/browser/web_contents_main_frame_observer.h"
 
+#include "build/build_config.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -65,6 +66,13 @@ TEST_F(WebContentsMainFrameObserverTest, DISABLED_IgnoresChildFrameNavigation) {
   EXPECT_FALSE(main_frame_observer_->is_document_loaded_in_main_frame());
 }
 
+// Flaky on Win. http://crbug.com/1010354
+#if defined(OS_WIN)
+#define MAYBE_IgnoresSameDocumentNavigationd \
+  DISABLED_IgnoresSameDocumentNavigationd
+#else
+#define MAYBE_IgnoresSameDocumentNavigationd IgnoresSameDocumentNavigationd
+#endif
 TEST_F(WebContentsMainFrameObserverTest, IgnoresSameDocumentNavigation) {
   Navigate(kMainFrame, kSameDocument);
   EXPECT_FALSE(main_frame_observer_->is_initialized());

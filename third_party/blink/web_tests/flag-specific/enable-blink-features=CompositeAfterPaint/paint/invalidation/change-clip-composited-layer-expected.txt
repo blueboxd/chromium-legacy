@@ -7,11 +7,11 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV id='target'",
+      "name": "LayoutNGBlockFlow DIV id='target'",
       "bounds": [100, 10],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='target'",
+          "object": "LayoutNGBlockFlow DIV id='target'",
           "rect": [0, 0, 100, 10],
           "reason": "full layer"
         }

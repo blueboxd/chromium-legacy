@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
@@ -313,7 +314,9 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   ASSERT_FALSE(MagnificationManager::Get()->IsMagnifierEnabled());
 }
 
-IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, A11yDockedMagnifierDisabled) {
+// Flaky. http://crbug.com/1010676
+IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
+                       DISABLED_A11yDockedMagnifierDisabled) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().ExpectHiddenPath({"connect", "dockedMagnifierOobeOption"});

@@ -189,27 +189,20 @@ void WebContentsDelegateAndroid::RendererResponsive(
   Java_WebContentsDelegateAndroid_rendererResponsive(env, obj);
 }
 
-bool WebContentsDelegateAndroid::ShouldCreateWebContents(
-    content::WebContents* web_contents,
-    content::RenderFrameHost* opener,
+bool WebContentsDelegateAndroid::IsWebContentsCreationOverridden(
     content::SiteInstance* source_site_instance,
-    int32_t route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
     content::mojom::WindowContainerType window_container_type,
     const GURL& opener_url,
     const std::string& frame_name,
-    const GURL& target_url,
-    const std::string& partition_id,
-    content::SessionStorageNamespace* session_storage_namespace) {
+    const GURL& target_url) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
-    return true;
+    return false;
   ScopedJavaLocalRef<jstring> java_url =
       ConvertUTF8ToJavaString(env, target_url.spec());
-  return Java_WebContentsDelegateAndroid_shouldCreateWebContents(env, obj,
-                                                                 java_url);
+  return !Java_WebContentsDelegateAndroid_shouldCreateWebContents(env, obj,
+                                                                  java_url);
 }
 
 void WebContentsDelegateAndroid::WebContentsCreated(

@@ -7,22 +7,22 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV",
+          "object": "LayoutNGBlockFlow (positioned) DIV",
           "rect": [8, 158, 106, 106],
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV",
+          "object": "LayoutNGBlockFlow (positioned) DIV",
           "rect": [8, 8, 106, 106],
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow DIV",
+          "object": "LayoutNGBlockFlow DIV",
           "rect": [8, 308, 100, 100],
           "reason": "appeared"
         },
         {
-          "object": "LayoutBlockFlow DIV id='target3'",
+          "object": "LayoutNGBlockFlow DIV id='target3'",
           "rect": [8, 388, 100, 20],
           "reason": "appeared"
         }

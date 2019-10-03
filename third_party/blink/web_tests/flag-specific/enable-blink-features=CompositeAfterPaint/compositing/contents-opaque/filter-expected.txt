@@ -7,13 +7,13 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV class='box filter-blur'",
+      "name": "LayoutNGBlockFlow DIV class='box filter-blur'",
       "bounds": [100, 100],
       "backgroundColor": "#008000",
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow DIV class='box filter-opacity'",
+      "name": "LayoutNGBlockFlow DIV class='box filter-opacity'",
       "bounds": [100, 100],
       "backgroundColor": "#008000",
       "transform": 2

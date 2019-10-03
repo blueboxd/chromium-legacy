@@ -16,6 +16,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/null_ax_action_target.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -733,8 +734,14 @@ ui::AXNodeData* PdfAccessibilityTree::CreateImageNode(
     const gfx::RectF& page_bounds) {
   ui::AXNodeData* image_node = CreateNode(ax::mojom::Role::kImage);
 
-  image_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                 image.alt_text);
+  if (image.alt_text.empty()) {
+    image_node->AddStringAttribute(
+        ax::mojom::StringAttribute::kName,
+        l10n_util::GetStringUTF8(IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION));
+  } else {
+    image_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                   image.alt_text);
+  }
   image_node->relative_bounds.bounds =
       ToGfxRectF(image.bounds) + page_bounds.OffsetFromOrigin();
   return image_node;

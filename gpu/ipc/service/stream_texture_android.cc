@@ -236,7 +236,20 @@ bool StreamTexture::CopyTexImage(unsigned target) {
 void StreamTexture::OnFrameAvailable() {
   has_pending_frame_ = true;
   if (has_listener_ && channel_) {
-    channel_->Send(new GpuStreamTextureMsg_FrameAvailable(route_id_));
+    // Send ycbcr_info if it has not been sent yet. This will always be sent
+    // before the first frame. This info needs to be sent only once to the
+    // renderer. Renderer will then cache it.
+    if (!ycbcr_info_sent_) {
+      ycbcr_info_sent_ = true;
+
+      // Since the frame is available, get the ycbcr info from the latest image.
+      base::Optional<VulkanYCbCrInfo> ycbcr_info =
+          SharedImageVideo::GetYcbcrInfo(this, context_state_);
+      channel_->Send(new GpuStreamTextureMsg_FrameWithYcbcrInfoAvailable(
+          route_id_, ycbcr_info));
+    } else {
+      channel_->Send(new GpuStreamTextureMsg_FrameAvailable(route_id_));
+    }
   }
 }
 

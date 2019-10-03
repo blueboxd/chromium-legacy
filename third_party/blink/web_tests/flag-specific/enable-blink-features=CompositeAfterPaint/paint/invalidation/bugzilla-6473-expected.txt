@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (relative positioned) P",
+          "object": "LayoutNGBlockFlow (relative positioned) P",
           "rect": [8, 152, 784, 20],
           "reason": "chunk disappeared"
         },
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutNGBlockFlow HTML",
           "rect": [8, 136, 784, 20],
           "reason": "chunk appeared"
         }

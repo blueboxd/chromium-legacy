@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='sizedToGridArea'",
+          "object": "LayoutNGBlockFlow DIV class='sizedToGridArea'",
           "rect": [8, 88, 100, 100],
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow DIV class='sizedToGridArea'",
+          "object": "LayoutNGBlockFlow DIV class='sizedToGridArea'",
           "rect": [8, 38, 100, 50],
           "reason": "style change"
         }

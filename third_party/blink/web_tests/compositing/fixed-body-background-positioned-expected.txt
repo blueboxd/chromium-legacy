@@ -24,6 +24,7 @@
       "name": "Scrolling Contents Layer",
       "bounds": [785, 3700],
       "backgroundColor": "#FFFFFF",
+      "scrollPosition": [0, 200],
       "transform": 1
     },
     {
@@ -47,8 +48,7 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, -200, 0, 1]
-      ],
-      "flattenInheritedTransform": false
+      ]
     }
   ]
 }

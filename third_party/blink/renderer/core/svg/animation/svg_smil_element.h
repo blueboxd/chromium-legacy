@@ -88,7 +88,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   bool CurrentIntervalIsActive(SMILTime elapsed);
   void UpdateInterval(SMILTime presentation_time);
   void UpdateActiveState(SMILTime elapsed);
-  void UpdateSyncBases();
 
   SMILTime NextInterestingTime(SMILTime elapsed) const;
   SMILTime NextProgressTime(SMILTime elapsed) const;

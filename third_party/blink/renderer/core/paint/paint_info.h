@@ -124,6 +124,9 @@ struct CORE_EXPORT PaintInfo {
   }
 
   bool IsPrinting() const { return global_paint_flags_ & kGlobalPaintPrinting; }
+  bool ShouldAddUrlMetadata() const {
+    return global_paint_flags_ & kGlobalPaintAddUrlMetadata;
+  }
 
   DisplayItem::Type DisplayItemTypeForClipping() const {
     return DisplayItem::PaintPhaseToClipType(phase);

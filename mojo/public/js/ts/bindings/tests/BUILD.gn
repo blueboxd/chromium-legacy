@@ -9,6 +9,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("test_interfaces") {
   testonly = true
   sources = [
+    "constants.test-mojom",
     "module.test-mojom",
   ]
   use_typescript_sources = true

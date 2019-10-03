@@ -191,7 +191,7 @@ ServiceManager::~ServiceManager() {
 }
 
 void ServiceManager::SetInstanceQuitCallback(
-    base::Callback<void(const Identity&)> callback) {
+    base::OnceCallback<void(const Identity&)> callback) {
   instance_quit_callback_ = std::move(callback);
 }
 
@@ -405,7 +405,7 @@ void ServiceManager::OnInstanceStopped(const Identity& identity) {
     listener->OnServiceStopped(identity);
   });
   if (!instance_quit_callback_.is_null())
-    instance_quit_callback_.Run(identity);
+    std::move(instance_quit_callback_).Run(identity);
 }
 
 ServiceInstance* ServiceManager::GetExistingInstance(

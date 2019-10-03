@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative green'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV class='relative green'",
           "rect": [108, 108, 100, 100],
           "reason": "appeared"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='overflowParent' class='absolute green'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='overflowParent' class='absolute green'",
           "rect": [8, 8, 100, 100],
           "reason": "style change"
         }

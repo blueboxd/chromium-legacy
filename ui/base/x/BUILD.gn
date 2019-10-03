@@ -20,6 +20,10 @@ jumbo_component("x") {
     "x11_menu_list.h",
     "x11_pointer_grab.cc",
     "x11_pointer_grab.h",
+    "x11_shm_image_pool_base.cc",
+    "x11_shm_image_pool_base.h",
+    "x11_software_bitmap_presenter.cc",
+    "x11_software_bitmap_presenter.h",
     "x11_util.cc",
     "x11_util.h",
     "x11_util_internal.h",
@@ -28,10 +32,14 @@ jumbo_component("x") {
   ]
 
   if (use_x11) {
-    # Not supported on Ozone for now.
     sources += [
       "x11_shm_image_pool.cc",
       "x11_shm_image_pool.h",
+    ]
+  } else {
+    sources += [
+      "x11_shm_image_pool_ozone.cc",
+      "x11_shm_image_pool_ozone.h",
     ]
   }
 

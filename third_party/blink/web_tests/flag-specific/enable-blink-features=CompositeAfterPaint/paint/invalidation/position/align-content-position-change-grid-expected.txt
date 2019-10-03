@@ -7,32 +7,32 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='item'",
+          "object": "LayoutNGBlockFlow DIV class='item'",
           "rect": [0, 302, 200, 50],
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow DIV class='item'",
+          "object": "LayoutNGBlockFlow DIV class='item'",
           "rect": [0, 252, 200, 50],
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow DIV class='item'",
+          "object": "LayoutNGBlockFlow DIV class='item'",
           "rect": [0, 202, 200, 50],
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow DIV class='item'",
+          "object": "LayoutNGBlockFlow DIV class='item'",
           "rect": [0, 152, 200, 50],
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow DIV class='item'",
+          "object": "LayoutNGBlockFlow DIV class='item'",
           "rect": [0, 102, 200, 50],
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow DIV class='item'",
+          "object": "LayoutNGBlockFlow DIV class='item'",
           "rect": [0, 52, 200, 50],
           "reason": "geometry"
         }

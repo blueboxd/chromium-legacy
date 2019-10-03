@@ -112,7 +112,8 @@ class WaylandSurfaceFactoryTest : public WaylandTest {
  protected:
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvas(
       gfx::AcceleratedWidget widget) {
-    auto canvas = surface_factory_->CreateCanvasForWidget(widget_);
+    auto canvas = surface_factory_->CreateCanvasForWidget(
+        widget_, base::ThreadTaskRunnerHandle::Get().get());
     base::RunLoop().RunUntilIdle();
 
     return canvas;

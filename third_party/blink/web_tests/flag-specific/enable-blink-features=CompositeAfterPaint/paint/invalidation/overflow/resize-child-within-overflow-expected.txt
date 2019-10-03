@@ -11,13 +11,13 @@
       "bounds": [800, 600]
     },
     {
-      "name": "LayoutBlockFlow HTML",
+      "name": "LayoutNGBlockFlow HTML",
       "bounds": [600, 1000],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='container'",
+          "object": "LayoutNGBlockFlow (positioned) DIV class='container'",
           "rect": [400, 0, 200, 1000],
           "reason": "incremental"
         }

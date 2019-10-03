@@ -849,6 +849,12 @@ class BLINK_EXPORT WebLocalFrameClient {
     return nullptr;
   }
 
+  // AppCache ------------------------------------------------------------
+  virtual void UpdateSubresourceFactory(
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {}
+
+  // Misc ----------------------------------------------------------------
+
   // Returns true when the contents of plugin are handled externally. This means
   // the plugin element will own a content frame but the frame is than used
   // externally to load the required handlers.
@@ -868,10 +874,6 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Transfers user activation state from |source_frame| to the current frame.
   virtual void TransferUserActivationFrom(WebLocalFrame* source_frame) {}
-
-  // AppCache ------------------------------------------------------------
-  virtual void UpdateSubresourceFactory(
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {}
 
   // Evicts the page from the back forward cache due to e.g., JavaScript
   // execution.

@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/passwords/password_breach_coordinator.h"
 
+#import "ios/chrome/browser/ui/passwords/password_breach_mediator.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -14,6 +15,9 @@
 
 // The main view controller for this coordinator.
 @property(nonatomic, strong) PasswordBreachViewController* viewController;
+
+// The main mediator for this coordinator.
+@property(nonatomic, strong) PasswordBreachMediator* mediator;
 
 @end
 
@@ -28,6 +32,7 @@
 }
 
 - (void)stop {
+  self.mediator = nil;
   [self.viewController.presentingViewController
       dismissViewControllerAnimated:YES
                          completion:nil];

@@ -1111,6 +1111,8 @@ if (!is_android) {
       "../browser/sessions/tab_restore_service_load_waiter.cc",
       "../browser/sessions/tab_restore_service_load_waiter.h",
       "../browser/sharing/click_to_call/click_to_call_browsertest.cc",
+      "../browser/sharing/sharing_browsertest.cc",
+      "../browser/sharing/sharing_browsertest.h",
       "../browser/signin/consistency_cookie_browsertest.cc",
       "../browser/signin/e2e_tests/demo_signin_e2e_test.cc",
       "../browser/signin/e2e_tests/live_test.cc",
@@ -2302,6 +2304,7 @@ if (!is_android) {
         "../browser/ui/views/crostini/crostini_ansible_software_config_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_browser_test_util.cc",
         "../browser/ui/views/crostini/crostini_browser_test_util.h",
+        "../browser/ui/views/crostini/crostini_force_close_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_installer_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_uninstaller_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_upgrade_container_view_browsertest.cc",
@@ -4072,7 +4075,6 @@ test("unit_tests") {
 
       # Only list files here (not directories). See https://crbug.com/912946
       data += [
-        "$root_out_dir/test_data/chrome/renderer/resources/extensions/notifications_custom_bindings.gtestjs",
         "$root_out_dir/test_data/chrome/renderer/resources/extensions/notifications_custom_bindings.js",
         "$root_out_dir/test_data/chrome/renderer/resources/extensions/notifications_test_util.js",
         "$root_out_dir/test_data/ui/webui/resources/js/cr.js",

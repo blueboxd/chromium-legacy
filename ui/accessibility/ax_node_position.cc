@@ -115,7 +115,7 @@ AXNodePosition::AXPositionInstance AXNodePosition::AsUnignoredTextPosition(
 
 int AXNodePosition::MaxTextOffset() const {
   if (IsNullPosition())
-    return INVALID_INDEX;
+    return INVALID_OFFSET;
 
   const AXNode* anchor = GetAnchor();
   DCHECK(anchor);

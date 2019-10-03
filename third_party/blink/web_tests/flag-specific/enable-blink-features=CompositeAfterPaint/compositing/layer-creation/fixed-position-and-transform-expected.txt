@@ -13,14 +13,14 @@
       "bounds": [15, 600]
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='indicator'",
+      "name": "LayoutNGBlockFlow (positioned) DIV id='indicator'",
       "bounds": [256, 256],
       "contentsOpaque": true,
       "backgroundColor": "#FF0000",
       "transform": 2
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='overlap'",
+      "name": "LayoutNGBlockFlow (positioned) DIV id='overlap'",
       "bounds": [500, 500],
       "contentsOpaque": true,
       "backgroundColor": "#008000"

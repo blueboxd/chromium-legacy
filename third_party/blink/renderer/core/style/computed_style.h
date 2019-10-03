@@ -942,6 +942,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   // color
   void SetColor(const Color&);
+  void ResolveInternalTextColor(const Color&);
 
   // line-height
   Length LineHeight() const;

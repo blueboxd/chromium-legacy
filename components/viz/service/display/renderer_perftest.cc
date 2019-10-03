@@ -221,6 +221,24 @@ void CreateTestTextureDrawQuad(ResourceId resource_id,
                /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
 }
 
+void CreateTestTileDrawQuad(ResourceId resource_id,
+                            const gfx::Rect& rect,
+                            const gfx::Size& texture_size,
+                            bool premultiplied_alpha,
+                            const SharedQuadState* shared_state,
+                            RenderPass* render_pass) {
+  // TileDrawQuads are non-normalized texture coords, so assume it's 1-1 with
+  // the visible rect.
+  const gfx::RectF tex_coord_rect(rect);
+  const bool needs_blending = true;
+  const bool nearest_neighbor = false;
+  const bool force_anti_aliasing_off = false;
+  auto* quad = render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
+  quad->SetNew(shared_state, rect, rect, needs_blending, resource_id,
+               tex_coord_rect, texture_size, premultiplied_alpha,
+               nearest_neighbor, force_anti_aliasing_off);
+}
+
 }  // namespace
 
 template <typename RendererType>
@@ -411,6 +429,78 @@ class RendererPerfTest : public testing::Test {
     } while (!timer_.HasTimeLimitExpired());
   }
 
+  void RunTileQuads(int tile_count,
+                    const gfx::Transform& starting_transform,
+                    const gfx::Transform& transform_step,
+                    bool share_resources) {
+    const gfx::Size kTextureSize =
+        ScaleToCeiledSize(kSurfaceSize, /*x_scale=*/0.2, /*y_scale=*/0.2);
+    // Make the tile size slightly smaller than the backing texture to simulate
+    // undefined bottom/right edges
+    const gfx::Rect kTileSize(kTextureSize.width() - 4,
+                              kTextureSize.height() - 4);
+    if (share_resources) {
+      // A single tiled resource referenced by each TileDrawQuad
+      resource_list_.push_back(CreateTestTexture(
+          gfx::Rect(kTextureSize),
+          /*texel_color=*/SkColorSetARGB(128, 0, 255, 0),
+          /*premultiplied_alpha=*/false, child_resource_provider_.get(),
+          child_context_provider_));
+    } else {
+      // Each TileDrawQuad gets its own resource
+      for (int i = 0; i < tile_count; ++i) {
+        resource_list_.push_back(CreateTestTexture(
+            gfx::Rect(kTextureSize),
+            /*texel_color=*/SkColorSetARGB(128, 0, 255, 0),
+            /*premultiplied_alpha=*/false, child_resource_provider_.get(),
+            child_context_provider_));
+      }
+    }
+
+    timer_.Reset();
+    do {
+      std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass();
+      gfx::Transform current_transform = starting_transform;
+      for (int i = 0; i < tile_count; ++i) {
+        // Every TileDrawQuad is at at different transform, so always need a new
+        // SharedQuadState
+        SharedQuadState* shared_state = CreateTestSharedQuadState(
+            current_transform, gfx::Rect(kSurfaceSize), pass.get(),
+            gfx::RRectF());
+        ResourceId resource_id =
+            share_resources ? resource_list_[0].id : resource_list_[i].id;
+        CreateTestTileDrawQuad(resource_id, gfx::Rect(kTileSize), kTextureSize,
+                               /*premultiplied_alpha=*/false, shared_state,
+                               pass.get());
+
+        current_transform.ConcatTransform(transform_step);
+      }
+
+      RenderPassList pass_list;
+      pass_list.push_back(std::move(pass));
+      DrawFrame(std::move(pass_list));
+
+      client_.WaitForSwap();
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
+  }
+
+  void RunRotatedTileQuads(bool share_resources) {
+    gfx::Transform start;
+    start.Translate(-300.f, -300.f);
+    gfx::Transform inc;
+    inc.Rotate(1.f);
+    this->RunTileQuads(350, start, inc, share_resources);
+  }
+
+  void RunRotatedTileQuadsShared() {
+    this->RunRotatedTileQuads(/*share_resources=*/true);
+  }
+
+  void RunRotatedTileQuads() {
+    this->RunRotatedTileQuads(/*share_resources=*/false);
+  }
+
  protected:
   WaitForSwapDisplayClient client_;
   ParentLocalSurfaceIdAllocator id_allocator_;
@@ -463,6 +553,14 @@ TYPED_TEST(RendererPerfTest, SingleTextureQuad) {
 
 TYPED_TEST(RendererPerfTest, TextureQuads5x5) {
   this->RunTextureQuads5x5();
+}
+
+TYPED_TEST(RendererPerfTest, RotatedTileQuadsShared) {
+  this->RunRotatedTileQuadsShared();
+}
+
+TYPED_TEST(RendererPerfTest, RotatedTileQuads) {
+  this->RunRotatedTileQuads();
 }
 
 }  // namespace viz

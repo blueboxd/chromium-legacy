@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
-#include "third_party/blink/renderer/platform/bindings/shared_persistent.h"
 #include "v8/include/v8.h"
 
 namespace blink {

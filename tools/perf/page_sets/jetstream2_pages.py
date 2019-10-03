@@ -7,7 +7,8 @@ from telemetry import story
 from telemetry.value import scalar
 
 class Jetstream2Story(press_story.PressStory):
-  URL='http://browserbench.org/JetStream/'
+  URL = 'http://browserbench.org/JetStream/'
+  NAME = 'JetStream2'
 
   def __init__(self, ps):
     super(Jetstream2Story, self).__init__(ps)
@@ -56,9 +57,8 @@ class Jetstream2Story(press_story.PressStory):
         })();"""
     )
 
-    self.AddJavascriptMetricSummaryValue(
-      scalar.ScalarValue(
-          None, 'Score', 'score', score))
+    self.AddJavascriptMetricValue(
+      scalar.ScalarValue(self, 'Score', 'score', score))
 
     for k, v in result.iteritems():
       # Replace '.' in the benchmark name, because '.' is interpreted

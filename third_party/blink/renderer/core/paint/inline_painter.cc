@@ -25,9 +25,9 @@ void InlinePainter::Paint(const PaintInfo& paint_info) {
   const auto& local_paint_info = paint_state.GetPaintInfo();
 
   if (local_paint_info.phase == PaintPhase::kForeground &&
-      local_paint_info.IsPrinting()) {
+      local_paint_info.ShouldAddUrlMetadata()) {
     ObjectPainter(layout_inline_)
-        .AddPDFURLRectIfNeeded(local_paint_info, paint_offset);
+        .AddURLRectIfNeeded(local_paint_info, paint_offset);
   }
 
   ScopedPaintTimingDetectorBlockPaintHook

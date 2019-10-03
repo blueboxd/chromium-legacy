@@ -97,13 +97,13 @@ IN_PROC_BROWSER_TEST_F(AcceptHeaderTest, Check) {
   // ResourceType::kMainFrame
   EXPECT_EQ(
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
-      "image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+      "image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
       GetFor("/accept-header.html"));
 
   // ResourceType::kSubFrame
   EXPECT_EQ(
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
-      "image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+      "image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
       GetFor("/iframe.html"));
 
   // ResourceType::kStylesheet

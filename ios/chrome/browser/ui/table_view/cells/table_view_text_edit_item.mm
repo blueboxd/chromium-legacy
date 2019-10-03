@@ -213,7 +213,7 @@ const CGFloat kEditIconLength = 18;
 
     // Edit icon.
     _iconView = [[UIImageView alloc] initWithImage:[self editImage]];
-    _iconView.tintColor = UIColor.cr_secondaryLabelColor;
+    _iconView.tintColor = [UIColor colorNamed:kGrey400Color];
     _iconView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_iconView];
 
@@ -296,7 +296,7 @@ const CGFloat kEditIconLength = 18;
     case TableViewTextEditItemIconTypeEdit:
       self.iconView.hidden = NO;
       [self.iconView setImage:[self editImage]];
-      self.iconView.tintColor = UIColor.cr_secondaryLabelColor;
+      self.iconView.tintColor = [UIColor colorNamed:kGrey400Color];
       [self setIconTypeNoneConstraints];
       break;
     case TableViewTextEditItemIconTypeError:

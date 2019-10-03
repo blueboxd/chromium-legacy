@@ -273,6 +273,13 @@ const char kAccountManagerLearnMoreURL[] =
 const char kAndroidAppsLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=playapps";
 
+const char kArcExternalStorageLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=open_files";
+
+const char kArcPrivacyPolicyURLPath[] = "arc/privacy_policy";
+
+const char kArcTermsURLPath[] = "arc/terms";
+
 const char kChromeAccessibilityHelpURL[] =
     "https://support.google.com/chromebook/topic/6323347";
 
@@ -338,10 +345,6 @@ const char kNaturalScrollHelpURL[] =
     "https://support.google.com/chromebook/?p=simple_scrolling";
 
 const char kOemEulaURLPath[] = "oem";
-
-const char kArcTermsURLPath[] = "arc/terms";
-
-const char kArcPrivacyPolicyURLPath[] = "arc/privacy_policy";
 
 const char kOnlineEulaURLPath[] =
     "https://www.google.com/intl/%s/chrome/eula_text.html";

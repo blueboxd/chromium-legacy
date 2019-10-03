@@ -162,6 +162,8 @@ blink_core_sources("animation") {
     "interpolable_length.h",
     "interpolable_shadow.cc",
     "interpolable_shadow.h",
+    "interpolable_transform_list.cc",
+    "interpolable_transform_list.h",
     "interpolable_value.cc",
     "interpolable_value.h",
     "interpolated_svg_path_source.h",

@@ -321,6 +321,15 @@
       <message desc="Label for switch to take portrait photo mode button." name="IDS_LABEL_SWITCH_TAKE_PORTRAIT_PHOTO_BUTTON">
         Portrait
       </message>
+      <message desc="Label for the confirm button to confirm with the reviewed photo or video." name="IDS_CONFIRM_REVIEW_BUTTON">
+        Confirm
+      </message>
+      <message desc="Label for the cancel button to cancel with the reviewed photo or video." name="IDS_CANCEL_REVIEW_BUTTON">
+        Cancel
+      </message>
+      <message desc="Label for the button to play video." name="IDS_PLAY_RESULT_VIDEO_BUTTON">
+        Play video
+      </message>
     </messages>
   </release>
 </grit>

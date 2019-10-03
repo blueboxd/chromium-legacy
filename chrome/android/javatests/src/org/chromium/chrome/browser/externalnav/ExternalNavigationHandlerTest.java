@@ -1557,6 +1557,39 @@ public class ExternalNavigationHandlerTest {
         Assert.assertFalse(mDelegate.startIncognitoIntentCalled);
     }
 
+    @Test
+    @SmallTest
+    public void testUserGesture_Regular() {
+        // IMDB app is installed.
+        mDelegate.add(new IntentActivity("imdb:", INTENT_APP_PACKAGE_NAME));
+
+        checkUrl(INTENT_URL_WITH_FALLBACK_URL)
+                .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
+                .withHasUserGesture(true)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+        Assert.assertTrue(IntentWithGesturesHandler.getInstance().getUserGestureAndClear(
+                mDelegate.startActivityIntent));
+        Assert.assertFalse(mDelegate.startIncognitoIntentCalled);
+    }
+
+    @Test
+    @SmallTest
+    public void testUserGesture_Incognito() {
+        // IMDB app is installed.
+        mDelegate.add(new IntentActivity("imdb:", INTENT_APP_PACKAGE_NAME));
+
+        checkUrl(INTENT_URL_WITH_FALLBACK_URL)
+                .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
+                .withHasUserGesture(true)
+                .withIsIncognito(true)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
+                        START_INCOGNITO | START_OTHER_ACTIVITY);
+        Assert.assertTrue(IntentWithGesturesHandler.getInstance().getUserGestureAndClear(
+                mDelegate.startActivityIntent));
+        Assert.assertTrue(mDelegate.startIncognitoIntentCalled);
+    }
+
     private static ResolveInfo newResolveInfo(String packageName) {
         ActivityInfo ai = new ActivityInfo();
         ai.packageName = packageName;

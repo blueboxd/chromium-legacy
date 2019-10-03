@@ -6,9 +6,11 @@
 #import "base/test/ios/wait_util.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #import "components/payments/core/features.h"
 #import "components/ukm/ios/features.h"
+#include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
@@ -329,6 +331,17 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 + (NSString*)displayTitleForURL:(NSString*)URL {
   return base::SysUTF16ToNSString(
       web::GetDisplayTitleForUrl(GURL(base::SysNSStringToUTF8(URL))));
+}
+
+#pragma mark - Autofill Utilities (EG2)
+
++ (void)clearCreditCards {
+  autofill::PersonalDataManager* personalDataManager =
+      autofill::PersonalDataManagerFactory::GetForBrowserState(
+          chrome_test_util::GetOriginalBrowserState());
+  for (const auto* creditCard : personalDataManager->GetCreditCards()) {
+    personalDataManager->RemoveByGUID(creditCard->guid());
+  }
 }
 
 #pragma mark - Sync Utilities (EG2)

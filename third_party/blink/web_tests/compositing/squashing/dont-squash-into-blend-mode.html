@@ -9,7 +9,7 @@ if (window.testRunner)
 onload = function() {
     if (window.internals) {
         var layers = JSON.parse(internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_DEBUG_INFO))["layers"];
-        var nonBlendDIVlayer = layers[5];
+        var nonBlendDIVlayer = layers[2];
         assert_true(nonBlendDIVlayer.compositingReasons[1] == "Layer was separately composited because it could not be squashed.");
         assert_true(nonBlendDIVlayer.squashingDisallowedReasons[0] == "Squashing a layer with blending is not supported.");
     }

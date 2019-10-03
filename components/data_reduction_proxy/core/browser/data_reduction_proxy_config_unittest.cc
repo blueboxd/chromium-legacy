@@ -374,7 +374,7 @@ TEST_F(DataReductionProxyConfigTest, MAYBE_TestOnNetworkChanged) {
 }
 
 // Verifies that the warm up URL is fetched correctly.
-TEST_F(DataReductionProxyConfigTest, WarmupURL) {
+TEST_F(DataReductionProxyConfigTest, DISABLED_WarmupURL) {
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(

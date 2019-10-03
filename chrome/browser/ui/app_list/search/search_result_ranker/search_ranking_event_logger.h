@@ -18,6 +18,7 @@
 #include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/search_ranking_event.pb.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 class ChromeSearchResult;
@@ -58,34 +59,21 @@ class SearchRankingEventLogger {
     int launches_this_session = 0;
   };
 
-  // Stores the relevant parts of a ChromeSearchResult used for logging.
-  struct ResultInfo {
-   public:
-    ResultInfo();
-    ResultInfo(const ResultInfo& other);
-    ~ResultInfo();
-
-    int index;
-    std::string target;
-    base::string16 title;
-    ash::SearchResultType type;
-    int subtype;
-    float relevance;
-  };
+  // Populate a SearchRankingItem proto for an item. |use_for_logging| is a
+  // bool to determine the proto will be used for logging or inference
+  // purpose.
+  void PopulateSearchRankingItem(SearchRankingItem* proto,
+                                 ChromeSearchResult* search_result,
+                                 int query_length,
+                                 bool use_for_logging);
 
   // Calls the UKM API for a source ID relevant to |result|, and then begins the
   // logging process by calling LogEvent.
-  void GetBackgroundSourceIdAndLogEvent(int event_id,
-                                        const base::string16& trimmed_query,
-                                        const ResultInfo& result_info,
-                                        int launched_index);
+  void GetBackgroundSourceIdAndLogEvent(const SearchRankingItem& result);
 
   // Logs the given event to UKM. If |source_id| is nullopt then use a blank
   // source ID.
-  void LogEvent(int event_id,
-                const base::string16& trimmed_query,
-                const ResultInfo& result_info,
-                int launched_index,
+  void LogEvent(const SearchRankingItem& result,
                 base::Optional<ukm::SourceId> source_id);
 
   SearchController* search_controller_;

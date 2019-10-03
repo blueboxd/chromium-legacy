@@ -672,12 +672,12 @@ below:
       <!-- Automatic image annotations for accessibility -->
       <if expr="is_win">
         <then>
-          <message name="IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION" desc="Accessibility role description for a graphic (image) on a web page that does not have a description for blind users.">
+          <message name="IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION" desc="Accessibility role description for a graphic (image) on a web page or PDF that does not have a description for blind users.">
             Unlabeled graphic
           </message>
         </then>
         <else>
-          <message name="IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION" desc="Accessibility role description for an image on a web page that does not have a description for blind users.">
+          <message name="IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION" desc="Accessibility role description for an image on a web page or PDF that does not have a description for blind users.">
             Unlabeled image
           </message>
         </else>

@@ -14,7 +14,7 @@ include_rules = [
   "+services/tracing/public/cpp",
   "+testing/android/native_test/native_browser_test_support.h",
   "+ui/ozone/public",
-  "+ui/views/test",
+  "+ui/views",
   "+v8/include/v8.h",
   "+ui/platform_window/common/platform_window_defaults.h",
 ]

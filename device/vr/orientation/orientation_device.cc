@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "device/vr/orientation/orientation_device.h"
 #include "device/vr/orientation/orientation_session.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading_shared_buffer_reader.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
@@ -136,13 +137,14 @@ void VROrientationDevice::RequestSession(
   // TODO(http://crbug.com/695937): Perform a check to see if sensors are
   // available when RequestSession is called for non-immersive sessions.
 
-  mojom::XRFrameDataProviderPtr data_provider;
+  mojo::PendingRemote<mojom::XRFrameDataProvider> data_provider;
   mojom::XRSessionControllerPtr controller;
   magic_window_sessions_.push_back(std::make_unique<VROrientationSession>(
-      this, mojo::MakeRequest(&data_provider), mojo::MakeRequest(&controller)));
+      this, data_provider.InitWithNewPipeAndPassReceiver(),
+      mojo::MakeRequest(&controller)));
 
   auto session = mojom::XRSession::New();
-  session->data_provider = data_provider.PassInterface();
+  session->data_provider = std::move(data_provider);
   if (display_info_) {
     session->display_info = display_info_.Clone();
   }

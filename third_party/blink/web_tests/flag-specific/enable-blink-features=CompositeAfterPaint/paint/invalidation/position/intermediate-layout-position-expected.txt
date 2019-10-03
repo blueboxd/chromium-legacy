@@ -12,7 +12,7 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow DIV",
+          "object": "LayoutNGBlockFlow DIV",
           "rect": [8, 74, 46, 20],
           "reason": "incremental"
         }

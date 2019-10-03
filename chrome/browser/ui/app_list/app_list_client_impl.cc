@@ -371,9 +371,6 @@ void AppListClientImpl::SetUpSearchUI() {
 
   search_controller_ =
       app_list::CreateSearchController(profile_, current_model_updater_, this);
-  search_ranking_event_logger_ =
-      std::make_unique<app_list::SearchRankingEventLogger>(
-          profile_, search_controller_.get());
 
   // Refresh the results used for the suggestion chips with empty query.
   // This fixes crbug.com/999287.
@@ -517,8 +514,6 @@ void AppListClientImpl::NotifySearchResultsForLogging(
     const base::string16& trimmed_query,
     const ash::SearchResultIdWithPositionIndices& results,
     int position_index) {
-  if (search_ranking_event_logger_)
-    search_ranking_event_logger_->Log(trimmed_query, results, position_index);
   if (search_controller_) {
     search_controller_->OnSearchResultsDisplayed(trimmed_query, results,
                                                  position_index);

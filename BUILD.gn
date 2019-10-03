@@ -1047,6 +1047,7 @@ if (!is_ios) {
       "//media/midi:mojo_js_data_deps",
       "//mojo/public/interfaces/bindings/tests:test_data_deps",
       "//mojo/public/mojom/base:base_js_data_deps",
+      "//mojo/public/js/ts/bindings/tests:test_interfaces_js_data_deps",
       "//services/shape_detection/public/mojom:mojom_js_data_deps",
       "//services/device/public/mojom:mojom_js_data_deps",
       "//services/device/public/mojom:generic_sensor_js_data_deps",

@@ -2,6 +2,7 @@ include_rules = [
   "+ash",
   "+cc",
   "+chromeos/audio/chromeos_sounds.h",
+  "+chromeos/constants/chromeos_features.h",
   "+components/viz/common",
   "+components/viz/host",
   "+components/viz/service",

@@ -20,12 +20,8 @@ void DrawInternal(cc::PaintCanvas* canvas,
                   const FloatRect& src_rect,
                   const PaintFlags& flags,
                   Image::ImageClampingMode clamping_mode,
-                  scoped_refptr<PaintWorkletInput> input) {
-  canvas->drawImageRect(PaintImageBuilder::WithDefault()
-                            .set_paint_worklet_input(std::move(input))
-                            .set_id(PaintImage::GetNextId())
-                            .TakePaintImage(),
-                        src_rect, dest_rect, &flags,
+                  const PaintImage& image) {
+  canvas->drawImageRect(image, src_rect, dest_rect, &flags,
                         WebCoreClampingModeToSkiaRectConstraint(clamping_mode));
 }
 }  // namespace
@@ -37,28 +33,23 @@ void PaintWorkletDeferredImage::Draw(cc::PaintCanvas* canvas,
                                      RespectImageOrientationEnum,
                                      ImageClampingMode clamping_mode,
                                      ImageDecodingMode) {
-  DrawInternal(canvas, dest_rect, src_rect, flags, clamping_mode, input_);
+  DrawInternal(canvas, dest_rect, src_rect, flags, clamping_mode, image_);
 }
 
 void PaintWorkletDeferredImage::DrawTile(GraphicsContext& context,
                                          const FloatRect& src_rect) {
   DrawInternal(context.Canvas(), FloatRect(), src_rect, context.FillFlags(),
-               kClampImageToSourceRect, input_);
+               kClampImageToSourceRect, image_);
 }
 
 sk_sp<PaintShader> PaintWorkletDeferredImage::CreateShader(
     const FloatRect& tile_rect,
     const SkMatrix* pattern_matrix,
     const FloatRect& src_rect) {
-  PaintImage image = PaintImageBuilder::WithDefault()
-                         .set_paint_worklet_input(std::move(input_))
-                         .set_id(PaintImage::GetNextId())
-                         .TakePaintImage();
-
   SkRect tile = SkRect::MakeXYWH(tile_rect.X(), tile_rect.Y(),
                                  tile_rect.Width(), tile_rect.Height());
   sk_sp<PaintShader> shader = PaintShader::MakeImage(
-      image, SkTileMode::kRepeat, SkTileMode::kRepeat, pattern_matrix, &tile);
+      image_, SkTileMode::kRepeat, SkTileMode::kRepeat, pattern_matrix, &tile);
 
   return shader;
 }

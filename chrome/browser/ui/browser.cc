@@ -1608,30 +1608,34 @@ void Browser::ShowRepostFormWarningDialog(WebContents* source) {
       std::make_unique<RepostFormWarningController>(source), source);
 }
 
-bool Browser::ShouldCreateWebContents(
-    content::WebContents* web_contents,
+bool Browser::IsWebContentsCreationOverridden(
+    content::SiteInstance* source_site_instance,
+    content::mojom::WindowContainerType window_container_type,
+    const GURL& opener_url,
+    const std::string& frame_name,
+    const GURL& target_url) {
+  return window_container_type ==
+             content::mojom::WindowContainerType::BACKGROUND &&
+         ShouldCreateBackgroundContents(source_site_instance, opener_url,
+                                        frame_name);
+}
+
+WebContents* Browser::CreateCustomWebContents(
     content::RenderFrameHost* opener,
     content::SiteInstance* source_site_instance,
-    int32_t route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
-    content::mojom::WindowContainerType window_container_type,
+    bool is_new_browsing_instance,
     const GURL& opener_url,
     const std::string& frame_name,
     const GURL& target_url,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
-  if ((window_container_type !=
-       content::mojom::WindowContainerType::BACKGROUND) ||
-      !ShouldCreateBackgroundContents(source_site_instance, opener_url,
-                                      frame_name))
-    return true;
-
-  CreateBackgroundContents(source_site_instance, opener, opener_url, route_id,
-                           main_frame_route_id, main_frame_widget_route_id,
-                           frame_name, target_url, partition_id,
-                           session_storage_namespace);
-  return false;
+  BackgroundContents* background_contents = CreateBackgroundContents(
+      source_site_instance, opener, opener_url, is_new_browsing_instance,
+      frame_name, target_url, partition_id, session_storage_namespace);
+  if (background_contents) {
+    return background_contents->web_contents();
+  }
+  return nullptr;
 }
 
 void Browser::WebContentsCreated(WebContents* source_contents,
@@ -2827,9 +2831,7 @@ BackgroundContents* Browser::CreateBackgroundContents(
     content::SiteInstance* source_site_instance,
     content::RenderFrameHost* opener,
     const GURL& opener_url,
-    int32_t route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
+    bool is_new_browsing_instance,
     const std::string& frame_name,
     const GURL& target_url,
     const std::string& partition_id,
@@ -2857,9 +2859,8 @@ BackgroundContents* Browser::CreateBackgroundContents(
   // Passed all the checks, so this should be created as a BackgroundContents.
   if (allow_js_access) {
     return service->CreateBackgroundContents(
-        source_site_instance, opener, route_id, main_frame_route_id,
-        main_frame_widget_route_id, frame_name, extension->id(), partition_id,
-        session_storage_namespace);
+        source_site_instance, opener, is_new_browsing_instance, frame_name,
+        extension->id(), partition_id, session_storage_namespace);
   }
 
   // If script access is not allowed, create the the background contents in a
@@ -2868,8 +2869,8 @@ BackgroundContents* Browser::CreateBackgroundContents(
   // process.
   BackgroundContents* contents = service->CreateBackgroundContents(
       content::SiteInstance::Create(source_site_instance->GetBrowserContext()),
-      nullptr, MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE, frame_name,
-      extension->id(), partition_id, session_storage_namespace);
+      nullptr, is_new_browsing_instance, frame_name, extension->id(),
+      partition_id, session_storage_namespace);
 
   // When a separate process is used, the original renderer cannot access the
   // new window later, thus we need to navigate the window now.

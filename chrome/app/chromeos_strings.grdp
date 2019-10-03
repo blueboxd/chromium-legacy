@@ -3515,6 +3515,23 @@
     An error occurred during installation of your Linux application.
   </message>
 
+  <!-- Linux windows force closing messages -->
+  <message name="IDS_CROSTINI_FORCE_CLOSE_TITLE_UNKNOWN" desc="Title of the crostini force-close dialog, which is used to destroy windows which are not responding. This version is used when we don't know which app is not responding.">
+    Application not responding.
+  </message>
+  <message name="IDS_CROSTINI_FORCE_CLOSE_TITLE_KNOWN" desc="Title of the crostini force-close dialog, which is used to destroy windows which are not responding. This version is used when we know which app is not responding.">
+    <ph name="LINUX_APP_NAME">$1<ex>GIMP</ex></ph> not responding.
+  </message>
+  <message name="IDS_CROSTINI_FORCE_CLOSE_BODY_UNKNOWN" desc="Description used by crostini's force-close dialog. This version is used when we don't know which app is not responding.">
+    The application is not responding. Select "Force close" to close the app.
+  </message>
+  <message name="IDS_CROSTINI_FORCE_CLOSE_BODY_KNOWN" desc="Description used by crostini's force-close dialog. This version is used when we know which app is not responding.">
+    <ph name="LINUX_APP_NAME">$1<ex>GIMP</ex></ph> is not responding. Select "Force close" to close the app.
+  </message>
+  <message name="IDS_CROSTINI_FORCE_CLOSE_ACCEPT_BUTTON" desc="Label for the button in the force-close dialog that closes the window.">
+    Force close
+  </message>
+
   <!-- Linux application uninstaller messages -->
   <message name="IDS_CROSTINI_APPLICATION_UNINSTALL_CONFIRM_TITLE" desc="Title of the Crostini application uninstaller, a confirmation dialog for uninstalling a Linux application.">
     Uninstall app?

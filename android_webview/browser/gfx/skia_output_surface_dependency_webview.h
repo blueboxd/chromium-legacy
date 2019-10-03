@@ -36,6 +36,7 @@ class SkiaOutputSurfaceDependencyWebView
   const gpu::GpuPreferences& GetGpuPreferences() override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() override;
   gpu::MailboxManager* GetMailboxManager() override;
+  gpu::ImageFactory* GetGpuImageFactory() override;
   void ScheduleGrContextCleanup() override;
   void PostTaskToClientThread(base::OnceClosure closure) override;
   bool IsOffscreen() override;

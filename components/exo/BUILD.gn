@@ -37,6 +37,7 @@ source_set("exo") {
     "mime_utils.h",
     "pointer.cc",
     "pointer.h",
+    "pointer_constraint_delegate.h",
     "pointer_delegate.h",
     "seat.cc",
     "seat.h",
@@ -98,6 +99,7 @@ source_set("exo") {
     deps += [
       "//ash/keyboard/ui",
       "//ash/public/cpp",
+      "//chromeos/constants",
     ]
     sources += [
       "client_controlled_shell_surface.cc",

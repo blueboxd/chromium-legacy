@@ -18,6 +18,7 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/test/fake_vr_device.h"
 #include "device/vr/test/fake_vr_service_client.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -140,7 +141,7 @@ class ArCoreDeviceTest : public testing::Test {
 
   StubMailboxToSurfaceBridge* bridge;
   StubArCoreSessionUtils* session_utils;
-  mojom::XRFrameDataProviderPtr frame_provider;
+  mojo::Remote<mojom::XRFrameDataProvider> frame_provider;
   mojom::XREnvironmentIntegrationProviderAssociatedPtr environment_provider;
   std::unique_ptr<base::RunLoop> run_loop;
   base::OnceClosure quit_closure;

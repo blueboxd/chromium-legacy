@@ -190,7 +190,8 @@ GLOzone* HeadlessSurfaceFactory::GetGLOzone(
 }
 
 std::unique_ptr<SurfaceOzoneCanvas>
-HeadlessSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
+HeadlessSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget,
+                                              base::TaskRunner* task_runner) {
   return std::make_unique<FileSurface>(GetPathForWidget(widget));
 }
 

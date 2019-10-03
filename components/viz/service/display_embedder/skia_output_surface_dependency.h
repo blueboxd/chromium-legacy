@@ -22,6 +22,7 @@ class GLSurface;
 namespace gpu {
 
 class GpuDriverBugWorkarounds;
+class ImageFactory;
 class ImageTransportSurfaceDelegate;
 class MailboxManager;
 class SharedContextState;
@@ -69,6 +70,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
   virtual const gpu::GpuPreferences& GetGpuPreferences() = 0;
   virtual const gpu::GpuFeatureInfo& GetGpuFeatureInfo() = 0;
   virtual gpu::MailboxManager* GetMailboxManager() = 0;
+  // May return null.
+  virtual gpu::ImageFactory* GetGpuImageFactory() = 0;
   // Note it is possible for IsOffscreen to be false and GetSurfaceHandle to
   // return kNullSurfaceHandle.
   virtual bool IsOffscreen() = 0;

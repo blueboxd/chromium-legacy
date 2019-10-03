@@ -21,6 +21,10 @@ class WebGL2ComputeRenderingContextBase : public WebGL2RenderingContextBase {
   void dispatchCompute(GLuint numGroupsX, GLuint numGroupsY, GLuint numGroupsZ);
   void dispatchComputeIndirect(int64_t offset);
 
+  /* Draw indirect */
+  void drawArraysIndirect(GLenum mode, int64_t offset);
+  void drawElementsIndirect(GLenum mode, GLenum type, int64_t offset);
+
   /* Program interface query */
   ScriptValue getProgramInterfaceParameter(ScriptState*,
                                            WebGLProgram*,

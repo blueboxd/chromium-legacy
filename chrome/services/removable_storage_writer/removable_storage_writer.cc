@@ -18,16 +18,12 @@ void RemovableStorageWriter::Write(
     const base::FilePath& source,
     const base::FilePath& target,
     mojo::PendingRemote<chrome::mojom::RemovableStorageWriterClient> client) {
-  writer_.Write(
-      source, target,
-      chrome::mojom::RemovableStorageWriterClientPtr(std::move(client)));
+  writer_.Write(source, target, std::move(client));
 }
 
 void RemovableStorageWriter::Verify(
     const base::FilePath& source,
     const base::FilePath& target,
     mojo::PendingRemote<chrome::mojom::RemovableStorageWriterClient> client) {
-  writer_.Verify(
-      source, target,
-      chrome::mojom::RemovableStorageWriterClientPtr(std::move(client)));
+  writer_.Verify(source, target, std::move(client));
 }

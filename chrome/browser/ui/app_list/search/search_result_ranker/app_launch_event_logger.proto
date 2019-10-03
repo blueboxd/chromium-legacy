@@ -56,8 +56,7 @@ message AppLaunchFeatures {
   optional int32 total_clicks = 11;
   repeated int32 clicks_each_hour = 12;
   optional AppLaunchEvent.LaunchedFrom last_launched_from = 13;
-  // Used when checking app for compliance. Should always be true outside of the
-  // checking procedure, which removes apps with |is_policy_compliant| false.
+  // Records which apps the logging policy allows to be logged.
   // Not logged in UKM.
   optional bool is_policy_compliant = 14;
   optional int32 click_rank = 15;

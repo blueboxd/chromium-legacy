@@ -90,7 +90,9 @@
       <include name="IDR_CAMERA_RECORD_END_OGG" file="src/sounds/record_end.ogg" type="BINDATA" />
       <include name="IDR_CAMERA_RECORD_START_OGG" file="src/sounds/record_start.ogg" type="BINDATA" />
       <include name="IDR_CAMERA_SHUTTER_OGG" file="src/sounds/shutter.ogg" type="BINDATA" />
-      <include name="IDR_CAMERA_TICK_OGG" file="src/sounds/tick.ogg" type="BINDATA" />
+      <include name="IDR_CAMERA_TICK_FINAL_OGG" file="src/sounds/tick_final.ogg" type="BINDATA" />
+      <include name="IDR_CAMERA_TICK_INC_OGG" file="src/sounds/tick_inc.ogg" type="BINDATA" />
+      <include name="IDR_CAMERA_TICK_START_OGG" file="src/sounds/tick_start.ogg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_MODE_SQUARE_SVG" file="src/images/camera_mode_square.svg" type="BINDATA" />
       <include name="IDR_CAMERA_SETTINGS_BUTTON_BACK_SVG" file="src/images/settings_button_back.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_MODE_PORTRAIT_SVG" file="src/images/camera_mode_portrait.svg" type="BINDATA" />

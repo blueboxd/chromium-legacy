@@ -183,13 +183,14 @@ TEST_F(ArcTracingModelTest, TopLevel) {
        GraphicsEventType::kSurfaceFlingerInvalidationDone,
        GraphicsEventType::kSurfaceFlingerCompositionStart,
        GraphicsEventType::kSurfaceFlingerCompositionDone}));
-  EXPECT_TRUE(ValidateGrahpicsEvents(
-      graphics_model.android_top_level().global_events(),
-      {GraphicsEventType::kVsync,
-       GraphicsEventType::kSurfaceFlingerCompositionJank}));
+  EXPECT_TRUE(
+      ValidateGrahpicsEvents(graphics_model.android_top_level().global_events(),
+                             {GraphicsEventType::kSurfaceFlingerVsyncHandler,
+                              GraphicsEventType::kSurfaceFlingerCompositionJank,
+                              GraphicsEventType::kVsyncTimestamp}));
   ASSERT_FALSE(graphics_model.android_top_level().global_events().empty());
   // Check trimmed by VSYNC.
-  EXPECT_EQ(GraphicsEventType::kVsync,
+  EXPECT_EQ(GraphicsEventType::kSurfaceFlingerVsyncHandler,
             graphics_model.android_top_level().global_events()[0].type);
   EXPECT_EQ(0U,
             graphics_model.android_top_level().global_events()[0].timestamp);

@@ -65,7 +65,7 @@ class LocatedEvent;
 namespace content {
 #if defined(OS_WIN)
 class LegacyRenderWidgetHostHWND;
-class DirectManipulationBrowserTest;
+class DirectManipulationBrowserTestBase;
 #endif
 
 class CursorManager;
@@ -384,7 +384,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 #if defined(OS_WIN)
   friend class AccessibilityObjectLifetimeWinBrowserTest;
   friend class AccessibilityTreeLinkageWinBrowserTest;
-  friend class DirectManipulationBrowserTest;
+  friend class DirectManipulationBrowserTestBase;
 #endif
   FRIEND_TEST_ALL_PREFIXES(InputMethodResultAuraTest,
                            FinishImeCompositionSession);

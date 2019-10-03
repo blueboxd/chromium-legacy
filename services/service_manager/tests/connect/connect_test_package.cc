@@ -64,17 +64,16 @@ class ProvidedService : public Service,
  private:
   // service_manager::Service:
   void OnStart() override {
-    bindings_.set_connection_error_handler(
-        base::Bind(&ProvidedService::OnConnectionError,
-                   base::Unretained(this)));
+    bindings_.set_connection_error_handler(base::BindRepeating(
+        &ProvidedService::OnConnectionError, base::Unretained(this)));
     registry_.AddInterface<test::mojom::ConnectTestService>(
-        base::Bind(&ProvidedService::BindConnectTestServiceRequest,
-                   base::Unretained(this)));
-    registry_.AddInterface<test::mojom::BlockedInterface>(base::Bind(
+        base::BindRepeating(&ProvidedService::BindConnectTestServiceRequest,
+                            base::Unretained(this)));
+    registry_.AddInterface<test::mojom::BlockedInterface>(base::BindRepeating(
         &ProvidedService::BindBlockedInterfaceRequest, base::Unretained(this)));
     registry_.AddInterface<test::mojom::AlwaysAllowedInterface>(
-        base::Bind(&ProvidedService::BindAlwaysAllowedInterfaceRequest,
-                   base::Unretained(this)));
+        base::BindRepeating(&ProvidedService::BindAlwaysAllowedInterfaceRequest,
+                            base::Unretained(this)));
     registry_.AddInterface(base::BindRepeating(
         &ProvidedService::BindIdentityTestRequest, base::Unretained(this)));
   }
@@ -205,13 +204,12 @@ class ConnectTestService : public Service,
  private:
   // service_manager::Service:
   void OnStart() override {
-    base::Closure error_handler =
-        base::Bind(&ConnectTestService::OnConnectionError,
-                   base::Unretained(this));
+    base::RepeatingClosure error_handler = base::BindRepeating(
+        &ConnectTestService::OnConnectionError, base::Unretained(this));
     bindings_.set_connection_error_handler(error_handler);
     registry_.AddInterface<test::mojom::ConnectTestService>(
-        base::Bind(&ConnectTestService::BindConnectTestServiceRequest,
-                   base::Unretained(this)));
+        base::BindRepeating(&ConnectTestService::BindConnectTestServiceRequest,
+                            base::Unretained(this)));
   }
 
   void OnBindInterface(const BindSourceInfo& source_info,

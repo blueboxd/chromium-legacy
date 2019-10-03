@@ -16,6 +16,10 @@ namespace ash {
 class DefaultScaleFactorRetriever;
 }
 
+namespace chromeos {
+class SchedulerConfigurationManagerBase;
+}
+
 namespace arc {
 
 class ArcPlayStoreEnabledPreferenceHandler;
@@ -25,7 +29,9 @@ class ArcSessionManager;
 // Detects ARC availability and launches ARC bridge service.
 class ArcServiceLauncher {
  public:
-  ArcServiceLauncher();
+  // |scheduler_configuration_manager| must outlive |this| object.
+  explicit ArcServiceLauncher(chromeos::SchedulerConfigurationManagerBase*
+                                  scheduler_configuration_manager);
   ~ArcServiceLauncher();
 
   // Returns a global instance.
@@ -55,6 +61,9 @@ class ArcServiceLauncher {
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
   std::unique_ptr<ArcPlayStoreEnabledPreferenceHandler>
       arc_play_store_enabled_preference_handler_;
+  // |scheduler_configuration_manager_| outlives |this|.
+  chromeos::SchedulerConfigurationManagerBase* const
+      scheduler_configuration_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcServiceLauncher);
 };

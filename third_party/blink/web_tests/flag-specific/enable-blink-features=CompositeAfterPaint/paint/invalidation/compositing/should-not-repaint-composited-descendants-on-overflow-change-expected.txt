@@ -7,14 +7,14 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV class='composited-child'",
+      "name": "LayoutNGBlockFlow DIV class='composited-child'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#008000"
     },
     {
-      "name": "LayoutBlockFlow DIV class='composited-child'",
+      "name": "LayoutNGBlockFlow DIV class='composited-child'",
       "position": [0, 200],
       "bounds": [100, 100],
       "contentsOpaque": true,
@@ -22,7 +22,7 @@
       "backgroundColor": "#008000"
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='composited-child overflow-child'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV class='composited-child overflow-child'",
       "position": [150, 150],
       "bounds": [100, 100],
       "contentsOpaque": true,
@@ -30,7 +30,7 @@
       "backgroundColor": "#008000"
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='composited-child overflow-child'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV class='composited-child overflow-child'",
       "position": [150, 350],
       "bounds": [100, 100],
       "contentsOpaque": true,

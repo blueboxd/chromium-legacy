@@ -274,9 +274,8 @@ class AXRange {
       // current leaf range is a <br> (already ending with a '\n' character) or
       // its respective anchor is invisible to the text representation.
       if (concatenation_behavior == AXTextConcatenationBehavior::kAsInnerText)
-        should_append_newline = current_anchor_text.length() > 0 &&
-                                !found_trailing_newline &&
-                                end->AtEndOfParagraph();
+        should_append_newline =
+            !found_trailing_newline && end->AtEndOfParagraph();
     }
     return range_text;
   }

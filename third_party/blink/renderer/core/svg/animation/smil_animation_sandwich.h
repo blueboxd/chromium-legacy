@@ -105,8 +105,8 @@ struct PriorityCompare {
 //
 // UpdateTiming() handles updates to interval and transitions the active state.
 //
-// UpdateSyncBases() handles the sorting described above (as well notifying
-// about new intervals).
+// UpdateActiveStateAndOrder() handles the sorting described above and updates
+// the active state of the elements in the sandwich.
 //
 // UpdateActiveAnimationStack() constructs a vector containing only the active
 // elements.
@@ -123,9 +123,9 @@ class SMILAnimationSandwich : public GarbageCollected<SMILAnimationSandwich> {
   void Unschedule(SVGSMILElement* animation);
   void Reset();
 
-  void UpdateTiming(SMILTime elapsed);
-  void UpdateSyncBases(SMILTime elapsed);
-  void UpdateActiveAnimationStack(SMILTime elapsed);
+  void UpdateTiming(SMILTime presentation_time);
+  void UpdateActiveStateAndOrder(SMILTime presentation_time);
+  void UpdateActiveAnimationStack(SMILTime presentation_time);
   SVGSMILElement* ApplyAnimationValues();
 
   SMILTime NextInterestingTime(SMILTime presentation_time) const;

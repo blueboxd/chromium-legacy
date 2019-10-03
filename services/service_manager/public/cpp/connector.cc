@@ -18,7 +18,7 @@ Connector::Connector(mojom::ConnectorPtrInfo unbound_state)
 Connector::Connector(mojom::ConnectorPtr connector)
     : connector_(std::move(connector)) {
   connector_.set_connection_error_handler(
-      base::Bind(&Connector::OnConnectionError, base::Unretained(this)));
+      base::BindOnce(&Connector::OnConnectionError, base::Unretained(this)));
 }
 
 Connector::~Connector() = default;
@@ -163,7 +163,7 @@ bool Connector::BindConnectorIfNecessary() {
 
     connector_.Bind(std::move(unbound_state_));
     connector_.set_connection_error_handler(
-        base::Bind(&Connector::OnConnectionError, base::Unretained(this)));
+        base::BindOnce(&Connector::OnConnectionError, base::Unretained(this)));
   }
 
   return true;

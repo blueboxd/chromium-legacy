@@ -32,9 +32,10 @@ class CopyOutputResult;
 namespace ui {
 class LocatedEvent;
 class MouseEvent;
-}
+}  // namespace ui
 
 namespace exo {
+class PointerConstraintDelegate;
 class PointerDelegate;
 class PointerGesturePinchDelegate;
 class RelativePointerDelegate;
@@ -97,11 +98,35 @@ class Pointer : public SurfaceTreeHost,
   void RegisterRelativePointerDelegate(RelativePointerDelegate* delegate);
   void UnregisterRelativePointerDelegate(RelativePointerDelegate* delegate);
 
-  // Pointer capture toggles:
-  void EnablePointerCapture();
+  // Capture the pointer for the top-most surface. Returns true iff the capture
+  // succeeded.
+  //
+  // TODO(b/124059008): Historically, exo needed to guess what the correct
+  // capture window was, as it did not implement wayland's pointer capture
+  // protocol.
+  bool EnablePointerCapture();
+
+  // Remove the currently active pointer capture (if there is one).
   void DisablePointerCapture();
 
+  // Enable the pointer constraint on the given surface. Returns true if the
+  // lock was granted, false otherwise.
+  //
+  // TODO(crbug.com/957455): For legacy reasons, locking the pointer will also
+  // hide the cursor.
+  bool ConstrainPointer(PointerConstraintDelegate* delegate);
+
+  // Disable the pointer constraint. This is designed to be called by the
+  // delegate, so it does not call OnConstraintBroken(), which should be done
+  // separately if the constraint was broken by something other than the
+  // delegate.
+  void UnconstrainPointer();
+
  private:
+  // Capture the pointer for the given surface. Returns true iff the capture
+  // succeeded.
+  bool EnablePointerCapture(Surface* capture_surface);
+
   // Returns the effective target for |event|.
   Surface* GetEffectiveTargetForEvent(ui::LocatedEvent* event) const;
 
@@ -150,6 +175,9 @@ class Pointer : public SurfaceTreeHost,
 
   // The delegate instance that relative movement events are dispatched to.
   RelativePointerDelegate* relative_pointer_delegate_ = nullptr;
+
+  // The delegate instance that controls when to lock/unlock this pointer.
+  PointerConstraintDelegate* pointer_constraint_delegate_ = nullptr;
 
   // The current focus surface for the pointer.
   Surface* focus_surface_ = nullptr;

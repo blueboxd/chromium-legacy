@@ -233,6 +233,7 @@ Bug(none) virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Fa
 
 # Failures due to an extra layer caused by a scroll hit test layer. Most of
 # these should pass once compositing reasons are correct in CompositeAfterPaint.
+crbug.com/738613 compositing/dont-composite-select-elements.html [ Failure ]
 crbug.com/738613 compositing/dont-composite-text-input-elements.html [ Failure ]
 crbug.com/738613 paint/invalidation/table/scroll-relative-table-inside-table-cell.html [ Failure ]
 crbug.com/738613 paint/invalidation/table/scroll-inside-table-cell.html [ Failure ]
@@ -350,10 +351,8 @@ Bug(none) paint/invalidation/compositing/subpixel-offset-scaled-transform-compos
 Bug(none) paint/pagination/composited-paginated-outlined-box.html [ Failure ]
 Bug(none) paint/invalidation/clip/mask-clip-change-stacking-child.html [ Failure ]
 Bug(none) paint/invalidation/media-audio-no-spurious-repaints.html [ Failure ]
-Bug(none) paint/invalidation/subpixel-shadow-included-in-invalidation.html [ Failure ]
 Bug(none) paint/invalidation/reflection/scroll-fixed-layer-with-reflection.html [ Failure ]
 Bug(none) paint/invalidation/reflection/scroll-fixed-reflected-layer.html [ Failure ]
-Bug(none) paint/invalidation/selection/japanese-rl-selection-repaint.html [ Failure ]
 Bug(none) paint/float/float-under-inline-self-painting-change.html [ Failure ]
 Bug(none) paint/invalidation/clip/clip-path-constant-repaint.html [ Failure ]
 Bug(none) paint/invalidation/svg/mask-clip-target-transform.svg [ Failure ]
@@ -365,7 +364,6 @@ crbug.com/900241 paint/invalidation/animation/transform-animation.html [ Failure
 
 # These tests have additional hit test rects. These may correct and simply due
 # to different layerization decisions, but this needs investigation.
-crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-global.html [ Failure ]
 crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
 
 # Backdrop filter

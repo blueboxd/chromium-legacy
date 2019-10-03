@@ -23,6 +23,10 @@ namespace base {
 class FilePath;
 }
 
+namespace chromeos {
+class SchedulerConfigurationManagerBase;
+}
+
 namespace version_info {
 enum class Channel;
 }
@@ -92,7 +96,9 @@ class ArcSession {
   static std::unique_ptr<ArcSession> Create(
       ArcBridgeService* arc_bridge_service,
       ash::DefaultScaleFactorRetriever* retriever,
-      version_info::Channel channel);
+      version_info::Channel channel,
+      chromeos::SchedulerConfigurationManagerBase*
+          scheduler_configuration_manager);
   virtual ~ArcSession();
 
   // Sends D-Bus message to start a mini-container.

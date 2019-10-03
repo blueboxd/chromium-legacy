@@ -1640,6 +1640,41 @@ TEST_F(LayerTreeHostImplTest, SnapAnimationCancelledByScroll) {
                    overflow->CurrentScrollOffset());
 }
 
+TEST_F(LayerTreeHostImplTest,
+       SnapAnimationShouldNotStartWhenScrollEndsAtSnapTarget) {
+  LayerImpl* overflow = CreateLayerForSnapping();
+
+  gfx::Point pointer_position(10, 10);
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_
+          ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
+          .thread);
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
+
+  // There is a snap target at 50, scroll to it directly.
+  gfx::Vector2dF x_delta(50, 0);
+  host_impl_->ScrollBy(UpdateState(pointer_position, x_delta).get());
+  EXPECT_FALSE(host_impl_->is_animating_for_snap_for_testing());
+
+  viz::BeginFrameArgs begin_frame_args =
+      viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+  host_impl_->ScrollEnd(EndState().get(), true);
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
+  BeginImplFrameAndAnimate(begin_frame_args, start_time);
+
+  // We are already at a snap target so we should not animate for snap.
+  EXPECT_FALSE(host_impl_->is_animating_for_snap_for_testing());
+
+  // Verify that we are not actually animating by running one frame and ensuring
+  // scroll offset has not changed.
+  BeginImplFrameAndAnimate(begin_frame_args,
+                           start_time + base::TimeDelta::FromMilliseconds(100));
+  EXPECT_FALSE(host_impl_->is_animating_for_snap_for_testing());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 0), overflow->CurrentScrollOffset());
+}
+
 TEST_F(LayerTreeHostImplTest, GetSnapFlingInfoWhenZoomed) {
   LayerImpl* overflow = CreateLayerForSnapping();
   // Scales the page to its 1/5.

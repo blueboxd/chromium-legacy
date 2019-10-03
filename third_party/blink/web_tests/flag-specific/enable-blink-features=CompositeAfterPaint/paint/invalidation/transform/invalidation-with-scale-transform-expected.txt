@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
           "rect": [85, 70, 91, 92],
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
           "rect": [84, 70, 91, 92],
           "reason": "geometry"
         }

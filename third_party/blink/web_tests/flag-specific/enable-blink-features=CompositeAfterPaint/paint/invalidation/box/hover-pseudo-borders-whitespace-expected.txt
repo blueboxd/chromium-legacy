@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='div_outline'",
+          "object": "LayoutNGBlockFlow DIV id='div_outline'",
           "rect": [8, 138, 120, 120],
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='div_border'",
+          "object": "LayoutNGBlockFlow DIV id='div_border'",
           "rect": [8, 8, 120, 120],
           "reason": "style change"
         }

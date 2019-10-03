@@ -39,7 +39,8 @@ class CSSScaleInterpolationType : public CSSInterpolationType {
   InterpolationValue PreInterpolationCompositeIfNeeded(
       InterpolationValue value,
       const InterpolationValue& underlying,
-      EffectModel::CompositeOperation) const final;
+      EffectModel::CompositeOperation,
+      ConversionCheckers&) const final;
 
   PairwiseInterpolationValue MaybeMergeSingles(
       InterpolationValue&&,

@@ -489,7 +489,7 @@ void SMILTimeContainer::UpdateIntervals(SMILTime document_time) {
       sandwich->UpdateTiming(document_time);
 
     for (auto& sandwich : scheduled_animations_.Values())
-      sandwich->UpdateSyncBases(document_time);
+      sandwich->UpdateActiveStateAndOrder(document_time);
   } while (intervals_dirty_);
 }
 

@@ -6,9 +6,9 @@
 
 #include <objbase.h>
 
-#include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/win/windows_version.h"
+#include "content/browser/renderer_host/direct_manipulation_test_helper_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/win/window_event_target.h"
@@ -171,80 +171,6 @@ class MockDirectManipulationViewport
   bool zoom_to_rect_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockDirectManipulationViewport);
-};
-
-class MockDirectManipulationContent
-    : public Microsoft::WRL::RuntimeClass<
-          Microsoft::WRL::RuntimeClassFlags<
-              Microsoft::WRL::RuntimeClassType::ClassicCom>,
-          Microsoft::WRL::Implements<
-              Microsoft::WRL::RuntimeClassFlags<
-                  Microsoft::WRL::RuntimeClassType::ClassicCom>,
-              Microsoft::WRL::FtmBase,
-              IDirectManipulationContent>> {
- public:
-  MockDirectManipulationContent() {}
-
-  ~MockDirectManipulationContent() override {}
-
-  void SetContentTransform(float scale, float scroll_x, float scroll_y) {
-    for (int i = 0; i < 6; ++i)
-      transforms_[i] = 0;
-    transforms_[0] = scale;
-    transforms_[4] = scroll_x;
-    transforms_[5] = scroll_y;
-  }
-
-  HRESULT STDMETHODCALLTYPE
-  GetContentTransform(_Out_writes_(point_count) float* transforms,
-                      _In_ DWORD point_count) override {
-    for (int i = 0; i < 6; ++i)
-      transforms[i] = transforms_[i];
-    return S_OK;
-  }
-
-  // Other Overrides
-  HRESULT STDMETHODCALLTYPE GetContentRect(_Out_ RECT* contentSize) override {
-    return S_OK;
-  }
-
-  HRESULT STDMETHODCALLTYPE
-  SetContentRect(_In_ const RECT* contentSize) override {
-    return S_OK;
-  }
-
-  HRESULT STDMETHODCALLTYPE GetViewport(_In_ REFIID riid,
-                                        _COM_Outptr_ void** object) override {
-    return S_OK;
-  }
-
-  HRESULT STDMETHODCALLTYPE GetTag(_In_ REFIID riid,
-                                   _COM_Outptr_opt_ void** object,
-                                   _Out_opt_ UINT32* id) override {
-    return S_OK;
-  }
-
-  HRESULT STDMETHODCALLTYPE SetTag(_In_opt_ IUnknown* object,
-                                   _In_ UINT32 id) override {
-    return S_OK;
-  }
-
-  HRESULT STDMETHODCALLTYPE
-  GetOutputTransform(_Out_writes_(point_count) float* matrix,
-                     _In_ DWORD point_count) override {
-    return S_OK;
-  }
-
-  HRESULT STDMETHODCALLTYPE
-  SyncContentTransform(_In_reads_(point_count) const float* matrix,
-                       _In_ DWORD point_count) override {
-    return S_OK;
-  }
-
- private:
-  float transforms_[6];
-
-  DISALLOW_COPY_AND_ASSIGN(MockDirectManipulationContent);
 };
 
 enum class EventGesture {

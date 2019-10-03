@@ -4625,6 +4625,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantAudioEraser)},
 #endif
 
+#if defined(OS_CHROMEOS)
+    {"exo-pointer-lock", flag_descriptions::kExoPointerLockName,
+     flag_descriptions::kExoPointerLockDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kExoPointerLock)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

@@ -27,22 +27,22 @@
           "reason": "disappeared"
         },
         {
-          "object": "LayoutTableCell TD",
+          "object": "LayoutNGTableCell TD",
           "rect": [15, 82, 117, 67],
           "reason": "appeared"
         },
         {
-          "object": "LayoutTableCell TD",
+          "object": "LayoutNGTableCell TD",
           "rect": [15, 82, 117, 67],
           "reason": "disappeared"
         },
         {
-          "object": "LayoutTableCell TD",
+          "object": "LayoutNGTableCell TD",
           "rect": [15, 15, 117, 67],
           "reason": "appeared"
         },
         {
-          "object": "LayoutTableCell TD",
+          "object": "LayoutNGTableCell TD",
           "rect": [15, 15, 117, 67],
           "reason": "disappeared"
         }

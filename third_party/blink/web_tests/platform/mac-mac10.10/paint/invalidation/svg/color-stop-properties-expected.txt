@@ -1,0 +1,144 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 608],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRect rect id='r12'",
+          "rect": [608, 368, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r6'",
+          "rect": [608, 248, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r12'",
+          "rect": [608, 128, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r6'",
+          "rect": [608, 8, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r11'",
+          "rect": [488, 368, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r5'",
+          "rect": [488, 248, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r11'",
+          "rect": [488, 128, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r5'",
+          "rect": [488, 8, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r10'",
+          "rect": [368, 368, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r4'",
+          "rect": [368, 248, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r10'",
+          "rect": [368, 128, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r4'",
+          "rect": [368, 8, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r9'",
+          "rect": [248, 368, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r3'",
+          "rect": [248, 248, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r9'",
+          "rect": [248, 128, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r3'",
+          "rect": [248, 8, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r8'",
+          "rect": [128, 368, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r2'",
+          "rect": [128, 248, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r8'",
+          "rect": [128, 128, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r2'",
+          "rect": [128, 8, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r7'",
+          "rect": [8, 368, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r1'",
+          "rect": [8, 248, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r7'",
+          "rect": [8, 128, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r1'",
+          "rect": [8, 8, 100, 100],
+          "reason": "SVG resource change"
+        }
+      ]
+    }
+  ]
+}
+

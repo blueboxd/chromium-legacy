@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
@@ -96,6 +97,37 @@ MATCHER_P2(HasIdScore, id, score, "") {
   return match;
 }
 
+std::unique_ptr<KeyedService> BuildHistoryService(
+    content::BrowserContext* context) {
+  TestingProfile* profile = static_cast<TestingProfile*>(context);
+
+  base::FilePath history_path(profile->GetPath().Append("history"));
+
+  // Delete the file before creating the service.
+  if (!base::DeleteFile(history_path, false) ||
+      base::PathExists(history_path)) {
+    ADD_FAILURE() << "failed to delete history db file "
+                  << history_path.value();
+    return nullptr;
+  }
+
+  std::unique_ptr<history::HistoryService> history_service =
+      std::make_unique<history::HistoryService>();
+  if (history_service->Init(
+          history::TestHistoryDatabaseParamsForPath(profile->GetPath()))) {
+    return std::move(history_service);
+  }
+
+  ADD_FAILURE() << "failed to initialize history service";
+  return nullptr;
+}
+
+class SearchControllerFake : public SearchController {
+ public:
+  explicit SearchControllerFake(Profile* profile)
+      : SearchController(nullptr, nullptr, profile) {}
+};
+
 }  // namespace
 
 class SearchResultRankerTest : public testing::Test {
@@ -110,6 +142,10 @@ class SearchResultRankerTest : public testing::Test {
     TestingProfile::Builder profile_builder;
     profile_builder.SetProfileName("testuser@gmail.com");
     profile_builder.SetPath(temp_dir_.GetPath().AppendASCII("TestProfile"));
+    profile_builder.AddTestingFactory(
+        HistoryServiceFactory::GetInstance(),
+        base::BindRepeating(&BuildHistoryService));
+
     profile_ = profile_builder.Build();
 
     history_service_ = std::make_unique<history::HistoryService>();
@@ -150,6 +186,10 @@ class SearchResultRankerTest : public testing::Test {
     return results;
   }
 
+  SearchController* MakeSearchController() {
+    return new SearchControllerFake(profile_.get());
+  }
+
   history::HistoryService* history_service() { return history_service_.get(); }
 
   void Wait() { task_environment_.RunUntilIdle(); }
@@ -185,7 +225,7 @@ class SearchResultRankerTest : public testing::Test {
 TEST_F(SearchResultRankerTest, MixedTypesRankersAreDisabledWithFlag) {
   DisableAllFeatures();
   auto ranker = MakeRanker();
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   Wait();
 
   AppLaunchData app_launch_data;
@@ -214,7 +254,7 @@ TEST_F(SearchResultRankerTest, CategoryModelImprovesScores) {
       app_list_features::kEnableQueryBasedMixedTypesRanker,
       {{"use_category_model", "true"}, {"boost_coefficient", "1.0"}});
   auto ranker = MakeRanker();
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   Wait();
 
   AppLaunchData app_launch_data;
@@ -253,7 +293,7 @@ TEST_F(SearchResultRankerTest, AppModelImprovesScores) {
   EnableOneFeature(app_list_features::kEnableAppRanker,
                    {{"use_recurrence_ranker", "true"}, {"config", json}});
   auto ranker = MakeRanker();
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   Wait();
 
   AppLaunchData app_A;
@@ -294,7 +334,7 @@ TEST_F(SearchResultRankerTest, DefaultQueryMixedModelImprovesScores) {
   base::RunLoop run_loop;
   auto ranker = MakeRanker();
   ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   run_loop.Run();
   Wait();
 
@@ -343,7 +383,7 @@ TEST_F(SearchResultRankerTest, QueryMixedModelNormalizesUrlIds) {
   base::RunLoop run_loop;
   auto ranker = MakeRanker();
   ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   run_loop.Run();
   Wait();
 
@@ -398,7 +438,7 @@ TEST_F(SearchResultRankerTest, QueryMixedModelConfigDeployment) {
   base::RunLoop run_loop;
   auto ranker = MakeRanker();
   ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   run_loop.Run();
   Wait();
 
@@ -428,7 +468,7 @@ TEST_F(SearchResultRankerTest, QueryMixedModelDeletesURLCorrectly) {
   base::RunLoop run_loop;
   auto ranker = MakeRanker();
   ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   run_loop.Run();
   Wait();
 
@@ -498,7 +538,7 @@ TEST_F(SearchResultRankerTest, QueryMixedModelDeletesURLCorrectly) {
   auto new_ranker = std::make_unique<SearchResultRanker>(
       profile_.get(), history_service(), dd_service_->connector());
   new_ranker->set_json_config_parsed_for_testing(new_run_loop.QuitClosure());
-  new_ranker->InitializeRankers();
+  new_ranker->InitializeRankers(MakeSearchController());
   new_run_loop.Run();
   Wait();
 
@@ -518,7 +558,7 @@ TEST_F(SearchResultRankerTest, QueryMixedModelDeletesURLCorrectly) {
 TEST_F(SearchResultRankerTest, ZeroStateGroupModelDisabledWithFlag) {
   DisableAllFeatures();
   auto ranker = MakeRanker();
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   Wait();
 
   // TODO(959679): Update the types used in this test once zero-state-related
@@ -554,7 +594,7 @@ TEST_F(SearchResultRankerTest, ZeroStateGroupTrainingImprovesScores) {
                        {"paired_coeff", "0.0"},
                    });
   auto ranker = MakeRanker();
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   Wait();
 
   AppLaunchData launch;
@@ -589,7 +629,7 @@ TEST_F(SearchResultRankerTest, ZeroStateColdStart) {
                        {"paired_coeff", "0.0"},
                    });
   auto ranker = MakeRanker();
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   Wait();
 
   ranker->FetchRankings(base::string16());
@@ -614,7 +654,7 @@ TEST_F(SearchResultRankerTest, ZeroStateAllGroupsPresent) {
                        {"paired_coeff", "0.0"},
                    });
   auto ranker = MakeRanker();
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   Wait();
 
   auto results = MakeSearchResults(
@@ -641,7 +681,7 @@ TEST_F(SearchResultRankerTest, ZeroStateMissingGroupAdded) {
                        {"paired_coeff", "0.0"},
                    });
   auto ranker = MakeRanker();
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   Wait();
 
   // Train on files enough that they should dominate the zero state results.
@@ -681,7 +721,7 @@ TEST_F(SearchResultRankerTest, ZeroStateTwoMissingGroupsAdded) {
                        {"paired_coeff", "0.0"},
                    });
   auto ranker = MakeRanker();
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   Wait();
 
   // Train on files enough that they should dominate the zero state results.
@@ -718,7 +758,7 @@ TEST_F(SearchResultRankerTest, ZeroStateStaleResultIgnored) {
                        {"paired_coeff", "0.0"},
                    });
   auto ranker = MakeRanker();
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   Wait();
 
   // Train on files enough that they should dominate the zero state results.
@@ -770,7 +810,7 @@ TEST_F(SearchResultRankerTest, ZeroStateCacheResetWhenTopResultChanges) {
                        {"paired_coeff", "0.0"},
                    });
   auto ranker = MakeRanker();
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   Wait();
 
   // Train on files enough that they should dominate the zero state results.
@@ -851,7 +891,7 @@ TEST_F(SearchResultRankerTest, ZeroStateGroupRankerUsesFinchConfig) {
                    {{"config", json}});
 
   auto ranker = MakeRanker();
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   Wait();
 
   // We expect a FakePredictor to have been loaded because predictor_type is set
@@ -871,7 +911,7 @@ TEST_F(SearchResultRankerTest, ZeroStateClickedTypeMetrics) {
                        {"default_group_score", "0.1"},
                    });
   auto ranker = MakeRanker();
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   Wait();
 
   // Zero state types should be logged during training.
@@ -917,7 +957,7 @@ TEST_F(SearchResultRankerTest, ZeroStateReceivedScoreMetrics) {
                        {"default_group_score", "0.1"},
                    });
   auto ranker = MakeRanker();
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(MakeSearchController());
   Wait();
 
   ranker->FetchRankings(base::string16());

@@ -14,7 +14,7 @@
       ]
     },
     {
-      "name": "LayoutTableCell TD",
+      "name": "LayoutNGTableCell TD",
       "position": [24, 22],
       "bounds": [10, 19],
       "transform": 1

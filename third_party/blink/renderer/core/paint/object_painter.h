@@ -25,8 +25,7 @@ class ObjectPainter : public ObjectPainterBase {
 
   void PaintOutline(const PaintInfo&, const PhysicalOffset& paint_offset);
   void PaintInlineChildrenOutlines(const PaintInfo&);
-  void AddPDFURLRectIfNeeded(const PaintInfo&,
-                             const PhysicalOffset& paint_offset);
+  void AddURLRectIfNeeded(const PaintInfo&, const PhysicalOffset& paint_offset);
 
   // Paints the object atomically as if it created a new stacking context, for:
   // - inline blocks, inline tables, inline-level replaced elements (Section

@@ -238,7 +238,10 @@ OutputSurfaceProviderImpl::CreateSoftwareOutputDeviceForPlatform(
   std::unique_ptr<ui::PlatformWindowSurface> platform_window_surface =
       factory->CreatePlatformWindowSurface(surface_handle);
   std::unique_ptr<ui::SurfaceOzoneCanvas> surface_ozone =
-      factory->CreateCanvasForWidget(surface_handle);
+      factory->CreateCanvasForWidget(surface_handle,
+                                     gpu_service_impl_->in_host_process()
+                                         ? nullptr
+                                         : gpu_service_impl_->main_runner());
   CHECK(surface_ozone);
   return std::make_unique<SoftwareOutputDeviceOzone>(
       std::move(platform_window_surface), std::move(surface_ozone));

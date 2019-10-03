@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='skewed'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='skewed'",
           "rect": [100, 50, 600, 500],
           "reason": "incremental"
         }

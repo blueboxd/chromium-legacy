@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_KEYED_SERVICE_H_
 
 #include <memory>
-#include <unordered_set>
 #include <vector>
 
 #include "base/macros.h"

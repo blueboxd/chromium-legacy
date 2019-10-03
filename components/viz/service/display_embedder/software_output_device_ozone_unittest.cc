@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,6 +23,7 @@
 #include "ui/ozone/public/surface_ozone_canvas.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace viz {
 
@@ -83,6 +83,17 @@ SoftwareOutputDeviceOzoneTest::SoftwareOutputDeviceOzoneTest() = default;
 SoftwareOutputDeviceOzoneTest::~SoftwareOutputDeviceOzoneTest() = default;
 
 void SoftwareOutputDeviceOzoneTest::SetUp() {
+  ui::OzonePlatform::InitParams params;
+  params.single_process = true;
+  ui::OzonePlatform::InitializeForUI(params);
+  ui::OzonePlatform::InitializeForGPU(params);
+
+  ui::PlatformWindowInitProperties properties;
+  properties.bounds = gfx::Rect(800, 600, 100, 100);
+  auto platform_window = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
+      &window_delegate_, std::move(properties));
+  platform_window->Show();
+
   context_factories_ =
       std::make_unique<ui::TestContextFactories>(enable_pixel_output_);
 
@@ -98,7 +109,7 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
   std::unique_ptr<ui::PlatformWindowSurface> platform_window_surface =
       factory->CreatePlatformWindowSurface(compositor_->widget());
   std::unique_ptr<ui::SurfaceOzoneCanvas> surface_ozone =
-      factory->CreateCanvasForWidget(compositor_->widget());
+      factory->CreateCanvasForWidget(compositor_->widget(), nullptr);
   if (!surface_ozone) {
     LOG(ERROR) << "SurfaceOzoneCanvas not constructible on this platform";
   } else {

@@ -36,24 +36,16 @@ class WebComponent : public fuchsia::sys::ComponentController,
   // Creates a WebComponent encapsulating a web.Frame. A ViewProvider service
   // will be published to the service-directory specified by |startup_context|,
   // and if |controller_request| is valid then it will be bound to this
-  // component, and the component configured to teardown if that channel closes.
+  // component, and the componentconfigured to teardown if that channel closes.
   // |runner| must outlive this component.
   WebComponent(WebContentRunner* runner,
-               std::unique_ptr<base::fuchsia::StartupContext> context,
+               std::unique_ptr<base::fuchsia::StartupContext> startup_context,
                fidl::InterfaceRequest<fuchsia::sys::ComponentController>
                    controller_request);
 
   ~WebComponent() override;
 
-  // Enables remote debugging on this WebComponent. Must be called before
-  // StartComponent().
-  void EnableRemoteDebugging();
-
-  // Starts this component. Must be called before LoadUrl().
-  virtual void StartComponent();
-
   // Navigates this component's Frame to |url| and passes |extra_headers|.
-  // May not be called until after StartComponent().
   void LoadUrl(const GURL& url,
                std::vector<fuchsia::net::http::Header> extra_headers);
 
@@ -113,9 +105,6 @@ class WebComponent : public fuchsia::sys::ComponentController,
   int termination_exit_code_ = 0;
 
   bool view_is_bound_ = false;
-
-  bool component_started_ = false;
-  bool enable_remote_debugging_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebComponent);
 };

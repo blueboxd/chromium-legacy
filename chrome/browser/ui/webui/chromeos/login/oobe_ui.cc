@@ -497,9 +497,10 @@ void OobeUI::BindMultiDeviceSetup(
 }
 
 void OobeUI::BindPrivilegedHostDeviceSetter(
-    multidevice_setup::mojom::PrivilegedHostDeviceSetterRequest request) {
-  GetLoggedInUserMojoConnector()->BindInterface(
-      multidevice_setup::mojom::kServiceName, std::move(request));
+    mojo::PendingReceiver<multidevice_setup::mojom::PrivilegedHostDeviceSetter>
+        receiver) {
+  GetLoggedInUserMojoConnector()->Connect(
+      multidevice_setup::mojom::kServiceName, std::move(receiver));
 }
 
 void OobeUI::BindCrosNetworkConfig(

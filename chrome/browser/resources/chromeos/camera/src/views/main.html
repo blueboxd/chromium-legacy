@@ -65,11 +65,13 @@
   </head>
   <body class="sound mirror mic _3x3">
     <div id="camera">
-      <div id="preview-wrapper" aria-hidden="true">
-        <img id="review-photo-result" class="preview-content">
+      <div id="preview-wrapper">
+        <img id="review-photo-result" class="preview-content"
+          aria-hidden="true">
         <video id="review-video-result" class="preview-content"></video>
         <div class="buttons circle centered-overlay">
-          <button id="play-result-video"></button>
+          <button id="play-result-video" tabindex="0"
+            i18n-label="play_result_video_button"></button>
         </div>
         <video id="preview-video" class="preview-content"></video>
         <div id="preview-metadata">
@@ -151,8 +153,10 @@
                 i18n-label="gallery_button" hidden></button>
       </div>
       <div id="confirm-result-groups" class="buttons right-stripe circle">
-        <button id="confirm-result"></button>
-        <button id="cancel-result"></button>
+        <button id="confirm-result" tabindex="0"
+          i18n-label="confirm_review_button"></button>
+        <button id="cancel-result" tabindex="0"
+          i18n-label="cancel_review_button"></button>
       </div>
       <div class="bottom-stripe left-stripe buttons circle">
         <button id="switch-device" tabindex="0"
@@ -410,9 +414,14 @@
     </div>
     <div class="centered-overlay" id="toast" aria-live="polite"></div>
     <div id="tooltip" aria-hidden="true"></div>
-    <audio id="sound-tick" src="../sounds/tick.ogg" data-timeout="200">
+    <audio id="sound-tick-final" src="../sounds/tick_final.ogg"
+      data-timeout="1000">
+    <audio id="sound-tick-inc" src="../sounds/tick_inc.ogg" data-timeout="1000">
+    <audio id="sound-tick-start" src="../sounds/tick_start.ogg"
+      data-timeout="1000">
     <audio id="sound-shutter" src="../sounds/shutter.ogg" data-timeout="350">
-    <audio id="sound-rec-start" src="../sounds/record_start.ogg" data-timeout="200">
+    <audio id="sound-rec-start" src="../sounds/record_start.ogg"
+      data-timeout="200">
     <audio id="sound-rec-end" src="../sounds/record_end.ogg" data-timeout="450">
     <template id="resolution-item-template">
       <label class="menu-item circle">

@@ -346,9 +346,10 @@ void NGBoxFragmentPainter::PaintObject(
   if (paint_phase == PaintPhase::kMask && is_visible)
     return PaintMask(paint_info, paint_offset);
 
-  if (paint_phase == PaintPhase::kForeground && paint_info.IsPrinting()) {
+  if (paint_phase == PaintPhase::kForeground &&
+      paint_info.ShouldAddUrlMetadata()) {
     NGFragmentPainter(box_fragment_, paint_fragment_)
-        .AddPDFURLRectIfNeeded(paint_info, paint_offset);
+        .AddURLRectIfNeeded(paint_info, paint_offset);
   }
 
   if (paint_phase != PaintPhase::kSelfOutlineOnly &&
@@ -768,8 +769,8 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
                                       border_edges.line_right);
   }
 
-    // The theme will tell us whether or not we should also paint the CSS
-    // border.
+  // The theme will tell us whether or not we should also paint the CSS
+  // border.
   if (box_decoration_data.ShouldPaintBorder()) {
     if (!theme_painted) {
       theme_painted =

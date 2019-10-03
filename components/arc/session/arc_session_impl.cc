@@ -15,6 +15,7 @@
 #include "ash/public/cpp/default_scale_factor_retriever.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
@@ -27,6 +28,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/login_manager/arc.pb.h"
+#include "chromeos/system/scheduler_configuration_manager_base.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_host_impl.h"
@@ -335,8 +337,12 @@ std::unique_ptr<ArcSessionImpl::Delegate> ArcSessionImpl::CreateDelegate(
                                                   channel);
 }
 
-ArcSessionImpl::ArcSessionImpl(std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)), client_(ArcClientAdapter::Create()) {
+ArcSessionImpl::ArcSessionImpl(std::unique_ptr<Delegate> delegate,
+                               chromeos::SchedulerConfigurationManagerBase*
+                                   scheduler_configuration_manager)
+    : delegate_(std::move(delegate)),
+      client_(ArcClientAdapter::Create()),
+      scheduler_configuration_manager_(scheduler_configuration_manager) {
   DCHECK(client_);
   client_->AddObserver(this);
 }
@@ -345,6 +351,8 @@ ArcSessionImpl::~ArcSessionImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(state_ == State::NOT_STARTED || state_ == State::STOPPED);
   client_->RemoveObserver(this);
+  if (scheduler_configuration_manager_)  // for testing
+    scheduler_configuration_manager_->RemoveObserver(this);
 }
 
 void ArcSessionImpl::StartMiniInstance() {
@@ -361,8 +369,21 @@ void ArcSessionImpl::StartMiniInstance() {
 
 void ArcSessionImpl::OnLcdDensity(int32_t lcd_density) {
   DCHECK_GT(lcd_density, 0);
-  DCHECK_EQ(state_, State::WAITING_FOR_LCD_DENSITY);
-  state_ = State::STARTING_MINI_INSTANCE;
+  DCHECK(state_ == State::WAITING_FOR_LCD_DENSITY);
+
+  lcd_density_ = lcd_density;
+  const auto& last_reply = scheduler_configuration_manager_->GetLastReply();
+  if (last_reply) {
+    state_ = State::STARTING_MINI_INSTANCE;
+    DoStartMiniInstance(last_reply->first ? last_reply->second : 0);
+  } else {
+    state_ = State::WAITING_FOR_NUM_CORES;
+    scheduler_configuration_manager_->AddObserver(this);
+  }
+}
+
+void ArcSessionImpl::DoStartMiniInstance(size_t num_cores_disabled) {
+  DCHECK_GT(lcd_density_, 0);
   StartArcMiniContainerRequest request;
   request.set_native_bridge_experiment(
       base::FeatureList::IsEnabled(arc::kNativeBridgeToggleFeature));
@@ -379,7 +400,8 @@ void ArcSessionImpl::OnLcdDensity(int32_t lcd_density) {
       delegate_->GetChannel() != version_info::Channel::STABLE &&
       delegate_->GetChannel() != version_info::Channel::BETA;
   request.set_arc_print_spooler_experiment(is_arc_print_spooler_enabled);
-  request.set_lcd_density(lcd_density);
+  request.set_lcd_density(lcd_density_);
+  request.set_num_cores_disabled(num_cores_disabled);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kArcPlayStoreAutoUpdate)) {
@@ -403,7 +425,8 @@ void ArcSessionImpl::OnLcdDensity(int32_t lcd_density) {
   }
 
   VLOG(1) << "Starting ARC mini instance with lcd_density="
-          << request.lcd_density();
+          << request.lcd_density()
+          << ", num_cores_disabled=" << request.num_cores_disabled();
 
   client_->StartMiniArc(request,
                         base::BindOnce(&ArcSessionImpl::OnMiniInstanceStarted,
@@ -422,6 +445,7 @@ void ArcSessionImpl::RequestUpgrade(UpgradeParams params) {
       NOTREACHED();
       break;
     case State::WAITING_FOR_LCD_DENSITY:
+    case State::WAITING_FOR_NUM_CORES:
     case State::STARTING_MINI_INSTANCE:
       VLOG(2) << "Requested to upgrade a starting ARC mini instance";
       // OnMiniInstanceStarted() will restart a full instance.
@@ -623,10 +647,14 @@ void ArcSessionImpl::Stop() {
   stop_requested_ = true;
   arc_bridge_host_.reset();
   switch (state_) {
+    case State::WAITING_FOR_NUM_CORES:
+      if (scheduler_configuration_manager_)  // for testing
+        scheduler_configuration_manager_->RemoveObserver(this);
+      FALLTHROUGH;
     case State::NOT_STARTED:
     case State::WAITING_FOR_LCD_DENSITY:
-      // If |Stop()| is called while waiting for LCD density, it can directly
-      // move to stopped state.
+      // If |Stop()| is called while waiting for LCD density or CPU cores
+      // information, it can directly move to stopped state.
       OnStopped(ArcStopReason::SHUTDOWN);
       return;
     case State::STARTING_MINI_INSTANCE:
@@ -663,6 +691,7 @@ void ArcSessionImpl::Stop() {
 void ArcSessionImpl::StopArcInstance() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(state_ == State::WAITING_FOR_LCD_DENSITY ||
+         state_ == State::WAITING_FOR_NUM_CORES ||
          state_ == State::STARTING_MINI_INSTANCE ||
          state_ == State::RUNNING_MINI_INSTANCE ||
          state_ == State::STARTING_FULL_INSTANCE ||
@@ -755,6 +784,21 @@ void ArcSessionImpl::SetUserIdHashForProfile(const std::string& hash) {
   client_->SetUserIdHashForProfile(hash);
 }
 
+void ArcSessionImpl::OnConfigurationSet(bool success,
+                                        size_t num_cores_disabled) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_EQ(state_, State::WAITING_FOR_NUM_CORES);
+
+  scheduler_configuration_manager_->RemoveObserver(this);
+  state_ = State::STARTING_MINI_INSTANCE;
+
+  // Note: On non-x86_64 devices, the configuration request to debugd always
+  // fails. It is WAI, and to support that case, don't log anything even when
+  // |success| is false. |num_cores_disabled| is always set regardless of
+  // where the call is successful.
+  DoStartMiniInstance(num_cores_disabled);
+}
+
 std::ostream& operator<<(std::ostream& os, ArcSessionImpl::State state) {
 #define MAP_STATE(name)             \
   case ArcSessionImpl::State::name: \
@@ -763,6 +807,7 @@ std::ostream& operator<<(std::ostream& os, ArcSessionImpl::State state) {
   switch (state) {
     MAP_STATE(NOT_STARTED);
     MAP_STATE(WAITING_FOR_LCD_DENSITY);
+    MAP_STATE(WAITING_FOR_NUM_CORES);
     MAP_STATE(STARTING_MINI_INSTANCE);
     MAP_STATE(RUNNING_MINI_INSTANCE);
     MAP_STATE(STARTING_FULL_INSTANCE);

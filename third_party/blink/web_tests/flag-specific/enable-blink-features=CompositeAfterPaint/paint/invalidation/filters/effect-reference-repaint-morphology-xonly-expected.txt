@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='box'",
+          "object": "LayoutNGBlockFlow DIV class='box'",
           "rect": [33, 50, 250, 200],
           "reason": "background"
         }

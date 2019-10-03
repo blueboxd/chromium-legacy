@@ -30,9 +30,12 @@ void ArcSession::RemoveObserver(Observer* observer) {
 std::unique_ptr<ArcSession> ArcSession::Create(
     ArcBridgeService* arc_bridge_service,
     ash::DefaultScaleFactorRetriever* retriever,
-    version_info::Channel channel) {
+    version_info::Channel channel,
+    chromeos::SchedulerConfigurationManagerBase*
+        scheduler_configuration_manager) {
   return std::make_unique<ArcSessionImpl>(
-      ArcSessionImpl::CreateDelegate(arc_bridge_service, retriever, channel));
+      ArcSessionImpl::CreateDelegate(arc_bridge_service, retriever, channel),
+      scheduler_configuration_manager);
 }
 
 }  // namespace arc

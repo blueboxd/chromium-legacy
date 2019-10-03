@@ -7,7 +7,16 @@
 
 #import <UIKit/UIKit.h>
 
-@interface PasswordBreachViewController : UIViewController
+#import "ios/chrome/browser/ui/passwords/password_breach_consumer.h"
+
+@protocol PasswordBreachActionHandler;
+
+@interface PasswordBreachViewController
+    : UIViewController <PasswordBreachConsumer>
+
+// The action handler for interactions in this View Controller.
+@property(nonatomic, weak) id<PasswordBreachActionHandler> actionHandler;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_PASSWORDS_PASSWORD_BREACH_VIEW_CONTROLLER_H_

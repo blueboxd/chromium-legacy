@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
+          "object": "LayoutNGBlockFlow DIV",
           "rect": [0, 0, 300, 125],
           "reason": "geometry"
         }
@@ -24,7 +24,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
+          "object": "LayoutNGBlockFlow DIV",
           "rect": [0, 0, 300, 63],
           "reason": "geometry"
         }
@@ -46,7 +46,7 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow DIV",
+          "object": "LayoutNGBlockFlow DIV",
           "rect": [0, 0, 200, 150],
           "reason": "geometry"
         }
@@ -68,7 +68,7 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow DIV",
+          "object": "LayoutNGBlockFlow DIV",
           "rect": [200, 0, 200, 150],
           "reason": "incremental"
         }

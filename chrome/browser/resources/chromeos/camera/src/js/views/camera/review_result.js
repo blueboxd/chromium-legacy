@@ -87,6 +87,8 @@ cca.views.camera.ReviewResult = class {
     const resolve = this.resolveOpen_;
     this.resolveOpen_ = null;
     cca.state.set('review-result', false);
+    cca.state.set('review-photo-result', false);
+    cca.state.set('review-video-result', false);
     cca.state.set('playing-result-video', false);
     this.reviewPhotoResult_.src = '';
     this.reviewVideoResult_.src = '';
@@ -117,7 +119,7 @@ cca.views.camera.ReviewResult = class {
    */
   async openVideo(fileEntry) {
     this.reviewVideoResult_.src = fileEntry.toURL();
-    cca.state.set('review-photo-result', false);
+    cca.state.set('review-video-result', true);
     cca.state.set('review-result', true);
     return new Promise((resolve) => {
       this.resolveOpen_ = resolve;

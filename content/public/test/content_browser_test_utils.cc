@@ -35,6 +35,11 @@
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+#if defined(OS_WIN)
+#include "ui/views/test/desktop_window_tree_host_win_test_api.h"  // nogncheck
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
+#endif  // defined(OS_WIN)
+
 namespace content {
 
 base::FilePath GetTestFilePath(const char* dir, const char* file) {
@@ -230,5 +235,17 @@ void IsolateOriginsForTesting(
         new_site_instance->GetIsolationContext(), origin));
   }
 }
+
+#if defined(OS_WIN)
+
+void SetMockCursorPositionForTesting(WebContents* web_contents,
+                                     const gfx::Point& position) {
+  views::test::DesktopWindowTreeHostWinTestApi host(
+      static_cast<views::DesktopWindowTreeHostWin*>(
+          web_contents->GetNativeView()->GetHost()));
+  host.SetMockCursorPositionForTesting(position);
+}
+
+#endif  // defined(OS_WIN)
 
 }  // namespace content

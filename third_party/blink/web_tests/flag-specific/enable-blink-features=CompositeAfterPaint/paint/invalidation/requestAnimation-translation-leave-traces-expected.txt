@@ -20,22 +20,22 @@ Tested locations: 1200,1500
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow DIV id='box'",
+          "object": "LayoutNGBlockFlow DIV id='box'",
           "rect": [1500, 0, 100, 100],
           "reason": "paint property change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='box'",
+          "object": "LayoutNGBlockFlow DIV id='box'",
           "rect": [1200, 0, 100, 100],
           "reason": "paint property change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='box'",
+          "object": "LayoutNGBlockFlow DIV id='box'",
           "rect": [1200, 0, 100, 100],
           "reason": "paint property change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='box'",
+          "object": "LayoutNGBlockFlow DIV id='box'",
           "rect": [900, 0, 100, 100],
           "reason": "paint property change"
         }

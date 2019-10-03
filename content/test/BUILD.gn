@@ -304,6 +304,8 @@ jumbo_static_library("test_support") {
     "test_background_sync_context.h",
     "test_background_sync_manager.cc",
     "test_background_sync_manager.h",
+    "test_background_sync_proxy.cc",
+    "test_background_sync_proxy.h",
     "test_blink_web_unit_test_support.cc",
     "test_blink_web_unit_test_support.h",
     "test_content_browser_client.cc",
@@ -363,6 +365,7 @@ jumbo_static_library("test_support") {
     "//services/media_session/public/mojom",
     "//third_party/blink/public:blink",
     "//third_party/blink/public:test_support",
+    "//third_party/blink/public/strings:strings_grit",
   ]
 
   deps = [
@@ -1287,6 +1290,8 @@ test("content_browsertests") {
       "../browser/accessibility/ax_platform_node_win_browsertest.cc",
       "../browser/renderer_host/accessibility_object_lifetime_win_browsertest.cc",
       "../browser/renderer_host/accessibility_tree_linkage_win_browsertest.cc",
+      "../browser/renderer_host/direct_manipulation_test_helper_win.cc",
+      "../browser/renderer_host/direct_manipulation_test_helper_win.h",
       "../browser/renderer_host/direct_manipulation_win_browsertest.cc",
     ]
 
@@ -1545,6 +1550,7 @@ test("content_unittests") {
     "../browser/background_sync/background_sync_manager_unittest.cc",
     "../browser/background_sync/background_sync_metrics_unittest.cc",
     "../browser/background_sync/background_sync_network_observer_unittest.cc",
+    "../browser/background_sync/background_sync_scheduler_unittest.cc",
     "../browser/background_sync/background_sync_service_impl_test_harness.cc",
     "../browser/background_sync/background_sync_service_impl_test_harness.h",
     "../browser/background_sync/one_shot_background_sync_service_impl_unittest.cc",
@@ -1726,6 +1732,8 @@ test("content_unittests") {
     "../browser/presentation/presentation_service_impl_unittest.cc",
     "../browser/renderer_host/clipboard_host_impl_unittest.cc",
     "../browser/renderer_host/cursor_manager_unittest.cc",
+    "../browser/renderer_host/direct_manipulation_test_helper_win.cc",
+    "../browser/renderer_host/direct_manipulation_test_helper_win.h",
     "../browser/renderer_host/direct_manipulation_win_unittest.cc",
     "../browser/renderer_host/dwrite_font_lookup_table_builder_win_unittest.cc",
     "../browser/renderer_host/dwrite_font_proxy_impl_win_unittest.cc",

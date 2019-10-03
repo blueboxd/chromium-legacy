@@ -2355,6 +2355,9 @@ void StyleResolver::ApplyCascadedColorValue(StyleResolverState& state) {
         case CSSValueID::kInitial:
           state.Style()->SetColor(ComputedStyleInitialValues::InitialColor());
           break;
+        case CSSValueID::kInternalRootColor:
+          state.Style()->SetIsColorInternalText(true);
+          break;
         default:
           identifier_value = nullptr;
           break;

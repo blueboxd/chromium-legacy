@@ -32,6 +32,9 @@ class ArcTracingEvent {
   explicit ArcTracingEvent(base::Value dictionary);
   ~ArcTracingEvent();
 
+  ArcTracingEvent(ArcTracingEvent&&);
+  ArcTracingEvent& operator=(ArcTracingEvent&&);
+
   // Gets process id of the event. Returns 0 if not set.
   int GetPid() const;
   // Sets process id of the event.

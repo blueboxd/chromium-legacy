@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
+#include "chromeos/system/scheduler_configuration_manager_base.h"
 #include "components/arc/session/arc_client_adapter.h"
 #include "components/arc/session/arc_session.h"
 
@@ -32,7 +33,10 @@ class ArcBridgeHost;
 
 constexpr int64_t kMinimumFreeDiskSpaceBytes = 64 << 20;  // 64MB
 
-class ArcSessionImpl : public ArcSession, public ArcClientAdapter::Observer {
+class ArcSessionImpl
+    : public ArcSession,
+      public ArcClientAdapter::Observer,
+      public chromeos::SchedulerConfigurationManagerBase::Observer {
  public:
   // The possible states of the session. Expected state changes are as follows.
   //
@@ -40,6 +44,8 @@ class ArcSessionImpl : public ArcSession, public ArcClientAdapter::Observer {
   // -> StartMiniInstance() ->
   // WAITING_FOR_LCD_DENSITY
   // -> OnLcdDensity ->
+  // WAITING_FOR_NUM_CORES
+  // -> OnConfigurationSet ->
   // STARTING_MINI_INSTANCE
   //   -> OnMiniInstanceStarted() ->
   // RUNNING_MINI_INSTANCE.
@@ -104,8 +110,11 @@ class ArcSessionImpl : public ArcSession, public ArcClientAdapter::Observer {
     // ARC is not yet started.
     NOT_STARTED,
 
-    // It's waiting for LCD dnesity to be available.
+    // It's waiting for LCD density to be available.
     WAITING_FOR_LCD_DENSITY,
+
+    // It's waiting for CPU cores information to be available.
+    WAITING_FOR_NUM_CORES,
 
     // The request to start a mini instance has been sent.
     STARTING_MINI_INSTANCE,
@@ -165,7 +174,9 @@ class ArcSessionImpl : public ArcSession, public ArcClientAdapter::Observer {
     virtual version_info::Channel GetChannel() = 0;
   };
 
-  explicit ArcSessionImpl(std::unique_ptr<Delegate> delegate);
+  ArcSessionImpl(std::unique_ptr<Delegate> delegate,
+                 chromeos::SchedulerConfigurationManagerBase*
+                     scheduler_configuration_manager_);
   ~ArcSessionImpl() override;
 
   // Returns default delegate implementation used for the production.
@@ -183,6 +194,9 @@ class ArcSessionImpl : public ArcSession, public ArcClientAdapter::Observer {
   bool IsStopRequested() override;
   void OnShutdown() override;
   void SetUserIdHashForProfile(const std::string& hash) override;
+
+  // chromeos::SchedulerConfigurationManagerBase::Observer overrides:
+  void OnConfigurationSet(bool success, size_t num_cores_disabled) override;
 
  private:
   // D-Bus callback for StartArcMiniContainer().
@@ -220,6 +234,9 @@ class ArcSessionImpl : public ArcSession, public ArcClientAdapter::Observer {
   // LCD density for the device is available.
   void OnLcdDensity(int32_t lcd_density);
 
+  // Called when |state_| moves to STARTING_MINI_INSTANCE.
+  void DoStartMiniInstance(size_t num_cores_disabled);
+
   // Free disk space under /home in bytes.
   void OnFreeDiskSpace(int64_t space);
 
@@ -254,6 +271,10 @@ class ArcSessionImpl : public ArcSession, public ArcClientAdapter::Observer {
 
   // Mojo endpoint.
   std::unique_ptr<mojom::ArcBridgeHost> arc_bridge_host_;
+
+  int lcd_density_ = 0;
+  chromeos::SchedulerConfigurationManagerBase* const
+      scheduler_configuration_manager_;
 
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcSessionImpl> weak_factory_{this};

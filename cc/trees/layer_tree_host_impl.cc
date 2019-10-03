@@ -4820,6 +4820,8 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
       ScrollOffsetToVector2dF(snap_position - current_position);
   bool scrolls_main_viewport_scroll_layer =
       scroll_node == ViewportMainScrollNode();
+
+  bool did_animate = false;
   if (scrolls_main_viewport_scroll_layer) {
     // Flash the overlay scrollbar even if the scroll dalta is 0.
     if (settings_.scrollbar_flash_after_any_scroll_update) {
@@ -4832,13 +4834,15 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
     }
     gfx::Vector2dF scaled_delta(delta);
     scaled_delta.Scale(active_tree()->page_scale_factor_for_scroll());
-    viewport()->ScrollAnimated(scaled_delta, base::TimeDelta());
+    gfx::Vector2dF consumed_delta =
+        viewport()->ScrollAnimated(scaled_delta, base::TimeDelta());
+    did_animate = !consumed_delta.IsZero();
   } else {
-    ScrollAnimationCreate(scroll_node, delta, base::TimeDelta());
+    did_animate = ScrollAnimationCreate(scroll_node, delta, base::TimeDelta());
   }
   DCHECK(!is_animating_for_snap_);
-  is_animating_for_snap_ = true;
-  return true;
+  is_animating_for_snap_ = did_animate;
+  return did_animate;
 }
 
 gfx::ScrollOffset LayerTreeHostImpl::GetVisualScrollOffset(

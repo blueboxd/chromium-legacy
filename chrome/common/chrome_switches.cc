@@ -866,8 +866,8 @@ const char kGuest[] = "guest";
     !defined(GOOGLE_CHROME_BUILD)
 // Enables Machine level user cloud policy on Chromium build. This policy is
 // always enabled on the branded builds.
-const char kEnableMachineLevelUserCloudPolicy[] =
-    "enable-machine-level-user-cloud-policy";
+const char kEnableChromeBrowserCloudManagement[] =
+    "enable-chrome-browser-cloud-management";
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

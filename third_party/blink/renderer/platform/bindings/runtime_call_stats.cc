@@ -177,7 +177,7 @@ Vector<RuntimeCallCounter*> RuntimeCallStats::CounterMapToSortedArray() const {
 void RuntimeCallStats::AddCounterMapStatsToBuilder(
     StringBuilder& builder) const {
   builder.AppendFormat("\nNumber of counters in map: %u\n\n",
-                                counter_map_.size()));
+                       counter_map_.size());
   for (RuntimeCallCounter* counter : CounterMapToSortedArray()) {
     builder.AppendFormat(row_format, counter->GetName(), counter->GetCount(),
                          counter->GetTime().InMillisecondsF());

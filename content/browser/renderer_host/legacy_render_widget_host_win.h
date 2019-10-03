@@ -29,7 +29,7 @@ class WindowEventTarget;
 
 namespace content {
 
-class DirectManipulationBrowserTest;
+class DirectManipulationBrowserTestBase;
 class DirectManipulationHelper;
 class RenderWidgetHostViewAura;
 
@@ -135,7 +135,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
 
  private:
   friend class AccessibilityObjectLifetimeWinBrowserTest;
-  friend class DirectManipulationBrowserTest;
+  friend class DirectManipulationBrowserTestBase;
 
   explicit LegacyRenderWidgetHostHWND(HWND parent);
   ~LegacyRenderWidgetHostHWND() override;

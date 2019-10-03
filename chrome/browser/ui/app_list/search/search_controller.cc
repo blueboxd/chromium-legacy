@@ -84,7 +84,7 @@ void SearchController::InitializeRankers(
           HistoryServiceFactory::GetForProfile(
               profile_, ServiceAccessType::EXPLICIT_ACCESS),
           connector);
-  ranker->InitializeRankers();
+  ranker->InitializeRankers(this);
   mixer_->SetNonAppSearchResultRanker(std::move(ranker));
 }
 
@@ -174,6 +174,10 @@ void SearchController::OnSearchResultsDisplayed(
     const base::string16& trimmed_query,
     const ash::SearchResultIdWithPositionIndices& results,
     int launched_index) {
+  // Log the impression.
+  mixer_->GetNonAppSearchResultRanker()->LogSearchResults(
+      trimmed_query, results, launched_index);
+
   if (trimmed_query.empty()) {
     mixer_->GetNonAppSearchResultRanker()->ZeroStateResultsDisplayed(results);
 

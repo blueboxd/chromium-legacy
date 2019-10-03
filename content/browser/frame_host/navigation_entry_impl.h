@@ -399,6 +399,16 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
     has_user_gesture_ = has_user_gesture;
   }
 
+  void set_network_isolation_key(
+      const net::NetworkIsolationKey& network_isolation_key) {
+    network_isolation_key_ = network_isolation_key;
+  }
+
+  const base::Optional<net::NetworkIsolationKey>& network_isolation_key()
+      const {
+    return network_isolation_key_;
+  }
+
   // Stores a record of the what was committed in this NavigationEntry's main
   // frame before it was replaced (e.g. by history.replaceState()).
   void set_replaced_entry_data(const ReplacedNavigationEntryData& data) {
@@ -530,6 +540,12 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // Set to true if the navigation controller gets notified about a SSL error
   // for a pending navigation. Defaults to false.
   bool ssl_error_;
+
+  // The network isolation key for this NavigationEntry. If provided, this
+  // determines the network isolation key to be used when navigating to this
+  // NavigationEntry; otherwise, the key is determined based on the navigating
+  // frame and top frame origins.  For example, this is used for view-source.
+  base::Optional<net::NetworkIsolationKey> network_isolation_key_;
 
   // Stores information about the entry prior to being replaced (e.g.
   // history.replaceState()). It is preserved after commit (session sync for

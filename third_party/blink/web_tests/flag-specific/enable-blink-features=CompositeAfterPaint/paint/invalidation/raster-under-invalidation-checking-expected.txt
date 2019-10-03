@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='target1'",
+          "object": "LayoutNGBlockFlow DIV id='target1'",
           "rect": [18, 10, 60, 40],
           "reason": "background"
         }
@@ -316,13 +316,13 @@
       ]
     },
     {
-      "name": "LayoutBlockFlow DIV id='target2'",
+      "name": "LayoutNGBlockFlow DIV id='target2'",
       "bounds": [60, 40],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='target2'",
+          "object": "LayoutNGBlockFlow DIV id='target2'",
           "rect": [0, 0, 60, 40],
           "reason": "background"
         }
@@ -632,13 +632,13 @@
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow DIV",
+      "name": "LayoutNGBlockFlow DIV",
       "bounds": [150, 150],
       "contentsOpaque": true,
       "backgroundColor": "#FFFF00",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='target3'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='target3'",
           "rect": [40, 70, 60, 40],
           "reason": "background"
         }
@@ -952,7 +952,7 @@
       "bounds": [150, 150],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='target4'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='target4'",
           "rect": [0, 60, 50, 40],
           "reason": "background"
         }

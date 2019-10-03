@@ -24,6 +24,10 @@ namespace gfx {
 class ImageSkia;
 }  // namespace gfx
 
+namespace views {
+class Widget;
+}  // namespace views
+
 class Profile;
 
 // TODO(crbug.com/1004708): Move Is*[Enabled|Allowed] functions to
@@ -131,6 +135,13 @@ void ShowCrostiniAppInstallerView(Profile* profile,
 // Shows the Crostini App Uninstaller dialog.
 void ShowCrostiniAppUninstallerView(Profile* profile,
                                     const std::string& app_id);
+// Shows the Crostini force-close dialog. If |app_name| is nonempty, the dialog
+// will include the window's name as text. Returns a handle to that dialog, so
+// that we can add observers to the dialog itself.
+views::Widget* ShowCrostiniForceCloseDialog(
+    const std::string& app_name,
+    views::Widget* closable_widget,
+    base::OnceClosure force_close_callback);
 // Shows the Crostini Termina Upgrade dialog (for blocking crostini start until
 // Termina version matches).
 void ShowCrostiniUpgradeView(Profile* profile, CrostiniUISurface ui_surface);

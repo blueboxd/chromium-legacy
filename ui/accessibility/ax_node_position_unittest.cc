@@ -606,7 +606,7 @@ TEST_F(AXPositionTest, GetMaxTextOffsetFromNullPosition) {
   TestPositionType text_position = AXNodePosition::CreateNullPosition();
   ASSERT_NE(nullptr, text_position);
   ASSERT_TRUE(text_position->IsNullPosition());
-  ASSERT_EQ(AXNodePosition::INVALID_INDEX, text_position->MaxTextOffset());
+  ASSERT_EQ(AXNodePosition::INVALID_OFFSET, text_position->MaxTextOffset());
 }
 
 TEST_F(AXPositionTest, GetMaxTextOffsetFromRoot) {
@@ -4497,8 +4497,8 @@ INSTANTIATE_TEST_SUITE_P(
         CreatePositionAtTextBoundaryTestParam{
             AXTextBoundary::kCharacter, AXTextBoundaryDirection::kBackwards,
             AXBoundaryBehavior::CrossBoundary,
-            "TextPosition anchor_id=9 text_offset=5 affinity=downstream "
-            "annotated_text=Line <2>"},
+            "TextPosition anchor_id=7 text_offset=0 affinity=downstream "
+            "annotated_text=<\n>"},
         CreatePositionAtTextBoundaryTestParam{
             AXTextBoundary::kCharacter, AXTextBoundaryDirection::kForwards,
             AXBoundaryBehavior::CrossBoundary,

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "components/exo/input_trace.h"
+#include "components/exo/pointer_constraint_delegate.h"
 #include "components/exo/pointer_delegate.h"
 #include "components/exo/pointer_gesture_pinch_delegate.h"
 #include "components/exo/relative_pointer_delegate.h"
@@ -33,6 +34,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/shell_window_ids.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif
 
 #if defined(USE_OZONE)
@@ -123,6 +125,8 @@ Pointer::~Pointer() {
     pinch_delegate_->OnPointerDestroying(this);
   if (relative_pointer_delegate_)
     relative_pointer_delegate_->OnPointerDestroying(this);
+  if (pointer_constraint_delegate_)
+    pointer_constraint_delegate_->OnConstraintBroken();
   WMHelper* helper = WMHelper::GetInstance();
   helper->RemovePreTargetHandler(this);
   // TODO(sky): CursorClient does not exist in mash
@@ -217,20 +221,19 @@ void Pointer::UnregisterRelativePointerDelegate(
   relative_pointer_delegate_ = nullptr;
 }
 
-void Pointer::EnablePointerCapture() {
+bool Pointer::EnablePointerCapture() {
   if (!base::FeatureList::IsEnabled(kPointerCapture))
-    return;
+    return false;
 
-  // If pointer capture is already enabled, disable it first.
+  // You are not allowed to have more than one capture active.
   if (capture_window_)
-    DisablePointerCapture();
+    return false;
 
-  // TODO(b/124059008): Find the correct window to set capture.
   aura::Window* active_window = WMHelper::GetInstance()->GetActiveWindow();
   if (!active_window) {
     LOG(ERROR) << "Failed to enable pointer capture: "
                   "active window not found";
-    return;
+    return false;
   }
   auto* top_level_widget =
       views::Widget::GetTopLevelWidgetForNativeView(active_window);
@@ -238,7 +241,7 @@ void Pointer::EnablePointerCapture() {
   if (!top_level_widget) {
     LOG(ERROR) << "Failed to enable pointer capture: "
                   "active window does not have associated widget";
-    return;
+    return false;
   }
   Surface* root_surface =
       GetShellMainSurface(top_level_widget->GetNativeWindow());
@@ -246,22 +249,9 @@ void Pointer::EnablePointerCapture() {
       !delegate_->CanAcceptPointerEventsForSurface(root_surface)) {
     LOG(ERROR) << "Failed to enable pointer capture: "
                   "cannot find window for capture";
-    return;
+    return false;
   }
-  capture_window_ = root_surface->window();
-
-  auto* capture_client = WMHelper::GetInstance()->GetCaptureClient();
-  capture_client->SetCapture(capture_window_);
-  capture_client->AddObserver(this);
-
-  auto* cursor_client = WMHelper::GetInstance()->GetCursorClient();
-  cursor_client->HideCursor();
-  cursor_client->LockCursor();
-
-  location_when_pointer_capture_enabled_ = gfx::ToRoundedPoint(location_);
-
-  if (ShouldMoveToCenter())
-    MoveCursorToCenterOfActiveDisplay();
+  return EnablePointerCapture(root_surface);
 }
 
 void Pointer::DisablePointerCapture() {
@@ -289,6 +279,52 @@ void Pointer::DisablePointerCapture() {
   focus_surface_ = nullptr;
   location_when_pointer_capture_enabled_.reset();
   UpdateCursor();
+}
+
+bool Pointer::ConstrainPointer(PointerConstraintDelegate* delegate) {
+  // Pointer lock is a chromeos-only feature (i.e. the chromeos::features
+  // namespace only exists in chromeos builds). So we do not compile pointer
+  // lock support unless we are on chromeos.
+#if defined(OS_CHROMEOS)
+  if (!base::FeatureList::IsEnabled(chromeos::features::kExoPointerLock))
+    return false;
+  bool success = EnablePointerCapture(delegate->GetConstrainedSurface());
+  if (success)
+    pointer_constraint_delegate_ = delegate;
+  return success;
+#else
+  NOTIMPLEMENTED();
+  return false;
+#endif
+}
+
+void Pointer::UnconstrainPointer() {
+  if (pointer_constraint_delegate_) {
+    DisablePointerCapture();
+    pointer_constraint_delegate_ = nullptr;
+  }
+}
+
+bool Pointer::EnablePointerCapture(Surface* capture_surface) {
+  if (!base::FeatureList::IsEnabled(kPointerCapture))
+    return false;
+
+  capture_window_ = capture_surface->window();
+
+  auto* capture_client = WMHelper::GetInstance()->GetCaptureClient();
+  capture_client->SetCapture(capture_window_);
+  capture_client->AddObserver(this);
+
+  auto* cursor_client = WMHelper::GetInstance()->GetCursorClient();
+  cursor_client->HideCursor();
+  cursor_client->LockCursor();
+
+  location_when_pointer_capture_enabled_ = gfx::ToRoundedPoint(location_);
+
+  if (ShouldMoveToCenter())
+    MoveCursorToCenterOfActiveDisplay();
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

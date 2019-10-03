@@ -61,7 +61,8 @@ class CrostiniAppWindowShelfController : public AppWindowLauncherController,
   void RegisterAppWindow(aura::Window* window, const std::string& shelf_app_id);
   void UnregisterAppWindow(AppWindowBase* app_window);
   void AddToShelf(aura::Window* window, AppWindowBase* app_window);
-  void RegisterCrostiniWindowForForceClose(aura::Window* window);
+  void RegisterCrostiniWindowForForceClose(aura::Window* window,
+                                           const std::string& app_name);
 
   // Returns ID of the shelf item that is removed, or a null id.
   ash::ShelfID RemoveFromShelf(aura::Window* window, AppWindowBase* app_window);

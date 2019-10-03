@@ -7,14 +7,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutNGBlockFlow HTML",
           "rect": [8, 96, 186, 64],
           "reason": "chunk appeared"
         }
       ]
     },
     {
-      "name": "LayoutTableCell TD",
+      "name": "LayoutNGTableCell TD",
       "position": [24, 22],
       "bounds": [10, 19],
       "transform": 1

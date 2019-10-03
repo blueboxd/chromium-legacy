@@ -909,6 +909,7 @@ NavigationRequest::NavigationRequest(
       source_site_instance_ = frame_navigation_entry->source_site_instance();
       dest_site_instance_ = frame_navigation_entry->site_instance();
     }
+    network_isolation_key_ = entry->network_isolation_key();
     is_view_source_ = entry->IsViewSourceMode();
     bindings_ = entry->bindings();
   }
@@ -2062,17 +2063,6 @@ void NavigationRequest::OnStartChecksComplete(
       frame_tree_node_, begin_params_.get(), &report_raw_headers);
   devtools_instrumentation::OnNavigationRequestWillBeSent(*this);
 
-  // If this is a top-frame navigation, then use the origin of the url (and
-  // update it as redirects happen). If this is a sub-frame navigation, get the
-  // URL from the top frame.
-  // TODO(crbug.com/979296): Consider changing this code to copy an origin
-  // instead of creating one from a URL which lacks opacity information.
-  url::Origin frame_origin = url::Origin::Create(common_params_->url);
-  url::Origin top_frame_origin =
-      frame_tree_node_->IsMainFrame()
-          ? frame_origin
-          : frame_tree_node_->frame_tree()->root()->current_origin();
-
   // Merge headers with embedder's headers.
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(begin_params_->headers);
@@ -2088,9 +2078,8 @@ void NavigationRequest::OnStartChecksComplete(
       browser_context, partition,
       std::make_unique<NavigationRequestInfo>(
           common_params_->Clone(), begin_params_.Clone(), site_for_cookies,
-          net::NetworkIsolationKey(top_frame_origin, frame_origin),
-          frame_tree_node_->IsMainFrame(), parent_is_main_frame,
-          IsSecureFrame(frame_tree_node_->parent()),
+          GetNetworkIsolationKey(), frame_tree_node_->IsMainFrame(),
+          parent_is_main_frame, IsSecureFrame(frame_tree_node_->parent()),
           frame_tree_node_->frame_tree_node_id(), is_for_guests_only,
           report_raw_headers,
           navigating_frame_host->GetVisibilityState() ==
@@ -3150,6 +3139,24 @@ GURL NavigationRequest::GetSiteForCommonParamsURL() const {
   // be correct for cross-BrowsingInstance redirects.
   return SiteInstanceImpl::GetSiteForURL(
       starting_site_instance_->GetIsolationContext(), common_params_->url);
+}
+
+net::NetworkIsolationKey NavigationRequest::GetNetworkIsolationKey() const {
+  if (network_isolation_key_)
+    return network_isolation_key_.value();
+
+  // If this is a top-frame navigation, then use the origin of the url (and
+  // update it as redirects happen). If this is a subframe navigation, get the
+  // URL from the top frame.
+  // TODO(crbug.com/979296): Consider changing this code to copy an origin
+  // instead of creating one from a URL which lacks opacity information.
+  url::Origin frame_origin = url::Origin::Create(common_params_->url);
+  url::Origin top_frame_origin =
+      frame_tree_node_->IsMainFrame()
+          ? frame_origin
+          : frame_tree_node_->frame_tree()->root()->current_origin();
+
+  return net::NetworkIsolationKey(top_frame_origin, frame_origin);
 }
 
 // TODO(zetamoo): Try to merge this function inside its callers.

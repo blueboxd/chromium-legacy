@@ -415,7 +415,6 @@ include_rules = [
   "+third_party/blink/public/platform/web_mouse_wheel_event.h",
   "+third_party/blink/public/platform/web_touch_event.h",
   "+third_party/blink/public/platform/web_security_style.h",
-  "+third_party/blink/public/platform/web_speech_synthesis_constants.h",
   "+third_party/blink/public/platform/web_sudden_termination_disabler_type.h",
   "+third_party/blink/public/platform/modules/notifications/web_notification_constants.h",
   "+third_party/blink/public/public_buildflags.h",
@@ -424,7 +423,6 @@ include_rules = [
   "+third_party/blink/public/web/web_media_player_action.h",
   "+third_party/blink/public/web/web_plugin_action.h",
   "+third_party/blink/public/web/web_presentation_receiver_flags.h",
-  "+third_party/blink/public/web/web_text_direction.h",
   "+third_party/blink/public/web/web_triggering_event_info.h",
 ]
 

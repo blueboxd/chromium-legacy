@@ -21,7 +21,7 @@ namespace service_manager {
 template <typename... BinderArgs>
 class BinderRegistryWithArgs {
  public:
-  using Binder = base::Callback<
+  using Binder = base::RepeatingCallback<
       void(const std::string&, mojo::ScopedMessagePipeHandle, BinderArgs...)>;
 
   BinderRegistryWithArgs() {}
@@ -32,8 +32,8 @@ class BinderRegistryWithArgs {
   // Usage example: //services/service_manager/README.md#OnBindInterface
   template <typename Interface>
   void AddInterface(
-      const base::Callback<void(mojo::InterfaceRequest<Interface>,
-                                BinderArgs...)>& callback,
+      const base::RepeatingCallback<void(mojo::InterfaceRequest<Interface>,
+                                         BinderArgs...)>& callback,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner = nullptr) {
     SetInterfaceBinder(
         Interface::Name_,
@@ -52,8 +52,8 @@ class BinderRegistryWithArgs {
   }
   void AddInterface(
       const std::string& interface_name,
-      const base::Callback<void(mojo::ScopedMessagePipeHandle, BinderArgs...)>&
-          callback,
+      const base::RepeatingCallback<void(mojo::ScopedMessagePipeHandle,
+                                         BinderArgs...)>& callback,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner = nullptr) {
     SetInterfaceBinder(interface_name,
                        std::make_unique<GenericCallbackBinder<BinderArgs...>>(

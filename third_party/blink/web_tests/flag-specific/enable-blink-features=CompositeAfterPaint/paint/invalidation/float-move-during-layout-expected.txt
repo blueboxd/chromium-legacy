@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (floating) DIV",
+          "object": "LayoutNGBlockFlow (floating) DIV",
           "rect": [8, 210, 100, 100],
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow (floating) DIV",
+          "object": "LayoutNGBlockFlow (floating) DIV",
           "rect": [8, 110, 100, 100],
           "reason": "geometry"
         }

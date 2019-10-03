@@ -12,11 +12,13 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/system/scheduler_configuration_manager_base.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/session/arc_session_impl.h"
 #include "components/arc/test/fake_arc_bridge_host.h"
@@ -176,6 +178,28 @@ struct ArcSessionDeleter {
   }
 };
 
+class FakeSchedulerConfigurationManager
+    : public chromeos::SchedulerConfigurationManagerBase {
+ public:
+  FakeSchedulerConfigurationManager() = default;
+  ~FakeSchedulerConfigurationManager() override = default;
+
+  void SetLastReply(size_t num_cores_disabled) {
+    reply_ = std::make_pair(true, num_cores_disabled);
+    for (Observer& obs : observer_list_)
+      obs.OnConfigurationSet(reply_->first, reply_->second);
+  }
+
+  base::Optional<std::pair<bool, size_t>> GetLastReply() const override {
+    return reply_;
+  }
+
+ private:
+  base::Optional<std::pair<bool, size_t>> reply_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeSchedulerConfigurationManager);
+};
+
 class ArcSessionImplTest : public testing::Test {
  public:
   ArcSessionImplTest() {
@@ -208,10 +232,17 @@ class ArcSessionImplTest : public testing::Test {
   std::unique_ptr<ArcSessionImpl, ArcSessionDeleter> CreateArcSession(
       std::unique_ptr<ArcSessionImpl::Delegate> delegate = nullptr,
       int32_t lcd_density = 160) {
-    if (!delegate)
-      delegate = std::make_unique<FakeDelegate>(lcd_density);
-    return std::unique_ptr<ArcSessionImpl, ArcSessionDeleter>(
-        new ArcSessionImpl(std::move(delegate)));
+    auto arc_session =
+        CreateArcSessionInternal(std::move(delegate), lcd_density);
+    fake_schedule_configuration_manager_.SetLastReply(0);
+    return arc_session;
+  }
+
+  std::unique_ptr<ArcSessionImpl, ArcSessionDeleter>
+  CreateArcSessionWithoutCpuInfo(
+      std::unique_ptr<ArcSessionImpl::Delegate> delegate = nullptr,
+      int32_t lcd_density = 160) {
+    return CreateArcSessionInternal(std::move(delegate), lcd_density);
   }
 
   void SetupMiniContainer(ArcSessionImpl* arc_session,
@@ -223,7 +254,20 @@ class ArcSessionImplTest : public testing::Test {
     ASSERT_FALSE(observer->on_session_stopped_args().has_value());
   }
 
+ protected:
+  FakeSchedulerConfigurationManager fake_schedule_configuration_manager_;
+
  private:
+  std::unique_ptr<ArcSessionImpl, ArcSessionDeleter> CreateArcSessionInternal(
+      std::unique_ptr<ArcSessionImpl::Delegate> delegate,
+      int32_t lcd_density) {
+    if (!delegate)
+      delegate = std::make_unique<FakeDelegate>(lcd_density);
+    return std::unique_ptr<ArcSessionImpl, ArcSessionDeleter>(
+        new ArcSessionImpl(std::move(delegate),
+                           &fake_schedule_configuration_manager_));
+  }
+
   base::test::TaskEnvironment task_environment_;
   user_manager::ScopedUserManager scoped_user_manager_{
       std::make_unique<user_manager::FakeUserManager>()};
@@ -675,8 +719,11 @@ TEST_F(ArcSessionImplTest, SupervisionTransitionShouldGraduate) {
 }
 
 TEST_F(ArcSessionImplTest, StartArcMiniContainerWithDensity) {
-  auto arc_session = CreateArcSession(nullptr, 240);
+  auto arc_session = CreateArcSessionWithoutCpuInfo(nullptr, 240);
   arc_session->StartMiniInstance();
+  EXPECT_EQ(ArcSessionImpl::State::WAITING_FOR_NUM_CORES,
+            arc_session->GetStateForTesting());
+  fake_schedule_configuration_manager_.SetLastReply(2);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(ArcSessionImpl::State::RUNNING_MINI_INSTANCE,
@@ -684,12 +731,62 @@ TEST_F(ArcSessionImplTest, StartArcMiniContainerWithDensity) {
   EXPECT_EQ(240, chromeos::FakeSessionManagerClient::Get()
                      ->last_start_arc_mini_container_request()
                      .lcd_density());
+  EXPECT_EQ(2u, chromeos::FakeSessionManagerClient::Get()
+                    ->last_start_arc_mini_container_request()
+                    .num_cores_disabled());
 }
 
 TEST_F(ArcSessionImplTest, StartArcMiniContainerWithDensityAsync) {
   auto delegate = std::make_unique<FakeDelegate>(0);
   auto* delegate_ptr = delegate.get();
-  auto arc_session = CreateArcSession(std::move(delegate));
+  auto arc_session = CreateArcSessionWithoutCpuInfo(std::move(delegate));
+  arc_session->StartMiniInstance();
+  EXPECT_EQ(ArcSessionImpl::State::WAITING_FOR_LCD_DENSITY,
+            arc_session->GetStateForTesting());
+  delegate_ptr->SetLcdDensity(240);
+  EXPECT_EQ(ArcSessionImpl::State::WAITING_FOR_NUM_CORES,
+            arc_session->GetStateForTesting());
+  fake_schedule_configuration_manager_.SetLastReply(2);
+  EXPECT_EQ(ArcSessionImpl::State::STARTING_MINI_INSTANCE,
+            arc_session->GetStateForTesting());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(240, chromeos::FakeSessionManagerClient::Get()
+                     ->last_start_arc_mini_container_request()
+                     .lcd_density());
+  EXPECT_EQ(2u, chromeos::FakeSessionManagerClient::Get()
+                    ->last_start_arc_mini_container_request()
+                    .num_cores_disabled());
+}
+
+TEST_F(ArcSessionImplTest, StartArcMiniContainerWithDensityAsyncReversedOrder) {
+  auto delegate = std::make_unique<FakeDelegate>(0);
+  auto* delegate_ptr = delegate.get();
+  auto arc_session = CreateArcSessionWithoutCpuInfo(std::move(delegate));
+  arc_session->StartMiniInstance();
+  // This time, set the CPU cores information first.
+  fake_schedule_configuration_manager_.SetLastReply(2);
+  EXPECT_EQ(ArcSessionImpl::State::WAITING_FOR_LCD_DENSITY,
+            arc_session->GetStateForTesting());
+  delegate_ptr->SetLcdDensity(240);
+  EXPECT_EQ(ArcSessionImpl::State::STARTING_MINI_INSTANCE,
+            arc_session->GetStateForTesting());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(240, chromeos::FakeSessionManagerClient::Get()
+                     ->last_start_arc_mini_container_request()
+                     .lcd_density());
+  EXPECT_EQ(2u, chromeos::FakeSessionManagerClient::Get()
+                    ->last_start_arc_mini_container_request()
+                    .num_cores_disabled());
+}
+
+TEST_F(ArcSessionImplTest, StartArcMiniContainerWithDensityAsyncCpuInfoEarly) {
+  auto delegate = std::make_unique<FakeDelegate>(0);
+  auto* delegate_ptr = delegate.get();
+  auto arc_session = CreateArcSessionWithoutCpuInfo(std::move(delegate));
+  // Set the CPU cores information even before StartMiniInstance() request.
+  fake_schedule_configuration_manager_.SetLastReply(2);
   arc_session->StartMiniInstance();
   EXPECT_EQ(ArcSessionImpl::State::WAITING_FOR_LCD_DENSITY,
             arc_session->GetStateForTesting());
@@ -701,12 +798,16 @@ TEST_F(ArcSessionImplTest, StartArcMiniContainerWithDensityAsync) {
   EXPECT_EQ(240, chromeos::FakeSessionManagerClient::Get()
                      ->last_start_arc_mini_container_request()
                      .lcd_density());
+  EXPECT_EQ(2u, chromeos::FakeSessionManagerClient::Get()
+                    ->last_start_arc_mini_container_request()
+                    .num_cores_disabled());
 }
 
 TEST_F(ArcSessionImplTest, StopWhileWaitingForLcdDensity) {
   auto delegate = std::make_unique<FakeDelegate>(0);
-  auto arc_session = CreateArcSession(std::move(delegate));
+  auto arc_session = CreateArcSessionWithoutCpuInfo(std::move(delegate));
   arc_session->StartMiniInstance();
+  fake_schedule_configuration_manager_.SetLastReply(2);
   EXPECT_EQ(ArcSessionImpl::State::WAITING_FOR_LCD_DENSITY,
             arc_session->GetStateForTesting());
   arc_session->Stop();
@@ -715,9 +816,34 @@ TEST_F(ArcSessionImplTest, StopWhileWaitingForLcdDensity) {
 
 TEST_F(ArcSessionImplTest, ShutdownWhileWaitingForLcdDensity) {
   auto delegate = std::make_unique<FakeDelegate>(0);
-  auto arc_session = CreateArcSession(std::move(delegate));
+  auto arc_session = CreateArcSessionWithoutCpuInfo(std::move(delegate));
   arc_session->StartMiniInstance();
+  fake_schedule_configuration_manager_.SetLastReply(2);
   EXPECT_EQ(ArcSessionImpl::State::WAITING_FOR_LCD_DENSITY,
+            arc_session->GetStateForTesting());
+  arc_session->OnShutdown();
+  EXPECT_EQ(ArcSessionImpl::State::STOPPED, arc_session->GetStateForTesting());
+}
+
+TEST_F(ArcSessionImplTest, StopWhileWaitingForNumCores) {
+  auto delegate = std::make_unique<FakeDelegate>(0);
+  auto* delegate_ptr = delegate.get();
+  auto arc_session = CreateArcSessionWithoutCpuInfo(std::move(delegate));
+  arc_session->StartMiniInstance();
+  delegate_ptr->SetLcdDensity(240);
+  EXPECT_EQ(ArcSessionImpl::State::WAITING_FOR_NUM_CORES,
+            arc_session->GetStateForTesting());
+  arc_session->Stop();
+  EXPECT_EQ(ArcSessionImpl::State::STOPPED, arc_session->GetStateForTesting());
+}
+
+TEST_F(ArcSessionImplTest, ShutdownWhileWaitingForNumCores) {
+  auto delegate = std::make_unique<FakeDelegate>(0);
+  auto* delegate_ptr = delegate.get();
+  auto arc_session = CreateArcSessionWithoutCpuInfo(std::move(delegate));
+  arc_session->StartMiniInstance();
+  delegate_ptr->SetLcdDensity(240);
+  EXPECT_EQ(ArcSessionImpl::State::WAITING_FOR_NUM_CORES,
             arc_session->GetStateForTesting());
   arc_session->OnShutdown();
   EXPECT_EQ(ArcSessionImpl::State::STOPPED, arc_session->GetStateForTesting());

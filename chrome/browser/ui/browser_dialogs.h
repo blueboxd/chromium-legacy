@@ -251,6 +251,7 @@ enum class DialogIdentifier {
   INCOGNITO_MENU = 97,
   PHONE_CHOOSER = 98,
   QR_CODE_GENERATOR = 99,
+  CROSTINI_FORCE_CLOSE = 100,
   // Add values above this line with a corresponding label in
   // tools/metrics/histograms/enums.xml
   MAX_VALUE

@@ -389,14 +389,19 @@ bool MimeHandlerViewGuest::IsFullscreenForTabOrPending(
   return is_guest_fullscreen_;
 }
 
-bool MimeHandlerViewGuest::ShouldCreateWebContents(
-    content::WebContents* web_contents,
+bool MimeHandlerViewGuest::IsWebContentsCreationOverridden(
+    content::SiteInstance* source_site_instance,
+    content::mojom::WindowContainerType window_container_type,
+    const GURL& opener_url,
+    const std::string& frame_name,
+    const GURL& target_url) {
+  return true;
+}
+
+content::WebContents* MimeHandlerViewGuest::CreateCustomWebContents(
     content::RenderFrameHost* opener,
     content::SiteInstance* source_site_instance,
-    int32_t route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
-    content::mojom::WindowContainerType window_container_type,
+    bool is_renderer_initiated,
     const GURL& opener_url,
     const std::string& frame_name,
     const GURL& target_url,
@@ -412,7 +417,7 @@ bool MimeHandlerViewGuest::ShouldCreateWebContents(
   auto* delegate = embedder_web_contents()->GetDelegate();
   if (delegate)
     delegate->OpenURLFromTab(embedder_web_contents(), open_params);
-  return false;
+  return nullptr;
 }
 
 bool MimeHandlerViewGuest::SetFullscreenState(bool is_fullscreen) {

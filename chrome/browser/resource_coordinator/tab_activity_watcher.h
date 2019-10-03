@@ -42,9 +42,10 @@ class TabActivityWatcher : public BrowserListObserver,
   // Log TabFeatures for oldest n tabs.
   void LogOldestNTabFeatures();
 
-  // |tabs| are sorted by descending importance, so that the last tab is
-  // the first candidate that will be discarded.
-  void SortLifecycleUnitWithTabRanker(std::vector<LifecycleUnit*>* tabs);
+  // Logs TabMetrics of all |tabs|; and sorts them by descending importance,
+  // so that the last tab is the first candidate that will be discarded.
+  void LogAndMaybeSortLifecycleUnitWithTabRanker(
+      std::vector<LifecycleUnit*>* tabs);
 
   // Returns the single instance, creating it if necessary.
   static TabActivityWatcher* GetInstance();

@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_HINTS_MANAGER_H_
 
 #include <memory>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -145,7 +145,7 @@ class OptimizationGuideHintsManager
   // |background_task_runner_|.
   std::unique_ptr<optimization_guide::HintUpdateData> ProcessHintsComponent(
       const optimization_guide::HintsComponentInfo& info,
-      const std::unordered_set<optimization_guide::proto::OptimizationType>&
+      const base::flat_set<optimization_guide::proto::OptimizationType>&
           registered_optimization_types,
       std::unique_ptr<optimization_guide::HintUpdateData> update_data);
 
@@ -157,7 +157,7 @@ class OptimizationGuideHintsManager
       const google::protobuf::RepeatedPtrField<
           optimization_guide::proto::OptimizationFilter>&
           blacklist_optimization_filters,
-      const std::unordered_set<optimization_guide::proto::OptimizationType>&
+      const base::flat_set<optimization_guide::proto::OptimizationType>&
           registered_optimization_types);
 
   // Callback run after the hint cache is fully initialized. At this point, the
@@ -258,7 +258,7 @@ class OptimizationGuideHintsManager
   // manager.
   //
   // Should only be read and modified on the UI thread.
-  std::unordered_set<optimization_guide::proto::OptimizationType>
+  base::flat_set<optimization_guide::proto::OptimizationType>
       registered_optimization_types_;
 
   // Synchronizes access to member variables related to optimization filters.
@@ -266,13 +266,13 @@ class OptimizationGuideHintsManager
 
   // The set of optimization types that the component specified by
   // |component_info_| has optimization filters for.
-  std::unordered_set<optimization_guide::proto::OptimizationType>
+  base::flat_set<optimization_guide::proto::OptimizationType>
       optimization_types_with_filter_ GUARDED_BY(optimization_filters_lock_);
 
   // A map from optimization type to the host filter that holds the blacklist
   // for that type.
-  std::unordered_map<optimization_guide::proto::OptimizationType,
-                     std::unique_ptr<optimization_guide::OptimizationFilter>>
+  base::flat_map<optimization_guide::proto::OptimizationType,
+                 std::unique_ptr<optimization_guide::OptimizationFilter>>
       blacklist_optimization_filters_ GUARDED_BY(optimization_filters_lock_);
 
   // Background thread where hints processing should be performed.

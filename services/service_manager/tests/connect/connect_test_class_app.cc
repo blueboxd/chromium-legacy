@@ -31,11 +31,11 @@ class ConnectTestClassApp : public Service,
     class_interface_bindings_.set_connection_error_handler(base::BindRepeating(
         &ConnectTestClassApp::HandleInterfaceClose, base::Unretained(this)));
     registry_.AddInterface<test::mojom::ConnectTestService>(
-        base::Bind(&ConnectTestClassApp::BindConnectTestServiceRequest,
-                   base::Unretained(this)));
+        base::BindRepeating(&ConnectTestClassApp::BindConnectTestServiceRequest,
+                            base::Unretained(this)));
     registry_.AddInterface<test::mojom::ClassInterface>(
-        base::Bind(&ConnectTestClassApp::BindClassInterfaceRequest,
-                   base::Unretained(this)));
+        base::BindRepeating(&ConnectTestClassApp::BindClassInterfaceRequest,
+                            base::Unretained(this)));
   }
 
   ~ConnectTestClassApp() override = default;

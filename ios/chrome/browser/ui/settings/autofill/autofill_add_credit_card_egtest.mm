@@ -81,18 +81,6 @@ id<GREYMatcher> CardNumberIconView(NSString* icon_type) {
   return IconViewForCellWithLabelId(IDS_IOS_AUTOFILL_CARD_NUMBER, icon_type);
 }
 
-// Matcher for the Invalid Card Number Alert.
-id<GREYMatcher> InvalidCardNumberAlert() {
-  return StaticTextWithAccessibilityLabelId(
-      IDS_IOS_ADD_CREDIT_CARD_INVALID_CARD_NUMBER_ALERT);
-}
-
-// Matcher for the Invalid Card Expiry Date Alert.
-id<GREYMatcher> InvalidCardExpiryDateAlert() {
-  return StaticTextWithAccessibilityLabelId(
-      IDS_IOS_ADD_CREDIT_CARD_INVALID_EXPIRATION_DATE_ALERT);
-}
-
 }  // namespace
 
 // Tests for Settings Autofill add credit cards section.
@@ -117,6 +105,11 @@ id<GREYMatcher> InvalidCardExpiryDateAlert() {
   [ChromeEarlGreyUI tapSettingsMenuButton:PaymentMethodsButton()];
   [[EarlGrey selectElementWithMatcher:AddPaymentMethodButton()]
       performAction:grey_tap()];
+}
+
+- (void)tearDown {
+  [ChromeEarlGrey clearCreditCards];
+  [super tearDown];
 }
 
 #pragma mark - Test that all fields on the 'Add Credit Card' screen appear
@@ -178,28 +171,20 @@ id<GREYMatcher> InvalidCardExpiryDateAlert() {
 
 #pragma mark - Test adding Valid/Inavlid card details
 
-// Tests when a user tries to add an invalid card number, an alert is shown. On
-// clicking 'OK' the alert is dismissed.
-- (void)testAddButtonAlertOnInvalidNumber {
+// Tests when a user tries to add an invalid card number, the "Add" button is
+// not enabled.
+- (void)testAddButtonDisabledOnInvalidNumber {
   [[EarlGrey selectElementWithMatcher:CardNumberTextField()]
       performAction:grey_typeText(@"1234")];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:InvalidCardNumberAlert()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:InvalidCardNumberAlert()]
-      assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
-      assertWithMatcher:grey_nil()];
+      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
+                                   grey_not(grey_enabled()), nil)];
 }
 
-// Tests when a user tries to add an invalid card number, an alert is shown. On
-// clicking 'OK' the alert is dismissed.
-- (void)testAddButtonAlertOnInvalidExpiryDate {
+// Tests when a user tries to add an invalid card number, the "Add" button is
+// not enabled.
+- (void)testAddButtonDisabledOnInvalidExpiryDate {
   [[EarlGrey selectElementWithMatcher:CardNumberTextField()]
       performAction:grey_typeText(@"4111111111111111")];
   [[EarlGrey selectElementWithMatcher:MonthOfExpiryTextField()]
@@ -208,21 +193,15 @@ id<GREYMatcher> InvalidCardExpiryDateAlert() {
       performAction:grey_typeText(@"0000")];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:InvalidCardExpiryDateAlert()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:InvalidCardExpiryDateAlert()]
-      assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
-      assertWithMatcher:grey_nil()];
+      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
+                                   grey_not(grey_enabled()), nil)];
 }
 
 // Tests when a user tries to add a valid card number, the screen is dismissed
 // and the new card number appears on the Autofill Credit Card 'Payment Methods'
 // screen.
 - (void)testAddButtonOnValidNumber {
+  [ChromeEarlGrey clearCreditCards];
   [[EarlGrey selectElementWithMatcher:CardNumberTextField()]
       performAction:grey_typeText(@"4111111111111111")];
   [[EarlGrey selectElementWithMatcher:MonthOfExpiryTextField()]
@@ -239,26 +218,10 @@ id<GREYMatcher> InvalidCardExpiryDateAlert() {
       assertWithMatcher:grey_notNil()];
 
   NSString* newCreditCardObjectLabel =
-      @", Visa  •⁠ ⁠•⁠ ⁠•⁠ ⁠•⁠ ⁠1111‬";
+      @", Visa  ‪•⁠ ⁠•⁠ ⁠•⁠ ⁠•⁠ ⁠1111‬";
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(
                                           newCreditCardObjectLabel)]
       assertWithMatcher:grey_sufficientlyVisible()];
-}
-
-#pragma mark - Test Use Camera button
-
-// Tests that the 'Use Camera' button opens the credit card scanner.
-- (void)testUseCameraButtonOpensCreditCardScanner {
-  // Feature only supported on iOS >= 13.
-  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
-  }
-  [[EarlGrey selectElementWithMatcher:UseCameraButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::CreditCardScannerView()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::CloseButton()]
-      performAction:grey_tap()];
 }
 
 #pragma mark - Inline Testing

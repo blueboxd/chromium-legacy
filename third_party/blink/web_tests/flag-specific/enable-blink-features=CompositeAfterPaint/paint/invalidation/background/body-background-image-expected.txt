@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow BODY",
+          "object": "LayoutNGBlockFlow BODY",
           "rect": [8, 240, 784, 288],
           "reason": "background"
         }

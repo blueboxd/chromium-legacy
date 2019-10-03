@@ -134,7 +134,9 @@ TEST_P(InterceptNavigationThrottleTest,
   EXPECT_EQ(NavigationThrottle::PROCEED, result);
 }
 
-TEST_P(InterceptNavigationThrottleTest, RequestCancelledIfNavigationIgnored) {
+// Flaky. http://crbug.com/1010187
+TEST_P(InterceptNavigationThrottleTest,
+       DISABLED_RequestCancelledIfNavigationIgnored) {
   ON_CALL(*mock_callback_receiver_, ShouldIgnoreNavigation(_, _))
       .WillByDefault(Return(true));
   EXPECT_CALL(

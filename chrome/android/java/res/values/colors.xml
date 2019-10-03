@@ -179,7 +179,6 @@
     <color name="search_box_hint">@color/default_text_color_secondary</color>
     <color name="thumbnail_placeholder_on_primary_bg" tools:ignore="UnusedResources">@color/modern_secondary_color</color>
     <color name="tab_layout_selected_tab_color">@color/default_text_color_blue</color>
-    <color name="drag_handlebar_color">#D9DBDF</color>
     <color name="web_notification_text">#CCCCCC</color>
 
 </resources>

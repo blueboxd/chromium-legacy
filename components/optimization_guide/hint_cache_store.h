@@ -7,9 +7,9 @@
 
 #include <map>
 #include <string>
-#include <unordered_set>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -163,7 +163,7 @@ class HintCacheStore {
   friend class HintUpdateData;
 
   using EntryKeyPrefix = std::string;
-  using EntryKeySet = std::unordered_set<EntryKey>;
+  using EntryKeySet = base::flat_set<EntryKey>;
 
   using EntryVector =
       leveldb_proto::ProtoDatabase<proto::StoreEntry>::KeyEntryVector;

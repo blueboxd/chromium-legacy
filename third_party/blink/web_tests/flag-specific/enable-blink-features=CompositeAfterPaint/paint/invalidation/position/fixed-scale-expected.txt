@@ -8,13 +8,13 @@
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='t' class='green translated'",
+      "name": "LayoutNGBlockFlow (positioned) DIV id='t' class='green translated'",
       "bounds": [50, 50],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='t' class='green translated'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='t' class='green translated'",
           "rect": [0, 0, 50, 50],
           "reason": "paint property change"
         }

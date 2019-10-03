@@ -1064,4 +1064,36 @@ TEST_F(LayoutObjectTest, FirstLineBackgroundImageChangeStyleCrash) {
   UpdateAllLifecyclePhasesForTest();
 }
 
+TEST_F(LayoutObjectTest, NeedsLayoutOverflowRecalc) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <div id='wrapper'>
+      <div id='target'>foo</div>
+      <div id='other'>bar</div>
+    </div>
+  )HTML");
+
+  auto* wrapper = GetLayoutObjectByElementId("wrapper");
+  auto* target = GetLayoutObjectByElementId("target");
+  auto* other = GetLayoutObjectByElementId("other");
+
+  DCHECK(wrapper);
+  DCHECK(target);
+  DCHECK(other);
+
+  EXPECT_FALSE(wrapper->NeedsLayoutOverflowRecalc());
+  EXPECT_FALSE(target->NeedsLayoutOverflowRecalc());
+  EXPECT_FALSE(other->NeedsLayoutOverflowRecalc());
+
+  auto* target_element = GetDocument().getElementById("target");
+  target_element->SetInnerHTMLFromString("baz");
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(wrapper->NeedsLayoutOverflowRecalc());
+  EXPECT_FALSE(target->NeedsLayoutOverflowRecalc());
+  EXPECT_FALSE(other->NeedsLayoutOverflowRecalc());
+}
+
 }  // namespace blink

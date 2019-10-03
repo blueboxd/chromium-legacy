@@ -359,7 +359,7 @@ TEST_F(ContentCaptureReceiverTest, DidCaptureContent) {
             content_capture_receiver_manager_helper()->captured_data());
 }
 
-TEST_F(ContentCaptureReceiverTest, DidCaptureContentWithUpdate) {
+TEST_F(ContentCaptureReceiverTest, DISABLED_DidCaptureContentWithUpdate) {
   DidCaptureContent(test_data(), true /* first_data */);
   // Verifies to get test_data() with correct frame content id.
   EXPECT_TRUE(

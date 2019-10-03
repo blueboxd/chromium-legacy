@@ -90,6 +90,10 @@ void SkiaOutputSurfaceDependencyWebView::PostTaskToClientThread(
   task_queue_->ScheduleClientTask(std::move(closure));
 }
 
+gpu::ImageFactory* SkiaOutputSurfaceDependencyWebView::GetGpuImageFactory() {
+  return nullptr;
+}
+
 bool SkiaOutputSurfaceDependencyWebView::IsOffscreen() {
   return false;
 }

@@ -19,7 +19,7 @@
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
-          "object": "LayoutTableCell TD id='target'",
+          "object": "LayoutNGTableCell TD id='target'",
           "rect": [10, 0, 102, 102],
           "reason": "background"
         }

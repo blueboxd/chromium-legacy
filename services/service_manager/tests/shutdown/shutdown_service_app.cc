@@ -20,8 +20,8 @@ class ShutdownServiceApp : public Service, public mojom::ShutdownTestService {
  public:
   explicit ShutdownServiceApp(mojom::ServiceRequest request)
       : service_binding_(this, std::move(request)) {
-    registry_.AddInterface<mojom::ShutdownTestService>(
-        base::Bind(&ShutdownServiceApp::Create, base::Unretained(this)));
+    registry_.AddInterface<mojom::ShutdownTestService>(base::BindRepeating(
+        &ShutdownServiceApp::Create, base::Unretained(this)));
   }
 
   ~ShutdownServiceApp() override = default;

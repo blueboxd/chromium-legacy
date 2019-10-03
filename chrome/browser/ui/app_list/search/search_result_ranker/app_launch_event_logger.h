@@ -77,9 +77,9 @@ class AppLaunchEventLogger {
  protected:
   // Get the url used to launch a PWA or bookmark app.
   virtual const GURL& GetLaunchWebURL(const extensions::Extension* extension);
-  // Enforces logging policy, ensuring that the |app_features_map_| only
-  // contains apps that are allowed to be logged. All apps are rechecked in case
-  // they have been uninstalled since the previous check.
+  // Enforces logging policy, ensuring that the |app_features_map_| flags the
+  // apps that are allowed to be logged. All apps are rechecked in case they
+  // have been uninstalled since the previous check.
   void EnforceLoggingPolicy();
 
   // The arc apps installed on the device.
@@ -99,12 +99,12 @@ class AppLaunchEventLogger {
   // preventing the changing of these member variables from their preset test
   // values.
   void SetRegistryAndArcInfo();
-  // Marks app as ok for policy compliance. If the app is not in
-  // |app_features_map_| then add it.
-  void OkApp(AppLaunchEvent_AppType app_type,
-             const std::string& app_id,
-             const std::string& arc_package_name,
-             const std::string& pwa_url);
+  // If the app is not in |app_features_map_| then add it.
+  void AddAppIfMissing(AppLaunchEvent_AppType app_type,
+                       const std::string& app_id,
+                       const std::string& arc_package_name,
+                       const std::string& pwa_url,
+                       bool is_policy_compliant);
   // Update the click rank (which ranks app by the number of clicks) for the
   // apps that have been clicked.
   void UpdateClickRank();

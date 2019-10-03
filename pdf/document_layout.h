@@ -14,6 +14,10 @@
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
 
+namespace pp {
+class Var;
+}  // namespace pp
+
 namespace chrome_pdf {
 
 // Layout of pages within a PDF document. Pages are placed as rectangles
@@ -34,6 +38,12 @@ class DocumentLayout final {
     Options& operator=(const Options& other);
 
     ~Options();
+
+    // Serializes layout options to a pp::Var.
+    pp::Var ToVar() const;
+
+    // Deserializes layout options from a pp::Var.
+    void FromVar(const pp::Var& var);
 
     PageOrientation default_page_orientation() const {
       return default_page_orientation_;

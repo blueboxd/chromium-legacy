@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/webgl_any.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_program.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_uniform_location.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -67,6 +68,56 @@ void WebGL2ComputeRenderingContextBase::dispatchComputeIndirect(
   if (!ValidateValueFitNonNegInt32("dispatchComputeIndirect", "offset", offset))
     return;
   ContextGL()->DispatchComputeIndirect(static_cast<GLintptr>(offset));
+}
+
+void WebGL2ComputeRenderingContextBase::drawArraysIndirect(
+    GLenum mode,
+    int64_t offset) {
+  if (!ValidateValueFitNonNegInt32("drawArraysIndirect", "offset", offset))
+    return;
+
+  if (!ValidateDrawArrays("drawArraysIndirect"))
+    return;
+
+  if (!bound_vertex_array_object_->IsAllEnabledAttribBufferBound()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "drawArraysIndirect",
+                      "no buffer is bound to enabled attribute");
+    return;
+  }
+
+  ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
+                                                   drawing_buffer_.get());
+  OnBeforeDrawCall();
+  ContextGL()->DrawArraysIndirect(
+      mode, reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
+}
+
+void WebGL2ComputeRenderingContextBase::drawElementsIndirect(
+    GLenum mode,
+    GLenum type,
+    int64_t offset) {
+  if (!ValidateValueFitNonNegInt32("drawElementsIndirect", "offset", offset))
+    return;
+
+  // The buffer currently bound to the (GL_)DRAW_INDIRECT_BUFFER binding might
+  // be unpopulated at this point, so the validation of element array buffer
+  // offset in it needs to be deferred. By feeding a dummy in-range offset value
+  // here, other validation logic for indexed drawing can be reused.
+  int64_t dummy_offset = 0;
+  if (!ValidateDrawElements("drawElementsIndirect", type, dummy_offset))
+    return;
+
+  if (!bound_vertex_array_object_->IsAllEnabledAttribBufferBound()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "drawElementsIndirect",
+                      "no buffer is bound to enabled attribute");
+    return;
+  }
+
+  ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
+                                                   drawing_buffer_.get());
+  OnBeforeDrawCall();
+  ContextGL()->DrawElementsIndirect(
+      mode, type, reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
 }
 
 ScriptValue WebGL2ComputeRenderingContextBase::getProgramInterfaceParameter(

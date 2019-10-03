@@ -45,9 +45,9 @@ ConvertPreviewsTypeToOptimizationType(PreviewsType previews_type) {
 
 // Returns the optimization types to register with the Optimization Guide
 // Decider based on which Previews are enabled for the session.
-std::unordered_set<optimization_guide::proto::OptimizationType>
+base::flat_set<optimization_guide::proto::OptimizationType>
 GetOptimizationTypesToRegister() {
-  std::unordered_set<optimization_guide::proto::OptimizationType>
+  base::flat_set<optimization_guide::proto::OptimizationType>
       optimization_types;
 
   if (params::IsNoScriptPreviewsEnabled())

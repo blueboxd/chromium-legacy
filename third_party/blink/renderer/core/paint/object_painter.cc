@@ -62,9 +62,9 @@ void ObjectPainter::PaintInlineChildrenOutlines(const PaintInfo& paint_info) {
   }
 }
 
-void ObjectPainter::AddPDFURLRectIfNeeded(const PaintInfo& paint_info,
-                                          const PhysicalOffset& paint_offset) {
-  DCHECK(paint_info.IsPrinting());
+void ObjectPainter::AddURLRectIfNeeded(const PaintInfo& paint_info,
+                                       const PhysicalOffset& paint_offset) {
+  DCHECK(paint_info.ShouldAddUrlMetadata());
   if (layout_object_.IsElementContinuation() || !layout_object_.GetNode() ||
       !layout_object_.GetNode()->IsLink() ||
       layout_object_.StyleRef().Visibility() != EVisibility::kVisible)

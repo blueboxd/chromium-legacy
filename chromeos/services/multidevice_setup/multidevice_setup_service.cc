@@ -71,7 +71,7 @@ void MultiDeviceSetupService::OnStart() {
       base::BindRepeating(&MultiDeviceSetupBase::BindReceiver,
                           base::Unretained(multidevice_setup_.get())));
   registry_.AddInterface(base::BindRepeating(
-      &PrivilegedHostDeviceSetterBase::BindRequest,
+      &PrivilegedHostDeviceSetterBase::BindReceiver,
       base::Unretained(privileged_host_device_setter_.get())));
 }
 

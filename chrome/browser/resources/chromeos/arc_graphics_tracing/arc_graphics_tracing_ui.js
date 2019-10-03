@@ -68,8 +68,8 @@ var eventAttributes = {
   // kChromeBarrierFlush
   301: {color: unusedColor, name: 'barrier flush'},
 
-  // kVsync
-  400: {color: '#ff3300', name: 'vsync', width: 0.5},
+  // kSurfaceFlingerVsyncHandler
+  400: {color: '#993300', name: 'vsync handler', width: 1.0},
   // kSurfaceFlingerInvalidationStart
   401: {color: '#ff9933', name: 'invalidation start'},
   // kSurfaceFlingerInvalidationDone
@@ -85,6 +85,8 @@ var eventAttributes = {
     width: 1.0,
     radius: 4.0
   },
+  // kVsyncTimestamp
+  406: {color: '#ff3300', name: 'vsync', width: 0.5},
 
   // kChromeOSDraw
   500: {color: '#3399ff', name: 'draw'},
@@ -977,7 +979,7 @@ class EventBands {
       var globalEvent = globalEvents[i];
       var globalEventType = globalEvent[0];
       var globalEventTimestamp = globalEvent[1];
-      if (globalEventType == 400 /* kVsync */) {
+      if (globalEventType == 406 /* kVsyncTimestamp */) {
         // -1 to prevent VSYNC detects itself. In last case, previous VSYNC
         // would be chosen.
         globalEventTimestamp -= 1;
@@ -1368,8 +1370,8 @@ class CpuDetailedInfoView extends DetailedInfoView {
     }
 
     var vsyncEvents = new Events(
-        overviewBand.model.android.global_events, 400 /* kVsync */,
-        400 /* kVsync */);
+        overviewBand.model.android.global_events, 406 /* kVsyncTimestamp */,
+        406 /* kVsyncTimestamp */);
     bands.setVSync(vsyncEvents);
 
     // Add center and boundary lines.
@@ -1649,7 +1651,8 @@ function setGraphicBuffersModel(model) {
   var chartHeight = 48;
 
   var vsyncEvents = new Events(
-      model.android.global_events, 400 /* kVsync */, 400 /* kVsync */);
+      model.android.global_events, 406 /* kVsyncTimestamp */,
+      406 /* kVsyncTimestamp */);
 
   var cpusTitle = new EventBandTitle(parent, 'CPUs', 'arc-events-band-title');
   var cpusBands = new CpuEventBands(
@@ -1730,6 +1733,12 @@ function setGraphicBuffersModel(model) {
       topBandPadding);
   // Add vsync events
   androidBands.setVSync(vsyncEvents);
+  // Add vsync handler events
+  var androidVsyncHandling = new Events(
+      model.android.global_events, 400 /* kSurfaceFlingerVsyncHandler */,
+      400 /* kSurfaceFlingerVsyncHandler */);
+  androidBands.addGlobal(androidVsyncHandling);
+  // Add jank events
   var androidJanks = new Events(
       model.android.global_events, 405 /* kSurfaceFlingerCompositionJank */,
       405 /* kSurfaceFlingerCompositionJank */);

@@ -13728,6 +13728,7 @@ Called by update_net_error_codes.py.-->
   <int value="97" label="Incognito Menu"/>
   <int value="98" label="Phone Chooser"/>
   <int value="99" label="QR Code Generator"/>
+  <int value="100" label="Crostini Force Close"/>
 </enum>
 
 <enum name="DialogOriginRelationship">
@@ -37516,6 +37517,7 @@ from previous Chrome versions.
   <int value="1376437124" label="show-cert-link"/>
   <int value="1377056573" label="browser-side-navigation:enabled"/>
   <int value="1378310092" label="disable-suggestions-service"/>
+  <int value="1379571437" label="ExoPointerLock:disabled"/>
   <int value="1379944457" label="EnableMessagesWebPush:disabled"/>
   <int value="1381746642" label="enable-automatic-password-saving"/>
   <int value="1382107019" label="LevelDBPerformRewrite:disabled"/>
@@ -37803,6 +37805,7 @@ from previous Chrome versions.
   <int value="1783293530" label="disallow-autofill-sync-credential"/>
   <int value="1783837132" label="enable-threaded-gpu-rasterization"/>
   <int value="1785093465" label="enable-document-passive-event-listeners"/>
+  <int value="1786182939" label="ExoPointerLock:enabled"/>
   <int value="1786229999" label="disable-md-downloads"/>
   <int value="1786386775" label="TranslateCompactUI:disabled"/>
   <int value="1786692012"

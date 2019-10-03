@@ -8,24 +8,13 @@ BEFORE:
 {
   "layers": [
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600],
-      "drawsContent": false,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [785, 585],
-      "drawsContent": false
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [2008, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='positionedAndTransformed fixed'",
+      "name": "LayoutNGBlockFlow (positioned) DIV class='positionedAndTransformed fixed'",
       "bounds": [50, 50],
       "contentsOpaque": true,
       "backgroundColor": "#C0C0C0",
@@ -59,25 +48,15 @@ AFTER:
 {
   "layers": [
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600],
-      "drawsContent": false,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [785, 585],
-      "drawsContent": false
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [2008, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
+      "scrollPosition": [0, 10],
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='positionedAndTransformed fixed'",
+      "name": "LayoutNGBlockFlow (positioned) DIV class='positionedAndTransformed fixed'",
       "bounds": [50, 50],
       "contentsOpaque": true,
       "backgroundColor": "#C0C0C0",
@@ -92,17 +71,15 @@ AFTER:
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, -10, 0, 1]
-      ],
-      "flattenInheritedTransform": false
+      ]
     },
     {
       "id": 2,
-      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [20, -70, 0, 1]
+        [20, -80, 0, 1]
       ]
     },
     {

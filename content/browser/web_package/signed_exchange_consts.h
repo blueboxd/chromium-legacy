@@ -8,7 +8,7 @@
 namespace content {
 
 constexpr char kAcceptHeaderSignedExchangeSuffix[] =
-    ",application/signed-exchange;v=b3";
+    ",application/signed-exchange;v=b3;q=0.9";
 
 enum class SignedExchangeVersion { kUnknown, kB3 };
 

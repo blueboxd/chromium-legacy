@@ -7,20 +7,20 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='scroller'",
+          "object": "LayoutNGBlockFlow DIV id='scroller'",
           "rect": [8, 8, 220, 220],
           "reason": "background"
         }
       ]
     },
     {
-      "name": "LayoutBlockFlow DIV id='scroller'",
+      "name": "LayoutNGBlockFlow DIV id='scroller'",
       "position": [10, 10],
       "bounds": [185, 300],
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
-          "object": "Scrolling background of LayoutBlockFlow DIV id='scroller'",
+          "object": "Scrolling background of LayoutNGBlockFlow DIV id='scroller'",
           "rect": [0, 0, 185, 300],
           "reason": "background"
         }
@@ -32,7 +32,7 @@
       "bounds": [220, 220],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='scroller'",
+          "object": "LayoutNGBlockFlow DIV id='scroller'",
           "rect": [0, 0, 220, 220],
           "reason": "background"
         }

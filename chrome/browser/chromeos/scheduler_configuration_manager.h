@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SCHEDULER_CONFIGURATION_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_SCHEDULER_CONFIGURATION_MANAGER_H_
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chromeos/system/scheduler_configuration_manager_base.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -34,6 +37,9 @@ class SchedulerConfigurationManager : public SchedulerConfigurationManagerBase {
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
+  // SchedulerConfigurationManagerBase overrides:
+  base::Optional<std::pair<bool, size_t>> GetLastReply() const override;
+
  private:
   void OnDebugDaemonReady(bool service_is_ready);
   void OnPrefChange();
@@ -42,6 +48,8 @@ class SchedulerConfigurationManager : public SchedulerConfigurationManagerBase {
   DebugDaemonClient* debug_daemon_client_ = nullptr;
   PrefChangeRegistrar observer_;
   bool debug_daemon_ready_ = false;
+  base::Optional<std::pair<bool, size_t>> last_reply_;
+
   base::WeakPtrFactory<SchedulerConfigurationManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerConfigurationManager);

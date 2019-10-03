@@ -76,7 +76,7 @@ void BuildBackplate(const InlineFlowBox* box,
 
 }  // anonymous namespace
 
-static void AddPDFURLRectsForInlineChildrenRecursively(
+static void AddURLRectsForInlineChildrenRecursively(
     const LayoutObject& layout_object,
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) {
@@ -85,9 +85,8 @@ static void AddPDFURLRectsForInlineChildrenRecursively(
     if (!child->IsLayoutInline() ||
         ToLayoutBoxModelObject(child)->HasSelfPaintingLayer())
       continue;
-    ObjectPainter(*child).AddPDFURLRectIfNeeded(paint_info, paint_offset);
-    AddPDFURLRectsForInlineChildrenRecursively(*child, paint_info,
-                                               paint_offset);
+    ObjectPainter(*child).AddURLRectIfNeeded(paint_info, paint_offset);
+    AddURLRectsForInlineChildrenRecursively(*child, paint_info, paint_offset);
   }
 }
 
@@ -101,9 +100,11 @@ bool LineBoxListPainter::ShouldPaint(const LayoutBoxModelObject& layout_object,
   DCHECK(layout_object.IsLayoutBlock() ||
          (layout_object.IsLayoutInline() && layout_object.HasLayer()));
 
-  if (paint_info.phase == PaintPhase::kForeground && paint_info.IsPrinting())
-    AddPDFURLRectsForInlineChildrenRecursively(layout_object, paint_info,
-                                               paint_offset);
+  if (paint_info.phase == PaintPhase::kForeground &&
+      paint_info.ShouldAddUrlMetadata()) {
+    AddURLRectsForInlineChildrenRecursively(layout_object, paint_info,
+                                            paint_offset);
+  }
 
   // If we have no lines then we have no work to do.
   if (!line_box_list_.First())

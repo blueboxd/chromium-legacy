@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV id='container'",
+      "name": "LayoutNGBlockFlow DIV id='container'",
       "bounds": [400, 2000],
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
-          "object": "Scrolling background of LayoutBlockFlow DIV id='container'",
+          "object": "Scrolling background of LayoutNGBlockFlow DIV id='container'",
           "rect": [0, 500, 400, 1500],
           "reason": "incremental"
         }

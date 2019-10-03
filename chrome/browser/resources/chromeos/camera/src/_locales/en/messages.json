@@ -340,5 +340,17 @@
   "MIGRATE_PICTURES_MSG": {
     "message": "Photos and videos taken with the camera will be moved to the Downloads folder. You can access them in Files.\n\nApps with storage permissions will have access to your photos and videos.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "CONFIRM_REVIEW_BUTTON": {
+    "message": "Confirm",
+    "description": "Label for the confirm button to confirm with the reviewed photo or video."
+  },
+  "CANCEL_REVIEW_BUTTON": {
+    "message": "Cancel",
+    "description": "Label for the cancel button to cancel with the reviewed photo or video."
+  },
+  "PLAY_RESULT_VIDEO_BUTTON": {
+    "message": "Play video",
+    "description": "Label for the button to play video."
   }
 }

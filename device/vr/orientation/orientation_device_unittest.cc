@@ -163,10 +163,10 @@ class VROrientationDeviceTest : public testing::Test {
   }
 
   std::unique_ptr<VROrientationSession> MakeDisplay() {
-    mojom::XRFrameDataProviderPtr data_provider;
+    mojo::PendingRemote<mojom::XRFrameDataProvider> data_provider;
     mojom::XRSessionControllerPtr controller;
     return std::make_unique<VROrientationSession>(
-        device_.get(), mojo::MakeRequest(&data_provider),
+        device_.get(), data_provider.InitWithNewPipeAndPassReceiver(),
         mojo::MakeRequest(&controller));
   }
 

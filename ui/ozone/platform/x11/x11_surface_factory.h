@@ -30,6 +30,9 @@ class X11SurfaceFactory : public SurfaceFactoryOzone {
       bool allow_protected_memory,
       bool enforce_protected_memory) override;
 #endif
+  std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
+      gfx::AcceleratedWidget widget,
+      base::TaskRunner* task_runner) override;
 
  private:
   std::unique_ptr<GLOzone> glx_implementation_;

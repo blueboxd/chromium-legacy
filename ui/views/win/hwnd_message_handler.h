@@ -604,6 +604,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // refers to the edge of the window being sized.
   void SizeRectToAspectRatio(UINT param, gfx::Rect* rect);
 
+  // Get the cursor position, which may be mocked if running a test
+  POINT GetCursorPos() const;
+
   HWNDMessageHandlerDelegate* delegate_;
 
   std::unique_ptr<FullscreenHandler> fullscreen_handler_;
@@ -790,6 +793,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   using FullscreenWindowMonitorMap = std::map<HMONITOR, HWNDMessageHandler*>;
   static base::LazyInstance<FullscreenWindowMonitorMap>::DestructorAtExit
       fullscreen_monitor_map_;
+
+  // Populated if the cursor position is being mocked for testing purposes.
+  base::Optional<gfx::Point> mock_cursor_position_;
 
   // The WeakPtrFactories below (one inside the
   // CR_MSG_MAP_CLASS_DECLARATIONS macro and autohide_factory_) must

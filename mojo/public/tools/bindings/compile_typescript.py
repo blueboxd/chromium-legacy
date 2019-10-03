@@ -31,7 +31,7 @@ def main(argv):
       [
           "--target 'es6'",
           "--module 'es6'",
-          "--lib 'es6'",
+          "--lib 'es6, esnext.bigint'",
           "--strict",
           file_paths
       ])

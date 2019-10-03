@@ -24,7 +24,7 @@ class Parent : public service_manager::Service,
   explicit Parent(service_manager::mojom::ServiceRequest request)
       : service_binding_(this, std::move(request)) {
     registry_.AddInterface<service_manager::test::mojom::Parent>(
-        base::Bind(&Parent::Create, base::Unretained(this)));
+        base::BindRepeating(&Parent::Create, base::Unretained(this)));
   }
 
   ~Parent() override = default;

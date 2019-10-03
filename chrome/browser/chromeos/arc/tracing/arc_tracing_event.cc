@@ -65,6 +65,10 @@ ArcTracingEvent::ArcTracingEvent(base::Value dictionary)
 
 ArcTracingEvent::~ArcTracingEvent() = default;
 
+ArcTracingEvent::ArcTracingEvent(ArcTracingEvent&&) = default;
+
+ArcTracingEvent& ArcTracingEvent::operator=(ArcTracingEvent&&) = default;
+
 int ArcTracingEvent::GetPid() const {
   return GetIntegerFromDictionary(GetDictionary(), kKeyPid,
                                   0 /* default_value */);

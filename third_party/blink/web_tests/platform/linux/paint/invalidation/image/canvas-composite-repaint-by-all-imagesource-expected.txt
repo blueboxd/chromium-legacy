@@ -1,17 +1,6 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600],
-      "drawsContent": false,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [785, 600],
-      "drawsContent": false
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [785, 933],
       "contentsOpaque": true,
@@ -460,24 +449,25 @@
       ]
     },
     {
-      "name": "LayoutVideo VIDEO id='video'",
-      "position": [15, 859],
-      "bounds": [150, 60],
-      "drawsContent": false
-    },
-    {
-      "name": "Squashing Containment Layer",
-      "drawsContent": false
-    },
-    {
       "name": "LayoutFlexibleBox (relative positioned) DIV class='sizing-small phase-ready state-stopped'",
-      "position": [15, 859],
-      "bounds": [150, 60]
+      "bounds": [150, 60],
+      "transform": 1
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
-      "position": [15, 859],
-      "bounds": [150, 60]
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV)",
+      "bounds": [150, 60],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [15, 859, 0, 1]
+      ]
     }
   ]
 }

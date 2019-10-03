@@ -14,6 +14,7 @@
 #include <keyboard-extension-unstable-v1-server-protocol.h>
 #include <linux-explicit-synchronization-unstable-v1-server-protocol.h>
 #include <notification-shell-unstable-v1-server-protocol.h>
+#include <pointer-constraints-unstable-v1-server-protocol.h>
 #include <pointer-gestures-unstable-v1-server-protocol.h>
 #include <presentation-time-server-protocol.h>
 #include <relative-pointer-unstable-v1-server-protocol.h>
@@ -64,6 +65,7 @@
 #include "components/exo/wayland/zcr_remote_shell.h"
 #include "components/exo/wayland/zcr_stylus_tools.h"
 #include "components/exo/wayland/zwp_input_timestamps_manager.h"
+#include "components/exo/wayland/zwp_pointer_constraints.h"
 #include "components/exo/wayland/zwp_pointer_gestures.h"
 #include "components/exo/wayland/zwp_relative_pointer_manager.h"
 #include "components/exo/wayland/zwp_text_input_manager.h"
@@ -172,6 +174,8 @@ Server::Server(Display* display)
                    bind_input_timestamps_manager);
   wl_global_create(wl_display_.get(), &zwp_pointer_gestures_v1_interface, 1,
                    display_, bind_pointer_gestures);
+  wl_global_create(wl_display_.get(), &zwp_pointer_constraints_v1_interface, 1,
+                   display_, bind_pointer_constraints);
   wl_global_create(wl_display_.get(),
                    &zwp_relative_pointer_manager_v1_interface, 1, display_,
                    bind_relative_pointer_manager);

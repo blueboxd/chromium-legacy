@@ -1,19 +1,10 @@
+ALERT: was: ,false
+ALERT: shouldBe: true,false
 {
   "layers": [
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600],
-      "drawsContent": false,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [800, 600],
-      "drawsContent": false
-    },
-    {
       "name": "Scrolling Contents Layer",
-      "bounds": [800, 600],
+      "bounds": [500, 400],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
@@ -23,8 +14,8 @@
           "reason": "chunk disappeared"
         },
         {
-          "object": "InlineTextBox 'Passed'",
-          "rect": [90, 116, 44, 18],
+          "object": "InlineTextBox 'Failed'",
+          "rect": [90, 116, 40, 18],
           "reason": "chunk appeared"
         }
       ]

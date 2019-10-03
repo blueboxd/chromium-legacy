@@ -8,14 +8,14 @@
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='red fixed'",
+      "name": "LayoutNGBlockFlow (positioned) DIV class='red fixed'",
       "position": [8, 200],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#FF0000",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='t' class='green absolute'",
           "rect": [0, 0, 100, 100],
           "reason": "chunk appeared"
         }

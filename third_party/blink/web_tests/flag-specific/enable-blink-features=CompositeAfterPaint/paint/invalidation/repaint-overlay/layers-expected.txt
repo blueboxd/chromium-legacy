@@ -8,12 +8,12 @@
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='container'",
+      "name": "LayoutNGBlockFlow (positioned) DIV id='container'",
       "bounds": [100, 100],
       "backgroundColor": "#0000FF80",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='child1'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='child1'",
           "rect": [20, 20, 10, 10],
           "reason": "background"
         }
@@ -21,18 +21,18 @@
       "transform": 2
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV id='scrollable'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='scrollable'",
       "bounds": [302, 302],
       "transform": 3
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV id='transform'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='transform'",
       "bounds": [200, 200],
       "contentsOpaque": true,
       "backgroundColor": "#FFFF00",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='child2'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='child2'",
           "rect": [20, 20, 10, 10],
           "reason": "background"
         }

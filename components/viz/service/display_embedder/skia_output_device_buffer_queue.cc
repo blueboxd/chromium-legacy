@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display_embedder/skia_output_device_buffer_queue.h"
 
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -12,6 +13,7 @@
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/gl/color_space_utils.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_surface.h"
@@ -170,13 +172,19 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
                             deps->GetSharedContextState().get(),
                             deps->GetMailboxManager(),
                             deps->GetSharedImageManager(),
-                            nullptr,
+                            deps->GetGpuImageFactory(),
                             nullptr,
                             true),
       shared_image_usage_(shared_image_usage) {
   shared_image_representation_factory_ =
       std::make_unique<gpu::SharedImageRepresentationFactory>(
           deps->GetSharedImageManager(), nullptr);
+
+#if defined(USE_OZONE)
+  image_format_ = GetResourceFormat(display::DisplaySnapshot::PrimaryFormat());
+#else
+  image_format_ = RGBA_8888;
+#endif
 
   // TODO(vasilyt): Need to figure out why partial swap isn't working
   capabilities_.supports_post_sub_buffer = false;
@@ -215,8 +223,8 @@ SkiaOutputDeviceBufferQueue::GetNextImage() {
   auto image = std::make_unique<Image>(
       &shared_image_factory_, shared_image_representation_factory_.get());
 
-  if (image->Initialize(image_size_, color_space_, ResourceFormat::RGBA_8888,
-                        dependency_, shared_image_usage_)) {
+  if (image->Initialize(image_size_, color_space_, image_format_, dependency_,
+                        shared_image_usage_)) {
     return image;
   }
 

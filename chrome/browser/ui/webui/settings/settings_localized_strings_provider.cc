@@ -1066,12 +1066,16 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"storageSpaceCriticallyLowMessageLine2",
        IDS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_LINE_2},
       {"storageExternal", IDS_SETTINGS_STORAGE_EXTERNAL},
-      {"storageAndroidAppsExternalDrivesNote",
-       IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES_NOTE},
       {"storageExternalStorageListHeader",
        IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_LIST_HEADER}};
   AddLocalizedStringsBulk(html_source, kStorageStrings,
                           base::size(kStorageStrings));
+
+  html_source->AddString(
+      "storageAndroidAppsExternalDrivesNote",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES_NOTE,
+          base::ASCIIToUTF16(chrome::kArcExternalStorageLearnMoreURL)));
 
   static constexpr LocalizedString kPowerStrings[] = {
       {"powerTitle", IDS_SETTINGS_POWER_TITLE},

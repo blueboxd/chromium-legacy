@@ -108,12 +108,14 @@ class COMPONENT_EXPORT(OZONE_BASE) SurfaceFactoryOzone {
   virtual std::unique_ptr<OverlaySurface> CreateOverlaySurface(
       gfx::AcceleratedWidget window);
 
-  // Create SurfaceOzoneCanvas for the specified gfx::AcceleratedWidget.
+  // Create SurfaceOzoneCanvas for the specified gfx::AcceleratedWidget. The
+  // |task_runner| may be null if the gpu service runs in a host process.
   //
   // Note: The platform must support creation of SurfaceOzoneCanvas from the
   // Browser Process using only the handle contained in gfx::AcceleratedWidget.
   virtual std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
-      gfx::AcceleratedWidget widget);
+      gfx::AcceleratedWidget widget,
+      base::TaskRunner* task_runner);
 
   // Create a single native buffer to be used for overlay planes or zero copy
   // for |widget| representing a particular display controller or default

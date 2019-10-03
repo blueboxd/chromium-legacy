@@ -534,7 +534,7 @@ TabManagerDelegate::GetSortedCandidates(
   return candidates;
 }
 
-void TabManagerDelegate::SortLifecycleUnitWithTabRanker(
+void TabManagerDelegate::LogAndMaybeSortLifecycleUnitWithTabRanker(
     std::vector<Candidate>* candidates,
     LifecycleUnitSorter sorter) {
   const uint32_t num_of_tab_to_score = GetNumOldestTabsToScoreWithTabRanker();
@@ -556,18 +556,20 @@ void TabManagerDelegate::SortLifecycleUnitWithTabRanker(
     }
   }
 
-  // Re-sort them with TabRanker.
+  // log and possibly Re-sort them with TabRanker.
   std::move(sorter).Run(&oldest_lifecycle_units);
 
-  // Put the sorted lifecycle units back to their original vacancies.
-  for (auto it = candidates->rbegin(); it != candidates->rend(); ++it) {
-    const auto& candidate = *it;
-    if (oldest_lifecycle_units.empty() ||
-        candidate.process_type() < process_type)
-      break;
-    if (candidate.lifecycle_unit()) {
-      *it = Candidate(oldest_lifecycle_units.back());
-      oldest_lifecycle_units.pop_back();
+  if (base::FeatureList::IsEnabled(features::kTabRanker)) {
+    // Put the sorted lifecycle units back to their original vacancies.
+    for (auto it = candidates->rbegin(); it != candidates->rend(); ++it) {
+      const auto& candidate = *it;
+      if (oldest_lifecycle_units.empty() ||
+          candidate.process_type() < process_type)
+        break;
+      if (candidate.lifecycle_unit()) {
+        *it = Candidate(oldest_lifecycle_units.back());
+        oldest_lifecycle_units.pop_back();
+      }
     }
   }
 }
@@ -622,12 +624,13 @@ void TabManagerDelegate::LowMemoryKillImpl(
   std::vector<Candidate> candidates =
       GetSortedCandidates(GetLifecycleUnits(), arc_processes);
 
-  if (base::FeatureList::IsEnabled(features::kTabRanker)) {
-    SortLifecycleUnitWithTabRanker(
-        &candidates,
-        base::BindOnce(&TabActivityWatcher::SortLifecycleUnitWithTabRanker,
-                       base::Unretained(TabActivityWatcher::GetInstance())));
-  }
+  // Log and Re-order oldest N LifecycleUnits if TabRanker is enabled; otherwise
+  // only log N LifecycleUnits and the candidates will be unchanged.
+  LogAndMaybeSortLifecycleUnitWithTabRanker(
+      &candidates,
+      base::BindOnce(
+          &TabActivityWatcher::LogAndMaybeSortLifecycleUnitWithTabRanker,
+          base::Unretained(TabActivityWatcher::GetInstance())));
 
   // TODO(semenzato): decide if TargetMemoryToFreeKB is doing real
   // I/O and if it is, move to I/O thread (crbug.com/778703).

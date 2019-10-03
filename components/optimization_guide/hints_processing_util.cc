@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/stringprintf.h"
 #include "components/optimization_guide/hint_update_data.h"
@@ -90,7 +91,7 @@ bool ProcessHints(google::protobuf::RepeatedPtrField<proto::Hint>* hints,
   if (!hint_update_data)
     return false;
 
-  std::unordered_set<std::string> seen_host_suffixes;
+  base::flat_set<std::string> seen_host_suffixes;
 
   bool did_process_hints = false;
   // Process each hint in the the hint configuration. The hints are mutable

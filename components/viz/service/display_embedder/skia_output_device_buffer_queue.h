@@ -71,6 +71,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
   // Format of images
   gfx::ColorSpace color_space_;
   gfx::Size image_size_;
+  ResourceFormat image_format_;
 
   // This image is currently used by Skia as RenderTarget. This may be nullptr
   // if no drawing in progress or if allocation failed at bind.

@@ -9196,9 +9196,11 @@ interface WebGL2ComputeRenderingContext
     method dispatchCompute
     method dispatchComputeIndirect
     method drawArrays
+    method drawArraysIndirect
     method drawArraysInstanced
     method drawBuffers
     method drawElements
+    method drawElementsIndirect
     method drawElementsInstanced
     method drawRangeElements
     method enable

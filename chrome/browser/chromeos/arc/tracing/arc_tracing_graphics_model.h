@@ -64,12 +64,13 @@ class ArcTracingGraphicsModel {
     kChromeBarrierFlush,        // 301
 
     // Android Surface Flinger top level events.
-    kVsync = 400,                      // 400
-    kSurfaceFlingerInvalidationStart,  // 401
-    kSurfaceFlingerInvalidationDone,   // 402
-    kSurfaceFlingerCompositionStart,   // 403
-    kSurfaceFlingerCompositionDone,    // 404
-    kSurfaceFlingerCompositionJank,    // 405,
+    kSurfaceFlingerVsyncHandler = 400,  // 400
+    kSurfaceFlingerInvalidationStart,   // 401
+    kSurfaceFlingerInvalidationDone,    // 402
+    kSurfaceFlingerCompositionStart,    // 403
+    kSurfaceFlingerCompositionDone,     // 404
+    kSurfaceFlingerCompositionJank,     // 405,
+    kVsyncTimestamp,                    // 406,
 
     // Chrome OS top level events.
     kChromeOSDraw = 500,        // 500

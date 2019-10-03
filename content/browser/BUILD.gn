@@ -501,6 +501,8 @@ jumbo_source_set("browser") {
     "background_sync/background_sync_proxy.h",
     "background_sync/background_sync_registration_helper.cc",
     "background_sync/background_sync_registration_helper.h",
+    "background_sync/background_sync_scheduler.cc",
+    "background_sync/background_sync_scheduler.h",
     "background_sync/background_sync_status.h",
     "background_sync/one_shot_background_sync_service_impl.cc",
     "background_sync/one_shot_background_sync_service_impl.h",

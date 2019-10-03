@@ -37,36 +37,25 @@ CastComponent::CastComponent(CastRunner* runner,
       agent_manager_(std::move(params.agent_manager)),
       application_config_(std::move(params.app_config)),
       rewrite_rules_provider_(std::move(params.rewrite_rules_provider)),
-      initial_rewrite_rules_(std::move(params.rewrite_rules.value())),
+      connector_(frame()),
       api_bindings_client_(std::move(params.api_bindings_client)),
       navigation_listener_binding_(this) {
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
-}
-
-CastComponent::~CastComponent() = default;
-
-void CastComponent::StartComponent() {
-  if (application_config_.has_enable_remote_debugging() &&
-      application_config_.enable_remote_debugging()) {
-    WebComponent::EnableRemoteDebugging();
-  }
-
-  WebComponent::StartComponent();
-
-  connector_ = std::make_unique<NamedMessagePortConnector>(frame());
 
   rewrite_rules_provider_.set_error_handler([this](zx_status_t status) {
     ZX_LOG(ERROR, status) << "UrlRequestRewriteRulesProvider disconnected.";
     DestroyComponent(kRewriteRulesProviderDisconnectExitCode,
                      fuchsia::sys::TerminationReason::INTERNAL_ERROR);
   });
-  OnRewriteRulesReceived(std::move(initial_rewrite_rules_));
+
+  DCHECK(params.rewrite_rules);
+  OnRewriteRulesReceived(std::move(params.rewrite_rules.value()));
 
   frame()->SetEnableInput(false);
   frame()->SetNavigationEventListener(
       navigation_listener_binding_.NewBinding());
   api_bindings_client_->AttachToFrame(
-      frame(), connector_.get(),
+      frame(), &connector_,
       base::BindOnce(&CastComponent::DestroyComponent, base::Unretained(this),
                      kBindingsFailureExitCode,
                      fuchsia::sys::TerminationReason::INTERNAL_ERROR));
@@ -76,6 +65,8 @@ void CastComponent::StartComponent() {
                    chromium::cast::ApplicationControllerReceiver>(
                    CastRunner::kAgentComponentUrl));
 }
+
+CastComponent::~CastComponent() = default;
 
 void CastComponent::DestroyComponent(int termination_exit_code,
                                      fuchsia::sys::TerminationReason reason) {
@@ -96,6 +87,6 @@ void CastComponent::OnNavigationStateChanged(
     fuchsia::web::NavigationState change,
     OnNavigationStateChangedCallback callback) {
   if (change.has_is_main_document_loaded() && change.is_main_document_loaded())
-    connector_->OnPageLoad();
+    connector_.OnPageLoad();
   callback();
 }

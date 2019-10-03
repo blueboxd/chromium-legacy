@@ -8,10 +8,10 @@
 #include <memory>
 #include <string>
 #include <tuple>
-#include <unordered_set>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/containers/flat_set.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/previews/content/previews_user_data.h"
@@ -33,13 +33,13 @@ class TestOptimizationGuideDecider
       std::vector<optimization_guide::proto::OptimizationType>
           optimization_types) override {
     registered_optimization_types_ =
-        std::unordered_set<optimization_guide::proto::OptimizationType>(
+        base::flat_set<optimization_guide::proto::OptimizationType>(
             optimization_types.begin(), optimization_types.end());
   }
 
   // Returns the optimization types registered with the Optimization Guide
   // Decider.
-  std::unordered_set<optimization_guide::proto::OptimizationType>
+  base::flat_set<optimization_guide::proto::OptimizationType>
   registered_optimization_types() {
     return registered_optimization_types_;
   }
@@ -78,7 +78,7 @@ class TestOptimizationGuideDecider
  private:
   // The optimization types that were registered with the Optimization Guide
   // Decider.
-  std::unordered_set<optimization_guide::proto::OptimizationType>
+  base::flat_set<optimization_guide::proto::OptimizationType>
       registered_optimization_types_;
 
   std::map<std::tuple<GURL, optimization_guide::proto::OptimizationType>,
@@ -169,7 +169,7 @@ TEST_F(PreviewsOptimizationGuideDeciderTest,
 
   PreviewsOptimizationGuideDecider decider(optimization_guide_decider());
 
-  std::unordered_set<optimization_guide::proto::OptimizationType>
+  base::flat_set<optimization_guide::proto::OptimizationType>
       registered_optimization_types =
           optimization_guide_decider()->registered_optimization_types();
   EXPECT_EQ(4u, registered_optimization_types.size());
@@ -200,7 +200,7 @@ TEST_F(PreviewsOptimizationGuideDeciderTest,
 
   PreviewsOptimizationGuideDecider decider(optimization_guide_decider());
 
-  std::unordered_set<optimization_guide::proto::OptimizationType>
+  base::flat_set<optimization_guide::proto::OptimizationType>
       registered_optimization_types =
           optimization_guide_decider()->registered_optimization_types();
   EXPECT_EQ(1u, registered_optimization_types.size());

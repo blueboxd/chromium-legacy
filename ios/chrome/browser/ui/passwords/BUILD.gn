@@ -5,8 +5,12 @@
 source_set("passwords") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "password_breach_action_handler.h",
+    "password_breach_consumer.h",
     "password_breach_coordinator.h",
     "password_breach_coordinator.mm",
+    "password_breach_mediator.h",
+    "password_breach_mediator.mm",
     "password_breach_view_controller.h",
     "password_breach_view_controller.mm",
   ]

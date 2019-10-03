@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
+          "object": "LayoutNGBlockFlow (positioned) DIV class='absolute red'",
           "rect": [250, 230, 100, 100],
           "reason": "paint property change"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative reflected'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV class='relative reflected'",
           "rect": [250, 230, 100, 100],
           "reason": "paint property change"
         }

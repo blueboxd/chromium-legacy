@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutTableCell TD",
+          "object": "LayoutNGTableCell TD",
           "rect": [256, 306, 204, 104],
           "reason": "geometry"
         },
         {
-          "object": "LayoutTableCell TD",
+          "object": "LayoutNGTableCell TD",
           "rect": [256, 156, 204, 104],
           "reason": "geometry"
         }

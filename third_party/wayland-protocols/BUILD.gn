@@ -77,6 +77,12 @@ wayland_protocol("pointer_gestures_protocol") {
   ]
 }
 
+wayland_protocol("pointer_constraints_protocol") {
+  sources = [
+    "src/unstable/pointer-constraints/pointer-constraints-unstable-v1.xml",
+  ]
+}
+
 wayland_protocol("relative_pointer_protocol") {
   sources = [
     "src/unstable/relative-pointer/relative-pointer-unstable-v1.xml",

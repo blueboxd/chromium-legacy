@@ -116,7 +116,7 @@ class TabActivityWatcherTest : public ChromeRenderViewHostTestHarness {
 };
 
 // Test that lifecycleunits are sorted with high activation score first order.
-TEST_F(TabActivityWatcherTest, SortLifecycleUnitWithTabRanker) {
+TEST_F(TabActivityWatcherTest, LogAndMaybeSortLifecycleUnitWithTabRanker) {
   SetParams({{"scorer_type", "0"}});
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
@@ -131,7 +131,7 @@ TEST_F(TabActivityWatcherTest, SortLifecycleUnitWithTabRanker) {
   std::vector<LifecycleUnit*> lifecycleunits = {tab0, tab2, tab3, tab1};
 
   // Sort and check the new order.
-  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+  TabActivityWatcher::GetInstance()->LogAndMaybeSortLifecycleUnitWithTabRanker(
       &lifecycleunits);
   EXPECT_EQ(lifecycleunits[0], tab3);
   EXPECT_EQ(lifecycleunits[1], tab2);
@@ -163,7 +163,7 @@ TEST_F(TabActivityWatcherTest, SortLifecycleUnitWithFrecencyScorer) {
   tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 2);
   std::vector<LifecycleUnit*> lifecycleunits = {tab0, tab1, tab2, tab3};
   // Sort and check the new order.
-  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+  TabActivityWatcher::GetInstance()->LogAndMaybeSortLifecycleUnitWithTabRanker(
       &lifecycleunits);
   // tab2 is the first one because it is foregrounded.
   EXPECT_EQ(lifecycleunits[0], tab2);
@@ -215,8 +215,9 @@ TEST_F(TabActivityWatcherTest, GetFrecencyScore) {
 }
 
 // Test that lifecycleunits are correctly logged inside
-// SortLifecycleUnitWithTabRanker.
-TEST_F(TabActivityWatcherTest, LogInsideSortLifecycleUnitWithTabRanker) {
+// LogAndMaybeSortLifecycleUnitWithTabRanker.
+TEST_F(TabActivityWatcherTest,
+       LogInsideLogAndMaybeSortLifecycleUnitWithTabRanker) {
   SetParams({{"disable_background_log_with_TabRanker", "true"}});
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
@@ -229,9 +230,9 @@ TEST_F(TabActivityWatcherTest, LogInsideSortLifecycleUnitWithTabRanker) {
   LifecycleUnit* tab2 = AddNewTab(tab_strip_model, 2);
   std::vector<LifecycleUnit*> lifecycleunits = {tab0};
 
-  // Call SortLifecycleUnitWithTabRanker on tab0 should log the TabMetrics for
-  // tab0.
-  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+  // Call LogAndMaybeSortLifecycleUnitWithTabRanker on tab0 should log the
+  // TabMetrics for tab0.
+  TabActivityWatcher::GetInstance()->LogAndMaybeSortLifecycleUnitWithTabRanker(
       &lifecycleunits);
   {
     SCOPED_TRACE("");
@@ -243,9 +244,9 @@ TEST_F(TabActivityWatcherTest, LogInsideSortLifecycleUnitWithTabRanker) {
         });
   }
 
-  // Call SortLifecycleUnitWithTabRanker on tab0 should log the TabMetrics for
-  // tab0.
-  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+  // Call LogAndMaybeSortLifecycleUnitWithTabRanker on tab0 should log the
+  // TabMetrics for tab0.
+  TabActivityWatcher::GetInstance()->LogAndMaybeSortLifecycleUnitWithTabRanker(
       &lifecycleunits);
   {
     SCOPED_TRACE("");
@@ -257,10 +258,10 @@ TEST_F(TabActivityWatcherTest, LogInsideSortLifecycleUnitWithTabRanker) {
         });
   }
 
-  // Call SortLifecycleUnitWithTabRanker on tab2 should not log the TabMetrics
-  // for tab2 because it is foregrounded.
+  // Call LogAndMaybeSortLifecycleUnitWithTabRanker on tab2 should not log the
+  // TabMetrics for tab2 because it is foregrounded.
   lifecycleunits = {tab2};
-  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+  TabActivityWatcher::GetInstance()->LogAndMaybeSortLifecycleUnitWithTabRanker(
       &lifecycleunits);
   {
     SCOPED_TRACE("");
@@ -268,10 +269,10 @@ TEST_F(TabActivityWatcherTest, LogInsideSortLifecycleUnitWithTabRanker) {
               0);
   }
 
-  // Call SortLifecycleUnitWithTabRanker on all three tabs should log two
-  // TabMetrics events for tab0 and tab1.
+  // Call LogAndMaybeSortLifecycleUnitWithTabRanker on all three tabs should log
+  // two TabMetrics events for tab0 and tab1.
   lifecycleunits = {tab0, tab1, tab2};
-  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+  TabActivityWatcher::GetInstance()->LogAndMaybeSortLifecycleUnitWithTabRanker(
       &lifecycleunits);
   {
     SCOPED_TRACE("");

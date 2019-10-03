@@ -4,17 +4,6 @@ This layer should be composited.
 {
   "layers": [
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600],
-      "drawsContent": false,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [785, 600],
-      "drawsContent": false
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [785, 611],
       "contentsOpaque": true,
@@ -22,15 +11,15 @@ This layer should be composited.
     },
     {
       "name": "LayoutNGBlockFlow DIV class='preserve3d'",
-      "position": [18, 390],
-      "bounds": [342, 180]
+      "bounds": [342, 180],
+      "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV class='box'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#C0C0C0",
-      "transform": 2
+      "transform": 6
     }
   ],
   "transforms": [
@@ -40,13 +29,43 @@ This layer should be composited.
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [49, 439, 0, 1]
-      ],
-      "flattenInheritedTransform": false
+        [18, 390, 0, 1]
+      ]
     },
     {
       "id": 2,
       "parent": 1,
+      "renderingContext": 1
+    },
+    {
+      "id": 3,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [18, 390, 0, 1]
+      ]
+    },
+    {
+      "id": 4,
+      "parent": 3,
+      "renderingContext": 1
+    },
+    {
+      "id": 5,
+      "parent": 4,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [31, 49, 0, 1]
+      ],
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
+    },
+    {
+      "id": 6,
+      "parent": 5,
       "transform": [
         [0.984807753012208, 0, -0.17364817766693, 0],
         [0, 1, 0, 0],
@@ -54,7 +73,8 @@ This layer should be composited.
         [0, 0, 0, 1]
       ],
       "origin": [50, 50],
-      "flattenInheritedTransform": false
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
     }
   ]
 }

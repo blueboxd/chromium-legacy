@@ -92,7 +92,7 @@ bool MachineLevelUserCloudPolicyController::
   return true;
 #else
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableMachineLevelUserCloudPolicy);
+      switches::kEnableChromeBrowserCloudManagement);
 #endif
 }
 

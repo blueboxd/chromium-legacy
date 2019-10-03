@@ -17,8 +17,8 @@ namespace service_manager {
 
 template <typename... BinderArgs>
 void BindCallbackAdapter(
-    const base::Callback<void(mojo::ScopedMessagePipeHandle, BinderArgs...)>&
-        callback,
+    const base::RepeatingCallback<void(mojo::ScopedMessagePipeHandle,
+                                       BinderArgs...)>& callback,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle handle,
     BinderArgs... args) {
@@ -42,7 +42,8 @@ template <typename Interface, typename... BinderArgs>
 class CallbackBinder : public InterfaceBinder<BinderArgs...> {
  public:
   using BindCallback =
-      base::Callback<void(mojo::InterfaceRequest<Interface>, BinderArgs...)>;
+      base::RepeatingCallback<void(mojo::InterfaceRequest<Interface>,
+                                   BinderArgs...)>;
 
   CallbackBinder(const BindCallback& callback,
                  const scoped_refptr<base::SequencedTaskRunner>& task_runner)
@@ -92,7 +93,7 @@ class CallbackBinder : public InterfaceBinder<BinderArgs...> {
 template <typename... BinderArgs>
 class GenericCallbackBinder : public InterfaceBinder<BinderArgs...> {
  public:
-  using BindCallback = base::Callback<
+  using BindCallback = base::RepeatingCallback<
       void(const std::string&, mojo::ScopedMessagePipeHandle, BinderArgs...)>;
 
   GenericCallbackBinder(
@@ -100,10 +101,11 @@ class GenericCallbackBinder : public InterfaceBinder<BinderArgs...> {
       const scoped_refptr<base::SequencedTaskRunner>& task_runner)
       : callback_(callback), task_runner_(task_runner) {}
   GenericCallbackBinder(
-      const base::Callback<void(mojo::ScopedMessagePipeHandle, BinderArgs...)>&
-          callback,
+      const base::RepeatingCallback<void(mojo::ScopedMessagePipeHandle,
+                                         BinderArgs...)>& callback,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-      : callback_(base::Bind(&BindCallbackAdapter<BinderArgs...>, callback)),
+      : callback_(
+            base::BindRepeating(&BindCallbackAdapter<BinderArgs...>, callback)),
         task_runner_(task_runner) {}
   ~GenericCallbackBinder() override {}
 

@@ -4,26 +4,31 @@
 
 #import "ios/chrome/browser/ui/passwords/password_breach_view_controller.h"
 
-#include "base/strings/sys_string_conversions.h"
-#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+#import "ios/chrome/browser/ui/passwords/password_breach_action_handler.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-using base::SysUTF16ToNSString;
-using password_manager::GetAcceptButtonLabel;
-using password_manager::GetCancelButtonLabel;
-using password_manager::GetDescription;
-using password_manager::GetTitle;
-using password_manager::CredentialLeakType;
+using l10n_util::GetNSString;
 
 namespace {
 constexpr CGFloat kStackViewSpacing = 16.0;
 }  // namespace
+
+@interface PasswordBreachViewController ()
+
+// Properties backing up the respective consumer setter.
+@property(nonatomic, strong) NSString* titleString;
+@property(nonatomic, strong) NSString* subtitleString;
+@property(nonatomic, strong) NSString* primaryActionString;
+@property(nonatomic) BOOL primaryActionAvailable;
+
+@end
 
 @implementation PasswordBreachViewController
 
@@ -33,17 +38,12 @@ constexpr CGFloat kStackViewSpacing = 16.0;
   [super viewDidLoad];
   self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
 
-  // TODO(crbug.com/1008862): Pass these at init instead of using these empty
-  // ones.
-  CredentialLeakType leakType = CredentialLeakType();
-  GURL URL = GURL();
-
   UIButton* doneButton = [UIButton buttonWithType:UIButtonTypeSystem];
   [doneButton addTarget:self
                  action:@selector(didTapDoneButton)
        forControlEvents:UIControlEventTouchUpInside];
-  NSString* doneTitle = SysUTF16ToNSString(GetCancelButtonLabel());
-  [doneButton setTitle:doneTitle forState:UIControlStateNormal];
+  [doneButton setTitle:GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)
+              forState:UIControlStateNormal];
   doneButton.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:doneButton];
 
@@ -56,13 +56,13 @@ constexpr CGFloat kStackViewSpacing = 16.0;
   title.numberOfLines = 0;
   title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
   title.textColor = [UIColor colorNamed:kTextPrimaryColor];
-  title.text = SysUTF16ToNSString(GetTitle(leakType));
+  title.text = self.titleString;
   title.translatesAutoresizingMaskIntoConstraints = NO;
 
   UILabel* subtitle = [[UILabel alloc] init];
   subtitle.numberOfLines = 0;
   subtitle.textColor = [UIColor colorNamed:kTextSecondaryColor];
-  subtitle.text = SysUTF16ToNSString(GetDescription(leakType, URL));
+  subtitle.text = self.subtitleString;
   subtitle.translatesAutoresizingMaskIntoConstraints = NO;
 
   UIStackView* stackView = [[UIStackView alloc]
@@ -73,20 +73,26 @@ constexpr CGFloat kStackViewSpacing = 16.0;
   stackView.spacing = kStackViewSpacing;
   [self.view addSubview:stackView];
 
-  UIButton* primaryActionButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  [primaryActionButton addTarget:self
-                          action:@selector(didTapPrimaryActionButton)
-                forControlEvents:UIControlEventTouchUpInside];
-  NSString* primaryActionTitle =
-      SysUTF16ToNSString(GetAcceptButtonLabel(leakType));
-  [primaryActionButton setTitle:primaryActionTitle
-                       forState:UIControlStateNormal];
-  primaryActionButton.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.view addSubview:primaryActionButton];
-
   UILayoutGuide* margins = self.view.layoutMarginsGuide;
 
-  // Primary Action Button constraints.
+  if (self.primaryActionAvailable) {
+    UIButton* primaryActionButton =
+        [UIButton buttonWithType:UIButtonTypeSystem];
+    [primaryActionButton addTarget:self
+                            action:@selector(didTapPrimaryActionButton)
+                  forControlEvents:UIControlEventTouchUpInside];
+    [primaryActionButton setTitle:self.primaryActionString
+                         forState:UIControlStateNormal];
+    primaryActionButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:primaryActionButton];
+
+    // Primary Action Button constraints.
+    AddSameConstraintsToSides(
+        margins, primaryActionButton,
+        LayoutSides::kLeading | LayoutSides::kTrailing | LayoutSides::kBottom);
+  }
+
+  // Done Button constraints.
   AddSameConstraintsToSides(margins, doneButton,
                             LayoutSides::kTrailing | LayoutSides::kTop);
 
@@ -98,23 +104,30 @@ constexpr CGFloat kStackViewSpacing = 16.0;
   AddSameCenterConstraints(margins, stackView);
   AddSameConstraintsToSides(margins, stackView,
                             LayoutSides::kLeading | LayoutSides::kTrailing);
+}
 
-  // Primary Action Button constraints.
-  AddSameConstraintsToSides(
-      margins, primaryActionButton,
-      LayoutSides::kLeading | LayoutSides::kTrailing | LayoutSides::kBottom);
+#pragma mark - PasswordBreachConsumer
+
+- (void)setTitleString:(NSString*)titleString
+            subtitleString:(NSString*)subtitleString
+       primaryActionString:(NSString*)primaryActionString
+    primaryActionAvailable:(BOOL)primaryActionAvailable {
+  self.titleString = titleString;
+  self.subtitleString = subtitleString;
+  self.primaryActionString = primaryActionString;
+  self.primaryActionAvailable = primaryActionAvailable;
 }
 
 #pragma mark - Private
 
 // Handle taps on the done button.
 - (void)didTapDoneButton {
-  // TODO(crbug.com/1008862): Hook up with a mediator.
+  [self.actionHandler passwordBreachDone];
 }
 
 // Handle taps on the primary action button.
 - (void)didTapPrimaryActionButton {
-  // TODO(crbug.com/1008862): Hook up with a mediator.
+  [self.actionHandler passwordBreachPrimaryAction];
 }
 
 @end

@@ -12,7 +12,7 @@
       "bounds": [320, 320],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='container'",
+          "object": "LayoutNGBlockFlow DIV id='container'",
           "rect": [0, 0, 320, 320],
           "reason": "chunk appeared"
         },
@@ -25,7 +25,7 @@
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV",
+      "name": "LayoutNGBlockFlow (positioned) DIV",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#FF0000",

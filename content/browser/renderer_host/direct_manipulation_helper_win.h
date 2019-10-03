@@ -28,7 +28,7 @@ class WindowEventTarget;
 
 namespace content {
 
-class DirectManipulationBrowserTest;
+class DirectManipulationBrowserTestBase;
 class DirectManipulationUnitTest;
 
 // TODO(crbug.com/914914) This is added for help us getting debug log on
@@ -83,7 +83,7 @@ class CONTENT_EXPORT DirectManipulationHelper
   void RemoveAnimationObserver();
 
  private:
-  friend class content::DirectManipulationBrowserTest;
+  friend class DirectManipulationBrowserTestBase;
   friend class DirectManipulationUnitTest;
 
   DirectManipulationHelper(HWND window, ui::Compositor* compositor);

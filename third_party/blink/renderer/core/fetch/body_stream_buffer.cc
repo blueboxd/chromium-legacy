@@ -107,9 +107,19 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
       consumer_(consumer),
       signal_(signal),
       made_from_readable_stream_(false) {
+  // This CHECK is temporary to track down the cause of
+  // https://crbug.com/1007162.
+  // TODO(ricea): Remove it once we know whether it crashes or not.
+  CHECK(consumer_);
+
   stream_ =
       ReadableStream::CreateWithCountQueueingStrategy(script_state_, this, 0);
   stream_broken_ = !stream_;
+
+  // This CHECK is temporary to track down the cause of
+  // https://crbug.com/1007162.
+  // TODO(ricea): Remove it once we know whether it crashes or not.
+  CHECK(consumer_);
 
   consumer_->SetClient(this);
   if (signal) {

@@ -7,10 +7,14 @@
 #include "base/logging.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
+#include "ppapi/cpp/var.h"
+#include "ppapi/cpp/var_dictionary.h"
 
 namespace chrome_pdf {
 
 namespace {
+
+constexpr char kDefaultPageOrientation[] = "defaultPageOrientation";
 
 int GetWidestPageWidth(const std::vector<pp::Size>& page_sizes) {
   int widest_page_width = 0;
@@ -40,6 +44,26 @@ DocumentLayout::Options& DocumentLayout::Options::operator=(
     const Options& other) = default;
 
 DocumentLayout::Options::~Options() = default;
+
+pp::Var DocumentLayout::Options::ToVar() const {
+  pp::VarDictionary dictionary;
+  dictionary.Set(kDefaultPageOrientation,
+                 static_cast<int32_t>(default_page_orientation_));
+  return dictionary;
+}
+
+void DocumentLayout::Options::FromVar(const pp::Var& var) {
+  pp::VarDictionary dictionary(var);
+
+  int32_t default_page_orientation =
+      dictionary.Get(kDefaultPageOrientation).AsInt();
+  DCHECK_GE(default_page_orientation,
+            static_cast<int32_t>(PageOrientation::kOriginal));
+  DCHECK_LE(default_page_orientation,
+            static_cast<int32_t>(PageOrientation::kLast));
+  default_page_orientation_ =
+      static_cast<PageOrientation>(default_page_orientation);
+}
 
 void DocumentLayout::Options::RotatePagesClockwise() {
   default_page_orientation_ = RotateClockwise(default_page_orientation_);

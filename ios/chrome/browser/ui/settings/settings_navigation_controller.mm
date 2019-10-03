@@ -251,8 +251,12 @@ initWithRootViewController:(UIViewController*)rootViewController
   if (self) {
     mainBrowserState_ = browserState;
     _settingsNavigationDelegate = delegate;
-    [self setModalPresentationStyle:UIModalPresentationFormSheet];
-    [self setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
+    self.modalPresentationStyle = UIModalPresentationFormSheet;
+    // Set the presentationController delegate. This is used for swipe down to
+    // dismiss. This needs to be set after the modalPresentationStyle.
+    if (@available(iOS 13, *)) {
+      self.presentationController.delegate = self;
+    }
   }
   return self;
 }
@@ -264,11 +268,6 @@ initWithRootViewController:(UIViewController*)rootViewController
   }
   self.navigationBar.prefersLargeTitles = YES;
   self.navigationBar.accessibilityIdentifier = @"SettingNavigationBar";
-  // Set the presentationController delegate. This is used for swipe down to
-  // dismiss.
-  if (@available(iOS 13, *)) {
-    self.presentationController.delegate = self;
-  }
   // Set the NavigationController delegate.
   self.delegate = self;
 }

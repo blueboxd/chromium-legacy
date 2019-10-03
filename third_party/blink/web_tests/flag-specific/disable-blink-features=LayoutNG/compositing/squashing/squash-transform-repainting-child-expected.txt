@@ -2,25 +2,10 @@ CASE 1, original layer tree
 {
   "layers": [
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600],
-      "drawsContent": false,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [800, 600],
-      "drawsContent": false
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "Squashing Containment Layer",
-      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
@@ -31,8 +16,9 @@ CASE 1, original layer tree
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
-      "position": [-1, -1],
-      "bounds": [281, 281]
+      "position": [-101, -101],
+      "bounds": [281, 281],
+      "transform": 2
     }
   ],
   "transforms": [
@@ -43,8 +29,16 @@ CASE 1, original layer tree
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [100, 100, 0, 1]
-      ],
-      "flattenInheritedTransform": false
+      ]
+    },
+    {
+      "id": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [100, 100, 0, 1]
+      ]
     }
   ]
 }
@@ -53,25 +47,10 @@ CASE 2, hovering over the outer div
 {
   "layers": [
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600],
-      "drawsContent": false,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [800, 600],
-      "drawsContent": false
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "Squashing Containment Layer",
-      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
@@ -82,7 +61,7 @@ CASE 2, hovering over the outer div
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
-      "position": [-1, -1],
+      "position": [-101, -101],
       "bounds": [281, 281],
       "paintInvalidations": [
         {
@@ -90,7 +69,8 @@ CASE 2, hovering over the outer div
           "rect": [0, 0, 142, 142],
           "reason": "background"
         }
-      ]
+      ],
+      "transform": 2
     }
   ],
   "transforms": [
@@ -101,8 +81,16 @@ CASE 2, hovering over the outer div
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [100, 100, 0, 1]
-      ],
-      "flattenInheritedTransform": false
+      ]
+    },
+    {
+      "id": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [100, 100, 0, 1]
+      ]
     }
   ]
 }
@@ -111,25 +99,10 @@ CASE 3, hovering over the inner div
 {
   "layers": [
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600],
-      "drawsContent": false,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [800, 600],
-      "drawsContent": false
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "Squashing Containment Layer",
-      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
@@ -140,7 +113,7 @@ CASE 3, hovering over the inner div
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
-      "position": [-1, -1],
+      "position": [-101, -101],
       "bounds": [281, 281],
       "paintInvalidations": [
         {
@@ -153,7 +126,8 @@ CASE 3, hovering over the inner div
           "rect": [32, 32, 71, 71],
           "reason": "background"
         }
-      ]
+      ],
+      "transform": 2
     }
   ],
   "transforms": [
@@ -164,8 +138,16 @@ CASE 3, hovering over the inner div
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [100, 100, 0, 1]
-      ],
-      "flattenInheritedTransform": false
+      ]
+    },
+    {
+      "id": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [100, 100, 0, 1]
+      ]
     }
   ]
 }

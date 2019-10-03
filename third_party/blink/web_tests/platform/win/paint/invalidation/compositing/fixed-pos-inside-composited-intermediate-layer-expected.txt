@@ -1,49 +1,33 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600],
-      "drawsContent": false,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [785, 600],
-      "drawsContent": false
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [785, 30020],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
+      "scrollPosition": [0, 100],
       "transform": 1
     },
     {
-      "name": "Squashing Containment Layer",
-      "drawsContent": false,
-      "transform": 1
-    },
-    {
-      "name": "LayoutBlockFlow DIV class='compositedBehind'",
+      "name": "LayoutNGBlockFlow DIV class='compositedBehind'",
       "bounds": [500, 500],
       "contentsOpaque": true,
       "backgroundColor": "#00FFFF",
-      "transform": 2
+      "transform": 3
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='containerOverlapsComposited')",
-      "position": [20, 20],
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='containerOverlapsComposited')",
+      "position": [12, 12],
       "bounds": [100, 30000],
-      "transform": 1
+      "transform": 5
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
-      "position": [45, 145],
+      "name": "LayoutNGBlockFlow (positioned) DIV class='fixed'",
       "bounds": [50, 50],
       "opacity": 0.990000009536743,
       "contentsOpaque": true,
       "backgroundColor": "#00FF00",
-      "transform": 1
+      "transform": 6
     }
   ],
   "transforms": [
@@ -54,19 +38,54 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, -100, 0, 1]
-      ],
-      "flattenInheritedTransform": false
+      ]
     },
     {
       "id": 2,
-      "parent": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -100, 0, 1]
+      ]
+    },
+    {
+      "id": 3,
+      "parent": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [8, 8, 0, 1]
-      ],
-      "flattenInheritedTransform": false
+      ]
+    },
+    {
+      "id": 4,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -100, 0, 1]
+      ]
+    },
+    {
+      "id": 5,
+      "parent": 4,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ]
+    },
+    {
+      "id": 6,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [45, 45, 0, 1]
+      ]
     }
   ]
 }

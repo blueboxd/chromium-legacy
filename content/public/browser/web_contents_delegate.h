@@ -57,7 +57,6 @@ class ColorChooser;
 class FileSelectListener;
 class JavaScriptDialogManager;
 class RenderFrameHost;
-class RenderProcessHost;
 class RenderWidgetHost;
 class SessionStorageNamespace;
 class SiteInstance;
@@ -298,35 +297,30 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual bool OnGoToEntryOffset(int offset);
 
   // Allows delegate to control whether a new WebContents can be created by
-  // |web_contents|.
+  // the WebContents itself.
   //
-  // The route ID parameters passed to this method are associated with the
-  // |source_site_instance|'s RenderProcessHost. They may also be
-  // MSG_ROUTING_NONE. If they are valid, they correspond to a trio of
-  // RenderView, RenderFrame, and RenderWidget objects that have been created in
-  // the renderer, but not yet assigned a WebContents, RenderViewHost,
-  // RenderFrameHost, or RenderWidgetHost.
+  // If an delegate returns true, it can optionally also override
+  // CreateCustomWebContents() below to provide their own WebContents.
+  virtual bool IsWebContentsCreationOverridden(
+      SiteInstance* source_site_instance,
+      content::mojom::WindowContainerType window_container_type,
+      const GURL& opener_url,
+      const std::string& frame_name,
+      const GURL& target_url);
+
+  // Allow delegate to creates a custom WebContents when
+  // WebContents::CreateNewWindow() is called. This function is only called
+  // when IsWebContentsCreationOverridden() returns true.
   //
-  // The return value is interpreted as follows:
-  //
-  //   Return true: |web_contents| should create a WebContents.
-  //   Return false: |web_contents| should not create a WebContents. The
-  //       provisionally-created RenderView (if it exists) in the renderer
-  //       process will be destroyed, UNLESS the delegate, during this method,
-  //       itself creates a WebContents using |source_site_instance|,
-  //       |route_id|, |main_frame_route_id|, and |main_frame_widget_route_id|
-  //       as creation parameters. If this happens, the delegate assumes
-  //       ownership of the corresponding RenderView, etc. |web_contents| will
-  //       detect that this has happened by looking for the existence of a
-  //       RenderViewHost in |source_site_instance| with |route_id|.
-  virtual bool ShouldCreateWebContents(
-      WebContents* web_contents,
+  // In general, a delegate should return a pointer to a created WebContents
+  // so that the opener can be given a references to it as appropriate.
+  // Returning nullptr also makes sense if the delegate wishes to suppress
+  // all window creation, or if the delegate wants to ensure the opener
+  // cannot get a reference effectively creating a new browsing instance.
+  virtual WebContents* CreateCustomWebContents(
       RenderFrameHost* opener,
       SiteInstance* source_site_instance,
-      int32_t route_id,
-      int32_t main_frame_route_id,
-      int32_t main_frame_widget_route_id,
-      content::mojom::WindowContainerType window_container_type,
+      bool is_new_browsing_instance,
       const GURL& opener_url,
       const std::string& frame_name,
       const GURL& target_url,

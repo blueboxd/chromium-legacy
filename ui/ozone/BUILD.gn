@@ -89,6 +89,7 @@ jumbo_component("ozone_base") {
     "public/platform_window_surface.h",
     "public/surface_factory_ozone.cc",
     "public/surface_factory_ozone.h",
+    "public/surface_ozone_canvas.cc",
     "public/surface_ozone_canvas.h",
     "public/swap_completion_callback.h",
     "public/system_input_injector.h",

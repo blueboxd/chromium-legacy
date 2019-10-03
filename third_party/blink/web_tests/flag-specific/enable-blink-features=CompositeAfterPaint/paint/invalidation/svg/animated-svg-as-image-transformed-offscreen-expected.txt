@@ -11,7 +11,7 @@
       "bounds": [800, 600]
     },
     {
-      "name": "LayoutBlockFlow DIV id='targetDiv'",
+      "name": "LayoutNGBlockFlow DIV id='targetDiv'",
       "bounds": [480, 480],
       "transform": 2
     }

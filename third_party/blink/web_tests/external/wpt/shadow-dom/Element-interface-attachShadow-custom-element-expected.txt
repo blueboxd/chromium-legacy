@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+PASS Element.attachShadow must create an instance of ShadowRoot for autonomous custom elements
+PASS Element.attachShadow must create an instance of ShadowRoot for undefined autonomous custom elements
+PASS Element.attachShadow for an autonomous custom element with disabledFeatures=["shadow"] should throw a NotSupportedError
+PASS Element.attachShadow for a customized built-in element with disabledFeatures=["shadow"] should throw a NotSupportedError
+FAIL Element.attachShadow for a custom element with disabledFeatures=["SHADOW"] should not throw a NotSupportedError Failed to execute 'attachShadow' on 'Element': attachShadow() is disabled by disabledFeatures static field.
+PASS Element.attachShadow must throw a NotSupportedError for customized built-in elements
+Harness: the test ran to completion.
+

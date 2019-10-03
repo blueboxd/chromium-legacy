@@ -12,20 +12,20 @@
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow DIV id='foo2'",
+      "name": "LayoutNGBlockFlow DIV id='foo2'",
       "bounds": [150, 1000],
       "contentsOpaque": true,
       "backgroundColor": "#ADD8E6",
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='foo'",
+      "name": "LayoutNGBlockFlow (positioned) DIV id='foo'",
       "bounds": [100, 1000],
       "contentsOpaque": true,
       "backgroundColor": "#FF0000",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='foo'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='foo'",
           "rect": [0, 0, 100, 1000],
           "reason": "background"
         }

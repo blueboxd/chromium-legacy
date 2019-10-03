@@ -516,8 +516,8 @@ def UpdatePDB(pdb_filename, verbose=True, build_dir=None, toolchain_dir=None,
     # time out.
     if time.time() - t1 > 60:
       t1 = time.time()
-      print*("Still working, %d / %d files have been processed." %
-             number_of_files - len(filelist), number_of_files)
+      print("Still working, %d / %d files have been processed." %
+            (number_of_files - len(filelist), number_of_files))
 
     # This directory is in the exclusion listed, either because it's not part of
     # a repository, or from one we're not interested in indexing.

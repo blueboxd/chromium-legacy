@@ -48,6 +48,11 @@ void SchedulerConfigurationManager::RegisterLocalStatePrefs(
   registry->RegisterStringPref(prefs::kSchedulerConfiguration, std::string());
 }
 
+base::Optional<std::pair<bool, size_t>>
+SchedulerConfigurationManager::GetLastReply() const {
+  return last_reply_;
+}
+
 void SchedulerConfigurationManager::OnDebugDaemonReady(bool service_is_ready) {
   if (!service_is_ready) {
     LOG(ERROR) << "Debug daemon unavailable";
@@ -93,6 +98,8 @@ void SchedulerConfigurationManager::OnPrefChange() {
 void SchedulerConfigurationManager::OnConfigurationSet(
     bool result,
     size_t num_cores_disabled) {
+  last_reply_ = std::make_pair(result, num_cores_disabled);
+
   if (result) {
     VLOG(1) << num_cores_disabled << " logical CPU cores are disabled";
   } else {

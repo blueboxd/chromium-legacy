@@ -94,6 +94,10 @@ interface mixin WebGL2ComputeRenderingContextBase {
     void dispatchCompute(GLuint numGroupsX, GLuint numGroupsY, GLuint numGroupsZ);
     void dispatchComputeIndirect(GLintptr offset);
 
+    /* Draw indirect */
+    void drawArraysIndirect(GLenum mode, GLintptr offset);
+    void drawElementsIndirect(GLenum mode, GLenum type, GLintptr offset);
+
     /* Program interface query */
     [CallWith=ScriptState] any getProgramInterfaceParameter(WebGLProgram program, GLenum programInterface, GLenum pname);
     GLuint getProgramResourceIndex(WebGLProgram program, GLenum programInterface, DOMString name);

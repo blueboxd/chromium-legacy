@@ -7,19 +7,19 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV id='first'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='first'",
       "bounds": [784, 53],
       "backgroundColor": "#FFFF00",
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow DIV",
+      "name": "LayoutNGBlockFlow DIV",
       "bounds": [784, 53],
       "backgroundColor": "#D3D3D3",
       "transform": 2
     },
     {
-      "name": "LayoutBlockFlow DIV",
+      "name": "LayoutNGBlockFlow DIV",
       "bounds": [784, 53],
       "backgroundColor": "#D3D3D3",
       "transform": 3

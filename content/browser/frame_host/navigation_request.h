@@ -737,6 +737,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   // Note: |site_url_| should only be updated with the result of this function.
   GURL GetSiteForCommonParamsURL() const;
 
+  // Returns the network isolation key for this NavigationRequest. If
+  // |network_isolation_key_| is empty, the key will be based off request url
+  // origin and top frame origin.
+  net::NetworkIsolationKey GetNetworkIsolationKey() const;
+
   // Updates the state of the navigation handle after encountering a server
   // redirect.
   void UpdateStateFollowingRedirect(const GURL& new_referrer_url,
@@ -1061,6 +1066,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   // NavigationRequest is associated with (if any).
   int64_t frame_entry_item_sequence_number_ = -1;
   int64_t frame_entry_document_sequence_number_ = -1;
+
+  // If non-empty, it represents the network isolation key explicitly asked to
+  // be used for this NavigationRequest.
+  base::Optional<net::NetworkIsolationKey> network_isolation_key_;
 
   // This is used to store the current_frame_host id at request creation time.
   GlobalFrameRoutingId previous_render_frame_host_id_;

@@ -60,7 +60,6 @@ void SMILAnimationSandwich::UpdateTiming(SMILTime elapsed) {
     if (!animation->CurrentIntervalIsActive(elapsed))
       continue;
     animation->UpdateInterval(elapsed);
-    animation->UpdateActiveState(elapsed);
   }
 }
 
@@ -86,13 +85,15 @@ SMILTime SMILAnimationSandwich::NextProgressTime(
   return earliest_progress_time;
 }
 
-void SMILAnimationSandwich::UpdateSyncBases(SMILTime elapsed) {
+void SMILAnimationSandwich::UpdateActiveStateAndOrder(
+    SMILTime presentation_time) {
   for (auto& animation : sandwich_)
-    animation->UpdateSyncBases();
+    animation->UpdateActiveState(presentation_time);
 
   if (!std::is_sorted(sandwich_.begin(), sandwich_.end(),
-                      PriorityCompare(elapsed))) {
-    std::sort(sandwich_.begin(), sandwich_.end(), PriorityCompare(elapsed));
+                      PriorityCompare(presentation_time))) {
+    std::sort(sandwich_.begin(), sandwich_.end(),
+              PriorityCompare(presentation_time));
   }
 }
 

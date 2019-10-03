@@ -125,6 +125,11 @@ class CONTENT_EXPORT BackgroundSyncManager
     clock_ = clock;
   }
 
+  void set_proxy_for_testing(std::unique_ptr<BackgroundSyncProxy> proxy) {
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+    proxy_ = std::move(proxy);
+  }
+
   // Called from DevTools
   void EmulateDispatchSyncEvent(
       const std::string& tag,
@@ -208,8 +213,6 @@ class CONTENT_EXPORT BackgroundSyncManager
       const std::string& tag,
       scoped_refptr<ServiceWorkerVersion> active_version,
       ServiceWorkerVersion::StatusCallback callback);
-  virtual void ScheduleDelayedTask(blink::mojom::BackgroundSyncType sync_type,
-                                   base::TimeDelta delay);
   virtual void HasMainFrameProviderHost(const url::Origin& origin,
                                         BoolCallback callback);
 
@@ -336,13 +339,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   void ScheduleDelayedProcessingOfRegistrations(
       blink::mojom::BackgroundSyncType sync_type);
 
-  base::CancelableOnceClosure& get_delayed_task(
-      blink::mojom::BackgroundSyncType sync_type);
-
-  void ResetAndScheduleDelayedSyncTask(
-      blink::mojom::BackgroundSyncType sync_type,
-      base::TimeDelta soonest_wakeup_delta);
-
   void FireReadyEventsImpl(
       blink::mojom::BackgroundSyncType sync_type,
       bool reschedule,
@@ -458,7 +454,7 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   CacheStorageScheduler op_scheduler_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
-  BackgroundSyncProxy proxy_;
+  std::unique_ptr<BackgroundSyncProxy> proxy_;
 
   scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context_;
   std::unique_ptr<BackgroundSyncParameters> parameters_;
@@ -469,9 +465,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   // The number of registrations currently in the firing state.
   int num_firing_registrations_one_shot_;
   int num_firing_registrations_periodic_;
-
-  base::CancelableOnceClosure delayed_one_shot_sync_task_;
-  base::CancelableOnceClosure delayed_periodic_sync_task_;
 
   bool delayed_processing_scheduled_one_shot_sync_ = false;
   bool delayed_processing_scheduled_periodic_sync_ = false;

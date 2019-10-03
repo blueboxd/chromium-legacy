@@ -124,7 +124,11 @@ static_library("utility") {
       "//chrome/services/removable_storage_writer:lib",
     ]
 
-    public_deps += [ "//chrome/common/extensions/api" ]
+    public_deps += [
+      "//chrome/common/extensions/api",
+      "//chrome/services/removable_storage_writer/public/mojom",
+      "//mojo/public/cpp/bindings",
+    ]
 
     # Prevent wininet from loading in the renderer. http://crbug.com/460679
     if (is_win) {

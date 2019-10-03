@@ -8,6 +8,7 @@
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -299,7 +300,8 @@ class XR final : public EventTargetWithInlineData,
   Member<XRFrameProvider> frame_provider_;
   HeapHashSet<WeakMember<XRSession>> sessions_;
   device::mojom::blink::VRServicePtr service_;
-  device::mojom::blink::XRFrameDataProviderPtr magic_window_provider_;
+  mojo::Remote<device::mojom::blink::XRFrameDataProvider>
+      magic_window_provider_;
   device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr
       environment_provider_;
   mojo::Receiver<device::mojom::blink::VRServiceClient> receiver_{this};

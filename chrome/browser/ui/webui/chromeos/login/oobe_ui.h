@@ -163,7 +163,8 @@ class OobeUI : public ui::MojoWebUIController {
       mojo::PendingReceiver<multidevice_setup::mojom::MultiDeviceSetup>
           receiver);
   void BindPrivilegedHostDeviceSetter(
-      multidevice_setup::mojom::PrivilegedHostDeviceSetterRequest request);
+      mojo::PendingReceiver<
+          multidevice_setup::mojom::PrivilegedHostDeviceSetter> receiver);
   void BindCrosNetworkConfig(
       mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
           receiver);

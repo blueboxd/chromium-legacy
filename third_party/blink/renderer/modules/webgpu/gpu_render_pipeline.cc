@@ -85,8 +85,16 @@ DawnDepthStencilStateDescriptor AsDawnType(
       AsDawnEnum<DawnCompareFunction>(webgpu_desc->depthCompare());
   dawn_desc.depthWriteEnabled = webgpu_desc->depthWriteEnabled();
   dawn_desc.format = AsDawnEnum<DawnTextureFormat>(webgpu_desc->format());
-  dawn_desc.stencilBack = AsDawnType(webgpu_desc->stencilBack());
-  dawn_desc.stencilFront = AsDawnType(webgpu_desc->stencilFront());
+  if (webgpu_desc->hasStencilBack()) {
+    dawn_desc.stencilBack = AsDawnType(webgpu_desc->stencilBack());
+  } else {
+    dawn_desc.stencilBack = DawnStencilStateFaceDescriptor{};
+  }
+  if (webgpu_desc->hasStencilFront()) {
+    dawn_desc.stencilFront = AsDawnType(webgpu_desc->stencilFront());
+  } else {
+    dawn_desc.stencilFront = DawnStencilStateFaceDescriptor{};
+  }
   dawn_desc.stencilReadMask = webgpu_desc->stencilReadMask();
   dawn_desc.stencilWriteMask = webgpu_desc->stencilWriteMask();
 

@@ -19,6 +19,8 @@
 #include "device/vr/util/fps_meter.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -49,7 +51,7 @@ struct ArCoreHitTestRequest;
 class ArImageTransport;
 
 using ArCoreGlCreateSessionCallback = base::OnceCallback<void(
-    mojom::XRFrameDataProviderPtrInfo frame_data_provider_info,
+    mojo::PendingRemote<mojom::XRFrameDataProvider> frame_data_provider,
     mojom::VRDisplayInfoPtr display_info,
     mojom::XRSessionControllerPtrInfo session_controller_info,
     mojom::XRPresentationConnectionPtr presentation_connection)>;
@@ -192,7 +194,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
 
   std::vector<std::unique_ptr<ArCoreHitTestRequest>> hit_test_requests_;
 
-  mojo::Binding<mojom::XRFrameDataProvider> frame_data_binding_;
+  mojo::Receiver<mojom::XRFrameDataProvider> frame_data_receiver_{this};
   mojo::Binding<mojom::XRSessionController> session_controller_binding_;
   mojo::AssociatedBinding<mojom::XREnvironmentIntegrationProvider>
       environment_binding_;
@@ -200,7 +202,8 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   void OnBindingDisconnect();
   void CloseBindingsIfOpen();
 
-  mojo::Binding<device::mojom::XRPresentationProvider> presentation_binding_;
+  mojo::Receiver<device::mojom::XRPresentationProvider> presentation_receiver_{
+      this};
   mojo::Remote<device::mojom::XRPresentationClient> submit_client_;
 
   base::OnceClosure pending_getframedata_;

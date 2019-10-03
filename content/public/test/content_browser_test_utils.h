@@ -236,6 +236,13 @@ void IsolateOriginsForTesting(
     WebContents* web_contents,
     std::vector<std::string> hostnames_to_isolate);
 
+#if defined(OS_WIN)
+
+void SetMockCursorPositionForTesting(WebContents* web_contents,
+                                     const gfx::Point& position);
+
+#endif  // defined(OS_WIN)
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_CONTENT_BROWSER_TEST_UTILS_H_

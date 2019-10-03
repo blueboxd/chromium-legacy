@@ -4,6 +4,10 @@
 
 #include "media/gpu/v4l2/v4l2_slice_video_decoder.h"
 
+#include <fcntl.h>
+#include <linux/media.h>
+#include <sys/ioctl.h>
+
 #include <algorithm>
 
 #include "base/bind.h"
@@ -17,7 +21,9 @@
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/linux/dmabuf_video_frame_pool.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/v4l2/v4l2_h264_accelerator.h"
 #include "media/gpu/v4l2/v4l2_h264_accelerator_legacy.h"
+#include "media/gpu/v4l2/v4l2_vp8_accelerator.h"
 #include "media/gpu/v4l2/v4l2_vp8_accelerator_legacy.h"
 #include "media/gpu/v4l2/v4l2_vp9_accelerator.h"
 
@@ -180,6 +186,7 @@ V4L2SliceVideoDecoder::~V4L2SliceVideoDecoder() {
   // We might be called from either the client or the decoder sequence.
   DETACH_FROM_SEQUENCE(client_sequence_checker_);
   DETACH_FROM_SEQUENCE(decoder_sequence_checker_);
+  DCHECK(requests_.empty());
   VLOGF(2);
 }
 
@@ -242,6 +249,11 @@ void V4L2SliceVideoDecoder::DestroyTask() {
     output_queue_ = nullptr;
   }
   DCHECK(surfaces_at_device_.empty());
+
+  if (supports_requests_) {
+    requests_ = {};
+    media_fd_.reset();
+  }
 
   weak_this_factory_.InvalidateWeakPtrs();
 
@@ -345,14 +357,31 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
     return;
   }
 
+  if (!CheckRequestAPISupport()) {
+    VPLOGF(1) << "Failed to check request api support.";
+    client_task_runner_->PostTask(FROM_HERE,
+                                  base::BindOnce(std::move(init_cb), false));
+    return;
+  }
+
   // Create codec-specific AcceleratedVideoDecoder.
   // TODO(akahuang): Check the profile is supported.
   if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
-    avd_.reset(new H264Decoder(
-        std::make_unique<V4L2LegacyH264Accelerator>(this, device_.get())));
+    if (supports_requests_) {
+      avd_.reset(new H264Decoder(
+          std::make_unique<V4L2H264Accelerator>(this, device_.get())));
+    } else {
+      avd_.reset(new H264Decoder(
+          std::make_unique<V4L2LegacyH264Accelerator>(this, device_.get())));
+    }
   } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
-    avd_.reset(new VP8Decoder(
-        std::make_unique<V4L2LegacyVP8Accelerator>(this, device_.get())));
+    if (supports_requests_) {
+      avd_.reset(new VP8Decoder(
+          std::make_unique<V4L2VP8Accelerator>(this, device_.get())));
+    } else {
+      avd_.reset(new VP8Decoder(
+          std::make_unique<V4L2LegacyVP8Accelerator>(this, device_.get())));
+    }
   } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
     avd_.reset(new VP9Decoder(
         std::make_unique<V4L2VP9Accelerator>(this, device_.get())));
@@ -398,11 +427,73 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
     return;
   }
 
+  if (supports_requests_ && !AllocateRequests()) {
+    client_task_runner_->PostTask(FROM_HERE,
+                                  base::BindOnce(std::move(init_cb), false));
+    return;
+  }
+
   // Call init_cb
   output_cb_ = output_cb;
   SetState(State::kDecoding);
   client_task_runner_->PostTask(FROM_HERE,
                                 base::BindOnce(std::move(init_cb), true));
+}
+
+bool V4L2SliceVideoDecoder::CheckRequestAPISupport() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(3);
+
+  struct v4l2_requestbuffers reqbufs;
+  memset(&reqbufs, 0, sizeof(reqbufs));
+  reqbufs.count = 0;
+  reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+  reqbufs.memory = V4L2_MEMORY_MMAP;
+  if (device_->Ioctl(VIDIOC_REQBUFS, &reqbufs) != 0) {
+    VPLOGF(1) << "VIDIOC_REQBUFS ioctl failed.";
+    return false;
+  }
+  if (reqbufs.capabilities & V4L2_BUF_CAP_SUPPORTS_REQUESTS) {
+    supports_requests_ = true;
+    VLOGF(1) << "Using request API.";
+    DCHECK(!media_fd_.is_valid());
+    // Let's try to open the media device
+    // TODO(crbug.com/985230): remove this hardcoding, replace with V4L2Device
+    // integration.
+    int media_fd = open("/dev/media-dec0", O_RDWR, 0);
+    if (media_fd < 0) {
+      VPLOGF(1) << "Failed to open media device.";
+      return false;
+    }
+    media_fd_ = base::ScopedFD(media_fd);
+  } else {
+    VLOGF(1) << "Using config store.";
+  }
+
+  return true;
+}
+
+bool V4L2SliceVideoDecoder::AllocateRequests() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(3);
+
+  DCHECK(requests_.empty());
+
+  for (size_t i = 0; i < input_queue_->AllocatedBuffersCount(); i++) {
+    int request_fd;
+
+    int ret = HANDLE_EINTR(
+        ioctl(media_fd_.get(), MEDIA_IOC_REQUEST_ALLOC, &request_fd));
+    if (ret < 0) {
+      VPLOGF(1) << "Failed to create request: ";
+      return false;
+     }
+
+    requests_.push(base::ScopedFD(request_fd));
+  }
+  DCHECK_EQ(requests_.size(), input_queue_->AllocatedBuffersCount());
+
+  return true;
 }
 
 bool V4L2SliceVideoDecoder::SetupInputFormat(uint32_t input_format_fourcc) {
@@ -827,8 +918,26 @@ scoped_refptr<V4L2DecodeSurface> V4L2SliceVideoDecoder::CreateSurface() {
     return nullptr;
   }
 
-  return scoped_refptr<V4L2DecodeSurface>(new V4L2ConfigStoreDecodeSurface(
-      std::move(input_buf), std::move(output_buf), std::move(frame)));
+  scoped_refptr<V4L2DecodeSurface> dec_surface;
+  if (supports_requests_) {
+    DCHECK(!requests_.empty());
+    base::ScopedFD request = std::move(requests_.front());
+    requests_.pop();
+    auto ret = V4L2RequestDecodeSurface::Create(
+        std::move(input_buf), std::move(output_buf), std::move(frame),
+        request.get());
+    requests_.push(std::move(request));
+    if (!ret) {
+      DVLOGF(3) << "Could not create surface.";
+      return nullptr;
+    }
+    dec_surface = std::move(*ret);
+  } else {
+    dec_surface = new V4L2ConfigStoreDecodeSurface(
+        std::move(input_buf), std::move(output_buf), std::move(frame));
+  }
+
+  return dec_surface;
 }
 
 void V4L2SliceVideoDecoder::ReuseOutputBuffer(V4L2ReadableBufferRef buffer) {

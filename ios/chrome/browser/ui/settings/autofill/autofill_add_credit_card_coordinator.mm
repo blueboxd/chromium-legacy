@@ -64,6 +64,7 @@
 
   UINavigationController* navigationController = [[UINavigationController alloc]
       initWithRootViewController:self.addCreditCardViewController];
+  navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
   navigationController.presentationController.delegate = self;
 
   [self.baseViewController presentViewController:navigationController

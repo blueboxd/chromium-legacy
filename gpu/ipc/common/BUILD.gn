@@ -55,6 +55,7 @@ source_set("command_buffer_traits_sources") {
 
   deps = [
     "//base",
+    "//gpu/ipc/common:vulkan_ycbcr_info",
     "//ui/gfx/ipc/buffer_types",
     "//ui/gfx/ipc/geometry",
   ]

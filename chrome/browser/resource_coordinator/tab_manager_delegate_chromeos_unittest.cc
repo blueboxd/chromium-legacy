@@ -13,6 +13,7 @@
 #include "base/process/process_handle.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/test_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
@@ -107,6 +108,8 @@ TEST_F(TabManagerDelegateTest, CandidatesSortedWithFocusedAppAndTab) {
 // Test to make sure old process types are active when TabRanker experiment
 // is turned on.
 TEST_F(TabManagerDelegateTest, SortLifecycleUnitWithTabRanker) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kTabRanker);
   std::vector<arc::ArcProcess> arc_processes;
   arc_processes.emplace_back(1, 10, "focused", arc::mojom::ProcessState::TOP,
                              kIsFocused, 99);
@@ -157,7 +160,7 @@ TEST_F(TabManagerDelegateTest, SortLifecycleUnitWithTabRanker) {
   };
 
   // Verify the re-ranked order.
-  TabManagerDelegate::SortLifecycleUnitWithTabRanker(
+  TabManagerDelegate::LogAndMaybeSortLifecycleUnitWithTabRanker(
       &candidates, base::BindOnce(oldest_first));
   EXPECT_EQ("focused", candidates[0].app()->process_name());
   EXPECT_EQ(&tab2, candidates[1].lifecycle_unit());

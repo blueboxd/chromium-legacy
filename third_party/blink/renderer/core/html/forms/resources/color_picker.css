@@ -143,11 +143,6 @@ format-toggler:hover {
   background-color: #F7F7F7;
 }
 
-#up-down-icon {
-  display: flex;
-  align-items: center;
-}
-
 format-label:not(.hidden-format-label) {
   border-radius: 2px;
   display: flex;

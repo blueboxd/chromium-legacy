@@ -18,6 +18,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
@@ -367,8 +368,15 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest,
   EXPECT_EQ(mojom::ActivationLevel::kEnabled, state.activation_level);
 }
 
+// Flaky on Win and Linux. http://crbug.com/1010186
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_Whitelisted_DisablesGenericRules \
+  DISABLED_Whitelisted_DisablesGenericRules
+#else
+#define MAYBE_Whitelisted_DisablesGenericRules Whitelisted_DisablesGenericRules
+#endif
 TEST_P(ActivationStateComputingThrottleSubFrameTest,
-       Whitelisted_DisablesGenericRules) {
+       MAYBE_Whitelisted_DisablesGenericRules) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://allow-child-to-be-whitelisted.com/"),
       mojom::ActivationLevel::kEnabled);

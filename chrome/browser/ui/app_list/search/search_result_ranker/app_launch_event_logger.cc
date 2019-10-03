@@ -188,13 +188,18 @@ void AppLaunchEventLogger::EnforceLoggingPolicy() {
     for (const auto& extension : *extensions) {
       // Only allow Chrome apps that are from the webstore.
       if (extension->from_webstore()) {
-        OkApp(AppLaunchEvent_AppType_CHROME, extension->id(),
-              base::EmptyString(), base::EmptyString());
+        AddAppIfMissing(AppLaunchEvent_AppType_CHROME, extension->id(),
+                        base::EmptyString(), base::EmptyString(), true);
         // PWA apps have from_bookmark() true. This will also categorize
         // bookmark apps as AppLaunchEvent_AppType_PWA.
       } else if (extension->from_bookmark()) {
-        OkApp(AppLaunchEvent_AppType_PWA, extension->id(), base::EmptyString(),
-              GetLaunchWebURL(extension.get()).spec());
+        AddAppIfMissing(AppLaunchEvent_AppType_PWA, extension->id(),
+                        base::EmptyString(),
+                        GetLaunchWebURL(extension.get()).spec(), true);
+        // Other extensions are not to be logged to UKM.
+      } else {
+        AddAppIfMissing(AppLaunchEvent_AppType_OTHER, extension->id(),
+                        base::EmptyString(), base::EmptyString(), false);
       }
     }
   }
@@ -209,20 +214,20 @@ void AppLaunchEventLogger::EnforceLoggingPolicy() {
       }
       const base::Value* package =
           arc_packages_->FindKey(package_name_value->GetString());
-      // Only allow Arc apps with sync enabled.
-      if (!package || !package->FindKey(kShouldSync)->GetBool()) {
+      if (!package) {
         continue;
       }
-      OkApp(AppLaunchEvent_AppType_PLAY, app.first,
-            package_name_value->GetString(), base::EmptyString());
+      // Only log Arc apps with sync enabled.
+      if (package->FindKey(kShouldSync)->GetBool()) {
+        AddAppIfMissing(AppLaunchEvent_AppType_PLAY, app.first,
+                        package_name_value->GetString(), base::EmptyString(),
+                        true);
+      } else {
+        AddAppIfMissing(AppLaunchEvent_AppType_OTHER, app.first,
+                        base::EmptyString(), base::EmptyString(), false);
+      }
     }
   }
-  // Remove any apps that are no longer installed or no longer satisfy logging
-  // policy.
-  base::EraseIf(app_features_map_,
-                [](const std::pair<std::string, AppLaunchFeatures>& pair) {
-                  return !pair.second.is_policy_compliant();
-                });
 }
 
 void AppLaunchEventLogger::SetRegistryAndArcInfo() {
@@ -240,10 +245,11 @@ void AppLaunchEventLogger::SetRegistryAndArcInfo() {
   }
 }
 
-void AppLaunchEventLogger::OkApp(AppLaunchEvent_AppType app_type,
-                                 const std::string& app_id,
-                                 const std::string& arc_package_name,
-                                 const std::string& pwa_url) {
+void AppLaunchEventLogger::AddAppIfMissing(AppLaunchEvent_AppType app_type,
+                                           const std::string& app_id,
+                                           const std::string& arc_package_name,
+                                           const std::string& pwa_url,
+                                           bool is_policy_compliant) {
   if (app_features_map_.find(app_id) == app_features_map_.end()) {
     AppLaunchFeatures app_launch_features;
     app_launch_features.set_app_id(app_id);
@@ -255,7 +261,7 @@ void AppLaunchEventLogger::OkApp(AppLaunchEvent_AppType app_type,
     }
     app_features_map_[app_id] = app_launch_features;
   }
-  app_features_map_[app_id].set_is_policy_compliant(true);
+  app_features_map_[app_id].set_is_policy_compliant(is_policy_compliant);
 }
 
 void AppLaunchEventLogger::UpdateClickRank() {
@@ -354,7 +360,10 @@ std::vector<std::string> AppLaunchEventLogger::ChooseAppsToLog(
       has_clicked_app = true;
       continue;
     }
-    apps_without_current.push_back(app.first);
+    // Only include apps that comply with logging policy.
+    if (app.second.is_policy_compliant()) {
+      apps_without_current.push_back(app.first);
+    }
   }
   std::vector<std::string> apps(
       Sample(apps_without_current, kNumRandomAppsToLog));
@@ -462,78 +471,78 @@ void AppLaunchEventLogger::Log(AppLaunchEvent app_launch_event) {
   ukm::SourceId launch_source_id =
       GetSourceId(app->second.app_type(), app_launch_event.app_id(),
                   app->second.arc_package_name(), app->second.pwa_url());
-  if (launch_source_id == ukm::kInvalidSourceId) {
-    return;
-  }
-  ukm::builders::AppListAppLaunch app_launch(launch_source_id);
 
   base::Time now(base::Time::Now());
   const base::TimeDelta duration = now - start_time_;
   all_clicks_last_hour_->Log(duration);
   all_clicks_last_24_hours_->Log(duration);
 
-  if (app_launch_event.launched_from() ==
-          AppLaunchEvent_LaunchedFrom_SUGGESTION_CHIP ||
-      app_launch_event.launched_from() ==
-          AppLaunchEvent_LaunchedFrom_SEARCH_BOX) {
-    app_launch.SetPositionIndex(app_launch_event.index());
-  }
-  app_launch.SetAppType(app->second.app_type())
-      .SetLaunchedFrom(app_launch_event.launched_from())
-      .SetDayOfWeek(DayOfWeek(now))
-      .SetHourOfDay(HourOfDay(now))
-      .SetAllClicksLastHour(
-          Bucketize(all_clicks_last_hour_->GetTotal(duration), kClickBuckets))
-      .SetAllClicksLast24Hours(Bucketize(
-          all_clicks_last_24_hours_->GetTotal(duration), kClickBuckets))
-      .SetTotalHours(ExponentialBucket(duration.InHours(),
-                                       kTotalHoursBucketSizeMultiplier))
-      .Record(ukm::UkmRecorder::Get());
-
-  // Log click data about the app clicked on and up to 25 other apps. This
-  // represents the state of the data immediately before the click.
-  const std::vector<std::string> apps_to_log =
-      ChooseAppsToLog(app_launch_event.app_id());
-
-  for (std::string app_id : apps_to_log) {
-    auto app = app_features_map_.find(app_id);
-    if (app == app_features_map_.end()) {
-      continue;
+  if (app->second.is_policy_compliant() &&
+      launch_source_id != ukm::kInvalidSourceId) {
+    ukm::builders::AppListAppLaunch app_launch(launch_source_id);
+    if (app_launch_event.launched_from() ==
+            AppLaunchEvent_LaunchedFrom_SUGGESTION_CHIP ||
+        app_launch_event.launched_from() ==
+            AppLaunchEvent_LaunchedFrom_SEARCH_BOX) {
+      app_launch.SetPositionIndex(app_launch_event.index());
     }
-    ukm::SourceId click_data_source_id =
-        GetSourceId(app->second.app_type(), app->first,
-                    app->second.arc_package_name(), app->second.pwa_url());
-    if (click_data_source_id == ukm::kInvalidSourceId) {
-      continue;
-    }
-    ukm::builders::AppListAppClickData app_click_data(click_data_source_id);
-    if (!app->second.has_most_recently_used_index()) {
-      // This app has not been clicked on this session, so log fewer metrics.
+    app_launch.SetAppType(app->second.app_type())
+        .SetLaunchedFrom(app_launch_event.launched_from())
+        .SetDayOfWeek(DayOfWeek(now))
+        .SetHourOfDay(HourOfDay(now))
+        .SetAllClicksLastHour(
+            Bucketize(all_clicks_last_hour_->GetTotal(duration), kClickBuckets))
+        .SetAllClicksLast24Hours(Bucketize(
+            all_clicks_last_24_hours_->GetTotal(duration), kClickBuckets))
+        .SetTotalHours(ExponentialBucket(duration.InHours(),
+                                         kTotalHoursBucketSizeMultiplier))
+        .Record(ukm::UkmRecorder::Get());
+
+    // Log click data about the app clicked on and up to 25 other apps. This
+    // represents the state of the data immediately before the click.
+    const std::vector<std::string> apps_to_log =
+        ChooseAppsToLog(app_launch_event.app_id());
+
+    for (std::string app_id : apps_to_log) {
+      auto app = app_features_map_.find(app_id);
+      if (app == app_features_map_.end()) {
+        continue;
+      }
+      ukm::SourceId click_data_source_id =
+          GetSourceId(app->second.app_type(), app->first,
+                      app->second.arc_package_name(), app->second.pwa_url());
+      if (click_data_source_id == ukm::kInvalidSourceId) {
+        continue;
+      }
+      ukm::builders::AppListAppClickData app_click_data(click_data_source_id);
+      if (!app->second.has_most_recently_used_index()) {
+        // This app has not been clicked on this session, so log fewer metrics.
+        app_click_data.SetAppType(app->second.app_type())
+            .SetAppLaunchId(launch_source_id)
+            .Record(ukm::UkmRecorder::Get());
+        continue;
+      }
+      app->second.set_time_since_last_click_sec(
+          now.ToDeltaSinceWindowsEpoch().InSeconds() -
+          app->second.time_of_last_click_sec());
+
+      LogClicksEachHour(app->second, &app_click_data);
+
       app_click_data.SetAppType(app->second.app_type())
           .SetAppLaunchId(launch_source_id)
+          .SetMostRecentlyUsedIndex(app->second.most_recently_used_index())
+          .SetTimeSinceLastClick(
+              Bucketize(app->second.time_since_last_click_sec(),
+                        kTimeSinceLastClickBuckets))
+          .SetClicksLastHour(
+              Bucketize(app->second.clicks_last_hour(), kClickBuckets))
+          .SetClicksLast24Hours(
+              Bucketize(app->second.clicks_last_24_hours(), kClickBuckets))
+          .SetTotalClicks(Bucketize(app->second.total_clicks(), kClickBuckets))
+          .SetClickRank(app->second.click_rank())
+          .SetLastLaunchedFrom(app->second.last_launched_from())
           .Record(ukm::UkmRecorder::Get());
-      continue;
     }
-    app->second.set_time_since_last_click_sec(
-        now.ToDeltaSinceWindowsEpoch().InSeconds() -
-        app->second.time_of_last_click_sec());
-
-    LogClicksEachHour(app->second, &app_click_data);
-
-    app_click_data.SetAppType(app->second.app_type())
-        .SetAppLaunchId(launch_source_id)
-        .SetMostRecentlyUsedIndex(app->second.most_recently_used_index())
-        .SetTimeSinceLastClick(
-            Bucketize(app->second.time_since_last_click_sec(),
-                      kTimeSinceLastClickBuckets))
-        .SetClicksLastHour(
-            Bucketize(app->second.clicks_last_hour(), kClickBuckets))
-        .SetClicksLast24Hours(
-            Bucketize(app->second.clicks_last_24_hours(), kClickBuckets))
-        .SetTotalClicks(Bucketize(app->second.total_clicks(), kClickBuckets))
-        .SetClickRank(app->second.click_rank())
-        .SetLastLaunchedFrom(app->second.last_launched_from())
-        .Record(ukm::UkmRecorder::Get());
   }
   ProcessClick(app_launch_event, now);
 }

@@ -46,9 +46,14 @@ class CORE_EXPORT PaintWorkletDeferredImage : public GeneratedImage {
  private:
   PaintWorkletDeferredImage(scoped_refptr<PaintWorkletInput> input,
                             const FloatSize& size)
-      : GeneratedImage(size), input_(input) {}
+      : GeneratedImage(size) {
+    image_ = PaintImageBuilder::WithDefault()
+                 .set_paint_worklet_input(std::move(input))
+                 .set_id(PaintImage::GetNextId())
+                 .TakePaintImage();
+  }
 
-  scoped_refptr<PaintWorkletInput> input_;
+  PaintImage image_;
 };
 
 }  // namespace blink

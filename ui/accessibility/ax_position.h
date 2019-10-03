@@ -1306,9 +1306,13 @@ class AXPosition {
   // not visible to a specific platform's APIs.
   AXPositionInstance AsPositionBeforeCharacter() const {
     AXPositionInstance text_position = AsTextPosition();
-    while (text_position->AtEndOfAnchor())
-      text_position = text_position->CreateNextLeafTextPosition();
-    return text_position;
+    if (!text_position->AtEndOfAnchor())
+      return text_position;
+
+    AXPositionInstance tree_position = CreateNextLeafTreePosition();
+    while (!tree_position->MaxTextOffset())
+      tree_position = tree_position->CreateNextLeafTreePosition();
+    return tree_position->AsTextPosition();
   }
 
   // Returns a text position located right after the previous character (from
@@ -1316,11 +1320,13 @@ class AXPosition {
   // See `AsPositionBeforeCharacter`, as this is its "reversed" version.
   AXPositionInstance AsPositionAfterCharacter() const {
     AXPositionInstance text_position = AsTextPosition();
-    while (text_position->AtStartOfAnchor()) {
-      text_position = text_position->CreatePreviousLeafTextPosition();
-      text_position = text_position->CreatePositionAtEndOfAnchor();
-    }
-    return text_position;
+    if (!text_position->AtStartOfAnchor())
+      return text_position;
+
+    AXPositionInstance tree_position = CreatePreviousLeafTreePosition();
+    while (!tree_position->MaxTextOffset())
+      tree_position = tree_position->CreatePreviousLeafTreePosition();
+    return tree_position->CreatePositionAtEndOfAnchor()->AsTextPosition();
   }
 
   AXPositionInstance CreateNextCharacterPosition(
@@ -2270,7 +2276,7 @@ class AXPosition {
   // including any text found in descendant text nodes.
   virtual int MaxTextOffset() const {
     if (IsNullPosition())
-      return INVALID_INDEX;
+      return INVALID_OFFSET;
     return static_cast<int>(GetText().length());
   }
 
@@ -2415,48 +2421,42 @@ class AXPosition {
     if (IsNullPosition())
       return CreateNullPosition();
 
+    AXPositionInstance current_position = AsTreePosition();
+    DCHECK(!current_position->IsNullPosition());
+
     if (AnchorChildCount()) {
-      AXPositionInstance child_position = nullptr;
+      const int child_index = current_position->child_index_;
+      if (child_index < current_position->AnchorChildCount()) {
+        AXPositionInstance child_position =
+            current_position->CreateChildPositionAt(child_index);
 
-      if (IsTreePosition()) {
-        if (child_index_ < AnchorChildCount())
-          child_position = CreateChildPositionAt(child_index_);
-      } else {
-        // We have to find the child node that encompasses the current text
-        // offset.
-        AXPositionInstance tree_position = AsTreePosition();
-        DCHECK(tree_position);
-        int child_index = tree_position->child_index_;
-        if (child_index < tree_position->AnchorChildCount())
-          child_position = tree_position->CreateChildPositionAt(child_index);
-      }
-
-      if (child_position) {
-        if (abort_predicate.Run(*this, *child_position, AXMoveType::kDescendant,
+        if (abort_predicate.Run(*current_position, *child_position,
+                                AXMoveType::kDescendant,
                                 AXMoveDirection::kNextInTree)) {
           return CreateNullPosition();
         }
-        return std::move(child_position);
+        return child_position;
       }
     }
 
-    AXPositionInstance current_position = Clone();
-    AXPositionInstance parent_position = CreateParentPosition();
+    AXPositionInstance parent_position =
+        current_position->CreateParentPosition();
+
+    // Get the next sibling if it exists, otherwise move up the AXTree to the
+    // lowest next sibling of this position's ancestors.
     while (!parent_position->IsNullPosition()) {
-      // Get the next sibling if it exists, otherwise move up to the parent's
-      // next sibling.
-      int index_in_parent = current_position->AnchorIndexInParent();
+      const int index_in_parent = current_position->AnchorIndexInParent();
       if (index_in_parent + 1 < parent_position->AnchorChildCount()) {
         AXPositionInstance next_sibling =
             parent_position->CreateChildPositionAt(index_in_parent + 1);
-        DCHECK(next_sibling && !next_sibling->IsNullPosition());
+        DCHECK(!next_sibling->IsNullPosition());
 
         if (abort_predicate.Run(*current_position, *next_sibling,
                                 AXMoveType::kSibling,
                                 AXMoveDirection::kNextInTree)) {
           return CreateNullPosition();
         }
-        return std::move(next_sibling);
+        return next_sibling;
       }
 
       if (abort_predicate.Run(*current_position, *parent_position,
@@ -2468,7 +2468,6 @@ class AXPosition {
       current_position = std::move(parent_position);
       parent_position = current_position->CreateParentPosition();
     }
-
     return CreateNullPosition();
   }
 
@@ -2478,42 +2477,49 @@ class AXPosition {
     if (IsNullPosition())
       return CreateNullPosition();
 
-    AXPositionInstance parent_position = CreateParentPosition();
+    AXPositionInstance current_position = AsTreePosition();
+    DCHECK(!current_position->IsNullPosition());
+
+    AXPositionInstance parent_position =
+        current_position->CreateParentPosition();
     if (parent_position->IsNullPosition())
       return CreateNullPosition();
 
-    // Get the previous sibling's deepest last child if a previous sibling
-    // exists, otherwise move up to the parent.
-    int index_in_parent = AnchorIndexInParent();
+    // If there is no previous sibling, move up to the parent.
+    const int index_in_parent = current_position->AnchorIndexInParent();
     if (index_in_parent <= 0) {
-      if (abort_predicate.Run(*this, *parent_position, AXMoveType::kAncestor,
+      if (abort_predicate.Run(*current_position, *parent_position,
+                              AXMoveType::kAncestor,
                               AXMoveDirection::kPreviousInTree)) {
         return CreateNullPosition();
       }
-
-      return std::move(parent_position);
+      return parent_position;
     }
 
-    AXPositionInstance leaf =
+    // Get the previous sibling's deepest last child.
+    AXPositionInstance rightmost_leaf =
         parent_position->CreateChildPositionAt(index_in_parent - 1);
-    if (!leaf->IsNullPosition() &&
-        abort_predicate.Run(*this, *leaf, AXMoveType::kSibling,
+    DCHECK(!rightmost_leaf->IsNullPosition());
+
+    if (abort_predicate.Run(*current_position, *rightmost_leaf,
+                            AXMoveType::kSibling,
                             AXMoveDirection::kPreviousInTree)) {
       return CreateNullPosition();
     }
 
-    while (!leaf->IsNullPosition() && leaf->AnchorChildCount()) {
-      parent_position = std::move(leaf);
-      leaf = parent_position->CreateChildPositionAt(
+    while (rightmost_leaf->AnchorChildCount()) {
+      parent_position = std::move(rightmost_leaf);
+      rightmost_leaf = parent_position->CreateChildPositionAt(
           parent_position->AnchorChildCount() - 1);
+      DCHECK(!rightmost_leaf->IsNullPosition());
 
-      if (abort_predicate.Run(*parent_position, *leaf, AXMoveType::kDescendant,
+      if (abort_predicate.Run(*parent_position, *rightmost_leaf,
+                              AXMoveType::kDescendant,
                               AXMoveDirection::kPreviousInTree)) {
         return CreateNullPosition();
       }
     }
-
-    return std::move(leaf);
+    return rightmost_leaf;
   }
 
   // Creates a position using the next text-only node as its anchor.
@@ -2671,7 +2677,7 @@ class AXPosition {
         break;
     }
 
-    if (crossed_potential_boundary_token && move_to.IsLeafTextPosition()) {
+    if (crossed_potential_boundary_token && !move_to.AnchorChildCount()) {
       // If there's a sequence of whitespace-only anchors, collapse so only the
       // last whitespace-only anchor is considered a paragraph boundary.
       if (direction == AXMoveDirection::kNextInTree &&

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "content/browser/background_sync/background_sync_scheduler.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/background_sync_context.h"
@@ -51,17 +52,35 @@ class BackgroundSyncProxy::Core {
     return storage_partition_impl->browser_context();
   }
 
-  // TODO(crbug.com/982378): Schedule a task to periodically revive suspended
-  // periodic Background Sync registrations.
-  void ScheduleBrowserWakeUp(blink::mojom::BackgroundSyncType sync_type) {
+  void ScheduleDelayedProcessing(blink::mojom::BackgroundSyncType sync_type,
+                                 base::TimeDelta delay,
+                                 base::OnceClosure delayed_task) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     if (!browser_context())
       return;
 
+    auto* scheduler = BackgroundSyncScheduler::GetFor(browser_context());
+    DCHECK(scheduler);
+    if (delay == base::TimeDelta::Max()) {
+      scheduler->CancelDelayedProcessing(
+          service_worker_context_->storage_partition(), sync_type);
+    } else {
+      scheduler->ScheduleDelayedProcessing(
+          service_worker_context_->storage_partition(), sync_type, delay,
+          base::BindOnce(
+              [](base::OnceClosure delayed_task) {
+                RunOrPostTaskOnThread(FROM_HERE,
+                                      ServiceWorkerContext::GetCoreThreadId(),
+                                      std::move(delayed_task));
+              },
+              std::move(delayed_task)));
+    }
+
+    // TODO(crbug.com/996166): Remove this call once the logic to schedule
+    // browser wakeup has moved to BackgroundTaskScheduler.
     auto* controller = browser_context()->GetBackgroundSyncController();
     DCHECK(controller);
-
     controller->ScheduleBrowserWakeUp(sync_type);
   }
 
@@ -97,14 +116,17 @@ BackgroundSyncProxy::BackgroundSyncProxy(
 
 BackgroundSyncProxy::~BackgroundSyncProxy() = default;
 
-void BackgroundSyncProxy::ScheduleBrowserWakeUp(
-    blink::mojom::BackgroundSyncType sync_type) {
+void BackgroundSyncProxy::ScheduleDelayedProcessing(
+    blink::mojom::BackgroundSyncType sync_type,
+    base::TimeDelta delay,
+    base::OnceClosure delayed_task) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   // Schedule Chrome wakeup.
-  RunOrPostTaskOnThread(FROM_HERE, BrowserThread::UI,
-                        base::BindOnce(&Core::ScheduleBrowserWakeUp,
-                                       ui_core_weak_ptr_, sync_type));
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(&Core::ScheduleDelayedProcessing, ui_core_weak_ptr_,
+                     sync_type, delay, std::move(delayed_task)));
 }
 
 void BackgroundSyncProxy::SendSuspendedPeriodicSyncOrigins(

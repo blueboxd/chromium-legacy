@@ -43,9 +43,6 @@ int main(int argc, char** argv) {
   create_context_params.set_user_agent_product("CrKey");
   create_context_params.set_user_agent_version("0");
 
-  const uint16_t kRemoteDebuggingPort = 9222;
-  create_context_params.set_remote_debugging_port(kRemoteDebuggingPort);
-
   CastRunner runner(
       base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get(),
       WebContentRunner::CreateWebContext(std::move(create_context_params)));

@@ -10,16 +10,22 @@
 
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "chrome/browser/sharing/fake_local_device_info_provider.h"
+#include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
+#include "chrome/common/pref_names.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/prefs/pref_registry.h"
+#include "components/prefs/pref_service_factory.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/fake_device_info_tracker.h"
+#include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "google_apis/gcm/engine/account_mapping.h"
@@ -119,15 +125,33 @@ class SharingDeviceRegistrationTest : public testing::Test {
                     &fake_device_info_tracker_,
                     &fake_local_device_info_provider_),
         vapid_key_manager_(&sync_prefs_),
-        sharing_device_registration_(&sync_prefs_,
+        sharing_device_registration_(pref_service_.get(),
+                                     &sync_prefs_,
                                      &mock_instance_id_driver_,
                                      &vapid_key_manager_) {
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
 
+  static std::unique_ptr<PrefService> CreatePrefServiceAndRegisterPrefs() {
+    scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
+        new user_prefs::PrefRegistrySyncable());
+    registry->RegisterBooleanPref(prefs::kSharedClipboardEnabled, true);
+    PrefServiceFactory factory;
+    factory.set_user_prefs(base::MakeRefCounted<TestingPrefStore>());
+    return factory.Create(registry);
+  }
+
   void SetUp() {
     ON_CALL(mock_instance_id_driver_, GetInstanceID(_))
         .WillByDefault(testing::Return(&fake_instance_id_));
+  }
+
+  void SetSharedClipboardPolicy(bool val) {
+    pref_service_->SetBoolean(prefs::kSharedClipboardEnabled, val);
+  }
+
+  void EnableSharedClipboardReceiverFlag() {
+    scoped_feature_list_.InitAndEnableFeature(kSharedClipboardReceiver);
   }
 
   void RegisterDeviceSync() {
@@ -187,6 +211,9 @@ class SharingDeviceRegistrationTest : public testing::Test {
   FakeLocalDeviceInfoProvider fake_local_device_info_provider_;
   FakeInstanceID fake_instance_id_;
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<PrefService> pref_service_ =
+      CreatePrefServiceAndRegisterPrefs();
   SharingSyncPreference sync_prefs_;
   VapidKeyManager vapid_key_manager_;
   SharingDeviceRegistration sharing_device_registration_;
@@ -199,6 +226,20 @@ class SharingDeviceRegistrationTest : public testing::Test {
 };
 
 }  // namespace
+
+TEST_F(SharingDeviceRegistrationTest, IsSharedClipboardSupported_True) {
+  SetSharedClipboardPolicy(true);
+  EnableSharedClipboardReceiverFlag();
+
+  EXPECT_TRUE(sharing_device_registration_.IsSharedClipboardSupported());
+}
+
+TEST_F(SharingDeviceRegistrationTest, IsSharedClipboardSupported_False) {
+  SetSharedClipboardPolicy(false);
+  EnableSharedClipboardReceiverFlag();
+
+  EXPECT_FALSE(sharing_device_registration_.IsSharedClipboardSupported());
+}
 
 TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
   SetInstanceIDFCMResult(InstanceID::Result::SUCCESS);

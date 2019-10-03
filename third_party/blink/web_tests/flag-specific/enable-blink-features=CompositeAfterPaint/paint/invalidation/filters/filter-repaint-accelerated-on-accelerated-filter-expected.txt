@@ -7,13 +7,13 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV id='resize' class='drop-shadow accelerated'",
+      "name": "LayoutNGBlockFlow DIV id='resize' class='drop-shadow accelerated'",
       "position": [-14, -14],
       "bounds": [160, 260],
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='resize' class='drop-shadow accelerated'",
+          "object": "LayoutNGBlockFlow DIV id='resize' class='drop-shadow accelerated'",
           "rect": [0, 0, 160, 260],
           "reason": "geometry"
         }

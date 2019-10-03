@@ -15,6 +15,7 @@ struct Mailbox;
 struct MailboxHolder;
 struct SyncToken;
 struct TextureInUseResponse;
+struct VulkanYCbCrInfo;
 }
 
 namespace IPC {
@@ -52,6 +53,16 @@ struct GPU_EXPORT ParamTraits<gpu::Mailbox> {
 template <>
 struct GPU_EXPORT ParamTraits<gpu::MailboxHolder> {
   using param_type = gpu::MailboxHolder;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct GPU_EXPORT ParamTraits<gpu::VulkanYCbCrInfo> {
+  using param_type = gpu::VulkanYCbCrInfo;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

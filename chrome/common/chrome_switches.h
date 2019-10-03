@@ -271,7 +271,7 @@ extern const char kGuest[];
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && \
     !defined(GOOGLE_CHROME_BUILD)
-extern const char kEnableMachineLevelUserCloudPolicy[];
+extern const char kEnableChromeBrowserCloudManagement[];
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

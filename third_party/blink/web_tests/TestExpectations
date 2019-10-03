@@ -2365,7 +2365,6 @@ crbug.com/958672 [ Mac ] external/wpt/css/css-text/hyphens/hyphens-span-002.html
 crbug.com/626703 external/wpt/css/css-text/letter-spacing/letter-spacing-control-chars-001.html [ Failure ]
 crbug.com/921318 external/wpt/css/css-text/tab-size/tab-size-spacing-001.html [ Failure ]
 crbug.com/626703 [ Win10 ] external/wpt/css/css-text/text-align/text-align-justify-004.html [ Failure ]
-crbug.com/974139 external/wpt/css/css-text/text-indent/text-indent-percentage-004.html [ Failure ]
 crbug.com/970200 external/wpt/css/css-text/text-indent/text-indent-tab-positions-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-capitalize-026.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-capitalize-028.html [ Failure ]
@@ -2431,9 +2430,6 @@ crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first
 crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first-char-006.html [ Skip ]
 crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first-char-013.html [ Skip ]
 crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-tab-004.html [ Skip ]
-
-crbug.com/6122 external/wpt/css/css-text/shaping/shaping-024.html [ Failure ]
-crbug.com/6122 external/wpt/css/css-text/shaping/shaping-025.html [ Failure ]
 
 # These are added to W3CImportExpectations as Skip, remove when next import is done.
 crbug.com/666657 external/wpt/css/css-text/hanging-punctuation [ Skip ]
@@ -3189,6 +3185,9 @@ crbug.com/1002514 external/wpt/web-share/share-sharePromise-internal-slot.https.
 crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-008.xhtml [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-008.xhtml [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-008.xhtml [ Failure ]
 crbug.com/626703 [ Win10 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-y_touch.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-none_touch.html [ Timeout ]
@@ -3277,7 +3276,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-lists/li-value-reversed-003.html [
 crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-text/line-break/line-break-anywhere-002.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/IndexedDB/structured-clone.any.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-sorted-before-dispatch.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/mediacapture-fromelement/ended.html [ Timeout ]
@@ -3474,7 +3472,6 @@ crbug.com/626703 [ Win7 ] external/wpt/upgrade-insecure-requests/image-redirect-
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-atomic-008.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-replaced-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-cluster-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-cluster-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-normal-keep-all-001.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/media-source/mediasource-config-change-webm-a-bitrate.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/media-elements/src_object_blob.html [ Timeout ]
@@ -3566,7 +3563,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/css-text/white-space/pre-wrap-013.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/white-space-intrinsic-size-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-copy-paste-001-manual.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-text/white-space/white-space-intrinsic-size-001.html [ Failure ]
 crbug.com/626703 external/wpt/html/webappapis/animation-frames/cancel-handle-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/filter-effects/filter-subregion-01.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/css/css-layout-api/auto-block-size-absolute.https.html [ Failure ]
@@ -6185,3 +6181,8 @@ crbug.com/1010483 [ Win ] fast/parser/residual-style-dom.html [ Crash Pass ]
 crbug.com/1010483 [ Win ] fast/parser/residual-style-hang.html [ Crash Pass ]
 crbug.com/1010483 [ Win ] fast/selectors/specificity-overflow.html [ Crash Pass ]
 
+# Latent failures discovered with the creation of the
+# virtual/disable-deferred-rendering suite
+crbug.com/1010593 virtual/disable-deferred-rendering/fast/canvas/canvas-scale-drawImage-shadow.html [ Failure ]
+crbug.com/1010655 virtual/disable-deferred-rendering/fast/canvas/canvas-lost-gpu-context.html [ Failure ]
+crbug.com/1010657 [ Mac ] virtual/disable-deferred-rendering/fast/canvas/image-object-in-canvas.html [ Failure ]

@@ -1973,11 +1973,15 @@ void LayoutObject::MarkContainerChainForOverflowRecalcIfNeeded() {
   } while (object);
 }
 
+void LayoutObject::SetNeedsVisualOverflowAndPaintInvalidation() {
+  SetShouldCheckForPaintInvalidation();
+  MarkSelfPaintingLayerForVisualOverflowRecalc();
+}
+
 void LayoutObject::SetNeedsOverflowRecalc() {
   bool needed_recalc = SelfNeedsLayoutOverflowRecalc();
   SetSelfNeedsLayoutOverflowRecalc();
-  SetShouldCheckForPaintInvalidation();
-  MarkSelfPaintingLayerForVisualOverflowRecalc();
+  SetNeedsVisualOverflowAndPaintInvalidation();
 
   if (!needed_recalc)
     MarkContainerChainForOverflowRecalcIfNeeded();

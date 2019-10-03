@@ -6,6 +6,7 @@
 #define COMPONENTS_ARC_TEST_FAKE_ARC_SESSION_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "components/arc/session/arc_session.h"

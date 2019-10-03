@@ -17,7 +17,7 @@ namespace content {
 TestBackgroundSyncManager::TestBackgroundSyncManager(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context)
-    : BackgroundSyncManager(std::move(service_worker_context),
+    : BackgroundSyncManager(service_worker_context,
                             std::move(devtools_context)) {}
 
 TestBackgroundSyncManager::~TestBackgroundSyncManager() {}
@@ -92,15 +92,6 @@ void TestBackgroundSyncManager::DispatchPeriodicSyncEvent(
     ServiceWorkerVersion::StatusCallback callback) {
   ASSERT_TRUE(dispatch_periodic_sync_callback_);
   dispatch_periodic_sync_callback_.Run(active_version, std::move(callback));
-}
-
-void TestBackgroundSyncManager::ScheduleDelayedTask(
-    blink::mojom::BackgroundSyncType sync_type,
-    base::TimeDelta delay) {
-  if (sync_type == blink::mojom::BackgroundSyncType::ONE_SHOT)
-    delayed_one_shot_sync_task_delta_ = delay;
-  else
-    delayed_periodic_sync_task_delta_ = delay;
 }
 
 void TestBackgroundSyncManager::HasMainFrameProviderHost(

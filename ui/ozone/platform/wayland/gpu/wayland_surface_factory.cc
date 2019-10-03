@@ -128,7 +128,8 @@ WaylandSurfaceFactory::WaylandSurfaceFactory(
 WaylandSurfaceFactory::~WaylandSurfaceFactory() = default;
 
 std::unique_ptr<SurfaceOzoneCanvas>
-WaylandSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
+WaylandSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget,
+                                             base::TaskRunner* task_runner) {
   return std::make_unique<WaylandCanvasSurface>(buffer_manager_, widget);
 }
 

@@ -5,6 +5,7 @@
 #include "content/renderer/media/android/stream_texture_wrapper_impl.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "cc/layers/video_frame_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -69,6 +70,7 @@ void StreamTextureWrapperImpl::ReallocateVideoFrame() {
               base::BindOnce(&OnReleaseVideoFrame, factory_, mailbox)),
           natural_size_, gfx::Rect(natural_size_), natural_size_,
           base::TimeDelta());
+  new_frame->set_ycbcr_info(ycbcr_info_);
 
   if (enable_texture_copy_) {
     new_frame->metadata()->SetBoolean(media::VideoFrameMetadata::COPY_REQUIRED,
@@ -93,6 +95,14 @@ void StreamTextureWrapperImpl::SetCurrentFrameInternal(
     scoped_refptr<media::VideoFrame> video_frame) {
   base::AutoLock auto_lock(current_frame_lock_);
   current_frame_ = std::move(video_frame);
+}
+
+void StreamTextureWrapperImpl::SetYcbcrInfo(
+    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info) {
+  DCHECK(!ycbcr_info_);
+
+  current_frame_->set_ycbcr_info(ycbcr_info);
+  ycbcr_info_ = std::move(ycbcr_info);
 }
 
 void StreamTextureWrapperImpl::UpdateTextureSize(const gfx::Size& new_size) {
@@ -154,8 +164,14 @@ void StreamTextureWrapperImpl::InitializeOnMainThread(
 
   ReallocateVideoFrame();
 
-  stream_texture_proxy_->BindToTaskRunner(received_frame_cb,
-                                          compositor_task_runner_);
+  // Unretained is safe here since |stream_texture_proxy_| is a scoped member of
+  // the this StreamTextureWrapperImpl class which clears/resets this callback
+  // before |this| is destroyed.
+  stream_texture_proxy_->BindToTaskRunner(
+      received_frame_cb,
+      base::BindOnce(&StreamTextureWrapperImpl::SetYcbcrInfo,
+                     base::Unretained(this)),
+      compositor_task_runner_);
 
   init_cb.Run(true);
 }

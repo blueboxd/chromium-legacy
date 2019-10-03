@@ -2088,6 +2088,8 @@ PhysicalRect LayoutText::LocalSelectionVisualRect() const {
   if (fragments.IsInLayoutNGInlineFormattingContext()) {
     PhysicalRect rect;
     for (const NGPaintFragment* fragment : fragments) {
+      if (fragment->PhysicalFragment().IsHiddenForPaint())
+        continue;
       const LayoutSelectionStatus status =
           frame_selection.ComputeLayoutSelectionStatus(*fragment);
       if (status.start == status.end)

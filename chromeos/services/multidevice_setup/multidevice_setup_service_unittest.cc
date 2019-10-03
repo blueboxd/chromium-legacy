@@ -153,9 +153,10 @@ class MultiDeviceSetupServiceTest : public testing::Test {
                        multidevice_setup_remote_.BindNewPipeAndPassReceiver());
     multidevice_setup_remote_.FlushForTesting();
 
-    connector->BindInterface(mojom::kServiceName,
-                             &privileged_host_device_setter_ptr_);
-    privileged_host_device_setter_ptr_.FlushForTesting();
+    connector->Connect(
+        mojom::kServiceName,
+        privileged_host_device_setter_remote_.BindNewPipeAndPassReceiver());
+    privileged_host_device_setter_remote_.FlushForTesting();
   }
 
   void TearDown() override {
@@ -193,8 +194,9 @@ class MultiDeviceSetupServiceTest : public testing::Test {
     return multidevice_setup_remote_;
   }
 
-  mojom::PrivilegedHostDeviceSetterPtr& privileged_host_device_setter_ptr() {
-    return privileged_host_device_setter_ptr_;
+  mojo::Remote<mojom::PrivilegedHostDeviceSetter>&
+  privileged_host_device_setter_remote() {
+    return privileged_host_device_setter_remote_;
   }
 
  private:
@@ -225,7 +227,8 @@ class MultiDeviceSetupServiceTest : public testing::Test {
   base::Optional<bool> last_debug_event_success_;
 
   mojo::Remote<mojom::MultiDeviceSetup> multidevice_setup_remote_;
-  mojom::PrivilegedHostDeviceSetterPtr privileged_host_device_setter_ptr_;
+  mojo::Remote<mojom::PrivilegedHostDeviceSetter>
+      privileged_host_device_setter_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupServiceTest);
 };
@@ -304,9 +307,9 @@ TEST_F(MultiDeviceSetupServiceTest, SetThenRemoveBeforeInitialization) {
                                             base::DoNothing());
   multidevice_setup_remote().FlushForTesting();
 
-  privileged_host_device_setter_ptr()->SetHostDevice("deviceId2",
-                                                     base::DoNothing());
-  privileged_host_device_setter_ptr().FlushForTesting();
+  privileged_host_device_setter_remote()->SetHostDevice("deviceId2",
+                                                        base::DoNothing());
+  privileged_host_device_setter_remote().FlushForTesting();
 
   multidevice_setup_remote()->RemoveHostDevice();
   multidevice_setup_remote().FlushForTesting();
@@ -326,9 +329,9 @@ TEST_F(MultiDeviceSetupServiceTest, RemoveThenSetThenSetBeforeInitialization) {
   multidevice_setup_remote()->RemoveHostDevice();
   multidevice_setup_remote().FlushForTesting();
 
-  privileged_host_device_setter_ptr()->SetHostDevice("deviceId1",
-                                                     base::DoNothing());
-  privileged_host_device_setter_ptr().FlushForTesting();
+  privileged_host_device_setter_remote()->SetHostDevice("deviceId1",
+                                                        base::DoNothing());
+  privileged_host_device_setter_remote().FlushForTesting();
 
   multidevice_setup_remote()->SetHostDevice("deviceId2", "authToken2",
                                             base::DoNothing());
@@ -365,9 +368,9 @@ TEST_F(MultiDeviceSetupServiceTest,
                                             base::DoNothing());
   multidevice_setup_remote().FlushForTesting();
 
-  privileged_host_device_setter_ptr()->SetHostDevice("deviceId3",
-                                                     base::DoNothing());
-  privileged_host_device_setter_ptr().FlushForTesting();
+  privileged_host_device_setter_remote()->SetHostDevice("deviceId3",
+                                                        base::DoNothing());
+  privileged_host_device_setter_remote().FlushForTesting();
 
   EXPECT_FALSE(fake_multidevice_setup());
 
@@ -448,9 +451,9 @@ TEST_F(MultiDeviceSetupServiceTest, FinishInitializationFirst) {
   EXPECT_EQ(1u, fake_multidevice_setup()->retry_set_host_now_args().size());
 
   // SetHostDevice(), without an auth token.
-  privileged_host_device_setter_ptr()->SetHostDevice("deviceId",
-                                                     base::DoNothing());
-  privileged_host_device_setter_ptr().FlushForTesting();
+  privileged_host_device_setter_remote()->SetHostDevice("deviceId",
+                                                        base::DoNothing());
+  privileged_host_device_setter_remote().FlushForTesting();
   EXPECT_EQ(1u, fake_multidevice_setup()->set_host_without_auth_args().size());
 }
 

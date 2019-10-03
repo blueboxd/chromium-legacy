@@ -674,6 +674,12 @@ public class ExternalNavigationHandler {
             // Make sure this extra is not sent unless we've done the verification.
             targetIntent.removeExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER);
         }
+
+        // The intent can be used to launch Chrome itself, record the user
+        // gesture here so that it can be used later.
+        if (params.hasUserGesture()) {
+            IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(targetIntent);
+        }
     }
 
     private @OverrideUrlLoadingResult int shouldOverrideUrlLoadingInternal(
@@ -820,12 +826,6 @@ public class ExternalNavigationHandler {
                 if (DEBUG) Log.i(TAG, "Custom tab redirect no handled");
                 return OverrideUrlLoadingResult.NO_OVERRIDE;
             }
-        }
-
-        // The intent can be used to launch Chrome itself, record the user
-        // gesture here so that it can be used later.
-        if (params.hasUserGesture()) {
-            IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(targetIntent);
         }
 
         switch (launchWebApkIfSoleIntentHandler(params, resolvingInfos, targetIntent)) {

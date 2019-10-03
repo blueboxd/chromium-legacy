@@ -10,19 +10,19 @@ transform: translateZ(-100px) rotateY(45deg);
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
       "bounds": [304, 304],
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow DIV id='parent'",
+      "name": "LayoutNGBlockFlow DIV id='parent'",
       "bounds": [280, 280],
       "contentsOpaque": true,
       "backgroundColor": "#FFFF00",
       "transform": 4
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV",
+      "name": "LayoutNGBlockFlow (positioned) DIV",
       "bounds": [200, 200],
       "backgroundColor": "#008000",
       "transform": 6

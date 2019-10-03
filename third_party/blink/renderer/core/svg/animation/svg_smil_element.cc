@@ -934,7 +934,8 @@ void SVGSMILElement::UpdateInterval(SMILTime presentation_time) {
   SMILInterval next_interval = ResolveInterval(begin_after, presentation_time);
   if (!next_interval.IsResolved() || next_interval == interval_)
     return;
-  previous_interval_ = interval_;
+  if (interval_.IsResolved())
+    previous_interval_ = interval_;
   interval_ = next_interval;
   NotifyDependentsOnNewInterval(interval_);
   interval_has_changed_ = true;
@@ -1024,6 +1025,8 @@ SVGSMILElement::ActiveState SVGSMILElement::DetermineActiveState(
     SMILTime elapsed) const {
   if (interval_.Contains(elapsed))
     return kActive;
+  if (is_waiting_for_first_interval_)
+    return kInactive;
   return Fill() == kFillFreeze ? kFrozen : kInactive;
 }
 
@@ -1068,18 +1071,13 @@ bool SVGSMILElement::CurrentIntervalIsActive(SMILTime elapsed) {
   return true;
 }
 
-void SVGSMILElement::UpdateSyncBases() {
-  if (!interval_has_changed_)
-    return;
-  interval_has_changed_ = false;
-}
-
 void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
   const bool was_active = GetActiveState() == kActive;
   active_state_ = DetermineActiveState(elapsed);
   const bool is_active = GetActiveState() == kActive;
   const bool interval_restart =
       interval_has_changed_ && previous_interval_.end == interval_.begin;
+  interval_has_changed_ = false;
 
   if ((was_active && !is_active) || interval_restart) {
     ScheduleEvent(event_type_names::kEndEvent);

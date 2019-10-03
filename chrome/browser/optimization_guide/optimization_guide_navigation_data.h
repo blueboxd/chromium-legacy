@@ -8,9 +8,9 @@
 #include <stdint.h>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <utility>
 
+#include "base/containers/flat_map.h"
 #include "base/optional.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/optimization_guide_enums.h"
@@ -118,13 +118,13 @@ class OptimizationGuideNavigationData {
   base::Optional<std::string> serialized_hint_version_string_;
 
   // The map from optimization type to the last decision made for that type.
-  std::unordered_map<optimization_guide::proto::OptimizationType,
-                     optimization_guide::OptimizationTypeDecision>
+  base::flat_map<optimization_guide::proto::OptimizationType,
+                 optimization_guide::OptimizationTypeDecision>
       optimization_type_decisions_;
 
   // The map from optimization target to the last decision made for that target.
-  std::unordered_map<optimization_guide::proto::OptimizationTarget,
-                     optimization_guide::OptimizationTargetDecision>
+  base::flat_map<optimization_guide::proto::OptimizationTarget,
+                 optimization_guide::OptimizationTargetDecision>
       optimization_target_decisions_;
 
   // Whether the hint cache had a hint for the navigation before commit.

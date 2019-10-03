@@ -2057,6 +2057,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "exo-pointer-lock",
+    "owners": [ "hollingum" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "expensive-background-timer-throttling",
     "owners": [ "altimin" ],
     "expiry_milestone": 76

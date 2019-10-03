@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_base.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -93,7 +94,7 @@ class ArCoreDevice : public VRDeviceBase {
 
   void OnCreateSessionCallback(
       mojom::XRRuntime::RequestSessionCallback deferred_callback,
-      mojom::XRFrameDataProviderPtrInfo frame_data_provider_info,
+      mojo::PendingRemote<mojom::XRFrameDataProvider> frame_data_provider,
       mojom::VRDisplayInfoPtr display_info,
       mojom::XRSessionControllerPtrInfo session_controller_info,
       mojom::XRPresentationConnectionPtr presentation_connection);

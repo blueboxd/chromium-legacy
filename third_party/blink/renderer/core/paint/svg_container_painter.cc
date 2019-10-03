@@ -95,10 +95,10 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
   SVGModelObjectPainter(layout_svg_container_)
       .PaintOutline(paint_info_before_filtering);
 
-  if (paint_info_before_filtering.IsPrinting() &&
+  if (paint_info_before_filtering.ShouldAddUrlMetadata() &&
       paint_info_before_filtering.phase == PaintPhase::kForeground) {
     ObjectPainter(layout_svg_container_)
-        .AddPDFURLRectIfNeeded(paint_info_before_filtering, PhysicalOffset());
+        .AddURLRectIfNeeded(paint_info_before_filtering, PhysicalOffset());
   }
 }
 

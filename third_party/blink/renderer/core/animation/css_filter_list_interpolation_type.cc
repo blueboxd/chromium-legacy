@@ -116,6 +116,14 @@ InterpolationValue ConvertFilterList(const FilterOperations& filter_operations,
   return InterpolationValue(std::move(interpolable_list));
 }
 
+class AlwaysInvalidateChecker
+    : public CSSInterpolationType::CSSConversionChecker {
+ public:
+  bool IsValid(const StyleResolverState& state,
+               const InterpolationValue& underlying) const final {
+    return false;
+  }
+};
 }  // namespace
 
 InterpolationValue CSSFilterListInterpolationType::MaybeConvertNeutral(
@@ -262,16 +270,19 @@ InterpolationValue
 CSSFilterListInterpolationType::PreInterpolationCompositeIfNeeded(
     InterpolationValue value,
     const InterpolationValue& underlying,
-    EffectModel::CompositeOperation composite) const {
+    EffectModel::CompositeOperation composite,
+    ConversionCheckers& conversion_checkers) const {
   DCHECK(!value.non_interpolable_value);
   DCHECK(!underlying.non_interpolable_value);
 
-  // By default, the interpolation stack attempts to optimize composition by
-  // doing it after interpolation. This does not work in the case of filter
-  // lists, as they have a composition behavior of concatenation. To work around
-  // that, we perform our composition in PreInterpolationCompositeIfNeeded
-  // (which runs before interpolation), and then make Composite a simple
-  // replacement with the resultant value.
+  // Due to the post-interpolation composite optimization, the interpolation
+  // stack aggressively caches interpolated values. When we are doing
+  // pre-interpolation compositing, this can cause us to bake-in the composited
+  // result even when the underlying value is changing. This checker is a hack
+  // to disable that caching in this case.
+  // TODO(crbug.com/1009230): Remove this once our interpolation code isn't
+  // caching composited values.
+  conversion_checkers.push_back(std::make_unique<AlwaysInvalidateChecker>());
 
   // The underlying value can be nullptr, most commonly if it contains a url().
   // TODO(crbug.com/1009229): Properly handle url() in filter composite.

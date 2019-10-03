@@ -2096,9 +2096,11 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method dispatchCompute
 [Worker]     method dispatchComputeIndirect
 [Worker]     method drawArrays
+[Worker]     method drawArraysIndirect
 [Worker]     method drawArraysInstanced
 [Worker]     method drawBuffers
 [Worker]     method drawElements
+[Worker]     method drawElementsIndirect
 [Worker]     method drawElementsInstanced
 [Worker]     method drawRangeElements
 [Worker]     method enable

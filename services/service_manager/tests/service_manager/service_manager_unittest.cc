@@ -45,28 +45,28 @@ namespace {
 
 void OnServiceStartedCallback(int* start_count,
                               std::string* service_name,
-                              const base::Closure& continuation,
+                              base::OnceClosure continuation,
                               const service_manager::Identity& identity) {
   (*start_count)++;
   *service_name = identity.name();
-  continuation.Run();
+  std::move(continuation).Run();
 }
 
 void OnServiceFailedToStartCallback(bool* run,
-                                    const base::Closure& continuation,
+                                    base::OnceClosure continuation,
                                     const service_manager::Identity& identity) {
   *run = true;
-  continuation.Run();
+  std::move(continuation).Run();
 }
 
 void OnServicePIDReceivedCallback(std::string* service_name,
-                                  uint32_t* serivce_pid,
-                                  const base::Closure& continuation,
+                                  uint32_t* service_pid,
+                                  base::OnceClosure continuation,
                                   const service_manager::Identity& identity,
                                   uint32_t pid) {
   *service_name = identity.name();
-  *serivce_pid = pid;
-  continuation.Run();
+  *service_pid = pid;
+  std::move(continuation).Run();
 }
 
 class TestService : public Service, public test::mojom::CreateInstanceTest {
@@ -210,14 +210,15 @@ class ServiceManagerTest : public testing::Test,
   }
 
   using ServiceFailedToStartCallback =
-      base::Callback<void(const service_manager::Identity&)>;
+      base::RepeatingCallback<void(const service_manager::Identity&)>;
   void set_service_failed_to_start_callback(
       const ServiceFailedToStartCallback& callback) {
     service_failed_to_start_callback_ = callback;
   }
 
   using ServicePIDReceivedCallback =
-      base::Callback<void(const service_manager::Identity&, uint32_t pid)>;
+      base::RepeatingCallback<void(const service_manager::Identity&,
+                                   uint32_t pid)>;
   void set_service_pid_received_callback(
       const ServicePIDReceivedCallback& callback) {
     service_pid_received_callback_ = callback;

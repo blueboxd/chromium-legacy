@@ -27,8 +27,7 @@ class NGFragmentPainter : public ObjectPainterBase {
 
   void PaintOutline(const PaintInfo&, const PhysicalOffset& paint_offset);
 
-  void AddPDFURLRectIfNeeded(const PaintInfo&,
-                             const PhysicalOffset& paint_offset);
+  void AddURLRectIfNeeded(const PaintInfo&, const PhysicalOffset& paint_offset);
 
   static bool ShouldRecordHitTestData(const PaintInfo&,
                                       const NGPhysicalBoxFragment&);

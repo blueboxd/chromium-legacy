@@ -453,7 +453,7 @@ class MachineLevelUserCloudPolicyEnrollmentTest
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
-    command_line->AppendSwitch(::switches::kEnableMachineLevelUserCloudPolicy);
+    command_line->AppendSwitch(::switches::kEnableChromeBrowserCloudManagement);
   }
 #endif
 
@@ -555,7 +555,7 @@ class MachineLevelUserCloudPolicyPolicyFetchTest
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
-    command_line->AppendSwitch(::switches::kEnableMachineLevelUserCloudPolicy);
+    command_line->AppendSwitch(::switches::kEnableChromeBrowserCloudManagement);
   }
 #endif
 

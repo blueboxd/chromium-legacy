@@ -8,9 +8,9 @@
 #include "components/previews/content/previews_optimization_guide.h"
 
 #include <string>
-#include <unordered_set>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/containers/mru_cache.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 
@@ -51,7 +51,7 @@ class PreviewsOptimizationGuideDecider : public PreviewsOptimizationGuide {
   base::MRUCache<GURL, std::vector<std::string>> resource_loading_hints_cache_;
 
   // The optimization types registered with |optimization_guide_decider_|.
-  const std::unordered_set<optimization_guide::proto::OptimizationType>
+  const base::flat_set<optimization_guide::proto::OptimizationType>
       registered_optimization_types_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuideDecider);

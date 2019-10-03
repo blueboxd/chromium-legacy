@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/inspector/inspector_resource_content_loader.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
@@ -121,9 +122,21 @@ void InspectorResourceContentLoader::Start() {
       FetchParameters params(resource_request, options);
       ResourceClient* resource_client =
           MakeGarbageCollected<ResourceClient>(this);
+      ResourceFetcher* fetcher = document->Fetcher();
+      if (base::FeatureList::IsEnabled(
+              features::kHtmlImportsRequestInitiatorLock)) {
+        // For @imports from HTML imported Documents, we use the
+        // context document for getting origin and ResourceFetcher to use the
+        // main Document's origin, while using the element document for
+        // CompleteURL() to use imported Documents' base URLs.
+        if (!document->ContextDocument()) {
+          continue;
+        }
+        fetcher = document->ContextDocument()->Fetcher();
+      }
       // Prevent garbage collection by holding a reference to this resource.
-      resources_.push_back(CSSStyleSheetResource::Fetch(
-          params, document->Fetcher(), resource_client));
+      resources_.push_back(
+          CSSStyleSheetResource::Fetch(params, fetcher, resource_client));
       // A cache hit for a css stylesheet will complete synchronously. Don't
       // mark the client as pending if it already finished.
       if (resource_client->GetResource())

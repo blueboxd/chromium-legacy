@@ -216,6 +216,11 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // Change the state and check the state transition is valid.
   void SetState(State new_state);
 
+  // Check whether request api is supported or not.
+  bool CheckRequestAPISupport();
+  // Allocate necessary request buffers is request api is supported.
+  bool AllocateRequests();
+
   // V4L2 device in use.
   scoped_refptr<V4L2Device> device_;
   // VideoFrame manager used to allocate and recycle video frame.
@@ -273,6 +278,13 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   bool needs_bitstream_conversion_ = false;
   // Next bitstream ID.
   int32_t next_bitstream_buffer_id_ = 0;
+
+  // Set to true by CreateInputBuffers() if the codec driver supports requests.
+  bool supports_requests_ = false;
+  // FIFO queue of requests, only used if supports_requests_ is true.
+  std::queue<base::ScopedFD> requests_;
+  // Stores the media file descriptor, only used if supports_requests_ is true.
+  base::ScopedFD media_fd_;
 
   SEQUENCE_CHECKER(client_sequence_checker_);
   SEQUENCE_CHECKER(decoder_sequence_checker_);

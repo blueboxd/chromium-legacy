@@ -35,6 +35,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependencyImpl
   const gpu::GpuPreferences& GetGpuPreferences() override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() override;
   gpu::MailboxManager* GetMailboxManager() override;
+  gpu::ImageFactory* GetGpuImageFactory() override;
   bool IsOffscreen() override;
   gpu::SurfaceHandle GetSurfaceHandle() override;
   scoped_refptr<gl::GLSurface> CreateGLSurface(

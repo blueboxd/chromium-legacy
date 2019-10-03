@@ -135,6 +135,10 @@ class StreamTexture : public StreamTextureSharedImageInterface,
   SequenceId sequence_;
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
 
+  // This indicates whether ycbcr info is already sent from gpu process to the
+  // renderer.
+  bool ycbcr_info_sent_ = false;
+
   base::WeakPtrFactory<StreamTexture> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(StreamTexture);
 };

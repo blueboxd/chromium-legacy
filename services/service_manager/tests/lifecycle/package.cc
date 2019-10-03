@@ -30,7 +30,7 @@ class PackagedApp : public service_manager::Service,
     bindings_.set_connection_error_handler(
         base::BindRepeating(&PackagedApp::MaybeQuit, base::Unretained(this)));
     registry_.AddInterface<service_manager::test::mojom::LifecycleControl>(
-        base::Bind(&PackagedApp::Create, base::Unretained(this)));
+        base::BindRepeating(&PackagedApp::Create, base::Unretained(this)));
   }
 
   ~PackagedApp() override = default;

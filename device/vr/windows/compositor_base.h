@@ -14,6 +14,7 @@
 #include "device/vr/util/sliding_average.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -178,8 +179,8 @@ class XRCompositorCommon : public base::Thread,
   base::RepeatingCallback<void(mojom::XRVisibilityState)>
       on_visibility_state_changed_;
   mojom::IsolatedXRGamepadProvider::RequestUpdateCallback gamepad_callback_;
-  mojo::Binding<mojom::XRPresentationProvider> presentation_binding_;
-  mojo::Binding<mojom::XRFrameDataProvider> frame_data_binding_;
+  mojo::Receiver<mojom::XRPresentationProvider> presentation_receiver_{this};
+  mojo::Receiver<mojom::XRFrameDataProvider> frame_data_receiver_{this};
   mojo::Binding<mojom::IsolatedXRGamepadProvider> gamepad_provider_;
   mojo::Binding<mojom::ImmersiveOverlay> overlay_binding_;
 

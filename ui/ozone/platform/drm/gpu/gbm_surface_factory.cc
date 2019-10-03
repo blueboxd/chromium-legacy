@@ -273,7 +273,8 @@ std::unique_ptr<OverlaySurface> GbmSurfaceFactory::CreateOverlaySurface(
 }
 
 std::unique_ptr<SurfaceOzoneCanvas> GbmSurfaceFactory::CreateCanvasForWidget(
-    gfx::AcceleratedWidget widget) {
+    gfx::AcceleratedWidget widget,
+    base::TaskRunner* task_runner) {
   DCHECK(thread_checker_.CalledOnValidThread());
   LOG(ERROR) << "Software rendering mode is not supported with GBM platform";
   return nullptr;

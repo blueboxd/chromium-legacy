@@ -221,6 +221,7 @@ source_set("test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//components/autofill/core/browser",
     "//components/content_settings/core/browser",
     "//components/payments/core:core",
     "//components/strings",
@@ -229,6 +230,7 @@ source_set("test_support") {
     "//components/ukm/ios:features",
     "//components/unified_consent",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/content_settings:content_settings",
     "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/ui:feature_flags",
@@ -332,6 +334,7 @@ source_set("eg_app_support+eg2") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//components/autofill/core/browser",
     "//components/content_settings/core/browser",
     "//components/payments/core:core",
     "//components/strings",
@@ -340,6 +343,7 @@ source_set("eg_app_support+eg2") {
     "//components/ukm/ios:features",
     "//components/unified_consent",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/content_settings:content_settings",
     "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/ui:feature_flags",

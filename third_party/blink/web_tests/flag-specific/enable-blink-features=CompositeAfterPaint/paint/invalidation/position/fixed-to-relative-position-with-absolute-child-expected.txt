@@ -7,17 +7,17 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutNGBlockFlow HTML",
           "rect": [8, 208, 200, 200],
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='container' class='fixed blue'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='container' class='fixed blue'",
           "rect": [108, 300, 100, 100],
           "reason": "chunk disappeared"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='container' class='fixed blue'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='container' class='fixed blue'",
           "rect": [8, 200, 100, 100],
           "reason": "chunk disappeared"
         }

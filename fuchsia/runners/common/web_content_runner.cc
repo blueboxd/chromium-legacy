@@ -18,6 +18,7 @@
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/startup_context.h"
 #include "base/logging.h"
+#include "fuchsia/runners/buildflags.h"
 #include "fuchsia/runners/common/web_component.h"
 #include "url/gurl.h"
 
@@ -71,6 +72,12 @@ fuchsia::web::CreateContextParams WebContentRunner::BuildCreateContextParams(
   if (data_directory)
     create_params.set_data_directory(std::move(data_directory));
 
+  // Set |remote_debugging_port| on the context, if set.
+  if (BUILDFLAG(ENABLE_REMOTE_DEBUGGING_ON_PORT) != 0) {
+    create_params.set_remote_debugging_port(
+        BUILDFLAG(ENABLE_REMOTE_DEBUGGING_ON_PORT));
+  }
+
   create_params.set_features(features);
 
   return create_params;
@@ -99,7 +106,6 @@ void WebContentRunner::StartComponent(
       this,
       std::make_unique<base::fuchsia::StartupContext>(std::move(startup_info)),
       std::move(controller_request));
-  component->StartComponent();
   component->LoadUrl(url, std::vector<fuchsia::net::http::Header>());
   RegisterComponent(std::move(component));
 }

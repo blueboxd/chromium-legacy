@@ -12,10 +12,12 @@
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/public/test/fake_pepper_plugin_instance.h"
 #include "content/public/test/render_view_test.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace pdf {
@@ -244,6 +246,13 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
     images_.push_back(std::move(image));
   }
 
+  {
+    ppapi::PdfAccessibilityImageInfo image;
+    image.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
+    image.text_run_index = 2;
+    images_.push_back(std::move(image));
+  }
+
   page_info_.text_run_count = text_runs_.size();
   page_info_.char_count = chars_.size();
   page_info_.link_count = links_.size();
@@ -270,6 +279,7 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
    * ++++++ Link
    * ++++ Paragraph
    * ++++++ Static Text
+   * ++++++ Image
    * ++++++ Image
    */
 
@@ -298,7 +308,7 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
   paragraph_node = page_node->children()[1];
   ASSERT_TRUE(paragraph_node);
   EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
-  ASSERT_EQ(2u, paragraph_node->children().size());
+  ASSERT_EQ(3u, paragraph_node->children().size());
 
   ui::AXNode* static_text_node = paragraph_node->children()[0];
   ASSERT_TRUE(static_text_node);
@@ -309,6 +319,12 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
   ASSERT_TRUE(image_node);
   EXPECT_EQ(ax::mojom::Role::kImage, image_node->data().role);
   EXPECT_EQ(kTestAltText,
+            image_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+
+  image_node = paragraph_node->children()[2];
+  ASSERT_TRUE(image_node);
+  EXPECT_EQ(ax::mojom::Role::kImage, image_node->data().role);
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION),
             image_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 }
 

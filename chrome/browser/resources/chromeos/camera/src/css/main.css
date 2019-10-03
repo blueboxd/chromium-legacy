@@ -275,13 +275,11 @@ body.should-handle-intent-result #modes-group {
 }
 
 body.review-result #preview-video,
-body:not(.review-result) #review-photo-result,
-body:not(.review-result) #review-video-result,
+body:not(.review-result) #confirm-result-groups,
 body:not(.review-photo-result) #review-photo-result,
-body.review-photo-result #review-video-result,
-body.review-photo-result #play-result-video,
-body.playing-result-video #play-result-video,
-body:not(.review-result) #confirm-result-groups {
+body:not(.review-video-result) #review-video-result,
+body:not(.review-video-result) #play-result-video,
+body.playing-result-video #play-result-video {
   display: none;
 }
 

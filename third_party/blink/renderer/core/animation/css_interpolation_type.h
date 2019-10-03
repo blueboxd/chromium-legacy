@@ -74,7 +74,8 @@ class CORE_EXPORT CSSInterpolationType : public InterpolationType {
   virtual InterpolationValue PreInterpolationCompositeIfNeeded(
       InterpolationValue value,
       const InterpolationValue& underlying,
-      EffectModel::CompositeOperation composite) const {
+      EffectModel::CompositeOperation,
+      ConversionCheckers&) const {
     return value;
   }
 

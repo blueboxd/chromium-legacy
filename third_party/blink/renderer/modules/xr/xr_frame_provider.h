@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_FRAME_PROVIDER_H_
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -70,8 +70,10 @@ class XRFrameProvider final : public GarbageCollected<XRFrameProvider> {
   HeapVector<Member<XRSession>> requesting_sessions_;
   HeapVector<Member<XRSession>> processing_sessions_;
 
-  device::mojom::blink::XRPresentationProviderPtr presentation_provider_;
-  device::mojom::blink::XRFrameDataProviderPtr immersive_data_provider_;
+  mojo::Remote<device::mojom::blink::XRPresentationProvider>
+      presentation_provider_;
+  mojo::Remote<device::mojom::blink::XRFrameDataProvider>
+      immersive_data_provider_;
   device::mojom::blink::VRPosePtr frame_pose_;
 
   // This frame ID is XR-specific and is used to track when frames arrive at the

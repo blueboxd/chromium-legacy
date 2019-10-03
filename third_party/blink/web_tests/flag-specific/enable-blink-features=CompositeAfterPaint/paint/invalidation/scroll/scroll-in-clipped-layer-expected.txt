@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
+          "object": "LayoutNGBlockFlow (positioned) DIV class='absolute red'",
           "rect": [100, 150, 100, 100],
           "reason": "chunk disappeared"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative green'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV class='relative green'",
           "rect": [100, 150, 100, 100],
           "reason": "chunk appeared"
         }

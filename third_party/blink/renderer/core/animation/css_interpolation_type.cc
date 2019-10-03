@@ -142,7 +142,8 @@ InterpolationValue CSSInterpolationType::MaybeConvertSingle(
   if (result && keyframe.Composite() !=
                     EffectModel::CompositeOperation::kCompositeReplace) {
     return PreInterpolationCompositeIfNeeded(std::move(result), underlying,
-                                             keyframe.Composite());
+                                             keyframe.Composite(),
+                                             conversion_checkers);
   }
   return result;
 }

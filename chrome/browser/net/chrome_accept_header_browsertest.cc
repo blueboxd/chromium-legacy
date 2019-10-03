@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAcceptHeaderTest, Check) {
     // navigation code path and behaves similarly to PDF loaded inside <iframe>.
     ASSERT_EQ(
         "text/html,application/xhtml+xml,application/xml;q=0.9,image/"
-        "webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+        "webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
         plugin_accept_header);
   } else {
     // This is for a sub-resource request.

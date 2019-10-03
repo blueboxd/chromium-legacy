@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/omnibox_result.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/search_ranking_event.pb.h"
 #include "chromeos/constants/devicetype.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
@@ -118,7 +119,6 @@ Category CategoryFromResultType(ash::SearchResultType type, int subtype) {
 int GetExponentialBucketMinForSeconds(int64_t sample) {
   return ukm::GetExponentialBucketMin(sample, kBucketExponentForSeconds);
 }
-
 }  // namespace
 
 SearchRankingEventLogger::SearchRankingEventLogger(
@@ -138,14 +138,144 @@ SearchRankingEventLogger::~SearchRankingEventLogger() = default;
 SearchRankingEventLogger::ResultState::ResultState() = default;
 SearchRankingEventLogger::ResultState::~ResultState() = default;
 
-SearchRankingEventLogger::ResultInfo::ResultInfo() = default;
-SearchRankingEventLogger::ResultInfo::ResultInfo(
-    const SearchRankingEventLogger::ResultInfo& other) = default;
-SearchRankingEventLogger::ResultInfo::~ResultInfo() = default;
-
 void SearchRankingEventLogger::SetEventRecordedForTesting(
     base::OnceClosure closure) {
   event_recorded_for_testing_ = std::move(closure);
+}
+
+void SearchRankingEventLogger::PopulateSearchRankingItem(
+    SearchRankingItem* proto,
+    ChromeSearchResult* search_result,
+    int query_length,
+    bool use_for_logging) {
+  const base::Time now = base::Time::Now();
+  base::Time::Exploded now_exploded;
+  now.LocalExplode(&now_exploded);
+
+  auto& features = *proto->mutable_features();
+  features.set_category(static_cast<int>(CategoryFromResultType(
+      search_result->result_type(), search_result->result_subtype())));
+
+  // Note this is the search provider's original relevance score, not
+  // tweaked by any search ranking models. Scores are floats in 0 to 1, and
+  // we map this to ints 0 to 100.
+  features.set_relevance_score(
+      static_cast<int>(100 * search_result->relevance()));
+  features.set_hour_of_day(now_exploded.hour);
+  features.set_day_of_week(now_exploded.day_of_week);
+  features.set_query_length(GetExponentialBucketMinForCounts1000(query_length));
+
+  if (features.category() == static_cast<int>(Category::FILE)) {
+    features.set_file_extension(ExtensionTypeFromFileName(search_result->id()));
+  }
+
+  if (search_result->result_type() == ash::SearchResultType::kOmnibox) {
+    // The id metadata of an OmniboxResult is a stripped URL, which does not
+    // correspond to the URL that will be navigated to.
+    proto->set_target(
+        static_cast<OmniboxResult*>(search_result)->DestinationURL().spec());
+  } else {
+    proto->set_target(search_result->id());
+  }
+
+  const std::string& domain = GURL(search_result->id()).host();
+  if (!domain.empty()) {
+    features.set_domain(domain);
+  }
+
+  // If the proto is created for logging purposes, create a new item in the map.
+  // Otherwise lookup the map for event info and create a "dummy" event info if
+  // doesn't nothing found.
+  ResultState* event_info;
+  ResultState dummy_event_info;
+  if (use_for_logging) {
+    event_info = &id_to_result_state_[proto->target()];
+  } else {
+    const auto& it = id_to_result_state_.find(proto->target());
+    if (it != id_to_result_state_.end()) {
+      event_info = &it->second;
+    } else {
+      event_info = &dummy_event_info;
+    }
+  }
+
+  if (event_info->last_launch != base::nullopt) {
+    base::Time last_launch = event_info->last_launch.value();
+    base::Time::Exploded last_launch_exploded;
+    last_launch.LocalExplode(&last_launch_exploded);
+
+    features.set_time_since_last_launch(
+        GetExponentialBucketMinForSeconds((now - last_launch).InSeconds()));
+    features.set_time_of_last_launch(last_launch_exploded.hour);
+
+    // Reset the number of launches this hour to 0 if this is the first
+    // launch today of this event, to account for user sessions spanning
+    // multiple days.
+    if (features.has_is_launched() && features.is_launched() == 1 &&
+        now - event_info->last_launch.value() >=
+            base::TimeDelta::FromHours(23)) {
+      event_info->launches_per_hour[now_exploded.hour] = 0;
+    }
+  }
+
+  features.set_launches_this_session(
+      GetExponentialBucketMinForCounts1000(event_info->launches_this_session));
+
+  const auto& launches = event_info->launches_per_hour;
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[0]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[1]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[2]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[3]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[4]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[5]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[6]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[7]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[8]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[9]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[10]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[11]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[12]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[13]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[14]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[15]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[16]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[17]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[18]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[19]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[20]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[21]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[22]));
+  features.add_launches_at_hour(
+      GetExponentialBucketMinForCounts1000(launches[23]));
+
+  if (features.has_is_launched() && features.is_launched() == 1) {
+    event_info->last_launch = now;
+    event_info->launches_this_session += 1;
+    event_info->launches_per_hour[now_exploded.hour] += 1;
+  }
 }
 
 void SearchRankingEventLogger::Log(
@@ -158,22 +288,18 @@ void SearchRankingEventLogger::Log(
     if (!result)
       continue;
 
-    ResultInfo result_info;
-    result_info.index = id_index.position_index;
-    result_info.title = result->title();
-    result_info.type = result->result_type();
-    result_info.subtype = result->result_subtype();
-    result_info.relevance = result->relevance();
+    SearchRankingItem proto;
+    proto.mutable_features()->set_position(id_index.position_index);
+    proto.set_event_id(next_event_id_);
+    proto.mutable_features()->set_is_launched(
+        id_index.position_index == launched_index ? 1 : 0);
+    PopulateSearchRankingItem(&proto, result, trimmed_query.size(),
+                              true /*use_for_logging*/);
 
     // Omnibox results have associated URLs, so are logged keyed on the URL
     // after validating that it exists in the history service. Other results
     // have no associated URL, so use a blank source ID.
     if (result->result_type() == ash::SearchResultType::kOmnibox) {
-      // The id metadata of an OmnioboxResult is a stripped URL, which does not
-      // correspond to the URL that will be navigated to.
-      result_info.target =
-          static_cast<OmniboxResult*>(result)->DestinationURL().spec();
-
       // When an omnibox result is launched, we need to retrieve a source ID
       // using the history service. This may be the first time the URL is used
       // and so it must be committed to the history service database before we
@@ -184,17 +310,13 @@ void SearchRankingEventLogger::Log(
             FROM_HERE,
             base::BindOnce(
                 &SearchRankingEventLogger::GetBackgroundSourceIdAndLogEvent,
-                weak_factory_.GetWeakPtr(), next_event_id_, trimmed_query,
-                result_info, launched_index),
+                weak_factory_.GetWeakPtr(), proto),
             kDelayForHistoryService);
       } else {
-        GetBackgroundSourceIdAndLogEvent(next_event_id_, trimmed_query,
-                                         result_info, launched_index);
+        GetBackgroundSourceIdAndLogEvent(proto);
       }
     } else {
-      result_info.target = result->id();
-      LogEvent(next_event_id_, trimmed_query, result_info, launched_index,
-               base::nullopt);
+      LogEvent(proto, base::nullopt);
     }
   }
 
@@ -202,106 +324,68 @@ void SearchRankingEventLogger::Log(
 }
 
 void SearchRankingEventLogger::GetBackgroundSourceIdAndLogEvent(
-    int event_id,
-    const base::string16& trimmed_query,
-    const ResultInfo& result,
-    int launched_index) {
+    const SearchRankingItem& result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ukm_background_recorder_->GetBackgroundSourceIdIfAllowed(
-      url::Origin::Create(GURL(result.target)),
+      url::Origin::Create(GURL(result.target())),
       base::BindOnce(&SearchRankingEventLogger::LogEvent,
-                     base::Unretained(this), event_id, trimmed_query, result,
-                     launched_index));
+                     base::Unretained(this), result));
 }
 
 void SearchRankingEventLogger::LogEvent(
-    int event_id,
-    const base::string16& trimmed_query,
-    const ResultInfo& result,
-    int launched_index,
+    const SearchRankingItem& result,
     base::Optional<ukm::SourceId> source_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!source_id)
     source_id = ukm_recorder_->GetNewSourceID();
 
-  const base::Time now = base::Time::Now();
-  base::Time::Exploded now_exploded;
-  now.LocalExplode(&now_exploded);
-
   ukm::builders::AppListNonAppImpression event(source_id.value());
-  event.SetEventId(event_id)
-      .SetPosition(result.index)
-      .SetIsLaunched(result.index == launched_index)
-      .SetQueryLength(
-          GetExponentialBucketMinForCounts1000(trimmed_query.size()))
-      // Note this is the search provider's original relevance score, not
-      // tweaked by any search ranking models. Scores are floats in 0 to 1, and
-      // we map this to ints 0 to 100.
-      .SetRelevanceScore(static_cast<int>(100 * result.relevance))
-      .SetCategory(
-          static_cast<int>(CategoryFromResultType(result.type, result.subtype)))
-      .SetHourOfDay(now_exploded.hour)
-      .SetDayOfWeek(now_exploded.day_of_week);
+  event.SetEventId(result.event_id())
+      .SetPosition(result.features().position())
+      .SetIsLaunched(result.features().is_launched())
+      .SetQueryLength(result.features().query_length())
+      .SetRelevanceScore(result.features().relevance_score())
+      .SetCategory(result.features().category())
+      .SetHourOfDay(result.features().hour_of_day())
+      .SetDayOfWeek(result.features().day_of_week())
+      .SetLaunchesThisSession(result.features().launches_this_session());
 
-  if (result.type == ash::SearchResultType::kLauncher) {
-    event.SetFileExtension(ExtensionTypeFromFileName(result.target));
+  if (result.features().has_file_extension()) {
+    event.SetFileExtension(result.features().file_extension());
   }
 
-  auto& event_info = id_to_result_state_[result.target];
-
-  if (event_info.last_launch != base::nullopt) {
-    base::Time last_launch = event_info.last_launch.value();
-    base::Time::Exploded last_launch_exploded;
-    last_launch.LocalExplode(&last_launch_exploded);
-
-    event.SetTimeSinceLastLaunch(
-        GetExponentialBucketMinForSeconds((now - last_launch).InSeconds()));
-    event.SetTimeOfLastLaunch(last_launch_exploded.hour);
-
-    // Reset the number of launches this hour to 0 if this is the first launch
-    // today of this event, to account for user sessions spanning multiple days.
-    if (result.index == launched_index &&
-        now - last_launch >= base::TimeDelta::FromHours(23)) {
-      event_info.launches_per_hour[now_exploded.hour] = 0;
-    }
+  if (result.features().has_time_since_last_launch()) {
+    event.SetTimeSinceLastLaunch(result.features().time_since_last_launch());
+    event.SetTimeOfLastLaunch(result.features().time_of_last_launch());
   }
 
-  event.SetLaunchesThisSession(
-      GetExponentialBucketMinForCounts1000(event_info.launches_this_session));
-
-  const auto& launches = event_info.launches_per_hour;
-  event.SetLaunchesAtHour00(GetExponentialBucketMinForCounts1000(launches[0]));
-  event.SetLaunchesAtHour01(GetExponentialBucketMinForCounts1000(launches[1]));
-  event.SetLaunchesAtHour02(GetExponentialBucketMinForCounts1000(launches[2]));
-  event.SetLaunchesAtHour03(GetExponentialBucketMinForCounts1000(launches[3]));
-  event.SetLaunchesAtHour04(GetExponentialBucketMinForCounts1000(launches[4]));
-  event.SetLaunchesAtHour05(GetExponentialBucketMinForCounts1000(launches[5]));
-  event.SetLaunchesAtHour06(GetExponentialBucketMinForCounts1000(launches[6]));
-  event.SetLaunchesAtHour07(GetExponentialBucketMinForCounts1000(launches[7]));
-  event.SetLaunchesAtHour08(GetExponentialBucketMinForCounts1000(launches[8]));
-  event.SetLaunchesAtHour09(GetExponentialBucketMinForCounts1000(launches[9]));
-  event.SetLaunchesAtHour10(GetExponentialBucketMinForCounts1000(launches[10]));
-  event.SetLaunchesAtHour11(GetExponentialBucketMinForCounts1000(launches[11]));
-  event.SetLaunchesAtHour12(GetExponentialBucketMinForCounts1000(launches[12]));
-  event.SetLaunchesAtHour13(GetExponentialBucketMinForCounts1000(launches[13]));
-  event.SetLaunchesAtHour14(GetExponentialBucketMinForCounts1000(launches[14]));
-  event.SetLaunchesAtHour15(GetExponentialBucketMinForCounts1000(launches[15]));
-  event.SetLaunchesAtHour16(GetExponentialBucketMinForCounts1000(launches[16]));
-  event.SetLaunchesAtHour17(GetExponentialBucketMinForCounts1000(launches[17]));
-  event.SetLaunchesAtHour18(GetExponentialBucketMinForCounts1000(launches[18]));
-  event.SetLaunchesAtHour19(GetExponentialBucketMinForCounts1000(launches[19]));
-  event.SetLaunchesAtHour20(GetExponentialBucketMinForCounts1000(launches[20]));
-  event.SetLaunchesAtHour21(GetExponentialBucketMinForCounts1000(launches[21]));
-  event.SetLaunchesAtHour22(GetExponentialBucketMinForCounts1000(launches[22]));
-  event.SetLaunchesAtHour23(GetExponentialBucketMinForCounts1000(launches[23]));
+  const auto& launches = result.features().launches_at_hour();
+  event.SetLaunchesAtHour00(launches[0]);
+  event.SetLaunchesAtHour01(launches[1]);
+  event.SetLaunchesAtHour02(launches[2]);
+  event.SetLaunchesAtHour03(launches[3]);
+  event.SetLaunchesAtHour04(launches[4]);
+  event.SetLaunchesAtHour05(launches[5]);
+  event.SetLaunchesAtHour06(launches[6]);
+  event.SetLaunchesAtHour07(launches[7]);
+  event.SetLaunchesAtHour08(launches[8]);
+  event.SetLaunchesAtHour09(launches[9]);
+  event.SetLaunchesAtHour10(launches[10]);
+  event.SetLaunchesAtHour11(launches[11]);
+  event.SetLaunchesAtHour12(launches[12]);
+  event.SetLaunchesAtHour13(launches[13]);
+  event.SetLaunchesAtHour14(launches[14]);
+  event.SetLaunchesAtHour15(launches[15]);
+  event.SetLaunchesAtHour16(launches[16]);
+  event.SetLaunchesAtHour17(launches[17]);
+  event.SetLaunchesAtHour18(launches[18]);
+  event.SetLaunchesAtHour19(launches[19]);
+  event.SetLaunchesAtHour20(launches[20]);
+  event.SetLaunchesAtHour21(launches[21]);
+  event.SetLaunchesAtHour22(launches[22]);
+  event.SetLaunchesAtHour23(launches[23]);
 
   event.Record(ukm_recorder_);
-
-  if (result.index == launched_index) {
-    event_info.last_launch = now;
-    event_info.launches_this_session += 1;
-    event_info.launches_per_hour[now_exploded.hour] += 1;
-  }
 
   if (event_recorded_for_testing_)
     std::move(event_recorded_for_testing_).Run();

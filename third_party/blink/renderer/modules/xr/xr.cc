@@ -897,8 +897,9 @@ void XR::OnRequestSessionReturned(
           session->GetInputClickListener());
     }
   } else {
+    magic_window_provider_.reset();
     magic_window_provider_.Bind(std::move(session_ptr->data_provider));
-    magic_window_provider_.set_connection_error_handler(WTF::Bind(
+    magic_window_provider_.set_disconnect_handler(WTF::Bind(
         &XR::OnMagicWindowProviderDisconnect, WrapWeakPersistent(this)));
   }
 

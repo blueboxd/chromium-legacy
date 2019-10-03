@@ -243,6 +243,11 @@ void ContentTranslateDriver::NavigationEntryCommitted(
     // Workaround for http://crbug.com/653051: back navigation sometimes have
     // the reload core type. Once http://crbug.com/669008 got resolved, we
     // could revisit here for a thorough solution.
+    //
+    // This means that the new translation won't be started when the page
+    // is restored from back-forward cache, which is the right thing to do.
+    // TODO(crbug.com/1001087): Ensure that it stays disabled for
+    // back-forward navigations even when bug above is fixed.
     return;
   }
 

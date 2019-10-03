@@ -96,14 +96,18 @@ ArcServiceLauncher* g_arc_service_launcher = nullptr;
 
 }  // namespace
 
-ArcServiceLauncher::ArcServiceLauncher()
+ArcServiceLauncher::ArcServiceLauncher(
+    chromeos::SchedulerConfigurationManagerBase*
+        scheduler_configuration_manager)
     : arc_service_manager_(std::make_unique<ArcServiceManager>()),
       arc_session_manager_(std::make_unique<ArcSessionManager>(
           std::make_unique<ArcSessionRunner>(
               base::BindRepeating(ArcSession::Create,
                                   arc_service_manager_->arc_bridge_service(),
                                   &default_scale_factor_retriever_,
-                                  chrome::GetChannel())))) {
+                                  chrome::GetChannel(),
+                                  scheduler_configuration_manager)))),
+      scheduler_configuration_manager_(scheduler_configuration_manager) {
   DCHECK(g_arc_service_launcher == nullptr);
   g_arc_service_launcher = this;
 
@@ -257,7 +261,8 @@ void ArcServiceLauncher::ResetForTesting() {
   arc_session_manager_ = std::make_unique<ArcSessionManager>(
       std::make_unique<ArcSessionRunner>(base::BindRepeating(
           ArcSession::Create, arc_service_manager_->arc_bridge_service(),
-          &default_scale_factor_retriever_, chrome::GetChannel())));
+          &default_scale_factor_retriever_, chrome::GetChannel(),
+          scheduler_configuration_manager_)));
 }
 
 }  // namespace arc

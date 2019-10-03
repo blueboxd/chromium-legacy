@@ -1519,9 +1519,6 @@ config("default_warnings") {
           # TODO(https://crbug.com/989932): Evaluate and possibly enable.
           "-Wno-implicit-int-float-conversion",
 
-          # TODO(https://crbug.com/995200): Clean up and enable.
-          "-Wno-xor-used-as-pow",
-
           # TODO(https://crbug.com/999871): Decide if we want to clean up the
           # codebase or just disable this.  Doesn't seem super useful, but
           # also fires in only 4 files.

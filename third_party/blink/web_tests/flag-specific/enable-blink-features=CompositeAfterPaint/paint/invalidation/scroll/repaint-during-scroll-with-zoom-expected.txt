@@ -23,7 +23,7 @@
           "reason": "scroll control"
         },
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutNGBlockFlow HTML",
           "rect": [0, 0, 55, 17],
           "reason": "paint property change"
         },

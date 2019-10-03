@@ -222,13 +222,13 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
   std::unique_ptr<ui::PlatformWindowSurface> platform_window_surface =
       factory->CreatePlatformWindowSurface(widget);
   std::unique_ptr<ui::SurfaceOzoneCanvas> surface_ozone =
-      factory->CreateCanvasForWidget(widget);
+      factory->CreateCanvasForWidget(widget, task_runner.get());
   CHECK(surface_ozone);
   return std::make_unique<viz::SoftwareOutputDeviceOzone>(
       std::move(platform_window_surface), std::move(surface_ozone));
 #elif defined(USE_X11)
-  return std::make_unique<viz::SoftwareOutputDeviceX11>(
-      widget, base::ThreadTaskRunnerHandle::Get().get());
+  return std::make_unique<viz::SoftwareOutputDeviceX11>(widget,
+                                                        task_runner.get());
 #else
   NOTREACHED();
   return nullptr;

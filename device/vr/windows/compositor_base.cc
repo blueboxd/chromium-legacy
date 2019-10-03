@@ -45,8 +45,6 @@ XRCompositorCommon::XRCompositorCommon()
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       webxr_js_time_(kSlidingAverageSize),
       webxr_gpu_time_(kSlidingAverageSize),
-      presentation_binding_(this),
-      frame_data_binding_(this),
       gamepad_provider_(this),
       overlay_binding_(this) {
   DCHECK(main_thread_task_runner_);
@@ -138,8 +136,8 @@ void XRCompositorCommon::SubmitFrameWithTextureHandle(
 void XRCompositorCommon::CleanUp() {
   submit_client_.reset();
   webxr_has_pose_ = false;
-  presentation_binding_.Close();
-  frame_data_binding_.Close();
+  presentation_receiver_.reset();
+  frame_data_receiver_.reset();
   gamepad_provider_.Close();
   overlay_binding_.Close();
   input_event_listener_ = nullptr;
@@ -198,8 +196,8 @@ void XRCompositorCommon::RequestSession(
     RequestSessionCallback callback) {
   DCHECK(options->immersive);
   webxr_has_pose_ = false;
-  presentation_binding_.Close();
-  frame_data_binding_.Close();
+  presentation_receiver_.reset();
+  frame_data_receiver_.reset();
 
   if (!StartRuntime()) {
     TRACE_EVENT_INSTANT0("xr", "Failed to start runtime",
@@ -217,11 +215,6 @@ void XRCompositorCommon::RequestSession(
 
   on_visibility_state_changed_ = std::move(on_visibility_state_changed);
 
-  device::mojom::XRPresentationProviderPtr presentation_provider;
-  device::mojom::XRFrameDataProviderPtr frame_data_provider;
-  presentation_binding_.Bind(mojo::MakeRequest(&presentation_provider));
-  frame_data_binding_.Bind(mojo::MakeRequest(&frame_data_provider));
-
   device::mojom::XRPresentationTransportOptionsPtr transport_options =
       device::mojom::XRPresentationTransportOptions::New();
   transport_options->transport_method =
@@ -233,13 +226,14 @@ void XRCompositorCommon::RequestSession(
   OnSessionStart();
 
   auto submit_frame_sink = device::mojom::XRPresentationConnection::New();
-  submit_frame_sink->provider = presentation_provider.PassInterface();
+  submit_frame_sink->provider =
+      presentation_receiver_.BindNewPipeAndPassRemote();
   submit_frame_sink->client_receiver =
       submit_client_.BindNewPipeAndPassReceiver();
   submit_frame_sink->transport_options = std::move(transport_options);
 
   auto session = device::mojom::XRSession::New();
-  session->data_provider = frame_data_provider.PassInterface();
+  session->data_provider = frame_data_receiver_.BindNewPipeAndPassRemote();
   session->submit_frame_sink = std::move(submit_frame_sink);
   session->uses_input_eventing = UsesInputEventing();
 
@@ -254,8 +248,8 @@ void XRCompositorCommon::ExitPresent() {
   TRACE_EVENT_INSTANT0("xr", "ExitPresent", TRACE_EVENT_SCOPE_THREAD);
   is_presenting_ = false;
   webxr_has_pose_ = false;
-  presentation_binding_.Close();
-  frame_data_binding_.Close();
+  presentation_receiver_.reset();
+  frame_data_receiver_.reset();
   submit_client_.reset();
   StopRuntime();
 

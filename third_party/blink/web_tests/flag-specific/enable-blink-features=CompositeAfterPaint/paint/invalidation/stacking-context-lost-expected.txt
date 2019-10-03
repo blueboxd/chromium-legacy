@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV id='outer'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='outer'",
       "position": [278, 278],
       "bounds": [100, 100],
       "contentsOpaque": true,
@@ -15,7 +15,7 @@
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='outer'",
           "rect": [0, 0, 100, 100],
           "reason": "full layer"
         }

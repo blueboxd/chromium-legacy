@@ -21,6 +21,14 @@ void StreamTextureProxy::Release() {
   // Cannot call |received_frame_cb_| after returning from here.
   ClearReceivedFrameCB();
 
+  // |this| can be deleted by the |task_runner_| on the compositor thread by
+  // posting task to that thread. So we need to clear the |set_ycbcr_info_cb_|
+  // here first so that its not called on the compositor thread before |this| is
+  // deleted. The problem is that |set_ycbcr_info_cb_| is provided by the owner
+  // of StreamTextureProxy, which is being destroyed and is releasing
+  // StreamTextureProxy.
+  ClearSetYcbcrInfoCB();
+
   // Release is analogous to the destructor, so there should be no more external
   // calls to this object in Release. Therefore there is no need to acquire the
   // lock to access |task_runner_|.
@@ -35,8 +43,14 @@ void StreamTextureProxy::ClearReceivedFrameCB() {
   received_frame_cb_.Reset();
 }
 
+void StreamTextureProxy::ClearSetYcbcrInfoCB() {
+  base::AutoLock lock(lock_);
+  set_ycbcr_info_cb_.Reset();
+}
+
 void StreamTextureProxy::BindToTaskRunner(
     const base::RepeatingClosure& received_frame_cb,
+    SetYcbcrInfoCb set_ycbcr_info_cb,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(task_runner.get());
 
@@ -45,6 +59,7 @@ void StreamTextureProxy::BindToTaskRunner(
     DCHECK(!task_runner_.get() || (task_runner.get() == task_runner_.get()));
     task_runner_ = task_runner;
     received_frame_cb_ = received_frame_cb;
+    set_ycbcr_info_cb_ = std::move(set_ycbcr_info_cb);
   }
 
   if (task_runner->BelongsToCurrentThread()) {
@@ -64,6 +79,17 @@ void StreamTextureProxy::BindOnThread() {
 
 void StreamTextureProxy::OnFrameAvailable() {
   base::AutoLock lock(lock_);
+  if (!received_frame_cb_.is_null())
+    received_frame_cb_.Run();
+}
+
+void StreamTextureProxy::OnFrameWithYcbcrInfoAvailable(
+    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info) {
+  base::AutoLock lock(lock_);
+  // Set the ycbcr info before running the received frame callback so that the
+  // first frame has it.
+  if (!set_ycbcr_info_cb_.is_null())
+    std::move(set_ycbcr_info_cb_).Run(std::move(ycbcr_info));
   if (!received_frame_cb_.is_null())
     received_frame_cb_.Run();
 }

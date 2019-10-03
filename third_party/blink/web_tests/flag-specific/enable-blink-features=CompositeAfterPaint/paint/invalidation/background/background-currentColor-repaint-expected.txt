@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='div2'",
+          "object": "LayoutNGBlockFlow DIV id='div2'",
           "rect": [8, 108, 100, 100],
           "reason": "appeared"
         },
         {
-          "object": "LayoutBlockFlow DIV id='div1'",
+          "object": "LayoutNGBlockFlow DIV id='div1'",
           "rect": [8, 8, 100, 100],
           "reason": "disappeared"
         }

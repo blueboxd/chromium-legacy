@@ -250,7 +250,7 @@ void OptimizationGuideHintsManager::OnHintsComponentAvailable(
 std::unique_ptr<optimization_guide::HintUpdateData>
 OptimizationGuideHintsManager::ProcessHintsComponent(
     const optimization_guide::HintsComponentInfo& info,
-    const std::unordered_set<optimization_guide::proto::OptimizationType>&
+    const base::flat_set<optimization_guide::proto::OptimizationType>&
         registered_optimization_types,
     std::unique_ptr<optimization_guide::HintUpdateData> update_data) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
@@ -287,7 +287,7 @@ void OptimizationGuideHintsManager::ProcessOptimizationFilters(
     const google::protobuf::RepeatedPtrField<
         optimization_guide::proto::OptimizationFilter>&
         blacklist_optimization_filters,
-    const std::unordered_set<optimization_guide::proto::OptimizationType>&
+    const base::flat_set<optimization_guide::proto::OptimizationType>&
         registered_optimization_types) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   base::AutoLock lock(optimization_filters_lock_);

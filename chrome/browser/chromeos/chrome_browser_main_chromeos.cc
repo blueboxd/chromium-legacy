@@ -545,8 +545,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   network_throttling_observer_.reset(
       new NetworkThrottlingObserver(g_browser_process->local_state()));
 
-  arc_service_launcher_ = std::make_unique<arc::ArcServiceLauncher>();
-
   ResourceReporter::GetInstance()->StartMonitoring(
       task_manager::TaskManagerInterface::GetTaskManager());
 
@@ -556,6 +554,9 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
       std::make_unique<SchedulerConfigurationManager>(
           DBusThreadManager::Get()->GetDebugDaemonClient(),
           g_browser_process->local_state());
+
+  arc_service_launcher_ = std::make_unique<arc::ArcServiceLauncher>(
+      scheduler_configuration_manager_.get());
 
   session_termination_manager_ =
       std::make_unique<chromeos::SessionTerminationManager>();
@@ -996,7 +997,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   low_disk_notification_.reset();
   demo_mode_resources_remover_.reset();
   adaptive_screen_brightness_manager_.reset();
-  scheduler_configuration_manager_.reset();
   auto_screen_brightness_controller_.reset();
   dark_resume_controller_.reset();
   lock_to_single_user_manager_.reset();
@@ -1079,6 +1079,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Specifically, this should be done after Profile destruction run in
   // ChromeBrowserMainPartsLinux::PostMainMessageLoopRun().
   arc_service_launcher_.reset();
+  // |arc_service_launcher_| uses |scheduler_configuration_manager_|.
+  scheduler_configuration_manager_.reset();
 
   AccessibilityManager::Shutdown();
 

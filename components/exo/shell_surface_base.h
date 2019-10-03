@@ -26,6 +26,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace ash {
@@ -49,6 +50,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
                          public aura::WindowObserver,
                          public aura::client::CaptureClientObserver,
                          public views::WidgetDelegate,
+                         public views::WidgetObserver,
                          public views::View,
                          public wm::ActivationChangeObserver {
  public:
@@ -166,6 +168,9 @@ class ShellSurfaceBase : public SurfaceTreeHost,
       views::Widget* widget) override;
   bool WidgetHasHitTestMask() const override;
   void GetWidgetHitTestMask(SkPath* mask) const override;
+
+  // Overridden from views::WidgetObserver:
+  void OnWidgetClosing(views::Widget* widget) override;
 
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;

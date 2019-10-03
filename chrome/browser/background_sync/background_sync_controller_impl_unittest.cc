@@ -258,10 +258,11 @@ TEST_F(BackgroundSyncControllerImplTest,
   // Medium engagement.
   base::TimeDelta delay = controller_->GetNextEventDelay(
       registration, &sync_parameters, base::TimeDelta::Max());
-  EXPECT_EQ(delay,
-            base::TimeDelta::FromMilliseconds(
-                min_gap_between_periodic_sync_events_ms *
-                BackgroundSyncControllerImpl::kEngagementLevelMediumPenalty));
+  EXPECT_EQ(
+      delay,
+      base::TimeDelta::FromMilliseconds(
+          min_gap_between_periodic_sync_events_ms *
+          BackgroundSyncControllerImpl::kEngagementLevelLowOrMediumPenalty));
 
   // Low engagement.
   SiteEngagementService::Get(&profile_)->ResetBaseScoreForURL(
@@ -269,10 +270,11 @@ TEST_F(BackgroundSyncControllerImplTest,
       SiteEngagementScore::GetMediumEngagementBoundary() - 1);
   delay = controller_->GetNextEventDelay(registration, &sync_parameters,
                                          base::TimeDelta::Max());
-  EXPECT_EQ(delay,
-            base::TimeDelta::FromMilliseconds(
-                min_gap_between_periodic_sync_events_ms *
-                BackgroundSyncControllerImpl::kEngagementLevelLowPenalty));
+  EXPECT_EQ(
+      delay,
+      base::TimeDelta::FromMilliseconds(
+          min_gap_between_periodic_sync_events_ms *
+          BackgroundSyncControllerImpl::kEngagementLevelLowOrMediumPenalty));
 
   // Minimal engagement.
   SiteEngagementService::Get(&profile_)->ResetBaseScoreForURL(GURL(kExampleUrl),

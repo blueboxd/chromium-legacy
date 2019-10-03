@@ -1309,6 +1309,9 @@ void ComputedStyle::SetColor(const Color& v) {
   SetIsColorInternalText(false);
   SetColorInternal(v);
 }
+void ComputedStyle::ResolveInternalTextColor(const Color& v) {
+  SetColorInternal(v);
+}
 
 static FloatRoundedRect::Radii CalcRadiiFor(const LengthSize& top_left,
                                             const LengthSize& top_right,

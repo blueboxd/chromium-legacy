@@ -3416,6 +3416,11 @@ const char kEnableZeroStateSuggestionsDescription[] =
     "Enable Zero State Suggestions feature in Launcher, which will show "
     "suggestions when launcher search box is active with an empty query";
 
+const char kExoPointerLockName[] = "Pointer lock for Linux applications";
+const char kExoPointerLockDescription[] =
+    "Allow Linux applications to request a pointer lock, i.e. exclusive use of "
+    "the mouse pointer.";
+
 const char kExperimentalAccessibilityChromeVoxLanguageSwitchingName[] =
     "Enable experimental ChromeVox language switching.";
 const char kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[] =

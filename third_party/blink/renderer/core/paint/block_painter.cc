@@ -220,10 +220,11 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
                              .CurrentPaintChunkProperties());
     }
   }
-  // If we're *printing* the foreground, paint the URL.
-  if (paint_phase == PaintPhase::kForeground && paint_info.IsPrinting()) {
-    ObjectPainter(layout_block_)
-        .AddPDFURLRectIfNeeded(paint_info, paint_offset);
+  // If we're *printing or creating a paint preview of* the foreground, paint
+  // the URL.
+  if (paint_phase == PaintPhase::kForeground &&
+      paint_info.ShouldAddUrlMetadata()) {
+    ObjectPainter(layout_block_).AddURLRectIfNeeded(paint_info, paint_offset);
   }
 
   // If we're painting our background (either 1. kBlockBackground - background

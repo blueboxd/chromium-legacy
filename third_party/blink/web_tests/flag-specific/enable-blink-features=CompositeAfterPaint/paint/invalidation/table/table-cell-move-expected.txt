@@ -7,17 +7,17 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutTableCell TD",
+          "object": "LayoutNGTableCell TD",
           "rect": [8, 326, 60, 60],
           "reason": "disappeared"
         },
         {
-          "object": "LayoutBlockFlow DIV",
+          "object": "LayoutNGBlockFlow DIV",
           "rect": [8, 266, 60, 60],
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow DIV",
+          "object": "LayoutNGBlockFlow DIV",
           "rect": [8, 206, 60, 60],
           "reason": "geometry"
         }

@@ -12,12 +12,12 @@
           "reason": "appeared"
         },
         {
-          "object": "LayoutTableCell TD",
+          "object": "LayoutNGTableCell TD",
           "rect": [118, 10, 108, 108],
           "reason": "disappeared"
         },
         {
-          "object": "LayoutTableCell TD",
+          "object": "LayoutNGTableCell TD",
           "rect": [10, 10, 106, 108],
           "reason": "disappeared"
         }

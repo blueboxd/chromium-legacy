@@ -1,0 +1,167 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='box'",
+      "bounds": [100, 150],
+      "contentsOpaque": true,
+      "backgroundColor": "#808080",
+      "transform": 2
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='box'",
+      "bounds": [100, 150],
+      "contentsOpaque": true,
+      "backgroundColor": "#808080",
+      "transform": 4
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='container'",
+      "position": [20, 10],
+      "bounds": [60, 70],
+      "transform": 5
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='box'",
+      "bounds": [100, 150],
+      "contentsOpaque": true,
+      "backgroundColor": "#808080",
+      "transform": 8
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='container'",
+      "position": [20, 10],
+      "bounds": [60, 70],
+      "transform": 9
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='box'",
+      "bounds": [100, 150],
+      "contentsOpaque": true,
+      "backgroundColor": "#808080",
+      "transform": 12
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [50, 50, 0, 1]
+      ]
+    },
+    {
+      "id": 2,
+      "parent": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 1, 1]
+      ]
+    },
+    {
+      "id": 3,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [242, 50, 0, 1]
+      ]
+    },
+    {
+      "id": 4,
+      "parent": 3,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 1, 1]
+      ]
+    },
+    {
+      "id": 5,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [28, 220, 0, 1]
+      ]
+    },
+    {
+      "id": 6,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [28, 220, 0, 1]
+      ]
+    },
+    {
+      "id": 7,
+      "parent": 6,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [22, 22, 0, 1]
+      ]
+    },
+    {
+      "id": 8,
+      "parent": 7,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 1, 1]
+      ]
+    },
+    {
+      "id": 9,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [220, 220, 0, 1]
+      ]
+    },
+    {
+      "id": 10,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [220, 220, 0, 1]
+      ]
+    },
+    {
+      "id": 11,
+      "parent": 10,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [22, 22, 0, 1]
+      ]
+    },
+    {
+      "id": 12,
+      "parent": 11,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 1, 1]
+      ]
+    }
+  ]
+}
+

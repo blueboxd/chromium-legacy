@@ -24,6 +24,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -400,9 +401,25 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, HttpPostInMainframe) {
   EXPECT_THAT(title, HasSubstr(original_url.path()));
 }
 
+class ViewSourceWithSplitCacheTest
+    : public ViewSourceTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  void SetUp() override {
+    bool split_cache_by_network_isolation_key = GetParam();
+    feature_list_.InitWithFeatureState(
+        net::features::kSplitCacheByNetworkIsolationKey,
+        split_cache_by_network_isolation_key);
+    ViewSourceTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests that "View Source" works fine for *subframes* shown via HTTP POST.
 // This is a regression test for https://crbug.com/774691.
-IN_PROC_BROWSER_TEST_F(ViewSourceTest, HttpPostInSubframe) {
+IN_PROC_BROWSER_TEST_P(ViewSourceWithSplitCacheTest, HttpPostInSubframe) {
   // Navigate to a page with multiple frames.
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -490,6 +507,11 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, HttpPostInSubframe) {
   EXPECT_THAT(title, HasSubstr(original_url.port()));
   EXPECT_THAT(title, HasSubstr(original_url.path()));
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    ViewSourceWithSplitCacheTest,
+    testing::Bool());
 
 // Verify that links clicked from view-source do not send a Referer header.
 // See https://crbug.com/834023.

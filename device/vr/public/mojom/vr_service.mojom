@@ -85,7 +85,7 @@ struct XRSessionOptions {
 // events, changes to view or stage parameters, or exit present calls initiated
 // by the device.
 struct XRSession {
-  XRFrameDataProvider data_provider;
+  pending_remote<XRFrameDataProvider> data_provider;
   // TODO(http://crbug.com/842025) Move where the client_receiver gets set to the
   // device process then mark this as non-optional.
   pending_receiver<XRSessionClient>? client_receiver;
@@ -107,7 +107,7 @@ struct XRSession {
 // way connection between the renderer and a device to synchronize and submit
 // frames to a sink outside of Chrome.
 struct XRPresentationConnection {
-  XRPresentationProvider provider;
+  pending_remote<XRPresentationProvider> provider;
   pending_receiver<XRPresentationClient> client_receiver;
   XRPresentationTransportOptions transport_options;
 };

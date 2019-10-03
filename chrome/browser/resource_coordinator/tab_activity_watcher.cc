@@ -586,26 +586,34 @@ void TabActivityWatcher::LogOldestNTabFeatures() {
   }
 }
 
-void TabActivityWatcher::SortLifecycleUnitWithTabRanker(
+void TabActivityWatcher::LogAndMaybeSortLifecycleUnitWithTabRanker(
     std::vector<LifecycleUnit*>* tabs) {
   // Set query_id so that all TabFeatures logged in this query can be joined.
   tab_metrics_logger_->set_query_id(NewInt64ForLabelIdOrQueryId());
 
   std::map<int32_t, base::Optional<TabFeatures>> tab_features;
   for (auto* lifecycle_unit : *tabs) {
-    content::WebContents* web_contents =
-        lifecycle_unit->AsTabLifecycleUnitExternal()->GetWebContents();
-    WebContentsData* web_contents_data =
-        WebContentsData::FromWebContents(web_contents);
-    if (!web_contents_data) {
+    auto* lifecycle_unit_external =
+        lifecycle_unit->AsTabLifecycleUnitExternal();
+    // the lifecycle_unit_external is nullptr in the unit test
+    // TabManagerDelegateTest::KillMultipleProcesses.
+    if (!lifecycle_unit_external) {
       tab_features[lifecycle_unit->GetID()] = base::nullopt;
     } else {
-      const base::Optional<TabFeatures>& tab =
+      WebContentsData* web_contents_data = WebContentsData::FromWebContents(
+          lifecycle_unit_external->GetWebContents());
+      DCHECK(web_contents_data);
+      const base::Optional<TabFeatures> tab =
           web_contents_data->GetTabFeatures();
       tab_features[lifecycle_unit->GetID()] = tab;
       web_contents_data->LogCurrentTabFeatures(tab);
     }
   }
+
+  // Directly return if TabRanker is not enabled.
+  if (!base::FeatureList::IsEnabled(features::kTabRanker))
+    return;
+
   const std::map<int32_t, float> reactivation_scores =
       predictor_->ScoreTabs(tab_features);
   // Sort with larger reactivation_score first (desending importance).

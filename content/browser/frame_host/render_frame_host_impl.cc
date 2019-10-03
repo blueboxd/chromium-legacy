@@ -4117,8 +4117,9 @@ void RenderFrameHostImpl::CreateNewWindow(
       cloned_namespace.get());
 
   if (is_new_browsing_instance || !new_window) {
-    // Opener suppressed or Javascript access disabled. Never tell the renderer
-    // about the new window.
+    // Opener suppressed, Javascript access disabled, or delegate did not
+    // provide a handle to any windows it created. In these cases, never tell
+    // the renderer about the new window.
     std::move(callback).Run(mojom::CreateNewWindowStatus::kIgnore, nullptr);
     return;
   }
@@ -4137,8 +4138,8 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   if (main_frame->waiting_for_init_) {
     // Need to check |waiting_for_init_| as some paths inside CreateNewWindow
-    // call above (namely, if WebContentsDelegate::ShouldCreateWebContents
-    // returns false) will resume requests by calling RenderFrameHostImpl::Init.
+    // call above (eg if WebContentsDelegate::IsWebContentsCreationOverridden()
+    // returns true) will resume requests by calling RenderFrameHostImpl::Init.
     main_frame->frame_->BlockRequests();
   }
 

@@ -12,7 +12,7 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow DIV class='sizedToGridArea'",
+          "object": "LayoutNGBlockFlow DIV class='sizedToGridArea'",
           "rect": [58, 48, 50, 50],
           "reason": "incremental"
         }

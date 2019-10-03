@@ -45,8 +45,9 @@ void InterfaceProvider::Forward(const ForwardCallback& callback) {
 }
 
 void InterfaceProvider::SetConnectionLostClosure(
-    const base::Closure& connection_lost_closure) {
-  interface_provider_.set_connection_error_handler(connection_lost_closure);
+    base::OnceClosure connection_lost_closure) {
+  interface_provider_.set_connection_error_handler(
+      std::move(connection_lost_closure));
 }
 
 base::WeakPtr<InterfaceProvider> InterfaceProvider::GetWeakPtr() {

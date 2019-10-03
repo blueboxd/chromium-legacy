@@ -231,10 +231,6 @@ void DesktopWindowTreeHostX11::SetShape(
   ResetWindowRegion();
 }
 
-bool DesktopWindowTreeHostX11::IsActive() const {
-  return GetXWindow()->IsActive();
-}
-
 Widget::MoveLoopResult DesktopWindowTreeHostX11::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     Widget::MoveLoopSource source,
@@ -437,8 +433,7 @@ void DesktopWindowTreeHostX11::OnActivationChanged(bool active) {
     open_windows().remove(widget);
     open_windows().insert(open_windows().begin(), widget);
   }
-  desktop_native_widget_aura()->HandleActivationChanged(active);
-  native_widget_delegate()->AsWidget()->GetRootView()->SchedulePaint();
+  DesktopWindowTreeHostPlatform::OnActivationChanged(active);
 }
 
 void DesktopWindowTreeHostX11::OnXWindowMapped() {

@@ -164,7 +164,9 @@ RESOURCES = \
 	src/sounds/record_end.ogg \
 	src/sounds/record_start.ogg \
 	src/sounds/shutter.ogg \
-	src/sounds/tick.ogg \
+	src/sounds/tick_final.ogg \
+	src/sounds/tick_inc.ogg \
+	src/sounds/tick_start.ogg \
 	src/views/main.html \
 	src/LICENSE \
 

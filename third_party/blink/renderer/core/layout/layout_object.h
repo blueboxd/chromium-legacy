@@ -2174,6 +2174,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   IntRect FragmentsVisualRectBoundingBox() const;
 
   void SetNeedsOverflowRecalc();
+  void SetNeedsVisualOverflowAndPaintInvalidation();
 
   void InvalidateClipPathCache();
 

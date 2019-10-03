@@ -242,9 +242,8 @@ int BackgroundSyncControllerImpl::GetSiteEngagementPenalty(const GURL& url) {
     case blink::mojom::EngagementLevel::MINIMAL:
       return kEngagementLevelMinimalPenalty;
     case blink::mojom::EngagementLevel::LOW:
-      return kEngagementLevelLowPenalty;
     case blink::mojom::EngagementLevel::MEDIUM:
-      return kEngagementLevelMediumPenalty;
+      return kEngagementLevelLowOrMediumPenalty;
     case blink::mojom::EngagementLevel::HIGH:
     case blink::mojom::EngagementLevel::MAX:
       // Very few sites reach max engagement level.

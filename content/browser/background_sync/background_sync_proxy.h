@@ -31,9 +31,12 @@ class CONTENT_EXPORT BackgroundSyncProxy {
  public:
   explicit BackgroundSyncProxy(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
-  ~BackgroundSyncProxy();
+  virtual ~BackgroundSyncProxy();
 
-  void ScheduleBrowserWakeUp(blink::mojom::BackgroundSyncType sync_type);
+  virtual void ScheduleDelayedProcessing(
+      blink::mojom::BackgroundSyncType sync_type,
+      base::TimeDelta delay,
+      base::OnceClosure delayed_task);
   void SendSuspendedPeriodicSyncOrigins(
       std::set<url::Origin> suspended_origins);
 

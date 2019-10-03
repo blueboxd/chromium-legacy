@@ -10,6 +10,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
@@ -83,8 +84,8 @@ constexpr char kHandleMessageInvalidateQuery[] =
     "android:onMessageReceived/android:handleMessageInvalidate";
 constexpr char kChromeTopEventsQuery[] =
     "viz,benchmark:Graphics.Pipeline.DrawAndSwap";
-constexpr char kVsyncQuery0[] = "android:HW_VSYNC_0|0";
-constexpr char kVsyncQuery1[] = "android:HW_VSYNC_0|1";
+constexpr char kSurfaceFlingerVsyncHandlerQuery[] = "android:HW_VSYNC_0|*";
+constexpr char kArcVsyncTimestampQuery[] = "android:ARC_VSYNC|*";
 
 constexpr char kBarrierFlushMatcher[] = "gpu:CommandBufferStub::OnAsyncFlush";
 
@@ -106,115 +107,133 @@ constexpr ssize_t kInvalidBufferIndex = -1;
 class BufferGraphicsEventMapper {
  public:
   struct MappingRule {
-    MappingRule(BufferEventType map_start, BufferEventType map_finish)
-        : map_start(map_start), map_finish(map_finish) {}
+    using EventTimeCallback =
+        base::RepeatingCallback<uint64_t(const ArcTracingEventMatcher&,
+                                         const ArcTracingEvent& event)>;
+
+    MappingRule(std::unique_ptr<ArcTracingEventMatcher> matcher,
+                BufferEventType map_start,
+                BufferEventType map_finish,
+                EventTimeCallback start_time_callback = EventTimeCallback())
+        : matcher(std::move(matcher)),
+          map_start(map_start),
+          map_finish(map_finish),
+          event_start_time_callback(start_time_callback) {}
+
+    bool Produce(const ArcTracingEvent& event,
+                 ArcTracingGraphicsModel::BufferEvents* collector) const {
+      if (!matcher->Match(event))
+        return false;
+
+      if (map_start != BufferEventType::kNone) {
+        uint64_t start_timestamp = event.GetTimestamp();
+        if (event_start_time_callback) {
+          start_timestamp = event_start_time_callback.Run(*matcher, event);
+        }
+
+        collector->push_back(
+            ArcTracingGraphicsModel::BufferEvent(map_start, start_timestamp));
+      }
+      if (map_finish != BufferEventType::kNone) {
+        collector->push_back(ArcTracingGraphicsModel::BufferEvent(
+            map_finish, event.GetEndTimestamp()));
+      }
+
+      return true;
+    }
+
+    std::unique_ptr<ArcTracingEventMatcher> matcher;
     BufferEventType map_start;
     BufferEventType map_finish;
+    EventTimeCallback event_start_time_callback;
   };
-  using MappingRules = std::vector<
-      std::pair<std::unique_ptr<ArcTracingEventMatcher>, MappingRule>>;
+  using MappingRules = std::vector<MappingRule>;
 
   BufferGraphicsEventMapper() {
     // exo rules
-    rules_.emplace_back(std::make_pair(
+    rules_.emplace_back(MappingRule(
         std::make_unique<ArcTracingEventMatcher>(kExoSurfaceAttachMatcher),
-        MappingRule(BufferEventType::kExoSurfaceAttach,
-                    BufferEventType::kNone)));
-    rules_.emplace_back(
-        std::make_pair(std::make_unique<ArcTracingEventMatcher>(
-                           kExoBufferProduceResourceMatcher),
-                       MappingRule(BufferEventType::kExoProduceResource,
-                                   BufferEventType::kNone)));
-    rules_.emplace_back(std::make_pair(
-        std::make_unique<ArcTracingEventMatcher>(
-            kExoBufferReleaseContentsMatcher),
-        MappingRule(BufferEventType::kNone, BufferEventType::kExoReleased)));
-    rules_.emplace_back(std::make_pair(
+        BufferEventType::kExoSurfaceAttach, BufferEventType::kNone));
+    rules_.emplace_back(MappingRule(std::make_unique<ArcTracingEventMatcher>(
+                                        kExoBufferProduceResourceMatcher),
+                                    BufferEventType::kExoProduceResource,
+                                    BufferEventType::kNone));
+    rules_.emplace_back(MappingRule(std::make_unique<ArcTracingEventMatcher>(
+                                        kExoBufferReleaseContentsMatcher),
+                                    BufferEventType::kNone,
+                                    BufferEventType::kExoReleased));
+    rules_.emplace_back(MappingRule(
         std::make_unique<ArcTracingEventMatcher>("exo:BufferInUse(step=bound)"),
-        MappingRule(BufferEventType::kExoBound, BufferEventType::kNone)));
-    rules_.emplace_back(
-        std::make_pair(std::make_unique<ArcTracingEventMatcher>(
-                           "exo:BufferInUse(step=pending_query)"),
-                       MappingRule(BufferEventType::kExoPendingQuery,
-                                   BufferEventType::kNone)));
+        BufferEventType::kExoBound, BufferEventType::kNone));
+    rules_.emplace_back(MappingRule(std::make_unique<ArcTracingEventMatcher>(
+                                        "exo:BufferInUse(step=pending_query)"),
+                                    BufferEventType::kExoPendingQuery,
+                                    BufferEventType::kNone));
 
     // gpu rules
-    rules_.emplace_back(
-        std::make_pair(std::make_unique<ArcTracingEventMatcher>(
-                           "gpu:CommandBufferProxyImpl::OrderingBarrier"),
-                       MappingRule(BufferEventType::kChromeBarrierOrder,
-                                   BufferEventType::kNone)));
-    rules_.emplace_back(std::make_pair(
+    rules_.emplace_back(MappingRule(
+        std::make_unique<ArcTracingEventMatcher>(
+            "gpu:CommandBufferProxyImpl::OrderingBarrier"),
+        BufferEventType::kChromeBarrierOrder, BufferEventType::kNone));
+    rules_.emplace_back(MappingRule(
         std::make_unique<ArcTracingEventMatcher>(kBarrierFlushMatcher),
-        MappingRule(BufferEventType::kNone,
-                    BufferEventType::kChromeBarrierFlush)));
+        BufferEventType::kNone, BufferEventType::kChromeBarrierFlush));
 
     // android rules
-    rules_.emplace_back(std::make_pair(
+    rules_.emplace_back(MappingRule(
         std::make_unique<ArcTracingEventMatcher>(kDequeueBufferQuery),
-        MappingRule(BufferEventType::kBufferQueueDequeueStart,
-                    BufferEventType::kBufferQueueDequeueDone)));
-    rules_.emplace_back(std::make_pair(
-        std::make_unique<ArcTracingEventMatcher>(kQueueBufferQuery),
-        MappingRule(BufferEventType::kBufferQueueQueueStart,
-                    BufferEventType::kBufferQueueQueueDone)));
-    rules_.emplace_back(std::make_pair(
+        BufferEventType::kBufferQueueDequeueStart,
+        BufferEventType::kBufferQueueDequeueDone));
+    rules_.emplace_back(
+        MappingRule(std::make_unique<ArcTracingEventMatcher>(kQueueBufferQuery),
+                    BufferEventType::kBufferQueueQueueStart,
+                    BufferEventType::kBufferQueueQueueDone));
+    rules_.emplace_back(MappingRule(
         std::make_unique<ArcTracingEventMatcher>("android:acquireBuffer"),
-        MappingRule(BufferEventType::kBufferQueueAcquire,
-                    BufferEventType::kNone)));
-    rules_.push_back(std::make_pair(
+        BufferEventType::kBufferQueueAcquire, BufferEventType::kNone));
+    rules_.push_back(MappingRule(
         std::make_unique<ArcTracingEventMatcher>("android:releaseBuffer"),
-        MappingRule(BufferEventType::kNone,
-                    BufferEventType::kBufferQueueReleased)));
-    rules_.emplace_back(std::make_pair(
-        std::make_unique<ArcTracingEventMatcher>(
-            "android:handleMessageInvalidate"),
-        MappingRule(BufferEventType::kSurfaceFlingerInvalidationStart,
-                    BufferEventType::kSurfaceFlingerInvalidationDone)));
-    rules_.emplace_back(std::make_pair(
-        std::make_unique<ArcTracingEventMatcher>(
-            "android:handleMessageRefresh"),
-        MappingRule(BufferEventType::kSurfaceFlingerCompositionStart,
-                    BufferEventType::kSurfaceFlingerCompositionDone)));
-    rules_.push_back(std::make_pair(
-        std::make_unique<ArcTracingEventMatcher>(kVsyncQuery0),
-        MappingRule(BufferEventType::kVsync, BufferEventType::kNone)));
-    rules_.push_back(std::make_pair(
-        std::make_unique<ArcTracingEventMatcher>(kVsyncQuery1),
-        MappingRule(BufferEventType::kVsync, BufferEventType::kNone)));
+        BufferEventType::kNone, BufferEventType::kBufferQueueReleased));
+    rules_.emplace_back(
+        MappingRule(std::make_unique<ArcTracingEventMatcher>(
+                        "android:handleMessageInvalidate"),
+                    BufferEventType::kSurfaceFlingerInvalidationStart,
+                    BufferEventType::kSurfaceFlingerInvalidationDone));
+    rules_.emplace_back(
+        MappingRule(std::make_unique<ArcTracingEventMatcher>(
+                        "android:handleMessageRefresh"),
+                    BufferEventType::kSurfaceFlingerCompositionStart,
+                    BufferEventType::kSurfaceFlingerCompositionDone));
 
     // viz,benchmark rules
     auto matcher = std::make_unique<ArcTracingEventMatcher>(
         "viz,benchmark:Graphics.Pipeline.DrawAndSwap");
     matcher->SetPhase(TRACE_EVENT_PHASE_ASYNC_BEGIN);
-    rules_.emplace_back(std::make_pair(
-        std::move(matcher),
-        MappingRule(BufferEventType::kChromeOSDraw, BufferEventType::kNone)));
-    rules_.emplace_back(std::make_pair(
+    rules_.emplace_back(MappingRule(std::move(matcher),
+                                    BufferEventType::kChromeOSDraw,
+                                    BufferEventType::kNone));
+    rules_.emplace_back(MappingRule(
         std::make_unique<ArcTracingEventMatcher>(
             "viz,benchmark:Graphics.Pipeline.DrawAndSwap(step=Draw)"),
-        MappingRule(BufferEventType::kNone, BufferEventType::kNone)));
-    rules_.emplace_back(std::make_pair(
+        BufferEventType::kNone, BufferEventType::kNone));
+    rules_.emplace_back(MappingRule(
         std::make_unique<ArcTracingEventMatcher>(
             "viz,benchmark:Graphics.Pipeline.DrawAndSwap(step=Swap)"),
-        MappingRule(BufferEventType::kChromeOSSwap, BufferEventType::kNone)));
-    rules_.emplace_back(std::make_pair(
+        BufferEventType::kChromeOSSwap, BufferEventType::kNone));
+    rules_.emplace_back(MappingRule(
         std::make_unique<ArcTracingEventMatcher>(
             "viz,benchmark:Graphics.Pipeline.DrawAndSwap(step=WaitForAck)"),
-        MappingRule(BufferEventType::kChromeOSWaitForAck,
-                    BufferEventType::kNone)));
-    rules_.emplace_back(
-        std::make_pair(std::make_unique<ArcTracingEventMatcher>(
-                           "viz,benchmark:Graphics.Pipeline.DrawAndSwap(step="
-                           "WaitForPresentation)"),
-                       MappingRule(BufferEventType::kChromeOSPresentationDone,
-                                   BufferEventType::kNone)));
+        BufferEventType::kChromeOSWaitForAck, BufferEventType::kNone));
+    rules_.emplace_back(MappingRule(
+        std::make_unique<ArcTracingEventMatcher>(
+            "viz,benchmark:Graphics.Pipeline.DrawAndSwap(step="
+            "WaitForPresentation)"),
+        BufferEventType::kChromeOSPresentationDone, BufferEventType::kNone));
     matcher = std::make_unique<ArcTracingEventMatcher>(
         "viz,benchmark:Graphics.Pipeline.DrawAndSwap");
     matcher->SetPhase(TRACE_EVENT_PHASE_ASYNC_END);
-    rules_.emplace_back(std::make_pair(
-        std::move(matcher), MappingRule(BufferEventType::kNone,
-                                        BufferEventType::kChromeOSSwapDone)));
+    rules_.emplace_back(MappingRule(std::move(matcher), BufferEventType::kNone,
+                                    BufferEventType::kChromeOSSwapDone));
   }
 
   ~BufferGraphicsEventMapper() = default;
@@ -222,17 +241,8 @@ class BufferGraphicsEventMapper {
   void Produce(const ArcTracingEvent& event,
                ArcTracingGraphicsModel::BufferEvents* collector) const {
     for (const auto& rule : rules_) {
-      if (!rule.first->Match(event))
-        continue;
-      if (rule.second.map_start != BufferEventType::kNone) {
-        collector->push_back(ArcTracingGraphicsModel::BufferEvent(
-            rule.second.map_start, event.GetTimestamp()));
-      }
-      if (rule.second.map_finish != BufferEventType::kNone) {
-        collector->push_back(ArcTracingGraphicsModel::BufferEvent(
-            rule.second.map_finish, event.GetEndTimestamp()));
-      }
-      return;
+      if (rule.Produce(event, collector))
+        return;
     }
     LOG(ERROR) << "Unsupported event: " << event.ToString();
   }
@@ -1321,10 +1331,58 @@ void GetAndroidTopEvents(const ArcTracingModel& common_model,
     GetEventMapper().Produce(*event, &result->buffer_events()[0]);
   }
 
-  for (const ArcTracingEvent* event : common_model.Select(kVsyncQuery0))
-    GetEventMapper().Produce(*event, &result->global_events());
-  for (const ArcTracingEvent* event : common_model.Select(kVsyncQuery1))
-    GetEventMapper().Produce(*event, &result->global_events());
+  const BufferGraphicsEventMapper::MappingRule
+      mapArcTimestampTraceEventToVsyncTimestamp(
+          std::make_unique<ArcTracingEventMatcher>(kArcVsyncTimestampQuery),
+          BufferEventType::kVsyncTimestamp, BufferEventType::kNone,
+          base::BindRepeating([](const ArcTracingEventMatcher& matcher,
+                                 const ArcTracingEvent& event) {
+            // kVsyncTimestamp is special in that we get the actual/ideal
+            // vsync timestamp which is provided as extra metadata encoded in
+            // the event name string, rather than looking at the the timestamp
+            // at which the event was recorded.
+            base::Optional<int64_t> timestamp =
+                matcher.ReadAndroidEventInt64(event);
+
+            // The encoded int64 timestamp is in nanoseconds. Convert to
+            // microseconds as that is what the event timestamps are in.
+            return timestamp ? (*timestamp / 1000) : event.GetTimestamp();
+          }));
+  bool hasArcVsyncTimestampEvents = false;
+  for (const ArcTracingEvent* event :
+       common_model.Select(kArcVsyncTimestampQuery)) {
+    if (mapArcTimestampTraceEventToVsyncTimestamp.Produce(
+            *event, &result->global_events())) {
+      hasArcVsyncTimestampEvents = true;
+    }
+  }
+
+  if (!hasArcVsyncTimestampEvents) {
+    // For backwards compatibility, if there are no events that match
+    // kArcVsyncTimestampQuery, we use the timestamp of the events that match
+    // kSurfaceFlingerVsyncHandlerQuery as the kVsyncTimestamp event, though
+    // this does not accurately represent the vsync event timestamp.
+    const BufferGraphicsEventMapper::MappingRule
+        mapVsyncHandlerTraceToVsyncTimestamp(
+            std::make_unique<ArcTracingEventMatcher>(
+                kSurfaceFlingerVsyncHandlerQuery),
+            BufferEventType::kVsyncTimestamp, BufferEventType::kNone);
+
+    for (const ArcTracingEvent* event :
+         common_model.Select(kSurfaceFlingerVsyncHandlerQuery))
+      mapVsyncHandlerTraceToVsyncTimestamp.Produce(*event,
+                                                   &result->global_events());
+  }
+
+  const BufferGraphicsEventMapper::MappingRule
+      mapVsyncHandlerTraceToVsyncHandlerEvent(
+          std::make_unique<ArcTracingEventMatcher>(
+              kSurfaceFlingerVsyncHandlerQuery),
+          BufferEventType::kSurfaceFlingerVsyncHandler, BufferEventType::kNone);
+  for (const ArcTracingEvent* event :
+       common_model.Select(kSurfaceFlingerVsyncHandlerQuery))
+    mapVsyncHandlerTraceToVsyncHandlerEvent.Produce(*event,
+                                                    &result->global_events());
 
   SortBufferEventsByTimestamp(&result->buffer_events()[0]);
 
@@ -1391,10 +1449,8 @@ bool LoadEvents(const base::Value* value,
                    BufferEventType::kExoJank) &&
         !IsInRange(type, BufferEventType::kChromeBarrierOrder,
                    BufferEventType::kChromeBarrierFlush) &&
-        !IsInRange(type, BufferEventType::kVsync,
-                   BufferEventType::kSurfaceFlingerCompositionDone) &&
-        !IsInRange(type, BufferEventType::kVsync,
-                   BufferEventType::kSurfaceFlingerCompositionJank) &&
+        !IsInRange(type, BufferEventType::kSurfaceFlingerVsyncHandler,
+                   BufferEventType::kVsyncTimestamp) &&
         !IsInRange(type, BufferEventType::kChromeOSDraw,
                    BufferEventType::kChromeOSJank) &&
         !IsInRange(type, BufferEventType::kCustomEvent,
@@ -1698,7 +1754,7 @@ void ArcTracingGraphicsModel::VsyncTrim() {
   int64_t trim_timestamp = -1;
 
   for (const auto& it : android_top_level_.global_events()) {
-    if (it.type == BufferEventType::kVsync) {
+    if (it.type == BufferEventType::kVsyncTimestamp) {
       trim_timestamp = it.timestamp;
       break;
     }

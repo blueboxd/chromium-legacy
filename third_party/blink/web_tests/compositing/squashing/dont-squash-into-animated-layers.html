@@ -24,7 +24,7 @@ onload = function() {
     target.style.transform = "translateX(10px)";
     if (window.internals) {
         var layers = JSON.parse(internals.layerTreeAsText(document, 1))["layers"]
-        var nonAnimatedDIVLayer = layers[4];
+        var nonAnimatedDIVLayer = layers[2];
         assert_true(nonAnimatedDIVLayer.compositingReasons[1] == "Layer was separately composited because it could not be squashed.");
         assert_true(nonAnimatedDIVLayer.squashingDisallowedReasons[0] == "Cannot squash into a layer that is animating.");
     }

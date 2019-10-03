@@ -20,7 +20,7 @@
 #include "chrome/browser/vr/base_scheduler_delegate.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/util/sliding_average.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/transform.h"
 
@@ -191,8 +191,9 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
 
   AndroidVSyncHelper vsync_helper_;
 
-  mojo::Binding<device::mojom::XRPresentationProvider> presentation_binding_;
-  mojo::Binding<device::mojom::XRFrameDataProvider> frame_data_binding_;
+  mojo::Receiver<device::mojom::XRPresentationProvider> presentation_receiver_{
+      this};
+  mojo::Receiver<device::mojom::XRFrameDataProvider> frame_data_receiver_{this};
 
   std::vector<device::mojom::XRInputSourceStatePtr> input_states_;
   mojo::Remote<device::mojom::XRPresentationClient> submit_client_;

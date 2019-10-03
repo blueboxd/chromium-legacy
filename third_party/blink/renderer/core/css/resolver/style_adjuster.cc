@@ -583,7 +583,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   }
 
   if (style.IsColorInternalText()) {
-    style.SetColor(
+    style.ResolveInternalTextColor(
         LayoutTheme::GetTheme().RootElementColor(style.UsedColorScheme()));
   }
 

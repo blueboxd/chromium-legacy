@@ -34,7 +34,7 @@ class MockDisplayClient : public mojom::DisplayClient {
   MOCK_METHOD1(OnContextCreationResult, void(gpu::ContextResult));
   MOCK_METHOD1(SetPreferredRefreshRate, void(float refresh_rate));
 #endif
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   MOCK_METHOD1(DidCompleteSwapWithNewSize, void(const gfx::Size&));
 #endif
 

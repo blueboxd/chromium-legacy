@@ -582,9 +582,8 @@ void BackgroundContentsService::LoadBackgroundContents(
   DVLOG(1) << "Loading background content url: " << url;
 
   BackgroundContents* contents = CreateBackgroundContents(
-      SiteInstance::CreateForURL(profile_, url), nullptr, MSG_ROUTING_NONE,
-      MSG_ROUTING_NONE, MSG_ROUTING_NONE, frame_name, application_id,
-      std::string(), nullptr);
+      SiteInstance::CreateForURL(profile_, url), nullptr, true, frame_name,
+      application_id, std::string(), nullptr);
 
   contents->CreateRenderViewSoon(url);
 }
@@ -592,16 +591,13 @@ void BackgroundContentsService::LoadBackgroundContents(
 BackgroundContents* BackgroundContentsService::CreateBackgroundContents(
     scoped_refptr<SiteInstance> site,
     content::RenderFrameHost* opener,
-    int32_t routing_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
+    bool is_new_browsing_instance,
     const std::string& frame_name,
     const std::string& application_id,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
   BackgroundContents* contents =
-      new BackgroundContents(std::move(site), opener, routing_id,
-                             main_frame_route_id, main_frame_widget_route_id,
+      new BackgroundContents(std::move(site), opener, is_new_browsing_instance,
                              this, partition_id, session_storage_namespace);
 
   // Register the BackgroundContents internally, then send out a notification

@@ -588,7 +588,7 @@ BackgroundSyncManager::BackgroundSyncManager(
     : op_scheduler_(CacheStorageSchedulerClient::kBackgroundSync,
                     base::ThreadTaskRunnerHandle::Get()),
       service_worker_context_(std::move(service_worker_context)),
-      proxy_(service_worker_context_),
+      proxy_(std::make_unique<BackgroundSyncProxy>(service_worker_context_)),
       devtools_context_(std::move(devtools_context)),
       parameters_(std::make_unique<BackgroundSyncParameters>()),
       disabled_(false),
@@ -738,7 +738,7 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
                   base::DoNothing::Once());
   FireReadyEvents(BackgroundSyncType::PERIODIC, /* reschedule= */ true,
                   base::DoNothing::Once());
-  proxy_.SendSuspendedPeriodicSyncOrigins(
+  proxy_->SendSuspendedPeriodicSyncOrigins(
       std::move(suspended_periodic_sync_origins));
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
@@ -1407,36 +1407,6 @@ void BackgroundSyncManager::DispatchPeriodicSyncEvent(
   }
 }
 
-base::CancelableOnceClosure& BackgroundSyncManager::get_delayed_task(
-    BackgroundSyncType sync_type) {
-  if (sync_type == BackgroundSyncType::ONE_SHOT)
-    return delayed_one_shot_sync_task_;
-  return delayed_periodic_sync_task_;
-}
-
-void BackgroundSyncManager::ScheduleDelayedTask(BackgroundSyncType sync_type,
-                                                base::TimeDelta delay) {
-  base::OnceClosure callback = get_delayed_task(sync_type).callback();
-
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, std::move(callback), delay);
-}
-
-void BackgroundSyncManager::ResetAndScheduleDelayedSyncTask(
-    BackgroundSyncType sync_type,
-    base::TimeDelta soonest_wakeup_delta) {
-  if (soonest_wakeup_delta.is_max() || soonest_wakeup_delta.is_zero())
-    return;
-
-  auto fire_events_callback = base::BindOnce(
-      &BackgroundSyncManager::FireReadyEvents, weak_ptr_factory_.GetWeakPtr(),
-      sync_type, /* reschedule= */ true, base::DoNothing::Once(),
-      /* keepalive= */ nullptr);
-
-  get_delayed_task(sync_type).Reset(std::move(fire_events_callback));
-  ScheduleDelayedTask(sync_type, soonest_wakeup_delta);
-}
-
 void BackgroundSyncManager::HasMainFrameProviderHost(const url::Origin& origin,
                                                      BoolCallback callback) {
   service_worker_context_->HasMainFrameProviderHost(origin.GetURL(),
@@ -1860,11 +1830,16 @@ void BackgroundSyncManager::ScheduleDelayedProcessingOfRegistrations(
     blink::mojom::BackgroundSyncType sync_type) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
-  ResetAndScheduleDelayedSyncTask(
+  auto fire_events_callback = base::BindOnce(
+      &BackgroundSyncManager::FireReadyEvents, weak_ptr_factory_.GetWeakPtr(),
+      sync_type, /* reschedule= */ true, base::DoNothing::Once(),
+      /* keepalive= */ nullptr);
+
+  proxy_->ScheduleDelayedProcessing(
       sync_type,
       GetSoonestWakeupDelta(sync_type,
-                            /* last_browser_wakeup_time= */ base::Time()));
-  proxy_.ScheduleBrowserWakeUp(sync_type);
+                            /* last_browser_wakeup_time= */ base::Time()),
+      std::move(fire_events_callback));
 }
 
 void BackgroundSyncManager::FireReadyEvents(

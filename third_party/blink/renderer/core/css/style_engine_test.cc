@@ -2153,6 +2153,51 @@ TEST_F(StyleEngineTest, ColorSchemeOverride) {
       GetDocument().documentElement()->GetComputedStyle()->UsedColorScheme());
 }
 
+TEST_F(StyleEngineTest, InternalRootColor) {
+  ScopedCSSColorSchemeForTest enable_color_scheme(true);
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kDark);
+
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      #container { color-scheme: dark }
+      #light { color-scheme: light }
+    </style>
+    <div id="container">
+      <span id="dark">Text</span>
+      <span id="light">Text</span>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhases();
+
+  auto* container = GetDocument().getElementById("container");
+  auto* light = GetDocument().getElementById("light");
+  auto* dark = GetDocument().getElementById("dark");
+
+  // Initial value of color-scheme is 'light'.
+  EXPECT_EQ(
+      WebColorScheme::kLight,
+      GetDocument().documentElement()->GetComputedStyle()->UsedColorScheme());
+  EXPECT_EQ(WebColorScheme::kDark,
+            container->GetComputedStyle()->UsedColorScheme());
+  // color-scheme:dark inherited from #container.
+  EXPECT_EQ(WebColorScheme::kDark, dark->GetComputedStyle()->UsedColorScheme());
+  EXPECT_EQ(WebColorScheme::kLight,
+            light->GetComputedStyle()->UsedColorScheme());
+
+  EXPECT_EQ(Color::kBlack, GetDocument()
+                               .documentElement()
+                               ->GetComputedStyle()
+                               ->VisitedDependentColor(GetCSSPropertyColor()));
+  EXPECT_EQ(Color::kWhite, container->GetComputedStyle()->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+  EXPECT_EQ(Color::kWhite, dark->GetComputedStyle()->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+  EXPECT_EQ(Color::kBlack, light->GetComputedStyle()->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+}
+
 TEST_F(StyleEngineTest, PseudoElementBaseComputedStyle) {
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>

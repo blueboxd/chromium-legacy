@@ -472,10 +472,9 @@ void SandboxLinux::StartBrokerProcess(
 
   // The initialization callback will perform generic initialization and then
   // call broker_sandboxer_callback.
-  CHECK(broker_process_->Init(
-      base::Bind(&UpdateProcessTypeAndEnableSandbox,
-                 base::Passed(std::move(broker_side_hook)), options,
-                 allowed_command_set)));
+  CHECK(broker_process_->Init(base::BindOnce(&UpdateProcessTypeAndEnableSandbox,
+                                             std::move(broker_side_hook),
+                                             options, allowed_command_set)));
 }
 
 bool SandboxLinux::HasOpenDirectories() const {

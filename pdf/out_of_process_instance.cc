@@ -80,6 +80,7 @@ constexpr char kJSStopScrollingType[] = "stopScrolling";
 constexpr char kJSDocumentDimensionsType[] = "documentDimensions";
 constexpr char kJSDocumentWidth[] = "width";
 constexpr char kJSDocumentHeight[] = "height";
+constexpr char kJSLayoutOptions[] = "layoutOptions";
 constexpr char kJSPageDimensions[] = "pageDimensions";
 constexpr char kJSPageX[] = "x";
 constexpr char kJSPageY[] = "y";
@@ -1292,6 +1293,7 @@ void OutOfProcessInstance::ProposeDocumentLayout(const DocumentLayout& layout) {
   dimensions.Set(kType, kJSDocumentDimensionsType);
   dimensions.Set(kJSDocumentWidth, pp::Var(document_size_.width()));
   dimensions.Set(kJSDocumentHeight, pp::Var(document_size_.height()));
+  dimensions.Set(kJSLayoutOptions, layout.options().ToVar());
   pp::VarArray page_dimensions_array;
   size_t num_pages = layout.page_count();
   if (page_is_processed_.size() < num_pages)

@@ -19,8 +19,8 @@ onload = function() {
 
   test(function() {
     var layers = JSON.parse(internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_DEBUG_INFO))["layers"];
-    var willChangeDIVLayer = layers[4];
-    var scaleTransformDIVLayer = layers[5];
+    var willChangeDIVLayer = layers[1];
+    var scaleTransformDIVLayer = layers[2];
     // Both transformed layers squash together after the will-change layer.
     assert_equals(willChangeDIVLayer.compositingReasons[0], "Has a will-change: transform compositing hint");
     assert_equals(scaleTransformDIVLayer.compositingReasons[0], "Secondary layer, home for a group of squashable content");

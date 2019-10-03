@@ -104,10 +104,8 @@ ArCoreGl::ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport)
     : gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       ar_image_transport_(std::move(ar_image_transport)),
       webxr_(std::make_unique<vr::WebXrPresentationState>()),
-      frame_data_binding_(this),
       session_controller_binding_(this),
-      environment_binding_(this),
-      presentation_binding_(this) {
+      environment_binding_(this) {
   DVLOG(1) << __func__;
   webxr_transform_ = WebXRImageTransformMatrix();
 }
@@ -177,18 +175,10 @@ void ArCoreGl::CreateSession(mojom::VRDisplayInfoPtr display_info,
 
   CloseBindingsIfOpen();
 
-  mojom::XRFrameDataProviderPtrInfo frame_data_provider_info;
-  frame_data_binding_.Bind(mojo::MakeRequest(&frame_data_provider_info));
-  frame_data_binding_.set_connection_error_handler(base::BindOnce(
-      &ArCoreGl::OnBindingDisconnect, weak_ptr_factory_.GetWeakPtr()));
-
   mojom::XRSessionControllerPtrInfo controller_info;
   session_controller_binding_.Bind(mojo::MakeRequest(&controller_info));
   session_controller_binding_.set_connection_error_handler(base::BindOnce(
       &ArCoreGl::OnBindingDisconnect, weak_ptr_factory_.GetWeakPtr()));
-
-  device::mojom::XRPresentationProviderPtr presentation_provider;
-  presentation_binding_.Bind(mojo::MakeRequest(&presentation_provider));
 
   device::mojom::XRPresentationTransportOptionsPtr transport_options =
       device::mojom::XRPresentationTransportOptions::New();
@@ -204,14 +194,19 @@ void ArCoreGl::CreateSession(mojom::VRDisplayInfoPtr display_info,
   auto submit_frame_sink = device::mojom::XRPresentationConnection::New();
   submit_frame_sink->client_receiver =
       submit_client_.BindNewPipeAndPassReceiver();
-  submit_frame_sink->provider = presentation_provider.PassInterface();
+  submit_frame_sink->provider =
+      presentation_receiver_.BindNewPipeAndPassRemote();
   submit_frame_sink->transport_options = std::move(transport_options);
 
   display_info_ = std::move(display_info);
 
   std::move(create_callback)
-      .Run(std::move(frame_data_provider_info), display_info_->Clone(),
-           std::move(controller_info), std::move(submit_frame_sink));
+      .Run(frame_data_receiver_.BindNewPipeAndPassRemote(),
+           display_info_->Clone(), std::move(controller_info),
+           std::move(submit_frame_sink));
+
+  frame_data_receiver_.set_disconnect_handler(base::BindOnce(
+      &ArCoreGl::OnBindingDisconnect, weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool ArCoreGl::InitializeGl(gfx::AcceleratedWidget drawing_widget) {
@@ -807,9 +802,9 @@ void ArCoreGl::CloseBindingsIfOpen() {
   DVLOG(3) << __func__;
 
   environment_binding_.Close();
-  frame_data_binding_.Close();
+  frame_data_receiver_.reset();
   session_controller_binding_.Close();
-  presentation_binding_.Close();
+  presentation_receiver_.reset();
 }
 
 bool ArCoreGl::IsOnGlThread() const {

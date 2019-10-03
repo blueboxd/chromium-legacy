@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_WEB_CONTENTS_OBSERVER_H_
 #define CHROME_BROWSER_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_WEB_CONTENTS_OBSERVER_H_
 
+#include <map>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
@@ -65,7 +65,7 @@ class OptimizationGuideWebContentsObserver
       bool has_committed);
 
   // The data related to a given navigation ID.
-  std::unordered_map<int64_t, OptimizationGuideNavigationData>
+  std::map<int64_t, OptimizationGuideNavigationData>
       inflight_optimization_guide_navigation_datas_;
 
   // Initialized in constructor. It may be null if the

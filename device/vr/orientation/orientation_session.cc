@@ -13,9 +13,9 @@ namespace device {
 
 VROrientationSession::VROrientationSession(
     VROrientationDevice* device,
-    mojom::XRFrameDataProviderRequest magic_window_request,
+    mojo::PendingReceiver<mojom::XRFrameDataProvider> magic_window_receiver,
     mojom::XRSessionControllerRequest session_request)
-    : magic_window_binding_(this, std::move(magic_window_request)),
+    : magic_window_receiver_(this, std::move(magic_window_receiver)),
       session_controller_binding_(this, std::move(session_request)),
       device_(device) {
   // Unretained is safe because the binding will close when we are destroyed,
@@ -62,7 +62,7 @@ void VROrientationSession::SetFrameDataRestricted(bool frame_data_restricted) {
 }
 
 void VROrientationSession::OnMojoConnectionError() {
-  magic_window_binding_.Close();
+  magic_window_receiver_.reset();
   session_controller_binding_.Close();
   device_->EndMagicWindowSession(this);  // This call will destroy us.
 }

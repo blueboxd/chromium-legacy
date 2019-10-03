@@ -21,8 +21,9 @@ namespace service_manager {
 // Connection.
 class SERVICE_MANAGER_PUBLIC_CPP_EXPORT InterfaceProvider {
  public:
-  using ForwardCallback = base::Callback<void(const std::string&,
-                                              mojo::ScopedMessagePipeHandle)>;
+  using ForwardCallback =
+      base::RepeatingCallback<void(const std::string&,
+                                   mojo::ScopedMessagePipeHandle)>;
   class TestApi {
    public:
     explicit TestApi(InterfaceProvider* provider) : provider_(provider) {}
@@ -78,7 +79,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT InterfaceProvider {
   void Forward(const ForwardCallback& callback);
 
   // Sets a closure to be run when the remote InterfaceProvider pipe is closed.
-  void SetConnectionLostClosure(const base::Closure& connection_lost_closure);
+  void SetConnectionLostClosure(base::OnceClosure connection_lost_closure);
 
   base::WeakPtr<InterfaceProvider> GetWeakPtr();
 
@@ -104,9 +105,9 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT InterfaceProvider {
   // Returns a callback to GetInterface<Interface>(). This can be passed to
   // BinderRegistry::AddInterface() to forward requests.
   template <typename Interface>
-  base::Callback<void(mojo::InterfaceRequest<Interface>)>
+  base::RepeatingCallback<void(mojo::InterfaceRequest<Interface>)>
   CreateInterfaceFactory() {
-    return base::Bind(
+    return base::BindRepeating(
         &InterfaceProvider::BindInterfaceRequestFromSource<Interface>,
         GetWeakPtr());
   }

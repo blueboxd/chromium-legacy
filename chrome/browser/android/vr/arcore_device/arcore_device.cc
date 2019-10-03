@@ -292,7 +292,7 @@ void ArCoreDevice::CallDeferredRequestSessionCallback(bool success) {
 
 void ArCoreDevice::OnCreateSessionCallback(
     mojom::XRRuntime::RequestSessionCallback deferred_callback,
-    mojom::XRFrameDataProviderPtrInfo frame_data_provider_info,
+    mojo::PendingRemote<mojom::XRFrameDataProvider> frame_data_provider,
     mojom::VRDisplayInfoPtr display_info,
     mojom::XRSessionControllerPtrInfo session_controller_info,
     mojom::XRPresentationConnectionPtr presentation_connection) {
@@ -300,7 +300,7 @@ void ArCoreDevice::OnCreateSessionCallback(
   DCHECK(IsOnMainThread());
 
   mojom::XRSessionPtr session = mojom::XRSession::New();
-  session->data_provider = std::move(frame_data_provider_info);
+  session->data_provider = std::move(frame_data_provider);
   session->display_info = std::move(display_info);
   session->submit_frame_sink = std::move(presentation_connection);
 

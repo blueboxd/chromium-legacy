@@ -123,6 +123,13 @@ class BadgeMediatorTest : public PlatformTest {
         InfobarType::kInfobarTypePasswordUpdate);
   }
 
+  // Inform InfobarBadgeTabHelper that the infobar added in AddSecondInfobar()
+  // is accepted.
+  void MarkSecondInfobarAccepted() {
+    GetFakeInfobarBadgeTabHelper()->UpdateBadgeForInfobarAccepted(
+        InfobarType::kInfobarTypePasswordUpdate);
+  }
+
   // Removes the Infobar created in AddSecondInfobar() to the
   // FakeInfoBarBadgeTabHelper.
   void RemoveInfobar() {
@@ -172,10 +179,17 @@ TEST_F(BadgeMediatorTest, BadgeMediatorTestRemoveInfobar) {
 TEST_F(BadgeMediatorTest, BadgeMediatorTestMarkAsRead) {
   AddAndActivateWebState(/*index=*/0, /*incognito=*/false);
   AddInfobar();
+  // Since there is only one badge, it should be marked as read.
+  EXPECT_FALSE(badge_consumer_.hasUnreadBadge);
   AddSecondInfobar();
   ASSERT_EQ(BadgeType::kBadgeTypeOverflow,
             badge_consumer_.displayedBadge.badgeType);
+  // Second badge should be unread since the overflow badge is being shown as
+  // the displayed badge.
   EXPECT_TRUE(badge_consumer_.hasUnreadBadge);
+  MarkSecondInfobarAccepted();
+  // Second badge should be read since its infobar is accepted.
+  EXPECT_FALSE(badge_consumer_.hasUnreadBadge);
 }
 
 // Test that the BadgeMediator updates the current badges to none when switching

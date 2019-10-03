@@ -1951,8 +1951,11 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMode) {
 
   LocalFrame* frame = web_view_helper.LocalMainFrame()->GetFrame();
   VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
-  EXPECT_EQ(viewport_height, visual_viewport.ContainerLayer()->Size().height());
-  EXPECT_TRUE(visual_viewport.ContainerLayer()->CcLayer()->masks_to_bounds());
+  auto* scroll_node = visual_viewport.GetScrollTranslationNode()->ScrollNode();
+  EXPECT_EQ(IntRect(0, 0, viewport_width, viewport_height),
+            scroll_node->ContainerRect());
+  EXPECT_EQ(IntSize(viewport_width, viewport_height),
+            scroll_node->ContentsSize());
   EXPECT_FALSE(scroll_container->CcLayer()->masks_to_bounds());
 }
 
@@ -5217,8 +5220,7 @@ TEST_F(WebFrameTest, SetTickmarks) {
   // Get the tickmarks for the original find request.
   LocalFrameView* frame_view = web_view_helper.LocalMainFrame()->GetFrameView();
   ScrollableArea* layout_viewport = frame_view->LayoutViewport();
-  Vector<IntRect> original_tickmarks;
-  layout_viewport->GetTickmarks(original_tickmarks);
+  Vector<IntRect> original_tickmarks = layout_viewport->GetTickmarks();
   EXPECT_EQ(4u, original_tickmarks.size());
 
   // Override the tickmarks.
@@ -5229,8 +5231,7 @@ TEST_F(WebFrameTest, SetTickmarks) {
   main_frame->SetTickmarks(overriding_tickmarks_expected);
 
   // Check the tickmarks are overriden correctly.
-  Vector<IntRect> overriding_tickmarks_actual;
-  layout_viewport->GetTickmarks(overriding_tickmarks_actual);
+  Vector<IntRect> overriding_tickmarks_actual = layout_viewport->GetTickmarks();
   EXPECT_EQ(overriding_tickmarks_expected, overriding_tickmarks_actual);
 
   // Reset the tickmark behavior.
@@ -5238,8 +5239,8 @@ TEST_F(WebFrameTest, SetTickmarks) {
   main_frame->SetTickmarks(reset_tickmarks);
 
   // Check that the original tickmarks are returned
-  Vector<IntRect> original_tickmarks_after_reset;
-  layout_viewport->GetTickmarks(original_tickmarks_after_reset);
+  Vector<IntRect> original_tickmarks_after_reset =
+      layout_viewport->GetTickmarks();
   EXPECT_EQ(original_tickmarks, original_tickmarks_after_reset);
 }
 
@@ -11376,8 +11377,8 @@ TEST_F(WebFrameSimTest, TickmarksDocumentRelative) {
                                                       search_text, *options);
 
   // Get the tickmarks for the original find request.
-  Vector<IntRect> original_tickmarks;
-  frame_view->LayoutViewport()->GetTickmarks(original_tickmarks);
+  Vector<IntRect> original_tickmarks =
+      frame_view->LayoutViewport()->GetTickmarks();
   EXPECT_EQ(1u, original_tickmarks.size());
 
   EXPECT_EQ(IntPoint(800, 2000), original_tickmarks[0].Location());

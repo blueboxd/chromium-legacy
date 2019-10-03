@@ -13,6 +13,7 @@
 #include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/internal/system_trust_store.h"
 #include "net/cert_net/cert_net_fetcher_impl.h"
+#include "net/der/encode_values.h"
 #include "net/log/net_log_with_source.h"
 #include "net/test/cert_builder.h"
 #include "net/test/cert_test_util.h"
@@ -369,5 +370,39 @@ TEST_F(CertVerifyProcBuiltinTest, EVRevocationCheckDeadline) {
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 #endif  // defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
+
+TEST_F(CertVerifyProcBuiltinTest, DebugData) {
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CreateChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
+
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
+  ASSERT_TRUE(chain.get());
+
+  base::Time time = base::Time::Now();
+
+  CertVerifyResult verify_result;
+  TestCompletionCallback callback;
+  Verify(chain.get(), "www.example.com", /*flags=*/0,
+         /*additional_trust_anchors=*/{root->GetX509Certificate()},
+         &verify_result, callback.callback());
+
+  int error = callback.WaitForResult();
+  EXPECT_THAT(error, IsOk());
+
+  auto* debug_data = CertVerifyProcBuiltinResultDebugData::Get(&verify_result);
+  ASSERT_TRUE(debug_data);
+  // No delayed tasks involved, so the mock time should not have advanced.
+  EXPECT_EQ(time, debug_data->verification_time());
+
+  base::Time der_verification_time_converted_back_to_base_time;
+  EXPECT_TRUE(net::der::GeneralizedTimeToTime(
+      debug_data->der_verification_time(),
+      &der_verification_time_converted_back_to_base_time));
+  // GeneralizedTime only has seconds precision.
+  EXPECT_EQ(
+      0,
+      (time - der_verification_time_converted_back_to_base_time).InSeconds());
+}
 
 }  // namespace net

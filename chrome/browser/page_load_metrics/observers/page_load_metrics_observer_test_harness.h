@@ -136,13 +136,9 @@ class PageLoadMetricsObserverTestHarness
 
   const PageLoadMetricsObserverDelegate& GetDelegateForCommittedLoad() const;
 
-  const ukm::TestAutoSetUkmRecorder& test_ukm_recorder() const {
-    return test_ukm_recorder_;
-  }
+  const ukm::TestAutoSetUkmRecorder& test_ukm_recorder() const;
 
  private:
-  base::HistogramTester histogram_tester_;
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
   std::unique_ptr<PageLoadMetricsObserverTester> tester_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadMetricsObserverTestHarness);

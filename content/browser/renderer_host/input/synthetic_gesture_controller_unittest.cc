@@ -205,8 +205,7 @@ class MockMoveGestureTarget : public MockSyntheticGestureTarget {
  public:
   MockMoveGestureTarget()
       : total_abs_move_distance_length_(0),
-        precise_scrolling_deltas_(false),
-        scroll_by_page_(false) {}
+        granularity_(ui::input_types::ScrollGranularity::kScrollByPixel) {}
   ~MockMoveGestureTarget() override {}
 
   gfx::Vector2dF start_to_end_distance() const {
@@ -215,14 +214,15 @@ class MockMoveGestureTarget : public MockSyntheticGestureTarget {
   float total_abs_move_distance_length() const {
     return total_abs_move_distance_length_;
   }
-  bool precise_scrolling_deltas() const { return precise_scrolling_deltas_; }
-  bool scroll_by_page() const { return scroll_by_page_; }
+
+  ui::input_types::ScrollGranularity granularity() const {
+    return granularity_;
+  }
 
  protected:
   gfx::Vector2dF start_to_end_distance_;
   float total_abs_move_distance_length_;
-  bool precise_scrolling_deltas_;
-  bool scroll_by_page_;
+  ui::input_types::ScrollGranularity granularity_;
 };
 
 class MockScrollMouseTarget : public MockMoveGestureTarget {
@@ -237,8 +237,7 @@ class MockScrollMouseTarget : public MockMoveGestureTarget {
     gfx::Vector2dF delta(mouse_wheel_event.delta_x, mouse_wheel_event.delta_y);
     start_to_end_distance_ += delta;
     total_abs_move_distance_length_ += delta.Length();
-    precise_scrolling_deltas_ = mouse_wheel_event.has_precise_scrolling_deltas;
-    scroll_by_page_ = mouse_wheel_event.scroll_by_page;
+    granularity_ = mouse_wheel_event.delta_units;
   }
 };
 
@@ -1284,7 +1283,8 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureMousePreciseScroll) {
   params.input_type = SyntheticSmoothMoveGestureParams::MOUSE_WHEEL_INPUT;
   params.start_point.SetPoint(39, 86);
   params.distances.push_back(gfx::Vector2d(0, -132));
-  params.precise_scrolling_deltas = true;
+  params.granularity =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
 
   std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
@@ -1295,8 +1295,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureMousePreciseScroll) {
       static_cast<MockMoveGestureTarget*>(target_);
   EXPECT_EQ(1, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(params.precise_scrolling_deltas,
-            scroll_target->precise_scrolling_deltas());
+  EXPECT_EQ(params.granularity, scroll_target->granularity());
 }
 
 TEST_F(SyntheticGestureControllerTest, SingleScrollGestureMouseScrollByPage) {
@@ -1306,7 +1305,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureMouseScrollByPage) {
   params.input_type = SyntheticSmoothMoveGestureParams::MOUSE_WHEEL_INPUT;
   params.start_point.SetPoint(39, 86);
   params.distances.push_back(gfx::Vector2d(0, -132));
-  params.scroll_by_page = true;
+  params.granularity = ui::input_types::ScrollGranularity::kScrollByPage;
 
   std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
@@ -1317,7 +1316,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureMouseScrollByPage) {
       static_cast<MockMoveGestureTarget*>(target_);
   EXPECT_EQ(1, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(params.scroll_by_page, scroll_target->scroll_by_page());
+  EXPECT_EQ(params.granularity, scroll_target->granularity());
 }
 
 void CheckIsWithinRangeMulti(float scroll_distance,

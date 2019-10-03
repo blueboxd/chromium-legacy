@@ -165,9 +165,9 @@ TEST_F(ProcessMetricsDecoratorTest, RefreshTimer) {
 
 TEST_F(ProcessMetricsDecoratorTest, PartialRefresh) {
   // Only contains the data for one of the two processes.
-  auto partial_memory_dump = base::make_optional(std::move(
+  auto partial_memory_dump = base::make_optional(
       GenerateMemoryDump({{mock_graph()->process->process_id(),
-                           kFakeResidentSetKb, kFakePrivateFootprintKb}})));
+                           kFakeResidentSetKb, kFakePrivateFootprintKb}}));
 
   EXPECT_CALL(*decorator(), GetMemoryDump())
       .WillOnce(
@@ -181,9 +181,9 @@ TEST_F(ProcessMetricsDecoratorTest, PartialRefresh) {
 
   // Do another partial refresh but this time for the other process. The data
   // attached to |mock_graph()->process| shouldn't change.
-  auto partial_memory_dump2 = base::make_optional(std::move(GenerateMemoryDump(
+  auto partial_memory_dump2 = base::make_optional(GenerateMemoryDump(
       {{mock_graph()->other_process->process_id(), kFakeResidentSetKb * 2,
-        kFakePrivateFootprintKb * 2}})));
+        kFakePrivateFootprintKb * 2}}));
   EXPECT_CALL(*decorator(), GetMemoryDump())
       .WillOnce(
           testing::Return(testing::ByMove(std::move(partial_memory_dump2))));

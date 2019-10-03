@@ -317,8 +317,8 @@ TEST_F(ChromeOmniboxNavigationObserverTest, AlternateNavInfoBar) {
       net_status = network::URLLoaderCompletionStatus(net::ERR_FAILED);
     } else {
       net_status = network::URLLoaderCompletionStatus(net::OK);
-      http_head = std::move(network::CreateURLResponseHead(
-          static_cast<net::HttpStatusCode>(response.http_response_code)));
+      http_head = network::CreateURLResponseHead(
+          static_cast<net::HttpStatusCode>(response.http_response_code));
     }
 
     test_url_loader_factory.AddResponse(GURL(response.urls[0]),

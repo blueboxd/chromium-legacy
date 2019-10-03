@@ -11,7 +11,7 @@
     android:orientation="vertical"
     android:focusable="false">
 
-    <org.chromium.chrome.browser.widget.RadioButtonWithDescription
+    <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
         android:id="@+id/system_default"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -20,7 +20,7 @@
         app:descriptionText="@string/themes_system_default_summary" />
 
     <!-- override default padding top and bottom -->
-    <org.chromium.chrome.browser.widget.RadioButtonWithDescription
+    <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
         android:id="@+id/light"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -30,7 +30,7 @@
         android:background="?attr/selectableItemBackground"
         app:titleText="@string/light_mode" />
 
-    <org.chromium.chrome.browser.widget.RadioButtonWithDescription
+    <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
         android:id="@+id/dark"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

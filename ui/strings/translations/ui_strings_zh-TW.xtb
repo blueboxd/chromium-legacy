@@ -117,7 +117,6 @@
 <translation id="4971687151119236543">上一首媒體曲目</translation>
 <translation id="5046499563572181734">輕觸這裡</translation>
 <translation id="5076340679995252485">貼上(&amp;P)</translation>
-<translation id="5137751499640340777">開啟 Google 助理</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">顯示/隱藏三角標記</translation>
 <translation id="5278860589123563674">無法傳送</translation>
@@ -154,6 +153,7 @@
 <translation id="6394627529324717982">逗號</translation>
 <translation id="6397363302884558537">Stop Speaking</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
+<translation id="6417265370957905582">Google 助理</translation>
 <translation id="6430678249303439055">一律封鎖來自這個應用程式的通知</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
 <translation id="6539092367496845964">發生錯誤，請稍後再試。</translation>
@@ -196,7 +196,6 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{超過 1 則未讀通知}other{超過 # 則未讀通知}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 分鐘內}other{# 分鐘內}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8098075892845277643">使用 Google 助理進行語音查詢</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 小時前}other{# 小時前}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{還剩 1 秒}other{還剩 # 秒}}</translation>
 <translation id="8144660977431427332">你的搜尋結果由 Google 助理提供。<ph name="LEARN_MORE" /></translation>

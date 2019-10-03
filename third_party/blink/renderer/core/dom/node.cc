@@ -102,7 +102,6 @@
 #include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/page/scrolling/scroll_customization_callbacks.h"
 #include "third_party/blink/renderer/core/page/scrolling/scroll_state.h"
 #include "third_party/blink/renderer/core/page/scrolling/scroll_state_callback.h"

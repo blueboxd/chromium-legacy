@@ -932,7 +932,7 @@ RGBA32 AXLayoutObject::GetColor() const {
   return color.Rgb();
 }
 
-AtomicString AXLayoutObject::FontFamily() const {
+String AXLayoutObject::FontFamily() const {
   if (!GetLayoutObject())
     return AXNodeObject::FontFamily();
 
@@ -940,9 +940,11 @@ AtomicString AXLayoutObject::FontFamily() const {
   if (!style)
     return AXNodeObject::FontFamily();
 
-  FontDescription& font_description =
-      const_cast<FontDescription&>(style->GetFontDescription());
-  return font_description.FirstFamily().Family();
+  const SimpleFontData* primary_font = style->GetFont().PrimaryFont();
+  if (!primary_font)
+    return AXNodeObject::FontFamily();
+
+  return primary_font->PlatformData().FontFamilyName();
 }
 
 // Font size is in pixels.

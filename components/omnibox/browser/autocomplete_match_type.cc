@@ -14,11 +14,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-const char AutocompleteMatchType::kAlternateTabSwitchButtonMessage[] =
-    "Navigation button, press Enter to navigate in this tab";
-const char AutocompleteMatchType::kAlternateTabSwitchMessage[] =
-    "Switch to this tab,";
-
 // static
 std::string AutocompleteMatchType::ToString(AutocompleteMatchType::Type type) {
   // clang-format off
@@ -78,25 +73,15 @@ base::string16 AddTabSwitchLabelTextIfNecessary(
     return base_message;
   }
 
-  if (is_tab_switch_button_focused !=
-      OmniboxFieldTrial::IsTabSwitchLogicReversed()) {
-    if (is_tab_switch_button_focused) {
-      const int button_message_id = IDS_ACC_TAB_SWITCH_BUTTON_FOCUSED_PREFIX;
-      if (label_prefix_length) {
-        const base::string16 sentinal =
-            base::WideToUTF16(kAccessibilityLabelPrefixEndSentinal);
-        *label_prefix_length += AccessibilityLabelPrefixLength(
-            l10n_util::GetStringFUTF16(button_message_id, sentinal));
-      }
-      return l10n_util::GetStringFUTF16(button_message_id, base_message);
-    } else {
-      return base::ASCIIToUTF16(
-                 AutocompleteMatchType::kAlternateTabSwitchMessage) +
-             base_message;
+  if (is_tab_switch_button_focused) {
+    const int button_message_id = IDS_ACC_TAB_SWITCH_BUTTON_FOCUSED_PREFIX;
+    if (label_prefix_length) {
+      const base::string16 sentinal =
+          base::WideToUTF16(kAccessibilityLabelPrefixEndSentinal);
+      *label_prefix_length += AccessibilityLabelPrefixLength(
+          l10n_util::GetStringFUTF16(button_message_id, sentinal));
     }
-  } else if (is_tab_switch_button_focused) {
-    return base::ASCIIToUTF16(
-        AutocompleteMatchType::kAlternateTabSwitchButtonMessage);
+    return l10n_util::GetStringFUTF16(button_message_id, base_message);
   }
 
   return l10n_util::GetStringFUTF16(IDS_ACC_TAB_SWITCH_SUFFIX, base_message);

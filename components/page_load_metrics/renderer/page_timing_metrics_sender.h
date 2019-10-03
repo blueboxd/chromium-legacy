@@ -76,7 +76,8 @@ class PageTimingMetricsSender {
 
   void UpdateResourceMetadata(int resource_id,
                               bool is_ad_resource,
-                              bool is_main_frame_resource);
+                              bool is_main_frame_resource,
+                              bool completed_before_fcp);
 
  protected:
   base::OneShotTimer* timer() const { return timer_.get(); }

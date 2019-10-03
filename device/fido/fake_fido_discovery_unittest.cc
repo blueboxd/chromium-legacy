@@ -67,7 +67,8 @@ TEST_F(FakeFidoDiscoveryTest, StartDiscovery) {
   ASSERT_TRUE(discovery.is_start_requested());
   ASSERT_FALSE(discovery.is_running());
 
-  EXPECT_CALL(observer, DiscoveryStarted(&discovery, true));
+  EXPECT_CALL(observer, DiscoveryStarted(&discovery, true,
+                                         std::vector<FidoAuthenticator*>()));
   discovery.WaitForCallToStartAndSimulateSuccess();
   ASSERT_TRUE(discovery.is_running());
   ASSERT_TRUE(discovery.is_start_requested());
@@ -87,7 +88,8 @@ TEST_F(FakeFidoDiscoveryTest, WaitThenStartStopDiscovery) {
   ASSERT_FALSE(discovery.is_running());
   ASSERT_TRUE(discovery.is_start_requested());
 
-  EXPECT_CALL(observer, DiscoveryStarted(&discovery, true));
+  EXPECT_CALL(observer, DiscoveryStarted(&discovery, true,
+                                         std::vector<FidoAuthenticator*>()));
   discovery.SimulateStarted(true);
   ASSERT_TRUE(discovery.is_running());
   ASSERT_TRUE(discovery.is_start_requested());
@@ -105,7 +107,8 @@ TEST_F(FakeFidoDiscoveryTest, StartFail) {
   ASSERT_FALSE(discovery.is_running());
   ASSERT_TRUE(discovery.is_start_requested());
 
-  EXPECT_CALL(observer, DiscoveryStarted(&discovery, false));
+  EXPECT_CALL(observer, DiscoveryStarted(&discovery, false,
+                                         std::vector<FidoAuthenticator*>()));
   discovery.SimulateStarted(false);
   ASSERT_FALSE(discovery.is_running());
   ASSERT_TRUE(discovery.is_start_requested());
@@ -119,19 +122,16 @@ TEST_F(FakeFidoDiscoveryTest, AddDevice) {
   discovery.set_observer(&observer);
 
   discovery.Start();
-
   auto device0 = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device0, GetId()).WillOnce(::testing::Return("device0"));
   base::RunLoop device0_done;
-  EXPECT_CALL(observer, AuthenticatorAdded(&discovery, _))
+  discovery.AddDevice(std::move(device0));
+
+  EXPECT_CALL(observer, DiscoveryStarted(&discovery, true, testing::SizeIs(1)))
       .WillOnce(testing::InvokeWithoutArgs(
           [&device0_done]() { device0_done.Quit(); }));
-  discovery.AddDevice(std::move(device0));
-  device0_done.Run();
-  ::testing::Mock::VerifyAndClearExpectations(&observer);
-
-  EXPECT_CALL(observer, DiscoveryStarted(&discovery, true));
   discovery.SimulateStarted(true);
+  device0_done.Run();
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
   auto device1 = std::make_unique<MockFidoDevice>();

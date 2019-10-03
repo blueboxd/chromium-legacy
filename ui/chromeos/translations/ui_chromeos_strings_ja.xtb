@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">フォルダの固定を解除</translation>
 <translation id="3678559383040232393">マルタ語キーボード</translation>
 <translation id="3685122418104378273">Google ドライブの同期は既定で無効になっています（モバイルデータを使用する場合）。</translation>
+<translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" /> をキャンセルします。</translation>
 <translation id="3726463242007121105">ファイルシステムがサポートされていないため、このデバイスを開くことはできません。</translation>
 <translation id="3741243925913727067">メディア デバイスの写真や動画を Google ドライブにバックアップします。</translation>
 <translation id="3749289110408117711">ファイル名</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">US インターナショナル（PC）</translation>
 <translation id="6346310558342052870">アクセスが制限されています</translation>
 <translation id="6353618411602605519">クロアチア語のキーボード</translation>
+<translation id="6356685157277930264">ファイルのフィードバック ウィンドウ</translation>
 <translation id="6358884629796491903">ドラゴン</translation>
 <translation id="637062427944097960">このファイルは別のデスクトップで開かれます。表示するには <ph name="USER_NAME" />（<ph name="MAIL_ADDRESS" />）に移動してください。</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> 個のアイテム</translation>

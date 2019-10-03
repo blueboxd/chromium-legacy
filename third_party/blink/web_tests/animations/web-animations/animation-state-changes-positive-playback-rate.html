@@ -282,10 +282,12 @@ test(function(t) {
 
 test(function(t) {
   var animation = createPausedAnimation(t);
+  // Calling pause on an animation that is already paused or pause-pending is a
+  // no-op.
   animation.pause();
   assert_equals(animation.startTime, null);
   assert_equals(animation.currentTime, 0);
-  assert_true(animation.pending);
+  assert_false(animation.pending);
   assert_equals(animation.playState, 'paused');
 }, "Calling pause() on a paused animation");
 

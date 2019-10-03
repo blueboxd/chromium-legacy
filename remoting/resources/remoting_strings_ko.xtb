@@ -136,6 +136,7 @@
 <translation id="4405930547258349619">핵심 라이브러리</translation>
 <translation id="4430435636878359009">컴퓨터에 원격 연결 사용중지</translation>
 <translation id="4430915108080446161">액세스 코드 생성 중...</translation>
+<translation id="4450893287417543264">다시 표시하지 않음</translation>
 <translation id="4472575034687746823">시작하기</translation>
 <translation id="4481276415609939789">등록된 컴퓨터가 없습니다. 컴퓨터에 원격 연결을 사용하려면 Chromoting을 설치하고 '<ph name="BUTTON_NAME" />' 버튼을 클릭하세요.</translation>
 <translation id="4513946894732546136">문제 신고</translation>
@@ -173,6 +174,7 @@
 <translation id="518094545883702183">이 정보는 보고된 문제를 진단하는 데만 사용되고 보고서 조사 담당자만 볼 수 있으며, 30일 이내에 폐기됩니다.</translation>
 <translation id="5204575267916639804">FAQ</translation>
 <translation id="5222676887888702881">로그아웃</translation>
+<translation id="5234764350956374838">숨기기</translation>
 <translation id="5254120496627797685">이 페이지를 닫으면 Chrome 원격 데스크톱 세션이 종료됩니다.</translation>
 <translation id="5308380583665731573">연결</translation>
 <translation id="5327248766486351172">이름</translation>

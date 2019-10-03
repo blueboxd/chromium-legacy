@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">Открепить папку</translation>
 <translation id="3678559383040232393">Мальтийская раскладка</translation>
 <translation id="3685122418104378273">Синхронизация Google Диска по мобильной сети отключена по умолчанию.</translation>
+<translation id="3689865792480713551">Отменить <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Невозможно получить доступ к устройству, так как его файловая система не поддерживается.</translation>
 <translation id="3741243925913727067">Сохранение фото и видео с вашего устройства на Google Диске</translation>
 <translation id="3749289110408117711">Название файла</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">Американская международная (ПК)</translation>
 <translation id="6346310558342052870">Доступ ограничен</translation>
 <translation id="6353618411602605519">Хорватская раскладка</translation>
+<translation id="6356685157277930264">Окно с информацией о файлах</translation>
 <translation id="6358884629796491903">Дракон</translation>
 <translation id="637062427944097960">Этот файл открыт на другом рабочем столе. Чтобы увидеть его, переключитесь на профиль пользователя <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
 <translation id="6395575651121294044">Объектов: <ph name="NUMBER_OF_FILES" /></translation>

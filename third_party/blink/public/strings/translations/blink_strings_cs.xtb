@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">zápatí</translation>
 <translation id="2709516037105925701">Automatické vyplňování</translation>
 <translation id="2723001399770238859">zvuk</translation>
+<translation id="2725963129578236554">komentáře</translation>
 <translation id="2746543609216772311">Datum musí být <ph name="MINIMUM_DATE_OR_TIME" /> nebo později.</translation>
 <translation id="2759744352195237655">tlačítko s vyskakovacím oknem</translation>
 <translation id="2761667185364618470">Chcete-li pokračovat, zaškrtněte toto políčko.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">Prodlužte prosím tento text na <ph name="MIN_CHARACTERS" /> či více znaků. (Aktuálně má <ph name="CURRENT_LENGTH" /> znaků.)</translation>
 <translation id="383465348367842624">Část před znakem <ph name="ATSIGN" /> nesmí obsahovat znak <ph name="INVALIDCHARACTER" />.</translation>
 <translation id="3846214748874656680">Ukončit režim na celou obrazovku</translation>
+<translation id="3889183436948184105">verze</translation>
 <translation id="3920932319529768807">závěr</translation>
 <translation id="3924558731517983934">aplikace</translation>
 <translation id="3944740393230681990">prolog</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">posuvník času zvuku</translation>
 <translation id="6443871981718447451">zobrazit nabídku skrytých titulků</translation>
 <translation id="6453774872122745852">poděkování</translation>
+<translation id="6475115390776617481">aktuální přítomnost</translation>
 <translation id="648732519525291180">výběr času</translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6572309429103589720">Neplatná gramatika</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">vložení</translation>
 <translation id="6989848892321993519">Prodlužte prosím tento text na <ph name="MIN_CHARACTERS" /> či více znaků. (Aktuálně má 1 znak.)</translation>
 <translation id="7033340931668032222">směr nahoru a dolů slouží ke změně hlasitosti</translation>
+<translation id="7034405885550056553">návrh</translation>
 <translation id="709897737746224366">Zadejte hodnotu, která odpovídá požadovanému formátu.</translation>
 <translation id="7118469954320184356">Popis není k dispozici.</translation>
 <translation id="7139483182332611405">předmluva</translation>
@@ -219,7 +223,7 @@
 <translation id="811583516810654505">Získávání popisu...</translation>
 <translation id="8117451130807776954">Tento týden</translation>
 <translation id="8199524924445686405">rrrr</translation>
-<translation id="8208673686607688524">místní datum a výběr času</translation>
+<translation id="8208673686607688524">výběr místního data a času</translation>
 <translation id="8261464734335370856">Neplatný pravopis</translation>
 <translation id="8284326494547611709">Titulky</translation>
 <translation id="835897206747267392">Neplatná hodnota.</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">výstup</translation>
 <translation id="8750798805984357768">Vyberte jednu z těchto možností.</translation>
 <translation id="8808573423886751634">kapitola</translation>
+<translation id="8822203815165896261">informace o autorech</translation>
 <translation id="8845239796550121995">Odesílání do televize</translation>
 <translation id="8851136666856101339">hlavní</translation>
 <translation id="8875657656876809964">Chyba přehrávání videa</translation>

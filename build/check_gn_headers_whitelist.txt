@@ -25,7 +25,6 @@ cc/input/event_listener_properties.h
 cc/input/scrollbar.h
 cc/input/scroller_size_metrics.h
 cc/layers/performance_properties.h
-cc/layers/scrollbar_theme_painter.h
 cc/output/bsp_compare_result.h
 cc/resources/release_callback_impl.h
 cc/resources/return_callback.h

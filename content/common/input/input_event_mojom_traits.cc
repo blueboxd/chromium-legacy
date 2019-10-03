@@ -340,13 +340,13 @@ bool StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::Read(
         wheel_event->momentum_phase =
             static_cast<blink::WebMouseWheelEvent::Phase>(
                 wheel_data->momentum_phase);
-        wheel_event->scroll_by_page = wheel_data->scroll_by_page;
-        wheel_event->has_precise_scrolling_deltas =
-            wheel_data->has_precise_scrolling_deltas;
         wheel_event->dispatch_type = wheel_data->cancelable;
         wheel_event->event_action =
             static_cast<blink::WebMouseWheelEvent::EventAction>(
                 wheel_data->event_action);
+        wheel_event->delta_units =
+            static_cast<ui::input_types::ScrollGranularity>(
+                wheel_data->delta_units);
       }
     }
 
@@ -397,9 +397,9 @@ StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::pointer_data(
         wheel_event->wheel_ticks_y, wheel_event->acceleration_ratio_x,
         wheel_event->acceleration_ratio_y, wheel_event->resending_plugin_id,
         wheel_event->phase, wheel_event->momentum_phase,
-        wheel_event->scroll_by_page, wheel_event->has_precise_scrolling_deltas,
         wheel_event->dispatch_type,
-        static_cast<uint8_t>(wheel_event->event_action));
+        static_cast<uint8_t>(wheel_event->event_action),
+        static_cast<uint8_t>(wheel_event->delta_units));
   }
 
   return PointerDataFromPointerProperties(

@@ -9,3 +9,6 @@ const base::Feature kSharingDeviceRegistration{
 
 const base::Feature kSharingUseDeviceInfo{"SharingUseDeviceInfo",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSharingQRCodeGenerator{"SharingQRCodeGenerator",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};

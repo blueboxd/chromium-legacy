@@ -69,6 +69,8 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
   if (!(frame->IsMappable() &&
         (frame->format() == media::PIXEL_FORMAT_I420 ||
          frame->format() == media::PIXEL_FORMAT_I420A)) &&
+      !(frame->storage_type() ==
+        media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) &&
       !frame->HasTextures()) {
     // Since connecting sources and sinks do not check the format, we need to
     // just ignore formats that we can not handle.
@@ -123,9 +125,11 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
       timestamp_aligner_.TranslateTimestamp(frame->timestamp().InMicroseconds(),
                                             now_us);
 
-  // Return |frame| directly if it is texture backed, because there is no
-  // cropping support for texture yet. See http://crbug/503653.
-  if (frame->HasTextures()) {
+  // Return |frame| directly if it is texture not backed up by GPU memory,
+  // because there is no cropping support for texture yet. See
+  // http://crbug/503653.
+  if (frame->HasTextures() &&
+      frame->storage_type() != media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
     // The webrtc::VideoFrame::UpdateRect expected by WebRTC must
     // be relative to the |visible_rect()|. We need to translate.
     const auto cropped_rect =
@@ -173,6 +177,20 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
     const auto cropped_rect =
         CropRectangle(accumulated_update_rect_, video_frame->visible_rect());
     DeliverFrame(std::move(video_frame), cropped_rect,
+                 translated_camera_time_us);
+    return;
+  }
+
+  // Delay scaling if |video_frame| is backed by GpuMemoryBuffer.
+  if (video_frame->storage_type() ==
+      media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    // When scaling is applied and any part of the frame has changed, we mark
+    // the whole frame as changed.
+    const auto update_rect_on_scaled =
+        accumulated_update_rect_.IsEmpty()
+            ? gfx::Rect()
+            : gfx::Rect(video_frame->natural_size());
+    DeliverFrame(std::move(video_frame), update_rect_on_scaled,
                  translated_camera_time_us);
     return;
   }
@@ -245,10 +263,17 @@ void WebRtcVideoTrackSource::DeliverFrame(
   // If the cropping or the size have changed since the previous
   // frame, even if nothing in the incoming coded frame content has changed, we
   // have to assume that every pixel in the outgoing frame has changed.
-  if (frame->visible_rect() != cropping_rect_of_previous_delivered_frame_) {
+  if (frame->visible_rect() != cropping_rect_of_previous_delivered_frame_ ||
+      frame->natural_size() != natural_size_of_previous_delivered_frame_) {
     cropping_rect_of_previous_delivered_frame_ = frame->visible_rect();
-    update_rect = gfx::Rect(0, 0, frame->visible_rect().width(),
-                            frame->visible_rect().height());
+    natural_size_of_previous_delivered_frame_ = frame->natural_size();
+    if (frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+      // Use the frame natural size since we delay the scaling.
+      update_rect = gfx::Rect(frame->natural_size());
+    } else {
+      update_rect = gfx::Rect(0, 0, frame->visible_rect().width(),
+                              frame->visible_rect().height());
+    }
   }
 
   // Clear accumulated_update_rect_.

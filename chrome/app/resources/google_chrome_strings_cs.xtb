@@ -20,7 +20,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1393853151966637042">Pomoc s používáním Chromu</translation>
 <translation id="1399397803214730675">V tomto počítači je již nainstalována novější verze prohlížeče Google Chrome. Jestliže software nefunguje, odinstalujte prosím prohlížeč Google Chrome a zkuste to znovu.</translation>
 <translation id="1434626383986940139">Aplikace Chrome Canary</translation>
-<translation id="1457721931618994305">Aktualizace prohlížeče Google Chrome...</translation>
 <translation id="1469002951682717133">Spouštěč aplikací Chrome</translation>
 <translation id="1553358976309200471">Aktualizovat Chrome</translation>
 <translation id="1587223624401073077">Google Chrome používá vaši kameru.</translation>
@@ -90,6 +89,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="3065168410429928842">Karta prohlížeče Chrome</translation>
 <translation id="3080151273017101988">Po ukončení prohlížeče Google Chrome nechat aplikace na pozadí spuštěné</translation>
 <translation id="3089968997497233615">K dispozici je nová, bezpečnější verze prohlížeče Google Chrome.</translation>
+<translation id="3138848678222082288">Budoucí verze prohlížeče Chrome se budou instalovat automaticky. Až toto stahování skončí, Chrome se restartuje a budete moci pokračovat.</translation>
 <translation id="3149510190863420837">Aplikace Chrome</translation>
 <translation id="3282568296779691940">Přihlásit se do Chromu</translation>
 <translation id="3340978935015468852">nastavení</translation>
@@ -174,9 +174,7 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="573759479754913123">O operačním systému Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome nelze spustit. Zkuste to znovu.</translation>
-<translation id="5877064549588274448">Verze byla změněna. Změny se projeví po restartování zařízení.</translation>
 <translation id="5895138241574237353">Restartovat</translation>
-<translation id="5906655207909574370">Aktualizace je téměř hotova! Dokončíte ji restartováním zařízení.</translation>
 <translation id="5940385492829620908">Zde jsou k dispozici vaše weby, záložky a další obsah Chromu.</translation>
 <translation id="5941830788786076944">Nastavit Google Chrome jako výchozí prohlížeč</translation>
 <translation id="6014844626092547096">Nyní jste v Chromu přihlášeni. Synchronizace je ale deaktivována správcem.</translation>
@@ -195,16 +193,15 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="6566149418543181476">Aktualizace prohlížeče Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Synchronizujete obsah a nastavení Chrome s účtem <ph name="PROFILE_EMAIL" />. Chcete-li možnosti synchronizace upravit nebo Chrome používat bez účtu Google, navštivte <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Zkopírováno do Chromu</translation>
-<translation id="6634887557811630702">Google Chrome je aktuální.</translation>
 <translation id="6676384891291319759">Přístup k internetu</translation>
 <translation id="6679975945624592337">Nechat Google Chrome běžet na pozadí</translation>
 <translation id="6750954913813541382">Text zadaný v prohlížeči odesílá Chrome kvůli opravě pravopisných chyb do Googlu</translation>
 <translation id="677276454032249905">Přesto Chrome ukončit?</translation>
 <translation id="683440813066116847">Pravidlo příchozího provozu pro aplikaci Google Chrome Canary, které povolí provoz mDNS.</translation>
 <translation id="6885412569789873916">Chrome Beta – aplikace</translation>
+<translation id="6906909733186691861">Budoucí verze prohlížeče Chrome se budou instalovat automaticky.</translation>
 <translation id="6943584222992551122">Ze zařízení budou smazány údaje této osoby o prohlížení. Budete-li je chtít znovu získat, přihlaste se do Chromu jako <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Pravidlo příchozího provozu pro aplikaci Google Chrome Beta, které povolí provoz mDNS.</translation>
-<translation id="6970811910055250180">Aktualizace zařízení...</translation>
 <translation id="6982337800632491844">Doména <ph name="DOMAIN" /> vyžaduje, abyste si před použitím tohoto zařízení přečetli a odsouhlasili následující smluvní podmínky. Tyto smluvní podmínky nerozšiřují, neupravují ani neomezují smluvní podmínky systému Google Chrome OS.</translation>
 <translation id="6989339256997917931">Prohlížeč Google Chrome byl aktualizován, ale minimálně po 30 dnů jste jej nepoužili.</translation>
 <translation id="7098166902387133879">Google Chrome používá váš mikrofon.</translation>
@@ -242,7 +239,6 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="7962410387636238736">Google Chrome se v tomto počítači již nebude aktualizovat, protože systémy Windows XP a Windows Vista již nejsou podporovány.</translation>
 <translation id="8008534537613507642">Přeinstalovat Chrome</translation>
 <translation id="8013993649590906847">Pokud obrázek nemá užitečný popis, Chrome se vám jej pokusí poskytnout. Za účelem vytváření popisů jsou obrázky odesílány do Googlu.</translation>
-<translation id="8030318113982266900">Aktualizace zařízení na verzi <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8032142183999901390">Odebrání účtu z Chromu se může projevit až po opětovném načtení otevřených karet.</translation>
 <translation id="8129812357326543296">O aplikaci &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Nainstalujte si Chrome do telefonu. Zašleme vám na telefon SMS.</translation>
@@ -265,7 +261,6 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="8606668294522778825">Prohlížeč Google Chrome vám může usnadnit prohlížení pomocí webových služeb. Tyto služby můžete případně zakázat. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome neodpovídá. Restartovat?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome se za 1 minutu restartuje}few{Chrome se za # minut restartuje}many{Chrome se za # minuty restartuje}other{Chrome se za # minut restartuje}}</translation>
-<translation id="8667808506758191620">Vaše zařízení <ph name="DEVICE_TYPE" /> je aktuální.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Také řídí, která stránka se zobrazí při spuštění Chromu.</translation>
 <translation id="870251953148363156">Aktualizace aplikace &amp;Google Chrome</translation>

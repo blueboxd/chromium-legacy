@@ -53,7 +53,8 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
                                uint32_t changed_metrics) override;
 
   // AppListControllerObserver:
-  void OnAppListVisibilityChanged(bool shown, int64_t display_id) override;
+  void OnAppListTargetVisibilityChanged(bool shown,
+                                        int64_t display_id) override;
 
   // OverviewObserver:
   void OnOverviewModeStartingAnimationComplete(bool canceled) override;

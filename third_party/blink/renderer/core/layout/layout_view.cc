@@ -900,6 +900,11 @@ void LayoutView::UpdateCounters() {
   }
 }
 
+bool LayoutView::HasTickmarks() const {
+  return !tickmarks_override_.IsEmpty() ||
+         GetDocument().Markers().PossiblyHasTextMatchMarkers();
+}
+
 Vector<IntRect> LayoutView::GetTickmarks() const {
   if (!tickmarks_override_.IsEmpty())
     return tickmarks_override_;

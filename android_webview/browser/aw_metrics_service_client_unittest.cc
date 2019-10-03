@@ -78,7 +78,7 @@ class AwMetricsServiceClientTest : public testing::Test {
 TEST_F(AwMetricsServiceClientTest, TestSetConsentTrueBeforeInit) {
   auto prefs = CreateTestPrefs();
   auto client = std::make_unique<TestClient>();
-  client->SetHaveMetricsConsent(true);
+  client->SetHaveMetricsConsent(true, true);
   client->Initialize(prefs.get());
   ASSERT_TRUE(client->IsRecordingActive());
   ASSERT_TRUE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
@@ -87,7 +87,7 @@ TEST_F(AwMetricsServiceClientTest, TestSetConsentTrueBeforeInit) {
 TEST_F(AwMetricsServiceClientTest, TestSetConsentFalseBeforeInit) {
   auto prefs = CreateTestPrefs();
   auto client = std::make_unique<TestClient>();
-  client->SetHaveMetricsConsent(false);
+  client->SetHaveMetricsConsent(false, false);
   client->Initialize(prefs.get());
   ASSERT_FALSE(client->IsRecordingActive());
   ASSERT_FALSE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
@@ -96,7 +96,7 @@ TEST_F(AwMetricsServiceClientTest, TestSetConsentFalseBeforeInit) {
 TEST_F(AwMetricsServiceClientTest, TestSetConsentTrueAfterInit) {
   auto prefs = CreateTestPrefs();
   auto client = CreateAndInitTestClient(prefs.get());
-  client->SetHaveMetricsConsent(true);
+  client->SetHaveMetricsConsent(true, true);
   ASSERT_TRUE(client->IsRecordingActive());
   ASSERT_TRUE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
 }
@@ -104,7 +104,7 @@ TEST_F(AwMetricsServiceClientTest, TestSetConsentTrueAfterInit) {
 TEST_F(AwMetricsServiceClientTest, TestSetConsentFalseAfterInit) {
   auto prefs = CreateTestPrefs();
   auto client = CreateAndInitTestClient(prefs.get());
-  client->SetHaveMetricsConsent(false);
+  client->SetHaveMetricsConsent(false, false);
   ASSERT_FALSE(client->IsRecordingActive());
   ASSERT_FALSE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
 }
@@ -114,7 +114,7 @@ TEST_F(AwMetricsServiceClientTest, TestKeepExistingClientId) {
   auto prefs = CreateTestPrefs();
   prefs->SetString(metrics::prefs::kMetricsClientID, kTestClientId);
   auto client = CreateAndInitTestClient(prefs.get());
-  client->SetHaveMetricsConsent(true);
+  client->SetHaveMetricsConsent(true, true);
   ASSERT_TRUE(client->IsRecordingActive());
   ASSERT_TRUE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
   ASSERT_EQ(kTestClientId, prefs->GetString(metrics::prefs::kMetricsClientID));
@@ -124,27 +124,59 @@ TEST_F(AwMetricsServiceClientTest, TestSetConsentFalseClearsClientId) {
   auto prefs = CreateTestPrefs();
   prefs->SetString(metrics::prefs::kMetricsClientID, kTestClientId);
   auto client = CreateAndInitTestClient(prefs.get());
-  client->SetHaveMetricsConsent(false);
+  client->SetHaveMetricsConsent(false, false);
   ASSERT_FALSE(client->IsRecordingActive());
   ASSERT_FALSE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
 }
 
 TEST_F(AwMetricsServiceClientTest, TestCanForceEnableMetrics) {
-  auto prefs = CreateTestPrefs();
-  auto client = CreateAndInitTestClient(prefs.get());
-
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       metrics::switches::kForceEnableMetricsReporting);
 
-  // Flip everything to false; flag should have higher precedence.
-  client->SetHaveMetricsConsent(false);
-  client->SetInSample(false);
-  ASSERT_TRUE(client->IsReportingEnabled());
+  auto prefs = CreateTestPrefs();
+  auto client = std::make_unique<TestClient>();
 
-  // Flip things to true just to double-check everything still works.
-  client->SetHaveMetricsConsent(true);
-  client->SetInSample(true);
+  // Flag should have higher precedence than sampling or user consent (but not
+  // app consent, so we set that to 'true' for this case).
+  client->SetHaveMetricsConsent(false, /* app_consent */ true);
+  client->SetInSample(false);
+  client->Initialize(prefs.get());
+
   ASSERT_TRUE(client->IsReportingEnabled());
+  ASSERT_TRUE(client->IsRecordingActive());
+}
+
+TEST_F(AwMetricsServiceClientTest, TestCanForceEnableMetricsIfAlreadyEnabled) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      metrics::switches::kForceEnableMetricsReporting);
+
+  auto prefs = CreateTestPrefs();
+  auto client = std::make_unique<TestClient>();
+
+  // This is a sanity check: flip consent and sampling to true, just to make
+  // sure the flag continues to work.
+  client->SetHaveMetricsConsent(true, true);
+  client->SetInSample(true);
+  client->Initialize(prefs.get());
+
+  ASSERT_TRUE(client->IsReportingEnabled());
+  ASSERT_TRUE(client->IsRecordingActive());
+}
+
+TEST_F(AwMetricsServiceClientTest, TestCannotForceEnableMetricsIfAppOptsOut) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      metrics::switches::kForceEnableMetricsReporting);
+
+  auto prefs = CreateTestPrefs();
+  auto client = std::make_unique<TestClient>();
+
+  // Even with the flag, app consent should be respected.
+  client->SetHaveMetricsConsent(true, /* app_consent */ false);
+  client->SetInSample(true);
+  client->Initialize(prefs.get());
+
+  ASSERT_FALSE(client->IsReportingEnabled());
+  ASSERT_FALSE(client->IsRecordingActive());
 }
 
 }  // namespace android_webview

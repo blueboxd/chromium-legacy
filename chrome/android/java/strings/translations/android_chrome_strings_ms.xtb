@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Digunakan</translation>
 <translation id="1171770572613082465">Lihat tapak web popular dengan mengetik butang "Tapak popular"</translation>
 <translation id="1173894706177603556">Namakan semula</translation>
-<translation id="1175310183703641346">Penanda halaman, sejarah, kata laluan dan pelbagai lagi tidak akan disegerakkan ke Akaun Google anda</translation>
 <translation id="1178581264944972037">Jeda</translation>
 <translation id="1181037720776840403">Alih keluar</translation>
 <translation id="1188239144602654184">Masuk ke AR</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">Ditandai halaman dalam <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Penyegerakan latar belakang</translation>
 <translation id="3771001275138982843">Tidak dapat memuat turun kemas kini</translation>
+<translation id="3771033907050503522">Tab Inkognito</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Hidupkan Bluetooth<ph name="END_LINK" /> untuk membenarkan penggandingan</translation>
 <translation id="3775705724665058594">Hantar ke peranti anda</translation>
 <translation id="3778956594442850293">Ditambahkan pada Skrin utama</translation>
@@ -484,7 +484,6 @@ Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain s
 <translation id="4719927025381752090">Tawaran untuk menterjemah</translation>
 <translation id="4720023427747327413">Buka dalam <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Bantu meningkatkan Chrome. <ph name="BEGIN_LINK" />Jawab tinjauan<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">Anda bertukar akaun penyegerakan daripada <ph name="ACCOUNT_EMAIL_OLD" /> kepada <ph name="ACCOUNT_EMAIL_NEW" />. Data Chrome sedia ada anda diurus oleh <ph name="MANAGED_DOMAIN" />. Tindakan ini akan memadamkan data anda daripada peranti ini, tetapi data anda akan kekal dalam <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">Kemas kini</translation>
 <translation id="4738836084190194332">Kali terakhir disegerakkan: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Buka tab baharu</translation>
@@ -668,13 +667,13 @@ Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> disimpan</translation>
 <translation id="5939518447894949180">Tetapkan semula</translation>
 <translation id="5942872142862698679">Menggunakan Google untuk carian</translation>
-<translation id="5944669582486359588">Dalam mod Ringkas, Chrome memuatkan halaman lebih pantas dan mengurangkan penggunaan data sehingga 60 peratus. Teknologi Awan Google mengoptimumkan halaman yang anda lawati.</translation>
 <translation id="5952764234151283551">Menghantar URL halaman yang cuba anda capai kepada Google</translation>
 <translation id="5956665950594638604">Buka Pusat Bantuan Chrome dalam tab baharu</translation>
 <translation id="5958275228015807058">Cari fail dan halaman anda dalam Muat Turun</translation>
 <translation id="5962718611393537961">Ketik untuk runtuhkan</translation>
 <translation id="6000066717592683814">Kekalkan Google</translation>
 <translation id="6005538289190791541">Kata laluan yang disyorkan</translation>
+<translation id="6036057147555329831">ICU tambahan</translation>
 <translation id="6039379616847168523">Lompat ke tab seterusnya</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6042308850641462728">Lagi</translation>
@@ -815,7 +814,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7029809446516969842">Kata laluan</translation>
 <translation id="7053983685419859001">Sekat</translation>
 <translation id="7055152154916055070">Ubah hala disekat:</translation>
-<translation id="7062545763355031412">Terima dan tukar akaun</translation>
 <translation id="7063006564040364415">Tidak dapat bersambung ke pelayan yang disegerakkan.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 dipilih}other{# dipilih}}</translation>
 <translation id="7071521146534760487">Urus akaun</translation>
@@ -1099,7 +1097,6 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="9139318394846604261">Beli-belah</translation>
 <translation id="9155898266292537608">Anda juga boleh mencari dengan mengetik pantas pada perkataan</translation>
 <translation id="9169507124922466868">Sejarah navigasi separa terbuka</translation>
-<translation id="9188680907066685419">Log keluar daripada akaun terurus</translation>
 <translation id="9204836675896933765">1 fail lagi</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Tidak dapat membuat panggilan</translation>
@@ -1108,7 +1105,6 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="932327136139879170">Laman Utama</translation>
 <translation id="938850635132480979">Ralat: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Akses mikrofon anda</translation>
-<translation id="951339005376969845">Padam data sedia ada. Anda boleh mendapatkannya semula dengan beralih semula kepada <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome boleh menggunakan <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> untuk melakukan carian di China. Anda boleh menukarnya dalam <ph name="BEGIN_LINK" />Tetapan<ph name="END_LINK" />.</translation>
 <translation id="965817943346481315">Sekat jika tapak menyiarkan iklan yang mengganggu atau mengelirukan (disyorkan)</translation>
 <translation id="968900484120156207">Halaman yang anda lawati dipaparkan di sini</translation>

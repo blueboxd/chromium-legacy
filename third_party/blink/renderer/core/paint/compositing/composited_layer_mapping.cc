@@ -1195,15 +1195,13 @@ void CompositedLayerMapping::UpdateInternalHierarchy() {
 
   // Now constructing the subtree for the overflow controls.
   bottom_layer = graphics_layer_.get();
-  // TODO(pdr): Ensure painting uses the correct GraphicsLayer when root layer
-  // scrolls is enabled.  crbug.com/638719
   if (is_main_frame_layout_view_layer_ &&
       !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     bottom_layer = GetLayoutObject()
                        .GetFrame()
                        ->GetPage()
                        ->GetVisualViewport()
-                       .ContainerLayer();
+                       .RootGraphicsLayer();
   }
   update_bottom_layer(overflow_controls_host_layer_.get());
   if (layer_for_horizontal_scrollbar_) {

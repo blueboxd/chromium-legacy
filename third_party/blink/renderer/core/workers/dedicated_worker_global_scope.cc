@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
@@ -109,6 +110,8 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
           MakeGarbageCollected<WorkerAnimationFrameProvider>(
               this,
               begin_frame_provider_params)) {
+  CoreInitializer::GetInstance().ProvideLocalFileSystemToWorker(*this);
+
   // Dedicated workers don't need to pause after script fetch.
   ReadyToRunWorkerScript();
   // Inherit the outside's origin trial tokens.

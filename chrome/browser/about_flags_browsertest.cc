@@ -179,7 +179,8 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_OriginFlagDisabled) {
             GetOriginListText(contents, kSwitchName));
 }
 
-IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, OriginFlagDisabled) {
+// Flaky. http://crbug.com/1010678
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, DISABLED_OriginFlagDisabled) {
   // Even though the feature is disabled, the switch is set directly via command
   // line.
   EXPECT_EQ(

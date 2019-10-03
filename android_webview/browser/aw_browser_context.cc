@@ -317,6 +317,11 @@ content::PushMessagingService* AwBrowserContext::GetPushMessagingService() {
   return NULL;
 }
 
+content::StorageNotificationService*
+AwBrowserContext::GetStorageNotificationService() {
+  return nullptr;
+}
+
 content::SSLHostStateDelegate* AwBrowserContext::GetSSLHostStateDelegate() {
   if (!ssl_host_state_delegate_.get()) {
     ssl_host_state_delegate_.reset(new AwSSLHostStateDelegate());

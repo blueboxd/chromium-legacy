@@ -95,6 +95,7 @@ class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
                      GraphicsContext&,
                      GraphicsLayerPaintingPhase,
                      const IntRect& interest_rect) const override;
+  void GraphicsLayersDidChange() override;
   String DebugName(const GraphicsLayer*) const override;
 
   PropertyTreeState DefaultPropertyTreeState() const;

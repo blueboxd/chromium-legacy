@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Al usar esta app, aceptas las <ph name="BEGIN_LINK_TOS" />Condiciones del servicio<ph name="END_LINK_TOS" /> y la <ph name="BEGIN_LINK_PRIVACY" />Política de Privacidad<ph name="END_LINK_PRIVACY" /> de Chrome.</translation>
 <translation id="2147651015520127414">Chrome verificó que <ph name="ISSUER" /> emitió el certificado de este sitio web.</translation>
 <translation id="2199719347983604670">Datos de Sincronización de Chrome</translation>
-<translation id="2342981853652716282">Accede a tu cuenta en Chrome para obtener tus favoritos, contraseñas y mucho más desde todos tus dispositivos.</translation>
 <translation id="2347208864470321755">Cuando esté activada esta función, Chrome ofrecerá traducir páginas escritas en otros idiomas con Google Traductor. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Para guardar imágenes, presiona Configuración para permitir que Chrome use tus fotos</translation>
 <translation id="2576431527583832481">¡Chrome mejoró! Hay una nueva versión disponible.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Envía las estadísticas de uso y los informes de fallos a Google para ayudarnos a mejorar Chrome.</translation>
 <translation id="415767770115540173">Obtén una mejor experiencia de Google en Chrome según tu ubicación.</translation>
 <translation id="424864128008805179">¿Quieres salir de Chrome?</translation>
+<translation id="4249068189593983585">Sugerencia de Chrome: Para obtener más opciones de pestañas, mantén presionado el botón Mostrar pestañas de la barra de herramientas, que se encuentra en la parte inferior o superior de la pantalla.</translation>
 <translation id="4523886039239821078">Algunos complementos causan bloqueos en Chrome. Desinstala:</translation>
 <translation id="5389212809648216794">Google Chrome no puede utilizar tu cámara porque la está usando otra aplicación</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Revisa las Condiciones del Servicio de Chrome actualizadas.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Algunos complementos causan bloqueos en Chrome. Prueba a desinstalarlos.</translation>
 <translation id="8459495907675268833">Los datos seleccionados se quitaron de Chrome y los dispositivos sincronizados. Es posible que tu cuenta de Google tenga otros formularios del historial de navegación, como las búsquedas y la actividad de otros servicios de Google en history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Es posible que Google Chrome utilice servicios web para mejorar tu experiencia de navegación (tienes la opción de inhabilitar estos servicios). <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 </translationbundle>

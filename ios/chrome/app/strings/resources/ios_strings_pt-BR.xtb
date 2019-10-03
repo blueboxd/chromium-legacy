@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Impossível salvar imagem</translation>
 <translation id="1180526666083833456">Sincronize seus dispositivos e mantenha suas personalizações em todos eles.</translation>
 <translation id="1181037720776840403">Remover</translation>
+<translation id="1207113853726624428">Nova pesquisa</translation>
 <translation id="1209206284964581585">Ocultar por enquanto</translation>
 <translation id="1219674500290482172">Não foi possível se conectar à Internet.</translation>
 <translation id="122699739164161391">Fechar todas as guias</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">Sugerir senha…</translation>
 <translation id="1870148520156231997">Mostrar senha</translation>
 <translation id="1872096359983322073">Lanterna</translation>
-<translation id="1876721852596493031">Enviar dados de uso</translation>
 <translation id="1911619930368729126">Enviar para o Google Drive</translation>
 <translation id="1923342640370224680">Última hora</translation>
 <translation id="1941314575388338491">Toque duas vezes para copiar.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artigos não lidos na lista de leitura.</translation>
 <translation id="2230173723195178503">Página da Web carregada</translation>
 <translation id="2239626343334228536">Limpando dados de navegação…</translation>
-<translation id="2256128224215992540">Sugestões de pesquisa e sites</translation>
 <translation id="2267753748892043616">Adicionar conta</translation>
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2273327106802955778">Menu "Mais"</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">Não foi possível abrir arquivo</translation>
 <translation id="2718352093833049315">Apenas com Wi-Fi</translation>
 <translation id="2747003861858887689">Campo anterior</translation>
+<translation id="2773292004659987824">Pesquisa anônima</translation>
 <translation id="2780046210906776326">Sem contas de e-mail</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Sair do alternador de guias</translation>
@@ -295,7 +295,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Ativar sincronização</translation>
 <translation id="5234764350956374838">Dispensar</translation>
-<translation id="5244474230056479698">Sincronizado com <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Cancelar sincronização</translation>
 <translation id="5271549068863921519">Salvar senha</translation>
 <translation id="5300589172476337783">Mostrar</translation>
@@ -501,6 +500,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8261506727792406068">Excluir</translation>
 <translation id="8281781826761538115">Padrão: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Nova pesquisa</translation>
+<translation id="8323906514956095947">Toque no botão e mantenha-o pressionado para ver mais opções da guia</translation>
 <translation id="8328777765163860529">Fechar todos</translation>
 <translation id="8407669440184693619">Nenhuma senha encontrada para este site</translation>
 <translation id="842017693807136194">Conectado com</translation>

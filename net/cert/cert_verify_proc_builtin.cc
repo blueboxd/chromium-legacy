@@ -48,6 +48,8 @@ constexpr base::TimeDelta kPerAttemptMinVerificationTimeLimit =
 
 DEFINE_CERT_ERROR_ID(kPathLacksEVPolicy, "Path does not have an EV policy");
 
+const void* kResultDebugDataKey = &kResultDebugDataKey;
+
 RevocationPolicy NoRevocationChecking() {
   RevocationPolicy policy;
   policy.check_revocation = false;
@@ -614,6 +616,9 @@ int CertVerifyProcBuiltin::VerifyInternal(
     return ERR_CERT_AUTHORITY_INVALID;
   }
 
+  CertVerifyProcBuiltinResultDebugData::Create(verify_result, verification_time,
+                                               der_verification_time);
+
   // Parse the target certificate.
   scoped_refptr<ParsedCertificate> target =
       ParseCertificateFromBuffer(input_cert->cert_buffer(), &parsing_errors);
@@ -746,6 +751,36 @@ class DefaultSystemTrustStoreProvider : public SystemTrustStoreProvider {
 std::unique_ptr<SystemTrustStoreProvider>
 SystemTrustStoreProvider::CreateDefaultForSSL() {
   return std::make_unique<DefaultSystemTrustStoreProvider>();
+}
+
+CertVerifyProcBuiltinResultDebugData::CertVerifyProcBuiltinResultDebugData(
+    base::Time verification_time,
+    const der::GeneralizedTime& der_verification_time)
+    : verification_time_(verification_time),
+      der_verification_time_(der_verification_time) {}
+
+// static
+const CertVerifyProcBuiltinResultDebugData*
+CertVerifyProcBuiltinResultDebugData::Get(
+    const base::SupportsUserData* debug_data) {
+  return static_cast<CertVerifyProcBuiltinResultDebugData*>(
+      debug_data->GetUserData(kResultDebugDataKey));
+}
+
+// static
+void CertVerifyProcBuiltinResultDebugData::Create(
+    base::SupportsUserData* debug_data,
+    base::Time verification_time,
+    const der::GeneralizedTime& der_verification_time) {
+  debug_data->SetUserData(
+      kResultDebugDataKey,
+      std::make_unique<CertVerifyProcBuiltinResultDebugData>(
+          verification_time, der_verification_time));
+}
+
+std::unique_ptr<base::SupportsUserData::Data>
+CertVerifyProcBuiltinResultDebugData::Clone() {
+  return std::make_unique<CertVerifyProcBuiltinResultDebugData>(*this);
 }
 
 scoped_refptr<CertVerifyProc> CreateCertVerifyProcBuiltin(

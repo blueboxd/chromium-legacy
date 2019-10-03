@@ -14,6 +14,7 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "content/common/child_process.mojom.h"
+#include "ipc/ipc_buildflags.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

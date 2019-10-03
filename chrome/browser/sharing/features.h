@@ -14,4 +14,7 @@ extern const base::Feature kSharingDeviceRegistration;
 // DeviceInfo.
 extern const base::Feature kSharingUseDeviceInfo;
 
+// Feature flag to enable QR Code Generator (currently desktop-only).
+extern const base::Feature kSharingQRCodeGenerator;
+
 #endif  // CHROME_BROWSER_SHARING_FEATURES_H_

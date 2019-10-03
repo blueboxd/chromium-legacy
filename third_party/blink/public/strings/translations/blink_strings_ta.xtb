@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">அடிக்குறிப்பு</translation>
 <translation id="2709516037105925701">தானாகநிரப்பு</translation>
 <translation id="2723001399770238859">ஆடியோ</translation>
+<translation id="2725963129578236554">கருத்துகள்</translation>
 <translation id="2746543609216772311">மதிப்பானது <ph name="MINIMUM_DATE_OR_TIME" /> அல்லது அதற்குப் பின்பு இருக்க வேண்டும்.</translation>
 <translation id="2759744352195237655">பாப் அப் பொத்தான்</translation>
 <translation id="2761667185364618470">தொடர விரும்பினால், இந்தப் பெட்டியைத் தேர்ந்தெடுங்கள்.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">இந்த உரையை <ph name="MIN_CHARACTERS" /> எழுத்துக்குறிகள் அல்லது அதற்கும் அதிகமாக (தற்போது <ph name="CURRENT_LENGTH" /> எழுத்துக்குறிகளைப் பயன்படுத்துகிறீர்கள்) நீட்டிக்கவும்.</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' ஐத் தொடர்ந்து வரும் பகுதியில் '<ph name="INVALIDCHARACTER" />' சின்னம் இருக்கக்கூடாது.</translation>
 <translation id="3846214748874656680">முழுத்திரை வேண்டாம்</translation>
+<translation id="3889183436948184105">மீள்திருத்தம்</translation>
 <translation id="3920932319529768807">முடிவு</translation>
 <translation id="3924558731517983934">ஆப்ஸ்</translation>
 <translation id="3944740393230681990">முன்னுரை</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">ஆடியோ நேர ஸ்கிரப்பர்</translation>
 <translation id="6443871981718447451">விரிவான வசனங்கள் மெனுவைக் காட்டும்</translation>
 <translation id="6453774872122745852">அங்கீகாரங்கள்</translation>
+<translation id="6475115390776617481">தற்சமயம் இன்னொருவர் பயன்படுத்துகிறார்</translation>
 <translation id="648732519525291180">நேரம் தேர்ந்தெடுப்பான்</translation>
 <translation id="6550675742724504774">விருப்பத்தேர்வுகள்</translation>
 <translation id="6572309429103589720">இலக்கணப்பிழை</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">செருகும்</translation>
 <translation id="6989848892321993519">இந்த உரையில் <ph name="MIN_CHARACTERS" /> அல்லது அதற்கு மேற்பட்ட எழுத்துக்குறிகளைப் பயன்படுத்தவும் (தற்போது 1 எழுத்துக்குறியைப் பயன்படுத்துகிறீர்கள்).</translation>
 <translation id="7033340931668032222">ஒலியளவை மாற்ற மேலும் கீழும் அசைக்கவும்</translation>
+<translation id="7034405885550056553">பரிந்துரை</translation>
 <translation id="709897737746224366">கோரிய வடிவமைப்பில் தருக.</translation>
 <translation id="7118469954320184356">விவரம் எதுவுமில்லை.</translation>
 <translation id="7139483182332611405">முன்னுரை</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">வெளியீடு</translation>
 <translation id="8750798805984357768">தயவுசெய்து இந்த விருப்பங்களில் ஒன்றைத் தேர்ந்தெடுங்கள்.</translation>
 <translation id="8808573423886751634">அத்தியாயம்</translation>
+<translation id="8822203815165896261">அனுமதி வழங்குவது தொடர்பான தகவல்</translation>
 <translation id="8845239796550121995">டிவிக்கு அனுப்புகிறது</translation>
 <translation id="8851136666856101339">முதன்மை</translation>
 <translation id="8875657656876809964">வீடியோ இயக்கப் பிழை</translation>

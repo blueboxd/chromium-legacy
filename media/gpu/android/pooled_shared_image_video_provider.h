@@ -57,8 +57,7 @@ class MEDIA_GPU_EXPORT PooledSharedImageVideoProvider
       base::SequenceBound<GpuHelper> gpu_helper,
       std::unique_ptr<SharedImageVideoProvider> provider);
 
-  class GpuHelperImpl : public GpuHelper,
-                        public gpu::CommandBufferStub::DestructionObserver {
+  class GpuHelperImpl : public GpuHelper {
    public:
     GpuHelperImpl(GetStubCB get_stub_cb);
     ~GpuHelperImpl() override;
@@ -67,9 +66,6 @@ class MEDIA_GPU_EXPORT PooledSharedImageVideoProvider
     void OnImageReturned(const gpu::SyncToken& sync_token,
                          scoped_refptr<CodecImageHolder> codec_image_holder,
                          base::OnceClosure cb) override;
-
-    // gpu::CommandBufferStub::DestructionObserver
-    void OnWillDestroyStub(bool have_context) override;
 
    private:
     void OnSyncTokenCleared(scoped_refptr<CodecImageHolder> codec_image_holder,

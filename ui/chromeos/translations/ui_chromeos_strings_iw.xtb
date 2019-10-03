@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">ביטול הצמדת התיקייה</translation>
 <translation id="3678559383040232393">מקלדת מלטית</translation>
 <translation id="3685122418104378273">‏הסנכרון של Google Drive מושבת כברירת מחדל בעת שימוש בנתונים לנייד.</translation>
+<translation id="3689865792480713551">ביטול <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">לא ניתן לפתוח מכשיר זה מאחר שמערכת הקבצים שלו אינה נתמכת.</translation>
 <translation id="3741243925913727067">‏גבה ב-Google Drive את התמונות והסרטונים שבמכשיר המדיה.</translation>
 <translation id="3749289110408117711">שם קובץ</translation>
@@ -464,6 +465,7 @@
 <translation id="6339145975392024142">‏מקלדת ארה"ב בינלאומית (PC)</translation>
 <translation id="6346310558342052870">גישה מוגבלת</translation>
 <translation id="6353618411602605519">מקלדת קרואטית</translation>
+<translation id="6356685157277930264">חלון משוב לגבי קבצים</translation>
 <translation id="6358884629796491903">דרקון</translation>
 <translation id="637062427944097960">הקובץ הזה נפתח בשולחן עבודה שונה. עבור אל <ph name="USER_NAME" />‏ (<ph name="MAIL_ADDRESS" />) כדי לראות אותו.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> פריטים</translation>

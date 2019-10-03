@@ -72,7 +72,6 @@
 <translation id="3509308970982693815">すべての Chromium ウィンドウを閉じてからもう一度お試しください。</translation>
 <translation id="352783484088404971">Chromium から削除...</translation>
 <translation id="3575459661164320785">お使いのパソコンに有害なソフトウェアが見つかりました。Chromium では、ブラウザを正常な動作に戻すためにこのソフトウェアを削除し、設定を復元して、拡張機能を無効化することができます。</translation>
-<translation id="3582788516608077514">Chromium を更新しています...</translation>
 <translation id="358997566136285270">Chromium ロゴ</translation>
 <translation id="3639635944603682591">この操作を行うと、このユーザーの閲覧データがこのデバイスから削除されます。データを復元するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="3713809861844741608">新しい Chromium タブでリンクを開く(&amp;T)</translation>
@@ -86,7 +85,6 @@
 <translation id="421369550622382712">Chromium の優れたアプリ、ゲーム、拡張機能、テーマをぜひご利用ください。</translation>
 <translation id="4216212958613226427">この言語が Chromium UI の表示に使用されます</translation>
 <translation id="4222580632002216401">Chromium にログインしています。同期は管理者によって無効にされています。</translation>
-<translation id="4224199872375172890">Chromium は最新版です。</translation>
 <translation id="4230135487732243613">Chromium データをこのアカウントにリンクしますか？</translation>
 <translation id="4271805377592243930">Chromium のヘルプを見る</translation>
 <translation id="4285930937574705105">原因不明のエラーによりインストールが失敗しました。実行中の Chromium を終了してからもう一度お試しください。</translation>
@@ -97,6 +95,7 @@
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" /> としてログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
 <translation id="459535195905078186">Chromium アプリ</translation>
 <translation id="4621240073146040695">Chromium を再起動して更新を完了してください。</translation>
+<translation id="4661006601577405669">Chromium の今後のバージョンは自動的にインストールされます。</translation>
 <translation id="4677944499843243528">プロフィールは、別のコンピュータ（<ph name="HOST_NAME" />）の別の Chromium プロセス（<ph name="PROCESS_ID" />）で使用されているようです。Chromium はプロフィールが破損しないようにプロフィールをロックしています。他のプロセスがこのプロフィールを使用していないことが確実であれば、プロフィールのロックを解除して Chromium を再起動できます。</translation>
 <translation id="469338717132742108">Chromium OS のヘルプを見る</translation>
 <translation id="4708774505295300557">前回このパソコンで別のユーザー（<ph name="ACCOUNT_EMAIL_LAST" />）が Chromium にログインしました。情報を個別に保持するには、新しい Chromium ユーザーを作成してください。</translation>
@@ -127,9 +126,7 @@
 <translation id="5698481217667032250">Chromium をこの言語で表示</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Chromium へようこそ</translation>
-<translation id="5877064549588274448">チャンネルが変更されました。変更を適用するには、デバイスを再起動してください。</translation>
 <translation id="5895138241574237353">再起動</translation>
-<translation id="5906655207909574370">デバイスを再起動して更新を完了してください。</translation>
 <translation id="5987687638152509985">同期を開始するには、Chromium を更新します</translation>
 <translation id="6013050204643758987">Chromium OS も <ph name="BEGIN_LINK_LINUX_OSS" />Linux（ベータ版）<ph name="END_LINK_LINUX_OSS" />も追加の<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />によって実現しました。</translation>
 <translation id="6040143037577758943">閉じる</translation>
@@ -171,7 +168,6 @@
 <translation id="6868056391275687737">Chromium の他のコピーが動作しています。更新するには他のコピーを終了してください。</translation>
 <translation id="6893813176749746474">Chromium が更新されましたが、30 日以上使用されていません。</translation>
 <translation id="6964305034639999644">Chromium のシークレット ウインドウでリンクを開く(&amp;G)</translation>
-<translation id="6970811910055250180">お使いのデバイスを更新しています...</translation>
 <translation id="6990124437352146030">このサイトを利用するには、Chromium でマイクの使用を許可する必要があります</translation>
 <translation id="705851970750939768">Chromium を更新</translation>
 <translation id="7066436765290594559">Chromium OS はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
@@ -193,6 +189,7 @@
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
 <translation id="7451052299415159299">このサイトを利用するには、Chromium でカメラの使用を許可する必要があります</translation>
 <translation id="7483335560992089831">実行中の Chromium と同じバージョンをインストールすることはできません。Chromium を閉じてからもう一度お試しください。</translation>
+<translation id="751093125041325477">Chromium の今後のバージョンは自動的にインストールされます。このダウンロードが完了すると Chromium が再起動し、すぐにお使いいただけます。</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium は 1 分後に再起動されます}other{Chromium は # 分後に再起動されます}}</translation>
 <translation id="7549178288319965365">Chromium OS について</translation>
 <translation id="7561906087460245826">Chromium のデータ（<ph name="URL" />）も消去する</translation>
@@ -214,7 +211,6 @@
 <translation id="7975919845073681630">この Chromium はセカンダリ インストールのため、既定のブラウザには設定できません。</translation>
 <translation id="7979877361127045932">Chromium メニューで非表示</translation>
 <translation id="8013436988911883588">Chromium にアクセスを許可すると、ウェブサイトからアクセスをリクエストできるようになります。</translation>
-<translation id="8030318113982266900">デバイスを <ph name="CHANNEL_NAME" /> チャンネルに更新しています...</translation>
 <translation id="81770708095080097">このファイルは危険なファイルであるため、Chromium でブロックしました。</translation>
 <translation id="8222496066431494154">Chromium をスマートフォンにインストールしませんか。お客様のアカウント再設定用の電話番号（<ph name="PHONE_NUMBER" />）に、Google より SMS をお送りします。</translation>
 <translation id="8248265253516264921">画像に有効な説明が設定されていない場合に、Chromium で説明を自動的に生成できるよう Google に画像が送信されます。この機能は設定でいつでも無効にできます。</translation>
@@ -229,7 +225,6 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8619360774459241877">Chromium を起動しています...</translation>
 <translation id="8621669128220841554">原因不明のエラーによりインストールに失敗しました。Chromium をもう一度ダウンロードしてください。</translation>
-<translation id="8667808506758191620">お使いの <ph name="DEVICE_TYPE" /> は最新です。</translation>
 <translation id="8682540261359803721">このページに設定が表示されない場合は、<ph name="LINK_BEGIN" />
       Chromium ブラウザの設定<ph name="LINK_END" />を確認してください</translation>
 <translation id="8697124171261953979">この拡張機能では、Chromium の起動時、またはアドレスバーからの検索時に表示されるページも制御されます。</translation>

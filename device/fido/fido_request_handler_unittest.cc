@@ -576,6 +576,8 @@ TEST_F(FidoRequestHandlerTest,
 
   discovery()->AddDevice(std::move(device0));
   platform_discovery->AddDevice(std::move(device1));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+  platform_discovery->WaitForCallToStartAndSimulateSuccess();
 
   task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
@@ -621,7 +623,8 @@ TEST_F(FidoRequestHandlerTest, TestWithPlatformAuthenticator) {
   device->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                       CreateFakeSuccessDeviceResponse());
   device->SetDeviceTransport(FidoTransportProtocol::kInternal);
-  auto* fake_discovery = fake_discovery_factory_.ForgeNextPlatformDiscovery();
+  auto* fake_discovery = fake_discovery_factory_.ForgeNextPlatformDiscovery(
+      test::FakeFidoDiscovery::StartMode::kAutomatic);
 
   TestObserver observer;
   auto request_handler = std::make_unique<FakeFidoRequestHandler>(
@@ -655,6 +658,8 @@ TEST_F(FidoRequestHandlerTest, BleTransportAllowedIfBluetoothAdapterPresent) {
 
   TestObserver observer;
   auto request_handler = CreateFakeHandler();
+  ble_discovery()->WaitForCallToStartAndSimulateSuccess();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
   request_handler->set_observer(&observer);
 
   observer.WaitForAndExpectAvailableTransportsAre(
@@ -668,6 +673,8 @@ TEST_F(FidoRequestHandlerTest,
 
   TestObserver observer;
   auto request_handler = CreateFakeHandler();
+  ble_discovery()->WaitForCallToStartAndSimulateSuccess();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
   request_handler->set_observer(&observer);
 
   observer.WaitForAndExpectAvailableTransportsAre(
@@ -680,6 +687,8 @@ TEST_F(FidoRequestHandlerTest,
 
   TestObserver observer;
   auto request_handler = CreateFakeHandler();
+  ble_discovery()->WaitForCallToStartAndSimulateSuccess();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
   task_environment_.FastForwardUntilNoTasksRemain();
 
   request_handler->set_observer(&observer);
@@ -693,6 +702,7 @@ TEST_F(FidoRequestHandlerTest, EmbedderNotifiedWhenAuthenticatorIdChanges) {
   TestObserver observer;
   auto request_handler = CreateFakeHandler();
   request_handler->set_observer(&observer);
+  discovery()->WaitForCallToStartAndSimulateSuccess();
   ble_discovery()->WaitForCallToStartAndSimulateSuccess();
 
   auto device = std::make_unique<MockFidoDevice>();
@@ -718,6 +728,12 @@ TEST_F(FidoRequestHandlerTest, TransportAvailabilityOfWindowsAuthenticator) {
         {FidoTransportProtocol::kUsbHumanInterfaceDevice},
         &fake_discovery_factory_);
     request_handler.set_observer(&observer);
+
+    // If the windows API is not enabled, the request is dispatched to the USB
+    // discovery. Simulate a success to fill the transport availability info.
+    if (!api_available)
+      discovery()->WaitForCallToStartAndSimulateSuccess();
+
     task_environment_.FastForwardUntilNoTasksRemain();
 
     auto transport_availability_info =

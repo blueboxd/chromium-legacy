@@ -41,19 +41,19 @@ class MenuItemView : public views::Button, public views::ButtonListener {
         views::BoxLayout::Orientation::kHorizontal));
     SetPreferredSize(gfx::Size(kMenuItemWidthDp, kMenuItemHeightDp));
 
-    auto spacing = std::make_unique<NonAccessibleView>();
+    auto* spacing = new NonAccessibleView();
     spacing->SetPreferredSize(gfx::Size(item.is_group
                                             ? kRegularMenuItemLeftPaddingDp
                                             : kGroupMenuItemLeftPaddingDp,
                                         kNonEmptyHeight));
-    AddChildView(std::move(spacing));
+    AddChildView(spacing);
 
-    auto label = std::make_unique<views::Label>(base::UTF8ToUTF16(item.title));
+    views::Label* label = new views::Label(base::UTF8ToUTF16(item.title));
     label->SetEnabledColor(SK_ColorWHITE);
     label->SetSubpixelRenderingEnabled(false);
     label->SetAutoColorReadabilityEnabled(false);
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    AddChildView(std::move(label));
+    AddChildView(label);
 
     if (item.selected)
       SetBackground(views::CreateSolidBackground(SK_ColorGRAY));
@@ -163,7 +163,7 @@ LoginMenuView::LoginMenuView(const std::vector<Item>& items,
       selected_index_ = i;
   }
   contents_ = scroller_->SetContents(std::move(contents));
-  scroller_->SetVerticalScrollBar(std::make_unique<LoginScrollBar>());
+  scroller_->SetVerticalScrollBar(new LoginScrollBar());
 }
 
 LoginMenuView::~LoginMenuView() = default;

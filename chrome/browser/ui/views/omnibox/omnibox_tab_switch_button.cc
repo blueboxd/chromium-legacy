@@ -157,12 +157,7 @@ void OmniboxTabSwitchButton::ProvideFocusHint() {
 }
 
 void OmniboxTabSwitchButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  if (!OmniboxFieldTrial::IsTabSwitchLogicReversed())
-    node_data->SetName(l10n_util::GetStringUTF8(IDS_ACC_TAB_SWITCH_BUTTON));
-  else
-    // TODO(krb): Internationalize when feature is final.
-    node_data->SetName(base::ASCIIToUTF16(
-        AutocompleteMatchType::kAlternateTabSwitchButtonMessage));
+  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACC_TAB_SWITCH_BUTTON));
   // Although this appears visually as a button, expose as a list box option so
   // that it matches the other options within its list box container.
   node_data->role = ax::mojom::Role::kListBoxOption;

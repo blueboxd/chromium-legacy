@@ -14,8 +14,8 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
+#include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fido_authenticator.h"
-#include "device/fido/fido_discovery_factory.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/test_callback_receiver.h"
@@ -70,6 +70,7 @@ class FakeFidoRequestHandlerBase : public FidoRequestHandlerBase {
                                fido_discovery_factory,
                                {FidoTransportProtocol::kBluetoothLowEnergy}) {
     set_observer(observer);
+    Start();
   }
 
   void SimulateFidoRequestHandlerHasAuthenticator(bool simulate_authenticator) {
@@ -95,6 +96,11 @@ class FidoBleAdapterManagerTest : public ::testing::Test {
  public:
   FidoBleAdapterManagerTest() {
     BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
+    fido_discovery_factory_->ForgeNextBleDiscovery(
+        test::FakeFidoDiscovery::StartMode::kAutomatic);
+
+    fake_request_handler_ = std::make_unique<FakeFidoRequestHandlerBase>(
+        mock_observer_.get(), fido_discovery_factory_.get());
   }
 
   MockBluetoothDevice* AddMockBluetoothDeviceToAdapter() {
@@ -134,13 +140,10 @@ class FidoBleAdapterManagerTest : public ::testing::Test {
       base::MakeRefCounted<::testing::NiceMock<MockBluetoothAdapter>>();
   std::unique_ptr<MockObserver> mock_observer_ =
       std::make_unique<MockObserver>();
-  std::unique_ptr<FidoDiscoveryFactory> fido_discovery_factory_ =
-      std::make_unique<FidoDiscoveryFactory>();
+  std::unique_ptr<test::FakeFidoDiscoveryFactory> fido_discovery_factory_ =
+      std::make_unique<test::FakeFidoDiscoveryFactory>();
 
-  std::unique_ptr<FakeFidoRequestHandlerBase> fake_request_handler_ =
-      std::make_unique<FakeFidoRequestHandlerBase>(
-          mock_observer_.get(),
-          fido_discovery_factory_.get());
+  std::unique_ptr<FakeFidoRequestHandlerBase> fake_request_handler_;
 };
 
 TEST_F(FidoBleAdapterManagerTest, AdapterNotPresent) {

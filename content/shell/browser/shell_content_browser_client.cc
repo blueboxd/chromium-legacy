@@ -413,10 +413,6 @@ void ShellContentBrowserClient::OverrideWebkitPrefs(
   } else {
     prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
   }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceHighContrast)) {
-    prefs->forced_colors = blink::ForcedColors::kActive;
-  }
 }
 
 base::FilePath ShellContentBrowserClient::GetFontLookupTableCacheDir() {

@@ -46,7 +46,6 @@
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
-#include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -215,7 +214,8 @@ void WebSharedWorkerImpl::StartWorkerContext(
       std::move(web_worker_fetch_context), Vector<CSPHeaderAndType>(),
       outside_settings_object->GetReferrerPolicy(),
       outside_settings_object->GetSecurityOrigin(), starter_secure_context,
-      outside_settings_object->GetHttpsState(), CreateWorkerClients(),
+      outside_settings_object->GetHttpsState(),
+      MakeGarbageCollected<WorkerClients>(),
       std::make_unique<SharedWorkerContentSettingsProxy>(
           mojo::PendingRemote<mojom::blink::WorkerContentSettingsProxy>(
               std::move(content_settings_handle), 0u)),
@@ -260,13 +260,6 @@ void WebSharedWorkerImpl::StartWorkerContext(
   // We are now ready to inspect worker thread.
   client_->WorkerReadyForInspection(devtools_agent_remote.PassPipe(),
                                     devtools_agent_host_receiver.PassPipe());
-}
-
-WorkerClients* WebSharedWorkerImpl::CreateWorkerClients() {
-  auto* worker_clients = MakeGarbageCollected<WorkerClients>();
-  CoreInitializer::GetInstance().ProvideLocalFileSystemToWorker(
-      *worker_clients);
-  return worker_clients;
 }
 
 void WebSharedWorkerImpl::TerminateWorkerContext() {

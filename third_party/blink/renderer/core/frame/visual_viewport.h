@@ -76,14 +76,11 @@ struct PaintPropertyTreeBuilderFragmentContext;
 // When attached, the layer tree will look like this:
 // (pre-CompositeAfterPaint only)
 //
-// TODO(wangxianzhu): Remove unnecessary layers.
 //  root_transform_layer_
-//  +- container_layer_ (transform: DET_or_parent)
-//     +- page_scale_layer_ (transform: page_scale_node_)
-//     |  +- scroll_layer_ (transform: scroll_translation_node_)
-//     |     +- LayoutView CompositedLayerMapping layers
-//     +- overlay_scrollbar_horizontal_ (optional, transform: DET_or_parent)
-//     +- overlay_scrollbar_vertical_ (optional, transform: DET_or_parent)
+//  +- scroll_layer_ (transform: scroll_translation_node_)
+//  |  +- LayoutView CompositedLayerMapping layers
+//  +- overlay_scrollbar_horizontal_ (optional, transform: DET_or_parent)
+//  +- overlay_scrollbar_vertical_ (optional, transform: DET_or_parent)
 //  (DET_or_parent: device_emulation_transform_node_ if exists,
 //   or the parent transform state)
 //
@@ -116,9 +113,7 @@ class CORE_EXPORT VisualViewport final
   void AttachLayerTree(GraphicsLayer*);
 
   GraphicsLayer* RootGraphicsLayer() { return root_transform_layer_.get(); }
-  GraphicsLayer* ContainerLayer() { return container_layer_.get(); }
   GraphicsLayer* ScrollLayer() { return scroll_layer_.get(); }
-  GraphicsLayer* PageScaleLayer() { return page_scale_layer_.get(); }
 
   void InitializeScrollbars();
 
@@ -222,7 +217,6 @@ class CORE_EXPORT VisualViewport final
   bool ScrollAnimatorEnabled() const override;
   void ScrollControlWasSetNeedsPaintInvalidation() override {}
   void UpdateScrollOffset(const ScrollOffset&, ScrollType) override;
-  GraphicsLayer* LayerForContainer() const override;
   GraphicsLayer* LayerForScrolling() const override;
   GraphicsLayer* LayerForHorizontalScrollbar() const override;
   GraphicsLayer* LayerForVerticalScrollbar() const override;
@@ -277,8 +271,6 @@ class CORE_EXPORT VisualViewport final
   // viewport's nodes.
   PaintPropertyChangeType UpdatePaintPropertyNodesIfNeeded(
       PaintPropertyTreeBuilderFragmentContext& context);
-
-  CompositorElementId GetCompositorOverscrollElasticityElementId() const;
 
   void SetNeedsPaintPropertyUpdate() { needs_paint_property_update_ = true; }
   bool NeedsPaintPropertyUpdate() const { return needs_paint_property_update_; }
@@ -341,8 +333,6 @@ class CORE_EXPORT VisualViewport final
 
   Member<Page> page_;
   std::unique_ptr<GraphicsLayer> root_transform_layer_;
-  std::unique_ptr<GraphicsLayer> container_layer_;
-  std::unique_ptr<GraphicsLayer> page_scale_layer_;
   std::unique_ptr<GraphicsLayer> scroll_layer_;
 
   // The layers of the ScrollbarLayerGroups are referenced from the
@@ -358,7 +348,7 @@ class CORE_EXPORT VisualViewport final
   scoped_refptr<TransformPaintPropertyNode> device_emulation_transform_node_;
   scoped_refptr<TransformPaintPropertyNode>
       overscroll_elasticity_transform_node_;
-  scoped_refptr<TransformPaintPropertyNode> page_scale_node__;
+  scoped_refptr<TransformPaintPropertyNode> page_scale_node_;
   scoped_refptr<TransformPaintPropertyNode> scroll_translation_node_;
   scoped_refptr<ScrollPaintPropertyNode> scroll_node_;
   scoped_refptr<EffectPaintPropertyNode> horizontal_scrollbar_effect_node_;
@@ -390,7 +380,6 @@ class CORE_EXPORT VisualViewport final
   bool track_pinch_zoom_stats_for_page_;
   CompositorElementId element_id_;
   CompositorElementId scroll_element_id_;
-  CompositorElementId overscroll_elasticity_element_id_;
 
   bool needs_paint_property_update_;
 };

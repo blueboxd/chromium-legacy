@@ -232,10 +232,22 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
                 mNativeClipboard, Clipboard.this, timestamp);
     }
 
+    /**
+     * Gets the last modified timestamp observed by the native side ClipboardAndroid, not the
+     * Android framework.
+     *
+     * @return the last modified time in millisecond.
+     */
+    public long getLastModifiedTimeMs() {
+        if (mNativeClipboard == 0) return 0;
+        return ClipboardJni.get().getLastModifiedTimeToJavaTime(mNativeClipboard);
+    }
+
     @NativeMethods
     interface Natives {
         void onPrimaryClipChanged(long nativeClipboardAndroid, Clipboard caller);
         void onPrimaryClipTimestampInvalidated(
                 long nativeClipboardAndroid, Clipboard caller, long timestamp);
+        long getLastModifiedTimeToJavaTime(long nativeClipboardAndroid);
     }
 }

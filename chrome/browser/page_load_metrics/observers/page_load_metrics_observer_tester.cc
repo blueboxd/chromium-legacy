@@ -20,6 +20,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/test/navigation_simulator.h"
+#include "content/public/test/test_renderer_host.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/ip_endpoint.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,16 +58,10 @@ class TestPageLoadMetricsEmbedderInterface
   }
 
   bool IsPrerender(content::WebContents* web_contents) override {
-    return prerender::PrerenderContents::FromWebContents(web_contents);
+    return false;
   }
 
-  bool IsExtensionUrl(const GURL& url) override {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    return url.SchemeIs(extensions::kExtensionScheme);
-#else
-    return false;
-#endif
-  }
+  bool IsExtensionUrl(const GURL& url) override { return false; }
 
  private:
   PageLoadMetricsObserverTester* test_;
@@ -77,14 +73,39 @@ class TestPageLoadMetricsEmbedderInterface
 
 PageLoadMetricsObserverTester::PageLoadMetricsObserverTester(
     content::WebContents* web_contents,
+    content::RenderViewHostTestHarness* rfh_test_harness,
     const RegisterObserversCallback& callback)
     : register_callback_(callback),
       web_contents_(web_contents),
+      rfh_test_harness_(rfh_test_harness),
       observer_(MetricsWebContentsObserver::CreateForWebContents(
           web_contents,
           std::make_unique<TestPageLoadMetricsEmbedderInterface>(this))) {}
 
 PageLoadMetricsObserverTester::~PageLoadMetricsObserverTester() {}
+
+void PageLoadMetricsObserverTester::StartNavigation(const GURL& gurl) {
+  std::unique_ptr<content::NavigationSimulator> navigation =
+      content::NavigationSimulator::CreateBrowserInitiated(gurl,
+                                                           web_contents());
+  navigation->Start();
+}
+
+void PageLoadMetricsObserverTester::NavigateWithPageTransitionAndCommit(
+    const GURL& url,
+    ui::PageTransition transition) {
+  auto simulator = PageTransitionIsWebTriggerable(transition)
+                       ? content::NavigationSimulator::CreateRendererInitiated(
+                             url, rfh_test_harness_->main_rfh())
+                       : content::NavigationSimulator::CreateBrowserInitiated(
+                             url, web_contents());
+  simulator->SetTransition(transition);
+  simulator->Commit();
+}
+
+void PageLoadMetricsObserverTester::NavigateToUntrackedUrl() {
+  rfh_test_harness_->NavigateAndCommit(GURL(url::kAboutBlankURL));
+}
 
 void PageLoadMetricsObserverTester::SimulateTimingUpdate(
     const mojom::PageLoadTiming& timing) {
@@ -276,10 +297,6 @@ void PageLoadMetricsObserverTester::SimulateDomStorageAccess(
     bool blocked_by_policy) {
   observer_->OnDomStorageAccessed(url, first_party_url, local,
                                   blocked_by_policy);
-}
-
-MetricsWebContentsObserver* PageLoadMetricsObserverTester::observer() const {
-  return observer_;
 }
 
 const PageLoadMetricsObserverDelegate&

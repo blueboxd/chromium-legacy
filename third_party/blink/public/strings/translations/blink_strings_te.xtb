@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">ఫుటర్</translation>
 <translation id="2709516037105925701">స్వయంపూర్తి</translation>
 <translation id="2723001399770238859">ఆడియో</translation>
+<translation id="2725963129578236554">వ్యాఖ్యలు</translation>
 <translation id="2746543609216772311">విలువ తప్పనిసరిగా <ph name="MINIMUM_DATE_OR_TIME" /> లేదా అంతకంటే తదుపరిది అయి ఉండాలి.</translation>
 <translation id="2759744352195237655">పాప్ అప్ బటన్</translation>
 <translation id="2761667185364618470">మీరు కొనసాగాలనుకుంటే దయచేసి ఈ బాక్స్‌కి టిక్కు పెట్టండి.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">దయచేసి ఈ వచనాన్ని <ph name="MIN_CHARACTERS" /> లేదా అంతకంటే ఎక్కువ అక్షరాలకు పొడిగించండి (ప్రస్తుతం మీరు <ph name="CURRENT_LENGTH" /> అక్షరాలను ఉపయోగిస్తున్నారు).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />'కి ముందు ఉన్న భాగంలో '<ph name="INVALIDCHARACTER" />' చిహ్నం ఉండకూడదు.</translation>
 <translation id="3846214748874656680">పూర్తి స్క్రీన్ నుండి నిష్క్రమించు</translation>
+<translation id="3889183436948184105">పునర్విమర్శ</translation>
 <translation id="3920932319529768807">ముగింపు</translation>
 <translation id="3924558731517983934">అప్లికేషన్‌</translation>
 <translation id="3944740393230681990">ప్రారంభం</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">ఆడియో సమయ స్క్రబ్బర్</translation>
 <translation id="6443871981718447451">ఉపశీర్షికల మెనూని చూపు</translation>
 <translation id="6453774872122745852">గుర్తింపులు</translation>
+<translation id="6475115390776617481">లైవ్ ప్రెజెన్స్</translation>
 <translation id="648732519525291180">సమయం ఎంపిక</translation>
 <translation id="6550675742724504774">ఎంపికలు</translation>
 <translation id="6572309429103589720">చెల్లని వ్యాకరణం</translation>
@@ -183,9 +186,11 @@
 <translation id="6981594929165378967">చొప్పించడం</translation>
 <translation id="6989848892321993519">దయచేసి ఈ వచనాన్ని <ph name="MIN_CHARACTERS" /> లేదా అంతకంటే ఎక్కువ అక్షరాలకు పొడిగించండి (ప్రస్తుతం మీరు 1 అక్షరాన్ని ఉపయోగిస్తున్నారు).</translation>
 <translation id="7033340931668032222">వాల్యూమ్ మార్చడానికి కిందకు లేదా పైకి బటన్‌ను ఉపయోగించండి</translation>
+<translation id="7034405885550056553">సూచన</translation>
 <translation id="709897737746224366">దయచేసి అభ్యర్థించిన ఆకృతీకరణను సరిపోల్చండి.</translation>
 <translation id="7118469954320184356">వివరణ అందుబాటులో లేదు.</translation>
 <translation id="7139483182332611405">ముందుమాట</translation>
+<translation id="7214187073215825913">కంటెంట్ సమాచారం</translation>
 <translation id="7263440858009898357">దయచేసి జాబితాలోని ఒక అంశాన్ని ఎంచుకోండి.</translation>
 <translation id="727747134524199931">నిలువు వరుస శీర్షిక</translation>
 <translation id="7320576522385648310">బఫర్ చేయడం</translation>
@@ -242,6 +247,7 @@
 <translation id="8711688047404765493">అవుట్‌పుట్</translation>
 <translation id="8750798805984357768">దయచేసి ఈ ఎంపికలలో ఒకదాన్ని ఎంచుకోండి.</translation>
 <translation id="8808573423886751634">అధ్యాయం</translation>
+<translation id="8822203815165896261">ఆథరింగ్ సమాచారం</translation>
 <translation id="8845239796550121995">ఇప్పుడు మీ టీవీలో ప్రసారం చేస్తోంది</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8875657656876809964">వీడియో ప్లేబ్యాక్ ఎర్రర్</translation>

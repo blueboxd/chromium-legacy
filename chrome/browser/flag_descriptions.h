@@ -1728,9 +1728,6 @@ extern const char kOmniboxPedalSuggestionsDescription[];
 extern const char kOmniboxReverseAnswersName[];
 extern const char kOmniboxReverseAnswersDescription[];
 
-extern const char kOmniboxReverseTabSwitchLogicName[];
-extern const char kOmniboxReverseTabSwitchLogicDescription[];
-
 extern const char kOmniboxSuggestionTransparencyOptionsName[];
 extern const char kOmniboxSuggestionTransparencyOptionsDescription[];
 
@@ -1988,9 +1985,6 @@ extern const char kEnableAssistantRoutinesDescription[];
 
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];
-
-extern const char kEnableChromeOsAccountManagerName[];
-extern const char kEnableChromeOsAccountManagerDescription[];
 
 extern const char kEnableDiscoverAppName[];
 extern const char kEnableDiscoverAppDescription[];

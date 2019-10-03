@@ -22,7 +22,6 @@
 <translation id="116280672541001035">已耗用</translation>
 <translation id="1171770572613082465">点按“热门网站”按钮可查看热门网站</translation>
 <translation id="1173894706177603556">重命名</translation>
-<translation id="1175310183703641346">您的书签、历史记录、密码和其他设置将不再同步到您的 Google 帐号中</translation>
 <translation id="1178581264944972037">暂停</translation>
 <translation id="1181037720776840403">删除</translation>
 <translation id="1188239144602654184">进入 AR 会话</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">已在 <ph name="PRODUCT_NAME" /> 中添加书签</translation>
 <translation id="3744111561329211289">后台同步</translation>
 <translation id="3771001275138982843">无法下载此项更新</translation>
+<translation id="3771033907050503522">隐身标签页</translation>
 <translation id="3773755127849930740">请<ph name="BEGIN_LINK" />开启蓝牙<ph name="END_LINK" />以允许配对</translation>
 <translation id="3775705724665058594">发送到您的设备</translation>
 <translation id="3778956594442850293">已添加到主屏幕</translation>
@@ -484,7 +484,6 @@
 <translation id="4719927025381752090">提供翻译</translation>
 <translation id="4720023427747327413">在<ph name="PRODUCT_NAME" />中打开</translation>
 <translation id="4720982865791209136">欢迎帮助我们改进 Chrome。<ph name="BEGIN_LINK" />参与调查<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">您正要将同步帐号从 <ph name="ACCOUNT_EMAIL_OLD" /> 切换到 <ph name="ACCOUNT_EMAIL_NEW" />。您现有的 Chrome 数据由 <ph name="MANAGED_DOMAIN" /> 管理。切换同步帐号后，您的数据将从这台设备上删除，但仍会保留在 <ph name="ACCOUNT_EMAIL_OLD" /> 中。</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4738836084190194332">上次同步时间：<ph name="WHEN" /></translation>
 <translation id="4749960740855309258">打开新标签页</translation>
@@ -668,13 +667,13 @@
 <translation id="5937580074298050696">已节省 <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">重置</translation>
 <translation id="5942872142862698679">目前使用的搜索引擎是 Google</translation>
-<translation id="5944669582486359588">在精简模式下，Chrome 可更快速地加载网页，并可节省多达 60% 的流量。Google 的云技术会优化您访问的网页。</translation>
 <translation id="5952764234151283551">将您尝试访问的网页的网址发送给 Google</translation>
 <translation id="5956665950594638604">在新标签页中打开 Chrome 帮助中心</translation>
 <translation id="5958275228015807058">在“下载内容”中查找您的文件和网页</translation>
 <translation id="5962718611393537961">点按即可收起</translation>
 <translation id="6000066717592683814">继续使用 Google</translation>
 <translation id="6005538289190791541">建议的密码</translation>
+<translation id="6036057147555329831">额外的 ICU</translation>
 <translation id="6039379616847168523">跳转到下一个标签页</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="6042308850641462728">更多</translation>
@@ -815,7 +814,6 @@
 <translation id="7029809446516969842">密码</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7055152154916055070">已禁止重定向：</translation>
-<translation id="7062545763355031412">接受并切换帐号</translation>
 <translation id="7063006564040364415">无法连接到同步服务器。</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{已选择 1 项}other{已选择 # 项}}</translation>
 <translation id="7071521146534760487">管理帐号</translation>
@@ -1099,7 +1097,6 @@
 <translation id="9139318394846604261">购物</translation>
 <translation id="9155898266292537608">您也可以通过快速点按某个字词进行搜索</translation>
 <translation id="9169507124922466868">导航历史记录在下半屏中显示</translation>
-<translation id="9188680907066685419">退出受管理的帐号</translation>
 <translation id="9204836675896933765">还剩 1 个文件</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">无法致电</translation>
@@ -1108,7 +1105,6 @@
 <translation id="932327136139879170">首页</translation>
 <translation id="938850635132480979">错误：<ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">使用您的麦克风</translation>
-<translation id="951339005376969845">删除现有数据。您可通过切换回 <ph name="FROM_ACCOUNT" /> 来获取现有数据。</translation>
 <translation id="95817756606698420">在中国，Chrome 可以使用<ph name="BEGIN_BOLD" />搜狗<ph name="END_BOLD" />作为搜索引擎。如果需要，您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中进行更改。</translation>
 <translation id="965817943346481315">屏蔽会展示侵扰性或误导性广告的网站（推荐）</translation>
 <translation id="968900484120156207">您访问的网页会显示在此处</translation>

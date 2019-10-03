@@ -1172,8 +1172,7 @@ void UserSessionManager::InitializeAccountManager() {
   base::FilePath profile_path =
       ProfileHelper::GetProfilePathByUserIdHash(user_context_.GetUserIDHash());
 
-  if (features::IsAccountManagerEnabled() &&
-      ProfileHelper::IsRegularProfilePath(profile_path)) {
+  if (ProfileHelper::IsRegularProfilePath(profile_path)) {
     chromeos::InitializeAccountManager(
         profile_path,
         base::BindOnce(&UserSessionManager::PrepareProfile, AsWeakPtr(),
@@ -1346,14 +1345,11 @@ void UserSessionManager::InitProfilePreferences(
     }
 
     bool should_use_legacy_flow = false;
-    if (!features::IsAccountManagerEnabled()) {
-      // Always use the legacy flow if Account Manager has not been enabled yet.
-      should_use_legacy_flow = true;
-    } else if (!identity_manager
-                    ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
-                        gaia_id)
-                    .has_value() &&
-               user_context.GetRefreshToken().empty()) {
+    if (!identity_manager
+             ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
+                 gaia_id)
+             .has_value() &&
+        user_context.GetRefreshToken().empty()) {
       // Edge case: |AccountManager| is enabled but neither |IdentityManager|
       // nor |user_context| has the refresh token. This means that an existing
       // user has switched on Account Manager for the first time and has not

@@ -44,13 +44,9 @@ class CORE_EXPORT ScrollbarThemeAura : public ScrollbarTheme {
   bool HasButtons(const Scrollbar&) override { return true; }
   bool HasThumb(const Scrollbar&) override;
 
-  IntRect BackButtonRect(const Scrollbar&,
-                         ScrollbarPart,
-                         bool painting = false) override;
-  IntRect ForwardButtonRect(const Scrollbar&,
-                            ScrollbarPart,
-                            bool painting = false) override;
-  IntRect TrackRect(const Scrollbar&, bool painting = false) override;
+  IntRect BackButtonRect(const Scrollbar&, ScrollbarPart) override;
+  IntRect ForwardButtonRect(const Scrollbar&, ScrollbarPart) override;
+  IntRect TrackRect(const Scrollbar&) override;
   int MinimumThumbLength(const Scrollbar&) override;
 
   void PaintTrackBackground(GraphicsContext&,
@@ -67,7 +63,7 @@ class CORE_EXPORT ScrollbarThemeAura : public ScrollbarTheme {
   void PaintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
 
   bool ShouldRepaintAllPartsOnInvalidation() const override;
-  ScrollbarPart InvalidateOnThumbPositionChange(
+  ScrollbarPart PartsToInvalidateOnThumbPositionChange(
       const Scrollbar&,
       float old_position,
       float new_position) const override;

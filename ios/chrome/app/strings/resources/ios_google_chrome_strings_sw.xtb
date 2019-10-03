@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Kwa kutumia programu hii, unakubali <ph name="BEGIN_LINK_TOS" />Sheria na Masharti<ph name="END_LINK_TOS" /> na <ph name="BEGIN_LINK_PRIVACY" />Ilani ya Faragha<ph name="END_LINK_PRIVACY" /> ya Chrome.</translation>
 <translation id="2147651015520127414">Chrome imethibitisha kuwa <ph name="ISSUER" /> ndiye mtoa cheti cha tovuti hii.</translation>
 <translation id="2199719347983604670">Data kutoka usawazishaji wa Chrome</translation>
-<translation id="2342981853652716282">Ingia katika Chrome ili upate alamisho, manenosiri yako na mengine mengi kwenye vifaa vyako vyote.</translation>
 <translation id="2347208864470321755">Kipengee hiki kikiwashwa, Chrome itatafsiri kurasa zilizoandikwa kwa lugha zingine kwa kutumia Google Tafsiri. <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Ili kuhifadhi picha, gusa Mipangilio ili uruhusu Chrome itumie picha zako</translation>
 <translation id="2576431527583832481">Chrome imekuwa bora! Toleo jipya linapatikana.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Saidia kuboresha Chrome kwa kutumia Google takwimu za matumizi na ripoti wakati wowote kivinjari hiki kinapoacha kufanya kazi.</translation>
 <translation id="415767770115540173">Pata hali bora ya Google katika Chrome kulingana na mahali ulipo.</translation>
 <translation id="424864128008805179">Ungependa kuondoka kwenye Chrome?</translation>
+<translation id="4249068189593983585">Kidokezo cha Chrome. Ili upate chaguo zaidi za kichupo, bofya na ushikilie kitufe cha 'Onyesha Vichupo' katika upau wa vidhibiti unaopatikana sehemu ya chini au juu ya skrini yako.</translation>
 <translation id="4523886039239821078">Baadhi ya programu jalizi husababisha Chrome iache kufanya kazi. Tafadhali ondoa:</translation>
 <translation id="5389212809648216794">Google Chrome imeshindwa kutumia kamera yako kwa sababu inatumiwa na programu nyingine</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Kagua Sheria na Masharti ya Chrome yaliyosasishwa.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Baadhi ya programu jalizi husababisha Chrome iache kufanya kazi. Tafadhali jaribu kuzisanidua.</translation>
 <translation id="8459495907675268833">Data uliyochagua imeondolewa kwenye Chrome na kwenye vifaa vilivyosawazishwa. Huenda Akaunti yako ya Google ina aina nyingine za historia ya mambo uliyovinjari kama vile mambo uliyotafuta na shughuli kutoka huduma nyingine za Google katika history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Huenda Google Chrome ikatumia huduma za wavuti kuboresha hali yako ya kuvinjari. Unaweza chagua kuzima huduma hizi. <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>
 </translationbundle>

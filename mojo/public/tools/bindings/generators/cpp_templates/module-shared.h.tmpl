@@ -61,7 +61,7 @@ namespace {{namespace}} {
 #include "mojo/public/cpp/bindings/lib/interface_serialization.h"
 {%- endif %}
 
-{% if not disallow_native_types %}
+{% if not disallow_native_types and uses_native_types %}
 #include "mojo/public/cpp/bindings/native_enum.h"
 #include "mojo/public/cpp/bindings/lib/native_struct_serialization.h"
 {%- endif %}

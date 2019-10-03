@@ -20,6 +20,7 @@
 <translation id="1087788677726983142">پنهان کردن فیلترهای جریان رویداد</translation>
 <translation id="1088219014394087294">عنوانی وجود ندارد.</translation>
 <translation id="1106741348836243114">بازخورد صوتی (نمادهای شنیداری) را روشن یا خاموش کنید.</translation>
+<translation id="1114836634143403764">پیشنهاد</translation>
 <translation id="1120743664840974483">{«ا»: «اسب»، «ب»: «بازی»، «پ»: «پروین»، «ت»: «ترانه»، «ث»: «ثریا»، «ج»: «جوجه»، «چ»: «چرخ»، «ح»: «حریم»، « خ»:«خصوصی »، « د»: «دفترچه»، «ذ»: «ذلیل»، «ر»: «روز»، «ز»: «زمان»، «ژ»: «ژولیت»، «س»: «سیاست»، «ش»: «شنبه»، «ص»: «صفحه»، «ض»: «ضروری»، «ط»: «طراوت»، «ظ»: «ظهر»، «ع»: «عصر»، « غ»: «غروب»، «ف»: «فروش»، «ق»: «قلب»، «ک»: «کودکان»، «گ»: «گوشی»، «ل»: «لوله»، «م»: «مرز»، «ن»: «نامناسب»، «و»: «ویلا»، «ه»: «هیاهو»، «ی»: «یادآور»}</translation>
 <translation id="1120938014254001895">تند کشیدن دو انگشت به بالا</translation>
 <translation id="1124771028211010580">سبک نمایش کنونی، پهلو به پهلو است.</translation>
@@ -126,6 +127,7 @@
 <translation id="1845944666972354496">برای فعال کردن دو ضربه سریع بزنید</translation>
 <translation id="1846771122725914429">صفحه‌نمایش بریل بلوتوث</translation>
 <translation id="1865601187525349519">پایان نوشتار</translation>
+<translation id="1875375785454778375">حضور زنده</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">تاریخ و زمان کنونی را بگویید.</translation>
 <translation id="1902396333223336119">سلول</translation>
@@ -146,6 +148,7 @@
 <translation id="2009187674653301682">بالانگاشت نیست</translation>
 <translation id="2010555995361223825">‏منوهای ChromeVox</translation>
 <translation id="2045490512405922022">بدون علامت</translation>
+<translation id="2049107626739254612">اطلاعات تألیف</translation>
 <translation id="20601713649439366">هیچ رابطه ریاضی قبلی وجود ندارد.</translation>
 <translation id="2063539687800151747">نقل‌قول آغازین</translation>
 <translation id="207477615537953741">تفسیر معنایی خاموش است</translation>
@@ -156,6 +159,7 @@
 <translation id="2110480898214777136">بسته‌بندی داخل یک صفحه، کادر گفتگو یا محتوی دیگر از ابتدا تا انتها یا از انتها تا ابتدا</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">کلید دسترسی: <ph name="KEY" /></translation>
+<translation id="2126597928985245619">نوشتاری برای این مورد در دسترس نیست</translation>
 <translation id="2127747486437921899">ایتالیک</translation>
 <translation id="2138345533858834403">‏خروجی نمایشگر بریل قابل بازخوانی را در
         پانل ChromeVox در بالای صفحه شبیه‌سازی می‌کند</translation>
@@ -261,6 +265,7 @@
 <translation id="2911433807131383493">‏باز کردن برنامه آموزشی ChromeVox</translation>
 <translation id="2912405967290226587">تند کشیدن سه انگشت به چپ</translation>
 <translation id="2932083475399492303">تعویض نوع خط بین حالت چیدمان یا ساختاری</translation>
+<translation id="293796669683825859">نظرها</translation>
 <translation id="2942710183375260152">آبی کربنی تیره</translation>
 <translation id="2943596527105977722">ماشی سیر</translation>
 <translation id="2944762337049891859">خواندن صفحه به‌صورت خودکار بعد از اتمام بارگیری.</translation>
@@ -337,6 +342,7 @@
 <translation id="3324983252691184275">زرشکی</translation>
 <translation id="3338224621010291843">لغزنده <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="335581015389089642">صدا</translation>
+<translation id="3356951775008366684">اعلام تلفظ آوایی کلمه</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{علامت به اضافه}one{# علامت به اضافه}other{# علامت به اضافه}}</translation>
 <translation id="338583716107319301">جداساز</translation>
@@ -533,6 +539,7 @@
 <translation id="4763480195061959176">ویدئو</translation>
 <translation id="4764692524839457597">پیش‌فرض</translation>
 <translation id="4772771694153161212">زیرخط نیست</translation>
+<translation id="4787577491510559358">اعلام قالب‌بندی برای مورد کنونی</translation>
 <translation id="479989351350248267">جستجو</translation>
 <translation id="4804818685124855865">قطع اتصال</translation>
 <translation id="481165870889056555">اعلام عنوان صفحه کنونی</translation>
@@ -569,6 +576,7 @@
 <translation id="4983588134362688868">رفتن به بالای صفحه</translation>
 <translation id="4986606102545753256"><ph name="NAME" />، پنجره</translation>
 <translation id="4993152509206108683">نرخ <ph name="PERCENT" /> درصد</translation>
+<translation id="4994420463726586413">اعلام وضعیت فعلی باتری</translation>
 <translation id="4996716799442435517">دیداری</translation>
 <translation id="4997282455736854877"><ph name="NAME" />، دکمه رادیویی انتخاب شد</translation>
 <translation id="4997475792277222884">مورد بعدی که پیوند نباشد وجود ندارد.</translation>

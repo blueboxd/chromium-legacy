@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Al usar esta aplicación, aceptas las <ph name="BEGIN_LINK_TOS" />condiciones de servicio<ph name="END_LINK_TOS" /> y el <ph name="BEGIN_LINK_PRIVACY" />aviso de privacidad<ph name="END_LINK_PRIVACY" /> de Chrome.</translation>
 <translation id="2147651015520127414">Chrome ha verificado que <ph name="ISSUER" /> emitió el certificado de este sitio web.</translation>
 <translation id="2199719347983604670">Datos de Sincronización de Chrome</translation>
-<translation id="2342981853652716282">Inicia sesión en Chrome para sincronizar los marcadores, las contraseñas y mucho más en todos tus dispositivos.</translation>
 <translation id="2347208864470321755">Cuando se activa esta función, Chrome ofrece la posibilidad de traducir páginas escritas en otros idiomas con el Traductor de Google. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Para guardar las imágenes, toca Configuración para permitir que Chrome utilice tus fotos</translation>
 <translation id="2576431527583832481">Chrome sigue mejorando. Hay una nueva versión disponible.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Ayudar a mejorar Chrome enviando estadísticas de uso e informes sobre fallos.</translation>
 <translation id="415767770115540173">Disfruta de una mejor experiencia en Chrome compartiendo tu ubicación.</translation>
 <translation id="424864128008805179">¿Quieres cerrar sesión en Chrome?</translation>
+<translation id="4249068189593983585">Consejo sobre Chrome: Para ver más opciones de pestañas, mantén pulsado el botón Mostrar pestañas en la barra de herramientas, que se encuentra en la parte inferior o superior de la pantalla.</translation>
 <translation id="4523886039239821078">Algunos complementos hacen que Chrome falle. Desinstálalos.</translation>
 <translation id="5389212809648216794">Google Chrome no puede utilizar la cámara porque la está usando otra aplicación</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Consulta los Términos del Servicio de Chrome actualizados<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Algunos complementos hacen que Chrome falle. Prueba a desinstalarlos.</translation>
 <translation id="8459495907675268833">Los datos seleccionados se han eliminado de Chrome y de los dispositivos sincronizados. Es posible que tu cuenta de Google tenga otras formas del historial de navegación, como las búsquedas o la actividad de otros servicios de Google en la página history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome puede utilizar servicios web para mejorar tu experiencia de navegación. Puedes habilitar o inhabilitar estos servicios. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 </translationbundle>

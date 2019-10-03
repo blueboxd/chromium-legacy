@@ -4839,8 +4839,6 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
   web_view_impl->MainFrameWidget()->Resize(WebSize(100, 150));
   SetViewportSize(WebSize(100, 150));
-  VisualViewport* visual_viewport =
-      &web_view_impl->GetPage()->GetVisualViewport();
   DevToolsEmulator* dev_tools_emulator = web_view_impl->GetDevToolsEmulator();
 
   TransformationMatrix expected_matrix;
@@ -4851,7 +4849,6 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
     dev_tools_emulator->OverrideVisibleRect(IntSize(), &visible_rect);
     EXPECT_EQ(IntRect(1, 2, 3, 4), visible_rect);  // Was modified.
   }
-  EXPECT_TRUE(visual_viewport->ContainerLayer()->MasksToBounds());
 
   // Override applies transform, sets visible rect, and disables
   // visual viewport clipping.
@@ -4864,7 +4861,6 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
     dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
     EXPECT_EQ(IntRect(50, 55, 50, 75), visible_rect);
   }
-  EXPECT_FALSE(visual_viewport->ContainerLayer()->MasksToBounds());
 
   // Setting new override discards previous one.
   matrix = dev_tools_emulator->ForceViewportForTesting(
@@ -4876,7 +4872,6 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
     dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
     EXPECT_EQ(IntRect(5, 10, 68, 101), visible_rect);  // Was modified.
   }
-  EXPECT_FALSE(visual_viewport->ContainerLayer()->MasksToBounds());
 
   // Clearing override restores original transform, visible rect and
   // visual viewport clipping.
@@ -4888,7 +4883,6 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
     dev_tools_emulator->OverrideVisibleRect(IntSize(), &visible_rect);
     EXPECT_EQ(IntRect(1, 2, 3, 4), visible_rect);  // Not modified.
   }
-  EXPECT_TRUE(visual_viewport->ContainerLayer()->MasksToBounds());
 }
 
 TEST_F(WebViewTest, ViewportOverrideIntegratesDeviceMetricsOffsetAndScale) {

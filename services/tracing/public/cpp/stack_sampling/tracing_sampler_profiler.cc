@@ -17,6 +17,7 @@
 #include "base/strings/strcat.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_local.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"

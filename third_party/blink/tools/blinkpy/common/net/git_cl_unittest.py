@@ -8,7 +8,9 @@ from blinkpy.common.host_mock import MockHost
 from blinkpy.common.net.buildbot import Build
 from blinkpy.common.net.git_cl import CLStatus
 from blinkpy.common.net.git_cl import GitCL
+from blinkpy.common.net.git_cl import SEARCHBUILDS_RESPONSE_PREFIX
 from blinkpy.common.net.git_cl import TryJobStatus
+from blinkpy.common.net.web_mock import MockWeb
 from blinkpy.common.system.executive_mock import MockExecutive
 
 
@@ -548,3 +550,101 @@ class GitCLTest(unittest.TestCase):
         # so if we only care about other-builder, not builder-a,
         # then no exception is raised.
         self.assertEqual(git_cl.try_job_results(['other-builder']), {})
+
+    def test_try_job_results_from_bb(self):
+        git_cl = GitCL(MockHost())
+        git_cl._host.web = MockWeb(responses=[
+            {
+                'status_code': 200,
+                'body': SEARCHBUILDS_RESPONSE_PREFIX +
+                """{
+                    "builds": [
+                        {
+                            "status": "SUCCESS",
+                            "builder": {
+                                "builder": "builder-a"
+                            },
+                            "number": 111,
+                            "tags": [
+                                {
+                                    "key": "user_agent",
+                                    "value": "cq"
+                                }
+                            ]
+                        },
+                        {
+                            "status": "SCHEDULED",
+                            "builder": {
+                                "builder": "builder-b"
+                            },
+                            "number": 222
+                        },
+                        {
+                            "status": "INFRA_FAILURE",
+                            "builder": {
+                                "builder": "builder-c"
+                            },
+                            "number": 333
+                        }
+                    ]
+                }"""
+            }
+        ])
+        self.assertEqual(
+            git_cl.try_job_results_from_bb(issue_number=None),
+            {
+                Build('builder-a', 111): TryJobStatus('COMPLETED', 'SUCCESS'),
+                Build('builder-b', 222): TryJobStatus('SCHEDULED', None),
+                # INFRA_FAILURE is mapped to FAILURE for this build.
+                Build('builder-c', 333): TryJobStatus('COMPLETED', 'FAILURE'),
+            })
+
+    def test_try_job_results_from_bb_skip_experimental_cq(self):
+        git_cl = GitCL(MockHost())
+        git_cl._host.web = MockWeb(responses=[
+            {
+                'status_code': 200,
+                'body': SEARCHBUILDS_RESPONSE_PREFIX +
+                """{
+                    "builds": [
+                        {
+                            "status": "SUCCESS",
+                            "builder": {
+                                "builder": "builder-a"
+                            },
+                            "number": 111,
+                            "tags": [
+                                {
+                                    "key": "user_agent",
+                                    "value": "cq"
+                                }
+                            ]
+                        },
+                        {
+                            "status": "SUCCESS",
+                            "builder": {
+                                "builder": "builder-b"
+                            },
+                            "number": 222,
+                            "tags": [
+                                {
+                                    "key": "user_agent",
+                                    "value": "cq"
+                                },
+                                {
+                                    "key": "cq_experimental",
+                                    "value": "true"
+                                }
+                            ]
+                        }
+                    ]
+                }"""
+            }
+        ])
+        self.assertEqual(
+            # Only one build appears - builder-b is ignored because it is
+            # experimental.
+            git_cl.try_job_results_from_bb(issue_number=None, cq_only=True),
+            {
+                Build('builder-a', 111): TryJobStatus('COMPLETED', 'SUCCESS'),
+            })

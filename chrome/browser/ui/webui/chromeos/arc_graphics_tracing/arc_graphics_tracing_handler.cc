@@ -441,8 +441,8 @@ void ArcGraphicsTracingHandler::StopTracing() {
     return;
 
   controller->StopTracing(content::TracingController::CreateStringEndpoint(
-      base::BindRepeating(&ArcGraphicsTracingHandler::OnTracingStopped,
-                          weak_ptr_factory_.GetWeakPtr())));
+      base::BindOnce(&ArcGraphicsTracingHandler::OnTracingStopped,
+                     weak_ptr_factory_.GetWeakPtr())));
 }
 
 void ArcGraphicsTracingHandler::SetStatus(const std::string& status) {
@@ -459,10 +459,9 @@ void ArcGraphicsTracingHandler::OnTracingStarted() {
 }
 
 void ArcGraphicsTracingHandler::OnTracingStopped(
-    std::unique_ptr<const base::DictionaryValue> metadata,
-    base::RefCountedString* trace_data) {
+    std::unique_ptr<std::string> trace_data) {
   std::string string_data;
-  string_data.swap(trace_data->data());
+  string_data.swap(*trace_data);
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},

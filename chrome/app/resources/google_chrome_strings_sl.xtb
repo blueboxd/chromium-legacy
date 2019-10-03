@@ -20,7 +20,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1393853151966637042">Pomoč pri uporabi Google Chroma</translation>
 <translation id="1399397803214730675">V tem računalniku je že nameščena novejša različica Google Chroma. Če programska oprema ne deluje, odstranite Google Chrome in poskusite znova.</translation>
 <translation id="1434626383986940139">Delovne različice aplikacij za Chrome</translation>
-<translation id="1457721931618994305">Posodabljanje Google Chroma ...</translation>
 <translation id="1469002951682717133">Zaganjalnik aplikacij v Chromu</translation>
 <translation id="1553358976309200471">Posodobi Chrome</translation>
 <translation id="1587223624401073077">Google Chrome uporablja vašo kamero.</translation>
@@ -92,6 +91,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="3065168410429928842">Zavihek v Chromu</translation>
 <translation id="3080151273017101988">Nadaljuj izvajanje programov v ozadju, ko je Google Chrome zaprt</translation>
 <translation id="3089968997497233615">Na voljo je nova, varnejša različica Google Chroma.</translation>
+<translation id="3138848678222082288">Prihodnje različice Chroma bodo nameščene samodejno. Ko se ta prenos dokonča, se bo Chrome znova zagnal in lahko boste nadaljevali z delom.</translation>
 <translation id="3149510190863420837">Aplikacije za Chrome</translation>
 <translation id="3282568296779691940">Prijava v Chrome</translation>
 <translation id="3340978935015468852">nastavitve</translation>
@@ -177,9 +177,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="573759479754913123">O sistemu Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – delovna različica Google Chroma</translation>
 <translation id="5804318322022881572">Chroma ni bilo mogoče zagnati. Poskusite znova.</translation>
-<translation id="5877064549588274448">Kanal spremenjen. Znova zaženite napravo, da uveljavite spremembe.</translation>
 <translation id="5895138241574237353">Znova zaženi</translation>
-<translation id="5906655207909574370">Samo še malo. Znova zaženite napravo, da dokončate posodobitev.</translation>
 <translation id="5940385492829620908">Tu so shranjeni vaš splet, zaznamki in druge stvari v Chromu.</translation>
 <translation id="5941830788786076944">Nastavi Google Chrome kot privzeti brskalnik</translation>
 <translation id="6014844626092547096">Zdaj ste prijavljeni v Chrome. Sinhronizacijo je onemogočil skrbnik.</translation>
@@ -198,16 +196,15 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="6566149418543181476">Posodabljanje Google Chroma (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Za sinhronizacijo stvari v Chromu uporabljate <ph name="PROFILE_EMAIL" />. Če želite posodobiti nastavitve sinhroniziranja ali uporabljati Chrome brez Google Računa, odprite <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Kopirano v Chrome</translation>
-<translation id="6634887557811630702">Google Chrome je posodobljen.</translation>
 <translation id="6676384891291319759">Dostop do interneta</translation>
 <translation id="6679975945624592337">Naj se Google Chrome izvaja v ozadju</translation>
 <translation id="6750954913813541382">Chrome zaradi odpravljanja napak pri črkovanju Googlu pošlje besedilo, ki ga vnesete v brskalnik</translation>
 <translation id="677276454032249905">Želite vseeno zapreti Chrome?</translation>
 <translation id="683440813066116847">Pravilo za dohodni promet za Google Chrome Canary, ki dovoli promet mDNS.</translation>
 <translation id="6885412569789873916">Aplikacije za Chrome Beta</translation>
+<translation id="6906909733186691861">Prihodnje različice Chroma bodo nameščene samodejno.</translation>
 <translation id="6943584222992551122">Podatki brskanja te osebe bodo izbrisani iz te naprave. Če želite podatke obnoviti, se prijavite v Chrome kot <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Pravilo za dohodni promet za Google Chrome Beta, ki dovoli promet mDNS.</translation>
-<translation id="6970811910055250180">Posodabljanje naprave ...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> zahteva, da preberete in sprejmete pogoje storitve, preden začnete uporabljati napravo. Ti pogoji ne dopolnjujejo, spreminjajo ali omejujejo pogojev za Google Chrome OS.</translation>
 <translation id="6989339256997917931">Google Chrome je posodobljen, a ga niste uporabljali že vsaj 30 dni.</translation>
 <translation id="7098166902387133879">Google Chrome uporablja vaš mikrofon.</translation>
@@ -245,7 +242,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="7962410387636238736">Ta računalnik ne bo več prejemal posodobitev za Google Chrome, ker sistema Windows XP in Windows Vista nista več podprta.</translation>
 <translation id="8008534537613507642">Vnovična namestitev Chroma</translation>
 <translation id="8013993649590906847">Če slika nima koristnega opisa, ga bo Chrome poskušal zagotoviti. Opisi se ustvarijo tako, da se slike pošljejo Googlu.</translation>
-<translation id="8030318113982266900">Posodabljanje naprave na kanal <ph name="CHANNEL_NAME" /> ...</translation>
 <translation id="8032142183999901390">Ko odstranite račun iz Chroma, boste morali morda znova naložiti odprte zavihke, če želite uveljaviti spremembo.</translation>
 <translation id="8129812357326543296">O &amp;Google Chromu</translation>
 <translation id="8179874765710681175">Namestite Chrome v telefonu. V telefon vam bomo poslali SMS.</translation>
@@ -269,7 +265,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 Te storitve lahko morda onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome se ne odziva. Ga želite znova zagnati?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome se bo znova zagnal čez eno minuto}one{Chrome se bo znova zagnal čez # minuto}two{Chrome se bo znova zagnal čez # minuti}few{Chrome se bo znova zagnal čez # minute}other{Chrome se bo znova zagnal čez # minut}}</translation>
-<translation id="8667808506758191620">Naprava <ph name="DEVICE_TYPE" /> je posodobljena.</translation>
 <translation id="8669527147644353129">Pomočnik za Google Chrome</translation>
 <translation id="8679801911857917785">Določa tudi, katera stran je prikazana, ko zaženete Chrome.</translation>
 <translation id="870251953148363156">Posodabljanje &amp;Google Chroma</translation>

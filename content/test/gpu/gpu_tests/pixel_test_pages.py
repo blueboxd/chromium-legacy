@@ -34,15 +34,13 @@ class PixelTestPage(object):
   """A wrapper class mimicking the functionality of the PixelTestsStorySet
   from the old-style GPU tests.
   """
-  def __init__(self, url, name, test_rect, revision,
-               tolerance=2, browser_args=None, expected_colors=None,
-               gpu_process_disabled=False, optional_action=None,
-               other_args=None, grace_period_end=None):
+  def __init__(self, url, name, test_rect, tolerance=2, browser_args=None,
+               expected_colors=None, gpu_process_disabled=False,
+               optional_action=None, other_args=None, grace_period_end=None):
     super(PixelTestPage, self).__init__()
     self.url = url
     self.name = name
     self.test_rect = test_rect
-    self.revision = revision
     # The tolerance when comparing against the reference image.
     self.tolerance = tolerance
     self.browser_args = browser_args
@@ -75,15 +73,15 @@ class PixelTestPage(object):
 
   def CopyWithNewBrowserArgsAndSuffix(self, browser_args, suffix):
     return PixelTestPage(
-      self.url, self.name + suffix, self.test_rect, self.revision,
-      self.tolerance, browser_args, self.expected_colors)
+      self.url, self.name + suffix, self.test_rect, self.tolerance,
+      browser_args, self.expected_colors)
 
   def CopyWithNewBrowserArgsAndPrefix(self, browser_args, prefix):
     # Assuming the test name is 'Pixel'.
     split = self.name.split('_', 1)
     return PixelTestPage(
       self.url, split[0] + '_' + prefix + split[1], self.test_rect,
-      self.revision, self.tolerance, browser_args, self.expected_colors)
+      self.tolerance, browser_args, self.expected_colors)
 
 
 def CopyPagesWithNewBrowserArgsAndSuffix(pages, browser_args, suffix):
@@ -150,69 +148,58 @@ class PixelTestPages(object):
       PixelTestPage(
         'pixel_background_image.html',
         base_name + '_BackgroundImage',
-        test_rect=[20, 20, 370, 370],
-        revision=3),
+        test_rect=[20, 20, 370, 370]),
 
       PixelTestPage(
         'pixel_canvas2d.html',
         base_name + '_Canvas2DRedBox',
-        test_rect=[0, 0, 300, 300],
-        revision=13),
+        test_rect=[0, 0, 300, 300]),
 
       PixelTestPage(
         'pixel_canvas2d_untagged.html',
         base_name + '_Canvas2DUntagged',
-        test_rect=[0, 0, 257, 257],
-        revision=0),
+        test_rect=[0, 0, 257, 257]),
 
       PixelTestPage(
         'pixel_css3d.html',
         base_name + '_CSS3DBlueBox',
-        test_rect=[0, 0, 300, 300],
-        revision=24),
+        test_rect=[0, 0, 300, 300]),
 
       PixelTestPage(
         'pixel_webgl_aa_alpha.html',
         base_name + '_WebGLGreenTriangle_AA_Alpha',
-        test_rect=[0, 0, 300, 300],
-        revision=9),
+        test_rect=[0, 0, 300, 300]),
 
       PixelTestPage(
         'pixel_webgl_noaa_alpha.html',
         base_name + '_WebGLGreenTriangle_NoAA_Alpha',
-        test_rect=[0, 0, 300, 300],
-        revision=6),
+        test_rect=[0, 0, 300, 300]),
 
       PixelTestPage(
         'pixel_webgl_aa_noalpha.html',
         base_name + '_WebGLGreenTriangle_AA_NoAlpha',
-        test_rect=[0, 0, 300, 300],
-        revision=10),
+        test_rect=[0, 0, 300, 300]),
 
       PixelTestPage(
         'pixel_webgl_noaa_noalpha.html',
         base_name + '_WebGLGreenTriangle_NoAA_NoAlpha',
-        test_rect=[0, 0, 300, 300],
-        revision=6),
+        test_rect=[0, 0, 300, 300]),
 
       PixelTestPage(
         'pixel_webgl_noalpha_implicit_clear.html',
         base_name + '_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
-        test_rect=[0, 0, 300, 300],
-        revision=6),
+        test_rect=[0, 0, 300, 300]),
 
       PixelTestPage(
         'pixel_webgl_sad_canvas.html',
         base_name + '_WebGLSadCanvas',
         test_rect=[0, 0, 300, 300],
-        revision=1,
         optional_action='CrashGpuProcess'),
 
       PixelTestPage(
         'pixel_scissor.html',
         base_name + '_ScissorTestWithPreserveDrawingBuffer',
         test_rect=[0, 0, 300, 300],
-        revision=0, # Golden image revision is not used
         tolerance=3,
         expected_colors=[
           {
@@ -238,20 +225,17 @@ class PixelTestPages(object):
       PixelTestPage(
         'pixel_canvas2d_webgl.html',
         base_name + '_2DCanvasWebGL',
-        test_rect=[0, 0, 300, 300],
-        revision=13),
+        test_rect=[0, 0, 300, 300]),
 
       PixelTestPage(
         'pixel_background.html',
         base_name + '_SolidColorBackground',
-        test_rect=[500, 500, 100, 100],
-        revision=1),
+        test_rect=[500, 500, 100, 100]),
 
       PixelTestPage(
         'pixel_video_mp4.html',
         base_name + '_Video_MP4',
         test_rect=[0, 0, 240, 135],
-        revision=0, # Golden image revision is not used
         tolerance=tolerance,
         expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
 
@@ -260,7 +244,6 @@ class PixelTestPages(object):
         base_name + '_Video_MP4_DXVA',
         browser_args=['--disable-features=D3D11VideoDecoder'],
         test_rect=[0, 0, 240, 135],
-        revision=0, # Golden image revision is not used
         tolerance=tolerance,
         expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
 
@@ -268,7 +251,6 @@ class PixelTestPages(object):
         'pixel_video_mp4_four_colors_aspect_4x3.html',
         base_name + '_Video_MP4_FourColors_Aspect_4x3',
         test_rect=[0, 0, 240, 135],
-        revision=0, # Golden image revision is not used
         tolerance=tolerance,
         expected_colors=[
           {
@@ -313,7 +295,6 @@ class PixelTestPages(object):
         'pixel_video_mp4_four_colors_rot_90.html',
         base_name + '_Video_MP4_FourColors_Rot_90',
         test_rect=[0, 0, 270, 240],
-        revision=0, # Golden image revision is not used
         tolerance=tolerance,
         expected_colors=[
           {
@@ -358,7 +339,6 @@ class PixelTestPages(object):
         'pixel_video_mp4_four_colors_rot_180.html',
         base_name + '_Video_MP4_FourColors_Rot_180',
         test_rect=[0, 0, 240, 135],
-        revision=0, # Golden image revision is not used
         tolerance=tolerance,
         expected_colors=[
           {
@@ -391,7 +371,6 @@ class PixelTestPages(object):
         'pixel_video_mp4_four_colors_rot_270.html',
         base_name + '_Video_MP4_FourColors_Rot_270',
         test_rect=[0, 0, 270, 240],
-        revision=0, # Golden image revision is not used
         tolerance=tolerance,
         expected_colors=[
           {
@@ -436,14 +415,12 @@ class PixelTestPages(object):
         'pixel_video_mp4_rounded_corner.html',
         base_name + '_Video_MP4_Rounded_Corner',
         test_rect=[0, 0, 240, 135],
-        revision=0,
         tolerance=tolerance),
 
       PixelTestPage(
         'pixel_video_vp9.html',
         base_name + '_Video_VP9',
         test_rect=[0, 0, 240, 135],
-        revision=0, # Golden image revision is not used
         tolerance=tolerance_vp9,
         expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
 
@@ -452,7 +429,6 @@ class PixelTestPages(object):
         base_name + '_Video_VP9_DXVA',
         browser_args=['--disable-features=D3D11VideoDecoder'],
         test_rect=[0, 0, 240, 135],
-        revision=0, # Golden image revision is not used
         tolerance=tolerance_vp9,
         expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
 
@@ -461,7 +437,6 @@ class PixelTestPages(object):
         'pixel_video_context_loss.html?src=/media/test/data/four-colors.mp4',
         base_name + '_Video_Context_Loss_MP4',
         test_rect=[0, 0, 240, 135],
-        revision=0, # Golden image revision is not used
         tolerance=tolerance,
         expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
 
@@ -471,7 +446,6 @@ class PixelTestPages(object):
          '?src=/media/test/data/four-colors-vp9.webm'),
         base_name + '_Video_Context_Loss_VP9',
         test_rect=[0, 0, 240, 135],
-        revision=0, # Golden image revision is not used
         tolerance=tolerance_vp9,
         expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
 
@@ -479,14 +453,12 @@ class PixelTestPages(object):
         'pixel_video_backdrop_filter.html',
         base_name + '_Video_BackdropFilter',
         test_rect=[0, 0, 240, 135],
-        revision=1,
         tolerance=tolerance),
 
       PixelTestPage(
         'pixel_webgl_premultiplied_alpha_false.html',
         base_name + '_WebGL_PremultipliedAlpha_False',
         test_rect=[0, 0, 150, 150],
-        revision=0, # Golden image revision is not used
         tolerance=3,
         expected_colors=[
           SCALE_FACTOR_OVERRIDES,
@@ -506,7 +478,6 @@ class PixelTestPages(object):
         'pixel_webgl2_blitframebuffer_result_displayed.html',
         base_name + '_WebGL2_BlitFramebuffer_Result_Displayed',
         test_rect=[0, 0, 200, 200],
-        revision=0, # Golden image revision is not used
         tolerance=3,
         expected_colors=[
           SCALE_FACTOR_OVERRIDES,
@@ -522,7 +493,6 @@ class PixelTestPages(object):
         'pixel_webgl2_clearbufferfv_result_displayed.html',
         base_name + '_WebGL2_ClearBufferfv_Result_Displayed',
         test_rect=[0, 0, 200, 200],
-        revision=0, # Golden image revision is not used
         tolerance=3,
         expected_colors=[
           SCALE_FACTOR_OVERRIDES,
@@ -538,7 +508,6 @@ class PixelTestPages(object):
         'pixel_repeated_webgl_to_2d.html',
         base_name + '_RepeatedWebGLTo2D',
         test_rect=[0, 0, 256, 256],
-        revision=0, # Golden image revision is not used
         tolerance=3,
         expected_colors=[
           SCALE_FACTOR_OVERRIDES,
@@ -555,7 +524,6 @@ class PixelTestPages(object):
         'pixel_repeated_webgl_to_2d.html',
         base_name + '_RepeatedWebGLTo2D_SoftwareCompositing',
         test_rect=[0, 0, 256, 256],
-        revision=0, # Golden image revision is not used
         browser_args=sw_compositing_args,
         tolerance=3,
         expected_colors=[
@@ -573,7 +541,6 @@ class PixelTestPages(object):
         'pixel_canvas2d_tab_switch.html',
         base_name + '_Canvas2DTabSwitch',
         test_rect=[0, 0, 100, 100],
-        revision=0, # Golden image revision is not used
         optional_action='SwitchTabs',
         tolerance=3,
         expected_colors=[
@@ -607,7 +574,6 @@ class PixelTestPages(object):
         'pixel_canvas2d_tab_switch.html',
         base_name + '_Canvas2DTabSwitch_SoftwareCompositing',
         test_rect=[0, 0, 100, 100],
-        revision=0, # Golden image revision is not used
         browser_args=sw_compositing_args,
         optional_action='SwitchTabs',
         tolerance=3,
@@ -642,7 +608,6 @@ class PixelTestPages(object):
         'pixel_webgl_copy_image.html',
         base_name + '_WebGLCopyImage',
         test_rect=[0, 0, 200, 100],
-        revision=0, # Golden image revision is not used
         tolerance=3,
         expected_colors=[
           {
@@ -708,7 +673,6 @@ class PixelTestPages(object):
         'pixel_background.html',
         base_name + '_GpuRasterization_BlueBox',
         test_rect=[0, 0, 220, 220],
-        revision=0, # Golden image revision is not used
         browser_args=browser_args,
         tolerance=0,
         expected_colors=[
@@ -789,7 +753,6 @@ class PixelTestPages(object):
         'concave_paths.html',
         base_name + '_GpuRasterization_ConcavePaths',
         test_rect=[0, 0, 100, 100],
-        revision=0, # Golden image revision is not used
         browser_args=browser_args,
         tolerance=0,
         expected_colors=[
@@ -835,14 +798,12 @@ class PixelTestPages(object):
         'pixel_offscreenCanvas_transfer_after_style_resize.html',
         base_name + '_OffscreenCanvasTransferAfterStyleResize',
         test_rect=[0, 0, 350, 350],
-        revision=10,
         browser_args=browser_args),
 
       PixelTestPage(
         'pixel_offscreenCanvas_transfer_before_style_resize.html',
         base_name + '_OffscreenCanvasTransferBeforeStyleResize',
         test_rect=[0, 0, 350, 350],
-        revision=10,
         browser_args=browser_args),
 
       PixelTestPage(
@@ -850,7 +811,6 @@ class PixelTestPages(object):
         base_name + '_OffscreenCanvasWebGLPaintAfterResize',
         test_rect=[0, 0, 200, 200],
         browser_args=browser_args,
-        revision=0, # Golden image revision is not used
         tolerance=0,
         expected_colors=[
           SCALE_FACTOR_OVERRIDES,
@@ -872,154 +832,132 @@ class PixelTestPages(object):
         'pixel_offscreenCanvas_transferToImageBitmap_main.html',
         base_name + '_OffscreenCanvasTransferToImageBitmap',
         test_rect=[0, 0, 300, 300],
-        revision=6,
         browser_args=browser_args),
 
       PixelTestPage(
         'pixel_offscreenCanvas_transferToImageBitmap_worker.html',
         base_name + '_OffscreenCanvasTransferToImageBitmapWorker',
         test_rect=[0, 0, 300, 300],
-        revision=6,
         browser_args=browser_args),
 
       PixelTestPage(
         'pixel_offscreenCanvas_webgl_commit_main.html',
         base_name + '_OffscreenCanvasWebGLDefault',
         test_rect=[0, 0, 360, 200],
-        revision=11,
         browser_args=browser_args),
 
       PixelTestPage(
         'pixel_offscreenCanvas_webgl_commit_worker.html',
         base_name + '_OffscreenCanvasWebGLDefaultWorker',
         test_rect=[0, 0, 360, 200],
-        revision=11,
         browser_args=browser_args),
 
       PixelTestPage(
         'pixel_offscreenCanvas_webgl_commit_main.html',
         base_name + '_OffscreenCanvasWebGLSoftwareCompositing',
         test_rect=[0, 0, 360, 200],
-        revision=7,
         browser_args=browser_args + ['--disable-gpu-compositing']),
 
       PixelTestPage(
         'pixel_offscreenCanvas_webgl_commit_worker.html',
         base_name + '_OffscreenCanvasWebGLSoftwareCompositingWorker',
         test_rect=[0, 0, 360, 200],
-        revision=7,
         browser_args=browser_args + ['--disable-gpu-compositing']),
 
       PixelTestPage(
         'pixel_offscreenCanvas_2d_commit_main.html',
         base_name + '_OffscreenCanvasAccelerated2D',
         test_rect=[0, 0, 360, 200],
-        revision=12,
         browser_args=browser_args + accelerated_args),
 
       PixelTestPage(
         'pixel_offscreenCanvas_2d_commit_worker.html',
         base_name + '_OffscreenCanvasAccelerated2DWorker',
         test_rect=[0, 0, 360, 200],
-        revision=12,
         browser_args=browser_args + accelerated_args),
 
       PixelTestPage(
         'pixel_offscreenCanvas_2d_commit_main.html',
         base_name + '_OffscreenCanvasUnaccelerated2D',
         test_rect=[0, 0, 360, 200],
-        revision=9,
         browser_args=browser_args + unaccelerated_args),
 
       PixelTestPage(
         'pixel_offscreenCanvas_2d_commit_worker.html',
         base_name + '_OffscreenCanvasUnaccelerated2DWorker',
         test_rect=[0, 0, 360, 200],
-        revision=9,
         browser_args=browser_args + unaccelerated_args),
 
       PixelTestPage(
         'pixel_offscreenCanvas_2d_commit_main.html',
         base_name + '_OffscreenCanvasUnaccelerated2DGPUCompositing',
         test_rect=[0, 0, 360, 200],
-        revision=14,
         browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
 
       PixelTestPage(
         'pixel_offscreenCanvas_2d_commit_worker.html',
         base_name + '_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
         test_rect=[0, 0, 360, 200],
-        revision=13,
         browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
 
       PixelTestPage(
         'pixel_offscreenCanvas_2d_resize_on_worker.html',
         base_name + '_OffscreenCanvas2DResizeOnWorker',
         test_rect=[0, 0, 200, 200],
-        revision=7,
         browser_args=browser_args),
 
       PixelTestPage(
         'pixel_offscreenCanvas_webgl_resize_on_worker.html',
         base_name + '_OffscreenCanvasWebglResizeOnWorker',
         test_rect=[0, 0, 200, 200],
-        revision=9,
         browser_args=browser_args),
 
       PixelTestPage(
         'pixel_canvas_display_linear-rgb.html',
         base_name + '_CanvasDisplayLinearRGBAccelerated2D',
         test_rect=[0, 0, 140, 140],
-        revision=10,
         browser_args=browser_args + accelerated_args),
 
       PixelTestPage(
         'pixel_canvas_display_linear-rgb.html',
         base_name + '_CanvasDisplayLinearRGBUnaccelerated2D',
         test_rect=[0, 0, 140, 140],
-        revision=2,
         browser_args=browser_args + unaccelerated_args),
 
       PixelTestPage(
         'pixel_canvas_display_linear-rgb.html',
         base_name + '_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
         test_rect=[0, 0, 140, 140],
-        revision=8,
         browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
 
       PixelTestPage(
         'pixel_canvas_display_srgb.html',
         base_name + '_CanvasDisplaySRGBAccelerated2D',
         test_rect=[0, 0, 140, 140],
-        revision=0, # not used, unsupported
         browser_args=browser_args + accelerated_args),
 
       PixelTestPage(
         'pixel_canvas_display_srgb.html',
         base_name + '_CanvasDisplaySRGBUnaccelerated2D',
         test_rect=[0, 0, 140, 140],
-        revision=1,
         browser_args=browser_args + unaccelerated_args),
 
       PixelTestPage(
         'pixel_canvas_display_srgb.html',
         base_name + '_CanvasDisplaySRGBUnaccelerated2DGPUCompositing',
         test_rect=[0, 0, 140, 140],
-        revision=1,
         browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
 
       PixelTestPage(
         'pixel_canvas_low_latency_2d.html',
         base_name + '_CanvasLowLatency2D',
         test_rect=[0, 0, 100, 100],
-        revision=9,
         browser_args=browser_args),
 
       PixelTestPage(
         'pixel_canvas_low_latency_2d.html',
         base_name + '_CanvasLowLatency2DSwapChain',
         test_rect=[0, 0, 100, 100],
-        revision=1,
         browser_args=browser_args +
         ['--enable-features=LowLatencyCanvas2dSwapChain']),
 
@@ -1027,14 +965,12 @@ class PixelTestPages(object):
         'pixel_canvas_low_latency_2d.html',
         base_name + '_CanvasUnacceleratedLowLatency2D',
         test_rect=[0, 0, 100, 100],
-        revision=4,
         browser_args=browser_args + unaccelerated_args),
 
       PixelTestPage(
         'pixel_canvas_low_latency_webgl.html',
         base_name + '_CanvasLowLatencyWebGL',
         test_rect=[0, 0, 200, 200],
-        revision=0, # not used
         browser_args=browser_args,
         tolerance=0,
         expected_colors=[
@@ -1051,7 +987,6 @@ class PixelTestPages(object):
         'pixel_canvas_low_latency_webgl.html',
         base_name + '_CanvasLowLatencyWebGLSwapChain',
         test_rect=[0, 0, 200, 200],
-        revision=0, # not used
         browser_args=browser_args +
         ['--enable-features=LowLatencyWebGLSwapChain'],
         tolerance=0,
@@ -1069,7 +1004,6 @@ class PixelTestPages(object):
         'pixel_canvas_low_latency_webgl_alpha_false.html',
         base_name + '_CanvasLowLatencyWebGLSwapChainAlphaFalse',
         test_rect=[0, 0, 200, 200],
-        revision=0, # not used
         browser_args=browser_args +
         ['--enable-features=LowLatencyWebGLSwapChain'],
         tolerance=0,
@@ -1095,28 +1029,24 @@ class PixelTestPages(object):
         'pixel_canvas2d.html',
         base_name + '_Canvas2DRedBox' + suffix,
         test_rect=[0, 0, 300, 300],
-        revision=1,
         browser_args=browser_args),
 
       PixelTestPage(
         'pixel_css3d.html',
         base_name + '_CSS3DBlueBox' + suffix,
         test_rect=[0, 0, 300, 300],
-        revision=2,
         browser_args=browser_args),
 
       PixelTestPage(
         'pixel_webgl_aa_alpha.html',
         base_name + '_WebGLGreenTriangle_AA_Alpha' + suffix,
         test_rect=[0, 0, 300, 300],
-        revision=2,
         browser_args=browser_args),
 
       PixelTestPage(
         'pixel_repeated_webgl_to_2d.html',
         base_name + '_RepeatedWebGLTo2D' + suffix,
         test_rect=[0, 0, 256, 256],
-        revision=0, # Golden image revision is not used
         browser_args=browser_args,
         tolerance=3,
         expected_colors=[
@@ -1141,7 +1071,6 @@ class PixelTestPages(object):
         'pixel_canvas2d.html',
         base_name + '_Canvas2DRedBox' + suffix,
         test_rect=[0, 0, 300, 300],
-        revision=2,
         browser_args=browser_args,
         gpu_process_disabled=True),
 
@@ -1149,7 +1078,6 @@ class PixelTestPages(object):
         'pixel_css3d.html',
         base_name + '_CSS3DBlueBox' + suffix,
         test_rect=[0, 0, 300, 300],
-        revision=2,
         browser_args=browser_args,
         gpu_process_disabled=True),
     ]
@@ -1174,13 +1102,11 @@ class PixelTestPages(object):
         'pixel_canvas2d_accelerated.html',
         base_name + '_IOSurface2DCanvas',
         test_rect=[0, 0, 400, 400],
-        revision=1,
         browser_args=iosurface_2d_canvas_args),
       PixelTestPage(
         'pixel_canvas2d_webgl.html',
         base_name + '_IOSurface2DCanvasWebGL',
         test_rect=[0, 0, 300, 300],
-        revision=4,
         browser_args=iosurface_2d_canvas_args),
 
       # On macOS, test WebGL non-Chromium Image compositing path.
@@ -1188,38 +1114,32 @@ class PixelTestPages(object):
         'pixel_webgl_aa_alpha.html',
         base_name + '_WebGLGreenTriangle_NonChromiumImage_AA_Alpha',
         test_rect=[0, 0, 300, 300],
-        revision=3,
         browser_args=non_chromium_image_args),
       PixelTestPage(
         'pixel_webgl_noaa_alpha.html',
         base_name + '_WebGLGreenTriangle_NonChromiumImage_NoAA_Alpha',
         test_rect=[0, 0, 300, 300],
-        revision=1,
         browser_args=non_chromium_image_args),
       PixelTestPage(
         'pixel_webgl_aa_noalpha.html',
         base_name + '_WebGLGreenTriangle_NonChromiumImage_AA_NoAlpha',
         test_rect=[0, 0, 300, 300],
-        revision=3,
         browser_args=non_chromium_image_args),
       PixelTestPage(
         'pixel_webgl_noaa_noalpha.html',
         base_name + '_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha',
         test_rect=[0, 0, 300, 300],
-        revision=1,
         browser_args=non_chromium_image_args),
 
       # On macOS, test CSS filter effects with and without the CA compositor.
       PixelTestPage(
         'filter_effects.html',
         base_name + '_CSSFilterEffects',
-        test_rect=[0, 0, 300, 300],
-        revision=11),
+        test_rect=[0, 0, 300, 300]),
       PixelTestPage(
         'filter_effects.html',
         base_name + '_CSSFilterEffects_NoOverlays',
         test_rect=[0, 0, 300, 300],
-        revision=11,
         tolerance=10,
         browser_args=no_overlays_args),
 
@@ -1228,7 +1148,6 @@ class PixelTestPages(object):
         'pixel_webgl_premultiplied_alpha_false.html',
         base_name + '_WebGL_PremultipliedAlpha_False_NoOverlays',
         test_rect=[0, 0, 150, 150],
-        revision=0, # Golden image revision is not used
         browser_args=no_overlays_args,
         tolerance=3,
         expected_colors=[
@@ -1273,7 +1192,6 @@ class PixelTestPages(object):
         'pixel_video_mp4.html',
         base_name + '_DirectComposition_Video_MP4',
         test_rect=[0, 0, 240, 135],
-        revision=0, # Golden image revision is not used
         browser_args=browser_args,
         tolerance=tolerance_dc,
         expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
@@ -1283,7 +1201,6 @@ class PixelTestPages(object):
         base_name + '_DirectComposition_Video_MP4_DXVA',
         browser_args=browser_args_DXVA,
         test_rect=[0, 0, 240, 135],
-        revision=0, # Golden image revision is not used
         tolerance=tolerance_dc,
         expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
 
@@ -1292,7 +1209,6 @@ class PixelTestPages(object):
         base_name + '_DirectComposition_Video_MP4_Fullsize',
         browser_args=browser_args,
         test_rect=[0, 0, 960, 540],
-        revision=0, # Golden image revision is not used
         other_args={'zero_copy': True},
         tolerance=tolerance_dc,
         expected_colors=[
@@ -1326,7 +1242,6 @@ class PixelTestPages(object):
         'pixel_video_mp4.html',
         base_name + '_DirectComposition_Video_MP4_YUY2',
         test_rect=[0, 0, 240, 135],
-        revision=0, # Golden image revision is not used
         browser_args=browser_args_YUY2,
         other_args={'expect_yuy2': True},
         tolerance=tolerance_dc,
@@ -1336,7 +1251,6 @@ class PixelTestPages(object):
         'pixel_video_mp4_four_colors_aspect_4x3.html',
         base_name + '_DirectComposition_Video_MP4_FourColors_Aspect_4x3',
         test_rect=[0, 0, 240, 135],
-        revision=0, # Golden image revision is not used
         browser_args=browser_args,
         tolerance=tolerance_dc,
         expected_colors=[
@@ -1382,7 +1296,6 @@ class PixelTestPages(object):
         'pixel_video_mp4_four_colors_rot_90.html',
         base_name + '_DirectComposition_Video_MP4_FourColors_Rot_90',
         test_rect=[0, 0, 270, 240],
-        revision=0, # Golden image revision is not used
         browser_args=browser_args,
         other_args={'video_is_rotated': True},
         tolerance=tolerance_dc,
@@ -1428,7 +1341,6 @@ class PixelTestPages(object):
         'pixel_video_mp4_four_colors_rot_180.html',
         base_name + '_DirectComposition_Video_MP4_FourColors_Rot_180',
         test_rect=[0, 0, 240, 135],
-        revision=0, # Golden image revision is not used
         browser_args=browser_args,
         other_args={'video_is_rotated': True},
         tolerance=tolerance_dc,
@@ -1462,7 +1374,6 @@ class PixelTestPages(object):
         'pixel_video_mp4_four_colors_rot_270.html',
         base_name + '_DirectComposition_Video_MP4_FourColors_Rot_270',
         test_rect=[0, 0, 270, 240],
-        revision=0, # Golden image revision is not used
         browser_args=browser_args,
         other_args={'video_is_rotated': True},
         tolerance=tolerance_dc,
@@ -1508,7 +1419,6 @@ class PixelTestPages(object):
         'pixel_video_vp9.html',
         base_name + '_DirectComposition_Video_VP9',
         test_rect=[0, 0, 240, 135],
-        revision=0, # Golden image revision is not used
         browser_args=browser_args,
         tolerance=tolerance_dc_vp9,
         expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
@@ -1518,7 +1428,6 @@ class PixelTestPages(object):
         base_name + '_DirectComposition_Video_VP9_DXVA',
         browser_args=browser_args_DXVA,
         test_rect=[0, 0, 240, 135],
-        revision=0, # Golden image revision is not used
         tolerance=tolerance_dc_vp9,
         expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
 
@@ -1526,7 +1435,6 @@ class PixelTestPages(object):
         'pixel_video_vp9_fullsize.html',
         base_name + '_DirectComposition_Video_VP9_Fullsize',
         test_rect=[0, 0, 960, 540],
-        revision=0, # Golden image revision is not used
         browser_args=browser_args,
         other_args={'zero_copy': True},
         tolerance=tolerance_dc_vp9,
@@ -1561,7 +1469,6 @@ class PixelTestPages(object):
         'pixel_video_vp9.html',
         base_name + '_DirectComposition_Video_VP9_YUY2',
         test_rect=[0, 0, 240, 135],
-        revision=0, # Golden image revision is not used
         browser_args=browser_args_YUY2,
         other_args={'expect_yuy2': True},
         tolerance=tolerance_dc_vp9,
@@ -1571,7 +1478,6 @@ class PixelTestPages(object):
         'pixel_video_underlay.html',
         base_name + '_DirectComposition_Underlay',
         test_rect=[0, 0, 240, 136],
-        revision=0, # Golden image revision is not used
         browser_args=browser_args,
         tolerance=tolerance_dc,
         expected_colors=[
@@ -1611,7 +1517,6 @@ class PixelTestPages(object):
         'pixel_video_underlay.html',
         base_name + '_DirectComposition_Underlay_DXVA',
         test_rect=[0, 0, 240, 136],
-        revision=0, # Golden image revision is not used
         browser_args=browser_args_DXVA,
         tolerance=tolerance_dc,
         expected_colors=[
@@ -1651,7 +1556,6 @@ class PixelTestPages(object):
         'pixel_video_underlay_fullsize.html',
         base_name + '_DirectComposition_Underlay_Fullsize',
         test_rect=[0, 0, 960, 540],
-        revision=0, # Golden image revision is not used
         browser_args=browser_args,
         other_args={'zero_copy': True},
         tolerance=tolerance_dc,
@@ -1692,7 +1596,6 @@ class PixelTestPages(object):
         'pixel_video_nonroot.html',
         base_name + '_DirectComposition_Nonroot',
         test_rect=[0, 0, 240, 136],
-        revision=0, # Golden image revision is not used
         browser_args=browser_args_Nonroot,
         tolerance=tolerance_dc,
         expected_colors=[
@@ -1732,7 +1635,6 @@ class PixelTestPages(object):
         'pixel_video_complex_overlays.html',
         base_name + '_DirectComposition_ComplexOverlays',
         test_rect=[0, 0, 240, 136],
-        revision=0, # Golden image revision is not used
         browser_args=browser_args_Complex,
         other_args={'video_is_rotated': True},
         tolerance=tolerance_dc,
@@ -1772,7 +1674,6 @@ class PixelTestPages(object):
         'pixel_video_mp4_rounded_corner.html',
         base_name + '_DirectComposition_Video_MP4_Rounded_Corner',
         test_rect=[0, 0, 240, 135],
-        revision=0,
         browser_args=browser_args,
         other_args={'no_overlay': True},
         tolerance=tolerance_dc),
@@ -1781,7 +1682,6 @@ class PixelTestPages(object):
         'pixel_video_backdrop_filter.html',
         base_name + '_DirectComposition_Video_BackdropFilter',
         test_rect=[0, 0, 240, 135],
-        revision=1,
         browser_args=browser_args,
         other_args={'no_overlay': True},
         tolerance=tolerance_dc),
@@ -1790,7 +1690,6 @@ class PixelTestPages(object):
         'pixel_video_mp4.html',
         base_name + '_DirectComposition_Video_Disable_Overlays',
         test_rect=[0, 0, 240, 135],
-        revision=0, # Golden image revision is not used
         browser_args=['--disable-direct-composition-video-overlays'],
         other_args={'no_overlay': True},
         tolerance=tolerance_dc,

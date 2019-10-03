@@ -94,23 +94,35 @@ constexpr SkColor kCloseButtonInkDropRippleHighlightColor =
     SkColorSetA(kCloseButtonColor, 0x14);
 
 // A self-deleting animation observer that runs the given callback when its
-// associated animation completes.
+// associated animation completes. Optionally takes a callback that is run when
+// the animation starts.
 class AnimationObserver : public ui::ImplicitAnimationObserver {
  public:
   explicit AnimationObserver(base::OnceClosure on_animation_finished)
-      : on_animation_finished_(std::move(on_animation_finished)) {
+      : AnimationObserver(base::NullCallback(),
+                          std::move(on_animation_finished)) {}
+
+  AnimationObserver(base::OnceClosure on_animation_started,
+                    base::OnceClosure on_animation_finished)
+      : on_animation_started_(std::move(on_animation_started)),
+        on_animation_finished_(std::move(on_animation_finished)) {
     DCHECK(!on_animation_finished_.is_null());
   }
 
   ~AnimationObserver() override = default;
 
   // ui::ImplicitAnimationObserver:
+  void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override {
+    if (!on_animation_started_.is_null())
+      std::move(on_animation_started_).Run();
+  }
   void OnImplicitAnimationsCompleted() override {
     std::move(on_animation_finished_).Run();
     delete this;
   }
 
  private:
+  base::OnceClosure on_animation_started_;
   base::OnceClosure on_animation_finished_;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationObserver);
@@ -408,7 +420,14 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
         item_widget_.get(), minimized_bounds, minimized_animation_type,
         minimized_animation_type ==
                 OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW
-            ? &transform_window_
+            ? new AnimationObserver{base::BindOnce(
+                                        &OverviewItem::
+                                            OnItemBoundsAnimationStarted,
+                                        weak_ptr_factory_.GetWeakPtr()),
+                                    base::BindOnce(
+                                        &OverviewItem::
+                                            OnItemBoundsAnimationEnded,
+                                        weak_ptr_factory_.GetWeakPtr())}
             : nullptr);
 
     // On the first update show |item_widget_|. It's created on creation of
@@ -1057,6 +1076,19 @@ void OverviewItem::OnItemAddedAnimationCompleted() {
   OnStartingAnimationComplete();
 }
 
+void OverviewItem::OnItemBoundsAnimationStarted() {
+  // Remove the shadow before animating because it may affect animation
+  // performance. The shadow will be added back once the animation is completed.
+  // Note that we can't use UpdateRoundedCornersAndShadow() since we don't want
+  // to update the rounded corners.
+  SetShadowBounds(base::nullopt);
+}
+
+void OverviewItem::OnItemBoundsAnimationEnded() {
+  UpdateRoundedCornersAndShadow();
+  OnDragAnimationCompleted();
+}
+
 void OverviewItem::PerformItemAddedAnimation(
     aura::Window* window,
     const gfx::Transform& target_transform) {
@@ -1120,8 +1152,8 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
     return;
   }
 
-  gfx::Transform transform = ScopedOverviewTransformWindow::GetTransformForRect(
-      screen_rect, overview_item_bounds);
+  const gfx::Transform transform =
+      gfx::TransformBetweenRects(screen_rect, overview_item_bounds);
 
   if (is_first_update &&
       animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW) {
@@ -1131,6 +1163,14 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
 
   ScopedOverviewTransformWindow::ScopedAnimationSettings animation_settings;
   transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
+  if (animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW &&
+      !animation_settings.empty()) {
+    animation_settings.front()->AddObserver(new AnimationObserver{
+        base::BindOnce(&OverviewItem::OnItemBoundsAnimationStarted,
+                       weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&OverviewItem::OnItemBoundsAnimationEnded,
+                       weak_ptr_factory_.GetWeakPtr())});
+  }
   SetTransform(window, transform);
 }
 
@@ -1276,12 +1316,6 @@ void OverviewItem::HandleGestureEndEvent() {
 }
 
 void OverviewItem::StartDrag() {
-  // |transform_window_| handles hiding shadow and rounded edges mask while
-  // animating, and applies them after animation is complete. Prevent the
-  // shadow and rounded edges mask from showing up after dragging in the case
-  // the window is pressed while still animating.
-  transform_window_.CancelAnimationsListener();
-
   aura::Window* widget_window = item_widget_->GetNativeWindow();
   aura::Window* window = GetWindow();
   if (widget_window && widget_window->parent() == window->parent()) {

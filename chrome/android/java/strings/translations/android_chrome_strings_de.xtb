@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Genutzt</translation>
 <translation id="1171770572613082465">Tippen Sie auf die Schaltfläche "Top-Websites", um beliebte Websites zu sehen</translation>
 <translation id="1173894706177603556">Umbenennen</translation>
-<translation id="1175310183703641346">Ihre Lesezeichen, Ihr Verlauf, Ihre Passwörter und andere Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert</translation>
 <translation id="1178581264944972037">Anhalten</translation>
 <translation id="1181037720776840403">Entfernen</translation>
 <translation id="1188239144602654184">AR-Sitzung starten</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">Als Lesezeichen in <ph name="PRODUCT_NAME" /> gespeichert</translation>
 <translation id="3744111561329211289">Hintergrundsynchronisierung</translation>
 <translation id="3771001275138982843">Update konnte nicht heruntergeladen werden</translation>
+<translation id="3771033907050503522">Inkognito-Tabs</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Aktivieren Sie Bluetooth<ph name="END_LINK" />, um die Kopplung zu ermöglichen</translation>
 <translation id="3775705724665058594">An meine Geräte senden</translation>
 <translation id="3778956594442850293">Zum Startbildschirm hinzugefügt</translation>
@@ -484,7 +484,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4719927025381752090">Übersetzung anbieten</translation>
 <translation id="4720023427747327413">In <ph name="PRODUCT_NAME" /> öffnen</translation>
 <translation id="4720982865791209136">Helfen Sie uns, Chrome zu verbessern. <ph name="BEGIN_LINK" />An Umfrage teilnehmen<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">Sie wechseln das Synchronisierungskonto von <ph name="ACCOUNT_EMAIL_OLD" /> zu <ph name="ACCOUNT_EMAIL_NEW" />. Ihre vorhandenen Chrome-Daten werden von <ph name="MANAGED_DOMAIN" /> verwaltet. Dadurch werden Ihre Daten von diesem Gerät gelöscht, aber Ihre Daten verbleiben in <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">Aktualisieren</translation>
 <translation id="4738836084190194332">Letzte Synchronisierung: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Neuen Tab öffnen</translation>
@@ -668,13 +667,13 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="5937580074298050696"><ph name="AMOUNT" /> gespeichert</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="5942872142862698679">Suche erfolgt mit Google</translation>
-<translation id="5944669582486359588">Im Lite-Modus werden Seiten schneller in Chrome geladen und es werden bis zu 60 % weniger Daten verbraucht. Durch die Cloud-Technologie von Google werden die von Ihnen besuchten Seiten optimiert.</translation>
 <translation id="5952764234151283551">Die URL einer Seite, die Sie aufrufen möchten, wird an Google gesendet</translation>
 <translation id="5956665950594638604">Chrome-Hilfe in einem neuen Tab öffnen</translation>
 <translation id="5958275228015807058">Ihre Dateien und Seiten finden Sie unter "Downloads"</translation>
 <translation id="5962718611393537961">Zum Minimieren tippen</translation>
 <translation id="6000066717592683814">Google beibehalten</translation>
 <translation id="6005538289190791541">Vorgeschlagenes Passwort</translation>
+<translation id="6036057147555329831">Extra ICU</translation>
 <translation id="6039379616847168523">Zum nächsten Tab wechseln</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="6042308850641462728">Mehr</translation>
@@ -815,7 +814,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7029809446516969842">Passwörter</translation>
 <translation id="7053983685419859001">Blockieren</translation>
 <translation id="7055152154916055070">Weiterleitung blockiert:</translation>
-<translation id="7062545763355031412">Akzeptieren und Konto wechseln</translation>
 <translation id="7063006564040364415">Verbindung zum Synchronisierungsserver konnte nicht hergestellt werden.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ausgewählt}other{# ausgewählt}}</translation>
 <translation id="7071521146534760487">Konto verwalten</translation>
@@ -1099,7 +1097,6 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="9139318394846604261">Shopping</translation>
 <translation id="9155898266292537608">Sie können auch kurz auf ein Wort tippen, um eine Suche zu starten</translation>
 <translation id="9169507124922466868">Navigationsverlauf ist halb geöffnet</translation>
-<translation id="9188680907066685419">Von verwaltetem Konto abmelden</translation>
 <translation id="9204836675896933765">Noch 1 Datei</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Anrufe nicht möglich</translation>
@@ -1108,7 +1105,6 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="932327136139879170">Privat</translation>
 <translation id="938850635132480979">Fehler: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Mikrofonzugriff</translation>
-<translation id="951339005376969845">Vorhandene Daten werden gelöscht. Wenn Sie Ihre vorhandenen Daten abrufen möchten, wechseln Sie zurück zu <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome kann in China <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> für die Suche verwenden. Sie können dies unter <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> ändern.</translation>
 <translation id="965817943346481315">Blockieren, wenn Website aufdringliche oder irreführende Werbung anzeigt (empfohlen)</translation>
 <translation id="968900484120156207">Von Ihnen besuchte Seiten werden hier angezeigt</translation>

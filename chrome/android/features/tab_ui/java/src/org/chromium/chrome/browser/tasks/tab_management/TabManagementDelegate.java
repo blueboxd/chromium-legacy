@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.features.start_surface.StartSurface;
-import org.chromium.components.module_installer.ModuleInterface;
+import org.chromium.components.module_installer.builder.ModuleInterface;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**

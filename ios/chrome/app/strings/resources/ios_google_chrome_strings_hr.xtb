@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Upotrebom ove aplikacije prihvaćate Chromeove <ph name="BEGIN_LINK_TOS" />uvjete pružanja usluge<ph name="END_LINK_TOS" /> i <ph name="BEGIN_LINK_PRIVACY" />obavijest o privatnosti<ph name="END_LINK_PRIVACY" />.</translation>
 <translation id="2147651015520127414">Chrome je potvrdio da je <ph name="ISSUER" /> izdao certifikat web-lokacije.</translation>
 <translation id="2199719347983604670">Podaci s Chrome sinkronizacije</translation>
-<translation id="2342981853652716282">Prijavite se na Chrome kako biste mogli pristupati svojim oznakama, zaporkama i ostalom na svim svojim uređajima.</translation>
 <translation id="2347208864470321755">Kada je ta značajka uključena, Chrome će ponuditi prijevod stranica napisanih na drugim jezicima pomoću Google prevoditelja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Da biste spremili slike, dodirnite Postavke i omogućite Chromeu upotrebu fotografija</translation>
 <translation id="2576431527583832481">Chrome je postao još bolji! Dostupna je nova verzija.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Poboljšajte Chrome šaljući Googleu statistike upotrebe i izvješća o rušenju.</translation>
 <translation id="415767770115540173">Doživite Google na bolji način u Chromeu na temelju svoje lokacije.</translation>
 <translation id="424864128008805179">Želite li se odjaviti s Chromea?</translation>
+<translation id="4249068189593983585">Savjet za Chrome. Za više opcija za kartice dodirnite i držite gumb Prikaži kartice na alatnoj traci pri dnu ili vrhu zaslona.</translation>
 <translation id="4523886039239821078">Neki programski dodaci uzrokuju rušenje preglednika Chrome. Deinstalirajte:</translation>
 <translation id="5389212809648216794">Google Chrome ne može upotrebljavati vaš fotoaparat jer ga upotrebljava neka druga aplikacija</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Pregledajte ažurirane Chromove uvjete pružanja usluge.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Neki programski dodaci uzrokuju rušenje preglednika Chrome. Pokušajte ih deinstalirati.</translation>
 <translation id="8459495907675268833">Odabrani podaci uklonjeni su iz Chromea i sa sinkroniziranih uređaja. Na Google računu možda postoje drugi oblici povijesti pregledavanja, primjerice pretraživanja i aktivnosti s drugih Googleovih usluga, na stranici history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome može upotrebljavati web-usluge za poboljšanje pregledavanja. Ako želite, možete onemogućiti te usluge. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 </translationbundle>

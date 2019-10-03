@@ -328,8 +328,11 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Delete) {
 
   provider_->DeleteMatch(provider_->matches()[0]);
 
-  // Make sure the deletion takes effect immediately in the provider even before
-  // the history service asynchronously performs the deletion.
+  // Make sure the deletion takes effect immediately in the provider before the
+  // history service asynchronously performs the deletion or even before the
+  // provider is started again.
+  ExpectMatches({});
+
   StartProviderAndWaitUntilDone();
   ExpectMatches({});
 

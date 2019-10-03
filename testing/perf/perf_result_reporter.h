@@ -8,6 +8,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "base/time/time.h"
+
 namespace perf_test {
 
 struct MetricInfo {
@@ -45,6 +47,11 @@ class PerfResultReporter {
   void AddResult(const std::string& metric_suffix, size_t value);
   void AddResult(const std::string& metric_suffix, double value);
   void AddResult(const std::string& metric_suffix, const std::string& value);
+  // A special version of AddResult that will automatically convert the given
+  // TimeDelta into a double with the correct units for the registered metric.
+  void AddResult(const std::string& metric_suffix,
+                 const base::TimeDelta& value);
+
   void AddResultList(const std::string& metric_suffix,
                      const std::string& values);
 

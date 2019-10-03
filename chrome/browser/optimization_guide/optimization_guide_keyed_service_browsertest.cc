@@ -84,7 +84,7 @@ class OptimizationGuideConsumerWebContentsObserver
             Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
     last_optimization_guide_decision_ = service->CanApplyOptimization(
         navigation_handle,
-        optimization_guide::OptimizationTarget::kPainfulPageLoad,
+        optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
         optimization_guide::proto::NOSCRIPT, /*optimization_metadata=*/nullptr);
   }
 

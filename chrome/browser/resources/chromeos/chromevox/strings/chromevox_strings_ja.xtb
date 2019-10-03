@@ -20,6 +20,7 @@
 <translation id="1087788677726983142">イベント ストリーム フィルタを非表示にする</translation>
 <translation id="1088219014394087294">見出しがありません。</translation>
 <translation id="1106741348836243114">音声フィードバック（イアコン）をオンまたはオフにします。</translation>
+<translation id="1114836634143403764">提案</translation>
 <translation id="1120743664840974483">{"a": "アルファ", "b": "ブラボー", "c": "チャーリー", "d": "デルタ", "e": "エコー", "f": "フォックストロット", "g": "ゴルフ", "h": "ホテル", "i": "インディア", "j": "ジュリエット","k": "キロ", "l": "リマ", "m": "マイク", "n": "ノベンバー", "o": "オスカー","p": "パパ", "q": "ケベック", "r": "ロメオ", "s": "シエラ", "t": "タンゴ", "u": "ユニフォーム", "v": "ビクター", "w": "ウイスキー","x": "エックスレイ", "y": "ヤンキー", "z": "ズールー"}</translation>
 <translation id="1120938014254001895">2 本の指で上にスワイプします</translation>
 <translation id="1124771028211010580">現在の表示スタイルは横並びです。</translation>
@@ -126,6 +127,7 @@
 <translation id="1845944666972354496">有効にするにはダブルタップします</translation>
 <translation id="1846771122725914429">Bluetooth 点字ディスプレイ</translation>
 <translation id="1865601187525349519">テキスト終了</translation>
+<translation id="1875375785454778375">アクセス中のユーザー</translation>
 <translation id="1876229593313240038">ドキュメント</translation>
 <translation id="188130072164734898">現在の日付と時刻を音声で読み上げます。</translation>
 <translation id="1902396333223336119">セル</translation>
@@ -146,6 +148,7 @@
 <translation id="2009187674653301682">上付き文字オフ</translation>
 <translation id="2010555995361223825">ChromeVox メニュー</translation>
 <translation id="2045490512405922022">オフ</translation>
+<translation id="2049107626739254612">作成情報</translation>
 <translation id="20601713649439366">前の数式はありません。</translation>
 <translation id="2063539687800151747">題辞</translation>
 <translation id="207477615537953741">セマンティクス オフ</translation>
@@ -156,6 +159,7 @@
 <translation id="2110480898214777136">ページ、ダイアログ、またはその他のコンテナの内部での、行頭から行末、または行末から行頭への折り返し</translation>
 <translation id="2119965627982867824">スピンボタン</translation>
 <translation id="2121067395472282800">アクセス キー: <ph name="KEY" /></translation>
+<translation id="2126597928985245619">このアイテムで使用できるテキストはありません</translation>
 <translation id="2127747486437921899">斜体</translation>
 <translation id="2138345533858834403">点字ディスプレイの出力を
         画面上部の ChromeVox パネルにシミュレートします。</translation>
@@ -261,6 +265,7 @@
 <translation id="2911433807131383493">ChromeVox チュートリアルを開く</translation>
 <translation id="2912405967290226587">3 本の指で右にスワイプします</translation>
 <translation id="2932083475399492303">構造化された行とレイアウト行の切り替え</translation>
+<translation id="293796669683825859">コメント</translation>
 <translation id="2942710183375260152">ダーク スレートブルー</translation>
 <translation id="2943596527105977722">ダーク ゴールデン ロッド</translation>
 <translation id="2944762337049891859">ページの読み込み後、自動的に読み上げを開始する。</translation>
@@ -337,6 +342,7 @@
 <translation id="3324983252691184275">クリムゾン</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> スライダー</translation>
 <translation id="335581015389089642">スピーチ</translation>
+<translation id="3356951775008366684">単語の発音を読み上げる</translation>
 <translation id="3359142382821736686">区切り文字</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{プラス}other{# 個のプラス記号}}</translation>
 <translation id="338583716107319301">セパレータ</translation>
@@ -533,6 +539,7 @@
 <translation id="4763480195061959176">動画</translation>
 <translation id="4764692524839457597">デフォルト</translation>
 <translation id="4772771694153161212">下線オフ</translation>
+<translation id="4787577491510559358">現在のアイテムの書式設定を読み上げる</translation>
 <translation id="479989351350248267">検索</translation>
 <translation id="4804818685124855865">切断</translation>
 <translation id="481165870889056555">現在のページのタイトルを読み上げる</translation>
@@ -569,6 +576,7 @@
 <translation id="4983588134362688868">ページの先頭に移動します</translation>
 <translation id="4986606102545753256"><ph name="NAME" />、ウィンドウ</translation>
 <translation id="4993152509206108683">速度 <ph name="PERCENT" /> パーセント</translation>
+<translation id="4994420463726586413">現在の電池の状態を読み上げる</translation>
 <translation id="4996716799442435517">ビジュアル</translation>
 <translation id="4997282455736854877"><ph name="NAME" />、選択されたラジオボタン</translation>
 <translation id="4997475792277222884">リンクでない次の項目はありません。</translation>

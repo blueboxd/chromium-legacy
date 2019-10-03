@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">Klasörün sabitlemesini kaldır</translation>
 <translation id="3678559383040232393">Malta diline özgü klavye</translation>
 <translation id="3685122418104378273">Mobil veriler kullanılırken Google Drive senkronizasyonu varsayılan olarak devre dışıdır.</translation>
+<translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" /> işlemi iptal edilecek.</translation>
 <translation id="3726463242007121105">Bu cihaz, dosya sistemi desteklenmediğinden açılamıyor.</translation>
 <translation id="3741243925913727067">Medya cihazınızın fotoğraflarını ve videolarını Google Drive'a yedekleyin.</translation>
 <translation id="3749289110408117711">Dosya adı</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">ABD uluslararası (PC)</translation>
 <translation id="6346310558342052870">Erişim kısıtlı</translation>
 <translation id="6353618411602605519">Hırvatça klavye</translation>
+<translation id="6356685157277930264">Dosya geri bildirim penceresi</translation>
 <translation id="6358884629796491903">Ejderha</translation>
 <translation id="637062427944097960">Bu dosya farklı bir masaüstünde açıldı. Görüntülemek için <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) adlı kullanıcıya gidin.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> öğe</translation>

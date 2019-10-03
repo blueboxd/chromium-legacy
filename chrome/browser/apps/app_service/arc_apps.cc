@@ -133,6 +133,12 @@ ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
   }
   prefs->AddObserver(this);
 
+  auto* intent_helper_bridge =
+      arc::ArcIntentHelperBridge::GetForBrowserContext(profile_);
+  if (intent_helper_bridge) {
+    arc_intent_helper_observer_.Add(intent_helper_bridge);
+  }
+
   app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
                                  apps::mojom::AppType::kArc);
 }
@@ -164,6 +170,8 @@ void ArcApps::Shutdown() {
     prefs->RemoveObserver(this);
   }
   arc_icon_once_loader_.StopObserving(prefs);
+
+  arc_intent_helper_observer_.RemoveAll();
 }
 
 void ArcApps::Connect(
@@ -412,6 +420,37 @@ void ArcApps::OnPackageListInitialRefreshed() {
   }
 }
 
+void ArcApps::OnIntentFiltersUpdated(
+    const base::Optional<std::string>& package_name) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (!prefs) {
+    return;
+  }
+
+  auto GetAppInfoAndPublish = [prefs, this](std::string app_id) {
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+    if (app_info) {
+      Publish(Convert(prefs, app_id, *app_info));
+    }
+  };
+
+  // If there is no specific package_name, update all apps, otherwise update
+  // apps for the package.
+
+  // Note: Cannot combine the two for-loops because the return type of
+  // GetAppIds() is std::vector<std::string> and the return type of
+  // GetAppsForPackage() is std::unordered_set<std::string>.
+  if (package_name == base::nullopt) {
+    for (const auto& app_id : prefs->GetAppIds()) {
+      GetAppInfoAndPublish(app_id);
+    }
+  } else {
+    for (const auto& app_id : prefs->GetAppsForPackage(package_name.value())) {
+      GetAppInfoAndPublish(app_id);
+    }
+  }
+}
+
 void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
                                 int32_t size_hint_in_dip,
                                 IconEffects icon_effects,
@@ -529,9 +568,6 @@ void ArcApps::UpdateAppIntentFilters(
     std::string package_name,
     arc::ArcIntentHelperBridge* intent_helper_bridge,
     std::vector<apps::mojom::IntentFilterPtr>* intent_filters) {
-  // TODO(crbug.com/853604): Add per-package observer to update the intent
-  // filter when package changes. Currently there is only observer for
-  // everything changes, want to try to split up it for each package.
   const std::vector<arc::IntentFilter>& arc_intent_filters =
       intent_helper_bridge->GetIntentFilterForPackage(package_name);
   for (auto& arc_intent_filter : arc_intent_filters) {

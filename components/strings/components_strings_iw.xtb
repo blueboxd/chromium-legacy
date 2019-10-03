@@ -45,6 +45,7 @@
 <translation id="1175875016430184367">3 סיכות הידוק בצד ימין</translation>
 <translation id="1178581264944972037">השהה</translation>
 <translation id="1181037720776840403">הסרה</translation>
+<translation id="1186201132766001848">בדיקת הסיסמאות</translation>
 <translation id="1197088940767939838">כתום</translation>
 <translation id="1201402288615127009">הבא</translation>
 <translation id="1201895884277373915">עוד מאתר זה</translation>
@@ -110,6 +111,7 @@
 <translation id="1430915738399379752">הדפסה</translation>
 <translation id="1442386063175183758">כנף ימנית בקיפול</translation>
 <translation id="1442987760062738829">ניקוב</translation>
+<translation id="1450011005989029586">‏אירעה פרצה באבטחת המידע באתר או באפליקציה שהשתמשת בהם, וכתוצאה מכך הסיסמה שלך נחשפה. ההמלצה של Chrome היא <ph name="BOLD" /> ב-<ph name="ORIGIN" /> עכשיו.</translation>
 <translation id="1455413310270022028">כלי מחיקה</translation>
 <translation id="1463543813647160932">5x7</translation>
 <translation id="1472675084647422956">הצג יותר</translation>
@@ -153,7 +155,6 @@
 <translation id="1640244768702815859">נסה <ph name="BEGIN_LINK" />להיכנס לדף הבית של האתר<ph name="END_LINK" />.</translation>
 <translation id="1644574205037202324">היסטוריה</translation>
 <translation id="1645368109819982629">פרוטוקול לא נתמך</translation>
-<translation id="1655462015569774233">{1,plural, =1{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; התוקף של אישור האבטחה שלו פג אתמול. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך. התאריך המוגדר כעת בשעון המחשב שלך הוא <ph name="CURRENT_DATE" />. האם זה נכון? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן את הדף הזה.}two{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; התוקף של אישור האבטחה שלו פג לפני יומיים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך. התאריך המוגדר כעת בשעון המחשב שלך הוא <ph name="CURRENT_DATE" />. האם זה נכון? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן את הדף הזה.}many{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; התוקף של אישור האבטחה שלו פג לפני # ימים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך. התאריך המוגדר כעת בשעון המחשב שלך הוא <ph name="CURRENT_DATE" />. האם זה נכון? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן את הדף הזה.}other{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; התוקף של אישור האבטחה שלו פג לפני # ימים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך. התאריך המוגדר כעת בשעון המחשב שלך הוא <ph name="CURRENT_DATE" />. האם זה נכון? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן את הדף הזה.}}</translation>
 <translation id="1656489000284462475">איסוף</translation>
 <translation id="1662550410081243962">שמירה ומילוי של אמצעי תשלום</translation>
 <translation id="1663943134801823270">‏הכרטיסים והכתובות נלקחים מ-Chrome. אפשר לנהל אותם ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
@@ -323,7 +324,6 @@
 <translation id="2501278716633472235">חזרה</translation>
 <translation id="2503184589641749290">כרטיסי חיוב וכרטיסים משולמים מראש שהסוחר מקבל</translation>
 <translation id="2505268675989099013">הגנה על החשבון</translation>
-<translation id="2515335152965840738">התעלמות</translation>
 <translation id="2515629240566999685">לבדוק את האות באזור שלך</translation>
 <translation id="2521385132275182522">סיכת הידוק בפינה הימנית התחתונה</translation>
 <translation id="2523886232349826891">הכרטיס יישמר רק במכשיר הזה</translation>
@@ -388,7 +388,6 @@
 <translation id="2799020568854403057">האתר הבא מכיל יישומים מזיקים</translation>
 <translation id="2799223571221894425">הפעל מחדש</translation>
 <translation id="2803306138276472711">‏לאחרונה, 'גלישה בטוחה של Google‏' <ph name="BEGIN_LINK" />זיהתה תוכנה זדונית<ph name="END_LINK" /> באתר <ph name="SITE" />. אתרים שבדרך כלל נחשבים לבטוחים נדבקים לעתים בתוכנה זדונית.</translation>
-<translation id="2815364696811431560">יציאה מהאתר</translation>
 <translation id="2824775600643448204">שורת חיפוש וכתובות אתרים</translation>
 <translation id="2826760142808435982">החיבור מוצפן ומאומת באמצעות <ph name="CIPHER" /> ומשתמש ב-<ph name="KX" /> כמנגנון להחלפת מפתחות.</translation>
 <translation id="2835170189407361413">ניקוי הטופס</translation>
@@ -462,6 +461,7 @@
 <translation id="320323717674993345">בטל תשלום</translation>
 <translation id="3207960819495026254">מסומן בסימניה</translation>
 <translation id="3209034400446768650">כניסה לדף עשויה להיות כרוכה בתשלום</translation>
+<translation id="3209080785413271048">‏אפשר להשתמש ב-Windows Hello כדי לאמת את אמצעי התשלום ששמרת.</translation>
 <translation id="3215092763954878852">‏לא ניתן להשתמש ב-WebAuthn</translation>
 <translation id="3225919329040284222">השרת הציג אישור שאינו תואם את הציפיות המובנות. ציפיות אלה נכללות עבור אתרי אינטרנט מסוימים בעלי אבטחה גבוהה כדי להגן עליך.</translation>
 <translation id="3226128629678568754">לחץ על לחצן הטעינה מחדש כדי לשלוח מחדש את הנתונים הדרושים לטעינת הדף.</translation>
@@ -472,6 +472,7 @@
 <translation id="3234666976984236645">זהה תמיד תוכן חשוב באתר זה</translation>
 <translation id="3270847123878663523">&amp;ביטול של שינוי סדר</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
+<translation id="3281668902344226640">‏אפשר להשתמש ב-Touch ID כדי לאמת את אמצעי התשלום ששמרת.</translation>
 <translation id="3282497668470633863">הוספה של השם המופיע בכרטיס</translation>
 <translation id="3287510313208355388">להורדה אחרי התחברות לרשת</translation>
 <translation id="3293642807462928945">מידע נוסף על המדיניות <ph name="POLICY_NAME" /></translation>
@@ -539,6 +540,7 @@
 <translation id="362276910939193118">כל ההיסטוריה</translation>
 <translation id="3630155396527302611">אם היא כבר רשומה כתוכנית המורשית לגשת לרשת, נסה
       להסיר אותה מהרשימה ולהוסיף אותה שוב.</translation>
+<translation id="3631244953324577188">מידע ביומטרי</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">האימות בוצע בהצלחה</translation>
 <translation id="3655670868607891010">אם נתקלת בזה לעתים קרובות, כדאי לנסות את ה<ph name="HELP_LINK" /> האלה.</translation>
@@ -619,6 +621,7 @@
 <translation id="4067947977115446013">הוספה של כתובת חוקית</translation>
 <translation id="4072486802667267160">התרחשה שגיאה במהלך עיבוד התשלום שלך. נסה שוב.</translation>
 <translation id="4075732493274867456">‏הלקוח והשרת אינם תומכים בגרסה נפוצה של פרוטוקול SSL או בחבילת צפנים.</translation>
+<translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">‏תצורת ה-Proxy מוגדרת להשתמש בכתובת אתר של סקריפט מסוג ‎.Pac ולא בשרתי Proxy קבועים.</translation>
 <translation id="4082393374666368382">הגדרות - ניהול</translation>
 <translation id="4098354747657067197">זהירות, אתר מטעה</translation>
@@ -675,6 +678,7 @@
 <translation id="4258748452823770588">חתימה שגויה</translation>
 <translation id="4261046003697461417">לא ניתן להוסיף הערות למסמכים מוגנים</translation>
 <translation id="4265872034478892965">אושרה על-ידי מנהל המערכת</translation>
+<translation id="4270615291506829403">לשנות את הסיסמה</translation>
 <translation id="4275830172053184480">הפעלת המכשיר מחדש</translation>
 <translation id="4277028893293644418">איפוס סיסמה</translation>
 <translation id="4279811152705618813">ה-<ph name="DEVICE_TYPE" /> מנוהל על-ידי <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -701,6 +705,7 @@
 <translation id="4372948949327679948">צפוי ערך מסוג <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">ניסית להשיג את <ph name="DOMAIN" />, אך האישור שהשרת הציג בוטל על ידי המנפיק שלו. פירוש הדבר שאין כל אפשרות לתת אמון באישורי האבטחה שהשרת הציג. ייתכן שאתה מתקשר עם תוקף.</translation>
 <translation id="4378154925671717803">טלפון</translation>
+<translation id="4398334096870680409">התכונה הזו לא זמינה במכשיר שלך.</translation>
 <translation id="4406896451731180161">תוצאות חיפוש</translation>
 <translation id="4408413947728134509">‏קובצי Cookie <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">כתובת איסוף</translation>
@@ -750,7 +755,9 @@
 <translation id="4691835149146451662">Architecture-A (Envelope)‎</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">החיבור נקטע</translation>
+<translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131">‏<ph name="BEGIN_LINK" />מפעיל את אבחון הרשת של Windows<ph name="END_LINK" /></translation>
+<translation id="4725851834065990915">‏אירעה פרצה באבטחת המידע באתר או באפליקציה שהשתמשת בהם, וכתוצאה מכך הסיסמה שלך נחשפה. מערכת Chrome ממליצה לך לבדוק עכשיו את הסיסמאות ששמרת.</translation>
 <translation id="4726672564094551039">טען מדיניות מחדש</translation>
 <translation id="4728558894243024398">פלטפורמה</translation>
 <translation id="4731967714531604179">Prc2 (Envelope)‎</translation>
@@ -782,7 +789,6 @@ Del</translation>
 <translation id="4816492930507672669">התאמה לדף</translation>
 <translation id="4850886885716139402">הצגה</translation>
 <translation id="4854362297993841467">שיטת המסירה הזו אינה זמינה. עליך לבחור שיטה אחרת.</translation>
-<translation id="4864052566555297930">טיפ בנושא בטיחות:</translation>
 <translation id="4876188919622883022">תצוגה נקייה</translation>
 <translation id="4876305945144899064">אין שם משתמש</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{אין}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}many{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
@@ -1010,6 +1016,7 @@ Del</translation>
 <translation id="5967592137238574583">עריכת הפרטים ליצירת קשר</translation>
 <translation id="5967867314010545767">הסר מההיסטוריה</translation>
 <translation id="5975083100439434680">התרחק</translation>
+<translation id="5979084224081478209">בדיקת הסיסמאות</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">לא ניתן לפתוח את אפליקציית התשלומים</translation>
 <translation id="5989320800837274978">‏לא צוינו שרתי Proxy קבועים ולא כתובת אתר של סקריפט ‎.pac</translation>
@@ -1167,6 +1174,7 @@ Del</translation>
 <translation id="679355240208270552">המערכת התעלמה מערך מדיניות זה, משום שלפי המדיניות חיפוש ברירת המחדל מושבת.</translation>
 <translation id="681021252041861472">שדה חובה</translation>
 <translation id="6810899417690483278">מזהה של התאמה אישית</translation>
+<translation id="6819440013020405090">‏אירעה פרצה באבטחת המידע באתר או באפליקציה שהשתמשת בהם, וכתוצאה מכך הסיסמה שלך נחשפה. מערכת Chrome ממליצה לך לבדוק את הסיסמאות ששמרת ולשנות את הסיסמה ב-<ph name="ORIGIN" />.</translation>
 <translation id="6825578344716086703">‏ניסית להגיע אל <ph name="DOMAIN" />, אבל השרת הציג אישור שנחתם באמצעות אלגוריתם חתימה חלש (כמו SHA-1). המשמעות היא שפרטי האבטחה שהוצגו על-ידי השרת עלולים להיות מזויפים, וייתכן שהשרת הוא לא השרת שציפית לו (ייתכן שנוצר קשר בינך לבין התוקף).</translation>
 <translation id="6826370046007623921">מניעת אובדן נתונים</translation>
 <translation id="6831043979455480757">תרגום</translation>
@@ -1209,6 +1217,7 @@ Del</translation>
 <translation id="7064851114919012435">פרטים ליצירת קשר</translation>
 <translation id="7075452647191940183">הבקשה גדולה מידי</translation>
 <translation id="7079718277001814089">האתר הזה מכיל תוכנה זדונית</translation>
+<translation id="70850504851191913">דווחה פרצה באבטחת מידע</translation>
 <translation id="7087282848513945231">מחוז</translation>
 <translation id="7090678807593890770">‏חפש ב-Google את <ph name="LINK" /></translation>
 <translation id="7108338896283013870">הסתרה</translation>
@@ -1297,6 +1306,7 @@ Del</translation>
 <translation id="7460618730930299168">הסינון שונה ממה שבחרת. להמשיך?</translation>
 <translation id="7473891865547856676">לא, תודה</translation>
 <translation id="7481312909269577407">קדימה</translation>
+<translation id="748406663033922918">אפשר להשתמש בנעילת המסך כדי לאמת את אמצעי התשלום ששמרת.</translation>
 <translation id="7485870689360869515">לא נמצאו נתונים.</translation>
 <translation id="7498234416455752244">המשך העריכה</translation>
 <translation id="7508255263130623398">מזהה המכשיר במדיניות שהוחזר ריק או שאינו תואם את מזהה המכשיר הנוכחי</translation>
@@ -1510,7 +1520,6 @@ Del</translation>
 <translation id="8553075262323480129">התרגום נכשל כיוון שלא הייתה אפשרות לקבוע את שפת הדף.</translation>
 <translation id="8557066899867184262">קוד האימות נמצא בגב הכרטיס.</translation>
 <translation id="8559762987265718583">לא ניתן ליצור חיבור פרטי אל <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> מפני שהתאריך והשעה (<ph name="DATE_AND_TIME" />) במכשיר שלך שגויים.</translation>
-<translation id="8561575143530093465"><ph name="SAFETY_TIP" /> אתר חשוד</translation>
 <translation id="8564985650692024650">‏אם הזנת את הסיסמה של <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> באתרים אחרים, ההמלצה של Chromium היא לאפס אותה.</translation>
 <translation id="8571890674111243710">מתרגם דף ל<ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">הוסף מספר טלפון
@@ -1571,6 +1580,7 @@ Del</translation>
 <translation id="8943282376843390568">ליים</translation>
 <translation id="8957210676456822347">הרשאת פורטל חובה</translation>
 <translation id="8962950042226115166">אתר חשוד</translation>
+<translation id="8966619695390250636">האם התכוונת?</translation>
 <translation id="8968766641738584599">שמירת הכרטיס</translation>
 <translation id="8971063699422889582">פג תוקפו של אישור השרת.</translation>
 <translation id="8975012916872825179">כולל מידע כמו מספרי טלפון, כתובות אימייל וכתובות למשלוח</translation>

@@ -41,17 +41,13 @@ class CORE_EXPORT ScrollbarThemeMock : public ScrollbarTheme {
   bool HasButtons(const Scrollbar&) override { return false; }
   bool HasThumb(const Scrollbar&) override { return true; }
 
-  IntRect BackButtonRect(const Scrollbar&,
-                         ScrollbarPart,
-                         bool /*painting*/ = false) override {
+  IntRect BackButtonRect(const Scrollbar&, ScrollbarPart) override {
     return IntRect();
   }
-  IntRect ForwardButtonRect(const Scrollbar&,
-                            ScrollbarPart,
-                            bool /*painting*/ = false) override {
+  IntRect ForwardButtonRect(const Scrollbar&, ScrollbarPart) override {
     return IntRect();
   }
-  IntRect TrackRect(const Scrollbar&, bool painting = false) override;
+  IntRect TrackRect(const Scrollbar&) override;
 
   void PaintTrackBackground(GraphicsContext&,
                             const Scrollbar&,

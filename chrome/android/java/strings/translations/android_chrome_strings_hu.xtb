@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Használt</translation>
 <translation id="1171770572613082465">A „Népszerűek” gombra koppintva megtekintheti a népszerű webhelyeket</translation>
 <translation id="1173894706177603556">Átnevezés</translation>
-<translation id="1175310183703641346">Könyvjelzői, előzményei, jelszavai és más beállításai többé nem lesznek szinkronizálva a Google-fiókjával</translation>
 <translation id="1178581264944972037">Szünet</translation>
 <translation id="1181037720776840403">Eltávolítás</translation>
 <translation id="1188239144602654184">AR indítása</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">Felvéve a(z) <ph name="PRODUCT_NAME" /> könyvjelzői közé</translation>
 <translation id="3744111561329211289">Szinkronizálás a háttérben</translation>
 <translation id="3771001275138982843">Nem sikerült letölteni a frissítést</translation>
+<translation id="3771033907050503522">Inkognitólapok</translation>
 <translation id="3773755127849930740">A párosítás engedélyezéséhez <ph name="BEGIN_LINK" />kapcsolja be a Bluetooth funkciót<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">Küldés a saját eszközökre</translation>
 <translation id="3778956594442850293">Hozzáadva a kezdőképernyőhöz</translation>
@@ -484,7 +484,6 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4719927025381752090">Fordítás felajánlása</translation>
 <translation id="4720023427747327413">Megnyitás itt: <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Segítsen a Chrome fejlesztésében. <ph name="BEGIN_LINK" />Töltse ki ezt a felmérést.<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">A(z) <ph name="ACCOUNT_EMAIL_OLD" /> szinkronizált fiókról a következőre vált át: <ph name="ACCOUNT_EMAIL_NEW" />. A meglévő Chrome-adatokat a(z) <ph name="MANAGED_DOMAIN" />. kezeli. Ezzel törli az adatait erről az eszközről, viszont azok továbbra is megmaradnak a(z) <ph name="ACCOUNT_EMAIL_OLD" /> fiókban.</translation>
 <translation id="473775607612524610">Frissítés</translation>
 <translation id="4738836084190194332">Utolsó szinkronizálás: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Új lap megnyitása</translation>
@@ -668,13 +667,13 @@ A VR-mód aktiválása előtt győződjön meg a webhely megbízhatóságáról.
 <translation id="5937580074298050696"><ph name="AMOUNT" /> megtakarított adatmennyiség</translation>
 <translation id="5939518447894949180">Visszaállítás</translation>
 <translation id="5942872142862698679">A Google használata a kereséshez</translation>
-<translation id="5944669582486359588">Egyszerűsített módban a Chrome gyorsabban betölti az oldalakat, és akár 60 százalékkal kisebb adatforgalmat generál. A Google felhőtechnológiája optimalizálja a felkeresett oldalakat.</translation>
 <translation id="5952764234151283551">Az elérni kívánt oldal URL-címének elküldése a Google-nak</translation>
 <translation id="5956665950594638604">A Chrome súgójának megnyitása új lapon</translation>
 <translation id="5958275228015807058">A fájlokat és oldalakat a Letöltések között találja meg</translation>
 <translation id="5962718611393537961">Koppintson az összecsukáshoz</translation>
 <translation id="6000066717592683814">A Google megtartása</translation>
 <translation id="6005538289190791541">Javasolt jelszó</translation>
+<translation id="6036057147555329831">További ICU</translation>
 <translation id="6039379616847168523">Ugrás a következő lapra</translation>
 <translation id="6040143037577758943">Bezárás</translation>
 <translation id="6042308850641462728">Továbbiak</translation>
@@ -815,7 +814,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7029809446516969842">Jelszavak</translation>
 <translation id="7053983685419859001">Letiltás</translation>
 <translation id="7055152154916055070">Átirányítás letiltva:</translation>
-<translation id="7062545763355031412">Elfogadás és fiókváltás</translation>
 <translation id="7063006564040364415">Nem sikerült csatlakozni a szinkronizálószerverhez.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 elem kijelölve}other{# elem kijelölve}}</translation>
 <translation id="7071521146534760487">Fiók kezelése</translation>
@@ -1099,7 +1097,6 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="9139318394846604261">Vásárlás</translation>
 <translation id="9155898266292537608">Úgy is végrehajthat keresést, hogy gyorsan rákoppint valamelyik szóra</translation>
 <translation id="9169507124922466868">Félmagasságban megnyitott navigációs előzmények</translation>
-<translation id="9188680907066685419">Kijelentkezés felügyelt fiókból</translation>
 <translation id="9204836675896933765">1 fájl maradt</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Nem lehet hívást indítani</translation>
@@ -1108,7 +1105,6 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="932327136139879170">Főoldal</translation>
 <translation id="938850635132480979">Hiba: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Hozzáférés a mikrofonhoz</translation>
-<translation id="951339005376969845">Meglévő adatok törlése. Ezeket úgy hívhatja le, hogy visszavált a következő fiókra: <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">A Chrome igénybe veheti a <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> keresőszolgáltatást, hogy Kínában kereshessen. Ezt a <ph name="BEGIN_LINK" />Beállításokban<ph name="END_LINK" /> módosíthatja.</translation>
 <translation id="965817943346481315">Letiltás, ha a webhely tolakodó vagy félrevezető hirdetéseket jelenít meg (ajánlott)</translation>
 <translation id="968900484120156207">Itt jelennek meg a felkeresett oldalak</translation>

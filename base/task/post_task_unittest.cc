@@ -5,9 +5,11 @@
 #include "base/task/post_task.h"
 
 #include "base/bind_helpers.h"
+#include "base/run_loop.h"
 #include "base/task/scoped_set_task_priority_for_current_thread.h"
 #include "base/task/task_executor.h"
 #include "base/task/test_task_traits_extension.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
@@ -17,6 +19,8 @@
 
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::IsNull;
+using ::testing::NotNull;
 using ::testing::Return;
 
 namespace base {
@@ -175,6 +179,50 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToTaskExecutor) {
     EXPECT_EQ(executor_.runner(), comsta_task_runner);
 #endif  // defined(OS_WIN)
   }
+}
+
+TEST_F(PostTaskTestWithExecutor,
+       ThreadPoolTaskRunnerGetTaskExecutorForCurrentThread) {
+  auto task_runner = CreateTaskRunner({ThreadPool()});
+  RunLoop run_loop;
+
+  EXPECT_TRUE(task_runner->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        // We don't have an executor for a ThreadPool task runner becuse they
+        // are for one shot tasks.
+        EXPECT_THAT(GetTaskExecutorForCurrentThread(), IsNull());
+        run_loop.Quit();
+      })));
+
+  run_loop.Run();
+}
+
+TEST_F(PostTaskTestWithExecutor,
+       ThreadPoolSequencedTaskRunnerGetTaskExecutorForCurrentThread) {
+  auto sequenced_task_runner = CreateSequencedTaskRunner({ThreadPool()});
+  RunLoop run_loop;
+
+  EXPECT_TRUE(sequenced_task_runner->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_THAT(GetTaskExecutorForCurrentThread(), NotNull());
+        run_loop.Quit();
+      })));
+
+  run_loop.Run();
+}
+
+TEST_F(PostTaskTestWithExecutor,
+       ThreadPoolSingleThreadTaskRunnerGetTaskExecutorForCurrentThread) {
+  auto single_thread_task_runner = CreateSingleThreadTaskRunner({ThreadPool()});
+  RunLoop run_loop;
+
+  EXPECT_TRUE(single_thread_task_runner->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_THAT(GetTaskExecutorForCurrentThread(), NotNull());
+        run_loop.Quit();
+      })));
+
+  run_loop.Run();
 }
 
 TEST_F(PostTaskTestWithExecutor, RegisterExecutorTwice) {

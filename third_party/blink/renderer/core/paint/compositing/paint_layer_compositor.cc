@@ -729,10 +729,10 @@ GraphicsLayer* PaintLayerCompositor::PaintRootGraphicsLayer() const {
   if (layout_view_.GetDocument().GetPage()->GetChromeClient().IsPopup())
     return RootGraphicsLayer();
 
-  // Start painting at the inner viewport container layer which is an ancestor
-  // of both the main contents layers and the scrollbar layers.
-  if (IsMainFrame() && GetVisualViewport().ContainerLayer())
-    return GetVisualViewport().ContainerLayer();
+  // Start painting at the root graphics layer of the inner viewport which is an
+  // ancestor of both the main contents layers and the scrollbar layers.
+  if (IsMainFrame() && GetVisualViewport().RootGraphicsLayer())
+    return GetVisualViewport().RootGraphicsLayer();
 
   return RootGraphicsLayer();
 }

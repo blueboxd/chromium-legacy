@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">ફોટા સાચવી શકતું નથી</translation>
 <translation id="1180526666083833456">સમગ્ર ડિવાઇસ પર સિંક કરો અને વ્યક્તિગત બનાવો.</translation>
 <translation id="1181037720776840403">કાઢી નાખો</translation>
+<translation id="1207113853726624428">નવી શોધ</translation>
 <translation id="1209206284964581585">હમણાં માટે છુપાવો</translation>
 <translation id="1219674500290482172">ઇન્ટરનેટથી કનેક્ટ કરવામાં અક્ષમ.</translation>
 <translation id="122699739164161391">બધાં ટૅબ બંધ કરો</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">પાસવર્ડ સૂચવો...</translation>
 <translation id="1870148520156231997">પાસવર્ડ જણાવો</translation>
 <translation id="1872096359983322073">ટોર્ચ</translation>
-<translation id="1876721852596493031">ઉપયોગ ડેટા મોકલો</translation>
 <translation id="1911619930368729126">Google ડ્રાઇવ પર અપલોડ કરો</translation>
 <translation id="1923342640370224680">છેલ્લી કલાક</translation>
 <translation id="1941314575388338491">કૉપિ કરવા માટે બે વાર ટૅપ કરો.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892">વાંચન સૂચિમાં <ph name="UNREAD_COUNT" /> ન વાંચેલા લેખો.</translation>
 <translation id="2230173723195178503">વેબપેજ લોડ કર્યું</translation>
 <translation id="2239626343334228536">બ્રાઉઝિંગ ડેટા સાફ થઈ રહ્યો છે...</translation>
-<translation id="2256128224215992540">શોધ અને સાઇટ વિશે સૂચનો</translation>
 <translation id="2267753748892043616">એકાઉન્ટ ઉમેરો</translation>
 <translation id="2268044343513325586">સુધારો</translation>
 <translation id="2273327106802955778">વધુ મેનૂ</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">ફાઇલ ખોલવામાં અસમર્થ છે</translation>
 <translation id="2718352093833049315">ફક્ત વાઇ-ફાઇ પર</translation>
 <translation id="2747003861858887689">પાછલી ફીલ્ડ</translation>
+<translation id="2773292004659987824">છૂપી શોધ</translation>
 <translation id="2780046210906776326">ઇમેઇલ એકાઉન્ટ્સ નથી</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">ટેબ સ્વિચર છોડી દો</translation>
@@ -295,7 +295,6 @@
 <translation id="5197255632782567636">ઇન્ટરનેટ</translation>
 <translation id="5228579091201413441">સિંક ચાલુ કરો</translation>
 <translation id="5234764350956374838">કાઢી નાખો</translation>
-<translation id="5244474230056479698"><ph name="EMAIL" /> પર સમન્વયિત કરી રહ્યાં છે</translation>
 <translation id="5245322853195994030">સિંક કરવાનું રદ કરો</translation>
 <translation id="5271549068863921519">પાસવર્ડ સાચવો</translation>
 <translation id="5300589172476337783">બતાવો</translation>
@@ -501,6 +500,7 @@
 <translation id="8261506727792406068">ડિલીટ કરો</translation>
 <translation id="8281781826761538115">ડિફૉલ્ટ - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">નવી શોધ</translation>
+<translation id="8323906514956095947">ટૅબના વધુ વિકલ્પો માટે, ટચ કરીને થોડીવાર દબાવી રાખો</translation>
 <translation id="8328777765163860529">બધું બંધ કરો</translation>
 <translation id="8407669440184693619">આ સાઇટ માટે કોઈ પાસવર્ડ મળ્યાં નથી</translation>
 <translation id="842017693807136194">ની સાથે સાઇન ઇન કરેલ</translation>

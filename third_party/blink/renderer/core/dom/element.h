@@ -857,7 +857,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   }
   void SetIsInTopLayer(bool);
 
-  void requestPointerLock();
   void requestPointerLock(const PointerLockOptions*);
 
   bool IsSpellCheckingEnabled() const;

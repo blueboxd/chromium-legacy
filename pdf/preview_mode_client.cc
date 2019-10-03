@@ -14,7 +14,8 @@ namespace chrome_pdf {
 PreviewModeClient::PreviewModeClient(Client* client) : client_(client) {}
 
 void PreviewModeClient::ProposeDocumentLayout(const DocumentLayout& layout) {
-  NOTREACHED();
+  // This will be invoked if the PreviewModeClient is used, which currently
+  // occurs if and only if loading a non-PDF document with more than 1 page.
 }
 
 void PreviewModeClient::Invalidate(const pp::Rect& rect) {

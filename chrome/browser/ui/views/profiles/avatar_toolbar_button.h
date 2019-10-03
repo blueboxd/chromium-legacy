@@ -37,6 +37,7 @@ class AvatarToolbarButton : public ToolbarButton,
   void UpdateIcon();
   void UpdateText();
   void SetAutofillIconVisible(bool autofill_icon_visible);
+  void ShowAvatarHighlightAnimation();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AvatarToolbarButtonTest,

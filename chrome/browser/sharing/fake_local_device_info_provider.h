@@ -22,8 +22,13 @@ class FakeLocalDeviceInfoProvider : public syncer::LocalDeviceInfoProvider {
   std::unique_ptr<Subscription> RegisterOnInitializedCallback(
       const base::RepeatingClosure& callback) override;
 
+  void SetReady(bool ready);
+  syncer::DeviceInfo* GetMutableDeviceInfo();
+
  private:
   syncer::DeviceInfo device_info_;
+  bool ready_ = true;
+  base::CallbackList<void(void)> callback_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeLocalDeviceInfoProvider);
 };

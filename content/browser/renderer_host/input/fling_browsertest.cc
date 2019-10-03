@@ -198,7 +198,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
     blink::WebMouseWheelEvent wheel_event =
         SyntheticWebMouseWheelEventBuilder::Build(
             10, 10, fling_velocity.x() / 1000, fling_velocity.y() / 1000, 0,
-            true);
+            ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
     wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
     const gfx::PointF position_in_widget(1, 1);
     const gfx::PointF position_in_root =

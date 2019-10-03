@@ -11,8 +11,6 @@ enum AssistantState {
   NOT_READY = 0,
   // The Assistant service is ready.
   READY,
-  // The Assistant UI is showing.
-  VISIBLE
 };
 
 enum AssistantAllowedState {

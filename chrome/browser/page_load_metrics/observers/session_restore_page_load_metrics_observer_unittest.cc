@@ -89,7 +89,7 @@ class SessionRestorePageLoadMetricsObserverTest
     WebContents* contents = tabs_.back().get();
     auto tester =
         std::make_unique<page_load_metrics::PageLoadMetricsObserverTester>(
-            contents,
+            contents, this,
             base::BindRepeating(
                 &SessionRestorePageLoadMetricsObserverTest::RegisterObservers,
                 base::Unretained(this)));

@@ -236,23 +236,27 @@ class TestInterstitialPageStateGuard : public TestInterstitialPage::Delegate {
 class WebContentsImplTestBrowserClient : public TestContentBrowserClient {
  public:
   WebContentsImplTestBrowserClient()
-      : assign_site_for_url_(false),
-        original_browser_client_(SetBrowserClientForTesting(this)) {}
+      : original_browser_client_(SetBrowserClientForTesting(this)) {}
 
   ~WebContentsImplTestBrowserClient() override {
     SetBrowserClientForTesting(original_browser_client_);
   }
 
   bool ShouldAssignSiteForURL(const GURL& url) override {
-    return assign_site_for_url_;
+    if (site_assignment_for_url_.find(url) != site_assignment_for_url_.end()) {
+      return site_assignment_for_url_[url];
+    }
+
+    return true;
   }
 
-  void set_assign_site_for_url(bool assign) {
-    assign_site_for_url_ = assign;
+  void set_assign_site_for_url(bool assign, const GURL& url) {
+    DCHECK(url.is_valid());
+    site_assignment_for_url_[url] = assign;
   }
 
  private:
-  bool assign_site_for_url_;
+  std::map<GURL, bool> site_assignment_for_url_;
   ContentBrowserClient* original_browser_client_;
 };
 
@@ -710,9 +714,9 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   orig_rfh->GetRenderViewHost()->set_delete_counter(&orig_rvh_delete_count);
   SiteInstanceImpl* orig_instance = contents()->GetSiteInstance();
 
-  browser_client.set_assign_site_for_url(false);
   // Navigate to an URL that will not assign a new SiteInstance.
   const GURL native_url("non-site-url://stuffandthings");
+  browser_client.set_assign_site_for_url(false, native_url);
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), native_url);
 
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
@@ -723,9 +727,9 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   EXPECT_EQ(GURL(), contents()->GetSiteInstance()->GetSiteURL());
   EXPECT_FALSE(orig_instance->HasSite());
 
-  browser_client.set_assign_site_for_url(true);
   // Navigate to new site (should keep same site instance).
   const GURL url("http://www.google.com");
+  browser_client.set_assign_site_for_url(true, url);
   auto navigation1 =
       NavigationSimulator::CreateBrowserInitiated(url, contents());
   navigation1->ReadyToCommit();
@@ -735,6 +739,24 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   EXPECT_FALSE(contents()->GetPendingMainFrame());
   navigation1->Commit();
 
+  // The first entry's SiteInstance should be reset to a new, related one. This
+  // prevents wrongly detecting a SiteInstance mismatch when returning to it
+  // later.
+  SiteInstanceImpl* prev_entry_instance = contents()
+                                              ->GetController()
+                                              .GetEntryAtIndex(0)
+                                              ->root_node()
+                                              ->frame_entry->site_instance();
+  EXPECT_NE(prev_entry_instance, orig_instance);
+  EXPECT_TRUE(orig_instance->IsRelatedSiteInstance(prev_entry_instance));
+  EXPECT_FALSE(prev_entry_instance->HasSite());
+
+  SiteInstanceImpl* curr_entry_instance = contents()
+                                              ->GetController()
+                                              .GetEntryAtIndex(1)
+                                              ->root_node()
+                                              ->frame_entry->site_instance();
+  EXPECT_EQ(curr_entry_instance, orig_instance);
   // Keep the number of active frames in orig_rfh's SiteInstance
   // non-zero so that orig_rfh doesn't get deleted when it gets
   // swapped out.
@@ -798,8 +820,8 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredSitelessUrl) {
 
   // Restore a navigation entry for URL that should not assign site to the
   // SiteInstance.
-  browser_client.set_assign_site_for_url(false);
   const GURL native_url("non-site-url://stuffandthings");
+  browser_client.set_assign_site_for_url(false, native_url);
   std::vector<std::unique_ptr<NavigationEntry>> entries;
   std::unique_ptr<NavigationEntry> new_entry =
       NavigationController::CreateNavigationEntry(
@@ -822,8 +844,8 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredSitelessUrl) {
   EXPECT_FALSE(orig_instance->HasSite());
 
   // Navigate to a regular site and verify that the SiteInstance was kept.
-  browser_client.set_assign_site_for_url(true);
   const GURL url("http://www.google.com");
+  browser_client.set_assign_site_for_url(true, url);
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url);
   EXPECT_EQ(orig_instance, contents()->GetSiteInstance());
 
@@ -841,8 +863,8 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredRegularUrl) {
 
   // Restore a navigation entry for a regular URL ensuring that the embedder
   // ShouldAssignSiteForUrl override is disabled (i.e. returns true).
-  browser_client.set_assign_site_for_url(true);
   const GURL regular_url("http://www.yahoo.com");
+  browser_client.set_assign_site_for_url(true, regular_url);
   std::vector<std::unique_ptr<NavigationEntry>> entries;
   std::unique_ptr<NavigationEntry> new_entry =
       NavigationController::CreateNavigationEntry(
@@ -2770,8 +2792,9 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
 
   int modifiers = 0;
   // Verify that normal mouse wheel events do nothing to change the zoom level.
-  blink::WebMouseWheelEvent event =
-      SyntheticWebMouseWheelEventBuilder::Build(0, 0, 0, 1, modifiers, false);
+  blink::WebMouseWheelEvent event = SyntheticWebMouseWheelEventBuilder::Build(
+      0, 0, 0, 1, modifiers,
+      ui::input_types::ScrollGranularity::kScrollByPixel);
   EXPECT_FALSE(contents()->HandleWheelEvent(event));
   EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
 
@@ -2779,8 +2802,9 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
   // decreased. Except on MacOS where we never want to adjust zoom
   // with mousewheel.
   modifiers = WebInputEvent::kControlKey;
-  event =
-      SyntheticWebMouseWheelEventBuilder::Build(0, 0, 0, 1, modifiers, false);
+  event = SyntheticWebMouseWheelEventBuilder::Build(
+      0, 0, 0, 1, modifiers,
+      ui::input_types::ScrollGranularity::kScrollByPixel);
   bool handled = contents()->HandleWheelEvent(event);
 #if defined(USE_AURA)
   EXPECT_TRUE(handled);
@@ -2793,8 +2817,9 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
 
   modifiers = WebInputEvent::kControlKey | WebInputEvent::kShiftKey |
               WebInputEvent::kAltKey;
-  event =
-      SyntheticWebMouseWheelEventBuilder::Build(0, 0, 2, -5, modifiers, false);
+  event = SyntheticWebMouseWheelEventBuilder::Build(
+      0, 0, 2, -5, modifiers,
+      ui::input_types::ScrollGranularity::kScrollByPixel);
   handled = contents()->HandleWheelEvent(event);
 #if defined(USE_AURA)
   EXPECT_TRUE(handled);
@@ -2806,8 +2831,9 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
 #endif
 
   // Unless there is no vertical movement.
-  event =
-      SyntheticWebMouseWheelEventBuilder::Build(0, 0, 2, 0, modifiers, false);
+  event = SyntheticWebMouseWheelEventBuilder::Build(
+      0, 0, 2, 0, modifiers,
+      ui::input_types::ScrollGranularity::kScrollByPixel);
   EXPECT_FALSE(contents()->HandleWheelEvent(event));
   EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
 
@@ -2815,8 +2841,9 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
   // zoom being adjusted, to avoid accidental adjustments caused by
   // two-finger-scrolling on a touchpad.
   modifiers = WebInputEvent::kControlKey;
-  event =
-      SyntheticWebMouseWheelEventBuilder::Build(0, 0, 0, 5, modifiers, true);
+  event = SyntheticWebMouseWheelEventBuilder::Build(
+      0, 0, 0, 5, modifiers,
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
   EXPECT_FALSE(contents()->HandleWheelEvent(event));
   EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
 

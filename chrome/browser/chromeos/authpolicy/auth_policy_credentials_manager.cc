@@ -26,7 +26,6 @@
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
@@ -50,9 +49,6 @@ constexpr char kProfileSigninNotificationId[] = "chrome://settings/signin/";
 // |profile| is a non-owning pointer to |Profile|.
 // |account_id| is the |AccountId| for the Device Account.
 void SetupAccountManager(Profile* profile, const AccountId& account_id) {
-  if (!features::IsAccountManagerEnabled())
-    return;
-
   AccountManagerFactory* factory =
       g_browser_process->platform_part()->GetAccountManagerFactory();
   DCHECK(factory);

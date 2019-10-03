@@ -9,6 +9,7 @@
 #include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/proto/models.pb.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_switches.h"
@@ -125,7 +126,7 @@ bool PreviewsOptimizationGuideDecider::CanApplyPreview(
   optimization_guide::OptimizationGuideDecision decision =
       optimization_guide_decider_->CanApplyOptimization(
           navigation_handle,
-          optimization_guide::OptimizationTarget::kPainfulPageLoad,
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
           *optimization_type, &optimization_metadata);
 
   // Return false if we are even unsure if we can apply the optimization (i.e.
@@ -172,7 +173,7 @@ bool PreviewsOptimizationGuideDecider::MaybeLoadOptimizationHints(
 
     if (optimization_guide_decider_->CanApplyOptimization(
             navigation_handle,
-            optimization_guide::OptimizationTarget::kPainfulPageLoad,
+            optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
             optimization_type,
             /*optimization_metadata=*/nullptr) !=
         optimization_guide::OptimizationGuideDecision::kFalse) {

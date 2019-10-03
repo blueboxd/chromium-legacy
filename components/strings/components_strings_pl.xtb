@@ -45,6 +45,7 @@
 <translation id="1175875016430184367">Trzy zszywki po prawej</translation>
 <translation id="1178581264944972037">Wstrzymaj</translation>
 <translation id="1181037720776840403">Usuń</translation>
+<translation id="1186201132766001848">Sprawdź hasła</translation>
 <translation id="1197088940767939838">Pomarańczowy</translation>
 <translation id="1201402288615127009">Dalej</translation>
 <translation id="1201895884277373915">Więcej z tej witryny</translation>
@@ -110,6 +111,7 @@
 <translation id="1430915738399379752">Drukuj</translation>
 <translation id="1442386063175183758">Składanie od dołu do środka</translation>
 <translation id="1442987760062738829">Otwór</translation>
+<translation id="1450011005989029586">W wyniku naruszenia bezpieczeństwa danych w witrynie lub aplikacji doszło do ujawnienia Twojego hasła. Chrome zaleca: natychmiast <ph name="BOLD" /> na <ph name="ORIGIN" />.</translation>
 <translation id="1455413310270022028">Gumka</translation>
 <translation id="1463543813647160932">5 x 7</translation>
 <translation id="1472675084647422956">Pokaż więcej</translation>
@@ -153,7 +155,6 @@
 <translation id="1640244768702815859">Otwórz <ph name="BEGIN_LINK" />stronę główną witryny<ph name="END_LINK" />.</translation>
 <translation id="1644574205037202324">Historia</translation>
 <translation id="1645368109819982629">Nieobsługiwany protokół</translation>
-<translation id="1655462015569774233">{1,plural, =1{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł wczoraj. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, musisz skorygować zegar systemu, a następnie odświeżyć tę stronę.}few{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł # dni temu. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, musisz skorygować zegar systemu, a następnie odświeżyć tę stronę.}many{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł # dni temu. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, musisz skorygować zegar systemu, a następnie odświeżyć tę stronę.}other{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł # dnia temu. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, musisz skorygować zegar systemu, a następnie odświeżyć tę stronę.}}</translation>
 <translation id="1656489000284462475">Odbiór</translation>
 <translation id="1662550410081243962">Zapisuj i automatycznie uzupełniaj informacje o formach płatności</translation>
 <translation id="1663943134801823270">Karty i adresy pochodzą z Chrome. Możesz nimi zarządzać w <ph name="BEGIN_LINK" />Ustawieniach<ph name="END_LINK" />.</translation>
@@ -323,7 +324,6 @@
 <translation id="2501278716633472235">Wróć</translation>
 <translation id="2503184589641749290">Akceptowane karty debetowe i przedpłacone</translation>
 <translation id="2505268675989099013">Chroń konto</translation>
-<translation id="2515335152965840738">IGNORUJ</translation>
 <translation id="2515629240566999685">Sprawdź sygnał w swojej okolicy</translation>
 <translation id="2521385132275182522">Zszywka w prawym dolnym rogu</translation>
 <translation id="2523886232349826891">Zapisana tylko na tym urządzeniu</translation>
@@ -390,7 +390,6 @@
 <translation id="2799020568854403057">Strona, którą chcesz otworzyć, zawiera szkodliwe aplikacje</translation>
 <translation id="2799223571221894425">Uruchom ponownie</translation>
 <translation id="2803306138276472711">Bezpieczne przeglądanie Google <ph name="BEGIN_LINK" />wykryło ostatnio złośliwe oprogramowanie<ph name="END_LINK" /> na <ph name="SITE" />. Strony, które zazwyczaj są bezpieczne, zostają czasem zainfekowane destrukcyjnym oprogramowaniem.</translation>
-<translation id="2815364696811431560">OPUŚĆ STRONĘ</translation>
 <translation id="2824775600643448204">Pasek adresu i wyszukiwania</translation>
 <translation id="2826760142808435982">Połączenie jest szyfrowane i uwierzytelniane algorytmem <ph name="CIPHER" />, a mechanizm wymiany kluczy to <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Wyczyść formularz</translation>
@@ -464,6 +463,7 @@
 <translation id="320323717674993345">Anuluj płatność</translation>
 <translation id="3207960819495026254">Dodano do zakładek</translation>
 <translation id="3209034400446768650">Strona może powodować naliczanie opłat</translation>
+<translation id="3209080785413271048">Używaj Windows Hello, by weryfikować swoje zapisane formy płatności.</translation>
 <translation id="3215092763954878852">Nie udało się użyć WebAuthn</translation>
 <translation id="3225919329040284222">Serwer przedstawił certyfikat, który nie pasuje do zaprogramowanych oczekiwań. Oczekiwania mają chronić Cię w określonych witrynach o wysokim poziomie zabezpieczeń.</translation>
 <translation id="3226128629678568754">Naciśnij przycisk ponownego załadowania, by przesłać dane wymagane do wczytania strony.</translation>
@@ -474,6 +474,7 @@
 <translation id="3234666976984236645">Zawsze wykrywaj ważną treść na tej stronie</translation>
 <translation id="3270847123878663523">&amp;Cofnij zmianę kolejności</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
+<translation id="3281668902344226640">Użyj czytnika Touch ID, by zweryfikować zapisane formy płatności.</translation>
 <translation id="3282497668470633863">Dodaj imię i nazwisko na karcie</translation>
 <translation id="3287510313208355388">Pobierz, gdy będę online</translation>
 <translation id="3293642807462928945">Więcej informacji o zasadzie <ph name="POLICY_NAME" /></translation>
@@ -541,6 +542,7 @@
 <translation id="362276910939193118">Wyświetl całą historię</translation>
 <translation id="3630155396527302611">Jeśli ten program jest już na liście programów mogących korzystać z sieci,
     spróbuj go z niej usunąć i dodać ponownie.</translation>
+<translation id="3631244953324577188">Biometria</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Weryfikacja powiodła się</translation>
 <translation id="3655670868607891010">Jeśli często widzisz ten komunikat, przeczytaj <ph name="HELP_LINK" />.</translation>
@@ -621,6 +623,7 @@
 <translation id="4067947977115446013">Dodaj poprawny adres</translation>
 <translation id="4072486802667267160">Podczas przetwarzania zamówienia wystąpił błąd. Spróbuj ponownie.</translation>
 <translation id="4075732493274867456">Klient i serwer nie obsługują wspólnej wersji protokołu SSL lub mechanizmu szyfrowania.</translation>
+<translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">Proxy skonfigurowano do używania URL-a skryptu PAC, a nie ustalonych serwerów proxy.</translation>
 <translation id="4082393374666368382">Ustawienia – Zarządzanie</translation>
 <translation id="4098354747657067197">Wchodzisz na stronę wprowadzającą w błąd</translation>
@@ -677,6 +680,7 @@
 <translation id="4258748452823770588">Nieprawidłowy podpis</translation>
 <translation id="4261046003697461417">Nie można dodawać adnotacji do dokumentów chronionych</translation>
 <translation id="4265872034478892965">Dozwolone przez administratora</translation>
+<translation id="4270615291506829403">zmień hasło</translation>
 <translation id="4275830172053184480">Zrestartuj urządzenie</translation>
 <translation id="4277028893293644418">Resetuj hasło</translation>
 <translation id="4279811152705618813">Twoim urządzeniem (<ph name="DEVICE_TYPE" />) zarządza domena <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -703,6 +707,7 @@
 <translation id="4372948949327679948">Oczekiwano wartości typu <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Próbujesz wejść na <ph name="DOMAIN" />, ale serwer przedstawił certyfikat unieważniony przez wystawcę. Oznacza to, że dane uwierzytelniające podane przez serwer są zupełnie niewiarygodne. Możliwe, że komunikujesz się z intruzem.</translation>
 <translation id="4378154925671717803">Telefon</translation>
+<translation id="4398334096870680409">Ta funkcja jest niedostępna na Twoim urządzeniu.</translation>
 <translation id="4406896451731180161">wyniki wyszukiwania</translation>
 <translation id="4408413947728134509">Pliki cookie (<ph name="NUM_COOKIES" />)</translation>
 <translation id="4415426530740016218">Adres odbioru</translation>
@@ -752,7 +757,9 @@
 <translation id="4691835149146451662">Architecture-A (koperta)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Połączenie zostało przerwane</translation>
+<translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Uruchom Diagnostykę sieci systemu Windows<ph name="END_LINK" /></translation>
+<translation id="4725851834065990915">W wyniku naruszenia bezpieczeństwa danych w witrynie lub aplikacji doszło do ujawnienia Twojego hasła. Chrome zaleca niezwłoczne sprawdzenie zapisanych haseł.</translation>
 <translation id="4726672564094551039">Odśwież zasady</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4731967714531604179">Prc2 (koperta)</translation>
@@ -780,7 +787,6 @@
 <translation id="4816492930507672669">Dopasuj do strony</translation>
 <translation id="4850886885716139402">Widok</translation>
 <translation id="4854362297993841467">Ta metoda dostawy jest niedostępna. Wybierz inną.</translation>
-<translation id="4864052566555297930">Wskazówka na temat bezpieczeństwa:</translation>
 <translation id="4876188919622883022">Widok uproszczony</translation>
 <translation id="4876305945144899064">Brak nazwy użytkownika</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{Brak}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}few{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}many{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
@@ -1007,6 +1013,7 @@
 <translation id="5967592137238574583">Edytuj dane kontaktowe</translation>
 <translation id="5967867314010545767">Usuń z historii</translation>
 <translation id="5975083100439434680">Pomniejsz</translation>
+<translation id="5979084224081478209">Sprawdź hasła</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Nie można otworzyć aplikacji do płatności</translation>
 <translation id="5989320800837274978">Nie określono ani stałych serwerów proxy, ani adresu URL skryptu PAC.</translation>
@@ -1164,6 +1171,7 @@
 <translation id="679355240208270552">Ignorowana, ponieważ wyszukiwarka domyślna nie jest dozwolona przez zasadę.</translation>
 <translation id="681021252041861472">Pole wymagane</translation>
 <translation id="6810899417690483278">Identyfikator dostosowania</translation>
+<translation id="6819440013020405090">W wyniku naruszenia bezpieczeństwa danych w witrynie lub aplikacji doszło do ujawnienia Twojego hasła. Chrome zaleca sprawdzenie zapisanych haseł i zmianę hasła w witrynie <ph name="ORIGIN" />.</translation>
 <translation id="6825578344716086703">Próbujesz wejść na <ph name="DOMAIN" />, ale serwer przedstawił certyfikat podpisany słabym algorytmem (takim jak SHA-1). Oznacza to, że dane uwierzytelniające podane przez serwer mogły zostać sfałszowane, a serwer może nie być tym, którego oczekujesz (możliwe, że komunikujesz się z intruzem).</translation>
 <translation id="6826370046007623921">Zapobieganie utracie danych</translation>
 <translation id="6831043979455480757">Tłumacz</translation>
@@ -1206,6 +1214,7 @@
 <translation id="7064851114919012435">Dane kontaktowe</translation>
 <translation id="7075452647191940183">Żądanie jest za duże</translation>
 <translation id="7079718277001814089">Ta strona zawiera złośliwe oprogramowanie</translation>
+<translation id="70850504851191913">Zgłoszono naruszenie bezpieczeństwa danych</translation>
 <translation id="7087282848513945231">Hrabstwo</translation>
 <translation id="7090678807593890770">Wyszukaj w Google: <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Ukryj</translation>
@@ -1294,6 +1303,7 @@ Dodatkowe informacje:
 <translation id="7460618730930299168">Godziny seansów są inne niż wybrane przez Ciebie. Czy chcesz kontynuować?</translation>
 <translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="7481312909269577407">Dalej</translation>
+<translation id="748406663033922918">Użyj blokady ekranu, by zweryfikować zapisane formy płatności.</translation>
 <translation id="7485870689360869515">Nie znaleziono danych.</translation>
 <translation id="7498234416455752244">Edytuj dalej</translation>
 <translation id="7508255263130623398">Zwrócony identyfikator urządzenia dla zasad jest pusty lub nie pasuje do bieżącego identyfikatora urządzenia</translation>
@@ -1507,7 +1517,6 @@ Dodatkowe informacje:
 <translation id="8553075262323480129">Tłumaczenie nie powiodło się, ponieważ nie można określić języka strony.</translation>
 <translation id="8557066899867184262">Kod CVC znajduje się na odwrocie karty.</translation>
 <translation id="8559762987265718583">Nie można nawiązać prywatnego połączenia z <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, ponieważ data i godzina (<ph name="DATE_AND_TIME" />) ustawione na urządzeniu są nieprawidłowe.</translation>
-<translation id="8561575143530093465"><ph name="SAFETY_TIP" /> podejrzana strona</translation>
 <translation id="8564985650692024650">Chromium zaleca zresetowanie hasła, którego używasz w: <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, jeśli zostało użyte na innej stronie.</translation>
 <translation id="8571890674111243710">Trwa tłumaczenie strony na język: <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Dodaj numer telefonu</translation>
@@ -1567,6 +1576,7 @@ Dodatkowe informacje:
 <translation id="8943282376843390568">Limonkowy</translation>
 <translation id="8957210676456822347">Autoryzacja portalu przechwytującego</translation>
 <translation id="8962950042226115166">Podejrzana strona</translation>
+<translation id="8966619695390250636">Czy chodziło Ci o to?</translation>
 <translation id="8968766641738584599">Zapisz kartę</translation>
 <translation id="8971063699422889582">Ważność certyfikatu serwera wygasła.</translation>
 <translation id="8975012916872825179">Obejmuje numery telefonów, adresy e-mail i adresy dostawy</translation>

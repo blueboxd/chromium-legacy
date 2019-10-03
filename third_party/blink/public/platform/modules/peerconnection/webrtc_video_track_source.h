@@ -78,6 +78,7 @@ class BLINK_PLATFORM_EXPORT WebRtcVideoTrackSource
   gfx::Rect accumulated_update_rect_;
   base::Optional<int> previous_capture_counter_;
   gfx::Rect cropping_rect_of_previous_delivered_frame_;
+  gfx::Size natural_size_of_previous_delivered_frame_;
 
   absl::optional<FrameAdaptationParams>
       custom_frame_adaptation_params_for_testing_;

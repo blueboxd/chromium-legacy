@@ -431,11 +431,7 @@ void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
 
   cc::Layer* cc_layer =
       GraphicsLayerToCcLayer(scrollable_area->LayerForScrolling());
-  cc::Layer* container_layer =
-      GraphicsLayerToCcLayer(scrollable_area->LayerForContainer());
   if (cc_layer) {
-    cc_layer->SetScrollable(container_layer->bounds());
-
     // TODO(bokan): This method shouldn't be resizing the layer geometry. That
     // happens in CompositedLayerMapping::UpdateScrollingLayerGeometry.
     PhysicalOffset subpixel_accumulation =
@@ -451,13 +447,15 @@ void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
         PhysicalRect(subpixel_accumulation, contents_size).PixelSnappedSize();
 
     if (scrollable_area != &page_->GetVisualViewport()) {
+      IntSize container_size = scrollable_area->VisibleContentRect().Size();
+      cc_layer->SetScrollable(gfx::Size(container_size));
+
       // The scrolling contents layer must be at least as large as its clip.
       // The visual viewport is special because the size of its scrolling
       // content depends on the page scale factor. Its scrollable content is
       // the layout viewport which is sized based on the minimum allowed page
       // scale so it actually can be smaller than its clip.
-      scroll_contents_size =
-          scroll_contents_size.ExpandedTo(IntSize(container_layer->bounds()));
+      scroll_contents_size = scroll_contents_size.ExpandedTo(container_size);
 
       // VisualViewport scrolling may involve pinch zoom and gets routed through
       // WebViewImpl explicitly rather than via ScrollingCoordinator::DidScroll

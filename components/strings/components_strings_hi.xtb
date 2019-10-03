@@ -45,6 +45,7 @@
 <translation id="1175875016430184367">दाईं ओर ट्रिपल स्टेपल</translation>
 <translation id="1178581264944972037">रोकें</translation>
 <translation id="1181037720776840403">हटाएं</translation>
+<translation id="1186201132766001848">पासवर्ड जांचें</translation>
 <translation id="1197088940767939838">नारंगी</translation>
 <translation id="1201402288615127009">अगला</translation>
 <translation id="1201895884277373915">इस साइट की ओर से ज़्यादा</translation>
@@ -110,6 +111,7 @@
 <translation id="1430915738399379752">प्रिंट करें</translation>
 <translation id="1442386063175183758">दायां गेट फ़ोल्ड</translation>
 <translation id="1442987760062738829">पंच</translation>
+<translation id="1450011005989029586">आप जो साइट या ऐप्लिकेशन इस्तेमाल करते हैं उसमें डेटा का उल्लंघन होने पर आपका पासवर्ड उजागर हो सकता है. Chrome <ph name="ORIGIN" /> पर अभी <ph name="BOLD" /> का सुझाव देता है.</translation>
 <translation id="1455413310270022028">इरेज़र</translation>
 <translation id="1463543813647160932">5x7</translation>
 <translation id="1472675084647422956">और दिखाएं</translation>
@@ -153,7 +155,6 @@
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />साइट के मुखपृष्ठ पर विज़िट करके<ph name="END_LINK" /> देखें.</translation>
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="1645368109819982629">असमर्थित प्रोटोकॉल</translation>
-<translation id="1655462015569774233">{1,plural, =1{यह सर्वर प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसके सुरक्षा प्रमाणपत्र की समय सीमा कल खत्म हो गई थी. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन को बाधित करने के कारण हो सकता है. आपके कंप्यूटर की घड़ी वर्तमान में <ph name="CURRENT_DATE" /> पर सेट है. क्‍या यह सही है? अगर नहीं, तो आपको अपने सिस्टम की घड़ी सही करनी चाहिए और फिर इस पेज को रीफ्रेश करना चाहिए.}one{यह सर्वर प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसके सुरक्षा प्रमाणपत्र की समय सीमा # दिन पहले खत्म हो गई है. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन को बाधित करने के कारण हो सकता है. आपके कंप्यूटर की घड़ी वर्तमान में <ph name="CURRENT_DATE" /> पर सेट है. क्‍या यह सही है? अगर नहीं, तो आपको अपने सिस्टम की घड़ी सही करनी चाहिए और फिर इस पेज को रीफ्रेश करना चाहिए.}other{यह सर्वर प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसके सुरक्षा प्रमाणपत्र की समय सीमा # दिन पहले खत्म हो गई है. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन को बाधित करने के कारण हो सकता है. आपके कंप्यूटर की घड़ी वर्तमान में <ph name="CURRENT_DATE" /> पर सेट है. क्‍या यह सही है? अगर नहीं, तो आपको अपने सिस्टम की घड़ी सही करनी चाहिए और फिर इस पेज को रीफ्रेश करना चाहिए.}}</translation>
 <translation id="1656489000284462475">पिकअप</translation>
 <translation id="1662550410081243962">भुगतान के तरीके सेव करें और जानकारी भरें</translation>
 <translation id="1663943134801823270">कार्ड और पते Chrome से मिलते हैं. आप उन्हें <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में प्रबंधित कर सकते हैं.</translation>
@@ -323,7 +324,6 @@
 <translation id="2501278716633472235">वापस जाएं</translation>
 <translation id="2503184589641749290">स्वीकृत डेबिट और प्रीपेड कार्ड</translation>
 <translation id="2505268675989099013">खाते की सुरक्षा करें</translation>
-<translation id="2515335152965840738">अनदेखा करें</translation>
 <translation id="2515629240566999685">अपने इलाके में सिग्नल की जाँच करें</translation>
 <translation id="2521385132275182522">नीचे दाईं ओर स्टेपल</translation>
 <translation id="2523886232349826891">सिर्फ़ इस डिवाइस पर सेव किया गया</translation>
@@ -388,7 +388,6 @@
 <translation id="2799020568854403057">आगे आने वाली साइट में नुकसान पहुंचाने वाले ऐप्लिकेशन हैं</translation>
 <translation id="2799223571221894425">फिर से लॉन्‍च करें</translation>
 <translation id="2803306138276472711">Google सुरक्षित ब्राउज़िंग को <ph name="SITE" /> पर हाल ही में <ph name="BEGIN_LINK" />मैलवेयर का पता चला<ph name="END_LINK" /> है. आमतौर पर सुरक्षित रहने वाली वेबसाइटें कभी-कभी मैलवेयर से संक्रमित हो जाती हैं.</translation>
-<translation id="2815364696811431560">साइट छोड़ें</translation>
 <translation id="2824775600643448204">पता और सर्च बार</translation>
 <translation id="2826760142808435982">कनेक्शन को <ph name="CIPHER" /> का उपयोग करके सुरक्षित किया गया है और उसकी पहचान की गई है और यह मुख्य विनिमय तकनीक के रूप में <ph name="KX" /> का उपयोग करता है.</translation>
 <translation id="2835170189407361413">फ़ॉर्म साफ़ करें</translation>
@@ -674,6 +673,7 @@
 <translation id="4258748452823770588">खराब हस्ताक्षर</translation>
 <translation id="4261046003697461417">सुरक्षित दस्तावेज़ों को एनोटेट नहीं किया जा सकता</translation>
 <translation id="4265872034478892965">आपके व्यवस्थापक ने अनुमति दी है</translation>
+<translation id="4270615291506829403">पासवर्ड बदलने का सुझाव</translation>
 <translation id="4275830172053184480">अपना डिवाइस फिर से प्रारंभ करें</translation>
 <translation id="4277028893293644418">पासवर्ड रीसेट करें</translation>
 <translation id="4279811152705618813">आपके <ph name="DEVICE_TYPE" /> का प्रबंधन <ph name="ENROLLMENT_DOMAIN" /> करता है</translation>
@@ -750,6 +750,7 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">आपका कनेक्शन बाधित था</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows नेटवर्क निदान चलाकर देखें<ph name="END_LINK" /></translation>
+<translation id="4725851834065990915">आप जो साइट या ऐप्लिकेशन इस्तेमाल करते हैं उसमें डेटा का उल्लंघन होने पर आपका पासवर्ड उजागर हो सकता है. Chrome सुझाव देता है कि आप अपने सेव किए हुए पासवर्ड की अभी जांच करें.</translation>
 <translation id="4726672564094551039">नीतियां फिर से लोड करें</translation>
 <translation id="4728558894243024398">प्लेटफ़ॉर्म</translation>
 <translation id="4731967714531604179">पीआरसी2 (एन्वेलप)</translation>
@@ -777,7 +778,6 @@
 <translation id="4816492930507672669">पेज में फ़िट करें</translation>
 <translation id="4850886885716139402">देखें</translation>
 <translation id="4854362297993841467">वितरण का यह तरीका उपलब्ध नहीं है. कोई दूसरा तरीका आज़माएं.</translation>
-<translation id="4864052566555297930">सुरक्षा सुझाव:</translation>
 <translation id="4876188919622883022">सरल बनाया गया व्यू</translation>
 <translation id="4876305945144899064">कोई उपयोगकर्ता नाम नहीं</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{कोई नहीं}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
@@ -1003,6 +1003,7 @@
 <translation id="5967592137238574583">संपर्क जानकारी में बदलाव करें</translation>
 <translation id="5967867314010545767">इतिहास से निकालें</translation>
 <translation id="5975083100439434680">ज़ूम आउट</translation>
+<translation id="5979084224081478209">पासवर्ड जांचें</translation>
 <translation id="5980920751713728343">इंडेक्स-3x5</translation>
 <translation id="598637245381783098">भुगतान ऐप्लिकेशन नहीं खुल सका</translation>
 <translation id="5989320800837274978">न तो कोई फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर और न ही कोई .pac स्क्रिप्ट URL साफ़ तौर पर बताया गया है.</translation>
@@ -1160,6 +1161,7 @@
 <translation id="679355240208270552">अनदेखा किया गया क्योंकि नीति ने डिफ़ॉल्ट सर्च चालू नहीं किया है.</translation>
 <translation id="681021252041861472">ज़रूरी फ़ील्ड</translation>
 <translation id="6810899417690483278">कस्टमाइज़ेशन आईडी</translation>
+<translation id="6819440013020405090">आप जो साइट या ऐप्लिकेशन इस्तेमाल करते हैं उसमें डेटा का उल्लंघन होने पर आपका पासवर्ड उजागर हो सकता है. Chrome सुझाव देता है कि आप अपने सेव किए हुए पासवर्ड की जांच करते रहें और उसे <ph name="ORIGIN" /> पर बदलते रहें.</translation>
 <translation id="6825578344716086703">आपने <ph name="DOMAIN" /> तक पहुंचने की कोशिश की थी, लेकिन सर्वर ने कमज़ोर हस्ताक्षर एल्गोरिद्म (जैसे कि SHA-1) वाला प्रमाणपत्र प्रस्तुत किया. इसका मतलब है कि सर्वर की ओर से प्रस्तुत किए गए सुरक्षा क्रेडेंशियल नकली हो सकते हैं और हो सकता है कि सर्वर आपका अपेक्षित सर्वर न हो (हो सकता है कि आप किसी हमलावर से बातचीत कर रहे हों).</translation>
 <translation id="6826370046007623921">डेटा लीक होने की रोकथाम</translation>
 <translation id="6831043979455480757">अनुवाद करें</translation>
@@ -1202,6 +1204,7 @@
 <translation id="7064851114919012435">संपर्क जानकारी</translation>
 <translation id="7075452647191940183">अनुरोध में बहुत ज़्यादा डेटा भेजा गया है</translation>
 <translation id="7079718277001814089">इस साइट में मैलवेयर है</translation>
+<translation id="70850504851191913">डेटा के उल्लंघन की शिकायत की गई है</translation>
 <translation id="7087282848513945231">काउंटी</translation>
 <translation id="7090678807593890770"><ph name="LINK" /> के लिए Google में खोज करें</translation>
 <translation id="7108338896283013870">छुपाएं</translation>
@@ -1503,7 +1506,6 @@
 <translation id="8553075262323480129">अनुवाद विफल हो गया क्योंकि पेज की भाषा तय नहीं की जा सकी.</translation>
 <translation id="8557066899867184262">कार्ड वेरीफ़िकेशन कोड (सीवीसी) आपके कार्ड के पीछे मौजूद होता है.</translation>
 <translation id="8559762987265718583"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> से एक निजी कनेक्‍शन स्‍थापित नहीं किया जा सकता क्‍योंकि आपके डिवाइस का तारीख और समय (<ph name="DATE_AND_TIME" />) गलत है.</translation>
-<translation id="8561575143530093465"><ph name="SAFETY_TIP" /> संदिग्ध साइट</translation>
 <translation id="8564985650692024650">अगर आपने अपने <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> पासवर्ड का दूसरी साइटों पर दोबारा इस्तेमाल किया है, तो क्रोमियम आपको उसे रीसेट करने का सुझाव देता है.</translation>
 <translation id="8571890674111243710">पेज का अनुवाद <ph name="LANGUAGE" /> में कर रहा है...</translation>
 <translation id="858637041960032120">फ़ोन नंबर जोड़ें
@@ -1564,6 +1566,7 @@
 <translation id="8943282376843390568">नींबू पीला</translation>
 <translation id="8957210676456822347">कैप्‍टिव पोर्टल की अनुमति देना</translation>
 <translation id="8962950042226115166">संदिग्ध साइट</translation>
+<translation id="8966619695390250636">क्या आपका मतलब यह था?</translation>
 <translation id="8968766641738584599">कार्ड सेव करें</translation>
 <translation id="8971063699422889582">सर्वर के प्रमाणपत्र की समय-सीमा खत्म हो चुकी है.</translation>
 <translation id="8975012916872825179">इसमें फ़ोन नंबर, ईमेल पते और शिपिंग पते जैसी जानकारी शामिल होती है</translation>

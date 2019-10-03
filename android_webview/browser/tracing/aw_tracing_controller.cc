@@ -33,21 +33,17 @@ class AwTraceDataEndpoint
  public:
   using ReceivedChunkCallback =
       base::RepeatingCallback<void(std::unique_ptr<std::string>)>;
-  using CompletedCallback =
-      base::OnceCallback<void(std::unique_ptr<const base::DictionaryValue>)>;
 
   static scoped_refptr<content::TracingController::TraceDataEndpoint> Create(
       ReceivedChunkCallback received_chunk_callback,
-      CompletedCallback completed_callback) {
+      base::OnceClosure completed_callback) {
     return new AwTraceDataEndpoint(std::move(received_chunk_callback),
                                    std::move(completed_callback));
   }
 
-  void ReceiveTraceFinalContents(
-      std::unique_ptr<const base::DictionaryValue> metadata) override {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(std::move(completed_callback_), std::move(metadata)));
+  void ReceivedTraceFinalContents() override {
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(std::move(completed_callback_)));
   }
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
@@ -56,7 +52,7 @@ class AwTraceDataEndpoint
   }
 
   explicit AwTraceDataEndpoint(ReceivedChunkCallback received_chunk_callback,
-                               CompletedCallback completed_callback)
+                               base::OnceClosure completed_callback)
       : received_chunk_callback_(std::move(received_chunk_callback)),
         completed_callback_(std::move(completed_callback)) {}
 
@@ -64,7 +60,7 @@ class AwTraceDataEndpoint
   ~AwTraceDataEndpoint() override {}
 
   ReceivedChunkCallback received_chunk_callback_;
-  CompletedCallback completed_callback_;
+  base::OnceClosure completed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AwTraceDataEndpoint);
 };
@@ -108,8 +104,7 @@ bool AwTracingController::StopAndFlush(JNIEnv* env,
                          weak_factory_.GetWeakPtr())));
 }
 
-void AwTracingController::OnTraceDataComplete(
-    std::unique_ptr<const base::DictionaryValue> metadata) {
+void AwTracingController::OnTraceDataComplete() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> obj = weak_java_object_.get(env);
   if (obj.obj()) {

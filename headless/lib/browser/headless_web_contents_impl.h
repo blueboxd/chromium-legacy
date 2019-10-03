@@ -121,11 +121,9 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
 
   using FrameFinishedCallback =
       base::OnceCallback<void(bool /* has_damage */,
-                              std::unique_ptr<SkBitmap>)>;
-  // If the frame was started, the function returns true and will
-  // invoke callback eventually. If an immediate error occurs, the
-  // function return false and will not invoke the callback.
-  bool BeginFrame(const base::TimeTicks& frame_timeticks,
+                              std::unique_ptr<SkBitmap>,
+                              std::string /* error_message*/)>;
+  void BeginFrame(const base::TimeTicks& frame_timeticks,
                   const base::TimeTicks& deadline,
                   const base::TimeDelta& interval,
                   bool animate_only,

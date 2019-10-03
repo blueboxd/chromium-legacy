@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "chrome/browser/android/vr/gl_browser_interface.h"
 #include "chrome/browser/android/vr/gvr_util.h"

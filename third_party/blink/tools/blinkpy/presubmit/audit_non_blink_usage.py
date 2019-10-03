@@ -267,6 +267,7 @@ _CONFIG = [
             'cc::HORIZONTAL',
             'cc::VERTICAL',
             'cc::THUMB',
+            'cc::TRACK',
             'cc::TICKMARKS',
             'cc::BrowserControlsState',
             'cc::EventListenerClass',

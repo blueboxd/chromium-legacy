@@ -62,6 +62,9 @@ class ASH_PUBLIC_EXPORT PaginationController {
   bool UpdateDrag(float scroll, const gfx::Rect& bounds);
   bool EndDrag(const ui::LocatedEvent& event);
 
+  // Helper function to change the page and callback record_metrics_.
+  void SelectPageAndRecordMetric(int delta, ui::EventType type);
+
   PaginationModel* pagination_model_;  // Not owned.
   ScrollAxis scroll_axis_;
 

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "base/trace_event/common/trace_event_common.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/vr/browser_renderer_browser_interface.h"
 #include "chrome/browser/vr/input_delegate_for_testing.h"
 #include "chrome/browser/vr/input_event.h"

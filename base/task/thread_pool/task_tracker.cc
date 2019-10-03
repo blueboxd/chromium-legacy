@@ -20,6 +20,7 @@
 #include "base/sequence_token.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/task/scoped_set_task_priority_for_current_thread.h"
+#include "base/task/task_executor.h"
 #include "base/threading/sequence_local_storage_map.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
@@ -27,6 +28,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace internal {
@@ -110,6 +112,61 @@ bool HasLogBestEffortTasksSwitch() {
          CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kLogBestEffortTasks);
 }
+
+// Needed for PostTaskHere and CurrentThread. This executor lives for the
+// duration of a threadpool task invocation.
+class EphemeralTaskExecutor : public TaskExecutor {
+ public:
+  // |sequenced_task_runner| and |single_thread_task_runner| must outlive this
+  // EphemeralTaskExecutor.
+  EphemeralTaskExecutor(SequencedTaskRunner* sequenced_task_runner,
+                        SingleThreadTaskRunner* single_thread_task_runner)
+      : sequenced_task_runner_(sequenced_task_runner),
+        single_thread_task_runner_(single_thread_task_runner) {
+    SetTaskExecutorForCurrentThread(this);
+  }
+
+  ~EphemeralTaskExecutor() override {
+    SetTaskExecutorForCurrentThread(nullptr);
+  }
+
+  // TaskExecutor:
+  bool PostDelayedTask(const Location& from_here,
+                       const TaskTraits& traits,
+                       OnceClosure task,
+                       TimeDelta delay) override {
+    return sequenced_task_runner_->PostDelayedTask(from_here, std::move(task),
+                                                   delay);
+  }
+
+  scoped_refptr<TaskRunner> CreateTaskRunner(
+      const TaskTraits& traits) override {
+    return sequenced_task_runner_;
+  }
+
+  scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunner(
+      const TaskTraits& traits) override {
+    return sequenced_task_runner_;
+  }
+
+  scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunner(
+      const TaskTraits& traits,
+      SingleThreadTaskRunnerThreadMode thread_mode) override {
+    return single_thread_task_runner_;
+  }
+
+#if defined(OS_WIN)
+  scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunner(
+      const TaskTraits& traits,
+      SingleThreadTaskRunnerThreadMode thread_mode) override {
+    return single_thread_task_runner_;
+  }
+#endif  // defined(OS_WIN)
+
+ private:
+  SequencedTaskRunner* sequenced_task_runner_;
+  SingleThreadTaskRunner* single_thread_task_runner_;
+};
 
 }  // namespace
 
@@ -479,6 +536,7 @@ void TaskTracker::RunTask(Task task,
     // Set up TaskRunnerHandle as expected for the scope of the task.
     Optional<SequencedTaskRunnerHandle> sequenced_task_runner_handle;
     Optional<ThreadTaskRunnerHandle> single_thread_task_runner_handle;
+    Optional<EphemeralTaskExecutor> ephemiral_task_executor;
     switch (task_source->execution_mode()) {
       case TaskSourceExecutionMode::kJob:
       case TaskSourceExecutionMode::kParallel:
@@ -487,10 +545,16 @@ void TaskTracker::RunTask(Task task,
         DCHECK(task_source->task_runner());
         sequenced_task_runner_handle.emplace(
             static_cast<SequencedTaskRunner*>(task_source->task_runner()));
+        ephemiral_task_executor.emplace(
+            static_cast<SequencedTaskRunner*>(task_source->task_runner()),
+            nullptr);
         break;
       case TaskSourceExecutionMode::kSingleThread:
         DCHECK(task_source->task_runner());
         single_thread_task_runner_handle.emplace(
+            static_cast<SingleThreadTaskRunner*>(task_source->task_runner()));
+        ephemiral_task_executor.emplace(
+            static_cast<SequencedTaskRunner*>(task_source->task_runner()),
             static_cast<SingleThreadTaskRunner*>(task_source->task_runner()));
         break;
     }

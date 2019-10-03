@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">ذخیره تصویر ممکن نشد</translation>
 <translation id="1180526666083833456">همگام‌سازی و شخصی‌سازی در همه دستگاه‌ها.</translation>
 <translation id="1181037720776840403">حذف</translation>
+<translation id="1207113853726624428">جستجوی جدید</translation>
 <translation id="1209206284964581585">فعلاً پنهان شود</translation>
 <translation id="1219674500290482172">اتصال به اینترنت امکان‌پذیر نیست.</translation>
 <translation id="122699739164161391">بستن همه برگه‌ها</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">پیشنهاد گذرواژه…</translation>
 <translation id="1870148520156231997">نشان دادن گذرواژه</translation>
 <translation id="1872096359983322073">چراغ‌قوه</translation>
-<translation id="1876721852596493031">ارسال داده استفاده</translation>
 <translation id="1911619930368729126">‏بارگذاری در Google Drive</translation>
 <translation id="1923342640370224680">ساعت گذشته</translation>
 <translation id="1941314575388338491">برای کپی کردن دو ضربه سریع بزنید.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> مقاله خوانده‌نشده در فهرست مطالعه.</translation>
 <translation id="2230173723195178503">صفحه وب بار شد</translation>
 <translation id="2239626343334228536">درحال پاک کردن داده‌های محصول مرور…</translation>
-<translation id="2256128224215992540">پیشنهادات جستجو و سایت</translation>
 <translation id="2267753748892043616">افزودن حساب</translation>
 <translation id="2268044343513325586">فیلتر</translation>
 <translation id="2273327106802955778">منوی بیشتر</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">فایل باز نشد</translation>
 <translation id="2718352093833049315">‏فقط در Wi-Fi</translation>
 <translation id="2747003861858887689">فیلد قبلی</translation>
+<translation id="2773292004659987824">جستجوی ناشناس</translation>
 <translation id="2780046210906776326">حساب ایمیلی وجود ندارد</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">از تعویض‌کننده برگه خارج شوید</translation>
@@ -165,7 +165,7 @@
 <translation id="3252394070589632019"><ph name="VALUE" />، ‏<ph name="ADDITIONAL_INFO" />، ‏<ph name="INDEX" /> از <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">برگه‌های باز</translation>
 <translation id="3277021493514034324">نشانی سایت کپی شد</translation>
-<translation id="3290875554372353449">یک حساب انتخاب کنید</translation>
+<translation id="3290875554372353449">حسابی را انتخاب کنید</translation>
 <translation id="3324193307694657476">آدرس ۲</translation>
 <translation id="3329904751041170572">اتصال به سرور امکان‌پذیر نیست.</translation>
 <translation id="3335947283844343239">باز کردن مجدد برگه بسته شده</translation>
@@ -295,7 +295,6 @@
 <translation id="5197255632782567636">اینترنت</translation>
 <translation id="5228579091201413441">فعال کردن همگام‌سازی</translation>
 <translation id="5234764350956374838">لغو کردن</translation>
-<translation id="5244474230056479698">درحال همگام‌سازی در <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">لغو همگام‌سازی</translation>
 <translation id="5271549068863921519">ذخیره گذرواژه</translation>
 <translation id="5300589172476337783">نمایش</translation>
@@ -501,6 +500,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8281781826761538115">پیش‌فرض - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">جستجوی جدید</translation>
+<translation id="8323906514956095947">برای دیدن گزینه‌های بیشتر برگه، لمس کنید و نگه دارید</translation>
 <translation id="8328777765163860529">بستن همه</translation>
 <translation id="8407669440184693619">هیچ گذرواژه‌ای برای این سایت پیدا نشد</translation>
 <translation id="842017693807136194">ورود به سیستم با</translation>

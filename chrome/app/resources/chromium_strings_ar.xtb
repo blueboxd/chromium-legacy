@@ -72,7 +72,6 @@
 <translation id="3509308970982693815">‏يُرجى إغلاق جميع نوافذ Chromium وإعادة المحاولة.</translation>
 <translation id="352783484088404971">‏إزالة من Chromium</translation>
 <translation id="3575459661164320785">‏هناك برنامج ضار على جهاز الكمبيوتر. ويمكن لمتصفِّح Chrome إزالته واستعادة إعداداتك وإيقاف الإضافات لكي يعمل متصفِّحك بشكلٍ طبيعي من جديد.</translation>
-<translation id="3582788516608077514">‏جارٍ تحديث Chromium...</translation>
 <translation id="358997566136285270">‏شعار Chromium</translation>
 <translation id="3639635944603682591">‏ستُحذَف بيانات تصفُّح هذا المستخدم من هذا الجهاز. ولاسترداد البيانات، سجّل الدخول إلى Chromium بصفتك <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">‏فتح الرابط في علامة تبويب جديدة في Chromium</translation>
@@ -86,7 +85,6 @@
 <translation id="421369550622382712">‏اكتشف تطبيقات، وألعاب، وإضافات، ومظاهر رائعة لمتصفح Chromium.</translation>
 <translation id="4216212958613226427">‏يتم استخدام هذه اللغة لعرض واجهة مستخدم Chromium</translation>
 <translation id="4222580632002216401">‏لقد سجلت الدخول الآن إلى Chromium! أوقف المشرف المزامنة.</translation>
-<translation id="4224199872375172890">‏Chromium محدّث.</translation>
 <translation id="4230135487732243613">‏هل ترغب في ربط بياناتك في Chromium بهذا الحساب؟</translation>
 <translation id="4271805377592243930">‏الحصول على مساعدة في Chromium</translation>
 <translation id="4285930937574705105">‏تعذّر إتمام عملية التثبيت بسبب خطأ غير محدد. إذا كان Chromium في حالة التشغيل حاليًا، فالرجاء إغلاقه وإعادة المحاولة.</translation>
@@ -98,6 +96,7 @@
 <translation id="4567424176335768812">لقد سجلت دخولك باعتبارك <ph name="USER_EMAIL_ADDRESS" />. ويُمكنك الآن الاستمتاع بالدخول إلى الإشارات المرجعية، والسجلّ، والإعدادات الأخرى على جميع الأجهزة التي تسجّل الدخول إليها.</translation>
 <translation id="459535195905078186">‏تطبيقات Chromium</translation>
 <translation id="4621240073146040695">‏أوشك التحديث على الانتهاء! إعادة تشغيل Chromium لإنهاء التحديث.</translation>
+<translation id="4661006601577405669">‏سيتم تثبيت الإصدارات المستقبلية من Chromium تلقائيًا.</translation>
 <translation id="4677944499843243528">‏يبدو أن الملف الشخصي قيد الاستخدام بواسطة عملية أخرى في Chromium (<ph name="PROCESS_ID" />) على جهاز كمبيوتر آخر (<ph name="HOST_NAME" />). وقد تمّ قفل الملف الشخصي من جانب Chromium لضمان عدم تعرضه للتلف. فإذا كنت واثقًا من عدم وجود عمليات أخرى قيد التشغيل على جهاز الكمبيوتر، فيُمكنك إلغاء قفل الملف الشخصي وإعادة تشغيل Chromium مجددًا.</translation>
 <translation id="469338717132742108">‏الحصول على مساعدة في نظام التشغيل Chromium</translation>
 <translation id="4708774505295300557">‏سجّل شخص ما الدخول من قبل إلى Chromium على جهاز الكمبيوتر هذا باسم <ph name="ACCOUNT_EMAIL_LAST" />. يُرجى إنشاء حساب مستخدم جديد في Chromium للإبقاء على معلوماتك بشكلٍ منفصل.</translation>
@@ -128,9 +127,7 @@
 <translation id="5698481217667032250">‏عرض Chromium بهذه اللغة</translation>
 <translation id="5820394555380036790">‏نظام التشغيل Chromium</translation>
 <translation id="5862307444128926510">‏مرحبًا بك في Chromium</translation>
-<translation id="5877064549588274448">تم تغيير القناة. يمكنك إعادة تشغيل الجهاز لتدخل التغييرات حيز التنفيذ.</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
-<translation id="5906655207909574370">أوشك التحديث على الانتهاء! أعِد تشغيل الجهاز لإنهاء التحديث.</translation>
 <translation id="5987687638152509985">‏تحديث Chromium لبدء المزامنة</translation>
 <translation id="6013050204643758987">‏أصبح نظام التشغيل Chromium متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS" />برنامج مفتوح المصدر<ph name="END_LINK_CROS_OSS" />إضافي، كما في نظام التشغيل <ph name="BEGIN_LINK_LINUX_OSS" />Linux (الإصدار التجريبي)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="6040143037577758943">إغلاق</translation>
@@ -172,7 +169,6 @@
 <translation id="6868056391275687737">‏هناك نُسخ أخرى من Chromium قيد التشغيل. يُرجى إغلاقها لإجراء التحديث.</translation>
 <translation id="6893813176749746474">‏تم تحديث متصفح Chromium، ولكنك لم تستخدمه منذ أكثر من 30 يومًا.</translation>
 <translation id="6964305034639999644">‏فتح الرابط في نافذة تصفح متخفٍ في Chromium</translation>
-<translation id="6970811910055250180">جارٍ تحديث الجهاز...</translation>
 <translation id="6990124437352146030">‏يحتاج Chromium إلى إذن للوصول إلى الميكروفون من أجل موقع الويب هذا.</translation>
 <translation id="705851970750939768">‏تحديث Chromium</translation>
 <translation id="7066436765290594559">‏تعذر على نظام التشغيل Chromium مزامنة البيانات. يُرجى تحديث عبارة مرور المزامنة.</translation>
@@ -194,6 +190,7 @@
 <translation id="7449453770951226939">‏<ph name="PAGE_TITLE" /> - إصدار قناة مطوري البرامج من Chromium</translation>
 <translation id="7451052299415159299">‏يحتاج Chromium إلى إذن للوصول إلى الكاميرا من أجل موقع الويب هذا.</translation>
 <translation id="7483335560992089831">‏لا يمكن تثبيت إصدار Chromium ذاته الذي يتم تشغيله حاليًا. يُرجى إغلاق Chromium وإعادة المحاولة.</translation>
+<translation id="751093125041325477">‏سيتم تثبيت الإصدارات المستقبلية من Chromium تلقائيًا. عند اكتمال عملية التنزيل هذه، ستتم إعادة تشغيل Chromium وسيكون جاهزًا للاستخدام على الفور.</translation>
 <translation id="753534427205733210">{0,plural, =1{‏ستتم إعادة تشغيل Chromium في غضون دقيقة واحدة}zero{‏ستتم إعادة تشغيل Chromium في غضون # دقيقة}two{‏ستتم إعادة تشغيل Chromium في غضون دقيقتين}few{‏ستتم إعادة تشغيل Chromium في غضون # دقائق}many{‏ستتم إعادة تشغيل Chromium في غضون # دقيقةً}other{‏ستتم إعادة تشغيل Chromium في غضون # دقيقة}}</translation>
 <translation id="7549178288319965365">‏حول نظام التشغيل Chromium</translation>
 <translation id="7561906087460245826">‏محو البيانات من Chromium أيضًا (<ph name="URL" />)</translation>
@@ -215,7 +212,6 @@
 <translation id="7975919845073681630">‏هذا تثبيت ثانوي من Chromium، ولا يمكن جعله متصفحك التلقائي.</translation>
 <translation id="7979877361127045932">‏الإخفاء في قائمة Chromium</translation>
 <translation id="8013436988911883588">‏بعد حصول Chromium على إمكانية الوصول، ستتمكن المواقع الإلكترونية من مطالبتك بإمكانية الوصول.</translation>
-<translation id="8030318113982266900">جارٍ تحديث جهازك إلى قناة <ph name="CHANNEL_NAME" />...</translation>
 <translation id="81770708095080097">‏هذا الملف ضار، لذلك فقد حظره Chromium.</translation>
 <translation id="8222496066431494154">‏بادِر بتثبيت Chromium على هاتفك. سنرسل رسالة قصيرة SMS إلى رقم هاتف استرداد حسابك: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8248265253516264921">‏في حال لم تتضمن صورة ما وصفًا مفيدًا، سيحاول Chromium توفير وصف لك. لإنشاء الأوصاف، سيتم إرسال الصور إلى Google. ويمكنك إيقاف هذه الميزة في الإعدادات في أي وقت.</translation>
@@ -230,7 +226,6 @@
 <translation id="8586442755830160949">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح The Chromium Authors. جميع الحقوق محفوظة.</translation>
 <translation id="8619360774459241877">‏جارٍ إطلاق Chromium...</translation>
 <translation id="8621669128220841554">‏تعذّر التثبيت نظرًا لحدوث خطأ غير محدد. يُرجى إعادة تنزيل Chromium.</translation>
-<translation id="8667808506758191620">جهاز <ph name="DEVICE_TYPE" /> مُحدّث.</translation>
 <translation id="8682540261359803721">‏في حال عدم عرض إعداد على هذه الصفحة، اذهب إلى <ph name="LINK_BEGIN" />
     إعدادات متصفِّح Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chromium أو إجراء بحث من المربع متعدد الاستخدامات.</translation>

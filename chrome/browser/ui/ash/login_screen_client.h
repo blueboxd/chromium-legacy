@@ -12,6 +12,10 @@
 #include "base/time/time.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
+namespace base {
+class ListValue;
+}
+
 namespace chromeos {
 class LoginAuthRecorder;
 }

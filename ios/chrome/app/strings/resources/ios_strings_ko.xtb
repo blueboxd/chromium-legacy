@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">이미지를 저장할 수 없음</translation>
 <translation id="1180526666083833456">모든 기기를 동기화 및 맞춤설정하세요.</translation>
 <translation id="1181037720776840403">삭제</translation>
+<translation id="1207113853726624428">새 검색</translation>
 <translation id="1209206284964581585">지금 숨기기</translation>
 <translation id="1219674500290482172">인터넷에 연결할 수 없습니다.</translation>
 <translation id="122699739164161391">탭 모두 닫기</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">비밀번호 추천...</translation>
 <translation id="1870148520156231997">비밀번호 표시</translation>
 <translation id="1872096359983322073">토치</translation>
-<translation id="1876721852596493031">사용 데이터 보내기</translation>
 <translation id="1911619930368729126">Google 드라이브로 업로드</translation>
 <translation id="1923342640370224680">지난 1시간</translation>
 <translation id="1941314575388338491">복사하려면 두 번 탭하세요.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892">읽기 목록에 읽지 않은 기사가 <ph name="UNREAD_COUNT" />개 있습니다.</translation>
 <translation id="2230173723195178503">웹페이지 로드됨</translation>
 <translation id="2239626343334228536">인터넷 사용 기록 삭제 중...</translation>
-<translation id="2256128224215992540">검색 및 사이트 제안</translation>
 <translation id="2267753748892043616">계정 추가</translation>
 <translation id="2268044343513325586">상세검색</translation>
 <translation id="2273327106802955778">더보기 메뉴</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">파일을 열 수 없음</translation>
 <translation id="2718352093833049315">Wi-Fi 연결 시</translation>
 <translation id="2747003861858887689">이전 필드</translation>
+<translation id="2773292004659987824">시크릿 검색</translation>
 <translation id="2780046210906776326">이메일 계정이 없음</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">탭 전환 종료</translation>
@@ -295,7 +295,6 @@
 <translation id="5197255632782567636">인터넷</translation>
 <translation id="5228579091201413441">동기화 사용</translation>
 <translation id="5234764350956374838">숨기기</translation>
-<translation id="5244474230056479698"><ph name="EMAIL" />에 동기화</translation>
 <translation id="5245322853195994030">동기화 취소</translation>
 <translation id="5271549068863921519">비밀번호 저장</translation>
 <translation id="5300589172476337783">표시</translation>
@@ -501,6 +500,7 @@
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8281781826761538115">기본값 - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">새 검색</translation>
+<translation id="8323906514956095947">더 많은 탭 옵션을 보려면 길게 터치하세요.</translation>
 <translation id="8328777765163860529">모두 닫기</translation>
 <translation id="8407669440184693619">이 사이트의 비밀번호를 찾을 수 없음</translation>
 <translation id="842017693807136194">다음을 사용하여 로그인함</translation>

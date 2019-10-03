@@ -232,4 +232,16 @@ void WebThemeEngineDefault::cacheScrollBarMetrics(
 }
 #endif
 
+blink::ForcedColors WebThemeEngineDefault::ForcedColors() const {
+  return ui::NativeTheme::GetInstanceForWeb()->UsesHighContrastColors()
+             ? blink::ForcedColors::kActive
+             : blink::ForcedColors::kNone;
+}
+
+void WebThemeEngineDefault::SetForcedColors(
+    const blink::ForcedColors forced_colors) {
+  ui::NativeTheme::GetInstanceForWeb()->set_high_contrast(
+      forced_colors == blink::ForcedColors::kActive);
+}
+
 }  // namespace content

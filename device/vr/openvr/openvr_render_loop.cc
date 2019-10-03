@@ -4,6 +4,7 @@
 
 #include "device/vr/openvr/openvr_render_loop.h"
 
+#include "base/trace_event/trace_event.h"
 #include "device/vr/openvr/openvr_api_wrapper.h"
 #include "device/vr/openvr/openvr_gamepad_helper.h"
 #include "device/vr/openvr/openvr_type_converters.h"

@@ -133,10 +133,6 @@ ProgrammaticScrollAnimator& ScrollableArea::GetProgrammaticScrollAnimator()
   return *programmatic_scroll_animator_;
 }
 
-GraphicsLayer* ScrollableArea::LayerForContainer() const {
-  return LayerForScrolling() ? LayerForScrolling()->Parent() : nullptr;
-}
-
 ScrollbarOrientation ScrollableArea::ScrollbarOrientationFromDirection(
     ScrollDirectionPhysical direction) const {
   return (direction == kScrollUp || direction == kScrollDown)

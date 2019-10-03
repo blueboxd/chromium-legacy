@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Genom att använda det här programmet godkänner du Chromes <ph name="BEGIN_LINK_TOS" />användarvillkor<ph name="END_LINK_TOS" /> och <ph name="BEGIN_LINK_PRIVACY" />sekretessmeddelande<ph name="END_LINK_PRIVACY" />.</translation>
 <translation id="2147651015520127414">Chrome har verifierat att <ph name="ISSUER" /> har utfärdat webbplatsens certifikat.</translation>
 <translation id="2199719347983604670">Data från Chrome sync</translation>
-<translation id="2342981853652716282">Logga in i Chrome om du vill få dina bokmärken, lösenord med mera på alla dina enheter.</translation>
 <translation id="2347208864470321755">När den här funktionen har aktiverats visas alternativet i Chrome att översätta sidor som är skrivna på andra språk med hjälp av Google Översätt. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Tryck på Inställningar och ge Chrome behörighet att använda dina bilder om du vill spara bilder</translation>
 <translation id="2576431527583832481">Chrome har blivit ännu bättre! En ny version finns tillgänglig.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Hjälp till att förbättra Chrome genom att skicka användningsstatistik och felrapporter till Google.</translation>
 <translation id="415767770115540173">Ange din plats och få en bättre upplevelse av Google när du använder Chrome.</translation>
 <translation id="424864128008805179">Vill du logga ut från Chrome?</translation>
+<translation id="4249068189593983585">Tips för Chrome. Tryck länge på Visa flikar i verktygsfältet så visas fler flikalternativ. Du hittar verktygsfältet längst ned eller högst upp på skärmen.</translation>
 <translation id="4523886039239821078">Några tillägg har fått Chrome att krascha. Avinstallera följande:</translation>
 <translation id="5389212809648216794">Google Chrome kan inte använda kameran eftersom den används av en annan app</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Läs de uppdaterade användarvillkoren för Chrome.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Några tillägg har fått Chrome att krascha. Testa att avinstallera dem.</translation>
 <translation id="8459495907675268833">Den data som markerades har tagits bort från Chrome och från synkroniserade enheter. Det kan finnas andra former av webbhistorik i Google-kontot på history.google.com, t.ex. sökningar och aktivitet på andra tjänster från Google.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome kan använda webbtjänster för att förbättra din upplevelse på webben. Du kan inaktivera dessa tjänster om du vill. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 </translationbundle>

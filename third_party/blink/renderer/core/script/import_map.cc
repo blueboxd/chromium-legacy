@@ -49,9 +49,15 @@ String NormalizeSpecifierKey(const String& key_string,
                              const KURL& base_url,
                              ConsoleLogger& logger) {
   // <spec step="1">If specifierKey is the empty string, then:</spec>
-  //
-  // TODO(hiroshige): Implement this step explicitly. Anyway currently empty
-  // strings are considered as invalid by ParsedSpecifier.
+  if (key_string.IsEmpty()) {
+    // <spec step="1.1">Report a warning to the console that specifier keys
+    // cannot be the empty string.</spec>
+    AddIgnoredKeyMessage(logger, key_string,
+                         "specifier keys cannot be the empty string.");
+
+    // <spec step="1.2">Return null.</spec>
+    return String();
+  }
 
   // <spec step="2">Let url be the result of parsing a URL-like import
   // specifier, given specifierKey and baseURL.</spec>
@@ -59,14 +65,9 @@ String NormalizeSpecifierKey(const String& key_string,
 
   switch (key.GetType()) {
     case ParsedSpecifier::Type::kInvalid:
-      // TODO(hiroshige): According to the spec, this should be considered as a
-      // bare specifier.
-      AddIgnoredKeyMessage(logger, key_string, "Invalid key (invalid URL)");
-      return String();
-
     case ParsedSpecifier::Type::kBare:
       // <spec step="4">Return specifierKey.</spec>
-      return key.GetImportMapKeyString();
+      return key_string;
 
     case ParsedSpecifier::Type::kURL:
       // <spec
@@ -77,9 +78,8 @@ String NormalizeSpecifierKey(const String& key_string,
       // TODO(hiroshige): Perhaps we should move this into ParsedSpecifier.
       if (!SchemeRegistry::IsFetchScheme(key.GetUrl().Protocol()) &&
           key.GetUrl().Protocol() != kStdScheme) {
-        AddIgnoredKeyMessage(logger, key_string,
-                             "Invalid key (non-fetch scheme)");
-        return String();
+        // <spec step="4">Return specifierKey.</spec>
+        return key_string;
       }
       // <spec step="3">If url is not null, then return the serialization of
       // url.</spec>

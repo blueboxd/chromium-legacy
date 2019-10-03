@@ -45,6 +45,7 @@
 <translation id="1175875016430184367">سه منگنه در راست</translation>
 <translation id="1178581264944972037">مکث</translation>
 <translation id="1181037720776840403">حذف</translation>
+<translation id="1186201132766001848">بررسی گذرواژه‌ها</translation>
 <translation id="1197088940767939838">نارنجی</translation>
 <translation id="1201402288615127009">بعدی</translation>
 <translation id="1201895884277373915">موارد بیشتر از این سایت</translation>
@@ -110,6 +111,7 @@
 <translation id="1430915738399379752">چاپ</translation>
 <translation id="1442386063175183758">سمت راست تاخوردگی دروازه‌ای</translation>
 <translation id="1442987760062738829">سوراخ کردن</translation>
+<translation id="1450011005989029586">‏نقض داده‌ای در سایت یا برنامه‌ای که می‌استفاده می‌کنید باعث افشا شدن گذرواژه‌تان شده است. Chrome <ph name="BOLD" /> را همین‌الان در <ph name="ORIGIN" /> توصیه می‌کند.</translation>
 <translation id="1455413310270022028">پاک‌کن</translation>
 <translation id="1463543813647160932">۵x۷</translation>
 <translation id="1472675084647422956">بیشتر ببینید</translation>
@@ -153,7 +155,6 @@
 <translation id="1640244768702815859">از<ph name="BEGIN_LINK" />صفحه اصلی سایت دیدن کنید<ph name="END_LINK" />.</translation>
 <translation id="1644574205037202324">سابقه</translation>
 <translation id="1645368109819982629">پروتکل پشتیبانی‌نشده</translation>
-<translation id="1655462015569774233">{1,plural, =1{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است؛ اعتبار گواهی امنیتی آن دیروز به پایان رسیده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند. ساعت رایانه‌تان درحال‌حاضر روی <ph name="CURRENT_DATE" /> تنظیم شده است. آیا درست است؟ اگر پاسخ منفی است، باید ساعت سیستمتان را درست کنید و سپس این صفحه را بازخوانی کنید.}one{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است. اعتبار گواهی امنیتی آن # روز قبل به پایان رسیده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند. ساعت رایانه‌تان درحال‌حاضر روی <ph name="CURRENT_DATE" /> تنظیم شده است. آیا درست است؟ اگر پاسخ منفی است، باید ساعت سیستمتان را درست کنید و سپس این صفحه را بازخوانی کنید.}other{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است. اعتبار گواهی امنیتی آن # روز قبل به پایان رسیده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند. ساعت رایانه‌تان درحال‌حاضر روی <ph name="CURRENT_DATE" /> تنظیم شده است. آیا درست است؟ اگر پاسخ منفی است، باید ساعت سیستمتان را درست کنید و سپس این صفحه را بازخوانی کنید.}}</translation>
 <translation id="1656489000284462475">تحویل گرفتن</translation>
 <translation id="1662550410081243962">ذخیره و تکمیل روش‌های پرداخت</translation>
 <translation id="1663943134801823270">‏کارت‌ها و نشانی‌ها از Chrome‌ هستند. می‌توانید آن‌ها را در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> مدیریت کنید.</translation>
@@ -323,7 +324,6 @@
 <translation id="2501278716633472235">بازگشت</translation>
 <translation id="2503184589641749290">کارت‌های نقدی و پیش‌پرداخت قابل‌قبول</translation>
 <translation id="2505268675989099013">محافظت از حساب</translation>
-<translation id="2515335152965840738">نادیده‌ گرفتن</translation>
 <translation id="2515629240566999685">بررسی سیگنال در منطقه‌تان</translation>
 <translation id="2521385132275182522">منگنه در پایین سمت راست</translation>
 <translation id="2523886232349826891">فقط در این دستگاه ذخیره شد</translation>
@@ -389,7 +389,6 @@
 <translation id="2799020568854403057">سایت پیش‌رو حاوی برنامه‌های خطرناک است</translation>
 <translation id="2799223571221894425">راه‌اندازی مجدد</translation>
 <translation id="2803306138276472711">‏Google Safe Browsing به تازگی در <ph name="SITE" />، ‏<ph name="BEGIN_LINK" />بدافزار شناسایی کرده است<ph name="END_LINK" />. گاهی اوقات وب‌سایت‌هایی که معمولاً ایمن هستند با بدافزار آلوده می‌شوند.</translation>
-<translation id="2815364696811431560">خروج از سایت</translation>
 <translation id="2824775600643448204">نوار جستجو و آدرس</translation>
 <translation id="2826760142808435982">اتصال با استفاده از <ph name="CIPHER" /> رمزگذاری و راستی‌آزمایی شده است و از <ph name="KX" /> به عنوان مکانیسم تبادل کلید استفاده می‌کند.</translation>
 <translation id="2835170189407361413">پاک کردن فرم</translation>
@@ -463,6 +462,7 @@
 <translation id="320323717674993345">لغو پرداخت</translation>
 <translation id="3207960819495026254">نشانک‌گذاری شده</translation>
 <translation id="3209034400446768650">ممکن است این صفحه از شما هزینه کسر کند</translation>
+<translation id="3209080785413271048">‏از Windows Hello برای به‌تأیید رساندن روش‌های پرداخت ذخیره‌شده‌تان استفاده کنید.</translation>
 <translation id="3215092763954878852">‏استفاده از WebAuthn ممکن نشد</translation>
 <translation id="3225919329040284222">سرور گواهی را نشان می‌دهد که با موارد پیش‌بینی‌شده داخلی مطابقت ندارد. این پیش‌بینی‌ها به‌طور حتم وب‌سایتهای دارای امنیت بالا را جهت محافظت از شما در بر می‌گیرند.</translation>
 <translation id="3226128629678568754">دکمه تازه‌سازی را فشار دهید تا داده‌های مورد نیاز برای بارگیری صفحه مجدداً ارسال شود.</translation>
@@ -473,6 +473,7 @@
 <translation id="3234666976984236645">همیشه محتوای مهم در این سایت شناسایی شود</translation>
 <translation id="3270847123878663523">&amp;واگرد ترتیب‌بندی مجدد</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
+<translation id="3281668902344226640">برای به‌تأیید رساندن روش‌های پرداخت ذخیره‌شده از «شناسه لمسی» استفاده کنید.</translation>
 <translation id="3282497668470633863">افزودن نام روی کارت</translation>
 <translation id="3287510313208355388">بارگیری بعد از آنلاین شدن</translation>
 <translation id="3293642807462928945">درباره خطمشی <ph name="POLICY_NAME" /> بیشتر بدانید</translation>
@@ -540,6 +541,7 @@
 <translation id="362276910939193118">نمایش کل سابقه</translation>
 <translation id="3630155396527302611">اگر درحال حاضر به‌عنوان برنامه‌ای برای دسترسی به شبکه در فهرست قرار دارد،
       سعی کنید آن را از فهرست حذف کرده و دوباره به فهرست اضافه کنید.</translation>
+<translation id="3631244953324577188">زیست‌سنجشی</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">ارزیابی موفق بود</translation>
 <translation id="3655670868607891010">اگر مکرراً با این مشکل مواجه می‌شوید، <ph name="HELP_LINK" /> را امتحان کنید.</translation>
@@ -620,6 +622,7 @@
 <translation id="4067947977115446013">افزودن نشانی معتبر</translation>
 <translation id="4072486802667267160">هنگام پردازش سفارش شما خطایی روی داد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="4075732493274867456">‏کلاینت و سرور از مجموعه رمزگذاری یا نسخه پروتکل SSL مشترکی استفاده نمی‌کنند.</translation>
+<translation id="4075941231477579656">شناسه لمسی</translation>
 <translation id="4079302484614802869">‏تنظیمات پروکسی، برای استفاده از آدرس اسکریپت pac. تنظیم شده است و از سرورهای ثابت نمی‌تواند استفاده کند.</translation>
 <translation id="4082393374666368382">تنظیمات - مدیریت</translation>
 <translation id="4098354747657067197">احتیاط، سایت گول‌زننده</translation>
@@ -676,6 +679,7 @@
 <translation id="4258748452823770588">امضای نادرست</translation>
 <translation id="4261046003697461417">نمی‌توان در سند محافظت‌شده حاشیه‌نویسی کرد</translation>
 <translation id="4265872034478892965">توسط سرپرست مجاز شده است</translation>
+<translation id="4270615291506829403">تغییر گذرواژهٔ شما</translation>
 <translation id="4275830172053184480">راه‌اندازی دستگاه خود</translation>
 <translation id="4277028893293644418">بازنشانی گذرواژه</translation>
 <translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> شما توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود.</translation>
@@ -702,6 +706,7 @@
 <translation id="4372948949327679948">مقدار مورد انتظار <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">شما سعی در دسترسی به <ph name="DOMAIN" /> را داشتید، اما صادر کننده، گواهی ارائه شده از سوی سرور را باطل کرده است. یعنی اصلاً نباید به اطلاعات کاربری که این سرور ارائه می‌کند اطمینان کرد. ممکن است شما با مهاجمی در ارتباط باشید.</translation>
 <translation id="4378154925671717803">تلفن</translation>
+<translation id="4398334096870680409">این ویژگی در دستگاهتان دردسترس نیست.</translation>
 <translation id="4406896451731180161">نتایج جستجو</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> کوکی</translation>
 <translation id="4415426530740016218">نشانی تحویل گرفتن</translation>
@@ -751,7 +756,9 @@
 <translation id="4691835149146451662">Architecture-A (Envelope)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">اتصال شما قطع شد</translation>
+<translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131">‏<ph name="BEGIN_LINK" />اجرای Windows Network Diagnostics<ph name="END_LINK" /></translation>
+<translation id="4725851834065990915">‏نقض داده‌ای در سایت یا برنامه‌ای که می‌استفاده می‌کنید باعث افشا شدن گذرواژه‌تان شده است. Chrome توصیه می‌کند همین‌حالا گذرواژه‌های ذخیره‌شده‌تان را بررسی کنید.</translation>
 <translation id="4726672564094551039">تازه‌سازی خط مشی‌ها</translation>
 <translation id="4728558894243024398">پلت فورم</translation>
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
@@ -779,7 +786,6 @@
 <translation id="4816492930507672669">متناسب با صفحه</translation>
 <translation id="4850886885716139402">نما</translation>
 <translation id="4854362297993841467">این روش تحویل در دسترس نیست. روش دیگری را امتحان کنید.</translation>
-<translation id="4864052566555297930">نکته ایمنی:</translation>
 <translation id="4876188919622883022">نمای ساده‌شده</translation>
 <translation id="4876305945144899064">بدون نام کاربری</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{هیچ‌کدام}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />، <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />، <ph name="EXAMPLE_DOMAIN_2" />، <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />، <ph name="EXAMPLE_DOMAIN_2" />، <ph name="AND_MORE" />}}</translation>
@@ -1006,6 +1012,7 @@
 <translation id="5967592137238574583">ویرایش اطلاعات تماس</translation>
 <translation id="5967867314010545767">حذف از سابقه</translation>
 <translation id="5975083100439434680">دورنمایی کردن</translation>
+<translation id="5979084224081478209">بررسی گذرواژه‌ها</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">برنامه پرداخت باز نشد</translation>
 <translation id="5989320800837274978">‏سرور پروکسی ثابت و URL اسکریپت pac. تعیین نشده‌اند.</translation>
@@ -1163,6 +1170,7 @@
 <translation id="679355240208270552">نادیده گرفته شد، زیرا جستجوی پیش‌فرض توسط خط‌مشی فعال نشده است.</translation>
 <translation id="681021252041861472">فیلد ضروری</translation>
 <translation id="6810899417690483278">شناسه سفارشی‌سازی</translation>
+<translation id="6819440013020405090">‏نقض داده‌ای در سایت یا برنامه‌ای که می‌استفاده می‌کنید باعث افشا شدن گذرواژه‌تان شده است. Chrome توصیه می‌کند گذرواژه‌های ذخیره‌شده‌تان را بررسی کنید و گذرواژه‌تان را در <ph name="ORIGIN" /> تغییر دهید.</translation>
 <translation id="6825578344716086703">‏تلاش کردید به <ph name="DOMAIN" /> دسترسی داشته باشید، اما گواهینامه ارائه‌شده از سوی سرور با استفاده از یک الگوریتم امضای ضعیف (مانند SHA-1) امضا شده است. یعنی ممکن است اعتبارنامه امنیتی ارائه‌شده از سوی سرور جعلی باشد و ممکن است سرور، سرور موردانتظار شما نباشد (ممکن است با یک مهاجم در ارتباط باشید).</translation>
 <translation id="6826370046007623921">جلوگیری از از بین رفتن داده‌ها</translation>
 <translation id="6831043979455480757">ترجمه</translation>
@@ -1205,6 +1213,7 @@
 <translation id="7064851114919012435">اطلاعات تماس</translation>
 <translation id="7075452647191940183">درخواست خیلی بزرگ است</translation>
 <translation id="7079718277001814089">این سایت حاوی بدافزار است</translation>
+<translation id="70850504851191913">نقض داده گزارش شد</translation>
 <translation id="7087282848513945231">بخش/شهرستان</translation>
 <translation id="7090678807593890770">‏جستجوی <ph name="LINK" /> در Google</translation>
 <translation id="7108338896283013870">عدم نمایش</translation>
@@ -1293,6 +1302,7 @@
 <translation id="7460618730930299168">فیلم در حال نمایش با آنچه انتخاب کرده‌اید متفاوت است. ادامه می‌دهید؟</translation>
 <translation id="7473891865547856676">نه متشکرم</translation>
 <translation id="7481312909269577407">ارسال کردن</translation>
+<translation id="748406663033922918">از قفل صفحه برای به‌تأیید رساندن روش‌های پرداخت ذخیره‌شده استفاده کنید.</translation>
 <translation id="7485870689360869515">هیچ داده‌ای یافت نشد.</translation>
 <translation id="7498234416455752244">ادامه ویرایش</translation>
 <translation id="7508255263130623398">شناسه دستگاه خط‌مشی برگردانده‌شده خالی است یا با شناسه کنونی دستگاه مطابقت ندارد</translation>
@@ -1506,7 +1516,6 @@
 <translation id="8553075262323480129">ترجمه انجام نشد زیرا زبان صفحه تعیین نشد.</translation>
 <translation id="8557066899867184262">‏CVC در پشت کارتتان قرار گرفته است.</translation>
 <translation id="8559762987265718583">اتصال خصوصی به <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> انجام نمی‌شود، زیرا تاریخ و زمان دستگاه شما (<ph name="DATE_AND_TIME" />) نادرست است.</translation>
-<translation id="8561575143530093465"><ph name="SAFETY_TIP" /> سایت مشکوک</translation>
 <translation id="8564985650692024650">‏Chromium توصیه می‌کند اگر از گذرواژه <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> خود در سایت دیگری استفاده کردید آن را بازنشانی کنید.</translation>
 <translation id="8571890674111243710">ترجمه صفحه به <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">افزودن شماره تلفن</translation>
@@ -1566,6 +1575,7 @@
 <translation id="8943282376843390568">لیمویی</translation>
 <translation id="8957210676456822347">مجوز پورتال محدود</translation>
 <translation id="8962950042226115166">سایت مشکوک</translation>
+<translation id="8966619695390250636">منظورتان این بود؟</translation>
 <translation id="8968766641738584599">ذخیره کارت</translation>
 <translation id="8971063699422889582">گواهی سرور منقضی شده است.</translation>
 <translation id="8975012916872825179">شامل اطلاعاتی مانند شماره تلفن، نشانی ایمیل و نشانی تحویل کالا می‌شود</translation>

@@ -71,12 +71,6 @@ void ScriptRunner::PostTask(const base::Location& web_trace_location) {
 }
 
 void ScriptRunner::Suspend() {
-#ifndef NDEBUG
-  // Resume will re-post tasks for all available scripts.
-  number_of_extra_tasks_ += async_scripts_to_execute_soon_.size() +
-                            in_order_scripts_to_execute_soon_.size();
-#endif
-
   is_suspended_ = true;
 }
 
@@ -84,12 +78,27 @@ void ScriptRunner::Resume() {
   DCHECK(is_suspended_);
 
   is_suspended_ = false;
+  if (!IsExecutionSuspended())
+    PostTasksForReadyScripts(FROM_HERE);
+}
+
+void ScriptRunner::SetForceDeferredExecution(bool force_deferred) {
+  DCHECK(force_deferred != is_force_deferred_);
+
+  is_force_deferred_ = force_deferred;
+  if (!IsExecutionSuspended())
+    PostTasksForReadyScripts(FROM_HERE);
+}
+
+void ScriptRunner::PostTasksForReadyScripts(
+    const base::Location& web_trace_location) {
+  DCHECK(!IsExecutionSuspended());
 
   for (size_t i = 0; i < async_scripts_to_execute_soon_.size(); ++i) {
-    PostTask(FROM_HERE);
+    PostTask(web_trace_location);
   }
   for (size_t i = 0; i < in_order_scripts_to_execute_soon_.size(); ++i) {
-    PostTask(FROM_HERE);
+    PostTask(web_trace_location);
   }
 }
 
@@ -240,7 +249,7 @@ void ScriptRunner::ExecuteTask() {
       whitelisted_stack_scope(
           scheduler::CooperativeSchedulingManager::Instance());
 
-  if (is_suspended_)
+  if (IsExecutionSuspended())
     return;
 
   if (ExecuteAsyncTask())
@@ -248,12 +257,6 @@ void ScriptRunner::ExecuteTask() {
 
   if (ExecuteInOrderTask())
     return;
-
-#ifndef NDEBUG
-  // Extra tasks should be posted only when we resume after suspending. These
-  // should all be accounted for in number_of_extra_tasks_.
-  DCHECK_GT(number_of_extra_tasks_--, 0);
-#endif
 }
 
 void ScriptRunner::Trace(Visitor* visitor) {

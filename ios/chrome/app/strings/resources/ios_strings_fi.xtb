@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Kuvaa ei voi tall.</translation>
 <translation id="1180526666083833456">Synkronoi ja yksilöi kaikilla laitteilla.</translation>
 <translation id="1181037720776840403">Poista</translation>
+<translation id="1207113853726624428">Uusi haku</translation>
 <translation id="1209206284964581585">Piilota toistaiseksi</translation>
 <translation id="1219674500290482172">Internetyhteyttä ei voi muodostaa.</translation>
 <translation id="122699739164161391">Sulje kaikki välilehdet</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">Ehdota salasanaa…</translation>
 <translation id="1870148520156231997">Näytä salasana</translation>
 <translation id="1872096359983322073">Taskulamppu</translation>
-<translation id="1876721852596493031">Lähetä käyttötietoja</translation>
 <translation id="1911619930368729126">Lähetä Google Driveen</translation>
 <translation id="1923342640370224680">Viimeinen tunti</translation>
 <translation id="1941314575388338491">Kopioi kaksoisnapauttamalla.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> lukematonta artikkelia lukulistalla</translation>
 <translation id="2230173723195178503">Verkkosivu ladattiin.</translation>
 <translation id="2239626343334228536">Selaustietoja poistetaan…</translation>
-<translation id="2256128224215992540">Haku- ja sivustoehdotukset</translation>
 <translation id="2267753748892043616">Lisää tili</translation>
 <translation id="2268044343513325586">Tarkenna</translation>
 <translation id="2273327106802955778">Lisäasetusvalikko</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">Tiedostoa ei voi avata</translation>
 <translation id="2718352093833049315">Vain Wi-Fillä</translation>
 <translation id="2747003861858887689">Edellinen kenttä</translation>
+<translation id="2773292004659987824">Incognito-haku</translation>
 <translation id="2780046210906776326">Ei sähköpostitilejä</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Sulje välilehden vaihtaja</translation>
@@ -295,7 +295,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Ota synkronointi käyttöön</translation>
 <translation id="5234764350956374838">Piilota</translation>
-<translation id="5244474230056479698">Synkronoidaan osoitteeseen <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Peruuta synkronointi</translation>
 <translation id="5271549068863921519">Tallenna salasana</translation>
 <translation id="5300589172476337783">Näytä</translation>
@@ -501,6 +500,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="8261506727792406068">Poista</translation>
 <translation id="8281781826761538115">Oletus – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Uusi haku</translation>
+<translation id="8323906514956095947">Katso lisää välilehtiasetuksia painamalla pitkään</translation>
 <translation id="8328777765163860529">Sulje kaikki</translation>
 <translation id="8407669440184693619">Tälle sivustolle ei löytynyt salasanoja</translation>
 <translation id="842017693807136194">Kirjauduttu palvelulla</translation>

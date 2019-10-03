@@ -32,8 +32,6 @@ namespace cc {
 class FrameSequenceTracker;
 class CompositorFrameReportingController;
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
 enum FrameSequenceTrackerType {
   kCompositorAnimation = 0,
   kMainThreadAnimation = 1,
@@ -41,7 +39,8 @@ enum FrameSequenceTrackerType {
   kRAF = 3,
   kTouchScroll = 4,
   kUniversal = 5,
-  kWheelScroll = 6,
+  kVideo = 6,
+  kWheelScroll = 7,
   kMaxType
 };
 

@@ -1296,15 +1296,17 @@ void AppListControllerImpl::NotifyAppListTargetVisibilityChanged(
   }
 
   // Notify chrome of target visibility changes.
-  if (client_)
-    client_->OnAppListTargetVisibilityChanged(real_target_visibility);
+  if (last_target_visible_ != real_target_visibility) {
+    if (client_)
+      client_->OnAppListTargetVisibilityChanged(real_target_visibility);
 
-  for (auto& observer : observers_)
-    observer.OnAppListTargetVisibilityChanged(real_target_visibility,
-                                              display_id);
-
-  last_target_visible_ = real_target_visibility;
-  last_target_visible_display_id_ = display_id;
+    for (auto& observer : observers_) {
+      observer.OnAppListTargetVisibilityChanged(real_target_visibility,
+                                                display_id);
+    }
+    last_target_visible_ = real_target_visibility;
+    last_target_visible_display_id_ = display_id;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

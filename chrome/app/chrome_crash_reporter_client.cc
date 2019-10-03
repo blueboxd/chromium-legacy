@@ -139,6 +139,13 @@ bool ChromeCrashReporterClient::GetCrashDumpLocation(
   return base::PathService::Get(chrome::DIR_CRASH_DUMPS, crash_dir);
 }
 
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+bool ChromeCrashReporterClient::GetCrashMetricsLocation(
+    base::FilePath* metrics_dir) {
+  return base::PathService::Get(chrome::DIR_USER_DATA, metrics_dir);
+}
+#endif  // OS_MACOSX || OS_LINUX
+
 bool ChromeCrashReporterClient::IsRunningUnattended() {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   return env->HasVar(env_vars::kHeadless);
@@ -157,8 +164,12 @@ bool ChromeCrashReporterClient::GetCollectStatsConsent() {
   bool is_stable_channel =
       chrome::GetChannel() == version_info::Channel::STABLE;
 
-  if (is_guest_session && is_stable_channel)
+  if (is_guest_session && is_stable_channel) {
+    VLOG(1) << "GetCollectStatsConsent(): is_guest_session " << is_guest_session
+            << " && is_stable_channel " << is_stable_channel
+            << " so returning false";
     return false;
+  }
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
@@ -167,8 +178,15 @@ bool ChromeCrashReporterClient::GetCollectStatsConsent() {
   // do not upload them.
   return is_official_chrome_build;
 #else  // !defined(OS_ANDROID)
-  return is_official_chrome_build &&
-      GoogleUpdateSettings::GetCollectStatsConsent();
+  if (!is_official_chrome_build) {
+    VLOG(1) << "GetCollectStatsConsent(): is_official_chrome_build is false "
+            << "so returning false";
+    return false;
+  }
+  bool settings_consent = GoogleUpdateSettings::GetCollectStatsConsent();
+  VLOG(1) << "GetCollectStatsConsent(): settings_consent: " << settings_consent
+          << " so returning that";
+  return settings_consent;
 #endif  // defined(OS_ANDROID)
 }
 
@@ -177,6 +195,15 @@ int ChromeCrashReporterClient::GetAndroidMinidumpDescriptor() {
   return kAndroidMinidumpDescriptor;
 }
 #endif
+
+#if defined(OS_LINUX)
+bool ChromeCrashReporterClient::ShouldMonitorCrashHandlerExpensively() {
+  // TODO(jperaza): Turn this on less frequently for stable channels when
+  // Crashpad is always enabled on Linux. Consider combining with the
+  // macOS implementation.
+  return true;
+}
+#endif  // OS_LINUX
 
 bool ChromeCrashReporterClient::EnableBreakpadForProcess(
     const std::string& process_type) {

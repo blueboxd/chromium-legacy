@@ -9,7 +9,9 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/optional.h"
 #include "base/time/time.h"
+#include "net/nqe/effective_connection_type.h"
 #include "url/gurl.h"
 
 namespace optimization_guide {
@@ -72,6 +74,12 @@ bool IsOptimizationGuideKeyedServiceEnabled();
 // a client-side safety limit for RAM use in case server sends too large of
 // a bloom filter.
 int MaxServerBloomFilterByteSize();
+
+// Maximum effective connection type at which hints can be fetched for
+// navigations in real-time. Returns null if the hints fetching for navigations
+// is disabled.
+base::Optional<net::EffectiveConnectionType>
+GetMaxEffectiveConnectionTypeForNavigationHintsFetch();
 
 }  // namespace features
 }  // namespace optimization_guide

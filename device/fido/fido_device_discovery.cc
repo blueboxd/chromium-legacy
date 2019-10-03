@@ -38,13 +38,18 @@ void FidoDeviceDiscovery::NotifyDiscoveryStarted(bool success) {
     state_ = State::kRunning;
   if (!observer())
     return;
-  observer()->DiscoveryStarted(this, success);
+
+  std::vector<FidoAuthenticator*> authenticators;
+  authenticators.reserve(authenticators_.size());
+  for (const auto& authenticator : authenticators_)
+    authenticators.push_back(authenticator.second.get());
+  observer()->DiscoveryStarted(this, success, std::move(authenticators));
 }
 
 void FidoDeviceDiscovery::NotifyAuthenticatorAdded(
     FidoAuthenticator* authenticator) {
   DCHECK_NE(state_, State::kIdle);
-  if (!observer())
+  if (!observer() || state_ != State::kRunning)
     return;
   observer()->AuthenticatorAdded(this, authenticator);
 }
@@ -52,7 +57,7 @@ void FidoDeviceDiscovery::NotifyAuthenticatorAdded(
 void FidoDeviceDiscovery::NotifyAuthenticatorRemoved(
     FidoAuthenticator* authenticator) {
   DCHECK_NE(state_, State::kIdle);
-  if (!observer())
+  if (!observer() || state_ != State::kRunning)
     return;
   observer()->AuthenticatorRemoved(this, authenticator);
 }

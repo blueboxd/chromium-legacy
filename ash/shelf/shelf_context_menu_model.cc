@@ -153,7 +153,8 @@ void ShelfContextMenuModel::AddShelfAndWallpaperItems() {
   // mode, the shelf alignment option is not shown.
   LoginStatus status = Shell::Get()->session_controller()->login_status();
   if (status == LoginStatus::USER &&
-      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+      !Shell::Get()->tablet_mode_controller()->InTabletMode() &&
+      prefs->FindPreference(prefs::kShelfAlignmentLocal)->IsUserModifiable()) {
     alignment_submenu_ = std::make_unique<ui::SimpleMenuModel>(this);
 
     constexpr int group = 0;

@@ -52,8 +52,7 @@ class TextPerfTest : public testing::Test {
   }
 
   void PrintResults() {
-    reporter_->AddResult(".render_time_avg",
-                         timer_.TimePerLap().InMillisecondsF());
+    reporter_->AddResult(".render_time_avg", timer_.TimePerLap());
     reporter_->AddResult(".number_of_runs",
                          static_cast<size_t>(timer_.NumLaps()));
   }

@@ -201,7 +201,7 @@ int ScrollbarThemeMac::ScrollbarPartToHIPressedState(ScrollbarPart part) {
   }
 }
 
-ScrollbarPart ScrollbarThemeMac::InvalidateOnThumbPositionChange(
+ScrollbarPart ScrollbarThemeMac::PartsToInvalidateOnThumbPositionChange(
     const Scrollbar& scrollbar,
     float old_position,
     float new_position) const {
@@ -250,13 +250,6 @@ ScrollbarPainter ScrollbarThemeMac::PainterForScrollbar(
 void ScrollbarThemeMac::PaintTrackBackground(GraphicsContext& context,
                                              const Scrollbar& scrollbar,
                                              const IntRect& rect) {
-  if (DrawingRecorder::UseCachedDrawingIfPossible(
-          context, scrollbar, DisplayItem::kScrollbarTrackBackground))
-    return;
-
-  DrawingRecorder recorder(context, scrollbar,
-                           DisplayItem::kScrollbarTrackBackground);
-
   GraphicsContextStateSaver state_saver(context);
   context.Translate(rect.X(), rect.Y());
   LocalCurrentGraphicsContext local_context(context,
@@ -381,21 +374,18 @@ bool ScrollbarThemeMac::HasThumb(const Scrollbar& scrollbar) {
 }
 
 IntRect ScrollbarThemeMac::BackButtonRect(const Scrollbar& scrollbar,
-                                          ScrollbarPart part,
-                                          bool painting) {
+                                          ScrollbarPart part) {
   DCHECK_EQ(ButtonsPlacement(), kWebScrollbarButtonsPlacementNone);
   return IntRect();
 }
 
 IntRect ScrollbarThemeMac::ForwardButtonRect(const Scrollbar& scrollbar,
-                                             ScrollbarPart part,
-                                             bool painting) {
+                                             ScrollbarPart part) {
   DCHECK_EQ(ButtonsPlacement(), kWebScrollbarButtonsPlacementNone);
   return IntRect();
 }
 
-IntRect ScrollbarThemeMac::TrackRect(const Scrollbar& scrollbar,
-                                     bool painting) {
+IntRect ScrollbarThemeMac::TrackRect(const Scrollbar& scrollbar) {
   DCHECK(!HasButtons(scrollbar));
   return scrollbar.FrameRect();
 }

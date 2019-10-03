@@ -918,6 +918,11 @@ content::PushMessagingService* TestingProfile::GetPushMessagingService() {
   return nullptr;
 }
 
+content::StorageNotificationService*
+TestingProfile::GetStorageNotificationService() {
+  return nullptr;
+}
+
 bool TestingProfile::IsSameProfile(Profile *profile) {
   if (this == profile)
     return true;

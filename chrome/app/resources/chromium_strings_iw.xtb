@@ -70,7 +70,6 @@
 <translation id="3509308970982693815">‏סגור את כל חלונות Chromium ונסה שוב.</translation>
 <translation id="352783484088404971">‏הסר מ-Chromium...</translation>
 <translation id="3575459661164320785">‏יש במחשב שלך תוכנה מזיקה. Chromium יכול להסיר אותה, לשחזר את ההגדרות שלך ולהשבית תוספים כדי שהדפדפן יחזור שוב לפעולה רגילה.</translation>
-<translation id="3582788516608077514">‏מעדכן את Chromium‏...</translation>
 <translation id="358997566136285270">‏לוגו של Chromium</translation>
 <translation id="3639635944603682591">‏נתוני הגלישה של האדם הזה יימחקו מהמכשיר. כדי לשחזר את הנתונים, יש להיכנס ל-Chromium בתור <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">‏פתח את הקישור ב&amp;כרטיסיית Chromium חדשה</translation>
@@ -84,7 +83,6 @@
 <translation id="421369550622382712">‏גלה יישומים, משחקים, תוספים ועיצובים מעולים בשביל Chromium.</translation>
 <translation id="4216212958613226427">‏זו השפה שבה מוצג ממשק המשתמש של Chromium</translation>
 <translation id="4222580632002216401">‏אתה מחובר כעת ל-Chromium! הסנכרון הושבת על ידי מנהל המערכת שלך.</translation>
-<translation id="4224199872375172890">‏Chromium‏ מעודכן.</translation>
 <translation id="4230135487732243613">‏האם לקשר את הנתונים שלך ב-Chromium לחשבון זה?</translation>
 <translation id="4271805377592243930">‏קבל עזרה בנושא Chromium</translation>
 <translation id="4285930937574705105">‏ההתקנה נכשלה בשל שגיאה לא צפויה. אם Chromium  פועל כעת, סגור אותו ונסה שוב.</translation>
@@ -96,6 +94,7 @@
 <translation id="4567424176335768812">נכנסת למערכת בתור <ph name="USER_EMAIL_ADDRESS" />. כעת אתה יכול לגשת אל הסימניות, ההיסטוריה והגדרות אחרות שלך בכל המכשירים שבהם אתה מחובר לחשבון.</translation>
 <translation id="459535195905078186">‏יישומי Chromium</translation>
 <translation id="4621240073146040695">‏העדכון כמעט הושלם! הפעל מחדש את Chromium‏ כדי לסיים את העדכון.</translation>
+<translation id="4661006601577405669">‏גרסאות עתידיות של Chromium יותקנו באופן אוטומטי.</translation>
 <translation id="4677944499843243528">‏נראה שהפרופיל נמצא בשימוש על ידי תהליך Chromium אחר (<ph name="PROCESS_ID" />) במחשב אחר (<ph name="HOST_NAME" />)‏. Chromium נעל את הפרופיל כדי שלא ייפגם. אם אתה משוכנע שאף תהליך אחר אינו משתמש בפרופיל זה, תוכל לבטל את נעילת הפרופיל ולהפעיל את Chromium מחדש.</translation>
 <translation id="469338717132742108">‏קבל עזרה בנושא Chromium OS</translation>
 <translation id="4708774505295300557">‏מישהו נכנס בעבר ל-Chromium מהמחשב הזה כ-<ph name="ACCOUNT_EMAIL_LAST" />. צור משתמש חדש ל-Chromium כדי לשמור על הפרדת המידע שלך.</translation>
@@ -126,9 +125,7 @@
 <translation id="5698481217667032250">‏הצג את Chromium בשפה זו</translation>
 <translation id="5820394555380036790">‏מערכת ההפעלה של Chromium</translation>
 <translation id="5862307444128926510">‏ברוכים הבאים ל-Chromium‏</translation>
-<translation id="5877064549588274448">הערוץ שונה. הפעל מחדש את המכשיר להחלת השינויים.</translation>
 <translation id="5895138241574237353">הפעל מחדש</translation>
-<translation id="5906655207909574370">העדכון כמעט הושלם! הפעל מחדש את המכשיר כדי לסיים את העדכון.</translation>
 <translation id="5987687638152509985">‏יש לעדכן את Chromium כדי להתחיל את הסנכרון</translation>
 <translation id="6013050204643758987">‏הפיתוח של מערכת ההפעלה Chromium אפשרי בזכות <ph name="BEGIN_LINK_CROS_OSS" />תוכנות קוד פתוח<ph name="END_LINK_CROS_OSS" /> נוספות, כמו <ph name="BEGIN_LINK_LINUX_OSS" />Linux (בטא)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="6040143037577758943">סגור</translation>
@@ -170,7 +167,6 @@
 <translation id="6868056391275687737">‏עותקים אחרים של Chromium פועלים. כדי לעדכן צריך לסגור אותם.</translation>
 <translation id="6893813176749746474">‏Chromium עודכן, אך לא השתמשת בו לפחות 30 ימים.</translation>
 <translation id="6964305034639999644">‏פתח את הקישור בחלון &amp;גלישה בסתר של Chromium</translation>
-<translation id="6970811910055250180">מעדכן את המכשיר שלך...</translation>
 <translation id="6990124437352146030">‏Chromium זקוק להרשאת גישה למיקרופון בשביל האתר הזה</translation>
 <translation id="705851970750939768">‏יש לעדכן את Chromium‏</translation>
 <translation id="7066436765290594559">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך. עדכן את משפט הסיסמה לסנכרון.</translation>
@@ -192,6 +188,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="7449453770951226939">‏<ph name="PAGE_TITLE" /> - Chromium בגירסת פיתוח</translation>
 <translation id="7451052299415159299">‏Chromium זקוק להרשאת גישה למצלמה בשביל האתר הזה</translation>
 <translation id="7483335560992089831">‏לא ניתן להתקין את אותה גרסת Chromium שפועלת כרגע. סגור את Chromium ונסה שוב.</translation>
+<translation id="751093125041325477">‏גרסאות עתידיות של Chromium יותקנו באופן אוטומטי. כשההורדה הזו תושלם, Chromium יופעל מחדש וניתן יהיה להמשיך בעבודה.</translation>
 <translation id="753534427205733210">{0,plural, =1{‏Chromium יופעל מחדש בעוד דקה}two{‏Chromium יופעל מחדש בעוד # דקות}many{‏Chromium יופעל מחדש בעוד # דקות}other{‏Chromium יופעל מחדש בעוד # דקות}}</translation>
 <translation id="7549178288319965365">‏על מערכת ההפעלה של Chromium</translation>
 <translation id="7561906087460245826">‏הסרת נתונים גם מ-Chromium (<ph name="URL" />)</translation>
@@ -213,7 +210,6 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="7975919845073681630">‏זוהי התקנה משנית של Chromium, ולא ניתן להפוך אותו לדפדפן ברירת המחדל שלך.</translation>
 <translation id="7979877361127045932">‏הסתר בתפריט Chromium</translation>
 <translation id="8013436988911883588">‏אחרי מתן גישה ל-Chromium, אתרים יוכלו לבקש ממך גישה.</translation>
-<translation id="8030318113982266900">מעדכן את המכשיר שלך לערוץ <ph name="CHANNEL_NAME" />...</translation>
 <translation id="81770708095080097">‏Chromium‏ חסם את הקובץ הזה כי הוא מסוכן.</translation>
 <translation id="8222496066431494154">‏יש להתקין את Chromium בטלפון שלך, ולאחר מכן נשלח הודעת SMS למספר שמוגדר לשחזור החשבון: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8248265253516264921">‏אם אין לתמונה תיאור מועיל, Chromium ינסה לספק לך תיאור. כדי ליצור תיאורים, התמונות נשלחות אל Google. אפשר להשבית את האפשרות הזו בכל זמן דרך ההגדרות.</translation>
@@ -228,7 +224,6 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="8586442755830160949">‏Copyright <ph name="YEAR" /> The Chromium Authors. כל הזכויות שמורות.</translation>
 <translation id="8619360774459241877">‏הפעלת Chromium מתבצעת...</translation>
 <translation id="8621669128220841554">‏ההתקנה נכשלה בשל שגיאה לא מזוהה. הורד שוב את Chromium.</translation>
-<translation id="8667808506758191620">ה-<ph name="DEVICE_TYPE" /> שלך מעודכן.</translation>
 <translation id="8682540261359803721">‏אם הגדרה מסוימת לא מופיעה בדף הזה, אפשר לחפש אותה <ph name="LINK_BEGIN" />
 בהגדרות של דפדפן Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chromium או מבצע חיפוש מסרגל הכתובות.</translation>

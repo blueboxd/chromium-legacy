@@ -45,6 +45,7 @@
 <translation id="1175875016430184367">Троструко спајање на десној страни</translation>
 <translation id="1178581264944972037">Паузирај</translation>
 <translation id="1181037720776840403">Уклони</translation>
+<translation id="1186201132766001848">Провери лозинке</translation>
 <translation id="1197088940767939838">Наранџаста</translation>
 <translation id="1201402288615127009">Даље</translation>
 <translation id="1201895884277373915">Више са овог сајта</translation>
@@ -110,6 +111,7 @@
 <translation id="1430915738399379752">Штампај</translation>
 <translation id="1442386063175183758">Пресавијање на десној страни у облику прозора</translation>
 <translation id="1442987760062738829">Бушење</translation>
+<translation id="1450011005989029586">Ваша лозинка је угрожена упадом у податке на сајту или у апликацији које користите. Chrome вам препоручује да одмах <ph name="BOLD" /> на <ph name="ORIGIN" />.</translation>
 <translation id="1455413310270022028">Брисач</translation>
 <translation id="1463543813647160932">5×7</translation>
 <translation id="1472675084647422956">Прикажи више</translation>
@@ -153,7 +155,6 @@
 <translation id="1640244768702815859">Покушајте да <ph name="BEGIN_LINK" />посетите почетну страницу сајта<ph name="END_LINK" />.</translation>
 <translation id="1644574205037202324">Историја</translation>
 <translation id="1645368109819982629">Неподржани протокол</translation>
-<translation id="1655462015569774233">{1,plural, =1{Овај сервер не може да докаже да је <ph name="DOMAIN" />; његов безбедносни сертификат је истекао јуче. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу. Сат рачунара је тренутно подешен на <ph name="CURRENT_DATE" />. Да ли је то тачно? Ако није, требало би да исправите сат система и да затим освежите ову страницу.}one{Овај сервер не може да докаже да је <ph name="DOMAIN" />; његов безбедносни сертификат је истекао пре # дана. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу. Сат рачунара је тренутно подешен на <ph name="CURRENT_DATE" />. Да ли је то тачно? Ако није, требало би да исправите сат система и да затим освежите ову страницу.}few{Овај сервер не може да докаже да је <ph name="DOMAIN" />; његов безбедносни сертификат је истекао пре # дана. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу. Сат рачунара је тренутно подешен на <ph name="CURRENT_DATE" />. Да ли је то тачно? Ако није, требало би да исправите сат система и да затим освежите ову страницу.}other{Овај сервер не може да докаже да је <ph name="DOMAIN" />; његов безбедносни сертификат је истекао пре # дана. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу. Сат рачунара је тренутно подешен на <ph name="CURRENT_DATE" />. Да ли је то тачно? Ако није, требало би да исправите сат система и да затим освежите ову страницу.}}</translation>
 <translation id="1656489000284462475">Преузимање</translation>
 <translation id="1662550410081243962">Чувај и уноси начине плаћања</translation>
 <translation id="1663943134801823270">Картице и адресе су из Chrome-а. Њима можете да управљате у <ph name="BEGIN_LINK" />подешавањима<ph name="END_LINK" />.</translation>
@@ -323,7 +324,6 @@
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2503184589641749290">Дебитне и припејд картице које се прихватају</translation>
 <translation id="2505268675989099013">Заштити налог</translation>
-<translation id="2515335152965840738">ЗАНЕМАРИ</translation>
 <translation id="2515629240566999685">да проверите сигнал у својој области</translation>
 <translation id="2521385132275182522">Спајање у доњем десном углу</translation>
 <translation id="2523886232349826891">Сачувано је само на овом уређају</translation>
@@ -390,7 +390,6 @@
 <translation id="2799020568854403057">Сајт који ћете посетити садржи штетне апликације</translation>
 <translation id="2799223571221894425">Поново покрени</translation>
 <translation id="2803306138276472711">Google безбедно прегледање је недавно <ph name="BEGIN_LINK" />открило малвер<ph name="END_LINK" /> на <ph name="SITE" />. Веб-сајтови који су обично безбедни се понекад заразе малвером.</translation>
-<translation id="2815364696811431560">НАПУСТИ САЈТ</translation>
 <translation id="2824775600643448204">Трака за адресу и претрагу</translation>
 <translation id="2826760142808435982">Веза је шифрована и њена аутентичност је потврђена помоћу <ph name="CIPHER" /> и користи <ph name="KX" /> као механизам за размену шифара.</translation>
 <translation id="2835170189407361413">Обриши образац</translation>
@@ -681,6 +680,7 @@
 <translation id="4258748452823770588">Неисправан потпис</translation>
 <translation id="4261046003697461417">Напомене не могу да се додају у заштићене документе</translation>
 <translation id="4265872034478892965">Дозвољава администратор</translation>
+<translation id="4270615291506829403">промените лозинку</translation>
 <translation id="4275830172053184480">Поновно покретање уређаја</translation>
 <translation id="4277028893293644418">Ресетујте лозинку</translation>
 <translation id="4279811152705618813"><ph name="DEVICE_TYPE" />-ом управља <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -759,6 +759,7 @@
 <translation id="4708268264240856090">Веза је прекинута</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />да покренете Windows дијагностику мреже<ph name="END_LINK" /></translation>
+<translation id="4725851834065990915">Ваша лозинка је угрожена упадом у податке на сајту или у апликацији које користите. Chrome препоручује да одмах проверите сачуване лозинке.</translation>
 <translation id="4726672564094551039">Поново учитај смернице</translation>
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="4731967714531604179">Prc2 (коверат)</translation>
@@ -786,7 +787,6 @@
 <translation id="4816492930507672669">Уклопи у страницу</translation>
 <translation id="4850886885716139402">Приказ</translation>
 <translation id="4854362297993841467">Овај начин испоруке није доступан. Испробајте неки други начин.</translation>
-<translation id="4864052566555297930">Безбедносни савет:</translation>
 <translation id="4876188919622883022">Поједностављени приказ</translation>
 <translation id="4876305945144899064">Нема корисничког имена</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{Ниједна}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}few{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
@@ -1013,6 +1013,7 @@
 <translation id="5967592137238574583">Измените контакт информације</translation>
 <translation id="5967867314010545767">Уклони из историје</translation>
 <translation id="5975083100439434680">Умањивање</translation>
+<translation id="5979084224081478209">Провери лозинке</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Отварање апликације за плаћање није успело</translation>
 <translation id="5989320800837274978">Нису наведени ни фиксни прокси сервери нити URL адреса .pac скрипте.</translation>
@@ -1169,6 +1170,7 @@
 <translation id="679355240208270552">Занемарује се зато што смернице нису омогућиле подразумевани претраживач.</translation>
 <translation id="681021252041861472">Обавезно поље</translation>
 <translation id="6810899417690483278">ИД за прилагођавање</translation>
+<translation id="6819440013020405090">Ваша лозинка је угрожена упадом у податке на сајту или у апликацији које користите. Chrome препоручује да проверите сачуване лозинке и да промените лозинку на <ph name="ORIGIN" />.</translation>
 <translation id="6825578344716086703">Покушали сте да посетите <ph name="DOMAIN" />, али је сервер послао сертификат потписан слабим алгоритмом (као што је SHA-1). То значи да су безбедносни акредитиви које је сервер послао можда кривотворени и сервер можда није онај који мислите да јесте (можда комуницирате са нападачем).</translation>
 <translation id="6826370046007623921">Спречавање губитка података</translation>
 <translation id="6831043979455480757">Преведи</translation>
@@ -1211,6 +1213,7 @@
 <translation id="7064851114919012435">Контакт информације</translation>
 <translation id="7075452647191940183">Захтев је превелик</translation>
 <translation id="7079718277001814089">Овај сајт садржи малвер</translation>
+<translation id="70850504851191913">Пријављен је упад у податке</translation>
 <translation id="7087282848513945231">Округ</translation>
 <translation id="7090678807593890770">Потражите <ph name="LINK" /> на Google-у</translation>
 <translation id="7108338896283013870">Сакриј</translation>
@@ -1513,7 +1516,6 @@
 <translation id="8553075262323480129">Превод није успео јер језик странице није могао да буде утврђен.</translation>
 <translation id="8557066899867184262">CVC је на полеђини картице.</translation>
 <translation id="8559762987265718583">Није могуће успоставити приватну везу са доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> јер датум и време на уређају (<ph name="DATE_AND_TIME" />) нису тачни.</translation>
-<translation id="8561575143530093465"><ph name="SAFETY_TIP" /> сумњиви сајт</translation>
 <translation id="8564985650692024650">Chromium вам препоручује да ресетујете лозинку за <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> ако сте је користили на другим сајтовима.</translation>
 <translation id="8571890674111243710">Превођење странице на <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Додај тел. број
@@ -1574,6 +1576,7 @@
 <translation id="8943282376843390568">Јаркозелена</translation>
 <translation id="8957210676456822347">Овлашћење на улазном порталу</translation>
 <translation id="8962950042226115166">Сумњиви сајт</translation>
+<translation id="8966619695390250636">Да ли сте мислили?</translation>
 <translation id="8968766641738584599">Сачувај картицу</translation>
 <translation id="8971063699422889582">Сертификат сервера је истекао.</translation>
 <translation id="8975012916872825179">Обухвата информације попут бројева телефона, имејл адреса и адреса за испоруку</translation>

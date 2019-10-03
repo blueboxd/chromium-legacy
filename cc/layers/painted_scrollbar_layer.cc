@@ -263,13 +263,8 @@ UIResourceBitmap PaintedScrollbarLayer::RasterizeScrollbarPart(
   float scale_y =
       content_rect.height() / static_cast<float>(layer_rect.height());
   canvas.scale(SkFloatToScalar(scale_x), SkFloatToScalar(scale_y));
-  // TODO(pdr): Scrollbars are painted with an offset (see Scrollbar::PaintPart)
-  // and the canvas is translated so that scrollbars are drawn at the origin.
-  // Refactor this code to not use an offset at all so Scrollbar::PaintPart
-  // paints at the origin and no translation is needed below.
-  canvas.translate(-layer_rect.x(), -layer_rect.y());
 
-  scrollbar_->PaintPart(&canvas, part, layer_rect);
+  scrollbar_->PaintPart(&canvas, part);
   // Make sure that the pixels are no longer mutable to unavoid unnecessary
   // allocation and copying.
   skbitmap.setImmutable();

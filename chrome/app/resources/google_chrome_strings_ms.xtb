@@ -18,7 +18,6 @@
 <translation id="1393853151966637042">Dapatkan bantuan untuk menggunakan Chrome</translation>
 <translation id="1399397803214730675">Komputer ini mempunyai versi Google Chrome paling terkini. Jika perisian tidak berfungsi, sila nyahpasang Google Chrome dan cuba semula.</translation>
 <translation id="1434626383986940139">Apl Chrome Canary</translation>
-<translation id="1457721931618994305">Mengemas kini Google Chrome...</translation>
 <translation id="1469002951682717133">Pelancar Apl Chrome</translation>
 <translation id="1553358976309200471">Kemas Kini Chrome</translation>
 <translation id="1587223624401073077">Google Chrome menggunakan kamera anda.</translation>
@@ -88,6 +87,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="3065168410429928842">Tab Chrome</translation>
 <translation id="3080151273017101988">Terus menjalankan apl latar belakang apabila Google Chrome ditutup</translation>
 <translation id="3089968997497233615">Terdapat versi Google Chrome baharu yang lebih selamat tersedia.</translation>
+<translation id="3138848678222082288">Versi Chrome pada masa hadapan akan dipasang secara automatik. Apabila muat turun ini selesai, Chrome akan dimulakan semula dan anda sudah boleh menggunakannya.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
 <translation id="3282568296779691940">Log masuk ke Chrome</translation>
 <translation id="3340978935015468852">tetapan</translation>
@@ -169,9 +169,7 @@ tetapan OS Chrome<ph name="LINK_END" /> anda</translation>
 <translation id="573759479754913123">Mengenai Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Tidak dapat melancarkan Chrome. Cuba lagi.</translation>
-<translation id="5877064549588274448">Saluran berubah. Mulakan semula peranti anda untuk menggunakan perubahan.</translation>
 <translation id="5895138241574237353">Mulakan Semula</translation>
-<translation id="5906655207909574370">Hampir terkini! Mulakan semula peranti anda untuk menyelesaikan kemas kini.</translation>
 <translation id="5940385492829620908">Web, penanda halaman dan barangan Chrome anda yang lain tinggal di sini.</translation>
 <translation id="5941830788786076944">Jadikan Google Chrome penyemak imbas lalai</translation>
 <translation id="6014844626092547096">Anda sedang dilog masuk ke Chrome! Penyegerakan dilumpuhkan oleh pentadbir anda.</translation>
@@ -190,16 +188,15 @@ tetapan OS Chrome<ph name="LINK_END" /> anda</translation>
 <translation id="6566149418543181476">Mengemas kini Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Anda menggunakan <ph name="PROFILE_EMAIL" /> untuk menyegerakkan bahan digital Chrome anda. Untuk mengemas kini pilihan penyegerakan anda atau menggunakan Chrome tanpa akaun Google, lawati <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Disalin ke Chrome</translation>
-<translation id="6634887557811630702">Google Chrome telah dikemas kini.</translation>
 <translation id="6676384891291319759">Akses Internet</translation>
 <translation id="6679975945624592337">Biarkan Google Chrome Dijalankan Di Latar Belakang</translation>
 <translation id="6750954913813541382">Untuk membetulkan kesalahan ejaan, Chrome akan menghantar teks yang anda taip dalam penyemak imbas kepada Google</translation>
 <translation id="677276454032249905">Keluar daripada Chrome juga?</translation>
 <translation id="683440813066116847">Peraturan masuk bagi Google Chrome Canary untuk membenarkan trafik mDNS.</translation>
 <translation id="6885412569789873916">Apl Chrome Beta</translation>
+<translation id="6906909733186691861">Versi Chrome pada masa hadapan akan dipasang secara automatik.</translation>
 <translation id="6943584222992551122">Data semakan imbas orang ini akan dipadamkan daripada peranti ini. Untuk memulihkan data itu, log masuk ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Peraturan masuk bagi Google Chrome Beta untuk membenarkan trafik mDNS.</translation>
-<translation id="6970811910055250180">Mengemas kini peranti anda...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> menghendaki anda membaca dan menerima Syarat Perkhidmatan berikut sebelum menggunakan peranti ini. Syarat ini tidak memperluas, mengubah suai atau mengehadkan Syarat OS Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome telah dikemas kini, tetapi anda belum menggunakannya untuk sekurang-kurangnya 30 hari.</translation>
 <translation id="7098166902387133879">Google Chrome menggunakan mikrofon anda.</translation>
@@ -237,7 +234,6 @@ tetapan OS Chrome<ph name="LINK_END" /> anda</translation>
 <translation id="7962410387636238736">Komputer ini tidak akan menerima kemas kini Google Chrome lagi kerana Windows XP dan Windows Vista sudah tidak disokong</translation>
 <translation id="8008534537613507642">Pasang Semula Chrome</translation>
 <translation id="8013993649590906847">Jika imej tiada perihalan yang berguna, Chrome akan cuba memberikan perihalan untuk anda. Untuk membuat perihalan, imej dihantar kepada Google.</translation>
-<translation id="8030318113982266900">Mengemas kini peranti anda kepada saluran <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8032142183999901390">Selepas mengalih keluar akaun anda daripada Chrome, anda mungkin perlu memuatkan semula tab yang dibuka untuk memberi kesan.</translation>
 <translation id="8129812357326543296">Mengenai &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Pasang Chrome pada telefon anda. Kami akan menghantar SMS ke telefon anda.</translation>
@@ -260,7 +256,6 @@ tetapan OS Chrome<ph name="LINK_END" /> anda</translation>
 <translation id="8606668294522778825">Google Chrome mungkin menggunakan perkhidmatan web untuk meningkatkan pengalaman semakan imbas anda. Anda boleh memilih untuk melumpuhkan perkhidmatan ini. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome tidak responsif. Lancarkan semula sekarang?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome akan dilancarkan semula dalam masa seminit}other{Chrome akan dilancarkan semula dalam masa # minit}}</translation>
-<translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> anda sudah dikemas kini.</translation>
 <translation id="8669527147644353129">Pembantu Google Chrome</translation>
 <translation id="8679801911857917785">Sambungan turut mengawal halaman yang ditunjukkan apabila anda memulakan Chrome.</translation>
 <translation id="870251953148363156">Kemas kini &amp;Google Chrome</translation>

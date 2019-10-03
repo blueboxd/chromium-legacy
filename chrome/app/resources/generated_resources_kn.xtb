@@ -60,7 +60,6 @@
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1079766198702302550">ಯಾವಾಗಲೂ ಕ್ಯಾಮರಾ ಪ್ರವೇಶವನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="1082398631555931481"><ph name="THIRD_PARTY_TOOL_NAME" /> ನಿಮ್ಮ Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಅದರ ಮೂಲ ಡೀಫಾಲ್ಟ್‌ಗಳಿಗೆ ಪುನಃ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಬಯಸುತ್ತದೆ. ಇದು ನಿಮ್ಮ ಮುಖಪುಟ, ಹೊಸ ಟ್ಯಾಬ್ ಪುಟ, ಮತ್ತು ಹುಡುಕಾಟ ಇಂಜಿನ್‌ಗಳನ್ನು ಮರುಹೊಂದಿಸುತ್ತದೆ, ನಿಮ್ಮ ವಿಸ್ತರಣೆಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ ಮತ್ತು ಎಲ್ಲ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಅನ್‌ಪಿನ್ ಮಾಡುತ್ತದೆ. ಇದು ಕುಕೀಗಳು, ವಿಷಯ ಹಾಗೂ ಸೈಟ್‌ ಡೇಟಾದಂತಹ ಇತರೆ ತಾತ್ಕಾಲಿಕ ಮತ್ತು ಕ್ಯಾಷ್ ಡೇಟಾವನ್ನು ಸಹ ತೆರವುಗೊಳಿಸುತ್ತದೆ.</translation>
-<translation id="1082725763867769612">ಆಫ್‌ಲೈನ್ ಫೈಲ್‌ಗಳು</translation>
 <translation id="1084824384139382525">ಲಿಂಕ್ ವಿಳಾ&amp;ಸವನ್ನು ನಕಲಿಸಿ</translation>
 <translation id="1085697365578766383">ವರ್ಚುವಲ್ ಯಂತ್ರವನ್ನು ಪ್ರಾರಂಭಿಸುವಲ್ಲಿ ದೋಷ ಕಂಡುಬಂದಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="1089439967362294234">ಪಾಸ್‌ವರ್ಡ್ ಬದಲಾಯಿಸಿ</translation>
@@ -130,7 +129,6 @@
 <translation id="1181037720776840403">ತೆಗೆದುಹಾಕು</translation>
 <translation id="1183237619868651138"><ph name="EXTERNAL_CRX_FILE" /> ಅನ್ನು ಸ್ಥಳೀಯ ಕ್ಯಾಷ್‌ನಲ್ಲಿ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="1185924365081634987">ಈ ನೆಟ್‌ವರ್ಕ್‌ ದೋಷವನ್ನು ಬಗೆಹರಿಸಲು <ph name="GUEST_SIGNIN_LINK_START" />ಅತಿಥಿಯಾಗಿ ಬ್ರೌಸ್ ಮಾಡುವುದನ್ನು<ph name="GUEST_SIGNIN_LINK_END" /> ಕೂಡಾ ನೀವು ಪ್ರಯತ್ನಿಸಬಹುದು.</translation>
-<translation id="1186201132766001848">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="1186771945450942097">ಹಾನಿಕಾರಕ ಸಾಫ್ಟ್‌ವೇರ್ ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="1187722533808055681">ತಟಸ್ಥದ ಎಚ್ಚರಿಸುವಿಕೆಗಳು</translation>
 <translation id="1188807932851744811">ಲಾಗ್ ಅನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿಲ್ಲ.</translation>
@@ -181,6 +179,7 @@
 <translation id="1243314992276662751">ಅಪ್‌ಲೋಡ್</translation>
 <translation id="1244265436519979884">ಪ್ರಸ್ತುತವಾಗಿ Linux ಮರುಸ್ಥಾಪನೆ ಪ್ರಗತಿಯಲ್ಲಿದೆ</translation>
 <translation id="1244303850296295656">ವಿಸ್ತರಣೆ ದೋಷ</translation>
+<translation id="1246905108078336582">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ನಿಂದ ಸಲಹೆಗಳನ್ನು ತೆಗೆದುಹಾಕುವುದೇ?</translation>
 <translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> ತಡೆಹಿಡಿಯಲಾಗಿದೆ, ಹೀಗಾಗಿ ಅದನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="1251366534849411931">ಓಪನಿಂಗ್ ಕರ್ಲಿ ಬ್ರಾಕೆಟ್ ಅನ್ನು ನಿರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ: <ph name="ERROR_LINE" /></translation>
 <translation id="1252987234827889034">ಪ್ರೊಫೈಲ್ ದೋಷ ಸಂಭವಿಸಿದೆ</translation>
@@ -304,7 +303,6 @@
 <translation id="1444628761356461360">ಈ ಸೆಟ್ಟಿಂಗ್ ಅನ್ನು ಸಾಧನದ ಮಾಲೀಕರಿಂದ ನಿರ್ವಹಿಸಿಲಾಗುತ್ತದೆ, <ph name="OWNER_EMAIL" />.</translation>
 <translation id="144518587530125858">'<ph name="IMAGE_PATH" />' ಅನ್ನು ಥೀಮ್‌ಗಾಗಿ ಲೋಡ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="1445693676523799095">ಇದು ಸ್ವಲ್ಪ ಸಮಯ ತೆಗೆದುಕೊಳ್ಳಬಹುದು</translation>
-<translation id="1450011005989029586">ನೀವು ಬಳಸುವ ವೆಬ್‌ಸೈಟ್‌ ಅಥವಾ ಆ್ಯಪ್‌ನಲ್ಲಿ ಡೇಟಾ ಉಲ್ಲಂಘನೆಯಾಗಿದೆ, ಇದರಿಂದಾಗಿ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಬಹಿರಂಗಗೊಂಡಿದೆ. <ph name="ORIGIN" /> ನಲ್ಲಿ <ph name="BOLD" /> Chrome ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="1451375123200651445">ವೆಬ್‌ಪುಟ, ಒಂದೇ ಫೈಲ್</translation>
 <translation id="1451917004835509682">ಮೇಲ್ವಿಚಾರಣೆ ವ್ಯಕ್ತಿಯನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="1454223536435069390">ಸ್ಕ್ರೀ&amp;ನ್‌ಶಾಟ್‌ ತೆಗೆದುಕೊಳ್ಳಿ</translation>
@@ -324,6 +322,7 @@
 <translation id="1476607407192946488">&amp;ಭಾಷೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="1478340334823509079">ವಿವರಗಳು: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">ಇನ್‌ಸ್ಟಾಲೇಶನ್ ಸಕ್ರಿಯಗೊಳಿಸಿಲ್ಲ</translation>
+<translation id="1481206932476131736">ನಿಮ್ಮ ಸೈನ್ ಇನ್ ಮಾಡಿದ ಖಾತೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ. Chrome ಮತ್ತು Google Play ನಲ್ಲಿನ ವೆಬ್‌ಸೈಟ್‌ಗಳು, ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ವಿಸ್ತರಣೆಗಳ ಅನುಮತಿಗಳನ್ನು ಆಧರಿಸಿ, ನಿಮ್ಮ ಅನುಭವವನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಲು ಈ ಖಾತೆಗಳನ್ನು ಬಳಸಬಹುದು.</translation>
 <translation id="1482626744466814421">ಈ ಟ್ಯಾಬ್ ಅನ್ನು ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಿ...</translation>
 <translation id="1483493594462132177">ಕಳುಹಿಸು</translation>
 <translation id="1484979925941077974">ಸೈಟ್‌, ಬ್ಲೂಟೂತ್ ಅನ್ನು ಬಳಸುತ್ತಿದೆ</translation>
@@ -604,7 +603,6 @@
 <translation id="1864111464094315414">ಲಾಗಿನ್</translation>
 <translation id="1864400682872660285">ಕೂಲರ್</translation>
 <translation id="1864454756846565995">USB-C ಸಾಧನ (ಹಿಂದಿನ ಪೋರ್ಟ್)</translation>
-<translation id="1865678028973512614">ಫೈಲ್‌ಗಳನ್ನು ಅಳಿಸಿ</translation>
 <translation id="1865769994591826607">ಅದೇ-ಸೈಟ್ ಸಂಪರ್ಕಗಳು ಮಾತ್ರ</translation>
 <translation id="186612162884103683">ಗುರುತಿಸಿದ ಸ್ಥಳಗಳಲ್ಲಿ "<ph name="EXTENSION" />"  ಚಿತ್ರಗಳು, ವಿಡಿಯೋ, ಮತ್ತು ಧ್ವನಿ ಫೈಲ್‌ಗಳನ್ನು ಓದಬಹುದು ಮತ್ತು ಬರೆಯಬಹುದು.</translation>
 <translation id="1867780286110144690">ನಿಮ್ಮ ಸ್ಥಾಪನೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು <ph name="PRODUCT_NAME" /> ಸಿದ್ದವಾಗಿದೆ</translation>
@@ -935,7 +933,6 @@
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">ಲಾಕ್ ಪರದೆ ಟಿಪ್ಪಣಿಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ <ph name="LOCK_SCREEN_APP_NAME" /> ನಲ್ಲಿ ಉಳಿಸಲಾಗುತ್ತದೆ. ನಿಮ್ಮ ಇತ್ತೀಚಿನ ಟಿಪ್ಪಣಿಯು ಲಾಕ್ ಪರದೆಯಲ್ಲಿರುತ್ತದೆ.</translation>
 <translation id="2353297238722298836">ಕ್ಯಾಮೆರಾ ಮತ್ತು ಮೈಕ್ರೊಫೋನ್ ಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ</translation>
-<translation id="2355241457888955">ನಿಮ್ಮ ಸಾಧನಗಳಿಗೆ ಪಠ್ಯವನ್ನು ಕಳುಹಿಸಿ</translation>
 <translation id="2356070529366658676">ಕೇಳಿ</translation>
 <translation id="2359345697448000899">ಪರಿಕರಗಳ ಮೆನುವಿನಲ್ಲಿರುವ ‘ವಿಸ್ತರಣೆಗಳು’ ಅನ್ನು ಕ್ಲಿಕ್ ಮಾಡುವ ಮೂಲಕ ನಿಮ್ಮ ವಿಸ್ತರಣೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ.</translation>
 <translation id="2359808026110333948">ಮುಂದುವರೆಸಿ</translation>
@@ -1064,7 +1061,6 @@
 <translation id="2534460670861217804">ಸುರಕ್ಷಿತ HTTP ಪ್ರಾಕ್ಸಿ</translation>
 <translation id="253557089021624350">ಎಣಿಕೆಯನ್ನು ಚಾಲ್ತಿಯಲ್ಲಿರಿಸಿ</translation>
 <translation id="2535799430745250929">ಯಾವುದೇ ಸೆಲ್ಯುಲರ್ ನೆಟ್‌ವರ್ಕ್ ಅಸ್ತಿತ್ವದಲ್ಲಿಲ್ಲ</translation>
-<translation id="2536052711541161459">ಪಾಯಿಂಟರ್ ವೇಗವರ್ಧನೆ</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> ಕೆಳಗಿನ ಫೈಲ್‌ಗಳು ಮತ್ತು ಫೋಲ್ಡರ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಬಹುದು ಮತ್ತು ಎಡಿಟ್ ಮಾಡಬಹುದು</translation>
 <translation id="2538361623464451692">ಸಿಂಕ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="2540449034743108469">ವಿಸ್ತರಣೆ ಚಟುವಟಿಕೆಗಳನ್ನು ಆಲಿಸಲು "ಪ್ರಾರಂಭಿಸಿ" ಒತ್ತಿರಿ</translation>
@@ -1367,6 +1363,7 @@
 <translation id="2981113813906970160">ದೊಡ್ಡ ಮೌಸ್ ಕರ್ಸರ್ ತೋರಿಸು</translation>
 <translation id="2982970937345031">ಅನಾಮಧೇಯವಾಗಿ ವರದಿ ಮಾಡಿ</translation>
 <translation id="2986010903908656993">MIDI ಸಾಧನಗಳ ಸಂಪೂರ್ಣ ನಿಯಂತ್ರಣ ಪಡೆಯದಿರುವಂತೆ ಈ ಪುಟವನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
+<translation id="2987620471460279764">ಬೇರೆ ಸಾಧನದಿಂದ ಪಠ್ಯವನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗಿದೆ</translation>
 <translation id="2989474696604907455">ಲಗತ್ತಿಸಿಲ್ಲ</translation>
 <translation id="2989786307324390836">DER-ಎನ್‌ಕೋಡೆಡ್ ಬೈನರಿ, ಏಕ ಪ್ರಮಾಣಪತ್ರ</translation>
 <translation id="2992931425024192067">ಎಲ್ಲಾ ಅಧಿಸೂಚನೆ ವಿಷಯಗಳನ್ನು ತೋರಿಸಿ</translation>
@@ -1941,6 +1938,7 @@
 <translation id="3820172043799983114">ಅಮಾನ್ಯ ಪಿನ್.</translation>
 <translation id="3820749202859700794">SECG ಎಲಿಪ್ಟಿಕ್ ಕರ್ವ್ secp521r1 (aka NIST P-521)</translation>
 <translation id="3822559385185038546">ಈ ಪ್ರಾಕ್ಸಿಯನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಜಾರಿಗೊಳಿಸಿದ್ದಾರೆ</translation>
+<translation id="3826440694796503677">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಹೆಚ್ಚಿನ Google ಖಾತೆಗಳ ಸೇರಿಸುವಿಕೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ</translation>
 <translation id="3827306204503227641">ಸ್ಯಾಂಡ್‌ಬಾಕ್ಸ್ ರದ್ದುಗೊಳಿಸಿರುವ ಪ್ಲಗ್-ಇನ್‌ಗಳ ಅನುಮತಿಯನ್ನು ಮುಂದುವರಿಸಿ</translation>
 <translation id="3827774300009121996">&amp;ಪೂರ್ಣ ಪರದೆ</translation>
 <translation id="3828029223314399057">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಹುಡುಕಿ</translation>
@@ -2036,6 +2034,7 @@
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">IE ಯಿಂದ ಆಮದುಗೊಂಡಿದೆ</translation>
 <translation id="3950820424414687140">ಸೈನ್ ಇನ್</translation>
+<translation id="3953834000574892725">ನನ್ನ ಖಾತೆಗಳು</translation>
 <translation id="3954354850384043518">ಪ್ರಗತಿಯಲ್ಲಿದೆ</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> ಹರ್ಟ್ಜ್‌)</translation>
 <translation id="3954953195017194676">ನಿಮ್ಮಲ್ಲಿ ಇತ್ತೀಚೆಗೆ ಕ್ಯಾಪ್ಚರ್‌ ಆಗಿರುವ WebRTC ಈವೆಂಟ್‌ ಲಾಗ್‌ಗಳು ಇಲ್ಲ.</translation>
@@ -2238,7 +2237,6 @@
 <translation id="4267953847983678297">ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸೆಲ್ಯುಲರ್ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ</translation>
 <translation id="4268025649754414643">ಕೀ ಎನ್ಸಿಫರ್ಮೆಂಟ್</translation>
 <translation id="4270393598798225102">ಆವೃತ್ತಿ <ph name="NUMBER" /></translation>
-<translation id="4270615291506829403">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಬದಲಾಯಿಸಲು</translation>
 <translation id="4275663329226226506">ಮಾದ್ಯಮ</translation>
 <translation id="4275830172053184480">ನಿಮ್ಮ ಸಾಧನವನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="4278101229438943600">ನಿಮ್ಮ ಅಸಿಸ್ಟೆಂಟ್ ಸಿದ್ಧವಾಗಿದೆ</translation>
@@ -2271,6 +2269,7 @@
 <translation id="4325237902968425115"><ph name="LINUX_APP_NAME" /> ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4330191372652740264">ಐಸ್ ವಾಟರ್</translation>
 <translation id="4330387663455830245">ಎಂದಿಗೂ <ph name="LANGUAGE" /> ಭಾಷೆಯನ್ನು ಅನುವಾದಿಸಬೇಡ</translation>
+<translation id="4332976768901252016">ಪೋಷಕ ನಿಯಂತ್ರಣಗಳನ್ನು ಸೆಟಪ್ ಮಾಡಿ</translation>
 <translation id="4333854382783149454">RSA ಎನ್‌ಕ್ರಿಪ್ಶನ್‌ನೊಂದಿಗೆ PKCS #1 SHA-1</translation>
 <translation id="4336979451636460645">ನೆಟ್‌ವರ್ಕ್ ಲಾಗ್‌ಗಳಿಗೆ, ಇದನ್ನು ವೀಕ್ಷಿಸಿ: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942">"<ph name="EXTENSION_NAME" />" ಅಪ್ಲಿಕೇಶನ್ ನೊಂದಿಗೆ <ph name="ORIGIN" /> ಸಂಪರ್ಕಿಸಲು ಬಯಸುತ್ತದೆ</translation>
@@ -2449,7 +2448,6 @@
 <translation id="4617001782309103936">ತೀರಾ ಚಿಕ್ಕದು</translation>
 <translation id="4617270414136722281">ವಿಸ್ತರಣೆ ಆಯ್ಕೆಗಳು</translation>
 <translation id="4619615317237390068">ಇತರ ಸಾಧನಗಳಿಂದ ಟ್ಯಾಬ್‌ಗಳು</translation>
-<translation id="462021874527520979">ನಿಮ್ಮ ಸಾಧನಗಳಿಂದ ಕರೆ ಮಾಡಿ</translation>
 <translation id="4620809267248568679">ಈ ಸೆಟ್ಟಿಂಗ್ ವಿಸ್ತರಣೆಯಿಂದ ಜಾರಿಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="4623189117674524348">ಈ ಸಾಧನಕ್ಕಾಗಿ API ಪ್ರವೇಶವನ್ನು ದೃಢೀಕರಿಸಲು ಸಿಸ್ಟಂ ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="4625078469366263107">ಅಪ್ಲಿಕೇಶನ್ ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
@@ -2497,7 +2495,6 @@
 <translation id="4693155481716051732">ಸುಶಿ</translation>
 <translation id="4694024090038830733">ಪ್ರಿಂಟರ್‌ ಕಾನ್ಫಿಗರೇಶನ್ ಅನ್ನು ನಿರ್ವಾಹಕರು ನಿಯಂತ್ರಿಸುತ್ತಿದ್ದಾರೆ.</translation>
 <translation id="4694604912444486114">ಕೋತಿ</translation>
-<translation id="4696983787092045100">ನಿಮ್ಮ ಸಾಧನಗಳಿಗೆ ಪಠ್ಯವನ್ನು ಕಳುಹಿಸಿ</translation>
 <translation id="4697551882387947560">ಬ್ರೌಸಿಂಗ್ ಸೆಷನ್ ಯಾವಾಗ ಕೊನೆಗೊಳ್ಳುತ್ತದೆ</translation>
 <translation id="4699172675775169585">ಸಂಗ್ರಹಿಸಲಾಗಿರುವ ಚಿತ್ರಗಳು ಮತ್ತು ಫೈಲ್‌ಗಳು</translation>
 <translation id="4699357559218762027">(ಆಟೋ-ಲಾಂಚ್ ಮಾಡಲಾಗಿದೆ)</translation>
@@ -2515,7 +2512,6 @@
 <translation id="4722920479021006856"><ph name="APP_NAME" /> ನಿಮ್ಮ ಪರದೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳುತ್ತಿದೆ.</translation>
 <translation id="4724450788351008910">ಅನುದಾನವನ್ನು ಬದಲಾಯಿಸಲಾಗಿದೆ</translation>
 <translation id="4725511304875193254">ಕಾರ್ಗಿ</translation>
-<translation id="4725851834065990915">ನೀವು ಬಳಸುವ ವೆಬ್‌ಸೈಟ್‌ ಅಥವಾ ಆ್ಯಪ್‌ನಲ್ಲಿ ಡೇಟಾ ಸೋರಿಕೆ ಉಂಟಾಗಿದೆ, ಇದರಿಂದಾಗಿ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಬಹಿರಂಗಗೊಂಡಿದೆ. ನಿಮ್ಮ ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ತಕ್ಷಣ ಪರಿಶೀಲಿಸುವಂತೆ Chrome ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="4726710629007580002">ಈ ವಿಸ್ತರಣೆಯನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿದಾಗ ಎಚ್ಚರಿಕೆಗಳು ಕಂಡುಬಂದಿವೆ:</translation>
 <translation id="4727847987444062305">ನಿರ್ವಹಿಸಲಾದ ಅತಿಥಿ ಸೆಶನ್</translation>
 <translation id="4728558894243024398">ಪ್ಲಾಟ್‌ಫಾರ್ಮ್</translation>
@@ -2545,6 +2541,7 @@
 <translation id="4763830802490665879">ನಿರ್ಗಮನದಲ್ಲಿ ಬಹು ಸೈಟ್‌ಗಳಿಂದ ಕುಕೀಸ್ ಅನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="4765582662863429759">ನಿಮ್ಮ ಫೋನ್‌ನಿಂದ ನಿಮ್ಮ Chromebook ಗೆ ಪಠ್ಯ ಸಂದೇಶಗಳನ್ನು ರಿಲೇ ಮಾಡಲು, Android ಸಂದೇಶಗಳನ್ನು ಅನುಮತಿಸುತ್ತದೆ</translation>
 <translation id="4768332406694066911">ನಿಮ್ಮನ್ನು ಗುರುತಿಸುವ ಈ ಸಂಸ್ಥೆಗಳ ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ನೀವು ಹೊಂದಿರುವಿರಿ</translation>
+<translation id="4774824109040330448">ಹೊಂದಾಣಿಕೆಯ ದೃಢೀಕರಣ ಆ್ಯಪ್ ಬಳಸಿ, ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ QR ಕೋಡ್ ಅನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ.</translation>
 <translation id="4776146737004271126">Android ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> ಗಾಗಿ ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="4777825441726637019">Play Store</translation>
@@ -2741,7 +2738,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="5062930723426326933">ಸೈನ್‌-ಇನ್‌ ವಿಫಲವಾಗಿದೆ, ದಯವಿಟ್ಟು ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="5063480226653192405">ಬಳಕೆ</translation>
 <translation id="5065775832226780415">Smart Lock</translation>
-<translation id="5067000372742249459"><ph name="DEVICE_NAME" /> ಗೆ ಪಠ್ಯವನ್ನು ಕಳುಹಿಸಿ</translation>
 <translation id="5067399438976153555">ಯಾವಾಗಲೂ ಆನ್</translation>
 <translation id="5067867186035333991">ನಿಮ್ಮ ಮೈಕ್ರೋಫೋನ್ ಪ್ರವೇಶಿಸಲು <ph name="HOST" /> ಬಯಸುತ್ತದೆಯೇ ಎಂಬುದನ್ನು ಕೇಳಿ</translation>
 <translation id="5068918910148307423">ಡೇಟಾ ಕಳುಹಿಸುವುದನ್ನು ಮತ್ತು ಸ್ವೀಕರಿಸುವುದನ್ನು ಮುಕ್ತಾಯಗೊಳಿಸಲು ಇತ್ತೀಚಿಗೆ ಮುಚ್ಚಿದ ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿಸಬೇಡ</translation>
@@ -2988,7 +2984,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="5436492226391861498">ಪ್ರಾಕ್ಸಿ ಟನಲ್‌‌ಗಾಗಿ ನಿರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="5436510242972373446"><ph name="SITE_NAME" /> ಹುಡುಕಿ:</translation>
 <translation id="543806387003274181">ದಯವಿಟ್ಟು ನಿಮ್ಮ ಫೈಲ್‌ಗಳನ್ನು ಉಳಿಸಿಕೊಳ್ಳಿ ಮತ್ತು ಈಗಲೇ ಹೊಸದೊಂದು ಖಾತೆಯನ್ನು ರಚಿಸಿ.</translation>
-<translation id="5438224778284622050">ಆಫ್‌ಲೈನ್ ಫೈಲ್‌ಗಳನ್ನು ಅಳಿಸುವುದೇ?</translation>
 <translation id="544083962418256601">ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ರಚಿಸಿ...</translation>
 <translation id="5442228125690314719">ಡಿಸ್ಕ್ ಚಿತ್ರವನ್ನು ರಚಿಸುವಲ್ಲಿ ದೋಷ ಕಂಡುಬಂದಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="5442550868130618860">ಸ್ವಯಂಚಾಲಿತ ಅಪ್‌ಡೇಟ್ ಅನ್ನು ಆನ್ ಮಾಡಿ</translation>
@@ -3322,7 +3317,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="5908769186679515905">ಫ್ಲ್ಯಾಷ್ ರನ್ ಮಾಡುವಿಕೆಯಿಂದ ಸೈಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="5910363049092958439">ಇದರಂತೆ ಇಮೇಜ್ ಉ&amp;ಳಿಸಿ...</translation>
 <translation id="5911533659001334206">ಶಾರ್ಟ್‌ಕಟ್ ವೀಕ್ಷಕ</translation>
-<translation id="5911737117543891828">ತಾತ್ಕಾಲಿಕ Google ಡ್ರೈವ್ ಆಫ್‌ಲೈನ್ ಫೈಲ್‌ಗಳನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ. ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಲಭ್ಯವಿರುವುದಾಗಿ ನೀವು ಹೊಂದಿಸಿರುವ ಫೈಲ್‌ಗಳನ್ನು ಈ ಸಾಧನದಿಂದ ಅಳಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="5912378097832178659">ಹುಡುಕಾಟ ಇಂಜಿನ್ ಅನ್ನು &amp;ಎಡಿಟ್ ಮಾಡಿ...</translation>
 <translation id="5914724413750400082">ಮಾಡ್ಯುಲಸ್ (<ph name="MODULUS_NUM_BITS" /> ಬಿಟ್‍ಗಳು):
   <ph name="MODULUS_HEX_DUMP" />
@@ -3373,7 +3367,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="5975792506968920132">ಬ್ಯಾಟರಿ ಚಾರ್ಜ್‌ನ ಶೇಕಡಾವಾರು</translation>
 <translation id="5976160379964388480">ಇತರರು</translation>
 <translation id="5978277834170881274">&amp;ಸಾಮಾನ್ಯ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆಯನ್ನು ಬಳಸಿ</translation>
-<translation id="5979084224081478209">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="5979421442488174909"><ph name="LANGUAGE" /> ಗೆ &amp;ಭಾಷಾಂತರಿಸಿ</translation>
 <translation id="5979469435153841984">ಪುಟಗಳನ್ನು ಬುಕ್‌ಮಾರ್ಕ್‌ ಮಾಡಲು, ವಿಳಾಸಪಟ್ಟಿಯಲ್ಲಿರುವ ನಕ್ಷತ್ರವನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="5984222099446776634">ಇತ್ತೀಚೆಗೆ ಭೇಟಿ ನೀಡಿದವು</translation>
@@ -3558,6 +3551,7 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="6243280677745499710">ಪ್ರಸ್ತುತವಾಗಿ ಹೊಂದಿಸಿರುವುದು</translation>
 <translation id="6243774244933267674">ಸರ್ವರ್ ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="6246790815526961700">ಸಾಧನದಿಂದ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ</translation>
+<translation id="6247620186971210352">ಯಾವುದೇ ಆ್ಯಪ್‌ಗಳು ಕಂಡುಬಂದಿಲ್ಲ</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6247802389331535091">ಸಿಸ್ಟಂ: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">ಅಪ್‌ಡೇಟ್‌‌ ಸಿದ್ಧವಾಗಿದೆ</translation>
@@ -3786,6 +3780,7 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="6596325263575161958">ಎನ್‌ಕ್ರಿಫ್ಶನ್ ಆಯ್ಕೆಗಳು</translation>
 <translation id="6596816719288285829">IP ವಿಳಾಸ</translation>
 <translation id="6597017209724497268">ಮಾದರಿಗಳು</translation>
+<translation id="6597148444736186483">ಈ ಸಾಧನದಲ್ಲಿ ಪ್ರಾಥಮಿಕ ಖಾತೆಯಿಂದ ಸೈನ್ ಔಟ್ ಆಗಲು, ಸ್ಕ್ರೀನ್ ಮೇಲಿರುವ ಸಮಯವನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ. ನಂತರ ಕಾಣಿಸಿಕೊಳ್ಳುವ ಮೆನುವಿನಲ್ಲಿ "ಸೈನ್ ಔಟ್" ಅನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="659934686219830168">ನೀವು ಈ ಪುಟವನ್ನು ತೊರೆದ ನಂತರ ಸಿಂಕ್ ಪ್ರಾರಂಭವಾಗುತ್ತದೆ</translation>
 <translation id="6602956230557165253">ನ್ಯಾವಿಗೇಟ್ ಮಾಡಲು ಎಡ ಮತ್ತು ಬಲ ಬಾಣದ ಕೀಲಿಗಳನ್ನು ಬಳಸಿ.</translation>
 <translation id="6605847144724004692">ಇನ್ನು ಯಾವುದೇ ಬಳಕೆದಾರರಿಂದ ರೇಟ್‌ ಮಾಡಲಾಗಿಲ್ಲ.</translation>
@@ -3924,7 +3919,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="6812349420832218321">ಮೂಲದಂತೆ <ph name="PRODUCT_NAME" /> ಅನ್ನು ಚಾಲನೆಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="6812841287760418429">ಬದಲಾವಣೆಗಳನ್ನು ಇರಿಸು</translation>
 <translation id="6817174620439930047">MIDI ಸಾಧನಗಳನ್ನು ಪ್ರವೇಶಿಸಲು ಸೈಟ್‌ವೊಂದು ಸಿಸ್ಟಮ್‌ನ ಪ್ರತ್ಯೇಕ ಸಂದೇಶಗಳನ್ನು ಬಳಸಬೇಕೆಂದಾಗ ನನ್ನನ್ನು ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
-<translation id="6819440013020405090">ನೀವು ಬಳಸುವ ವೆಬ್‌ಸೈಟ್‌ ಅಥವಾ ಆ್ಯಪ್‌ನಲ್ಲಿ ಡೇಟಾ ಸೋರಿಕೆ ಉಂಟಾಗಿದೆ, ಇದರಿಂದಾಗಿ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಬಹಿರಂಗಗೊಂಡಿದೆ. ನೀವು <ph name="ORIGIN" /> ನಲ್ಲಿ ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಪರಿಶೀಲಿಸಲು ಮತ್ತು ಬದಲಾಯಿಸಲು Chrome ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="682123305478866682">ಡೆಸ್ಕ್‌ಟಾಪ್ ಬಿತ್ತರಿಸಿ</translation>
 <translation id="6823506025919456619">ನಿಮ್ಮ ಸಾಧನಗಳನ್ನು ನೋಡಲು ನೀವು Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ</translation>
 <translation id="6824564591481349393">ಇಮೇಲ್ &amp;ವಿಳಾಸವನ್ನು ನಕಲು ಮಾಡಿ</translation>
@@ -4108,7 +4102,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="708060913198414444">ಆಡಿಯೋ ವಿಳಾಸವನ್ನು ನ&amp;ಕಲಿಸಿ</translation>
 <translation id="7081952801286122383">ನೀವು ಅದೃಶ್ಯ ಮೋಡ್‌ನಲ್ಲಿರುವಿರಿ</translation>
 <translation id="708278670402572152">ಸ್ಕ್ಯಾನಿಂಗ್ ಸಕ್ರಿಯಗೊಳಿಸಲು ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸಿ</translation>
-<translation id="70850504851191913">ಡೇಟಾ ಉಲ್ಲಂಘನೆಯನ್ನು ವರದಿಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7085389578340536476">ಆಡಿಯೋ ರೆಕಾರ್ಡ್ ಮಾಡಲು Chrome ಗೆ ಅನುಮತಿಸಬೇಕೆ?</translation>
 <translation id="7088434364990739311">ಅಪ್‌ಡೇಟ್‌‌ ಪರಿಶೀಲನೆಯು ಪ್ರಾರಂಭಿಸಲು ವಿಫಲವಾಗಿದೆ (ದೋಷ ಕೋಡ್ <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip ಆರ್ಕೈವರ್ - ಫೈಲ್‌ಗಳ ಅಪ್ಲಿಕೇಶನ್‌ನಲ್ಲಿ ZIP ಫೈಲ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ ಮತ್ತು ಪ್ಯಾಕ್ ಮಾಡಿ .</translation>
@@ -4309,6 +4302,7 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="7366415735885268578">ಸೈಟ್ ಸೇರಿಸಿ</translation>
 <translation id="7366909168761621528">ಬ್ರೌಸಿಂಗ್ ಡೇಟಾ</translation>
 <translation id="736877393389250337"><ph name="URL" /> ಅನ್ನು <ph name="ALTERNATIVE_BROWSER_NAME" /> ನಲ್ಲಿ ತೆರೆಯಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ.</translation>
+<translation id="7370592524170198497">ಇಥರ್‌ನೆಟ್ EAP:</translation>
 <translation id="7371006317849674875">ಪ್ರಾರಂಭ ಸಮಯ</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">ಮೌಸ್ ಕರ್ಸರ್ ಅನ್ನು ಸರಿಸುವಾಗ ಹೈಲೈಟ್ ಮಾಡಿ</translation>
@@ -4316,6 +4310,7 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="7378627244592794276">ಬೇಡ</translation>
 <translation id="73786666777299047">Chrome ವೆಬ್‌ ಸ್ಟೋರ್ ತೆರೆಯಿರಿ</translation>
 <translation id="7378812711085314936">ಡೇಟಾ ಸಂಪರ್ಕವನ್ನು ಪಡೆಯಿರಿ</translation>
+<translation id="7378962964415201590">ಹೊಸ ಫೋನ್ ಅನ್ನು ಜೋಡಿಸಿ</translation>
 <translation id="7380768571499464492"><ph name="PRINTER_NAME" /> ಅನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7385854874724088939">ಮುದ್ರಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿರುವಾಗ ಯಾವುದೋ ತಪ್ಪು ಸಂಭವಿಸಿದೆ.  ದಯವಿಟ್ಟು ನಿಮ್ಮ ಪ್ರಿಂಟರ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="7385896526023870365">ಈ ವಿಸ್ತರಣೆಯು, ಸೈಟ್‌ಗೆ ಹೆಚ್ಚುವರಿ ಪ್ರವೇಶ ಹೊಂದಿರುವುದಿಲ್ಲ.</translation>
@@ -4326,6 +4321,7 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="7396845648024431313">ಸಿಸ್ಟಂ ಪ್ರಾರಂಭಗೊಳ್ಳುವಾಗ <ph name="APP_NAME" /> ಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ ಮತ್ತು ಒಮ್ಮೆ ನೀವು ಇತರೆ ಎಲ್ಲ <ph name="PRODUCT_NAME" /> ವಿಂಡೊಗಳನ್ನು ಮುಚ್ಚಿದರೂ ಸಹ ಹಿನ್ನೆಲೆಯಲ್ಲಿ ಚಾಲನೆಗೊಳ್ಳಲು ಮುಂದುವರಿಯುತ್ತದೆ.</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400839060291901923"><ph name="PHONE_NAME" /> ನಲ್ಲಿ ಸಂಪರ್ಕವನ್ನು ಹೊಂದಿಸಿ</translation>
+<translation id="7401778920660465883">ಈ ಸಂದೇಶವನ್ನು ವಜಾಗೊಳಿಸಿ</translation>
 <translation id="740624631517654988">ಪಾಪ್-ಅಪ್  ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="7407430846095439694">ಆಮದು ಮಾಡಿ ಮತ್ತು ಬೈಂಡ್ ಮಾಡಿ</translation>
 <translation id="7409549334477097887">ತುಂಬಾ ದೊಡ್ಡದು</translation>
@@ -4553,7 +4549,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">ನಿಮ್ಮ ಡಿಸ್‌ಪ್ಲೇನ ಗಡಿಗಳನ್ನು ಹೊಂದಿಸಿ</translation>
 <translation id="7760004034676677601">ಇದು ನೀವು ನಿರೀಕ್ಷಿಸುತ್ತಿರುವ ಆರಂಭಿಕ ಪುಟವೇ?</translation>
-<translation id="7761380698973548146">ನಿಮ್ಮ ಸಾಧನಗಳಿಂದ ಕರೆ ಮಾಡಿ</translation>
 <translation id="7764225426217299476">ವಿಳಾಸ ಸೇರಿಸಿ</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_DOMAIN" /> ರಿಂದ <ph name="DOWNLOAD_RECEIVED" /></translation>
 <translation id="7765158879357617694">ಸರಿಸು</translation>
@@ -4648,6 +4643,7 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="7851457902707056880">ಮಾಲೀಕನ ಖಾತೆಗೆ ಮಾತ್ರ ಸೈನ್‌-ಇನ್‌ ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ. ದಯವಿಟ್ಟು ರೀಬೂಟ್ ಮಾಡಿ ಮತ್ತು ಮಾಲೀಕರ ಖಾತೆಯೊಂದಿಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ. ಯಂತ್ರವು 30 ಸೆಕುಂಡುಗಳಲ್ಲಿ ಸ್ವಯಂ ರೀಬೂಟ್ ಆಗುತ್ತದೆ.</translation>
 <translation id="7851716364080026749">ಯಾವಾಗಲೂ ಕ್ಯಾಮರಾ ಹಾಗೂ ಮೈಕ್ರೋಫೋನ್ ಪ್ರವೇಶನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="7851720427268294554">IPP ವಿಶ್ಲೇಷಕ</translation>
+<translation id="78526636422538552">ಹೆಚ್ಚಿನ Google ಖಾತೆಗಳ ಸೇರಿಸುವಿಕೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="7853747251428735">ಇನ್ನಷ್ಟು ಪರಿಕರ&amp;ಗಳು</translation>
 <translation id="7857117644404132472">ವಿನಾಯಿತಿ ಸೇರಿಸು</translation>
 <translation id="7857949311770343000">ನೀವು ನಿರೀಕ್ಷಿಸುತ್ತಿರುವುದು ಈ ಹೊಸ ಟ್ಯಾಬ್ ಪುಟವೇ?</translation>
@@ -4972,6 +4968,7 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="8308179586020895837">ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಪ್ರವೇಶಿಸಲು <ph name="HOST" /> ಬಯಸುತ್ತದೆಯೇ ಎಂಬುದನ್ನು ಕೇಳಿ</translation>
 <translation id="830868413617744215">ಬೀಟಾ</translation>
 <translation id="8309458809024885768">ಪ್ರಮಾಣಪತ್ರ ಈಗಾಗಲೇ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ</translation>
+<translation id="8314089908545021657">ಹೊಸ ಫೋನ್ ಜೊತೆಗೆ ಜೋಡಿಸಿ</translation>
 <translation id="8314381333424235892">ವಿಸ್ತರಣೆ ಕಾಣೆಯಾಗಿದೆ ಅಥವಾ ಅದನ್ನು ಅನ್‍‍ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="831440797644402910">ಈ ಫೋಲ್ಡರ್ ತೆರೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="8316618172731049784"><ph name="DEVICE_NAME" /> ಗೆ ಕಳುಹಿಸಿ</translation>

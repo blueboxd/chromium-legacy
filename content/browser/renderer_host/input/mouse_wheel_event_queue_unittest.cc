@@ -240,7 +240,10 @@ class MouseWheelEventQueueTest : public testing::Test,
                       WebInputEvent::RailsMode rails_mode,
                       bool has_synthetic_phase = false) {
     WebMouseWheelEvent event = SyntheticWebMouseWheelEventBuilder::Build(
-        x, y, global_x, global_y, dX, dY, modifiers, high_precision);
+        x, y, global_x, global_y, dX, dY, modifiers,
+        high_precision
+            ? ui::input_types::ScrollGranularity::kScrollByPrecisePixel
+            : ui::input_types::ScrollGranularity::kScrollByPixel);
     event.phase = phase;
     event.momentum_phase = momentum_phase;
     event.rails_mode = rails_mode;

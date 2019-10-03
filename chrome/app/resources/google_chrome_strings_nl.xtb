@@ -20,7 +20,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1393853151966637042">Hulp bij het gebruik van Chrome</translation>
 <translation id="1399397803214730675">Deze computer beschikt al over een nieuwere versie van Google Chrome. Als de software niet werkt, verwijder je Google Chrome en probeer je het opnieuw.</translation>
 <translation id="1434626383986940139">Chrome Canary-apps</translation>
-<translation id="1457721931618994305">Google Chrome wordt bijgewerkt</translation>
 <translation id="1469002951682717133">App-opstartprogramma van Chrome</translation>
 <translation id="1553358976309200471">Chrome updaten</translation>
 <translation id="1587223624401073077">Google Chrome gebruikt je camera.</translation>
@@ -173,9 +172,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="573759479754913123">Over Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Kan Chrome niet starten. Probeer het opnieuw.</translation>
-<translation id="5877064549588274448">Kanaal gewijzigd. Start het apparaat opnieuw op om de wijzigingen door te voeren.</translation>
 <translation id="5895138241574237353">Opnieuw starten</translation>
-<translation id="5906655207909574370">Updaten bijna voltooid. Start je apparaat opnieuw op om de update te voltooien.</translation>
 <translation id="5940385492829620908">Hier vind je internet, bladwijzers en andere Chrome-instellingen.</translation>
 <translation id="5941830788786076944">Google Chrome instellen als mijn standaardbrowser</translation>
 <translation id="6014844626092547096">Je bent nu ingelogd bij Chrome! Synchronisatie is uitgeschakeld door je beheerder.</translation>
@@ -194,7 +191,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="6566149418543181476">Google Chrome updaten (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Je gebruikt <ph name="PROFILE_EMAIL" /> om je Chrome-bestanden te synchroniseren. Als je je synchronisatievoorkeur wilt bijwerken of Chrome zonder Google-account wilt gebruiken, ga je naar '<ph name="SETTINGS_LINK" />'.</translation>
 <translation id="6600954340915313787">Gekopieerd naar Chrome</translation>
-<translation id="6634887557811630702">Google Chrome is bijgewerkt.</translation>
 <translation id="6676384891291319759">Verbinding maken met internet</translation>
 <translation id="6679975945624592337">Google Chrome op de achtergrond laten uitvoeren</translation>
 <translation id="6750954913813541382">Voor het verbeteren van spelfouten verzendt Chrome de tekst die je in de browser typt naar Google</translation>
@@ -204,7 +200,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="6906909733186691861">Toekomstige versies van Chrome worden automatisch geïnstalleerd.</translation>
 <translation id="6943584222992551122">De browsergegevens van deze persoon worden verwijderd van dit apparaat. Als je de gegevens wilt herstellen, log je in bij Chrome als <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Inkomende regel zodat Google Chrome Bèta mDNS-verkeer toestaat.</translation>
-<translation id="6970811910055250180">Je apparaat bijwerken...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> vereist dat je de volgende Servicevoorwaarden leest en accepteert voordat je dit apparaat gebruikt. Met deze voorwaarden worden de Voorwaarden van Google Chrome OS niet uitgebreid, aangepast of beperkt.</translation>
 <translation id="6989339256997917931">Google Chrome is bijgewerkt, maar je hebt het programma minstens 30 dagen niet gebruikt.</translation>
 <translation id="7098166902387133879">Google Chrome gebruikt je microfoon.</translation>
@@ -242,7 +237,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="7962410387636238736">Deze computer ontvangt geen Google Chrome-updates meer, omdat Windows XP en Windows Vista niet meer worden ondersteund</translation>
 <translation id="8008534537613507642">Chrome opnieuw installeren</translation>
 <translation id="8013993649590906847">Als een afbeelding geen nuttige beschrijving bevat, probeert Chrome je er een te geven. Afbeeldingen worden naar Google verzonden om beschrijvingen te maken.</translation>
-<translation id="8030318113982266900">Je apparaat bijwerken naar <ph name="CHANNEL_NAME" /> kanaal...</translation>
 <translation id="8032142183999901390">Nadat je je account uit Chrome hebt verwijderd, moet je je geopende tabbladen mogelijk opnieuw laden om de wijzigingen door te voeren.</translation>
 <translation id="8129812357326543296">Over &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Installeer Chrome op je telefoon. We sturen een sms naar je telefoon.</translation>
@@ -265,7 +259,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="8606668294522778825">Google Chrome kan webservices gebruiken om je browse-ervaring te verbeteren. Je kunt deze services eventueel uitschakelen. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome reageert niet meer. Nu opnieuw starten?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome wordt over één minuut opnieuw gestart}other{Chrome wordt over # minuten opnieuw gestart}}</translation>
-<translation id="8667808506758191620">Je <ph name="DEVICE_TYPE" /> is up-to-date.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chrome start.</translation>
 <translation id="870251953148363156">&amp;Google Chrome updaten</translation>

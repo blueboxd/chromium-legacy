@@ -35,7 +35,7 @@
 #include "base/strings/string_util.h"
 #include "components/viz/common/features.h"
 #include "content/public/common/content_switches.h"
-#include "fuchsia/engine/common.h"
+#include "fuchsia/engine/common/web_engine_content_client.h"
 #include "fuchsia/engine/switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/key_system_names.h"
@@ -97,13 +97,16 @@ bool SetContentDirectoriesInCommandLine(
                       base::NumberToString(directory_handle_id)}));
   }
 
-  command_line->AppendSwitchASCII(kContentDirectories,
+  command_line->AppendSwitchASCII(switches::kContentDirectories,
                                   base::JoinString(directory_pairs, ","));
 
   return true;
 }
 
 }  // namespace
+
+const uint32_t ContextProviderImpl::kContextRequestHandleId =
+    PA_HND(PA_USER0, 0);
 
 ContextProviderImpl::ContextProviderImpl() = default;
 
@@ -195,7 +198,7 @@ void ContextProviderImpl::Create(
               &launch_options.handles_to_transfer,
               devtools_listener_channels.back().get())));
     }
-    launch_command.AppendSwitchNative(kRemoteDebuggerHandles,
+    launch_command.AppendSwitchNative(switches::kRemoteDebuggerHandles,
                                       base::JoinString(handles_ids, ","));
   }
 
@@ -279,7 +282,7 @@ void ContextProviderImpl::Create(
       }
       product_tag += "/" + params.user_agent_version();
     }
-    launch_command.AppendSwitchNative(kUserAgentProductAndVersion,
+    launch_command.AppendSwitchNative(switches::kUserAgentProductAndVersion,
                                       std::move(product_tag));
   } else if (params.has_user_agent_version()) {
     DLOG(ERROR) << "Embedder version without product.";

@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Utilizados</translation>
 <translation id="1171770572613082465">Veja Websites populares ao tocar no botão "Principais sites"</translation>
 <translation id="1173894706177603556">Mudar nome</translation>
-<translation id="1175310183703641346">Os seus marcadores, o histórico, as palavras-passe, entre outros, já não são sincronizados com a sua Conta Google.</translation>
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="1181037720776840403">Remover</translation>
 <translation id="1188239144602654184">Aceder à realidade aumentada</translation>
@@ -193,7 +192,7 @@
 <translation id="2387895666653383613">Escala do texto</translation>
 <translation id="2394602618534698961">Os ficheiros que transferir aparecem aqui.</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
-<translation id="2410754283952462441">Selecionar uma conta</translation>
+<translation id="2410754283952462441">Selecione uma conta</translation>
 <translation id="2414886740292270097">Escuro</translation>
 <translation id="2416359993254398973">O Chrome necessita de autorização de acesso à câmara para este site.</translation>
 <translation id="2426805022920575512">Selecionar outra conta</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">Adicionado aos marcadores no <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sincronização em segundo plano</translation>
 <translation id="3771001275138982843">Não foi possível transferir a atualização.</translation>
+<translation id="3771033907050503522">Sep. nav. anónima</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Ative o Bluetooth<ph name="END_LINK" /> para permitir a sincronização</translation>
 <translation id="3775705724665058594">Envie para os seus dispositivos</translation>
 <translation id="3778956594442850293">Adicionado ao ecrã principal</translation>
@@ -484,7 +484,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="4719927025381752090">Propor tradução</translation>
 <translation id="4720023427747327413">Abrir no <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Ajude a melhorar o Chrome. <ph name="BEGIN_LINK" />Responder ao inquérito<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">Está a mudar de contas de sincronização de <ph name="ACCOUNT_EMAIL_OLD" /> para <ph name="ACCOUNT_EMAIL_NEW" />. Os dados do Chrome existentes são geridos por <ph name="MANAGED_DOMAIN" />. Esta ação elimina os seus dados deste dispositivo, embora permaneçam em <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">Atualizar</translation>
 <translation id="4738836084190194332">Última sincronização: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Abrir um novo separador</translation>
@@ -668,13 +667,13 @@ Certifique-se de que confia neste site antes de entrar na RV.</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> poupado(s)</translation>
 <translation id="5939518447894949180">Repor</translation>
 <translation id="5942872142862698679">A utilizar o Google para pesquisa</translation>
-<translation id="5944669582486359588">No Modo Lite, o Chrome carrega páginas mais rapidamente e utiliza até menos 60 por cento de dados. A tecnologia na nuvem da Google otimiza as páginas visitadas.</translation>
 <translation id="5952764234151283551">Envia para a Google o URL de uma página à qual esteja a tentar aceder.</translation>
 <translation id="5956665950594638604">Abrir Centro de Ajuda do Chrome num novo separador</translation>
 <translation id="5958275228015807058">Encontre os seus ficheiros e páginas nas Transferências.</translation>
 <translation id="5962718611393537961">Toque para reduzir</translation>
 <translation id="6000066717592683814">Manter o Google</translation>
 <translation id="6005538289190791541">Palavra-passe sugerida</translation>
+<translation id="6036057147555329831">ICU extra</translation>
 <translation id="6039379616847168523">Ir para o próximo separador</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6042308850641462728">Mais</translation>
@@ -815,7 +814,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7029809446516969842">Palavras-passe</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7055152154916055070">Redirecionamento bloqueado:</translation>
-<translation id="7062545763355031412">Aceitar e mudar de contas</translation>
 <translation id="7063006564040364415">Não foi possível estabelecer ligação ao servidor de sincronização.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 selecionado}other{# selecionados}}</translation>
 <translation id="7071521146534760487">Gerir conta</translation>
@@ -1099,7 +1097,6 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="9139318394846604261">Compras</translation>
 <translation id="9155898266292537608">Também pode pesquisar ao tocar rapidamente numa palavra.</translation>
 <translation id="9169507124922466868">O histórico de navegação está aberto até meio.</translation>
-<translation id="9188680907066685419">Terminar sessão na conta gerida</translation>
 <translation id="9204836675896933765">Falta 1 ficheiro</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Não é possível efetuar chamadas</translation>
@@ -1108,7 +1105,6 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="932327136139879170">Página inicial</translation>
 <translation id="938850635132480979">Erro: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Aceder ao microfone</translation>
-<translation id="951339005376969845">Eliminar os dados existentes. Pode obtê-los ao mudar novamente para <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">O Chrome pode utilizar o <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> para pesquisar na China. Pode alterar esta opção nas <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" />.</translation>
 <translation id="965817943346481315">Bloquear se o site apresentar anúncios intrusivos ou enganadores (recomendado)</translation>
 <translation id="968900484120156207">As páginas que visita aparecem aqui.</translation>

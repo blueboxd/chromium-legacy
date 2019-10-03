@@ -45,6 +45,7 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
     kCompositionMarkerIndex,
     kActiveSuggestionMarkerIndex,
     kSuggestionMarkerIndex,
+    kTextFragmentMarkerIndex,
     kMarkerTypeIndexesCount
   };
 
@@ -55,6 +56,7 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
     kComposition = 1 << kCompositionMarkerIndex,
     kActiveSuggestion = 1 << kActiveSuggestionMarkerIndex,
     kSuggestion = 1 << kSuggestionMarkerIndex,
+    kTextFragment = 1 << kTextFragmentMarkerIndex,
   };
 
   class MarkerTypesIterator
@@ -122,6 +124,7 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
     static MarkerTypes Spelling() { return MarkerTypes(kSpelling); }
     static MarkerTypes TextMatch() { return MarkerTypes(kTextMatch); }
     static MarkerTypes Suggestion() { return MarkerTypes(kSuggestion); }
+    static MarkerTypes TextFragment() { return MarkerTypes(kTextFragment); }
 
     bool Contains(MarkerType type) const { return mask_ & type; }
     bool Intersects(const MarkerTypes& types) const {

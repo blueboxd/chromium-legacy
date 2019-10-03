@@ -3087,6 +3087,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kForceDeviceScaleFactor,
     switches::kForceGpuMemAvailableMb,
     switches::kForceGpuRasterization,
+    switches::kForceHighContrast,
     switches::kForceOverlayFullscreenVideo,
     switches::kForceVideoOverlays,
     switches::kFullMemoryCrashReport,

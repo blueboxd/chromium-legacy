@@ -204,8 +204,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   void AlignChildren(FlexLayoutAlgorithm&);
   void ApplyStretchAlignmentToChild(FlexItem& child);
   void FlipForRightToLeftColumn(const Vector<FlexLine>& line_contexts);
-  void FlipForWrapReverse(const Vector<FlexLine>&,
-                          LayoutUnit cross_axis_start_edge);
 
   float CountIntrinsicSizeForAlgorithmChange(
       LayoutUnit max_preferred_width,

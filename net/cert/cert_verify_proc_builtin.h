@@ -8,7 +8,9 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
+#include "base/supports_user_data.h"
 #include "net/base/net_export.h"
+#include "net/der/parse_values.h"
 
 namespace net {
 
@@ -33,6 +35,32 @@ class NET_EXPORT SystemTrustStoreProvider {
   // thread-safe. However, the returned SystemTrustStore will only be used on
   // a single thread.
   virtual std::unique_ptr<SystemTrustStore> CreateSystemTrustStore() = 0;
+};
+
+class NET_EXPORT CertVerifyProcBuiltinResultDebugData
+    : public base::SupportsUserData::Data {
+ public:
+  CertVerifyProcBuiltinResultDebugData(
+      base::Time verification_time,
+      const der::GeneralizedTime& der_verification_time);
+
+  static const CertVerifyProcBuiltinResultDebugData* Get(
+      const base::SupportsUserData* debug_data);
+  static void Create(base::SupportsUserData* debug_data,
+                     base::Time verification_time,
+                     const der::GeneralizedTime& der_verification_time);
+
+  // base::SupportsUserData::Data implementation:
+  std::unique_ptr<Data> Clone() override;
+
+  base::Time verification_time() const { return verification_time_; }
+  const der::GeneralizedTime& der_verification_time() const {
+    return der_verification_time_;
+  }
+
+ private:
+  base::Time verification_time_;
+  der::GeneralizedTime der_verification_time_;
 };
 
 // TODO(crbug.com/649017): This is not how other cert_verify_proc_*.h are

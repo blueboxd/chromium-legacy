@@ -20,7 +20,6 @@
 #include "components/gcm_driver/crypto/p256_key_util.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/sync_device_info/device_info.h"
-#include "components/sync_device_info/local_device_info_provider.h"
 #include "crypto/ec_private_key.h"
 
 #if defined(OS_ANDROID)
@@ -33,12 +32,10 @@ using sync_pb::SharingSpecificFields;
 SharingDeviceRegistration::SharingDeviceRegistration(
     SharingSyncPreference* sharing_sync_preference,
     instance_id::InstanceIDDriver* instance_id_driver,
-    VapidKeyManager* vapid_key_manager,
-    syncer::LocalDeviceInfoProvider* local_device_info_provider)
+    VapidKeyManager* vapid_key_manager)
     : sharing_sync_preference_(sharing_sync_preference),
       instance_id_driver_(instance_id_driver),
-      vapid_key_manager_(vapid_key_manager),
-      local_device_info_provider_(local_device_info_provider) {}
+      vapid_key_manager_(vapid_key_manager) {}
 
 SharingDeviceRegistration::~SharingDeviceRegistration() = default;
 
@@ -49,12 +46,16 @@ void SharingDeviceRegistration::RegisterDevice(RegistrationCallback callback) {
     return;
   }
 
-  auto registration = sharing_sync_preference_->GetFCMRegistration();
+  base::Optional<SharingSyncPreference::FCMRegistration> registration =
+      sharing_sync_preference_->GetFCMRegistration();
+  base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info =
+      sharing_sync_preference_->GetLocalSharingInfo();
   if (registration && registration->authorized_entity == authorized_entity &&
-      (base::Time::Now() - registration->timestamp < kRegistrationExpiration)) {
+      (base::Time::Now() - registration->timestamp < kRegistrationExpiration) &&
+      sharing_info) {
     // Authorized entity hasn't changed nor has expired, skip to next step.
     RetrieveEncryptionInfo(std::move(callback), registration->authorized_entity,
-                           registration->fcm_token);
+                           sharing_info->fcm_token);
     return;
   }
 
@@ -111,22 +112,14 @@ void SharingDeviceRegistration::OnEncryptionInfoReceived(
     std::string auth_secret) {
   sharing_sync_preference_->SetFCMRegistration(
       SharingSyncPreference::FCMRegistration(authorized_entity,
-                                             fcm_registration_token, p256dh,
-                                             auth_secret, base::Time::Now()));
-
-  const syncer::DeviceInfo* local_device_info =
-      local_device_info_provider_->GetLocalDeviceInfo();
-  if (!local_device_info) {
-    std::move(callback).Run(SharingDeviceRegistrationResult::kSyncServiceError);
-    return;
-  }
+                                             base::Time::Now()));
 
   std::set<SharingSpecificFields::EnabledFeatures> enabled_features =
       GetEnabledFeatures();
-  SharingSyncPreference::Device device(
+  syncer::DeviceInfo::SharingInfo sharing_info(
       fcm_registration_token, std::move(p256dh), std::move(auth_secret),
       enabled_features);
-  sharing_sync_preference_->SetSyncDevice(local_device_info->guid(), device);
+  sharing_sync_preference_->SetLocalSharingInfo(std::move(sharing_info));
   std::move(callback).Run(SharingDeviceRegistrationResult::kSuccess);
 }
 
@@ -139,10 +132,7 @@ void SharingDeviceRegistration::UnregisterDevice(
     return;
   }
 
-  const syncer::DeviceInfo* local_device_info =
-      local_device_info_provider_->GetLocalDeviceInfo();
-  if (local_device_info)
-    sharing_sync_preference_->RemoveDevice(local_device_info->guid());
+  sharing_sync_preference_->ClearLocalSharingInfo();
 
   instance_id_driver_->GetInstanceID(kSharingFCMAppID)
       ->DeleteToken(

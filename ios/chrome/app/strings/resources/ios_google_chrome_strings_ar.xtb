@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">‏باستخدام هذا التطبيق، أنت توافق على <ph name="BEGIN_LINK_TOS" />بنود الخدمة<ph name="END_LINK_TOS" /> و<ph name="BEGIN_LINK_PRIVACY" />إشعار الخصوصية<ph name="END_LINK_PRIVACY" /> من Chrome.</translation>
 <translation id="2147651015520127414">‏لقد تحقق Chrome من أن <ph name="ISSUER" /> أصدر شهادة الموقع الإلكتروني.</translation>
 <translation id="2199719347983604670">‏البيانات من مزامنة Chrome</translation>
-<translation id="2342981853652716282">‏سجّل الدخول إلى Chrome للحصول على الإشارات المرجعية وكلمات المرور والإعدادات الأخرى واستخدامها على جميع أجهزتك.</translation>
 <translation id="2347208864470321755">‏عند تشغيل هذه الميزة، سيقترح Chrome ترجمة الصفحات المكتوبة بلغات أخرى باستخدام "ترجمة Google". <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">‏لحفظ الصور، انقر على الإعدادات للسماح لمتصفح Chrome باستخدام صورك</translation>
 <translation id="2576431527583832481">‏لقد أصبح Chrome أفضل من ذي قبل! يتوفر إصدار جديد.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">‏يمكنك المساعدة في تحسين Chrome عن طريق إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google.</translation>
 <translation id="415767770115540173">‏احصل على تجربة أفضل لاستخدام Google في Chrome استنادًا إلى موقعك.</translation>
 <translation id="424864128008805179">‏هل تريد تسجيل الخروج من Chrome؟</translation>
+<translation id="4249068189593983585">‏نصيحة لاستخدام Chrome: لمزيد من خيارات علامات التبويب، يمكنك اللمس مع الاستمرار على الزر "عرض علامات التبويب" في شريط الأدوات الموجود أسفل الشاشة أو أعلاها.</translation>
 <translation id="4523886039239821078">‏تتسبب بعض الإضافات في تعطل Chrome. يُرجى إزالتها:</translation>
 <translation id="5389212809648216794">‏يتعذر على Google Chrome استخدام الكاميرا نظرًا لأنها قيد الاستخدام من قِبل تطبيق آخر</translation>
 <translation id="5621912349729388018">‏<ph name="BEGIN_LINK" />يُرجى مراجعة بنود خدمة Chrome المعدَّلة.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">‏تتسبب بعض الإضافات في تعطل Chrome. يُرجى محاولة إزالتها.</translation>
 <translation id="8459495907675268833">‏تمت إزالة البيانات المُحددة من متصفح Chrome والأجهزة التي تمت مزامنتها. قد يحتوي حسابك في Google على نماذج أخرى من سجل التصفح، مثل عمليات البحث والأنشطة من خدمات Google الأخرى في history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">‏قد يستخدم Google Chrome خدمات الويب لتحسين تجربة التصفح. ويمكنك بشكل اختياري إيقاف هذه الخدمات. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 </translationbundle>

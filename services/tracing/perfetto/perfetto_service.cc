@@ -10,6 +10,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/tracing/perfetto/consumer_host.h"

@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">చిత్రాన్ని సేవ్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="1180526666083833456">అన్ని పరికరాలలో సింక్ చేయండి మరియు వ్యక్తిగతీకరించండి.</translation>
 <translation id="1181037720776840403">తీసివేయి</translation>
+<translation id="1207113853726624428">కొత్త శోధన</translation>
 <translation id="1209206284964581585">ప్రస్తుతానికి దాచు</translation>
 <translation id="1219674500290482172">ఇంటర్నెట్‌కు కనెక్ట్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="122699739164161391">అన్ని ట్యాబ్‌లను మూసివేయి</translation>
@@ -43,6 +44,7 @@
 <translation id="1449835205994625556">పాస్‌వర్డ్‌ను దాచండి</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> అంశాలు</translation>
 <translation id="1491277525950327607">సెట్టింగ్‌ను టోగుల్ చేయడానికి రెండుసార్లు నొక్కండి</translation>
+<translation id="1509486075633541495">వెబ్‌సైట్‌కు సైన్ ఇన్ చేయండి</translation>
 <translation id="152234381334907219">ఎప్పటికి సేవ్ చెయ్యబడవు</translation>
 <translation id="1540800554400757039">చిరునామా 1</translation>
 <translation id="1545749641540134597">QR కోడ్‌ను స్కాన్ చేయండి</translation>
@@ -71,7 +73,6 @@
 <translation id="1828824471510190776">పాస్‌వర్డ్‌ను సూచించండి...</translation>
 <translation id="1870148520156231997">పాస్‌వర్డ్‌ను చూపండి</translation>
 <translation id="1872096359983322073">టార్చ్</translation>
-<translation id="1876721852596493031">వినియోగ డేటాను పంపు</translation>
 <translation id="1911619930368729126">Google డిస్క్‌కి అప్‌. చే.</translation>
 <translation id="1923342640370224680">గత గంట</translation>
 <translation id="1941314575388338491">కాపీ చేయడానికి రెండుసార్లు నొక్కండి.</translation>
@@ -94,7 +95,6 @@
 <translation id="2207590065820824892">చదవాల్సిన జాబితాలో <ph name="UNREAD_COUNT" /> కథనాలు ఉన్నాయి.</translation>
 <translation id="2230173723195178503">వెబ్‌పేజీ లోడ్ అయ్యింది</translation>
 <translation id="2239626343334228536">బ్రౌజింగ్ డేటాను తీసివేస్తోంది...</translation>
-<translation id="2256128224215992540">శోధన &amp; సైట్ సూచనలు</translation>
 <translation id="2267753748892043616">ఖాతాను జోడించు</translation>
 <translation id="2268044343513325586">మరింత మెరుగుపరచండి</translation>
 <translation id="2273327106802955778">మరిన్ని మెను</translation>
@@ -130,6 +130,7 @@
 <translation id="2712127207578915686">ఫైల్‌ను తెరవలేకపోయింది</translation>
 <translation id="2718352093833049315">Wi-Fiలో మాత్రమే</translation>
 <translation id="2747003861858887689">మునుపటి ఫీల్డ్</translation>
+<translation id="2773292004659987824">అజ్ఞాత శోధన</translation>
 <translation id="2780046210906776326">ఇమెయిల్ ఖాతాలు లేవు</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">ట్యాబ్ స్విచర్ నుండి నిష్క్రమించు</translation>
@@ -294,7 +295,6 @@
 <translation id="5197255632782567636">ఇంటర్నెట్</translation>
 <translation id="5228579091201413441">సమకాలీకరణను ప్రారంభించండి</translation>
 <translation id="5234764350956374838">తొలగించు</translation>
-<translation id="5244474230056479698"><ph name="EMAIL" />కి సమకాలీకరిస్తోంది</translation>
 <translation id="5245322853195994030">సింక్‌ను రద్దు చేయి</translation>
 <translation id="5271549068863921519">పాస్‌వర్డ్‌ను సేవ్ చేయి</translation>
 <translation id="5300589172476337783">చూపించు</translation>
@@ -500,6 +500,7 @@
 <translation id="8261506727792406068">తొలగించు</translation>
 <translation id="8281781826761538115">డిఫాల్ట్ - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">కొత్త శోధన</translation>
+<translation id="8323906514956095947">మరిన్ని ట్యాబ్ ఎంపికల కోసం తాకి &amp; అలాగే నొక్కి ఉంచండి</translation>
 <translation id="8328777765163860529">అన్నింటినీ మూసివేయి</translation>
 <translation id="8407669440184693619">ఈ సైట్ కోసం పాస్‌వర్డ్‌లు కనుగొనబడలేదు</translation>
 <translation id="842017693807136194">దీనితో సైన్ ఇన్ చేయబడింది</translation>

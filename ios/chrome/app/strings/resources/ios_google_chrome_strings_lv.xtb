@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Izmantojot šo lietojumprogrammu, jūs piekrītat Chrome <ph name="BEGIN_LINK_TOS" />pakalpojumu sniegšanas noteikumiem<ph name="END_LINK_TOS" /> un <ph name="BEGIN_LINK_PRIVACY" />konfidencialitātes paziņojumam<ph name="END_LINK_PRIVACY" />.</translation>
 <translation id="2147651015520127414">Chrome apstiprināja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu.</translation>
 <translation id="2199719347983604670">Chrome sinhronizācijas dati</translation>
-<translation id="2342981853652716282">Pierakstieties pārlūkā Chrome, lai iegūtu savas grāmatzīmes, paroles un citu saturu visās savās ierīcēs.</translation>
 <translation id="2347208864470321755">Ja šī funkcija ir ieslēgta, Chrome piedāvā tulkot citās valodās rakstītas lapas, izmantojot Google tulkotāju. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="2441696206556358796">Lai saglabātu attēlus, pieskarieties vienumam Iestatījumi un atļaujiet Chrome lietot fotoattēlus.</translation>
 <translation id="2576431527583832481">Pārlūkprogramma Chrome ir uzlabota! Ir pieejama jauna versija.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Uzlabojiet pārlūku Chrome, uzņēmumam Google sūtot lietojuma statistiku un avāriju pārskatus.</translation>
 <translation id="415767770115540173">Uzlabojiet savu Google pakalpojumu izmantošanas pieredzi pārlūkā Chrome, sūtot informāciju par savu atrašanās vietu.</translation>
 <translation id="424864128008805179">Vai izrakstīties no pārlūka Chrome?</translation>
+<translation id="4249068189593983585">Chrome padoms. Lai iegūtu vairāk ciļņu iespēju, rīkjoslā, kas atrodas ekrāna apakšdaļā vai augšdaļā, pieskarieties pogai Rādīt cilnes un turiet to.</translation>
 <translation id="4523886039239821078">Daži papildinājumi var izraisīt pārlūka Chrome avarēšanu. Lūdzu, atinstalējiet šos papildinājumus:</translation>
 <translation id="5389212809648216794">Google Chrome pašlaik nevar izmantot kameru, jo to izmanto cita lietojumprogramma.</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Izlasiet atjauninātos Chrome pakalpojumu sniegšanas noteikumus<ph name="END_LINK" />.</translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Daži papildinājumi var izraisīt pārlūka Chrome avarēšanu. Lūdzu, atinstalējiet tos.</translation>
 <translation id="8459495907675268833">Atlasītie dati ir noņemti no pārlūka Chrome un sinhronizētajām ierīcēm. Jūsu Google kontam vietnē history.google.com var būt citu veidu pārlūkošanas vēstures dati, piemēram, meklēšanas vaicājumi un darbības citos Google pakalpojumos.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome var izmantot tīmekļa pakalpojumus, lai uzlabotu jūsu pārlūkošanas pieredzi. Jūs varat arī atspējot šos pakalpojumus. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 </translationbundle>

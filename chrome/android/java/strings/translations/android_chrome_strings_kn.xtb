@@ -22,7 +22,6 @@
 <translation id="116280672541001035">ಬಳಕೆಯಾಗಿದ್ದು</translation>
 <translation id="1171770572613082465">"ಉನ್ನತ ಸೈಟ್‌ಗಳು" ಬಟನ್ ಟ್ಯಾಪ್ ಮಾಡುವ ಮೂಲಕ ಜನಪ್ರಿಯ ವೆಬ್‌ಸೈಟ್‌ಗಳನ್ನು ನೋಡಿ</translation>
 <translation id="1173894706177603556">ಮರುಹೆಸರಿಸು</translation>
-<translation id="1175310183703641346">ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಹೆಚ್ಚಿನವುಗಳನ್ನು ಇನ್ನು ಮುಂದೆ ನಿಮ್ಮ Google ಖಾತೆಗೆ ಸಿಂಕ್ ಮಾಡುವುದಿಲ್ಲ</translation>
 <translation id="1178581264944972037">ವಿರಾಮ</translation>
 <translation id="1181037720776840403">ತೆಗೆದುಹಾಕು</translation>
 <translation id="1188239144602654184">AR ಅನ್ನು ನಮೂದಿಸಿ</translation>
@@ -362,6 +361,7 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> ನಲ್ಲಿ ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="3744111561329211289">ಹಿನ್ನೆಲೆ ಸಿಂಕ್</translation>
 <translation id="3771001275138982843">ಅಪ್‌ಡೇಟ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
+<translation id="3771033907050503522">ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="3773755127849930740">ಜೋಡಿಸುವಿಕೆ ಅನುಮತಿಸಲು <ph name="BEGIN_LINK" />ಬ್ಲೂಟೂತ್ ಆನ್ ಮಾಡಿ<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">ನಿಮ್ಮ ಸಾಧನಗಳಿಗೆ ಕಳುಹಿಸಿ</translation>
 <translation id="3778956594442850293">ಹೋಮ್‌ನ ಪರದೆಗೆ ಸೇರಿಸಲಾಗಿದೆ</translation>
@@ -484,7 +484,6 @@
 <translation id="4719927025381752090">ಅನುವಾದಿಸಲು ಅವಕಾಶಿಸಿ</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="4720982865791209136">Chrome ಸುಧಾರಣೆಗೆ ಸಹಾಯ ಮಾಡಿ. <ph name="BEGIN_LINK" />ಸಮೀಕ್ಷೆಯಲ್ಲಿ ಭಾಗವಹಿಸಿ<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982"><ph name="ACCOUNT_EMAIL_OLD" /> ರಿಂದ <ph name="ACCOUNT_EMAIL_NEW" /> ಗೆ ನೀವು ಸಿಂಕ್ ಖಾತೆಗಳನ್ನು ಬದಲಾಯಿಸುತ್ತಿರುವಿರಿ. ನಿಮ್ಮ ಪ್ರಸ್ತುತ Chrome ಡೇಟಾವನ್ನು <ph name="MANAGED_DOMAIN" /> ನಿರ್ವಹಿಸುತ್ತಿದೆ. ಈ ಸಾಧನದಲ್ಲಿರುವ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಇದು ಅಳಿಸಿಹಾಕುತ್ತದೆ, ಆದರೆ ನಿಮ್ಮ ಡೇಟಾ <ph name="ACCOUNT_EMAIL_OLD" /> ನಲ್ಲಿ ಹಾಗೆಯೇ ಇರುತ್ತದೆ.</translation>
 <translation id="473775607612524610">ಅಪ್‌ಡೇಟ್‌‌</translation>
 <translation id="4738836084190194332">ಕೊನೆಯದಾಗಿ ಸಿಂಕ್ ಮಾಡಿರುವ ಸಮಯ: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">ಹೊಸ ಟ್ಯಾಬ್ ತೆರೆಯಿರಿ</translation>
@@ -668,13 +667,13 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="5937580074298050696"><ph name="AMOUNT" /> ಉಳಿಸಲಾಗಿದೆ</translation>
 <translation id="5939518447894949180">ಮರುಹೊಂದಿಸು</translation>
 <translation id="5942872142862698679">ಹುಡುಕಲು Google ಬಳಸಲಾಗುತ್ತಿದೆ</translation>
-<translation id="5944669582486359588">ಲೈಟ್ ಮೋಡ್‍ನಲ್ಲಿ, Chrome ವೇಗವಾಗಿ ಪುಟಗಳನ್ನು ಲೋಡ್ ಮಾಡುತ್ತದೆ, ಮತ್ತು ಸಾಮಾನ್ಯಕ್ಕಿಂತ ಶೇಕಡಾ 60 ರಷ್ಟು ಕಡಿಮೆ ಡೇಟಾವನ್ನು ಬಳಸುತ್ತದೆ. Google ನ ಕ್ಲೌಡ್ ತಂತ್ರಜ್ಞಾನವು, ನೀವು ಭೇಟಿ ನೀಡುವ ಪುಟಗಳನ್ನು ಆಪ್ಟಿಮೈಸ್ ಮಾಡುತ್ತದೆ.</translation>
 <translation id="5952764234151283551">ನೀವು ಸಂಪರ್ಕಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿರುವ ಪುಟದ URL ಅನ್ನು Google ಗೆ ಕಳುಹಿಸುತ್ತದೆ</translation>
 <translation id="5956665950594638604">ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ Chrome ಸಹಾಯ ಕೇಂದ್ರ ತೆರೆಯಿರಿ</translation>
 <translation id="5958275228015807058">ಡೌನ್‌ಲೋಡ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಫೈಲ್‌ಗಳು ಮತ್ತು ಪುಟಗಳನ್ನು ಹುಡುಕಿ</translation>
 <translation id="5962718611393537961">ಕುಗ್ಗಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="6000066717592683814">Google ಇರಿಸಿಕೊಳ್ಳಿ</translation>
 <translation id="6005538289190791541">ಸೂಚಿಸಿದ ಪಾಸ್‌ವರ್ಡ್</translation>
+<translation id="6036057147555329831">ಹೆಚ್ಚುವರಿ ICU</translation>
 <translation id="6039379616847168523">ಮುಂದಿನ ಟ್ಯಾಬ್‌ಗೆ ಹೋಗಿ</translation>
 <translation id="6040143037577758943">ಮುಚ್ಚಿರಿ</translation>
 <translation id="6042308850641462728">ಇನ್ನಷ್ಟು</translation>
@@ -816,7 +815,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="7029809446516969842">ಪಾಸ್‌ವರ್ಡ್‌ಗಳು</translation>
 <translation id="7053983685419859001">ನಿರ್ಬಂಧಿಸು</translation>
 <translation id="7055152154916055070">ಮರುನಿರ್ದೇಶಿಸುವಿಕೆಯನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ:</translation>
-<translation id="7062545763355031412">ಸಮ್ಮತಿಸಿ ಮತ್ತು ಖಾತೆಗಳನ್ನು ಬದಲಾಯಿಸಿ</translation>
 <translation id="7063006564040364415">ಸಿಂಕ್ ಸರ್ವರ್‌ಗೆ ಸಂಪರ್ಕ ಹೊಂದಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ}one{# ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ}other{# ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ}}</translation>
 <translation id="7071521146534760487">ಖಾತೆಯನ್ನು ನಿರ್ವಹಿಸಿ</translation>
@@ -1100,7 +1098,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="9139318394846604261">ಶಾಪಿಂಗ್</translation>
 <translation id="9155898266292537608">ನೀವು ಪದವನ್ನು ಕ್ಷಿಪ್ರವಾಗಿ ಟ್ಯಾಪ್ ಮಾಡುವ ಮೂಲಕವೂ ಹುಡುಕಬಹುದು</translation>
 <translation id="9169507124922466868">ನ್ಯಾವಿಗೇಷನ್ ಇತಿಹಾಸವು ಅರ್ಧ-ತೆರೆದಿದೆ</translation>
-<translation id="9188680907066685419">ನಿರ್ವಹಿಸಲಾದ ಖಾತೆಯಿಂದ ಸೈನ್ ಔಟ್ ಮಾಡಿ</translation>
 <translation id="9204836675896933765">1 ಫೈಲ್ ಬಾಕಿ ಉಳಿದಿದೆ</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">ಕರೆಗಳನ್ನು ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
@@ -1109,7 +1106,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="932327136139879170">ಹೋಮ್</translation>
 <translation id="938850635132480979">ದೋಷ: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">ನಿಮ್ಮ ಮೈಕ್ರೋಫೋನ್ ಪ್ರವೇಶಿಸಿ</translation>
-<translation id="951339005376969845">ಪ್ರಸ್ತುತ ಡೇಟಾ ಅಳಿಸಿ. ನೀವು <ph name="FROM_ACCOUNT" /> ಗೆ ಮರಳಿ ಬದಲಿಸುವ ಮೂಲಕ ಅದನ್ನು ಮರಳಿ ಪಡೆಯಬಹುದು.</translation>
 <translation id="95817756606698420">Chrome ಚೀನಾದಲ್ಲಿ ಹುಡುಕಲು <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> ಬಳಸಬಹುದು. ನೀವು ಇದನ್ನು <ph name="BEGIN_LINK" />ಸೆಟ್ಟಿಂಗ್‌ಗಳು<ph name="END_LINK" /> ನಲ್ಲಿ ಬದಲಾಯಿಸಬಹುದು.</translation>
 <translation id="965817943346481315">ಅತಿಕ್ರಮಣಕಾರಿಯಾಗಿರುವ ಅಥವಾ ತಪ್ಪುದಾರಿಗೆಳೆಯುವ ಜಾಹೀರಾತುಗಳನ್ನು ಸೈಟ್ ತೋರಿಸಿದರೆ ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="968900484120156207">ನೀವು ಭೇಟಿ ನೀಡುವ ಪುಟಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ</translation>

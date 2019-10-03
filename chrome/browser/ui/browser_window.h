@@ -66,6 +66,11 @@ namespace gfx {
 class Size;
 }
 
+namespace qrcode_generator {
+class QRCodeGeneratorBubbleController;
+class QRCodeGeneratorBubbleView;
+}  // namespace qrcode_generator
+
 namespace signin_metrics {
 enum class AccessPoint;
 }
@@ -248,6 +253,9 @@ class BrowserWindow : public ui::BaseWindow {
   // the window. Returns whether any change occurred.
   virtual bool UpdatePageActionIcon(PageActionIconType type) = 0;
 
+  // Executes highlight animation on toolbar's avatar.
+  virtual void ShowAvatarHighlightAnimation() = 0;
+
   // Executes the action for the specified page action icon.
   virtual void ExecutePageActionIconForTesting(PageActionIconType type) = 0;
 
@@ -350,22 +358,29 @@ class BrowserWindow : public ui::BaseWindow {
   // |already_bookmarked| is true if the url is already bookmarked.
   virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) = 0;
 
+  // Shows the QR Code generator bubble. |url| is the URL for the initial code.
+  virtual qrcode_generator::QRCodeGeneratorBubbleView*
+  ShowQRCodeGeneratorBubble(
+      content::WebContents* contents,
+      qrcode_generator::QRCodeGeneratorBubbleController* controller,
+      const GURL& url) = 0;
+
   // Shows the "Save credit card" bubble.
   virtual autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
       content::WebContents* contents,
       autofill::SaveCardBubbleController* controller,
       bool is_user_gesture) = 0;
 
-  // Shows the "send tab to self" bubble.
-  virtual send_tab_to_self::SendTabToSelfBubbleView* ShowSendTabToSelfBubble(
-      content::WebContents* contents,
-      send_tab_to_self::SendTabToSelfBubbleController* controller,
-      bool is_user_gesture) = 0;
-
   // Shows the local card migration bubble.
   virtual autofill::LocalCardMigrationBubble* ShowLocalCardMigrationBubble(
       content::WebContents* contents,
       autofill::LocalCardMigrationBubbleController* controller,
+      bool is_user_gesture) = 0;
+
+  // Shows the "send tab to self" bubble.
+  virtual send_tab_to_self::SendTabToSelfBubbleView* ShowSendTabToSelfBubble(
+      content::WebContents* contents,
+      send_tab_to_self::SendTabToSelfBubbleController* controller,
       bool is_user_gesture) = 0;
 
   // Shows the translate bubble.

@@ -178,7 +178,7 @@ access the module. To do this, add the following in the new file
 ```java
 package org.chromium.chrome.features.foo;
 
-import org.chromium.components.module_installer.ModuleInterface;
+import org.chromium.components.module_installer.builder.ModuleInterface;
 
 /** Interface to call into Foo feature. */
 @ModuleInterface(module = "foo", impl = "org.chromium.chrome.features.FooImpl")

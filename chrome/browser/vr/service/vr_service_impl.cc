@@ -169,10 +169,8 @@ void VRServiceImpl::OnDisplayInfoChanged() {
   device::mojom::VRDisplayInfoPtr display_info =
       runtime_manager_->GetCurrentVRDisplayInfo(this);
   if (display_info) {
-    session_clients_.ForAllPtrs(
-        [&display_info](device::mojom::XRSessionClient* client) {
-          client->OnChanged(display_info.Clone());
-        });
+    for (auto& client : session_clients_)
+      client->OnChanged(display_info.Clone());
   }
 }
 
@@ -292,15 +290,15 @@ void VRServiceImpl::OnSessionCreated(
 
   UMA_HISTOGRAM_ENUMERATION("XR.RuntimeUsed", session_runtime_id);
 
-  device::mojom::XRSessionClientPtr client;
-  session->client_request = mojo::MakeRequest(&client);
+  mojo::Remote<device::mojom::XRSessionClient> client;
+  session->client_receiver = client.BindNewPipeAndPassReceiver();
 
   session->enabled_features.clear();
   for (const auto& feature : enabled_features) {
     session->enabled_features.push_back(feature);
   }
 
-  session_clients_.AddPtr(std::move(client));
+  session_clients_.Add(std::move(client));
 
   std::move(callback).Run(
       device::mojom::RequestSessionResult::NewSession(std::move(session)));
@@ -571,16 +569,14 @@ void VRServiceImpl::GetImmersiveVRDisplayInfo(
 }
 
 void VRServiceImpl::OnExitPresent() {
-  session_clients_.ForAllPtrs(
-      [](device::mojom::XRSessionClient* client) { client->OnExitPresent(); });
+  for (auto& client : session_clients_)
+    client->OnExitPresent();
 }
 
 void VRServiceImpl::OnVisibilityStateChanged(
     device::mojom::XRVisibilityState visiblity_state) {
-  session_clients_.ForAllPtrs(
-      [visiblity_state](device::mojom::XRSessionClient* client) {
-        client->OnVisibilityStateChanged(visiblity_state);
-      });
+  for (auto& client : session_clients_)
+    client->OnVisibilityStateChanged(visiblity_state);
 }
 
 void VRServiceImpl::OnActivate(device::mojom::VRDisplayEventReason reason,

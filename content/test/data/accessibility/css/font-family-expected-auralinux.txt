@@ -1,5 +1,5 @@
-[document web] offset=0 family-name=-webkit-serif
-++[landmark] offset=0 family-name=-webkit-monospace offset=1 family-name=-webkit-sans-serif
-++++[paragraph] offset=0 family-name=-webkit-monospace
-++++++[text] name='Monospace' offset=0 family-name=-webkit-monospace
-++++[text] name='Sans serif' offset=0 family-name=-webkit-sans-serif
+[document web] offset=0 family-name=Tinos
+++[landmark] offset=0 family-name=Cousine offset=1 family-name=Arimo
+++++[paragraph] offset=0 family-name=Cousine
+++++++[text] name='Monospace' offset=0 family-name=Cousine
+++++[text] name='Sans serif' offset=0 family-name=Arimo

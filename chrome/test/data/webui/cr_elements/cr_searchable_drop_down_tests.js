@@ -30,6 +30,12 @@ suite('cr-searchable-drop-down', function() {
     Polymer.dom.flush();
   }
 
+  function blur() {
+    let input = dropDown.shadowRoot.querySelector('cr-input');
+    input.fire('blur');
+    Polymer.dom.flush();
+  }
+
   function down() {
     MockInteractions.keyDownOn(searchInput, 'ArrowDown', [], 'ArrowDown');
   }
@@ -296,5 +302,35 @@ suite('cr-searchable-drop-down', function() {
 
     dropDown.readonly = false;
     assertFalse(input.readonly);
+  });
+
+  // When a user types in the dropdown but does not choose a valid option, the
+  // dropdown should revert to the previously selected option on loss of focus.
+  test('value resets on loss of focus', function() {
+    setItems(['dog', 'cat', 'mouse']);
+
+    getList()[0].click();
+    assertEquals('dog', searchInput.value);
+
+    // Make sure the search box value changes back to dog
+    search('ta');
+    blur();
+    assertEquals('dog', searchInput.value);
+  });
+
+  // When a user types in the dropdown but does not choose a valid option, the
+  // dropdown should keep the same text on loss of focus. (Only when
+  // isupdateValueOnInput is set to true).
+  test('value remains on loss of focus', function() {
+    dropDown.updateValueOnInput = true;
+    setItems(['dog', 'cat', 'mouse']);
+
+    getList()[0].click();
+    assertEquals('dog', searchInput.value);
+
+    // Make sure the search box value keeps the same text
+    search('ta');
+    blur();
+    assertEquals('ta', searchInput.value);
   });
 });

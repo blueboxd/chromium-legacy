@@ -14,9 +14,8 @@
 #include "fuchsia/base/init_logging.h"
 #include "fuchsia/engine/browser/web_engine_browser_main.h"
 #include "fuchsia/engine/browser/web_engine_content_browser_client.h"
-#include "fuchsia/engine/common.h"
+#include "fuchsia/engine/common/web_engine_content_client.h"
 #include "fuchsia/engine/renderer/web_engine_content_renderer_client.h"
-#include "fuchsia/engine/web_engine_content_client.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

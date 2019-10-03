@@ -32,16 +32,23 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
       const gfx::Rect& window_screen_rect);
   ~RenderWidgetScreenMetricsEmulator();
 
-  const gfx::Size& original_size() const { return original_widget_size_; }
   const ScreenInfo& original_screen_info() const {
     return original_screen_info_;
   }
-  const gfx::Rect& original_screen_rect() const {
+  // This rect is the WidgetScreenRect or ViewRect, which is the main frame
+  // widget's bounding box, not including OS window decor, in logical DIP screen
+  // coordinates.
+  const gfx::Rect& original_view_rect() const {
     return original_view_screen_rect_;
   }
+  // This rect is the WindowScreenRect or WindowRect, which is the bounding box
+  // of the main frame's top level window, including OS window decor, in logical
+  // DIP screen coordinates.
+  const gfx::Rect& original_window_rect() const {
+    return original_window_screen_rect_;
+  }
 
-  float scale() const { return scale_; }
-  const gfx::Rect& applied_widget_rect() const { return applied_widget_rect_; }
+  float scale() const { return emulation_params_.scale; }
 
   // Emulated position of the main frame widget (aka view) rect.
   gfx::Point ViewRectOrigin();
@@ -63,19 +70,18 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
   void OnShowContextMenu(ContextMenuParams* params);
 
  private:
-  RenderWidgetScreenMetricsEmulatorDelegate* const delegate_;
+  bool emulating_desktop() const {
+    return emulation_params_.screen_position ==
+           blink::WebDeviceEmulationParams::kDesktop;
+  }
 
   // Applies emulated values to the RenderWidget.
   void Apply();
 
+  RenderWidgetScreenMetricsEmulatorDelegate* const delegate_;
+
   // Parameters as passed by RenderWidget::EnableScreenMetricsEmulation.
   blink::WebDeviceEmulationParams emulation_params_;
-
-  // The computed scale and offset used to fit widget into browser window.
-  float scale_ = 1;
-
-  // Widget rect as passed to webwidget.
-  gfx::Rect applied_widget_rect_;
 
   // Original values to restore back after emulation ends.
   ScreenInfo original_screen_info_;

@@ -81,6 +81,25 @@ enum class MatchValidationResult {
   COUNT = 3
 };
 
+void RecordClipboardMetrics(AutocompleteMatchType::Type match_type) {
+  if (match_type != AutocompleteMatchType::CLIPBOARD_URL &&
+      match_type != AutocompleteMatchType::CLIPBOARD_TEXT) {
+    return;
+  }
+
+  base::TimeDelta age =
+      ClipboardRecentContent::GetInstance()->GetClipboardContentAge();
+  UMA_HISTOGRAM_LONG_TIMES_100("MobileOmnibox.PressedClipboardSuggestionAge",
+                               age);
+  if (match_type == AutocompleteMatchType::CLIPBOARD_URL) {
+    UMA_HISTOGRAM_LONG_TIMES_100(
+        "MobileOmnibox.PressedClipboardSuggestionAge.URL", age);
+  } else if (match_type == AutocompleteMatchType::CLIPBOARD_TEXT) {
+    UMA_HISTOGRAM_LONG_TIMES_100(
+        "MobileOmnibox.PressedClipboardSuggestionAge.TEXT", age);
+  }
+}
+
 /**
  * A prefetcher class responsible for triggering zero suggest prefetch.
  * The prefetch occurs as a side-effect of calling OnOmniboxFocused() on
@@ -282,11 +301,7 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
       "Omnibox.SuggestionUsed.RichEntity",
       match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY);
 
-  if (match.type == AutocompleteMatchType::CLIPBOARD_URL) {
-    UMA_HISTOGRAM_LONG_TIMES_100(
-        "MobileOmnibox.PressedClipboardSuggestionAge",
-        ClipboardRecentContent::GetInstance()->GetClipboardContentAge());
-  }
+  RecordClipboardMetrics(match.type);
 
   AutocompleteMatch::LogSearchEngineUsed(
       match, TemplateURLServiceFactory::GetForProfile(profile_));

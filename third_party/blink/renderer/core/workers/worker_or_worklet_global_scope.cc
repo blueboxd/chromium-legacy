@@ -276,6 +276,9 @@ void WorkerOrWorkletGlobalScope::InitializeWebFetchContextIfNeeded() {
 
 ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
   DCHECK(IsContextThread());
+  // Worklets don't support subresource fetch.
+  DCHECK(IsWorkerGlobalScope());
+
   if (inside_settings_resource_fetcher_)
     return inside_settings_resource_fetcher_;
 
@@ -337,6 +340,8 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
 
 ResourceFetcher* WorkerOrWorkletGlobalScope::Fetcher() const {
   DCHECK(IsContextThread());
+  // Worklets don't support subresource fetch.
+  DCHECK(IsWorkerGlobalScope());
   DCHECK(inside_settings_resource_fetcher_);
   return inside_settings_resource_fetcher_;
 }

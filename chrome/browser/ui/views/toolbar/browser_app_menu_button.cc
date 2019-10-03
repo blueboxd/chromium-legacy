@@ -331,8 +331,7 @@ base::Optional<SkColor> BrowserAppMenuButton::GetPromoHighlightColor() const {
 
 gfx::Rect BrowserAppMenuButton::GetAnchorBoundsInScreen() const {
   gfx::Rect bounds = GetBoundsInScreen();
-  gfx::Insets insets =
-      GetToolbarInkDropInsets(this, *GetProperty(views::kInternalPaddingKey));
+  gfx::Insets insets = GetToolbarInkDropInsets(this);
   // If the button is extended, don't inset the trailing edge. The anchored menu
   // should extend to the screen edge as well so the menu is easier to hit
   // (Fitts's law).
@@ -402,8 +401,7 @@ std::unique_ptr<views::InkDropMask> BrowserAppMenuButton::CreateInkDropMask()
     // This gets the latest ink drop insets. |SetTrailingMargin()| is called
     // whenever our margins change (i.e. due to the window maximizing or
     // minimizing) and updates our internal padding property accordingly.
-    const gfx::Insets ink_drop_insets =
-        GetToolbarInkDropInsets(this, *GetProperty(views::kInternalPaddingKey));
+    const gfx::Insets ink_drop_insets = GetToolbarInkDropInsets(this);
     const float corner_radius =
         (height() - ink_drop_insets.top() - ink_drop_insets.bottom()) / 2.0f;
     return std::make_unique<PulsingInkDropMask>(ink_drop_container(), size(),

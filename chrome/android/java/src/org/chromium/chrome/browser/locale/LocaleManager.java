@@ -32,9 +32,9 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
+import org.chromium.chrome.browser.ui.widget.PromoDialog;
 import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.chrome.browser.widget.PromoDialog;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.ui.base.PageTransition;
 

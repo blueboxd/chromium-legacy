@@ -45,6 +45,7 @@
 <translation id="1175875016430184367">Triple agrafe à droite</translation>
 <translation id="1178581264944972037">Suspendre</translation>
 <translation id="1181037720776840403">Supprimer</translation>
+<translation id="1186201132766001848">Vérifier les mots de passe</translation>
 <translation id="1197088940767939838">Orange</translation>
 <translation id="1201402288615127009">Suivant</translation>
 <translation id="1201895884277373915">Plus de résultats pour ce site</translation>
@@ -110,6 +111,7 @@
 <translation id="1430915738399379752">Imprimer</translation>
 <translation id="1442386063175183758">Pli du volet droit</translation>
 <translation id="1442987760062738829">Perforer</translation>
+<translation id="1450011005989029586">Votre mot de passe a été compromis à la suite d'une violation de données affectant un site ou une application que vous utilisez. Chrome vous recommande de <ph name="BOLD" /> sur <ph name="ORIGIN" /> au plus tôt.</translation>
 <translation id="1455413310270022028">Gomme</translation>
 <translation id="1463543813647160932">5 x 7</translation>
 <translation id="1472675084647422956">Plus</translation>
@@ -153,7 +155,6 @@
 <translation id="1640244768702815859">Essayez de <ph name="BEGIN_LINK" />consulter la page d'accueil du site<ph name="END_LINK" />.</translation>
 <translation id="1644574205037202324">Historique</translation>
 <translation id="1645368109819982629">Protocole incompatible</translation>
-<translation id="1655462015569774233">{1,plural, =1{Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car son certificat de sécurité a expiré hier. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement : <ph name="CURRENT_DATE" />. Cela vous semble-t-il correct ? Si ce n'est pas le cas, vous devez corriger l'horloge de votre système, puis actualiser la page.}one{Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car son certificat de sécurité a expiré il y a # jour. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement : <ph name="CURRENT_DATE" />. Cela vous semble-t-il correct ? Si ce n'est pas le cas, vous devez corriger l'horloge de votre système, puis actualiser la page.}other{Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car son certificat de sécurité a expiré il y a # jours. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement : <ph name="CURRENT_DATE" />. Cela vous semble-t-il correct ? Si ce n'est pas le cas, vous devez corriger l'horloge de votre système, puis actualiser la page.}}</translation>
 <translation id="1656489000284462475">Enlèvement</translation>
 <translation id="1662550410081243962">Enregistrer et renseigner les modes de paiement</translation>
 <translation id="1663943134801823270">Les cartes et les adresses proviennent de Chrome. Vous pouvez les gérer dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
@@ -323,7 +324,6 @@
 <translation id="2501278716633472235">Retour</translation>
 <translation id="2503184589641749290">Cartes de débit et cartes prépayées acceptées</translation>
 <translation id="2505268675989099013">Protéger le compte</translation>
-<translation id="2515335152965840738">IGNORER</translation>
 <translation id="2515629240566999685">Vérifiez le signal dans votre zone.</translation>
 <translation id="2521385132275182522">Agrafe en bas à droite</translation>
 <translation id="2523886232349826891">Enregistrée sur cet appareil uniquement</translation>
@@ -380,7 +380,6 @@
 <translation id="2799020568854403057">Ce site contient des applications malveillantes</translation>
 <translation id="2799223571221894425">Relancer</translation>
 <translation id="2803306138276472711">La fonctionnalité de navigation sécurisée Google a récemment permis de <ph name="BEGIN_LINK" />détecter des logiciels malveillants<ph name="END_LINK" /> sur le site <ph name="SITE" />. Un site Web qui est normalement sans danger peut parfois être infecté par des logiciels malveillants.</translation>
-<translation id="2815364696811431560">QUITTER LE SITE</translation>
 <translation id="2824775600643448204">Barre d'adresse et de recherche</translation>
 <translation id="2826760142808435982">La connexion est chiffrée et authentifiée avec la clé <ph name="CIPHER" />. La méthode d'échange de clés utilisée est <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Effacer le formulaire</translation>
@@ -454,6 +453,7 @@
 <translation id="320323717674993345">Annuler le paiement</translation>
 <translation id="3207960819495026254">Favori</translation>
 <translation id="3209034400446768650">Cette page peut vous facturer de l'argent</translation>
+<translation id="3209080785413271048">Utilisez Windows Hello pour valider vos modes de paiement enregistrés.</translation>
 <translation id="3215092763954878852">Impossible d'utiliser WebAuthn</translation>
 <translation id="3225919329040284222">Le serveur dispose d'un certificat qui ne répond pas aux exigences intégrées. Celles-ci sont incluses dans certains sites Web très sécurisés afin de vous protéger.</translation>
 <translation id="3226128629678568754">Veuillez appuyer sur le bouton d'actualisation pour renvoyer les données nécessaires au chargement de la page.</translation>
@@ -464,6 +464,7 @@
 <translation id="3234666976984236645">Toujours détecter du contenu important sur ce site</translation>
 <translation id="3270847123878663523">&amp;Annuler la réorganisation</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
+<translation id="3281668902344226640">Utilisez Touch ID pour valider vos modes de paiement enregistrés.</translation>
 <translation id="3282497668470633863">Ajouter le nom sur la carte</translation>
 <translation id="3287510313208355388">Télécharger une fois connecté</translation>
 <translation id="3293642807462928945">En savoir plus sur les règles <ph name="POLICY_NAME" />.</translation>
@@ -531,6 +532,7 @@
 <translation id="362276910939193118">Afficher l'historique complet</translation>
 <translation id="3630155396527302611">S'il est déjà répertorié en tant que programme autorisé à accéder au réseau,
     essayez de le supprimer de la liste, puis de le rajouter.</translation>
+<translation id="3631244953324577188">Biométrie</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Validation réussie.</translation>
 <translation id="3655670868607891010">Si ce message s'affiche régulièrement, essayez ces <ph name="HELP_LINK" />.</translation>
@@ -606,6 +608,7 @@
 <translation id="4067947977115446013">Ajouter une adresse valide</translation>
 <translation id="4072486802667267160">Une erreur s'est produite lors du traitement de votre commande. Veuillez réessayer.</translation>
 <translation id="4075732493274867456">Le client et le serveur ne sont pas compatibles avec une version de protocole ou une méthode de chiffrement SSL commune.</translation>
+<translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">La configuration du proxy est définie pour utiliser une URL de script .pac, et non pas des serveurs proxy déterminés.</translation>
 <translation id="4082393374666368382">Paramètres - Gestion</translation>
 <translation id="4098354747657067197">Le site Web que vous allez ouvrir est trompeur</translation>
@@ -662,6 +665,7 @@
 <translation id="4258748452823770588">Signature incorrecte.</translation>
 <translation id="4261046003697461417">Impossible d'ajouter des annotations aux documents protégés</translation>
 <translation id="4265872034478892965">Autorisé par votre administrateur</translation>
+<translation id="4270615291506829403">modifier votre mot de passe</translation>
 <translation id="4275830172053184480">Redémarrer l'appareil</translation>
 <translation id="4277028893293644418">Réinitialiser le mot de passe</translation>
 <translation id="4279811152705618813">Votre <ph name="DEVICE_TYPE" /> est géré par <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -688,6 +692,7 @@
 <translation id="4372948949327679948">Valeur attendue : <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Vous avez tenté d'accéder à <ph name="DOMAIN" />, mais le certificat présenté par le serveur a été révoqué par son émetteur. Cela signifie que le certificat présenté par le serveur ne doit pas être approuvé. Il est donc possible que vous communiquiez avec un pirate informatique.</translation>
 <translation id="4378154925671717803">Téléphone</translation>
+<translation id="4398334096870680409">Cette fonctionnalité n'est pas disponible sur votre appareil.</translation>
 <translation id="4406896451731180161">résultats de recherche</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Adresse d'enlèvement</translation>
@@ -736,7 +741,9 @@
 <translation id="4691835149146451662">Architecture-A (enveloppe)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Votre connexion a été interrompue</translation>
+<translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Exécutez les diagnostics réseau de Windows<ph name="END_LINK" /></translation>
+<translation id="4725851834065990915">Votre mot de passe a été compromis à la suite d'une violation de données affectant un site ou une application que vous utilisez. Nous vous recommandons de vérifier vos mots de passe enregistrés maintenant.</translation>
 <translation id="4726672564094551039">Actualiser les règles</translation>
 <translation id="4728558894243024398">Plate-forme</translation>
 <translation id="4731967714531604179">Prc2 (enveloppe)</translation>
@@ -764,7 +771,6 @@
 <translation id="4816492930507672669">Ajuster à la page</translation>
 <translation id="4850886885716139402">Afficher</translation>
 <translation id="4854362297993841467">Mode de livraison non disponible. Choisissez-en un autre.</translation>
-<translation id="4864052566555297930">Conseil de sécurité :</translation>
 <translation id="4876188919622883022">Vue simplifiée</translation>
 <translation id="4876305945144899064">Aucun nom d'utilisateur</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{Aucun}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
@@ -990,6 +996,7 @@
 <translation id="5967592137238574583">Modifier les coordonnées</translation>
 <translation id="5967867314010545767">Supprimer de l'historique</translation>
 <translation id="5975083100439434680">Zoom arrière</translation>
+<translation id="5979084224081478209">Vérifier les mots de passe</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Impossible d'ouvrir l'application de paiement</translation>
 <translation id="5989320800837274978">Aucun serveur proxy déterminé ou URL de script .pac n'a été indiqué.</translation>
@@ -1147,6 +1154,7 @@
 <translation id="679355240208270552">Règle ignorée, car le moteur de recherche par défaut n'est pas activé par une règle.</translation>
 <translation id="681021252041861472">Champ obligatoire</translation>
 <translation id="6810899417690483278">ID de la personnalisation</translation>
+<translation id="6819440013020405090">Votre mot de passe a été compromis à la suite d'une violation de données affectant un site ou une application que vous utilisez. Nous vous recommandons de vérifier vos mots de passe enregistrés et de modifier celui utilisé pour <ph name="ORIGIN" />.</translation>
 <translation id="6825578344716086703">Vous avez tenté d'accéder à <ph name="DOMAIN" />, mais le serveur a présenté un certificat signé à l'aide d'un algorithme de signature faible (par exemple, SHA-1). Il est possible que le certificat fourni par le serveur ait été falsifié. Il se peut donc que le serveur ne soit pas celui auquel vous souhaitez accéder, et qu'il s'agisse d'une tentative de piratage.</translation>
 <translation id="6826370046007623921">Protection contre la perte de données</translation>
 <translation id="6831043979455480757">Traduire</translation>
@@ -1189,6 +1197,7 @@
 <translation id="7064851114919012435">Coordonnées</translation>
 <translation id="7075452647191940183">Requête trop volumineuse</translation>
 <translation id="7079718277001814089">Ce site contient des logiciels malveillants</translation>
+<translation id="70850504851191913">Violation de données signalée</translation>
 <translation id="7087282848513945231">Comté</translation>
 <translation id="7090678807593890770">Effectuez une recherche Google sur <ph name="LINK" />.</translation>
 <translation id="7108338896283013870">Masquer</translation>
@@ -1277,6 +1286,7 @@ Informations supplémentaires :
 <translation id="7460618730930299168">Le filtrage est différent de ce que vous avez sélectionné. Continuer ?</translation>
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="7481312909269577407">Avancer</translation>
+<translation id="748406663033922918">Utilisez le verrouillage de l'écran pour valider vos modes de paiement enregistrés.</translation>
 <translation id="7485870689360869515">Aucune donnée n'a été trouvée.</translation>
 <translation id="7498234416455752244">Poursuivre les modifications</translation>
 <translation id="7508255263130623398">L'ID d'appareil de la règle renvoyé est vide ou ne correspond pas à l'ID d'appareil actuel.</translation>
@@ -1490,7 +1500,6 @@ Informations supplémentaires :
 <translation id="8553075262323480129">La traduction a échoué, car nous n'avons pas pu déterminer la langue de la page.</translation>
 <translation id="8557066899867184262">Le code CVC figure au recto de votre carte.</translation>
 <translation id="8559762987265718583">Impossible d'établir une connexion privée à <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> : la date et l'heure de votre appareil (<ph name="DATE_AND_TIME" />) sont incorrectes.</translation>
-<translation id="8561575143530093465"><ph name="SAFETY_TIP" /> site suspect</translation>
 <translation id="8564985650692024650">L'équipe Chromium vous recommande de réinitialiser votre mot de passe <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> si vous l'avez réutilisé sur d'autres sites.</translation>
 <translation id="8571890674111243710">Traduction de la page en <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Saisir num tél</translation>
@@ -1550,6 +1559,7 @@ Informations supplémentaires :
 <translation id="8943282376843390568">Citron vert</translation>
 <translation id="8957210676456822347">Autorisation du portail captif</translation>
 <translation id="8962950042226115166">Site suspect</translation>
+<translation id="8966619695390250636">Essayez avec :</translation>
 <translation id="8968766641738584599">Enregistrer la carte</translation>
 <translation id="8971063699422889582">Le certificat du serveur a expiré.</translation>
 <translation id="8975012916872825179">Y compris les numéros de téléphone, les adresses e-mail et les adresses de livraison</translation>

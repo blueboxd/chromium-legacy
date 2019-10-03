@@ -58,11 +58,6 @@ public class DataReductionStatsPreference extends Preference {
      */
     private static final String PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE =
             "data_reduction_site_breakdown_allowed_date";
-    /**
-     * The threshold at which to start showing real data usage and savings, in
-     * kilobytes.
-     */
-    private static final long SHOW_REAL_DATA_USED_KB_THRESHOLD = 100;
 
     private NetworkStatsHistory mOriginalNetworkStatsHistory;
     private NetworkStatsHistory mReceivedNetworkStatsHistory;
@@ -173,7 +168,7 @@ public class DataReductionStatsPreference extends Preference {
 
         mShouldShowRealData =
                 ConversionUtils.bytesToKilobytes(mReceivedNetworkStatsHistory.getTotalBytes())
-                >= SHOW_REAL_DATA_USED_KB_THRESHOLD;
+                >= DataReductionProxySettings.DATA_REDUCTION_SHOW_CHART_KB_THRESHOLD;
 
         // Determine the visible start and end points based on the available data and when it was
         // last updated.
@@ -251,10 +246,12 @@ public class DataReductionStatsPreference extends Preference {
                         ? context.getString(R.string.data_reduction_end_date_content_description,
                                   mEndDatePhrase)
                         : "");
-        if (mDataUsageTextView != null)
+        if (mDataUsageTextView != null) {
             mDataUsageTextView.setText(mShouldShowRealData ? mReceivedTotalPhrase : "");
-        if (mDataSavingsTextView != null)
+        }
+        if (mDataSavingsTextView != null) {
             mDataSavingsTextView.setText(mShouldShowRealData ? mSavingsTotalPhrase : "");
+        }
     }
 
     /**

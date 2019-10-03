@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">เลิกตรึงโฟลเดอร์</translation>
 <translation id="3678559383040232393">แป้นพิมพ์มอลตา</translation>
 <translation id="3685122418104378273">เมื่อใช้ข้อมูลมือถือ การซิงค์ Google ไดรฟ์จะปิดใช้อยู่เป็นค่าเริ่มต้น</translation>
+<translation id="3689865792480713551">ยกเลิก<ph name="ACTIVITY_DESCRIPTION" /></translation>
 <translation id="3726463242007121105">ไม่สามารถเปิดอุปกรณ์นี้ได้ เนื่องจากไม่สนับสนุนระบบไฟล์ของอุปกรณ์นี้</translation>
 <translation id="3741243925913727067">สำรองรูปภาพและวิดีโอของอุปกรณ์สื่อไปยัง Google ไดรฟ์</translation>
 <translation id="3749289110408117711">ชื่อไฟล์</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">สหรัฐอเมริกาสากล (พีซี)</translation>
 <translation id="6346310558342052870">จำกัดสิทธิ์เข้าถึง</translation>
 <translation id="6353618411602605519">แป้นพิมพ์ภาษาโครเอเชีย</translation>
+<translation id="6356685157277930264">หน้าต่างความคิดเห็นของไฟล์</translation>
 <translation id="6358884629796491903">มังกร</translation>
 <translation id="637062427944097960">ไฟล์นี้เปิดอยู่บนเดสก์ท็อปเครื่องอื่น โปรดย้ายมายัง <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) เพื่อดู</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> รายการ</translation>

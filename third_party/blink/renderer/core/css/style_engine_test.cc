@@ -11,6 +11,7 @@
 #include "third_party/blink/public/common/css/navigation_controls.h"
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
@@ -1583,7 +1584,8 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColors) {
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()));
 
-  GetDocument().GetSettings()->SetForcedColors(ForcedColors::kActive);
+  Platform::Current()->ThemeEngine()->SetForcedColors(ForcedColors::kActive);
+  GetDocument().PlatformColorsChanged();
   UpdateAllLifecyclePhases();
   EXPECT_EQ(MakeRGB(0, 128, 0),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
@@ -1617,7 +1619,7 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
   )HTML");
 
   // ForcedColors = kNone, PreferredColorScheme = kLight
-  GetDocument().GetSettings()->SetForcedColors(ForcedColors::kNone);
+  Platform::Current()->ThemeEngine()->SetForcedColors(ForcedColors::kNone);
   GetDocument().GetSettings()->SetPreferredColorScheme(
       PreferredColorScheme::kLight);
   UpdateAllLifecyclePhases();
@@ -1634,7 +1636,8 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
                 GetCSSPropertyColor()));
 
   // ForcedColors = kActive, PreferredColorScheme = kDark
-  GetDocument().GetSettings()->SetForcedColors(ForcedColors::kActive);
+  Platform::Current()->ThemeEngine()->SetForcedColors(ForcedColors::kActive);
+  GetDocument().PlatformColorsChanged();
   UpdateAllLifecyclePhases();
   EXPECT_EQ(MakeRGB(255, 165, 0),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(

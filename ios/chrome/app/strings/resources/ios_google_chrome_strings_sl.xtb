@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Če uporabljate to aplikacijo, se strinjate s <ph name="BEGIN_LINK_TOS" />pogoji storitve<ph name="END_LINK_TOS" /> in <ph name="BEGIN_LINK_PRIVACY" />pravilnikom o zasebnosti<ph name="END_LINK_PRIVACY" /> za Chrome.</translation>
 <translation id="2147651015520127414">Chrome je preveril, da je izdajatelj <ph name="ISSUER" /> izdal potrdilo tega spletnega mesta.</translation>
 <translation id="2199719347983604670">Podatki iz Sinhronizacije za Chrome</translation>
-<translation id="2342981853652716282">Prijavite se v Chrome, če želite dostopati do svojih zaznamkov, gesel in drugega v vseh napravah.</translation>
 <translation id="2347208864470321755">Kadar je vklopljena ta funkcija, bo Chrome ponudil, da z uporabo Google Prevajalnika prevede strani v drugih jezikih. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Če želite shraniti slike, se dotaknite aplikacije Settings in dovolite Chromu dostop do fotografij</translation>
 <translation id="2576431527583832481">Chrome je izboljšan! Na voljo je nova različica.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Pomagajte izboljšati Chrome s pošiljanjem statističnih podatkov o uporabi in poročil o zrušitvah Googlu.</translation>
 <translation id="415767770115540173">Get a better Google experience in Chrome based on your location.</translation>
 <translation id="424864128008805179">Se želite odjaviti iz Chroma?</translation>
+<translation id="4249068189593983585">Nasvet za Chrome. Če želite več možnosti za zavihke, pridržite gumb za prikaz zavihkov v orodni vrstici na dnu ali vrhu zaslona.</translation>
 <translation id="4523886039239821078">Nekateri dodatki povzročajo zrušitve Chroma. Odstranite jih:</translation>
 <translation id="5389212809648216794">Google Chrome ne more uporabljati fotoaparata, ker ga uporablja druga aplikacija</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Oglejte si posodobljene pogoje storitve za Chrome.<ph name="END_LINK" /></translation>
@@ -51,6 +51,4 @@
 <translation id="840168496893712993">Nekateri dodatki povzročajo zrušitve Chroma. Poskusite jih odstraniti.</translation>
 <translation id="8459495907675268833">Izbrani podatki so bili odstranjeni iz Chroma in sinhroniziranih naprav. V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in dejavnosti iz drugih Googlovih storitev, na history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome lahko za izboljšanje izkušnje pri brskanju uporabi spletne storitve.
-Te storitve lahko morda onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 </translationbundle>

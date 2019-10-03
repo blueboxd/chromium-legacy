@@ -248,15 +248,10 @@ void OpenWindowOnUI(
   // function can't be used directly since there is no render frame host yet
   // that the navigation will occur in.
 
-  GURL dest_url(url);
-  if (!GetContentClient()->browser()->ShouldAllowOpenURL(site_instance, url))
-    dest_url = GURL(url::kAboutBlankURL);
-
   OpenURLParams params(
-      dest_url,
+      url,
       Referrer::SanitizeForRequest(
-          dest_url,
-          Referrer(script_url, network::mojom::ReferrerPolicy::kDefault)),
+          url, Referrer(script_url, network::mojom::ReferrerPolicy::kDefault)),
       type == WindowType::PAYMENT_HANDLER_WINDOW
           ? WindowOpenDisposition::NEW_POPUP
           : WindowOpenDisposition::NEW_FOREGROUND_TAB,

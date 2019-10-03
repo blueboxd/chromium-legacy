@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">לא ניתן לשמור את התמונה</translation>
 <translation id="1180526666083833456">סנכרון והתאמה אישית במכשירים שונים</translation>
 <translation id="1181037720776840403">הסרה</translation>
+<translation id="1207113853726624428">חיפוש חדש</translation>
 <translation id="1209206284964581585">הסתר בינתיים</translation>
 <translation id="1219674500290482172">לא ניתן להתחבר לאינטרנט.</translation>
 <translation id="122699739164161391">סגירת כל הכרטיסיות</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">הצעת סיסמה…</translation>
 <translation id="1870148520156231997">הצגת הסיסמה</translation>
 <translation id="1872096359983322073">פנס</translation>
-<translation id="1876721852596493031">שלח נתוני שימוש</translation>
 <translation id="1911619930368729126">‏העלה אל Google Drive</translation>
 <translation id="1923342640370224680">בשעה האחרונה</translation>
 <translation id="1941314575388338491">הקש פעמיים כדי להעתיק.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> מאמרים שלא נקראו ברשימת הקריאה.</translation>
 <translation id="2230173723195178503">דף האינטרנט נטען</translation>
 <translation id="2239626343334228536">מנקה נתוני גלישה…</translation>
-<translation id="2256128224215992540">הצעות למונחי חיפוש ולאתרים</translation>
 <translation id="2267753748892043616">חשבון חדש</translation>
 <translation id="2268044343513325586">צמצם</translation>
 <translation id="2273327106802955778">התפריט 'עוד'</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">לא ניתן לפתוח את הקובץ</translation>
 <translation id="2718352093833049315">‏רק ב-Wi-Fi</translation>
 <translation id="2747003861858887689">השדה הקודם</translation>
+<translation id="2773292004659987824">חיפוש במצב גלישה בסתר</translation>
 <translation id="2780046210906776326">אין חשבונות אימייל</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">‏צא מ-Tab Switcher</translation>
@@ -295,7 +295,6 @@
 <translation id="5197255632782567636">אינטרנט</translation>
 <translation id="5228579091201413441">הפעל סנכרון</translation>
 <translation id="5234764350956374838">סגור</translation>
-<translation id="5244474230056479698">מסנכרן ל-<ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">ביטול הסנכרון</translation>
 <translation id="5271549068863921519">שמור סיסמה</translation>
 <translation id="5300589172476337783">הצגה</translation>
@@ -501,6 +500,7 @@
 <translation id="8261506727792406068">מחיקה</translation>
 <translation id="8281781826761538115">ברירת מחדל - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">חיפוש חדש</translation>
+<translation id="8323906514956095947">לחיצה ארוכה תציג אפשרויות נוספות של כרטיסיות</translation>
 <translation id="8328777765163860529">סגור הכל</translation>
 <translation id="8407669440184693619">לא נמצאו סיסמאות בשביל האתר הזה</translation>
 <translation id="842017693807136194">מחובר באמצעות</translation>

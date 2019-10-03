@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_break_appeal.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_early_break.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
@@ -215,7 +216,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   NGBreakTokenVector child_break_tokens_;
   NGBreakTokenVector inline_break_tokens_;
 
-  base::Optional<NGEarlyBreak> early_break_;
+  scoped_refptr<const NGEarlyBreak> early_break_;
+  NGBreakAppeal break_appeal_ = kBreakAppealLastResort;
 
   NGAdjoiningObjectTypes adjoining_object_types_ = kAdjoiningNone;
   bool has_adjoining_object_descendants_ = false;
@@ -224,7 +226,6 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   bool is_pushed_by_floats_ = false;
   bool is_legacy_layout_root_ = false;
 
-  bool has_last_resort_break_ = false;
   bool has_floating_descendants_ = false;
   bool has_orthogonal_flow_roots_ = false;
   bool has_descendant_that_depends_on_percentage_block_size_ = false;

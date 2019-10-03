@@ -201,11 +201,13 @@ void TestNavigationObserver::OnDidStartNavigation(
 
 void TestNavigationObserver::OnDidFinishNavigation(
     NavigationHandle* navigation_handle) {
+  NavigationRequest* request = NavigationRequest::From(navigation_handle);
+
   last_navigation_url_ = navigation_handle->GetURL();
+  last_initiator_origin_ = request->common_params().initiator_origin;
   last_navigation_succeeded_ = !navigation_handle->IsErrorPage();
   last_net_error_code_ = navigation_handle->GetNetErrorCode();
-  last_navigation_type_ =
-      NavigationRequest::From(navigation_handle)->navigation_type();
+  last_navigation_type_ = request->navigation_type();
 
   if (wait_event_ == WaitEvent::kNavigationFinished)
     EventTriggered();

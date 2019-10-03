@@ -22,7 +22,6 @@
 <translation id="116280672541001035">વપરાયેલ</translation>
 <translation id="1171770572613082465">"લોકપ્રિય સાઇટ" બટન પર ટૅપ કરીને લોકપ્રિય વેબસાઇટ જુઓ</translation>
 <translation id="1173894706177603556">નામ બદલો</translation>
-<translation id="1175310183703641346">તમારા બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને અન્ય બાબતો હવેથી Google એકાઉન્ટ પર સિંક થશે નહીં</translation>
 <translation id="1178581264944972037">થોભો</translation>
 <translation id="1181037720776840403">કાઢી નાખો</translation>
 <translation id="1188239144602654184">AR દાખલ કરો</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> માં બુકમાર્ક કર્યું</translation>
 <translation id="3744111561329211289">પૃષ્ઠભૂમિ સમન્વયન</translation>
 <translation id="3771001275138982843">અપડેટ ડાઉનલોડ કરી શકાઈ નથી</translation>
+<translation id="3771033907050503522">છૂપા ટેબ્સ</translation>
 <translation id="3773755127849930740">જોડી કરવાની મંજૂરી આપવા માટે <ph name="BEGIN_LINK" />Bluetooth ચાલુ કરો<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">તમારા ડિવાઇસ પર મોકલો</translation>
 <translation id="3778956594442850293">હોમ સ્ક્રીન પર ઉમેર્યું</translation>
@@ -484,7 +484,6 @@
 <translation id="4719927025381752090">અનુવાદ કરવાની ઑફર કરો</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> માં ખોલો</translation>
 <translation id="4720982865791209136">Chromeને બહેતર બનાવવામાં સહાય કરો. <ph name="BEGIN_LINK" />સર્વેક્ષણમાં ભાગ લો<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">તમે <ph name="ACCOUNT_EMAIL_OLD" />થી <ph name="ACCOUNT_EMAIL_NEW" /> પર સિંક એકાઉન્ટને સ્વિચ કરી રહ્યાં છો. તમારો અસ્તિત્વમાંનો Chrome ડેટા <ph name="MANAGED_DOMAIN" /> દ્વારા મેનેજ કરવામાં આવે છે. આ ડિવાઇસ પરથી આ તમારા ડેટાને ડિલીટ કરશે, પરંતુ તમારો ડેટા <ph name="ACCOUNT_EMAIL_OLD" />માં રહેશે.</translation>
 <translation id="473775607612524610">અપડેટ કરો</translation>
 <translation id="4738836084190194332">છેલ્લે સમન્વયિત: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">એક નવું ટૅબ ખોલો</translation>
@@ -668,13 +667,13 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="5937580074298050696"><ph name="AMOUNT" /> ડેટા બચાવ્યો</translation>
 <translation id="5939518447894949180">રીસેટ કરો</translation>
 <translation id="5942872142862698679">શોધ માટે Google નો ઉપયોગ કરી રહ્યાં છે</translation>
-<translation id="5944669582486359588">લાઇટ મોડમાં, Chrome પેજને વધુ ઝડપથી લોડ કરે છે અને તે 60 ટકા સુધીના ઓછા ડેટાનો ઉપયોગ કરે છે. Googleની ક્લાઉડ ટેક્નોલોજી તમે મુલાકાત લો છો તે પેજને ઑપ્ટિમાઇઝ કરે છે.</translation>
 <translation id="5952764234151283551">તમે જેના પર પહોંચવાનો પ્રયાસ કરતા હોય તે પેજનું URL Googleને મોકલાવે છે</translation>
 <translation id="5956665950594638604">Chrome સહાયતા કેન્દ્રમાં એક નવું ટૅબ ખોલો</translation>
 <translation id="5958275228015807058">ડાઉનલોડ કરેલમાંથી તમારી ફાઇલો અને પેજ શોધો</translation>
 <translation id="5962718611393537961">સંકુચિત કરવા માટે ટૅપ કરો</translation>
 <translation id="6000066717592683814">Google રાખો</translation>
 <translation id="6005538289190791541">સૂચવેલ પાસવર્ડ</translation>
+<translation id="6036057147555329831">અતિરિક્ત ICU</translation>
 <translation id="6039379616847168523">આગલા ટૅબ પર જાઓ</translation>
 <translation id="6040143037577758943">બંધ કરો</translation>
 <translation id="6042308850641462728">વધુ</translation>
@@ -815,7 +814,6 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="7029809446516969842">પાસવર્ડ્સ</translation>
 <translation id="7053983685419859001">અવરોધિત કરો</translation>
 <translation id="7055152154916055070">રીડાયરેક્ટ કરવાનું બ્લૉક કરવામાં આવ્યું છે:</translation>
-<translation id="7062545763355031412">સ્વીકારો અને એકાઉન્ટ્સ સ્વિચ કરો</translation>
 <translation id="7063006564040364415">સમન્વયન સર્વર સાથે કનેક્ટ કરી શકાયું નથી</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 પસંદ કરી}one{# પસંદ કરી}other{# પસંદ કરી}}</translation>
 <translation id="7071521146534760487">એકાઉન્ટને મેનેજ કરો</translation>
@@ -1099,7 +1097,6 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="9139318394846604261">ખરીદી</translation>
 <translation id="9155898266292537608">તમે કોઈએક શબ્દ પર ટૅપ કરીને પણ ઝડપથી શોધી શકો છો</translation>
 <translation id="9169507124922466868">નૅવિગેશન ઇતિહાસ અડધા ભાગમાં ખુલ્લો છે</translation>
-<translation id="9188680907066685419">સંચાલિત એકાઉન્ટમાંથી સાઇન આઉટ કરો</translation>
 <translation id="9204836675896933765">1 ફાઇલ બાકી છે</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">કૉલ કરી શકતા નથી</translation>
@@ -1108,7 +1105,6 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="932327136139879170">હોમ</translation>
 <translation id="938850635132480979">ભૂલ: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">તમારા માઇક્રોફોનની ઍક્સેસ</translation>
-<translation id="951339005376969845">અસ્તિત્વમાંનો ડેટા ડિલીટ કરો. તમે <ph name="FROM_ACCOUNT" /> પર પાછા સ્વિચ કરીને એને પાછું મેળવી શકો છો.</translation>
 <translation id="95817756606698420">Chrome, ચાઇનામાં શોધ માટે <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> નો ઉપયોગ કરી શકે છે. તમે આને <ph name="BEGIN_LINK" />સેટિંગ્સ<ph name="END_LINK" />માં બદલી શકો છો.</translation>
 <translation id="965817943346481315">જો સાઇટ ઘૃણાસ્પદ અથવા ભ્રામક જાહેરાતો બતાવતી હોય, તો બ્લૉક કરો (ભલામણ કરેલ)</translation>
 <translation id="968900484120156207">તમે મુલાકાત લીધેલા પેજ અહીં દેખાય છે</translation>

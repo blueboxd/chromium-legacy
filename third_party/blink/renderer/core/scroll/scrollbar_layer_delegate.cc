@@ -128,7 +128,7 @@ gfx::Rect ScrollbarLayerDelegate::NinePatchThumbAperture() const {
   return theme_.NinePatchThumbAperture(*scrollbar_);
 }
 
-bool ScrollbarLayerDelegate::HasTickmarks() const {
+bool ScrollbarLayerDelegate::ShouldPaint() const {
   // TODO(crbug.com/860499): Remove this condition, it should not occur.
   // Layers may exist and be painted for a |scrollbar_| that has had its
   // ScrollableArea detached. This seems weird because if the area is detached
@@ -140,80 +140,45 @@ bool ScrollbarLayerDelegate::HasTickmarks() const {
   // HasTickmarks can't be known and may change once the frame is unthrottled.
   if (scrollbar_->GetScrollableArea()->IsThrottled())
     return false;
+  return true;
+}
 
-  Vector<IntRect> tickmarks;
-  scrollbar_->GetTickmarks(tickmarks);
-  return !tickmarks.IsEmpty();
+bool ScrollbarLayerDelegate::HasTickmarks() const {
+  return ShouldPaint() && scrollbar_->HasTickmarks();
 }
 
 void ScrollbarLayerDelegate::PaintPart(cc::PaintCanvas* canvas,
-                                       cc::ScrollbarPart part,
-                                       const gfx::Rect& content_rect) {
-  PaintCanvasAutoRestore auto_restore(canvas, true);
-  blink::Scrollbar& scrollbar = *scrollbar_;
-
-  // TODO(crbug.com/860499): Remove this condition, it should not occur.
-  // Layers may exist and be painted for a |scrollbar_| that has had its
-  // ScrollableArea detached. This seems weird because if the area is detached
-  // the layer should be destroyed but here we are.
-  if (!scrollbar_->GetScrollableArea())
-    return;
-  // When the frame is throttled, the scrollbar will not be painted because
-  // the frame has not had its lifecycle updated.
-  if (scrollbar.GetScrollableArea()->IsThrottled())
+                                       cc::ScrollbarPart part) {
+  if (!ShouldPaint())
     return;
 
-  if (part == cc::THUMB) {
-    ScopedScrollbarPainter painter(*canvas, device_scale_factor_);
-    theme_.PaintThumb(painter.Context(), scrollbar, IntRect(content_rect));
-    if (!theme_.ShouldRepaintAllPartsOnInvalidation())
-      scrollbar.ClearThumbNeedsRepaint();
-    return;
-  }
-
-  if (part == cc::TICKMARKS) {
-    ScopedScrollbarPainter painter(*canvas, device_scale_factor_);
-    theme_.PaintTickmarks(painter.Context(), scrollbar, IntRect(content_rect));
-    return;
-  }
-
-  canvas->clipRect(gfx::RectToSkRect(content_rect));
   ScopedScrollbarPainter painter(*canvas, device_scale_factor_);
-  GraphicsContext& context = painter.Context();
-
-  theme_.PaintScrollbarBackground(context, scrollbar);
-
-  if (theme_.HasButtons(scrollbar)) {
-    theme_.PaintButton(context, scrollbar,
-                       theme_.BackButtonRect(scrollbar, kBackButtonStartPart),
-                       kBackButtonStartPart);
-    theme_.PaintButton(context, scrollbar,
-                       theme_.BackButtonRect(scrollbar, kBackButtonEndPart),
-                       kBackButtonEndPart);
-    theme_.PaintButton(
-        context, scrollbar,
-        theme_.ForwardButtonRect(scrollbar, kForwardButtonStartPart),
-        kForwardButtonStartPart);
-    theme_.PaintButton(
-        context, scrollbar,
-        theme_.ForwardButtonRect(scrollbar, kForwardButtonEndPart),
-        kForwardButtonEndPart);
+  // The canvas coordinate space is relative to the part's origin.
+  switch (part) {
+    case cc::THUMB: {
+      IntRect rect(IntPoint(),
+                   UsesNinePatchThumbResource()
+                       ? theme_.NinePatchThumbCanvasSize(*scrollbar_)
+                       : theme_.ThumbRect(*scrollbar_).Size());
+      theme_.PaintThumb(painter.Context(), *scrollbar_, rect);
+      scrollbar_->ClearThumbNeedsRepaint();
+      break;
+    }
+    case cc::TRACK: {
+      theme_.PaintTrackAndButtonsForCompositor(painter.Context(), *scrollbar_);
+      theme_.PaintTickmarks(painter.Context(), *scrollbar_,
+                            IntRect(TrackRect()));
+      scrollbar_->ClearTrackNeedsRepaint();
+      break;
+    }
+    case cc::TICKMARKS: {
+      IntRect rect(IntPoint(), theme_.TrackRect(*scrollbar_).Size());
+      theme_.PaintTickmarks(painter.Context(), *scrollbar_, rect);
+      break;
+    }
+    default:
+      NOTREACHED();
   }
-
-  IntRect track_paint_rect = theme_.TrackRect(scrollbar);
-  theme_.PaintTrackBackground(context, scrollbar, track_paint_rect);
-
-  if (theme_.HasThumb(scrollbar)) {
-    theme_.PaintTrackPiece(painter.Context(), scrollbar, track_paint_rect,
-                           kForwardTrackPart);
-    theme_.PaintTrackPiece(painter.Context(), scrollbar, track_paint_rect,
-                           kBackTrackPart);
-  }
-
-  theme_.PaintTickmarks(painter.Context(), scrollbar, track_paint_rect);
-
-  if (!theme_.ShouldRepaintAllPartsOnInvalidation())
-    scrollbar.ClearTrackNeedsRepaint();
 }
 
 }  // namespace blink

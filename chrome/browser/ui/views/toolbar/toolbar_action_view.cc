@@ -76,6 +76,8 @@ ToolbarActionView::ToolbarActionView(
   if (delegate_->ShownInsideMenu())
     SetFocusBehavior(FocusBehavior::ALWAYS);
 
+  InstallToolbarButtonHighlightPathGenerator(this);
+
   set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
 
   UpdateState();
@@ -89,16 +91,9 @@ const char* ToolbarActionView::GetClassName() const {
   return kClassName;
 }
 
-void ToolbarActionView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
-  SetToolbarButtonHighlightPath(this, gfx::Insets());
-
-  MenuButton::OnBoundsChanged(previous_bounds);
-}
-
 gfx::Rect ToolbarActionView::GetAnchorBoundsInScreen() const {
   gfx::Rect bounds = GetBoundsInScreen();
-  bounds.Inset(GetToolbarInkDropInsets(this, gfx::Insets()));
+  bounds.Inset(GetToolbarInkDropInsets(this));
   return bounds;
 }
 

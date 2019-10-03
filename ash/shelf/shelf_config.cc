@@ -110,7 +110,8 @@ void ShelfConfig::OnDisplayMetricsChanged(const display::Display& display,
   UpdateIsDense();
 }
 
-void ShelfConfig::OnAppListVisibilityChanged(bool shown, int64_t display_id) {
+void ShelfConfig::OnAppListTargetVisibilityChanged(bool shown,
+                                                   int64_t display_id) {
   // Let's check that the app visibility mechanism isn't mis-firing, which
   // would lead to a lot of extraneous relayout work.
   DCHECK_NE(is_app_list_visible_, shown);
@@ -268,9 +269,9 @@ SkColor ShelfConfig::GetDefaultShelfColor() const {
   if (dark_muted_color == kInvalidWallpaperColor)
     return final_color;
 
-  // Combine SK_ColorBLACK at 70% opacity with |dark_muted_color|.
+  // Combine SK_ColorBLACK at 50% opacity with |dark_muted_color|.
   final_color = color_utils::GetResultingPaintColor(
-      SkColorSetA(SK_ColorBLACK, 178), dark_muted_color);
+      SkColorSetA(SK_ColorBLACK, 127), dark_muted_color);
 
   return SkColorSetA(final_color, 189);  // 74% opacity
 }

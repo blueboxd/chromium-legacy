@@ -505,18 +505,51 @@ TEST_F(ProxyConfigWebSocketTest, UsesProxy) {
   EXPECT_EQ("PROXY proxy:3128", ToPacString());
 }
 
-// See RFC6455 Section 4.1. item 3, "_Proxy Usage_".
-TEST_F(ProxyConfigWebSocketTest, PrefersSocks) {
+// See RFC6455 Section 4.1. item 3, "_Proxy Usage_". Note that this favors a
+// SOCKSv4 proxy (although technically the spec only notes SOCKSv5).
+TEST_F(ProxyConfigWebSocketTest, PrefersSocksV4) {
   ParseFromString(
       "http=proxy:3128 ; https=sslproxy:3128 ; socks=socksproxy:1080");
   Apply(WsUrl());
   EXPECT_EQ("SOCKS socksproxy:1080", ToPacString());
 }
 
+// See RFC6455 Section 4.1. item 3, "_Proxy Usage_".
+TEST_F(ProxyConfigWebSocketTest, PrefersSocksV5) {
+  ParseFromString(
+      "http=proxy:3128 ; https=sslproxy:3128 ; socks=socks5://socksproxy:1080");
+  Apply(WsUrl());
+  EXPECT_EQ("SOCKS5 socksproxy:1080", ToPacString());
+}
+
 TEST_F(ProxyConfigWebSocketTest, PrefersHttpsToHttp) {
   ParseFromString("http=proxy:3128 ; https=sslproxy:3128");
   Apply(WssUrl());
   EXPECT_EQ("PROXY sslproxy:3128", ToPacString());
+}
+
+// Tests when a proxy-per-url-scheme configuration was used, and proxies are
+// specified for http://, https://, and a fallback proxy (non-SOCKS).
+// Even though the fallback proxy is not SOCKS, it is still favored over the
+// proxy for http://* and https://*.
+TEST_F(ProxyConfigWebSocketTest, PrefersNonSocksFallbackOverHttps) {
+  // The notation for "socks=" is abused to set the "fallback proxy".
+  ParseFromString(
+      "http=proxy:3128 ; https=sslproxy:3128; socks=https://httpsproxy");
+  EXPECT_EQ("HTTPS httpsproxy:443", rules_.fallback_proxies.ToPacString());
+  Apply(WssUrl());
+  EXPECT_EQ("HTTPS httpsproxy:443", ToPacString());
+}
+
+// Tests when a proxy-per-url-scheme configuration was used, and the fallback
+// proxy is a non-SOCKS proxy, and no proxy was given for https://* or
+// http://*. The fallback proxy is used.
+TEST_F(ProxyConfigWebSocketTest, UsesNonSocksFallbackProxy) {
+  // The notation for "socks=" is abused to set the "fallback proxy".
+  ParseFromString("ftp=ftpproxy:3128; socks=https://httpsproxy");
+  EXPECT_EQ("HTTPS httpsproxy:443", rules_.fallback_proxies.ToPacString());
+  Apply(WssUrl());
+  EXPECT_EQ("HTTPS httpsproxy:443", ToPacString());
 }
 
 TEST_F(ProxyConfigWebSocketTest, PrefersHttpsEvenForWs) {

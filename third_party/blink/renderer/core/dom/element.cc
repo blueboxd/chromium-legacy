@@ -1358,7 +1358,7 @@ void Element::setScrollLeft(double new_left) {
             gfx::ScrollOffset(end_point), true, false);
     end_point = GetDocument()
                     .GetSnapCoordinator()
-                    ->GetSnapPosition(*box, *strategy)
+                    .GetSnapPosition(*box, *strategy)
                     .value_or(end_point);
 
     FloatPoint new_position(end_point.X(),
@@ -1406,7 +1406,7 @@ void Element::setScrollTop(double new_top) {
             gfx::ScrollOffset(end_point), false, true);
     end_point = GetDocument()
                     .GetSnapCoordinator()
-                    ->GetSnapPosition(*box, *strategy)
+                    .GetSnapPosition(*box, *strategy)
                     .value_or(end_point);
     FloatPoint new_position(scrollable_area->ScrollPosition().X(),
                             end_point.Y());
@@ -1531,7 +1531,7 @@ void Element::ScrollLayoutBoxBy(const ScrollToOptions* scroll_to_options) {
                                                             displacement);
     new_position = GetDocument()
                        .GetSnapCoordinator()
-                       ->GetSnapPosition(*box, *strategy)
+                       .GetSnapPosition(*box, *strategy)
                        .value_or(new_position);
     scrollable_area->ScrollToAbsolutePosition(new_position, scroll_behavior);
   }
@@ -1590,7 +1590,7 @@ void Element::ScrollLayoutBoxTo(const ScrollToOptions* scroll_to_options) {
             scroll_to_options->hasTop());
     new_position = GetDocument()
                        .GetSnapCoordinator()
-                       ->GetSnapPosition(*box, *strategy)
+                       .GetSnapPosition(*box, *strategy)
                        .value_or(new_position);
     scrollable_area->ScrollToAbsolutePosition(new_position, scroll_behavior);
   }
@@ -1626,11 +1626,10 @@ void Element::ScrollFrameBy(const ScrollToOptions* scroll_to_options) {
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForEndAndDirection(current_position,
                                                           displacement);
-  new_position =
-      GetDocument()
-          .GetSnapCoordinator()
-          ->GetSnapPosition(*GetDocument().GetLayoutView(), *strategy)
-          .value_or(new_position);
+  new_position = GetDocument()
+                     .GetSnapCoordinator()
+                     .GetSnapPosition(*GetDocument().GetLayoutView(), *strategy)
+                     .value_or(new_position);
   viewport->SetScrollOffset(viewport->ScrollPositionToOffset(new_position),
                             kProgrammaticScroll, scroll_behavior);
 }
@@ -1664,11 +1663,10 @@ void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
       cc::SnapSelectionStrategy::CreateForEndPosition(
           gfx::ScrollOffset(new_position), scroll_to_options->hasLeft(),
           scroll_to_options->hasTop());
-  new_position =
-      GetDocument()
-          .GetSnapCoordinator()
-          ->GetSnapPosition(*GetDocument().GetLayoutView(), *strategy)
-          .value_or(new_position);
+  new_position = GetDocument()
+                     .GetSnapCoordinator()
+                     .GetSnapPosition(*GetDocument().GetLayoutView(), *strategy)
+                     .value_or(new_position);
   new_offset = viewport->ScrollPositionToOffset(new_position);
   viewport->SetScrollOffset(new_offset, kProgrammaticScroll, scroll_behavior);
 }
@@ -5317,13 +5315,6 @@ void Element::SetIsInTopLayer(bool in_top_layer) {
     return;
   if (!GetDocument().InStyleRecalc())
     SetForceReattachLayoutTree();
-}
-
-void Element::requestPointerLock() {
-  if (GetDocument().GetPage()) {
-    GetDocument().GetPage()->GetPointerLockController().RequestPointerLock(
-        this);
-  }
 }
 
 void Element::requestPointerLock(const PointerLockOptions* options) {

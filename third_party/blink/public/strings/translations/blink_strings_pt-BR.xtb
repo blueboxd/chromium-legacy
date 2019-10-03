@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">rodapé</translation>
 <translation id="2709516037105925701">Preenchimento automático</translation>
 <translation id="2723001399770238859">áudio</translation>
+<translation id="2725963129578236554">comentários</translation>
 <translation id="2746543609216772311">O valor deve ser <ph name="MINIMUM_DATE_OR_TIME" /> ou posterior.</translation>
 <translation id="2759744352195237655">botão pop-up</translation>
 <translation id="2761667185364618470">Marque esta caixa se deseja continuar.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">Aumente este texto para <ph name="MIN_CHARACTERS" /> caracteres ou mais. No momento, você está usando <ph name="CURRENT_LENGTH" /> caracteres).</translation>
 <translation id="383465348367842624">Uma parte seguida por "<ph name="ATSIGN" />" não deve conter o símbolo "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="3846214748874656680">Sair da tela cheia</translation>
+<translation id="3889183436948184105">revisão</translation>
 <translation id="3920932319529768807">conclusão</translation>
 <translation id="3924558731517983934">app</translation>
 <translation id="3944740393230681990">prólogo</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">barra de progressão do áudio</translation>
 <translation id="6443871981718447451">mostrar menu de closed captions</translation>
 <translation id="6453774872122745852">agradecimentos</translation>
+<translation id="6475115390776617481">presença ao vivo</translation>
 <translation id="648732519525291180">seletor de hora</translation>
 <translation id="6550675742724504774">Opções</translation>
 <translation id="6572309429103589720">Gramática inválida</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">inserção</translation>
 <translation id="6989848892321993519">Aumente esse texto para <ph name="MIN_CHARACTERS" /> caracteres ou mais. No momento, você está usando 1 caractere.</translation>
 <translation id="7033340931668032222">para cima e para baixo para controlar o volume</translation>
+<translation id="7034405885550056553">sugestão</translation>
 <translation id="709897737746224366">É preciso que o formato corresponda ao exigido.</translation>
 <translation id="7118469954320184356">Nenhuma descrição disponível.</translation>
 <translation id="7139483182332611405">prefácio</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">saída</translation>
 <translation id="8750798805984357768">Selecione uma das opções.</translation>
 <translation id="8808573423886751634">capítulo</translation>
+<translation id="8822203815165896261">informações de autoria</translation>
 <translation id="8845239796550121995">Reproduzindo agora na sua TV</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8875657656876809964">Erro na reprodução do vídeo</translation>

@@ -12,6 +12,7 @@ struct ANGLEFeature {
   string description;
   string bug;
   string status;
+  string condition;
 };
 
 // gpu:GpuExtraInfo

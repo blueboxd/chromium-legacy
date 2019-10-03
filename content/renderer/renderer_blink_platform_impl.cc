@@ -91,6 +91,7 @@
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -98,6 +99,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/sqlite/sqlite3.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gl/buildflags.h"
 #include "url/gurl.h"
 
@@ -307,9 +309,12 @@ blink::WebSandboxSupport* RendererBlinkPlatformImpl::GetSandboxSupport() {
 blink::WebThemeEngine* RendererBlinkPlatformImpl::ThemeEngine() {
   blink::WebThemeEngine* theme_engine =
       GetContentClient()->renderer()->OverrideThemeEngine();
-  if (theme_engine)
-    return theme_engine;
-  return BlinkPlatformImpl::ThemeEngine();
+  if (!theme_engine)
+    theme_engine = BlinkPlatformImpl::ThemeEngine();
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceHighContrast))
+    theme_engine->SetForcedColors(blink::ForcedColors::kActive);
+  return theme_engine;
 }
 
 bool RendererBlinkPlatformImpl::sandboxEnabled() {

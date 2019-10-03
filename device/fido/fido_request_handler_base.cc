@@ -59,26 +59,6 @@ FidoRequestHandlerBase::FidoRequestHandlerBase(
 
 void FidoRequestHandlerBase::InitDiscoveries(
     const base::flat_set<FidoTransportProtocol>& available_transports) {
-  // The number of times |notify_observer_callback_| needs to be invoked before
-  // Observer::OnTransportAvailabilityEnumerated is dispatched. Essentially this
-  // is used to wait until the parts |transport_availability_info_| are
-  // filled out; the |notify_observer_callback_| is invoked once for each part
-  // once that part is ready, namely:
-  //
-  // 1) [If the platform authenticator is enabled] once the platform
-  //    authenticator is ready.
-  // 2) [If BLE or caBLE are enabled] if Bluetooth adapter is present.
-  //
-  // On top of that, we wait for (3) an invocation that happens when the
-  // |observer_| is set, so that OnTransportAvailabilityEnumerated is never
-  // called before the observer is set.
-  size_t transport_info_callback_count = 1u;
-
-#if defined(OS_WIN)
-  if (transport_availability_info_.has_win_native_api_authenticator)
-    ++transport_info_callback_count;
-#endif  // defined(OS_WIN)
-
   transport_availability_info_.available_transports = available_transports;
   for (const auto transport : available_transports) {
     std::unique_ptr<FidoDiscoveryBase> discovery =
@@ -91,27 +71,35 @@ void FidoRequestHandlerBase::InitDiscoveries(
       continue;
     }
 
-    if (transport == FidoTransportProtocol::kInternal) {
-      ++transport_info_callback_count;
-    }
-
     discovery->set_observer(this);
     discoveries_.push_back(std::move(discovery));
   }
 
+  bool has_ble = false;
   if (base::Contains(transport_availability_info_.available_transports,
                      FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy) ||
       base::Contains(transport_availability_info_.available_transports,
                      FidoTransportProtocol::kBluetoothLowEnergy)) {
-    ++transport_info_callback_count;
+    has_ble = true;
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&FidoRequestHandlerBase::ConstructBleAdapterPowerManager,
                        weak_factory_.GetWeakPtr()));
   }
 
+  // Initialize |notify_observer_callback_| with the number of times it has to
+  // be invoked before Observer::OnTransportAvailabilityEnumerated is
+  // dispatched.
+  // Essentially this is used to wait until the parts
+  // |transport_availability_info_| are filled out; the
+  // |notify_observer_callback_| is invoked once for each discovery once it is
+  // ready, and additionally:
+  //
+  // 1) [If BLE or caBLE are enabled] if Bluetooth adapter is present.
+  // 2) When |observer_| is set, so that OnTransportAvailabilityEnumerated is
+  // never called before it is set.
   notify_observer_callback_ = base::BarrierClosure(
-      transport_info_callback_count,
+      discoveries_.size() + has_ble + 1,
       base::BindOnce(
           &FidoRequestHandlerBase::NotifyObserverTransportAvailability,
           weak_factory_.GetWeakPtr()));
@@ -296,6 +284,17 @@ void FidoRequestHandlerBase::AuthenticatorPairingModeChanged(
   }
 }
 
+void FidoRequestHandlerBase::DiscoveryStarted(
+    FidoDiscoveryBase* discovery,
+    bool success,
+    std::vector<FidoAuthenticator*> authenticators) {
+  for (auto* authenticator : authenticators)
+    AddAuthenticator(authenticator);
+
+  DCHECK(notify_observer_callback_);
+  notify_observer_callback_.Run();
+}
+
 void FidoRequestHandlerBase::AddAuthenticator(
     FidoAuthenticator* authenticator) {
   DCHECK(authenticator &&
@@ -336,16 +335,8 @@ void FidoRequestHandlerBase::AddAuthenticator(
         .win_native_ui_shows_resident_credential_notice =
         static_cast<WinWebAuthnApiAuthenticator*>(authenticator)
             ->ShowsPrivacyNotice();
-    DCHECK(notify_observer_callback_);
-    notify_observer_callback_.Run();
   }
 #endif  // defined(OS_WIN)
-
-  if (authenticator->AuthenticatorTransport() ==
-      FidoTransportProtocol::kInternal) {
-    DCHECK(notify_observer_callback_);
-    notify_observer_callback_.Run();
-  }
 }
 
 bool FidoRequestHandlerBase::HasAuthenticator(

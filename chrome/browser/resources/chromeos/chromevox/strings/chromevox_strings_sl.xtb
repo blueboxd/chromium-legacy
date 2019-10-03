@@ -20,6 +20,7 @@
 <translation id="1087788677726983142">Skritje filtrov toka dogodkov</translation>
 <translation id="1088219014394087294">Ni naslovov.</translation>
 <translation id="1106741348836243114">Vklop/izklop zvočnih povratnih informacij (zvočnih ikon).</translation>
+<translation id="1114836634143403764">Predlog</translation>
 <translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "celje", "č": "časopis", "d": "delta", "e": "eho", "f": "fokstrot", "g": "golf", "h": "hotel", "i": "indija", "j": "julija", "k": "kilo", "l": "lima", "m": "maribor", "n": "november", "o": "oskar", "p": "postojna", "q": "quebec", "r": "romeo", "s": "sežana", "š": "štajerska", "t": "tango", "u": "uniforma", "v": "viktor", "w": "washington", "x": "iks", "y": "youtube", "z": "zulu", "ž": "žaba"}</translation>
 <translation id="1120938014254001895">Z dvema prstoma povlecite gor</translation>
 <translation id="1124771028211010580">Trenutno je izbran vzporedni slog prikaza.</translation>
@@ -126,6 +127,7 @@
 <translation id="1845944666972354496">Za aktiviranje se dvakrat dotaknite.</translation>
 <translation id="1846771122725914429">Zaslon braille Bluetooth</translation>
 <translation id="1865601187525349519">Konec besedila</translation>
+<translation id="1875375785454778375">Prisotnost v živo</translation>
 <translation id="1876229593313240038">dok</translation>
 <translation id="188130072164734898">Izgovori trenutna čas in datum.</translation>
 <translation id="1902396333223336119">Celica</translation>
@@ -146,6 +148,7 @@
 <translation id="2009187674653301682">Ni nadpisano</translation>
 <translation id="2010555995361223825">ChromeVoxovi meniji</translation>
 <translation id="2045490512405922022">ni potrjeno</translation>
+<translation id="2049107626739254612">Podatki o avtorstvu</translation>
 <translation id="20601713649439366">Ni prejšnjega matematičnega izraza.</translation>
 <translation id="2063539687800151747">Epigraf</translation>
 <translation id="207477615537953741">Semantični način je izklopljen</translation>
@@ -156,6 +159,7 @@
 <translation id="2110480898214777136">Prelom vrstice od začetka do konca ali od konca do začetka znotraj strani, pogovornega okna ali drugega vsebnika</translation>
 <translation id="2119965627982867824">pomik</translation>
 <translation id="2121067395472282800">tipka za dostop: <ph name="KEY" /></translation>
+<translation id="2126597928985245619">Za ta element ni besedila na voljo</translation>
 <translation id="2127747486437921899">Ležeče</translation>
 <translation id="2138345533858834403">Simulira učinek bralnika braille, ki omogoča osveževanje,
         v podoknu ChromeVoxa na vrhu zaslona.</translation>
@@ -261,6 +265,7 @@
 <translation id="2911433807131383493">Odpiranje vadnice za ChromeVox</translation>
 <translation id="2912405967290226587">S tremi prsti povlecite v desno</translation>
 <translation id="2932083475399492303">Preklapljanje med strukturno vrstico in vrstico postavitve</translation>
+<translation id="293796669683825859">Komentarji</translation>
 <translation id="2942710183375260152">Temno skrilasto modra</translation>
 <translation id="2943596527105977722">Temno zlatorumena</translation>
 <translation id="2944762337049891859">Samodejno branje strani po dokončanju nalaganja.</translation>
@@ -337,6 +342,7 @@
 <translation id="3324983252691184275">Škrlatna</translation>
 <translation id="3338224621010291843">Drsnik z vrednostjo <ph name="VALUE" /> in imenom <ph name="NAME" /></translation>
 <translation id="335581015389089642">Speech</translation>
+<translation id="3356951775008366684">Najava fonetične izgovarjave za besedo</translation>
 <translation id="3359142382821736686">loččrt</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{znak za plus}one{# znak za plus}two{# znaka za plus}few{# znaki za plus}other{# znakov za plus}}</translation>
 <translation id="338583716107319301">Ločilo</translation>
@@ -533,6 +539,7 @@
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">privzeto</translation>
 <translation id="4772771694153161212">Ni podčrtano</translation>
+<translation id="4787577491510559358">Najava oblikovanja za trenutni element</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Prekini povezavo</translation>
 <translation id="481165870889056555">Obvestilo o naslovu trenutne strani</translation>
@@ -569,6 +576,7 @@
 <translation id="4983588134362688868">Na vrh strani</translation>
 <translation id="4986606102545753256">Okno <ph name="NAME" /></translation>
 <translation id="4993152509206108683">Hitrost: <ph name="PERCENT" /> %</translation>
+<translation id="4994420463726586413">Najava trenutnega stanja akumulatorja</translation>
 <translation id="4996716799442435517">Vidno</translation>
 <translation id="4997282455736854877">Izbirni gumb <ph name="NAME" /> je izbran</translation>
 <translation id="4997475792277222884">Ni naslednjega elementa, ki ni povezava.</translation>

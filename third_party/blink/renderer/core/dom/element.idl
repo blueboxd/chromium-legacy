@@ -93,8 +93,7 @@ callback ScrollStateCallback = void (ScrollState scrollState);
 
     // Pointer Lock
     // https://w3c.github.io/pointerlock/#extensions-to-the-element-interface
-    [MeasureAs=ElementRequestPointerLock] void requestPointerLock();
-    [RuntimeEnabled=PointerLockOptions] void requestPointerLock(PointerLockOptions options);
+    [MeasureAs=ElementRequestPointerLock] void requestPointerLock(optional PointerLockOptions options);
 
     // CSSOM View Module
     // https://drafts.csswg.org/cssom-view/#extension-to-the-element-interface

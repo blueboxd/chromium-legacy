@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Se usi questa applicazione, accetti i <ph name="BEGIN_LINK_TOS" />Termini di servizio<ph name="END_LINK_TOS" /> e l'<ph name="BEGIN_LINK_PRIVACY" />Informativa sulla privacy<ph name="END_LINK_PRIVACY" /> di Chrome.</translation>
 <translation id="2147651015520127414">Chrome ha verificato che <ph name="ISSUER" /> ha emesso il certificato del sito web.</translation>
 <translation id="2199719347983604670">Dati dalla Sincronizzazione Chrome</translation>
-<translation id="2342981853652716282">Accedi a Chrome per trovare i tuoi preferiti, le password e altre impostazioni su tutti i tuoi dispositivi.</translation>
 <translation id="2347208864470321755">Quando questa funzione è attiva, Chrome si offre di tradurre le pagine scritte in altre lingue utilizzando Google Traduttore. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Per salvare le immagini, tocca Impostazioni e consenti a Chrome di usare le tue foto</translation>
 <translation id="2576431527583832481">Chrome è stato migliorato. È disponibile una nuova versione.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Aiutaci a migliorare Chrome inviando a Google statistiche sull'utilizzo e rapporti sugli arresti anomali.</translation>
 <translation id="415767770115540173">Migliora la tua esperienza di Chrome tramite l'accesso alla tua posizione.</translation>
 <translation id="424864128008805179">Uscire da Chrome?</translation>
+<translation id="4249068189593983585">Suggerimento per Chrome. Per vedere più opzioni sulla scheda, tocca e tieni premuto il pulsante Mostra schede della barra degli strumenti, che si trova nella parte inferiore o superiore della schermata.</translation>
 <translation id="4523886039239821078">Alcuni componenti aggiuntivi provocano l'arresto anomalo di Chrome. Disinstallali.</translation>
 <translation id="5389212809648216794">Google Chrome non può utilizzare la videocamera perché è attualmente utilizzata da un'altra applicazione</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Leggi i Termini di servizio di Chrome aggiornati<ph name="END_LINK" />.</translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Alcuni componenti aggiuntivi provocano l'arresto anomalo di Chrome. Prova a disinstallarli.</translation>
 <translation id="8459495907675268833">I dati selezionati sono stati rimossi da Chrome e dai dispositivi sincronizzati. Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, ad esempio ricerche e attività, di altri servizi Google alla pagina history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome potrebbe utilizzare servizi web per migliorare la tua esperienza di navigazione. Se preferisci, puoi disattivare questi servizi. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 </translationbundle>

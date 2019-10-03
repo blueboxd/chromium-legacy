@@ -19,10 +19,6 @@ namespace instance_id {
 class InstanceIDDriver;
 }
 
-namespace syncer {
-class LocalDeviceInfoProvider;
-}
-
 class SharingSyncPreference;
 class VapidKeyManager;
 enum class SharingDeviceRegistrationResult;
@@ -34,11 +30,9 @@ class SharingDeviceRegistration {
   using RegistrationCallback =
       base::OnceCallback<void(SharingDeviceRegistrationResult)>;
 
-  SharingDeviceRegistration(
-      SharingSyncPreference* prefs,
-      instance_id::InstanceIDDriver* instance_id_driver,
-      VapidKeyManager* vapid_key_manager,
-      syncer::LocalDeviceInfoProvider* device_info_tracker);
+  SharingDeviceRegistration(SharingSyncPreference* prefs,
+                            instance_id::InstanceIDDriver* instance_id_driver,
+                            VapidKeyManager* vapid_key_manager);
   virtual ~SharingDeviceRegistration();
 
   // Registers device with sharing sync preferences. Takes a |callback| function
@@ -101,7 +95,6 @@ class SharingDeviceRegistration {
   SharingSyncPreference* sharing_sync_preference_;
   instance_id::InstanceIDDriver* instance_id_driver_;
   VapidKeyManager* vapid_key_manager_;
-  syncer::LocalDeviceInfoProvider* local_device_info_provider_;
   base::Optional<std::set<sync_pb::SharingSpecificFields_EnabledFeatures>>
       enabled_features_testing_value_;
 

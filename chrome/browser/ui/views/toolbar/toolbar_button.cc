@@ -77,6 +77,8 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
     installable_ink_drop_->SetConfig(GetToolbarInstallableInkDropConfig(this));
   }
 
+  InstallToolbarButtonHighlightPathGenerator(this);
+
   SetInkDropMode(InkDropMode::ON);
 
   // Make sure icons are flipped by default so that back, forward, etc. follows
@@ -217,8 +219,6 @@ bool ToolbarButton::IsMenuShowing() const {
 }
 
 void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  SetToolbarButtonHighlightPath(this, *GetProperty(views::kInternalPaddingKey));
-
   UpdateColorsAndInsets();
   LabelButton::OnBoundsChanged(previous_bounds);
 }
@@ -231,8 +231,7 @@ void ToolbarButton::OnThemeChanged() {
 
 gfx::Rect ToolbarButton::GetAnchorBoundsInScreen() const {
   gfx::Rect bounds = GetBoundsInScreen();
-  gfx::Insets insets =
-      GetToolbarInkDropInsets(this, *GetProperty(views::kInternalPaddingKey));
+  gfx::Insets insets = GetToolbarInkDropInsets(this);
   // If the button is extended, don't inset the leading edge. The anchored menu
   // should extend to the screen edge as well so the menu is easier to hit
   // (Fitts's law).

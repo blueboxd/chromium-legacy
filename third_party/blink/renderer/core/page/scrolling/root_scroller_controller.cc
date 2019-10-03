@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -408,11 +407,6 @@ void RootScrollerController::ProcessImplicitCandidates() {
   // Only promote an implicit root scroller if we have a unique match.
   if (multiple_matches)
     implicit_root_scroller_ = nullptr;
-}
-
-PaintLayer* RootScrollerController::RootScrollerPaintLayer() const {
-  return root_scroller_util::PaintLayerForRootScroller(
-      effective_root_scroller_);
 }
 
 void RootScrollerController::ElementRemoved(const Element& element) {

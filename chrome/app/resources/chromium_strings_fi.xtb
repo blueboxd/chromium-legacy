@@ -72,7 +72,6 @@
 <translation id="3509308970982693815">Sulje kaikki Chromium-ikkunat ja yritä uudelleen.</translation>
 <translation id="352783484088404971">Poista Chromiumista…</translation>
 <translation id="3575459661164320785">Tietokoneellasi on haitallinen ohjelmisto. Chromium voi poistaa sen, palauttaa asetuksesi ja poistaa laajennukset käytöstä, jotta selaimesi toimii taas normaalisti.</translation>
-<translation id="3582788516608077514">Päivitetään Chromiumia...</translation>
 <translation id="358997566136285270">Chromium-logo</translation>
 <translation id="3639635944603682591">Käyttäjän selaustiedot poistetaan tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Avaa linkki uudella Chromiumin välilehdellä</translation>
@@ -86,7 +85,6 @@
 <translation id="421369550622382712">Löydät hienoja sovelluksia, pelejä, laajennuksia ja teemoja Chromiumille.</translation>
 <translation id="4216212958613226427">Chromium-käyttöliittymä näytetään tällä kielellä</translation>
 <translation id="4222580632002216401">Olet nyt kirjautunut sisään Chromiumiin! Järjestelmänvalvoja on poistanut synkronoinnin käytöstä.</translation>
-<translation id="4224199872375172890">Chromium on ajan tasalla.</translation>
 <translation id="4230135487732243613">Linkitetäänkö Chromium-tiedot tähän tiliin?</translation>
 <translation id="4271805377592243930">Ohjeita Chromiumin käyttöön</translation>
 <translation id="4285930937574705105">Asennus epäonnistui tuntemattoman virheen takia. Jos Chromium on tällä hetkellä käynnissä, sulje se ja yritä uudelleen.</translation>
@@ -98,6 +96,7 @@
 <translation id="4567424176335768812">Olet kirjautunut Chromeen tilillä <ph name="USER_EMAIL_ADDRESS" />. Nyt voit käyttää kirjanmerkkejäsi, historiaa ja muita asetuksia kaikilla laitteilla, joihin olet kirjautunut.</translation>
 <translation id="459535195905078186">Chromium-sovellukset</translation>
 <translation id="4621240073146040695">Melkein valmista. Viimeistele päivitys käynnistämällä Chromium uudelleen.</translation>
+<translation id="4661006601577405669">Chromiumin tulevat versiot asennetaan automaattisesti.</translation>
 <translation id="4677944499843243528">Profiili näyttäisi olevan toisen Chromium-prosessin (<ph name="PROCESS_ID" />) käytössä toisella tietokoneella (<ph name="HOST_NAME" />). Chromium on lukinnut profiilin, jotta se ei vioitu. Jos olet varma, että mikään toinen prosessi ei käytä tätä profiilia, voit poistaa profiilin lukituksen ja käynnistää Chromiumin uudelleen.</translation>
 <translation id="469338717132742108">Ohjeita Chromium-käyttöjärjestelmän käyttöön</translation>
 <translation id="4708774505295300557">Joku on jo kirjautunut tällä tietokoneella Chromiumiin käyttäjätilillä <ph name="ACCOUNT_EMAIL_LAST" />. Luo uusi Chromium-käyttäjä, jos haluat pitää tiedot erillään.</translation>
@@ -128,9 +127,7 @@
 <translation id="5698481217667032250">Näytä Chromium tällä kielellä</translation>
 <translation id="5820394555380036790">Chromium-käyttöjärjestelmä</translation>
 <translation id="5862307444128926510">Tervetuloa Chromiumiin</translation>
-<translation id="5877064549588274448">Kanava vaihdettiin. Ota muutokset käyttöön käynnistämällä laite uudelleen.</translation>
 <translation id="5895138241574237353">Käynnistä uudelleen</translation>
-<translation id="5906655207909574370">Melkein ajan tasalla. Viimeistele päivitys käynnistämällä laite uudelleen.</translation>
 <translation id="5987687638152509985">Aloita synkronointi päivittämällä Chromium.</translation>
 <translation id="6013050204643758987">Toinen <ph name="BEGIN_LINK_CROS_OSS" />avoimen lähdekoodin ohjelmisto<ph name="END_LINK_CROS_OSS" /> tukee Chromium-käyttöjärjestelmää, kuten myös <ph name="BEGIN_LINK_LINUX_OSS" />Linuxia (beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="6040143037577758943">Sulje</translation>
@@ -172,7 +169,6 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 <translation id="6868056391275687737">Chromiumin muita kopioita on käynnissä. Sulje ne päivittämistä varten.</translation>
 <translation id="6893813176749746474">Chromium on päivitetty, mutta et ole käyttänyt sitä ainakaan 30 päivään.</translation>
 <translation id="6964305034639999644">Avaa linkki Chromiumin inco&amp;gnito-ikkunassa</translation>
-<translation id="6970811910055250180">Päivitetään laitetta...</translation>
 <translation id="6990124437352146030">Chromium tarvitsee oikeuden käyttää mikrofoniasi tällä sivustolla.</translation>
 <translation id="705851970750939768">Päivitä Chromium</translation>
 <translation id="7066436765290594559">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja. Päivitä synkronoinnin tunnuslause.</translation>
@@ -194,6 +190,7 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium Dev</translation>
 <translation id="7451052299415159299">Chromium tarvitsee oikeuden käyttää kameraasi tällä sivustolla.</translation>
 <translation id="7483335560992089831">Chromiumista ei voi asentaa versiota, joka on tällä hetkellä käynnissä. Sulje Chromium ja yritä uudelleen.</translation>
+<translation id="751093125041325477">Chromiumin tulevat versiot asennetaan automaattisesti. Kun lataus on valmis, Chromium käynnistyy uudelleen ja voit aloittaa käytön.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium käynnistetään uudelleen 1 minuutin kuluttua}other{Chromium käynnistetään uudelleen # minuutin kuluttua}}</translation>
 <translation id="7549178288319965365">Tietoja Chromium-käyttöjärjestelmästä</translation>
 <translation id="7561906087460245826">Poista data myös Chromiumista (<ph name="URL" />)</translation>
@@ -215,7 +212,6 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
 <translation id="7975919845073681630">Tämä on Chromiumin toissijainen asennus, eikä sitä voi asettaa oletusselaimeksi.</translation>
 <translation id="7979877361127045932">Piilota Chromium-valikossa</translation>
 <translation id="8013436988911883588">Kun Chromiumilla on käyttöoikeus, sivustot voivat pyytää sitä sinulta.</translation>
-<translation id="8030318113982266900">Päivitetään laitteeseen kanavaa <ph name="CHANNEL_NAME" />…</translation>
 <translation id="81770708095080097">Tämä tiedosto on vaarallinen, joten Chromium on estänyt sen.</translation>
 <translation id="8222496066431494154">Asenna Chromium puhelimellesi. Lähetämme tekstiviestin palauttamisen puhelinnumeroosi: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="8248265253516264921">Jos kuvalla ei ole hyödyllistä kuvausta, Chromium yrittää luoda sellaisen. Kuvat lähetetään Googlelle kuvausten luomista varten. Voit milloin tahansa poistaa tämän käytöstä asetuksissa.</translation>
@@ -230,7 +226,6 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Kaikki oikeudet pidätetään.</translation>
 <translation id="8619360774459241877">Käynnistetään Chromiumia…</translation>
 <translation id="8621669128220841554">Asennus epäonnistui määrittelemättömän virheen vuoksi. Lataa Chromium uudelleen.</translation>
-<translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> on ajan tasalla.</translation>
 <translation id="8682540261359803721">Jos asetus ei näy tällä sivulla, siirry <ph name="LINK_BEGIN" />
     Chromiumin selainasetuksiin<ph name="LINK_END" />.</translation>
 <translation id="8697124171261953979">Määrittää myös Chromiumin ja omnibox-hakujen aloitussivun.</translation>

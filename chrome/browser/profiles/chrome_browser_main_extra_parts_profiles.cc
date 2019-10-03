@@ -102,6 +102,7 @@
 #include "chrome/browser/metrics/desktop_session_duration/desktop_profile_session_durations_service_factory.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/search/instant_service_factory.h"
+#include "chrome/browser/storage/storage_notification_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/media_router/media_router_ui_service_factory.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -405,6 +406,9 @@ void ChromeBrowserMainExtraPartsProfiles::
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   SpellcheckServiceFactory::GetInstance();
+#endif
+#if !defined(OS_ANDROID)
+  StorageNotificationServiceFactory::GetInstance();
 #endif
   suggestions::SuggestionsServiceFactory::GetInstance();
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)

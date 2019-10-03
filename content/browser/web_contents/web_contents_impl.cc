@@ -300,6 +300,11 @@ bool AreValidRegisterProtocolHandlerArguments(const std::string& protocol,
   return true;
 }
 
+void RecordMaxFrameCountUMA(size_t max_frame_count) {
+  UMA_HISTOGRAM_COUNTS_10000("Navigation.MainFrame.MaxFrameCount",
+                             max_frame_count);
+}
+
 }  // namespace
 
 std::unique_ptr<WebContents> WebContents::Create(
@@ -614,7 +619,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 
   ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForWeb();
   native_theme_observer_.Add(native_theme);
-  in_high_contrast_ = native_theme->UsesHighContrastColors();
   using_dark_colors_ = native_theme->ShouldUseDarkColors();
   preferred_color_scheme_ = native_theme->GetPreferredColorScheme();
 }
@@ -4398,6 +4402,13 @@ void WebContentsImpl::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
   TRACE_EVENT1("navigation", "WebContentsImpl::ReadyToCommitNavigation",
                "navigation_handle", navigation_handle);
+
+  if (!navigation_handle->GetParentFrame() &&
+      record_max_frame_count_when_leaving_current_page_) {
+    RecordMaxFrameCountUMA(max_frame_count_);
+    record_max_frame_count_when_leaving_current_page_ = false;
+  }
+
   for (auto& observer : observers_)
     observer.ReadyToCommitNavigation(navigation_handle);
 
@@ -4484,6 +4495,17 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
   if (should_focus_location_bar_by_default_ &&
       navigation_handle->GetURL() != url::kAboutBlankURL) {
     should_focus_location_bar_by_default_ = false;
+  }
+
+  // If navigation has successfully finished in the main page, set
+  // |record_max_frame_count_when_leaving_current_page_| to true so that when
+  // the main frame navigates away from this page we know to record this page's
+  // max frame count.
+  if (navigation_handle->IsInMainFrame() && !navigation_handle->IsErrorPage()) {
+    record_max_frame_count_when_leaving_current_page_ = true;
+
+    // Navigation has completed in main frame. Reset |max_frame_count_| to 1.
+    max_frame_count_ = 1;
   }
 }
 
@@ -5290,6 +5312,12 @@ void WebContentsImpl::NotifyViewSwapped(RenderViewHost* old_host,
 void WebContentsImpl::NotifyFrameSwapped(RenderFrameHost* old_host,
                                          RenderFrameHost* new_host,
                                          bool is_main_frame) {
+  if (!old_host) {
+    frame_count_++;
+    if (max_frame_count_ < frame_count_)
+      max_frame_count_ = frame_count_;
+  }
+
 #if defined(OS_ANDROID)
   // Copy importance from |old_host| if |new_host| is a main frame.
   if (old_host && !new_host->GetParent()) {
@@ -5394,6 +5422,12 @@ void WebContentsImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
 }
 
 void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
+  if (!render_frame_host->GetParent() && IsBeingDestroyed() &&
+      record_max_frame_count_when_leaving_current_page_) {
+    // Main frame has been deleted because WebContents is being destroyed.
+    RecordMaxFrameCountUMA(max_frame_count_);
+  }
+
   is_notifying_observers_ = true;
   for (auto& observer : observers_)
     observer.RenderFrameDeleted(render_frame_host);
@@ -6814,6 +6848,8 @@ gfx::Size WebContentsImpl::GetSizeForNewRenderView(bool is_main_frame) {
 }
 
 void WebContentsImpl::OnFrameRemoved(RenderFrameHost* render_frame_host) {
+  frame_count_--;
+
   for (auto& observer : observers_)
     observer.FrameDeleted(render_frame_host);
 }
@@ -7354,17 +7390,12 @@ void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   DCHECK(native_theme_observer_.IsObserving(observed_theme));
 
   bool using_dark_colors = observed_theme->ShouldUseDarkColors();
-  bool in_high_contrast = observed_theme->UsesHighContrastColors();
   ui::NativeTheme::PreferredColorScheme preferred_color_scheme =
       observed_theme->GetPreferredColorScheme();
   bool preferences_changed = false;
 
   if (using_dark_colors_ != using_dark_colors) {
     using_dark_colors_ = using_dark_colors;
-    preferences_changed = true;
-  }
-  if (in_high_contrast_ != in_high_contrast) {
-    in_high_contrast_ = in_high_contrast;
     preferences_changed = true;
   }
   if (preferred_color_scheme_ != preferred_color_scheme) {

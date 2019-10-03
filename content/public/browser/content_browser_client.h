@@ -394,13 +394,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This is called on the UI thread.
   virtual bool CanCommitURL(RenderProcessHost* process_host, const GURL& url);
 
-  // Returns whether |url| should be allowed to open from the context indicated
-  // by |site_instance|.
-  // This also applies in cases where the new URL will open in another process.
-  //
-  // TODO(lukasza): https://crbug.com/1003957: Remove this method.
-  virtual bool ShouldAllowOpenURL(SiteInstance* site_instance, const GURL& url);
-
   // Returns whether a URL can be displayed within a WebUI for a given
   // BrowserContext. Temporary workaround while crbug.com/768526 is resolved.
   // Note: This is used by an internal Cast implementation of this class.

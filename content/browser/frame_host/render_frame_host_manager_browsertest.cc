@@ -6018,6 +6018,18 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_EQ(GURL("http://foo.com"), instance1->GetSiteURL());
   }
 
+  // The previously committed entry should get a new, related instance to avoid
+  // a SiteInstance mismatch when returning to it. See http://crbug.com/992198
+  // for further context.
+  SiteInstanceImpl* prev_entry_instance = web_contents->GetController()
+                                              .GetEntryAtIndex(0)
+                                              ->root_node()
+                                              ->frame_entry->site_instance();
+  EXPECT_NE(prev_entry_instance, instance1);
+  EXPECT_NE(prev_entry_instance, nullptr);
+  EXPECT_TRUE(prev_entry_instance->IsRelatedSiteInstance(instance1.get()));
+  EXPECT_EQ(GURL(), prev_entry_instance->GetSiteURL());
+
   // Navigate to bar.com, which destroys the previous RenderProcessHost.
   GURL url3(embedded_test_server()->GetURL("bar.com", "/title1.html"));
   RenderProcessHostWatcher exit_observer(

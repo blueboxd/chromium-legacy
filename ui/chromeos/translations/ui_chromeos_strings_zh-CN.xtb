@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">取消固定文件夹</translation>
 <translation id="3678559383040232393">马耳他语键盘</translation>
 <translation id="3685122418104378273">当您使用移动数据网络时，Google 云端硬盘同步功能默认情况下处于停用状态。</translation>
+<translation id="3689865792480713551">取消<ph name="ACTIVITY_DESCRIPTION" />。</translation>
 <translation id="3726463242007121105">系统不支持此设备的文件系统，因此无法打开此设备。</translation>
 <translation id="3741243925913727067">将您的媒体设备上的照片和视频备份到 Google 云端硬盘。</translation>
 <translation id="3749289110408117711">文件名</translation>
@@ -458,6 +459,7 @@
 <translation id="6339145975392024142">美式国际 (PC) 键盘</translation>
 <translation id="6346310558342052870">访问权限受限</translation>
 <translation id="6353618411602605519">克罗地亚语键盘</translation>
+<translation id="6356685157277930264">文件反馈窗口</translation>
 <translation id="6358884629796491903">龙</translation>
 <translation id="637062427944097960">此文件已在其他桌面打开。请转至<ph name="USER_NAME" />(<ph name="MAIL_ADDRESS" />)查看此文件。</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> 项内容</translation>

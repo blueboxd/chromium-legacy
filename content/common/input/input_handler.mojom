@@ -63,10 +63,9 @@ struct WheelData {
   int32 resending_plugin_id;
   uint8 phase;
   uint8 momentum_phase;
-  bool scroll_by_page;
-  bool has_precise_scrolling_deltas;
   Cancelability cancelable;
   uint8 event_action;
+  uint8 delta_units;
 };
 
 struct MouseData {

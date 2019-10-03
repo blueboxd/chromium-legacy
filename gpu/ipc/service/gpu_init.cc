@@ -274,7 +274,10 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 #endif
 
 #if BUILDFLAG(ENABLE_VULKAN)
-  if (gpu_preferences_.use_vulkan != gpu::VulkanImplementationName::kNone) {
+  if (gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] ==
+      gpu::kGpuFeatureStatusEnabled) {
+    DCHECK_NE(gpu_preferences_.use_vulkan,
+              gpu::VulkanImplementationName::kNone);
     bool use_swiftshader = gpu_preferences_.use_vulkan ==
                            gpu::VulkanImplementationName::kSwiftshader;
     const bool enforce_protected_memory =

@@ -78,7 +78,7 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     color_gamut = MediaValues::CalculateColorGamut(frame);
     preferred_color_scheme = MediaValues::CalculatePreferredColorScheme(frame);
     prefers_reduced_motion = MediaValues::CalculatePrefersReducedMotion(frame);
-    forced_colors = MediaValues::CalculateForcedColors(frame);
+    forced_colors = MediaValues::CalculateForcedColors();
     navigation_controls = MediaValues::CalculateNavigationControls(frame);
   }
 }

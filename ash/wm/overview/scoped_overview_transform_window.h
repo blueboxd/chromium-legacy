@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "ui/aura/client/transient_window_client_observer.h"
-#include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -40,10 +39,9 @@ class ScopedOverviewHideWindows;
 // fit in certain bounds. The window's state is restored when this object is
 // destroyed.
 class ASH_EXPORT ScopedOverviewTransformWindow
-    : public ui::ImplicitAnimationObserver,
-      public aura::client::TransientWindowClientObserver {
+    : public aura::client::TransientWindowClientObserver {
  public:
-  // Overview windows have certain properties if their aspect ratio exceedes a
+  // Overview windows have certain properties if their aspect ratio exceeds a
   // threshold. This enum keeps track of which category the window falls into,
   // based on its aspect ratio.
   enum class GridWindowFillMode {
@@ -66,10 +64,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
                             const gfx::SizeF& target,
                             int top_view_inset,
                             int title_height);
-
-  // Returns the transform turning |src_rect| into |dst_rect|.
-  static gfx::Transform GetTransformForRect(const gfx::RectF& src_rect,
-                                            const gfx::RectF& dst_rect);
 
   ScopedOverviewTransformWindow(OverviewItem* overview_item,
                                 aura::Window* window);
@@ -147,13 +141,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // clip the top portion of the window that normally contains the caption (if
   // any), otherwise it will skip updating that clip.
   void UpdateRoundedCorners(bool show, bool update_clip);
-
-  // Stop listening to any animations to finish.
-  void CancelAnimationsListener();
-
-  // ui::ImplicitAnimationObserver:
-  void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override;
-  void OnImplicitAnimationsCompleted() override;
 
   // aura::client::TransientWindowClientObserver:
   void OnTransientChildWindowAdded(aura::Window* parent,

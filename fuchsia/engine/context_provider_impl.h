@@ -28,6 +28,9 @@ class WEB_ENGINE_EXPORT ContextProviderImpl
       const base::CommandLine& command,
       const base::LaunchOptions& options)>;
 
+  // Handle Id used to pass the request channel to Context processes.
+  static const uint32_t kContextRequestHandleId;
+
   ContextProviderImpl();
   ~ContextProviderImpl() override;
 

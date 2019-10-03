@@ -20,24 +20,29 @@ bool IsGoodClipping(ClipResult clip_result) {
 
 CanvasCopyInfo GetCanvasCopyInfo(const gfx::Size& source_size,
                                  float scale_factor,
-                                 const gfx::Size& target_size) {
+                                 const gfx::Size& unscaled_target_size) {
   DCHECK(!source_size.IsEmpty());
-  DCHECK(!target_size.IsEmpty());
+  DCHECK(!unscaled_target_size.IsEmpty());
   DCHECK_GT(scale_factor, 0.0f);
 
-  CanvasCopyInfo copy_info;
-
   const float desired_aspect =
-      float{target_size.width()} / float{target_size.height()};
+      float{unscaled_target_size.width()} / unscaled_target_size.height();
+
+  CanvasCopyInfo copy_info;
+  copy_info.target_size =
+      gfx::ScaleToFlooredSize(unscaled_target_size, scale_factor);
 
   // Get the clipping rect so that we can preserve the aspect ratio while
   // filling the destination.
-  if (source_size.width() < target_size.width() ||
-      source_size.height() < target_size.height()) {
+  if (source_size.width() < unscaled_target_size.width() ||
+      source_size.height() < unscaled_target_size.height()) {
     // Source image is smaller: we clip the part of source image within the
     // dest rect, and then stretch it to fill the dest rect. We don't respect
     // the aspect ratio in this case.
-    copy_info.copy_rect = gfx::Rect(target_size);
+    gfx::Size copy_size = source_size;
+    copy_size.SetToMin(copy_info.target_size);
+
+    copy_info.copy_rect = gfx::Rect(copy_size);
     copy_info.clip_result = ClipResult::kSourceSmallerThanTarget;
 
   } else {
@@ -65,8 +70,6 @@ CanvasCopyInfo GetCanvasCopyInfo(const gfx::Size& source_size,
       copy_info.copy_rect = gfx::Rect(source_size);
     }
   }
-
-  copy_info.target_size = gfx::ScaleToFlooredSize(target_size, scale_factor);
 
   return copy_info;
 }

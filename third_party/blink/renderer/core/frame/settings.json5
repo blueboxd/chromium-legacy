@@ -1074,14 +1074,6 @@
       name: "DontSendKeyEventsToJavascript",
       initial: false,
     },
-    // Forced colors from the OS/application passed to the renderer for
-    // evaluating the forced-colors media query.
-    {
-      name: "forcedColors",
-      initial: "ForcedColors::kNone",
-      invalidate: "ColorScheme",
-      type: "ForcedColors",
-    },
     // Navigation controls from the application passed to the renderer for
     // evaluating the navigation-controls media query.
     {

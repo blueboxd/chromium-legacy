@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Gagal Simpan Imej</translation>
 <translation id="1180526666083833456">Segerakkan dan peribadikan pada semua peranti.</translation>
 <translation id="1181037720776840403">Alih keluar</translation>
+<translation id="1207113853726624428">Carian Baharu</translation>
 <translation id="1209206284964581585">Sorok sementara</translation>
 <translation id="1219674500290482172">Tidak dapat menyambung ke Internet.</translation>
 <translation id="122699739164161391">Tutup Semua Tab</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">Cadangkan Kata Laluan...</translation>
 <translation id="1870148520156231997">Dedahkan Kata Laluan</translation>
 <translation id="1872096359983322073">Lampu suluh</translation>
-<translation id="1876721852596493031">Hantar Data Penggunaan</translation>
 <translation id="1911619930368729126">Muat naik ke Google Drive</translation>
 <translation id="1923342640370224680">Jam Terakhir</translation>
 <translation id="1941314575388338491">Ketik dua kali untuk menyalin.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artikel Senarai Bacaan yang belum dibaca.</translation>
 <translation id="2230173723195178503">Halaman web dimuatkan</translation>
 <translation id="2239626343334228536">Mengosongkan data semakan imbas...</translation>
-<translation id="2256128224215992540">Cadangan Carian dan Tapak</translation>
 <translation id="2267753748892043616">Tambahkan Akaun</translation>
 <translation id="2268044343513325586">Perhalusi</translation>
 <translation id="2273327106802955778">Lagi menu</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">Tidak Dapat Membuka Fail</translation>
 <translation id="2718352093833049315">Hanya pada Wi-Fi</translation>
 <translation id="2747003861858887689">Medan sebelumnya</translation>
+<translation id="2773292004659987824">Carian Inkognito</translation>
 <translation id="2780046210906776326">Tiada Akaun E-mel</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Tinggalkan Penukar Tab</translation>
@@ -295,7 +295,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Dayakan penyegerakan</translation>
 <translation id="5234764350956374838">Singkirkan</translation>
-<translation id="5244474230056479698">Menyegerak ke <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Batalkan Penyegerakan</translation>
 <translation id="5271549068863921519">Simpan kata laluan</translation>
 <translation id="5300589172476337783">Paparkan</translation>
@@ -501,6 +500,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="8261506727792406068">Padam</translation>
 <translation id="8281781826761538115">Lalai - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Carian Baharu</translation>
+<translation id="8323906514956095947">Sentuh &amp; tahan untuk melihat lagi pilihan tab</translation>
 <translation id="8328777765163860529">Tutup Semua</translation>
 <translation id="8407669440184693619">Tiada kata laluan ditemui untuk tapak ini</translation>
 <translation id="842017693807136194">Dilog Masuk dengan</translation>

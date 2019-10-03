@@ -186,7 +186,7 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
 // non-fullscreen badges.
 - (void)updateConsumerReadStatus {
   for (id<BadgeItem> item in self.badges) {
-    if (!item.fullScreen && item.badgeState & BadgeStateRead) {
+    if (!item.fullScreen && !(item.badgeState & BadgeStateRead)) {
       [self.consumer markDisplayedBadgeAsRead:NO];
       return;
     }

@@ -18,7 +18,6 @@
 <translation id="1393853151966637042">Obter ajuda para usar o Google Chrome</translation>
 <translation id="1399397803214730675">Este computador já tem uma versão mais recente do Google Chrome. Caso o software não esteja funcionando, desinstale-o e tente novamente.</translation>
 <translation id="1434626383986940139">Aplicativos Canary do Google Chrome</translation>
-<translation id="1457721931618994305">Atualizando o Google Chrome...</translation>
 <translation id="1469002951682717133">Inicializador de aplicativos do Google Chrome</translation>
 <translation id="1553358976309200471">Atualizar o Google Chrome</translation>
 <translation id="1587223624401073077">O Google Chrome está usando sua câmera.</translation>
@@ -87,6 +86,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="3065168410429928842">Guia do Chrome</translation>
 <translation id="3080151273017101988">Executar aplicativos em segundo plano quando o Google Chrome estiver fechado</translation>
 <translation id="3089968997497233615">Há uma versão nova e mais segura do Google Chrome disponível.</translation>
+<translation id="3138848678222082288">As versões futuras do Chrome serão instaladas automaticamente. Quando o download terminar, o Chrome será reiniciado e estará tudo pronto para você.</translation>
 <translation id="3149510190863420837">Aplicativos do Google Chrome</translation>
 <translation id="3282568296779691940">Fazer login no Google Chrome</translation>
 <translation id="3340978935015468852">configurações</translation>
@@ -167,9 +167,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="573759479754913123">Sobre o Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" />: Google Chrome Canary</translation>
 <translation id="5804318322022881572">Não foi possível iniciar o Chrome. Tente novamente.</translation>
-<translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
-<translation id="5906655207909574370">Atualização quase concluída. Reinicie o dispositivo para concluí-la.</translation>
 <translation id="5940385492829620908">Sua Web, seus favoritos e demais conteúdo do Chrome estão aqui.</translation>
 <translation id="5941830788786076944">Fazer do Google Chrome o navegador padrão</translation>
 <translation id="6014844626092547096">Agora, você está conectado ao Google Chrome. A sincronização está desativada por seu administrador.</translation>
@@ -188,16 +186,15 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="6566149418543181476">Atualizando o Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Você está usando <ph name="PROFILE_EMAIL" /> para sincronizar suas informações do Google Chrome. Para atualizar suas preferências de sincronização ou usar o Chrome sem uma Conta do Google, vá para <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Copiado no Chrome</translation>
-<translation id="6634887557811630702">O Google Chrome está atualizado.</translation>
 <translation id="6676384891291319759">Acessar a internet</translation>
 <translation id="6679975945624592337">Permitir a execução do Google Chrome em segundo plano</translation>
 <translation id="6750954913813541382">Para corrigir erros de ortografia, o Chrome envia o texto digitado no navegador para o Google</translation>
 <translation id="677276454032249905">Sair do Chrome mesmo assim?</translation>
 <translation id="683440813066116847">Regra interna do Google Chrome Canary para permitir tráfego mDNS.</translation>
 <translation id="6885412569789873916">Apps do Chrome Beta</translation>
+<translation id="6906909733186691861">As versões futuras do Chrome serão instaladas automaticamente.</translation>
 <translation id="6943584222992551122">Os dados de navegação dessa pessoa serão excluídos deste dispositivo. Para recuperar os dados, faça login no Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Regra interna do Google Chrome Beta que permite o tráfego mDNS.</translation>
-<translation id="6970811910055250180">Atualizando o dispositivo...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> requer que você leia e aceite os Termos de Serviço a seguir antes de utilizar o serviço. Esses termos não ampliam, modificam nem limitam os Termos do Google Chrome OS.</translation>
 <translation id="6989339256997917931">O Google Chrome foi atualizado, mas ele não é utilizado há pelo menos trinta dias.</translation>
 <translation id="7098166902387133879">O Google Chrome está usando seu microfone.</translation>
@@ -235,7 +232,6 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="7962410387636238736">Este computador não receberá mais atualizações do Google Chrome porque o Windows XP e o Windows Vista não são mais compatíveis</translation>
 <translation id="8008534537613507642">Reinstalar o Google Chrome</translation>
 <translation id="8013993649590906847">Se uma imagem não tiver uma descrição útil, o Chrome tentará fornecer uma para você. As imagens serão enviadas ao Google para a criação de descrições.</translation>
-<translation id="8030318113982266900">Atualizando seu dispositivo para o canal <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8032142183999901390">Depois de remover sua conta do Google Chrome, pode ser necessário recarregar as guias abertas para que a alteração entre em vigor.</translation>
 <translation id="8129812357326543296">Sobre o Google Chrome</translation>
 <translation id="8179874765710681175">Instale o Chrome no seu smartphone. Enviaremos um SMS para seu número.</translation>
@@ -258,7 +254,6 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="8606668294522778825">O Google Chrome pode usar os serviços da Web para melhorar sua experiência de navegação. Se preferir, é possível desativar esses serviços. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">O Google Chrome não responde. Reiniciar agora?</translation>
 <translation id="8625237574518804553">{0,plural, =1{O Chrome será reiniciado em 1 minuto}one{O Chrome será reiniciado em # minuto}other{O Chrome será reiniciado em # minutos}}</translation>
-<translation id="8667808506758191620">Seu dispositivo <ph name="DEVICE_TYPE" /> está atualizado.</translation>
 <translation id="8669527147644353129">Auxiliar do Google Chrome</translation>
 <translation id="8679801911857917785">Controla também qual página deve ser exibida quando você inicia o Chrome.</translation>
 <translation id="870251953148363156">Atualizar o Google Chrome</translation>

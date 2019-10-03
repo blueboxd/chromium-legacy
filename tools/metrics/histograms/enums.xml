@@ -13725,6 +13725,9 @@ Called by update_net_error_codes.py.-->
   <int value="94" label="Crostini Container Upgrade"/>
   <int value="95" label="Cookie Controls"/>
   <int value="96" label="Crostini Ansible Software Config"/>
+  <int value="97" label="Incognito Menu"/>
+  <int value="98" label="Phone Chooser"/>
+  <int value="99" label="QR Code Generator"/>
 </enum>
 
 <enum name="DialogOriginRelationship">
@@ -18162,6 +18165,7 @@ Called by update_net_error_codes.py.-->
   <int value="617" label="DeviceLoginScreenAutoclickEnabled"/>
   <int value="618" label="DeviceLoginScreenStickyKeysEnabled"/>
   <int value="619" label="DeviceLoginScreenKeyboardFocusHighlightEnabled"/>
+  <int value="620" label="ShelfAlignment"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -21584,6 +21588,23 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Installed Unrequested">
     Feature module is installed but has not been requested previously.
   </int>
+</enum>
+
+<enum name="FeatureModuleInstallingStatus">
+  <int value="0" label="UnknownCode">Unknown update status.</int>
+  <int value="1" label="Requested">Module requested (on-demand).</int>
+  <int value="2" label="Pending">Module pending.</int>
+  <int value="3" label="Downloading">Module downloading.</int>
+  <int value="4" label="Downloaded">Module downloaded.</int>
+  <int value="5" label="Installing">Module installing.</int>
+  <int value="6" label="Installed">Module installed.</int>
+  <int value="7" label="Failed">Module request failed.</int>
+  <int value="8" label="Canceling">Module request canceling.</int>
+  <int value="9" label="Canceled">Module request canceled.</int>
+  <int value="10" label="RequiresUserConfirmation">
+    Module request requires user confirmation.
+  </int>
+  <int value="11" label="RequestedDeferred">Module requested (deferred).</int>
 </enum>
 
 <enum name="FeatureModuleInstallStatus">
@@ -36035,7 +36056,6 @@ from previous Chrome versions.
   <int value="-623364791" label="ClickToCallReceiver:disabled"/>
   <int value="-622685174" label="enable-pdf-material-ui"/>
   <int value="-621382525" label="VizDisplayCompositor:enabled"/>
-  <int value="-621044227" label="OmniboxReverseTabSwitchLogic:enabled"/>
   <int value="-620030047" label="CrosCompUpdates:disabled"/>
   <int value="-619740638" label="ListAllDisplayModes:enabled"/>
   <int value="-619665653" label="DisableKeepaliveFetch:disabled"/>
@@ -37315,7 +37335,6 @@ from previous Chrome versions.
       label="AutofillCreditCardLastUsedDateDisplay:disabled"/>
   <int value="1155905651" label="DrawVerticallyEdgeToEdge:disabled"/>
   <int value="1155923106" label="NTPOfflinePages:enabled"/>
-  <int value="1161075291" label="OmniboxReverseTabSwitchLogic:disabled"/>
   <int value="1163255347" label="ash-enable-touch-view-touch-feedback"/>
   <int value="1165682330" label="AutofillSaveAndFillVPA:disabled"/>
   <int value="1166169237" label="disable-delay-agnostic-aec"/>
@@ -52411,6 +52430,7 @@ Called by update_net_trust_anchors.py.-->
       label="IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE"/>
   <int value="109"
       label="IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES"/>
+  <int value="110" label="IDC_CONTENT_CONTEXT_GENERATE_QR_CODE"/>
 </enum>
 
 <enum name="ReopenTabPromoStepAtDismissal">
@@ -57745,34 +57765,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="TLS 1.3 full handshake (1-RTT, usually)"/>
   <int value="4" label="TLS 1.3 resumption handshake (1-RTT, usually)"/>
   <int value="5" label="TLS 1.3 0-RTT handshake (0-RTT)"/>
-</enum>
-
-<enum name="SSLHandshakeEarlyDataReason">
-<!-- Corresponds to //third_party/boringssl's ssl_early_data_reason_t -->
-
-  <int value="0"
-      label="The handshake has not progressed far enough for the 0-RTT status
-             to be known."/>
-  <int value="1" label="0-RTT is disabled for this connection."/>
-  <int value="2" label="0-RTT was accepted."/>
-  <int value="3"
-      label="The negotiated protocol version does not support 0-RTT."/>
-  <int value="4"
-      label="The peer declined to offer or accept 0-RTT for an unknown
-             reason."/>
-  <int value="5" label="The client did not offer a session."/>
-  <int value="6" label="The server declined to resume the session."/>
-  <int value="7" label="The session does not support 0-RTT."/>
-  <int value="8" label="The server sent a HelloRetryRequest."/>
-  <int value="9"
-      label="The negotiated ALPN protocol did not match the session."/>
-  <int value="10"
-      label="The connection negotiated Channel ID, which is incompatible with
-             0-RTT."/>
-  <int value="11"
-      label="The connection negotiated token binding, which is incompatible
-             with 0-RTT."/>
-  <int value="12" label="The client and server ticket age were too far apart."/>
 </enum>
 
 <enum name="SSLHashAlgorithm">

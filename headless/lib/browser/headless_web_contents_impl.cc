@@ -233,7 +233,9 @@ class HeadlessWebContentsImpl::PendingFrame
  private:
   friend class base::RefCounted<PendingFrame>;
 
-  ~PendingFrame() { std::move(callback_).Run(has_damage_, std::move(bitmap_)); }
+  ~PendingFrame() {
+    std::move(callback_).Run(has_damage_, std::move(bitmap_), "");
+  }
 
   const uint64_t sequence_number_;
 
@@ -466,7 +468,7 @@ HeadlessBrowserContextImpl* HeadlessWebContentsImpl::browser_context() const {
   return browser_context_;
 }
 
-bool HeadlessWebContentsImpl::BeginFrame(
+void HeadlessWebContentsImpl::BeginFrame(
     const base::TimeTicks& frame_timeticks,
     const base::TimeTicks& deadline,
     const base::TimeDelta& interval,
@@ -474,8 +476,11 @@ bool HeadlessWebContentsImpl::BeginFrame(
     bool capture_screenshot,
     FrameFinishedCallback frame_finished_callback) {
   DCHECK(begin_frame_control_enabled_);
-  if (pending_frame_)
-    return false;
+  if (pending_frame_) {
+    std::move(frame_finished_callback)
+        .Run(false, nullptr, "Another frame is pending");
+    return;
+  }
   TRACE_EVENT2("headless", "HeadlessWebContentsImpl::BeginFrame", "frame_time",
                frame_timeticks, "capture_screenshot", capture_screenshot);
 
@@ -501,11 +506,10 @@ bool HeadlessWebContentsImpl::BeginFrame(
   args.animate_only = animate_only;
 
   ui::Compositor* compositor = browser()->PlatformGetCompositor(this);
-  DCHECK(compositor);
+  CHECK(compositor);
   compositor->context_factory_private()->IssueExternalBeginFrame(
       compositor, args, /* force= */ true,
       base::BindOnce(&PendingFrame::OnFrameComplete, pending_frame));
-  return true;
 }
 
 HeadlessWebContents::Builder::Builder(

@@ -49,7 +49,8 @@ std::pair<unsigned, unsigned> GetTextMatchMarkerPaintOffsets(
   const unsigned text_box_start =
       text_box.Start() + text_box.GetLineLayoutItem().TextStartOffset();
 
-  DCHECK_EQ(DocumentMarker::kTextMatch, marker.GetType());
+  DCHECK(marker.GetType() == DocumentMarker::kTextMatch ||
+         marker.GetType() == DocumentMarker::kTextFragment);
   const unsigned start_offset = marker.StartOffset() > text_box_start
                                     ? marker.StartOffset() - text_box_start
                                     : 0U;
@@ -478,7 +479,8 @@ InlineTextBoxPainter::PaintOffsets InlineTextBoxPainter::MarkerPaintStartAndEnd(
   // Text match markers are painted differently (in an inline text box truncated
   // by an ellipsis, they paint over the ellipsis) and so should not use this
   // function.
-  DCHECK_NE(DocumentMarker::kTextMatch, marker.GetType());
+  DCHECK(marker.GetType() != DocumentMarker::kTextMatch &&
+         marker.GetType() != DocumentMarker::kTextFragment);
   DCHECK(inline_text_box_.Truncation() != kCFullTruncation);
   DCHECK(inline_text_box_.Len());
 
@@ -594,13 +596,14 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
         inline_text_box_.PaintDocumentMarker(paint_info.context, box_origin,
                                              marker, style, font, true);
         break;
+      case DocumentMarker::kTextFragment:
       case DocumentMarker::kTextMatch:
         if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground) {
-          inline_text_box_.PaintTextMatchMarkerBackground(
-              paint_info, box_origin, To<TextMatchMarker>(marker), style, font);
+          inline_text_box_.PaintTextMarkerBackground(
+              paint_info, box_origin, To<TextMarkerBase>(marker), style, font);
         } else {
-          inline_text_box_.PaintTextMatchMarkerForeground(
-              paint_info, box_origin, To<TextMatchMarker>(marker), style, font);
+          inline_text_box_.PaintTextMarkerForeground(
+              paint_info, box_origin, To<TextMarkerBase>(marker), style, font);
         }
         break;
       case DocumentMarker::kComposition:
@@ -825,13 +828,14 @@ void InlineTextBoxPainter::PaintStyleableMarkerUnderline(
       inline_text_box_.LogicalHeight());
 }
 
-void InlineTextBoxPainter::PaintTextMatchMarkerForeground(
+void InlineTextBoxPainter::PaintTextMarkerForeground(
     const PaintInfo& paint_info,
     const LayoutPoint& box_origin,
-    const TextMatchMarker& marker,
+    const TextMarkerBase& marker,
     const ComputedStyle& style,
     const Font& font) {
-  if (!InlineLayoutObject()
+  if (marker.GetType() == DocumentMarker::kTextMatch &&
+      !InlineLayoutObject()
            .GetFrame()
            ->GetEditor()
            .MarkedTextMatchesAreHighlighted())
@@ -866,13 +870,14 @@ void InlineTextBoxPainter::PaintTextMatchMarkerForeground(
                      inline_text_box_.Len(), text_style, kInvalidDOMNodeId);
 }
 
-void InlineTextBoxPainter::PaintTextMatchMarkerBackground(
+void InlineTextBoxPainter::PaintTextMarkerBackground(
     const PaintInfo& paint_info,
     const LayoutPoint& box_origin,
-    const TextMatchMarker& marker,
+    const TextMarkerBase& marker,
     const ComputedStyle& style,
     const Font& font) {
-  if (!LineLayoutAPIShim::LayoutObjectFrom(inline_text_box_.GetLineLayoutItem())
+  if (marker.GetType() == DocumentMarker::kTextMatch &&
+      !LineLayoutAPIShim::LayoutObjectFrom(inline_text_box_.GetLineLayoutItem())
            ->GetFrame()
            ->GetEditor()
            .MarkedTextMatchesAreHighlighted())

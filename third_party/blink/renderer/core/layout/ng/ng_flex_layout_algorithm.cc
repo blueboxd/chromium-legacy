@@ -555,30 +555,44 @@ void NGFlexLayoutAlgorithm::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
 }
 
 void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
-  // TODO(dgrogan): Implement the behavior from
-  // LayoutFlexibleBox::LayoutColumnReverse here.
-  LayoutUnit final_content_cross_size =
+  Vector<FlexLine>& line_contexts = algorithm_->FlexLines();
+  const LayoutUnit cross_axis_start_edge =
+      line_contexts.IsEmpty() ? LayoutUnit()
+                              : line_contexts[0].cross_axis_offset;
+  const LayoutUnit final_content_cross_size =
       is_column_ ? container_builder_.InlineSize() -
                        border_scrollbar_padding_.InlineSum()
                  : container_builder_.BlockSize() -
                        border_scrollbar_padding_.BlockSum();
-  if (!algorithm_->IsMultiline() && !algorithm_->FlexLines().IsEmpty())
-    algorithm_->FlexLines()[0].cross_axis_extent = final_content_cross_size;
+
+  // TODO(dgrogan): Implement the behavior from
+  // LayoutFlexibleBox::LayoutColumnReverse here.
+
+  if (!algorithm_->IsMultiline() && !line_contexts.IsEmpty())
+    line_contexts[0].cross_axis_extent = final_content_cross_size;
 
   algorithm_->AlignFlexLines(final_content_cross_size);
 
   algorithm_->AlignChildren();
 
-  // TODO(dgrogan): Implement behavior from legacy's FlipForWrapReverse and
-  // FlipForRightToLeftColumn here.
+  if (Style().FlexWrap() == EFlexWrap::kWrapReverse) {
+    // flex-wrap: wrap-reverse reverses the order of the lines in the container;
+    // FlipForWrapReverse recalculates each item's cross axis position. We have
+    // to do that after AlignChildren sets an initial cross axis position.
+    algorithm_->FlipForWrapReverse(cross_axis_start_edge,
+                                   final_content_cross_size);
+  }
 
-  for (FlexLine& line_context : algorithm_->FlexLines()) {
+  for (FlexLine& line_context : line_contexts) {
     for (wtf_size_t child_number = 0;
          child_number < line_context.line_items.size(); ++child_number) {
       FlexItem& flex_item = line_context.line_items[child_number];
 
       if (DoesItemStretch(flex_item.ng_input_node))
         ApplyStretchAlignmentToChild(flex_item);
+
+      // TODO(dgrogan): Implement behavior from legacy's
+      // FlipForRightToLeftColumn here.
 
       // flex_item.desired_location stores the main axis offset in X and the
       // cross axis offset in Y. But AddChild wants offset from parent

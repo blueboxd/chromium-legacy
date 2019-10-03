@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_break_appeal.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_early_break.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
@@ -77,10 +78,17 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return HasRareData() ? rare_data_->column_spanner : NGBlockNode(nullptr);
   }
 
-  const NGEarlyBreak* GetEarlyBreak() const {
+  scoped_refptr<const NGEarlyBreak> GetEarlyBreak() const {
     if (!HasRareData())
       return nullptr;
-    return &rare_data_->early_break.value();
+    return rare_data_->early_break;
+  }
+
+  // Return the appeal of the best breakpoint (if any) we found inside the node.
+  NGBreakAppeal EarlyBreakAppeal() const {
+    if (HasRareData())
+      return static_cast<NGBreakAppeal>(rare_data_->early_break_appeal);
+    return kBreakAppealLastResort;
   }
 
   const NGExclusionSpace& ExclusionSpace() const {
@@ -300,7 +308,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     LayoutUnit bfc_line_offset;
     base::Optional<LayoutUnit> bfc_block_offset;
 
-    base::Optional<NGEarlyBreak> early_break;
+    scoped_refptr<const NGEarlyBreak> early_break;
+    NGBreakAppeal early_break_appeal = kBreakAppealLastResort;
     LogicalOffset oof_positioned_offset;
     NGMarginStrut end_margin_strut;
     NGUnpositionedListMarker unpositioned_list_marker;

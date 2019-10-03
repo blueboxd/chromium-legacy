@@ -345,6 +345,14 @@ TEST_F(CreditCardFIDOAuthenticatorTest, ParseCreationOptions) {
           std::move(creation_options_json));
   EXPECT_EQ(kTestChallenge, BytesToBase64(creation_options_ptr->challenge));
   EXPECT_EQ(kTestRelyingPartyId, creation_options_ptr->relying_party.id);
+
+  // Ensure only platform authenticators are allowed.
+  EXPECT_EQ(AuthenticatorAttachment::kPlatform,
+            creation_options_ptr->authenticator_selection
+                ->authenticator_attachment());
+  EXPECT_EQ(UserVerificationRequirement::kRequired,
+            creation_options_ptr->authenticator_selection
+                ->user_verification_requirement());
 }
 
 TEST_F(CreditCardFIDOAuthenticatorTest, ParseAttestationResponse) {

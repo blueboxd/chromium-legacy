@@ -277,7 +277,6 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
       main_settings.GetAvailablePointerTypes());
   page_->GetSettings().SetPrimaryPointerType(
       main_settings.GetPrimaryPointerType());
-  page_->GetSettings().SetForcedColors(main_settings.GetForcedColors());
 
   ProvideContextFeaturesTo(*page_, std::make_unique<PagePopupFeaturesClient>());
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, empty_local_frame_client,

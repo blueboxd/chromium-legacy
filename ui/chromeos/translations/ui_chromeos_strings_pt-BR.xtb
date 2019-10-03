@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">Liberar pasta</translation>
 <translation id="3678559383040232393">Teclado maltês</translation>
 <translation id="3685122418104378273">A sincronização do Google Drive é desativada por padrão durante o uso de dados móveis.</translation>
+<translation id="3689865792480713551">Cancelar <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Não foi possível abrir este dispositivo porque seu sistema de arquivos não é suportado.</translation>
 <translation id="3741243925913727067">Backup de fotos e vídeos do seu dispositivo de mídia para o Google Drive.</translation>
 <translation id="3749289110408117711">Nome do arquivo</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">Internacional dos EUA (PC)</translation>
 <translation id="6346310558342052870">Acesso restrito</translation>
 <translation id="6353618411602605519">Teclado croata</translation>
+<translation id="6356685157277930264">Janela de feedback do Arquivos</translation>
 <translation id="6358884629796491903">Dragão</translation>
 <translation id="637062427944097960">Este arquivo está aberto em uma área de trabalho diferente. Mude para <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) para visualizá-lo.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> itens</translation>

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 29
+// Next MinVersion: 30
 
 module arc.mojom;
 
@@ -179,8 +179,7 @@ interface IntentHelperHost {
   // Called when icons associated with the package are no longer up to date.
   [MinVersion=3] OnIconInvalidated@1(string package_name);
 
-  // Called when intent filters are updated. Either on startup or when
-  // apps are installed or uninstalled.
+  // Called when intent filters are updated on startup.
   [MinVersion=9] OnIntentFiltersUpdated@5(array<IntentFilter> intent_filters);
 
   // Opens the downloads directory in the Chrome OS file manager.
@@ -240,6 +239,11 @@ interface IntentHelperHost {
                                      bool should_handle_result,
                                      bool should_down_scale,
                                      bool is_secure);
+
+  // Called when intent filters are updated for one package. This will be
+  // called when apps are installed, uninstalled or updated.
+  [MinVersion=29] OnIntentFiltersUpdatedForPackage@13(
+      string package_name, array<IntentFilter> intent_filters);
 };
 
 // Sends intents to ARC on behalf of Chrome.

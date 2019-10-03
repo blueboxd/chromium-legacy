@@ -41,22 +41,6 @@
         <attr name="emptyErrorMessage" format="string" />
     </declare-styleable>
 
-    <declare-styleable name="PaddedFrameLayout">
-        <attr name="maxChildWidth" format="dimension" />
-        <attr name="maxChildHeight" format="dimension" />
-    </declare-styleable>
-
-    <declare-styleable name="MaterialProgressBar">
-        <attr name="colorBackground" format="reference|color" />
-        <attr name="colorProgress" format="reference|color" />
-        <attr name="colorSecondaryProgress" format="reference|color" />
-    </declare-styleable>
-
-    <declare-styleable name="RadioButtonWithDescription">
-        <attr name="titleText" format="string" />
-        <attr name="descriptionText" format="string" />
-    </declare-styleable>
-
     <declare-styleable name="SpinnerPreference">
         <!-- Used to change the SpinnerPreference to display the TextView and the Spinner on the
              same line. Devices with a smallest width of less than 360dp will still use two separate

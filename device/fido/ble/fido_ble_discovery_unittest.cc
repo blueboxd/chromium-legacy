@@ -114,6 +114,18 @@ class FidoBleDiscoveryTest : public ::testing::Test {
     BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
   }
 
+  void ExpectSuccessfulStartScan() {
+    EXPECT_CALL(*adapter(), StartScanWithFilter_)
+        .WillOnce(testing::Invoke(
+            [](const device::BluetoothDiscoveryFilter* discovery_filter,
+               device::BluetoothAdapter::DiscoverySessionResultCallback&
+                   callback) {
+              std::move(callback).Run(
+                  /*is_error=*/false,
+                  device::UMABluetoothDiscoverySessionOutcome::SUCCESS);
+            }));
+  }
+
   FidoBleDiscovery* discovery() { return &discovery_; }
   MockFidoDiscoveryObserver* observer() { return &observer_; }
   MockBluetoothAdapter* adapter() {
@@ -136,7 +148,8 @@ TEST_F(FidoBleDiscoveryTest,
   SetMockBluetoothAdapter();
   EXPECT_CALL(*adapter(), IsPresent()).WillOnce(Return(false));
   EXPECT_CALL(*adapter(), SetPowered).Times(0);
-  EXPECT_CALL(*observer(), DiscoveryStarted(discovery(), false));
+  EXPECT_CALL(*observer(), DiscoveryStarted(discovery(), false,
+                                            std::vector<FidoAuthenticator*>()));
   discovery()->Start();
   task_environment_.FastForwardUntilNoTasksRemain();
 }
@@ -149,15 +162,9 @@ TEST_F(FidoBleDiscoveryTest, FidoBleDiscoveryResumeScanningAfterPoweredOn) {
   // After BluetoothAdapter is powered on, we expect that discovery session
   // starts again. Immediately calling the callback so that it does not hold a
   // reference to the adapter.
-  EXPECT_CALL(*adapter(), StartScanWithFilter_)
-      .WillOnce(testing::Invoke(
-          [](const device::BluetoothDiscoveryFilter* discovery_filter,
-             device::BluetoothAdapter::DiscoverySessionResultCallback&
-                 callback) {
-            std::move(callback).Run(
-                /*is_error=*/false,
-                device::UMABluetoothDiscoverySessionOutcome::SUCCESS);
-          }));
+  ExpectSuccessfulStartScan();
+  EXPECT_CALL(*observer(), DiscoveryStarted(discovery(), true,
+                                            std::vector<FidoAuthenticator*>()));
   discovery()->Start();
   task_environment_.FastForwardUntilNoTasksRemain();
   adapter()->NotifyAdapterPoweredChanged(true);
@@ -168,7 +175,7 @@ TEST_F(FidoBleDiscoveryTest, FidoBleDiscoveryNoAdapter) {
   // simulating cases where the discovery is destroyed before obtaining a handle
   // to an adapter. This should be handled gracefully and not result in a crash.
   // We don't expect any calls to the notification methods.
-  EXPECT_CALL(*observer(), DiscoveryStarted(discovery(), _)).Times(0);
+  EXPECT_CALL(*observer(), DiscoveryStarted(discovery(), _, _)).Times(0);
   EXPECT_CALL(*observer(), AuthenticatorAdded(discovery(), _)).Times(0);
   EXPECT_CALL(*observer(), AuthenticatorRemoved(discovery(), _)).Times(0);
 }
@@ -191,11 +198,10 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsKnownDevice) {
   {
     base::RunLoop run_loop;
     auto quit = run_loop.QuitClosure();
-    EXPECT_CALL(
-        observer,
-        AuthenticatorAdded(&discovery,
-                           IdMatches(BluetoothTestBase::kTestDeviceAddress1)));
-    EXPECT_CALL(observer, DiscoveryStarted(&discovery, true))
+    EXPECT_CALL(observer,
+                DiscoveryStarted(&discovery, true,
+                                 testing::ElementsAre(IdMatches(
+                                     BluetoothTestBase::kTestDeviceAddress1))))
         .WillOnce(ReturnFromAsyncCall(quit));
 
     discovery.Start();
@@ -217,7 +223,8 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsNewDevice) {
   {
     base::RunLoop run_loop;
     auto quit = run_loop.QuitClosure();
-    EXPECT_CALL(observer, DiscoveryStarted(&discovery, true))
+    EXPECT_CALL(observer, DiscoveryStarted(&discovery, true,
+                                           std::vector<FidoAuthenticator*>()))
         .WillOnce(ReturnFromAsyncCall(quit));
 
     discovery.Start();
@@ -261,7 +268,8 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsUpdatedDevice) {
   {
     base::RunLoop run_loop;
     auto quit = run_loop.QuitClosure();
-    EXPECT_CALL(observer, DiscoveryStarted(&discovery, true))
+    EXPECT_CALL(observer, DiscoveryStarted(&discovery, true,
+                                           std::vector<FidoAuthenticator*>()))
         .WillOnce(ReturnFromAsyncCall(quit));
 
     discovery.Start();
@@ -306,7 +314,8 @@ TEST_F(BluetoothTest, FidoBleDiscoveryRejectsCableDevice) {
   {
     base::RunLoop run_loop;
     auto quit = run_loop.QuitClosure();
-    EXPECT_CALL(observer, DiscoveryStarted(&discovery, true))
+    EXPECT_CALL(observer, DiscoveryStarted(&discovery, true,
+                                           std::vector<FidoAuthenticator*>()))
         .WillOnce(ReturnFromAsyncCall(quit));
 
     discovery.Start();
@@ -355,13 +364,16 @@ TEST_F(FidoBleDiscoveryTest,
 TEST_F(FidoBleDiscoveryTest, DiscoveryNotifiesObserverWhenDeviceInPairingMode) {
   SetMockBluetoothAdapter();
   EXPECT_CALL(*adapter(), IsPresent()).WillOnce(Return(true));
+  EXPECT_CALL(*adapter(), IsPowered()).WillOnce(Return(true));
   auto mock_device = CreateMockFidoDevice();
 
+  ::testing::InSequence sequence;
+  ExpectSuccessfulStartScan();
+  EXPECT_CALL(*observer(), DiscoveryStarted(discovery(), true, _));
   const auto device_id = FidoBleDevice::GetIdForAddress(kDeviceAddress);
   discovery()->Start();
   task_environment_.FastForwardUntilNoTasksRemain();
 
-  ::testing::InSequence sequence;
   EXPECT_CALL(*observer(),
               AuthenticatorAdded(discovery(), IdMatches(kDeviceAddress)));
   adapter()->NotifyDeviceChanged(mock_device.get());
@@ -378,13 +390,16 @@ TEST_F(FidoBleDiscoveryTest,
        DiscoveryNotifiesObserverWhenDeviceInNonPairingMode) {
   SetMockBluetoothAdapter();
   EXPECT_CALL(*adapter(), IsPresent()).WillOnce(Return(true));
+  EXPECT_CALL(*adapter(), IsPowered()).WillOnce(Return(true));
   auto mock_device = CreateMockFidoDevice();
 
+  ::testing::InSequence sequence;
+  ExpectSuccessfulStartScan();
+  EXPECT_CALL(*observer(), DiscoveryStarted(discovery(), true, _));
   const auto device_id = FidoBleDevice::GetIdForAddress(kDeviceAddress);
   discovery()->Start();
   task_environment_.FastForwardUntilNoTasksRemain();
 
-  ::testing::InSequence sequence;
   EXPECT_CALL(*observer(),
               AuthenticatorAdded(discovery(), IdMatches(kDeviceAddress)));
   adapter()->NotifyDeviceChanged(mock_device.get());
@@ -429,8 +444,12 @@ TEST_F(FidoBleDiscoveryTest,
 TEST_F(FidoBleDiscoveryTest, DiscoveryDoesNotDeleteDeviceOnAddressCollision) {
   SetMockBluetoothAdapter();
   EXPECT_CALL(*adapter(), IsPresent()).WillOnce(Return(true));
+  EXPECT_CALL(*adapter(), IsPowered()).WillOnce(Return(true));
   auto mock_device = CreateMockFidoDevice();
   auto changed_mock_device = CreateChangedMockFidoDevice();
+
+  ExpectSuccessfulStartScan();
+  EXPECT_CALL(*observer(), DiscoveryStarted(discovery(), true, _));
 
   EXPECT_CALL(*observer(),
               AuthenticatorAdded(discovery(), IdMatches(kDeviceAddress)));

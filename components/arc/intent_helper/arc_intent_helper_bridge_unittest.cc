@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "components/arc/intent_helper/open_url_delegate.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -179,7 +180,10 @@ TEST_F(ArcIntentHelperTest, TestObserver) {
   class FakeObserver : public ArcIntentHelperObserver {
    public:
     FakeObserver() = default;
-    void OnIntentFiltersUpdated() override { updated_ = true; }
+    void OnIntentFiltersUpdated(
+        const base::Optional<std::string>& package_name) override {
+      updated_ = true;
+    }
     bool IsUpdated() { return updated_; }
     void Reset() { updated_ = false; }
 

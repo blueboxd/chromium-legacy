@@ -154,10 +154,18 @@ NGLayoutResult::NGLayoutResult(
     space_.ExclusionSpace().MoveDerivedGeometry(builder->exclusion_space_);
   }
 
-  // If we found an early breakpoint inside that we need to break at, we're
-  // going to re-layout now, and break at the early breakpoint.
-  if (builder->early_break_ && !physical_fragment_)
-    EnsureRareData()->early_break = *builder->early_break_;
+  // If we produced a fragment that we didn't break inside, provide the best
+  // early possible breakpoint that we found inside. This early breakpoint will
+  // be propagated to the container for further consideration. If we didn't
+  // produce a fragment, on the other hand, it means that we're going to
+  // re-layout now, and break at the early breakpoint (i.e. the status is
+  // kNeedsEarlierBreak).
+  if (builder->early_break_ &&
+      (!physical_fragment_ || !physical_fragment_->BreakToken())) {
+    auto* rare_data = EnsureRareData();
+    rare_data->early_break = builder->early_break_;
+    rare_data->early_break_appeal = builder->break_appeal_;
+  }
 
   if (HasRareData()) {
     rare_data_->bfc_line_offset = builder->bfc_line_offset_;

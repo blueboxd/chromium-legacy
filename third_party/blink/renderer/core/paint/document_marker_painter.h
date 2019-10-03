@@ -15,7 +15,7 @@ class FloatRect;
 class GraphicsContext;
 class LayoutUnit;
 class StyleableMarker;
-class TextMatchMarker;
+class TextMarkerBase;
 struct TextPaintStyle;
 struct PhysicalOffset;
 struct PhysicalRect;
@@ -39,7 +39,7 @@ class DocumentMarkerPainter {
                                   DocumentMarker::MarkerType marker_type,
                                   const PhysicalRect& local_rect);
   static TextPaintStyle ComputeTextPaintStyleFrom(const ComputedStyle& style,
-                                                  const TextMatchMarker& marker,
+                                                  const TextMarkerBase& marker,
                                                   bool in_forced_colors_mode);
 };
 

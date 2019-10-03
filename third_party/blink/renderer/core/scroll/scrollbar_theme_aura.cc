@@ -177,8 +177,7 @@ bool ScrollbarThemeAura::HasThumb(const Scrollbar& scrollbar) {
 }
 
 IntRect ScrollbarThemeAura::BackButtonRect(const Scrollbar& scrollbar,
-                                           ScrollbarPart part,
-                                           bool) {
+                                           ScrollbarPart part) {
   // Windows and Linux just have single arrows.
   if (part == kBackButtonEndPart)
     return IntRect();
@@ -188,8 +187,7 @@ IntRect ScrollbarThemeAura::BackButtonRect(const Scrollbar& scrollbar,
 }
 
 IntRect ScrollbarThemeAura::ForwardButtonRect(const Scrollbar& scrollbar,
-                                              ScrollbarPart part,
-                                              bool) {
+                                              ScrollbarPart part) {
   // Windows and Linux just have single arrows.
   if (part == kForwardButtonStartPart)
     return IntRect();
@@ -206,7 +204,7 @@ IntRect ScrollbarThemeAura::ForwardButtonRect(const Scrollbar& scrollbar,
   return IntRect(x, y, size.Width(), size.Height());
 }
 
-IntRect ScrollbarThemeAura::TrackRect(const Scrollbar& scrollbar, bool) {
+IntRect ScrollbarThemeAura::TrackRect(const Scrollbar& scrollbar) {
   // The track occupies all space between the two buttons.
   IntSize bs = ButtonSize(scrollbar);
   if (scrollbar.Orientation() == kHorizontalScrollbar) {
@@ -248,14 +246,6 @@ void ScrollbarThemeAura::PaintTrackPiece(GraphicsContext& gc,
                                          const Scrollbar& scrollbar,
                                          const IntRect& rect,
                                          ScrollbarPart part_type) {
-  DisplayItem::Type display_item_type =
-      TrackPiecePartToDisplayItemType(part_type);
-  if (DrawingRecorder::UseCachedDrawingIfPossible(gc, scrollbar,
-                                                  display_item_type))
-    return;
-
-  DrawingRecorder recorder(gc, scrollbar, display_item_type);
-
   WebThemeEngine::State state = scrollbar.HoveredPart() == part_type
                                     ? WebThemeEngine::kStateHover
                                     : WebThemeEngine::kStateNormal;
@@ -263,7 +253,7 @@ void ScrollbarThemeAura::PaintTrackPiece(GraphicsContext& gc,
   if (UseMockTheme() && !scrollbar.Enabled())
     state = WebThemeEngine::kStateDisabled;
 
-  IntRect align_rect = TrackRect(scrollbar, false);
+  IntRect align_rect = TrackRect(scrollbar);
   WebThemeEngine::ExtraParams extra_params;
   extra_params.scrollbar_track.is_back = (part_type == kBackTrackPart);
   extra_params.scrollbar_track.track_x = align_rect.X();
@@ -282,15 +272,10 @@ void ScrollbarThemeAura::PaintButton(GraphicsContext& gc,
                                      const Scrollbar& scrollbar,
                                      const IntRect& rect,
                                      ScrollbarPart part) {
-  DisplayItem::Type display_item_type = ButtonPartToDisplayItemType(part);
-  if (DrawingRecorder::UseCachedDrawingIfPossible(gc, scrollbar,
-                                                  display_item_type))
-    return;
   PartPaintingParams params =
       ButtonPartPaintingParams(scrollbar, scrollbar.CurrentPos(), part);
   if (!params.should_paint)
     return;
-  DrawingRecorder recorder(gc, scrollbar, display_item_type);
 
   WebThemeEngine::ExtraParams extra_params;
   extra_params.scrollbar_button.zoom = scrollbar.EffectiveZoom();
@@ -332,7 +317,7 @@ bool ScrollbarThemeAura::ShouldRepaintAllPartsOnInvalidation() const {
   return false;
 }
 
-ScrollbarPart ScrollbarThemeAura::InvalidateOnThumbPositionChange(
+ScrollbarPart ScrollbarThemeAura::PartsToInvalidateOnThumbPositionChange(
     const Scrollbar& scrollbar,
     float old_position,
     float new_position) const {

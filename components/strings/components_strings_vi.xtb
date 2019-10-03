@@ -45,6 +45,7 @@
 <translation id="1175875016430184367">Dập 3 ghim bên phải</translation>
 <translation id="1178581264944972037">Tạm dừng</translation>
 <translation id="1181037720776840403">Xóa</translation>
+<translation id="1186201132766001848">Kiểm tra mật khẩu</translation>
 <translation id="1197088940767939838">Màu cam</translation>
 <translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="1201895884277373915">Thêm từ trang web này</translation>
@@ -110,6 +111,7 @@
 <translation id="1430915738399379752">In</translation>
 <translation id="1442386063175183758">Gấp dạng cửa bên phải</translation>
 <translation id="1442987760062738829">Đục lỗ</translation>
+<translation id="1450011005989029586">Một sự cố rò rỉ dữ liệu trên trang web hoặc ứng dụng bạn dùng đã làm lộ mật khẩu của bạn. Bạn nên <ph name="BOLD" /> trên <ph name="ORIGIN" /> ngay bây giờ.</translation>
 <translation id="1455413310270022028">Tẩy</translation>
 <translation id="1463543813647160932">5x7</translation>
 <translation id="1472675084647422956">Hiển thị thêm</translation>
@@ -153,7 +155,6 @@
 <translation id="1640244768702815859">Hãy thử <ph name="BEGIN_LINK" />truy cập trang chủ của trang web<ph name="END_LINK" />.</translation>
 <translation id="1644574205037202324">Lịch sử</translation>
 <translation id="1645368109819982629">Giao thức không được hỗ trợ</translation>
-<translation id="1655462015569774233">{1,plural, =1{Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này đã hết hạn hôm qua. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn. Đồng hồ máy tính của bạn hiện được đặt là <ph name="CURRENT_DATE" />. Ngày này có đúng không? Nếu không đúng, bạn phải sửa lại đồng hồ của hệ thống rồi làm mới trang này.}other{Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này đã hết hạn cách đây # ngày. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn. Đồng hồ máy tính của bạn hiện được đặt là <ph name="CURRENT_DATE" />. Ngày này có đúng không? Nếu không đúng, bạn phải sửa lại đồng hồ của hệ thống rồi làm mới trang này.}}</translation>
 <translation id="1656489000284462475">Nhận hàng</translation>
 <translation id="1662550410081243962">Lưu và điền phương thức thanh toán</translation>
 <translation id="1663943134801823270">Thẻ và địa chỉ từ Chrome. Bạn có thể quản lý thẻ và địa chỉ trong <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>
@@ -323,7 +324,6 @@
 <translation id="2501278716633472235">Quay lại</translation>
 <translation id="2503184589641749290">Thẻ ghi nợ và thẻ trả trước được chấp nhận</translation>
 <translation id="2505268675989099013">Bảo vệ tài khoản</translation>
-<translation id="2515335152965840738">BỎ QUA</translation>
 <translation id="2515629240566999685">Kiểm tra tín hiệu trong khu vực của bạn</translation>
 <translation id="2521385132275182522">Dập ghim dưới cùng bên phải</translation>
 <translation id="2523886232349826891">Chỉ lưu trên thiết bị này</translation>
@@ -390,7 +390,6 @@
 <translation id="2799020568854403057">Trang web bạn sắp truy cập chứa ứng dụng có hại</translation>
 <translation id="2799223571221894425">Chạy lại</translation>
 <translation id="2803306138276472711">Duyệt web an toàn của Google gần đây <ph name="BEGIN_LINK" />đã phát hiện phần mềm độc hại<ph name="END_LINK" /> trên <ph name="SITE" />. Các trang web thường được coi là an toàn đôi khi vẫn bị nhiễm phần mềm độc hại.</translation>
-<translation id="2815364696811431560">RỜI KHỎI TRANG WEB</translation>
 <translation id="2824775600643448204">Thanh địa chỉ và tìm kiếm</translation>
 <translation id="2826760142808435982">Kết nối được mã hóa và xác thực bằng <ph name="CIPHER" /> đồng thời sử dụng <ph name="KX" /> làm cơ chế trao đổi chính.</translation>
 <translation id="2835170189407361413">Xóa biểu mẫu</translation>
@@ -464,6 +463,7 @@
 <translation id="320323717674993345">Hủy thanh toán</translation>
 <translation id="3207960819495026254">Đã đánh dấu trang</translation>
 <translation id="3209034400446768650">Trang này có thể tính phí</translation>
+<translation id="3209080785413271048">Dùng Windows Hello để xác minh phương thức thanh toán đã lưu.</translation>
 <translation id="3215092763954878852">Không thể dùng WebAuthn</translation>
 <translation id="3225919329040284222">Máy chủ đưa ra chứng chỉ không khớp với kỳ vọng được tích hợp sẵn. Các kỳ vọng này có trong một số trang web nhất định, có tính bảo mật cao với mục đích bảo vệ bạn.</translation>
 <translation id="3226128629678568754">Nhấn nút tải lại để gửi lại các dữ liệu cần thiết để tải trang.</translation>
@@ -474,6 +474,7 @@
 <translation id="3234666976984236645">Luôn luôn phát hiện nội dung quan trọng trên trang web này</translation>
 <translation id="3270847123878663523">&amp;Hoàn tác sắp xếp lại</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
+<translation id="3281668902344226640">Dùng Touch ID để xác minh phương thức thanh toán đã lưu.</translation>
 <translation id="3282497668470633863">Thêm tên trên thẻ</translation>
 <translation id="3287510313208355388">Tải xuống khi trực tuyến</translation>
 <translation id="3293642807462928945">Hãy tìm hiểu thêm về chính sách <ph name="POLICY_NAME" /></translation>
@@ -541,6 +542,7 @@
 <translation id="362276910939193118">Hiển thị Toàn bộ Lịch sử</translation>
 <translation id="3630155396527302611">Nếu chương trình đã được liệt kê là chương trình được phép truy cập mạng, hãy thử
       xóa chương trình này khỏi danh sách rồi thêm lại.</translation>
+<translation id="3631244953324577188">Sinh trắc học</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Xác thực thành công</translation>
 <translation id="3655670868607891010">Nếu bạn thường xuyên thấy thông báo này, hãy thử các <ph name="HELP_LINK" /> sau.</translation>
@@ -621,6 +623,7 @@
 <translation id="4067947977115446013">Thêm địa chỉ hợp lệ</translation>
 <translation id="4072486802667267160">Đã xảy ra lỗi khi xử lý đơn đặt hàng của bạn. Vui lòng thử lại.</translation>
 <translation id="4075732493274867456">Ứng dụng và máy chủ không hỗ trợ bộ mã hóa hoặc phiên bản giao thức SSL thông thường.</translation>
+<translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">Cấu hình proxy được đặt để sử dụng URL tập lệnh .pac chứ không phải máy chủ proxy cố định.</translation>
 <translation id="4082393374666368382">Cài đặt – Quản lý</translation>
 <translation id="4098354747657067197">Bạn sắp truy cập trang web lừa đảo</translation>
@@ -677,6 +680,7 @@
 <translation id="4258748452823770588">Chữ ký không hợp lệ</translation>
 <translation id="4261046003697461417">Không thể chú thích tài liệu được bảo vệ</translation>
 <translation id="4265872034478892965">Được quản trị viên cho phép</translation>
+<translation id="4270615291506829403">thay đổi mật khẩu</translation>
 <translation id="4275830172053184480">Khởi động lại thiết bị của bạn</translation>
 <translation id="4277028893293644418">Đặt lại mật khẩu</translation>
 <translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> của bạn do <ph name="ENROLLMENT_DOMAIN" /> quản lý</translation>
@@ -703,6 +707,7 @@
 <translation id="4372948949327679948">Giá trị <ph name="VALUE_TYPE" /> mong đợi.</translation>
 <translation id="4377125064752653719">Bạn đã cố truy cập vào <ph name="DOMAIN" /> nhưng chứng chỉ mà máy chủ xuất trình đã bị nhà phát hành thu hồi. Điều này có nghĩa là giấy ủy nhiệm bảo mật mà máy chủ xuất trình hoàn toàn không đáng tin cậy. Bạn có thể đang giao tiếp với kẻ tấn công.</translation>
 <translation id="4378154925671717803">Điện thoại</translation>
+<translation id="4398334096870680409">Thiết bị của bạn không dùng được tính năng này.</translation>
 <translation id="4406896451731180161">kết quả tìm kiếm</translation>
 <translation id="4408413947728134509">Cookie <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Địa chỉ nhận hàng</translation>
@@ -752,7 +757,9 @@
 <translation id="4691835149146451662">Architecture-A (Phong bì)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Kết nối của bạn bị gián đoạn</translation>
+<translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Chạy Chẩn đoán mạng của Windows<ph name="END_LINK" /></translation>
+<translation id="4725851834065990915">Một sự cố rò rỉ dữ liệu trên trang web hoặc ứng dụng bạn dùng đã làm lộ mật khẩu của bạn. Bạn nên kiểm tra mật khẩu đã lưu ngay bây giờ.</translation>
 <translation id="4726672564094551039">Tải lại chính sách</translation>
 <translation id="4728558894243024398">Nền tảng</translation>
 <translation id="4731967714531604179">Prc2 (Phong bì)</translation>
@@ -780,7 +787,6 @@
 <translation id="4816492930507672669">Vừa với trang</translation>
 <translation id="4850886885716139402">Xem</translation>
 <translation id="4854362297993841467">Phương thức phân phối này không có sẵn. Hãy thử một phương thức khác.</translation>
-<translation id="4864052566555297930">Mẹo an toàn:</translation>
 <translation id="4876188919622883022">Chế độ xem đơn giản</translation>
 <translation id="4876305945144899064">Không có tên người dùng</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{Không có}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
@@ -1007,6 +1013,7 @@
 <translation id="5967592137238574583">Chỉnh sửa thông tin liên hệ</translation>
 <translation id="5967867314010545767">Xóa khỏi lịch sử</translation>
 <translation id="5975083100439434680">Thu nhỏ</translation>
+<translation id="5979084224081478209">Kiểm tra mật khẩu</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Không thể mở ứng dụng thanh toán</translation>
 <translation id="5989320800837274978">Cả máy chủ proxy cố định và URL tập lệnh .pac đều chưa được chỉ định.</translation>
@@ -1164,6 +1171,7 @@
 <translation id="679355240208270552">Đã bỏ qua vì chính sách đã tắt tìm kiếm mặc định.</translation>
 <translation id="681021252041861472">Trường bắt buộc</translation>
 <translation id="6810899417690483278">ID tùy chỉnh</translation>
+<translation id="6819440013020405090">Một sự cố rò rỉ dữ liệu trên trang web hoặc ứng dụng bạn dùng đã làm lộ mật khẩu của bạn. Bạn nên kiểm tra mật khẩu đã lưu và đổi mật khẩu dùng trên <ph name="ORIGIN" />.</translation>
 <translation id="6825578344716086703">Bạn đã cố gắng truy cập vào <ph name="DOMAIN" /> nhưng máy chủ xuất trình một chứng chỉ được ký bằng một thuật toán chữ ký yếu (chẳng hạn như SHA-1). Điều này có nghĩa là thông tin đăng nhập bảo mật mà máy chủ xuất trình có thể đã bị giả mạo và máy chủ đó có thể không phải là máy chủ mà bạn mong đợi (bạn có thể đang kết nối với kẻ tấn công).</translation>
 <translation id="6826370046007623921">Ngăn chặn mất dữ liệu</translation>
 <translation id="6831043979455480757">Dịch</translation>
@@ -1206,6 +1214,7 @@
 <translation id="7064851114919012435">Thông tin liên hệ</translation>
 <translation id="7075452647191940183">Yêu cầu quá lớn</translation>
 <translation id="7079718277001814089">Trang web này có chứa phần mềm độc hại</translation>
+<translation id="70850504851191913">Đã báo cáo sự cố rò rỉ dữ liệu</translation>
 <translation id="7087282848513945231">Hạt</translation>
 <translation id="7090678807593890770">Tìm kiếm <ph name="LINK" /> trên Google</translation>
 <translation id="7108338896283013870">Ẩn</translation>
@@ -1294,6 +1303,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7460618730930299168">Màn hình khác với nội dung bạn đã chọn. Bạn có muốn tiếp tục không?</translation>
 <translation id="7473891865547856676">Không, cảm ơn</translation>
 <translation id="7481312909269577407">Chuyển tiếp</translation>
+<translation id="748406663033922918">Dùng phương thức khóa màn hình để xác minh phương thức thanh toán đã lưu.</translation>
 <translation id="7485870689360869515">Không tìm thấy dữ liệu.</translation>
 <translation id="7498234416455752244">Tiếp tục chỉnh sửa</translation>
 <translation id="7508255263130623398">ID thiết bị thuộc chính sách trả lại trống hoặc không khớp với ID của thiết bị hiện tại</translation>
@@ -1507,7 +1517,6 @@ Thông tin chi tiết bổ sung:
 <translation id="8553075262323480129">Dịch thất bại do ngôn ngữ của trang không được xác định.</translation>
 <translation id="8557066899867184262">CVC nằm ở mặt sau thẻ của bạn.</translation>
 <translation id="8559762987265718583">Không thể thiết lập kết nối riêng tư với <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> vì ngày và giờ (<ph name="DATE_AND_TIME" />) trên thiết bị của bạn không đúng.</translation>
-<translation id="8561575143530093465"><ph name="SAFETY_TIP" /> trang web đáng ngờ</translation>
 <translation id="8564985650692024650">Chromium khuyên bạn nên đặt lại mật khẩu <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> của mình nếu đã sử dụng lại mật khẩu này trên các trang web khác.</translation>
 <translation id="8571890674111243710">Đang dịch trang sang <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Thêm số đ.thoại
@@ -1568,6 +1577,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8943282376843390568">Vàng chanh</translation>
 <translation id="8957210676456822347">Ủy quyền cổng bị khóa</translation>
 <translation id="8962950042226115166">Trang web đáng ngờ</translation>
+<translation id="8966619695390250636">Ý bạn là?</translation>
 <translation id="8968766641738584599">Lưu thẻ</translation>
 <translation id="8971063699422889582">Chứng chỉ của máy chủ đã hết hạn.</translation>
 <translation id="8975012916872825179">Bao gồm các thông tin như số điện thoại, địa chỉ email và địa chỉ giao hàng</translation>

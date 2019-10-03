@@ -107,11 +107,6 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/supervised_user_service.h"
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/install_limiter.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -1369,19 +1364,6 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
     disable_reasons |= disable_reason::DISABLE_PERMISSIONS_INCREASE;
     if (!extension_prefs_->DidExtensionEscalatePermissions(extension->id()))
       RecordPermissionMessagesHistogram(extension, "AutoDisable");
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    // If a custodian-installed extension is disabled for a supervised user due
-    // to a permissions increase, send a request to the custodian.
-    if (util::IsExtensionSupervised(extension, profile_) &&
-        !ExtensionSyncService::Get(profile_)->HasPendingReenable(
-            extension->id(), extension->version())) {
-      SupervisedUserService* supervised_user_service =
-          SupervisedUserServiceFactory::GetForProfile(profile_);
-      supervised_user_service->AddExtensionUpdateRequest(extension->id(),
-                                                         extension->version());
-    }
-#endif
   }
 
   if (disable_reasons == disable_reason::DISABLE_NONE)

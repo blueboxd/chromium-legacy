@@ -409,6 +409,7 @@ let ACMatchClassification;
  *   inlineAutocompletion: string,
  *   isSearchType: boolean,
  *   fillIntoEdit: string,
+ *   supportsDeletion: boolean,
  *   swapContentsAndDescription: boolean,
  *   type: string,
  * }}
@@ -416,7 +417,7 @@ let ACMatchClassification;
 let AutocompleteMatch;
 
 /** @enum {number} */
-let AutocompleteResultStatus;
+const AutocompleteResultStatus = {};
 
 /**
  * @typedef {{
@@ -488,6 +489,7 @@ configData.translatedStrings.otherError;
 configData.translatedStrings.permissionError;
 configData.translatedStrings.ready;
 configData.translatedStrings.realboxSeparator;
+configData.translatedStrings.removeSuggestion;
 configData.translatedStrings.removeThumbnailTooltip;
 configData.translatedStrings.restoreDefaultBackground;
 configData.translatedStrings.restoreDefaultLinks;

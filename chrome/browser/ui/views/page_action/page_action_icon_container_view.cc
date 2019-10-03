@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/views/page_action/pwa_install_view.h"
 #include "chrome/browser/ui/views/page_action/zoom_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
+#include "chrome/browser/ui/views/qrcode_generator/qrcode_generator_icon_view.h"
 #include "chrome/browser/ui/views/reader_mode/reader_mode_icon_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
 #include "chrome/browser/ui/views/sharing/sharing_dialog_view.h"
@@ -95,6 +96,12 @@ PageActionIconContainerView::PageActionIconContainerView(const Params& params)
         pwa_install_icon_ = new PwaInstallView(
             params.command_updater, params.page_action_icon_delegate);
         page_action_icons_.push_back(pwa_install_icon_);
+        break;
+      case PageActionIconType::kQRCodeGenerator:
+        qrcode_generator_icon_view_ =
+            new qrcode_generator::QRCodeGeneratorIconView(
+                params.command_updater, params.page_action_icon_delegate);
+        page_action_icons_.push_back(qrcode_generator_icon_view_);
         break;
       case PageActionIconType::kReaderMode:
         DCHECK(params.command_updater);
@@ -180,6 +187,8 @@ PageActionIconView* PageActionIconContainerView::GetIconView(
       return native_file_system_access_icon_;
     case PageActionIconType::kPwaInstall:
       return pwa_install_icon_;
+    case PageActionIconType::kQRCodeGenerator:
+      return qrcode_generator_icon_view_;
     case PageActionIconType::kReaderMode:
       return reader_mode_icon_;
     case PageActionIconType::kSaveCard:

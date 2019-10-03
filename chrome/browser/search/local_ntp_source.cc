@@ -298,6 +298,8 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
     // Realbox
     AddString(translated_strings.get(), "realboxSeparator",
               IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
+    AddString(translated_strings.get(), "removeSuggestion",
+              IDS_OMNIBOX_REMOVE_SUGGESTION);
 
     // Promos
     AddString(translated_strings.get(), "dismissPromo", IDS_NTP_DISMISS_PROMO);

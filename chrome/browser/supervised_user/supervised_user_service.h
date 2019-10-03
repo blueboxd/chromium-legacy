@@ -108,15 +108,6 @@ class SupervisedUserService : public KeyedService,
   // Adds an access request for the given URL.
   void AddURLAccessRequest(const GURL& url, SuccessCallback callback);
 
-  // Adds an update request for the given WebStore item (App/Extension).
-  void AddExtensionUpdateRequest(const std::string& extension_id,
-                                 const base::Version& version,
-                                 SuccessCallback callback);
-
-  // Same as above, but without a callback, just logging errors on failure.
-  void AddExtensionUpdateRequest(const std::string& extension_id,
-                                 const base::Version& version);
-
   // Get the string used to identify an extension install or update request.
   // Public for testing.
   static std::string GetExtensionRequestId(const std::string& extension_id,

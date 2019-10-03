@@ -419,15 +419,6 @@ void BuildHandlerArgs(CrashReporterClient* crash_reporter_client,
   }
 
   (*process_annotations)["plat"] = std::string("Android");
-
-  if (crash_reporter_client->ShouldMonitorCrashHandlerExpensively()) {
-    arguments->push_back("--monitor-self");
-  }
-
-  // Set up --monitor-self-annotation even in the absence of --monitor-self
-  // so that minidumps produced by Crashpad's generate_dump tool will
-  // contain these annotations.
-  arguments->push_back("--monitor-self-annotation=ptype=crashpad-handler");
 }
 
 bool GetHandlerPath(base::FilePath* exe_dir, base::FilePath* handler_path) {

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.modules.extra_icu;
 
-import org.chromium.components.module_installer.ModuleInterface;
+import org.chromium.components.module_installer.builder.ModuleInterface;
 
 /** Interface into the extra ICU module. Only used to check whether module is installed. */
 @ModuleInterface(module = "extra_icu", impl = "org.chromium.chrome.modules.extra_icu.ExtraIcuImpl")

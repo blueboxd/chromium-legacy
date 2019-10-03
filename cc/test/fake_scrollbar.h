@@ -40,9 +40,7 @@ class FakeScrollbar : public Scrollbar {
   float ThumbOpacity() const override;
   bool NeedsPaintPart(ScrollbarPart part) const override;
   bool HasTickmarks() const override;
-  void PaintPart(PaintCanvas* canvas,
-                 ScrollbarPart part,
-                 const gfx::Rect& content_rect) override;
+  void PaintPart(PaintCanvas* canvas, ScrollbarPart part) override;
   bool UsesNinePatchThumbResource() const override;
   gfx::Size NinePatchThumbCanvasSize() const override;
   gfx::Rect NinePatchThumbAperture() const override;
@@ -64,6 +62,8 @@ class FakeScrollbar : public Scrollbar {
     needs_paint_track_ = needs_paint;
   }
   void set_has_tickmarks(bool has_tickmarks) { has_tickmarks_ = has_tickmarks; }
+
+  gfx::Rect GetPartRect(ScrollbarPart part) const;
 
  private:
   bool paint_;

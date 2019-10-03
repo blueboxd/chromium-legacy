@@ -137,10 +137,9 @@ class MemoryTracingTest : public ContentBrowserTest {
   void DisableTracing() {
     base::RunLoop run_loop;
     bool success = TracingController::GetInstance()->StopTracing(
-        TracingControllerImpl::CreateCallbackEndpoint(base::BindRepeating(
-            [](base::Closure quit_closure,
-               std::unique_ptr<const base::DictionaryValue> metadata,
-               base::RefCountedString* trace_str) {
+        TracingControllerImpl::CreateCallbackEndpoint(base::BindOnce(
+            [](base::OnceClosure quit_closure,
+               std::unique_ptr<std::string> trace_str) {
               std::move(quit_closure).Run();
             },
             run_loop.QuitClosure())));

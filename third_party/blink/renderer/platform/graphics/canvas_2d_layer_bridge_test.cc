@@ -327,30 +327,6 @@ TEST_F(Canvas2DLayerBridgeTest, AccelerationHint) {
     scoped_refptr<StaticBitmapImage> image =
         bridge->NewImageSnapshot(kPreferNoAcceleration);
     EXPECT_TRUE(bridge->IsValid());
-    EXPECT_TRUE(bridge->IsAccelerated());
-  }
-
-  {
-    std::unique_ptr<Canvas2DLayerBridge> bridge =
-        MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kDisableAcceleration,
-                   CanvasColorParams());
-    PaintFlags flags;
-    bridge->DrawingCanvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
-    scoped_refptr<StaticBitmapImage> image =
-        bridge->NewImageSnapshot(kPreferAcceleration);
-    EXPECT_TRUE(bridge->IsValid());
-    EXPECT_FALSE(bridge->IsAccelerated());
-  }
-
-  {
-    std::unique_ptr<Canvas2DLayerBridge> bridge =
-        MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kDisableAcceleration,
-                   CanvasColorParams());
-    PaintFlags flags;
-    bridge->DrawingCanvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
-    scoped_refptr<StaticBitmapImage> image =
-        bridge->NewImageSnapshot(kPreferNoAcceleration);
-    EXPECT_TRUE(bridge->IsValid());
     EXPECT_FALSE(bridge->IsAccelerated());
   }
 }

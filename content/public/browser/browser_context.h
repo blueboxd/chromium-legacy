@@ -91,6 +91,7 @@ class ResourceContext;
 class ServiceManagerConnection;
 class SharedCorsOriginAccessList;
 class SiteInstance;
+class StorageNotificationService;
 class StoragePartition;
 class SSLHostStateDelegate;
 
@@ -280,6 +281,12 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // responsible for ensuring that it outlives RenderProcessHost. It's valid to
   // return nullptr.
   virtual PushMessagingService* GetPushMessagingService() = 0;
+
+  // Returns a storage notification service associated with that context,
+  // nullptr otherwise. In the case that nullptr is returned, QuotaManager
+  // and the rest of the storage layer will have no connection to the Chrome
+  // layer for UI purposes.
+  virtual StorageNotificationService* GetStorageNotificationService() = 0;
 
   // Returns the SSL host state decisions for this context. The context may
   // return nullptr, implementing the default exception storage strategy.

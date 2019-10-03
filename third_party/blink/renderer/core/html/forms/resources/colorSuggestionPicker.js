@@ -63,10 +63,85 @@ function ColorSuggestionPicker(element, config) {
 }
 ColorSuggestionPicker.prototype = Object.create(Picker.prototype);
 
-var SwatchBorderBoxWidth = 24;   // keep in sync with CSS
-var SwatchBorderBoxHeight = 24;  // keep in sync with CSS
-var SwatchesPerRow = 5;
-var SwatchesMaxRow = 4;
+Object.defineProperty(ColorSuggestionPicker, '_ColorSwatchWidth', {
+  get: function() {
+    return Number(window.getComputedStyle(document.body)
+                      .getPropertyValue('--color-swatch-width')
+                      .replace('px', ''));
+  }
+});
+
+Object.defineProperty(ColorSuggestionPicker, '_ColorSwatchHeight', {
+  get: function() {
+    return Number(window.getComputedStyle(document.body)
+                      .getPropertyValue('--color-swatch-height')
+                      .replace('px', ''));
+  }
+});
+
+Object.defineProperty(ColorSuggestionPicker, '_ColorSwatchPadding', {
+  get: function() {
+    return Number(window.getComputedStyle(document.body)
+                      .getPropertyValue('--color-swatch-padding')
+                      .replace('px', ''));
+  }
+});
+
+Object.defineProperty(ColorSuggestionPicker, '_ColorSwatchBorderWidth', {
+  get: function() {
+    return Number(window.getComputedStyle(document.body)
+                      .getPropertyValue('--color-swatch-border-width')
+                      .replace('px', ''));
+  }
+});
+
+Object.defineProperty(ColorSuggestionPicker, '_ColorSwatchMargin', {
+  get: function() {
+    return Number(window.getComputedStyle(document.body)
+                      .getPropertyValue('--color-swatch-margin')
+                      .replace('px', ''));
+  }
+});
+
+Object.defineProperty(ColorSuggestionPicker, 'SwatchBorderBoxWidth', {
+  get: function() {
+    return ColorSuggestionPicker._ColorSwatchWidth +
+        (ColorSuggestionPicker._ColorSwatchPadding * 2) +
+        (ColorSuggestionPicker._ColorSwatchBorderWidth * 2) +
+        (ColorSuggestionPicker._ColorSwatchMargin * 2);
+  }
+});
+
+Object.defineProperty(ColorSuggestionPicker, 'SwatchBorderBoxHeight', {
+  get: function() {
+    return ColorSuggestionPicker._ColorSwatchHeight +
+        (ColorSuggestionPicker._ColorSwatchPadding * 2) +
+        (ColorSuggestionPicker._ColorSwatchBorderWidth * 2) +
+        (ColorSuggestionPicker._ColorSwatchMargin * 2);
+  }
+});
+
+Object.defineProperty(ColorSuggestionPicker, 'SwatchesPerRow', {
+  get: function() {
+    return 5;
+  }
+});
+
+Object.defineProperty(ColorSuggestionPicker, 'SwatchesMaxRow', {
+  get: function() {
+    return global.params.isFormControlsRefreshEnabled ? 3 : 4;
+  }
+});
+
+Object.defineProperty(ColorSuggestionPicker, 'ScrollbarWidth', {
+  get: function() {
+    return !global.params.isFormControlsRefreshEnabled ?
+        getScrollbarWidth() :
+        Number(window.getComputedStyle(document.body)
+                   .getPropertyValue('--scrollbar-width')
+                   .replace('px', ''));
+  }
+});
 
 ColorSuggestionPicker.prototype._layout = function() {
   var container = createElement('div', 'color-swatch-container');
@@ -80,11 +155,15 @@ ColorSuggestionPicker.prototype._layout = function() {
     swatch.style.backgroundColor = this._config.values[i];
     container.appendChild(swatch);
   }
-  var containerWidth = SwatchBorderBoxWidth * SwatchesPerRow;
-  if (this._config.values.length > SwatchesPerRow * SwatchesMaxRow)
-    containerWidth += getScrollbarWidth();
+  var containerWidth = ColorSuggestionPicker.SwatchBorderBoxWidth *
+      ColorSuggestionPicker.SwatchesPerRow;
+  if (this._config.values.length > (ColorSuggestionPicker.SwatchesPerRow *
+                                    ColorSuggestionPicker.SwatchesMaxRow))
+    containerWidth += ColorSuggestionPicker.ScrollbarWidth;
   container.style.width = containerWidth + 'px';
-  container.style.maxHeight = (SwatchBorderBoxHeight * SwatchesMaxRow) + 'px';
+  container.style.maxHeight = (ColorSuggestionPicker.SwatchBorderBoxHeight *
+                               ColorSuggestionPicker.SwatchesMaxRow) +
+      'px';
   this._element.appendChild(container);
   var otherButton =
       createElement('button', 'other-color', this._config.otherColorLabel);
@@ -153,10 +232,10 @@ ColorSuggestionPicker.prototype._handleKeyDown = function(event) {
           index++;
           break;
         case 'ArrowUp':
-          index -= SwatchesPerRow;
+          index -= ColorSuggestionPicker.SwatchesPerRow;
           break;
         case 'ArrowDown':
-          index += SwatchesPerRow;
+          index += ColorSuggestionPicker.SwatchesPerRow;
           break;
       }
       if (index > this._container.childNodes.length - 1) {

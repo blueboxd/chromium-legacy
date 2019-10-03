@@ -12,7 +12,7 @@ import androidx.annotation.NonNull;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
-import org.chromium.components.module_installer.ModuleInterface;
+import org.chromium.components.module_installer.builder.ModuleInterface;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.Map;

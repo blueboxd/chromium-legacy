@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Nije moguće spremiti sliku</translation>
 <translation id="1180526666083833456">Sinkronizacija i prilagodba na svim uređajima.</translation>
 <translation id="1181037720776840403">Ukloni</translation>
+<translation id="1207113853726624428">Novo pretraživanje</translation>
 <translation id="1209206284964581585">Sakrij za sad</translation>
 <translation id="1219674500290482172">Povezivanje s internetom nije moguće.</translation>
 <translation id="122699739164161391">Zatvori sve kartice</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">Predloži zaporku...</translation>
 <translation id="1870148520156231997">Otkrijte zaporku</translation>
 <translation id="1872096359983322073">Svjetlo</translation>
-<translation id="1876721852596493031">Slanje pod. o upot.</translation>
 <translation id="1911619930368729126">Prenesi na Google disk</translation>
 <translation id="1923342640370224680">Posljednji sat</translation>
 <translation id="1941314575388338491">Dodirnite dvaput da biste kopirali.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892">Nepročitanih članaka na popisu za čitanje: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Web-stranica učitana</translation>
 <translation id="2239626343334228536">Brisanje podataka o pregledavanju...</translation>
-<translation id="2256128224215992540">Prijedlozi pretraživanja i web-lokacija</translation>
 <translation id="2267753748892043616">Dodaj račun</translation>
 <translation id="2268044343513325586">Pročišćavanje</translation>
 <translation id="2273327106802955778">Izbornik Više</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">Datoteka nije otvorena</translation>
 <translation id="2718352093833049315">Samo na Wi-Fiju</translation>
 <translation id="2747003861858887689">Prethodno polje</translation>
+<translation id="2773292004659987824">Anonimno pretraživanje</translation>
 <translation id="2780046210906776326">Nema računa e-pošte</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Zatvori prekidač za prebacivanje između kartica</translation>
@@ -295,7 +295,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Omogući sinkronizaciju</translation>
 <translation id="5234764350956374838">Odbaci</translation>
-<translation id="5244474230056479698">Sinkronizira se s računom <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Otkaži sinkronizaciju</translation>
 <translation id="5271549068863921519">Spremi zaporku</translation>
 <translation id="5300589172476337783">Prikaži</translation>
@@ -501,6 +500,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8281781826761538115">Zadano – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Novo pretraživanje</translation>
+<translation id="8323906514956095947">Dodirnite i držite za više opcija za kartice</translation>
 <translation id="8328777765163860529">Zatvori sve</translation>
 <translation id="8407669440184693619">Nije pronađena nijedna zaporka za ovu web-lokaciju</translation>
 <translation id="842017693807136194">Prijavljeni ste na uslugu</translation>

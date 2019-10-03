@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">Ordner loslösen</translation>
 <translation id="3678559383040232393">Maltesische Tastatur</translation>
 <translation id="3685122418104378273">Die Google Drive-Synchronisierung ist bei der mobilen Datennutzung standardmäßig deaktiviert.</translation>
+<translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" /> abbrechen.</translation>
 <translation id="3726463242007121105">Dieses Gerät kann nicht geöffnet werden, da das zugehörige Dateisystem nicht unterstützt wird.</translation>
 <translation id="3741243925913727067">Fotos und Videos des Mediengeräts auf Google Drive sichern</translation>
 <translation id="3749289110408117711">Dateiname</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">US-amerikanisch (PC)</translation>
 <translation id="6346310558342052870">Zugriff eingeschränkt</translation>
 <translation id="6353618411602605519">Kroatische Tastatur</translation>
+<translation id="6356685157277930264">Feedbackfenster für "Meine Dateien"</translation>
 <translation id="6358884629796491903">Drache</translation>
 <translation id="637062427944097960">Diese Datei wurde auf einem anderen Desktop geöffnet. Wechseln Sie zu <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />), um die Datei anzusehen.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> Elemente</translation>

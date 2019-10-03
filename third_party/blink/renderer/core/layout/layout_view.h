@@ -243,8 +243,9 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   PhysicalRect DebugRect() const override;
 
   // Returns the coordinates of find-in-page scrollbar tickmarks.  These come
-  // from DocumentMarkerController, unless overridden by SetTickmarks.
+  // from DocumentMarkerController, unless overridden by OverrideTickmarks().
   Vector<IntRect> GetTickmarks() const;
+  bool HasTickmarks() const;
 
   // Sets the coordinates of find-in-page scrollbar tickmarks, bypassing
   // DocumentMarkerController.  This is used by the PDF plugin.

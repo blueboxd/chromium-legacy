@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">Odepnout složku</translation>
 <translation id="3678559383040232393">Maltská klávesnice</translation>
 <translation id="3685122418104378273">Když používáte mobilní datové připojení, synchronizace s Diskem Google je ve výchozím nastavení vypnutá.</translation>
+<translation id="3689865792480713551">Zrušit <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Toto zařízení nelze otevřít, protože jeho systém souborů není podporován.</translation>
 <translation id="3741243925913727067">Zálohujte fotky a videa ze svého mediálního zařízení na Disk Google.</translation>
 <translation id="3749289110408117711">Název souboru</translation>
@@ -462,6 +463,7 @@
 <translation id="6339145975392024142">USA – mezinárodní (PC)</translation>
 <translation id="6346310558342052870">Přístup je omezen</translation>
 <translation id="6353618411602605519">Chorvatská klávesnice</translation>
+<translation id="6356685157277930264">Okno zpětné vazby k souborům</translation>
 <translation id="6358884629796491903">Drak</translation>
 <translation id="637062427944097960">Tento soubor je otevřen na jiné ploše. Chcete-li jej zobrazit, přejděte do profilu <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
 <translation id="6395575651121294044">Počet položek: <ph name="NUMBER_OF_FILES" /></translation>

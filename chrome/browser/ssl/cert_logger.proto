@@ -100,7 +100,8 @@ message CertLoggerRequest {
   // The certificate chain as a series of PEM-encoded certificates, including
   // intermediates but not necessarily the root.
   required string cert_chain = 2;
-  // The time (in usec since the epoch) when the client generated the report.
+  // The time (in usec since the Windows epoch) when the client generated the
+  // report.
   required int64 time_usec = 3;
   // public_key_hash contains the string forms of the hashes calculated for
   // the chain. (I.e. "sha1/<base64 data>".)
@@ -230,4 +231,12 @@ message TrialVerificationInfo {
   // on reports from macOS.  Contains the union of flags from all the GetTrust
   // calls done during verification.
   repeated MacTrustFlags mac_combined_trust_debug_info = 7;
+
+  // The time (in usec since the Windows epoch) when the trial verifier
+  // attempted to verify the chain.
+  optional int64 trial_verification_time_usec = 8;
+
+  // The GeneralizedTime encoded time when the trial verifier attempted to
+  // verify the chain.
+  optional string trial_der_verification_time = 9;
 }

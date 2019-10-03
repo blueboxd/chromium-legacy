@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "components/services/unzip/content/unzip_service.h"

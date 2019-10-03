@@ -94,6 +94,7 @@ public class PasswordGenerationIntegrationTest {
 
     @Test
     @IntegrationTest
+    @DisabledTest(message = "crbug.com/1010540")
     public void testManualGenerationCancel() throws InterruptedException, TimeoutException {
         waitForGenerationLabel();
         focusField(PASSWORD_NODE_ID_MANUAL);
@@ -130,6 +131,7 @@ public class PasswordGenerationIntegrationTest {
 
     @Test
     @IntegrationTest
+    @DisabledTest(message = "crbug.com/1010540")
     public void testManualGenerationUsePassword() throws InterruptedException, TimeoutException {
         waitForGenerationLabel();
         focusField(PASSWORD_NODE_ID_MANUAL);

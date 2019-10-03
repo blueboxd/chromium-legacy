@@ -2933,6 +2933,26 @@
         }
       },
       {
+        "args": [
+          "--test-type=integration"
+        ],
+        "isolate_name": "chromedriver_py_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "chromedriver_py_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        }
+      },
+      {
         "isolate_name": "chromedriver_replay_unittests",
         "merge": {
           "args": [],

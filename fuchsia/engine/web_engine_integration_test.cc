@@ -206,10 +206,11 @@ TEST_F(WebEngineIntegrationTest, InvalidUserAgent) {
   }
 }
 
-// Check the remote_debugging_port parameter in CreateContextParams properly
-// opens the DevTools service in the created Context.
-// Check Context.GetRemoteDebuggingPort() API is not blocking.
+// Check that if the CreateContextParams has |remote_debugging_port| set then:
+// - DevTools becomes available when the first debuggable Frame is created.
+// - DevTools closes when the last debuggable Frame is closed.
 TEST_F(WebEngineIntegrationTest, RemoteDebuggingPort) {
+  // Create a Context with remote debugging enabled via an ephemeral port.
   fuchsia::web::CreateContextParams create_params;
   auto directory = base::fuchsia::OpenDirectory(
       base::FilePath(base::fuchsia::kServiceDirectoryPath));
@@ -217,13 +218,26 @@ TEST_F(WebEngineIntegrationTest, RemoteDebuggingPort) {
   create_params.set_service_directory(std::move(directory));
   create_params.set_remote_debugging_port(0);
 
-  // Create Context, Frame and NavigationController.
   fuchsia::web::ContextPtr web_context;
   web_context_provider_->Create(std::move(create_params),
                                 web_context.NewRequest());
-  web_context.set_error_handler([](zx_status_t status) { ADD_FAILURE(); });
+  web_context.set_error_handler([](zx_status_t status) {
+    ZX_LOG(ERROR, status);
+    ADD_FAILURE();
+  });
 
-  // Get the remote debugging port early, to ensure this is not blocking.
+  // Create a Frame with remote debugging enabled.
+  fuchsia::web::FramePtr web_frame;
+  fuchsia::web::CreateFrameParams create_frame_params;
+  create_frame_params.set_enable_remote_debugging(true);
+  web_context->CreateFrameWithParams(std::move(create_frame_params),
+                                     web_frame.NewRequest());
+  web_frame.set_error_handler([](zx_status_t status) {
+    ZX_LOG(ERROR, status);
+    ADD_FAILURE();
+  });
+
+  // Expect to receive a notification of the selected DevTools port.
   base::RunLoop run_loop;
   cr_fuchsia::ResultReceiver<
       fuchsia::web::Context_GetRemoteDebuggingPort_Result>
@@ -236,19 +250,16 @@ TEST_F(WebEngineIntegrationTest, RemoteDebuggingPort) {
   uint16_t remote_debugging_port = port_receiver->response().port;
   ASSERT_TRUE(remote_debugging_port != 0);
 
-  fuchsia::web::FramePtr web_frame;
-  web_context->CreateFrame(web_frame.NewRequest());
-  web_frame.set_error_handler([](zx_status_t status) { ADD_FAILURE(); });
-
+  // Navigate the Frame to a URL, and verify the URL via DevTools.
   fuchsia::web::NavigationControllerPtr nav_controller;
   web_frame->GetNavigationController(nav_controller.NewRequest());
-  nav_controller.set_error_handler([](zx_status_t status) { ADD_FAILURE(); });
 
   cr_fuchsia::TestNavigationListener navigation_listener;
   fidl::Binding<fuchsia::web::NavigationEventListener> listener_binding(
       &navigation_listener);
   web_frame->SetNavigationEventListener(listener_binding.NewBinding());
 
+  // Navigate to a URL.
   GURL url = embedded_test_server_.GetURL("/defaultresponse");
   ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       nav_controller.get(), fuchsia::web::LoadUrlParams(), url.spec()));
@@ -262,6 +273,59 @@ TEST_F(WebEngineIntegrationTest, RemoteDebuggingPort) {
   base::Value* devtools_url = devtools_list.GetList()[0].FindPath("url");
   ASSERT_TRUE(devtools_url->is_string());
   EXPECT_EQ(devtools_url->GetString(), url);
+
+  // Create a second frame, without remote debugging enabled. The remote
+  // debugging service should still report a single Frame is present.
+  fuchsia::web::FramePtr web_frame2;
+  web_context->CreateFrame(web_frame2.NewRequest());
+  web_frame2.set_error_handler([](zx_status_t status) { ADD_FAILURE(); });
+
+  devtools_list = cr_fuchsia::GetDevToolsListFromPort(remote_debugging_port);
+  ASSERT_TRUE(devtools_list.is_list());
+  EXPECT_EQ(devtools_list.GetList().size(), 1u);
+
+  devtools_url = devtools_list.GetList()[0].FindPath("url");
+  ASSERT_TRUE(devtools_url->is_string());
+  EXPECT_EQ(devtools_url->GetString(), url);
+
+  // Tear down the debuggable Frame. The remote debugging service should have
+  // shut down.
+  base::RunLoop controller_run_loop;
+  nav_controller.set_error_handler(
+      [&controller_run_loop](zx_status_t) { controller_run_loop.Quit(); });
+  web_frame.Unbind();
+
+  // Wait until the NavigationController shuts down to ensure WebEngine has
+  // handled the Frame tear down.
+  controller_run_loop.Run();
+
+  devtools_list = cr_fuchsia::GetDevToolsListFromPort(remote_debugging_port);
+  EXPECT_TRUE(devtools_list.is_none());
+}
+
+// Check that remote debugging requests for Frames in non-debuggable Contexts
+// cause an error to be reported.
+TEST_F(WebEngineIntegrationTest, RequestDebuggableFrameInNonDebuggableContext) {
+  fuchsia::web::CreateContextParams create_params = DefaultContextParams();
+
+  fuchsia::web::ContextPtr web_context;
+  web_context_provider_->Create(std::move(create_params),
+                                web_context.NewRequest());
+  web_context.set_error_handler([](zx_status_t status) { ADD_FAILURE(); });
+
+  fuchsia::web::FramePtr web_frame;
+  fuchsia::web::CreateFrameParams create_frame_params;
+  create_frame_params.set_enable_remote_debugging(true);
+  web_context->CreateFrameWithParams(std::move(create_frame_params),
+                                     web_frame.NewRequest());
+
+  base::RunLoop loop;
+  web_frame.set_error_handler(
+      [quit_loop = loop.QuitClosure()](zx_status_t status) {
+        EXPECT_EQ(status, ZX_ERR_INVALID_ARGS);
+        quit_loop.Run();
+      });
+  loop.Run();
 }
 
 // Navigates to a resource served under the "testdata" ContentDirectory.

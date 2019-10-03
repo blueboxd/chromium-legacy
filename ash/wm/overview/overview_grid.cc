@@ -53,6 +53,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -1686,9 +1687,8 @@ void OverviewGrid::AddDraggedWindowIntoOverviewOnDragEnd(
     const gfx::Rect new_bounds = dragged_window->bounds();
     if (old_bounds != new_bounds) {
       // It's for smoother animation.
-      gfx::Transform transform =
-          ScopedOverviewTransformWindow::GetTransformForRect(
-              gfx::RectF(new_bounds), gfx::RectF(old_bounds));
+      const gfx::Transform transform = gfx::TransformBetweenRects(
+          gfx::RectF(new_bounds), gfx::RectF(old_bounds));
       dragged_window->SetTransform(transform);
     }
     dragged_window->ClearProperty(ash::kCanAttachToAnotherWindowKey);

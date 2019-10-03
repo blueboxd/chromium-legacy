@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">Frigør mappe</translation>
 <translation id="3678559383040232393">Maltesisk tastatur</translation>
 <translation id="3685122418104378273">Synkronisering af Google Drev er som standard deaktiveret, når du bruger mobildata.</translation>
+<translation id="3689865792480713551">Annuller <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Denne enhed kan ikke åbnes, fordi dens filsystem ikke understøttes.</translation>
 <translation id="3741243925913727067">Sikkerhedskopiér billeder og videoer på din medieenhed til Google Drev.</translation>
 <translation id="3749289110408117711">Filnavn</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">Amerikansk internationalt (pc)</translation>
 <translation id="6346310558342052870">Begrænset adgang</translation>
 <translation id="6353618411602605519">Kroatisk tastatur</translation>
+<translation id="6356685157277930264">Feedback i vinduet Filer</translation>
 <translation id="6358884629796491903">Drage</translation>
 <translation id="637062427944097960">Denne fil blev åbnet på en anden computer. Skift til <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) for at se den.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> elementer</translation>

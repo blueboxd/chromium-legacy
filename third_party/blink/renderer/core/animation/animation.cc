@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -68,8 +69,12 @@ unsigned NextSequenceNumber() {
   return ++next;
 }
 
-double ToMilliseconds(double seconds) {
+double SecondsToMilliseconds(double seconds) {
   return seconds * 1000;
+}
+
+double MillisecondsToSeconds(double milliseconds) {
+  return milliseconds / 1000;
 }
 
 bool AreEqualOrNull(double a, double b) {
@@ -179,6 +184,8 @@ Animation::Animation(ExecutionContext* execution_context,
       is_composited_animation_disabled_for_testing_(false),
       pending_pause_(false),
       pending_play_(false),
+      pending_finish_notification_(false),
+      has_queued_microtask_(false),
       outdated_(false),
       finished_(true),
       compositor_state_(nullptr),
@@ -246,6 +253,7 @@ DocumentTimeline& Animation::TickingTimeline() {
   return document_->Timeline();
 }
 
+// https://drafts.csswg.org/web-animations/#setting-the-current-time-of-an-animation.
 void Animation::setCurrentTime(double new_current_time,
                                bool is_null,
                                ExceptionState& exception_state) {
@@ -259,10 +267,6 @@ void Animation::setCurrentTime(double new_current_time,
     return;
   }
 
-  PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
-
-  // Step 1. of the procedure to silently set the current time of an
-  // animation states that we abort if the new time is null.
   if (is_null) {
     // If the current time is resolved, then throw a TypeError.
     if (!IsNull(CurrentTimeInternal())) {
@@ -272,15 +276,30 @@ void Animation::setCurrentTime(double new_current_time,
     return;
   }
 
+  SetCurrentTimeInternal(MillisecondsToSeconds(new_current_time));
+
+  // Synchronously resolve pending pause task.
+  if (pending_pause_) {
+    hold_time_ = MillisecondsToSeconds(new_current_time);
+    ApplyPendingPlaybackRate();
+    start_time_ = base::nullopt;
+    pending_pause_ = false;
+    if (ready_promise_)
+      ResolvePromiseMaybeAsync(ready_promise_.Get());
+  }
+
+  // TODO(crbug.com/960944): Deprecate use of legacy flags.
   if (PlayStateInternal() == kIdle)
     paused_ = true;
-
   current_time_pending_ = false;
   internal_play_state_ = kUnset;
-  SetCurrentTimeInternal(new_current_time / 1000, kTimingUpdateOnDemand);
 
-  if (CalculatePlayState() == kFinished)
-    start_time_ = CalculateStartTime(new_current_time);
+  // Update the finished state.
+  UpdateFinishedState(UpdateType::kDiscontinuous, NotificationType::kAsync);
+
+  SetCompositorPending(/*effect_changed=*/false);
+  animation_play_state_ = CalculateAnimationPlayState();
+  internal_play_state_ = CalculatePlayState();
 }
 
 // https://drafts.csswg.org/web-animations/#setting-the-current-time-of-an-animation
@@ -394,7 +413,7 @@ double Animation::currentTime() {
   // 1. If the animation’s hold time is resolved,
   //    The current time is the animation’s hold time.
   if (hold_time_.has_value())
-    return ToMilliseconds(hold_time_.value());
+    return SecondsToMilliseconds(hold_time_.value());
 
   // 2.  If any of the following are true:
   //    * the animation has no associated timeline, or
@@ -416,7 +435,7 @@ double Animation::currentTime() {
   }
   double current_time =
       (timeline_time.value() - start_time_.value()) * playback_rate_;
-  return ToMilliseconds(current_time);
+  return SecondsToMilliseconds(current_time);
 }
 
 double Animation::CurrentTimeInternal() const {
@@ -1023,22 +1042,16 @@ void Animation::UpdateFinishedState(UpdateType update_type,
 
   // 4. Set the current finished state.
   AnimationPlayState play_state = CalculateAnimationPlayState();
-
   if (play_state == kFinished) {
     // 5. Setup finished notification.
-    if (notification_type == NotificationType::kSync) {
+    if (notification_type == NotificationType::kSync)
       CommitFinishNotification();
-    } else {
-      // TODO(crbug.com/960944): Schedule an asynchronous notification.
-      // This code path is not currently being used as the only call site
-      // for UpdateFinishedState is from finish() which triggers a synchronous
-      // notification.
-      NOTIMPLEMENTED();
-    }
+    else
+      ScheduleAsyncFinish();
   } else {
     // 6. If not finished but the current finished promise is already resolved,
     //    create a new promise.
-    finished_ = false;
+    finished_ = pending_finish_notification_ = false;
     if (finished_promise_ &&
         finished_promise_->GetState() == AnimationPromise::kResolved) {
       finished_promise_->Reset();
@@ -1047,12 +1060,54 @@ void Animation::UpdateFinishedState(UpdateType update_type,
   NotifyProbe();
 }
 
+void Animation::ScheduleAsyncFinish() {
+  // Run a task to handle the finished promise and event as a microtask. With
+  // the exception of an explicit call to Animation::finish, it is important to
+  // apply these updates asynchronously as it is possible to enter the finished
+  // state temporarily.
+  pending_finish_notification_ = true;
+  if (!has_queued_microtask_) {
+    Microtask::EnqueueMicrotask(
+        WTF::Bind(&Animation::AsyncFinishMicrotask, WrapWeakPersistent(this)));
+    has_queued_microtask_ = true;
+  }
+}
+
+void Animation::AsyncFinishMicrotask() {
+  // Resolve the finished promise and queue the finished event only if the
+  // animation is still in a pending finished state. It is possible that the
+  // transition was only temporary.
+  if (pending_finish_notification_)
+    CommitFinishNotification();
+
+  // This is a once callback and needs to be re-armed.
+  has_queued_microtask_ = false;
+}
+
 void Animation::CommitFinishNotification() {
+  pending_finish_notification_ = false;
+  pending_play_ = pending_pause_ = false;
+  animation_play_state_ = kFinished;
+
+  // TODO(crbug.com/960944) Deprecate following flags.
+  current_time_pending_ = false;
+  internal_play_state_ = kFinished;
+
+  // If start_time_ is not set, then CalculatePlayState will return pending
+  // rather than finished.  Force synchronous resolution of the start time.
+  if (!start_time_ && hold_time_ && timeline_ && timeline_->IsActive())
+    start_time_ = CalculateStartTime(hold_time_.value());
+
   if (finished_promise_ &&
       finished_promise_->GetState() == AnimationPromise::kPending) {
     ResolvePromiseMaybeAsync(finished_promise_.Get());
   }
   QueueFinishedEvent();
+}
+
+void Animation::CommitAllUpdatesForTesting() {
+  if (pending_finish_notification_)
+    CommitFinishNotification();
 }
 
 // https://drafts.csswg.org/web-animations/#setting-the-playback-rate-of-an-animation

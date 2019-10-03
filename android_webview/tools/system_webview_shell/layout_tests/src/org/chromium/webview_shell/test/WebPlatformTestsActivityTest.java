@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.webview_shell.WebPlatformTestsActivity;
 
 import java.util.ArrayList;
@@ -72,6 +73,7 @@ public class WebPlatformTestsActivityTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1010552")
     public void testOpenCloseWindow() throws Exception {
         final BlockingQueue<Integer> queue = new LinkedBlockingQueue<>();
 
@@ -97,6 +99,7 @@ public class WebPlatformTestsActivityTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1010552")
     public void testNestedOpensAndCloses() throws Exception {
         final BlockingQueue<Integer> queue = new LinkedBlockingQueue<>();
         final int depthToTest = 3;

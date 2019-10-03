@@ -23,6 +23,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/views/animation/compositor_animation_runner.h"
 #include "ui/views/animation/ink_drop_host_view.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
@@ -182,7 +183,7 @@ void InstallableInkDrop::OnPaintLayer(const ui::PaintContext& context) {
 
   ui::PaintRecorder paint_recorder(context, layer_->size());
   gfx::Canvas* canvas = paint_recorder.canvas();
-  canvas->ClipPath(GetHighlightPathForView(view_), true);
+  canvas->ClipPath(GetHighlightPath(view_), true);
 
   painter_.Paint(canvas, view_->size());
 }
@@ -190,24 +191,6 @@ void InstallableInkDrop::OnPaintLayer(const ui::PaintContext& context) {
 void InstallableInkDrop::OnDeviceScaleFactorChanged(
     float old_device_scale_factor,
     float new_device_scale_factor) {}
-
-// static
-SkPath InstallableInkDrop::GetHighlightPathForView(const View* view) {
-  // Use the provided highlight path if there is one.
-  const SkPath* const path_property = view->GetProperty(kHighlightPathKey);
-  if (path_property)
-    return *path_property;
-
-  // Otherwise, construct a default path. This will be pill shaped, or circular
-  // when |view| is square.
-  SkPath path;
-
-  const float radius =
-      std::min(view->size().width(), view->size().height()) / 2.0f;
-  path.addRoundRect(gfx::RectToSkRect(view->GetLocalBounds()), radius, radius);
-
-  return path;
-}
 
 void InstallableInkDrop::SchedulePaint() {
   layer_->SchedulePaint(gfx::Rect(layer_->size()));

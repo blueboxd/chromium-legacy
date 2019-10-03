@@ -109,7 +109,7 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
   static ColorSpaceGamut CalculateColorGamut(LocalFrame*);
   static PreferredColorScheme CalculatePreferredColorScheme(LocalFrame*);
   static bool CalculatePrefersReducedMotion(LocalFrame*);
-  static ForcedColors CalculateForcedColors(LocalFrame*);
+  static ForcedColors CalculateForcedColors();
   static NavigationControls CalculateNavigationControls(LocalFrame*);
 };
 

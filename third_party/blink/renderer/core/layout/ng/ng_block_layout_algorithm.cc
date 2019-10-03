@@ -37,14 +37,35 @@
 namespace blink {
 namespace {
 
+inline scoped_refptr<const NGLayoutResult> LayoutBlockChild(
+    const NGConstraintSpace& space,
+    const NGBreakToken* break_token,
+    const NGEarlyBreak* early_break,
+    NGBlockNode* node) {
+  const NGEarlyBreak* early_break_in_child = nullptr;
+  if (UNLIKELY(early_break && early_break->Type() == NGEarlyBreak::kBlock &&
+               early_break->BlockNode() == *node)) {
+    // We're entering a child that we know that we're going to break inside, and
+    // even where to break. Look inside, and pass the inner breakpoint to
+    // layout.
+    early_break_in_child = early_break->BreakInside();
+    // If there's no break inside, we should already have broken before this
+    // child.
+    DCHECK(early_break_in_child);
+  }
+  return node->Layout(space, break_token, early_break_in_child);
+}
+
 inline scoped_refptr<const NGLayoutResult> LayoutInflow(
     const NGConstraintSpace& space,
     const NGBreakToken* break_token,
+    const NGEarlyBreak* early_break,
     NGLayoutInputNode* node,
     NGInlineChildLayoutContext* context) {
-  auto* inline_node = DynamicTo<NGInlineNode>(node);
-  return inline_node ? inline_node->Layout(space, break_token, context)
-                     : To<NGBlockNode>(node)->Layout(space, break_token);
+  if (auto* inline_node = DynamicTo<NGInlineNode>(node))
+    return inline_node->Layout(space, break_token, context);
+  return LayoutBlockChild(space, break_token, early_break,
+                          To<NGBlockNode>(node));
 }
 
 NGAdjoiningObjectTypes ToAdjoiningObjectTypes(EClear clear) {
@@ -139,8 +160,13 @@ LogicalOffset LogicalFromBfcOffsets(const NGBfcOffset& child_bfc_offset,
 }
 
 inline bool IsEarlyBreakpoint(const NGEarlyBreak& breakpoint,
-                              const NGBoxFragmentBuilder& builder) {
-  return breakpoint.LineNumber() == builder.LineCount();
+                              const NGBoxFragmentBuilder& builder,
+                              NGLayoutInputNode child) {
+  if (breakpoint.Type() == NGEarlyBreak::kLine)
+    return child.IsInline() && breakpoint.LineNumber() == builder.LineCount();
+  if (breakpoint.IsBreakBefore())
+    return breakpoint.BlockNode() == child;
+  return false;
 }
 
 }  // namespace
@@ -153,7 +179,8 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
       border_scrollbar_padding_(border_padding_ +
                                 params.fragment_geometry.scrollbar),
       is_resuming_(IsResumingLayout(params.break_token)),
-      exclusion_space_(params.space.ExclusionSpace()) {
+      exclusion_space_(params.space.ExclusionSpace()),
+      early_break_(params.early_break) {
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
@@ -378,9 +405,8 @@ NGBlockLayoutAlgorithm::RelayoutAndBreakEarlier(
     const NGEarlyBreak& breakpoint) {
   NGLayoutAlgorithmParams params(Node(),
                                  container_builder_.InitialFragmentGeometry(),
-                                 ConstraintSpace(), BreakToken());
+                                 ConstraintSpace(), BreakToken(), &breakpoint);
   NGBlockLayoutAlgorithm algorithm_with_break(params);
-  algorithm_with_break.early_break_ = &breakpoint;
   NGBoxFragmentBuilder& new_builder = algorithm_with_break.container_builder_;
   new_builder.SetBoxType(container_builder_.BoxType());
   // We're not going to run out of space in the next layout pass, since we're
@@ -409,8 +435,13 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
         ConstraintSpace(), Style(), container_builder_.Scrollbar());
   }
 
-  if (ConstraintSpace().HasBlockFragmentation())
+  if (ConstraintSpace().HasBlockFragmentation()) {
     container_builder_.SetHasBlockFragmentation();
+    // The whereabouts of our container's so far best breakpoint is none of our
+    // business, but we store its appeal, so that we don't look for breakpoints
+    // with lower appeal than that.
+    container_builder_.SetBreakAppeal(ConstraintSpace().EarlyBreakAppeal());
+  }
   container_builder_.SetBfcLineOffset(
       ConstraintSpace().BfcOffset().line_offset);
 
@@ -554,14 +585,29 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
       // we'll need to keep looking for subsequent content on the way up the
       // tree.
       if (NGLayoutInputNode next = child.NextSibling()) {
-        container_builder_.AddBreakBeforeChild(next,
+        container_builder_.AddBreakBeforeChild(next, kBreakAppealPerfect,
                                                /* is_forced_break */ true);
       }
       break;
     } else {
-      if (UNLIKELY(early_break_ &&
-                   FindEarlyBreakpoint(child, &previous_inflow_position)))
+      // If this is the child we had previously determined to break before, do
+      // so now and finish layout.
+      if (UNLIKELY(
+              early_break_ &&
+              IsEarlyBreakpoint(*early_break_, container_builder_, child))) {
+        if (!ResolveBfcBlockOffset(&previous_inflow_position)) {
+          // However, the predetermined breakpoint may be exactly where the BFC
+          // block-offset gets resolved. If that hasn't yet happened, we need to
+          // do that first and re-layout at the right BFC block-offset, and THEN
+          // break.
+          return container_builder_.Abort(
+              NGLayoutResult::kBfcBlockOffsetResolved);
+        }
+        BreakBeforeChild(child, kBreakAppealPerfect,
+                         /* is_forced_break */ false,
+                         &previous_inflow_position);
         break;
+      }
 
       NGLayoutResult::EStatus status;
       if (child.CreatesNewFormattingContext()) {
@@ -791,18 +837,6 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
     container_builder_.SetStyleVariant(NGStyleVariant::kFirstLine);
 
   return container_builder_.ToBoxFragment();
-}
-
-bool NGBlockLayoutAlgorithm::FindEarlyBreakpoint(
-    NGLayoutInputNode child,
-    NGPreviousInflowPosition* previous_inflow_position) {
-  DCHECK(early_break_);
-  if (!IsEarlyBreakpoint(*early_break_, container_builder_))
-    return false;
-
-  BreakBeforeChild(child, /* is_forced_break */ false,
-                   previous_inflow_position);
-  return true;
 }
 
 const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
@@ -1158,10 +1192,13 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleNewFormattingContext(
         has_processed_first_child_ || child_margin_got_separated ||
         child_bfc_offset.block_offset > child_bfc_offset_estimate ||
         layout_result->IsPushedByFloats();
-    if (BreakBeforeChildIfNeeded(
-            child, *layout_result, previous_inflow_position,
-            logical_offset.block_offset, has_container_separation))
+    BreakStatus break_status = BreakBeforeChildIfNeeded(
+        child, *layout_result, previous_inflow_position,
+        logical_offset.block_offset, has_container_separation);
+    if (break_status == kBrokeBefore)
       return NGLayoutResult::kSuccess;
+    if (break_status == kNeedsEarlierBreak)
+      return NGLayoutResult::kNeedsEarlierBreak;
     EBreakBetween break_after = JoinFragmentainerBreakValues(
         layout_result->FinalBreakAfter(), child.Style().BreakAfter());
     container_builder_.SetPreviousBreakAfter(break_after);
@@ -1284,8 +1321,8 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     // exclusion space.
     DCHECK(child_space.ExclusionSpace().IsEmpty());
 
-    scoped_refptr<const NGLayoutResult> layout_result =
-        To<NGBlockNode>(child).Layout(child_space, child_break_token);
+    scoped_refptr<const NGLayoutResult> layout_result = LayoutBlockChild(
+        child_space, child_break_token, early_break_, &To<NGBlockNode>(child));
 
     // Since this child establishes a new formatting context, no exclusion space
     // should be returned.
@@ -1404,8 +1441,9 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleInflow(
   NGConstraintSpace child_space = CreateConstraintSpaceForChild(
       child, child_data, child_available_size_, /* is_new_fc */ false,
       forced_bfc_block_offset, has_clearance_past_adjoining_floats);
-  scoped_refptr<const NGLayoutResult> layout_result = LayoutInflow(
-      child_space, child_break_token, &child, inline_child_layout_context);
+  scoped_refptr<const NGLayoutResult> layout_result =
+      LayoutInflow(child_space, child_break_token, early_break_, &child,
+                   inline_child_layout_context);
 
   // To save space of the stack when we recurse into |NGBlockNode::Layout|
   // above, the rest of this function is continued within |FinishInflow|.
@@ -1581,8 +1619,9 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
     NGConstraintSpace new_child_space = CreateConstraintSpaceForChild(
         child, *child_data, child_available_size_, /* is_new_fc */ false,
         child_bfc_block_offset);
-    layout_result = LayoutInflow(new_child_space, child_break_token, &child,
-                                 inline_child_layout_context);
+    layout_result =
+        LayoutInflow(new_child_space, child_break_token, early_break_, &child,
+                     inline_child_layout_context);
 
     if (layout_result->Status() == NGLayoutResult::kBfcBlockOffsetResolved) {
       // Even a second layout pass may abort, if the BFC block offset initially
@@ -1595,8 +1634,9 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
       new_child_space = CreateConstraintSpaceForChild(
           child, *child_data, child_available_size_, /* is_new_fc */ false,
           child_bfc_block_offset);
-      layout_result = LayoutInflow(new_child_space, child_break_token, &child,
-                                   inline_child_layout_context);
+      layout_result =
+          LayoutInflow(new_child_space, child_break_token, early_break_, &child,
+                       inline_child_layout_context);
     }
 
     DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
@@ -1647,10 +1687,13 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
     bool has_container_separation =
         has_processed_first_child_ || (layout_result->IsPushedByFloats() &&
                                        !container_builder_.IsPushedByFloats());
-    if (BreakBeforeChildIfNeeded(
-            child, *layout_result, previous_inflow_position,
-            logical_offset.block_offset, has_container_separation))
+    BreakStatus break_status = BreakBeforeChildIfNeeded(
+        child, *layout_result, previous_inflow_position,
+        logical_offset.block_offset, has_container_separation);
+    if (break_status == kBrokeBefore)
       return NGLayoutResult::kSuccess;
+    if (break_status == kNeedsEarlierBreak)
+      return NGLayoutResult::kNeedsEarlierBreak;
     EBreakBetween break_after = JoinFragmentainerBreakValues(
         layout_result->FinalBreakAfter(), child.Style().BreakAfter());
     container_builder_.SetPreviousBreakAfter(break_after);
@@ -1695,7 +1738,7 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
         // If we still haven't found a descendant at which to resume column
         // layout after the spanner, look for one now.
         if (NGLayoutInputNode next = child.NextSibling()) {
-          container_builder_.AddBreakBeforeChild(next,
+          container_builder_.AddBreakBeforeChild(next, kBreakAppealPerfect,
                                                  /* is_forced_break */ true);
         }
       }
@@ -1964,7 +2007,7 @@ bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
     return true;
   }
 
-  if (Node().ChildrenInline()) {
+  if (Node().ChildrenInline() && !early_break_) {
     if (container_builder_.DidBreak() || first_overflowing_line_) {
       if (first_overflowing_line_ &&
           first_overflowing_line_ < container_builder_.LineCount()) {
@@ -1980,10 +2023,16 @@ bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
                                  std::min(line_count, int(Style().Orphans())));
         }
         // We need to layout again, and stop at the right line number.
-        NGEarlyBreak breakpoint(line_number);
-        container_builder_.SetEarlyBreak(breakpoint);
+        scoped_refptr<const NGEarlyBreak> breakpoint =
+            base::AdoptRef(new NGEarlyBreak(line_number));
+        container_builder_.SetEarlyBreak(breakpoint, kBreakAppealPerfect);
         return false;
       }
+    } else {
+      // Everything could fit in the current fragmentainer, but, depending on
+      // what comes after, the best location to break at may be between two of
+      // our lines.
+      UpdateEarlyBreakBetweenLines();
     }
   }
 
@@ -1993,7 +2042,8 @@ bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   return true;
 }
 
-bool NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(
+NGBlockLayoutAlgorithm::BreakStatus
+NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(
     NGLayoutInputNode child,
     const NGLayoutResult& layout_result,
     NGPreviousInflowPosition* previous_inflow_position,
@@ -2004,39 +2054,51 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(
   // If the BFC offset is unknown, there's nowhere to break, since there's no
   // non-empty child content yet (as that would have resolved the BFC offset).
   if (!container_builder_.BfcBlockOffset())
-    return false;
+    return kContinueWithoutBreaking;
 
+  // If we already know where to insert the break, we already know that it's not
+  // going to be here, since that's something we check before entering layout of
+  // a child.
+  if (early_break_)
+    return kContinueWithoutBreaking;
+
+  NGBreakAppeal appeal_before = kBreakAppealPerfect;
   if (has_container_separation) {
     EBreakBetween break_between =
         CalculateBreakBetweenValue(child, layout_result, container_builder_);
     if (IsForcedBreakValue(ConstraintSpace(), break_between)) {
-      BreakBeforeChild(child, layout_result, block_offset,
+      BreakBeforeChild(child, layout_result, block_offset, kBreakAppealPerfect,
                        /* is_forced_break */ true, previous_inflow_position);
-      return true;
+      return kBrokeBefore;
     }
+
+    // If there's a break-{after,before}:avoid* involved at this breakpoint,
+    // its appeal will decrease.
+    if (IsAvoidBreakValue(ConstraintSpace(), break_between))
+      appeal_before = kBreakAppealViolatingBreakAvoid;
+  } else {
+    // This is not a valid break point. If there's no container separation, it
+    // means that we're breaking before the first piece of in-flow content
+    // inside this block, even if it's not a valid class C break point [1] We
+    // really don't want to break here, if we can find something better.
+    //
+    // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
+    appeal_before = kBreakAppealLastResort;
   }
 
   const auto& physical_fragment = layout_result.PhysicalFragment();
-  if (const NGBlockBreakToken* child_token =
-          DynamicTo<NGBlockBreakToken>(physical_fragment.BreakToken())) {
+  if (IsA<NGBlockBreakToken>(physical_fragment.BreakToken())) {
     // The block child broke inside. We now need to decide whether to keep that
     // break, or if it would be better to break before it.
-    if ((!child_token->HasLastResortBreak() &&
-         !IsAvoidBreakValue(ConstraintSpace(), child.Style().BreakInside())) ||
-        layout_result.HasForcedBreak()) {
-      // The break inside is perfect. Keep it.
-      return false;
-    }
-    if (!has_container_separation) {
-      // The break inside wasn't perfect, but breaking before wouldn't be any
-      // better, since we're at the start of the container, with no valid class
-      // C break point [1]. Keep the break inside, since that gives more content
-      // progression, but mark the break as undesirable. We might find something
-      // better further up the tree.
-      //
-      // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
-      container_builder_.SetHasLastResortBreak();
-      return false;
+    NGBreakAppeal appeal_inside = CalculateBreakAppealInside(
+        ConstraintSpace(), To<NGBlockNode>(child), layout_result);
+    // Allow breaking inside if it has the same appeal or higher than breaking
+    // before or breaking earlier.
+    if (appeal_inside >= appeal_before &&
+        (!container_builder_.HasEarlyBreak() ||
+         appeal_inside >= container_builder_.BreakAppeal())) {
+      container_builder_.SetBreakAppeal(appeal_inside);
+      return kContinueWithoutBreaking;
     }
   } else {
     LayoutUnit space_left = FragmentainerSpaceAvailable() - block_offset;
@@ -2062,8 +2124,20 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(
         want_break = false;
     }
 
-    if (!want_break)
-      return false;
+    if (!want_break) {
+      if (child.IsBlock()) {
+        // If this doesn't happen, though, we're tentatively not going to break
+        // before or inside this child, but we'll check the appeal of breaking
+        // there anyway. It may be the best breakpoint we'll ever find. (Note
+        // that we only do this for block children, since, when it comes to
+        // inline layout, we first need to lay out all the line boxes, so that
+        // we know what do to in order to honor orphans and widows, if at all
+        // possible.)
+        UpdateEarlyBreakAtBlockChild(To<NGBlockNode>(child), layout_result,
+                                     appeal_before);
+      }
+      return kContinueWithoutBreaking;
+    }
   }
 
   // Figure out where to insert a soft break. It will either be before this
@@ -2099,13 +2173,12 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(
             std::max(minimum_line_count, static_cast<int>(Style().Widows()));
       }
       if (line_count < minimum_line_count) {
-        if (is_first_fragment) {
-          // Not enough orphans. Our only hope is if we can break before the
-          // start of this block to improve on the situation. That's not
-          // something we can determine at this point though. Permit the break,
-          // but mark it as undesirable.
-          container_builder_.SetHasLastResortBreak();
-        }
+        // Not enough orphans. Our only hope is if we can break before the start
+        // of this block to improve on the situation. That's not something we
+        // can determine at this point though. Permit the break, but mark it as
+        // undesirable.
+        if (appeal_before > kBreakAppealViolatingOrphansAndWidows)
+          appeal_before = kBreakAppealViolatingOrphansAndWidows;
       } else {
         // There are enough lines before the break. Try to make sure that
         // there'll be enough lines after the break as well. Attempt to honor
@@ -2120,7 +2193,7 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(
           // (if at all possible), which means that lines that could fit in the
           // current fragment (that we have already laid out) may have to be
           // saved for the next fragment.
-          return false;
+          return kContinueWithoutBreaking;
         }
 
         // We have determined that there are plenty of lines for the next
@@ -2131,27 +2204,30 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(
     }
   }
 
-  if (!has_container_separation) {
-    // We're breaking before the first piece of in-flow content inside this
-    // block, even if it's not a valid class C break point [1] in this case. We
-    // really don't want to break here, if we can find something better.
-    //
-    // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
-    container_builder_.SetHasLastResortBreak();
+  // So, we've run out of space, and the child won't fit here. But if there's a
+  // breakpoint with higher appeal among earlier siblings, abort and re-layout
+  // to that breakpoint now.
+  if (container_builder_.HasEarlyBreak() &&
+      container_builder_.BreakAppeal() > appeal_before) {
+    // Found a better place to break. Before aborting, calculate and report
+    // space shortage from where we'd actually break.
+    PropagateSpaceShortage(layout_result, block_offset);
+    return kNeedsEarlierBreak;
   }
 
   // Break before the child. Note that there may be a better break further up
   // with higher appeal (but it's too early to tell), in which case this
   // breakpoint will be replaced.
-  BreakBeforeChild(child, layout_result, block_offset,
+  BreakBeforeChild(child, layout_result, block_offset, appeal_before,
                    /* is_forced_break */ false, previous_inflow_position);
-  return true;
+  return kBrokeBefore;
 }
 
 void NGBlockLayoutAlgorithm::BreakBeforeChild(
     NGLayoutInputNode child,
     const NGLayoutResult& layout_result,
     LayoutUnit block_offset,
+    NGBreakAppeal appeal,
     bool is_forced_break,
     NGPreviousInflowPosition* previous_inflow_position) {
 #if DCHECK_IS_ON()
@@ -2168,11 +2244,12 @@ void NGBlockLayoutAlgorithm::BreakBeforeChild(
   if (child.IsBlock())
     PropagateSpaceShortage(layout_result, block_offset);
 
-  BreakBeforeChild(child, is_forced_break, previous_inflow_position);
+  BreakBeforeChild(child, appeal, is_forced_break, previous_inflow_position);
 }
 
 void NGBlockLayoutAlgorithm::BreakBeforeChild(
     NGLayoutInputNode child,
+    NGBreakAppeal appeal,
     bool is_forced_break,
     NGPreviousInflowPosition* previous_inflow_position) {
   // The remaining part of the fragmentainer (the unusable space for child
@@ -2181,7 +2258,7 @@ void NGBlockLayoutAlgorithm::BreakBeforeChild(
       FragmentainerSpaceAvailable();
   // This will drop the fragment (if any) on the floor and retry at the start of
   // the next fragmentainer.
-  container_builder_.AddBreakBeforeChild(child, is_forced_break);
+  container_builder_.AddBreakBeforeChild(child, appeal, is_forced_break);
 }
 
 void NGBlockLayoutAlgorithm::PropagateSpaceShortage(
@@ -2207,6 +2284,74 @@ void NGBlockLayoutAlgorithm::PropagateSpaceShortage(
   // fail to stretch the columns (column balancing).
   if (space_shortage > LayoutUnit())
     container_builder_.PropagateSpaceShortage(space_shortage);
+}
+
+void NGBlockLayoutAlgorithm::UpdateEarlyBreakAtBlockChild(
+    NGBlockNode child,
+    const NGLayoutResult& layout_result,
+    NGBreakAppeal appeal_before) {
+  // We shouldn't be here if we already know where to break.
+  DCHECK(!early_break_);
+
+  // If the child already broke, it's a little too late to look for breakpoints.
+  DCHECK(!layout_result.PhysicalFragment().BreakToken());
+
+  // See if there's a good breakpoint inside the child.
+  NGBreakAppeal appeal_inside = kBreakAppealLastResort;
+  if (scoped_refptr<const NGEarlyBreak> breakpoint =
+          layout_result.GetEarlyBreak()) {
+    appeal_inside =
+        CalculateBreakAppealInside(ConstraintSpace(), child, layout_result);
+    if (container_builder_.BreakAppeal() <= appeal_inside) {
+      // Found a good breakpoint inside the child. Add the child to the early
+      // break container chain, and store it.
+      auto parent_break = base::AdoptRef(new NGEarlyBreak(child, breakpoint));
+      container_builder_.SetEarlyBreak(parent_break, appeal_inside);
+    }
+  }
+
+  // Breaking before isn't better if it's less appealing than what we already
+  // have (obviously), and also not if it has the same appeal as the break
+  // location inside the child that we just found (when the appeal is the same,
+  // whatever takes us further wins).
+  if (appeal_before < container_builder_.BreakAppeal() ||
+      appeal_before == appeal_inside)
+    return;
+
+  container_builder_.SetEarlyBreak(base::AdoptRef(new NGEarlyBreak(child)),
+                                   appeal_before);
+}
+
+void NGBlockLayoutAlgorithm::UpdateEarlyBreakBetweenLines() {
+  // We shouldn't be here if we already know where to break.
+  DCHECK(!early_break_);
+
+  // If the child already broke, it's a little too late to look for breakpoints.
+  DCHECK(!container_builder_.DidBreak());
+
+  int line_count = container_builder_.LineCount();
+  if (line_count < 2)
+    return;
+  // We can break between two of the lines if we have to. Calculate the best
+  // line number to break before, and the appeal of such a breakpoint.
+  int line_number =
+      std::max(line_count - Style().Widows(),
+               std::min(line_count - 1, static_cast<int>(Style().Orphans())));
+  NGBreakAppeal appeal = kBreakAppealPerfect;
+  if (line_number < Style().Orphans() ||
+      line_count - line_number < Style().Widows()) {
+    // Not enough lines in this container to satisfy the orphans and/or widows
+    // requirement. If we break before the last line (i.e. the last possible
+    // class B breakpoint), we'll fit as much as possible, and that's the best
+    // we can do.
+    line_number = line_count - 1;
+    appeal = kBreakAppealViolatingOrphansAndWidows;
+  }
+  if (container_builder_.BreakAppeal() <= appeal) {
+    scoped_refptr<const NGEarlyBreak> breakpoint =
+        base::AdoptRef(new NGEarlyBreak(line_number));
+    container_builder_.SetEarlyBreak(breakpoint, appeal);
+  }
 }
 
 NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
@@ -2416,6 +2561,7 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
       new_bfc_block_offset = child_data.bfc_offset_estimate.block_offset;
     SetupFragmentation(ConstraintSpace(), new_bfc_block_offset, &builder,
                        is_new_fc);
+    builder.SetEarlyBreakAppeal(container_builder_.BreakAppeal());
   }
 
   return builder.ToConstraintSpace();

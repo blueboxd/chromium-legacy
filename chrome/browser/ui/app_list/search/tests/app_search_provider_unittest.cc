@@ -797,6 +797,17 @@ TEST_F(AppSearchProviderTest, AppServiceIconCache) {
   proxy->OverrideInnerIconLoaderForTesting(old_icon_loader);
 }
 
+TEST_F(AppSearchProviderTest, FuzzyAppSearchTest) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(app_list_features::kEnableFuzzyAppSearch);
+  CreateSearch();
+  EXPECT_EQ("Packaged App 1,Packaged App 2", RunQuery("pa1"));
+  std::string result = RunQuery("packahe");
+  EXPECT_TRUE(result == "Packaged App 1,Packaged App 2" ||
+              result == "Packaged App 2,Packaged App 1");
+  EXPECT_EQ(kKeyboardShortcutHelperInternalName, RunQuery("Helper"));
+}
+
 enum class TestExtensionInstallType {
   CONTROLLED_BY_POLICY,
   CHROME_COMPONENT,

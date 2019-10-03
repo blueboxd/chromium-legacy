@@ -16,7 +16,6 @@
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
-#include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -362,13 +361,6 @@ void DedicatedWorker::DispatchErrorEventForScriptFetchFailure() {
   DispatchEvent(*Event::CreateCancelable(event_type_names::kError));
 }
 
-WorkerClients* DedicatedWorker::CreateWorkerClients() {
-  auto* worker_clients = MakeGarbageCollected<WorkerClients>();
-  CoreInitializer::GetInstance().ProvideLocalFileSystemToWorker(
-      *worker_clients);
-  return worker_clients;
-}
-
 std::unique_ptr<WebContentSettingsClient>
 DedicatedWorker::CreateWebContentSettingsClient() {
   std::unique_ptr<WebContentSettingsClient> content_settings_client;
@@ -466,8 +458,9 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
       GetExecutionContext()->GetContentSecurityPolicy()->Headers(),
       referrer_policy, GetExecutionContext()->GetSecurityOrigin(),
       GetExecutionContext()->IsSecureContext(),
-      GetExecutionContext()->GetHttpsState(), CreateWorkerClients(),
-      CreateWebContentSettingsClient(), response_address_space,
+      GetExecutionContext()->GetHttpsState(),
+      MakeGarbageCollected<WorkerClients>(), CreateWebContentSettingsClient(),
+      response_address_space,
       OriginTrialContext::GetTokens(GetExecutionContext()).get(),
       parent_devtools_token, std::move(settings), kV8CacheOptionsDefault,
       nullptr /* worklet_module_responses_map */,

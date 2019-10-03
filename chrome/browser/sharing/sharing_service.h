@@ -18,12 +18,13 @@
 #include "chrome/browser/sharing/ping_message_handler.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
-#include "chrome/browser/sharing/sharing_fcm_sender.h"
+#include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "components/gcm_driver/web_push_common.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/sync/protocol/device_info_specifics.pb.h"
 #include "components/sync_device_info/device_info_tracker.h"
+#include "components/sync_device_info/local_device_info_provider.h"
 #include "net/base/backoff_entry.h"
 
 #if defined(OS_ANDROID)
@@ -39,12 +40,12 @@ class GCMDriver;
 
 namespace syncer {
 class DeviceInfo;
-class LocalDeviceInfoProvider;
 class SyncService;
 }  // namespace syncer
 
 class NotificationDisplayService;
 class SharingFCMHandler;
+class SharingFCMSender;
 class SharingMessageHandler;
 class SharingSyncPreference;
 class VapidKeyManager;
@@ -136,10 +137,11 @@ class SharingService : public KeyedService,
   void OnDeviceInfoChange() override;
 
   void RegisterDevice();
-
   void UnregisterDevice();
+
   void OnDeviceRegistered(SharingDeviceRegistrationResult result);
   void OnDeviceUnregistered(SharingDeviceRegistrationResult result);
+
   void OnMessageSent(base::TimeTicks start_time,
                      const std::string& message_guid,
                      SharingSendMessageResult result,

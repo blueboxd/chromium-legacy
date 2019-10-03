@@ -63,7 +63,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/permission_request_creator.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_features.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -1940,33 +1939,6 @@ class ExtensionServiceTestSupervised
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-class MockPermissionRequestCreator : public PermissionRequestCreator {
- public:
-  MockPermissionRequestCreator() {}
-  ~MockPermissionRequestCreator() override {}
-
-  bool IsEnabled() const override { return true; }
-
-  void CreateURLAccessRequest(const GURL& url_requested,
-                              SuccessCallback callback) override {
-    FAIL();
-  }
-
-  void CreateExtensionUpdateRequest(
-      const std::string& id,
-      SupervisedUserService::SuccessCallback callback) override {
-    CreateExtensionUpdateRequestInternal(id);
-  }
-
-  // TODO(crbug.com/729950): This mock method can be set to direct calls once
-  // gtest supports move-only objects, since SuccessCallback is move only.
-  MOCK_METHOD1(CreateExtensionUpdateRequestInternal,
-               void(const std::string& id));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockPermissionRequestCreator);
-};
-
 TEST_F(ExtensionServiceTestSupervised, InstallOnlyAllowedByCustodian) {
   InitSupervisedUserInitiatedExtensionInstallFeature(false);
 
@@ -2182,20 +2154,13 @@ TEST_F(ExtensionServiceTestSupervised,
        UpdateWithPermissionIncreaseApprovalOldVersion) {
   InitServices(true /* profile_is_supervised */);
 
-  MockPermissionRequestCreator* creator = new MockPermissionRequestCreator;
-  supervised_user_service()->AddPermissionRequestCreator(
-      base::WrapUnique(creator));
-
   const std::string version1("1");
   const std::string version2("2");
 
   std::string id = InstallPermissionsTestExtension(true /* by_custodian */);
 
   // Update to a new version with increased permissions.
-  EXPECT_CALL(*creator,
-              CreateExtensionUpdateRequestInternal(RequestId(id, version2)));
   UpdatePermissionsTestExtension(id, version2, DISABLED);
-  Mock::VerifyAndClearExpectations(creator);
   EXPECT_TRUE(IsPendingCustodianApproval(id));
 
   // Simulate a custodian approval for re-enabling the extension coming in
@@ -2209,11 +2174,6 @@ TEST_F(ExtensionServiceTestSupervised,
   ext_specifics->set_installed_by_custodian(true);
   ext_specifics->set_version(version1);
 
-  // Attempting to re-enable an old version should result in a permission
-  // request for the current version.
-  EXPECT_CALL(*creator,
-              CreateExtensionUpdateRequestInternal(RequestId(id, version2)));
-
   SyncChangeList list =
       MakeSyncChangeList(id, specifics, SyncChange::ACTION_UPDATE);
 
@@ -2224,7 +2184,6 @@ TEST_F(ExtensionServiceTestSupervised,
       id, base::Version(version1)));
   EXPECT_FALSE(extension_sync_service()->HasPendingReenable(
       id, base::Version(version2)));
-  Mock::VerifyAndClearExpectations(creator);
   EXPECT_TRUE(IsPendingCustodianApproval(id));
 }
 
@@ -2232,18 +2191,11 @@ TEST_F(ExtensionServiceTestSupervised,
        UpdateWithPermissionIncreaseApprovalMatchingVersion) {
   InitServices(true /* profile_is_supervised */);
 
-  MockPermissionRequestCreator* creator = new MockPermissionRequestCreator;
-  supervised_user_service()->AddPermissionRequestCreator(
-      base::WrapUnique(creator));
-
   std::string id = InstallPermissionsTestExtension(true /* by_custodian */);
 
   // Update to a new version with increased permissions.
   const std::string version2("2");
-  EXPECT_CALL(*creator,
-              CreateExtensionUpdateRequestInternal(RequestId(id, version2)));
   UpdatePermissionsTestExtension(id, version2, DISABLED);
-  Mock::VerifyAndClearExpectations(creator);
   EXPECT_TRUE(IsPendingCustodianApproval(id));
 
   // Simulate a custodian approval for re-enabling the extension coming in
@@ -2269,18 +2221,11 @@ TEST_F(ExtensionServiceTestSupervised,
        UpdateWithPermissionIncreaseApprovalNewVersion) {
   InitServices(true /* profile_is_supervised */);
 
-  MockPermissionRequestCreator* creator = new MockPermissionRequestCreator;
-  supervised_user_service()->AddPermissionRequestCreator(
-      base::WrapUnique(creator));
-
   std::string id = InstallPermissionsTestExtension(true /* by_custodian */);
 
   // Update to a new version with increased permissions.
   const std::string version2("2");
-  EXPECT_CALL(*creator,
-              CreateExtensionUpdateRequestInternal(RequestId(id, version2)));
   UpdatePermissionsTestExtension(id, version2, DISABLED);
-  Mock::VerifyAndClearExpectations(creator);
 
   // Simulate a custodian approval for re-enabling the extension coming in
   // through Sync. Set a newer version than we have installed.
@@ -2292,11 +2237,6 @@ TEST_F(ExtensionServiceTestSupervised,
   ext_specifics->set_disable_reasons(extensions::disable_reason::DISABLE_NONE);
   ext_specifics->set_installed_by_custodian(true);
   ext_specifics->set_version(version3);
-
-  // This should *not* result in a new permission request.
-  EXPECT_CALL(*creator,
-              CreateExtensionUpdateRequestInternal(RequestId(id, version3)))
-      .Times(0);
 
   SyncChangeList list =
       MakeSyncChangeList(id, specifics, SyncChange::ACTION_UPDATE);

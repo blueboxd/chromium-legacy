@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "content/public/app/content_main.h"
-#include "fuchsia/engine/common.h"
+#include "fuchsia/engine/context_provider_impl.h"
 #include "fuchsia/engine/context_provider_main.h"
 #include "fuchsia/engine/web_engine_main_delegate.h"
 #include "services/service_manager/embedder/switches.h"
@@ -23,8 +23,8 @@ int main(int argc, const char** argv) {
     // zx_take_startup_handle() is called only when process_type is empty (i.e.
     // for Browser and ContextProvider processes). Renderer and other child
     // processes may use the same handle id for other handles.
-    context.set_channel(
-        zx::channel(zx_take_startup_handle(kContextRequestHandleId)));
+    context.set_channel(zx::channel(
+        zx_take_startup_handle(ContextProviderImpl::kContextRequestHandleId)));
 
     // If |process_type| is empty then this may be a Browser process, or the
     // main ContextProvider process. Browser processes will have a

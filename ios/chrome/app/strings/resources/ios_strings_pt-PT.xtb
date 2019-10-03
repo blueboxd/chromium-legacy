@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Não é Possível Guardar a Imagem</translation>
 <translation id="1180526666083833456">Sincronize e personalize entre dispositivos.</translation>
 <translation id="1181037720776840403">Remover</translation>
+<translation id="1207113853726624428">Nova pesquisa</translation>
 <translation id="1209206284964581585">Ocultar para já</translation>
 <translation id="1219674500290482172">Não é possível estabelecer ligação à Internet.</translation>
 <translation id="122699739164161391">Fechar todos os separadores</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">Sugerir palavra-passe…</translation>
 <translation id="1870148520156231997">Mostrar palavra-passe</translation>
 <translation id="1872096359983322073">Lanterna</translation>
-<translation id="1876721852596493031">Enviar Dados de Uso</translation>
 <translation id="1911619930368729126">Carregar p/ Google Drive</translation>
 <translation id="1923342640370224680">Última Hora</translation>
 <translation id="1941314575388338491">Toque duas vezes para copiar.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artigos não lidos na Lista de leitura.</translation>
 <translation id="2230173723195178503">Página Web carregada</translation>
 <translation id="2239626343334228536">A limpar os dados de navegação…</translation>
-<translation id="2256128224215992540">Sugestões de pesquisa e de sites</translation>
 <translation id="2267753748892043616">Adicionar conta</translation>
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2273327106802955778">Menu Mais</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">Não é pos. abrir o fich.</translation>
 <translation id="2718352093833049315">Apenas em Wi-Fi</translation>
 <translation id="2747003861858887689">Campo anterior</translation>
+<translation id="2773292004659987824">Pesquisa anónima</translation>
 <translation id="2780046210906776326">Sem Contas de Email</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Sair do Comutador de separadores</translation>
@@ -165,7 +165,7 @@
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> de <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Abrir Separadores</translation>
 <translation id="3277021493514034324">Endereço do site copiado</translation>
-<translation id="3290875554372353449">Selecionar uma conta</translation>
+<translation id="3290875554372353449">Selecione uma conta</translation>
 <translation id="3324193307694657476">Morada 2</translation>
 <translation id="3329904751041170572">Não foi possível ligar ao servidor.</translation>
 <translation id="3335947283844343239">Reabrir separador fechado</translation>
@@ -295,7 +295,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Ativar a sincronização</translation>
 <translation id="5234764350956374838">Ignorar</translation>
-<translation id="5244474230056479698">A sincronizar com <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Cancelar sincronização</translation>
 <translation id="5271549068863921519">Guardar palavra-passe</translation>
 <translation id="5300589172476337783">Mostrar</translation>
@@ -501,6 +500,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8281781826761538115">Predefinição – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Nova pesquisa</translation>
+<translation id="8323906514956095947">Toque sem soltar para obter mais opções de separadores.</translation>
 <translation id="8328777765163860529">Fechar Tudo</translation>
 <translation id="8407669440184693619">Não foram encontradas palavras-passe para este site</translation>
 <translation id="842017693807136194">Iniciar sessão com</translation>

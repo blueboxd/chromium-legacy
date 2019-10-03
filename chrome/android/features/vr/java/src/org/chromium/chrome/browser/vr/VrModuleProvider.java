@@ -11,7 +11,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modules.ModuleInstallUi;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.module_installer.OnModuleInstallFinishedListener;
+import org.chromium.components.module_installer.engine.InstallListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,7 +88,7 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
         for (VrModeObserver observer : sVrModeObservers) observer.onExitVr();
     }
 
-    /* package */ static void installModule(OnModuleInstallFinishedListener onFinishedListener) {
+    /* package */ static void installModule(InstallListener listener) {
         VrModule.install((success) -> {
             if (success) {
                 // Re-create delegate provider.
@@ -97,7 +97,7 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
                 assert !(delegate instanceof VrDelegateFallback);
                 delegate.initAfterModuleInstall();
             }
-            onFinishedListener.onFinished(success);
+            listener.onComplete(success);
         });
     }
 

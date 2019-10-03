@@ -56,8 +56,8 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
     NGLayoutCacheStatus cache_status;
     base::Optional<NGFragmentGeometry> initial_fragment_geometry;
     return To<LayoutBlockFlow>(node.GetLayoutBox())
-        ->CachedLayoutResult(space, nullptr, &initial_fragment_geometry,
-                             &cache_status);
+        ->CachedLayoutResult(space, nullptr, nullptr,
+                             &initial_fragment_geometry, &cache_status);
   }
 
   String DumpFragmentTree(const NGPhysicalBoxFragment* fragment) {

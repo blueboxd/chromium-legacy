@@ -22,8 +22,8 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
+import org.chromium.chrome.browser.ui.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.resources.ResourceManager;
 

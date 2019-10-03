@@ -11,6 +11,7 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
+#include "cc/test/fake_scrollbar.h"
 #include "cc/test/layer_tree_pixel_test.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -38,33 +39,23 @@ class LayerTreeHostScrollbarsPixelTest
   float device_scale_factor_ = 1.f;
 };
 
-class PaintedScrollbar : public Scrollbar {
+class PaintedScrollbar : public FakeScrollbar {
  public:
-  ~PaintedScrollbar() override = default;
+  explicit PaintedScrollbar(const gfx::Size& size)
+      : FakeScrollbar(/*paint*/ true,
+                      /*has_thumb*/ false,
+                      HORIZONTAL,
+                      /*is_left_side_vertical_scrollbar*/ false,
+                      /*is_overlay*/ false) {
+    set_track_rect(gfx::Rect(size));
+  }
 
-  ScrollbarOrientation Orientation() const override { return VERTICAL; }
-  bool IsLeftSideVerticalScrollbar() const override { return false; }
-  gfx::Point Location() const override { return gfx::Point(); }
-  bool IsOverlay() const override { return false; }
-  bool HasThumb() const override { return thumb_; }
-  int ThumbThickness() const override { return rect_.width(); }
-  int ThumbLength() const override { return rect_.height(); }
-  gfx::Rect TrackRect() const override { return rect_; }
-  gfx::Rect BackButtonRect() const override { return rect_; }
-  gfx::Rect ForwardButtonRect() const override { return rect_; }
-  bool SupportsDragSnapBack() const override { return false; }
-  float ThumbOpacity() const override { return 1.f; }
-  bool NeedsPaintPart(ScrollbarPart part) const override { return true; }
-  bool HasTickmarks() const override { return false; }
-  void PaintPart(PaintCanvas* canvas,
-                 ScrollbarPart part,
-                 const gfx::Rect& content_rect) override {
+  void PaintPart(PaintCanvas* canvas, ScrollbarPart part) override {
     PaintFlags flags;
     flags.setStyle(PaintFlags::kStroke_Style);
     flags.setStrokeWidth(SkIntToScalar(paint_scale_));
     flags.setColor(color_);
-
-    gfx::Rect inset_rect = content_rect;
+    gfx::Rect inset_rect = GetPartRect(part);
     while (!inset_rect.IsEmpty()) {
       int big = paint_scale_ + 2;
       int small = paint_scale_;
@@ -73,17 +64,12 @@ class PaintedScrollbar : public Scrollbar {
       inset_rect.Inset(big, big, small, small);
     }
   }
-  bool UsesNinePatchThumbResource() const override { return false; }
-  gfx::Size NinePatchThumbCanvasSize() const override { return gfx::Size(); }
-  gfx::Rect NinePatchThumbAperture() const override { return gfx::Rect(); }
 
   void set_paint_scale(int scale) { paint_scale_ = scale; }
 
  private:
   int paint_scale_ = 4;
-  bool thumb_ = false;
   SkColor color_ = SK_ColorGREEN;
-  gfx::Rect rect_;
 };
 
 LayerTreeTest::RendererType const kRendererTypes[] = {
@@ -102,7 +88,7 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, NoScale) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  auto scrollbar = std::make_unique<PaintedScrollbar>();
+  auto scrollbar = std::make_unique<PaintedScrollbar>(gfx::Size(200, 200));
   scoped_refptr<PaintedScrollbarLayer> layer =
       PaintedScrollbarLayer::Create(std::move(scrollbar));
   layer->SetIsDrawable(true);
@@ -121,7 +107,7 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, DeviceScaleFactor) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
 
-  auto scrollbar = std::make_unique<PaintedScrollbar>();
+  auto scrollbar = std::make_unique<PaintedScrollbar>(gfx::Size(100, 100));
   scoped_refptr<PaintedScrollbarLayer> layer =
       PaintedScrollbarLayer::Create(std::move(scrollbar));
   layer->SetIsDrawable(true);
@@ -136,7 +122,7 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, TransformScale) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  auto scrollbar = std::make_unique<PaintedScrollbar>();
+  auto scrollbar = std::make_unique<PaintedScrollbar>(gfx::Size(100, 100));
   scoped_refptr<PaintedScrollbarLayer> layer =
       PaintedScrollbarLayer::Create(std::move(scrollbar));
   layer->SetIsDrawable(true);
@@ -163,7 +149,7 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, MAYBE_HugeTransformScale) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(400, 400), SK_ColorWHITE);
 
-  auto scrollbar = std::make_unique<PaintedScrollbar>();
+  auto scrollbar = std::make_unique<PaintedScrollbar>(gfx::Size(10, 400));
   scrollbar->set_paint_scale(1);
   scoped_refptr<PaintedScrollbarLayer> layer =
       PaintedScrollbarLayer::Create(std::move(scrollbar));
@@ -216,18 +202,20 @@ class LayerTreeHostOverlayScrollbarsPixelTest
   float thickness_scale_;
 };
 
-class PaintedOverlayScrollbar : public PaintedScrollbar {
+class PaintedOverlayScrollbar : public FakeScrollbar {
  public:
-  ~PaintedOverlayScrollbar() override = default;
+  PaintedOverlayScrollbar()
+      : FakeScrollbar(/*paint*/ true,
+                      /*has_thumb*/ true,
+                      VERTICAL,
+                      /*is_left_side_vertical_scrollbar*/ false,
+                      /*is_overlay*/ true) {
+    set_thumb_thickness(15);
+    set_thumb_length(50);
+    set_track_rect(gfx::Rect(0, 0, 15, 400));
+  }
 
-  int ThumbThickness() const override { return 15; }
-  int ThumbLength() const override { return 50; }
-  gfx::Rect TrackRect() const override { return gfx::Rect(0, 0, 15, 400); }
-  bool HasThumb() const override { return true; }
-  bool IsOverlay() const override { return true; }
-  void PaintPart(PaintCanvas* canvas,
-                 ScrollbarPart part,
-                 const gfx::Rect& content_rect) override {
+  void PaintPart(PaintCanvas* canvas, ScrollbarPart part) override {
     // The outside of the rect will be painted with a 1 pixel black, red, then
     // blue border. The inside will be solid blue. This will allow the test to
     // ensure that scaling the thumb doesn't scale the border at all.  Note
@@ -238,8 +226,7 @@ class PaintedOverlayScrollbar : public PaintedScrollbar {
     flags.setStrokeWidth(SkIntToScalar(1));
     flags.setColor(SK_ColorBLACK);
 
-    gfx::Rect inset_rect = content_rect;
-
+    gfx::Rect inset_rect = GetPartRect(part);
     canvas->drawRect(RectToSkRect(inset_rect), flags);
 
     flags.setColor(SK_ColorRED);
@@ -250,6 +237,7 @@ class PaintedOverlayScrollbar : public PaintedScrollbar {
     inset_rect.Inset(1, 1);
     canvas->drawRect(RectToSkRect(inset_rect), flags);
   }
+
   bool UsesNinePatchThumbResource() const override { return true; }
   gfx::Size NinePatchThumbCanvasSize() const override {
     return gfx::Size(7, 7);

@@ -688,8 +688,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsLayoutReplaced() const {
     return IsOfType(kLayoutObjectLayoutReplaced);
   }
-  bool IsLayoutScrollbarPart() const {
-    return IsOfType(kLayoutObjectLayoutScrollbarPart);
+  bool IsLayoutCustomScrollbarPart() const {
+    return IsOfType(kLayoutObjectLayoutCustomScrollbarPart);
   }
   bool IsLayoutView() const { return IsOfType(kLayoutObjectLayoutView); }
   bool IsRuby() const { return IsOfType(kLayoutObjectRuby); }
@@ -2316,7 +2316,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
    protected:
     friend class LayoutBoxModelObject;
-    friend class LayoutScrollbar;
+    friend class CustomScrollbar;
     friend class PaintInvalidator;
     friend class PaintPropertyTreeBuilder;
     friend class PrePaintTreeWalk;
@@ -2516,7 +2516,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectLayoutMultiColumnSpannerPlaceholder,
     kLayoutObjectLayoutEmbeddedContent,
     kLayoutObjectLayoutReplaced,
-    kLayoutObjectLayoutScrollbarPart,
+    kLayoutObjectLayoutCustomScrollbarPart,
     kLayoutObjectLayoutView,
     kLayoutObjectRuby,
     kLayoutObjectRubyBase,

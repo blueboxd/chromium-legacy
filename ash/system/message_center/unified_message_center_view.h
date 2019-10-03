@@ -19,6 +19,10 @@ namespace gfx {
 class LinearAnimation;
 }  // namespace gfx
 
+namespace message_center {
+class Notification;
+}  // namespace message_center
+
 namespace views {
 class ScrollView;
 }  // namespace views
@@ -26,6 +30,7 @@ class ScrollView;
 namespace ash {
 
 class MessageCenterScrollBar;
+class StackedNotificationBar;
 class UnifiedMessageCenterBubble;
 class UnifiedSystemTrayModel;
 class UnifiedSystemTrayView;
@@ -47,41 +52,6 @@ enum class UnifiedMessageCenterAnimationState {
   // dismisses the last notification and during the clear all animation.
   // TODO(tengs): This animation is not yet implemented.
   COLLAPSE,
-};
-
-// The header shown above the notification list displaying the number of hidden
-// notifications. There are currently two UI implementations toggled by the
-// NotificationStackingBarRedesign feature flag.
-class StackingNotificationCounterView : public views::View {
- public:
-  explicit StackingNotificationCounterView(views::ButtonListener* listener);
-  ~StackingNotificationCounterView() override;
-
-  // Sets the number of total notifications and hidden notifications. Returns
-  // true if the count was updated from the previous SetCount() call.
-  bool SetCount(int total_notification_count, int stacked_notification_count);
-
-  // Sets the current animation state.
-  void SetAnimationState(UnifiedMessageCenterAnimationState animation_state);
-
-  // views::View:
-  void OnPaint(gfx::Canvas* canvas) override;
-  const char* GetClassName() const override;
-
- private:
-  friend class UnifiedMessageCenterViewTest;
-
-  void UpdateVisibility();
-
-  int total_notification_count_ = 0;
-  int stacked_notification_count_ = 0;
-  UnifiedMessageCenterAnimationState animation_state_ =
-      UnifiedMessageCenterAnimationState::IDLE;
-
-  views::Label* const count_label_;
-  views::Button* const clear_all_button_;
-
-  DISALLOW_COPY_AND_ASSIGN(StackingNotificationCounterView);
 };
 
 // Manages scrolling of notification list.
@@ -119,7 +89,7 @@ class ASH_EXPORT UnifiedMessageCenterView
   void ConfigureMessageView(message_center::MessageView* message_view);
 
   // Count number of notifications that are above visible area.
-  int GetStackedNotificationCount() const;
+  std::vector<message_center::Notification*> GetStackedNotifications() const;
 
   // Set the first child view to be focused when focus is acquired.
   // This is the first visible child unless reverse is true, in which case
@@ -186,7 +156,7 @@ class ASH_EXPORT UnifiedMessageCenterView
   UnifiedSystemTrayView* const parent_;
   UnifiedSystemTrayModel* const model_;
   UnifiedMessageCenterBubble* const message_center_bubble_;
-  StackingNotificationCounterView* const stacking_counter_;
+  StackedNotificationBar* const notification_bar_;
   MessageCenterScrollBar* const scroll_bar_;
   views::ScrollView* const scroller_;
   UnifiedMessageListView* const message_list_view_;

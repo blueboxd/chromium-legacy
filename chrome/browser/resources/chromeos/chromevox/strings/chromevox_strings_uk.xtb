@@ -20,6 +20,7 @@
 <translation id="1087788677726983142">Сховати фільтри потоку подій</translation>
 <translation id="1088219014394087294">Немає заголовків.</translation>
 <translation id="1106741348836243114">Увімкнути або вимкнути звуковий сигнал (звуковий ефект).</translation>
+<translation id="1114836634143403764">Пропозиція</translation>
 <translation id="1120743664840974483">{"а": "андрій", "б": "богдан", "в": "василь", "г": "григорій", "ґ": "ґудзик", "д": "дмитро", "е": "еней", "є": "євген", "ж": "жук", "з": "зеновій", "и": "ігрек", "і": "іван", "ї": "їжак", "й": "йосип", "к": "кіловат", "л": "левко", "м": "марія", "н": "наталка", "о": "ольга", "п": "павло", "р": "роман", "с": "степан", "т": "тарас", "у": "україна", "ф": "федір", "х": "христина", "ц": "центр", "ч": "чоловік", "ш": "шура", "щ": "щука", "ь": "м'який знак", "ю": "юрій", "я": "яків"}</translation>
 <translation id="1120938014254001895">Проведіть двома пальцями вгору</translation>
 <translation id="1124771028211010580">Поточний стиль дисплея – паралельний перегляд.</translation>
@@ -126,6 +127,7 @@
 <translation id="1845944666972354496">Двічі торкніться, щоб активувати</translation>
 <translation id="1846771122725914429">Брайлівський Bluetooth-дисплей</translation>
 <translation id="1865601187525349519">Кінець тексту</translation>
+<translation id="1875375785454778375">Присутність у реальному часі</translation>
 <translation id="1876229593313240038">документ</translation>
 <translation id="188130072164734898">Диктувати поточну дату та час.</translation>
 <translation id="1902396333223336119">Клітинка</translation>
@@ -146,6 +148,7 @@
 <translation id="2009187674653301682">Не надрядковий текст</translation>
 <translation id="2010555995361223825">Меню ChromeVox</translation>
 <translation id="2045490512405922022">без прапорця</translation>
+<translation id="2049107626739254612">Інформація про автора</translation>
 <translation id="20601713649439366">Немає попереднього математичного виразу.</translation>
 <translation id="2063539687800151747">Епіграф</translation>
 <translation id="207477615537953741">Семантичний аналіз вимкнено</translation>
@@ -156,6 +159,7 @@
 <translation id="2110480898214777136">Перехід із початку в кінець або з кінця на початок сторінки, діалогового вікна чи іншого контейнера</translation>
 <translation id="2119965627982867824">лічильник</translation>
 <translation id="2121067395472282800">клавіша доступу: <ph name="KEY" /></translation>
+<translation id="2126597928985245619">Цей елемент не містить тексту</translation>
 <translation id="2127747486437921899">Курсив</translation>
 <translation id="2138345533858834403">Імітує вивід оновлюваного екрана Брайля на панелі ChromeVox угорі.</translation>
 <translation id="2163782704988363449">Перелік описок</translation>
@@ -260,6 +264,7 @@
 <translation id="2911433807131383493">Відкрити навчальний посібник ChromeVox</translation>
 <translation id="2912405967290226587">Проведіть трьома пальцями праворуч</translation>
 <translation id="2932083475399492303">Переключення між структурною лінією та лінією розмітки</translation>
+<translation id="293796669683825859">Коментарі</translation>
 <translation id="2942710183375260152">Темно-сіро-синій</translation>
 <translation id="2943596527105977722">Темний золотисто-червоний</translation>
 <translation id="2944762337049891859">Автоматично озвучувати сторінку, коли вона завантажиться.</translation>
@@ -336,6 +341,7 @@
 <translation id="3324983252691184275">Малиновий</translation>
 <translation id="3338224621010291843">Повзунок <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="335581015389089642">Speech</translation>
+<translation id="3356951775008366684">Озвучувати вимову слова</translation>
 <translation id="3359142382821736686">розділювач</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{плюс}one{# знак плюс}few{# знаки плюс}many{# знаків плюс}other{# plus signs}}</translation>
 <translation id="338583716107319301">Розділювач</translation>
@@ -532,6 +538,7 @@
 <translation id="4763480195061959176">відео</translation>
 <translation id="4764692524839457597">за умовчанням</translation>
 <translation id="4772771694153161212">Без підкреслення</translation>
+<translation id="4787577491510559358">Озвучувати формат поточного елемента</translation>
 <translation id="479989351350248267">пошук</translation>
 <translation id="4804818685124855865">Від'єднатися</translation>
 <translation id="481165870889056555">Повідомити назву поточної сторінки</translation>
@@ -568,6 +575,7 @@
 <translation id="4983588134362688868">Перейти вгору сторінки</translation>
 <translation id="4986606102545753256"><ph name="NAME" />, вікно</translation>
 <translation id="4993152509206108683">Швидкість мовлення у відсотках: <ph name="PERCENT" /></translation>
+<translation id="4994420463726586413">Озвучувати поточний стан акумулятора</translation>
 <translation id="4996716799442435517">Візуальна</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, перемикач вибрано</translation>
 <translation id="4997475792277222884">Немає наступного елемента, який не є посиланням.</translation>

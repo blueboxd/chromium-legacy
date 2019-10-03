@@ -18,7 +18,6 @@
 <translation id="1393853151966637042">Dapatkan bantuan tentang penggunaan Chrome</translation>
 <translation id="1399397803214730675">Komputer ini telah memiliki versi Google Chrome yang lebih anyar. Jika software tidak bekerja, uninstal Google Chrome dan coba lagi.</translation>
 <translation id="1434626383986940139">Aplikasi Chrome Canary</translation>
-<translation id="1457721931618994305">Memperbarui Google Chrome...</translation>
 <translation id="1469002951682717133">Peluncur Aplikasi Chrome</translation>
 <translation id="1553358976309200471">Perbarui browser Chrome</translation>
 <translation id="1587223624401073077">Google Chrome menggunakan kamera Anda.</translation>
@@ -87,6 +86,7 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, histori, dan s
 <translation id="3065168410429928842">Tab Chrome</translation>
 <translation id="3080151273017101988">Terus jalankan apl latar belakang saat Google Chrome ditutup</translation>
 <translation id="3089968997497233615">Tersedia versi Google Chrome yang baru dan lebih aman.</translation>
+<translation id="3138848678222082288">Versi Chrome berikutnya akan diinstal secara otomatis. Saat download ini selesai, Chrome akan dimulai ulang dan siap digunakan.</translation>
 <translation id="3149510190863420837">Aplikasi Chrome</translation>
 <translation id="3282568296779691940">Login ke Chrome</translation>
 <translation id="3340978935015468852">setelan</translation>
@@ -168,9 +168,7 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, histori, dan s
 <translation id="573759479754913123">Tentang Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Tidak dapat meluncurkan Chrome. Harap coba lagi.</translation>
-<translation id="5877064549588274448">Saluran diubah. Mulai ulang perangkat Anda untuk menerapkan perubahan.</translation>
 <translation id="5895138241574237353">Mulai Ulang</translation>
-<translation id="5906655207909574370">Hampir selesai diperbarui! Mulai ulang perangkat untuk menyelesaikan pembaruan.</translation>
 <translation id="5940385492829620908">Web, bookmark, dan file Chrome Anda lainnya tersedia di sini.</translation>
 <translation id="5941830788786076944">Jadikan Google Chrome sebagai browser default</translation>
 <translation id="6014844626092547096">Sekarang Anda telah masuk ke Chrome! Sinkronisasi dinonaktifkan oleh administrator Anda.</translation>
@@ -189,16 +187,15 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, histori, dan s
 <translation id="6566149418543181476">Memperbarui Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Anda menggunakan <ph name="PROFILE_EMAIL" /> untuk menyinkronkan barang-barang Chrome. Untuk memperbarui preferensi sinkronisasi atau untuk menggunakan Chrome tanpa akun Google, kunjungi <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Disalin ke Chrome</translation>
-<translation id="6634887557811630702">Google Chrome sudah diperbarui.</translation>
 <translation id="6676384891291319759">Akses Internet</translation>
 <translation id="6679975945624592337">Jalankan Google Chrome di Background</translation>
 <translation id="6750954913813541382">Untuk memperbaiki kesalahan ejaan, Chrome mengirim teks yang Anda ketikkan di browser ke Google</translation>
 <translation id="677276454032249905">Tetap tutup Chrome?</translation>
 <translation id="683440813066116847">Inbound rule untuk Google Chrome Canary guna mengizinkan lalu lintas mDNS.</translation>
 <translation id="6885412569789873916">Aplikasi Chrome Beta</translation>
+<translation id="6906909733186691861">Versi Chrome berikutnya akan diinstal secara otomatis.</translation>
 <translation id="6943584222992551122">Data browsing pengguna ini akan dihapus dari perangkat ini. Untuk memulihkan data, login ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Inbound rule untuk Google Chrome Beta guna mengizinkan traffic mDNS.</translation>
-<translation id="6970811910055250180">Memperbarui perangkat Anda...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> mewajibkan Anda membaca dan menyetujui Persyaratan Layanan sebelum menggunakan perangkat ini. Persyaratan ini tidak memperluas, mengubah, atau membatasi Persyaratan Chrome OS.</translation>
 <translation id="6989339256997917931">Google Chrome telah diperbarui, tetapi Anda belum menggunakannya selama setidaknya 30 hari.</translation>
 <translation id="7098166902387133879">Google Chrome menggunakan mikrofon Anda.</translation>
@@ -236,7 +233,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, histori, dan s
 <translation id="7962410387636238736">Komputer ini tidak akan menerima update Google Chrome lagi karena Windows XP dan Windows Vista sudah tidak didukung</translation>
 <translation id="8008534537613507642">Instal Ulang Chrome</translation>
 <translation id="8013993649590906847">Jika gambar tidak memiliki deskripsi yang berguna, Chrome akan mencoba memberikan deskripsi untuk Anda. Untuk membuat deskripsi, gambar akan dikirim ke Google.</translation>
-<translation id="8030318113982266900">Memperbarui perangkat Anda ke saluran <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8032142183999901390">Setelah membuang akun dari Chrome, Anda mungkin perlu memuat ulang tab terbuka untuk menerapkannya.</translation>
 <translation id="8129812357326543296">Tentang &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Instal Chrome di ponsel. Kami akan mengirimkan SMS ke ponsel Anda.</translation>
@@ -259,7 +255,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, histori, dan s
 <translation id="8606668294522778825">Google Chrome dapat menggunakan layanan web untuk meningkatkan pengalaman penjelajahan Anda. Anda dapat memilih untuk menonaktifkan layanan ini. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome tidak merespons. Luncurkan ulang sekarang?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome akan diluncurkan ulang dalam 1 menit}other{Chrome akan diluncurkan ulang dalam # menit}}</translation>
-<translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> Anda sudah diperbarui.</translation>
 <translation id="8669527147644353129">Pembantu Google Chrome</translation>
 <translation id="8679801911857917785">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chrome.</translation>
 <translation id="870251953148363156">Pembaruan &amp;Google Chrome</translation>

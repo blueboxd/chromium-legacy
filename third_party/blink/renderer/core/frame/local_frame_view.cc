@@ -105,7 +105,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/print_context.h"
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
-#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
@@ -1473,7 +1472,7 @@ void LocalFrameView::ClearLayoutSubtreeRootsAndMarkContainingBlocks() {
 }
 
 void LocalFrameView::AddOrthogonalWritingModeRoot(LayoutBox& root) {
-  DCHECK(!root.IsLayoutScrollbarPart());
+  DCHECK(!root.IsLayoutCustomScrollbarPart());
   orthogonal_writing_mode_root_list_.Add(root);
 }
 
@@ -1833,10 +1832,7 @@ void LocalFrameView::PerformPostLayoutTasks() {
           this->GetScrollingCoordinator()) {
     scrolling_coordinator->NotifyGeometryChanged(this);
   }
-
-  if (SnapCoordinator* snap_coordinator =
-          frame_->GetDocument()->GetSnapCoordinator())
-    snap_coordinator->UpdateAllSnapContainerData();
+  frame_->GetDocument()->GetSnapCoordinator().UpdateAllSnapContainerData();
 
   SendResizeEventIfNeeded();
 }
@@ -2562,13 +2558,6 @@ static void RecordGraphicsLayerAsForeignLayer(
                      graphics_layer->GetPropertyTreeState());
 }
 
-static void CollectViewportLayersForLayerList(GraphicsContext& context,
-                                              VisualViewport& visual_viewport) {
-  RecordGraphicsLayerAsForeignLayer(context, visual_viewport.ContainerLayer());
-  RecordGraphicsLayerAsForeignLayer(context, visual_viewport.PageScaleLayer());
-  RecordGraphicsLayerAsForeignLayer(context, visual_viewport.ScrollLayer());
-}
-
 static void CollectDrawableLayersForLayerListRecursively(
     GraphicsContext& context,
     const GraphicsLayer* layer) {
@@ -2795,16 +2784,14 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
         std::make_unique<PaintController>(PaintController::kTransient);
 
     GraphicsContext context(*paint_controller_);
-    // Note: Some blink unit tests run without turning on compositing which
-    // means we don't create viewport layers. OOPIFs also don't have their own
-    // viewport layers.
-    if (GetLayoutView()->Compositor()->InCompositingMode() &&
-        GetFrame() == GetPage()->MainFrame()) {
-      // TODO(bokan): We should eventually stop creating layers for the visual
-      // viewport. At that point, we can remove this. However, for now, CC
-      // still has some dependencies on the viewport scale and scroll layers.
-      CollectViewportLayersForLayerList(context,
-                                        frame_->GetPage()->GetVisualViewport());
+    // The inner viewport scroll layer is not drawable, but we still need to
+    // collect it in order to coordinate viewport scrolls.
+    if (frame_->IsMainFrame()) {
+      if (const auto* inner_scroll_layer =
+              frame_->GetPage()->GetVisualViewport().ScrollLayer()) {
+        DCHECK(!inner_scroll_layer->DrawsContent());
+        RecordGraphicsLayerAsForeignLayer(context, inner_scroll_layer);
+      }
     }
     // Before CompositeAfterPaint, |PaintRootGraphicsLayer| is the ancestor of
     // all drawable layers (see: PaintLayerCompositor::PaintRootGraphicsLayer)

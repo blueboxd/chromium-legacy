@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">ይህን መተግበሪያ በመጠቀምዎ በChrome <ph name="BEGIN_LINK_TOS" />የአገልግሎት ውል<ph name="END_LINK_TOS" /> እና <ph name="BEGIN_LINK_PRIVACY" />የግላዊነት ማስታወቂያ<ph name="END_LINK_PRIVACY" /> ተስማምተዋል።</translation>
 <translation id="2147651015520127414">Chrome የዚህ ድር ጣቢያ እውቅና ማረጋገጫ ያወጣው <ph name="ISSUER" /> መሆኑን አረጋግጧል።</translation>
 <translation id="2199719347983604670">ውሂብ ከChrome ስምረት</translation>
-<translation id="2342981853652716282">የእርስዎን ዕልባቶች፣ የይለፍ ቃላት እና በሁሉም የእርስዎ መሣሪያዎች ላይ ተጨማሪ ለማግኘት ወደ Chrome በመለያ ይግቡ።</translation>
 <translation id="2347208864470321755">ይህ ባህሪ ሲበራ Chrome በሌሎች ቋንቋዎች የተጻፉ ገጾች Google ትርጉምን በመጠቀም እንዲተረጎምልዎ ይጠይቀዎታል። <ph name="BEGIN_LINK" />ተጨማሪ ለመረዳት<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">ምስሎችን ለማስቀመጥ Chrome የእርስዎን ፎቶዎች መጠቀም እንዲችል በቅንብሮች ላይ መታ ያድርጉ።</translation>
 <translation id="2576431527583832481">Chrome አሁን ተሻሽሏል! አዲስ ስሪት አለ።</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">የአጠቃቀም ስታቲክሶችን እና የብልሽት ሪፖርቶችን ወደ Google በመላክ Chromeን የተሻለ ለማድረግ እገዛ ያድርጉ።</translation>
 <translation id="415767770115540173">በአካባቢዎ ላይ በመመስረት የተሻለ የGoogle ተሞክሮ በChrome ውስጥ ያግኙ።</translation>
 <translation id="424864128008805179">ከChrome ተዘግቶ ይወጣ?</translation>
+<translation id="4249068189593983585">የChrome ጠቃሚ ምክር። ተጨማሪ የትር አማራጮችን ለማግኘት በመሣሪያ አሞሌው ውስጥ የትሮችን አሳይ አዝራሩን ነክተው ይያዙ፣ ይህ በማያ ገጽዎ አናት ወይም ግርጌ ላይ ነው ያለው።</translation>
 <translation id="4523886039239821078">አንዳንድ ተጨማሪዎች Chrome እንዲበላሽ ያደርጋሉ። እባክዎ የሚከተለውን ያራግፉ፦</translation>
 <translation id="5389212809648216794">ሌላ መተግበሪያ ካሜራዎን እየተጠቀመበት ስለሆነ Google Chrome ካሜራዎን መጠቀም አይችልም</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />የተዘመነውን የ Chrome አገልግሎት ውሎች ይገምግሙ።<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">አንዳንድ ተጨማሪዎች Chrome እንዲበላሽ ያደርጋሉ። እባክዎ እነሱን ለማራገፍ ይሞክሩ።</translation>
 <translation id="8459495907675268833">የተመረጠው ውሂብ ከChrome እና የሰመሩ መሣሪያዎች ተወግዷል። የGoogle መለያዎ history.google.com ላይ እንደ የሌሎች Google አገልግሎቶች ፍለጋዎች እና እንቅስቃሴ ያለ ሌሎች የአሰሳ ታሪክ ዓይነት ሊኖረው ይችላል።</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome የአሰሳ ተሞክሮዎን ለማሻሻል የድር አገልግሎቶችን ሊጠቀም ይችላል። እነዚህን አገልግሎቶች በአማራጭነት ሊያሰናክሏቸው ይችላሉ። <ph name="BEGIN_LINK" />ተጨማሪ ለመረዳት<ph name="END_LINK" /></translation>
 </translationbundle>

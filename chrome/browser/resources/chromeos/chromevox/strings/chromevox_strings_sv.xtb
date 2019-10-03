@@ -20,6 +20,7 @@
 <translation id="1087788677726983142">Göm filter för händelseflöden</translation>
 <translation id="1088219014394087294">Det finns inga rubriker.</translation>
 <translation id="1106741348836243114">Aktivera eller inaktivera ljudsignaler (ljudikoner).</translation>
+<translation id="1114836634143403764">Förslag</translation>
 <translation id="1120743664840974483">{"a": "Adam", "b": "Bertil", "c": "Cesar", "d": "David", "e": "Erik", "f": "Filip", "g": "Gustav", "h": "Helge", "i": "Ivar", "j": "Johan","k": "Kalle", "l": "Ludvig", "m": "Martin", "n": "Niklas", "o": "Olof","p": "Petter", "q": "Quintus", "r": "Rudolf", "s": "Sigurd", "t": "Tore", "u": "Urban", "v": "Viktor", "w": "Wilhelm","x": "Xerxes", "y": "Yngve", "z": "Zäta", "å": "Åke", "ä": "Ärlig", "ö": "Östen"}</translation>
 <translation id="1120938014254001895">Svep uppåt med två fingrar</translation>
 <translation id="1124771028211010580">Aktuellt visningsformat är sida vid sida.</translation>
@@ -126,6 +127,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="1845944666972354496">Aktivera genom att trycka snabbt två gånger</translation>
 <translation id="1846771122725914429">Punktskriftsskärm med Bluetooth</translation>
 <translation id="1865601187525349519">Slutet på texten</translation>
+<translation id="1875375785454778375">Närvarande just nu</translation>
 <translation id="1876229593313240038">dok</translation>
 <translation id="188130072164734898">Säg aktuell tid och aktuellt datum.</translation>
 <translation id="1902396333223336119">Cell</translation>
@@ -146,6 +148,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="2009187674653301682">Inte upphöjd</translation>
 <translation id="2010555995361223825">ChromeVox-menyer</translation>
 <translation id="2045490512405922022">inte markerad</translation>
+<translation id="2049107626739254612">Författaruppgift</translation>
 <translation id="20601713649439366">Det finns inget föregående matematiskt uttryck.</translation>
 <translation id="2063539687800151747">Epigraf</translation>
 <translation id="207477615537953741">Semantisk tolkning inaktiverad</translation>
@@ -156,6 +159,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="2110480898214777136">Radbryt från början till slut eller från slut till början på en sida, i en dialogruta eller i en annan behållare</translation>
 <translation id="2119965627982867824">snurrknapp</translation>
 <translation id="2121067395472282800">snabbtangent:<ph name="KEY" /></translation>
+<translation id="2126597928985245619">Det finns ingen tillgänglig text för objektet</translation>
 <translation id="2127747486437921899">Kursiv</translation>
 <translation id="2138345533858834403">Simulerar utdatan från en uppdaterbar punktskriftsskärm
         på ChromeVox-panelen högst upp på skärmen.</translation>
@@ -261,6 +265,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="2911433807131383493">Öppna självstudierna för ChromeVox</translation>
 <translation id="2912405967290226587">Svep åt höger med tre fingrar</translation>
 <translation id="2932083475399492303">Byt mellan rader i strukturen och rader i layouten</translation>
+<translation id="293796669683825859">Kommentarer</translation>
 <translation id="2942710183375260152">Mörkt skifferblå</translation>
 <translation id="2943596527105977722">Mörkt gullrisgul</translation>
 <translation id="2944762337049891859">Läs upp sidan automatiskt när den har lästs in.</translation>
@@ -337,6 +342,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="3324983252691184275">Karmosinröd</translation>
 <translation id="3338224621010291843">Skjutreglage för <ph name="NAME" /> med värdet <ph name="VALUE" /></translation>
 <translation id="335581015389089642">Tal</translation>
+<translation id="3356951775008366684">Läs upp det fonetiska uttalet av ord</translation>
 <translation id="3359142382821736686">avgränsare</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{plustecken}other{# plustecken}}</translation>
 <translation id="338583716107319301">Avgränsare</translation>
@@ -533,6 +539,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">standard</translation>
 <translation id="4772771694153161212">Inte understruken</translation>
+<translation id="4787577491510559358">Läs upp formatering för det aktuella objektet</translation>
 <translation id="479989351350248267">sök</translation>
 <translation id="4804818685124855865">Koppla från</translation>
 <translation id="481165870889056555">Läs upp den aktuella sidans titel</translation>
@@ -569,6 +576,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="4983588134362688868">Till början av sidan</translation>
 <translation id="4986606102545753256"><ph name="NAME" />, fönster</translation>
 <translation id="4993152509206108683">Hastighet: <ph name="PERCENT" /> procent</translation>
+<translation id="4994420463726586413">Läs upp aktuell batteristatus</translation>
 <translation id="4996716799442435517">Visuell</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, markerad alternativknapp</translation>
 <translation id="4997475792277222884">Det finns inga fler objekt som inte är länkar.</translation>

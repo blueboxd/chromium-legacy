@@ -60,7 +60,6 @@
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1079766198702302550">Always block camera access</translation>
 <translation id="1082398631555931481"><ph name="THIRD_PARTY_TOOL_NAME" /> wants to restore your Chrome settings to their original defaults. This will reset your homepage, new tab page and search engine, disable your extensions and unpin all tabs. It will also clear other temporary and cached data, such as cookies, content and site data.</translation>
-<translation id="1082725763867769612">Offline files</translation>
 <translation id="1084824384139382525">Copy link addr&amp;ess</translation>
 <translation id="1085697365578766383">Error starting the virtual machine. Please try again.</translation>
 <translation id="1089439967362294234">Change Password</translation>
@@ -130,7 +129,6 @@
 <translation id="1181037720776840403">Remove</translation>
 <translation id="1183237619868651138">Can't install <ph name="EXTERNAL_CRX_FILE" /> in local cache.</translation>
 <translation id="1185924365081634987">You may also try to <ph name="GUEST_SIGNIN_LINK_START" />browse as guest<ph name="GUEST_SIGNIN_LINK_END" /> to fix this network error.</translation>
-<translation id="1186201132766001848">Check passwords</translation>
 <translation id="1186771945450942097">Remove harmful software</translation>
 <translation id="1187722533808055681">Idle wake ups</translation>
 <translation id="1188807932851744811">Log not uploaded.</translation>
@@ -305,7 +303,6 @@
 <translation id="1444628761356461360">This setting is managed by the device owner, <ph name="OWNER_EMAIL" />.</translation>
 <translation id="144518587530125858">Could not load '<ph name="IMAGE_PATH" />' for theme.</translation>
 <translation id="1445693676523799095">This may take a while</translation>
-<translation id="1450011005989029586">A data breach on a site or app that you use exposed your password. Chrome recommends <ph name="BOLD" /> on <ph name="ORIGIN" /> now.</translation>
 <translation id="1451375123200651445">Web page, Single File</translation>
 <translation id="1451917004835509682">Add Supervised Person</translation>
 <translation id="1454223536435069390">T&amp;ake screenshot</translation>
@@ -605,7 +602,6 @@
 <translation id="1864111464094315414">Login</translation>
 <translation id="1864400682872660285">Cooler</translation>
 <translation id="1864454756846565995">USB-C device (rear port)</translation>
-<translation id="1865678028973512614">Delete files</translation>
 <translation id="1865769994591826607">Same-site connections only</translation>
 <translation id="186612162884103683">"<ph name="EXTENSION" />" can read and write images, video and sound files in the ticked locations.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> is ready to complete your installation</translation>
@@ -936,7 +932,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">Lock screen notes are automatically saved to <ph name="LOCK_SCREEN_APP_NAME" />. Your most recent note will remain on the lock screen.</translation>
 <translation id="2353297238722298836">Camera and microphone allowed</translation>
-<translation id="2355241457888955">Send text to your devices</translation>
 <translation id="2356070529366658676">Ask</translation>
 <translation id="2359345697448000899">Manage your extensions by clicking Extensions in the Tools menu.</translation>
 <translation id="2359808026110333948">Continue</translation>
@@ -1066,7 +1061,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2534460670861217804">Secure HTTP Proxy</translation>
 <translation id="253557089021624350">Keepalive count</translation>
 <translation id="2535799430745250929">No mobile network exists</translation>
-<translation id="2536052711541161459">Pointer acceleration</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> can view and edit the following files and folders</translation>
 <translation id="2538361623464451692">Sync disabled</translation>
 <translation id="2540449034743108469">Press 'Start' to listen for extension activities</translation>
@@ -1369,6 +1363,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2981113813906970160">Show large mouse cursor</translation>
 <translation id="2982970937345031">Report anonymously</translation>
 <translation id="2986010903908656993">This page has been blocked from having full control of MIDI devices.</translation>
+<translation id="2987620471460279764">Text shared from other device</translation>
 <translation id="2989474696604907455">not attached</translation>
 <translation id="2989786307324390836">DER-encoded binary, single certificate</translation>
 <translation id="2992931425024192067">Show all notification content</translation>
@@ -2242,7 +2237,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4267953847983678297">Automatically connect to mobile network</translation>
 <translation id="4268025649754414643">Key Encipherment</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
-<translation id="4270615291506829403">changing your password</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4275830172053184480">Restart your device</translation>
 <translation id="4278101229438943600">Your Assistant is ready</translation>
@@ -2454,7 +2448,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4617001782309103936">Too short</translation>
 <translation id="4617270414136722281">Extension options</translation>
 <translation id="4619615317237390068">Tabs from other devices</translation>
-<translation id="462021874527520979">Call From Your Devices</translation>
 <translation id="4620809267248568679">This setting is enforced by an extension.</translation>
 <translation id="4623189117674524348">The system failed to authorise API access for this device.</translation>
 <translation id="4625078469366263107">Enable App</translation>
@@ -2502,7 +2495,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Printer configuration is handled by the administrator.</translation>
 <translation id="4694604912444486114">Monkey</translation>
-<translation id="4696983787092045100">Send text to Your Devices</translation>
 <translation id="4697551882387947560">When the browsing session ends</translation>
 <translation id="4699172675775169585">Cached images and files</translation>
 <translation id="4699357559218762027">(auto-launched)</translation>
@@ -2520,7 +2512,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4722920479021006856"><ph name="APP_NAME" /> is sharing your screen.</translation>
 <translation id="4724450788351008910">Affiliation Changed</translation>
 <translation id="4725511304875193254">Corgi</translation>
-<translation id="4725851834065990915">A data breach on a site or app that you use exposed your password. Chrome recommends checking your saved passwords now.</translation>
 <translation id="4726710629007580002">There were warnings when trying to install this extension:</translation>
 <translation id="4727847987444062305">Managed guest session</translation>
 <translation id="4728558894243024398">Platform</translation>
@@ -2746,7 +2737,6 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="5062930723426326933">Sign-in failed, please connect to the Internet and try again.</translation>
 <translation id="5063480226653192405">Usage</translation>
 <translation id="5065775832226780415">Smart Lock</translation>
-<translation id="5067000372742249459">Send text to <ph name="DEVICE_NAME" /></translation>
 <translation id="5067399438976153555">Always on</translation>
 <translation id="5067867186035333991">Ask if <ph name="HOST" /> wants to access your microphone</translation>
 <translation id="5068918910148307423">Do not allow recently closed sites to finish sending and receiving data</translation>
@@ -2993,7 +2983,6 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="5436492226391861498">Waiting for proxy tunnel...</translation>
 <translation id="5436510242972373446">Search <ph name="SITE_NAME" />:</translation>
 <translation id="543806387003274181">Please save your files and create a new account now.</translation>
-<translation id="5438224778284622050">Delete offline files?</translation>
 <translation id="544083962418256601">Create shortcuts...</translation>
 <translation id="5442228125690314719">Error creating disk image. Please try again.</translation>
 <translation id="5442550868130618860">Turn on automatic update</translation>
@@ -3326,7 +3315,6 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="5908769186679515905">Block sites from running Flash</translation>
 <translation id="5910363049092958439">Sa&amp;ve Image As...</translation>
 <translation id="5911533659001334206">Shortcut viewer</translation>
-<translation id="5911737117543891828">Temporary Google Drive offline files will be deleted. Files that you’ve set as available offline won’t be deleted from this device.</translation>
 <translation id="5912378097832178659">&amp;Edit search engines...</translation>
 <translation id="5914724413750400082">Modulus (<ph name="MODULUS_NUM_BITS" /> bits):
   <ph name="MODULUS_HEX_DUMP" />
@@ -3377,7 +3365,6 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="5975792506968920132">Battery Charge Percentage</translation>
 <translation id="5976160379964388480">Others</translation>
 <translation id="5978277834170881274">Use basic spell check</translation>
-<translation id="5979084224081478209">Check passwords</translation>
 <translation id="5979421442488174909">&amp;Translate to <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">To bookmark pages, click the star in the address bar</translation>
 <translation id="5984222099446776634">Recently Visited</translation>
@@ -3929,7 +3916,6 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> cannot be run as root.</translation>
 <translation id="6812841287760418429">Keep changes</translation>
 <translation id="6817174620439930047">Ask when a site wants to use system exclusive messages to access MIDI devices (recommended)</translation>
-<translation id="6819440013020405090">A data breach on a site or app that you use exposed your password. Chrome recommends checking your saved passwords and changing your password on <ph name="ORIGIN" />.</translation>
 <translation id="682123305478866682">Cast desktop</translation>
 <translation id="6823506025919456619">You need to sign in to Chrome to see your devices</translation>
 <translation id="6824564591481349393">Copy &amp;Email Address</translation>
@@ -4112,7 +4098,6 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="708060913198414444">C&amp;opy audio address</translation>
 <translation id="7081952801286122383">You're incognito</translation>
 <translation id="708278670402572152">Disconnect to enable scanning</translation>
-<translation id="70850504851191913">Data breach reported</translation>
 <translation id="7085389578340536476">Allow Chrome to record audio?</translation>
 <translation id="7088434364990739311">Update check failed to start (error code <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver – Open and pack ZIP files in Files app.</translation>
@@ -4560,7 +4545,6 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Adjust the boundaries of your display</translation>
 <translation id="7760004034676677601">Is this the start-up page that you were expecting?</translation>
-<translation id="7761380698973548146">Call from your devices</translation>
 <translation id="7764225426217299476">Add address</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> from <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Move</translation>

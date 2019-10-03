@@ -10,12 +10,15 @@ import android.content.Context;
 import android.net.Uri;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.view.ActionMode;
 
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisSpan;
 import org.chromium.chrome.browser.omnibox.UrlBar.ScrollType;
@@ -25,6 +28,9 @@ import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.UrlBarProperties.AutocompleteText;
 import org.chromium.chrome.browser.omnibox.UrlBarProperties.UrlBarTextState;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorFactory;
+import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.net.MalformedURLException;
@@ -44,6 +50,12 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate, UrlBar.Url
     private UrlBarData mUrlBarData;
     private @ScrollType int mScrollType = UrlBar.ScrollType.NO_SCROLL;
     private @SelectionState int mSelectionState = UrlBarCoordinator.SelectionState.SELECT_ALL;
+
+    // The numbers for "MobileOmnibox.LongPressPasteAge", the expected time range of time is from
+    // 1ms to 1 hour, and 100 buckets.
+    private static final long MIN_TIME_MILLIS = 1;
+    private static final long MAX_TIME_MILLIS = DateUtils.HOUR_IN_MILLIS;
+    private static final int NUM_OF_BUCKETS = 100;
 
     private final List<UrlTextChangeListener> mUrlTextChangeListeners = new ArrayList<>();
 
@@ -314,7 +326,10 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate, UrlBar.Url
         for (int i = 0; i < clipData.getItemCount(); i++) {
             builder.append(clipData.getItemAt(i).coerceToText(context));
         }
-        return sanitizeTextForPaste(builder.toString());
+
+        String stringToPaste = sanitizeTextForPaste(builder.toString());
+        recordPasteMetrics(stringToPaste);
+        return stringToPaste;
     }
 
     @VisibleForTesting
@@ -345,6 +360,23 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate, UrlBar.Url
         for (int i = 0; i < mUrlTextChangeListeners.size(); i++) {
             mUrlTextChangeListeners.get(i).onTextChanged(
                     textWithoutAutocomplete, textWithAutocomplete);
+        }
+    }
+
+    private void recordPasteMetrics(String text) {
+        boolean isUrl = BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                                .isFullBrowserStarted()
+                && AutocompleteCoordinatorFactory.qualifyPartialURLQuery(text) != null;
+
+        long age = System.currentTimeMillis() - Clipboard.getInstance().getLastModifiedTimeMs();
+        RecordHistogram.recordCustomTimesHistogram("MobileOmnibox.LongPressPasteAge", age,
+                MIN_TIME_MILLIS, MAX_TIME_MILLIS, NUM_OF_BUCKETS);
+        if (isUrl) {
+            RecordHistogram.recordCustomTimesHistogram("MobileOmnibox.LongPressPasteAge.URL", age,
+                    MIN_TIME_MILLIS, MAX_TIME_MILLIS, NUM_OF_BUCKETS);
+        } else {
+            RecordHistogram.recordCustomTimesHistogram("MobileOmnibox.LongPressPasteAge.TEXT", age,
+                    MIN_TIME_MILLIS, MAX_TIME_MILLIS, NUM_OF_BUCKETS);
         }
     }
 }

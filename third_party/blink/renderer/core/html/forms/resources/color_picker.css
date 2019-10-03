@@ -7,6 +7,11 @@ body {
   font-family: sans-serif;
 }
 
+.color-picker-main {
+  border: 0;
+  padding: 0;
+}
+
 color-picker {
   background: #FFFFFF;
   display: flex;
@@ -136,6 +141,11 @@ format-toggler {
 
 format-toggler:hover {
   background-color: #F7F7F7;
+}
+
+#up-down-icon {
+  display: flex;
+  align-items: center;
 }
 
 format-label:not(.hidden-format-label) {

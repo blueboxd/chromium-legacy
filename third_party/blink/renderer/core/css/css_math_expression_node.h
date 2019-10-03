@@ -324,7 +324,6 @@ class CSSMathExpressionVariadicOperation final : public CSSMathExpressionNode {
 
  private:
   // Helper for iterating from the 2nd to the last operands
-  // TODO(crbug.com/825895): Is this Oilpan-safe?
   base::span<const Member<const CSSMathExpressionNode>> SecondToLastOperands()
       const {
     return base::make_span(std::next(operands_.begin()), operands_.end());

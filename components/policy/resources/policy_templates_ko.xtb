@@ -1205,7 +1205,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책이 설정되지 않아도 더 구체적인 정책 사용에 영향을 주지 않습니다.</translation>
 <translation id="2987155890997901449">ARC 사용</translation>
 <translation id="2987227569419001736">Web Bluetooth API 사용 조정</translation>
-<translation id="2989466284538293869">업로드 콘텐츠 규정 준수 검사</translation>
 <translation id="3011301228198307065"><ph name="PRODUCT_NAME" />의 기본 홈페이지 URL을 구성하며 사용자가 변경하지 못하게 차단합니다.
 
           홈페이지는 홈 버튼을 통해 열리는 페이지입니다. 시작 시 열리는 페이지는 RestoreOnStartup 정책으로 제어됩니다.
@@ -1734,7 +1733,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           설정하지 않거나 False로 설정하면 파일을 Google 드라이브에 전송할 수 있습니다.</translation>
 <translation id="3915395663995367577">proxy .pac 파일에 대한 URL</translation>
 <translation id="3925377537407648234">디스플레이 해상도 및 배율 설정</translation>
-<translation id="3936481697920057199">업로드 및 다운로드 콘텐츠 규정 준수 검사</translation>
 <translation id="3939893074578116847">온라인 상태를 모니터링하기 위해 관리 서버에 네트워크 패킷을 전송하여
       기기가 오프라인일 때 서버에서 감지할 수 있도록 합니다.
 
@@ -2024,18 +2022,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책 값은 밀리초 단위로 지정해야 하며 값은 유휴 지연보다 작거나 같게 고정됩니다.
 
           유휴 작업이 로그아웃 또는 종료인 경우에만 경고 메시지가 표시됩니다.</translation>
-<translation id="4342827592971649626">이 정책은 세이프 브라우징을 통한 사용자 다운로드 항목의 심층 검사를 제어합니다. 정책이 설정되지 않거나 기본값인 '파일을 검사하지 않음'으로 설정되면 세이프 브라우징에서 사용자 다운로드 항목을 검사하지 않습니다.
-
-      '파일 검사 금지'로 설정되면 사용자가 다운로드 항목을 검사할 수 없습니다. 이는 일부 사용자(예: 고급 보호 사용자)가 다운로드 항목을 검사하도록 허용하는 기본값과는 다릅니다. '파일 검사 금지'로 설정하면 이러한 사용자의 검사도 차단됩니다.
-
-      '사용자 다운로드 항목을 검사를 위해 보내기'로 설정되면 사용자 다운로드 항목이 네트워크를 통해 세이프 브라우징으로 전송되어 멀웨어 검사를 거치게 됩니다.
-
-      '사용자 업로드 항목을 검사를 위해 보내기'로 설정되면 사용자 업로드 항목이 네트워크를 통해 세이프 브라우징으로 전송되어 멀웨어 검사를 거치게 됩니다.
-
-      '사용자 업로드 및 다운로드 항목을 검사를 위해 보내기'로 설정되면 '사용자 업로드 항목을 검사를 위해 보내기' 및 '사용자 다운로드 항목을 검사를 위해 보내기'에서 설명된 규칙에 따라 작동합니다.
-
-      검사 결과가 사용자와 관리자에게 어떻게 표시되는지 자세히 알아보려면 <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> 및 <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> 정책을 참조하세요.</translation>
-<translation id="4344356660952451291">다운로드한 콘텐츠의 규정 준수를 검사해야 하는 도메인 목록</translation>
 <translation id="4346674324214534449">방해가 되는 광고가 포함된 사이트에서 광고를 차단할지 설정할 수 있습니다.
 
       이 정책을 2로 설정하면 방해가 되는 광고가 포함된 사이트에서 광고가 차단됩니다.
@@ -2166,7 +2152,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="4604931264910482931">기본 메시지 차단 목록 설정</translation>
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME" />에서 메타 태그 검사 건너뛰기</translation>
 <translation id="4625915093043961294">확장 프로그램 설치 허용목록 설정</translation>
-<translation id="4632261735235986857">파일 검사 금지</translation>
 <translation id="4632343302005518762"><ph name="PRODUCT_FRAME_NAME" />이(가) 목록에 있는 콘텐츠 유형을 처리하도록 허용</translation>
 <translation id="4632566332417930481">엔터프라이즈 정책에 의해 설치된 확장 프로그램에서는 Developer Tools 사용 금지, 다른 컨텍스트에서는 Developer Tools 사용 허용</translation>
 <translation id="4633786464238689684">맨 윗줄에 있는 키의 기본 동작을 기능 키로 변경합니다.
@@ -2309,7 +2294,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="4983201894483989687">오래된 플러그인 실행 허용</translation>
 <translation id="4986560318567565414">다른 브라우저에서 Chrome으로 전환하기 위한 경로입니다.</translation>
 <translation id="4988291787868618635">유휴 지연 시간에 도달하면 수행할 작업</translation>
-<translation id="5009903818924226868">콘텐츠 규정 준수 검사 안함</translation>
 <translation id="5032164758660626397">사용자의 대용량 파일 전송 차단</translation>
 <translation id="5047604665028708335">콘텐츠 팩 외부 사이트에 대한 액세스를 허용합니다.</translation>
 <translation id="5052081091120171147">이 정책을 사용하도록 설정하면 현재 기본 브라우저에서 강제로 인터넷 사용기록을 가져옵니다. 또한 가져오기 대화상자에 영향을 미칩니다.
@@ -2525,16 +2509,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
           이 정책을 'False'로 설정하면 사용자가 콘텐츠를 기기로 전송할 수 없게 됩니다. 반면에 'True'로 설정하면 사용자가 콘텐츠를 전송할 수 있습니다. 이 정책을 설정하지 않으면 사용자가 콘텐츠를 등록된 Chrome OS 기기로 전송할 수 없지만, 등록되지 않은 기기로는 전송할 수 있습니다.</translation>
 <translation id="5323200200131319468">로그인 화면에서 음성 피드백 사용 설정</translation>
-<translation id="5325625566921364045">엔터프라이즈 규칙 준수를 위해 업로드, 다운로드, 클립보드로부터 붙여넣기 또는 드래그 앤 드롭한 데이터를 <ph name="PRODUCT_NAME" />에서 검사하는 방법을 제어합니다.
-
-      정책이 설정되지 않거나 '없음'으로 설정되면 <ph name="PRODUCT_NAME" />에서 데이터의 규정 준수를 검사하지 않습니다.
-
-      정책이 '다운로드 검사'로 설정되어 있고 사용자가 <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" /> 정책의 URL에서 파일을 다운로드하려고 하면 <ph name="PRODUCT_NAME" />에서 다운로드된 데이터의 엔터프라이즈 규칙 준수 여부를 검사합니다.
-
-      정책이 '업로드 검사'로 설정되어 있고 사용자가 <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" />에 없는 도메인으로 파일을 업로드하려고 하면 <ph name="PRODUCT_NAME" />에서 업로드된 파일, 클립보드로부터 붙여넣은 데이터 또는 드래그 앤 드롭한 데이터의 엔터프라이즈 규칙 준수 여부를 검사합니다.
-
-      정책이 '업로드 및 다운로드 검사'로 설정되면 <ph name="PRODUCT_NAME" />은(는) '다운로드 검사' 및 '업로드 검사'에 설명된 규칙에 따라 작동합니다.
-      </translation>
 <translation id="532848608876725157">안전하지 않은 대체를 포함하여 DNS-over-HTTPS 사용</translation>
 <translation id="5329007337159326804">경고: 최대 TLS 버전 정책이 <ph name="PRODUCT_NAME" /> 버전 75쯤에서 완전히 삭제됩니다(2019년 6월경).
 
@@ -2595,7 +2569,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="5405289061476885481"><ph name="PRODUCT_OS_NAME" /> 로그인 화면에서 허용되는 키보드 레이아웃을 구성합니다.
 
       이 정책이 입력 방법 식별자 목록으로 설정되는 경우 주어진 입력 방법을 로그인 화면에서 사용할 수 있습니다. 첫 번째로 주어진 입력 수단이 사전 선택됩니다. 로그인 화면에서는 사용자 포드가 활성화되는데 이때 이 정책에서 주어진 입력 수단과 더불어 사용자가 마지막으로 사용한 입력 수단을 사용할 수 있습니다. 이 정책이 설정되지 않은 경우 로그인 화면의 입력 수단은 로그인 화면이 표시되는 언어에서 가져옵니다. 유효한 입력 수단 식별자가 아닌 값은 무시됩니다.</translation>
-<translation id="540659115481372611">다운로드 콘텐츠 규정 준수 검사</translation>
 <translation id="5412057811596122582">정책을 사용하도록 설정했거나 구성하지 않은 경우(기본값)
       오디오 캡처 액세스 요청이 있을 때 사용자에게 메시지가 표시됩니다.
       AudioCaptureAllowedUrls 목록에 포함된 URL일 경우 사용자에게 메시지를 표시하지 않아도 액세스 권한이 있으므로 메시지가 표시되지 않습니다.
@@ -3023,10 +2996,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
           이 정책을 설정하지 않은 경우 'DefaultJavaScriptSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
 <translation id="614662973812186053">이 정책은 Android 사용 및 진단 데이터 수집도 제어합니다.</translation>
-<translation id="6150961766041720393">업로드한 파일, 클립보드로부터 붙여넣은 데이터 또는 드래그 앤 드롭한 데이터의 규정 준수를 검사하지 않아도 되는 도메인의 목록입니다.  이 정책은 <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />이(가) 사용 설정된 경우에만 사용됩니다.
-
-      정책이 설정되지 않거나 빈 도메인 목록으로 설정되면 모든 콘텐츠의 규정 준수 검사가 실행됩니다.
-      </translation>
 <translation id="6153048425064249648">이 정책을 사용하면 브라우저 작업에 관한 정보를 Google 관리 콘솔에 업로드하는 <ph name="PRODUCT_NAME" /> 클라우드 보고 기능을 관리할 수 있습니다.
 
       정책이 설정되지 않거나 False로 설정되면 데이터가 수집 또는 업로드되지 않습니다.
@@ -3118,16 +3087,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="6281043242780654992">기본 메시지의 정책을 설정합니다. 차단된 기본 메시지 호스트는 허용 목록에 추가되지 않는 한 허용되지 않습니다.</translation>
 <translation id="6282799760374509080">오디오 캡처 허용 또는 거부</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6305895953906663275">이 정책은 사용자가 용량이 너무 커서 멀웨어 또는 콘텐츠 규정 준수 스캔을 위해 보낼 수 없는 파일(50MB 이상)을 업로드하거나 다운로드하려고 할 때 <ph name="PRODUCT_NAME" />의 작동 방식을 제어합니다.  이 제한은 검사가 사용 설정된 도메인 목록을 제어하는 정책, <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> 및 <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />에서 스캔이 필요하다고 결정한 파일에만 적용됩니다.
-
-      정책이 설정되지 않거나 '없음'으로 설정되면 <ph name="PRODUCT_NAME" />에서 사용자가 모든 크기의 파일을 업로드하거나 다운로드하도록 허용합니다.
-
-      정책이 '대용량 다운로드 차단'으로 설정되면 용량이 너무 커서 스캔할 수 없는 파일은 사용자에게 제공되기 전에 삭제됩니다.  다운로드하기 전에 항상 크기를 확인할 수는 없으므로 <ph name="PRODUCT_NAME" />에서 파일을 다운로드한 후 허용되는 크기 제한을 초과하는지 확인할 수도 있습니다.
-
-      정책이 '대용량 업로드 차단'으로 설정되면 용량이 너무 커서 스캔할 수 없는 파일은 업로드하도록 선택할 수 없습니다.
-
-      정책이 '대용량 파일 업로드 및 다운로드 차단'으로 설정되면 <ph name="PRODUCT_NAME" />은(는) '대용량 다운로드 차단' 및 '대용량 업로드 차단'에 설명된 규칙에 따라 작동합니다.
-      </translation>
 <translation id="6310223829319187614">사용자가 로그인할 때 도메인 이름 자동완성 기능을 사용합니다.</translation>
 <translation id="6315673513957120120">사용자가 SSL 오류가 있는 사이트를 탐색하면 Chrome에서 경고 페이지를 표시합니다. 기본적으로 또는 이 정책이 'true'로 설정된 경우 사용자는 이 경고 페이지를 클릭하여 탐색할 수 있습니다.
       이 정책을 'false'로 설정하면 사용자가 경고 페이지를 클릭하여 탐색할 수 없습니다.</translation>
@@ -3156,7 +3115,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책이 false로 설정된 경우 사용자 목록이 보고되지 않습니다.</translation>
 <translation id="6394350458541421998">이 정책은 <ph name="PRODUCT_OS_NAME" /> 버전 29를 기준으로 지원 중단되었습니다. 대신 PresentationScreenDimDelayScale 정책을 사용해 주시기 바랍니다.</translation>
 <translation id="6401669939808766804">사용자 로그아웃</translation>
-<translation id="6403746242226534223">방문한 URL의 세이프 브라우징 평판 실시간 확인</translation>
 <translation id="6406448383934634215">시작 시 액션으로 'URL 목록 열기'를 선택하면 열릴 URL 목록을 지정할 수 있습니다. 이 정책이 설정되지 않으면 시작 시 어떤 URL도 열리지 않습니다.
 
           이 정책은 'RestoreOnStartup' 정책이 'RestoreOnStartupIsURLs'로 설정된 경우에만 작동합니다.
@@ -3354,10 +3312,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       이 정책이 설정되지 않으면 MacOS, Android(비공개 DNS 또는 VPN이 사용 설정되지 않은 경우), ChromeOS에서 내장 DNS 클라이언트가 기본으로 사용 설정되며, 사용자는 chrome://flags를 수정하거나 명령줄 플래그를 사용하여 내장 DNS 클라이언트 사용 여부를 변경할 수 있습니다.</translation>
 <translation id="6843296367238757293">지원 중단된 정책입니다. 사용하지 마시기 바랍니다. https://support.google.com/chrome/a/answer/7643500에서 자세히 알아보세요.</translation>
-<translation id="6845546921986645941">정책이 사용 설정되면 <ph name="PRODUCT_NAME" />에서 비밀번호 재사용, 멀웨어 다운로드, 전면 광고, 콘텐츠 규정 미준수와 같은 안전하지 않은 이벤트를 분석을 위해 Google에 보고합니다.  콘텐츠 규정 미준수와 같은 일부 안전하지 않은 이벤트에는 이 검사를 사용 설정하는 다른 정책에 따라 검사가 적용됩니다.
-
-      정책이 사용 중지되거나 설정되지 않으면 <ph name="PRODUCT_NAME" />에서 안전하지 않은 이벤트를 보고하지 않습니다.
-      </translation>
 <translation id="684856667300805181">이 정책은 <ph name="PRODUCT_NAME" /> 68에서 삭제되었으며 <ph name="ARC_GLS_POLICY_NAME" />(으)로 교체되었습니다.</translation>
 <translation id="6851199885688265233">커서 강조표시 접근성 기능 사용</translation>
 <translation id="6856743875250214792">이 정책은 내부 테스트용으로만 사용되었으며 보안 문제를 일으킬 수 있기 때문에 M66에서 지원 중단되고 삭제됩니다.
@@ -3906,21 +3860,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 설정을 사용하면 <ph name="PRODUCT_NAME" />이(가) 지정된 언어를 사용합니다. 설정한 언어가 지원되지 않으면 'en-US'가 대신 사용됩니다.
 
       이 설정을 사용 중지하거나 설정하지 않으면 <ph name="PRODUCT_NAME" />은(는) 사용자가 지정한 기본 언어(설정한 경우)나 시스템 언어 또는 대체 언어인 'en-US'를 사용합니다.</translation>
-<translation id="7641363659597330616"><ph name="PRODUCT_NAME" />에서 사용자가 보안상 결정을 재정의하도록 허용하지 않고 완전히 차단할 다운로드의 유형을 설정합니다.
-
-      이 정책을 설정하면 <ph name="PRODUCT_NAME" />에서 특정 유형의 다운로드를 차단하며, 사용자가 보안 경고를 우회할 수 없게 됩니다.
-
-      '위험한 다운로드 차단' 옵션을 선택하면 모든 다운로드가 허용되지만, 세이프 브라우징 경고가 표시된 다운로드는 허용되지 않습니다.
-
-      '위험할 가능성이 있는 다운로드 차단' 옵션을 선택하면 모든 다운로드가 허용되지만, 위험할 가능성이 있다는 세이프 브라우징 경고가 표시된 다운로드는 허용되지 않습니다.
-
-      '모든 다운로드 차단' 옵션을 선택하면 모든 다운로드가 차단됩니다.
-
-      이 정책을 설정하지 않거나 '특별한 제한 없음' 옵션을 선택하면 세이프 브라우징 분석 결과에 따른 일반적인 보안 제한이 다운로드에 적용됩니다.
-
-      이러한 제한은 웹페이지 콘텐츠 및 '링크 다운로드...' 컨텍스트 메뉴 옵션에서 트리거된 다운로드에 적용됩니다. 또한 이러한 제한은 현재 표시된 페이지를 저장/다운로드하는 데는 적용되지 않으며, 페이지를 PDF로 저장하는 인쇄 옵션에도 적용되지 않습니다.
-
-      세이프 브라우징에 관해 자세히 알아보려면 https://developers.google.com/safe-browsing 페이지를 참조하세요.</translation>
 <translation id="7643883929273267746"><ph name="PRODUCT_NAME" />에 표시되는 계정 제한</translation>
 <translation id="7644825865811580663">이 정책이 'true'로 설정되면 <ph name="PRODUCT_NAME" />이(가) 처음 실행될 때 표시되는 첫 번째 창을 무조건 최대화합니다.
       이 정책이 'false'로 설정되거나 설정되지 않으면 첫 번째로 표시되는 창이 최대화될지는 화면 크기에 따라 결정됩니다.</translation>
@@ -3962,10 +3901,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="7713608076604149344">다운로드 제한</translation>
 <translation id="7715711044277116530">프레젠테이션 모드에서 화면 어둡게 하기 지연 시간이 조정되는 비율</translation>
 <translation id="7717938661004793600"><ph name="PRODUCT_OS_NAME" /> 접근성 기능을 구성합니다.</translation>
-<translation id="7744220323108979821">로컬 저장소에 저장하기 전에 다운로드한 콘텐츠의 규정 준수를 검사해야 하는 도메인 목록입니다.  이 정책은 <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />이(가) 사용 설정된 경우에만 사용됩니다.
-
-      정책이 설정되지 않거나 빈 도메인 목록으로 설정되면 다운로드한 콘텐츠의 규정 준수 검사가 실행되지 않습니다.
-      </translation>
 <translation id="7747447585227954402">기기가 <ph name="PRODUCT_OS_NAME" />에서 <ph name="PLUGIN_VM_NAME" />을(를) 사용하도록 허용합니다.</translation>
 <translation id="7749402620209366169">사용자 지정 PIN 대신 원격 액세스 호스트에 대한 2단계 인증을 사용하도록 설정합니다.
 
@@ -4377,7 +4312,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
           예제 패턴은 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started 페이지를 참조하세요.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">브라우저 기록 저장 사용 중지</translation>
-<translation id="8495279065011513838">콘텐츠 규정 준수 확인</translation>
 <translation id="8499172469244085141">기본 설정(사용자가 변경할 수 있음)</translation>
 <translation id="849962487677588458">이 정책은 지원이 중단되었으며 곧 Chrome 78에서 삭제될 예정입니다. 이를 대체하는 정책은 없습니다.
 
@@ -4481,7 +4415,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="8685024486845674965">비밀번호가 재사용되어 비밀번호 보호 경고가 실행됨</translation>
 <translation id="8693243869659262736">내장 DNS 클라이언트 사용</translation>
 <translation id="8698286761337647563">SAML 사용자의 비밀번호가 만료되기 며칠 전에 알림을 표시할지 설정합니다.</translation>
-<translation id="870193046368370542">업로드한 콘텐츠의 규정 준수를 검사하지 않아도 되는 도메인 목록</translation>
 <translation id="8703488928438047864">보드 상태 보고</translation>
 <translation id="8704831857353097849">사용할 수 없는 플러그인 목록</translation>
 <translation id="8711086062295757690">해당 검색 공급자로 검색할 때 검색주소창에서 사용되는 단축키 키워드를 지정합니다.

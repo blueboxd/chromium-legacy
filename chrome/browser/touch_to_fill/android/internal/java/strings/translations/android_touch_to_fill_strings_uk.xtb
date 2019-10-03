@@ -1,5 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
+<translation id="1717486229951421299">Список облікових даних, які вставляються дотиком, відкрито на половину висоти екрана.</translation>
+<translation id="207576718733492531">Список облікових даних, які вставляються дотиком, закритий.</translation>
 <translation id="2410754283952462441">Виберіть обліковий запис</translation>
+<translation id="3399357656427473483">Список облікових даних, які вставляються дотиком.</translation>
+<translation id="5441504010984421144">Список облікових даних, які вставляються дотиком, відкрито на всю висоту екрана.</translation>
+<translation id="5458743933922296641">Увійдіть в обліковий запис на сайті <ph name="SITE_NAME" /> у Chrome</translation>
 </translationbundle>

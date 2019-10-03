@@ -6,11 +6,14 @@
 #define SERVICES_TRACING_PERFETTO_CONSUMER_HOST_H_
 
 #include <memory>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
 #include "base/threading/sequence_bound.h"
 #include "base/timer/timer.h"
@@ -18,6 +21,10 @@
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/consumer.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/tracing_service.h"
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace service_manager {
 struct BindSourceInfo;
@@ -76,6 +83,7 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
     void DisableTracingAndEmitJson(
         const std::string& agent_label_filter,
         mojo::ScopedDataPipeProducerHandle stream,
+        bool privacy_filtering_enabled,
         DisableTracingAndEmitJsonCallback callback) override;
 
    private:

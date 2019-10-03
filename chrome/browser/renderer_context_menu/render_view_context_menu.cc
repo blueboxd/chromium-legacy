@@ -61,6 +61,7 @@
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_context_menu_observer.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_context_menu_observer.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_utils.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
@@ -75,6 +76,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/exclusive_access/keyboard_lock_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
@@ -364,13 +366,14 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES, 107},
        {IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE, 108},
        {IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES, 109},
+       {IDC_CONTENT_CONTEXT_GENERATE_QR_CODE, 110},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 110}});
+       {0, 111}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -1492,12 +1495,16 @@ void RenderViewContextMenu::AppendPageItems() {
                                   IDS_CONTENT_CONTEXT_SAVEPAGEAS);
   menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
   AppendMediaRouterItem();
+
+  // Send-Tab-To-Self (user's other devices), page level.
+  bool send_tab_to_self_menu_present = false;
   if (GetBrowser() &&
       send_tab_to_self::ShouldOfferFeature(
           GetBrowser()->tab_strip_model()->GetActiveWebContents())) {
     send_tab_to_self::RecordSendTabToSelfClickResult(
         send_tab_to_self::kContentMenu, SendTabToSelfClickResult::kShowItem);
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+    send_tab_to_self_menu_present = true;
     if (send_tab_to_self::GetValidDeviceCount(GetBrowser()->profile()) == 1) {
 #if defined(OS_MACOSX)
       menu_model_.AddItem(IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,
@@ -1534,9 +1541,26 @@ void RenderViewContextMenu::AppendPageItems() {
           send_tab_to_self_sub_menu_model_.get(), kSendTabToSelfIcon);
 #endif
     }
+  }
 
+  // Context menu item for QR Code Generator.
+  // This is presented alongside the send-tab-to-self items, though each may be
+  // present without the other due to feature experimentation. Therefore we
+  // may or may not need to create a new separator.
+  bool should_offer_qr_code_generator =
+      base::FeatureList::IsEnabled(kSharingQRCodeGenerator);
+  if (GetBrowser() && should_offer_qr_code_generator) {
+    if (!send_tab_to_self_menu_present)
+      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_GENERATE_QR_CODE,
+                                    IDS_CONTEXT_MENU_GENERATE_QR_CODE_PAGE);
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  } else if (send_tab_to_self_menu_present) {
+    // Close out sharing section if send-tab-to-self was present but QR
+    // generator was not.
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
+
   if (TranslateService::IsTranslatableURL(params_.page_url)) {
     std::unique_ptr<translate::TranslatePrefs> prefs(
         ChromeTranslateClient::CreateTranslatePrefs(
@@ -2031,6 +2055,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
     case IDC_SEND_TAB_TO_SELF:
     case IDC_SEND_TAB_TO_SELF_SINGLE_TARGET:
+    case IDC_CONTENT_CONTEXT_GENERATE_QR_CODE:
       return true;
 
     case IDC_CONTENT_LINK_SEND_TAB_TO_SELF:
@@ -2264,6 +2289,16 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kLinkMenu, SendTabToSelfClickResult::kClickItem);
       break;
+
+    case IDC_CONTENT_CONTEXT_GENERATE_QR_CODE: {
+      auto* web_contents =
+          GetBrowser()->tab_strip_model()->GetActiveWebContents();
+      auto* bubble_controller =
+          qrcode_generator::QRCodeGeneratorBubbleController::Get(web_contents);
+      bubble_controller->ShowBubble(params_.link_url);
+      // TODO(skare): Log a useraction here and in the page icon launch.
+      break;
+    }
 
     case IDC_RELOAD:
       embedder_web_contents_->GetController().Reload(

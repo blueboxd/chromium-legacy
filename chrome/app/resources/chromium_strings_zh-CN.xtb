@@ -72,7 +72,6 @@
 <translation id="3509308970982693815">请关闭所有 Chromium 窗口并重试。</translation>
 <translation id="352783484088404971">从Chromium中移除…</translation>
 <translation id="3575459661164320785">您的计算机上存在有害软件。Chromium 可以移除该软件、恢复您的设置并停用扩展程序，以确保您的浏览器能够重新正常运行。</translation>
-<translation id="3582788516608077514">正在更新 Chromium...</translation>
 <translation id="358997566136285270">Chromium 徽标</translation>
 <translation id="3639635944603682591">系统将会从此设备上删除该用户的浏览数据。要想恢复这些数据，请以“<ph name="USER_EMAIL" />”的身份登录 Chromium。</translation>
 <translation id="3713809861844741608">在 Chromium 新标签页中打开链接(&amp;T)</translation>
@@ -86,7 +85,6 @@
 <translation id="421369550622382712">在这里，您可以找到适用于 Chromium 的精彩应用、游戏、扩展程序和主题背景。</translation>
 <translation id="4216212958613226427">使用此语言显示 Chromium 界面</translation>
 <translation id="4222580632002216401">您现在已登录 Chromium！不过，管理员已停用同步功能。</translation>
-<translation id="4224199872375172890">Chromium 已是最新版本。</translation>
 <translation id="4230135487732243613">是否将您的 Chromium 数据与此帐号相关联？</translation>
 <translation id="4271805377592243930">获取有关 Chromium 的帮助</translation>
 <translation id="4285930937574705105">未知错误导致安装失败。如果 Chromium 正在运行，请将其关闭，然后重试。</translation>
@@ -98,6 +96,7 @@ Chromium 操作系统简介<ph name="LINK_END" /></translation>
 <translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS" /> 的身份登录。现在您可在已登录的所有设备上访问您的书签、历史记录和其他设置。</translation>
 <translation id="459535195905078186">Chromium 应用</translation>
 <translation id="4621240073146040695">即将更新到最新版本！重新启动 Chromium 即可完成更新。</translation>
+<translation id="4661006601577405669">Chromium 的后续版本将会自动安装。</translation>
 <translation id="4677944499843243528">其他计算机 (<ph name="HOST_NAME" />) 的另一个 Chromium 进程 (<ph name="PROCESS_ID" />) 好像正在使用此个人资料。Chromium 已锁定此个人资料以防止其受损。如果您确定其他进程目前未使用此个人资料，请为其解锁并重新启动 Chromium。</translation>
 <translation id="469338717132742108">获取有关 Chromium 操作系统的帮助</translation>
 <translation id="4708774505295300557">之前已有人在此计算机上以 <ph name="ACCOUNT_EMAIL_LAST" /> 的身份登录了 Chromium。请新建一个 Chromium 用户来单独保存您的信息。</translation>
@@ -128,9 +127,7 @@ Chromium 操作系统简介<ph name="LINK_END" /></translation>
 <translation id="5698481217667032250">以这种语言显示 Chromium</translation>
 <translation id="5820394555380036790">Chromium 操作系统</translation>
 <translation id="5862307444128926510">欢迎使用 Chromium</translation>
-<translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
 <translation id="5895138241574237353">重新启动</translation>
-<translation id="5906655207909574370">即将更新到最新版本！重新启动您的设备即可完成更新。</translation>
 <translation id="5987687638152509985">更新 Chromium 以开始同步</translation>
 <translation id="6013050204643758987">Chromium 操作系统是借助了其他<ph name="BEGIN_LINK_CROS_OSS" />开放源代码软件<ph name="END_LINK_CROS_OSS" />才得以问世，<ph name="BEGIN_LINK_LINUX_OSS" />Linux（测试版）<ph name="END_LINK_LINUX_OSS" />也是如此。</translation>
 <translation id="6040143037577758943">关闭</translation>
@@ -172,7 +169,6 @@ Chromium 操作系统简介<ph name="LINK_END" /></translation>
 <translation id="6868056391275687737">Chromium 的其他副本正在运行。若要更新，请关闭这些副本。</translation>
 <translation id="6893813176749746474">Chromium 已更新，但您已经至少 30 天未使用它了。</translation>
 <translation id="6964305034639999644">在 Chromium 无痕式窗口中打开链接(&amp;G)</translation>
-<translation id="6970811910055250180">正在更新设备...</translation>
 <translation id="6990124437352146030">Chromium 需要获得相应权限，才能允许此网站使用您的麦克风</translation>
 <translation id="705851970750939768">更新 Chromium</translation>
 <translation id="7066436765290594559">Chromium操作系统无法同步您的数据。请更新您的同步密码。</translation>
@@ -194,6 +190,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium 开发者版</translation>
 <translation id="7451052299415159299">Chromium 需要获得相应权限，才能允许此网站使用您的摄像头</translation>
 <translation id="7483335560992089831">无法安装与当前运行的版本相同的 Chromium。请关闭 Chromium 并重试。</translation>
+<translation id="751093125041325477">Chromium 的后续版本将会自动安装。下载完毕后，Chromium 会重启，然后您就可以开始使用了。</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium 将在 1 分钟后重新启动}other{Chromium 将在 # 分钟后重新启动}}</translation>
 <translation id="7549178288319965365">关于 Chromium 操作系统</translation>
 <translation id="7561906087460245826">一并清除 Chromium (<ph name="URL" />) 中的数据</translation>
@@ -215,7 +212,6 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7975919845073681630">这是 Chromium 的并行安装，您无法将此浏览器设为默认浏览器。</translation>
 <translation id="7979877361127045932">在 Chromium 菜单中隐藏</translation>
 <translation id="8013436988911883588">一旦 Chromium 获得了使用权限，网站便能请求您向其授予使用权限。</translation>
-<translation id="8030318113982266900">正在将您的设备更新至“<ph name="CHANNEL_NAME" />”版…</translation>
 <translation id="81770708095080097">此文件存在危险，因此 Chromium 已将其拦截。</translation>
 <translation id="8222496066431494154">请在您的手机上安装 Chromium。我们会将一条短信发送到您帐号的辅助电话号码：<ph name="PHONE_NUMBER" /></translation>
 <translation id="8248265253516264921">如果图片缺少有用的说明，则 Chromium 会尝试为您提供一条说明。为便于创建说明，系统会将图片发送给 Google。您可以随时在“设置”中关闭此功能。</translation>
@@ -230,7 +226,6 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="8586442755830160949">版权所有<ph name="YEAR" /> The Chromium Authors。保留所有权利。</translation>
 <translation id="8619360774459241877">正在启动 Chromium…</translation>
 <translation id="8621669128220841554">未指定的错误导致安装失败。请重新下载 Chromium。</translation>
-<translation id="8667808506758191620">您的 <ph name="DEVICE_TYPE" /> 是最新版本。</translation>
 <translation id="8682540261359803721">如果此页面中未显示某项设置，请在 <ph name="LINK_BEGIN" />
       Chromium 浏览器设置<ph name="LINK_END" />中查找</translation>
 <translation id="8697124171261953979">它还能够控制您启动Chromium后或通过多功能框进行搜索时系统显示的页面。</translation>

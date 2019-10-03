@@ -79,7 +79,8 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   const IntRect& FrameRect() const { return frame_rect_; }
 
   ScrollbarOverlayColorTheme GetScrollbarOverlayColorTheme() const;
-  void GetTickmarks(Vector<IntRect>&) const;
+  bool HasTickmarks() const;
+  Vector<IntRect> GetTickmarks() const;
   bool IsScrollableAreaActive() const;
 
   IntPoint ConvertFromRootFrame(const IntPoint&) const;
@@ -161,8 +162,9 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
     elastic_overscroll_ = elastic_overscroll;
   }
 
-  // Use setNeedsPaintInvalidation to cause the scrollbar (or parts thereof)
-  // to repaint.
+  // Use SetNeedsPaintInvalidation to cause the scrollbar (or parts thereof)
+  // to repaint. Here "track" includes track, buttons and tickmarks, i.e. all
+  // things except the thumb.
   bool TrackNeedsRepaint() const { return track_needs_repaint_; }
   void ClearTrackNeedsRepaint() { track_needs_repaint_ = false; }
   bool ThumbNeedsRepaint() const { return thumb_needs_repaint_; }

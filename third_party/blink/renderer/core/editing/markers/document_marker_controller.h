@@ -74,6 +74,7 @@ class CORE_EXPORT DocumentMarkerController final
                                  Color background_color);
   void AddSuggestionMarker(const EphemeralRange&,
                            const SuggestionMarkerProperties&);
+  void AddTextFragmentMarker(const EphemeralRange&);
 
   void MoveMarkers(const Text& src_node, int length, const Text& dst_node);
 
@@ -143,6 +144,7 @@ class CORE_EXPORT DocumentMarkerController final
   DocumentMarkerVector Markers() const;
   DocumentMarkerVector ComputeMarkersToPaint(const Text&) const;
 
+  bool PossiblyHasTextMatchMarkers() const;
   Vector<IntRect> LayoutRectsForTextMatchMarkers();
   void InvalidateRectsForAllTextMatchMarkers();
   void InvalidateRectsForTextMatchMarkersInNode(const Text&);

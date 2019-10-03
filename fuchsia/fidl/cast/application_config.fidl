@@ -16,11 +16,7 @@ table ApplicationConfig {
   /// implementation.
   3: string web_url;
 
-  /// Touch input policy to be applied to the application.
-  /// If true, then touch input is forced on.
-  /// If false, then touch input is disabled.
-  /// If unset, then the caller is allowed to enable or disable input.
-  4: bool touch_enabled_policy;
+  4: reserved;
 
   // If true, enable remote debugging for this application.
   // if false or unset, remote debugging is disabled for this application.

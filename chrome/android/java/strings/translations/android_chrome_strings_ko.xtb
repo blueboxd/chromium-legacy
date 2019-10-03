@@ -22,7 +22,6 @@
 <translation id="116280672541001035">사용</translation>
 <translation id="1171770572613082465">'인기 사이트' 버튼을 탭하여 인기 웹사이트를 확인하세요.</translation>
 <translation id="1173894706177603556">이름 바꾸기</translation>
-<translation id="1175310183703641346">북마크, 방문 기록, 비밀번호 등이 더 이상 Google 계정과 동기화되지 않습니다.</translation>
 <translation id="1178581264944972037">일시중지</translation>
 <translation id="1181037720776840403">삭제</translation>
 <translation id="1188239144602654184">AR 입력</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> 북마크에 추가됨</translation>
 <translation id="3744111561329211289">백그라운드 동기화</translation>
 <translation id="3771001275138982843">업데이트를 다운로드할 수 없음</translation>
+<translation id="3771033907050503522">시크릿 탭</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />블루투스를 사용 설정<ph name="END_LINK" />하여 페어링을 허용하세요.</translation>
 <translation id="3775705724665058594">기기로 전송</translation>
 <translation id="3778956594442850293">홈 화면에 추가됨</translation>
@@ -484,7 +484,6 @@
 <translation id="4719927025381752090">번역 옵션 제공</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" />에서 열기</translation>
 <translation id="4720982865791209136">Chrome을 개선하는 데 도움을 주세요. <ph name="BEGIN_LINK" />설문조사 참여하기<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">동기화 계정을 <ph name="ACCOUNT_EMAIL_OLD" />에서 <ph name="ACCOUNT_EMAIL_NEW" />(으)로 전환합니다. 기존 Chrome 데이터는 <ph name="MANAGED_DOMAIN" />에서 관리됩니다. 이렇게 하면 데이터가 이 기기에서 삭제되지만 <ph name="ACCOUNT_EMAIL_OLD" />에는 그대로 유지됩니다.</translation>
 <translation id="473775607612524610">업데이트</translation>
 <translation id="4738836084190194332">마지막 동기화 시간: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">새 탭 열기</translation>
@@ -668,13 +667,13 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="5937580074298050696"><ph name="AMOUNT" /> 저장됨</translation>
 <translation id="5939518447894949180">초기화</translation>
 <translation id="5942872142862698679">검색할 때 Google 사용</translation>
-<translation id="5944669582486359588">Chrome의 라이트 모드를 사용하면 페이지가 더 빠르게 로드되고 데이터가 최대 60퍼센트 절약됩니다. Google의 클라우드 기술이 내가 방문하는 페이지를 최적화해 줍니다.</translation>
 <translation id="5952764234151283551">접속하려는 페이지의 URL을 Google에 전송</translation>
 <translation id="5956665950594638604">새 탭에서 Chrome 고객센터 열기</translation>
 <translation id="5958275228015807058">다운로드에서 파일 및 페이지를 찾아보세요.</translation>
 <translation id="5962718611393537961">탭하여 접기</translation>
 <translation id="6000066717592683814">계속 Google 사용</translation>
 <translation id="6005538289190791541">추천 비밀번호</translation>
+<translation id="6036057147555329831">추가 ICU</translation>
 <translation id="6039379616847168523">다음 탭으로 이동</translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="6042308850641462728">더보기</translation>
@@ -815,7 +814,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="7029809446516969842">비밀번호</translation>
 <translation id="7053983685419859001">차단</translation>
 <translation id="7055152154916055070">다음 주소로의 리디렉션이 차단됨:</translation>
-<translation id="7062545763355031412">동의 및 계정 전환</translation>
 <translation id="7063006564040364415">동기화 서버에 연결할 수 없습니다.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1개 선택됨}other{#개 선택됨}}</translation>
 <translation id="7071521146534760487">계정 관리</translation>
@@ -1099,7 +1097,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="9139318394846604261">쇼핑</translation>
 <translation id="9155898266292537608">단어를 살짝 탭하여 검색할 수도 있습니다</translation>
 <translation id="9169507124922466868">탐색 기록이 절반 높이로 열림</translation>
-<translation id="9188680907066685419">관리 계정에서 로그아웃</translation>
 <translation id="9204836675896933765">파일 1개가 남았습니다.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">전화를 걸 수 없음</translation>
@@ -1108,7 +1105,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="932327136139879170">홈</translation>
 <translation id="938850635132480979">오류: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">마이크에 액세스</translation>
-<translation id="951339005376969845">기존 데이터를 삭제합니다. <ph name="FROM_ACCOUNT" />(으)로 전환하여 기존 데이터를 가져올 수 있습니다.</translation>
 <translation id="95817756606698420">중국에서 검색할 때 Chrome에서 <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />를 사용할 수 있습니다. <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 변경할 수 있습니다.</translation>
 <translation id="965817943346481315">사이트에서 방해가 되거나 사용자를 현혹하는 광고를 표시하는 경우 광고 차단(권장)</translation>
 <translation id="968900484120156207">방문한 페이지가 여기에 표시됩니다.</translation>

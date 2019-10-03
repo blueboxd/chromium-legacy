@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Ако користите ову апликацију, прихватате Chrome <ph name="BEGIN_LINK_TOS" />услове коришћења услуге<ph name="END_LINK_TOS" /> и <ph name="BEGIN_LINK_PRIVACY" />Обавештење о приватности<ph name="END_LINK_PRIVACY" />.</translation>
 <translation id="2147651015520127414">Chrome је потврдио да је <ph name="ISSUER" /> издао сертификат овог веб-сајта.</translation>
 <translation id="2199719347983604670">Подаци из Chrome синхронизације</translation>
-<translation id="2342981853652716282">Пријавите се у Chrome да би вам обележивачи, лозинке и други садржај били доступни на свим уређајима.</translation>
 <translation id="2347208864470321755">Када је ова функција укључена, Chrome ће нудити да преведе странице написане на другим језицима помоћу Google преводиоца. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Да бисте сачували слике, додирните Подешавања да бисте омогућили Chrome-у да користи слике</translation>
 <translation id="2576431527583832481">Chrome је управо постао бољи! Доступна је нова верзија.</translation>
@@ -52,5 +51,4 @@
 <translation id="840168496893712993">Неки програмски додаци изазивају отказивање Chrome-а. Покушајте да их деинсталирате.</translation>
 <translation id="8459495907675268833">Изабрани подаци су уклоњени из Chrome-а и са синхронизованих уређаја. Google налог можда има друге облике историје прегледања, попут претрага и активности у другим Google услугама на history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome може да користи веб-услуге да би побољшао доживљај прегледања. Можете опционално да онемогућите те услуге. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 </translationbundle>

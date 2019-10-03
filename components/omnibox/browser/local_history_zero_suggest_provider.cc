@@ -234,6 +234,11 @@ void LocalHistoryZeroSuggestProvider::DeleteMatch(
   // Prevent the deleted suggestion from being resuggested until the
   // corresponding URLs are asynchronously deleted.
   deleted_suggestions_set_.insert(match.contents);
+
+  // Immediately update the list of matches to reflect the match was deleted.
+  base::EraseIf(matches_, [&](const auto& item) {
+    return match.contents == item.contents;
+  });
 }
 
 LocalHistoryZeroSuggestProvider::LocalHistoryZeroSuggestProvider(

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/browser/printing/pdf_to_emf_converter.h"
 
-#include <Windows.h>
+#include <windows.h>
 
 #include "base/bind.h"
+#include "base/containers/span.h"
 #include "base/files/file_util.h"
 #include "base/hash/sha1.h"
 #include "base/memory/ref_counted_memory.h"
@@ -15,8 +16,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "chrome/browser/printing/pdf_to_emf_converter.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "printing/emf_win.h"
 #include "printing/metafile.h"
 #include "printing/pdf_render_settings.h"
@@ -58,7 +59,7 @@ std::string GetFileNameForPageNumber(const std::string& name, int page_number) {
 
 std::unique_ptr<ENHMETAHEADER> GetEmfHeader(const std::string& emf_data) {
   Emf emf;
-  if (!emf.InitFromData(emf_data.data(), emf_data.length()))
+  if (!emf.InitFromData(emf_data.data(), emf_data.size()))
     return nullptr;
 
   auto meta_header = std::make_unique<ENHMETAHEADER>();
@@ -90,9 +91,8 @@ void CompareEmfHeaders(const ENHMETAHEADER& expected_header,
 }
 
 std::string HashData(const char* data, size_t len) {
-  unsigned char buf[base::kSHA1Length];
-  base::SHA1HashBytes(reinterpret_cast<const unsigned char*>(data), len, buf);
-  return base::HexEncode(buf, sizeof(buf));
+  auto span = base::make_span(reinterpret_cast<const uint8_t*>(data), len);
+  return base::HexEncode(base::SHA1HashSpan(span));
 }
 
 class PdfToEmfConverterBrowserTest : public InProcessBrowserTest {
@@ -169,8 +169,8 @@ class PdfToEmfConverterBrowserTest : public InProcessBrowserTest {
   void ComparePageEmfHeader() {
     // TODO(crbug.com/781403): the generated data can differ visually. Until
     // this is fixed only checking the output size and parts of the EMF header.
-    ASSERT_EQ(expected_current_emf_data_.length(),
-              actual_current_emf_data_.length());
+    ASSERT_EQ(expected_current_emf_data_.size(),
+              actual_current_emf_data_.size());
 
     std::unique_ptr<ENHMETAHEADER> expected_header =
         GetEmfHeader(expected_current_emf_data_);
@@ -182,10 +182,10 @@ class PdfToEmfConverterBrowserTest : public InProcessBrowserTest {
   }
 
   void ComparePageEmfPayload() {
-    ASSERT_EQ(expected_current_emf_data_.length(),
-              actual_current_emf_data_.length());
-    ASSERT_GT(expected_current_emf_data_.length(), kHeaderSize);
-    size_t size = expected_current_emf_data_.length() - kHeaderSize;
+    ASSERT_EQ(expected_current_emf_data_.size(),
+              actual_current_emf_data_.size());
+    ASSERT_GT(expected_current_emf_data_.size(), kHeaderSize);
+    size_t size = expected_current_emf_data_.size() - kHeaderSize;
     EXPECT_EQ(HashData(expected_current_emf_data_.data() + kHeaderSize, size),
               HashData(actual_current_emf_data_.data() + kHeaderSize, size));
   }
@@ -195,8 +195,6 @@ class PdfToEmfConverterBrowserTest : public InProcessBrowserTest {
     base::FilePath test_data_dir;
     if (base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir))
       test_data_dir = test_data_dir.AppendASCII("printing");
-    else
-      test_data_dir.clear();
     return test_data_dir;
   }
 

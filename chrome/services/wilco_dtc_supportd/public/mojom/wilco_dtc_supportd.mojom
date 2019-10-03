@@ -54,7 +54,8 @@ enum WilcoDtcSupportdEvent {
 interface WilcoDtcSupportdServiceFactory {
   // Returns an interface to WilcoDtcSupportdService in response to the passed
   // interface to WilcoDtcSupportdClient.
-  GetService@0(WilcoDtcSupportdService& service, WilcoDtcSupportdClient client)
+  GetService@0(pending_receiver<WilcoDtcSupportdService> service,
+               pending_remote<WilcoDtcSupportdClient> client)
       => ();
 };
 

@@ -1256,7 +1256,11 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
   // TODO(crbug.com/931704): make sure to support the case where paint worklet
   // generated images are used in other raster work such as canvas2d.
   if (op->image.IsPaintWorklet()) {
-    DCHECK(params.image_provider);
+    // When rasterizing on the main thread (e.g. paint invalidation checking,
+    // see https://crbug.com/990382), an image provider may not be available, so
+    // we should draw nothing.
+    if (!params.image_provider)
+      return;
     ImageProvider::ScopedResult result =
         params.image_provider->GetRasterContent(DrawImage(op->image));
 

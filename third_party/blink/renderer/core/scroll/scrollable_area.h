@@ -199,7 +199,8 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual bool IsScrollCornerVisible() const = 0;
   virtual IntRect ScrollCornerRect() const = 0;
   void SetScrollCornerNeedsPaintInvalidation();
-  virtual void GetTickmarks(Vector<IntRect>&) const {}
+  virtual bool HasTickmarks() const { return false; }
+  virtual Vector<IntRect> GetTickmarks() const { return Vector<IntRect>(); }
 
   // Convert points and rects between the scrollbar and its containing
   // EmbeddedContentView. The client needs to implement these in order to be
@@ -332,7 +333,6 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
                    MaximumScrollOffset(orientation));
   }
 
-  virtual GraphicsLayer* LayerForContainer() const;
   virtual GraphicsLayer* LayerForScrolling() const { return nullptr; }
   virtual GraphicsLayer* LayerForHorizontalScrollbar() const { return nullptr; }
   virtual GraphicsLayer* LayerForVerticalScrollbar() const { return nullptr; }

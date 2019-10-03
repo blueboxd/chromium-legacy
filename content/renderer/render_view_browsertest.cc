@@ -628,8 +628,9 @@ TEST_F(RenderViewImplTest, EmulatingPopupRect) {
 
   {
     // Make a popup widget.
-    RenderWidget* popup_widget = nullptr;
-    view()->CreatePopupAndGetWidget(frame()->GetWebFrame(), &popup_widget);
+    blink::WebPagePopup* popup = view()->CreatePopup(frame()->GetWebFrame());
+    RenderWidget* popup_widget =
+        static_cast<RenderWidget*>(popup->GetClientForTesting());
     ASSERT_TRUE(popup_widget);
 
     // Set its size.
@@ -655,8 +656,9 @@ TEST_F(RenderViewImplTest, EmulatingPopupRect) {
 
   {
     // Make a popup again. It should inherit device emulation params.
-    RenderWidget* popup_widget = nullptr;
-    view()->CreatePopupAndGetWidget(frame()->GetWebFrame(), &popup_widget);
+    blink::WebPagePopup* popup = view()->CreatePopup(frame()->GetWebFrame());
+    RenderWidget* popup_widget =
+        static_cast<RenderWidget*>(popup->GetClientForTesting());
     ASSERT_TRUE(popup_widget);
 
     // Set its size again.

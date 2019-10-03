@@ -197,7 +197,7 @@ bool PowerStatus::BatteryImageInfo::ApproximatelyEqual(
   }
 
   // Otherwise, consider close values such as 42% and 45% as about the same.
-  return icon_badge == o.icon_badge && o.alert_if_low == o.alert_if_low &&
+  return icon_badge == o.icon_badge && alert_if_low == o.alert_if_low &&
          std::abs(charge_percent - o.charge_percent) < 5;
 }
 

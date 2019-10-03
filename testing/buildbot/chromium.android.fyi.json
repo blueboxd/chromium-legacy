@@ -379,26 +379,6 @@
         },
         "test": "unit_tests"
       }
-    ],
-    "junit_tests": [
-      {
-        "args": [
-          "--enable-features=BackForwardCache",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.chrome_junit_tests.filter"
-        ],
-        "name": "bf_cache_chrome_junit_tests",
-        "swarming": {},
-        "test": "chrome_junit_tests"
-      },
-      {
-        "args": [
-          "--enable-features=BackForwardCache",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_junit_tests.filter"
-        ],
-        "name": "bf_cache_content_junit_tests",
-        "swarming": {},
-        "test": "content_junit_tests"
-      }
     ]
   },
   "android-marshmallow-x86-fyi-rel": {

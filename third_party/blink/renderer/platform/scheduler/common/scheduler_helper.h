@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/task/sequence_manager/sequence_manager.h"
+#include "base/task/simple_task_executor.h"
 #include "base/time/tick_clock.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -134,6 +135,7 @@ class PLATFORM_EXPORT SchedulerHelper
   Observer* observer_;  // NOT OWNED
 
   UkmTaskSampler ukm_task_sampler_;
+  base::Optional<base::SimpleTaskExecutor> simple_task_executor_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerHelper);
 };

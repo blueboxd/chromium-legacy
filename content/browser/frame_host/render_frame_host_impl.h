@@ -328,6 +328,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // BrowserAccessibilityDelegate
   void AccessibilityPerformAction(const ui::AXActionData& data) override;
   bool AccessibilityViewHasFocus() const override;
+  void AccessibilityViewSetFocus() override;
   gfx::Rect AccessibilityGetViewBounds() const override;
   float AccessibilityGetDeviceScaleFactor() const override;
   void AccessibilityFatalError() override;

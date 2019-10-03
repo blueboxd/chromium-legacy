@@ -30,6 +30,7 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
@@ -166,10 +167,8 @@ std::unique_ptr<views::Button> CreateCircularImageButton(
     button->SetBorder(views::CreateRoundedRectBorder(
         kBorderThickness, kButtonRadius, GetDefaultSeparatorColor()));
   }
-  // Set circular highlight path.
-  auto path = std::make_unique<SkPath>();
-  path->addCircle(kButtonRadius, kButtonRadius, kButtonRadius);
-  button->SetProperty(views::kHighlightPathKey, path.release());
+
+  InstallCircleHighlightPathGenerator(button.get());
 
   return button;
 }

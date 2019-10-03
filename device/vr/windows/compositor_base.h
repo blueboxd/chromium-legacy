@@ -14,6 +14,7 @@
 #include "device/vr/util/sliding_average.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -169,7 +170,7 @@ class XRCompositorCommon : public base::Thread,
   gfx::RectF right_webxr_bounds_;
   gfx::Size source_size_;
 
-  mojom::XRPresentationClientPtr submit_client_;
+  mojo::Remote<mojom::XRPresentationClient> submit_client_;
   SubmitOverlayTextureCallback overlay_submit_callback_;
   RequestNotificationOnWebXrSubmittedCallback on_webxr_submitted_;
   bool webxr_has_pose_ = false;

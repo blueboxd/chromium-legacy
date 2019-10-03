@@ -20,6 +20,7 @@
 <translation id="1087788677726983142">நிகழ்வு வரிசை வடிப்பான்களை மறை</translation>
 <translation id="1088219014394087294">தலைப்புகள் இல்லை.</translation>
 <translation id="1106741348836243114">ஒலி மறுமொழியை (ஆடியோ செய்திகள்) இயக்கு அல்லது முடக்கு.</translation>
+<translation id="1114836634143403764">பரிந்துரை</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">இரண்டு விரல்களை மேலே ஸ்வைப் செய்யவும்</translation>
 <translation id="1124771028211010580">தற்போதைய காட்சி நடை: அருகருகே.</translation>
@@ -126,6 +127,7 @@
 <translation id="1845944666972354496">செயல்படுத்த, இருமுறை தட்டவும்</translation>
 <translation id="1846771122725914429">புளூடூத் பிரெய்ல் காட்சி</translation>
 <translation id="1865601187525349519">உரையின் இறுதி</translation>
+<translation id="1875375785454778375">தற்சமயம் இன்னொருவர் பயன்படுத்துகிறார்</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">தற்போதைய நேரம் மற்றும் தேதியைக் கூறவும்.</translation>
 <translation id="1902396333223336119">கலம்</translation>
@@ -146,6 +148,7 @@
 <translation id="2009187674653301682">சூப்பர்ஸ்கிரிப்ட் அல்ல</translation>
 <translation id="2010555995361223825">ChromeVox மெனுக்கள்</translation>
 <translation id="2045490512405922022">தேர்வுசெய்யப்படவில்லை</translation>
+<translation id="2049107626739254612">அனுமதி வழங்குவது தொடர்பான தகவல்</translation>
 <translation id="20601713649439366">முந்தைய கணிதக் கோவை இல்லை.</translation>
 <translation id="2063539687800151747">கல்வெட்டு</translation>
 <translation id="207477615537953741">பொருள்விளக்கம் முடக்கப்பட்டது</translation>
@@ -156,6 +159,7 @@
 <translation id="2110480898214777136">பக்கம், உரையாடல் அல்லது பிற கன்டெய்னருக்குள், தொடக்கத்திலிருந்து முடிவு அல்லது முடிவிலிருந்து தொடக்கத்திற்கு மடிக்கலாம்.</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">அணுகல் விசை:<ph name="KEY" /></translation>
+<translation id="2126597928985245619">இதன் பெயர் குறிப்பிடப்படவில்லை</translation>
 <translation id="2127747486437921899">இட்டாலிக்</translation>
 <translation id="2138345533858834403">திரையின் மேலிருக்கும் ChromeVox பேனலில், புதுப்பிக்கக்கூடிய பிரெய்லி காட்சியின்
         வெளியீட்டை உருவகப்படுத்தும்.</translation>
@@ -261,6 +265,7 @@
 <translation id="2911433807131383493">ChromeVox பயிற்சியைத் திற</translation>
 <translation id="2912405967290226587">மூன்று விரல்களை வலதுபுறமாக ஸ்வைப் செய்யவும்</translation>
 <translation id="2932083475399492303">வரியின் வகையை கட்டமைப்பு அல்லது தளவமைப்புக்கு இடையில் மாற்றவும்</translation>
+<translation id="293796669683825859">கருத்துகள்</translation>
 <translation id="2942710183375260152">டார்க் ஸ்லேட் புளூ</translation>
 <translation id="2943596527105977722">டார்க் கோல்டன் ராட்</translation>
 <translation id="2944762337049891859">பக்கம் ஏற்றப்பட்டதும், அதைத் தானாகவே படி.</translation>
@@ -337,6 +342,7 @@
 <translation id="3324983252691184275">அடர்சிவப்பு</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> ஸ்லைடர்</translation>
 <translation id="335581015389089642">பேச்சு</translation>
+<translation id="3356951775008366684">வார்த்தையின் ஒலியியல் உச்சரிப்பைத் தெரிவிக்கும்</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{கூட்டல் குறி}other{# கூட்டல் குறிகள்}}</translation>
 <translation id="338583716107319301">பிரிப்பான்</translation>
@@ -533,6 +539,7 @@
 <translation id="4763480195061959176">வீடியோ</translation>
 <translation id="4764692524839457597">இயல்பு</translation>
 <translation id="4772771694153161212">அடிக்கோடு இல்லை</translation>
+<translation id="4787577491510559358">தற்போதைய உருப்படியின் வடிவமைப்பைத் தெரிவிக்கும்</translation>
 <translation id="479989351350248267">தேடல்</translation>
 <translation id="4804818685124855865">தொடர்பைத் துண்டி</translation>
 <translation id="481165870889056555">தற்போதைய பக்கத்தின் தலைப்பை அறிவிக்கவும்</translation>
@@ -569,6 +576,7 @@
 <translation id="4983588134362688868">பக்கத்தின் மேல்பகுதிக்குச் செல்லவும்</translation>
 <translation id="4986606102545753256"><ph name="NAME" />, சாளரம்</translation>
 <translation id="4993152509206108683">பேச்சு விகிதம் <ph name="PERCENT" /> சதவீதம்</translation>
+<translation id="4994420463726586413">தற்போதைய பேட்டரி நிலையைத் தெரிவிக்கும்</translation>
 <translation id="4996716799442435517">பார்வை</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, ரேடியோ பட்டன் தேர்ந்தெடுக்கப்பட்டது</translation>
 <translation id="4997475792277222884">இணைப்பாக இல்லாத அடுத்த உருப்படி இல்லை.</translation>
@@ -730,7 +738,7 @@
 <translation id="6042826534790431634">செயல்படுத்த, தேடல்+Space விசைகளை அழுத்தவும்.</translation>
 <translation id="6044160928851315051">விஷுவல் திரையை முடக்கும்</translation>
 <translation id="6082768461603900813">அடிப்படை வழிசெலுத்துதல்</translation>
-<translation id="6118126368611144850">Chromeக்கான Android பயன்பாடுகள். உங்கள் சாதனத்தில் Play ஸ்டோர் இருந்தால், Android பயன்பாடுகளுடன்கூடிய ChromeVox இல் புத்தம்புதிய அம்சங்களைப் பெறுங்கள் (பொதுவில் வெளியாவதற்கு முன்பே). Play ஸ்டோரிலிருந்து Google Chrome Canaryஐப் பதிவிறக்கி, பரிசோதனைக்குரிய ஆதரவைப் பயன்படுத்திப் பார்க்கவும்.</translation>
+<translation id="6118126368611144850">Chromeக்கான Android ஆப்ஸ். உங்கள் சாதனத்தில் Play ஸ்டோர் இருந்தால், Android பயன்பாடுகளுடன்கூடிய ChromeVox இல் புத்தம்புதிய அம்சங்களைப் பெறுங்கள் (பொதுவில் வெளியாவதற்கு முன்பே). Play ஸ்டோரிலிருந்து Google Chrome Canaryஐப் பதிவிறக்கி, பரிசோதனைக்குரிய ஆதரவைப் பயன்படுத்திப் பார்க்கவும்.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">கலத்தின் இறுதி.</translation>
 <translation id="6122013438240733403">btn</translation>

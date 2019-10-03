@@ -16,11 +16,6 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 
 }  // namespace
 
-// Controls whether to enable Chrome OS Account Manager.
-// Rollout controlled by Finch.
-const base::Feature kAccountManager{"ChromeOSAccountManager",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether to enable Ambient mode feature.
 const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -217,10 +212,6 @@ const base::Feature kVideoPlayerNativeControls{
     "VideoPlayerNativeControls", base::FEATURE_ENABLED_BY_DEFAULT};
 
 ////////////////////////////////////////////////////////////////////////////////
-
-bool IsAccountManagerEnabled() {
-  return base::FeatureList::IsEnabled(kAccountManager);
-}
 
 bool IsAmbientModeEnabled() {
   return base::FeatureList::IsEnabled(kAmbientModeFeature);

@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
@@ -36,9 +35,73 @@
 
 namespace {
 
+const size_t kMaxClipboardSuggestionShownNumTimesSimpleSize = 20;
+
 bool IsMatchDeletionEnabled() {
   return base::FeatureList::IsEnabled(
       omnibox::kOmniboxRemoveSuggestionsFromClipboard);
+}
+
+void RecordCreatingClipboardSuggestionMetrics(
+    size_t current_url_suggested_times,
+    bool matches_is_empty,
+    AutocompleteMatchType::Type match_type,
+    const base::TimeDelta clipboard_contents_age) {
+  DCHECK(match_type == AutocompleteMatchType::CLIPBOARD_URL ||
+         match_type == AutocompleteMatchType::CLIPBOARD_TEXT ||
+         match_type == AutocompleteMatchType::CLIPBOARD_IMAGE);
+
+  base::UmaHistogramSparse(
+      "Omnibox.ClipboardSuggestionShownNumTimes",
+      std::min(current_url_suggested_times,
+               kMaxClipboardSuggestionShownNumTimesSimpleSize));
+  UMA_HISTOGRAM_BOOLEAN("Omnibox.ClipboardSuggestionShownWithCurrentURL",
+                        !matches_is_empty);
+  UMA_HISTOGRAM_LONG_TIMES_100("Omnibox.ClipboardSuggestionShownAge",
+                               clipboard_contents_age);
+  if (match_type == AutocompleteMatchType::CLIPBOARD_URL) {
+    base::UmaHistogramSparse(
+        "Omnibox.ClipboardSuggestionShownNumTimes.URL",
+        std::min(current_url_suggested_times,
+                 kMaxClipboardSuggestionShownNumTimesSimpleSize));
+    UMA_HISTOGRAM_BOOLEAN("Omnibox.ClipboardSuggestionShownWithCurrentURL.URL",
+                          !matches_is_empty);
+    UMA_HISTOGRAM_LONG_TIMES_100("Omnibox.ClipboardSuggestionShownAge.URL",
+                                 clipboard_contents_age);
+  } else if (match_type == AutocompleteMatchType::CLIPBOARD_TEXT) {
+    base::UmaHistogramSparse(
+        "Omnibox.ClipboardSuggestionShownNumTimes.TEXT",
+        std::min(current_url_suggested_times,
+                 kMaxClipboardSuggestionShownNumTimesSimpleSize));
+    UMA_HISTOGRAM_BOOLEAN("Omnibox.ClipboardSuggestionShownWithCurrentURL.TEXT",
+                          !matches_is_empty);
+    UMA_HISTOGRAM_LONG_TIMES_100("Omnibox.ClipboardSuggestionShownAge.TEXT",
+                                 clipboard_contents_age);
+  } else if (match_type == AutocompleteMatchType::CLIPBOARD_IMAGE) {
+    base::UmaHistogramSparse(
+        "Omnibox.ClipboardSuggestionShownNumTimes.IMAGE",
+        std::min(current_url_suggested_times,
+                 kMaxClipboardSuggestionShownNumTimesSimpleSize));
+    UMA_HISTOGRAM_BOOLEAN(
+        "Omnibox.ClipboardSuggestionShownWithCurrentURL.IMAGE",
+        !matches_is_empty);
+    UMA_HISTOGRAM_LONG_TIMES_100("Omnibox.ClipboardSuggestionShownAge.IMAGE",
+                                 clipboard_contents_age);
+  }
+}
+
+void RecordDeletingClipboardSuggestionMetrics(
+    AutocompleteMatchType::Type match_type,
+    const base::TimeDelta clipboard_contents_age) {
+  UMA_HISTOGRAM_LONG_TIMES_100("Omnibox.ClipboardSuggestionRemovedAge",
+                               clipboard_contents_age);
+  if (match_type == AutocompleteMatchType::CLIPBOARD_URL) {
+    UMA_HISTOGRAM_LONG_TIMES_100("Omnibox.ClipboardSuggestionRemovedAge.URL",
+                                 clipboard_contents_age);
+  } else if (match_type == AutocompleteMatchType::CLIPBOARD_TEXT) {
+    UMA_HISTOGRAM_LONG_TIMES_100("Omnibox.ClipboardSuggestionRemovedAge.TEXT",
+                                 clipboard_contents_age);
+  }
 }
 
 }  // namespace
@@ -94,6 +157,8 @@ void ClipboardProvider::Stop(bool clear_cached_results,
 }
 
 void ClipboardProvider::DeleteMatch(const AutocompleteMatch& match) {
+  RecordDeletingClipboardSuggestionMetrics(
+      match.type, clipboard_content_->GetClipboardContentAge());
   clipboard_content_->ClearClipboardContent();
 
   const auto pred = [&match](const AutocompleteMatch& i) {
@@ -149,9 +214,6 @@ void ClipboardProvider::AddCreatedMatchWithTracking(
     current_url_suggested_times_ = 1;
   }
 
-  base::UmaHistogramSparse(
-      "Omnibox.ClipboardSuggestionShownNumTimes",
-      std::min(current_url_suggested_times_, static_cast<size_t>(20)));
 
   // If the omnibox is not empty, add a default match.
   // This match will be opened when the user presses "Enter".
@@ -165,10 +227,10 @@ void ClipboardProvider::AddCreatedMatchWithTracking(
                             history_url_provider_, -1);
     matches_.push_back(verbatim_match);
   }
-  UMA_HISTOGRAM_BOOLEAN("Omnibox.ClipboardSuggestionShownWithCurrentURL",
-                        !matches_.empty());
-  UMA_HISTOGRAM_LONG_TIMES_100("Omnibox.ClipboardSuggestionShownAge",
-                               clipboard_contents_age);
+
+  RecordCreatingClipboardSuggestionMetrics(current_url_suggested_times_,
+                                           matches_.empty(), match.type,
+                                           clipboard_contents_age);
 
   matches_.push_back(match);
 }

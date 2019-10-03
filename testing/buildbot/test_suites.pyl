@@ -264,23 +264,6 @@
       },
     },
 
-    'bfcache_junit_tests': {
-      'bf_cache_chrome_junit_tests': {
-        'args': [
-          '--enable-features=BackForwardCache',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.chrome_junit_tests.filter'
-        ],
-        'test': 'chrome_junit_tests',
-      },
-      'bf_cache_content_junit_tests': {
-        'args': [
-          '--enable-features=BackForwardCache',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_junit_tests.filter'
-        ],
-        'test': 'content_junit_tests',
-      },
-    },
-
     'bfcache_linux_specific_gtests': {
       'bf_cache_browser_tests': {
         'args': [

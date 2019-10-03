@@ -394,9 +394,9 @@ void SplitViewController::SnapWindow(aura::Window* window,
         ->OnSelectorItemDragEnded(/*snap=*/true);
   }
 
-    // Update the divider position and window bounds before snapping a new
-    // window. Since the minimum size of |window| maybe larger than currently
-    // bounds in |snap_position|.
+  // Update the divider position and window bounds before snapping a new
+  // window. Since the minimum size of |window| maybe larger than currently
+  // bounds in |snap_position|.
   if (state_ != State::kNoSnap &&
       split_view_type_ == SplitViewType::kTabletType) {
     divider_position_ = GetClosestFixedDividerPosition();
@@ -1679,9 +1679,8 @@ void SplitViewController::RestoreTransformIfApplicable(aura::Window* window) {
     // bounds and its transformed bounds before to be snapped.
     const gfx::Rect snapped_bounds = GetSnappedWindowBoundsInScreen(
         window, (window == left_window_) ? LEFT : RIGHT);
-    const gfx::Transform starting_transform =
-        ScopedOverviewTransformWindow::GetTransformForRect(
-            gfx::RectF(snapped_bounds), gfx::RectF(item_bounds));
+    const gfx::Transform starting_transform = gfx::TransformBetweenRects(
+        gfx::RectF(snapped_bounds), gfx::RectF(item_bounds));
     SetTransformWithAnimation(window, starting_transform, gfx::Transform());
   }
 }

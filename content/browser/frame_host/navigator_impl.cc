@@ -428,15 +428,6 @@ void NavigatorImpl::RequestOpenURL(
   // redirects.  http://crbug.com/311721.
   std::vector<GURL> redirect_chain;
 
-  // Note that unlike NavigateFromFrameProxy, this uses the navigating
-  // RenderFrameHost's current SiteInstance, as that's where this navigation
-  // originated.
-  GURL dest_url(url);
-  if (!GetContentClient()->browser()->ShouldAllowOpenURL(current_site_instance,
-                                                         url)) {
-    dest_url = GURL(url::kAboutBlankURL);
-  }
-
   int frame_tree_node_id = -1;
 
   // Send the navigation to the current FrameTreeNode if it's destined for a
@@ -448,7 +439,7 @@ void NavigatorImpl::RequestOpenURL(
         render_frame_host->frame_tree_node()->frame_tree_node_id();
   }
 
-  OpenURLParams params(dest_url, referrer, frame_tree_node_id, disposition,
+  OpenURLParams params(url, referrer, frame_tree_node_id, disposition,
                        ui::PAGE_TRANSITION_LINK,
                        true /* is_renderer_initiated */);
   params.uses_post = uses_post;
@@ -517,24 +508,10 @@ void NavigatorImpl::NavigateFromFrameProxy(
           render_frame_host->frame_tree_node()->IsMainFrame()))
     return;
 
-  Referrer referrer_to_use(referrer);
-  SiteInstance* current_site_instance = render_frame_host->GetSiteInstance();
-  // It is important to pass in the source_site_instance if it is available
-  // (such as when navigating a proxy).  See https://crbug.com/656752.
-  if (!GetContentClient()->browser()->ShouldAllowOpenURL(
-          source_site_instance ? source_site_instance : current_site_instance,
-          url)) {
-    // It is important to return here, rather than rewrite the url to
-    // about:blank.  The latter won't actually have any effect when
-    // transferring, as NavigateToEntry will think that the transfer is to the
-    // same RFH that started the navigation and let the existing navigation (for
-    // the disallowed URL) proceed.
-    return;
-  }
-
   // TODO(creis): Determine if this transfer started as a browser-initiated
   // navigation.  See https://crbug.com/495161.
   bool is_renderer_initiated = true;
+  Referrer referrer_to_use(referrer);
   if (render_frame_host->web_ui()) {
     // Note that we hide the referrer for Web UI pages. We don't really want
     // web sites to see a referrer of "chrome://blah" (and some chrome: URLs
@@ -553,6 +530,7 @@ void NavigatorImpl::NavigateFromFrameProxy(
     return;
   }
 
+  SiteInstance* current_site_instance = render_frame_host->GetSiteInstance();
   base::Optional<url::Origin> final_initiator_origin = initiator_origin;
   GetContentClient()->browser()->OverrideNavigationParams(
       current_site_instance, &page_transition, &is_renderer_initiated,

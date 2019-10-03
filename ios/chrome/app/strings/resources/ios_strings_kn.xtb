@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">ಚಿತ್ರವನ್ನು ಉಳಿಸಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ</translation>
 <translation id="1180526666083833456">ಸಾಧನಗಳಾದ್ಯಂತ ಸಿಂಕ್ ಮಾಡಿ ಮತ್ತು ವೈಯಕ್ತೀಕರಿಸಿ.</translation>
 <translation id="1181037720776840403">ತೆಗೆದುಹಾಕು</translation>
+<translation id="1207113853726624428">ಹೊಸ ಹುಡುಕಾಟ</translation>
 <translation id="1209206284964581585">ಸದ್ಯಕ್ಕೆ ಮರೆಮಾಡಿ</translation>
 <translation id="1219674500290482172">ಇಂಟರ್ನೆಟ್‌ ಸಂಪರ್ಕ ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ.</translation>
 <translation id="122699739164161391">ಎಲ್ಲಾ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಮುಚ್ಚಿ</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಸೂಚಿಸಿ...</translation>
 <translation id="1870148520156231997">ಪಾಸ್‌ವರ್ಡ್‌ ತೋರಿಸಿ</translation>
 <translation id="1872096359983322073">ಟಾರ್ಚ್</translation>
-<translation id="1876721852596493031">ಬಳಕೆ ಡೇಟಾ ಕಳುಹಿಸಿ</translation>
 <translation id="1911619930368729126">Google ಡ್ರೈವ್‌ಗೆ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="1923342640370224680">ಕೊನೆಯ ಗಂಟೆ</translation>
 <translation id="1941314575388338491">ನಕಲಿಸಲು ಡಬಲ್‌ ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> ಓದದಿರುವ ಓದುವ ಪಟ್ಟಿ ಲೇಖನಗಳು.</translation>
 <translation id="2230173723195178503">ವೆಬ್‌ಪುಟ ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="2239626343334228536">ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತಿದೆ...</translation>
-<translation id="2256128224215992540">ಹುಡುಕಾಟ ಹಾಗೂ ಸೈಟ್ ಕುರಿತಾದ ಸಲಹೆಗಳು</translation>
 <translation id="2267753748892043616">ಖಾತೆ ಸೇರಿಸಿ</translation>
 <translation id="2268044343513325586">ಪರಿಷ್ಕರಿಸು</translation>
 <translation id="2273327106802955778">ಹೆಚ್ಚಿನ ಮೆನು</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">ಫೈಲ್‌ ತೆರೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="2718352093833049315">ಕೇವಲ ವೈ-ಫೈ ಮಾತ್ರ</translation>
 <translation id="2747003861858887689">ಹಿಂದಿನ ಕ್ಷೇತ್ರ</translation>
+<translation id="2773292004659987824">ಅಜ್ಞಾತ ಹುಡುಕಾಟ</translation>
 <translation id="2780046210906776326">ಯಾವುದೇ ಇಮೇಲ್ ಖಾತೆಗಳಿಲ್ಲ</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">ಟ್ಯಾಬ್ ಸ್ವಿಚರ್ ತ್ಯಜಿಸಿ</translation>
@@ -295,7 +295,6 @@
 <translation id="5197255632782567636">ಇಂಟರ್ನೆಟ್</translation>
 <translation id="5228579091201413441">ಸಿಂಕ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="5234764350956374838">ವಜಾಗೊಳಿಸಿ</translation>
-<translation id="5244474230056479698"><ph name="EMAIL" /> ಗೆ ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="5245322853195994030">ಸಿಂಕ್ ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="5271549068863921519">ಪಾಸ್‌ವರ್ಡ್ ಉಳಿಸಿ</translation>
 <translation id="5300589172476337783">ಪ್ರದರ್ಶಿಸಿ</translation>
@@ -501,6 +500,7 @@
 <translation id="8261506727792406068">ಅಳಿಸಿ</translation>
 <translation id="8281781826761538115">ಡಿಫಾಲ್ಟ್ - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">ಹೊಸ ಹುಡುಕಾಟ</translation>
+<translation id="8323906514956095947">ಹೆಚ್ಚಿನ ಟ್ಯಾಬ್ ಆಯ್ಕೆಗಳಿಗಾಗಿ ಬಟನ್ ಅನ್ನು ಸ್ಪರ್ಶಿಸಿ ಮತ್ತು ಹೋಲ್ಡ್‌ ಮಾಡಿ</translation>
 <translation id="8328777765163860529">ಎಲ್ಲವನ್ನು ಮುಚ್ಚಿರಿ</translation>
 <translation id="8407669440184693619">ಈ ಸೈಟ್‌ಗಾಗಿ ಯಾವುದೇ ಪಾಸ್‌ವರ್ಡ್ ಕಂಡುಬಂದಿಲ್ಲ</translation>
 <translation id="842017693807136194">ಇದರಿಂದ ಸೈನ್‌ ಇನ್‌ ಮಾಡಲಾಗಿದೆ</translation>

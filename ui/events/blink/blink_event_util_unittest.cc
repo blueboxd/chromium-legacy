@@ -67,11 +67,11 @@ TEST(BlinkEventUtilTest, NonPaginatedWebMouseWheelEvent) {
   blink::WebMouseWheelEvent event(
       blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
+  event.delta_units = ui::input_types::ScrollGranularity::kScrollByPixel;
   event.delta_x = 1.f;
   event.delta_y = 1.f;
   event.wheel_ticks_x = 1.f;
   event.wheel_ticks_y = 1.f;
-  event.scroll_by_page = false;
   std::unique_ptr<blink::WebInputEvent> webEvent =
       ScaleWebInputEvent(event, 2.f);
   EXPECT_TRUE(webEvent);
@@ -87,11 +87,11 @@ TEST(BlinkEventUtilTest, PaginatedWebMouseWheelEvent) {
   blink::WebMouseWheelEvent event(
       blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
+  event.delta_units = ui::input_types::ScrollGranularity::kScrollByPage;
   event.delta_x = 1.f;
   event.delta_y = 1.f;
   event.wheel_ticks_x = 1.f;
   event.wheel_ticks_y = 1.f;
-  event.scroll_by_page = true;
   std::unique_ptr<blink::WebInputEvent> webEvent =
       ScaleWebInputEvent(event, 2.f);
   EXPECT_TRUE(webEvent);

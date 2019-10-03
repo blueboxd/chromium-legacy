@@ -20,6 +20,7 @@
 <translation id="1087788677726983142">ইভেন্ট স্ট্রিম ফিল্টার লুকান</translation>
 <translation id="1088219014394087294">কোনো শিরোলেখ নেই৷</translation>
 <translation id="1106741348836243114">শব্দ প্রতিক্রিয়া  (earcons) চালু বা বন্ধ করুন৷</translation>
+<translation id="1114836634143403764">সাজেশন</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">দুই আঙ্গুল দিয়ে উপরের দিকে সোয়াইপ করুন</translation>
 <translation id="1124771028211010580">বর্তমান প্রদর্শন শৈলীটি পাশাপাশি।</translation>
@@ -126,6 +127,7 @@
 <translation id="1845944666972354496">চালু করতে ডবল ট্যাপ করুন</translation>
 <translation id="1846771122725914429">ব্লুটুথ ব্রেইল ডিসপ্লে</translation>
 <translation id="1865601187525349519">পাঠ্যের শেষে</translation>
+<translation id="1875375785454778375">কারা এই কন্টেন্টে কাজ করছেন</translation>
 <translation id="1876229593313240038">দস্তাবেজ</translation>
 <translation id="188130072164734898">বর্তমান সময় ও তারিখ বলে৷</translation>
 <translation id="1902396333223336119">সেল</translation>
@@ -146,6 +148,7 @@
 <translation id="2009187674653301682">সুপারস্ক্রিপ্ট নয়</translation>
 <translation id="2010555995361223825">ChromeVox মেনুগুলি</translation>
 <translation id="2045490512405922022">চেক লাগানো হয়নি</translation>
+<translation id="2049107626739254612">লেখার তথ্য</translation>
 <translation id="20601713649439366">এর পূর্বে কোনো গাণিতিক অভিব্যক্তি নেই৷</translation>
 <translation id="2063539687800151747">এপিগ্রাফ</translation>
 <translation id="207477615537953741">শব্দার্থিক বন্ধ আছে</translation>
@@ -156,6 +159,7 @@
 <translation id="2110480898214777136">কোনো পৃষ্ঠা, ডায়ালগ বা অন্যান্য কন্টেনারে শুরু থেকে শেষ বা শেষ থেকে শুরু পর্যন্ত পাঠ্য মোড়ান।</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">অ্যাক্সেস কী:<ph name="KEY" /></translation>
+<translation id="2126597928985245619">এই আইটেমের কোনও নাম দেওয়া নেই</translation>
 <translation id="2127747486437921899">তির্যক টেক্সট</translation>
 <translation id="2138345533858834403">স্ক্রিনের উপরের অংশে ChromeVox এর প্যানেলে
          রিফ্রেশযোগ্য ব্রেইল ডিসপ্লের আউটপুট অনুকরণ করা হয়।</translation>
@@ -261,6 +265,7 @@
 <translation id="2911433807131383493">ChromeVox টিউটোরিয়াল খুলুন</translation>
 <translation id="2912405967290226587">তিন আঙ্গুল দিয়ে ডানদিকে সোয়াইপ করুন</translation>
 <translation id="2932083475399492303">গঠনগত বা লেআউট লাইন টাইপের মধ্যে টগল করুন</translation>
+<translation id="293796669683825859">মন্তব্য</translation>
 <translation id="2942710183375260152">গাঢ় স্লেট নীল</translation>
 <translation id="2943596527105977722">গাঢ় সোনালী রড</translation>
 <translation id="2944762337049891859">পৃষ্ঠা লোড হওয়ার পর সেটি স্বয়ংক্রিয়ভাবে পড়ুন</translation>
@@ -337,6 +342,7 @@
 <translation id="3324983252691184275">টকটকে লাল</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> স্লাইডার</translation>
 <translation id="335581015389089642">স্পিচ</translation>
+<translation id="3356951775008366684">ধ্বনি-অনুযায়ী শব্দ উচ্চারণ করুন</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{যুক্ত}one{#টি যুক্ত চিহ্ন}other{#টি যুক্ত চিহ্ন}}</translation>
 <translation id="338583716107319301">পৃথককারী</translation>
@@ -533,6 +539,7 @@
 <translation id="4763480195061959176">ভিডিও</translation>
 <translation id="4764692524839457597">ডিফল্ট</translation>
 <translation id="4772771694153161212">নিচে আন্ডারলাইন দেওয়া নেই</translation>
+<translation id="4787577491510559358">বর্তমান আইটেমের ফরম্যাটিং নিয়ে বলুন</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">সংযোগ বিচ্ছিন্ন</translation>
 <translation id="481165870889056555">বর্তমান পৃষ্ঠার শিরোনাম ঘোষণা করুন</translation>
@@ -569,6 +576,7 @@
 <translation id="4983588134362688868">পৃষ্ঠাটির শীর্ষে ফিরে যান</translation>
 <translation id="4986606102545753256"><ph name="NAME" />, উইন্ডো</translation>
 <translation id="4993152509206108683"><ph name="PERCENT" /> শতাংশ হার</translation>
+<translation id="4994420463726586413">ব্যাটারিতে কত চার্জ আছে জানান</translation>
 <translation id="4996716799442435517">ভিসুয়াল</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, রেডিও বোতাম নির্বাচিত</translation>
 <translation id="4997475792277222884">এমন কোনও পরবর্তী আইটেম নেই যা লিঙ্ক নয়৷</translation>

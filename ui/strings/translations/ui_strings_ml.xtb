@@ -117,7 +117,6 @@
 <translation id="4971687151119236543">മുമ്പത്തെ മീഡിയ ട്രാക്ക്</translation>
 <translation id="5046499563572181734">ഇവിടെ ടാപ്പുചെയ്യുക</translation>
 <translation id="5076340679995252485">&amp;ഒട്ടിക്കുക</translation>
-<translation id="5137751499640340777">Google അസിസ്‌റ്റന്റ് ആരംഭിക്കുക</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">ഡിസ്‌ക്ലോഷർ ത്രികോണം</translation>
 <translation id="5278860589123563674">അയയ്ക്കാനായില്ല</translation>
@@ -154,6 +153,7 @@
 <translation id="6394627529324717982">കോമ</translation>
 <translation id="6397363302884558537">സംഭാഷണം നിർത്തുക</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{ഒരു സെക്കൻഡ് മുമ്പ്}other{# സെക്കൻഡ് മുമ്പ്}}</translation>
+<translation id="6417265370957905582">Google അസിസ്‌റ്റന്റ്</translation>
 <translation id="6430678249303439055">ഈ ആപ്പിൽ നിന്നുള്ള എല്ലാ അറിയിപ്പുകളും ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 സെക്കൻഡ് മുമ്പ്}other{# സെക്കൻഡ് മുമ്പ്}}</translation>
 <translation id="6539092367496845964">എന്തോ കുഴപ്പം സംഭവിച്ചു. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
@@ -196,7 +196,6 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{ഒന്നിലധികം വായിക്കാത്ത അറിയിപ്പ് ഉണ്ട്}other{#-ലധികം വായിക്കാത്ത അറിയിപ്പുകൾ ഉണ്ട്}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{ഒരു മിനിറ്റിൽ}other{# മിനിറ്റിൽ}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8098075892845277643">Google അസിസ്‌റ്റൻ്റ് ശബ്‌ദ ചോദ്യം ഉപയോഗിച്ച് തുടങ്ങൂ</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{ഒരു മണിക്കൂര്‍ മുമ്പ്}other{# മണിക്കൂർ മുമ്പ്}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{ഒരു സെക്കൻഡ് ശേഷിക്കുന്നു}other{# സെക്കൻഡ് ശേഷിക്കുന്നു}}</translation>
 <translation id="8144660977431427332">നിങ്ങളുടെ തിരയലുകൾ നൽകുന്നത് Google അസിസ്‌റ്റൻ്റ് ആണ്. <ph name="LEARN_MORE" /></translation>

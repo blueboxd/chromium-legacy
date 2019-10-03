@@ -244,6 +244,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   void Trace(blink::Visitor*) override;
 
   bool CompositorPendingForTesting() const { return compositor_pending_; }
+  void CommitAllUpdatesForTesting();
 
  protected:
   DispatchEventResult DispatchEventInternal(Event&) override;
@@ -332,6 +333,8 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   double TimelineTime() const;
   DocumentTimeline& TickingTimeline();
 
+  void ScheduleAsyncFinish();
+  void AsyncFinishMicrotask();
   void CommitFinishNotification();
 
   // Tracking the state of animations in dev tools.
@@ -384,6 +387,8 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   // control.
   bool pending_pause_;
   bool pending_play_;
+  bool pending_finish_notification_;
+  bool has_queued_microtask_;
 
   // This indicates timing information relevant to the animation's effect
   // has changed by means other than the ordinary progression of time

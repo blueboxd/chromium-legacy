@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Käyttämällä tätä sovellusta hyväksyt Chromen <ph name="BEGIN_LINK_TOS" />käyttöehdot<ph name="END_LINK_TOS" /> ja <ph name="BEGIN_LINK_PRIVACY" />tietosuojailmoituksen<ph name="END_LINK_PRIVACY" />.</translation>
 <translation id="2147651015520127414">Chrome vahvisti, että <ph name="ISSUER" /> on myöntänyt tämän sivuston varmenteen.</translation>
 <translation id="2199719347983604670">Chromen synkronoinnista saatu data</translation>
-<translation id="2342981853652716282">Kirjaudu sisään Chromeen, jotta voit käyttää kirjanmerkkejäsi, salasanojasi ja muita asetuksiasi kaikilla laitteillasi.</translation>
 <translation id="2347208864470321755">Kun tämä ominaisuus on käytössä, Chrome tarjoaa vierailla kielillä kirjoitettujen sivujen käännöksiä Google-kääntäjän kautta. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Anna Chromelle asetuksissa lupa käyttää kuviasi, niin kuvia voi tallentaa.</translation>
 <translation id="2576431527583832481">Chromesta tuli juuri entistä parempi! Uusi versio on saatavilla.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Auta parantamaan Chromea lähettämällä käyttötilastoja ja virheraportteja Googlelle.</translation>
 <translation id="415767770115540173">Saat paremman Googlen käyttökokemuksen Chromessa sijaintisi perusteella.</translation>
 <translation id="424864128008805179">Kirjaudutaanko ulos Chromesta?</translation>
+<translation id="4249068189593983585">Chrome-vinkki: Voit avata välilehtien lisäasetukset painamalla pitkään ylä- tai alapalkissa olevaa Näytä välilehdet ‑painiketta.</translation>
 <translation id="4523886039239821078">Jokin laajennus kaataa Chromen. Kokeile poistaa seuraavat:</translation>
 <translation id="5389212809648216794">Google Chrome ei voi käyttää kameraa, koska se on toisen sovelluksen käytössä.</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Lue Chromen päivitetyt käyttöehdot.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Jokin laajennus kaataa Chromen. Kokeile poistaa laajennuksia.</translation>
 <translation id="8459495907675268833">Valitut tiedot on poistettu Chromesta ja synkronoiduilta laitteilta. Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toimintaa muista Google-palveluista, osoitteessa history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome voi käyttää verkkopalveluita selauskokemuksesi parantamiseen. Voit halutessasi poistaa nämä palvelut käytöstä. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 </translationbundle>

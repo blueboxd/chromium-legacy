@@ -149,5 +149,18 @@ int MaxServerBloomFilterByteSize() {
                                                 250 * 1024 /* 250KB */);
 }
 
+base::Optional<net::EffectiveConnectionType>
+GetMaxEffectiveConnectionTypeForNavigationHintsFetch() {
+  std::string param_value = base::GetFieldTrialParamValueByFeature(
+      features::kOptimizationHintsFetching,
+      "max_effective_connection_type_for_navigation_hints_fetch");
+
+  // Use a default value.
+  if (param_value.empty())
+    return net::EFFECTIVE_CONNECTION_TYPE_3G;
+
+  return net::GetEffectiveConnectionTypeForName(param_value);
+}
+
 }  // namespace features
 }  // namespace optimization_guide

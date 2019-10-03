@@ -19,7 +19,6 @@
 #include "content/public/browser/resource_context.h"
 #include "fuchsia/engine/browser/web_engine_net_log.h"
 #include "fuchsia/engine/browser/web_engine_permission_manager.h"
-#include "fuchsia/engine/common.h"
 #include "services/network/public/cpp/network_switches.h"
 
 class WebEngineBrowserContext::ResourceContext
@@ -108,6 +107,11 @@ WebEngineBrowserContext::GetSpecialStoragePolicy() {
 
 content::PushMessagingService*
 WebEngineBrowserContext::GetPushMessagingService() {
+  return nullptr;
+}
+
+content::StorageNotificationService*
+WebEngineBrowserContext::GetStorageNotificationService() {
   return nullptr;
 }
 

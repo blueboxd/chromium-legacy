@@ -20,6 +20,7 @@
 <translation id="1087788677726983142">이벤트 스트림 필터 숨기기</translation>
 <translation id="1088219014394087294">제목이 없습니다.</translation>
 <translation id="1106741348836243114">음성 피드백(이어콘)을 사용 또는 사용 안함으로 설정합니다.</translation>
+<translation id="1114836634143403764">추천</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "fox", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">손가락 두 개를 사용하여 위로 스와이프</translation>
 <translation id="1124771028211010580">현재 디스플레이 스타일은 병렬식입니다.</translation>
@@ -126,6 +127,7 @@
 <translation id="1845944666972354496">활성화하려면 두 번 탭하세요.</translation>
 <translation id="1846771122725914429">블루투스 점자 디스플레이</translation>
 <translation id="1865601187525349519">텍스트의 끝</translation>
+<translation id="1875375785454778375">실시간 공동작업자</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">현재 날짜와 시간을 말합니다.</translation>
 <translation id="1902396333223336119">셀</translation>
@@ -146,6 +148,7 @@
 <translation id="2009187674653301682">위 첨자 아님</translation>
 <translation id="2010555995361223825">ChromeVox 메뉴</translation>
 <translation id="2045490512405922022">선택 안함</translation>
+<translation id="2049107626739254612">저자 정보</translation>
 <translation id="20601713649439366">이전 수식이 없습니다.</translation>
 <translation id="2063539687800151747">제명</translation>
 <translation id="207477615537953741">의미 해석 사용 안함</translation>
@@ -156,6 +159,7 @@
 <translation id="2110480898214777136">페이지, 대화 또는 기타 컨테이너 내부에서 처음부터 끝 또는 끝부터 처음에 래핑합니다.</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">액세스 키:<ph name="KEY" /></translation>
+<translation id="2126597928985245619">이 항목에 사용 가능한 텍스트가 없습니다</translation>
 <translation id="2127747486437921899">기울임꼴</translation>
 <translation id="2138345533858834403">화면 상단의 ChromeVox 패널에서
         새로고침할 수 있는 점자 디스플레이의 출력을 시뮬레이션합니다.</translation>
@@ -261,6 +265,7 @@
 <translation id="2911433807131383493">ChromeVox 가이드 열기</translation>
 <translation id="2912405967290226587">손가락 세 개를 사용하여 오른쪽으로 스와이프</translation>
 <translation id="2932083475399492303">구조 선/레이아웃 선 간의 선 유형 전환</translation>
+<translation id="293796669683825859">댓글</translation>
 <translation id="2942710183375260152">다크 슬레이트 블루</translation>
 <translation id="2943596527105977722">다크 골든로드</translation>
 <translation id="2944762337049891859">로드가 끝나면 자동으로 페이지를 읽습니다.</translation>
@@ -337,6 +342,7 @@
 <translation id="3324983252691184275">진홍색</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> 슬라이더</translation>
 <translation id="335581015389089642">음성</translation>
+<translation id="3356951775008366684">단어의 발음을 음성으로 안내합니다.</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{더하기 기호}other{더하기 기호 #개}}</translation>
 <translation id="338583716107319301">구분자</translation>
@@ -533,6 +539,7 @@
 <translation id="4763480195061959176">동영상</translation>
 <translation id="4764692524839457597">기본값</translation>
 <translation id="4772771694153161212">밑줄 아님</translation>
+<translation id="4787577491510559358">현재 항목의 서식을 음성으로 안내합니다.</translation>
 <translation id="479989351350248267">검색</translation>
 <translation id="4804818685124855865">연결 해제</translation>
 <translation id="481165870889056555">현재 페이지의 제목 알림</translation>
@@ -569,6 +576,7 @@
 <translation id="4983588134362688868">페이지 처음으로 이동</translation>
 <translation id="4986606102545753256"><ph name="NAME" />, 창</translation>
 <translation id="4993152509206108683">속도: <ph name="PERCENT" />퍼센트</translation>
+<translation id="4994420463726586413">현재 배터리 상태를 음성으로 안내합니다.</translation>
 <translation id="4996716799442435517">시각적</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, 라디오 버튼이 선택됨</translation>
 <translation id="4997475792277222884">링크가 아닌 다음 항목이 없습니다.</translation>

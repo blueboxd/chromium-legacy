@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">footer</translation>
 <translation id="2709516037105925701">Isi-Otomatis</translation>
 <translation id="2723001399770238859">audio</translation>
+<translation id="2725963129578236554">komentar</translation>
 <translation id="2746543609216772311">Tanggal harus <ph name="MINIMUM_DATE_OR_TIME" /> atau setelahnya.</translation>
 <translation id="2759744352195237655">tombol pop-up</translation>
 <translation id="2761667185364618470">Centang kotak ini jika Anda ingin melanjutkan.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">Perpanjang teks ini hingga <ph name="MIN_CHARACTERS" /> karakter atau lebih (saat ini Anda menggunakan <ph name="CURRENT_LENGTH" /> karakter).</translation>
 <translation id="383465348367842624">Bagian sebelum '<ph name="ATSIGN" />' tidak boleh berisi simbol '<ph name="INVALIDCHARACTER" />'.</translation>
 <translation id="3846214748874656680">Keluar dari layar penuh</translation>
+<translation id="3889183436948184105">revisi</translation>
 <translation id="3920932319529768807">kesimpulan</translation>
 <translation id="3924558731517983934">aplikasi</translation>
 <translation id="3944740393230681990">prolog</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">scrubber waktu audio</translation>
 <translation id="6443871981718447451">tampilkan menu subtitel</translation>
 <translation id="6453774872122745852">ucapan terima kasih</translation>
+<translation id="6475115390776617481">kehadiran langsung</translation>
 <translation id="648732519525291180">pemilih waktu</translation>
 <translation id="6550675742724504774">Opsi</translation>
 <translation id="6572309429103589720">Tata bahasa tidak valid</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">penyisipan</translation>
 <translation id="6989848892321993519">Perpanjang teks ini menjadi <ph name="MIN_CHARACTERS" /> karakter atau lebih (saat ini Anda menggunakan 1 karakter).</translation>
 <translation id="7033340931668032222">ke atas dan ke bawah untuk mengubah volume</translation>
+<translation id="7034405885550056553">saran</translation>
 <translation id="709897737746224366">Sesuaikan dengan format yang diminta.</translation>
 <translation id="7118469954320184356">Deskripsi tidak tersedia.</translation>
 <translation id="7139483182332611405">kata pengantar</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">keluaran</translation>
 <translation id="8750798805984357768">Pilih salah satu opsi berikut.</translation>
 <translation id="8808573423886751634">bab</translation>
+<translation id="8822203815165896261">info pembuatan</translation>
 <translation id="8845239796550121995">Sekarang sedang mentransmisi ke TV Anda</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8875657656876809964">Error pemutaran video</translation>

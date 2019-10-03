@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">การใช้แอปพลิเคชันนี้หมายความว่าคุณยอมรับ<ph name="BEGIN_LINK_TOS" />ข้อกำหนดในการให้บริการ<ph name="END_LINK_TOS" />และ<ph name="BEGIN_LINK_PRIVACY" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK_PRIVACY" />ของ Chrome</translation>
 <translation id="2147651015520127414">Chrome ยืนยันว่า <ph name="ISSUER" /> ได้ออกใบรับรองของเว็บไซต์นี้</translation>
 <translation id="2199719347983604670">ข้อมูลจากการซิงค์ของ Chrome</translation>
-<translation id="2342981853652716282">ลงชื่อเข้าใช้ Chrome เพื่อรับบุ๊กมาร์ก รหัสผ่าน และข้อมูลอื่นๆ ในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="2347208864470321755">เมื่อเปิดฟีเจอร์นี้ Chrome จะเสนอให้แปลหน้าต่างๆ ที่เขียนด้วยภาษาอื่นโดยใช้ Google แปลภาษา <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">ในการบันทึกรูปภาพ ให้แตะการตั้งค่าเพื่ออนุญาตให้ Chrome ใช้รูปภาพ</translation>
 <translation id="2576431527583832481">Chrome พัฒนาใหม่! มีรุ่นใหม่ให้ใช้งานแล้ว</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">ช่วยให้ Chrome ทำงานได้ดีขึ้นโดยส่งสถิติการใช้งานและรายงานข้อขัดข้องให้กับ Google</translation>
 <translation id="415767770115540173">รับประสบการณ์การใช้งาน Google ที่ดีขึ้นใน Chrome โดยอิงตามตำแหน่งของคุณ</translation>
 <translation id="424864128008805179">ต้องการออกจากระบบ Chrome ไหม</translation>
+<translation id="4249068189593983585">เคล็ดลับสำหรับ Chrome ถ้าต้องการดูตัวเลือกแท็บเพิ่มเติม ให้แตะปุ่ม "แสดงแท็บ" ค้างไว้ในแถบเครื่องมือ ซึ่งอยู่ที่ด้านล่างหรือด้านบนของหน้าจอ</translation>
 <translation id="4523886039239821078">ส่วนเสริมบางรายการทำให้ Chrome ขัดข้อง โปรดถอนการติดตั้ง</translation>
 <translation id="5389212809648216794">Google Chrome ไม่สามารถใช้กล้องถ่ายรูปเนื่องจากแอปพลิเคชันอื่นใช้งานอยู่</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />อ่านข้อกำหนดในการให้บริการของ Chrome ที่อัปเดต<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">ส่วนเสริมบางรายการทำให้ Chrome ขัดข้อง โปรดลองถอนการติดตั้งส่วนเสริมนั้น</translation>
 <translation id="8459495907675268833">ระบบได้นำข้อมูลที่เลือกไว้ออกจาก Chrome และอุปกรณ์ที่ซิงค์แล้ว บัญชี Google ของคุณอาจมีประวัติการท่องเว็บในรูปแบบอื่นๆ เช่น การค้นหาและกิจกรรมจากบริการอื่นๆ ของ Google ที่ history.google.com</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome อาจใช้บริการเว็บเพื่อปรับปรุงประสบการณ์การท่องเว็บของคุณ คุณสามารถเลือกปิดบริการเหล่านี้ได้ <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 </translationbundle>

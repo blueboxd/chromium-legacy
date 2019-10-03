@@ -5,6 +5,7 @@
 #include "extensions/renderer/worker_thread_util.h"
 
 #include "base/lazy_instance.h"
+#include "base/threading/thread_local.h"
 #include "content/public/renderer/worker_thread.h"
 #include "extensions/common/constants.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"

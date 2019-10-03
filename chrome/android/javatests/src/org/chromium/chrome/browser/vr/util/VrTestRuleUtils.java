@@ -22,10 +22,8 @@ import org.chromium.chrome.browser.vr.VrIntentDelegate;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.rules.CustomTabActivityVrTestRule;
 import org.chromium.chrome.browser.vr.rules.VrActivityRestrictionRule;
-import org.chromium.chrome.browser.vr.rules.VrModuleNotInstalled;
 import org.chromium.chrome.browser.vr.rules.VrTestRule;
 import org.chromium.chrome.browser.vr.rules.WebappActivityVrTestRule;
-import org.chromium.components.module_installer.Module;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -59,10 +57,6 @@ public class VrTestRuleUtils extends XrTestRuleUtils {
      */
     public static void evaluateVrTestRuleImpl(final Statement base, final Description desc,
             final VrTestRule rule, final ChromeLaunchMethod launcher) throws Throwable {
-        // Should be called before any other VR methods get called.
-        if (desc.getAnnotation(VrModuleNotInstalled.class) != null) {
-            Module.setForceUninstalled("vr");
-        }
         TestVrShellDelegate.setDescription(desc);
 
         VrTestRuleUtils.ensureNoVrActivitiesDisplayed();

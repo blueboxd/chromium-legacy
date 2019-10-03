@@ -48,7 +48,7 @@ class CORE_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
 
   bool ShouldRepaintAllPartsOnInvalidation() const override;
 
-  ScrollbarPart InvalidateOnThumbPositionChange(
+  ScrollbarPart PartsToInvalidateOnThumbPositionChange(
       const Scrollbar&,
       float old_position,
       float new_position) const override;
@@ -64,13 +64,9 @@ class CORE_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
   bool HasButtons(const Scrollbar&) override { return false; }
   bool HasThumb(const Scrollbar&) override;
 
-  IntRect BackButtonRect(const Scrollbar&,
-                         ScrollbarPart,
-                         bool painting = false) override;
-  IntRect ForwardButtonRect(const Scrollbar&,
-                            ScrollbarPart,
-                            bool painting = false) override;
-  IntRect TrackRect(const Scrollbar&, bool painting = false) override;
+  IntRect BackButtonRect(const Scrollbar&, ScrollbarPart) override;
+  IntRect ForwardButtonRect(const Scrollbar&, ScrollbarPart) override;
+  IntRect TrackRect(const Scrollbar&) override;
   int ThumbThickness(const Scrollbar&) override;
   int ThumbThickness() { return thumb_thickness_; }
 

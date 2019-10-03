@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -21,13 +20,6 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
-
-namespace {
-
-const char kPeripheralHeuristicHistogram[] =
-    "Plugin.PowerSaver.PeripheralHeuristicInitialDecision";
-
-}  // namespace
 
 PluginPowerSaverHelper::PeripheralPlugin::PeripheralPlugin(
     const url::Origin& content_origin,
@@ -112,15 +104,8 @@ PluginPowerSaverHelper::GetPeripheralContentStatus(
     return RenderFrame::CONTENT_STATUS_PERIPHERAL;
   }
 
-  auto status = PeripheralContentHeuristic::GetPeripheralStatus(
+  return PeripheralContentHeuristic::GetPeripheralStatus(
       origin_whitelist_, main_frame_origin, content_origin, unobscured_size);
-
-  if (record_decision == RenderFrame::RECORD_DECISION) {
-    UMA_HISTOGRAM_ENUMERATION(kPeripheralHeuristicHistogram, status,
-                              RenderFrame::CONTENT_STATUS_NUM_ITEMS);
-  }
-
-  return status;
 }
 
 void PluginPowerSaverHelper::WhitelistContentOrigin(

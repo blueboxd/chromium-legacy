@@ -15,7 +15,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
-import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
@@ -34,6 +33,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.ui.widget.displaystyle.UiConfig;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.modelutil.ListObservable;
 
 import java.util.List;
@@ -124,7 +124,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             RecordHistogram.recordBooleanHistogram(
                     "NewTabPage.ContentSuggestions.ArtificialDelay", false);
         } else {
-            PostTask.postDelayedTask(TaskTraits.USER_BLOCKING, addSectionAndFooter, sectionDelay);
+            PostTask.postDelayedTask(
+                    UiThreadTaskTraits.USER_BLOCKING, addSectionAndFooter, sectionDelay);
             RecordHistogram.recordBooleanHistogram(
                     "NewTabPage.ContentSuggestions.ArtificialDelay", true);
         }

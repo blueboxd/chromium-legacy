@@ -168,11 +168,6 @@ bool ContentBrowserClient::CanCommitURL(RenderProcessHost* process_host,
   return true;
 }
 
-bool ContentBrowserClient::ShouldAllowOpenURL(SiteInstance* site_instance,
-                                              const GURL& url) {
-  return true;
-}
-
 bool ContentBrowserClient::IsURLAcceptableForWebUI(
     BrowserContext* browser_context,
     const GURL& url) {

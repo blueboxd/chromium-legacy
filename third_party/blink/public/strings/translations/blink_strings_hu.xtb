@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">lábléc</translation>
 <translation id="2709516037105925701">Automatikus kitöltés</translation>
 <translation id="2723001399770238859">audio</translation>
+<translation id="2725963129578236554">megjegyzések</translation>
 <translation id="2746543609216772311">Az érték <ph name="MINIMUM_DATE_OR_TIME" /> vagy azt követő kell, hogy legyen.</translation>
 <translation id="2759744352195237655">előugró gomb</translation>
 <translation id="2761667185364618470">Kérjük, jelölje be ezt a jelölőnégyzetet, ha tovább kíván haladni.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">Kérjük, <ph name="MIN_CHARACTERS" /> karakter hosszú vagy annál hosszabb szöveget adjon meg (jelenleg <ph name="CURRENT_LENGTH" /> karaktert használ).</translation>
 <translation id="383465348367842624">A „<ph name="ATSIGN" />” előtti rész nem tartalmazhat „<ph name="INVALIDCHARACTER" />” karaktert.</translation>
 <translation id="3846214748874656680">Teljes képernyő – ki</translation>
+<translation id="3889183436948184105">változat</translation>
 <translation id="3920932319529768807">összefoglalás</translation>
 <translation id="3924558731517983934">alkalmazás</translation>
 <translation id="3944740393230681990">prológus</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">hang idővonalának vezérlője</translation>
 <translation id="6443871981718447451">a feliratok menü mutatása</translation>
 <translation id="6453774872122745852">köszönetnyilvánítás</translation>
+<translation id="6475115390776617481">élő közreműködés</translation>
 <translation id="648732519525291180">időválasztó</translation>
 <translation id="6550675742724504774">Beállítások</translation>
 <translation id="6572309429103589720">Nyelvtani hiba</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">beszúrás</translation>
 <translation id="6989848892321993519">Legalább <ph name="MIN_CHARACTERS" /> karakter hosszú szöveget adjon meg (jelenleg 1 karaktert használ).</translation>
 <translation id="7033340931668032222">fel és le a hangerő módosításához</translation>
+<translation id="7034405885550056553">javaslat</translation>
 <translation id="709897737746224366">Kérjük, tartsa magát a kívánt formátumhoz.</translation>
 <translation id="7118469954320184356">Nincs leírás.</translation>
 <translation id="7139483182332611405">bevezető</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">kimenet</translation>
 <translation id="8750798805984357768">Kérjük, válassza ki az egyik opciót.</translation>
 <translation id="8808573423886751634">fejezet</translation>
+<translation id="8822203815165896261">szerzői adatok</translation>
 <translation id="8845239796550121995">Átküldés a tévére folyamatban</translation>
 <translation id="8851136666856101339">fő</translation>
 <translation id="8875657656876809964">Videólejátszási hiba</translation>

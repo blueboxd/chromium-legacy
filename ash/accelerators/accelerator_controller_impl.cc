@@ -111,6 +111,8 @@ const char kDockedMagnifierToggleAccelNotificationId[] =
     "chrome://settings/accessibility/dockedmagnifier";
 const char kFullscreenMagnifierToggleAccelNotificationId[] =
     "chrome://settings/accessibility/fullscreenmagnifier";
+const char kSpokenFeedbackToggleAccelNotificationId[] =
+    "chrome://settings/accessibility/spokenfeedback";
 
 namespace {
 
@@ -120,7 +122,6 @@ using message_center::SystemNotificationWarningLevel;
 
 // Toast id and duration for Assistant shortcuts.
 constexpr char kAssistantErrorToastId[] = "assistant_error";
-const char kFeatureDisabledByPolicyToastId[] = "disabled_by_policy_error";
 constexpr int kToastDurationMs = 2500;
 
 constexpr char kVirtualDesksToastId[] = "virtual_desks_toast";
@@ -978,21 +979,42 @@ bool CanHandleToggleOverview() {
   return true;
 }
 
-void CreateAndShowStickyNotification(const int title_id,
-                                     const int message_id,
-                                     const std::string& notification_id) {
+void CreateAndShowStickyNotification(const base::string16& title,
+                                     const base::string16& message,
+                                     const std::string& notification_id,
+                                     const gfx::VectorIcon& icon) {
   std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
-      l10n_util::GetStringUTF16(title_id),
-      l10n_util::GetStringUTF16(message_id),
+      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title, message,
       base::string16() /* display source */, GURL(),
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierAccelerator),
-      message_center::RichNotificationData(), nullptr,
-      kNotificationAccessibilityIcon, SystemNotificationWarningLevel::NORMAL);
+      message_center::RichNotificationData(), nullptr, icon,
+      SystemNotificationWarningLevel::NORMAL);
   notification->set_priority(message_center::SYSTEM_PRIORITY);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
+}
+
+void CreateAndShowStickyNotification(
+    int title_id,
+    int message_id,
+    const std::string& notification_id,
+    const gfx::VectorIcon& icon = kNotificationAccessibilityIcon) {
+  CreateAndShowStickyNotification(l10n_util::GetStringUTF16(title_id),
+                                  l10n_util::GetStringUTF16(message_id),
+                                  notification_id, icon);
+}
+
+void NotifyAccessibilityFeatureDisabledByAdmin(
+    int feature_name_id,
+    const std::string& notification_id) {
+  CreateAndShowStickyNotification(
+      l10n_util::GetStringUTF16(
+          IDS_ASH_ACCESSIBILITY_FEATURE_SHORTCUT_DISABLED_TITLE),
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_ACCESSIBILITY_FEATURE_SHORTCUT_DISABLED_MSG,
+          l10n_util::GetStringUTF16(feature_name_id)),
+      notification_id, kLoginScreenEnterpriseIcon);
 }
 
 void RemoveStickyNotitification(const std::string& notification_id) {
@@ -1000,27 +1022,21 @@ void RemoveStickyNotitification(const std::string& notification_id) {
                                                            false /* by_user */);
 }
 
-void ShowDisabledByPolicyToastMessage(int feature_name_string_id) {
-  ShowToast(kFeatureDisabledByPolicyToastId,
-            l10n_util::GetStringFUTF16(
-                IDS_ASH_FEATURE_DISABLED_BY_POLICY,
-                l10n_util::GetStringUTF16(feature_name_string_id)));
-}
 void SetDockedMagnifierEnabled(bool enabled) {
   Shell::Get()->docked_magnifier_controller()->SetEnabled(enabled);
 
   // We need to show the notification only if the state actually changed.
   const bool actual_enabled =
       Shell::Get()->docked_magnifier_controller()->GetEnabled();
+  RemoveStickyNotitification(kDockedMagnifierToggleAccelNotificationId);
   if (enabled && actual_enabled) {
     CreateAndShowStickyNotification(IDS_DOCKED_MAGNIFIER_ACCEL_TITLE,
                                     IDS_DOCKED_MAGNIFIER_ACCEL_MSG,
                                     kDockedMagnifierToggleAccelNotificationId);
   } else if (enabled != actual_enabled) {
-    ShowDisabledByPolicyToastMessage(
-        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DOCKED_MAGNIFIER);
-  } else {
-    RemoveStickyNotitification(kDockedMagnifierToggleAccelNotificationId);
+    NotifyAccessibilityFeatureDisabledByAdmin(
+        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DOCKED_MAGNIFIER,
+        kDockedMagnifierToggleAccelNotificationId);
   }
 }
 
@@ -1059,16 +1075,16 @@ void SetFullscreenMagnifierEnabled(bool enabled) {
   // We need to show the notification only if the state actually changed.
   const bool actual_enabled =
       Shell::Get()->magnification_controller()->IsEnabled();
+  RemoveStickyNotitification(kFullscreenMagnifierToggleAccelNotificationId);
   if (enabled && actual_enabled) {
     CreateAndShowStickyNotification(
         IDS_FULLSCREEN_MAGNIFIER_ACCEL_TITLE,
         IDS_FULLSCREEN_MAGNIFIER_ACCEL_MSG,
         kFullscreenMagnifierToggleAccelNotificationId);
   } else if (enabled != actual_enabled) {
-    ShowDisabledByPolicyToastMessage(
-        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SCREEN_MAGNIFIER);
-  } else {
-    RemoveStickyNotitification(kFullscreenMagnifierToggleAccelNotificationId);
+    NotifyAccessibilityFeatureDisabledByAdmin(
+        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SCREEN_MAGNIFIER,
+        kFullscreenMagnifierToggleAccelNotificationId);
   }
 }
 
@@ -1079,15 +1095,15 @@ void SetHighContrastEnabled(bool enabled) {
   // Value could differ from one that were set because of higher-priority pref
   // source, eg. policy. See crbug.com/953245.
   const bool actual_enabled = accessibility_controller->high_contrast_enabled();
+  RemoveStickyNotitification(kHighContrastToggleAccelNotificationId);
   if (enabled && actual_enabled) {
     CreateAndShowStickyNotification(IDS_HIGH_CONTRAST_ACCEL_TITLE,
                                     IDS_HIGH_CONTRAST_ACCEL_MSG,
                                     kHighContrastToggleAccelNotificationId);
   } else if (enabled != actual_enabled) {
-    ShowDisabledByPolicyToastMessage(
-        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGH_CONTRAST_MODE);
-  } else {
-    RemoveStickyNotitification(kHighContrastToggleAccelNotificationId);
+    NotifyAccessibilityFeatureDisabledByAdmin(
+        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGH_CONTRAST_MODE,
+        kHighContrastToggleAccelNotificationId);
   }
 }
 
@@ -1148,9 +1164,11 @@ void HandleToggleSpokenFeedback() {
                                        A11Y_NOTIFICATION_SHOW);
   // If we tried to enable it and didn't succeed — show disabled by policy
   // toast.
+  RemoveStickyNotitification(kSpokenFeedbackToggleAccelNotificationId);
   if (!controller->spoken_feedback_enabled() && !old_value) {
-    ShowDisabledByPolicyToastMessage(
-        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SPOKEN_FEEDBACK);
+    NotifyAccessibilityFeatureDisabledByAdmin(
+        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SPOKEN_FEEDBACK,
+        kSpokenFeedbackToggleAccelNotificationId);
   }
 }
 

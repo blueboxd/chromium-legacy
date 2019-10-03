@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Nagamit</translation>
 <translation id="1171770572613082465">Tingnan ang mga sikat na website sa pamamagitan ng pag-tap sa button na "Mga nangungunang site"</translation>
 <translation id="1173894706177603556">Pangalanang muli</translation>
-<translation id="1175310183703641346">Hindi na isi-sync sa Google Account mo ang iyong mga bookmark, history, password, at higit pa</translation>
 <translation id="1178581264944972037">I-pause</translation>
 <translation id="1181037720776840403">Alisin</translation>
 <translation id="1188239144602654184">Pumasok sa AR</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">Naka-bookmark sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Pag-sync sa background</translation>
 <translation id="3771001275138982843">Hindi ma-download ang update</translation>
+<translation id="3771033907050503522">Mga Tab na Incognito</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />I-on ang Bluetooth<ph name="END_LINK" /> upang payagan ang pagpapares</translation>
 <translation id="3775705724665058594">Ipadala sa iyong mga device</translation>
 <translation id="3778956594442850293">Idinagdag sa Home screen</translation>
@@ -484,7 +484,6 @@ Maaaring may ibang uri ng history ng pag-browse ang iyong Google account tulad n
 <translation id="4719927025381752090">Mag-alok na magsalin</translation>
 <translation id="4720023427747327413">Buksan sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Tumulong na pahusayin ang Chrome. <ph name="BEGIN_LINK" />Sagutan ang survey<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">Lilipat ka ng account sa pag-sync mula sa <ph name="ACCOUNT_EMAIL_OLD" /> papunta sa <ph name="ACCOUNT_EMAIL_NEW" />. Pinamamahalaan ng <ph name="MANAGED_DOMAIN" /> ang iyong kasalukuyang data ng Chrome. Ide-delete nito ang iyong data mula sa device na ito, ngunit mananatili ang iyong data sa <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">I-update</translation>
 <translation id="4738836084190194332">Huling na-sync: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Magbukas ng bagong tab</translation>
@@ -668,13 +667,13 @@ Tiyaking pinagkakatiwalaan mo ang site na ito bago ka pumasok sa VR.</translatio
 <translation id="5937580074298050696"><ph name="AMOUNT" /> ang natipid</translation>
 <translation id="5939518447894949180">I-reset</translation>
 <translation id="5942872142862698679">Ginagamit ang Google para sa paghahanap</translation>
-<translation id="5944669582486359588">Sa Lite mode, mas mabilis na nilo-load ng Chrome ang mga page at gumagamit ng hanggang 60 porsyentong mas kaunting data. Ino-optimize ng Cloud technology ng Google ang mga page na binibisita mo.</translation>
 <translation id="5952764234151283551">Ipinapadala sa Google ang URL ng page na sinusubukan mong puntahan</translation>
 <translation id="5956665950594638604">Buksan ang Help Center ng Chrome sa bagong tab</translation>
 <translation id="5958275228015807058">Hanapin ang iyong mga file at page sa Mga Download</translation>
 <translation id="5962718611393537961">I-tap upang i-collapse</translation>
 <translation id="6000066717592683814">Panatilihin ang Google</translation>
 <translation id="6005538289190791541">Iminumungkahing password</translation>
+<translation id="6036057147555329831">Karagdagang ICU</translation>
 <translation id="6039379616847168523">Pumunta sa susunod na tab</translation>
 <translation id="6040143037577758943">Isara</translation>
 <translation id="6042308850641462728">Higit pa</translation>
@@ -815,7 +814,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7029809446516969842">Mga Password</translation>
 <translation id="7053983685419859001">I-block</translation>
 <translation id="7055152154916055070">Na-block ang pag-redirect:</translation>
-<translation id="7062545763355031412">Tanggapin at lumipat ng account</translation>
 <translation id="7063006564040364415">Hindi makakonekta sa server ng pag-sync.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ang napili}one{# ang napili}other{# ang napili}}</translation>
 <translation id="7071521146534760487">Pamahalaan ang account</translation>
@@ -1099,7 +1097,6 @@ HINDI magkakaroon ng access sa camera ang site. Ikaw lang ang makakakita ng mga 
 <translation id="9139318394846604261">Shopping</translation>
 <translation id="9155898266292537608">Makakapaghanap ka rin gamit ang mabilisang pag-tap sa isang salita</translation>
 <translation id="9169507124922466868">Nakabukas nang kalahati ang history ng pag-navigate</translation>
-<translation id="9188680907066685419">Mag-sign out sa pinamamahalaang account</translation>
 <translation id="9204836675896933765">1 file ang natitira</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Hindi makatawag</translation>
@@ -1108,7 +1105,6 @@ HINDI magkakaroon ng access sa camera ang site. Ikaw lang ang makakakita ng mga 
 <translation id="932327136139879170">Home</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">I-access ang iyong mikropono</translation>
-<translation id="951339005376969845">I-delete ang kasalukuyang data. Mababawi mo ito sa pamamagitan ng paglipat pabalik sa <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Maaaring gamitin ng Chrome ang <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> para sa paghahanap sa China. Maaari mo itong baguhin sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" />.</translation>
 <translation id="965817943346481315">I-block kung nagpapakita ang site ng mga nakakasagabal o nakakapanlinlang na ad (inirerekomenda)</translation>
 <translation id="968900484120156207">Lalabas dito ang mga page na binibisita mo</translation>

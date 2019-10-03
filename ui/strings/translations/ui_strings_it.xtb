@@ -117,7 +117,6 @@
 <translation id="4971687151119236543">Traccia precedente contenuti multimediali</translation>
 <translation id="5046499563572181734">Tocca qui</translation>
 <translation id="5076340679995252485">&amp;Incolla</translation>
-<translation id="5137751499640340777">Avvia l'Assistente Google</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Triangolo di apertura</translation>
 <translation id="5278860589123563674">Invio non riuscito</translation>
@@ -154,6 +153,7 @@
 <translation id="6394627529324717982">Virgola</translation>
 <translation id="6397363302884558537">Interrompi comandi vocali</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 sec fa}other{# sec fa}}</translation>
+<translation id="6417265370957905582">Assistente Google</translation>
 <translation id="6430678249303439055">Blocca tutte le notifiche da questa app</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 secondo fa}other{# secondi fa}}</translation>
 <translation id="6539092367496845964">Si è verificato un problema. Riprova più tardi.</translation>
@@ -196,7 +196,6 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Più di 1 notifica da leggere}other{Più di # notifiche da leggere}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{tra 1 m}other{tra # m}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8098075892845277643">Avvia query vocale dell'Assistente Google</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 ora fa}other{# ore fa}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sec rimanente}other{# sec rimanenti}}</translation>
 <translation id="8144660977431427332">Le tue ricerche sono basate sulla tecnologia dell'Assistente Google. <ph name="LEARN_MORE" /></translation>

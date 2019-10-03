@@ -245,8 +245,6 @@ inline ScrollOffset ToScrollDelta(ScrollDirectionPhysical dir, float delta) {
                                                      : ScrollOffset(0, delta);
 }
 
-typedef unsigned ScrollbarControlPartMask;
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLL_TYPES_H_

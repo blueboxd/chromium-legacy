@@ -6,8 +6,8 @@
 
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "third_party/libyuv/include/libyuv.h"
 #include "third_party/webrtc/common_video/include/video_frame_buffer.h"
+#include "third_party/webrtc/common_video/libyuv/include/webrtc_libyuv.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -85,19 +85,33 @@ scoped_refptr<media::VideoFrame> ConstructI420VideoFrame(
     const media::VideoFrame& source_frame) {
   // NV12 is the only supported format.
   DCHECK_EQ(source_frame.format(), media::PIXEL_FORMAT_NV12);
+  DCHECK_EQ(source_frame.storage_type(),
+            media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
   gfx::GpuMemoryBuffer* gmb = source_frame.GetGpuMemoryBuffer();
   if (!gmb || !gmb->Map()) {
     return nullptr;
   }
+
+  // Crop to the visible rectangle specified in |source_frame|.
+  const uint8_t* src_y = (reinterpret_cast<const uint8_t*>(gmb->memory(0)) +
+                          source_frame.visible_rect().x() +
+                          (source_frame.visible_rect().y() * gmb->stride(0)));
+  const uint8_t* src_uv =
+      (reinterpret_cast<const uint8_t*>(gmb->memory(1)) +
+       ((source_frame.visible_rect().x() / 2) * 2) +
+       ((source_frame.visible_rect().y() / 2) * gmb->stride(1)));
+
+  // Convert to I420 and scale to the natural size specified in |source_frame|.
   scoped_refptr<media::VideoFrame> i420_frame = media::VideoFrame::CreateFrame(
-      media::PIXEL_FORMAT_I420, source_frame.coded_size(),
-      source_frame.visible_rect(), source_frame.natural_size(),
+      media::PIXEL_FORMAT_I420, source_frame.natural_size(),
+      gfx::Rect(source_frame.natural_size()), source_frame.natural_size(),
       source_frame.timestamp());
   i420_frame->metadata()->MergeMetadataFrom(source_frame.metadata());
   const auto& i420_planes = i420_frame->layout().planes();
-  int ret = libyuv::NV12ToI420(
-      reinterpret_cast<const uint8_t*>(gmb->memory(0)), gmb->stride(0),
-      reinterpret_cast<const uint8_t*>(gmb->memory(1)), gmb->stride(1),
+  webrtc::NV12ToI420Scaler scaler;
+  scaler.NV12ToI420Scale(
+      src_y, gmb->stride(0), src_uv, gmb->stride(1),
+      source_frame.visible_rect().width(), source_frame.visible_rect().height(),
       i420_frame->data(media::VideoFrame::kYPlane),
       i420_planes[media::VideoFrame::kYPlane].stride,
       i420_frame->data(media::VideoFrame::kUPlane),
@@ -105,10 +119,9 @@ scoped_refptr<media::VideoFrame> ConstructI420VideoFrame(
       i420_frame->data(media::VideoFrame::kVPlane),
       i420_planes[media::VideoFrame::kVPlane].stride,
       i420_frame->coded_size().width(), i420_frame->coded_size().height());
+
   gmb->Unmap();
-  if (ret) {
-    return nullptr;
-  }
+
   return i420_frame;
 }
 
@@ -127,10 +140,16 @@ webrtc::VideoFrameBuffer::Type WebRtcVideoFrameAdapter::type() const {
 }
 
 int WebRtcVideoFrameAdapter::width() const {
+  if (frame_->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    return frame_->natural_size().width();
+  }
   return frame_->visible_rect().width();
 }
 
 int WebRtcVideoFrameAdapter::height() const {
+  if (frame_->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    return frame_->natural_size().height();
+  }
   return frame_->visible_rect().height();
 }
 
@@ -142,8 +161,8 @@ WebRtcVideoFrameAdapter::CreateFrameAdapter() const {
     if (!i420_frame) {
       return new rtc::RefCountedObject<
           FrameAdapter<webrtc::I420BufferInterface>>(
-          media::VideoFrame::CreateColorFrame(frame_->visible_rect().size(), 0u,
-                                              0x80, 0x80, frame_->timestamp()));
+          media::VideoFrame::CreateColorFrame(frame_->natural_size(), 0u, 0x80,
+                                              0x80, frame_->timestamp()));
     }
 
     // Keep |frame_| alive until |i420_frame| is destroyed.

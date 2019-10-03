@@ -35,7 +35,7 @@
         app:srcCompat="@drawable/logo_avatar_anonymous"/>
   </LinearLayout>
 
-  <org.chromium.chrome.browser.widget.MaterialProgressBar
+  <org.chromium.chrome.browser.ui.widget.MaterialProgressBar
       android:id="@+id/progress_bar"
       android:layout_width="match_parent"
       android:layout_height="2dp"

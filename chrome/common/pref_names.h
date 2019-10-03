@@ -978,6 +978,7 @@ extern const char kBuiltinCertificateVerifierEnabled[];
 extern const char kSharingVapidKey[];
 extern const char kSharingSyncedDevices[];
 extern const char kSharingFCMRegistration[];
+extern const char kSharingLocalSharingInfo[];
 
 #if !defined(OS_ANDROID)
 extern const char kHatsSurveyMetadata[];

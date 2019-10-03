@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Използвани</translation>
 <translation id="1171770572613082465">Вижте популярните уебсайтове, като докоснете бутона „Водещи сайтове“</translation>
 <translation id="1173894706177603556">Преименуване</translation>
-<translation id="1175310183703641346">Вашите отметки, история, пароли и др. повече няма да се синхронизират с профила ви в Google</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Премахване</translation>
 <translation id="1188239144602654184">Стартиране на AR</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">Отметката бе запазена в/ъв <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Синхронизиране на заден план</translation>
 <translation id="3771001275138982843">Актуализацията не можа да бъде изтеглена</translation>
+<translation id="3771033907050503522">Раздели „инкогнито“</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Включете Bluetooth<ph name="END_LINK" />, за да разрешите сдвояването</translation>
 <translation id="3775705724665058594">Изпращане до устройствата ви</translation>
 <translation id="3778956594442850293">Добавено към началния екран</translation>
@@ -484,7 +484,6 @@
 <translation id="4719927025381752090">Предложения за превод</translation>
 <translation id="4720023427747327413">Отваряне в <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Помогнете за подобряването на Chrome. <ph name="BEGIN_LINK" />Участвайте в анкетата<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">Превключвате профилите за синхронизиране от <ph name="ACCOUNT_EMAIL_OLD" /> към <ph name="ACCOUNT_EMAIL_NEW" />. Данните ви в Chrome се управляват от <ph name="MANAGED_DOMAIN" />. Така данните ви ще бъдат изтрити от това устройство, но ще останат в/ъв <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">Актуализиране</translation>
 <translation id="4738836084190194332">Последно синхронизиране: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Отваряне на нов раздел</translation>
@@ -668,13 +667,13 @@
 <translation id="5937580074298050696">Спестени: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Нулиране</translation>
 <translation id="5942872142862698679">За търсене ще се използва Google</translation>
-<translation id="5944669582486359588">В олекотения режим на Chrome страниците се зареждат по-бързо и се използват до 60 процента по-малко данни. Посещаваните от вас страници се оптимизират с помощта на базираната на облака технология на Google.</translation>
 <translation id="5952764234151283551">Изпраща до Google URL адреса на страницата, която искате да посетите</translation>
 <translation id="5956665950594638604">Отваряне на Помощния център на Chrome в нов раздел</translation>
 <translation id="5958275228015807058">Намерете файловете и страниците си в „Изтегляния“</translation>
 <translation id="5962718611393537961">Докоснете за свиване</translation>
 <translation id="6000066717592683814">Запазване на Google</translation>
 <translation id="6005538289190791541">Предложена парола</translation>
+<translation id="6036057147555329831">допълнителният ICU модул</translation>
 <translation id="6039379616847168523">Преминаване към следващия раздел</translation>
 <translation id="6040143037577758943">Затваряне</translation>
 <translation id="6042308850641462728">Още</translation>
@@ -815,7 +814,6 @@
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="7053983685419859001">Блокиране</translation>
 <translation id="7055152154916055070">Блокирано бе пренасочване:</translation>
-<translation id="7062545763355031412">Приемане и превключване на профилите</translation>
 <translation id="7063006564040364415">Не можа да се установи връзка със синхронизиращия сървър.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Избрана е 1}other{Избрани са #}}</translation>
 <translation id="7071521146534760487">Управление на профила</translation>
@@ -1099,7 +1097,6 @@
 <translation id="9139318394846604261">Пазаруване</translation>
 <translation id="9155898266292537608">Можете също да извършите търсене с бързо докосване на дума</translation>
 <translation id="9169507124922466868">Историята на навигацията е наполовина отворена</translation>
-<translation id="9188680907066685419">Излизане от управляван профил</translation>
 <translation id="9204836675896933765">Остава 1 файл</translation>
 <translation id="9206873250291191720">А</translation>
 <translation id="9209888181064652401">Не могат да се извършват обаждания</translation>
@@ -1108,7 +1105,6 @@
 <translation id="932327136139879170">Начална страница</translation>
 <translation id="938850635132480979">Грешка: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Достъп до микрофона</translation>
-<translation id="951339005376969845">Изтриване на съществуващите данни. Можете да ги извлечете, като превключите обратно към <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome може да използва <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> за търсене в Китай. Можете да промените това от <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" />.</translation>
 <translation id="965817943346481315">Блокиране, ако на сайта се показват натрапчиви или подвеждащи реклами (препоръчително)</translation>
 <translation id="968900484120156207">Посетените от вас страници се показват тук</translation>

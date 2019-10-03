@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">頁尾</translation>
 <translation id="2709516037105925701">自動填入</translation>
 <translation id="2723001399770238859">音訊</translation>
+<translation id="2725963129578236554">留言</translation>
 <translation id="2746543609216772311">必須輸入 <ph name="MINIMUM_DATE_OR_TIME" /> 或之後的值。</translation>
 <translation id="2759744352195237655">彈出式按鈕</translation>
 <translation id="2761667185364618470">如果你要繼續執行，請勾選這個核取方塊。</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">請將這段文字加長到 <ph name="MIN_CHARACTERS" /> 個字元以上 (目前使用字元數：<ph name="CURRENT_LENGTH" />)。</translation>
 <translation id="383465348367842624">「<ph name="ATSIGN" />」後面的部分不應包含「<ph name="INVALIDCHARACTER" />」符號。</translation>
 <translation id="3846214748874656680">結束全螢幕</translation>
+<translation id="3889183436948184105">修訂版本</translation>
 <translation id="3920932319529768807">結論</translation>
 <translation id="3924558731517983934">應用程式</translation>
 <translation id="3944740393230681990">序言</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">音訊時間點拖曳工具</translation>
 <translation id="6443871981718447451">顯示隱藏式輔助字幕選單</translation>
 <translation id="6453774872122745852">鳴謝</translation>
+<translation id="6475115390776617481">即時狀態</translation>
 <translation id="648732519525291180">時間選擇器</translation>
 <translation id="6550675742724504774">選項</translation>
 <translation id="6572309429103589720">文法錯誤</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">插入</translation>
 <translation id="6989848892321993519">請將這段文字加長到 <ph name="MIN_CHARACTERS" /> 個字元以上 (目前已有 1 個字元)。</translation>
 <translation id="7033340931668032222">上下鍵可調整音量</translation>
+<translation id="7034405885550056553">建議</translation>
 <translation id="709897737746224366">請符合要求的格式。</translation>
 <translation id="7118469954320184356">目前沒有說明。</translation>
 <translation id="7139483182332611405">前言</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">輸出</translation>
 <translation id="8750798805984357768">請選取其中一個選項。</translation>
 <translation id="8808573423886751634">章節</translation>
+<translation id="8822203815165896261">作者資訊</translation>
 <translation id="8845239796550121995">正在投放到電視上</translation>
 <translation id="8851136666856101339">主要元素</translation>
 <translation id="8875657656876809964">影片播放錯誤</translation>

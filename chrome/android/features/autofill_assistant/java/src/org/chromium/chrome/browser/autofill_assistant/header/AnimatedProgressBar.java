@@ -10,8 +10,8 @@ import android.animation.ValueAnimator;
 import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ui.widget.MaterialProgressBar;
 import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
-import org.chromium.chrome.browser.widget.MaterialProgressBar;
 
 import java.util.ArrayDeque;
 import java.util.Queue;

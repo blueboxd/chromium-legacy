@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Korzystając z tej aplikacji, akceptujesz <ph name="BEGIN_LINK_TOS" />Warunki korzystania z Chrome<ph name="END_LINK_TOS" /> i <ph name="BEGIN_LINK_PRIVACY" />Informacje na temat ochrony prywatności w Chrome<ph name="END_LINK_PRIVACY" />.</translation>
 <translation id="2147651015520127414">Chrome sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Dane synchronizacji Chrome</translation>
-<translation id="2342981853652716282">Zaloguj się w Chrome, by mieć dostęp do swoich zakładek, haseł i innych ustawień na wszystkich swoich urządzeniach.</translation>
 <translation id="2347208864470321755">Gdy ta funkcja jest włączona, Chrome oferuje tłumaczenie stron w innych językach przy użyciu Tłumacza Google. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Aby zapisać obrazy, kliknij Ustawienia i pozwól Chrome na użycie zdjęć</translation>
 <translation id="2576431527583832481">Chrome jest teraz jeszcze lepszy! Dostępna jest nowa wersja.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Pomóż ulepszyć Chrome, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
 <translation id="415767770115540173">Włączenie udostępniania lokalizacji w Chrome pozwala w pełni korzystać z usług Google.</translation>
 <translation id="424864128008805179">Wylogować z Chrome?</translation>
+<translation id="4249068189593983585">Wskazówka dla użytkowników Chrome. Aby zobaczyć więcej opcji kart, naciśnij i przytrzymaj przycisk Pokaż karty na pasku narzędzi, który znajduje się na dole lub na górze ekranu.</translation>
 <translation id="4523886039239821078">Niektóre dodatki mogą powodować awarie Chrome. Odinstaluj je.</translation>
 <translation id="5389212809648216794">Google Chrome nie może użyć aparatu, bo używa go już inna aplikacja</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Zapoznaj się ze zaktualizowanymi Warunkami korzystania z usługi Chrome<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Niektóre dodatki mogą powodować awarie Chrome. Spróbuj je odinstalować.</translation>
 <translation id="8459495907675268833">Wybrane dane zostały usunięte z Chrome i synchronizowanych urządzeń. Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w innych usługach Google, mogą być nadal dostępne na Twoim koncie Google na history.google.com</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Aby poprawić wygodę przeglądania, Google Chrome może korzystać z usług internetowych. Możesz je opcjonalnie wyłączyć. <ph name="BEGIN_LINK" />Dowiedz się więcej<ph name="END_LINK" /></translation>
 </translationbundle>

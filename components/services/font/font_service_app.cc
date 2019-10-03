@@ -10,10 +10,12 @@
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/services/font/fontconfig_matching.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "skia/ext/skia_utils_base.h"
 #include "ui/gfx/font_fallback_linux.h"
 #include "ui/gfx/font_render_params.h"
 
@@ -115,7 +117,8 @@ void FontServiceApp::MatchFamilyName(const std::string& family_name,
 
   // Stash away the returned path, so we can give it an ID (index)
   // which will later be given to us in a request to open the file.
-  int index = FindOrAddPath(result_identity.fString);
+  base::FilePath path(result_identity.fString.c_str());
+  size_t index = FindOrAddPath(path);
 
   mojom::FontIdentityPtr identity(mojom::FontIdentity::New());
   identity->id = static_cast<uint32_t>(index);
@@ -137,9 +140,8 @@ void FontServiceApp::OpenStream(uint32_t id_number,
 
   DCHECK_LT(id_number, static_cast<uint32_t>(paths_.size()));
   base::File file;
-  if (id_number < static_cast<uint32_t>(paths_.size())) {
-    file = GetFileForPath(base::FilePath(paths_[id_number].c_str()));
-  }
+  if (id_number < static_cast<uint32_t>(paths_.size()))
+    file = GetFileForPath(paths_[id_number]);
 
   std::move(callback).Run(std::move(file));
 }
@@ -151,7 +153,7 @@ void FontServiceApp::FallbackFontForCharacter(
   TRACE_EVENT0("fonts", "FontServiceApp::FallbackFontForCharacter");
 
   auto fallback_font = gfx::GetFallbackFontForChar(character, locale);
-  int index = FindOrAddPath(SkString(fallback_font.filename.data()));
+  size_t index = FindOrAddPath(base::FilePath(fallback_font.filename));
 
   mojom::FontIdentityPtr identity(mojom::FontIdentity::New());
   identity->id = static_cast<uint32_t>(index);
@@ -206,8 +208,7 @@ void FontServiceApp::MatchFontByPostscriptNameOrFullFontName(
   base::Optional<FontConfigLocalMatching::FontConfigMatchResult> match_result =
       FontConfigLocalMatching::FindFontByPostscriptNameOrFullFontName(family);
   if (match_result) {
-    uint32_t fontconfig_interface_id =
-        FindOrAddPath(SkString(match_result->file_path.value().c_str()));
+    uint32_t fontconfig_interface_id = FindOrAddPath(match_result->file_path);
     mojom::FontIdentityPtr font_identity =
         mojom::FontIdentityPtr(mojom::FontIdentity::New(
             fontconfig_interface_id, match_result->ttc_index,
@@ -240,11 +241,11 @@ void FontServiceApp::MatchFontWithFallback(
 #endif
 }
 
-int FontServiceApp::FindOrAddPath(const SkString& path) {
+size_t FontServiceApp::FindOrAddPath(const base::FilePath& path) {
   TRACE_EVENT1("fonts", "FontServiceApp::FindOrAddPath", "path",
-               TRACE_STR_COPY(path.c_str()));
-  int count = paths_.size();
-  for (int i = 0; i < count; ++i) {
+               path.AsUTF8Unsafe());
+  size_t count = paths_.size();
+  for (size_t i = 0; i < count; ++i) {
     if (path == paths_[i])
       return i;
   }

@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">页脚</translation>
 <translation id="2709516037105925701">自动填充</translation>
 <translation id="2723001399770238859">音频</translation>
+<translation id="2725963129578236554">评注</translation>
 <translation id="2746543609216772311">指定的值不得早于<ph name="MINIMUM_DATE_OR_TIME" />。</translation>
 <translation id="2759744352195237655">弹出式按钮</translation>
 <translation id="2761667185364618470">如果要继续，请选中此框。</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">请将该文本增加为 <ph name="MIN_CHARACTERS" /> 个字符或更多（您当前使用的是 <ph name="CURRENT_LENGTH" /> 个字符）。</translation>
 <translation id="383465348367842624">“<ph name="ATSIGN" />”前面的内容不应包含符号“<ph name="INVALIDCHARACTER" />”。</translation>
 <translation id="3846214748874656680">退出全屏模式</translation>
+<translation id="3889183436948184105">修订版本</translation>
 <translation id="3920932319529768807">总结</translation>
 <translation id="3924558731517983934">应用</translation>
 <translation id="3944740393230681990">序言</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">音频时间进度条</translation>
 <translation id="6443871981718447451">显示字幕菜单</translation>
 <translation id="6453774872122745852">致谢</translation>
+<translation id="6475115390776617481">实时协作状态</translation>
 <translation id="648732519525291180">时间选择器</translation>
 <translation id="6550675742724504774">选项</translation>
 <translation id="6572309429103589720">语法无效</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">插入</translation>
 <translation id="6989848892321993519">请将该内容增加到 <ph name="MIN_CHARACTERS" /> 个或更多字符（目前您使用了 1 个字符）。</translation>
 <translation id="7033340931668032222">上下键用于更改音量</translation>
+<translation id="7034405885550056553">建议</translation>
 <translation id="709897737746224366">请与所请求的格式保持一致。</translation>
 <translation id="7118469954320184356">尚无说明。</translation>
 <translation id="7139483182332611405">序言</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">输出</translation>
 <translation id="8750798805984357768">请从这些选项中选择一个。</translation>
 <translation id="8808573423886751634">章节</translation>
+<translation id="8822203815165896261">创作信息</translation>
 <translation id="8845239796550121995">现在正投射到您的电视上</translation>
 <translation id="8851136666856101339">主体内容</translation>
 <translation id="8875657656876809964">视频播放出错</translation>

@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Ao usar este aplicativo, você concorda com os <ph name="BEGIN_LINK_TOS" />Termos de Serviço<ph name="END_LINK_TOS" /> e o <ph name="BEGIN_LINK_PRIVACY" />Aviso de Privacidade<ph name="END_LINK_PRIVACY" /> do Chrome.</translation>
 <translation id="2147651015520127414">O Chrome verificou que <ph name="ISSUER" /> emitiu o certificado desse website.</translation>
 <translation id="2199719347983604670">Dados da "Sincronização do Chrome"</translation>
-<translation id="2342981853652716282">Faça login no Chrome para ver seus favoritos, senhas e muito mais em todos os seus dispositivos.</translation>
 <translation id="2347208864470321755">Quando este recurso está ativado, o Google Chrome disponibiliza a tradução de páginas escritas em outros idiomas usando o Google Tradutor. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Para salvar as imagens, toque em "Ajustes" para permitir que o Chrome use suas fotos</translation>
 <translation id="2576431527583832481">O Google Chrome ficou ainda melhor! Uma nova versão está disponível.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Ajude a melhorar o Chrome. Envie estatísticas de uso e relatórios de falhas ao Google.</translation>
 <translation id="415767770115540173">Melhore sua experiência do Google no Chrome de acordo com seu local.</translation>
 <translation id="424864128008805179">Sair do Google Chrome?</translation>
+<translation id="4249068189593983585">Dica do Chrome. Para ver mais opções de guia, toque no botão "Exibir abas" na barra de ferramentas localizada na parte superior ou inferior da tela e mantenha-o pressionado.</translation>
 <translation id="4523886039239821078">Alguns complementos causam a falha do Google Chrome. Desinstale-os.</translation>
 <translation id="5389212809648216794">O Google Chrome não pode usar a câmera porque ela está sendo usada por outro app</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Leia os Termos de Serviço atualizados do Chrome.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Alguns complementos causam a falha do Google Chrome. Tente desinstalá-los.</translation>
 <translation id="8459495907675268833">Os dados selecionados foram removidos do Chrome e dos dispositivos sincronizados. É possível que sua Conta do Google tenha outras formas de histórico de navegação, como pesquisas e atividades de outros serviços do Google em history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">O Google Chrome pode usar os serviços da Web para melhorar sua experiência de navegação. Se preferir, é possível desativar esses serviços. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 </translationbundle>

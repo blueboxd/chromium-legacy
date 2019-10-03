@@ -12,6 +12,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_base.h"
 #include "base/sequence_checker.h"
 #include "base/threading/thread_local.h"
@@ -21,6 +22,14 @@
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_metadata.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
+
+namespace base {
+namespace trace_event {
+class ThreadInstructionCount;
+class TraceEvent;
+struct TraceEventHandle;
+}  // namespace trace_event
+}  // namespace base
 
 namespace perfetto {
 class StartupTraceWriter;
@@ -67,6 +76,11 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventMetadataSource
   void AddGeneratorFunction(JsonMetadataGeneratorFunction generator);
   // Same as above, but for filling in proto format.
   void AddGeneratorFunction(MetadataGeneratorFunction generator);
+  // For background tracing, the legacy crash uploader needs
+  // metadata fields to be uploaded as POST args in addition to being
+  // embedded in the trace. TODO(oysteine): Remove when only the
+  // UMA uploader path is used.
+  std::unique_ptr<base::DictionaryValue> GenerateLegacyMetadataDict();
 
   // PerfettoTracedProcess::DataSourceBase implementation, called by
   // ProducerClent.

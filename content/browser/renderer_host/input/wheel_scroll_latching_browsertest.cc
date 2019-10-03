@@ -166,8 +166,9 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest, MAYBE_WheelEventTarget) {
   float delta_x = 0;
   float delta_y = -0.6 * scrollable_div_top;
   blink::WebMouseWheelEvent wheel_event =
-      SyntheticWebMouseWheelEventBuilder::Build(x, y, x, y, delta_x, delta_y, 0,
-                                                true);
+      SyntheticWebMouseWheelEventBuilder::Build(
+          x, y, x, y, delta_x, delta_y, 0,
+          ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
 
   wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   GetRouter()->RouteMouseWheelEvent(GetRootView(), &wheel_event,
@@ -219,8 +220,9 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
   float delta_x = 0;
   float delta_y = -0.6 * scrollable_div_top;
   blink::WebMouseWheelEvent wheel_event =
-      SyntheticWebMouseWheelEventBuilder::Build(x, y, x, y, delta_x, delta_y, 0,
-                                                true);
+      SyntheticWebMouseWheelEventBuilder::Build(
+          x, y, x, y, delta_x, delta_y, 0,
+          ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
   wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   GetRouter()->RouteMouseWheelEvent(GetRootView(), &wheel_event,
                                     ui::LatencyInfo());
@@ -378,7 +380,9 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
   auto wheel_msg_watcher = std::make_unique<InputMsgWatcher>(
       GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
   blink::WebMouseWheelEvent wheel_event =
-      SyntheticWebMouseWheelEventBuilder::Build(x, y, x, y, 1, 1, 0, true);
+      SyntheticWebMouseWheelEventBuilder::Build(
+          x, y, x, y, 1, 1, 0,
+          ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
   wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   GetRouter()->RouteMouseWheelEvent(GetRootView(), &wheel_event,
                                     ui::LatencyInfo());

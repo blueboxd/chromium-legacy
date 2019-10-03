@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Utilizzati</translation>
 <translation id="1171770572613082465">Scopri i siti web più visitati toccando il pulsante "Siti principali"</translation>
 <translation id="1173894706177603556">Rinomina</translation>
-<translation id="1175310183703641346">I preferiti, la cronologia, le password e altre impostazioni non verranno più sincronizzati con il tuo Account Google</translation>
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="1181037720776840403">Rimuovi</translation>
 <translation id="1188239144602654184">Entra in AR</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">Aggiunto ai preferiti di <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sincronizzazione in background</translation>
 <translation id="3771001275138982843">Impossibile scaricare l'aggiornamento</translation>
+<translation id="3771033907050503522">Schede di navigazione in incognito</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Attiva il Bluetooth<ph name="END_LINK" /> per consentire l'accoppiamento</translation>
 <translation id="3775705724665058594">Invia ai tuoi dispositivi</translation>
 <translation id="3778956594442850293">Aggiunto alla schermata Home</translation>
@@ -484,7 +484,6 @@ Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4719927025381752090">Proponi di tradurre</translation>
 <translation id="4720023427747327413">Apri in <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Contribuisci a migliorare Chrome. <ph name="BEGIN_LINK" />Rispondi al sondaggio<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">Stai per cambiare account di sincronizzazione, passando dall'account <ph name="ACCOUNT_EMAIL_OLD" /> all'account <ph name="ACCOUNT_EMAIL_NEW" />. I tuoi attuali dati di Chrome vengono gestiti da <ph name="MANAGED_DOMAIN" />. I dati verranno eliminati da questo dispositivo, ma rimarranno memorizzati nell'account <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">Aggiorna</translation>
 <translation id="4738836084190194332">Ultima sincronizzazione: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Apri una nuova scheda</translation>
@@ -668,13 +667,13 @@ Prima di accedere alla VR, verifica che questo sito sia attendibile.</translatio
 <translation id="5937580074298050696">Dati risparmiati: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Reimposta</translation>
 <translation id="5942872142862698679">Google in uso per la ricerca</translation>
-<translation id="5944669582486359588">Nella modalità Lite, Chrome carica le pagine più rapidamente e utilizza fino al 60 percento di dati in meno. La tecnologia cloud di Google ottimizza le pagine visitate.</translation>
 <translation id="5952764234151283551">Invia a Google l'URL della pagina a cui stai tentando di accedere</translation>
 <translation id="5956665950594638604">Apri Centro assistenza di Chrome in nuova scheda</translation>
 <translation id="5958275228015807058">Puoi trovare i tuoi file e le tue pagine nella cartella Download</translation>
 <translation id="5962718611393537961">Tocca per comprimere</translation>
 <translation id="6000066717592683814">Mantieni Google</translation>
 <translation id="6005538289190791541">Password consigliata</translation>
+<translation id="6036057147555329831">ICU extra</translation>
 <translation id="6039379616847168523">Vai alla scheda successiva</translation>
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="6042308850641462728">Altro</translation>
@@ -815,7 +814,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7029809446516969842">Password</translation>
 <translation id="7053983685419859001">Blocca</translation>
 <translation id="7055152154916055070">Reindirizzamento bloccato:</translation>
-<translation id="7062545763355031412">Accetta e cambia account</translation>
 <translation id="7063006564040364415">Impossibile collegarsi al server di sincronizzazione.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 elemento selezionato}other{# elementi selezionati}}</translation>
 <translation id="7071521146534760487">Gestisci account</translation>
@@ -1099,7 +1097,6 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="9139318394846604261">Shopping</translation>
 <translation id="9155898266292537608">Per eseguire una ricerca, basta un rapido tocco su una parola</translation>
 <translation id="9169507124922466868">La cronologia di navigazione è aperta fino a metà</translation>
-<translation id="9188680907066685419">Esci dall'account gestito</translation>
 <translation id="9204836675896933765">1 file rimanente</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Impossibile effettuare chiamate</translation>
@@ -1108,7 +1105,6 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="932327136139879170">Home page</translation>
 <translation id="938850635132480979">Errore: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Accesso al microfono</translation>
-<translation id="951339005376969845">Elimina i dati esistenti. Puoi recuperarli tornando all'account <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome può usare <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> per le ricerche in Cina. Puoi modificare questa preferenza nelle <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>
 <translation id="965817943346481315">Blocca se il sito mostra annunci invasivi o fuorvianti (consigliato)</translation>
 <translation id="968900484120156207">Le pagine visitate saranno mostrate qui</translation>

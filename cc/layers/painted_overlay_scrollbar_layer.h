@@ -9,7 +9,6 @@
 #include "cc/input/scrollbar.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/scrollbar_layer_interface.h"
-#include "cc/layers/scrollbar_theme_painter.h"
 #include "cc/resources/scoped_ui_resource.h"
 
 namespace cc {

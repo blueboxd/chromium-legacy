@@ -180,10 +180,14 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
   }
 
   void SimulateAwaitReady() {
+    animation->CommitAllUpdatesForTesting();
+
     // TOOD(crbug/958433): This should trigger a call to the microtask for
     // applying updates.
     SimulateFrame(last_frame_time);
   }
+
+  void SimulateMicrotask() { animation->CommitAllUpdatesForTesting(); }
 
   Persistent<DocumentTimeline> timeline;
   Persistent<Animation> animation;
@@ -1403,6 +1407,7 @@ TEST_F(AnimationAnimationTestNoCompositing,
   // Resolving the finished promise clears the pending activity.
   animation->setCurrentTime(50000, false);
   EXPECT_EQ("finished", animation->playState());
+  SimulateMicrotask();
   EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
   EXPECT_FALSE(animation->HasPendingActivity());
 
@@ -1453,6 +1458,7 @@ TEST_F(AnimationAnimationTestNoCompositing,
   // Finishing the animation asynchronously clears the pending activity.
   animation->setCurrentTime(50000, false);
   EXPECT_EQ("finished", animation->playState());
+  SimulateMicrotask();
   EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
   EXPECT_TRUE(animation->HasPendingActivity());
   animation->pending_finished_event_ = nullptr;

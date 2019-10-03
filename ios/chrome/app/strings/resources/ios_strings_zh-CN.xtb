@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">无法保存图片</translation>
 <translation id="1180526666083833456">在所有设备上保持同步并进行个性化设置。</translation>
 <translation id="1181037720776840403">删除</translation>
+<translation id="1207113853726624428">新搜索</translation>
 <translation id="1209206284964581585">暂时隐藏</translation>
 <translation id="1219674500290482172">无法连接到互联网。</translation>
 <translation id="122699739164161391">关闭所有标签页</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">建议密码…</translation>
 <translation id="1870148520156231997">显示密码</translation>
 <translation id="1872096359983322073">闪光灯</translation>
-<translation id="1876721852596493031">发送使用情况数据</translation>
 <translation id="1911619930368729126">上传到Google云端硬盘</translation>
 <translation id="1923342640370224680">过去 1 小时</translation>
 <translation id="1941314575388338491">点按两次即可复制。</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892">阅读清单中有 <ph name="UNREAD_COUNT" /> 篇未读文章。</translation>
 <translation id="2230173723195178503">已加载网页</translation>
 <translation id="2239626343334228536">正在清除浏览数据…</translation>
-<translation id="2256128224215992540">搜索和网站建议</translation>
 <translation id="2267753748892043616">添加帐号</translation>
 <translation id="2268044343513325586">优化</translation>
 <translation id="2273327106802955778">“更多”菜单</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">无法打开该文件</translation>
 <translation id="2718352093833049315">仅限使用无线局域网时</translation>
 <translation id="2747003861858887689">上一个字段</translation>
+<translation id="2773292004659987824">无痕搜索</translation>
 <translation id="2780046210906776326">没有电子邮件帐号</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">离开标签页切换器</translation>
@@ -295,7 +295,6 @@
 <translation id="5197255632782567636">互联网</translation>
 <translation id="5228579091201413441">启用同步功能</translation>
 <translation id="5234764350956374838">关闭</translation>
-<translation id="5244474230056479698">同步到 <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">取消同步</translation>
 <translation id="5271549068863921519">保存密码</translation>
 <translation id="5300589172476337783">显示</translation>
@@ -501,6 +500,7 @@
 <translation id="8261506727792406068">删除</translation>
 <translation id="8281781826761538115">默认语言区域 - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">新搜索</translation>
+<translation id="8323906514956095947">轻触并按住可查看更多的标签页选项</translation>
 <translation id="8328777765163860529">全部关闭</translation>
 <translation id="8407669440184693619">未找到任何用于此网站的密码</translation>
 <translation id="842017693807136194">所用登录身份</translation>

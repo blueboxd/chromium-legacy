@@ -76,7 +76,8 @@ TEST(FidoDiscoveryTest, TestNotificationsOnSuccessfulStart) {
   EXPECT_FALSE(discovery.is_running());
   ::testing::Mock::VerifyAndClearExpectations(&discovery);
 
-  EXPECT_CALL(observer, DiscoveryStarted(&discovery, true));
+  EXPECT_CALL(observer, DiscoveryStarted(&discovery, true,
+                                         std::vector<FidoAuthenticator*>()));
   discovery.NotifyDiscoveryStarted(true);
   EXPECT_TRUE(discovery.is_start_requested());
   EXPECT_TRUE(discovery.is_running());
@@ -93,7 +94,8 @@ TEST(FidoDiscoveryTest, TestNotificationsOnFailedStart) {
   discovery.Start();
   task_environment_.RunUntilIdle();
 
-  EXPECT_CALL(observer, DiscoveryStarted(&discovery, false));
+  EXPECT_CALL(observer, DiscoveryStarted(&discovery, false,
+                                         std::vector<FidoAuthenticator*>()));
   discovery.NotifyDiscoveryStarted(false);
   EXPECT_TRUE(discovery.is_start_requested());
   EXPECT_FALSE(discovery.is_running());
@@ -112,19 +114,23 @@ TEST(FidoDiscoveryTest, TestAddRemoveDevices) {
   auto* device0_raw = device0.get();
   FidoAuthenticator* authenticator0 = nullptr;
   base::RunLoop device0_done;
-  EXPECT_CALL(observer, AuthenticatorAdded(&discovery, _))
-      .WillOnce(DoAll(SaveArg<1>(&authenticator0),
-                      testing::InvokeWithoutArgs(
-                          [&device0_done]() { device0_done.Quit(); })));
+  EXPECT_CALL(observer, DiscoveryStarted(&discovery, true, _))
+      .WillOnce(testing::Invoke(
+          [&](auto* discovery, bool success, auto authenticators) {
+            EXPECT_EQ(1u, authenticators.size());
+            authenticator0 = authenticators[0];
+            device0_done.Quit();
+          }));
   EXPECT_CALL(*device0, GetId()).WillRepeatedly(Return("device0"));
   EXPECT_TRUE(discovery.AddDevice(std::move(device0)));
+  discovery.NotifyDiscoveryStarted(true);
   EXPECT_EQ("device0", authenticator0->GetId());
   EXPECT_EQ(device0_raw,
             static_cast<FidoDeviceAuthenticator*>(authenticator0)->device());
   device0_done.Run();
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
-  // Expect successful insertion.
+  // Expect successful insertion after starting.
   base::RunLoop device1_done;
   auto device1 = std::make_unique<MockFidoDevice>();
   auto* device1_raw = device1.get();

@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">Odepnij folder</translation>
 <translation id="3678559383040232393">Klawiatura maltańska</translation>
 <translation id="3685122418104378273">Gdy komórkowa transmisja danych jest włączona, synchronizacja z Dyskiem Google jest domyślnie wyłączona.</translation>
+<translation id="3689865792480713551">Anuluj <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Nie można otworzyć urządzenia, ponieważ jego system plików nie jest obsługiwany.</translation>
 <translation id="3741243925913727067">Tworzy na Dysku Google kopie zapasowe zdjęć i filmów z nośnika danych.</translation>
 <translation id="3749289110408117711">Nazwa pliku</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">Amerykańska międzynarodowa (PC)</translation>
 <translation id="6346310558342052870">Ograniczony dostęp</translation>
 <translation id="6353618411602605519">Klawiatura chorwacka</translation>
+<translation id="6356685157277930264">Okno informacji zwrotnych o plikach</translation>
 <translation id="6358884629796491903">Smok</translation>
 <translation id="637062427944097960">Ten plik został otwarty na innym pulpicie. Przejdź do <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />), aby go zobaczyć.</translation>
 <translation id="6395575651121294044">Elementy: <ph name="NUMBER_OF_FILES" /></translation>

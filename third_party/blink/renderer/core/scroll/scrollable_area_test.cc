@@ -29,7 +29,7 @@ using testing::Return;
 class ScrollbarThemeWithMockInvalidation : public ScrollbarThemeMock {
  public:
   MOCK_CONST_METHOD0(ShouldRepaintAllPartsOnInvalidation, bool());
-  MOCK_CONST_METHOD3(InvalidateOnThumbPositionChange,
+  MOCK_CONST_METHOD3(PartsToInvalidateOnThumbPositionChange,
                      ScrollbarPart(const Scrollbar&, float, float));
 };
 
@@ -143,7 +143,7 @@ TEST_F(ScrollableAreaTest, InvalidatesNonCompositedScrollbarsWhenThumbMoves) {
   ASSERT_FALSE(scrollable_area->HasLayerForHorizontalScrollbar());
   EXPECT_CALL(theme, ShouldRepaintAllPartsOnInvalidation())
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(theme, InvalidateOnThumbPositionChange(_, _, _))
+  EXPECT_CALL(theme, PartsToInvalidateOnThumbPositionChange(_, _, _))
       .WillRepeatedly(Return(kNoPart));
 
   // A scroll in each direction should only invalidate one scrollbar.
@@ -201,7 +201,7 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
 
   // First, we'll scroll horizontally, and the theme will require repainting
   // the back button (i.e. the track).
-  EXPECT_CALL(theme, InvalidateOnThumbPositionChange(_, _, _))
+  EXPECT_CALL(theme, PartsToInvalidateOnThumbPositionChange(_, _, _))
       .WillOnce(Return(kBackButtonStartPart));
   scrollable_area->SetScrollOffset(ScrollOffset(50, 0), kProgrammaticScroll);
   EXPECT_TRUE(layer_for_horizontal_scrollbar.HasTrackedRasterInvalidations());
@@ -212,7 +212,7 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
   horizontal_scrollbar->ClearTrackNeedsRepaint();
 
   // Next, we'll scroll vertically, but invalidate the thumb.
-  EXPECT_CALL(theme, InvalidateOnThumbPositionChange(_, _, _))
+  EXPECT_CALL(theme, PartsToInvalidateOnThumbPositionChange(_, _, _))
       .WillOnce(Return(kThumbPart));
   scrollable_area->SetScrollOffset(ScrollOffset(50, 50), kProgrammaticScroll);
   EXPECT_FALSE(layer_for_horizontal_scrollbar.HasTrackedRasterInvalidations());
@@ -226,7 +226,7 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
   // invalidations. Nonetheless the GraphicsLayer should be invalidated,
   // because we still need to update the underlying layer (though no
   // rasterization will be required).
-  EXPECT_CALL(theme, InvalidateOnThumbPositionChange(_, _, _))
+  EXPECT_CALL(theme, PartsToInvalidateOnThumbPositionChange(_, _, _))
       .Times(2)
       .WillRepeatedly(Return(kNoPart));
   scrollable_area->SetScrollOffset(ScrollOffset(70, 70), kProgrammaticScroll);

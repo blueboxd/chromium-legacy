@@ -517,13 +517,14 @@ blink::WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
   // from data from any other continuous device.
 
   if (CGEventGetIntegerValueField(cg_event, kCGScrollWheelEventIsContinuous)) {
+    result.delta_units =
+        ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
     result.delta_x = CGEventGetIntegerValueField(
         cg_event, kCGScrollWheelEventPointDeltaAxis2);
     result.delta_y = CGEventGetIntegerValueField(
         cg_event, kCGScrollWheelEventPointDeltaAxis1);
     result.wheel_ticks_x = result.delta_x / ui::kScrollbarPixelsPerCocoaTick;
     result.wheel_ticks_y = result.delta_y / ui::kScrollbarPixelsPerCocoaTick;
-    result.has_precise_scrolling_deltas = true;
   } else {
     result.delta_x = [event deltaX] * ui::kScrollbarPixelsPerCocoaTick;
     result.delta_y = [event deltaY] * ui::kScrollbarPixelsPerCocoaTick;

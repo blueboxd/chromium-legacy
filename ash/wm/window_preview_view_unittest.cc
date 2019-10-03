@@ -4,8 +4,10 @@
 
 #include "ash/wm/window_preview_view.h"
 
+#include "ash/public/cpp/app_types.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_preview_view_test_api.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 
@@ -51,6 +53,64 @@ TEST_F(WindowPreviewViewTest, TransientChildAddedAndRemoved) {
 
   ::wm::RemoveTransientChild(widget1->GetNativeWindow(),
                              widget3->GetNativeWindow());
+  EXPECT_EQ(2u, test_api.GetMirrorViews().size());
+}
+
+// Tests that init'ing a Widget with a native window as a transient child before
+// it is parented to a parent window doesn't cause a crash while the
+// WindowPreviewView is observing transient windows additions.
+// https://crbug.com/1003544.
+TEST_F(WindowPreviewViewTest, NoCrashWithTransientChildWithNoWindowState) {
+  auto widget1 = CreateTestWidget();
+
+  auto create_transient_child = [](views::Widget* parent_widget,
+                                   views::Widget::InitParams::Type type)
+      -> std::unique_ptr<views::Widget> {
+    auto widget = std::make_unique<views::Widget>();
+    views::Widget::InitParams params{type};
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.bounds = gfx::Rect{40, 50};
+    params.context = params.parent = parent_widget->GetNativeWindow();
+    params.init_properties_container.SetProperty(
+        aura::client::kAppType, static_cast<int>(ash::AppType::ARC_APP));
+    widget->Init(std::move(params));
+    widget->Show();
+    return widget;
+  };
+
+  auto transient_child1 = create_transient_child(
+      widget1.get(), views::Widget::InitParams::TYPE_WINDOW);
+
+  EXPECT_EQ(widget1->GetNativeWindow(),
+            wm::GetTransientParent(transient_child1->GetNativeWindow()));
+
+  auto preview_view = std::make_unique<WindowPreviewView>(
+      widget1->GetNativeWindow(), /*trilinear_filtering_on_init=*/false);
+  WindowPreviewViewTestApi test_api(preview_view.get());
+  ASSERT_EQ(2u, test_api.GetMirrorViews().size());
+
+  // The popup and bubble transient child should be ignored (they result in a
+  // native window type WINDOW_TYPE_POPUP), while the TYPE_WINDOW one will be
+  // added as a transient child before it is parented to a container. This
+  // should not cause a crash.
+  auto transient_child2 = create_transient_child(
+      widget1.get(), views::Widget::InitParams::TYPE_POPUP);
+  auto transient_child3 = create_transient_child(
+      widget1.get(), views::Widget::InitParams::TYPE_BUBBLE);
+  auto transient_child4 = create_transient_child(
+      widget1.get(), views::Widget::InitParams::TYPE_WINDOW);
+
+  EXPECT_EQ(widget1->GetNativeWindow(),
+            wm::GetTransientParent(transient_child2->GetNativeWindow()));
+  EXPECT_EQ(widget1->GetNativeWindow(),
+            wm::GetTransientParent(transient_child3->GetNativeWindow()));
+  EXPECT_EQ(widget1->GetNativeWindow(),
+            wm::GetTransientParent(transient_child4->GetNativeWindow()));
+  EXPECT_EQ(3u, test_api.GetMirrorViews().size());
+
+  transient_child3.reset();
+  EXPECT_EQ(3u, test_api.GetMirrorViews().size());
+  transient_child4.reset();
   EXPECT_EQ(2u, test_api.GetMirrorViews().size());
 }
 

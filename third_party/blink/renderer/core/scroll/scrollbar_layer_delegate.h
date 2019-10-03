@@ -52,15 +52,15 @@ class CORE_EXPORT ScrollbarLayerDelegate : public cc::Scrollbar {
   float ThumbOpacity() const override;
   bool NeedsPaintPart(cc::ScrollbarPart part) const override;
   bool HasTickmarks() const override;
-  void PaintPart(cc::PaintCanvas* canvas,
-                 cc::ScrollbarPart part,
-                 const gfx::Rect& content_rect) override;
+  void PaintPart(cc::PaintCanvas* canvas, cc::ScrollbarPart part) override;
 
   bool UsesNinePatchThumbResource() const override;
   gfx::Size NinePatchThumbCanvasSize() const override;
   gfx::Rect NinePatchThumbAperture() const override;
 
  private:
+  bool ShouldPaint() const;
+
   // Accessed by main and compositor threads, e.g., the compositor thread
   // checks |Orientation()|.
   CrossThreadPersistent<blink::Scrollbar> scrollbar_;

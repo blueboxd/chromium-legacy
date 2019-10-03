@@ -178,6 +178,7 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapMakeCredentialRequest request,
     AuthenticatorSelectionCriteria authenticator_selection_criteria,
+    bool allow_skipping_pin_touch,
     CompletionCallback completion_callback)
     : FidoRequestHandlerBase(
           connector,
@@ -188,7 +189,8 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
       completion_callback_(std::move(completion_callback)),
       request_(std::move(request)),
       authenticator_selection_criteria_(
-          std::move(authenticator_selection_criteria)) {
+          std::move(authenticator_selection_criteria)),
+      allow_skipping_pin_touch_(allow_skipping_pin_touch) {
   transport_availability_info().request_type =
       FidoRequestHandlerBase::RequestType::kMakeCredential;
 
@@ -253,6 +255,11 @@ void MakeCredentialRequestHandler::DispatchRequest(
   switch (authenticator->WillNeedPINToMakeCredential(request_, observer())) {
     case MakeCredentialPINDisposition::kUsePIN:
     case MakeCredentialPINDisposition::kSetPIN:
+      // Skip asking for touch if this is the only available authenticator.
+      if (active_authenticators().size() == 1 && allow_skipping_pin_touch_) {
+        HandleTouch(authenticator);
+        return;
+      }
       // A PIN will be needed. Just request a touch to let the user select
       // this authenticator if they wish.
       authenticator->GetTouch(

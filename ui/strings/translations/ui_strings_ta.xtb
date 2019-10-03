@@ -13,7 +13,7 @@
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" />ஐ <ph name="FOLDER_NAME" /> கோப்புறைக்கு நகர்த்தும்.</translation>
 <translation id="1291104554099683393">சிறுசிறு பகுதிகளாக உரையைப் பகிர முயலவும்.</translation>
 <translation id="1293699935367580298">Esc</translation>
-<translation id="1306549533752902673">பரிந்துரைக்கப்படும் பயன்பாடுகள்</translation>
+<translation id="1306549533752902673">பரிந்துரைக்கப்படும் ஆப்ஸ்</translation>
 <translation id="1368832886055348810">இடமிருந்து வலம்</translation>
 <translation id="1383876407941801731">தேடல்</translation>
 <translation id="1398853756734560583">பெரிதாக்கு</translation>
@@ -117,7 +117,6 @@
 <translation id="4971687151119236543">ஊடகத்தின் முந்தைய டிராக்</translation>
 <translation id="5046499563572181734">இங்கே தட்டவும்</translation>
 <translation id="5076340679995252485">&amp;ஒட்டு</translation>
-<translation id="5137751499640340777">Google அசிஸ்டண்ட்டைத் தொடங்கும்</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> பெ.பை</translation>
 <translation id="5266161281976477809">கூடுதல் உள்ளடக்கத்தைக் காட்டும் முக்கோணம்</translation>
 <translation id="5278860589123563674">அனுப்ப முடியவில்லை</translation>
@@ -154,6 +153,7 @@
 <translation id="6394627529324717982">கமா</translation>
 <translation id="6397363302884558537">பேச்சை நிறுத்து</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 நிமிடம் முன்பு}other{# நிமிடங்கள் முன்பு}}</translation>
+<translation id="6417265370957905582">Google அசிஸ்டண்ட்</translation>
 <translation id="6430678249303439055">இந்தப் பயன்பாட்டிலிருந்து எல்லா அறிவிப்புகளையும் தடு</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 வினாடிக்கு முன்பு}other{# வினாடிகளுக்கு முன்பு}}</translation>
 <translation id="6539092367496845964">ஏதோ தவறாகிவிட்டது. பிறகு முயலவும்.</translation>
@@ -196,7 +196,6 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1க்கு மேற்பட்ட அறிவிப்புகள் படிக்கப்படாமல் உள்ளன}other{#க்கு மேற்பட்ட அறிவிப்புகள் படிக்கப்படாமல் உள்ளன}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{இன்னும் 1நி}other{இன்னும் #நி}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8098075892845277643">Google அசிஸ்டண்ட்டின் குரல் வினவலைத் தொடங்கும்</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 மணிநேரம் முன்பு}other{# மணிநேரம் முன்பு}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 நொடி உள்ளது}other{# நொடிகள் உள்ளன}}</translation>
 <translation id="8144660977431427332">உங்கள் தேடல்கள் Google அசிஸ்டண்ட்டைப் பயன்படுத்தி தேடப்படுகின்றன. <ph name="LEARN_MORE" /></translation>
@@ -233,7 +232,7 @@
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 நொடி}other{# நொடிகள்}}</translation>
 <translation id="9059834730836941392">அறிவிப்பைச் சுருக்கு</translation>
 <translation id="9150735707954472829">தாவல்</translation>
-<translation id="9161053988251441839">பரிந்துரைக்கும் பயன்பாடுகள்</translation>
+<translation id="9161053988251441839">பரிந்துரைக்கும் ஆப்ஸ்</translation>
 <translation id="9170848237812810038">&amp;செயல்தவிர்</translation>
 <translation id="932327136139879170">முகப்பு</translation>
 <translation id="944069440740578670">படிக்காத அறிவிப்புகள்</translation>

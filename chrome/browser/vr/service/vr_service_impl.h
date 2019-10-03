@@ -22,9 +22,9 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
@@ -152,7 +152,7 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
                                XrConsentPromptLevel consent_level);
 
   scoped_refptr<XRRuntimeManager> runtime_manager_;
-  mojo::InterfacePtrSet<device::mojom::XRSessionClient> session_clients_;
+  mojo::RemoteSet<device::mojom::XRSessionClient> session_clients_;
   mojo::Remote<device::mojom::VRServiceClient> service_client_;
   content::RenderFrameHost* render_frame_host_;
   mojo::StrongBindingPtr<VRService> binding_;

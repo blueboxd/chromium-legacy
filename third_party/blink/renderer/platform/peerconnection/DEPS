@@ -30,5 +30,6 @@ specific_include_rules = {
         "+gpu/command_buffer/common/mailbox.h",
         "+media/video/mock_gpu_video_accelerator_factories.h",
         "+media/video/mock_video_encode_accelerator.h",
+        "+third_party/blink/renderer/platform/testing/video_frame_utils.h",
     ],
 }

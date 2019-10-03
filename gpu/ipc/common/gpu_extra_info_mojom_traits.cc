@@ -13,7 +13,7 @@ bool StructTraits<gpu::mojom::ANGLEFeatureDataView, gpu::ANGLEFeature>::Read(
     gpu::ANGLEFeature* out) {
   return data.ReadName(&out->name) && data.ReadCategory(&out->category) &&
          data.ReadDescription(&out->description) && data.ReadBug(&out->bug) &&
-         data.ReadStatus(&out->status);
+         data.ReadStatus(&out->status) && data.ReadCondition(&out->condition);
 }
 
 // static

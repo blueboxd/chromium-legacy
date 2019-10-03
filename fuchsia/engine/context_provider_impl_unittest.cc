@@ -33,7 +33,7 @@
 #include "base/test/multiprocess_test.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
-#include "fuchsia/engine/common.h"
+#include "fuchsia/engine/context_provider_impl.h"
 #include "fuchsia/engine/fake_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -58,8 +58,8 @@ MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
     }
   }
 
-  fidl::InterfaceRequest<fuchsia::web::Context> fuchsia_context(
-      zx::channel(zx_take_startup_handle(kContextRequestHandleId)));
+  fidl::InterfaceRequest<fuchsia::web::Context> fuchsia_context(zx::channel(
+      zx_take_startup_handle(ContextProviderImpl::kContextRequestHandleId)));
   CHECK(fuchsia_context);
 
   FakeContext context;

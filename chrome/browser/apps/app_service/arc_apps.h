@@ -11,11 +11,14 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/arc_icon_once_loader.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
+#include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -36,7 +39,8 @@ class AppServiceProxy;
 // See chrome/services/app_service/README.md.
 class ArcApps : public KeyedService,
                 public apps::mojom::Publisher,
-                public ArcAppListPrefs::Observer {
+                public ArcAppListPrefs::Observer,
+                public arc::ArcIntentHelperObserver {
  public:
   static ArcApps* Get(Profile* profile);
 
@@ -90,6 +94,10 @@ class ArcApps : public KeyedService,
                         bool uninstalled) override;
   void OnPackageListInitialRefreshed() override;
 
+  // arc::ArcIntentHelperObserver overrides.
+  void OnIntentFiltersUpdated(
+      const base::Optional<std::string>& package_name) override;
+
   void LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
                          int32_t size_hint_in_dip,
                          IconEffects icon_effects,
@@ -116,6 +124,9 @@ class ArcApps : public KeyedService,
   ArcIconOnceLoader arc_icon_once_loader_;
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
+
+  ScopedObserver<arc::ArcIntentHelperBridge, arc::ArcIntentHelperObserver>
+      arc_intent_helper_observer_{this};
 
   base::WeakPtrFactory<ArcApps> weak_ptr_factory_{this};
 

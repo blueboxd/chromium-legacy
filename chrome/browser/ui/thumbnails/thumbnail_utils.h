@@ -47,7 +47,7 @@ bool IsGoodClipping(ClipResult clip_result);
 // value contains the type of clip and the clip parameters.
 CanvasCopyInfo GetCanvasCopyInfo(const gfx::Size& source_size,
                                  float scale_factor,
-                                 const gfx::Size& target_size);
+                                 const gfx::Size& unscaled_target_size);
 
 }  // namespace thumbnails
 

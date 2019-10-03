@@ -20,7 +20,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1393853151966637042">Humingi ng tulong sa paggamit ng Chrome</translation>
 <translation id="1399397803214730675">Mayroon nang mas bagong bersyon ng Google Chrome ang computer na ito. Kung hindi gumagana ang software, mangyaring i-uninstall ang Google Chrome at subukang muli.</translation>
 <translation id="1434626383986940139">Chrome Canary Apps</translation>
-<translation id="1457721931618994305">Ina-update ang Google Chrome...</translation>
 <translation id="1469002951682717133">App Launcher ng Chrome</translation>
 <translation id="1553358976309200471">I-update ang Chrome</translation>
 <translation id="1587223624401073077">Ginagamit ng Google Chrome ang iyong camera.</translation>
@@ -92,6 +91,7 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impo
 <translation id="3065168410429928842">Tab ng Chrome</translation>
 <translation id="3080151273017101988">Magpatuloy sa pagpapatakbo ng mga app sa background kapag nakasara ang Google Chrome</translation>
 <translation id="3089968997497233615">May available na bago, mas ligtas na bersyon ng Google Chrome.</translation>
+<translation id="3138848678222082288">Awtomatikong ii-install ang mga bersyon ng Chrome sa hinaharap. Kapag nakumpleto ang pag-download na ito, magre-restart ang Chrome at makakapagpatuloy ka na.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
 <translation id="3282568296779691940">Mag-sign in sa Chrome</translation>
 <translation id="3340978935015468852">mga setting</translation>
@@ -177,9 +177,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="573759479754913123">Tungkol sa Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Hindi mailunsad ang Chrome. Subukang muli.</translation>
-<translation id="5877064549588274448">Binago ang channel. I-restart ang iyong device upang ilapat ang mga pagbabago.</translation>
 <translation id="5895138241574237353">I-restart</translation>
-<translation id="5906655207909574370">Halos napapanahon na! I-restart ang iyong device upang tapusin ang pag-a-update.</translation>
 <translation id="5940385492829620908">Makikita dito ang iyong web, mga bookmark at iba pang mga bagay-bagay sa Chrome.</translation>
 <translation id="5941830788786076944">Gawin ang Google Chrome na default browser</translation>
 <translation id="6014844626092547096">Naka-sign in ka na ngayon sa Chrome! Na-disable ng iyong administrator ang pag-sync.</translation>
@@ -198,16 +196,15 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="6566149418543181476">Ina-update ang Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Ginagamit mo ang <ph name="PROFILE_EMAIL" /> upang i-sync ang iyong bagay sa Chrome. Upang ma-update ang iyong kagustuhan sa pag-sync o upang magamit ang Chrome nang walang Google account, bisitahin ang <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Kinopya sa Chrome</translation>
-<translation id="6634887557811630702">Napapanahon ang Google Chrome.</translation>
 <translation id="6676384891291319759">I-access ang Internet</translation>
 <translation id="6679975945624592337">Hayaang Tumakbo sa Background ang Google Chrome</translation>
 <translation id="6750954913813541382">Para ayusin ang mga error sa pagbabaybay, ipinapadala ng Chrome sa Google ang text na na-type mo sa browser</translation>
 <translation id="677276454032249905">Lumabas pa rin sa Chrome?</translation>
 <translation id="683440813066116847">Inbound na panuntunan para sa Google Chrome Canary upang payagan ang trapiko ng mDNS.</translation>
 <translation id="6885412569789873916">Mga Chrome Beta App</translation>
+<translation id="6906909733186691861">Awtomatikong ii-install ang mga bersyon ng Chrome sa hinaharap.</translation>
 <translation id="6943584222992551122">Made-delete sa device na ito ang data sa pag-browse ng taong ito. Para ma-recover ang data, mag-sign in sa Chrome bilang <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Inbound na panuntunan para sa Google Chrome Beta upang payagan ang trapiko ng mDNS.</translation>
-<translation id="6970811910055250180">Ina-update ang iyong device...</translation>
 <translation id="6982337800632491844">Kinakailangan ng <ph name="DOMAIN" /> na basahin mo at tanggapin ang sumusunod na Mga Tuntunin ng Serbisyo bago gamitin ang device na ito. Hindi pinapalawak, binabago o nililimitahan ng mga tuntuning ito ang Mga Tuntunin ng Google Chrome OS.</translation>
 <translation id="6989339256997917931">Na-update na ang Google Chrome, ngunit hindi mo pa ito ginamit sa huling 30 araw.</translation>
 <translation id="7098166902387133879">Ginagamit ng Google Chrome ang iyong mikropono.</translation>
@@ -245,7 +242,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="7962410387636238736">Hindi na makakatanggap ang computer na ito ng mga update sa Google Chrome dahil hindi na sinusuportahan ang Windows XP at Windows Vista</translation>
 <translation id="8008534537613507642">Muling i-install ang Chrome</translation>
 <translation id="8013993649590906847">Kung hindi sapat ang deskripsyon ng isang larawan, susubukan ng Chrome na ayusin ito para sa iyo. Para gumawa ng mga deskripsyon, ipinapadala ang mga larawan sa Google.</translation>
-<translation id="8030318113982266900">Ina-update ang iyong device sa <ph name="CHANNEL_NAME" /> na channel...</translation>
 <translation id="8032142183999901390">Pagkatapos alisin ang iyong account sa Chrome, maaaring kailangan mong i-reload ang mga nakabukas mong tab upang magkabisa.</translation>
 <translation id="8129812357326543296">Tungkol sa &amp;Google Chrome</translation>
 <translation id="8179874765710681175">I-install ang Chrome sa iyong telepono. Magpapadala kami ng SMS sa telepono mo.</translation>
@@ -268,7 +264,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="8606668294522778825">Maaaring gumamit ang Google Chrome ng mga serbisyo sa web upang mapabuti ang iyong karanasan sa pagba-browse. Opsyonal mong madi-disable ang mga serbisyong ito. <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Hindi gumagana ang Google Chrome. Ilunsad muli ngayon?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Muling ilulunsad ang Chrome sa loob ng 1 minuto}one{Muling ilulunsad ang Chrome sa loob ng # minuto}other{Muling ilulunsad ang Chrome sa loob ng # na minuto}}</translation>
-<translation id="8667808506758191620">Napapanahon ang iyong <ph name="DEVICE_TYPE" />.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chrome.</translation>
 <translation id="870251953148363156">I-update ang &amp;Google Chrome</translation>

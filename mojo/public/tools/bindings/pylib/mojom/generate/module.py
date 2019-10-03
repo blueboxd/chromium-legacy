@@ -1066,3 +1066,43 @@ def ContainsHandlesOrInterfaces(kind):
     else:
       return False
   return Check(kind)
+
+
+def ContainsNativeTypes(kind):
+  """Check if the kind contains any native type (struct or enum).
+
+  This check is recursive so it checks all struct fields, scoped interface
+  enums, etc.
+
+  Args:
+    struct: {Kind} The kind to check.
+
+  Returns:
+    {bool}: True if the kind contains native types.
+  """
+  # We remember the types we already checked to avoid infinite recursion when
+  # checking recursive (or mutually recursive) types:
+  checked = set()
+  def Check(kind):
+    if kind.spec in checked:
+      return False
+    checked.add(kind.spec)
+    if IsEnumKind(kind):
+      return kind.native_only
+    elif IsStructKind(kind):
+      if kind.native_only:
+        return True
+      if any(enum.native_only for enum in kind.enums):
+        return True
+      return any(Check(field.kind) for field in kind.fields)
+    elif IsUnionKind(kind):
+      return any(Check(field.kind) for field in kind.fields)
+    elif IsInterfaceKind(kind):
+      return any(enum.native_only for enum in kind.enums)
+    elif IsArrayKind(kind):
+      return Check(kind.kind)
+    elif IsMapKind(kind):
+      return Check(kind.key_kind) or Check(kind.value_kind)
+    else:
+      return False
+  return Check(kind)

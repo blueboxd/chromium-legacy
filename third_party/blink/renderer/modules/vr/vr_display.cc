@@ -576,7 +576,7 @@ void VRDisplay::OnRequestImmersiveSessionReturned(
 
     frame_transport_ = MakeGarbageCollected<XRFrameTransport>();
     frame_transport_->BindSubmitFrameClient(
-        std::move(session->submit_frame_sink->client_request));
+        std::move(session->submit_frame_sink->client_receiver));
     frame_transport_->SetTransportOptions(
         std::move(session->submit_frame_sink->transport_options));
 
@@ -584,7 +584,7 @@ void VRDisplay::OnRequestImmersiveSessionReturned(
       immersive_client_binding_->Close();
     immersive_client_binding_ = MakeGarbageCollected<SessionClientBinding>(
         this, SessionClientBinding::SessionBindingType::kImmersive,
-        std::move(session->client_request));
+        std::move(session->client_receiver));
 
     Update(std::move(session->display_info));
 
@@ -613,7 +613,7 @@ void VRDisplay::SetNonImmersiveSession(
     non_immersive_provider_.Bind(std::move(session->data_provider));
     non_immersive_client_binding_ = MakeGarbageCollected<SessionClientBinding>(
         this, SessionClientBinding::SessionBindingType::kNonImmersive,
-        std::move(session->client_request));
+        std::move(session->client_receiver));
   }
 
   // Now that we're initialized, we need to ensure that the data is flowing

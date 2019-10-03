@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MOUSE_WHEEL_EVENT_H_
 
 #include "third_party/blink/public/platform/web_mouse_event.h"
+#include "ui/events/types/scroll_types.h"
 
 namespace blink {
 
@@ -72,13 +73,6 @@ class WebMouseWheelEvent : public WebMouseEvent {
   Phase phase;
   Phase momentum_phase;
 
-  // True when phase information is added in mouse_wheel_phase_handler based
-  // on its timer.
-  bool has_synthetic_phase = false;
-
-  bool scroll_by_page = false;
-  bool has_precise_scrolling_deltas = false;
-
   RailsMode rails_mode;
 
   // Whether the event is blocking, non-blocking, all event
@@ -87,6 +81,16 @@ class WebMouseWheelEvent : public WebMouseEvent {
 
   // The expected result of this wheel event (if not canceled).
   EventAction event_action;
+
+  // True when phase information is added in mouse_wheel_phase_handler based
+  // on its timer.
+  bool has_synthetic_phase = false;
+
+  // The units of delta_x and delta_y. Currently only supports
+  // kScrollByPrecisePixel, kScrollByPixel, and kScrollByPage, as they are
+  // the only values expected after converting an OS event to a
+  // WebMouseWheelEvent.
+  ui::input_types::ScrollGranularity delta_units;
 
   WebMouseWheelEvent(Type type, int modifiers, base::TimeTicks time_stamp)
       : WebMouseEvent(sizeof(WebMouseWheelEvent),
@@ -104,7 +108,8 @@ class WebMouseWheelEvent : public WebMouseEvent {
         phase(kPhaseNone),
         momentum_phase(kPhaseNone),
         rails_mode(kRailsModeFree),
-        dispatch_type(kBlocking) {}
+        dispatch_type(kBlocking),
+        delta_units(ui::input_types::ScrollGranularity::kScrollByPixel) {}
 
   WebMouseWheelEvent()
       : WebMouseEvent(sizeof(WebMouseWheelEvent), kMousePointerId),
@@ -118,7 +123,8 @@ class WebMouseWheelEvent : public WebMouseEvent {
         phase(kPhaseNone),
         momentum_phase(kPhaseNone),
         rails_mode(kRailsModeFree),
-        dispatch_type(kBlocking) {}
+        dispatch_type(kBlocking),
+        delta_units(ui::input_types::ScrollGranularity::kScrollByPixel) {}
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT float DeltaXInRootFrame() const;

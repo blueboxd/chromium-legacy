@@ -7,15 +7,12 @@
 
 #include <memory>
 
+#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/cpp/app_list/app_list_controller_observer.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
-
-namespace base {
-class OneShotTimer;
-}  // namespace base
 
 namespace ui {
 class GestureEvent;
@@ -32,21 +29,22 @@ class HomeButton;
 class HomeButtonController : public AppListControllerObserver,
                              public SessionObserver,
                              public TabletModeObserver,
-                             public AssistantStateObserver {
+                             public AssistantStateObserver,
+                             public AssistantUiModelObserver {
  public:
   explicit HomeButtonController(HomeButton* button);
   ~HomeButtonController() override;
 
-  // Maybe handles a gesture event based on the event and whether voice
-  // interaction is available. Returns true if the event is consumed; otherwise,
-  // HomeButton should pass the event along to Button to consume.
+  // Maybe handles a gesture event based on the event and whether the Assistant
+  // is available. Returns true if the event is consumed; otherwise, HomeButton
+  // should pass the event along to Button to consume.
   bool MaybeHandleGestureEvent(ui::GestureEvent* event);
 
-  // Whether voice interaction is available via long-press.
-  bool IsVoiceInteractionAvailable();
+  // Whether the Assistant is available via long-press.
+  bool IsAssistantAvailable();
 
-  // Whether voice interaction is currently running.
-  bool IsVoiceInteractionRunning();
+  // Whether the Assistant UI currently showing.
+  bool IsAssistantVisible();
 
   bool is_showing_app_list() const { return is_showing_app_list_; }
 
@@ -64,13 +62,20 @@ class HomeButtonController : public AppListControllerObserver,
   void OnAssistantStatusChanged(mojom::AssistantState state) override;
   void OnAssistantSettingsEnabled(bool enabled) override;
 
+  // AssistantUiModelObserver:
+  void OnUiVisibilityChanged(
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) override;
+
   void OnAppListShown();
   void OnAppListDismissed();
 
-  void StartVoiceInteractionAnimation();
+  void StartAssistantAnimation();
 
-  // Initialize the voice interaction overlay.
-  void InitializeVoiceInteractionOverlay();
+  // Initialize the Assistant overlay.
+  void InitializeAssistantOverlay();
 
   // True if the app list is currently showing for the button's display.
   // This is useful because other app_list_visible functions aren't per-display.
@@ -79,11 +84,10 @@ class HomeButtonController : public AppListControllerObserver,
   // The button that owns this controller.
   HomeButton* const button_;
 
-  // Owned by the button's view hierarchy. Null if voice interaction is not
+  // Owned by the button's view hierarchy. Null if the Assistant is not
   // enabled.
   AssistantOverlay* assistant_overlay_ = nullptr;
   std::unique_ptr<base::OneShotTimer> assistant_animation_delay_timer_;
-  base::TimeTicks voice_interaction_start_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeButtonController);
 };

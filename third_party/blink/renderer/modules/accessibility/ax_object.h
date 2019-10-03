@@ -621,7 +621,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // Used by objects of role ColorWellRole.
   virtual RGBA32 ColorValue() const { return Color::kTransparent; }
   virtual bool CanvasHasFallbackContent() const { return false; }
-  virtual AtomicString FontFamily() const { return g_null_atom; }
+  virtual String FontFamily() const { return String(); }
   // Font size is in pixels.
   virtual float FontSize() const { return 0.0f; }
   virtual float FontWeight() const { return 0.0f; }

@@ -21,7 +21,8 @@
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "fuchsia/engine/common.h"
+#include "fuchsia/engine/common/web_engine_content_client.h"
+#include "fuchsia/engine/switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/string_data_source.h"
@@ -42,14 +43,14 @@ ContentDirectoriesMap ParseContentDirectoriesFromCommandLine() {
   // Parse the list of content directories from the command line.
   std::string content_directories_unsplit =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          kContentDirectories);
+          switches::kContentDirectories);
   if (content_directories_unsplit.empty())
     return {};
 
   base::StringPairs named_handle_ids;
   if (!base::SplitStringIntoKeyValuePairs(content_directories_unsplit, '=', ',',
                                           &named_handle_ids)) {
-    LOG(WARNING) << "Couldn't parse --" << kContentDirectories
+    LOG(WARNING) << "Couldn't parse --" << switches::kContentDirectories
                  << " into KV pairs: " << content_directories_unsplit;
     return {};
   }
@@ -320,7 +321,8 @@ void ContentDirectoryLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  if (!request.url.SchemeIs(kFuchsiaContentDirectoryScheme) ||
+  if (!request.url.SchemeIs(
+          WebEngineContentClient::kFuchsiaContentDirectoryScheme) ||
       !request.url.is_valid()) {
     client->OnComplete(
         network::URLLoaderCompletionStatus(net::ERR_INVALID_URL));

@@ -27,6 +27,7 @@
 #include "ui/views/bubble/footnote_container_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
@@ -116,10 +117,7 @@ std::unique_ptr<Button> BubbleFrameView::CreateCloseButton(
   close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
   close_button->SizeToPreferredSize();
 
-  // Let the close button use a circular inkdrop shape.
-  auto highlight_path = std::make_unique<SkPath>();
-  highlight_path->addOval(gfx::RectToSkRect(gfx::Rect(close_button->size())));
-  close_button->SetProperty(kHighlightPathKey, highlight_path.release());
+  InstallCircleHighlightPathGenerator(close_button.get());
 
   // Remove the close button from tab traversal on all platforms. Note this does
   // not affect screen readers' ability to focus the close button. Keyboard

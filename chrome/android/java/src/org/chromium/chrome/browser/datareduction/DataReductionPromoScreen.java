@@ -11,7 +11,7 @@ import android.view.View;
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.widget.PromoDialog;
+import org.chromium.chrome.browser.ui.widget.PromoDialog;
 import org.chromium.ui.widget.Toast;
 
 /**

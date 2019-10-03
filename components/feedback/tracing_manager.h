@@ -58,9 +58,7 @@ class TracingManager {
   TracingManager();
 
   void StartTracing();
-  void OnTraceDataCollected(
-      std::unique_ptr<const base::DictionaryValue> metadata,
-      base::RefCountedString* data);
+  void OnTraceDataCollected(std::unique_ptr<std::string> data);
 
   // ID of the trace that is being collected.
   int current_trace_id_;

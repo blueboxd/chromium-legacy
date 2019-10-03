@@ -70,7 +70,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // Lay out again, this time with a predefined good breakpoint that we
   // discovered in the first pass. This happens when we run out of space in a
   // fragmentainer at an less-than-ideal location, due to breaking restrictions,
-  // such as orphans or widows.
+  // such as orphans, widows, break-before:avoid or break-after:avoid.
   NOINLINE scoped_refptr<const NGLayoutResult> RelayoutAndBreakEarlier(
       const NGEarlyBreak&);
 
@@ -78,10 +78,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       NGInlineChildLayoutContext* inline_child_layout_context);
 
   scoped_refptr<const NGLayoutResult> FinishLayout(NGPreviousInflowPosition*);
-
-  // If the child is the one we have already determined to break before, do so
-  // and return true. Otherwise, return false.
-  bool FindEarlyBreakpoint(NGLayoutInputNode child, NGPreviousInflowPosition*);
 
   // Return the BFC block offset of this block.
   LayoutUnit BfcBlockOffset() const {
@@ -233,9 +229,33 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // returned.
   bool FinalizeForFragmentation();
 
-  // Insert a fragmentainer break before the child if necessary.
-  // Update previous in-flow position and return true if a break was inserted.
-  // Otherwise return false.
+  // Outcome of considering (and possibly attempting) breaking before a child.
+  enum BreakStatus {
+    // Continue layout. No break was inserted before the child (but there may be
+    // a break inside).
+    kContinueWithoutBreaking,
+
+    // A break was inserted before the child. Discard the child fragment and
+    // finish layout of the container. If there was a break inside the child, it
+    // will be discarded along with the child fragment.
+    kBrokeBefore,
+
+    // The child couldn't fit here, but no break was inserted before the child,
+    // as it was an unappealing place to break, and we have a better earlier
+    // breakpoint. We now need to abort the current layout, and go back and
+    // re-layout to said earlier breakpoint.
+    kNeedsEarlierBreak
+  };
+
+  // Insert a fragmentainer break before the child if necessary. In that case,
+  // the previous in-flow position will be updated, we'll return |kBrokeBefore|.
+  // If we don't break inside, we'll consider the appeal of doing so anyway (and
+  // store it as the most appealing break point so far if that's the case),
+  // since we might have to go back and break here. Return
+  // |kContinueWithoutBreaking| if we're to continue laying out. If
+  // |kNeedsEarlierBreak| is returned, it means that we ran out of space, but
+  // shouldn't break before the child, but rather abort layout, and re-layout to
+  // a previously found good breakpoint.
   // If |has_container_separation| is true, it means that we're at a valid
   // breakpoint. We obviously prefer valid breakpoints, but sometimes we need to
   // break at undesirable locations. Class A breakpoints occur between block
@@ -246,24 +266,36 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // block-start content edge of the container and the block-start margin edge
   // of the first in-flow child. This can happen when in-flow content is pushed
   // down by floats. https://www.w3.org/TR/css-break-3/#possible-breaks
-  bool BreakBeforeChildIfNeeded(NGLayoutInputNode child,
-                                const NGLayoutResult&,
-                                NGPreviousInflowPosition*,
-                                LayoutUnit block_offset,
-                                bool has_container_separation);
+  BreakStatus BreakBeforeChildIfNeeded(NGLayoutInputNode child,
+                                       const NGLayoutResult&,
+                                       NGPreviousInflowPosition*,
+                                       LayoutUnit block_offset,
+                                       bool has_container_separation);
 
   // Insert either a soft or forced break before the child.
   void BreakBeforeChild(NGLayoutInputNode child,
                         const NGLayoutResult&,
                         LayoutUnit block_offset,
+                        NGBreakAppeal,
                         bool is_forced_break,
                         NGPreviousInflowPosition*);
   void BreakBeforeChild(NGLayoutInputNode child,
+                        NGBreakAppeal,
                         bool is_forced_break,
                         NGPreviousInflowPosition*);
 
   // Propagate the minimal space shortage from a child.
   void PropagateSpaceShortage(const NGLayoutResult&, LayoutUnit block_offset);
+
+  // Look for a better breakpoint (than we already have) either before the child
+  // (class A breakpoint), or inside it (class A or B breakpoint), and store it.
+  void UpdateEarlyBreakAtBlockChild(NGBlockNode child,
+                                    const NGLayoutResult& layout_result,
+                                    NGBreakAppeal break_before);
+
+  // Look for a better breakpoint (than we already have) between lines (i.e. a
+  // class B breakpoint), and store it.
+  void UpdateEarlyBreakBetweenLines();
 
   void PropagateBaselinesFromChildren();
   bool AddBaseline(const NGBaselineRequest&,

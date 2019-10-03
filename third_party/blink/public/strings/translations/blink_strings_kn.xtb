@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">ಅಡಿಟಿಪ್ಪಣಿ</translation>
 <translation id="2709516037105925701">ಸ್ವಯಂತುಂಬುವಿಕೆ</translation>
 <translation id="2723001399770238859">ಆಡಿಯೋ</translation>
+<translation id="2725963129578236554">ಕಾಮೆಂಟ್‌ಗಳು</translation>
 <translation id="2746543609216772311">ಮೌಲ್ಯವು <ph name="MINIMUM_DATE_OR_TIME" /> ಅಥವಾ ನಂತರದ್ದಾಗಿರಬೇಕು.</translation>
 <translation id="2759744352195237655">ಪಾಪ್ ಅಪ್ ಬಟನ್</translation>
 <translation id="2761667185364618470">ನೀವು ಮುಂದುವರೆಯಬೇಕಾದರೆ ದಯವಿಟ್ಟು ಈ ಬಾಕ್ಸ್ ಅನ್ನು ಪರೀಕ್ಷಿಸಿ.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">ಈ ಪಠ್ಯವನ್ನು <ph name="MIN_CHARACTERS" /> ಅಕ್ಷರಗಳಿಗೆ ಅಥವಾ ಅದಕ್ಕಿಂತಲೂ ಹೆಚ್ಚಿಗೆ ಸೀಮಿತಗೊಳಿಸಿ (ನೀವು ಪ್ರಸ್ತುತವಾಗಿ <ph name="CURRENT_LENGTH" /> ಅಕ್ಷರಗಳನ್ನು ಬಳಸುತ್ತಿರುವಿರಿ).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' ನಂತರದ ಭಾಗವು '<ph name="INVALIDCHARACTER" />' ಚಿಹ್ನೆಯನ್ನು ಒಳಗೊಂಡಿರಬಾರದು.</translation>
 <translation id="3846214748874656680">ಪೂರ್ಣಪರದೆಯಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
+<translation id="3889183436948184105">ಪರಿಷ್ಕರಣೆ</translation>
 <translation id="3920932319529768807">ತೀರ್ಮಾನ</translation>
 <translation id="3924558731517983934">ಅಪ್ಲಿಕೇಶನ್</translation>
 <translation id="3944740393230681990">ಪೀಠಿಕೆ</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">ಆಡಿಯೊ ಸಮಯ ಸ್ಕ್ರಬ್ಬರ್</translation>
 <translation id="6443871981718447451">ಮುಚ್ಚಿದ ಶೀರ್ಷಿಕೆಗಳ ಮೆನುವನ್ನು ತೋರಿಸಿ</translation>
 <translation id="6453774872122745852">ಅಂಗೀಕಾರಗಳು</translation>
+<translation id="6475115390776617481">ಪ್ರಸ್ತುತವಾಗಿ ಈ ವಿಷಯವನ್ನು ಪರಿಶೀಲಿಸುತ್ತಿರುವವರು ಅಥವಾ ಎಡಿಟ್ ಮಾಡುತ್ತಿರುವವರು</translation>
 <translation id="648732519525291180">ಸಮಯ ಪಿಕರ್</translation>
 <translation id="6550675742724504774">ಆಯ್ಕೆಗಳು</translation>
 <translation id="6572309429103589720">ಅಮಾನ್ಯ ವ್ಯಾಕರಣ</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">ಅಳವಡಿಕೆ</translation>
 <translation id="6989848892321993519">ಈ ಪಠ್ಯವನ್ನು <ph name="MIN_CHARACTERS" /> ಅಥವಾ ಇದಕ್ಕಿಂತಲೂ ಹೆಚ್ಚಿನ ಅಕ್ಷರಗಳಿಗೆ ಉದ್ದಗೊಳಿಸಿ (ನೀವು ಪ್ರಸ್ತುತ 1 ಅಕ್ಷರಗಳನ್ನು ಬಳಸುತ್ತಿರುವಿರಿ).</translation>
 <translation id="7033340931668032222">ವಾಲ್ಯೂಮ್ ಬದಲಾಯಿಸಲು ಮೇಲಕ್ಕೆ ಮತ್ತು ಕೆಳಕ್ಕೆ ಬಟನ್ ಒತ್ತಿರಿ</translation>
+<translation id="7034405885550056553">ಸಲಹೆ</translation>
 <translation id="709897737746224366">ದಯವಿಟ್ಟು ವಿನಂತಿಸಿದ ಸ್ವರೂಪವನ್ನು ಹೊಂದಿಸಿ.</translation>
 <translation id="7118469954320184356">ಯಾವುದೇ ವಿವರಣೆ ಲಭ್ಯವಿಲ್ಲ.</translation>
 <translation id="7139483182332611405">ಮುನ್ನುಡಿ</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">ಔಟ್‌ಪುಟ್</translation>
 <translation id="8750798805984357768">ದಯವಿಟ್ಟು ಈ ಕೆಳಗಿನ ಆಯ್ಕೆಗಳಲ್ಲಿ ಒಂದನ್ನು ಆರಿಸಿ.</translation>
 <translation id="8808573423886751634">ಅಧ್ಯಾಯ</translation>
+<translation id="8822203815165896261">ಲೇಖಕರ ಮಾಹಿತಿ</translation>
 <translation id="8845239796550121995">ಈಗ ನಿಮ್ಮ ಟಿವಿಯನ್ನು ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="8851136666856101339">ಮುಖ್ಯ</translation>
 <translation id="8875657656876809964">ವೀಡಿಯೊ ಪ್ಲೇಬ್ಯಾಕ್ ದೋಷ</translation>

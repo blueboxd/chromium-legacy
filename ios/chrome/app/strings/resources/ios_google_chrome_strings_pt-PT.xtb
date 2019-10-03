@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Ao utilizar esta aplicação, aceita os <ph name="BEGIN_LINK_TOS" />Termos de Utilização<ph name="END_LINK_TOS" /> e o <ph name="BEGIN_LINK_PRIVACY" />Aviso de Privacidade<ph name="END_LINK_PRIVACY" /> do Chrome.</translation>
 <translation id="2147651015520127414">O Chrome confirmou que <ph name="ISSUER" /> emitiu o certificado deste Website.</translation>
 <translation id="2199719347983604670">Dados da Sincronização do Chrome</translation>
-<translation id="2342981853652716282">Inicie sessão no Chrome para obter os seus marcadores, palavras-passe e muito mais em todos os dispositivos.</translation>
 <translation id="2347208864470321755">Se esta funcionalidade estiver ativada, o Chrome oferecer-se-á para traduzir páginas escritas noutros idiomas com o Google Tradutor. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Para guardar imagens, toque em Definições para permitir que o Chrome utilize as suas fotos</translation>
 <translation id="2576431527583832481">O Chrome ficou ainda melhor! Está disponível uma nova versão.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Ajude a melhorar o Chrome ao enviar estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="415767770115540173">Obter uma melhor experiência no Google Chrome com base na sua localização.</translation>
 <translation id="424864128008805179">Pretende terminar sessão no Chrome?</translation>
+<translation id="4249068189593983585">Sugestão para o Chrome: para obter mais opções de separadores, toque sem soltar no botão Mostrar separadores na barra de ferramentas, que se encontra na parte superior ou inferior do ecrã.</translation>
 <translation id="4523886039239821078">Alguns suplementos provocam falhas no sistema do Chrome. Desinstale:</translation>
 <translation id="5389212809648216794">O Google Chrome não pode utilizar a câmara porque está a ser utilizada por outra aplicação</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Consulte os Termos de Utilização do Chrome atualizados.<ph name="END_LINK" /></translation>
@@ -50,5 +50,4 @@
 <translation id="840168496893712993">Alguns suplementos provocam falhas no sistema do Chrome. Tente desinstalá-los.</translation>
 <translation id="8459495907675268833">Os dados selecionados foram removidos do Chrome e dos dispositivos sincronizados. A sua Conta Google pode ter outras formas do histórico de navegação, como pesquisas e atividade de outros serviços Google, em history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">O Google Chrome poderá utilizar serviços Web para melhorar a sua experiência de navegação. Poderá optar por desativar estes serviços. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 </translationbundle>

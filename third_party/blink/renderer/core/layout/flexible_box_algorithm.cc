@@ -759,6 +759,21 @@ void FlexLayoutAlgorithm::AlignChildren() {
   }
 }
 
+void FlexLayoutAlgorithm::FlipForWrapReverse(
+    LayoutUnit cross_axis_start_edge,
+    LayoutUnit cross_axis_content_size) {
+  DCHECK_EQ(Style()->FlexWrap(), EFlexWrap::kWrapReverse);
+  for (FlexLine& line_context : flex_lines_) {
+    LayoutUnit original_offset =
+        line_context.cross_axis_offset - cross_axis_start_edge;
+    LayoutUnit new_offset = cross_axis_content_size - original_offset -
+                            line_context.cross_axis_extent;
+    LayoutUnit wrap_reverse_difference = new_offset - original_offset;
+    for (FlexItem& flex_item : line_context.line_items)
+      flex_item.desired_location.Move(LayoutUnit(), wrap_reverse_difference);
+  }
+}
+
 TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode() const {
   return GetTransformedWritingMode(*style_);
 }

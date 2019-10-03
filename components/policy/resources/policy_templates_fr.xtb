@@ -1207,7 +1207,6 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
           Si cette règle n'est pas définie, le comportement des règles plus spécifiques n'est pas modifié.</translation>
 <translation id="2987155890997901449">Activer ARC</translation>
 <translation id="2987227569419001736">Contrôler l'utilisation de l'API Web Bluetooth</translation>
-<translation id="2989466284538293869">Vérifier la conformité du contenu des importations</translation>
 <translation id="3011301228198307065">Permet de configurer l'URL de la page d'accueil par défaut dans <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de la modifier.
 
           La page d'accueil est la page qui s'ouvre lorsque l'utilisateur clique sur le bouton d'accueil. Les pages qui s'affichent au démarrage sont gérées par les règles RestoreOnStartup.
@@ -1732,7 +1731,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           Si ce paramètre est défini sur "False" ou s'il n'est pas défini, les utilisateurs ont la possibilité de transférer des fichiers vers Google Drive.</translation>
 <translation id="3915395663995367577">URL d'un fichier .pac de proxy</translation>
 <translation id="3925377537407648234">Régler la résolution d'affichage et le facteur d'adaptation</translation>
-<translation id="3936481697920057199">Vérifier la conformité du contenu des importations et des téléchargements</translation>
 <translation id="3939893074578116847">Envoyer des paquets réseau au serveur de gestion pour contrôler l'état en ligne, afin de lui permettre
       de détecter si l'appareil est hors connexion
 
@@ -2022,18 +2020,6 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
           La valeur de la règle doit être indiquée en millisecondes. Les valeurs doivent être inférieures ou égales au délai d'inactivité.
 
           Le message d'avertissement ne s'affiche que si le dépassement du délai d'inactivité entraîne une déconnexion ou l'arrêt de l'appareil.</translation>
-<translation id="4342827592971649626">Cette règle permet de contrôler l'analyse approfondie des téléchargements des utilisateurs à l'aide de la navigation sécurisée. Si cette règle n'est pas configurée ou si elle est définie sur le paramètre par défaut ("Ne pas analyser les fichiers"), les téléchargements des utilisateurs ne sont pas analysés par la navigation sécurisée.
-
-      Si cette règle est définie sur "Interdire l'analyse des fichiers", les utilisateurs ne sont pas autorisés à analyser leurs téléchargements. Ce paramètre est différent de celui par défaut, qui permet à certains utilisateurs (comme les utilisateurs de la Protection Avancée) d'envoyer leurs téléchargements pour analyse. Ce paramètre empêche ces utilisateurs d'analyser leurs fichiers.
-
-      Si cette règle est définie sur "Envoyer les téléchargements des utilisateurs pour analyse", les téléchargements des utilisateurs sont envoyés sur le réseau à la navigation sécurisée afin d'y être analysés pour détecter les éventuels logiciels malveillants.
-
-      Si cette règle est définie sur "Envoyer les importations des utilisateurs pour analyse", les importations des utilisateurs sont envoyées sur le réseau à la navigation sécurisée afin d'y être analysées pour détecter les éventuels logiciels malveillants.
-
-      Si cette règle est définie sur "Envoyer les importations et les téléchargements des utilisateurs pour analyse", le produit se comporte conformément aux règles indiquées sous "Envoyer les importations des utilisateurs pour analyse" et "Envoyer les téléchargements des utilisateurs pour analyse".
-
-      Pour savoir comment les utilisateurs et les administrateurs peuvent consulter les résultats de l'analyse, reportez-vous aux règles <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> et <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" />.</translation>
-<translation id="4344356660952451291">Liste des domaines pour lesquels le contenu téléchargé doit faire l'objet d'une vérification de conformité</translation>
 <translation id="4346674324214534449">Vous permet de définir si les annonces doivent être bloquées sur les sites présentant des annonces intrusives.
 
       Si cette règle est définie sur 2, les annonces seront bloquées sur les sites présentant des annonces intrusives.
@@ -2164,7 +2150,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4604931264910482931">Configurer la liste noire de messagerie native</translation>
 <translation id="4617338332148204752">Ignorer la vérification des balises Meta dans <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configurer la liste blanche d'installation des extensions</translation>
-<translation id="4632261735235986857">Interdire l'analyse des fichiers</translation>
 <translation id="4632343302005518762">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenu répertoriés</translation>
 <translation id="4632566332417930481">Interdire l'utilisation des outils pour les développeurs avec les extensions installées par la stratégie d'entreprise, mais autoriser l'utilisation des outils pour les développeurs dans les autres cas</translation>
 <translation id="4633786464238689684">Modifie le comportement par défaut de la première rangée de touches, qui deviennent des touches de fonction.
@@ -2305,7 +2290,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4983201894483989687">Autoriser l'exécution de plug-ins obsolètes</translation>
 <translation id="4986560318567565414">Chemin d'accès pour basculer vers Chrome à partir du navigateur secondaire.</translation>
 <translation id="4988291787868618635">Action à effectuer au terme du délai d'inactivité</translation>
-<translation id="5009903818924226868">Ne pas vérifier la conformité du contenu</translation>
 <translation id="5032164758660626397">Empêcher l'utilisateur de transférer des fichiers volumineux</translation>
 <translation id="5047604665028708335">Autoriser l'accès aux sites en dehors des packs de contenu</translation>
 <translation id="5052081091120171147">Lorsqu'elle est activée, cette règle force l'importation de l'historique de navigation à partir du navigateur par défaut actuel. Si elle est activée, elle affecte également la boîte de dialogue d'importation. 
@@ -2522,16 +2506,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
           Si cette règle est définie sur "False", les utilisateurs ne peuvent pas caster de contenu sur leur appareil. Si elle est définie sur "True", les utilisateurs sont autorisés à caster du contenu. Si elle n'est pas définie, les utilisateurs ne peuvent pas caster de contenu sur les appareils Chrome OS enregistrés, mais ils peuvent le faire sur des appareils non enregistrés.</translation>
 <translation id="5323200200131319468">Activer les commentaires audio sur l'écran de connexion</translation>
-<translation id="5325625566921364045">Permet de contrôler la façon dont <ph name="PRODUCT_NAME" /> vérifie que les données importées, téléchargées, collées à partir du presse-papiers ou glissées-déposées sont conformes aux règles de l'entreprise.
-
-      Si cette règle n'est pas configurée ou est définie sur "Aucune", <ph name="PRODUCT_NAME" /> ne vérifie la conformité d'aucune donnée.
-
-      Si cette règle est définie sur "Vérifier les téléchargements" et que l'utilisateur tente de télécharger un fichier à partir d'une URL indiquée dans la règle <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" />, <ph name="PRODUCT_NAME" /> vérifie que les données téléchargées sont conformes aux règles de l'entreprise.
-
-      Si cette règle est définie sur "Vérifier les importations" et que l'utilisateur tente d'importer un fichier sur un domaine qui n'est pas indiqué dans la règle <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" />, <ph name="PRODUCT_NAME" /> vérifie que le fichier importé, les données collées à partir du presse-papiers et les données glissées-déposées sont conformes aux règles de l'entreprise.
-
-      Si cette règle est définie sur "Vérifier les importations et les téléchargements", <ph name="PRODUCT_NAME" /> se comporte conformément aux règles indiquées sous "Vérifier les téléchargements" et "Vérifier les importations".
-      </translation>
 <translation id="532848608876725157">Activer DNS-over-HTTPS avec solution de secours à risque</translation>
 <translation id="5329007337159326804">Avertissement : La règle relative à la version TLS maximale sera entièrement supprimée de <ph name="PRODUCT_NAME" /> à partir de la version 75 environ (autour de juin 2019).
 
@@ -2591,7 +2565,6 @@ Si cette règle n'est pas configurée, le paramètre "AskNotifications" est util
 <translation id="5405289061476885481">Détermine les dispositions de clavier autorisées sur l'écran de connexion <ph name="PRODUCT_OS_NAME" />.
 
       Si cette règle est définie sur une liste d'identifiants de modes de saisie, les modes de saisie indiqués sont disponibles sur l'écran de connexion. Le premier mode de saisie proposé est présélectionné. Lorsqu'un profil utilisateur est actif sur l'écran de connexion, le dernier mode de saisie utilisé par l'utilisateur est disponible en plus des modes de saisie fournis par cette règle. Si cette règle n'est pas définie, les modes de saisie sur l'écran de connexion sont dérivés des paramètres régionaux dans lesquels cet écran est affiché. Les valeurs qui ne constituent pas des identifiants de modes de saisie valides sont ignorées.</translation>
-<translation id="540659115481372611">Vérifier la conformité du contenu des téléchargements</translation>
 <translation id="5412057811596122582">Si cette règle est activée ou n'est pas configurée (par défaut), l'utilisateur est invité à accepter l'accès à la capture audio, excepté pour les URL configurées dans la liste AudioCaptureAllowedUrls, qui bénéficient d'un accès instantané.
 
       Lorsque cette règle est désactivée, l'utilisateur ne reçoit pas de message d'invitation, et la capture audio n'est disponible que pour les URL configurées dans AudioCaptureAllowedUrls.
@@ -3018,10 +2991,6 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultJavaScriptSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
 <translation id="614662973812186053">Cette règle permet également de contrôler la collecte des données d'utilisation et de diagnostic sur les appareils Android.</translation>
-<translation id="6150961766041720393">Liste des domaines pour lesquels les fichiers importés, les données collées à partir du presse-papiers ou les données glissées-déposées ne doivent pas faire l'objet d'une vérification de conformité.  Cette règle ne s'applique que si la règle <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> est activée.
-
-      Si cette règle n'est pas définie ou si elle est configurée, mais qu'aucun domaine n'est indiqué dans la liste, tous les contenus font l'objet d'une vérification de conformité.
-      </translation>
 <translation id="6153048425064249648">Cette règle permet de contrôler la création de rapports dans le cloud pour <ph name="PRODUCT_NAME" />, qui transmet des informations sur le fonctionnement du navigateur à la console d'administration Google.
 
       Si cette règle n'est pas définie ou est définie sur "False", aucune donnée n'est collectée ni transmise.
@@ -3114,16 +3083,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6281043242780654992">Cette règle permet de configurer le comportement de la messagerie native. Les hôtes de messagerie native qui figurent sur la liste noire ne sont pas autorisés tant qu'ils n'ont pas été ajoutés à la liste blanche.</translation>
 <translation id="6282799760374509080">Autoriser ou interdire la capture audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6305895953906663275">Cette règle permet de contrôler le comportement de <ph name="PRODUCT_NAME" /> lorsqu'un utilisateur tente d'importer ou de télécharger des fichiers trop volumineux pour être analysés en vue de détecter d'éventuels logiciels malveillants ou de vérifier la conformité de leur contenu (50 Mo ou plus).  Cette restriction ne s'applique qu'aux fichiers nécessitant une analyse comme défini par <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> et par les règles qui régissent la liste des domaines pour lesquels les vérifications sont activées.
-
-      Si cette règle n'est pas définie ou si elle est configurée sur "Aucune", <ph name="PRODUCT_NAME" /> autorise l'utilisateur à importer ou à télécharger des fichiers, quelle que soit leur taille.
-
-      Si cette règle est définie sur "Bloquer le téléchargement de fichiers volumineux", les fichiers trop volumineux pour être analysés sont supprimés avant que l'utilisateur n'y ait accès.  Comme il n'est pas toujours possible de connaître la taille d'un fichier avant son téléchargement, <ph name="PRODUCT_NAME" /> peut télécharger des fichiers, puis déterminer qu'ils dépassent la taille maximale autorisée.
-
-      Si cette règle est définie sur "Bloquer l'importation de fichiers volumineux", les fichiers trop volumineux pour être analysés ne peuvent pas être sélectionnés pour l'importation.
-
-      Si cette règle est définie sur "Bloquer l'importation et le téléchargement de fichiers volumineux", <ph name="PRODUCT_NAME" /> se comporte conformément aux règles indiquées sous "Bloquer le téléchargement de fichiers volumineux" et "Bloquer l'importation de fichiers volumineux".
-      </translation>
 <translation id="6310223829319187614">Activer la saisie automatique du nom de domaine lors de la connexion de l'utilisateur</translation>
 <translation id="6315673513957120120">Chrome affiche une page d'avertissement lorsque les utilisateurs naviguent vers des sites présentant des erreurs SSL. Par défaut, ou quand cette règle est définie sur "True", les utilisateurs sont autorisés à poursuivre leur navigation vers la page concernée.
       Définir cette règle sur "False" empêche les utilisateurs de poursuivre leur navigation au-delà de la page d'avertissement.</translation>
@@ -3152,7 +3111,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
       Si cette règle est définie sur "False", aucune liste d'utilisateurs n'est générée.</translation>
 <translation id="6394350458541421998">Cette règle a été supprimée à partir de la version 29 de <ph name="PRODUCT_OS_NAME" />. Veuillez utiliser la règle PresentationScreenDimDelayScale à la place.</translation>
 <translation id="6401669939808766804">Déconnecter l'utilisateur</translation>
-<translation id="6403746242226534223">Vérifier la réputation des URL visitées en temps réel (navigation sécurisée)</translation>
 <translation id="6406448383934634215">Si l'option "Ouvrir une liste d'URL" est sélectionnée comme action de démarrage, vous pouvez spécifier la liste des URL qui sont ouvertes. Si cette règle n'est pas configurée, aucune URL ne sera ouverte au démarrage.
 
           Cette règle ne fonctionne que si la règle RestoreOnStartup est définie sur RestoreOnStartupIsURLs.
@@ -3349,10 +3307,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 
       Si cette règle n'est pas configurée, le client DNS intégré est activé par défaut sur Mac OS, Android (lorsque ni le DNS privé, ni le VPN ne sont activés) et Chrome OS, et l'utilisateur peut choisir si le client DNS intégré doit être utilisé ou non, soit en modifiant chrome://flags, soit à l'aide d'un indicateur de ligne de commande.</translation>
 <translation id="6843296367238757293">Cette règle est obsolète. Nous vous déconseillons de l'utiliser. Pour en savoir plus, rendez-vous sur https://support.google.com/chrome/a/answer/7643500.</translation>
-<translation id="6845546921986645941">Lorsque cette règle est activée, <ph name="PRODUCT_NAME" /> signale à Google les événements à risque (réutilisation d'un mot de passe, téléchargement de logiciels malveillants, interstitiels, non-conformité d'un contenu, etc.) pour qu'ils fassent l'objet d'une analyse.  Certains événements à risque, comment la non-conformité d'un contenu, dépendent d'autres règles en vertu desquelles de telles vérifications sont activées.
-
-      Si cette règle est désactivée ou si elle n'est pas définie, <ph name="PRODUCT_NAME" /> ne signale pas les événements à risque.
-      </translation>
 <translation id="684856667300805181">Cette règle a été supprimée dans <ph name="PRODUCT_NAME" /> 68 et remplacée par <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6851199885688265233">Activer la fonctionnalité d'accessibilité de mise en surbrillance du curseur</translation>
 <translation id="6856743875250214792">Cette règle désormais obsolète a été supprimée dans M66, car elle servait uniquement aux tests internes et ne permettait pas de garantir la sécurité.
@@ -3893,21 +3847,6 @@ On attend de cette règle qu'elle soit utilisée dans le cadre de la modificatio
 Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> utilise les paramètres régionaux spécifiés. Si les paramètres régionaux configurés ne sont pas compatibles, le navigateur applique la valeur "en-US". 
 
 Si ce paramètre est désactivé ou s'il n'est pas configuré, <ph name="PRODUCT_NAME" /> utilise les paramètres régionaux favoris de l'utilisateur (s'ils ont été configurés), les paramètres régionaux du système ou les paramètres régionaux de remplacement ("en-US").</translation>
-<translation id="7641363659597330616">Permet de configurer le type de téléchargements qui seront complètement bloqués par <ph name="PRODUCT_NAME" />, et pour lesquels les utilisateurs ne sont pas autorisés à ignorer l'avertissement de sécurité.
-
-      Si vous activez cette règle, <ph name="PRODUCT_NAME" /> empêche certains types de téléchargements, et ne permet pas aux utilisateurs de contourner les avertissements de sécurité.
-
-      Si vous sélectionnez l'option "Bloquer les téléchargements dangereux", tous les téléchargements sont autorisés, sauf ceux déclenchant un avertissement de sécurité.
-
-      Si vous sélectionnez l'option "Bloquer les téléchargements potentiellement dangereux", tous les téléchargements sont autorisés, sauf ceux déclenchant un avertissement de sécurité de type "téléchargement potentiellement dangereux".
-
-      Si vous sélectionnez l'option "Bloquer tous les téléchargements", tous les téléchargements sont bloqués.
-
-      Si vous n'activez pas cette règle, ou si vous sélectionnez l'option "Aucune restriction particulière", les restrictions de sécurité habituelles basées sur les résultats de l'analyse de la navigation sécurisée s'appliquent aux téléchargements.
-
-      Notez que ces restrictions s'appliquent aux téléchargements déclenchés par le contenu d'une page Web, ainsi qu'à l'option de menu contextuel "Télécharger le lien". Ces restrictions ne s'appliquent pas à l'enregistrement ou au téléchargement de la page actuellement affichée, ni à l'enregistrement au format PDF depuis les options d'impression.
-
-      Pour en savoir plus sur la navigation sécurisée, consultez la page https://developers.google.com/safe-browsing.</translation>
 <translation id="7643883929273267746">Limiter les comptes visibles dans <ph name="PRODUCT_NAME" /></translation>
 <translation id="7644825865811580663">Si cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> agrandit automatiquement la première fenêtre affichée lors de la première exécution.
       Si cette règle est définie sur "False" ou si elle n'est pas configurée, une règle heuristique détermine si la première fenêtre affichée doit être agrandie en fonction de la taille d'écran.</translation>
@@ -3951,10 +3890,6 @@ au maximum si un utilisateur se sert de l'appareil.
 <translation id="7713608076604149344">Restrictions de téléchargement</translation>
 <translation id="7715711044277116530">Pourcentage d'adaptation du délai d'assombrissement de l'écran en mode Présentation</translation>
 <translation id="7717938661004793600">Permet de configurer les fonctionnalités d'accessibilité de <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7744220323108979821">Liste des domaines pour lesquels le contenu téléchargé doit faire l'objet d'une vérification de conformité avant d'être enregistré sur un espace de stockage local.  Cette règle ne s'applique que si la règle <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> est activée.
-
-      Si cette règle n'est pas définie ou si elle est configurée, mais qu'aucun domaine n'est indiqué dans la liste, aucun contenu téléchargé ne fait l'objet d'une vérification de conformité.
-      </translation>
 <translation id="7747447585227954402">Autoriser les appareils à utiliser un <ph name="PLUGIN_VM_NAME" /> pour <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Active l'authentification forte pour les hôtes d'accès à distance au lieu d'un code d'accès défini par l'utilisateur.
 
@@ -4358,7 +4293,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
           Pour voir des exemples de formats, accédez à l'adresse https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Désactiver l'enregistrement de l'historique du navigateur</translation>
-<translation id="8495279065011513838">Vérifier la conformité du contenu</translation>
 <translation id="8499172469244085141">Paramètres par défaut (les utilisateurs peuvent les contourner)</translation>
 <translation id="849962487677588458">Cette règle est obsolète (elle va être supprimée dans Chrome 78 et ne sera pas remplacée).
 
@@ -4458,7 +4392,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8685024486845674965">L'avertissement relatif à la protection par mot de passe est déclenché par la réutilisation d'un mot de passe</translation>
 <translation id="8693243869659262736">Utiliser le client DNS intégré</translation>
 <translation id="8698286761337647563">Délai, en nombre de jours, pour informer à l'avance les utilisateurs SAML de l'expiration de leur mot de passe</translation>
-<translation id="870193046368370542">Liste des domaines pour lesquels le contenu importé doit faire l'objet d'une vérification de conformité</translation>
 <translation id="8703488928438047864">Envoyer des rapports sur l'état du matériel</translation>
 <translation id="8704831857353097849">Liste des plug-ins désactivés</translation>
 <translation id="8711086062295757690">Indique le mot clé qui est le raccourci utilisé dans l'Omnibox pour déclencher la recherche de ce moteur.

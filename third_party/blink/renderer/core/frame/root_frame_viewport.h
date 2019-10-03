@@ -90,7 +90,6 @@ class CORE_EXPORT RootFrameViewport final
   bool UserInputScrollable(ScrollbarOrientation) const override;
   bool ShouldPlaceVerticalScrollbarOnLeft() const override;
   void ScrollControlWasSetNeedsPaintInvalidation() override;
-  GraphicsLayer* LayerForContainer() const override;
   GraphicsLayer* LayerForScrolling() const override;
   GraphicsLayer* LayerForHorizontalScrollbar() const override;
   GraphicsLayer* LayerForVerticalScrollbar() const override;

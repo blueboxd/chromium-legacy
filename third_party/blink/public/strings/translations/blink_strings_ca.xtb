@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">peu</translation>
 <translation id="2709516037105925701">Emplenament automàtic</translation>
 <translation id="2723001399770238859">àudio</translation>
+<translation id="2725963129578236554">comentaris</translation>
 <translation id="2746543609216772311">El valor ha de ser <ph name="MINIMUM_DATE_OR_TIME" /> o posterior.</translation>
 <translation id="2759744352195237655">botó emergent</translation>
 <translation id="2761667185364618470">Marqueu aquesta casella si voleu continuar.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">Allargueu aquest text fins a un mínim de <ph name="MIN_CHARACTERS" /> caràcters (ara n'utilitzeu <ph name="CURRENT_LENGTH" />).</translation>
 <translation id="383465348367842624">Un nom d'usuari seguit de "<ph name="ATSIGN" />" no pot contenir el símbol "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="3846214748874656680">Surt de la pantalla completa</translation>
+<translation id="3889183436948184105">revisió</translation>
 <translation id="3920932319529768807">conclusió</translation>
 <translation id="3924558731517983934">aplicació</translation>
 <translation id="3944740393230681990">pròleg</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">barra de moment de l'àudio</translation>
 <translation id="6443871981718447451">mostra el menú de subtítols</translation>
 <translation id="6453774872122745852">agraïments</translation>
+<translation id="6475115390776617481">presència en directe</translation>
 <translation id="648732519525291180">selector d'hora</translation>
 <translation id="6550675742724504774">Opcions</translation>
 <translation id="6572309429103589720">La gramàtica no és vàlida</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">inserció</translation>
 <translation id="6989848892321993519">Allarga aquest text fins a <ph name="MIN_CHARACTERS" /> caràcters o més (ara n'utilitzes 1).</translation>
 <translation id="7033340931668032222">amunt i avall per canviar el volum</translation>
+<translation id="7034405885550056553">suggeriment</translation>
 <translation id="709897737746224366">Feu servir el format sol·licitat.</translation>
 <translation id="7118469954320184356">No hi ha cap descripció disponible.</translation>
 <translation id="7139483182332611405">prefaci</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">sortida</translation>
 <translation id="8750798805984357768">Seleccioneu una d'aquestes opcions.</translation>
 <translation id="8808573423886751634">capítol</translation>
+<translation id="8822203815165896261">informació sobre l'autoria</translation>
 <translation id="8845239796550121995">S'està emetent al televisor</translation>
 <translation id="8851136666856101339">principal</translation>
 <translation id="8875657656876809964">Error de reproducció del vídeo</translation>

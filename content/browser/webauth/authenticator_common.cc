@@ -548,7 +548,8 @@ AuthenticatorCommon::CreateRequestDelegate(std::string relying_party_id) {
       render_frame_host_, relying_party_id_);
 }
 
-void AuthenticatorCommon::StartMakeCredentialRequest() {
+void AuthenticatorCommon::StartMakeCredentialRequest(
+    bool allow_skipping_pin_touch) {
   discovery_factory_ =
       AuthenticatorEnvironmentImpl::GetInstance()->GetDiscoveryFactoryOverride(
           static_cast<RenderFrameHostImpl*>(render_frame_host_)
@@ -576,14 +577,17 @@ void AuthenticatorCommon::StartMakeCredentialRequest() {
       connector_, discovery_factory_,
       GetTransports(caller_origin_, transports_),
       *ctap_make_credential_request_, *authenticator_selection_criteria_,
+      allow_skipping_pin_touch,
       base::BindOnce(&AuthenticatorCommon::OnRegisterResponse,
                      weak_factory_.GetWeakPtr()));
 
   request_delegate_->RegisterActionCallbacks(
       base::BindOnce(&AuthenticatorCommon::OnCancelFromUI,
                      weak_factory_.GetWeakPtr()) /* cancel_callback */,
-      base::BindRepeating(&AuthenticatorCommon::StartMakeCredentialRequest,
-                          weak_factory_.GetWeakPtr()) /* start_over_callback */,
+      base::BindRepeating(
+          &AuthenticatorCommon::StartMakeCredentialRequest,
+          weak_factory_.GetWeakPtr(),
+          /*allow_skipping_pin_touch=*/false) /* start_over_callback */,
       base::BindRepeating(
           &device::FidoRequestHandlerBase::StartAuthenticatorRequest,
           request_->GetWeakPtr()) /* request_callback */,
@@ -599,7 +603,8 @@ void AuthenticatorCommon::StartMakeCredentialRequest() {
   request_->set_observer(request_delegate_.get());
 }
 
-void AuthenticatorCommon::StartGetAssertionRequest() {
+void AuthenticatorCommon::StartGetAssertionRequest(
+    bool allow_skipping_pin_touch) {
   discovery_factory_ =
       AuthenticatorEnvironmentImpl::GetInstance()->GetDiscoveryFactoryOverride(
           static_cast<RenderFrameHostImpl*>(render_frame_host_)
@@ -637,14 +642,17 @@ void AuthenticatorCommon::StartGetAssertionRequest() {
   request_ = std::make_unique<device::GetAssertionRequestHandler>(
       connector_, discovery_factory_,
       GetTransports(caller_origin_, transports_), *ctap_get_assertion_request_,
+      allow_skipping_pin_touch,
       base::BindOnce(&AuthenticatorCommon::OnSignResponse,
                      weak_factory_.GetWeakPtr()));
 
   request_delegate_->RegisterActionCallbacks(
       base::BindOnce(&AuthenticatorCommon::OnCancelFromUI,
                      weak_factory_.GetWeakPtr()) /* cancel_callback */,
-      base::BindRepeating(&AuthenticatorCommon::StartGetAssertionRequest,
-                          weak_factory_.GetWeakPtr()) /* start_over_callback */,
+      base::BindRepeating(
+          &AuthenticatorCommon::StartGetAssertionRequest,
+          weak_factory_.GetWeakPtr(),
+          /*allow_skipping_pin_touch=*/false) /* start_over_callback */,
       base::BindRepeating(
           &device::FidoRequestHandlerBase::StartAuthenticatorRequest,
           request_->GetWeakPtr()) /* request_callback */,
@@ -895,7 +903,7 @@ void AuthenticatorCommon::MakeCredential(
       break;
   }
 
-  StartMakeCredentialRequest();
+  StartMakeCredentialRequest(/*allow_skipping_pin_touch=*/true);
 }
 
 // mojom:Authenticator
@@ -1008,7 +1016,7 @@ void AuthenticatorCommon::GetAssertion(
   ctap_get_assertion_request_->is_u2f_only =
       OriginIsCryptoTokenExtension(caller_origin_);
 
-  StartGetAssertionRequest();
+  StartGetAssertionRequest(/*allow_skipping_pin_touch=*/true);
 }
 
 void AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailable(

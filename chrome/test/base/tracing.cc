@@ -36,8 +36,7 @@ class StringTraceEndpoint
     *result_ += *chunk;
   }
 
-  void ReceiveTraceFinalContents(
-      std::unique_ptr<const base::DictionaryValue> metadata) override {
+  void ReceivedTraceFinalContents() override {
     if (!result_->empty())
       *result_ += "]";
     completion_callback_.Run();

@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">Atspraust mapi</translation>
 <translation id="3678559383040232393">Maltiešu tastatūra</translation>
 <translation id="3685122418104378273">Izmantojot mobilos datus, Google diska sinhronizācija pēc noklusējuma ir atspējota.</translation>
+<translation id="3689865792480713551">Atcelt: <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Šo ierīci nevar atvērt, jo tās failu sistēma netiek atbalstīta.</translation>
 <translation id="3741243925913727067">Dublējiet savas multivides ierīces fotoattēlus un videoklipus Google diskā.</translation>
 <translation id="3749289110408117711">Faila nosaukums</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">ASV starptautiskā (PC) tastatūra</translation>
 <translation id="6346310558342052870">Piekļuve ierobežota</translation>
 <translation id="6353618411602605519">Horvātu valodas tastatūra</translation>
+<translation id="6356685157277930264">Failu atsauksmju logs</translation>
 <translation id="6358884629796491903">Pūķis</translation>
 <translation id="637062427944097960">Šis fails tika atvērts citā darbvirsmā. Lai skatītu šo darbvirsmu, izmantojiet profilu <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> vienumi</translation>

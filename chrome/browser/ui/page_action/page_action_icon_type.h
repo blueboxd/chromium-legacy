@@ -15,6 +15,7 @@ enum class PageActionIconType {
   kManagePasswords,
   kNativeFileSystemAccess,
   kPwaInstall,
+  kQRCodeGenerator,
   kReaderMode,
   kSaveCard,
   kSendTabToSelf,

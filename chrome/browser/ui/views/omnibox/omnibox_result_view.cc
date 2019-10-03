@@ -10,7 +10,6 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -24,11 +23,11 @@
 #include "chrome/browser/ui/views/omnibox/remove_suggestion_bubble.h"
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -37,8 +36,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/controls/menu/menu_runner.h"
-
+#include "ui/views/controls/button/image_button_factory.h"
 #if defined(OS_WIN)
 #include "base/win/atl.h"
 #endif
@@ -68,15 +66,6 @@ OmniboxResultView::OmniboxResultView(
       omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
       GetColor(OmniboxPart::RESULTS_ICON)));
   keyword_view_->icon()->SizeToPreferredSize();
-
-  if (base::FeatureList::IsEnabled(
-          omnibox::kOmniboxSuggestionTransparencyOptions)) {
-    context_menu_contents_.AddItemWithStringId(IDS_OMNIBOX_WHY_THIS_SUGGESTION,
-                                               IDS_OMNIBOX_WHY_THIS_SUGGESTION);
-    context_menu_contents_.AddItemWithStringId(IDS_OMNIBOX_REMOVE_SUGGESTION,
-                                               IDS_OMNIBOX_REMOVE_SUGGESTION);
-    set_context_menu_controller(this);
-  }
 }
 
 OmniboxResultView::~OmniboxResultView() {}
@@ -94,23 +83,38 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 
   // Set up possible button.
   if (match.ShouldShowButton()) {
-    if (!OmniboxFieldTrial::IsTabSwitchLogicReversed()) {
-      suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
-          popup_contents_view_, this,
-          l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
-          l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT),
-          omnibox::kSwitchIcon, theme_provider_);
-    } else {
-      suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
-          // TODO(krb): Make official strings when we accept the feature.
-          popup_contents_view_, this, base::ASCIIToUTF16("Open in this tab"),
-          base::ASCIIToUTF16("Open"), omnibox::kSwitchIcon, theme_provider_);
-    }
-
+    suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
+        popup_contents_view_, this,
+        l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
+        l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT),
+        omnibox::kSwitchIcon, theme_provider_);
     suggestion_tab_switch_button_->set_owned_by_client();
     AddChildView(suggestion_tab_switch_button_.get());
   } else {
     suggestion_tab_switch_button_.reset();
+  }
+
+  if (match_.SupportsDeletion() &&
+      base::FeatureList::IsEnabled(
+          omnibox::kOmniboxSuggestionTransparencyOptions)) {
+    // This is intentionally not in the tab order by default, but should be
+    // if the user has full-acessibility mode on. This is because this is a
+    // tertiary priority button, which already has a Shift+Delete shortcut.
+    // TODO(tommycli): Make sure we announce the Shift+Delete capability in the
+    // accessibility node data for removable suggestions.
+    if (!remove_suggestion_button_) {
+      remove_suggestion_button_ = views::CreateVectorImageButton(this);
+      remove_suggestion_button_->set_owned_by_client();
+
+      // TODO(tommycli): Make sure this is visible in Dark Mode.
+      views::SetImageFromVectorIcon(remove_suggestion_button_.get(),
+                                    vector_icons::kCloseRoundedIcon,
+                                    GetColor(OmniboxPart::RESULTS_ICON));
+
+      AddChildView(remove_suggestion_button_.get());
+    }
+  } else {
+    remove_suggestion_button_.reset();
   }
 
   Invalidate();
@@ -155,25 +159,13 @@ void OmniboxResultView::Invalidate(bool force_reapply_styles) {
   // description text, whereas non-answer suggestions use the match text and
   // calculated classifications for the description text.
   if (match_.answer) {
-    const bool reverse = OmniboxFieldTrial::IsReverseAnswersEnabled() &&
-                         !match_.answer->IsExceptedFromLineReversal();
-    if (reverse) {
-      suggestion_view_->content()->SetText(match_.answer->second_line());
-      suggestion_view_->description()->SetText(match_.contents,
-                                               match_.contents_class, true);
-      suggestion_view_->description()->ApplyTextColor(
-          OmniboxPart::RESULTS_TEXT_DIMMED);
-      suggestion_view_->description()->AppendExtraText(
-          match_.answer->first_line());
-    } else {
-      suggestion_view_->content()->SetText(match_.contents,
-                                           match_.contents_class);
-      suggestion_view_->content()->ApplyTextColor(
-          OmniboxPart::RESULTS_TEXT_DEFAULT);
-      suggestion_view_->content()->AppendExtraText(match_.answer->first_line());
-      suggestion_view_->description()->SetText(match_.answer->second_line(),
-                                               true);
-    }
+    suggestion_view_->content()->SetText(match_.contents,
+                                         match_.contents_class);
+    suggestion_view_->content()->ApplyTextColor(
+        OmniboxPart::RESULTS_TEXT_DEFAULT);
+    suggestion_view_->content()->AppendExtraText(match_.answer->first_line());
+    suggestion_view_->description()->SetText(match_.answer->second_line(),
+                                             true);
   } else if (match_.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
              match_.type == AutocompleteMatchType::PEDAL) {
     // Entities use match text and calculated classifications, but with style
@@ -259,11 +251,30 @@ void OmniboxResultView::SetRichSuggestionImage(const gfx::ImageSkia& image) {
 // |button| is the tab switch button.
 void OmniboxResultView::ButtonPressed(views::Button* button,
                                       const ui::Event& event) {
-  if (!(OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
-        match_.ShouldShowTabMatchButton())) {
+  if (button == suggestion_tab_switch_button_.get()) {
     OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
+  } else if (button == remove_suggestion_button_.get()) {
+    // Temporarily inhibit the popup closing on blur while we open the remove
+    // suggestion confirmation bubble.
+    popup_contents_view_->model()->set_popup_closes_on_blur(false);
+
+    // TODO(tommycli): We re-fetch the original match from the popup model,
+    // because |match_| already has its contents and description swapped by this
+    // class, and we don't want that for the bubble. We should improve this.
+    AutocompleteMatch raw_match =
+        popup_contents_view_->model()->result().match_at(model_index_);
+
+    TemplateURLService* template_url_service = popup_contents_view_->model()
+                                                   ->edit_model()
+                                                   ->client()
+                                                   ->GetTemplateURLService();
+    ShowRemoveSuggestion(template_url_service, this, raw_match,
+                         base::BindOnce(&OmniboxResultView::RemoveSuggestion,
+                                        weak_factory_.GetWeakPtr()));
+
+    popup_contents_view_->model()->set_popup_closes_on_blur(true);
   } else {
-    OpenMatch(WindowOpenDisposition::CURRENT_TAB, event.time_stamp());
+    NOTREACHED();
   }
 }
 
@@ -279,6 +290,22 @@ void OmniboxResultView::Layout() {
     const int max_kw_x =
         suggestion_width - OmniboxMatchCellView::GetTextIndent();
     suggestion_width = animation_->CurrentValueBetween(max_kw_x, 0);
+  }
+
+  // Add buttons from right to left, shrinking the suggestion width as we go.
+  // TODO(tommycli): We should probably use a layout manager here.
+  if (remove_suggestion_button_) {
+    const gfx::Size button_size = remove_suggestion_button_->GetPreferredSize();
+    suggestion_width -=
+        button_size.width() + OmniboxMatchCellView::kMarginRight;
+
+    // Center the button vertically.
+    const int vertical_margin =
+        (suggestion_view_->height() - button_size.height()) / 2;
+    remove_suggestion_button_->SetBounds(suggestion_width, vertical_margin,
+                                         button_size.width(),
+                                         button_size.height());
+    remove_suggestion_button_->SetVisible(true);
   }
   if (suggestion_tab_switch_button_) {
     suggestion_tab_switch_button_->ProvideWidthHint(suggestion_width);
@@ -301,6 +328,7 @@ void OmniboxResultView::Layout() {
       suggestion_tab_switch_button_->SetVisible(false);
     }
   }
+
   keyword_view_->SetBounds(suggestion_width, 0, width() - suggestion_width,
                            height());
   if (popup_contents_view_->InExplicitExperimentalKeywordMode() ||
@@ -355,9 +383,7 @@ void OmniboxResultView::OnMouseReleased(const ui::MouseEvent& event) {
         event.IsOnlyLeftMouseButton()
             ? WindowOpenDisposition::CURRENT_TAB
             : WindowOpenDisposition::NEW_BACKGROUND_TAB;
-    if ((OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
-         match_.ShouldShowTabMatchButton()) ||
-        match_.IsTabSwitchSuggestion()) {
+    if (match_.IsTabSwitchSuggestion()) {
       disposition = WindowOpenDisposition::SWITCH_TO_TAB;
     }
     OpenMatch(disposition, event.time_stamp());
@@ -405,64 +431,6 @@ gfx::Size OmniboxResultView::CalculatePreferredSize() const {
 void OmniboxResultView::OnThemeChanged() {
   Invalidate(true);
   SchedulePaint();
-}
-
-void OmniboxResultView::ShowContextMenuForViewImpl(
-    views::View* source,
-    const gfx::Point& point,
-    ui::MenuSourceType source_type) {
-  // Deferred unhover of the result until the context menu is closed.
-  // If the mouse is still over the result when the context menu is closed, the
-  // View will receive an OnMouseMoved call anyways, which sets hover to true.
-  base::RepeatingClosure set_hovered_false = base::BindRepeating(
-      &OmniboxResultView::SetHovered, weak_factory_.GetWeakPtr(), false);
-
-  context_menu_runner_ = std::make_unique<views::MenuRunner>(
-      &context_menu_contents_,
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
-      set_hovered_false);
-  context_menu_runner_->RunMenuAt(
-      GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
-      views::MenuAnchorPosition::kTopLeft, source_type);
-
-  // Opening the context menu unsets the hover state, but we still want the
-  // result 'hovered' as long as the context menu is open.
-  SetHovered(true);
-}
-
-// ui::SimpleMenuModel::Delegate overrides:
-bool OmniboxResultView::IsCommandIdVisible(int command_id) const {
-  if (command_id == IDS_OMNIBOX_REMOVE_SUGGESTION)
-    return match_.SupportsDeletion();
-
-  DCHECK(command_id == IDS_OMNIBOX_WHY_THIS_SUGGESTION);
-  return true;
-}
-
-void OmniboxResultView::ExecuteCommand(int command_id, int event_flags) {
-  // Temporarily inhibit the popup closing on blur while we open the remove
-  // suggestion confirmation bubble.
-  popup_contents_view_->model()->set_popup_closes_on_blur(false);
-
-  // TODO(tommycli): We re-fetch the original match from the popup model,
-  // because |match_| already has its contents and description swapped by this
-  // class, and we don't want that for the bubble. We should improve this.
-  AutocompleteMatch raw_match =
-      popup_contents_view_->model()->result().match_at(model_index_);
-
-  if (command_id == IDS_OMNIBOX_REMOVE_SUGGESTION) {
-    TemplateURLService* template_url_service = popup_contents_view_->model()
-                                                   ->edit_model()
-                                                   ->client()
-                                                   ->GetTemplateURLService();
-    ShowRemoveSuggestion(template_url_service, this, raw_match,
-                         base::BindOnce(&OmniboxResultView::RemoveSuggestion,
-                                        weak_factory_.GetWeakPtr()));
-  } else if (command_id == IDS_OMNIBOX_WHY_THIS_SUGGESTION) {
-    ShowWhyThisSuggestion(this, raw_match);
-  }
-
-  popup_contents_view_->model()->set_popup_closes_on_blur(true);
 }
 
 void OmniboxResultView::ProvideButtonFocusHint() {

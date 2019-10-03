@@ -21,6 +21,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/wilco_dtc_supportd_client.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
@@ -208,11 +209,12 @@ void WilcoDtcSupportdBridge::BootstrapMojoConnection() {
   // Queue a call that would establish full-duplex Mojo communication with the
   // wilco_dtc_supportd daemon by sending an interface pointer to the self
   // instance.
-  mojo_self_binding_.Close();
-  wilco_dtc_supportd::mojom::WilcoDtcSupportdClientPtr self_proxy;
-  mojo_self_binding_.Bind(mojo::MakeRequest(&self_proxy));
+  mojo_self_receiver_.reset();
+  mojo::PendingRemote<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
+      self_proxy;
+  mojo_self_receiver_.Bind(self_proxy.InitWithNewPipeAndPassReceiver());
   wilco_dtc_supportd_service_factory_mojo_ptr_->GetService(
-      mojo::MakeRequest(&wilco_dtc_supportd_service_mojo_ptr_),
+      wilco_dtc_supportd_service_mojo_remote_.BindNewPipeAndPassReceiver(),
       std::move(self_proxy),
       base::BindOnce(&WilcoDtcSupportdBridge::OnMojoGetServiceCompleted,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -232,12 +234,12 @@ void WilcoDtcSupportdBridge::OnBootstrappedMojoConnection(bool success) {
     return;
   DLOG(ERROR) << "Failed to establish Mojo connection to wilco_dtc_supportd";
   wilco_dtc_supportd_service_factory_mojo_ptr_.reset();
-  wilco_dtc_supportd_service_mojo_ptr_.reset();
+  wilco_dtc_supportd_service_mojo_remote_.reset();
   ScheduleWaitingForDBusService();
 }
 
 void WilcoDtcSupportdBridge::OnMojoGetServiceCompleted() {
-  DCHECK(wilco_dtc_supportd_service_mojo_ptr_);
+  DCHECK(wilco_dtc_supportd_service_mojo_remote_);
   DVLOG(0) << "Established Mojo communication with wilco_dtc_supportd";
   // Reset the current connection attempt counter, since a successful
   // initialization of Mojo communication has completed.
@@ -248,7 +250,7 @@ void WilcoDtcSupportdBridge::OnMojoConnectionError() {
   DLOG(WARNING)
       << "Mojo connection to the wilco_dtc_supportd daemon got shut down";
   wilco_dtc_supportd_service_factory_mojo_ptr_.reset();
-  wilco_dtc_supportd_service_mojo_ptr_.reset();
+  wilco_dtc_supportd_service_mojo_remote_.reset();
   ScheduleWaitingForDBusService();
 }
 

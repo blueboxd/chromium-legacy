@@ -41,108 +41,118 @@ void RenderWidgetScreenMetricsEmulator::ChangeEmulationParams(
 }
 
 gfx::Point RenderWidgetScreenMetricsEmulator::ViewRectOrigin() {
-  gfx::Point widget_pos = original_screen_rect().origin();
+  gfx::Point widget_pos = original_view_rect().origin();
   if (emulation_params_.view_position)
     widget_pos = *emulation_params_.view_position;
-  else if (emulation_params_.screen_position !=
-           blink::WebDeviceEmulationParams::kDesktop)
+  else if (!emulating_desktop())
     widget_pos = gfx::Point();
   return widget_pos;
 }
 
 void RenderWidgetScreenMetricsEmulator::Apply() {
-  ScreenInfo screen_info = original_screen_info_;
+  // The WidgetScreenRect gets derived from the widget size of the main frame
+  // widget, not from the original WidgetScreenRect.
+  gfx::Size widget_size = original_widget_size_;
+  // The WindowScreenRect gets derived from the original WindowScreenRect,
+  // though.
+  gfx::Size window_size = original_window_rect().size();
 
-  applied_widget_rect_.set_size(gfx::Size(emulation_params_.view_size));
-
-  if (!applied_widget_rect_.width())
-    applied_widget_rect_.set_width(original_size().width());
-
-  if (!applied_widget_rect_.height())
-    applied_widget_rect_.set_height(original_size().height());
-
-  scale_ = emulation_params_.scale;
-  if (!emulation_params_.view_size.width &&
-      !emulation_params_.view_size.height && scale_) {
-    applied_widget_rect_.set_size(
-        gfx::ScaleToRoundedSize(original_size(), 1.f / scale_));
-  }
-
-  gfx::Rect window_screen_rect;
-  if (emulation_params_.screen_position ==
-      blink::WebDeviceEmulationParams::kDesktop) {
-    screen_info.rect = original_screen_info().rect;
-    screen_info.available_rect = original_screen_info().available_rect;
-    window_screen_rect = original_window_screen_rect_;
-    if (emulation_params_.view_position) {
-      applied_widget_rect_.set_origin(*emulation_params_.view_position);
-      window_screen_rect.set_origin(*emulation_params_.view_position);
-    } else {
-      applied_widget_rect_.set_origin(original_view_screen_rect_.origin());
-    }
+  // If either the width or height are specified by the emulator, then we use
+  // that size, and assume that they have the scale pre-applied to them.
+  if (emulation_params_.view_size.width) {
+    widget_size.set_width(emulation_params_.view_size.width);
   } else {
-    applied_widget_rect_.set_origin(
-        emulation_params_.view_position.value_or(blink::WebPoint()));
-    screen_info.rect = applied_widget_rect_;
-    screen_info.available_rect = applied_widget_rect_;
-    window_screen_rect = applied_widget_rect_;
+    widget_size.set_width(
+        gfx::ToRoundedInt(widget_size.width() / emulation_params_.scale));
   }
+  if (emulation_params_.view_size.height) {
+    widget_size.set_height(emulation_params_.view_size.height);
+  } else {
+    widget_size.set_height(
+        gfx::ToRoundedInt(widget_size.height() / emulation_params_.scale));
+  }
+
+  // For mobile emulation, the window size is changed to match the widget size,
+  // as there are no window decorations around the widget.
+  if (!emulating_desktop())
+    window_size = widget_size;
+
+  gfx::Point widget_pos = original_view_rect().origin();
+  gfx::Point window_pos = original_window_rect().origin();
+
+  if (emulation_params_.view_position) {
+    // The emulated widget position overrides the widget and window positions.
+    widget_pos = *emulation_params_.view_position;
+    window_pos = widget_pos;
+  } else if (!emulating_desktop()) {
+    // For mobile emulation, the widget and window are moved to 0,0 if not
+    // explicitly specified.
+    widget_pos = gfx::Point();
+    window_pos = widget_pos;
+  }
+
+  gfx::Rect screen_rect = original_screen_info().rect;
 
   if (!emulation_params_.screen_size.IsEmpty()) {
-    gfx::Rect screen_rect = gfx::Rect(0, 0, emulation_params_.screen_size.width,
-                                      emulation_params_.screen_size.height);
-    screen_info.rect = screen_rect;
-    screen_info.available_rect = screen_rect;
+    // The emulated screen size overrides the real one, and moves the screen's
+    // origin to 0,0.
+    screen_rect = gfx::Rect(emulation_params_.screen_size);
+  } else if (!emulating_desktop()) {
+    // For mobile emulation, the screen is adjusted to match the position and
+    // size of the widget rect, if not explicitly specified.
+    screen_rect = gfx::Rect(widget_pos, widget_size);
   }
 
-  screen_info.device_scale_factor =
-      emulation_params_.device_scale_factor
-          ? emulation_params_.device_scale_factor
-          : original_screen_info().device_scale_factor;
+  float device_scale_factor = original_screen_info().device_scale_factor;
 
-  if (emulation_params_.screen_orientation_type !=
-      blink::kWebScreenOrientationUndefined) {
-    switch (emulation_params_.screen_orientation_type) {
-      case blink::kWebScreenOrientationPortraitPrimary:
-        screen_info.orientation_type =
-            SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
-        break;
-      case blink::kWebScreenOrientationPortraitSecondary:
-        screen_info.orientation_type =
-            SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
-        break;
-      case blink::kWebScreenOrientationLandscapePrimary:
-        screen_info.orientation_type =
-            SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
-        break;
-      case blink::kWebScreenOrientationLandscapeSecondary:
-        screen_info.orientation_type =
-            SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
-        break;
-      default:
-        screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_DEFAULT;
-        break;
-    }
-    screen_info.orientation_angle = emulation_params_.screen_orientation_angle;
+  if (emulation_params_.device_scale_factor)
+    device_scale_factor = emulation_params_.device_scale_factor;
+
+  ScreenOrientationValues orientation_type =
+      original_screen_info().orientation_type;
+  uint16_t orientation_angle = original_screen_info().orientation_angle;
+
+  switch (emulation_params_.screen_orientation_type) {
+    case blink::kWebScreenOrientationUndefined:
+      break;  // Leave as the real value.
+    case blink::kWebScreenOrientationPortraitPrimary:
+      orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
+      orientation_angle = emulation_params_.screen_orientation_angle;
+      break;
+    case blink::kWebScreenOrientationPortraitSecondary:
+      orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
+      orientation_angle = emulation_params_.screen_orientation_angle;
+      break;
+    case blink::kWebScreenOrientationLandscapePrimary:
+      orientation_type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
+      orientation_angle = emulation_params_.screen_orientation_angle;
+      break;
+    case blink::kWebScreenOrientationLandscapeSecondary:
+      orientation_type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
+      orientation_angle = emulation_params_.screen_orientation_angle;
+      break;
   }
 
   // Pass three emulation parameters to the blink side:
   // - we keep the real device scale factor in compositor to produce sharp image
   //   even when emulating different scale factor;
-  // - in order to fit into view, WebView applies offset and scale to the
-  //   root layer.
   blink::WebDeviceEmulationParams modified_emulation_params = emulation_params_;
   modified_emulation_params.device_scale_factor =
       original_screen_info().device_scale_factor;
-  modified_emulation_params.scale = scale_;
   delegate_->SetScreenMetricsEmulationParameters(true,
                                                  modified_emulation_params);
 
-  delegate_->SetScreenRects(applied_widget_rect_, window_screen_rect);
+  delegate_->SetScreenRects(gfx::Rect(widget_pos, widget_size),
+                            gfx::Rect(window_pos, window_size));
 
-  delegate_->SetScreenInfoAndSize(
-      screen_info, /*widget_size=*/applied_widget_rect_.size(),
-      /*visible_viewport_size=*/applied_widget_rect_.size());
+  ScreenInfo screen_info = original_screen_info();
+  screen_info.device_scale_factor = device_scale_factor;
+  screen_info.rect = screen_rect;
+  screen_info.available_rect = screen_rect;
+  screen_info.orientation_type = orientation_type;
+  screen_info.orientation_angle = orientation_angle;
+  delegate_->SetScreenInfoAndSize(screen_info, /*widget_size=*/widget_size,
+                                  /*visible_viewport_size=*/widget_size);
 }
 
 void RenderWidgetScreenMetricsEmulator::OnSynchronizeVisualProperties(
@@ -160,16 +170,15 @@ void RenderWidgetScreenMetricsEmulator::OnUpdateScreenRects(
     const gfx::Rect& window_screen_rect) {
   original_view_screen_rect_ = view_screen_rect;
   original_window_screen_rect_ = window_screen_rect;
-  if (emulation_params_.screen_position ==
-      blink::WebDeviceEmulationParams::kDesktop) {
+  if (emulating_desktop()) {
     Apply();
   }
 }
 
 void RenderWidgetScreenMetricsEmulator::OnShowContextMenu(
     ContextMenuParams* params) {
-  params->x *= scale_;
-  params->y *= scale_;
+  params->x *= emulation_params_.scale;
+  params->y *= emulation_params_.scale;
 }
 
 }  // namespace content

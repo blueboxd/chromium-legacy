@@ -10,15 +10,18 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
-#include "chrome/browser/sharing/sharing_fcm_sender.h"
+#include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "components/gcm_driver/gcm_app_handler.h"
+#include "components/sync_device_info/device_info.h"
 
 namespace gcm {
 class GCMDriver;
 }
 
 class SharingMessageHandler;
+class SharingFCMSender;
 class SharingSyncPreference;
 
 // SharingFCMHandler is responsible for receiving SharingMessage from GCMDriver
@@ -66,6 +69,9 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
   void OnMessagesDeleted(const std::string& app_id) override;
 
  private:
+  base::Optional<syncer::DeviceInfo::SharingInfo> GetSharingInfo(
+      const SharingMessage& original_message);
+
   // Ack message sent back to the original sender of message.
   void SendAckMessage(const SharingMessage& original_message,
                       const std::string& original_message_id);

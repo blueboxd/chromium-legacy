@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Ei saa salvestada</translation>
 <translation id="1180526666083833456">Kasutage eri seadmete vahel sünkroonimist ja isikupärastamist.</translation>
 <translation id="1181037720776840403">Eemalda</translation>
+<translation id="1207113853726624428">Uus otsing</translation>
 <translation id="1209206284964581585">Peida praeguseks</translation>
 <translation id="1219674500290482172">Internetiga ei saa ühendust.</translation>
 <translation id="122699739164161391">Sule kõik vahelehed</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">Soovita parooli …</translation>
 <translation id="1870148520156231997">Kuva parool</translation>
 <translation id="1872096359983322073">Lamp</translation>
-<translation id="1876721852596493031">Kasutusandm. saatm.</translation>
 <translation id="1911619930368729126">Laadi üles Google Drive'i</translation>
 <translation id="1923342640370224680">Viimane tund</translation>
 <translation id="1941314575388338491">Kopeerimiseks topeltpuudutage.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892">Lugemisloendis on <ph name="UNREAD_COUNT" /> lugemata artiklit.</translation>
 <translation id="2230173723195178503">Veebileht laaditi</translation>
 <translation id="2239626343334228536">Sirvimisandmete kustutamine …</translation>
-<translation id="2256128224215992540">Otsingu- ja saidisoovitused</translation>
 <translation id="2267753748892043616">Lisa konto</translation>
 <translation id="2268044343513325586">Täpsustamine</translation>
 <translation id="2273327106802955778">Rohkem menüü-üksusi</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">Faili ei õnnestu avada</translation>
 <translation id="2718352093833049315">Ainult WiFi-ga</translation>
 <translation id="2747003861858887689">Eelmine väli</translation>
+<translation id="2773292004659987824">Inkognito režiimis otsing</translation>
 <translation id="2780046210906776326">Pole meilikontosid</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Välju vahelehtede vahetist</translation>
@@ -295,7 +295,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Sünkroonimise lubamine</translation>
 <translation id="5234764350956374838">Loobu</translation>
-<translation id="5244474230056479698">Sünkroonimine aadressiga <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Tühista sünkroonimine</translation>
 <translation id="5271549068863921519">Salvesta parool</translation>
 <translation id="5300589172476337783">Kuva</translation>
@@ -501,6 +500,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="8261506727792406068">Kustuta</translation>
 <translation id="8281781826761538115">Vaikimisi – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Uus otsing</translation>
+<translation id="8323906514956095947">Vahelehtede lisavalikute nägemiseks puudutage ja hoidke</translation>
 <translation id="8328777765163860529">Sule kõik</translation>
 <translation id="8407669440184693619">Selle saidi jaoks ei leitud paroole</translation>
 <translation id="842017693807136194">Sisse logitud:</translation>

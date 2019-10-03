@@ -47,6 +47,7 @@ ScrollbarThemeOverlay::ScrollbarThemeOverlay(int thumb_thickness,
       scrollbar_margin_(scrollbar_margin),
       allow_hit_test_(allow_hit_test),
       color_(color),
+      is_mobile_theme_(false),
       use_solid_color_(true) {}
 
 ScrollbarThemeOverlay::ScrollbarThemeOverlay(int thumb_thickness,
@@ -56,13 +57,14 @@ ScrollbarThemeOverlay::ScrollbarThemeOverlay(int thumb_thickness,
       thumb_thickness_(thumb_thickness),
       scrollbar_margin_(scrollbar_margin),
       allow_hit_test_(allow_hit_test),
+      is_mobile_theme_(false),
       use_solid_color_(false) {}
 
 bool ScrollbarThemeOverlay::ShouldRepaintAllPartsOnInvalidation() const {
   return false;
 }
 
-ScrollbarPart ScrollbarThemeOverlay::InvalidateOnThumbPositionChange(
+ScrollbarPart ScrollbarThemeOverlay::PartsToInvalidateOnThumbPositionChange(
     const Scrollbar&,
     float old_position,
     float new_position) const {
@@ -121,19 +123,16 @@ bool ScrollbarThemeOverlay::HasThumb(const Scrollbar& scrollbar) {
   return true;
 }
 
-IntRect ScrollbarThemeOverlay::BackButtonRect(const Scrollbar&,
-                                              ScrollbarPart,
-                                              bool) {
+IntRect ScrollbarThemeOverlay::BackButtonRect(const Scrollbar&, ScrollbarPart) {
   return IntRect();
 }
 
 IntRect ScrollbarThemeOverlay::ForwardButtonRect(const Scrollbar&,
-                                                 ScrollbarPart,
-                                                 bool) {
+                                                 ScrollbarPart) {
   return IntRect();
 }
 
-IntRect ScrollbarThemeOverlay::TrackRect(const Scrollbar& scrollbar, bool) {
+IntRect ScrollbarThemeOverlay::TrackRect(const Scrollbar& scrollbar) {
   IntRect rect = scrollbar.FrameRect();
   if (scrollbar.Orientation() == kHorizontalScrollbar)
     rect.InflateX(-scrollbar_margin_);

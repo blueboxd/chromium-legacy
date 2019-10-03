@@ -15,21 +15,26 @@ FakeApplicationConfigManager::~FakeApplicationConfigManager() = default;
 
 void FakeApplicationConfigManager::GetConfig(std::string id,
                                              GetConfigCallback callback) {
-  if (id_to_url_.find(id) == id_to_url_.end()) {
+  const auto iter = id_to_application_config_.find(id);
+  if (iter == id_to_application_config_.end()) {
     LOG(ERROR) << "Unknown Cast App ID: " << id;
     callback(chromium::cast::ApplicationConfig());
     return;
   }
 
   chromium::cast::ApplicationConfig app_config;
-  app_config.set_id(id);
-  app_config.set_display_name("Dummy test app");
-  app_config.set_web_url(id_to_url_[id].spec());
-
+  DCHECK_EQ(iter->second.Clone(&app_config), ZX_OK);
   callback(std::move(app_config));
 }
 
 void FakeApplicationConfigManager::AddAppMapping(const std::string& id,
-                                                 const GURL& url) {
-  id_to_url_[id] = url;
+                                                 const GURL& url,
+                                                 bool enable_remote_debugging) {
+  chromium::cast::ApplicationConfig app_config;
+  app_config.set_id(id);
+  app_config.set_display_name("Dummy test app");
+  app_config.set_web_url(url.spec());
+  app_config.set_enable_remote_debugging(enable_remote_debugging);
+
+  id_to_application_config_[id] = std::move(app_config);
 }

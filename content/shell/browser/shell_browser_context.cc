@@ -180,6 +180,11 @@ PushMessagingService* ShellBrowserContext::GetPushMessagingService() {
   return nullptr;
 }
 
+StorageNotificationService*
+ShellBrowserContext::GetStorageNotificationService() {
+  return nullptr;
+}
+
 SSLHostStateDelegate* ShellBrowserContext::GetSSLHostStateDelegate() {
   return nullptr;
 }

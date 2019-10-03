@@ -107,6 +107,7 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
+#include "chrome/browser/ui/views/qrcode_generator/qrcode_generator_bubble.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_view_impl.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
 #include "chrome/browser/ui/views/sharing/sharing_dialog_view.h"
@@ -1106,6 +1107,13 @@ bool BrowserView::UpdatePageActionIcon(PageActionIconType type) {
   return icon ? icon->Update() : false;
 }
 
+void BrowserView::ShowAvatarHighlightAnimation() {
+  AvatarToolbarButton* avatar_button = toolbar_->GetAvatarToolbarButton();
+  if (!avatar_button)
+    return;
+  avatar_button->ShowAvatarHighlightAnimation();
+}
+
 void BrowserView::ExecutePageActionIconForTesting(PageActionIconType type) {
   toolbar_button_provider_->GetPageActionIconView(type)->ExecuteForTesting();
 }
@@ -1351,6 +1359,27 @@ void BrowserView::ShowIntentPickerBubble(
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
   toolbar_->ShowBookmarkBubble(url, already_bookmarked,
                                bookmark_bar_view_.get());
+}
+
+qrcode_generator::QRCodeGeneratorBubbleView*
+BrowserView::ShowQRCodeGeneratorBubble(
+    content::WebContents* contents,
+    qrcode_generator::QRCodeGeneratorBubbleController* controller,
+    const GURL& url) {
+  qrcode_generator::QRCodeGeneratorBubble* bubble =
+      new qrcode_generator::QRCodeGeneratorBubble(GetLocationBarView(),
+                                                  contents, controller, url);
+
+  PageActionIconView* icon_view =
+      toolbar_button_provider()->GetPageActionIconView(
+          PageActionIconType::kQRCodeGenerator);
+  if (icon_view)
+    bubble->SetHighlightedButton(icon_view);
+
+  views::BubbleDialogDelegateView::CreateBubble(bubble);
+  bubble->Show();
+
+  return bubble;
 }
 
 // TODO(crbug.com/932818): Clean up this two functions and add helper for shared

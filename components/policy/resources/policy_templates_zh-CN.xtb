@@ -1134,7 +1134,6 @@
           如果未设置此政策，更具体政策的行为不会受到影响。</translation>
 <translation id="2987155890997901449">启用 ARC</translation>
 <translation id="2987227569419001736">控制对 Web Bluetooth API 的使用</translation>
-<translation id="2989466284538293869">检查上传内容的合规性</translation>
 <translation id="3011301228198307065">配置 <ph name="PRODUCT_NAME" /> 中的默认主页网址，并禁止用户更改此配置。
 
           主页是由“主页”按钮打开的网页。启动时打开的网页是由 RestoreOnStartup 政策控制的。
@@ -1642,7 +1641,6 @@
           如果此政策未设置或设为 False，用户可以将文件传输到 Google 云端硬盘。</translation>
 <translation id="3915395663995367577">代理 .pac 文件的网址</translation>
 <translation id="3925377537407648234">设置显示屏分辨率和缩放比例</translation>
-<translation id="3936481697920057199">检查上传内容和下载内容的合规性</translation>
 <translation id="3939893074578116847">将网络数据包发送到管理服务器以监控联网状态，从而使得服务器能够判断设备有没有联网。
 
       如果此政策设为 true，系统将发送监控网络数据包（所谓的“<ph name="HEARTBEATS_TERM" />”）。
@@ -1922,18 +1920,6 @@
           指定的政策值应以毫秒为单位，并且不得大于闲置延迟时间。
 
           仅当闲置操作为注销或关机时，系统才会显示警告消息。</translation>
-<translation id="4342827592971649626">此政策用于控制安全浏览功能对用户下载内容的深度扫描。如果此政策未设置，或设为默认的“不扫描文件”，安全浏览功能将不会扫描用户下载内容。
-
-      如果此政策设为“禁止扫描文件”，系统将会禁止用户扫描他们的下载内容。此设置不同于默认设置：默认设置允许某些用户（例如，那些已加入高级保护计划的用户）将他们的下载内容发送给服务器进行扫描，但此设置会禁止这类用户进行扫描。
-
-      如果此政策设为“发送用户下载内容进行扫描”，系统就会将用户下载内容通过网络发送给安全浏览功能，以进行恶意软件扫描。
-
-      如果此政策设为“发送用户上传内容进行扫描”，系统就会将用户上传内容通过网络发送给安全浏览功能，以进行恶意软件扫描。
-
-      如果此政策设为“发送用户上传内容和下载内容进行扫描”，则系统将根据“发送用户上传内容进行扫描”和“发送用户下载内容进行扫描”所述的规则操作。
-
-      若想详细了解系统会如何向用户和管理员显示扫描结果，请参阅 <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> 和 <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> 政策。</translation>
-<translation id="4344356660952451291">需要检查下载内容是否合规的网域列表</translation>
 <translation id="4346674324214534449">可让您设置是否应禁止含侵扰性广告的网站展示广告。
 
       如果此政策设为 2，系统将禁止含侵扰性广告的网站展示广告。
@@ -2056,7 +2042,6 @@
 <translation id="4604931264910482931">配置本地消息传递主机黑名单</translation>
 <translation id="4617338332148204752">跳过“<ph name="PRODUCT_FRAME_NAME" />”中的元标记检查</translation>
 <translation id="4625915093043961294">配置扩展程序安装白名单</translation>
-<translation id="4632261735235986857">禁止扫描文件</translation>
 <translation id="4632343302005518762">允许 <ph name="PRODUCT_FRAME_NAME" />处理列出的内容类型</translation>
 <translation id="4632566332417930481">禁止在由企业政策安装的扩展程序中使用开发者工具，允许在其他情境中使用开发者工具</translation>
 <translation id="4633786464238689684">将顶行按键的默认行为模式更改为功能键。
@@ -2196,7 +2181,6 @@
 <translation id="4983201894483989687">允许运行过期的插件</translation>
 <translation id="4986560318567565414">控制用于从替代浏览器切换至 Chrome 的路径。</translation>
 <translation id="4988291787868618635">闲置延迟时间已过时执行的操作</translation>
-<translation id="5009903818924226868">不检查内容的合规性</translation>
 <translation id="5032164758660626397">阻止用户传输大型文件</translation>
 <translation id="5047604665028708335">允许访问非内容包内的网站</translation>
 <translation id="5052081091120171147">如果启用此政策，就会强制从当前默认浏览器导入浏览记录，还会影响导入对话框。如果停用此政策，就不会导入浏览记录。如果未设置此政策，系统就会询问用户是否导入浏览记录，或者系统自动进行导入。</translation>
@@ -2393,16 +2377,6 @@
 
           如果此政策设为 False，用户将无法向其设备投射内容。如果此政策设为 True，用户将能够投射内容。如果此政策未设置，用户将被禁止向已注册的 Chrome 操作系统设备投射内容，但可将内容投射到未注册的设备。</translation>
 <translation id="5323200200131319468">在登录屏幕上启用语音反馈</translation>
-<translation id="5325625566921364045">控制 <ph name="PRODUCT_NAME" /> 如何检查上传、下载、拖放或从剪贴板复制并粘贴的数据是否符合企业规则。
-
-      如果此政策未设置或设为“无”，<ph name="PRODUCT_NAME" /> 将不会检查任何数据的合规性。
-
-      如果此政策设为“检查下载内容”，并且用户尝试通过 <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" /> 政策中的网址下载文件，则 <ph name="PRODUCT_NAME" /> 将会检查下载的数据是否符合企业规则。
-
-      如果此政策设为“检查上传内容”，并且用户尝试将文件上传至 <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" /> 中未包含的网域，则 <ph name="PRODUCT_NAME" /> 将会检查上传的文件、从剪贴板复制并粘贴的数据或者拖放的数据是否符合企业规则。
-
-      如果此政策设为“检查上传内容和下载内容”，<ph name="PRODUCT_NAME" /> 将根据“检查下载内容”和“检查上传内容”所述的规则操作。
-      </translation>
 <translation id="532848608876725157">启用 DNS-over-HTTPS，且允许改用不安全的查询</translation>
 <translation id="5329007337159326804">警告：大概从 75 版（将于 2019 年 6 月左右推出）开始，<ph name="PRODUCT_NAME" /> 中将会彻底移除用于指定最高 TLS 版本的政策。
 
@@ -2460,7 +2434,6 @@
 <translation id="5405289061476885481">配置允许在 <ph name="PRODUCT_OS_NAME" />登录屏幕上使用哪些键盘布局。
 
       如果此政策设为一个输入法标识符列表，登录屏幕上将会提供所有已指定的输入法以供选用。系统将会预先选择所指定的第一种输入法。当登录屏幕上显示已激活的用户操作大图标时，屏幕上除了会提供通过此政策指定的各种输入法外，还会提供相应用户最近一次用过的输入法。如果此政策未设置，系统则会根据显示登录屏幕时使用的语言区域提供登录屏幕上的输入法。系统将会忽略无效的输入法标识符。</translation>
-<translation id="540659115481372611">检查下载内容的合规性</translation>
 <translation id="5412057811596122582">如果启用或未配置此政策（默认），则系统会在收到音频捕获设备使用请求时提示用户；但对于 AudioCaptureAllowedUrls 列表中配置的网址，系统不会提示用户，而是直接授予访问权限。
 
       如果停用此政策，则系统一律不提示用户，只有 AudioCaptureAllowedUrls 中配置的网址可以使用音频捕获设备。
@@ -2863,10 +2836,6 @@
 <translation id="6141402445226505817">一律使用粗略式时区检测方式</translation>
 <translation id="6145799962557135888">可让您设置网址格式的列表，这些网址格式用于指定允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="614662973812186053">此政策亦用于控制对 Android 使用情况和诊断数据的收集。</translation>
-<translation id="6150961766041720393">以列表形式指定：对于哪些网域，系统不需检查上传的文件、从剪贴板复制并粘贴的数据或者拖放的数据是否合规。仅当 <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 设为“enabled”时，才会用到此政策。
-
-      如果此政策未设置或设为一个空的网域列表，系统会检查所有内容的合规性。
-      </translation>
 <translation id="6153048425064249648">此政策用于控制可将浏览器操作信息上传到 Google 管理控制台的 <ph name="PRODUCT_NAME" /> 云端报告。
 
       当此政策设为 False 或未设置时，系统不会收集或上传任何数据。
@@ -2941,16 +2910,6 @@
 <translation id="6281043242780654992">配置本地消息传递政策。不允许黑名单中列出的本地消息传递主机（除非相应主机已列入白名单）。</translation>
 <translation id="6282799760374509080">是否允许音频捕获</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6305895953906663275">此政策用于控制 <ph name="PRODUCT_NAME" /> 在以下情况下的行为：用户尝试上传或下载的文件太大（50MB 或更大），无法发送给服务器进行恶意软件扫描或内容合规性扫描。此限制仅适用于需要扫描的文件，是否需要扫描取决于 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />、<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 以及用于控制已启用检查功能的网域列表的政策。
-
-      如果此政策未设置或设为“无”，则 <ph name="PRODUCT_NAME" /> 允许用户上传或下载任何大小的文件。
-
-      如果此政策设为“阻止大型文件下载”，那么当文件因太大而无法扫描时，系统会在将文件提供给用户之前就删除它们。由于系统并非总能在下载之前确定文件的大小，因此 <ph name="PRODUCT_NAME" /> 可能会先下载文件，然后再确定它们是否超过了允许的大小限制。
-
-      如果此政策设为“阻止大型文件上传”，用户将无法选择上传因太大而无法扫描的文件。
-
-      如果此政策设为“阻止大型文件上传和下载”，<ph name="PRODUCT_NAME" /> 将根据“阻止大型文件下载”和“阻止大型文件上传”所述的规则操作。
-      </translation>
 <translation id="6310223829319187614">允许在用户登录期间自动填充域名</translation>
 <translation id="6315673513957120120">当用户访问存在 SSL 错误的网站时，Chrome 将显示警告页面。默认情况下，或当此政策设为 true 时，用户可以在点击这些警告页面后继续操作。
       如果将此政策设为 false，用户将无法通过点击任何警告页面继续操作。</translation>
@@ -2979,7 +2938,6 @@
       如果此政策设为False，则不报告这些用户。</translation>
 <translation id="6394350458541421998">此政策从 <ph name="PRODUCT_OS_NAME" />版本 29 起开始弃用。请改用 PresentationScreenDimDelayScale 政策。</translation>
 <translation id="6401669939808766804">使用户退出</translation>
-<translation id="6403746242226534223">实时查看所访问网址的安全浏览声誉</translation>
 <translation id="6406448383934634215">如果选择“打开网址列表”作为启动时的操作，您就可以指定要打开的网址的列表。如果此政策未设置，启动时将不会打开任何网址。
 
           仅当“RestoreOnStartup”政策设为“RestoreOnStartupIsURLs”时，此政策才有效。
@@ -3177,10 +3135,6 @@
 
       如果此政策未设置，那么在 MacOS、Android（当私人 DNS 和 VPN 均未启用时）和 ChromeOS 中，内置 DNS 客户端将会默认处于启用状态，并且用户将能够通过修改 chrome://flags 或指定命令行标记来更改是否使用内置 DNS 客户端。</translation>
 <translation id="6843296367238757293">此政策已被弃用。建议您改用其他政策。如需了解详情，请访问 https://support.google.com/chrome/a/answer/7643500</translation>
-<translation id="6845546921986645941">如果此政策设为“enabled”，<ph name="PRODUCT_NAME" /> 会向 Google 报告密码重用、恶意软件下载、插页式广告和内容不合规等不安全事件，以供分析。某些不安全事件（例如内容不合规）的界定取决于启用此类检查的其他政策。
-
-      如果此政策设为“disabled”或未设置，<ph name="PRODUCT_NAME" /> 将不会报告不安全事件。
-      </translation>
 <translation id="684856667300805181">此政策已在 <ph name="PRODUCT_NAME" /> 68 中移除，并已由 <ph name="ARC_GLS_POLICY_NAME" /> 取代。</translation>
 <translation id="6851199885688265233">启用“光标突出显示”无障碍功能</translation>
 <translation id="6856743875250214792">我们已在 M66 中弃用并移除了此政策，因为它仅用于内部测试且存在安全隐患。
@@ -3697,21 +3651,6 @@
       </translation>
 <translation id="7632724434767231364">GSSAPI 库名称</translation>
 <translation id="7635471475589566552">在 <ph name="PRODUCT_NAME" />中配置应用的语言区域，并禁止用户更改语言区域。如果您启用了此设置，<ph name="PRODUCT_NAME" />就会使用指定的语言区域。如果配置的语言区域不受支持，就会改用“en-US”。如果已停用或未配置此设置，<ph name="PRODUCT_NAME" />就会使用由用户指定的首选语言区域（如果已配置）、系统语言区域或备用语言区域“en-US”。</translation>
-<translation id="7641363659597330616">配置 <ph name="PRODUCT_NAME" /> 将全面拦截的下载内容类型，而不允许用户替换这项安全性决定。
-
-      如果您设置了此政策，<ph name="PRODUCT_NAME" /> 将拦截特定类型的下载内容，并且不允许用户绕过安全警告。
-
-      如果您选择的是“拦截有危险的下载内容”选项，系统将允许所有下载内容，但会触发安全浏览警告的下载内容除外。
-
-      如果您选择的是“拦截可能有危险的下载内容”选项，系统将允许所有下载内容，但会触发安全浏览警告（指示下载内容可能有危险）的下载内容除外。
-
-      如果您选择的是“拦截所有下载内容”选项，系统将会拦截所有下载内容。
-
-      如果此政策未设置（或者选择的是“无特殊限制”选项），系统将根据安全浏览功能分析结果检查下载内容是否符合常规安全限制。
-
-      请注意，这些限制适用于从网页内容以及“下载链接…”上下文菜单选项触发的下载内容。这些限制不适用于保存/下载当前显示的页面，也不适用于通过打印选项另存为 PDF 文件。
-
-      要详细了解安全浏览功能，请访问 https://developers.google.com/safe-browsing。</translation>
 <translation id="7643883929273267746">限制可在<ph name="PRODUCT_NAME" />中显示的帐号</translation>
 <translation id="7644825865811580663">如果将此政策设为 true，<ph name="PRODUCT_NAME" /> 将在首次运行时一律将显示的第一个窗口最大化。
       如果不配置此政策或将其设为 false，系统将根据屏幕尺寸决定是否将显示的第一个窗口最大化。</translation>
@@ -3753,10 +3692,6 @@
 <translation id="7713608076604149344">下载限制</translation>
 <translation id="7715711044277116530">演示模式下屏幕变暗延迟时间的调整幅度（百分比）</translation>
 <translation id="7717938661004793600">配置 <ph name="PRODUCT_OS_NAME" />辅助功能。</translation>
-<translation id="7744220323108979821">以列表形式指定：对于哪些网域，系统需要在将下载内容保存到本地存储空间之前检查相应内容是否合规。仅当 <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 设为“enabled”时，才会用到此政策。
-
-      如果此政策设为一个空的网域列表或未设置，系统便无需检查任何下载内容的合规性。
-      </translation>
 <translation id="7747447585227954402">允许设备在 <ph name="PRODUCT_OS_NAME" />上使用 <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="7749402620209366169">为远程访问主机启用双重身份验证，而不是采用用户指定的 PIN。
 
@@ -4152,7 +4087,6 @@
           要查看示例格式，请访问 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">停用保存浏览器历史记录的功能</translation>
-<translation id="8495279065011513838">检查内容的合规性</translation>
 <translation id="8499172469244085141">默认设置（用户可以覆盖）</translation>
 <translation id="849962487677588458">此政策已被弃用，预定会在 Chrome 78 中被移除，且无替代政策。
 
@@ -4248,7 +4182,6 @@
 <translation id="8685024486845674965">重复使用密码可触发密码保护服务警告功能</translation>
 <translation id="8693243869659262736">使用内置 DNS 客户端</translation>
 <translation id="8698286761337647563">用于指定提前多少天通知密码快要到期的 SAML 用户</translation>
-<translation id="870193046368370542">无需检查上传内容是否合规的网域列表</translation>
 <translation id="8703488928438047864">报告主板状态</translation>
 <translation id="8704831857353097849">已停用插件的列表</translation>
 <translation id="8711086062295757690">指定关键字，该关键字在多功能框中作为快捷方式来触发针对此提供商的搜索。此政策是可选的，如果未设置，就没有任何关键字可激活搜索服务提供商。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>

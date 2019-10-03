@@ -20,7 +20,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1393853151966637042">Få hjälp med att använda Chrome</translation>
 <translation id="1399397803214730675">Det finns redan en senare version av Google Chrome på den här datorn. Om programmet inte fungerar avinstallerar du Google Chrome och försöker igen.</translation>
 <translation id="1434626383986940139">Chrome Canary-appar</translation>
-<translation id="1457721931618994305">Uppdaterar Google Chrome ...</translation>
 <translation id="1469002951682717133">Startprogrammet för appar i Chrome</translation>
 <translation id="1553358976309200471">Uppdatera Chrome</translation>
 <translation id="1587223624401073077">Google Chrome använder din kamera.</translation>
@@ -92,6 +91,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="3065168410429928842">Chrome-flik</translation>
 <translation id="3080151273017101988">Fortsätt köra bakgrundsappar när Google Chrome avslutas</translation>
 <translation id="3089968997497233615">Det finns en ny, ännu säkrare version av Google Chrome.</translation>
+<translation id="3138848678222082288">Framtida versioner av Chrome installeras automatiskt. Chrome startas om när nedladdningen är klar och sedan är du igång.</translation>
 <translation id="3149510190863420837">Chrome-appar</translation>
 <translation id="3282568296779691940">Logga in i Chrome</translation>
 <translation id="3340978935015468852">inställningar</translation>
@@ -177,9 +177,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="573759479754913123">Om Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Det gick inte att starta Chrome. Försök igen.</translation>
-<translation id="5877064549588274448">Kanalen har ändrats. Starta om enheten om du vill tillämpa ändringarna.</translation>
 <translation id="5895138241574237353">Starta om</translation>
-<translation id="5906655207909574370">Uppdateringen är nästan klar! Slutför den genom att starta om enheten.</translation>
 <translation id="5940385492829620908">Här finns webben, bokmärken och allt annat du använder Chrome till.</translation>
 <translation id="5941830788786076944">Använd Google Chrome som standardwebbläsare</translation>
 <translation id="6014844626092547096">Nu är du inloggad på Chrome. Synkronisering har inaktiverats av administratören.</translation>
@@ -198,16 +196,15 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="6566149418543181476">Google Chrome uppdateras (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Du använder <ph name="PROFILE_EMAIL" /> för att synkronisera dina grejer i Chrome. Om du vill uppdatera synkroniseringsinställningen eller använda Chrome utan ett Google-konto besöker du <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Kopierat till Chrome</translation>
-<translation id="6634887557811630702">Google Chrome behöver inte uppdateras.</translation>
 <translation id="6676384891291319759">Gå ut på Internet</translation>
 <translation id="6679975945624592337">Låt Google Chrome köras i bakgrunden</translation>
 <translation id="6750954913813541382">Text som du skriver i webbläsaren Chrome skickas till Google för att kontrollera stavningen</translation>
 <translation id="677276454032249905">Vill du avsluta Chrome ändå?</translation>
 <translation id="683440813066116847">Regel som tillåter inkommande mDNS-trafik för Google Chrome Canary.</translation>
 <translation id="6885412569789873916">Appar i Chrome Beta</translation>
+<translation id="6906909733186691861">Framtida versioner av Chrome installeras automatiskt.</translation>
 <translation id="6943584222992551122">Den här personens webbinformation raderas från enheten. Logga in i Chrome som <ph name="USER_EMAIL" /> om du vill återställa data.</translation>
 <translation id="6967962315388095737">Regel som tillåter inkommande mDNS-trafik för Google Chrome Beta.</translation>
-<translation id="6970811910055250180">Enheten uppdateras ...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> kräver att du läser och godkänner följande användarvillkor innan du använder enheten. Villkoren varken utökar, ändrar eller begränsar villkoren för Google Chrome OS.</translation>
 <translation id="6989339256997917931">Chrome har uppdaterats men du har inte använt det på över 30 dagar.</translation>
 <translation id="7098166902387133879">Google Chrome använder din mikrofon.</translation>
@@ -245,7 +242,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7962410387636238736">Den här datorn får inte längre uppdateringar för Google Chrome eftersom Windows XP och Windows Vista inte längre stöds.</translation>
 <translation id="8008534537613507642">Installera om Chrome</translation>
 <translation id="8013993649590906847">Om en bild inte har någon användbar beskrivning görs ett försök att beskriva den åt dig i Chrome. Bilderna skickas till Google så att beskrivningen kan genereras.</translation>
-<translation id="8030318113982266900">Uppdaterar din enhet till kanalen <ph name="CHANNEL_NAME" /> ...</translation>
 <translation id="8032142183999901390">När du har tagit bort kontot från Chrome kan öppna flikar behöva läsas in på nytt för att ändringen ska träda i kraft.</translation>
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Installera Chrome på mobilen. Vi skickar ett sms till mobilen.</translation>
@@ -268,7 +264,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="8606668294522778825">Google Chrome kan använda webbtjänster för att förbättra din upplevelse på webben. Du kan inaktivera dessa tjänster om du vill. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome svarar inte. Vill du starta om nu?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Om en minut startas Chrome om}other{Om # minuter startas Chrome om}}</translation>
-<translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> är uppdaterad.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Det styr också vilken sida som visas när du startar Chrome.</translation>
 <translation id="870251953148363156">Uppdatera &amp;Google Chrome</translation>

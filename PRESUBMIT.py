@@ -4610,7 +4610,7 @@ def _CheckTranslationScreenshots(input_api, output_api):
   def _CheckScreenshotRemoved(screenshots_dir, message_id):
     sha1_path = input_api.os_path.join(
         screenshots_dir, message_id + '.png.sha1')
-    if sha1_path not in removed_paths:
+    if input_api.os_path.exists(sha1_path) and sha1_path not in removed_paths:
       unnecessary_sha1_files.append(sha1_path)
 
 

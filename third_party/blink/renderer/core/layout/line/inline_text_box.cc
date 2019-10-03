@@ -510,24 +510,22 @@ void InlineTextBox::PaintDocumentMarker(GraphicsContext& pt,
                                                   font, grammar);
 }
 
-void InlineTextBox::PaintTextMatchMarkerForeground(
-    const PaintInfo& paint_info,
-    const LayoutPoint& box_origin,
-    const TextMatchMarker& marker,
-    const ComputedStyle& style,
-    const Font& font) const {
-  InlineTextBoxPainter(*this).PaintTextMatchMarkerForeground(
-      paint_info, box_origin, marker, style, font);
+void InlineTextBox::PaintTextMarkerForeground(const PaintInfo& paint_info,
+                                              const LayoutPoint& box_origin,
+                                              const TextMarkerBase& marker,
+                                              const ComputedStyle& style,
+                                              const Font& font) const {
+  InlineTextBoxPainter(*this).PaintTextMarkerForeground(paint_info, box_origin,
+                                                        marker, style, font);
 }
 
-void InlineTextBox::PaintTextMatchMarkerBackground(
-    const PaintInfo& paint_info,
-    const LayoutPoint& box_origin,
-    const TextMatchMarker& marker,
-    const ComputedStyle& style,
-    const Font& font) const {
-  InlineTextBoxPainter(*this).PaintTextMatchMarkerBackground(
-      paint_info, box_origin, marker, style, font);
+void InlineTextBox::PaintTextMarkerBackground(const PaintInfo& paint_info,
+                                              const LayoutPoint& box_origin,
+                                              const TextMarkerBase& marker,
+                                              const ComputedStyle& style,
+                                              const Font& font) const {
+  InlineTextBoxPainter(*this).PaintTextMarkerBackground(paint_info, box_origin,
+                                                        marker, style, font);
 }
 
 int InlineTextBox::CaretMinOffset() const {

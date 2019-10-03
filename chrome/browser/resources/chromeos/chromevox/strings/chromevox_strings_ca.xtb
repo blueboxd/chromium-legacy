@@ -20,6 +20,7 @@
 <translation id="1087788677726983142">Amaga els filtres del flux d'esdeveniments</translation>
 <translation id="1088219014394087294">No hi ha cap capçalera.</translation>
 <translation id="1106741348836243114">Activa o desactiva els avisos sonors (earcons).</translation>
+<translation id="1114836634143403764">Suggeriment</translation>
 <translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Fes lliscar dos dits cap amunt</translation>
 <translation id="1124771028211010580">L'estil de pantalla actual és paral·lel.</translation>
@@ -126,6 +127,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="1845944666972354496">Fes doble toc per activar</translation>
 <translation id="1846771122725914429">Pantalla braille amb connexió Bluetooth</translation>
 <translation id="1865601187525349519">Fi del text</translation>
+<translation id="1875375785454778375">Presència en directe</translation>
 <translation id="1876229593313240038">document</translation>
 <translation id="188130072164734898">Diu en veu alta la data i l'hora actuals.</translation>
 <translation id="1902396333223336119">Cel·la</translation>
@@ -146,6 +148,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="2009187674653301682">No és un superíndex</translation>
 <translation id="2010555995361223825">Menús de ChromeVox</translation>
 <translation id="2045490512405922022">sense marcar</translation>
+<translation id="2049107626739254612">Informació sobre l'autoria</translation>
 <translation id="20601713649439366">No hi ha cap expressió matemàtica anterior.</translation>
 <translation id="2063539687800151747">Epígraf</translation>
 <translation id="207477615537953741">Semàntica desactivada</translation>
@@ -156,6 +159,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="2110480898214777136">Ves del principi al final o viceversa dins d'una pàgina, d'un quadre de diàleg o d'un altre espai delimitat</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">clau d'accés: <ph name="KEY" /></translation>
+<translation id="2126597928985245619">No hi ha text disponible per a aquest element</translation>
 <translation id="2127747486437921899">Cursiva</translation>
 <translation id="2138345533858834403">Simula la sortida d'una pantalla per a braille que es pugui actualitzar al tauler de ChromeVox situat a la part superior de la pantalla.</translation>
 <translation id="2163782704988363449">Errata</translation>
@@ -260,6 +264,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="2911433807131383493">Obre el tutorial de ChromeVox</translation>
 <translation id="2912405967290226587">Fes lliscar tres dits cap a la dreta</translation>
 <translation id="2932083475399492303">Commuta el tipus de línia entre estructural o disseny.</translation>
+<translation id="293796669683825859">Comentaris</translation>
 <translation id="2942710183375260152">Blau pissarra fosc</translation>
 <translation id="2943596527105977722">Groc daurat fosc</translation>
 <translation id="2944762337049891859">Llegeix la pàgina automàticament quan s'acabi de carregar.</translation>
@@ -336,6 +341,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="3324983252691184275">Carmesí</translation>
 <translation id="3338224621010291843">Control lliscant <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="335581015389089642">Veu</translation>
+<translation id="3356951775008366684">Anuncia la pronunciació fonètica de la paraula</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{més}other{# signes més}}</translation>
 <translation id="338583716107319301">Separador</translation>
@@ -532,6 +538,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4763480195061959176">vídeo</translation>
 <translation id="4764692524839457597">opció predeterminada</translation>
 <translation id="4772771694153161212">Sense subratllat</translation>
+<translation id="4787577491510559358">Anuncia el format de l'element</translation>
 <translation id="479989351350248267">cerca</translation>
 <translation id="4804818685124855865">Desconnecta</translation>
 <translation id="481165870889056555">Presenta el títol de la pàgina actual</translation>
@@ -568,6 +575,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4983588134362688868">Va a la part superior de la pàgina.</translation>
 <translation id="4986606102545753256"><ph name="NAME" />, finestra</translation>
 <translation id="4993152509206108683">Taxa d'un <ph name="PERCENT" /> per cent</translation>
+<translation id="4994420463726586413">Anuncia l'estat actual de la bateria</translation>
 <translation id="4996716799442435517">Visual</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, botó d'opció seleccionat</translation>
 <translation id="4997475792277222884">No hi ha cap element més que no sigui un enllaç.</translation>

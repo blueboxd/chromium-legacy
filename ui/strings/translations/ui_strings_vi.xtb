@@ -117,7 +117,6 @@
 <translation id="4971687151119236543">Bản nhạc trước của trình phát phương tiện</translation>
 <translation id="5046499563572181734">Nhấn vào đây</translation>
 <translation id="5076340679995252485">&amp;Dán</translation>
-<translation id="5137751499640340777">Mở Trợ lý Google</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Tam giác hiển thị</translation>
 <translation id="5278860589123563674">Không gửi được</translation>
@@ -154,6 +153,7 @@
 <translation id="6394627529324717982">Dấu phẩy</translation>
 <translation id="6397363302884558537">Dừng nói</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 giây trước}other{# giây trước}}</translation>
+<translation id="6417265370957905582">Trợ lý Google</translation>
 <translation id="6430678249303439055">Chặn tất cả thông báo từ ứng dụng này</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 giây trước}other{# giây trước}}</translation>
 <translation id="6539092367496845964">Đã xảy ra lỗi. Hãy thử lại sau.</translation>
@@ -196,7 +196,6 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Bạn có hơn 1 thông báo chưa đọc}other{Bạn có hơn # thông báo chưa đọc}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{trong 1 phút}other{trong # phút}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8098075892845277643">Bắt đầu đặt câu hỏi bằng giọng nói cho Trợ lý Google</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 giờ trước}other{# giờ trước}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Còn 1 giây}other{Còn # giây}}</translation>
 <translation id="8144660977431427332">Các nội dung tìm kiếm của bạn được Trợ lý Google hỗ trợ. <ph name="LEARN_MORE" /></translation>

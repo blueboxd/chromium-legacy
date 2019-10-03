@@ -21,6 +21,7 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/util/sliding_average.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/transform.h"
 
 namespace gfx {
@@ -194,7 +195,7 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   mojo::Binding<device::mojom::XRFrameDataProvider> frame_data_binding_;
 
   std::vector<device::mojom::XRInputSourceStatePtr> input_states_;
-  device::mojom::XRPresentationClientPtr submit_client_;
+  mojo::Remote<device::mojom::XRPresentationClient> submit_client_;
   base::queue<uint16_t> pending_frames_;
 
   base::queue<std::pair<WebXrPresentationState::FrameIndexType, WebVrBounds>>

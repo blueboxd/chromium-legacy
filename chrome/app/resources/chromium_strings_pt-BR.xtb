@@ -70,7 +70,6 @@
 <translation id="3509308970982693815">Feche todas as janelas do Chromium e tente novamente.</translation>
 <translation id="352783484088404971">Remover do Chromium...</translation>
 <translation id="3575459661164320785">Há um software nocivo no seu computador. O Chromium pode removê-lo, restaurar as configurações e desativar as extensões para que o navegador volte a funcionar normalmente.</translation>
-<translation id="3582788516608077514">Atualizando o Chromium....</translation>
 <translation id="358997566136285270">Logotipo do Chromium</translation>
 <translation id="3639635944603682591">Os dados de navegação dessa pessoa serão excluídos deste dispositivo. Para recuperar os dados, faça login no Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Abrir link em nova &amp;guia do Chromium</translation>
@@ -84,7 +83,6 @@
 <translation id="421369550622382712">Descubra ótimos aplicativos, jogos, extensões e temas para o Chromium.</translation>
 <translation id="4216212958613226427">Este idioma é usado para exibir a IU do Chromium</translation>
 <translation id="4222580632002216401">Agora, você está conectado ao Chromium. A sincronização está desativada por seu administrador.</translation>
-<translation id="4224199872375172890">O Chromium está atualizado.</translation>
 <translation id="4230135487732243613">Vincular seus dados do Chromium a esta conta?</translation>
 <translation id="4271805377592243930">Ajuda com o Chromium</translation>
 <translation id="4285930937574705105">Ocorreu uma falha na instalação devido a um erro não especificado. Se o Chromium estiver sendo executado, feche-o e tente novamente.</translation>
@@ -96,6 +94,7 @@ Sobre o Chromium OS<ph name="LINK_END" /></translation>
 <translation id="4567424176335768812">Você está conectado como <ph name="USER_EMAIL_ADDRESS" />. Agora você pode acessar seus favoritos, histórico e outras configurações em todos os seus dispositivos conectados.</translation>
 <translation id="459535195905078186">Aplicativos do Chromium</translation>
 <translation id="4621240073146040695">Atualização quase concluída. Reinicie o Chromium para concluí-la.</translation>
+<translation id="4661006601577405669">As versões futuras do Chromium serão instaladas automaticamente.</translation>
 <translation id="4677944499843243528">O perfil parece estar em uso por outro processo do Chromium (<ph name="PROCESS_ID" />) em outro computador (<ph name="HOST_NAME" />). O Chromium bloqueou o perfil para que ele não seja corrompido. Se você tiver certeza de que nenhum outro processo está usando este perfil, pode desbloquear o perfil e reiniciar o Chromium.</translation>
 <translation id="469338717132742108">Ajuda com o Chromium OS</translation>
 <translation id="4708774505295300557">Anteriormente, alguém fez login no Chromium neste computador como <ph name="ACCOUNT_EMAIL_LAST" />. Crie um novo usuário do Chromium para manter suas informações separadas.</translation>
@@ -126,9 +125,7 @@ Sobre o Chromium OS<ph name="LINK_END" /></translation>
 <translation id="5698481217667032250">Exibir Chromium neste idioma</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Bem-vindo ao Chromium</translation>
-<translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
-<translation id="5906655207909574370">Atualização quase concluída. Reinicie o dispositivo para concluí-la.</translation>
 <translation id="5987687638152509985">Atualize o Chromium para começar a sincronizar</translation>
 <translation id="6013050204643758987">O desenvolvimento do Chromium OS tornou-se possível graças a outros <ph name="BEGIN_LINK_CROS_OSS" />softwares de código aberto<ph name="END_LINK_CROS_OSS" />, como o <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="6040143037577758943">Fechar</translation>
@@ -168,7 +165,6 @@ Sobre o Chromium OS<ph name="LINK_END" /></translation>
 <translation id="6868056391275687737">Outras cópias do Chromium estão em execução. Para atualizar, feche-as.</translation>
 <translation id="6893813176749746474">O Chromium foi atualizado, mas não é utilizado há pelo menos 30 dias.</translation>
 <translation id="6964305034639999644">Abrir link na janela &amp;sem rastros do Chromium</translation>
-<translation id="6970811910055250180">Atualizando o dispositivo...</translation>
 <translation id="6990124437352146030">O Chromium precisa de permissão para este site acessar seu microfone</translation>
 <translation id="705851970750939768">Atualizar o Chromium</translation>
 <translation id="7066436765290594559">O Chromium OS não pôde sincronizar seus dados. Atualize sua senha de sincronização.</translation>
@@ -188,6 +184,7 @@ Sobre o Chromium OS<ph name="LINK_END" /></translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" />: Chromium Dev</translation>
 <translation id="7451052299415159299">O Chromium precisa de permissão para este site acessar sua câmera</translation>
 <translation id="7483335560992089831">Não é possível instalar a mesma versão do Chromium que está sendo executada. Feche o Chromium e tente novamente.</translation>
+<translation id="751093125041325477">As versões futuras do Chromium serão instaladas automaticamente. Quando o download terminar, o Chromium será reiniciado e estará tudo pronto para você.</translation>
 <translation id="753534427205733210">{0,plural, =1{O Chromium será reiniciado em 1 minuto}one{O Chromium será reiniciado em # minuto}other{O Chromium será reiniciado em # minutos}}</translation>
 <translation id="7549178288319965365">Sobre o Chromium OS</translation>
 <translation id="7561906087460245826">Limpar também os dados do Chromium (<ph name="URL" />)</translation>
@@ -208,7 +205,6 @@ Sobre o Chromium OS<ph name="LINK_END" /></translation>
 <translation id="7975919845073681630">Como esta é uma instalação secundária do Chromium, ele não pode se tornar seu navegador padrão.</translation>
 <translation id="7979877361127045932">Esconder no menu do Chromium</translation>
 <translation id="8013436988911883588">Assim que o Chromium tiver acesso, os sites poderão solicitar acesso.</translation>
-<translation id="8030318113982266900">Atualizando seu dispositivo para o canal <ph name="CHANNEL_NAME" />...</translation>
 <translation id="81770708095080097">Esse arquivo é perigoso, por isso ele foi bloqueado pelo Chromium.</translation>
 <translation id="8222496066431494154">Instale o Chromium no seu smartphone. Enviaremos um SMS para o número de recuperação da sua conta: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8248265253516264921">Se uma imagem não tiver uma descrição útil, o Chromium tentará fornecer uma para você. As imagens serão enviadas ao Google para a criação de descrições. É possível desativar essa opção nas configurações a qualquer momento.</translation>
@@ -223,7 +219,6 @@ Sobre o Chromium OS<ph name="LINK_END" /></translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autores do Chromium. Todos os direitos reservados.</translation>
 <translation id="8619360774459241877">Iniciando o Chromium…</translation>
 <translation id="8621669128220841554">Falha na instalação devido a um erro não especificado. Faça o download do Chromium novamente.</translation>
-<translation id="8667808506758191620">Seu dispositivo <ph name="DEVICE_TYPE" /> está atualizado.</translation>
 <translation id="8682540261359803721">Se uma configuração não for exibida nesta página, verifique as <ph name="LINK_BEGIN" />configurações de navegador do Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Controla também qual página deve ser exibida quando você inicia o Chromium ou faz uma pesquisa na Omnibox.</translation>
 <translation id="8704119203788522458">Este é seu Chromium</translation>

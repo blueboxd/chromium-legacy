@@ -35,6 +35,9 @@ struct GPU_EXPORT ANGLEFeature {
 
   // Status, can be "enabled" or "disabled".
   std::string status;
+
+  // Condition, contains the condition that set 'status'.
+  std::string condition;
 };
 using ANGLEFeatures = std::vector<ANGLEFeature>;
 

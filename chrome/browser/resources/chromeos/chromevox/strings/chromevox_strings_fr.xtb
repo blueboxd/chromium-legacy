@@ -20,6 +20,7 @@
 <translation id="1087788677726983142">Masquer les filtres de flux d'événements</translation>
 <translation id="1088219014394087294">Aucun titre</translation>
 <translation id="1106741348836243114">Activer ou désactiver les commentaires audio (icônes audio)</translation>
+<translation id="1114836634143403764">Suggestion</translation>
 <translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliett","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "x-ray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Balayer l'écran vers le haut avec deux doigts</translation>
 <translation id="1124771028211010580">Le style d'affichage actuel est "côte à côte".</translation>
@@ -126,6 +127,7 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="1845944666972354496">Appuyer deux fois pour activer</translation>
 <translation id="1846771122725914429">Plage braille Bluetooth</translation>
 <translation id="1865601187525349519">Fin du texte</translation>
+<translation id="1875375785454778375">Actuellement présent</translation>
 <translation id="1876229593313240038">doc.</translation>
 <translation id="188130072164734898">Énoncer la date et l'heure actuelles</translation>
 <translation id="1902396333223336119">Cellule</translation>
@@ -146,6 +148,7 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="2009187674653301682">Pas en exposant</translation>
 <translation id="2010555995361223825">Menus ChromeVox</translation>
 <translation id="2045490512405922022">non cochée</translation>
+<translation id="2049107626739254612">Informations de création</translation>
 <translation id="20601713649439366">Aucune expression mathématique précédente</translation>
 <translation id="2063539687800151747">Épigraphe</translation>
 <translation id="207477615537953741">Interprétation sémantique désactivée</translation>
@@ -156,6 +159,7 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="2110480898214777136">Déplace du début à la fin ou de la fin au début au sein d'une page, d'une boîte de dialogue ou d'un autre conteneur</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">touche d'accès : <ph name="KEY" /></translation>
+<translation id="2126597928985245619">Aucun texte disponible pour cet élément</translation>
 <translation id="2127747486437921899">Italique</translation>
 <translation id="2138345533858834403">Simule la sortie d'un affichage braille actualisable
         dans le panneau ChromeVox en haut de l'écran.</translation>
@@ -261,6 +265,7 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="2911433807131383493">Ouvrir le tutoriel ChromeVox</translation>
 <translation id="2912405967290226587">Balayer l'écran vers la droite avec trois doigts</translation>
 <translation id="2932083475399492303">Changer de type de ligne (ligne de structure et ligne de mise en page)</translation>
+<translation id="293796669683825859">Commentaires</translation>
 <translation id="2942710183375260152">Bleu ardoise foncé</translation>
 <translation id="2943596527105977722">Jaune paille foncé</translation>
 <translation id="2944762337049891859">Lire la page automatiquement après son chargement.</translation>
@@ -337,6 +342,7 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="3324983252691184275">Pourpre</translation>
 <translation id="3338224621010291843">Curseur <ph name="NAME" /> <ph name="VALUE" /></translation>
 <translation id="335581015389089642">Voix</translation>
+<translation id="3356951775008366684">Donner la prononciation phonétique du mot</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{signe plus}one{# signe plus}other{# signes plus}}</translation>
 <translation id="338583716107319301">Séparateur</translation>
@@ -533,6 +539,7 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="4763480195061959176">vidéo</translation>
 <translation id="4764692524839457597">par défaut</translation>
 <translation id="4772771694153161212">Non souligné</translation>
+<translation id="4787577491510559358">Annoncer la mise en forme de l'élément actuel</translation>
 <translation id="479989351350248267">rechercher</translation>
 <translation id="4804818685124855865">Se déconnecter</translation>
 <translation id="481165870889056555">Énoncer le titre de la page actuelle</translation>
@@ -569,6 +576,7 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="4983588134362688868">Revenir en haut de la page</translation>
 <translation id="4986606102545753256"><ph name="NAME" />, fenêtre</translation>
 <translation id="4993152509206108683">Vitesse : <ph name="PERCENT" /> %</translation>
+<translation id="4994420463726586413">Annoncer l'état actuel de la batterie</translation>
 <translation id="4996716799442435517">Navigation par zone visuelle</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, case d'option sélectionnée</translation>
 <translation id="4997475792277222884">Aucun élément suivant autre qu'un lien</translation>

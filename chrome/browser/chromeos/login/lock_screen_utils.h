@@ -10,6 +10,10 @@
 
 class AccountId;
 
+namespace base {
+class ListValue;
+}
+
 namespace chromeos {
 namespace lock_screen_utils {
 

@@ -136,6 +136,7 @@
 <translation id="4405930547258349619">コア ライブラリ</translation>
 <translation id="4430435636878359009">このパソコンへのリモート接続を無効にする</translation>
 <translation id="4430915108080446161">アクセス コードを生成しています...</translation>
+<translation id="4450893287417543264">次回から表示しない</translation>
 <translation id="4472575034687746823">利用を開始</translation>
 <translation id="4481276415609939789">パソコンが登録されていません。パソコンへのリモート接続を有効にするには、対象となるパソコンに Chromoting をインストールし、[<ph name="BUTTON_NAME" />] をクリックしてください。</translation>
 <translation id="4513946894732546136">フィードバック</translation>
@@ -173,6 +174,7 @@
 <translation id="518094545883702183">この情報は、報告していただいた問題を診断する目的にのみ使用され、調査担当者のみに利用可能となります。この情報が 30 日間を過ぎて保持されることはありません。</translation>
 <translation id="5204575267916639804">よくある質問</translation>
 <translation id="5222676887888702881">ログアウト</translation>
+<translation id="5234764350956374838">閉じる</translation>
 <translation id="5254120496627797685">このページを閉じると、Chrome リモート デスクトップ セッションが終了します。</translation>
 <translation id="5308380583665731573">接続</translation>
 <translation id="5327248766486351172">名前</translation>

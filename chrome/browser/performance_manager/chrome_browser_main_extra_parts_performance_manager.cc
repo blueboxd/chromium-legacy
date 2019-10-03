@@ -10,8 +10,8 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/performance_manager/browser_child_process_watcher.h"
-#include "chrome/browser/performance_manager/decorators/freeze_origin_trial_policy_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/frozen_frame_aggregator.h"
+#include "chrome/browser/performance_manager/decorators/page_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
 #include "chrome/browser/performance_manager/decorators/process_metrics_decorator.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
@@ -69,8 +69,7 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostMainMessageLoopRun() {
 // static
 void ChromeBrowserMainExtraPartsPerformanceManager::
     CreateDefaultPoliciesAndDecorators(performance_manager::GraphImpl* graph) {
-  graph->PassToGraph(std::make_unique<
-                     performance_manager::FreezeOriginTrialPolicyAggregator>());
+  graph->PassToGraph(std::make_unique<performance_manager::PageAggregator>());
   graph->PassToGraph(
       std::make_unique<performance_manager::FrozenFrameAggregator>());
   graph->PassToGraph(

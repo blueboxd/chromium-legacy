@@ -306,7 +306,7 @@ bool IsArcWindow(const aura::Window* window) {
 }
 
 bool IsArcPipWindow(const aura::Window* window) {
-  return WindowState::Get(window)->IsPip() && window_util::IsArcWindow(window);
+  return IsArcWindow(window) && WindowState::Get(window)->IsPip();
 }
 
 }  // namespace window_util

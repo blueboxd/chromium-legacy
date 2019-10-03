@@ -28,3 +28,8 @@
 #error interface_request.h should not be included by the generated header \
     for a mojom containing only a struct.
 #endif
+
+#ifdef MOJO_PUBLIC_CPP_BINDINGS_LIB_NATIVE_STRUCT_SERIALIZATION_H_
+#error native_struct_serialization.h should not be included by the generated \
+    header for a mojom that does not use native structs.
+#endif

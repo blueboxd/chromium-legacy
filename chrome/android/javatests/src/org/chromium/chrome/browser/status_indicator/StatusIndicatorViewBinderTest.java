@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.ViewResourceFrameLayout;
+import org.chromium.chrome.browser.ui.widget.ViewResourceFrameLayout;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivity;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;

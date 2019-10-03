@@ -389,9 +389,6 @@ bool IsShortBookmarkSuggestionsEnabled();
 // Returns true if either the tab switch suggestions flag is enabled.
 bool IsTabSwitchSuggestionsEnabled();
 
-// Returns true if the feature of reversing the tab switch logic is enabled.
-bool IsTabSwitchLogicReversed();
-
 // Returns true if dedicated rows for tab switch suggestions is enabled.
 bool IsTabSwitchSuggestionsDedicatedRowEnabled();
 

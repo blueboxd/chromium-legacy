@@ -412,7 +412,7 @@ TEST_F(TextFragmentAnchorTest, SameElementTextRange) {
   // Expect marker on "This is a test page".
   auto* text = To<Text>(GetDocument().getElementById("text")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text, DocumentMarker::MarkerTypes::TextMatch());
+      *text, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(19u, markers.at(0)->EndOffset());
@@ -446,7 +446,7 @@ TEST_F(TextFragmentAnchorTest, NeighboringElementTextRange) {
   // Expect marker on "test page"
   auto* text1 = To<Text>(GetDocument().getElementById("text1")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text1, DocumentMarker::MarkerTypes::TextMatch());
+      *text1, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(10u, markers.at(0)->StartOffset());
   EXPECT_EQ(19u, markers.at(0)->EndOffset());
@@ -454,7 +454,7 @@ TEST_F(TextFragmentAnchorTest, NeighboringElementTextRange) {
   // Expect marker on "with another paragraph"
   auto* text2 = To<Text>(GetDocument().getElementById("text2")->firstChild());
   markers = GetDocument().Markers().MarkersFor(
-      *text2, DocumentMarker::MarkerTypes::TextMatch());
+      *text2, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(22u, markers.at(0)->EndOffset());
@@ -490,7 +490,7 @@ TEST_F(TextFragmentAnchorTest, DifferentDepthElementTextRange) {
   // Expect marker on "test page"
   auto* text1 = To<Text>(GetDocument().getElementById("text1")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text1, DocumentMarker::MarkerTypes::TextMatch());
+      *text1, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(10u, markers.at(0)->StartOffset());
   EXPECT_EQ(19u, markers.at(0)->EndOffset());
@@ -498,7 +498,7 @@ TEST_F(TextFragmentAnchorTest, DifferentDepthElementTextRange) {
   // Expect marker on "with another paragraph"
   auto* text2 = To<Text>(GetDocument().getElementById("text2")->firstChild());
   markers = GetDocument().Markers().MarkersFor(
-      *text2, DocumentMarker::MarkerTypes::TextMatch());
+      *text2, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(22u, markers.at(0)->EndOffset());
@@ -564,7 +564,7 @@ TEST_F(TextFragmentAnchorTest, MultipleTextRanges) {
   // Expect marker on "test page"
   auto* text1 = To<Text>(GetDocument().getElementById("text1")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text1, DocumentMarker::MarkerTypes::TextMatch());
+      *text1, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(10u, markers.at(0)->StartOffset());
   EXPECT_EQ(19u, markers.at(0)->EndOffset());
@@ -572,7 +572,7 @@ TEST_F(TextFragmentAnchorTest, MultipleTextRanges) {
   // Expect markers on "with" and "paragraph of text"
   auto* text2 = To<Text>(GetDocument().getElementById("text2")->firstChild());
   markers = GetDocument().Markers().MarkersFor(
-      *text2, DocumentMarker::MarkerTypes::TextMatch());
+      *text2, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(2u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(4u, markers.at(0)->EndOffset());
@@ -625,7 +625,7 @@ TEST_F(TextFragmentAnchorTest, TextRangeWithContext) {
   // Expect marker on "is a test".
   auto* text = To<Text>(GetDocument().getElementById("text")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text, DocumentMarker::MarkerTypes::TextMatch());
+      *text, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(5u, markers.at(0)->StartOffset());
   EXPECT_EQ(14u, markers.at(0)->EndOffset());
@@ -694,7 +694,7 @@ TEST_F(TextFragmentAnchorTest, TextRangeWithCrossElementContext) {
   // Expect marker on the expected "A string of text".
   auto* text = To<Text>(GetDocument().getElementById("expected")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text, DocumentMarker::MarkerTypes::TextMatch());
+      *text, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(16u, markers.at(0)->EndOffset());
@@ -736,7 +736,7 @@ TEST_F(TextFragmentAnchorTest, CrossElementAndWhitespaceContext) {
   // Expect marker on the expected "cat".
   auto* text = To<Text>(GetDocument().getElementById("expected")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text, DocumentMarker::MarkerTypes::TextMatch());
+      *text, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(3u, markers.at(0)->EndOffset());
@@ -772,7 +772,7 @@ TEST_F(TextFragmentAnchorTest, CrossEmptySiblingAndParentElementContext) {
   // Expect marker on "match".
   auto* text = To<Text>(GetDocument().getElementById("expected")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text, DocumentMarker::MarkerTypes::TextMatch());
+      *text, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(5u, markers.at(0)->EndOffset());
@@ -828,7 +828,7 @@ TEST_F(TextFragmentAnchorTest, OneContextTerm) {
   // Expect marker on the first "page"
   auto* text1 = To<Text>(GetDocument().getElementById("text1")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text1, DocumentMarker::MarkerTypes::TextMatch());
+      *text1, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(15u, markers.at(0)->StartOffset());
   EXPECT_EQ(19u, markers.at(0)->EndOffset());
@@ -836,7 +836,7 @@ TEST_F(TextFragmentAnchorTest, OneContextTerm) {
   // Expect marker on the second "page"
   auto* text2 = To<Text>(GetDocument().getElementById("text2")->firstChild());
   markers = GetDocument().Markers().MarkersFor(
-      *text2, DocumentMarker::MarkerTypes::TextMatch());
+      *text2, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(6u, markers.at(0)->StartOffset());
   EXPECT_EQ(10u, markers.at(0)->EndOffset());
@@ -883,7 +883,7 @@ TEST_F(TextFragmentAnchorTest, ScrollCancelled) {
   // Expect marker on "test"
   auto* text = To<Text>(p.firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text, DocumentMarker::MarkerTypes::TextMatch());
+      *text, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(10u, markers.at(0)->StartOffset());
   EXPECT_EQ(14u, markers.at(0)->EndOffset());
@@ -1102,7 +1102,7 @@ TEST_F(TextFragmentAnchorTest, OverlappingTextRanges) {
   // Expect marker on "This is a test".
   auto* text = To<Text>(GetDocument().getElementById("text")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text, DocumentMarker::MarkerTypes::TextMatch());
+      *text, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(14u, markers.at(0)->EndOffset());
@@ -1399,7 +1399,7 @@ TEST_F(TextFragmentAnchorTest, CheckForWordBoundaryWithPartialWord) {
   // Expect marker on only "tes age"
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *To<Text>(p.firstChild()), DocumentMarker::MarkerTypes::TextMatch());
+      *To<Text>(p.firstChild()), DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(10u, markers.at(0)->StartOffset());
   EXPECT_EQ(17u, markers.at(0)->EndOffset());
@@ -1659,6 +1659,37 @@ TEST_F(TextFragmentAnchorTest, IdFragmentWithFragmentDirective) {
   EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(div)))
       << "Should have scrolled <div> into view but didn't, scroll offset: "
       << LayoutViewport()->GetScrollOffset().ToString();
+}
+
+// Ensure we can match <text> inside of a <svg> element.
+TEST_F(TextFragmentAnchorTest, TargetTextInSvg) {
+  SimRequest request("https://example.com/test.html#targetText=test",
+                     "text/html");
+  LoadURL("https://example.com/test.html#targetText=test");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      svg {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <svg><text id="text" x="0" y="15">This is a test page</text></svg>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  Element& text = *GetDocument().getElementById("text");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(text)))
+      << "<text> Element wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
 }
 
 }  // namespace

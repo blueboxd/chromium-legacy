@@ -49,11 +49,6 @@ class UserFeedbackProvider {
   virtual UIViewController* CreateViewController(
       id<UserFeedbackDataSource> data_source,
       id<ApplicationCommands> dispatcher);
-  // DEPRECATED: CreateViewController(data_source) is deprecated.
-  // Use CreateViewController(data_source, tab_opener) instead. This will be
-  // removed once all implementers of UserFeedbackProvider stopped using this.
-  virtual UIViewController* CreateViewController(
-      id<UserFeedbackDataSource> data_source);
   // Uploads collected feedback reports.
   virtual void Synchronize();
 

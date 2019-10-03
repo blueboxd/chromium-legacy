@@ -15,7 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "base/trace_event/common/trace_event_common.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/com_init_util.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_co_mem.h"

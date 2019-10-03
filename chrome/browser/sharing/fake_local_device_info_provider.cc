@@ -26,12 +26,22 @@ version_info::Channel FakeLocalDeviceInfoProvider::GetChannel() const {
 
 const syncer::DeviceInfo* FakeLocalDeviceInfoProvider::GetLocalDeviceInfo()
     const {
-  return &device_info_;
+  return ready_ ? &device_info_ : nullptr;
 }
 
-std::unique_ptr<FakeLocalDeviceInfoProvider::Subscription>
+std::unique_ptr<syncer::LocalDeviceInfoProvider::Subscription>
 FakeLocalDeviceInfoProvider::RegisterOnInitializedCallback(
     const base::RepeatingClosure& callback) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return callback_list_.Add(callback);
+}
+
+void FakeLocalDeviceInfoProvider::SetReady(bool ready) {
+  bool got_ready = !ready_ && ready;
+  ready_ = ready;
+  if (got_ready)
+    callback_list_.Notify();
+}
+
+syncer::DeviceInfo* FakeLocalDeviceInfoProvider::GetMutableDeviceInfo() {
+  return &device_info_;
 }

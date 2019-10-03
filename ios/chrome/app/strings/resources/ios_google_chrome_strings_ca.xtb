@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">En fer servir aquesta aplicació, acceptes les <ph name="BEGIN_LINK_TOS" />condicions del servei<ph name="END_LINK_TOS" /> i l'<ph name="BEGIN_LINK_PRIVACY" />avís de privadesa<ph name="END_LINK_PRIVACY" /> de Chrome.</translation>
 <translation id="2147651015520127414">Chrome ha verificat que <ph name="ISSUER" /> ha emès el certificat d'aquest lloc web.</translation>
 <translation id="2199719347983604670">Dades de la sincronització de Chrome</translation>
-<translation id="2342981853652716282">Inicia la sessió a Chrome per accedir a les adreces d'interès, les contrasenyes i altres continguts des de tots els teus dispositius.</translation>
 <translation id="2347208864470321755">Quan la funció està activada, Chrome ofereix la traducció de les pàgines escrites en altres idiomes mitjançant el Traductor de Google. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Per desar imatges, toca Configuració perquè Chrome pugui utilitzar les teves fotos</translation>
 <translation id="2576431527583832481">Chrome ara és millor. Hi ha una versió nova disponible.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Ajuda a millorar Chrome enviant estadístiques d'ús i informes d'error a Google.</translation>
 <translation id="415767770115540173">Si compartiu la ubicació, millorareu la vostra experiència a Chrome.</translation>
 <translation id="424864128008805179">Vols tancar la sessió de Chrome?</translation>
+<translation id="4249068189593983585">Consell de Chrome. Per accedir a més opcions de pestanyes, mantén premut el botó Mostra pestanyes a la barra d'eines, que és a la part inferior o superior de la pantalla.</translation>
 <translation id="4523886039239821078">Alguns complements fan que Chrome es bloquegi. Desinstal·leu-los.</translation>
 <translation id="5389212809648216794">Google Chrome no pot utilitzar la càmera perquè l'està utilitzant una altra aplicació</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Revisa les condicions del servei actualitzades de Chrome.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Alguns complements fan que Chrome es bloquegi. Proveu de desinstal·lar-los.</translation>
 <translation id="8459495907675268833">Les dades seleccionades s'han suprimit de Chrome i dels dispositius sincronitzats. És possible que el vostre compte de Google tingui altres formes de l'historial de navegació a history.google.com, com ara les cerques i l'activitat d'altres serveis de Google.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome pot utilitzar serveis web per millorar la vostra experiència de  navegació, però podeu desactivar-los si voleu. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 </translationbundle>

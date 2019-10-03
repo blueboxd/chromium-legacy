@@ -39,7 +39,6 @@
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
-#include "content/renderer/pepper/pepper_plugin_instance_metrics.h"
 #include "content/renderer/pepper/pepper_try_catch.h"
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
@@ -1133,10 +1132,6 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
       event.GetType() == blink::WebInputEvent::kMouseDown &&
       (event.GetModifiers() & blink::WebInputEvent::kLeftButtonDown)) {
     has_been_clicked_ = true;
-    blink::WebRect bounds = container()->GetElement().BoundsInViewport();
-    render_frame()->GetLocalRootRenderWidget()->ConvertViewportToWindow(
-        &bounds);
-    RecordFlashClickSizeMetric(bounds.width, bounds.height);
   }
 
   if (throttler_ && throttler_->ConsumeInputEvent(event))
@@ -1844,16 +1839,9 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
       viewport_to_dip_scale_);
 
   // During the first view update, initialize the throttler.
-  if (!sent_initial_did_change_view_) {
-    if (is_flash_plugin_ && RenderThread::Get()) {
-      RecordFlashSizeMetric(unobscured_rect_.width(),
-                            unobscured_rect_.height());
-    }
-
-    if (throttler_) {
-      throttler_->Initialize(render_frame_, url::Origin::Create(plugin_url_),
-                             module()->name(), unobscured_rect_.size());
-    }
+  if (!sent_initial_did_change_view_ && throttler_) {
+    throttler_->Initialize(render_frame_, url::Origin::Create(plugin_url_),
+                           module()->name(), unobscured_rect_.size());
   }
 
   ppapi::ViewData view_data = view_data_;

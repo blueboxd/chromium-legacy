@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/threading/thread_checker.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
 #include "components/viz/common/display/use_layered_window.h"
 #include "components/viz/common/resources/resource_sizes.h"

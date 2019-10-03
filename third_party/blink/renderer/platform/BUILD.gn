@@ -1618,6 +1618,8 @@ jumbo_static_library("test_support") {
     "testing/unit_test_helpers.h",
     "testing/url_test_helpers.cc",
     "testing/url_test_helpers.h",
+    "testing/video_frame_utils.cc",
+    "testing/video_frame_utils.h",
     "testing/viewport_layers_setup.cc",
     "testing/viewport_layers_setup.h",
     "testing/weburl_loader_mock.cc",
@@ -1861,6 +1863,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "weborigin/scheme_registry_test.cc",
     "weborigin/security_origin_test.cc",
     "weborigin/security_policy_test.cc",
+    "webrtc/webrtc_video_frame_adapter_test.cc",
   ]
 
   if (is_win) {

@@ -18,7 +18,6 @@
 <translation id="1393853151966637042">Få hjælp til at bruge Chrome</translation>
 <translation id="1399397803214730675">Denne computer har allerede en nyere version af Google Chrome. Hvis programmet ikke virker, skal du afinstallere Google Chrome og prøve igen.</translation>
 <translation id="1434626383986940139">Chrome Canary-apps</translation>
-<translation id="1457721931618994305">Opdaterer Google Chrome...</translation>
 <translation id="1469002951682717133">Chrome-applisten</translation>
 <translation id="1553358976309200471">Opdater Chrome</translation>
 <translation id="1587223624401073077">Google Chrome bruger dit kamera.</translation>
@@ -88,6 +87,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="3065168410429928842">Fanen Chrome</translation>
 <translation id="3080151273017101988">Fortsæt med at køre baggrundsapps, når Google Chrome er lukket</translation>
 <translation id="3089968997497233615">Der findes en ny, sikker version af Google Chrome.</translation>
+<translation id="3138848678222082288">Fremtidige version af Chrome installeres automatisk. Når denne download er gennemført, genstartes Chrome, og så er du godt på vej.</translation>
 <translation id="3149510190863420837">Chrome-apps</translation>
 <translation id="3282568296779691940">Log ind i Chrome</translation>
 <translation id="3340978935015468852">indstillinger</translation>
@@ -169,9 +169,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="573759479754913123">Om Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome kunne ikke startes. Prøv igen.</translation>
-<translation id="5877064549588274448">Kanalen er ændret. Genstart din enhed for at anvende ændringerne.</translation>
 <translation id="5895138241574237353">Genstart</translation>
-<translation id="5906655207909574370">Næsten opdateret. Genstart din enhed for at afslutte opdateringen.</translation>
 <translation id="5940385492829620908">Dit webindhold, dine bogmærker og andre Chrome-ting kan findes her.</translation>
 <translation id="5941830788786076944">Gør Google Chrome til din standardbrowser</translation>
 <translation id="6014844626092547096">Du er nu logget ind i Chrome. Synkronisering er deaktiveret af din administrator.</translation>
@@ -190,16 +188,15 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="6566149418543181476">Opdaterer Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Du bruger <ph name="PROFILE_EMAIL" /> til at synkronisere dine Chrome-ting med. Gå til <ph name="SETTINGS_LINK" />, hvis du vil opdatere dine synkroniseringspræference, eller hvis du vil bruge Chrome uden en Google-konto.</translation>
 <translation id="6600954340915313787">Kopieret til Chrome</translation>
-<translation id="6634887557811630702">Google Chrome er opdateret.</translation>
 <translation id="6676384891291319759">Få adgang til internettet</translation>
 <translation id="6679975945624592337">Lad Google Chrome køre i baggrunden</translation>
 <translation id="6750954913813541382">Chrome sender den tekst, du angiver i browseren, til Google for at rette stavefejl</translation>
 <translation id="677276454032249905">Vil du afslutte Chrome alligevel?</translation>
 <translation id="683440813066116847">Indgående regel for Google Chrome Canary om at tillade mDNS-trafik.</translation>
 <translation id="6885412569789873916">Apps i Chrome beta</translation>
+<translation id="6906909733186691861">Fremtidige version af Chrome installeres automatisk.</translation>
 <translation id="6943584222992551122">Brugerens browserdata slettes fra denne enhed. Log ind på Chrome som <ph name="USER_EMAIL" /> for at gendanne dataene.</translation>
 <translation id="6967962315388095737">Indgående regel for Google Chrome beta om at tillade mDNS-trafik.</translation>
-<translation id="6970811910055250180">Opdaterer din enhed...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> kræver, at du læser og accepterer følgende servicevilkår, inden du bruger denne enhed. Disse vilkår udvider, ændrer eller begrænser på ingen måde vilkårene for Google Chrome OS.</translation>
 <translation id="6989339256997917931">Google Chrome er blevet opdateret, men du har ikke brugt den i 30 dage.</translation>
 <translation id="7098166902387133879">Google Chrome bruger din mikrofon.</translation>
@@ -237,7 +234,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="7962410387636238736">Denne computer modtager ikke længere Google Chrome-opdateringer, da Windows XP og Windows Vista ikke længere understøttes.</translation>
 <translation id="8008534537613507642">Geninstaller Chrome</translation>
 <translation id="8013993649590906847">Hvis et billede ikke har en brugbar beskrivelse, forsøger Chrome at angive en for dig. Billederne sendes til Google, så der kan oprettes beskrivelser.</translation>
-<translation id="8030318113982266900">Opdaterer din enhed til kanalen <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8032142183999901390">Når du har fjernet din konto fra Chrome, skal du muligvis indlæse dine åbne faner, før ændringen træder i kraft.</translation>
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Installer Chrome på din telefon. Vi sender en sms til din telefon.</translation>
@@ -260,7 +256,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="8606668294522778825">Google Chrome bruger muligvis webtjenester for at forbedre din browseroplevelse. Du kan vælge at deaktivere disse tjenester. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome svarer ikke. Vil du genstarte nu?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome genstarter om 1 minut}one{Chrome genstarter om # minut}other{Chrome genstarter om # minutter}}</translation>
-<translation id="8667808506758191620">Din <ph name="DEVICE_TYPE" /> er opdateret.</translation>
 <translation id="8669527147644353129">Hjælp til Google Chrome</translation>
 <translation id="8679801911857917785">Den styrer også, hvilken side der vises, når du åbner Chrome.</translation>
 <translation id="870251953148363156">Opdater &amp;Google Chrome</translation>

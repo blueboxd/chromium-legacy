@@ -29,11 +29,10 @@ AppMenuButton::AppMenuButton(views::MenuButtonListener* menu_button_listener)
 AppMenuButton::~AppMenuButton() {}
 
 void AppMenuButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
+  // TODO(pbos): Remove the need to bypass ToolbarButton::OnBoundsChanged.
   // ToolbarButton::OnBoundsChanged calls UpdateHighlightBackgroundAndInsets
   // which expects ToolbarButtons to be the same height as the location bar
   // which breaks tests on ChromeOS.
-  SetToolbarButtonHighlightPath(this, *GetProperty(views::kInternalPaddingKey));
 }
 
 void AppMenuButton::AddObserver(AppMenuButtonObserver* observer) {

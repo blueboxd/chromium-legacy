@@ -75,7 +75,8 @@ test(function() {
   var animation = pausedAnimation();
   assert_unresolved(animation.startTime);
   assert_equals(animation.currentTime, duration);
-  assert_true(animation.pending);
+  // Setting the current time of a pause-pending animation applies a synchronous update.
+  assert_false(animation.pending);
   assert_equals(animation.playState, 'paused');
 }, "Play state is paused after pausing and setting current time of a canceled reversed animation");
 
@@ -289,10 +290,12 @@ test(function() {
 
 test(function() {
   var animation = pausedAnimation();
+  // Calling pause on an animation that is already paused or pause-pending is
+  // a no-op.
   animation.pause();
   assert_unresolved(animation.startTime);
   assert_equals(animation.currentTime, duration);
-  assert_true(animation.pending);
+  assert_false(animation.pending);
   assert_equals(animation.playState, 'paused');
 }, "Calling pause() on a paused animation");
 
@@ -325,10 +328,12 @@ test(function() {
 
 test(function() {
   var animation = pausedAnimation();
+  // Setting the current time on a paused or pause-pending animation gets
+  // resolved synchronously.
   animation.currentTime = 1000;
   assert_unresolved(animation.startTime);
   assert_times_equal(animation.currentTime, 1000);
-  assert_true(animation.pending);
+  assert_false(animation.pending);
   assert_equals(animation.playState, 'paused');
 }, "Setting currentTime on a paused animation");
 

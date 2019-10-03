@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Di Ma-save Larawan</translation>
 <translation id="1180526666083833456">Mag-sync at mag-personalize sa lahat ng device.</translation>
 <translation id="1181037720776840403">Alisin</translation>
+<translation id="1207113853726624428">Bagong Paghahanap</translation>
 <translation id="1209206284964581585">Itago sa ngayon</translation>
 <translation id="1219674500290482172">Hindi makakonekta sa Internet.</translation>
 <translation id="122699739164161391">Isara ang Lahat ng Tab</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">Magmungkahi ng Password...</translation>
 <translation id="1870148520156231997">Ipakita ang Password</translation>
 <translation id="1872096359983322073">Torch</translation>
-<translation id="1876721852596493031">Magpadala ng Data</translation>
 <translation id="1911619930368729126">I-upload sa Google Drive</translation>
 <translation id="1923342640370224680">Nakaraang Oras</translation>
 <translation id="1941314575388338491">I-double tap upang kopyahin.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> (na) hindi pa nababasang artikulo sa Listahan ng Babasahin</translation>
 <translation id="2230173723195178503">Na-load na ang webpage</translation>
 <translation id="2239626343334228536">Kini-clear ang data sa pag-browse...</translation>
-<translation id="2256128224215992540">Mga Suhestyon sa Paghahanap at Site</translation>
 <translation id="2267753748892043616">Magdagdag ng Account</translation>
 <translation id="2268044343513325586">Pinuhin</translation>
 <translation id="2273327106802955778">Higit pang menu</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">Hindi Mabuksan ang File</translation>
 <translation id="2718352093833049315">Sa Wi-Fi lang</translation>
 <translation id="2747003861858887689">Nakaraang field</translation>
+<translation id="2773292004659987824">Paghahanap sa Incognito</translation>
 <translation id="2780046210906776326">Walang Mga Email Account</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Umalis sa Tagalipat ng Tab</translation>
@@ -295,7 +295,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">I-enable ang pag-sync</translation>
 <translation id="5234764350956374838">Balewalain</translation>
-<translation id="5244474230056479698">Sini-sync sa <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Kanselahin ang Pag-sync</translation>
 <translation id="5271549068863921519">I-save ang password</translation>
 <translation id="5300589172476337783">Ipakita</translation>
@@ -501,6 +500,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="8261506727792406068">I-delete</translation>
 <translation id="8281781826761538115">Default - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Bagong Paghahanap</translation>
+<translation id="8323906514956095947">Pindutin nang matagal para sa higit pang opsyon sa tab</translation>
 <translation id="8328777765163860529">Isara Lahat</translation>
 <translation id="8407669440184693619">Walang nahanap na password para sa site na ito</translation>
 <translation id="842017693807136194">Naka-sign In Gamit ang</translation>

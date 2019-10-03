@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/message_center/message_center_scroll_bar.h"
+#include "ash/system/message_center/stacked_notification_bar.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
@@ -163,15 +164,15 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
   }
 
   views::View* GetStackingCounter() {
-    return message_center_view()->stacking_counter_;
+    return message_center_view()->notification_bar_;
   }
 
   views::View* GetStackingCounterLabel() {
-    return message_center_view()->stacking_counter_->count_label_;
+    return message_center_view()->notification_bar_->count_label_;
   }
 
   views::View* GetStackingCounterClearAllButton() {
-    return message_center_view()->stacking_counter_->clear_all_button_;
+    return message_center_view()->notification_bar_->clear_all_button_;
   }
 
   message_center::MessageView* ToggleFocusToMessageView(size_t index,

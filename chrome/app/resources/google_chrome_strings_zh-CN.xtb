@@ -18,7 +18,6 @@
 <translation id="1393853151966637042">获取 Chrome 浏览器使用帮助</translation>
 <translation id="1399397803214730675">该计算机已安装了更高版本的 Google Chrome 浏览器。如果该软件无法正常运行，请卸载 Google Chrome 浏览器，然后重试。</translation>
 <translation id="1434626383986940139">Chrome Canary 应用</translation>
-<translation id="1457721931618994305">正在更新 Google Chrome...</translation>
 <translation id="1469002951682717133">Chrome 应用启动器</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1587223624401073077">Google Chrome 正在使用您的摄像头。</translation>
@@ -88,6 +87,7 @@ Chrome 操作系统简介<ph name="LINK_END" /></translation>
 <translation id="3065168410429928842">Chrome 标签页</translation>
 <translation id="3080151273017101988">关闭 Google Chrome 后继续运行后台应用</translation>
 <translation id="3089968997497233615">Google Chrome 浏览器现已推出更安全的新版本。</translation>
+<translation id="3138848678222082288">Chrome 的后续版本将会自动安装。下载完毕后，Chrome 会重启，然后您就可以开始使用了。</translation>
 <translation id="3149510190863420837">Chrome 应用</translation>
 <translation id="3282568296779691940">登录 Chrome</translation>
 <translation id="3340978935015468852">设置</translation>
@@ -169,9 +169,7 @@ Chrome 操作系统简介<ph name="LINK_END" /></translation>
 <translation id="573759479754913123">关于 Chrome 操作系统</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">无法启动 Chrome。请重试。</translation>
-<translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
 <translation id="5895138241574237353">重新启动</translation>
-<translation id="5906655207909574370">即将更新到最新版本！重新启动您的设备即可完成更新。</translation>
 <translation id="5940385492829620908">您的上网记录、书签和其他Chrome资料和数据都保存在此处。</translation>
 <translation id="5941830788786076944">将 Google Chrome 浏览器设为默认浏览器</translation>
 <translation id="6014844626092547096">您现在已登录 Chrome！不过，管理员已停用同步功能。</translation>
@@ -190,16 +188,15 @@ Chrome 操作系统简介<ph name="LINK_END" /></translation>
 <translation id="6566149418543181476">正在更新 Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">您在使用<ph name="PROFILE_EMAIL" />同步自己的Chrome资料和数据。要更新您的同步偏好设置或在不登录Google帐号的情况下使用Chrome，请前往<ph name="SETTINGS_LINK" />部分。</translation>
 <translation id="6600954340915313787">已复制到 Chrome</translation>
-<translation id="6634887557811630702">Google Chrome 已是最新版本。</translation>
 <translation id="6676384891291319759">访问互联网</translation>
 <translation id="6679975945624592337">让 Google Chrome 在后台运行</translation>
 <translation id="6750954913813541382">为了修正拼写错误，Chrome 会将您在浏览器中输入的文字发送给 Google</translation>
 <translation id="677276454032249905">仍要退出 Chrome？</translation>
 <translation id="683440813066116847">Google Chrome Canary版的入站规则，允许mDNS流量。</translation>
 <translation id="6885412569789873916">Chrome 测试版应用</translation>
+<translation id="6906909733186691861">Chrome 的后续版本将会自动安装。</translation>
 <translation id="6943584222992551122">系统将会从此设备上删除该用户的浏览数据。要想恢复这些数据，请以“<ph name="USER_EMAIL" />”的身份登录 Chrome。</translation>
 <translation id="6967962315388095737">Google Chrome 测试版的入站规则，允许 mDNS 流量。</translation>
-<translation id="6970811910055250180">正在更新设备...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> 要求您必须先阅读并接受以下服务条款，才能使用此设备。这些条款不会扩大、修改或限制 Google Chrome 操作系统条款。</translation>
 <translation id="6989339256997917931">Google Chrome 浏览器已更新，但您已经至少 30 天未使用它了。</translation>
 <translation id="7098166902387133879">Google Chrome 正在使用您的麦克风。</translation>
@@ -237,7 +234,6 @@ Chrome 操作系统简介<ph name="LINK_END" /></translation>
 <translation id="7962410387636238736">此计算机将不会再收到 Google Chrome 更新，因为 Windows XP 和 Windows Vista 已不再受支持</translation>
 <translation id="8008534537613507642">重新安装Chrome</translation>
 <translation id="8013993649590906847">如果图片缺少有用的说明，则 Chrome 会尝试为您提供一条说明。为便于创建说明，系统会将图片发送给 Google。</translation>
-<translation id="8030318113982266900">正在将您的设备更新至“<ph name="CHANNEL_NAME" />”版…</translation>
 <translation id="8032142183999901390">从Chrome移除您的帐号后，您可能需要重新加载已打开的标签页才能使其正常显示。</translation>
 <translation id="8129812357326543296">关于 Google Chrome(&amp;G)</translation>
 <translation id="8179874765710681175">请在您的手机上安装 Chrome。我们会向您的手机发送一条短信。</translation>
@@ -260,7 +256,6 @@ Chrome 操作系统简介<ph name="LINK_END" /></translation>
 <translation id="8606668294522778825">Google Chrome 可能会使用网络服务来改善您的浏览体验。不过，您可以选择停用这些服务。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome 未响应。是否立即重新启动？</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome 将在 1 分钟后重新启动}other{Chrome 将在 # 分钟后重新启动}}</translation>
-<translation id="8667808506758191620">您的 <ph name="DEVICE_TYPE" /> 是最新版本。</translation>
 <translation id="8669527147644353129">Google Chrome 浏览器帮助程序</translation>
 <translation id="8679801911857917785">它还能够控制Chrome启动后显示的页面。</translation>
 <translation id="870251953148363156">更新 Google Chrome(&amp;G)</translation>

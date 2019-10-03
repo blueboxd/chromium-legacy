@@ -4,6 +4,8 @@
 
 #include "components/metrics/net/cellular_logic_helper.h"
 
+#include "base/time/time.h"
+#include "build/build_config.h"
 #include "net/base/network_change_notifier.h"
 
 namespace metrics {

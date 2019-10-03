@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Apabila menggunakan aplikasi ini, anda bersetuju menerima <ph name="BEGIN_LINK_TOS" />Syarat Perkhidmatan<ph name="END_LINK_TOS" /> dan <ph name="BEGIN_LINK_PRIVACY" />Notis Privasi<ph name="END_LINK_PRIVACY" /> Chrome.</translation>
 <translation id="2147651015520127414">Chrome mengesahkan bahawa <ph name="ISSUER" /> telah mengeluarkan sijil tapak web ini.</translation>
 <translation id="2199719347983604670">Data daripada penyegerakan Chrome</translation>
-<translation id="2342981853652716282">Log masuk ke Chrome untuk mendapatkan penanda halaman, kata laluan anda dan pelbagai lagi pada semua peranti anda.</translation>
 <translation id="2347208864470321755">Apabila ciri ini dihidupkan, Chrome akan menawarkan halaman yang ditulis dalam bahasa lain diterjemah menggunakan Google Terjemah. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Untuk menyimpan imej, ketik pada Tetapan untuk membolehkan Chrome menggunakan foto anda</translation>
 <translation id="2576431527583832481">Chrome telah dipertingkatkan! Versi baharu kini boleh didapati.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Bantu jadikan Chrome lebih baik dengan menghantar laporan perangkaan penggunaan dan ranap sistem kepada Google.</translation>
 <translation id="415767770115540173">Dapatkan pengalaman yang lebih baik dalam Chrome berdasarkan lokasi anda.</translation>
 <translation id="424864128008805179">Log keluar daripada Chrome?</translation>
+<translation id="4249068189593983585">Petua Chrome. Untuk melihat lebih banyak pilihan tab, sentuh &amp; tahan butang Tunjukkan Tab dalam bar alat, yang terletak di bahagian bawah atau atas skrin anda.</translation>
 <translation id="4523886039239821078">Beberapa tambahan menyebabkan Chrome ranap. Sila nyahpasang:</translation>
 <translation id="5389212809648216794">Google Chrome tidak dapat menggunakan kamera anda kerana kamera sedang digunakan oleh aplikasi lain</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Semak Syarat Perkhidmatan Chrome yang dikemas kini.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Beberapa tambahan menyebabkan Chrome ranap. Sila cuba menyahpasang tambahan tersebut.</translation>
 <translation id="8459495907675268833">Data yang dipilih telah dialih keluar daripada Chrome dan peranti yang disegerakkan. Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain seperti carian dan aktiviti daripada perkhidmatan Google yang lain di history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome mungkin menggunakan perkhidmatan web untuk meningkatkan pengalaman semakan imbas anda. Anda boleh memilih untuk melumpuhkan perkhidmatan ini. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 </translationbundle>

@@ -177,6 +177,27 @@ ProxyList* ProxyConfig::ProxyRules::MapUrlSchemeToProxyListNoFallback(
 
 const ProxyList* ProxyConfig::ProxyRules::GetProxyListForWebSocketScheme()
     const {
+  // Follow the recommendation from RFC 6455 section 4.1.3:
+  //
+  //       NOTE: Implementations that do not expose explicit UI for
+  //       selecting a proxy for WebSocket connections separate from other
+  //       proxies are encouraged to use a SOCKS5 [RFC1928] proxy for
+  //       WebSocket connections, if available, or failing that, to prefer
+  //       the proxy configured for HTTPS connections over the proxy
+  //       configured for HTTP connections.
+  //
+  // This interpretation is a bit different from the RFC, in
+  // that it favors both SOCKSv4 and SOCKSv5.
+  //
+  // When the net::ProxyRules came from system proxy settings,
+  // "fallback_proxies" will be empty, or a a single SOCKS
+  // proxy, making this ordering match the RFC.
+  //
+  // However for other configurations it is possible for
+  // "fallback_proxies" to be a list of any ProxyServer,
+  // including non-SOCKS. In this case "fallback_proxies" is
+  // still prioritized over proxies_for_http and
+  // proxies_for_https.
   if (!fallback_proxies.IsEmpty())
     return &fallback_proxies;
   if (!proxies_for_https.IsEmpty())

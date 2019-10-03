@@ -86,9 +86,6 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::PreferredColorScheme,
                               blink::PreferredColorScheme::kNoPreference,
                               blink::PreferredColorScheme::kLight)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::ForcedColors,
-                              blink::ForcedColors::kNone,
-                              blink::ForcedColors::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebPoint)
   IPC_STRUCT_TRAITS_MEMBER(x)
@@ -254,7 +251,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(do_not_update_selection_on_mutating_selection_range)
   IPC_STRUCT_TRAITS_MEMBER(autoplay_policy)
   IPC_STRUCT_TRAITS_MEMBER(preferred_color_scheme)
-  IPC_STRUCT_TRAITS_MEMBER(forced_colors)
   IPC_STRUCT_TRAITS_MEMBER(low_priority_iframes_threshold)
   IPC_STRUCT_TRAITS_MEMBER(picture_in_picture_enabled)
   IPC_STRUCT_TRAITS_MEMBER(translate_service_available)

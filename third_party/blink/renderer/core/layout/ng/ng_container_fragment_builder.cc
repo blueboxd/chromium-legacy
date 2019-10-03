@@ -124,8 +124,6 @@ void NGContainerFragmentBuilder::AddChild(
       switch (child.Type()) {
         case NGPhysicalFragment::kFragmentBox:
         case NGPhysicalFragment::kFragmentRenderedLegend:
-          if (To<NGBlockBreakToken>(child_break_token)->HasLastResortBreak())
-            has_last_resort_break_ = true;
           child_break_tokens_.push_back(child_break_token);
           break;
         case NGPhysicalFragment::kFragmentLineBox:

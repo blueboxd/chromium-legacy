@@ -127,12 +127,11 @@ void Supervisor::RequestTraceWithHeapDump(TraceFinishedCallback callback,
   auto finished_dump_callback = base::BindOnce(
       [](TraceFinishedCallback callback, bool success, uint64_t dump_guid) {
         // Once the trace has stopped, run |callback| on the UI thread.
-        auto finish_sink_callback = base::Bind(
+        auto finish_sink_callback = base::BindOnce(
             [](TraceFinishedCallback callback,
-               std::unique_ptr<const base::DictionaryValue> metadata,
-               base::RefCountedString* in) {
+               std::unique_ptr<std::string> in) {
               std::string result;
-              result.swap(in->data());
+              result.swap(*in);
               base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
                   ->PostTask(FROM_HERE,
                              base::BindOnce(std::move(callback), true,

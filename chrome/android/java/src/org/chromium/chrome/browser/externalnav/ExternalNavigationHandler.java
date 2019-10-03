@@ -524,10 +524,11 @@ public class ExternalNavigationHandler {
         return sendIntentToMarket(intent.getPackage(), marketReferrer, params);
     }
 
-    private boolean maybeSetSmsPackage(Intent targetIntent, List<ResolveInfo> resolvingInfos) {
+    private boolean maybeSetSmsPackage(Intent targetIntent) {
         final Uri uri = targetIntent.getData();
         if (targetIntent.getPackage() == null && uri != null
                 && UrlConstants.SMS_SCHEME.equals(uri.getScheme())) {
+            List<ResolveInfo> resolvingInfos = mDelegate.queryIntentActivities(targetIntent);
             targetIntent.setPackage(getDefaultSmsPackageName(resolvingInfos));
             return true;
         }
@@ -628,9 +629,58 @@ public class ExternalNavigationHandler {
         return false;
     }
 
+    /**
+     * For security reasons, we disable all intent:// URLs to Instant Apps that are not coming from
+     * SERP.
+     */
+    private boolean preventDirectInstantAppsIntent(
+            boolean isDirectInstantAppsIntent, boolean shouldProxyForInstantApps) {
+        if (!isDirectInstantAppsIntent || shouldProxyForInstantApps) return false;
+        if (DEBUG) Log.i(TAG, "Intent URL to an Instant App");
+        RecordHistogram.recordEnumeratedHistogram("Android.InstantApps.DirectInstantAppsIntent",
+                AiaIntent.OTHER, AiaIntent.NUM_ENTRIES);
+        return true;
+    }
+
+    /**
+     * Prepare the intent to be sent. This function does not change the filtering for the intent,
+     * so the list if resolveInfos for the intent will be the same before and after this function.
+     */
+    private void prepareExternalIntent(Intent targetIntent, ExternalNavigationParams params,
+            List<ResolveInfo> resolvingInfos, boolean shouldProxyForInstantApps) {
+        // Set the Browser application ID to us in case the user chooses Chrome
+        // as the app.  This will make sure the link is opened in the same tab
+        // instead of making a new one.
+        targetIntent.putExtra(Browser.EXTRA_APPLICATION_ID,
+                ContextUtils.getApplicationContext().getPackageName());
+        if (params.isOpenInNewTab()) targetIntent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
+        targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        // Ensure intents re-target potential caller activity when we run in CCT mode.
+        targetIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        mDelegate.maybeSetWindowId(targetIntent);
+        mDelegate.maybeRecordAppHandlersInIntent(targetIntent, resolvingInfos);
+
+        if (params.getReferrerUrl() != null) {
+            IntentHandler.setPendingReferrer(targetIntent, params.getReferrerUrl());
+        }
+
+        if (params.isIncognito()) IntentHandler.setPendingIncognitoUrl(targetIntent);
+
+        if (shouldProxyForInstantApps) {
+            RecordHistogram.recordEnumeratedHistogram("Android.InstantApps.DirectInstantAppsIntent",
+                    AiaIntent.SERP, AiaIntent.NUM_ENTRIES);
+            targetIntent.putExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER, true);
+        } else {
+            // Make sure this extra is not sent unless we've done the verification.
+            targetIntent.removeExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER);
+        }
+    }
+
     private @OverrideUrlLoadingResult int shouldOverrideUrlLoadingInternal(
             ExternalNavigationParams params, Intent targetIntent,
             @Nullable String browserFallbackUrl) {
+        sanitizeQueryIntentActivitiesIntent(targetIntent);
+
         if (blockExternalNavWhileBackgrounded(params) || blockExternalNavFromBackgroundTab(params)
                 || ignoreBackForwardNav(params)) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
@@ -698,19 +748,15 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
-        sanitizeQueryIntentActivitiesIntent(targetIntent);
+        if (!maybeSetSmsPackage(targetIntent)) maybeRecordPhoneIntentMetrics(targetIntent);
 
+        Intent debugIntent = new Intent(targetIntent);
         List<ResolveInfo> resolvingInfos = mDelegate.queryIntentActivities(targetIntent);
-        boolean canResolveActivity = resolvingInfos.size() > 0;
-        if (!canResolveActivity) {
+        if (resolvingInfos.isEmpty()) {
             return handleUnresolvableIntent(params, targetIntent, browserFallbackUrl);
         }
 
         if (browserFallbackUrl != null) targetIntent.removeExtra(EXTRA_BROWSER_FALLBACK_URL);
-
-        if (!maybeSetSmsPackage(targetIntent, resolvingInfos)) {
-            maybeRecordPhoneIntentMetrics(targetIntent);
-        }
 
         boolean hasSpecializedHandler = mDelegate.countSpecializedHandlers(resolvingInfos) > 0;
         if (!isExternalProtocol && !hasSpecializedHandler) {
@@ -732,50 +778,16 @@ public class ExternalNavigationHandler {
         boolean isDirectInstantAppsIntent =
                 isExternalProtocol && InstantAppsHandler.isIntentToInstantApp(targetIntent);
         boolean shouldProxyForInstantApps = isDirectInstantAppsIntent && mDelegate.isSerpReferrer();
-        if (shouldProxyForInstantApps) {
-            RecordHistogram.recordEnumeratedHistogram("Android.InstantApps.DirectInstantAppsIntent",
-                    AiaIntent.SERP, AiaIntent.NUM_ENTRIES);
-            targetIntent.putExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER, true);
-        } else if (isDirectInstantAppsIntent) {
-            // For security reasons, we disable all intent:// URLs to Instant Apps that are
-            // not coming from SERP.
-            if (DEBUG) Log.i(TAG, "Intent URL to an Instant App");
-            RecordHistogram.recordEnumeratedHistogram("Android.InstantApps.DirectInstantAppsIntent",
-                    AiaIntent.OTHER, AiaIntent.NUM_ENTRIES);
+        if (preventDirectInstantAppsIntent(isDirectInstantAppsIntent, shouldProxyForInstantApps)) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
-        } else {
-            // Make sure this extra is not sent unless we've done the verification.
-            targetIntent.removeExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER);
         }
 
-        // Set the Browser application ID to us in case the user chooses Chrome
-        // as the app.  This will make sure the link is opened in the same tab
-        // instead of making a new one.
-        targetIntent.putExtra(Browser.EXTRA_APPLICATION_ID,
-                ContextUtils.getApplicationContext().getPackageName());
-        if (params.isOpenInNewTab()) targetIntent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
-        targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        // Ensure intents re-target potential caller activity when we run in CCT mode.
-        targetIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        mDelegate.maybeSetWindowId(targetIntent);
-        mDelegate.maybeRecordAppHandlersInIntent(targetIntent, resolvingInfos);
+        prepareExternalIntent(targetIntent, params, resolvingInfos, shouldProxyForInstantApps);
+        // As long as our intent resolution hasn't changed, resolvingInfos won't need to be
+        // re-computed as it won't have changed.
+        assert intentResolutionMatches(debugIntent, targetIntent);
 
-        if (params.getReferrerUrl() != null) {
-            IntentHandler.setPendingReferrer(targetIntent, params.getReferrerUrl());
-        }
-
-        if (params.isIncognito()) IntentHandler.setPendingIncognitoUrl(targetIntent);
-
-        boolean deviceCanHandleIntent = deviceCanHandleIntent(targetIntent);
         if (params.isIncognito() && !mDelegate.willChromeHandleIntent(targetIntent)) {
-            // Assume the browser can handle it if there's no activity for this intent.
-            if (!deviceCanHandleIntent) {
-                if (DEBUG) {
-                    Log.i(TAG, "Not showing alert dialog with no handler for intent");
-                }
-                return OverrideUrlLoadingResult.NO_OVERRIDE;
-            }
-
             // This intent may leave Chrome.  Warn the user that incognito does not carry over
             // to apps out side of Chrome.
             try {
@@ -831,8 +843,7 @@ public class ExternalNavigationHandler {
         }
 
         try {
-            if (deviceCanHandleIntent
-                    && mDelegate.startActivityIfNeeded(targetIntent, shouldProxyForInstantApps)) {
+            if (mDelegate.startActivityIfNeeded(targetIntent, shouldProxyForInstantApps)) {
                 // Assume the browser can handle it if there's no activity for this intent.
                 if (DEBUG) Log.i(TAG, "startActivityIfNeeded");
                 return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
@@ -1063,5 +1074,11 @@ public class ExternalNavigationHandler {
     private boolean deviceCanHandleIntent(Intent intent) {
         List<ResolveInfo> resolveInfos = mDelegate.queryIntentActivities(intent);
         return resolveInfos != null && !resolveInfos.isEmpty();
+    }
+
+    private static boolean intentResolutionMatches(Intent intent, Intent other) {
+        return intent.filterEquals(other)
+                && (intent.getSelector() == other.getSelector()
+                        || intent.getSelector().filterEquals(other.getSelector()));
     }
 }

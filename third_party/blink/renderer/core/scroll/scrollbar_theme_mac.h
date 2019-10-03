@@ -44,8 +44,6 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
 
   void RegisterScrollbar(Scrollbar&) override;
 
-  bool SupportsControlTints() const override { return true; }
-
   // On Mac, the painting code itself animates the opacity so there's no need
   // to disable in order to make the scrollbars invisible. In fact,
   // disabling/enabling causes invalidations which can cause endless loops as
@@ -62,7 +60,7 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   bool ShouldCenterOnThumb(const Scrollbar&, const WebMouseEvent&) override;
 
   bool ShouldRepaintAllPartsOnInvalidation() const override { return false; }
-  ScrollbarPart InvalidateOnThumbPositionChange(
+  ScrollbarPart PartsToInvalidateOnThumbPositionChange(
       const Scrollbar&,
       float old_position,
       float new_position) const override;
@@ -75,9 +73,6 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   void SetNewPainterForScrollbar(Scrollbar&, ScrollbarPainter);
   ScrollbarPainter PainterForScrollbar(const Scrollbar&) const;
 
-  void PaintTrackBackground(GraphicsContext&,
-                            const Scrollbar&,
-                            const IntRect&) override;
   void PaintThumb(GraphicsContext& context,
                   const Scrollbar& scrollbar,
                   const IntRect& rect) override {
@@ -110,13 +105,9 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
 
   virtual void UpdateButtonPlacement(WebScrollbarButtonsPlacement) {}
 
-  IntRect TrackRect(const Scrollbar&, bool painting = false) override;
-  IntRect BackButtonRect(const Scrollbar&,
-                         ScrollbarPart,
-                         bool painting = false) override;
-  IntRect ForwardButtonRect(const Scrollbar&,
-                            ScrollbarPart,
-                            bool painting = false) override;
+  IntRect TrackRect(const Scrollbar&) override;
+  IntRect BackButtonRect(const Scrollbar&, ScrollbarPart) override;
+  IntRect ForwardButtonRect(const Scrollbar&, ScrollbarPart) override;
 
   bool HasButtons(const Scrollbar&) override { return false; }
   bool HasThumb(const Scrollbar&) override;
@@ -125,6 +116,9 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
 
   int TickmarkBorderWidth() override { return 1; }
 
+  void PaintTrackBackground(GraphicsContext&,
+                            const Scrollbar&,
+                            const IntRect&) override;
   void PaintThumbInternal(GraphicsContext&,
                           const Scrollbar&,
                           const IntRect&,

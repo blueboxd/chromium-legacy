@@ -324,7 +324,8 @@ TEST_F(HttpServiceTest, AutoRedirect) {
   ExecuteRequest(url_loader, std::move(request));
   CheckResponseError(url_response(), net::OK);
   EXPECT_EQ(url_response().status_code, 200u);
-  EXPECT_EQ(url_response().url,
+  ASSERT_TRUE(url_response().url.has_value());
+  EXPECT_EQ(url_response().url.value(),
             http_test_server()->GetURL("/with-headers.html").spec());
 }
 
@@ -346,14 +347,14 @@ TEST_F(HttpServiceTest, ManualRedirect) {
       http_test_server()->GetURL("/with-headers.html").spec();
   CheckResponseError(url_response(), net::OK);
   EXPECT_EQ(url_response().status_code, 302u);
-  EXPECT_EQ(url_response().url, request_url);
-  EXPECT_EQ(url_response().redirect_url, final_url);
+  EXPECT_EQ(url_response().url.value_or(""), request_url);
+  EXPECT_EQ(url_response().redirect_url.value_or(""), final_url);
 
   base::RunLoop run_loop;
   url_loader->FollowRedirect(
       [&run_loop, &final_url](oldhttp::URLResponse response) {
         EXPECT_EQ(response.status_code, 200u);
-        EXPECT_EQ(response.url, final_url);
+        EXPECT_EQ(response.url.value_or(""), final_url);
         run_loop.Quit();
       });
   run_loop.Run();

@@ -20,6 +20,7 @@
 <translation id="1087788677726983142">הסתרת מסננים של אירועים בסטרימינג</translation>
 <translation id="1088219014394087294">אין כותרות.</translation>
 <translation id="1106741348836243114">‏הפעל או השבת משוב צלילים (Earcons).</translation>
+<translation id="1114836634143403764">הצעה</translation>
 <translation id="1120743664840974483">{"א": "אלף", "ב": "בועז", "ג": "גימל", "ד": "דוד", "ה": "הגר", "ו": "וו", "ז": "זאב", "ח": "חוה", "ט": "טיח", "י": "יונה","כ": "כרמל", "ל": "לאה", "מ": "משה", "נ": "נשר", "ס": "סמך","ע": "עין", "פ": "פסל", "צ": "ציפור", "ק": "קורח", "ר": "רות", "ש": "שמיר", "ת": "תלם"}</translation>
 <translation id="1120938014254001895">החלקה מעלה עם שתי אצבעות</translation>
 <translation id="1124771028211010580">התצוגה הנוכחית היא זה לצד זה.</translation>
@@ -126,6 +127,7 @@
 <translation id="1845944666972354496">אפשר להפעיל באמצעות לחיצה פעמיים</translation>
 <translation id="1846771122725914429">‏צג ברייל תואם Bluetooth</translation>
 <translation id="1865601187525349519">סוף הטקסט</translation>
+<translation id="1875375785454778375">מבצע פעולות עכשיו</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">אמור את התאריך והשעה הנוכחיים.</translation>
 <translation id="1902396333223336119">תא</translation>
@@ -146,6 +148,7 @@
 <translation id="2009187674653301682">לא כתב עילי</translation>
 <translation id="2010555995361223825">‏תפריטים של ChromeVox</translation>
 <translation id="2045490512405922022">לא מסומן</translation>
+<translation id="2049107626739254612">פרטי המחבר</translation>
 <translation id="20601713649439366">אין ביטוי מתמטי קודם.</translation>
 <translation id="2063539687800151747">רשומת</translation>
 <translation id="207477615537953741">סמנטי כבוי</translation>
@@ -156,6 +159,7 @@
 <translation id="2110480898214777136">הגדר גלישת טקסט מההתחלה לסוף או מהסוף להתחלה בתוך דף, תיבת דו-שיח או גורם מכיל אחר</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">מקש גישה:<ph name="KEY" /></translation>
+<translation id="2126597928985245619">אין טקסט זמין בשביל הפריט הזה</translation>
 <translation id="2127747486437921899">נטוי</translation>
 <translation id="2138345533858834403">‏מדמה את הפלט של צג הברייל שניתן לרענן
         בחלונית ChromeVox בחלק העליון של המסך.</translation>
@@ -261,6 +265,7 @@
 <translation id="2911433807131383493">‏פתח את המדריך של ChromeVox</translation>
 <translation id="2912405967290226587">החלקה ימינה עם שלוש אצבעות</translation>
 <translation id="2932083475399492303">החלף סוג שורה בין מבנית או פריסה</translation>
+<translation id="293796669683825859">תגובות</translation>
 <translation id="2942710183375260152">כחול אפור כהה</translation>
 <translation id="2943596527105977722">מטה-זהב כהה</translation>
 <translation id="2944762337049891859">הקרא את הדף באופן אוטומטי בסיום טעינתו.</translation>
@@ -337,6 +342,7 @@
 <translation id="3324983252691184275">ארגמן</translation>
 <translation id="3338224621010291843">המחוון <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="335581015389089642">דיבור</translation>
+<translation id="3356951775008366684">הקראת ההגייה פונטית של מילה</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{סימן חיבור}two{# סימני חיבור}many{# סימני חיבור}other{# סימני חיבור}}</translation>
 <translation id="338583716107319301">מפריד</translation>
@@ -533,6 +539,7 @@
 <translation id="4763480195061959176">סרטוני וידאו</translation>
 <translation id="4764692524839457597">ברירת מחדל</translation>
 <translation id="4772771694153161212">ללא קו תחתון</translation>
+<translation id="4787577491510559358">הקראת הפורמט של הפריט הנוכחי</translation>
 <translation id="479989351350248267">Search</translation>
 <translation id="4804818685124855865">נתק</translation>
 <translation id="481165870889056555">הכרזה על הכותרת של הדף הנוכחי</translation>
@@ -569,6 +576,7 @@
 <translation id="4983588134362688868">דלג לחלק העליון של הדף</translation>
 <translation id="4986606102545753256"><ph name="NAME" />, חלון</translation>
 <translation id="4993152509206108683"><ph name="PERCENT" /> אחוזים מקצב הדיבור</translation>
+<translation id="4994420463726586413">הקראת מצב הסוללה הנוכחי</translation>
 <translation id="4996716799442435517">ויזואלי</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, לחצן בחירה מסומן</translation>
 <translation id="4997475792277222884">אין פריט הבא שאינו קישור.</translation>

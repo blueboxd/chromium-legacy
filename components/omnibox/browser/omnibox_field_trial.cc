@@ -650,10 +650,6 @@ bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions);
 }
 
-bool OmniboxFieldTrial::IsTabSwitchLogicReversed() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxReverseTabSwitchLogic);
-}
-
 bool OmniboxFieldTrial::IsTabSwitchSuggestionsDedicatedRowEnabled() {
   return base::FeatureList::IsEnabled(
       omnibox::kOmniboxTabSwitchSuggestionsDedicatedRow);

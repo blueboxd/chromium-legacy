@@ -196,6 +196,8 @@ static const int kRecipeRetryLimit = 5;
 }
 
 - (void)setUp {
+  self->shouldRecordException = true;
+
   [super setUp];
 
   const base::FilePath recipePath = [[self class] recipePath];

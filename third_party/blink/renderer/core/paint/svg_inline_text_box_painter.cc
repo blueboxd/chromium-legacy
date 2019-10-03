@@ -547,11 +547,13 @@ Vector<SVGTextFragmentWithRange> SVGInlineTextBoxPainter::CollectTextMatches(
   const Vector<SVGTextFragmentWithRange> empty_text_match_list;
 
   // SVG does not support grammar or spellcheck markers, so skip anything but
-  // TextMatch.
-  if (marker.GetType() != DocumentMarker::kTextMatch)
+  // TextMarkerBase types.
+  if (marker.GetType() != DocumentMarker::kTextMatch &&
+      marker.GetType() != DocumentMarker::kTextFragment)
     return empty_text_match_list;
 
-  if (!InlineLayoutObject()
+  if (marker.GetType() == DocumentMarker::kTextMatch &&
+      !InlineLayoutObject()
            .GetFrame()
            ->GetEditor()
            .MarkedTextMatchesAreHighlighted())
@@ -587,10 +589,10 @@ SVGInlineTextBoxPainter::CollectFragmentsInRange(int start_position,
   return fragment_info_list;
 }
 
-void SVGInlineTextBoxPainter::PaintTextMatchMarkerForeground(
+void SVGInlineTextBoxPainter::PaintTextMarkerForeground(
     const PaintInfo& paint_info,
     const LayoutPoint& point,
-    const TextMatchMarker& marker,
+    const TextMarkerBase& marker,
     const ComputedStyle& style,
     const Font& font) {
   const Vector<SVGTextFragmentWithRange> text_match_info_list =
@@ -634,10 +636,10 @@ void SVGInlineTextBoxPainter::PaintTextMatchMarkerForeground(
   }
 }
 
-void SVGInlineTextBoxPainter::PaintTextMatchMarkerBackground(
+void SVGInlineTextBoxPainter::PaintTextMarkerBackground(
     const PaintInfo& paint_info,
     const LayoutPoint& point,
-    const TextMatchMarker& marker,
+    const TextMarkerBase& marker,
     const ComputedStyle& style,
     const Font& font) {
   const Vector<SVGTextFragmentWithRange> text_match_info_list =

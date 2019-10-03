@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/heap/process_heap.h"
 
 #include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/heap/gc_info.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent_node.h"
@@ -27,6 +28,11 @@ void BlinkGCFreeHook(uint8_t* address) {
 }  // namespace
 
 void ProcessHeap::Init() {
+  DCHECK(!base::FeatureList::IsEnabled(
+             blink::features::kBlinkHeapConcurrentMarking) ||
+         base::FeatureList::IsEnabled(
+             blink::features::kBlinkHeapIncrementalMarking));
+
   total_allocated_space_ = 0;
   total_allocated_object_size_ = 0;
 

@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">ส่วนท้าย</translation>
 <translation id="2709516037105925701">ป้อนอัตโนมัติ</translation>
 <translation id="2723001399770238859">เสียง</translation>
+<translation id="2725963129578236554">ความคิดเห็น</translation>
 <translation id="2746543609216772311">ค่าต้องเป็น <ph name="MINIMUM_DATE_OR_TIME" /> หรือหลังจากนั้น</translation>
 <translation id="2759744352195237655">ปุ่มป๊อปอัป</translation>
 <translation id="2761667185364618470">โปรดเลือกช่องนี้หากคุณต้องการดำเนินการต่อ</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">โปรดกรอกข้อความนี้ให้มีอักขระอย่างน้อย <ph name="MIN_CHARACTERS" /> ตัว (ตอนนี้คุณมี <ph name="CURRENT_LENGTH" /> ตัว)</translation>
 <translation id="383465348367842624">ส่วนที่ตามด้วย "<ph name="ATSIGN" />" ต้องไม่มีสัญลักษณ์ "<ph name="INVALIDCHARACTER" />"</translation>
 <translation id="3846214748874656680">ออกจากการแสดงเต็มหน้าจอ</translation>
+<translation id="3889183436948184105">การแก้ไข</translation>
 <translation id="3920932319529768807">บทสรุป</translation>
 <translation id="3924558731517983934">แอปพลิเคชัน</translation>
 <translation id="3944740393230681990">อารัมภบท</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">ตัวควบคุมเวลาของเสียง</translation>
 <translation id="6443871981718447451">แสดงเมนูคำอธิบายภาพ</translation>
 <translation id="6453774872122745852">กิตติกรรมประกาศ</translation>
+<translation id="6475115390776617481">ผู้ทำงานร่วมกันที่ดูเนื้อหานี้อยู่</translation>
 <translation id="648732519525291180">เครื่องมือเลือกเวลา</translation>
 <translation id="6550675742724504774">ตัวเลือก</translation>
 <translation id="6572309429103589720">ไวยากรณ์ไม่ถูกต้อง</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">การแทรก</translation>
 <translation id="6989848892321993519">โปรดกรอกข้อความนี้ให้มีอักขระอย่างน้อย <ph name="MIN_CHARACTERS" /> ตัว (ตอนนี้คุณมี 1 ตัว)</translation>
 <translation id="7033340931668032222">ขึ้นและลงเพื่อเปลี่ยนระดับเสียง</translation>
+<translation id="7034405885550056553">คำแนะนำ</translation>
 <translation id="709897737746224366">โปรดจับคู่รูปแบบที่ร้องขอ</translation>
 <translation id="7118469954320184356">ไม่มีคำอธิบาย</translation>
 <translation id="7139483182332611405">ส่วนนำ</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">เอาต์พุต</translation>
 <translation id="8750798805984357768">โปรดเลือกตัวเลือกอย่างหนึ่งอย่างใดเหล่านี้</translation>
 <translation id="8808573423886751634">บท</translation>
+<translation id="8822203815165896261">ข้อมูลการเขียนโปรแกรม</translation>
 <translation id="8845239796550121995">ตอนนี้กำลังแคสต์ไปยัง TV</translation>
 <translation id="8851136666856101339">หลัก</translation>
 <translation id="8875657656876809964">ข้อผิดพลาดในการเล่นวิดีโอ</translation>

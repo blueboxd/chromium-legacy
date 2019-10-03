@@ -910,7 +910,8 @@
       // Enabled by features::kLegacyWindowsDWriteFontFallback;
     },
     {
-      name: "LinkSystemColors"
+      name: "LinkSystemColors",
+      status: "stable",
     },
     {
       name: "LongTaskV2",
@@ -1289,6 +1290,7 @@
     },
     {
       name: "PointerLockOptions",
+      origin_trial_feature_name: "PointerLockOptions",
     },
     {
       name: "PointerRawUpdate",
@@ -1492,7 +1494,7 @@
       status: {"Android": "", "default": "experimental"},
     },
     {
-      name: "ServiceWorkerFilterFrozen",
+      name: "ServiceWorkerClientLifecycleState",
       status: "experimental",
     },
     {
@@ -1665,6 +1667,7 @@
     },
     {
       name: "UseWindowsSystemColors",
+      status: "stable",
     },
     {
       name: "V8IdleTasks",

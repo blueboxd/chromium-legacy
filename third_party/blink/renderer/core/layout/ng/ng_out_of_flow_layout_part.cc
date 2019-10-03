@@ -570,9 +570,21 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
   }
 
   base::Optional<LogicalSize> replaced_size;
+  base::Optional<LogicalSize> replaced_aspect_ratio;
+  bool is_replaced_with_only_aspect_ratio = false;
   if (is_replaced) {
-    replaced_size =
-        ComputeReplacedSize(node, candidate_constraint_space, min_max_size);
+    ComputeReplacedSize(node, candidate_constraint_space, min_max_size,
+                        &replaced_size, &replaced_aspect_ratio);
+    is_replaced_with_only_aspect_ratio = !replaced_size &&
+                                         replaced_aspect_ratio &&
+                                         !replaced_aspect_ratio->IsEmpty();
+    // If we only have aspect ratio, and no replaced size, intrinsic size
+    // defaults to 300x150. min_max_size gets computed from the intrinsic size.
+    // We reset the min_max_size because spec says that OOF-positioned size
+    // should not be constrained by intrinsic size in this case.
+    // https://www.w3.org/TR/CSS22/visudet.html#inline-replaced-width
+    if (is_replaced_with_only_aspect_ratio)
+      min_max_size.reset();
   } else if (should_be_considered_as_replaced) {
     replaced_size =
         LogicalSize{min_max_size->ShrinkToFit(
@@ -590,6 +602,17 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
   if (!is_replaced && should_be_considered_as_replaced)
     replaced_size.reset();
 
+  // Replaced elements with only aspect ratio compute their block size from
+  // inline size and aspect ratio.
+  // https://www.w3.org/TR/css-sizing-3/#intrinsic-sizes
+  if (is_replaced_with_only_aspect_ratio) {
+    replaced_size = LogicalSize(
+        node_position.size.inline_size,
+        (replaced_aspect_ratio->block_size *
+         ((node_position.size.inline_size - border_padding.InlineSum()) /
+          replaced_aspect_ratio->inline_size)) +
+            border_padding.BlockSum());
+  }
   if (AbsoluteNeedsChildBlockSize(candidate_style)) {
     layout_result =
         GenerateFragment(node, container_content_size_in_candidate_writing_mode,

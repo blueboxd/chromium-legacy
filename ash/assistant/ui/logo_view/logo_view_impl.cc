@@ -76,6 +76,9 @@ void LogoViewImpl::SetSpeechLevel(float speech_level) {
 }
 
 int64_t LogoViewImpl::StartTimer() {
+  // Remove animation observer from previous |StartTimer| if exists.
+  StopTimer();
+
   ui::Compositor* compositor = layer()->GetCompositor();
   if (compositor && !compositor->HasAnimationObserver(this)) {
     animating_compositor_ = compositor;

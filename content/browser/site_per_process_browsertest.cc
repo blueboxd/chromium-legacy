@@ -1677,13 +1677,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
       blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   scroll_event.SetPositionInWidget(1, 1);
+  // Use precise pixels to keep these events off the animated scroll pathways,
+  // which currently break this test.
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=710513
+  scroll_event.delta_units =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   scroll_event.delta_x = 0.0f;
   scroll_event.delta_y = -5.0f;
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
-  // Set has_precise_scroll_deltas to keep these events off the animated scroll
-  // pathways, which currently break this test.
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=710513
-  scroll_event.has_precise_scrolling_deltas = true;
   rwhv_parent->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   // The event router sends wheel events of a single scroll sequence to the
@@ -1964,10 +1965,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TouchpadGestureFlingStart) {
   blink::WebMouseWheelEvent scroll_event(
       blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
+  scroll_event.delta_units =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   scroll_event.delta_x = 0.0f;
   scroll_event.delta_y = 5.0f;
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
-  scroll_event.has_precise_scrolling_deltas = true;
   child_rwh->ForwardWheelEvent(scroll_event);
   gesture_scroll_begin_ack_observer.Wait();
 
@@ -2091,10 +2093,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        scale_factor),
       gfx::ToCeiledInt((bounds.y() - root_view->GetViewBounds().y() + 10) *
                        scale_factor));
+  scroll_event.delta_units =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   scroll_event.delta_x = 0.0f;
   scroll_event.delta_y = 5.0f;
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
-  scroll_event.has_precise_scrolling_deltas = true;
   rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
   ack_observer.Wait();
 
@@ -2150,10 +2153,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        scale_factor),
       gfx::ToCeiledInt((bounds.y() - root_view->GetViewBounds().y() + 10) *
                        scale_factor));
+  scroll_event.delta_units =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   scroll_event.delta_x = 0.0f;
   scroll_event.delta_y = -5.0f;
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
-  scroll_event.has_precise_scrolling_deltas = true;
   child_view->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   // Send a wheel end event to complete the scrolling sequence.
@@ -2227,10 +2231,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollLocalSubframeInOOPIF) {
       blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   scroll_event.SetPositionInWidget(90, 110);
+  scroll_event.delta_units =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   scroll_event.delta_x = 0.0f;
   scroll_event.delta_y = -50.0f;
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
-  scroll_event.has_precise_scrolling_deltas = true;
   rwhv_child->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
   ack_observer.Wait();
 }
@@ -14260,7 +14265,8 @@ class ScrollingIntegrationTest : public SitePerProcessBrowserTest {
     params.gesture_source_type = source;
     params.anchor = gfx::PointF(point);
     params.distances.push_back(-distance);
-    params.precise_scrolling_deltas = true;
+    params.granularity =
+        ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
 
     auto gesture = std::make_unique<SyntheticSmoothScrollGesture>(params);
 

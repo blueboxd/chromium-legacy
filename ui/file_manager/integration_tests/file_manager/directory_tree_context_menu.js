@@ -682,62 +682,6 @@
   };
 
   /**
-   * Tests the creation of new folders from the directory tree from the context
-   * menu. Creates the new folders in random order to ensure directory tree
-   * sorting does not break folder renaming. crbug.com/1004717
-   */
-  testcase.dirCreateMultipleFolders = async () => {
-    // Open Files app on local downloads.
-    const appId =
-        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
-
-    const createNewFolder = async (name) => {
-      // Right click on Downloads folder.
-      await remoteCall.waitAndRightClick(appId, TREEITEM_DOWNLOADS);
-
-      // Wait for context menu to appear and create new folder.
-      const newFolderMenuItem = '#directory-tree-context-menu:not([hidden])' +
-          ' [command="#new-folder"]:not([hidden]):not([disabled])';
-      await remoteCall.waitAndClickElement(appId, newFolderMenuItem);
-
-      // Rename folder.
-      const textInput = '#directory-tree .tree-item[renaming] input';
-      await remoteCall.waitForElement(appId, textInput);
-      await remoteCall.callRemoteTestUtil(
-          'inputText', appId, [textInput, name]);
-      await remoteCall.callRemoteTestUtil(
-          'fakeKeyDown', appId, [textInput, 'Enter', false, false, false]);
-
-      // Wait for the folder to lose its renaming state.
-      const renamingItem = '#directory-tree .tree-item[renaming]';
-      await remoteCall.waitForElementLost(appId, renamingItem);
-    };
-
-    const checkDownloadsSubdirectoriesExist = async (expectedLabels) => {
-      const directoryItemsQuery =
-          ['#directory-tree [entry-label="Downloads"] > .tree-children .label'];
-      const directoryItems = await remoteCall.callRemoteTestUtil(
-          'queryAllElements', appId, directoryItemsQuery);
-      const directoryItemsLabels = directoryItems.map(child => child.text);
-      chrome.test.assertEq(expectedLabels, directoryItemsLabels);
-    };
-
-    // The folders in sorted order would be 111, aaa, bbb. Create these
-    // folders in random order. crbug.com/1004717
-    let names = ['aaa', '111', 'bbb'];
-    while (names.length) {
-      const getRandomIndex = () => {
-        return Math.floor(Math.random() * Math.floor(names.length));
-      };
-      const name = names.splice(getRandomIndex(), 1);
-      await createNewFolder(name);
-    }
-
-    // Check: the new folders should have been created in the right order.
-    await checkDownloadsSubdirectoriesExist(['111', 'aaa', 'bbb']);
-  };
-
-  /**
    * Tests context menu for Recent root, currently it doesn't show context menu.
    */
   testcase.dirContextMenuRecent = async () => {

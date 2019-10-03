@@ -87,9 +87,9 @@
         <div id="networkState" class="title settings-box-text"
             connected$="[[isConnectedState_(managedProperties_)]]"
             error$="[[isConnectionErrorState_(
-                managedProperties_, outOfRange_)]]">
+                managedProperties_, outOfRange_, deviceState_)]]">
           [[getStateText_(managedProperties_, propertiesReceived_,
-              outOfRange_)]]
+              outOfRange_, deviceState_)]]
         </div>
         <template is="dom-if"
             if="[[isPolicySource(managedProperties_.source))]]">
@@ -125,10 +125,10 @@
       <controlled-button id="connect" class="action-button"
           on-click="onConnectTap_"
           hidden$="[[!showConnect_(managedProperties_, globalPolicy,
-              managedNetworkAvailable)]]"
+              managedNetworkAvailable, deviceState_)]]"
           disabled="[[!enableConnect_(managedProperties_, defaultNetwork,
               propertiesReceived_, outOfRange_, globalPolicy,
-              managedNetworkAvailable)]]"
+              managedNetworkAvailable, deviceState_)]]"
           label="$i18n{networkButtonConnect}"
           pref="[[getFakeVpnConfigPrefForEnforcement_(managedProperties_,
               prefs.vpn_config_allowed)]]">

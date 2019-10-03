@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Používáním této aplikace vyjadřujete souhlas se <ph name="BEGIN_LINK_TOS" />smluvními podmínkami<ph name="END_LINK_TOS" /> a <ph name="BEGIN_LINK_PRIVACY" />zásadami ochrany soukromí<ph name="END_LINK_PRIVACY" /> prohlížeče Chrome.</translation>
 <translation id="2147651015520127414">Chrome ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Data ze synchronizace Chromu</translation>
-<translation id="2342981853652716282">Chcete-li mít své záložky, hesla a další obsah na všech zařízeních, přihlaste se do Chromu.</translation>
 <translation id="2347208864470321755">Pokud je tato funkce zapnutá, bude Chrome nabízet překlad stránek v jiných jazycích pomocí Překladače Google. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Chcete-li uložit obrázky, klepněte na Nastavení a umožněte Chromu používat vaše fotky.</translation>
 <translation id="2576431527583832481">Chrome je opět o něco lepší. K dispozici je nová verze.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Pomozte Chrome zlepšovat – posílejte Googlu statistiky využití a zprávy o selhání.</translation>
 <translation id="415767770115540173">Služby Google mohou v prohlížeči Chrome díky údajům o poloze fungovat lépe.</translation>
 <translation id="424864128008805179">Odhlásit se z Chromu?</translation>
+<translation id="4249068189593983585">Tip pro Chrome. Další možnosti karet zobrazíte přidržením tlačítka Zobrazit karty, které najdete v dolní nebo horní části obrazovky.</translation>
 <translation id="4523886039239821078">Některé doplňky způsobují selhání prohlížeče Chrome. Prosím odinstalujte:</translation>
 <translation id="5389212809648216794">Google Chrome nemůže použít fotoaparát, protože jej právě používá jiná aplikace</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Přečtěte si aktualizované smluvní podmínky prohlížeče Chrome.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Některé doplňky způsobují selhání prohlížeče Chrome. Zkuste je prosím odinstalovat.</translation>
 <translation id="8459495907675268833">Vybraná data byla z Chromu a synchronizovaných zařízení odstraněna. Na stránce history.google.com mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google, například vyhledávací dotazy a aktivita z ostatních služeb Google.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Prohlížeč Google Chrome vám může usnadnit prohlížení pomocí webových služeb. Tyto služby můžete případně zakázat. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 </translationbundle>

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/proto/models.pb.h"
 
 namespace content {
 class NavigationHandle;
@@ -30,13 +31,6 @@ enum class OptimizationGuideDecision {
   kMaxValue = kFalse,
 };
 
-// The types of pages the optimization guide understands how to classify.
-enum class OptimizationTarget {
-  kUnknown,
-  // Should only be applied when the page load is predicted to be painful.
-  kPainfulPageLoad,
-};
-
 // Contains metadata for the optimization.
 struct OptimizationMetadata {
   // Only applicable for NOSCRIPT and RESOURCE_LOADING optimization types.
@@ -55,7 +49,7 @@ class OptimizationGuideDecider {
   // |navigation_handle|.
   virtual OptimizationGuideDecision CanApplyOptimization(
       content::NavigationHandle* navigation_handle,
-      OptimizationTarget optimization_target,
+      proto::OptimizationTarget optimization_target,
       proto::OptimizationType optimization_type,
       OptimizationMetadata* optimization_metadata) = 0;
 

@@ -73,7 +73,6 @@
 <translation id="1828824471510190776">Suggest  Password…</translation>
 <translation id="1870148520156231997">Reveal password</translation>
 <translation id="1872096359983322073">Torch</translation>
-<translation id="1876721852596493031">Send usage data</translation>
 <translation id="1911619930368729126">Upload to Google Drive</translation>
 <translation id="1923342640370224680">Last Hour</translation>
 <translation id="1941314575388338491">Double tap to copy.</translation>
@@ -96,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> unread Reading List articles.</translation>
 <translation id="2230173723195178503">Web page loaded</translation>
 <translation id="2239626343334228536">Clearing browsing data…</translation>
-<translation id="2256128224215992540">Search and Site Suggestions</translation>
 <translation id="2267753748892043616">Add Account</translation>
 <translation id="2268044343513325586">Refine</translation>
 <translation id="2273327106802955778">More menu</translation>
@@ -297,7 +295,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Enable sync</translation>
 <translation id="5234764350956374838">Dismiss</translation>
-<translation id="5244474230056479698">Syncing to <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Cancel sync</translation>
 <translation id="5271549068863921519">Save password</translation>
 <translation id="5300589172476337783">Show</translation>

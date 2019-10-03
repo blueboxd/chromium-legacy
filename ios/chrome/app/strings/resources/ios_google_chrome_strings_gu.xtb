@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">આ ઍપ્લિકેશનનો ઉપયોગ કરીને, તમે Chromeની <ph name="BEGIN_LINK_TOS" />સેવાની શરતો<ph name="END_LINK_TOS" /> અને <ph name="BEGIN_LINK_PRIVACY" />ગોપનીયતા સૂચના<ph name="END_LINK_PRIVACY" /> સાથે સંમત થાઓ છો.</translation>
 <translation id="2147651015520127414">Chrome એ ચકાસણી કરી છે કે <ph name="ISSUER" /> એ આ વેબસાઇટનું પ્રમાણપત્ર ઇસ્યુ કર્યું છે.</translation>
 <translation id="2199719347983604670">Chrome સિંકમાંનો ડેટા</translation>
-<translation id="2342981853652716282">તમારા બધા ઉપકરણો પર તમારા બુકમાર્ક, પાસવર્ડ અને બીજુ ઘણું મેળવવા માટે Chromeમાં સાઇન ઇન કરો.</translation>
 <translation id="2347208864470321755">જ્યારે આ સુવિધા ચાલુ કરી હોય, ત્યારે Chrome, Google અનુવાદનો ઉપયોગ કરીને અન્ય ભાષાઓમાં લખેલા પૃષ્ઠોના અનુવાદની ઓફર કરશે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">ફોટા સાચવવા માટે, Chrome ને તમારા ફોટાનો ઉપયોગ કરવા દેવા માટે સેટિંગ પર ટૅપ કરો</translation>
 <translation id="2576431527583832481">Chrome હમણાં જ વધુ સારું થયું છે! એક નવું વર્ઝન ઉપલબ્ધ છે.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">ઉપયોગનાં આંકડા અને ક્રૅશ રિપોર્ટ Googleને મોકલીને Chromeને વધુ સારું બનાવવામાં મદદ કરો.</translation>
 <translation id="415767770115540173">Chrome માં તમારા સ્થાન પર આધારિત બહેતર Google અનુભવ મેળવો.</translation>
 <translation id="424864128008805179">Chromeમાંથી સાઇન આઉટ કરીએ?</translation>
+<translation id="4249068189593983585">Chrome ટિપ. ટૅબના વધુ વિકલ્પો માટે, તમારી સ્ક્રીનના તળિયે અથવા ટોચે આવેલા ટૂલબારમાંના 'ટૅબ બતાવો' બટનને ટચ કરીને થોડીવાર દબાવી રાખો.</translation>
 <translation id="4523886039239821078">કેટલાંક એડ-ઓનને કારણે Chrome ક્રૅશ થાય છે. કૃપા કરી આને અનઇન્સ્ટૉલ કરો:</translation>
 <translation id="5389212809648216794">Google Chrome, તમારા કૅમેરાનો ઉપયોગ કરી શકતું નથી કારણ કે તે બીજી ઍપ્લિકેશન દ્વારા ઉપયોગમાં છે</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Chromeની અપડેટ કરેલી સેવાની શરતોનો રિવ્યૂ કરો.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">કેટલાંક એડ-ઓનને કારણે Chrome ક્રૅશ થાય છે. કૃપા કરીને તેમને અનઇન્સ્ટૉલ કરવાનો પ્રયાસ કરો.</translation>
 <translation id="8459495907675268833">પસંદ કરેલ ડેટા Chrome અને સિંક ડિવાઇસમાંથી દૂર કરવામાં આવ્યો છે. તમારા Google એકાઉન્ટમાં બ્રાઉઝિંગ ઇતિહાસના બીજા સ્વરૂપો જેમ કે શોધ અને history.google.com પરની બીજા Google સેવાઓમાંથી પ્રવૃત્તિ હોય શકે છે.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">તમારા બ્રાઉઝ કરવાના અનુભવને વધુ સારો બનાવવા માટે Google Chrome વેબ સેવાઓનો ઉપયોગ કરી શકે. તમે વૈકલ્પિક રીતે આ સેવાઓને બંધ કરી શકો છો. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 </translationbundle>

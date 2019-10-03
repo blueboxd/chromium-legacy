@@ -18,7 +18,6 @@
 <translation id="1393853151966637042">Отримати довідку щодо користування Chrome</translation>
 <translation id="1399397803214730675">На комп’ютері вже встановлено новішу версію Google Chrome. Якщо програмне забезпечення не працює, видаліть Google Chrome і повторіть спробу.</translation>
 <translation id="1434626383986940139">Програми Chrome для версії Canary</translation>
-<translation id="1457721931618994305">Оновлення Google Chrome...</translation>
 <translation id="1469002951682717133">Панель запуску програм Chrome</translation>
 <translation id="1553358976309200471">Оновити Chrome</translation>
 <translation id="1587223624401073077">Google Chrome використовує вашу камеру.</translation>
@@ -88,6 +87,7 @@
 <translation id="3065168410429928842">Chrome</translation>
 <translation id="3080151273017101988">Продовжувати роботу фонових програм, коли Google Chrome закрито</translation>
 <translation id="3089968997497233615">Доступна нова, безпечніша версія Google Chrome.</translation>
+<translation id="3138848678222082288">Наступні версії Chrome встановлюватимуться автоматично. Щойно це завантаження завершиться, Chrome перезапуститься, і ви зможете продовжувати.</translation>
 <translation id="3149510190863420837">Додатки Chrome</translation>
 <translation id="3282568296779691940">Вхід у Chrome</translation>
 <translation id="3340978935015468852">налаштування</translation>
@@ -169,9 +169,7 @@
 <translation id="573759479754913123">Про ОС Chrome</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Не вдалося запустити Chrome. Повторіть спробу.</translation>
-<translation id="5877064549588274448">Канал змінено. Перезапустіть пристрій, щоб застосувати зміни.</translation>
 <translation id="5895138241574237353">Перезапустити</translation>
-<translation id="5906655207909574370">Майже оновлено. Перезапустіть пристрій, щоб завершити оновлення.</translation>
 <translation id="5940385492829620908">Тут містяться ваші веб-сторінки, закладки та інші дані Chrome.</translation>
 <translation id="5941830788786076944">Зробити Google Chrome переглядачем за промовчанням</translation>
 <translation id="6014844626092547096">Ви ввійшли в Chrome. Проте ваш адміністратор вимкнув синхронізацію.</translation>
@@ -190,16 +188,15 @@
 <translation id="6566149418543181476">Google Chrome оновлюється (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Ви синхронізуєте дані Chrome через обліковий запис <ph name="PROFILE_EMAIL" />. Щоб оновити параметри синхронізації або використовувати Chrome без облікового запису Google, перейдіть на сторінку <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Скопійовано в Chrome</translation>
-<translation id="6634887557811630702">У вас остання версія Google Chrome.</translation>
 <translation id="6676384891291319759">Доступ до Інтернету</translation>
 <translation id="6679975945624592337">Дозволити Google Chrome працювати у фоновому режимі</translation>
 <translation id="6750954913813541382">Щоб виправляти орфографічні помилки, Chrome надсилає в Google текст, який ви вводите у веб-переглядачі</translation>
 <translation id="677276454032249905">Усе одно вийти з Chrome?</translation>
 <translation id="683440813066116847">Вхідне правило для Google Chrome Canary дозволяє трафік mDNS.</translation>
 <translation id="6885412569789873916">Бета-версія додатків Chrome</translation>
+<translation id="6906909733186691861">Наступні версії Chrome встановлюватимуться автоматично.</translation>
 <translation id="6943584222992551122">Дані веб-перегляду користувача буде видалено з цього пристрою. Щоб відновити їх, увійдіть в обліковий запис Chrome як <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Вхідне правило для бета-версії Google Chrome дозволяє трафік mDNS.</translation>
-<translation id="6970811910055250180">Оновлення пристрою...</translation>
 <translation id="6982337800632491844">Перш ніж використовувати цей пристрій, потрібно прочитати й прийняти наведені нижче Умови використання сайту <ph name="DOMAIN" />. Ці умови не розширюють, не змінюють і не обмежують Умови використання ОС Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome оновлено, проте ви не користувалися цим веб-переглядачем щонайменше 30 днів.</translation>
 <translation id="7098166902387133879">Google Chrome використовує ваш мікрофон.</translation>
@@ -237,7 +234,6 @@
 <translation id="7962410387636238736">На цей комп’ютер не надходитимуть оновлення Google Chrome, оскільки Windows XP та Windows Vista більше не підтримуються</translation>
 <translation id="8008534537613507642">Перевстановити Chrome</translation>
 <translation id="8013993649590906847">Якщо зображення не має корисного опису, Chrome спробує додати його. Для цього зображення надсилаються в Google.</translation>
-<translation id="8030318113982266900">Оновлення пристрою до каналу <ph name="CHANNEL_NAME" />…</translation>
 <translation id="8032142183999901390">Якщо видалити обліковий запис із Chrome, можливо, потрібно оновити відкриті вкладки, щоб зміни почали діяти.</translation>
 <translation id="8129812357326543296">Про &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Установіть Chrome на телефоні. Ми надішлемо SMS на ваш телефон.</translation>
@@ -260,7 +256,6 @@
 <translation id="8606668294522778825">Google Chrome може покращувати веб-перегляд за допомогою веб-служб. Ви можете вимкнути ці служби. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome не відповідає. Перезапустити зараз?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome перезапуститься через 1 хвилину}one{Chrome перезапуститься через # хвилину}few{Chrome перезапуститься через # хвилини}many{Chrome перезапуститься через # хвилин}other{Chrome перезапуститься через # хвилини}}</translation>
-<translation id="8667808506758191620">Ваш пристрій <ph name="DEVICE_TYPE" /> оновлено.</translation>
 <translation id="8669527147644353129">Помічник Google Chrome</translation>
 <translation id="8679801911857917785">Розширення також змінило сторінку, яка відкривається під час запуску Chrome.</translation>
 <translation id="870251953148363156">Оновити &amp;Google Chrome</translation>

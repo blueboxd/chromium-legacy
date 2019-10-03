@@ -410,8 +410,13 @@ This file contains the strings for ash.
         Volume
       </message>
 
-      <message name="IDS_ASH_FEATURE_DISABLED_BY_POLICY" desc="The message used to indicate that this feature is disabled by policy.">
-        <ph name="FEATURE_NAME">$1<ex>Docked magnifier</ex></ph> has been disabled by a policy applied to this device. Please talk to your administrator to request changes.
+      <message name="IDS_ASH_ACCESSIBILITY_FEATURE_SHORTCUT_DISABLED_TITLE"
+               desc="Title to indicate that the shortcut for an accessibility feature has been disabled.">
+        Shortcut turned off
+      </message>
+      <message name="IDS_ASH_ACCESSIBILITY_FEATURE_SHORTCUT_DISABLED_MSG"
+               desc="The message used to indicate that, the corresponding shortcut for that accessibility feature has been disabled.">
+        Administrator has deactivated <ph name="FEATURE_NAME">$1<ex>Fullscreen magnifier</ex></ph>.
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_IME_SHORT" desc="The short label used for IME button in system tray bubble.">

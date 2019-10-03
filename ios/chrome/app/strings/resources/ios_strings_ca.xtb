@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">No es pot desar.</translation>
 <translation id="1180526666083833456">Sincronitza i personalitza el contingut en tots els dispositius.</translation>
 <translation id="1181037720776840403">Suprimeix</translation>
+<translation id="1207113853726624428">Cerca nova</translation>
 <translation id="1209206284964581585">Amaga per ara</translation>
 <translation id="1219674500290482172">No es pot connectar a Internet.</translation>
 <translation id="122699739164161391">Tanca totes les pestanyes</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">Suggereix una contrasenya...</translation>
 <translation id="1870148520156231997">Mostra la contrasenya</translation>
 <translation id="1872096359983322073">Llanterna</translation>
-<translation id="1876721852596493031">Envia les dades d'ús</translation>
 <translation id="1911619930368729126">Penja a Google Drive</translation>
 <translation id="1923342640370224680">La darrera hora</translation>
 <translation id="1941314575388338491">Feu doble toc per copiar-ho.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> articles de la llista de lectura no llegits</translation>
 <translation id="2230173723195178503">La pàgina web s'ha carregat</translation>
 <translation id="2239626343334228536">S'estan esborrant les dades de navegació...</translation>
-<translation id="2256128224215992540">Suggeriments de cerques i llocs</translation>
 <translation id="2267753748892043616">Afegeix un compte</translation>
 <translation id="2268044343513325586">Restringeix</translation>
 <translation id="2273327106802955778">Més opcions del menú</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">No es pot obrir el fitxer</translation>
 <translation id="2718352093833049315">Només amb Wi-Fi</translation>
 <translation id="2747003861858887689">Camp anterior</translation>
+<translation id="2773292004659987824">Cerca d'incògnit</translation>
 <translation id="2780046210906776326">Cap compte de correu</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Surt del selector de pestanyes</translation>
@@ -295,7 +295,6 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Activa la sincronització</translation>
 <translation id="5234764350956374838">Omet</translation>
-<translation id="5244474230056479698">S'està sincronitzant amb <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Cancel·la la sincronització</translation>
 <translation id="5271549068863921519">Desa la contrasenya</translation>
 <translation id="5300589172476337783">Mostra</translation>
@@ -501,6 +500,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="8261506727792406068">Suprimeix</translation>
 <translation id="8281781826761538115">Idioma predeterminat: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Cerca nova</translation>
+<translation id="8323906514956095947">Mantén premut el botó per veure més opcions de pestanyes</translation>
 <translation id="8328777765163860529">Tanca-ho tot</translation>
 <translation id="8407669440184693619">No s'ha trobat cap contrasenya per a aquest lloc web</translation>
 <translation id="842017693807136194">S'ha iniciat la sessió amb</translation>

@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 

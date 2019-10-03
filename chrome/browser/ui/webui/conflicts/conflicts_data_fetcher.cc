@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/task/post_task.h"
+#include "base/values.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "content/public/browser/browser_task_traits.h"

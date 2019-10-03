@@ -60,6 +60,7 @@
 #include "chrome/browser/ui/app_list/search/internal_app_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
+#include "chrome/browser/ui/app_list/search/search_utils/fuzzy_tokenized_string_match.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -967,25 +968,45 @@ void AppSearchProvider::UpdateQueriedResults() {
     if (!app->searchable())
       continue;
 
-    TokenizedStringMatch match;
     TokenizedString* indexed_name = app->GetTokenizedIndexedName();
-
-    if (match.Calculate(query_terms, *indexed_name)) {
-      // Exact matches should be shown even if the threshold isn't reached, e.g.
-      // due to a localized name being particularly short.
-      if (match.relevance() <= app->relevance_threshold() &&
-          !base::EqualsCaseInsensitiveASCII(query_, app->name()) &&
-          !app->MatchSearchableText(query_terms)) {
+    if (!app_list_features::IsFuzzyAppSearchEnabled()) {
+      TokenizedStringMatch match;
+      if (match.Calculate(query_terms, *indexed_name)) {
+        // Exact matches should be shown even if the threshold isn't reached,
+        // e.g. due to a localized name being particularly short.
+        if (match.relevance() <= app->relevance_threshold() &&
+            !base::EqualsCaseInsensitiveASCII(query_, app->name()) &&
+            !app->MatchSearchableText(query_terms)) {
+          continue;
+        }
+      } else if (!app->MatchSearchableText(query_terms)) {
         continue;
       }
-    } else if (!app->MatchSearchableText(query_terms)) {
-      continue;
-    }
+      std::unique_ptr<AppResult> result =
+          app->data_source()->CreateResult(app->id(), list_controller_, false);
+      result->UpdateFromMatch(*indexed_name, match);
+      MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
+    } else {
+      FuzzyTokenizedStringMatch match;
+      if (match.IsRelevant(query_terms, *indexed_name) ||
+          app->MatchSearchableText(query_terms) ||
+          base::EqualsCaseInsensitiveASCII(query_, app->name())) {
+        std::unique_ptr<AppResult> result = app->data_source()->CreateResult(
+            app->id(), list_controller_, false);
 
-    std::unique_ptr<AppResult> result =
-        app->data_source()->CreateResult(app->id(), list_controller_, false);
-    result->UpdateFromMatch(*indexed_name, match);
-    MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
+        // Update result from match.
+        result->SetTitle(indexed_name->text());
+        result->set_relevance(match.relevance());
+        ash::SearchResultTags tags;
+        for (const auto& hit : match.hits()) {
+          tags.push_back(ash::SearchResultTag(ash::SearchResultTag::MATCH,
+                                              hit.start(), hit.end()));
+        }
+        result->SetTitleTags(tags);
+
+        MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
+      }
+    }
   }
   PublishQueriedResultsOrRecommendation(true, &new_results);
 }

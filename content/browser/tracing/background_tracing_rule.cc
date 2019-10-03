@@ -15,6 +15,7 @@
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "components/tracing/common/background_tracing_agent.mojom.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"

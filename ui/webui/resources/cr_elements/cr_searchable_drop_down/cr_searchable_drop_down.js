@@ -352,4 +352,17 @@ Polymer({
     return errorMessage;
   },
 
+  /**
+   * This makes sure to reset the text displayed in the dropdown to the actual
+   * value in the cr-input for the use case where a user types in an invalid
+   * option then changes focus from the dropdown. This behavior is only for when
+   * updateValueOnInput is false. When updateValueOnInput is true, it is ok to
+   * leave the user's text in the dropdown search bar when focus is changed.
+   * @private
+   */
+  onBlur_ : function () {
+    if (!this.updateValueOnInput) {
+      this.$.search.value = this.value;
+    }
+  }
 });

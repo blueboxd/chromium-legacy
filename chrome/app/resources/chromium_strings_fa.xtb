@@ -71,7 +71,6 @@
 <translation id="3509308970982693815">‏لطفاً همه پنجره‌های Chromium را ببندید و دوباره سعی کنید.</translation>
 <translation id="352783484088404971">‏حذف از Chromium...</translation>
 <translation id="3575459661164320785">‏نرم‌افزار مضری در رایانه‌تان وجود دارد. Chromium می‌تواند آن را بردارد، تنظیمات را بازیابی کند و افزونه‌ها را غیرفعال کند تا عملکرد مرورگرتان دوباره عادی شود.</translation>
-<translation id="3582788516608077514">‏در حال به‌روزرسانی Chromium…</translation>
 <translation id="358997566136285270">‏نشان‌واره Chromium</translation>
 <translation id="3639635944603682591">‏داده‌های محصول مرور این کاربر از این دستگاه حذف می‌شود. برای بازیابی داده‌ها، با نام <ph name="USER_EMAIL" /> به سیستم Chromium وارد شوید.</translation>
 <translation id="3713809861844741608">‏باز کردن پیوند در &amp;برگه جدید Chromium</translation>
@@ -85,7 +84,6 @@
 <translation id="421369550622382712">‏برنامه‌ها، بازی‌ها، افزونه‌ها و طرح‌های زمینه Chromium را کشف کنید.</translation>
 <translation id="4216212958613226427">‏از این زبان برای نمایش رابط کاربری Chromium استفاده می‌شود</translation>
 <translation id="4222580632002216401">‏اکنون وارد Chromium شدید! سرپرست سیستم شما همگام‌سازی را از کار انداخته است.</translation>
-<translation id="4224199872375172890">‏Chromium به‌روز است.</translation>
 <translation id="4230135487732243613">‏داده‌های Chromium به این حساب مرتبط شود؟</translation>
 <translation id="4271805377592243930">‏دریافت کمک برای Chromium</translation>
 <translation id="4285930937574705105">‏به دلیل خطای نامشخص نصب ناموفق بود. اگر Chromium در حال اجرا است، لطفاً آن را ببندید و دوباره سعی کنید.</translation>
@@ -97,6 +95,7 @@
 <translation id="4567424176335768812">با حساب <ph name="USER_EMAIL_ADDRESS" /> وارد سیستم شده‌اید. اکنون در همه دستگاه‌هایی که با آنها به سیستم وارد شده‌اید می‌توانید به نشانک‌ها، سابقه و دیگر تنظیماتتان دسترسی داشته باشید.</translation>
 <translation id="459535195905078186">‏برنامه‌های Chromium</translation>
 <translation id="4621240073146040695">‏تقریباً به‌روز شده است! برای تمام کردن به‌روزرسانی، Chromium را راه‌اندازی مجدد کنید.</translation>
+<translation id="4661006601577405669">‏نسخه‌های آینده Chromium به‌طور خودکار نصب خواهند شد.</translation>
 <translation id="4677944499843243528">‏ظاهراً نمایه توسط فرآیند Chromium دیگری (<ph name="PROCESS_ID" />) در رایانه‌ای دیگر (<ph name="HOST_NAME" />) در حال استفاده است. Chromium نمایه را قفل کرده است تا خراب نشود. اگر مطمئنید فرآیندهای دیگری از این نمایه استفاده نمی‌کنند، می‌توانید قفل نمایه را باز کنید و Chromium را مجدداً راه‌اندازی نمایید.</translation>
 <translation id="469338717132742108">‏دریافت کمک برای سیستم عامل Chromium</translation>
 <translation id="4708774505295300557">‏شخصی قبلاً به‌عنوان <ph name="ACCOUNT_EMAIL_LAST" /> به سیستم Chromium در این رایانه وارد شده است. برای اینکه اطلاعاتتان جدا حفظ شود، لطفاً کاربر Chrome جدیدی ایجاد کنید.</translation>
@@ -127,9 +126,7 @@
 <translation id="5698481217667032250">‏نمایش Chromium به این زبان</translation>
 <translation id="5820394555380036790">‏سیستم عامل Chromium </translation>
 <translation id="5862307444128926510">‏به Chromium خوش آمدید</translation>
-<translation id="5877064549588274448">کانال تغییر کرد. برای اعمال تغییرات دستگاه خود را مجدداً راه‌اندازی کنید.</translation>
 <translation id="5895138241574237353">راه‌اندازی مجدد</translation>
-<translation id="5906655207909574370">تقریباً به‌روز شده است! برای تمام کردن به‌روزرسانی، دستگاهتان را دوباره راه‌اندازی کنید.</translation>
 <translation id="5987687638152509985">‏به‌روزرسانی Chromium برای شروع همگام‌سازی</translation>
 <translation id="6013050204643758987">‏ساخت سیستم‌عامل Chromium به‌کمک <ph name="BEGIN_LINK_CROS_OSS" />نرم‌افزار منبع آزاد<ph name="END_LINK_CROS_OSS" /> دیگری، مثل <ph name="BEGIN_LINK_LINUX_OSS" />Linux (بتا)<ph name="END_LINK_LINUX_OSS" />، امکان‌پذیر شده است.</translation>
 <translation id="6040143037577758943">بستن</translation>
@@ -171,7 +168,6 @@
 <translation id="6868056391275687737">‏نسخه‌های دیگری از Chromium درحال اجرا است. برای به‌روزرسانی، آن‌ها را ببندید.</translation>
 <translation id="6893813176749746474">‏Chromium به‌روز شده است اما حداقل ۳۰ روز از آن استفاده نکرده‌اید.</translation>
 <translation id="6964305034639999644">‏باز کردن پیوند در پنجره &amp;ناشناس Chromium</translation>
-<translation id="6970811910055250180">درحال به‌روزرسانی دستگاه شما…</translation>
 <translation id="6990124437352146030">‏Chromium برای این سایت به مجوز دسترسی به میکروفون نیاز دارد</translation>
 <translation id="705851970750939768">‏به‌روزرسانی Chromium</translation>
 <translation id="7066436765290594559">‏سیستم‌عامل Chromium قادر به همگام‌سازی داده‌های شما نبود. لطفاً رمز عبارتی همگام‌سازی خود را به‌روز کنید.</translation>
@@ -192,6 +188,7 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
 <translation id="7451052299415159299">‏Chromium برای این سایت به مجوز دسترسی به دوربین نیاز دارد</translation>
 <translation id="7483335560992089831">‏نمی‌توانید Chromium دارای نسخه مشابه با نسخه در حال اجرا را نصب کنید. لطفاً Chromium را ببندید و دوباره سعی کنید.</translation>
+<translation id="751093125041325477">‏نسخه‌های آینده Chromium به‌طور خودکار نصب خواهند شد. وقتی این بارگیری کامل شد، Chromium بازراه‌اندازی می‌شود و شما به کار خود ادامه خواهید داد.</translation>
 <translation id="753534427205733210">{0,plural, =1{‏Chromium ‏۱ دقیقه دیگر راه‌اندازی مجدد می‌شود}one{‏Chromium ‏# دقیقه دیگر راه‌اندازی مجدد می‌شود}other{‏Chromium ‏# دقیقه دیگر راه‌اندازی مجدد می‌شود}}</translation>
 <translation id="7549178288319965365">‏درباره سیستم عامل Chromium </translation>
 <translation id="7561906087460245826">‏همچنین داده‌ها از Chromium پاک شود (<ph name="URL" />)</translation>
@@ -213,7 +210,6 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="7975919845073681630">‏این نصب ثانویه Chromium است و نمی‌تواند مرورگر پیش‌فرضتان شود.</translation>
 <translation id="7979877361127045932">‏پنهان در منوی Chromium</translation>
 <translation id="8013436988911883588">‏وقتی Chromium دسترسی داشته باشد، وب‌سایت‌ها می‌توانند مجوز دسترسی درخواست کنند.</translation>
-<translation id="8030318113982266900">درحال به روزرسانی دستگاه شما به کانال <ph name="CHANNEL_NAME" />...</translation>
 <translation id="81770708095080097">‏این فایل خطرناک است، بنابراین Chromium آن را مسدود کرده است.</translation>
 <translation id="8222496066431494154">‏Chromium را در تلفنتان نصب کنید. پیامکی به شماره تلفن بازیابی حساب شما ارسال خواهیم کرد: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8248265253516264921">‏اگر تصویری توضیح مفیدی نداشته باشد، Chromium توضیحی برای شما ارائه خواهد کرد. برای ایجاد توضیحات، تصاویر به Google ارسال می‌شود. هروقت خواستید می‌توانید این گزینه را در تنظیمات خاموش کنید.</translation>
@@ -228,7 +224,6 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="8586442755830160949">‏حق نسخه‌برداری <ph name="YEAR" /> نویسندگان Chromium. کلیه حقوق محفوظ است.</translation>
 <translation id="8619360774459241877">‏درحال راه‌اندازی Chromium…</translation>
 <translation id="8621669128220841554">‏به دلیل خطای نامشخص، نصب ناموفق بود. لطفاً دوباره Chromium را بارگیری کنید.</translation>
-<translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> شما به‌ روز است.</translation>
 <translation id="8682540261359803721">‏اگر تنظیمی در این صفحه نشان داده نمی‌شود، در <ph name="LINK_BEGIN" />
       تنظیمات مرورگر Chromium<ph name="LINK_END" /> آن را پیدا کنید</translation>
 <translation id="8697124171261953979">‏این برنامه همچنین صفحه‌ای را که هنگام راه‌اندازی Chromium یا جستجو از Omnibox نشان داده می‌شود، کنترل می‌کند.</translation>

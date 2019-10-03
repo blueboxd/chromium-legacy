@@ -65,8 +65,10 @@ constexpr SkColor kLightInkDropHighlightColor =
 
 class PageSwitcherButton : public views::Button {
  public:
-  PageSwitcherButton(views::ButtonListener* listener, bool vertical)
-      : views::Button(listener), vertical_(vertical) {
+  PageSwitcherButton(views::ButtonListener* listener,
+                     bool is_root_app_grid_page_switcher)
+      : views::Button(listener),
+        is_root_app_grid_page_switcher_(is_root_app_grid_page_switcher) {
     SetInkDropMode(InkDropMode::ON);
   }
 
@@ -116,7 +118,9 @@ class PageSwitcherButton : public views::Button {
     return std::make_unique<views::FloodFillInkDropRipple>(
         size(), GetLocalBounds().InsetsFrom(bounds),
         GetInkDropCenterBasedOnLastEvent(),
-        vertical_ ? kDarkInkDropRippleColor : kLightInkDropRippleColor, 1.0f);
+        is_root_app_grid_page_switcher_ ? kDarkInkDropRippleColor
+                                        : kLightInkDropRippleColor,
+        1.0f);
   }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
@@ -124,8 +128,8 @@ class PageSwitcherButton : public views::Button {
     return std::make_unique<views::InkDropHighlight>(
         gfx::PointF(GetLocalBounds().CenterPoint()),
         std::make_unique<views::CircleLayerDelegate>(
-            vertical_ ? kDarkInkDropHighlightColor
-                      : kLightInkDropHighlightColor,
+            is_root_app_grid_page_switcher_ ? kDarkInkDropHighlightColor
+                                            : kLightInkDropHighlightColor,
             kInkDropRadius));
   }
 
@@ -147,12 +151,14 @@ class PageSwitcherButton : public views::Button {
   PaintButtonInfo BuildPaintButtonInfo() {
     PaintButtonInfo info;
     if (selected_) {
-      info.color = vertical_ ? kDarkSelectedButtonColor : kLightNormalColor;
+      info.color = is_root_app_grid_page_switcher_ ? kDarkSelectedButtonColor
+                                                   : kLightNormalColor;
       info.style = cc::PaintFlags::kFill_Style;
       info.radius = SkIntToScalar(kSelectedButtonRadius);
       info.stroke_width = SkIntToScalar(0);
     } else {
-      info.color = vertical_ ? kDarkNormalColor : kLightNormalColor;
+      info.color = is_root_app_grid_page_switcher_ ? kDarkNormalColor
+                                                   : kLightNormalColor;
       info.style = cc::PaintFlags::kStroke_Style;
       info.radius = SkIntToScalar(kNormalButtonRadius);
       info.stroke_width = kStrokeWidth;
@@ -177,8 +183,8 @@ class PageSwitcherButton : public views::Button {
   // If this button is selected, set to true. By default, set to false;
   bool selected_ = false;
 
-  // True if the page switcher button strip should grow vertically.
-  const bool vertical_;
+  // True if the page switcher root is the app grid.
+  const bool is_root_app_grid_page_switcher_;
 
   DISALLOW_COPY_AND_ASSIGN(PageSwitcherButton);
 };
@@ -191,15 +197,15 @@ PageSwitcherButton* GetButtonByIndex(views::View* buttons, size_t index) {
 }  // namespace
 
 PageSwitcher::PageSwitcher(ash::PaginationModel* model,
-                           bool vertical,
+                           bool is_root_app_grid_page_switcher,
                            bool is_tablet_mode)
     : model_(model),
       buttons_(new views::View),
-      vertical_(vertical),
+      is_root_app_grid_page_switcher_(is_root_app_grid_page_switcher),
       is_tablet_mode_(is_tablet_mode) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-  if (vertical_) {
+  if (is_root_app_grid_page_switcher_) {
     buttons_->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical, gfx::Insets(),
         kVerticalButtonPadding));
@@ -224,7 +230,7 @@ PageSwitcher::~PageSwitcher() {
 gfx::Size PageSwitcher::CalculatePreferredSize() const {
   // Always return a size with correct width so that container resize is not
   // needed when more pages are added.
-  if (vertical_) {
+  if (is_root_app_grid_page_switcher_) {
     return gfx::Size(kPreferredButtonStripWidth,
                      buttons_->GetPreferredSize().height());
   }
@@ -256,9 +262,11 @@ void PageSwitcher::ButtonPressed(views::Button* sender,
   const int page = std::distance(children.begin(), it);
   if (page == model_->selected_page())
     return;
-  RecordPageSwitcherSource(
-      event.IsGestureEvent() ? kTouchPageIndicator : kClickPageIndicator,
-      is_tablet_mode_);
+  if (is_root_app_grid_page_switcher_) {
+    RecordPageSwitcherSource(
+        event.IsGestureEvent() ? kTouchPageIndicator : kClickPageIndicator,
+        is_tablet_mode_);
+  }
   model_->SelectPage(page, true /* animate */);
 }
 
@@ -268,7 +276,8 @@ void PageSwitcher::TotalPagesChanged() {
 
   buttons_->RemoveAllChildViews(true);
   for (int i = 0; i < model_->total_pages(); ++i) {
-    PageSwitcherButton* button = new PageSwitcherButton(this, vertical_);
+    PageSwitcherButton* button =
+        new PageSwitcherButton(this, is_root_app_grid_page_switcher_);
     button->SetAccessibleName(l10n_util::GetStringFUTF16(
         IDS_APP_LIST_PAGE_SWITCHER, base::FormatNumber(i + 1),
         base::FormatNumber(model_->total_pages())));

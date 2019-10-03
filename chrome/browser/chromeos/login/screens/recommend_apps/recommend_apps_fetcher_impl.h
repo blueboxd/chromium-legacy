@@ -19,6 +19,10 @@
 #include "components/arc/arc_features_parser.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 
+namespace base {
+class Value;
+}
+
 namespace network {
 namespace mojom {
 class URLLoaderFactory;

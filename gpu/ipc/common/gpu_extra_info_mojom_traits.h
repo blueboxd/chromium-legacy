@@ -35,6 +35,10 @@ struct StructTraits<gpu::mojom::ANGLEFeatureDataView, gpu::ANGLEFeature> {
   static const std::string& status(const gpu::ANGLEFeature& input) {
     return input.status;
   }
+
+  static const std::string& condition(const gpu::ANGLEFeature& input) {
+    return input.condition;
+  }
 };
 
 template <>

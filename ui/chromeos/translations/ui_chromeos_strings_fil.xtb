@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">I-unpin ang folder</translation>
 <translation id="3678559383040232393">Maltese keyboard</translation>
 <translation id="3685122418104378273">Naka-disable ang Google Drive bilang default, kapag gumagamit ng mobile data.</translation>
+<translation id="3689865792480713551">Kanselahin ang <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Hindi mabuksan ang device na ito dahil hindi sinusuportahan ang filesystem nito.</translation>
 <translation id="3741243925913727067">I-back up ang mga larawan at video ng iyong media device sa Google Drive.</translation>
 <translation id="3749289110408117711">File name</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">US international (PC)</translation>
 <translation id="6346310558342052870">Pinaghihigpitan ang access</translation>
 <translation id="6353618411602605519">Croatian na keyboard</translation>
+<translation id="6356685157277930264">Window ng feedback ng mga file</translation>
 <translation id="6358884629796491903">Dragon</translation>
 <translation id="637062427944097960">Ang file na ito na binuksan sa ibang desktop. Ilipat sa <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) upang tingnan ito.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> (na) item</translation>

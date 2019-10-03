@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Đã sử dụng</translation>
 <translation id="1171770572613082465">Xem các trang web phổ biến bằng cách nhấn vào nút "Trang web hàng đầu"</translation>
 <translation id="1173894706177603556">Đổi tên</translation>
-<translation id="1175310183703641346">Dấu trang, lịch sử, mật khẩu và các dữ liệu khác sẽ không còn đồng bộ hóa với Tài khoản Google của bạn nữa</translation>
 <translation id="1178581264944972037">Tạm dừng</translation>
 <translation id="1181037720776840403">Xóa</translation>
 <translation id="1188239144602654184">Chuyển sang thực tế tăng cường</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">Đã đánh dấu trang trong <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Đồng bộ hóa dưới nền</translation>
 <translation id="3771001275138982843">Không thể tải bản cập nhật xuống</translation>
+<translation id="3771033907050503522">Tab ẩn danh</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Bật Bluetooth<ph name="END_LINK" /> để cho phép ghép nối</translation>
 <translation id="3775705724665058594">Gửi đến các thiết bị của bạn</translation>
 <translation id="3778956594442850293">Đã thêm vào màn hình chính</translation>
@@ -484,7 +484,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4719927025381752090">Đề xuất dịch</translation>
 <translation id="4720023427747327413">Mở trong <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Hãy giúp cải tiến Chrome. <ph name="BEGIN_LINK" />Tham gia khảo sát<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">Bạn đang chuyển các tài khoản đồng bộ hóa từ <ph name="ACCOUNT_EMAIL_OLD" /> sang <ph name="ACCOUNT_EMAIL_NEW" />. Dữ liệu Chrome hiện có của bạn do <ph name="MANAGED_DOMAIN" /> quản lý. Thao tác này sẽ xóa dữ liệu của bạn khỏi thiết bị này nhưng dữ liệu sẽ vẫn còn trong <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">Cập nhật</translation>
 <translation id="4738836084190194332">Đồng bộ hóa lần gần đây nhất: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Mở tab mới</translation>
@@ -668,13 +667,13 @@ Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế
 <translation id="5937580074298050696">Đã tiết kiệm <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="5942872142862698679">Sử dụng Google để tìm kiếm</translation>
-<translation id="5944669582486359588">Ở Chế độ thu gọn, Chrome tải trang nhanh hơn và sử dụng dữ liệu ít hơn tới 60%. Công nghệ đám mây của Google tối ưu hóa các trang mà bạn truy cập.</translation>
 <translation id="5952764234151283551">Gửi cho Google URL của trang bạn đang cố truy cập</translation>
 <translation id="5956665950594638604">Mở Trung tâm trợ giúp Chrome trong tab mới</translation>
 <translation id="5958275228015807058">Tìm tệp và trang của bạn trong Tệp đã tải xuống</translation>
 <translation id="5962718611393537961">Nhấn để thu gọn</translation>
 <translation id="6000066717592683814">Giữ Google làm công cụ tìm kiếm mặc định</translation>
 <translation id="6005538289190791541">Mật khẩu đề xuất</translation>
+<translation id="6036057147555329831">Bộ chuyển đổi giao diện (ICU) bổ sung</translation>
 <translation id="6039379616847168523">Chuyển sang tab tiếp theo</translation>
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="6042308850641462728">Xem thêm</translation>
@@ -815,7 +814,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7029809446516969842">Mật khẩu</translation>
 <translation id="7053983685419859001">Chặn</translation>
 <translation id="7055152154916055070">Liên kết chuyển hướng đã chặn:</translation>
-<translation id="7062545763355031412">Chấp nhận và chuyển đổi tài khoản</translation>
 <translation id="7063006564040364415">Không thể kết nối với máy chủ đồng bộ hóa.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Đã chọn 1 mục}other{Đã chọn # mục}}</translation>
 <translation id="7071521146534760487">Quản lý tài khoản</translation>
@@ -1099,7 +1097,6 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="9139318394846604261">Mua sắm</translation>
 <translation id="9155898266292537608">Bạn cũng có thể tìm kiếm bằng cách nhấn nhanh vào một từ</translation>
 <translation id="9169507124922466868">Lịch sử di chuyển đang mở ở nửa dưới màn hình</translation>
-<translation id="9188680907066685419">Đăng xuất khỏi tài khoản được quản lý</translation>
 <translation id="9204836675896933765">Còn lại 1 tệp</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Không thể gọi điện</translation>
@@ -1108,7 +1105,6 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="932327136139879170">Trang chủ</translation>
 <translation id="938850635132480979">Lỗi: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Truy cập micrô của bạn</translation>
-<translation id="951339005376969845">Xóa dữ liệu hiện có. Bạn có thể truy xuất dữ liệu bằng cách chuyển về <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome có thể sử dụng <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> để tìm kiếm tại Trung Quốc. Bạn có thể thay đổi điều này trong <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>
 <translation id="965817943346481315">Chặn nếu trang web hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm (khuyên dùng)</translation>
 <translation id="968900484120156207">Các trang mà bạn truy cập sẽ xuất hiện tại đây</translation>

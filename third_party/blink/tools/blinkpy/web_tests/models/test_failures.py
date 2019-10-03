@@ -29,6 +29,7 @@
 import cPickle
 
 from blinkpy.web_tests.models import test_expectations
+from blinkpy.web_tests.controllers import repaint_overlay
 
 
 def is_reftest_failure(failure_list):
@@ -97,7 +98,24 @@ def determine_result_type(failure_list):
 
 
 class TestFailure(object):
-    """Abstract base class that defines the failure interface."""
+
+    def __init__(self, actual_driver_output, expected_driver_output):
+        self.actual_driver_output = actual_driver_output
+        self.expected_driver_output = expected_driver_output
+        self._has_stderr = False
+        self._repaint_overlay = False
+        if actual_driver_output:
+            self._has_stderr = actual_driver_output.has_stderr()
+        if expected_driver_output:
+            self._has_stderr |= expected_driver_output.has_stderr()
+
+    @property
+    def has_stderr(self):
+        return self._has_stderr
+
+    @property
+    def has_repaint_overlay(self):
+        return self._repaint_overlay
 
     @staticmethod
     def loads(s):
@@ -128,8 +146,10 @@ class TestFailure(object):
 
 class FailureTimeout(TestFailure):
 
-    def __init__(self, is_reftest=False):
-        super(FailureTimeout, self).__init__()
+    def __init__(self, actual_driver_output, expected_driver_output,
+                is_reftest=False):
+        super(FailureTimeout, self).__init__(
+            actual_driver_output, expected_driver_output)
         self.is_reftest = is_reftest
 
     def message(self):
@@ -141,8 +161,11 @@ class FailureTimeout(TestFailure):
 
 class FailureCrash(TestFailure):
 
-    def __init__(self, is_reftest=False, process_name='content_shell', pid=None, has_log=False):
-        super(FailureCrash, self).__init__()
+    def __init__(self, actual_driver_output, expected_driver_output,
+                 is_reftest=False, process_name='content_shell', pid=None,
+                 has_log=False):
+        super(FailureCrash, self).__init__(
+            actual_driver_output, expected_driver_output)
         self.process_name = process_name
         self.pid = pid
         self.is_reftest = is_reftest
@@ -159,8 +182,10 @@ class FailureCrash(TestFailure):
 
 class FailureLeak(TestFailure):
 
-    def __init__(self, is_reftest=False, log=''):
-        super(FailureLeak, self).__init__()
+    def __init__(self, actual_driver_output, expected_driver_output,
+                 is_reftest=False, log=''):
+        super(FailureLeak, self).__init__(
+            actual_driver_output, expected_driver_output)
         self.is_reftest = is_reftest
         self.log = log
 
@@ -180,7 +205,19 @@ class FailureTestHarnessAssertion(TestFailure):
         return 'asserts failed'
 
 
-class FailureTextMismatch(TestFailure):
+class FailureText(TestFailure):
+
+    def __init__(self, actual_output, expected_output):
+        super(FailureText, self).__init__(actual_output, expected_output)
+        if actual_output:
+            self._repaint_overlay = (
+                repaint_overlay.result_contains_repaint_rects(actual_output.text))
+        if expected_output:
+            self._repaint_overlay |= (
+                repaint_overlay.result_contains_repaint_rects(expected_output.text))
+
+
+class FailureTextMismatch(FailureText):
 
     def message(self):
         return 'text diff'
@@ -230,51 +267,50 @@ class FailureMissingImage(TestFailure):
 
 class FailureImageHashMismatch(TestFailure):
 
+    def __init__(self, actual_driver_output, expected_driver_output,
+                 image_diff=None):
+        super(FailureImageHashMismatch, self).__init__(
+              actual_driver_output, expected_driver_output)
+        self.image_diff = image_diff
+
     def message(self):
         return 'image diff'
 
 
+# TODO(rmhasan): Get rid of this because it is not used?
 class FailureImageHashIncorrect(TestFailure):
 
     def message(self):
         return '-expected.png embedded checksum is incorrect'
 
 
-class FailureReftestMismatch(TestFailure):
+class FailureReftest(TestFailure):
 
-    def __init__(self, reference_filename=None):
-        super(FailureReftestMismatch, self).__init__()
+    def __init__(self, actual_driver_output, expected_driver_output,
+                 reference_filename=None):
+        super(FailureReftest, self).__init__(
+            actual_driver_output, expected_driver_output)
         self.reference_filename = reference_filename
+
+class FailureReftestMismatch(FailureReftest):
 
     def message(self):
         return 'reference mismatch'
 
 
-class FailureReftestMismatchDidNotOccur(TestFailure):
-
-    def __init__(self, reference_filename=None):
-        super(FailureReftestMismatchDidNotOccur, self).__init__()
-        self.reference_filename = reference_filename
+class FailureReftestMismatchDidNotOccur(FailureReftest):
 
     def message(self):
         return "reference mismatch didn't happen"
 
 
-class FailureReftestNoImageGenerated(TestFailure):
-
-    def __init__(self, reference_filename=None):
-        super(FailureReftestNoImageGenerated, self).__init__()
-        self.reference_filename = reference_filename
+class FailureReftestNoImageGenerated(FailureReftest):
 
     def message(self):
         return "reference test didn't generate pixel results"
 
 
-class FailureReftestNoReferenceImageGenerated(TestFailure):
-
-    def __init__(self, reference_filename=None):
-        super(FailureReftestNoReferenceImageGenerated, self).__init__()
-        self.reference_filename = reference_filename
+class FailureReftestNoReferenceImageGenerated(FailureReftest):
 
     def message(self):
         return "-expected.html didn't generate pixel results"
@@ -293,6 +329,8 @@ class FailureAudioMismatch(TestFailure):
 
 
 class FailureEarlyExit(TestFailure):
+    def __init__(self, actual_output=None, expected_output=None):
+        super(FailureEarlyExit, self).__init__(actual_output, expected_output)
 
     def message(self):
         return 'skipped due to early exit'

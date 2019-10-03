@@ -13,7 +13,7 @@
     android:focusable="false"
     android:orientation="vertical">
 
-    <org.chromium.chrome.browser.widget.RadioButtonWithDescription
+    <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
         android:id="@+id/allowed"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -21,7 +21,7 @@
         android:background="?android:attr/selectableItemBackground"
         app:titleText="@string/website_settings_category_allowed" />
 
-    <org.chromium.chrome.browser.widget.RadioButtonWithDescription
+    <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
         android:id="@+id/ask"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -29,7 +29,7 @@
         android:background="?android:attr/selectableItemBackground"
         app:titleText="@string/website_settings_category_ask" />
 
-    <org.chromium.chrome.browser.widget.RadioButtonWithDescription
+    <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
         android:id="@+id/blocked"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

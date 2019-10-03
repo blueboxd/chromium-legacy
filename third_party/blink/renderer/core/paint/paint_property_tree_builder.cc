@@ -1870,10 +1870,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
           static_cast<cc::OverscrollBehavior::OverscrollBehaviorType>(
               box.StyleRef().OverscrollBehaviorY()));
 
-      auto* snap_coordinator = box.GetDocument().GetSnapCoordinator();
-      if (snap_coordinator) {
-        state.snap_container_data = snap_coordinator->GetSnapContainerData(box);
-      }
+      state.snap_container_data =
+          box.GetDocument().GetSnapCoordinator().GetSnapContainerData(box);
 
       OnUpdateScroll(properties_->UpdateScroll(*context_.current.scroll,
                                                std::move(state)));

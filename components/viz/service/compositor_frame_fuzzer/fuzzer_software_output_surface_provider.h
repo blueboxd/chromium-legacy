@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/files/file_path.h"
+#include "base/optional.h"
 #include "components/viz/service/display_embedder/output_surface_provider.h"
 
 namespace viz {

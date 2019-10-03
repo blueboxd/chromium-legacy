@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">تذييل</translation>
 <translation id="2709516037105925701">الملء التلقائي</translation>
 <translation id="2723001399770238859">الصوت</translation>
+<translation id="2725963129578236554">التعليقات</translation>
 <translation id="2746543609216772311">يجب أن تكون القيمة <ph name="MINIMUM_DATE_OR_TIME" /> أو بعد ذلك.</translation>
 <translation id="2759744352195237655">زر بقائمة منبثقة</translation>
 <translation id="2761667185364618470">يُرجى تحديد هذا المربع إذا أردت المتابعة.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">يُرجى إطالة هذا النص إلى <ph name="MIN_CHARACTERS" /> من الحروف أو أكثر (أنت تستخدم حاليًا <ph name="CURRENT_LENGTH" /> من الحروف).</translation>
 <translation id="383465348367842624">الجزء المتبوع بالعلامة "<ph name="ATSIGN" />" يجب ألا يشتمل على الرمز "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="3846214748874656680">خروج من عرض ملء الشاشة</translation>
+<translation id="3889183436948184105">المراجعة</translation>
 <translation id="3920932319529768807">خاتمة</translation>
 <translation id="3924558731517983934">التطبيق</translation>
 <translation id="3944740393230681990">فاتحة</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">شريط تمرير وقت الصوت</translation>
 <translation id="6443871981718447451">عرض قائمة مقاطع الترجمة والشرح</translation>
 <translation id="6453774872122745852">شكر وتقدير</translation>
+<translation id="6475115390776617481">الحضور المباشر</translation>
 <translation id="648732519525291180">منتقي الوقت</translation>
 <translation id="6550675742724504774">خيارات</translation>
 <translation id="6572309429103589720">قواعد لغوية غير صالحة</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">إدراج</translation>
 <translation id="6989848892321993519">يُرجى إطالة هذا النص إلى <ph name="MIN_CHARACTERS" /> من الحروف أو أكثر (أنت الآن تستخدم حرفًا واحدًا).</translation>
 <translation id="7033340931668032222">الضغط على السهم المتجه إلى الأعلى والآخر المتجه إلى الأسفل لتغيير مستوى الصوت</translation>
+<translation id="7034405885550056553">اقتراح</translation>
 <translation id="709897737746224366">يُرجى مطابقة التنسيق المطلوب.</translation>
 <translation id="7118469954320184356">لا يتوفر أي وصف.</translation>
 <translation id="7139483182332611405">تمهيد</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">الإخراج</translation>
 <translation id="8750798805984357768">يُرجى اختيار أحد هذه الخيارات.</translation>
 <translation id="8808573423886751634">فصل</translation>
+<translation id="8822203815165896261">إنشاء المعلومات</translation>
 <translation id="8845239796550121995">يتم الآن الإرسال إلى جهاز التلفزيون</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8875657656876809964">خطأ في تشغيل الفيديو.</translation>

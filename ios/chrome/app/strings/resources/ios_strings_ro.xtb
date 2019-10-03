@@ -73,7 +73,6 @@
 <translation id="1828824471510190776">Sugerează o parolă...</translation>
 <translation id="1870148520156231997">Afișează parola</translation>
 <translation id="1872096359983322073">Lanternă</translation>
-<translation id="1876721852596493031">Trim. date utilizare</translation>
 <translation id="1911619930368729126">Încarcă în Google Drive</translation>
 <translation id="1923342640370224680">Ultima oră</translation>
 <translation id="1941314575388338491">Atinge de două ori pentru a copia.</translation>
@@ -96,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> articole necitite în Lista de lectură.</translation>
 <translation id="2230173723195178503">Pagina web s-a încărcat</translation>
 <translation id="2239626343334228536">Se șterg datele de navigare...</translation>
-<translation id="2256128224215992540">Sugestii de căutare și de site-uri</translation>
 <translation id="2267753748892043616">Adaugă un cont</translation>
 <translation id="2268044343513325586">Rafinează</translation>
 <translation id="2273327106802955778">Meniul Mai multe</translation>
@@ -297,7 +295,6 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Activează sincronizarea</translation>
 <translation id="5234764350956374838">Închide</translation>
-<translation id="5244474230056479698">Se sincronizează cu <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Anulează sincronizarea</translation>
 <translation id="5271549068863921519">Salvează parola</translation>
 <translation id="5300589172476337783">Afișează</translation>

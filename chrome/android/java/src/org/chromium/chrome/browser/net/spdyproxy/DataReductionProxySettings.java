@@ -19,11 +19,9 @@ import org.chromium.chrome.browser.preferences.datareduction.DataReductionStatsP
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -69,7 +67,11 @@ public class DataReductionProxySettings {
     public static final String DATA_REDUCTION_FIRST_ENABLED_TIME =
             "BANDWIDTH_REDUCTION_FIRST_ENABLED_TIME";
 
+    // The saved data threshold for showing the Lite mode menu footer.
     private static final long DATA_REDUCTION_MAIN_MENU_ITEM_SAVED_KB_THRESHOLD = 100;
+
+    // The received data threshold for showing the data reduction chart in settings.
+    public static final long DATA_REDUCTION_SHOW_CHART_KB_THRESHOLD = 100;
 
     private Callback<List<DataReductionDataUseItem>> mQueryDataUsageCallback;
 
@@ -288,20 +290,6 @@ public class DataReductionProxySettings {
     public boolean isDataReductionProxyUnreachable() {
         return DataReductionProxySettingsJni.get().isDataReductionProxyUnreachable(
                 mNativeDataReductionProxySettings, DataReductionProxySettings.this);
-    }
-
-    /**
-     * @return The data reduction settings as a string percentage.
-     */
-    public String getContentLengthPercentSavings() {
-        ContentLengths length = getContentLengths();
-
-        double savings = 0;
-        if (length.getOriginal() > 0L  && length.getOriginal() > length.getReceived()) {
-            savings = (length.getOriginal() - length.getReceived()) / (double) length.getOriginal();
-        }
-        NumberFormat percentageFormatter = NumberFormat.getPercentInstance(Locale.getDefault());
-        return percentageFormatter.format(savings);
     }
 
     public Map<String, String> toFeedbackMap() {

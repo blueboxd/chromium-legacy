@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

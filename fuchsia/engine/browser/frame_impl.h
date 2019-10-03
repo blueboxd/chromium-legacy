@@ -49,8 +49,10 @@ class FrameImpl : public fuchsia::web::Frame,
   ~FrameImpl() override;
 
   zx::unowned_channel GetBindingChannelForTest() const;
-  content::WebContents* web_contents_for_test() { return web_contents_.get(); }
-  bool has_view_for_test() { return window_tree_host_ != nullptr; }
+  content::WebContents* web_contents_for_test() const {
+    return web_contents_.get();
+  }
+  bool has_view_for_test() const { return window_tree_host_ != nullptr; }
   void set_javascript_console_message_hook_for_test(
       base::RepeatingCallback<void(base::StringPiece)> hook) {
     console_log_message_hook_ = std::move(hook);

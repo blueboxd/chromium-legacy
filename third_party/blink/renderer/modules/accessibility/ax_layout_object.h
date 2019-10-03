@@ -103,7 +103,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   const AtomicString& AccessKey() const override;
   RGBA32 ComputeBackgroundColor() const final;
   RGBA32 GetColor() const final;
-  AtomicString FontFamily() const final;
+  String FontFamily() const final;
   // Font size is in pixels.
   float FontSize() const final;
   float FontWeight() const final;

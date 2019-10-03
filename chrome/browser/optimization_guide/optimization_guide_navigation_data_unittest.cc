@@ -485,10 +485,10 @@ TEST(OptimizationGuideNavigationDataTest,
 
   OptimizationGuideNavigationData data(/*navigation_id=*/3);
   data.SetDecisionForOptimizationTarget(
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::OptimizationTargetDecision::kPageLoadMatches);
   data.SetDecisionForOptimizationTarget(
-      optimization_guide::OptimizationTarget::kUnknown,
+      optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN,
       optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch);
   data.RecordMetrics(/*has_committed=*/false);
 
@@ -509,10 +509,10 @@ TEST(OptimizationGuideNavigationDataTest, RecordMetricsRecordsLatestTarget) {
 
   OptimizationGuideNavigationData data(/*navigation_id=*/3);
   data.SetDecisionForOptimizationTarget(
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch);
   data.SetDecisionForOptimizationTarget(
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::OptimizationTargetDecision::kPageLoadMatches);
   data.RecordMetrics(/*has_committed=*/false);
 
@@ -530,9 +530,10 @@ TEST(OptimizationGuideNavigationDataTest, DeepCopy) {
   EXPECT_EQ(base::nullopt, data->serialized_hint_version_string());
   EXPECT_EQ(base::nullopt, data->GetDecisionForOptimizationType(
                                optimization_guide::proto::NOSCRIPT));
-  EXPECT_EQ(base::nullopt,
-            data->GetDecisionForOptimizationTarget(
-                optimization_guide::OptimizationTarget::kPainfulPageLoad));
+  EXPECT_EQ(
+      base::nullopt,
+      data->GetDecisionForOptimizationTarget(
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
   EXPECT_EQ(base::nullopt, data->has_hint_before_commit());
   EXPECT_EQ(base::nullopt, data->has_hint_after_commit());
   EXPECT_FALSE(data->has_page_hint_value());
@@ -542,7 +543,7 @@ TEST(OptimizationGuideNavigationDataTest, DeepCopy) {
       optimization_guide::proto::NOSCRIPT,
       optimization_guide::OptimizationTypeDecision::kAllowedByHint);
   data->SetDecisionForOptimizationTarget(
-      optimization_guide::OptimizationTarget::kPainfulPageLoad,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
       optimization_guide::OptimizationTargetDecision::kPageLoadMatches);
   data->set_serialized_hint_version_string("123abc");
   data->set_has_hint_before_commit(true);
@@ -557,9 +558,10 @@ TEST(OptimizationGuideNavigationDataTest, DeepCopy) {
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
             *data_copy.GetDecisionForOptimizationType(
                 optimization_guide::proto::NOSCRIPT));
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
-            *data_copy.GetDecisionForOptimizationTarget(
-                optimization_guide::OptimizationTarget::kPainfulPageLoad));
+  EXPECT_EQ(
+      optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
+      *data_copy.GetDecisionForOptimizationTarget(
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
   EXPECT_TRUE(data_copy.has_hint_before_commit().value());
   EXPECT_TRUE(data_copy.has_hint_after_commit().value());
   EXPECT_EQ("123abc", *(data_copy.serialized_hint_version_string()));

@@ -10,6 +10,7 @@ import android.content.Context;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,6 +21,8 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -38,7 +41,15 @@ public class UrlBarMediatorUnitTest {
 
     @Before
     public void setUp() {
+        RecordHistogram.setDisabledForTests(true);
+        RecordUserAction.setDisabledForTests(true);
         MockitoAnnotations.initMocks(this);
+    }
+
+    @After
+    public void tearDown() {
+        RecordHistogram.setDisabledForTests(false);
+        RecordUserAction.setDisabledForTests(false);
     }
 
     @Test

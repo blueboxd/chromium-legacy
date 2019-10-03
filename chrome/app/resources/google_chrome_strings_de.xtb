@@ -18,7 +18,6 @@
 <translation id="1393853151966637042">Hilfe für Chrome aufrufen</translation>
 <translation id="1399397803214730675">Auf diesem Computer befindet sich bereits eine neuere Version von Google Chrome. Falls die Software nicht funktioniert, deinstallieren Sie Google Chrome und versuchen Sie es erneut.</translation>
 <translation id="1434626383986940139">Chrome Canary-Apps</translation>
-<translation id="1457721931618994305">Google Chrome wird aktualisiert...</translation>
 <translation id="1469002951682717133">Chrome App Launcher</translation>
 <translation id="1553358976309200471">Chrome aktualisieren</translation>
 <translation id="1587223624401073077">Google Chrome verwendet Ihre Kamera.</translation>
@@ -87,6 +86,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="3065168410429928842">Chrome-Tab</translation>
 <translation id="3080151273017101988">Apps im Hintergrund ausführen, wenn Google Chrome geschlossen ist</translation>
 <translation id="3089968997497233615">Es gibt eine neue, sicherere Version von Google Chrome.</translation>
+<translation id="3138848678222082288">Künftige Versionen von Chrome werden automatisch installiert. Nach Abschluss des Downloads wird Chrome neu gestartet und Sie können fortfahren.</translation>
 <translation id="3149510190863420837">Chrome-Apps</translation>
 <translation id="3282568296779691940">In Chrome anmelden</translation>
 <translation id="3340978935015468852">Einstellungen</translation>
@@ -167,9 +167,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="573759479754913123">Über Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome konnte nicht gestartet werden. Versuchen Sie es noch einmal.</translation>
-<translation id="5877064549588274448">Kanal wurde geändert. Starten Sie Ihr Gerät neu, um die Änderungen zu übernehmen.</translation>
 <translation id="5895138241574237353">Neu starten</translation>
-<translation id="5906655207909574370">Fast fertig! Starten Sie Ihr Gerät neu, um die Aktualisierung abzuschließen.</translation>
 <translation id="5940385492829620908">Hier können Sie im Web surfen und Ihre Lesezeichen und andere Chrome-Inhalte speichern.</translation>
 <translation id="5941830788786076944">Google Chrome als Standardbrowser festlegen</translation>
 <translation id="6014844626092547096">Sie sind nun in Chrome angemeldet. Die Synchronisierung wurde von Ihrem Administrator deaktiviert.</translation>
@@ -188,16 +186,15 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="6566149418543181476">Google Chrome wird aktualisiert (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Ihre E-Mail-Adresse <ph name="PROFILE_EMAIL" /> wird zurzeit für die Synchronisierung Ihrer Chrome-Inhalte verwendet. Wenn Sie Ihre Synchronisierungseinstellungen ändern oder Chrome ohne Google-Konto verwenden möchten, rufen Sie <ph name="SETTINGS_LINK" /> auf.</translation>
 <translation id="6600954340915313787">In Chrome kopiert</translation>
-<translation id="6634887557811630702">Google Chrome ist auf dem neuesten Stand.</translation>
 <translation id="6676384891291319759">Internetzugriff</translation>
 <translation id="6679975945624592337">Google Chrome im Hintergrund ausführen</translation>
 <translation id="6750954913813541382">Zur Behebung von Tippfehlern sendet Chrome im Browser eingegebenen Text an Google</translation>
 <translation id="677276454032249905">Chrome trotzdem beenden?</translation>
 <translation id="683440813066116847">Eingangsregel für die Zulassung von mDNS-Verkehr in Google Chrome Canary</translation>
 <translation id="6885412569789873916">Chrome Beta-Apps</translation>
+<translation id="6906909733186691861">Künftige Versionen von Chrome werden automatisch installiert.</translation>
 <translation id="6943584222992551122">Die Browserdaten dieser Person werden von diesem Gerät gelöscht. Um die Daten wiederherzustellen, melden Sie sich als <ph name="USER_EMAIL" /> in Chrome an.</translation>
 <translation id="6967962315388095737">Eingangsregel für die Zulassung von mDNS-Verkehr in Google Chrome Beta.</translation>
-<translation id="6970811910055250180">Ihr Gerät wird aktualisiert...</translation>
 <translation id="6982337800632491844">Vor der Verwendung dieses Geräts ist es erforderlich, dass Sie die folgenden Nutzungsbedingungen von <ph name="DOMAIN" /> akzeptieren. Durch diese Nutzungsbedingungen werden die Google Chrome OS-Nutzungsbedingungen nicht erweitert, geändert oder eingeschränkt.</translation>
 <translation id="6989339256997917931">Google Chrome wurde aktualisiert, Sie haben den Browser jedoch mindestens 30 Tage nicht verwendet.</translation>
 <translation id="7098166902387133879">Google Chrome verwendet Ihr Mikrofon.</translation>
@@ -235,7 +232,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="7962410387636238736">Dieser Computer erhält keine Google Chrome-Updates mehr, da Windows XP und Windows Vista nicht mehr unterstützt werden</translation>
 <translation id="8008534537613507642">Chrome erneut installieren</translation>
 <translation id="8013993649590906847">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chrome, eine für Sie zu finden. Damit entsprechende Beschreibungen erstellt werden können, werden die Bilder an Google gesendet.</translation>
-<translation id="8030318113982266900">Ihr Gerät wird auf Kanal <ph name="CHANNEL_NAME" /> aktualisiert...</translation>
 <translation id="8032142183999901390">Nachdem Sie Ihr Konto aus Chrome entfernt haben, müssen Sie Ihre geöffneten Tabs möglicherweise neu laden, damit die Änderung wirksam wird.</translation>
 <translation id="8129812357326543296">Über &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Installieren Sie Chrome auf Ihrem Smartphone. Wir senden Ihnen eine SMS.</translation>
@@ -258,7 +254,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="8606668294522778825">Google Chrome verwendet möglicherweise Webdienste zur Unterstützung Ihrer Onlinesuche. Sie haben die Möglichkeit, diese Dienste zu deaktivieren. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome reagiert nicht. Jetzt neu starten?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome wird in einer Minute neu gestartet}other{Chrome wird in # Minuten neu gestartet}}</translation>
-<translation id="8667808506758191620">Ihr <ph name="DEVICE_TYPE" /> ist auf dem neuesten Stand.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Die Erweiterung legt auch die Seite fest, die beim Start von Chrome angezeigt wird.</translation>
 <translation id="870251953148363156">&amp;Google Chrome aktualisieren</translation>

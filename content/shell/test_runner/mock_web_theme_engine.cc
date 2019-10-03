@@ -19,7 +19,11 @@
 using blink::WebRect;
 using blink::WebThemeEngine;
 
+#endif  // !defined(OS_MACOSX)
+
 namespace test_runner {
+
+#if !defined(OS_MACOSX)
 
 namespace {
 
@@ -605,6 +609,15 @@ void MockWebThemeEngine::Paint(cc::PaintCanvas* canvas,
   }
 }
 
-}  // namespace test_runner
-
 #endif  // !defined(OS_MACOSX)
+
+blink::ForcedColors MockWebThemeEngine::ForcedColors() const {
+  return forced_colors_;
+}
+
+void MockWebThemeEngine::SetForcedColors(
+    const blink::ForcedColors forced_colors) {
+  forced_colors_ = forced_colors;
+}
+
+}  // namespace test_runner

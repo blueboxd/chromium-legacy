@@ -475,9 +475,7 @@ void LayoutBox::UpdateGridPositionAfterStyleChange(
 void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
     const ComputedStyle& old_style) {
   DCHECK(Style());
-  SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  if (!snap_coordinator)
-    return;
+  SnapCoordinator& snap_coordinator = GetDocument().GetSnapCoordinator();
 
   // scroll-snap-type and scroll-padding invalidate the snap container.
   if (old_style.GetScrollSnapType() != StyleRef().GetScrollSnapType() ||
@@ -485,7 +483,7 @@ void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
       old_style.ScrollPaddingLeft() != StyleRef().ScrollPaddingLeft() ||
       old_style.ScrollPaddingTop() != StyleRef().ScrollPaddingTop() ||
       old_style.ScrollPaddingRight() != StyleRef().ScrollPaddingRight()) {
-    snap_coordinator->SnapContainerDidChange(*this, false /* is_removed */);
+    snap_coordinator.SnapContainerDidChange(*this, false /* is_removed */);
   }
 
   // scroll-snap-align, scroll-snap-stop and scroll-margin invalidate the snap
@@ -496,25 +494,19 @@ void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
       old_style.ScrollMarginLeft() != StyleRef().ScrollMarginLeft() ||
       old_style.ScrollMarginTop() != StyleRef().ScrollMarginTop() ||
       old_style.ScrollMarginRight() != StyleRef().ScrollMarginRight())
-    snap_coordinator->SnapAreaDidChange(*this, StyleRef().GetScrollSnapAlign());
+    snap_coordinator.SnapAreaDidChange(*this, StyleRef().GetScrollSnapAlign());
 }
 
 void LayoutBox::AddScrollSnapMapping() {
-  SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  if (!snap_coordinator)
-    return;
-
-  snap_coordinator->SnapContainerDidChange(*this, false /* is_removed */);
-  snap_coordinator->SnapAreaDidChange(*this, Style()->GetScrollSnapAlign());
+  SnapCoordinator& snap_coordinator = GetDocument().GetSnapCoordinator();
+  snap_coordinator.SnapContainerDidChange(*this, false /* is_removed */);
+  snap_coordinator.SnapAreaDidChange(*this, Style()->GetScrollSnapAlign());
 }
 
 void LayoutBox::ClearScrollSnapMapping() {
-  SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  if (!snap_coordinator)
-    return;
-
-  snap_coordinator->SnapContainerDidChange(*this, true /* is_removed */);
-  snap_coordinator->SnapAreaDidChange(*this, cc::ScrollSnapAlign());
+  SnapCoordinator& snap_coordinator = GetDocument().GetSnapCoordinator();
+  snap_coordinator.SnapContainerDidChange(*this, true /* is_removed */);
+  snap_coordinator.SnapAreaDidChange(*this, cc::ScrollSnapAlign());
 }
 
 void LayoutBox::UpdateFromStyle() {
@@ -2330,6 +2322,7 @@ void LayoutBox::SetCachedLayoutResult(const NGLayoutResult& layout_result,
 scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     const NGConstraintSpace& new_space,
     const NGBreakToken* break_token,
+    const NGEarlyBreak* early_break,
     base::Optional<NGFragmentGeometry>* initial_fragment_geometry,
     NGLayoutCacheStatus* out_cache_status) {
   *out_cache_status = NGLayoutCacheStatus::kNeedsLayout;
@@ -2343,6 +2336,9 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
 
   // TODO(cbiesinger): Support caching fragmented boxes.
   if (break_token)
+    return nullptr;
+
+  if (early_break)
     return nullptr;
 
   // Set our initial temporary cache status to "hit".

@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Als je deze app gebruikt, ga je akkoord met de <ph name="BEGIN_LINK_TOS" />servicevoorwaarden<ph name="END_LINK_TOS" /> en het <ph name="BEGIN_LINK_PRIVACY" />privacybeleid<ph name="END_LINK_PRIVACY" /> van Chrome.</translation>
 <translation id="2147651015520127414">Chrome heeft geverifieerd dat <ph name="ISSUER" /> het certificaat voor deze website heeft verstrekt.</translation>
 <translation id="2199719347983604670">Gegevens van Chrome-synchronisatie</translation>
-<translation id="2342981853652716282">Log in bij Chrome om je bladwijzers, wachtwoorden en meer op al je apparaten te gebruiken.</translation>
 <translation id="2347208864470321755">Als deze functie is ingeschakeld, biedt Chrome aan pagina's die zijn geschreven in andere talen te vertalen met Google Translate. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Als je afbeeldingen wilt opslaan, tik je op Instellingen om Chrome je foto's te laten gebruiken</translation>
 <translation id="2576431527583832481">Chrome is nu nog beter! Er is een nieuwe versie beschikbaar.</translation>
@@ -52,5 +51,4 @@
 <translation id="840168496893712993">Sommige add-ons kunnen ervoor zorgen dat Chrome crasht. Verwijder deze add-ons.</translation>
 <translation id="8459495907675268833">De geselecteerde gegevens zijn verwijderd uit Chrome en van gesynchroniseerde apparaten. Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekopdrachten en activiteit uit andere Google-services) beschikbaar zijn via history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome kan webservices gebruiken om je browse-ervaring te verbeteren. Je kunt deze services eventueel uitschakelen. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 </translationbundle>

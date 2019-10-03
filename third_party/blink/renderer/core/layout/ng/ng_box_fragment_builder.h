@@ -92,7 +92,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // Add a break token for a child that doesn't yet have any fragments, because
   // its first fragment is to be produced in the next fragmentainer. This will
   // add a break token for the child, but no fragment.
-  void AddBreakBeforeChild(NGLayoutInputNode child, bool is_forced_break);
+  void AddBreakBeforeChild(NGLayoutInputNode child,
+                           NGBreakAppeal,
+                           bool is_forced_break);
 
   // Add a layout result. This involves appending the fragment and its relative
   // offset to the builder, but also keeping track of out-of-flow positioned
@@ -150,10 +152,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // Return the number of line boxes laid out.
   int LineCount() const { return inline_break_tokens_.size(); }
 
-  // Call when we're setting an undersirable break. It may be possible to avoid
-  // the break if we instead break at an earlier element.
-  void SetHasLastResortBreak() { has_last_resort_break_ = true; }
-
   // Set when we have iterated over all the children. This means that all
   // children have been fully laid out, or have break tokens. No more children
   // left to discover.
@@ -162,8 +160,19 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   void SetColumnSpanner(NGBlockNode spanner) { column_spanner_ = spanner; }
   bool FoundColumnSpanner() const { return !!column_spanner_; }
 
-  void SetEarlyBreak(NGEarlyBreak breakpoint) { early_break_ = breakpoint; }
-  bool HasEarlyBreak() const { return early_break_.has_value(); }
+  void SetEarlyBreak(scoped_refptr<const NGEarlyBreak> breakpoint,
+                     NGBreakAppeal appeal) {
+    early_break_ = breakpoint;
+    break_appeal_ = appeal;
+  }
+  bool HasEarlyBreak() const { return early_break_.get(); }
+
+  // Set the highest break appeal found so far. This is either:
+  // 1: The highest appeal of a breakpoint found by our container
+  // 2: The appeal of a possible early break inside
+  // 3: The appeal of an actual break inside (to be stored in a break token)
+  void SetBreakAppeal(NGBreakAppeal appeal) { break_appeal_ = appeal; }
+  NGBreakAppeal BreakAppeal() const { return break_appeal_; }
 
   // Offsets are not supposed to be set during fragment construction, so we
   // do not provide a setter here.

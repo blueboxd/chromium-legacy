@@ -37,7 +37,7 @@
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -53,7 +53,7 @@ class ResolveURICallbacks;
 
 class LocalFileSystem final : public GarbageCollected<LocalFileSystem>,
                               public Supplement<LocalFrame>,
-                              public Supplement<WorkerClients>,
+                              public Supplement<WorkerGlobalScope>,
                               public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(LocalFileSystem);
 
@@ -63,7 +63,7 @@ class LocalFileSystem final : public GarbageCollected<LocalFileSystem>,
   static const char kSupplementName[];
 
   explicit LocalFileSystem(LocalFrame&);
-  explicit LocalFileSystem(WorkerClients&);
+  explicit LocalFileSystem(WorkerGlobalScope&);
   ~LocalFileSystem();
 
   void ResolveURL(ExecutionContext*,
@@ -111,7 +111,7 @@ class LocalFileSystem final : public GarbageCollected<LocalFileSystem>,
 };
 
 void ProvideLocalFileSystemTo(LocalFrame&);
-void ProvideLocalFileSystemToWorker(WorkerClients&);
+void ProvideLocalFileSystemToWorker(WorkerGlobalScope&);
 
 }  // namespace blink
 

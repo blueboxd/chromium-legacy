@@ -1041,7 +1041,7 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
   new_scaled_position =
       document()
           ->GetSnapCoordinator()
-          ->GetSnapPosition(*document()->GetLayoutView(), *strategy)
+          .GetSnapPosition(*document()->GetLayoutView(), *strategy)
           .value_or(new_scaled_position);
 
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
@@ -1108,7 +1108,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
   new_scaled_position =
       document()
           ->GetSnapCoordinator()
-          ->GetSnapPosition(*document()->GetLayoutView(), *strategy)
+          .GetSnapPosition(*document()->GetLayoutView(), *strategy)
           .value_or(new_scaled_position);
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),

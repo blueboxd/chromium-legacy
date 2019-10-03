@@ -6576,6 +6576,50 @@ the Bookmarks menu.">
         </message>
       </if>
 
+      <!-- Share via QR code strings -->
+      <if expr="not use_titlecase">
+        <message name="IDS_CONTEXT_MENU_GENERATE_QR_CODE_PAGE" desc="The label for the Generate QR code for this Page context menu item.">
+          Generate QR code for this page
+        </message>
+        <message name="IDS_CONTEXT_MENU_GENERATE_QR_CODE_IMAGE" desc="The label for the Generate QR code for this Image context menu item.">
+          Generate QR code for this image
+        </message>
+      </if>
+      <if expr="use_titlecase">
+        <message name="IDS_CONTEXT_MENU_GENERATE_QR_CODE_PAGE" desc="The label for the Generate QR code for this Page context menu item.">
+          Generate QR code for this Page
+        </message>
+        <message name="IDS_CONTEXT_MENU_GENERATE_QR_CODE_IMAGE" desc="The label for the Generate QR code for this Image context menu item.">
+          Generate QR code for this Image
+        </message>
+      </if>
+      <if expr="not is_android">
+        <message name="IDS_OMNIBOX_QRCODE_GENERATOR_ICON_LABEL" desc="String for the omnibox icon label for the QR code Generator">
+          QR code
+        </message>
+        <message name="IDS_OMNIBOX_QRCODE_GENERATOR_ICON_TOOLTIP" desc="Tooltip for the omnibox icon label for the QR code Generator">
+          Generate QR code for this Page
+        </message>
+      </if>
+      <message name="IDS_BROWSER_SHARING_QR_CODE_DIALOG_TITLE"
+          desc="Title for the QR Generator dialog.">
+        Scan QR code
+      </message>
+      <message name="IDS_BROWSER_SHARING_QR_CODE_DIALOG_URL_TEXTFIELD_ACCESSIBLE_NAME"
+          desc="Text to be spoken for the QR code Generator's URL Textfield.">
+        URL
+      </message>
+      <message name="IDS_BROWSER_SHARING_QR_CODE_DIALOG_TOOLTIP"
+          desc="Tooltip string for QR Generator dialog informing the user they
+          can scan a QR code with their phone.">
+        To scan this code, you can use a QR scanner app on your phone, or some camera apps.
+      </message>
+      <message name="IDS_BROWSER_SHARING_QR_CODE_DIALOG_DOWNLOAD_BUTTON_LABEL"
+          desc="Button text for the QR code generator's download button.">
+        Download
+      </message>
+
+
       <!-- Sharing features. -->
       <if expr="not use_titlecase">
         <message name="IDS_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES" desc="The label of item for click to call in context menu when multiple devices are available.">

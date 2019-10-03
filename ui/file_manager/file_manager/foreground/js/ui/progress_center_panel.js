@@ -418,12 +418,11 @@ class ProgressCenterPanel {
         };
         const primaryText =
             this.generateSourceString_(item, panelItem.userData);
-        panelItem.setAttribute('primary-text', primaryText);
+        panelItem.primaryText = primaryText;
         panelItem.setAttribute('data-progress-id', item.id);
         if (item.destinationMessage) {
-          panelItem.setAttribute(
-              'secondary-text',
-              strf('TO_FOLDER_NAME', item.destinationMessage));
+          panelItem.secondaryText =
+              strf('TO_FOLDER_NAME', item.destinationMessage);
         }
         // On progress panels, make the cancel button aria-lable more useful.
         const cancelLabel = strf('CANCEL_ACTIVITY_LABEL', primaryText);
@@ -446,12 +445,10 @@ class ProgressCenterPanel {
               (item.type === 'copy' || item.type === 'move')) {
             const donePanelItem = this.completedHost_.addPanelItem(item.id);
             donePanelItem.panelType = donePanelItem.panelTypeDone;
-            donePanelItem.setAttribute(
-                'primary-text',
-                this.generateSourceString_(item, panelItem.userData));
-            donePanelItem.setAttribute(
-                'secondary-text',
-                this.generateDestinationString_(item, panelItem.userData));
+            donePanelItem.primaryText =
+                this.generateSourceString_(item, panelItem.userData);
+            donePanelItem.secondaryText =
+                this.generateDestinationString_(item, panelItem.userData);
             donePanelItem.signalCallback = (signal) => {
               if (signal === 'dismiss') {
                 this.completedHost_.removePanelItem(donePanelItem);
@@ -470,7 +467,9 @@ class ProgressCenterPanel {
           break;
         case 'error':
           panelItem.panelType = panelItem.panelTypeError;
-          panelItem.setAttribute('primary-text', item.message);
+          panelItem.primaryText = item.message;
+          // Make sure the panel is attached so it shows immediately.
+          this.feedbackHost_.attachPanelItem(panelItem);
           break;
       }
     } else if (panelItem) {

@@ -7,18 +7,27 @@ import("//chrome/android/modules/buildflags.gni")
 
 android_library("module_installer_java") {
   java_files = [
-    "java/src/org/chromium/components/module_installer/ModuleInstallerImpl.java",
-    "java/src/org/chromium/components/module_installer/ModuleInstallerBackend.java",
-    "java/src/org/chromium/components/module_installer/FakeModuleInstallerBackend.java",
-    "java/src/org/chromium/components/module_installer/PlayCoreModuleInstallerBackend.java",
-    "java/src/org/chromium/components/module_installer/ApkModuleInstaller.java",
-    "java/src/org/chromium/components/module_installer/ModuleInstaller.java",
-    "java/src/org/chromium/components/module_installer/OnModuleInstallFinishedListener.java",
-    "java/src/org/chromium/components/module_installer/Module.java",
-    "java/src/org/chromium/components/module_installer/Timer.java",
-    "java/src/org/chromium/components/module_installer/observers/ModuleActivityObserver.java",
-    "java/src/org/chromium/components/module_installer/observers/ObserverStrategy.java",
-    "java/src/org/chromium/components/module_installer/observers/ObserverStrategyImpl.java",
+    "java/src/org/chromium/components/module_installer/builder/Module.java",
+    "java/src/org/chromium/components/module_installer/builder/ModuleEngine.java",
+    "java/src/org/chromium/components/module_installer/engine/ApkEngine.java",
+    "java/src/org/chromium/components/module_installer/engine/FakeEngine.java",
+    "java/src/org/chromium/components/module_installer/engine/InstallEngine.java",
+    "java/src/org/chromium/components/module_installer/engine/EngineFactory.java",
+    "java/src/org/chromium/components/module_installer/engine/InstallListener.java",
+    "java/src/org/chromium/components/module_installer/engine/SplitCompatEngine.java",
+    "java/src/org/chromium/components/module_installer/engine/SplitCompatEngineFacade.java",
+    "java/src/org/chromium/components/module_installer/logger/Logger.java",
+    "java/src/org/chromium/components/module_installer/logger/PlayCoreLogger.java",
+    "java/src/org/chromium/components/module_installer/logger/SplitAvailabilityLogger.java",
+    "java/src/org/chromium/components/module_installer/logger/SplitInstallFailureLogger.java",
+    "java/src/org/chromium/components/module_installer/logger/SplitInstallStatusLogger.java",
+    "java/src/org/chromium/components/module_installer/observer/ActivityObserver.java",
+    "java/src/org/chromium/components/module_installer/observer/ActivityObserverFacade.java",
+    "java/src/org/chromium/components/module_installer/observer/InstallerObserver.java",
+    "java/src/org/chromium/components/module_installer/util/CrashKeyRecorder.java",
+    "java/src/org/chromium/components/module_installer/util/ModuleUtil.java",
+    "java/src/org/chromium/components/module_installer/util/SplitCompatInitializer.java",
+    "java/src/org/chromium/components/module_installer/util/Timer.java",
   ]
 
   deps = [
@@ -35,19 +44,11 @@ android_library("module_installer_java") {
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
-android_library("module_installer_test_java") {
-  testonly = true
-  java_files = [ "javatests/src/org/chromium/components/module_installer/ModuleInstallerRule.java" ]
-  deps = [
-    ":module_installer_java",
-    "//base:base_java",
-    "//third_party/junit",
-  ]
-  jacoco_never_instrument = true
-}
-
 junit_binary("module_installer_junit_tests") {
-  java_files = [ "junit/src/org/chromium/components/module_installer/observers/ModuleActivityObserverTest.java" ]
+  java_files = [
+    "junit/src/org/chromium/components/module_installer/engine/SplitCompatEngineTest.java",
+    "junit/src/org/chromium/components/module_installer/observer/ActivityObserverTest.java",
+  ]
   deps = [
     ":module_installer_java",
     "//base:base_java",
@@ -57,15 +58,12 @@ junit_binary("module_installer_junit_tests") {
 
 java_library("module_interface_java") {
   supports_android = true
-  java_files = [
-    "java/src/org/chromium/components/module_installer/ModuleInterface.java",
-  ]
+  java_files = [ "java/src/org/chromium/components/module_installer/builder/ModuleInterface.java" ]
 }
 
 java_annotation_processor("module_interface_processor") {
-  java_files = [ "java/src/org/chromium/components/module_installer/ModuleInterfaceProcessor.java" ]
-  main_class =
-      "org.chromium.components.module_installer.ModuleInterfaceProcessor"
+  java_files = [ "java/src/org/chromium/components/module_installer/builder/ModuleInterfaceProcessor.java" ]
+  main_class = "org.chromium.components.module_installer.builder.ModuleInterfaceProcessor"
   annotation_processor_deps = [ "//third_party/auto:auto_service_processor" ]
   deps = [
     ":module_interface_java",
@@ -77,14 +75,14 @@ java_annotation_processor("module_interface_processor") {
 # Use this one if your target needs to depend on ModuleInstallerConfig. The
 # other two targets are automatically added to build targets.
 java_cpp_template("module_installer_build_config") {
-  package_path = "org/chromium/components/module_installer"
+  package_path = "org/chromium/components/module_installer/builder"
   sources = [
     "build/ModuleInstallerConfig.template",
   ]
 }
 
 java_cpp_template("module_installer_bundle_build_config") {
-  package_path = "org/chromium/components/module_installer"
+  package_path = "org/chromium/components/module_installer/builder"
   sources = [
     "build/ModuleInstallerConfig.template",
   ]
@@ -92,7 +90,7 @@ java_cpp_template("module_installer_bundle_build_config") {
 }
 
 java_cpp_template("module_installer_apk_build_config") {
-  package_path = "org/chromium/components/module_installer"
+  package_path = "org/chromium/components/module_installer/builder"
   sources = [
     "build/ModuleInstallerConfig.template",
   ]
@@ -121,6 +119,6 @@ source_set("native") {
 
 generate_jni("jni_headers") {
   sources = [
-    "java/src/org/chromium/components/module_installer/Module.java",
+    "java/src/org/chromium/components/module_installer/builder/Module.java",
   ]
 }

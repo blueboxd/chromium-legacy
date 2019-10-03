@@ -28,7 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_GLOBAL_SCOPE_H_
 
 #include <memory>
-#include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"

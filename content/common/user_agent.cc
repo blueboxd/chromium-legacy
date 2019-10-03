@@ -39,8 +39,8 @@ std::string GetUserAgentPlatform() {
 #elif defined(OS_ANDROID)
   return "Linux; ";
 #elif defined(OS_FUCHSIA)
-  // TODO(https://bugs.fuchsia.dev/p/fuchsia/issues/detail?id=36774#c11): Sites
-  // get confused into serving mobile content if we report only "Fuchsia".
+  // TODO(https://crbug.com/1010256): Sites get confused into serving mobile
+  // content if we report only "Fuchsia".
   return "X11; ";
 #elif defined(OS_POSIX)
   return "Unknown; ";

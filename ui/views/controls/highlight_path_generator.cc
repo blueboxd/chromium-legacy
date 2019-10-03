@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/highlight_path_generator.h"
 
+#include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
@@ -27,6 +28,20 @@ SkPath RectHighlightPathGenerator::GetHighlightPath(const View* view) {
 void InstallRectHighlightPathGenerator(View* view) {
   HighlightPathGenerator::Install(
       view, std::make_unique<RectHighlightPathGenerator>());
+}
+
+SkPath CircleHighlightPathGenerator::GetHighlightPath(const View* view) {
+  const SkRect rect = gfx::RectToSkRect(view->GetLocalBounds());
+  const SkScalar radius = SkScalarHalf(std::min(rect.width(), rect.height()));
+
+  SkPath path;
+  path.addCircle(rect.centerX(), rect.centerY(), radius);
+  return path;
+}
+
+void InstallCircleHighlightPathGenerator(View* view) {
+  HighlightPathGenerator::Install(
+      view, std::make_unique<CircleHighlightPathGenerator>());
 }
 
 }  // namespace views

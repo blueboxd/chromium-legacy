@@ -24,6 +24,7 @@ constexpr const char* FrameSequenceTracker::kFrameSequenceTrackerTypeNames[] = {
     [FrameSequenceTrackerType::kRAF] = "RAF",
     [FrameSequenceTrackerType::kTouchScroll] = "TouchScroll",
     [FrameSequenceTrackerType::kUniversal] = "Universal",
+    [FrameSequenceTrackerType::kVideo] = "Video",
     [FrameSequenceTrackerType::kWheelScroll] = "WheelScroll",
     [FrameSequenceTrackerType::kMaxType] = "",
 };

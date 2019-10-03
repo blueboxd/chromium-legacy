@@ -50,6 +50,7 @@ struct AutocompleteMatch {
   bool is_search_type;  // Result of AutocompleteMatch::IsSearchType().
   string type;  // Result of AutocompleteMatchType::ToString().
   bool swap_contents_and_description;
+  bool supports_deletion;
 };
 
 enum AutocompleteResultStatus {

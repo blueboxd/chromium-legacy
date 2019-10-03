@@ -8,7 +8,10 @@
 
 #include "build/build_config.h"
 #include "net/cert/cert_verify_proc.h"
+#include "net/cert/cert_verify_proc_builtin.h"
 #include "net/cert/trial_comparison_cert_verifier.h"
+#include "net/der/encode_values.h"
+#include "net/der/parse_values.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "net/cert/internal/trust_store_mac.h"
@@ -73,6 +76,20 @@ void TrialComparisonCertVerifierMojo::OnSendTrialReport(
         mac_trust_debug_info->combined_trust_debug_info();
   }
 #endif
+  auto* cert_verify_proc_builtin_debug_data =
+      net::CertVerifyProcBuiltinResultDebugData::Get(&trial_result);
+  if (cert_verify_proc_builtin_debug_data) {
+    debug_info->trial_verification_time =
+        cert_verify_proc_builtin_debug_data->verification_time();
+    uint8_t encoded_generalized_time[net::der::kGeneralizedTimeLength];
+    if (net::der::EncodeGeneralizedTime(
+            cert_verify_proc_builtin_debug_data->der_verification_time(),
+            encoded_generalized_time)) {
+      debug_info->trial_der_verification_time = std::string(
+          encoded_generalized_time,
+          encoded_generalized_time + net::der::kGeneralizedTimeLength);
+    }
+  }
 
   report_client_->SendTrialReport(
       hostname, unverified_cert, enable_rev_checking,

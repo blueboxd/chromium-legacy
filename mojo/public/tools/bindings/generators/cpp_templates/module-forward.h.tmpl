@@ -65,6 +65,12 @@ namespace {{variant}} {
 #endif
 {%- endif %}
 
+{% if not disallow_native_types and uses_native_types and all_enums|length -%}
+namespace mojo {
+enum class NativeEnum;
+}  // namespace mojo
+{%- endif %}
+
 {%- if variant %}
 {%-   for namespace in namespaces_as_array %}
 namespace {{namespace}} {

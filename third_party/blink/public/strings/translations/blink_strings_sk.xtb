@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">päta</translation>
 <translation id="2709516037105925701">Automatické dopĺňanie</translation>
 <translation id="2723001399770238859">zvuk</translation>
+<translation id="2725963129578236554">komentáre</translation>
 <translation id="2746543609216772311">Hodnota musí byť <ph name="MINIMUM_DATE_OR_TIME" /> alebo neskôr.</translation>
 <translation id="2759744352195237655">kontextové tlačidlo</translation>
 <translation id="2761667185364618470">Ak chcete pokračovať, začiarknite toto políčko.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">Predĺžte tento text aspoň na <ph name="MIN_CHARACTERS" /> alebo viac znakov (momentálny počet znakov je <ph name="CURRENT_LENGTH" />).</translation>
 <translation id="383465348367842624">Časť pred znakom <ph name="ATSIGN" /> by nemala obsahovať symbol <ph name="INVALIDCHARACTER" />.</translation>
 <translation id="3846214748874656680">Ukončiť režim celej obrazovky</translation>
+<translation id="3889183436948184105">revízia</translation>
 <translation id="3920932319529768807">záver</translation>
 <translation id="3924558731517983934">aplikácia</translation>
 <translation id="3944740393230681990">prológ</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">posúvač časovej osi zvuku</translation>
 <translation id="6443871981718447451">zobraziť ponuku skrytých titulkov</translation>
 <translation id="6453774872122745852">poďakovanie</translation>
+<translation id="6475115390776617481">aktuálny spolupracujúci</translation>
 <translation id="648732519525291180">výber času</translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6572309429103589720">Neplatná gramatika</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">vloženie</translation>
 <translation id="6989848892321993519">Predĺžte tento text aspoň na <ph name="MIN_CHARACTERS" /> alebo viac znakov (momentálne používate jeden znak).</translation>
 <translation id="7033340931668032222">smery nahor a nadol slúžia na zmenu hlasitosti</translation>
+<translation id="7034405885550056553">návrh</translation>
 <translation id="709897737746224366">Zadajte hodnotu zodpovedajúcu požadovanému formátu.</translation>
 <translation id="7118469954320184356">Nie je k dispozícii žiadny popis.</translation>
 <translation id="7139483182332611405">predslov</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">výstup</translation>
 <translation id="8750798805984357768">Vyberte jednu z týchto možností.</translation>
 <translation id="8808573423886751634">kapitola</translation>
+<translation id="8822203815165896261">informácie o autorovi</translation>
 <translation id="8845239796550121995">Prenáša sa do televízora</translation>
 <translation id="8851136666856101339">hlavné</translation>
 <translation id="8875657656876809964">Chyba prehrávania videa</translation>

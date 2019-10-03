@@ -311,7 +311,7 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
     end_point = GetLayoutBox()
                     ->GetDocument()
                     .GetSnapCoordinator()
-                    ->GetSnapPosition(*GetLayoutBox(), *strategy)
+                    .GetSnapPosition(*GetLayoutBox(), *strategy)
                     .value_or(end_point);
     new_scroll_offset = ScrollPositionToOffset(end_point);
   }
@@ -457,10 +457,6 @@ bool RootFrameViewport::ShouldPlaceVerticalScrollbarOnLeft() const {
 
 void RootFrameViewport::ScrollControlWasSetNeedsPaintInvalidation() {
   LayoutViewport().ScrollControlWasSetNeedsPaintInvalidation();
-}
-
-GraphicsLayer* RootFrameViewport::LayerForContainer() const {
-  return LayoutViewport().LayerForContainer();
 }
 
 GraphicsLayer* RootFrameViewport::LayerForScrolling() const {

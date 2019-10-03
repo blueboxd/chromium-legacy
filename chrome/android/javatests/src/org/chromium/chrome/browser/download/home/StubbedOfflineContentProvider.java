@@ -24,16 +24,12 @@ import java.util.ArrayList;
 /** Stubs out the OfflineContentProvider. */
 public class StubbedOfflineContentProvider implements OfflineContentProvider {
     private final Handler mHandler;
-    private final CallbackHelper mAddObserverCallback;
-    private final CallbackHelper mRemoveObserverCallback;
     private final CallbackHelper mDeleteItemCallback;
     private final ArrayList<OfflineItem> mItems;
     private OfflineContentProvider.Observer mObserver;
 
     public StubbedOfflineContentProvider() {
         mHandler = new Handler(Looper.getMainLooper());
-        mAddObserverCallback = new CallbackHelper();
-        mRemoveObserverCallback = new CallbackHelper();
         mDeleteItemCallback = new CallbackHelper();
         mItems = new ArrayList<>();
     }
@@ -44,20 +40,22 @@ public class StubbedOfflineContentProvider implements OfflineContentProvider {
 
     public void addItem(OfflineItem item) {
         mItems.add(item);
+
+        ArrayList<OfflineItem> list = new ArrayList<>();
+        list.add(item);
+        mObserver.onItemsAdded(list);
     }
 
     @Override
     public void addObserver(OfflineContentProvider.Observer addedObserver) {
         assertEquals(mObserver, null);
         mObserver = addedObserver;
-        mAddObserverCallback.notifyCalled();
     }
 
     @Override
     public void removeObserver(OfflineContentProvider.Observer removedObserver) {
         assertEquals(mObserver, removedObserver);
         mObserver = null;
-        mRemoveObserverCallback.notifyCalled();
     }
 
     @Override

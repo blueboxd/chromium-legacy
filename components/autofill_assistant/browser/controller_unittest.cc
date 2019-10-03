@@ -81,11 +81,11 @@ struct MockCollectUserDataOptions : public CollectUserDataOptions {
   MockCollectUserDataOptions() {
     base::MockOnceCallback<void(std::unique_ptr<UserData>)>
         mock_confirm_callback;
-    confirm_callback = std::move(mock_confirm_callback.Get());
+    confirm_callback = mock_confirm_callback.Get();
     base::MockOnceCallback<void(int)> mock_actions_callback;
-    additional_actions_callback = std::move(mock_actions_callback.Get());
+    additional_actions_callback = mock_actions_callback.Get();
     base::MockOnceCallback<void(int)> mock_terms_callback;
-    terms_link_callback = std::move(mock_terms_callback.Get());
+    terms_link_callback = mock_terms_callback.Get();
   }
 };
 

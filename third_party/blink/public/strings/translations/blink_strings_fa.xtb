@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">پانویس</translation>
 <translation id="2709516037105925701">تکمیل خودکار</translation>
 <translation id="2723001399770238859">صدا</translation>
+<translation id="2725963129578236554">نظرها</translation>
 <translation id="2746543609216772311">مقدار باید <ph name="MINIMUM_DATE_OR_TIME" /> یا بعد از آن باشد.</translation>
 <translation id="2759744352195237655">دکمه بازشو</translation>
 <translation id="2761667185364618470">درصورتی‌که می‌خواهید ادامه دهید، این کادر را انتخاب کنید.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">لطفاً این نوشتار را به <ph name="MIN_CHARACTERS" /> نویسه یا بیشتر افزایش دهید (درحال حاضر از <ph name="CURRENT_LENGTH" /> نویسه استفاده می‌کنید).</translation>
 <translation id="383465348367842624">قسمت قبل از «<ph name="ATSIGN" />» نباید حاوی نماد «<ph name="INVALIDCHARACTER" />» باشد.</translation>
 <translation id="3846214748874656680">خروج از حالت تمام صفحه</translation>
+<translation id="3889183436948184105">بازبینی</translation>
 <translation id="3920932319529768807">نتیجه‌گیری</translation>
 <translation id="3924558731517983934">برنامه</translation>
 <translation id="3944740393230681990">گفتار آغازین</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">انتخابگر زمان صدا</translation>
 <translation id="6443871981718447451">نمایش منوی زیرنویس ناشنوایان</translation>
 <translation id="6453774872122745852">قدردانی</translation>
+<translation id="6475115390776617481">حضور زنده</translation>
 <translation id="648732519525291180">انتخابگر زمان</translation>
 <translation id="6550675742724504774">گزینه‌ها</translation>
 <translation id="6572309429103589720">دستور زبان نامعتبر</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">درج</translation>
 <translation id="6989848892321993519">لطفاً این نوشتار را به <ph name="MIN_CHARACTERS" /> نویسه یا بیشتر افزایش دهید (درحال‌حاضر از ۱ نویسه استفاده می‌کنید).</translation>
 <translation id="7033340931668032222">برای تغییر میزان صدا، به بالا و پایین بروید</translation>
+<translation id="7034405885550056553">پیشنهاد</translation>
 <translation id="709897737746224366">لطفاً با قالب درخواستی مطابقت دهید.</translation>
 <translation id="7118469954320184356">توضیحی دردسترس نیست.</translation>
 <translation id="7139483182332611405">پیش‌گفتار</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">خروجی</translation>
 <translation id="8750798805984357768">لطفاً یکی از این گزینه‌ها را انتخاب کنید.</translation>
 <translation id="8808573423886751634">فصل</translation>
+<translation id="8822203815165896261">اطلاعات تألیف</translation>
 <translation id="8845239796550121995">درحال ارسال محتوا به تلویزیون</translation>
 <translation id="8851136666856101339">اصلی</translation>
 <translation id="8875657656876809964">خطا در بازپخش ویدئو</translation>

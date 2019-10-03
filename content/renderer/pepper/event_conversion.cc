@@ -252,7 +252,9 @@ void AppendMouseWheelEvent(const WebInputEvent& event,
   result.wheel_delta.y = mouse_wheel_event.delta_y;
   result.wheel_ticks.x = mouse_wheel_event.wheel_ticks_x;
   result.wheel_ticks.y = mouse_wheel_event.wheel_ticks_y;
-  result.wheel_scroll_by_page = !!mouse_wheel_event.scroll_by_page;
+  result.wheel_scroll_by_page =
+      (mouse_wheel_event.delta_units ==
+       ui::input_types::ScrollGranularity::kScrollByPage);
   result_events->push_back(result);
 }
 
@@ -507,7 +509,10 @@ WebMouseWheelEvent* BuildMouseWheelEvent(const InputEventData& event) {
   mouse_wheel_event->delta_y = event.wheel_delta.y;
   mouse_wheel_event->wheel_ticks_x = event.wheel_ticks.x;
   mouse_wheel_event->wheel_ticks_y = event.wheel_ticks.y;
-  mouse_wheel_event->scroll_by_page = event.wheel_scroll_by_page;
+  mouse_wheel_event->delta_units =
+      event.wheel_scroll_by_page
+          ? ui::input_types::ScrollGranularity::kScrollByPage
+          : ui::input_types::ScrollGranularity::kScrollByPixel;
   return mouse_wheel_event;
 }
 

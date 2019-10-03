@@ -96,8 +96,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
   // Shuts down the worker thread. This may synchronously destroy |this|.
   void TerminateWorkerThread();
 
-  WorkerClients* CreateWorkerClients();
-
   void ConnectTaskOnWorkerThread(MessagePortChannel);
 
   Persistent<SharedWorkerReportingProxy> reporting_proxy_;

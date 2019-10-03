@@ -140,9 +140,8 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
   }
 
   webrtc::EncodedImage encoded_image;
-  encoded_image.Allocate(buffer_size);
-  encoded_image.set_size(buffer_size);
-  memcpy(encoded_image.data(), buffer, buffer_size);
+  encoded_image.SetEncodedData(
+      webrtc::EncodedImageBuffer::Create(buffer, buffer_size));
   encoded_image._encodedWidth = frame.size.width();
   encoded_image._encodedHeight = frame.size.height();
   encoded_image._completeFrame = true;

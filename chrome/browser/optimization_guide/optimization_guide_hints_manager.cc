@@ -490,6 +490,8 @@ void OptimizationGuideHintsManager::OnHintsFetched(
       OnTopHostsHintsFetched(std::move(get_hints_response));
       return;
     case optimization_guide::proto::CONTEXT_PAGE_NAVIGATION:
+      OnPageNavigationHintsFetched(std::move(get_hints_response));
+      return;
     case optimization_guide::proto::CONTEXT_UNSPECIFIED:
       NOTREACHED();
   }
@@ -517,6 +519,19 @@ void OptimizationGuideHintsManager::OnTopHostsHintsFetched(
   }
 }
 
+void OptimizationGuideHintsManager::OnPageNavigationHintsFetched(
+    base::Optional<std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
+        get_hints_response) {
+  if (!get_hints_response.has_value() || !get_hints_response.value())
+    return;
+
+  hint_cache_->UpdateFetchedHints(
+      std::move(*get_hints_response), clock_->Now() + kUpdateFetchedHintsDelay,
+      base::BindOnce(
+          &OptimizationGuideHintsManager::OnFetchedPageNavigationHintsStored,
+          ui_weak_ptr_factory_.GetWeakPtr()));
+}
+
 void OptimizationGuideHintsManager::OnFetchedTopHostsHintsStored() {
   LOCAL_HISTOGRAM_BOOLEAN("OptimizationGuide.FetchedHints.Stored", true);
 
@@ -524,6 +539,11 @@ void OptimizationGuideHintsManager::OnFetchedTopHostsHintsStored() {
   top_hosts_hints_fetch_timer_.Start(
       FROM_HERE, hint_cache_->FetchedHintsUpdateTime() - clock_->Now(), this,
       &OptimizationGuideHintsManager::ScheduleTopHostsHintsFetch);
+}
+
+void OptimizationGuideHintsManager::OnFetchedPageNavigationHintsStored() {
+  for (const auto& url : navigation_urls_last_fetched_real_time_)
+    LoadHintForURL(url, base::DoNothing());
 }
 
 base::Time OptimizationGuideHintsManager::GetLastHintsFetchAttemptTime() const {
@@ -560,6 +580,14 @@ void OptimizationGuideHintsManager::LoadHintForNavigation(
       navigation_data->set_has_hint_before_commit(has_hint);
     }
   }
+
+  LoadHintForURL(url, std::move(callback));
+}
+
+void OptimizationGuideHintsManager::LoadHintForURL(const GURL& url,
+                                                   base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(url.has_host());
 
   hint_cache_->LoadHint(
       url.host(),
@@ -623,7 +651,7 @@ bool OptimizationGuideHintsManager::HasLoadedOptimizationFilter(
 
 void OptimizationGuideHintsManager::CanApplyOptimization(
     content::NavigationHandle* navigation_handle,
-    optimization_guide::OptimizationTarget optimization_target,
+    optimization_guide::proto::OptimizationTarget optimization_target,
     optimization_guide::proto::OptimizationType optimization_type,
     optimization_guide::OptimizationTargetDecision*
         optimization_target_decision,
@@ -642,10 +670,11 @@ void OptimizationGuideHintsManager::CanApplyOptimization(
   *optimization_type_decision =
       optimization_guide::OptimizationTypeDecision::kUnknown;
 
-  // We only support the optimization target |kPainfulPageLoad|, so just return
-  // that we don't know if the target doesn't match that.
+  // We only support the optimization target
+  // |OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD|, so just return that we don't know
+  // if the target doesn't match that.
   if (optimization_target !=
-      optimization_guide::OptimizationTarget::kPainfulPageLoad) {
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD) {
     return;
   }
 
@@ -778,6 +807,58 @@ void OptimizationGuideHintsManager::CanApplyOptimization(
 void OptimizationGuideHintsManager::OnEffectiveConnectionTypeChanged(
     net::EffectiveConnectionType effective_connection_type) {
   current_effective_connection_type_ = effective_connection_type;
+}
+
+bool OptimizationGuideHintsManager::IsAllowedToFetchNavigationHints(
+    const GURL& url) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!IsUserPermittedToFetchHints(profile_))
+    return false;
+
+  if (!url.is_valid() || !url.SchemeIs(url::kHttpsScheme))
+    return false;
+
+  base::Optional<net::EffectiveConnectionType> ect_max_threshold =
+      optimization_guide::features::
+          GetMaxEffectiveConnectionTypeForNavigationHintsFetch();
+  // If the threshold is unavailable, return early since there is no safe way to
+  // proceed.
+  if (!ect_max_threshold.has_value())
+    return false;
+
+  if (current_effective_connection_type_ <
+          net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G ||
+      current_effective_connection_type_ > ect_max_threshold.value()) {
+    return false;
+  }
+
+  return true;
+}
+
+void OptimizationGuideHintsManager::OnNavigationStartOrRedirect(
+    content::NavigationHandle* navigation_handle,
+    base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (IsAllowedToFetchNavigationHints(navigation_handle->GetURL())) {
+    std::vector<std::string> hosts{navigation_handle->GetURL().host()};
+    navigation_urls_last_fetched_real_time_.clear();
+    navigation_urls_last_fetched_real_time_.push_back(
+        navigation_handle->GetURL());
+
+    if (!hints_fetcher_) {
+      hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
+          url_loader_factory_,
+          optimization_guide::features::GetOptimizationGuideServiceURL(),
+          pref_service_);
+    }
+    hints_fetcher_->FetchOptimizationGuideServiceHints(
+        hosts, optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
+        base::BindOnce(&OptimizationGuideHintsManager::OnHintsFetched,
+                       ui_weak_ptr_factory_.GetWeakPtr()));
+  }
+  LoadHintForNavigation(navigation_handle, std::move(callback));
 }
 
 void OptimizationGuideHintsManager::ClearFetchedHints() {

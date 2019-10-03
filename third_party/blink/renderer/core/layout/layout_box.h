@@ -42,6 +42,7 @@ class NGBoxFragmentBuilder;
 class NGConstraintSpace;
 class ShapeOutsideInfo;
 struct BoxLayoutExtraInput;
+class NGEarlyBreak;
 class NGBreakToken;
 struct NGFragmentGeometry;
 enum class NGLayoutCacheStatus;
@@ -968,6 +969,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   scoped_refptr<const NGLayoutResult> CachedLayoutResult(
       const NGConstraintSpace&,
       const NGBreakToken*,
+      const NGEarlyBreak*,
       base::Optional<NGFragmentGeometry>* initial_fragment_geometry,
       NGLayoutCacheStatus* out_cache_status);
 

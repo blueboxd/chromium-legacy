@@ -16,9 +16,10 @@ namespace blink {
 class LayoutBox;
 class NGBaselineRequest;
 class NGBlockBreakToken;
+class NGBoxFragmentBuilder;
 class NGBreakToken;
 class NGConstraintSpace;
-class NGBoxFragmentBuilder;
+class NGEarlyBreak;
 class NGLayoutResult;
 class NGPhysicalBoxFragment;
 class NGPhysicalContainerFragment;
@@ -38,7 +39,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   scoped_refptr<const NGLayoutResult> Layout(
       const NGConstraintSpace& constraint_space,
-      const NGBreakToken* break_token = nullptr);
+      const NGBreakToken* break_token = nullptr,
+      const NGEarlyBreak* = nullptr);
 
   // This method is just for use within the |NGSimplifiedLayoutAlgorithm|.
   //

@@ -10,7 +10,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_bridge.h"
 #include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
@@ -60,28 +63,28 @@ class TestingWilcoDtcSupportdBridgeWrapper final {
   // Implements the GetService Mojo method of the WilcoDtcSupportdServiceFactory
   // interface. Called during the simulated Mojo boostrapping.
   void HandleMojoGetService(
-      wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceRequest
-          mojo_wilco_dtc_supportd_service_request,
-      wilco_dtc_supportd::mojom::WilcoDtcSupportdClientPtr
+      mojo::PendingReceiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
+          mojo_wilco_dtc_supportd_service_receiver,
+      mojo::PendingRemote<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
           mojo_wilco_dtc_supportd_client);
 
-  // Mojo binding that binds the WilcoDtcSupportdService implementation (passed
+  // Mojo receiver that binds the WilcoDtcSupportdService implementation (passed
   // to the constructor) with the other endpoint owned from |bridge_|.
-  mojo::Binding<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
-      mojo_wilco_dtc_supportd_service_binding_;
+  mojo::Receiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
+      mojo_wilco_dtc_supportd_service_receiver_;
 
   // Mojo pointer that points to the WilcoDtcSupportdClient implementation
   // (owned by |bridge_|).  Is initialized if the Mojo is bootstrapped by
   // EstablishFakeMojoConnection().
-  wilco_dtc_supportd::mojom::WilcoDtcSupportdClientPtr
+  mojo::Remote<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
       mojo_wilco_dtc_supportd_client_;
 
   // Temporary callback that allows to deliver the
   // WilcoDtcSupportdServiceRequest value during the Mojo bootstrapping
   // simulation by EstablishFakeMojoConnection().
   base::OnceCallback<void(
-      wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceRequest
-          mojo_wilco_dtc_supportd_service_request)>
+      mojo::PendingReceiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
+          mojo_wilco_dtc_supportd_service_receiver)>
       mojo_get_service_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingWilcoDtcSupportdBridgeWrapper);

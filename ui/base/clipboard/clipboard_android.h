@@ -39,6 +39,9 @@ class ClipboardAndroid : public Clipboard {
       const base::android::JavaParamRef<jobject>& obj,
       const jlong j_timestamp_ms);
 
+  // Called by Java side.
+  int64_t GetLastModifiedTimeToJavaTime(JNIEnv* env);
+
   // Sets the callback called whenever the clipboard is modified.
   COMPONENT_EXPORT(BASE_CLIPBOARD)
   void SetModifiedCallback(ModifiedCallback cb);

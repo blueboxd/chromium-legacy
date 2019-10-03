@@ -182,8 +182,7 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate)
   // contents' size. Using zeroes doesn't prevent it from scrolling and sizing
   // correctly.
   scroller->ClipHeightTo(0, 0);
-  scroller->SetVerticalScrollBar(
-      std::make_unique<ZeroWidthVerticalScrollBar>());
+  scroller->SetVerticalScrollBar(new ZeroWidthVerticalScrollBar());
   scroller->SetBackgroundColor(SK_ColorTRANSPARENT);
   AddChildView(std::move(scroller));
 

@@ -43,8 +43,8 @@ int TracingManager::RequestTrace() {
   ++g_next_trace_id;
   content::TracingController::GetInstance()->StopTracing(
       content::TracingController::CreateStringEndpoint(
-          base::Bind(&TracingManager::OnTraceDataCollected,
-                     weak_ptr_factory_.GetWeakPtr())));
+          base::BindOnce(&TracingManager::OnTraceDataCollected,
+                         weak_ptr_factory_.GetWeakPtr())));
   return current_trace_id_;
 }
 
@@ -93,14 +93,13 @@ void TracingManager::StartTracing() {
 }
 
 void TracingManager::OnTraceDataCollected(
-    std::unique_ptr<const base::DictionaryValue> metadata,
-    base::RefCountedString* trace_data) {
+    std::unique_ptr<std::string> trace_data) {
   if (!current_trace_id_)
     return;
 
   std::string output_val;
-  feedback_util::ZipString(
-      base::FilePath(kTracingFilename), trace_data->data(), &output_val);
+  feedback_util::ZipString(base::FilePath(kTracingFilename), *trace_data,
+                           &output_val);
 
   scoped_refptr<base::RefCountedString> output(
       base::RefCountedString::TakeString(&output_val));

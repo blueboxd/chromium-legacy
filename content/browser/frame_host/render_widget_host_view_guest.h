@@ -24,6 +24,10 @@
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace IPC {
+class Message;
+}
+
 namespace content {
 class BrowserPluginGuest;
 class RenderWidgetHost;

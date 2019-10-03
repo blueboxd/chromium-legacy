@@ -20,7 +20,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_wilco_dtc_supportd_client.h"
 #include "chromeos/dbus/wilco_dtc_supportd_client.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace chromeos {
 
@@ -36,31 +35,35 @@ class TestingMojoWilcoDtcSupportdServiceFactory final
   // GetService() is called.
   explicit TestingMojoWilcoDtcSupportdServiceFactory(
       base::RepeatingCallback<void(
-          wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceRequest
-              mojo_wilco_dtc_supportd_service_request,
-          wilco_dtc_supportd::mojom::WilcoDtcSupportdClientPtr
+          mojo::PendingReceiver<
+              wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
+              mojo_wilco_dtc_supportd_service_receiver,
+          mojo::PendingRemote<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
               mojo_wilco_dtc_supportd_client)> get_service_handler_callback)
       : get_service_handler_callback_(std::move(get_service_handler_callback)) {
   }
 
-  // Completes the Mojo binding of |this| to the given Mojo interface request.
+  // Completes the Mojo receiver of |this| to the given Mojo pending receiver.
   // This method allows to redirect to |this| the calls on the
   // WilcoDtcSupportdServiceFactory interface that are made by the
   // WilcoDtcSupportdBridge.
-  void Bind(wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactoryRequest
-                mojo_wilco_dtc_supportd_service_factory_request) {
-    // First close the Mojo binding in case it was previously completed, to
+  void Bind(mojo::PendingReceiver<
+            wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>
+                mojo_wilco_dtc_supportd_service_factory_receiver) {
+    // First close the Mojo receiver in case it was previously completed, to
     // allow calling this method multiple times.
-    self_binding_.Close();
-    self_binding_.Bind(
-        std::move(mojo_wilco_dtc_supportd_service_factory_request));
+    self_receiver_.reset();
+    self_receiver_.Bind(
+        std::move(mojo_wilco_dtc_supportd_service_factory_receiver));
   }
 
   // WilcoDtcSupportdServiceFactory overrides:
 
   void GetService(
-      wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceRequest service,
-      wilco_dtc_supportd::mojom::WilcoDtcSupportdClientPtr client,
+      mojo::PendingReceiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
+          service,
+      mojo::PendingRemote<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
+          client,
       GetServiceCallback callback) override {
     DCHECK(service);
     DCHECK(client);
@@ -75,15 +78,15 @@ class TestingMojoWilcoDtcSupportdServiceFactory final
   }
 
  private:
-  // Mojo binding that binds |this| as an implementation of the
+  // Mojo receiver that binds |this| as an implementation of the
   // WilcoDtcSupportdClient Mojo interface.
-  mojo::Binding<wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>
-      self_binding_{this};
+  mojo::Receiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>
+      self_receiver_{this};
   // The callback to be run when GetService() is called.
   base::RepeatingCallback<void(
-      wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceRequest
-          mojo_wilco_dtc_supportd_service_request,
-      wilco_dtc_supportd::mojom::WilcoDtcSupportdClientPtr
+      mojo::PendingReceiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
+          mojo_wilco_dtc_supportd_service_receiver,
+      mojo::PendingRemote<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
           mojo_wilco_dtc_supportd_client)>
       get_service_handler_callback_;
 
@@ -157,14 +160,15 @@ void TestingWilcoDtcSupportdBridgeWrapper::EstablishFakeMojoConnection() {
   // Set up the callback that will handle the GetService Mojo method called
   // during the bootstrap.
   base::RunLoop run_loop;
-  wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceRequest
-      intercepted_mojo_wilco_dtc_supportd_service_request;
+  mojo::PendingReceiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
+      intercepted_mojo_wilco_dtc_supportd_service_receiver;
   mojo_get_service_handler_ = base::BindLambdaForTesting(
-      [&run_loop, &intercepted_mojo_wilco_dtc_supportd_service_request](
-          wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceRequest
-              mojo_wilco_dtc_supportd_service_request) {
-        intercepted_mojo_wilco_dtc_supportd_service_request =
-            std::move(mojo_wilco_dtc_supportd_service_request);
+      [&run_loop, &intercepted_mojo_wilco_dtc_supportd_service_receiver](
+          mojo::PendingReceiver<
+              wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
+              mojo_wilco_dtc_supportd_service_receiver) {
+        intercepted_mojo_wilco_dtc_supportd_service_receiver =
+            std::move(mojo_wilco_dtc_supportd_service_receiver);
         run_loop.Quit();
       });
 
@@ -178,24 +182,24 @@ void TestingWilcoDtcSupportdBridgeWrapper::EstablishFakeMojoConnection() {
 
   // Wait till the GetService Mojo method call completes.
   run_loop.Run();
-  DCHECK(intercepted_mojo_wilco_dtc_supportd_service_request);
   DCHECK(mojo_wilco_dtc_supportd_client_);
 
-  // First close the Mojo binding in case it was previously completed, to allow
+  // First close the Mojo receiver in case it was previously completed, to allow
   // calling this method multiple times.
-  mojo_wilco_dtc_supportd_service_binding_.Close();
-  mojo_wilco_dtc_supportd_service_binding_.Bind(
-      std::move(intercepted_mojo_wilco_dtc_supportd_service_request));
+  mojo_wilco_dtc_supportd_service_receiver_.reset();
+  mojo_wilco_dtc_supportd_service_receiver_.Bind(
+      std::move(intercepted_mojo_wilco_dtc_supportd_service_receiver));
 }
 
 void TestingWilcoDtcSupportdBridgeWrapper::HandleMojoGetService(
-    wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceRequest
-        mojo_wilco_dtc_supportd_service_request,
-    wilco_dtc_supportd::mojom::WilcoDtcSupportdClientPtr
+    mojo::PendingReceiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
+        mojo_wilco_dtc_supportd_service_receiver,
+    mojo::PendingRemote<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
         mojo_wilco_dtc_supportd_client) {
   std::move(mojo_get_service_handler_)
-      .Run(std::move(mojo_wilco_dtc_supportd_service_request));
-  mojo_wilco_dtc_supportd_client_ = std::move(mojo_wilco_dtc_supportd_client);
+      .Run(std::move(mojo_wilco_dtc_supportd_service_receiver));
+  mojo_wilco_dtc_supportd_client_.Bind(
+      std::move(mojo_wilco_dtc_supportd_client));
 }
 
 TestingWilcoDtcSupportdBridgeWrapper::TestingWilcoDtcSupportdBridgeWrapper(
@@ -203,7 +207,7 @@ TestingWilcoDtcSupportdBridgeWrapper::TestingWilcoDtcSupportdBridgeWrapper(
         mojo_wilco_dtc_supportd_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<WilcoDtcSupportdBridge>* bridge)
-    : mojo_wilco_dtc_supportd_service_binding_(
+    : mojo_wilco_dtc_supportd_service_receiver_(
           mojo_wilco_dtc_supportd_service) {
   auto profile_manager = std::make_unique<TestingProfileManager>(
       TestingBrowserProcess::GetGlobal());

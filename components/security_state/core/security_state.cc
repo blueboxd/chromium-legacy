@@ -227,7 +227,8 @@ VisibleSecurityState::VisibleSecurityState()
       is_error_page(false),
       is_view_source(false),
       is_devtools(false),
-      connection_used_legacy_tls(false) {}
+      connection_used_legacy_tls(false),
+      is_legacy_tls_control_site(false) {}
 
 VisibleSecurityState::~VisibleSecurityState() {}
 

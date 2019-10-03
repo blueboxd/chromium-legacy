@@ -1552,8 +1552,8 @@ sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
       return nullptr;
 
     const char* hdr = R"(
-layout(ctype=float) in uniform half offset;
-layout(ctype=float) in uniform half multiplier;
+layout(ctype=float) uniform half offset;
+layout(ctype=float) uniform half multiplier;
 
 void main(inout half4 color) {
   // un-premultiply alpha

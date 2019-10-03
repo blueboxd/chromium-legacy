@@ -18,8 +18,9 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_wilco_dtc_supportd_client.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -48,32 +49,35 @@ class FakeMojoWilcoDtcSupportdServiceFactory final
   // WilcoDtcSupportdServiceFactory overrides:
 
   void GetService(
-      wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceRequest service,
-      wilco_dtc_supportd::mojom::WilcoDtcSupportdClientPtr client,
+      mojo::PendingReceiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
+          service,
+      mojo::PendingRemote<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
+          client,
       GetServiceCallback callback) override {
     EXPECT_FALSE(pending_get_service_call_);
     pending_get_service_call_ = PendingGetServiceCall{
         std::move(service), std::move(client), std::move(callback)};
   }
 
-  // Completes the Mojo binding of this instance to the given Mojo interface
-  // request.
-  void Bind(wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactoryRequest
-                request) {
-    // Close the Mojo binding in case it was previously completed, to allow
+  // Completes the Mojo receiver of this instance to the given Mojo pending
+  // receiver.
+  void Bind(
+      mojo::PendingReceiver<
+          wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory> receiver) {
+    // Close the Mojo receiver in case it was previously completed, to allow
     // calling this method multiple times.
-    self_binding_.Close();
+    self_receiver_.reset();
 
-    self_binding_.Bind(std::move(request));
+    self_receiver_.Bind(std::move(receiver));
 
-    self_binding_.set_connection_error_handler(
+    self_receiver_.set_disconnect_handler(
         base::BindOnce(&FakeMojoWilcoDtcSupportdServiceFactory::OnBindingError,
                        base::Unretained(this)));
   }
 
-  // Closes the Mojo binding of this instance.
-  void CloseBinding() {
-    self_binding_.Close();
+  // Closes the Mojo receiver of this instance.
+  void CloseReceiver() {
+    self_receiver_.reset();
 
     // Drop the current pending GetService call, if there was any, to allow our
     // instance to be used for new GetService calls after this instance gets
@@ -87,13 +91,14 @@ class FakeMojoWilcoDtcSupportdServiceFactory final
   }
 
   // Respond to the current pending GetService call.
-  wilco_dtc_supportd::mojom::WilcoDtcSupportdClientPtr RespondToGetServiceCall(
-      mojo::Binding<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>*
-          mojo_wilco_dtc_supportd_service_binding) {
+  mojo::PendingRemote<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
+  RespondToGetServiceCall(
+      mojo::Receiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>*
+          mojo_wilco_dtc_supportd_service_receiver) {
     DCHECK(pending_get_service_call_);
     PendingGetServiceCall pending_call = std::move(*pending_get_service_call_);
     pending_get_service_call_.reset();
-    mojo_wilco_dtc_supportd_service_binding->Bind(
+    mojo_wilco_dtc_supportd_service_receiver->Bind(
         std::move(pending_call.service));
     std::move(pending_call.callback).Run();
     return std::move(pending_call.client);
@@ -101,8 +106,10 @@ class FakeMojoWilcoDtcSupportdServiceFactory final
 
  private:
   struct PendingGetServiceCall {
-    wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceRequest service;
-    wilco_dtc_supportd::mojom::WilcoDtcSupportdClientPtr client;
+    mojo::PendingReceiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
+        service;
+    mojo::PendingRemote<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
+        client;
     GetServiceCallback callback;
   };
 
@@ -113,8 +120,8 @@ class FakeMojoWilcoDtcSupportdServiceFactory final
     pending_get_service_call_.reset();
   }
 
-  mojo::Binding<wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>
-      self_binding_{this};
+  mojo::Receiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>
+      self_receiver_{this};
 
   base::Optional<PendingGetServiceCall> pending_get_service_call_;
 };
@@ -218,18 +225,19 @@ class WilcoDtcSupportdBridgeTest : public testing::Test {
 
   // Reply to the pending GetService Mojo call held up by the fake.
   void RespondToMojoFactoryGetServiceCall() {
-    // Close the binding, if it was completed, to allow calling this method
+    // Close the receiver, if it was completed, to allow calling this method
     // multiple times.
-    mojo_wilco_dtc_supportd_service_binding_.Close();
+    mojo_wilco_dtc_supportd_service_receiver_.reset();
+    mojo_wilco_dtc_supportd_client_.reset();
 
-    mojo_wilco_dtc_supportd_client_ =
+    mojo_wilco_dtc_supportd_client_.Bind(
         mojo_wilco_dtc_supportd_service_factory_.RespondToGetServiceCall(
-            &mojo_wilco_dtc_supportd_service_binding_);
+            &mojo_wilco_dtc_supportd_service_receiver_));
   }
 
   // Simulates Mojo connection error.
   void AbortMojoConnection() {
-    mojo_wilco_dtc_supportd_service_factory_.CloseBinding();
+    mojo_wilco_dtc_supportd_service_factory_.CloseReceiver();
   }
 
   base::test::TaskEnvironment task_environment_{
@@ -240,8 +248,8 @@ class WilcoDtcSupportdBridgeTest : public testing::Test {
       mojo_wilco_dtc_supportd_service_factory_;
 
   MockMojoWilcoDtcSupportdService mojo_wilco_dtc_supportd_service_;
-  mojo::Binding<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
-      mojo_wilco_dtc_supportd_service_binding_{
+  mojo::Receiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
+      mojo_wilco_dtc_supportd_service_receiver_{
           &mojo_wilco_dtc_supportd_service_};
 
   StrictMock<MockWilcoDtcSupportdNotificationController>*
@@ -249,7 +257,7 @@ class WilcoDtcSupportdBridgeTest : public testing::Test {
 
   std::unique_ptr<WilcoDtcSupportdBridge> wilco_dtc_supportd_bridge_;
 
-  wilco_dtc_supportd::mojom::WilcoDtcSupportdClientPtr
+  mojo::Remote<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
       mojo_wilco_dtc_supportd_client_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 };
@@ -352,8 +360,9 @@ TEST_F(WilcoDtcSupportdBridgeTest, ImmediateMojoDisconnectionError) {
        WilcoDtcSupportdBridge::max_connection_attempt_count_for_testing();
        ++attempt_number) {
     // Verify that the bridge made the GetService Mojo call (on the
-    // WilcoDtcSupportdServiceFactory interface). Abort the Mojo binding without
-    // responding to the call. Verify that no new call happens immediately.
+    // WilcoDtcSupportdServiceFactory interface). Abort the Mojo receiver
+    // without responding to the call. Verify that no new call happens
+    // immediately.
     EXPECT_TRUE(is_mojo_factory_get_service_call_in_flight());
     AbortMojoConnection();
     task_environment_.RunUntilIdle();
@@ -381,7 +390,7 @@ TEST_F(WilcoDtcSupportdBridgeTest, Reestablishing) {
   EXPECT_TRUE(
       wilco_dtc_supportd_bridge()->wilco_dtc_supportd_service_mojo_proxy());
 
-  // Abort the Mojo binding. Verify that no new connection attempt happens
+  // Abort the Mojo receiver. Verify that no new connection attempt happens
   // immediately.
   AbortMojoConnection();
   task_environment_.RunUntilIdle();
@@ -423,7 +432,7 @@ TEST_F(WilcoDtcSupportdBridgeTest, RetryCounterReset) {
   EXPECT_TRUE(
       wilco_dtc_supportd_bridge()->wilco_dtc_supportd_service_mojo_proxy());
 
-  // Abort the Mojo binding.
+  // Abort the Mojo receiver.
   AbortMojoConnection();
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(

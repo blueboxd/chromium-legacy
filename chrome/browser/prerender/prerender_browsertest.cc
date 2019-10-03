@@ -500,23 +500,35 @@ class FakeDevToolsClient : public content::DevToolsAgentHostClient {
   void AgentHostClosed(DevToolsAgentHost* agent_host) override {}
 };
 
-// A ContentBrowserClient that cancels all prerenderers on OpenURL.
+// A ContentBrowserClient that cancels all prerenderers when a new navigation
+// starts.
 class TestContentBrowserClient : public ChromeContentBrowserClient {
  public:
   TestContentBrowserClient() {}
   ~TestContentBrowserClient() override {}
 
   // ChromeContentBrowserClient:
-  bool ShouldAllowOpenURL(content::SiteInstance* site_instance,
-                          const GURL& url) override {
+  void OverrideNavigationParams(
+      content::SiteInstance* site_instance,
+      ui::PageTransition* transition,
+      bool* is_renderer_initiated,
+      content::Referrer* referrer,
+      base::Optional<url::Origin>* initiator_origin) override {
+    DCHECK(!already_called_);
+    already_called_ = true;
+
     PrerenderManagerFactory::GetForBrowserContext(
         site_instance->GetBrowserContext())
         ->CancelAllPrerenders();
-    return ChromeContentBrowserClient::ShouldAllowOpenURL(site_instance,
-                                                                  url);
+    ChromeContentBrowserClient::OverrideNavigationParams(
+        site_instance, transition, is_renderer_initiated, referrer,
+        initiator_origin);
   }
 
  private:
+  // Whether the OverrideNavigationParams override above was already called.
+  bool already_called_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(TestContentBrowserClient);
 };
 

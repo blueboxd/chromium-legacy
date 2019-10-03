@@ -16,16 +16,15 @@
 <translation id="2178608107313874732">Chromium kan inte använda kameran just nu</translation>
 <translation id="2195025571279539885">Vill du att Chromium ska översätta sidor skrivna på <ph name="LANGUAGE_NAME" /> på den här webbplatsen nästa gång?</translation>
 <translation id="2590893390871230428">Synkronisera data i Chromium</translation>
-<translation id="2647554856022461007">Chromium kan använda webbtjänster för att förbättra din upplevelse på webben. Du kan inaktivera dessa tjänster om du vill. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">Chromium kan inte använda kameran eftersom den används av en annan app</translation>
 <translation id="2915596697727466327">Chromium använder Face ID för att se till att endast behöriga har åtkomst till lösenorden.</translation>
 <translation id="3256316712990552818">Kopierat till Chromium</translation>
-<translation id="3605252743693911722">Logga in i Chromium om du vill få dina bokmärken, lösenord med mera på alla dina enheter.</translation>
 <translation id="3805899903892079518">Chromium har inte åtkomst till dina foton eller videor. Aktivera åtkomst i iOS-inställningar &gt; Sekretess &gt; Foton.</translation>
 <translation id="4555020257205549924">När den här funktionen har aktiverats visas alternativet i Chromium att översätta sidor som är skrivna på andra språk med hjälp av Google Översätt. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Aktivera Chromium som skanner</translation>
 <translation id="4787850887676698916">Här visas flikar som du har öppnat i Chromium på andra enheter.</translation>
 <translation id="4999538639245140991">Din data i Chromium raderas från den här enheten eftersom du loggar ut från ett konto som hanteras av <ph name="SIGNOUT_MANAGED_DOMAIN" />. Din data finns kvar i Google-kontot.</translation>
+<translation id="5573014823074921752">Tips för Chromium. Tryck länge på Visa flikar i verktygsfältet så visas fler flikalternativ. Du hittar verktygsfältet längst ned eller högst upp på skärmen.</translation>
 <translation id="5862307444128926510">Välkommen till Chromium</translation>
 <translation id="5945387852661427312">Du håller på att logga in med ett konto som hanteras av <ph name="DOMAIN" /> vilket ger administratören kontroll över data i Chromium. Din data kopplas permanent till det här kontot. Om du loggar ut från Chromium raderas all din data från enheten, men den lagras fortfarande på Google-kontot.</translation>
 <translation id="6068866989048414399">Användarvillkor för Chromium</translation>

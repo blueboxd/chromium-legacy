@@ -25,7 +25,6 @@ class TraceConfig;
 }  // namespace trace_event
 
 class DictionaryValue;
-class RefCountedString;
 }  // namespace base
 
 namespace tracing {
@@ -43,8 +42,7 @@ class TracingControllerImpl : public TracingController,
  public:
   // Create an endpoint for dumping the trace data to a callback.
   CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateCallbackEndpoint(
-      const base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
-                                base::RefCountedString*)>& callback);
+      base::OnceCallback<void(std::unique_ptr<std::string>)> callback);
 
   CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint>
   CreateCompressedStringEndpoint(scoped_refptr<TraceDataEndpoint> endpoint,

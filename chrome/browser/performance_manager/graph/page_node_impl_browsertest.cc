@@ -9,7 +9,6 @@
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/performance_manager/decorators/freeze_origin_trial_policy_aggregator.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_impl.h"
 #include "chrome/common/chrome_switches.h"

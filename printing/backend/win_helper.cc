@@ -12,6 +12,7 @@
 
 #include "base/debug/alias.h"
 #include "base/file_version_info.h"
+#include "base/file_version_info_win.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/free_deleter.h"
@@ -128,6 +129,19 @@ const char kXpsTicketTemplate[] =
 const char kXpsTicketColor[] = "Color";
 const char kXpsTicketMonochrome[] = "Monochrome";
 
+bool IsOpenXpsCapableImpl() {
+  std::unique_ptr<FileVersionInfoWin> file_version_info =
+      FileVersionInfoWin::CreateFileVersionInfoWin(
+          base::FilePath(FILE_PATH_LITERAL("xpsprint.dll")));
+  if (!file_version_info)
+    return false;  // Cannot support OpenXPS without system support.
+
+  // Need at least version 6.2.9200.16492 to support OpenXPS, per:
+  // https://support.microsoft.com/en-us/help/2670838/platform-update-for-windows-7-sp1-and-windows-server-2008-r2-sp1
+  const base::Version kOpenXpsMinVersion("6.2.9200.16492");
+  return file_version_info->GetFileVersion() >= kOpenXpsMinVersion;
+}
+
 }  // namespace
 
 namespace printing {
@@ -150,6 +164,14 @@ bool ScopedPrinterHandle::OpenPrinterWithName(const wchar_t* printer) {
     Set(temp_handle);
   }
   return IsValid();
+}
+
+// static
+bool XPSModule::IsOpenXpsCapable() {
+  // TODO(awscreen): Can be removed once Chrome drops support for Windows 7,
+  // since everything from Windows 8 onward is all OpenXPS.
+  static const bool capable = IsOpenXpsCapableImpl();
+  return capable;
 }
 
 bool XPSModule::Init() {

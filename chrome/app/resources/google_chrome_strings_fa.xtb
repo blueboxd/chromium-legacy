@@ -18,7 +18,6 @@
 <translation id="1393853151966637042">‏دریافت راهنمایی برای استفاده از Chrome</translation>
 <translation id="1399397803214730675">‏این رایانه از قبل دارای نسخه جدیدتر Google Chrome است. اگر نرم‌افزار کار نمی‌کند، لطفاً Google Chrome را حذف نصب کرده و دوباره امتحان کنید.</translation>
 <translation id="1434626383986940139">‏برنامه‌های Chrome Canary</translation>
-<translation id="1457721931618994305">‏به‌روزرسانی Google Chrome…</translation>
 <translation id="1469002951682717133">‏را‌ه‌انداز برنامه Chrome</translation>
 <translation id="1553358976309200471">‏به‌روزرسانی Chrome</translation>
 <translation id="1587223624401073077">‏Google Chrome درحال استفاده از دوربین شما است.</translation>
@@ -88,6 +87,7 @@
 <translation id="3065168410429928842">‏برگه Chrome</translation>
 <translation id="3080151273017101988">‏ادامه اجرای برنامه‌ها در پس‌زمینه هنگامیکه Google Chrome بسته می‌شود</translation>
 <translation id="3089968997497233615">‏نسخه جدید و امن تری از Google Chrome موجود است.</translation>
+<translation id="3138848678222082288">‏نسخه‌های آینده Chrome به‌طور خودکار نصب خواهند شد. وقتی این بارگیری کامل شد، Chrome بازراه‌اندازی می‌شود و شما به کار خود ادامه خواهید داد.</translation>
 <translation id="3149510190863420837">‏برنامه‌های Chrome</translation>
 <translation id="3282568296779691940">‏ورود به Chrome</translation>
 <translation id="3340978935015468852">تنظیمات</translation>
@@ -169,9 +169,7 @@
 <translation id="573759479754913123">‏درباره سیستم عامل Chrome</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">‏Chrome راه‌اندازی نشد. دوباره امتحان کنید.</translation>
-<translation id="5877064549588274448">کانال تغییر کرد. برای اعمال تغییرات دستگاه خود را مجدداً راه‌اندازی کنید.</translation>
 <translation id="5895138241574237353">راه‌اندازی مجدد</translation>
-<translation id="5906655207909574370">تقریباً به‌روز شده است! برای تمام کردن به‌روزرسانی، دستگاهتان را دوباره راه‌اندازی کنید.</translation>
 <translation id="5940385492829620908">‏وب، نشانک‌ها و موارد دیگر Chrome شما در اینجا هستند.</translation>
 <translation id="5941830788786076944">‏Google Chrome مرورگر پیش‌فرض شود</translation>
 <translation id="6014844626092547096">‏اکنون وارد Chrome شدید! سرپرست سیستم شما همگام‌سازی را از کار انداخته است.</translation>
@@ -190,16 +188,15 @@
 <translation id="6566149418543181476">‏درحال به‌روزرسانی Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">‏شما از <ph name="PROFILE_EMAIL" /> برای همگام‌سازی موارد Chrome خودتان استفاده می‌کنید. برای به‌روزرسانی تنظیمات ترجیحی همگام‌سازی‌تان یا استفاده از Chrome بدون حساب Google، به <ph name="SETTINGS_LINK" /> مراجعه کنید.</translation>
 <translation id="6600954340915313787">‏کپی در Chrome</translation>
-<translation id="6634887557811630702">‏Google Chrome به‌روز است</translation>
 <translation id="6676384891291319759">دسترسی به اینترنت</translation>
 <translation id="6679975945624592337">‏اجازه به Google Chrome برای اجرا در پس‌زمینه</translation>
 <translation id="6750954913813541382">‏Chrome برای رفع غلط‌های املایی، نوشتاری را که در مرورگر تایپ می‌کنید به Google ارسال می‌کند</translation>
 <translation id="677276454032249905">‏درهرصورت از Chrome خارج می‌شوید؟</translation>
 <translation id="683440813066116847">‏قانون ترافیک ورودی برای Google Chrome Canary به منظور اجازه به ترافیک mDNS .</translation>
 <translation id="6885412569789873916">‏برنامه‌های Chrome نسخه بتا</translation>
+<translation id="6906909733186691861">‏نسخه‌های آینده Chrome به‌طور خودکار نصب خواهند شد.</translation>
 <translation id="6943584222992551122">‏داده‌های محصول مرور این فرد از این دستگاه حذف می‌شود. برای بازیابی داده‌ها، با نام <ph name="USER_EMAIL" /> به سیستم Chrome وارد شوید.</translation>
 <translation id="6967962315388095737">‏قانون ترافیک ورودی Google Chrome نسخه بتا برای امکان دادن به ترافیک mDNS.</translation>
-<translation id="6970811910055250180">درحال به‌روزرسانی دستگاه شما…</translation>
 <translation id="6982337800632491844">‏<ph name="DOMAIN" /> لازم می‌داند که شما شرایط خدمات زیر را قبل از استفاده از دستگاه خوانده و بپذیرید. این شرایط، شرایط سیستم عامل Google Chrome را بیشتر، اصلاح و محدود نمی‌کنند.</translation>
 <translation id="6989339256997917931">‏Google Chrome به روز شده است اما حداقل ۳۰ روز از آن استفاده نکرده‌اید.</translation>
 <translation id="7098166902387133879">‏Google Chrome درحال استفاده از میکروفون شما است.</translation>
@@ -237,7 +234,6 @@
 <translation id="7962410387636238736">‏این رایانه دیگر به‌روزرسانی‌های Google Chrome را دریافت نمی‌کند زیرا Windows XP و Windows Vista دیگر پشتیبانی نمی‌شوند</translation>
 <translation id="8008534537613507642">‏نصب مجدد Chrome</translation>
 <translation id="8013993649590906847">‏اگر تصویری توضیح مفیدی نداشته باشد، Chrome توضیحی برای شما ارائه خواهد کرد. برای ایجاد توضیحات، تصاویر به Google ارسال می‌شود.</translation>
-<translation id="8030318113982266900">درحال به روزرسانی دستگاه شما به کانال <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8032142183999901390">‏پس از حذف حسابتان از Chrome، ممکن است لازم باشد برای اعمال تغییرات، برگه‌های بازتان را تازه‌سازی کنید.</translation>
 <translation id="8129812357326543296">‏درباره &amp;Google Chrome</translation>
 <translation id="8179874765710681175">‏Chrome را روی تلفنتان نصب کنید. پیامکی به تلفن شما خواهیم فرستاد.</translation>
@@ -260,7 +256,6 @@
 <translation id="8606668294522778825">‏ممکن است Google Chrome برای بهبود تجربه مرور شما از سرویس‌های وب استفاده کند. می‌توانید به صورت اختیاری این سرویس‌ها را غیرفعال کنید. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">‏Google Chrome پاسخ نمی‌دهد. مجدداً راه‌اندازی شود؟</translation>
 <translation id="8625237574518804553">{0,plural, =1{‏Chrome ‏۱ دقیقه دیگر راه‌اندازی مجدد می‌شود}one{‏Chrome ‏# دقیقه دیگر راه‌اندازی مجدد می‌شود}other{‏Chrome ‏# دقیقه دیگر راه‌اندازی مجدد می‌شود}}</translation>
-<translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> شما به‌ روز است.</translation>
 <translation id="8669527147644353129">‏راهنمای Google Chrome</translation>
 <translation id="8679801911857917785">‏این برنامه همچنین صفحه‌ای را که هنگام راه‌اندازی Chrome نشان داده می‌شود، کنترل می‌کند.</translation>
 <translation id="870251953148363156">‏به‌روزرسانی Goo&amp;gle Chrome</translation>

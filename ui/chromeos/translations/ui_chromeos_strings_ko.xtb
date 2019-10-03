@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">폴더 고정 해제</translation>
 <translation id="3678559383040232393">몰타어 키보드</translation>
 <translation id="3685122418104378273">모바일 데이터를 사용할 때는 Google 드라이브 동기화가 기본적으로 사용 중지됩니다.</translation>
+<translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" /> 작업을 취소합니다.</translation>
 <translation id="3726463242007121105">파일 시스템이 지원되지 않아 이 기기를 열 수 없습니다.</translation>
 <translation id="3741243925913727067">Google 드라이브에 미디어 기기의 사진과 동영상을 백업합니다.</translation>
 <translation id="3749289110408117711">파일 이름</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">미국 국제(PC)</translation>
 <translation id="6346310558342052870">액세스 제한됨</translation>
 <translation id="6353618411602605519">크로아티아어 키보드</translation>
+<translation id="6356685157277930264">파일 의견 창</translation>
 <translation id="6358884629796491903">용</translation>
 <translation id="637062427944097960">파일이 다른 데스크톱에서 열려 있습니다. 파일을 보려면 <ph name="USER_NAME" />(<ph name="MAIL_ADDRESS" />)(으)로 이동하세요.</translation>
 <translation id="6395575651121294044">항목 <ph name="NUMBER_OF_FILES" />개</translation>

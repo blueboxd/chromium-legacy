@@ -44,6 +44,8 @@ PaintedOverlayScrollbarLayer::PaintedOverlayScrollbarLayer(
       scroll_element_id_(scroll_element_id),
       thumb_thickness_(scrollbar_->ThumbThickness()),
       thumb_length_(scrollbar_->ThumbLength()) {
+  DCHECK(scrollbar_->HasThumb());
+  DCHECK(scrollbar_->IsOverlay());
   DCHECK(scrollbar_->UsesNinePatchThumbResource());
   SetIsScrollbar(true);
 }
@@ -117,9 +119,6 @@ bool PaintedOverlayScrollbarLayer::Update() {
   bool updated = false;
   updated |= Layer::Update();
 
-  DCHECK(scrollbar_->HasThumb());
-  DCHECK(scrollbar_->IsOverlay());
-  DCHECK(scrollbar_->UsesNinePatchThumbResource());
   updated |= UpdateProperty(scrollbar_->TrackRect(), &track_rect_);
   updated |= UpdateProperty(scrollbar_->Location(), &location_);
   updated |= UpdateProperty(scrollbar_->ThumbThickness(), &thumb_thickness_);
@@ -143,15 +142,9 @@ bool PaintedOverlayScrollbarLayer::PaintThumbIfNeeded() {
   SkBitmap skbitmap;
   skbitmap.allocN32Pixels(paint_rect.width(), paint_rect.height());
   SkiaPaintCanvas canvas(skbitmap);
+  canvas.clear(SK_ColorTRANSPARENT);
 
-  SkRect content_skrect = RectToSkRect(paint_rect);
-  PaintFlags flags;
-  flags.setAntiAlias(false);
-  flags.setBlendMode(SkBlendMode::kClear);
-  canvas.drawRect(content_skrect, flags);
-  canvas.clipRect(content_skrect);
-
-  scrollbar_->PaintPart(&canvas, THUMB, paint_rect);
+  scrollbar_->PaintPart(&canvas, THUMB);
   // Make sure that the pixels are no longer mutable to unavoid unnecessary
   // allocation and copying.
   skbitmap.setImmutable();
@@ -183,15 +176,9 @@ bool PaintedOverlayScrollbarLayer::PaintTickmarks() {
   SkBitmap skbitmap;
   skbitmap.allocN32Pixels(paint_rect.width(), paint_rect.height());
   SkiaPaintCanvas canvas(skbitmap);
+  canvas.clear(SK_ColorTRANSPARENT);
 
-  SkRect content_skrect = RectToSkRect(paint_rect);
-  PaintFlags flags;
-  flags.setAntiAlias(false);
-  flags.setBlendMode(SkBlendMode::kClear);
-  canvas.drawRect(content_skrect, flags);
-  canvas.clipRect(content_skrect);
-
-  scrollbar_->PaintPart(&canvas, TICKMARKS, paint_rect);
+  scrollbar_->PaintPart(&canvas, TICKMARKS);
   // Make sure that the pixels are no longer mutable to unavoid unnecessary
   // allocation and copying.
   skbitmap.setImmutable();

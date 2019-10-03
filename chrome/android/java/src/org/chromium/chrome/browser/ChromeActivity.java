@@ -162,7 +162,7 @@ import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
-import org.chromium.components.module_installer.Module;
+import org.chromium.components.module_installer.builder.Module;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;

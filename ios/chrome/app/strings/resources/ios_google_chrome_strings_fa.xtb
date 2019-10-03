@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">‏استفاده از این برنامه به‌معنای اعلام موافقت شما با <ph name="BEGIN_LINK_TOS" />شرایط و ضوابط<ph name="END_LINK_TOS" /> و <ph name="BEGIN_LINK_PRIVACY" />اعلان حریم خصوصی<ph name="END_LINK_PRIVACY" /> Chrome است.</translation>
 <translation id="2147651015520127414">‏Chrome تأیید می‌کند که <ph name="ISSUER" /> گواهی‌نامه این وب‌سایت را صادر کرده است.</translation>
 <translation id="2199719347983604670">‏داده‌های مربوط به همگام‌سازی Chrome</translation>
-<translation id="2342981853652716282">‏برای دریافت نشانک‌ها، گذرواژه‌ها و موارد دیگر در همه دستگاه‌هایتان، به سیستم Chrome وارد شوید.</translation>
 <translation id="2347208864470321755">‏وقتی این ویژگی روشن است، Chrome ترجمه صفحات نوشته شده به دیگر زبان‌ها را با استفاده از ‏‫مترجم Google‬ پیشنهاد می‌دهد. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">‏برای ذخیره تصاویر، با ضربه زدن روی «تنظیمات» به Chrome اجازه دهید از عکس‌هایتان استفاده کند</translation>
 <translation id="2576431527583832481">‏‫Chrome بهتر شده است! نسخه جدید آن در دسترس است.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">‏‫با ارسال آمار کاربرد و گزارش‌های خرابی به Google، به بهتر شدن Chrome کمک کنید.</translation>
 <translation id="415767770115540173">‏با Chrome تجربه بهتری از Google براساس موقعیت مکانی‌تان داشته باشید.</translation>
 <translation id="424864128008805179">‏از سیستم Chrome خارج می شوید؟</translation>
+<translation id="4249068189593983585">‏نکته Chrome. برای دیدن گزینه‌های بیشتر برگه، دکمه «نمایش برگه‌ها» را در نوارابزار (واقع در پایین یا بالای صفحه) لمس کنید و نگه دارید.</translation>
 <translation id="4523886039239821078">‏برخی از افزونه‌ها باعث می‌شوند Chrome از کار بیفتد. لطفاً آنها را حذف نصب کنید:</translation>
 <translation id="5389212809648216794">‏Google Chrome نمی‌تواند از دوربین استفاده کند زیرا برنامه دیگری از آن استفاده می‌کند</translation>
 <translation id="5621912349729388018">‏<ph name="BEGIN_LINK" />شرایط خدمات به‌روزشده Chrome را مرور کنید.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">‏برخی از افزونه‌ها باعث می‌شوند Chrome از کار بیفتد. لطفاً آنها را حذف نصب کنید.</translation>
 <translation id="8459495907675268833">‏داده‌های انتخاب‌‌شده از Chrome و دستگاه‌های همگام‌سازی‌شده حذف شدند. ممکن است اشکال دیگری از سابقه مرورتان در حساب Google شما وجود داشته باشد، مانند جستجو‌ها و فعالیت دیگر سرویس‌های Google در history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">‏ممکن است Google Chrome برای بهبود تجربه مرور شما از سرویس‌های وب استفاده کند. می‌توانید به صورت اختیاری این سرویس‌ها را غیرفعال کنید. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 </translationbundle>

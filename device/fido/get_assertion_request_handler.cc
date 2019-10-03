@@ -224,6 +224,7 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
     FidoDiscoveryFactory* fido_discovery_factory,
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapGetAssertionRequest request,
+    bool allow_skipping_pin_touch,
     CompletionCallback completion_callback)
     : FidoRequestHandlerBase(
           connector,
@@ -232,7 +233,8 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
               supported_transports,
               GetTransportsAllowedByRP(request))),
       completion_callback_(std::move(completion_callback)),
-      request_(std::move(request)) {
+      request_(std::move(request)),
+      allow_skipping_pin_touch_(allow_skipping_pin_touch) {
   transport_availability_info().request_type =
       FidoRequestHandlerBase::RequestType::kGetAssertion;
   transport_availability_info().has_empty_allow_list =
@@ -262,6 +264,11 @@ void GetAssertionRequestHandler::DispatchRequest(
 
   switch (authenticator->WillNeedPINToGetAssertion(request_, observer())) {
     case FidoAuthenticator::GetAssertionPINDisposition::kUsePIN:
+      // Skip asking for touch if this is the only available authenticator.
+      if (active_authenticators().size() == 1 && allow_skipping_pin_touch_) {
+        HandleTouch(authenticator);
+        return;
+      }
       // A PIN will be needed. Just request a touch to let the user select
       // this authenticator if they wish.
       FIDO_LOG(DEBUG) << "Asking for touch from "
@@ -548,7 +555,6 @@ void GetAssertionRequestHandler::OnHavePIN(std::string pin) {
   if (authenticator_ == nullptr) {
     // Authenticator was detached. The request will already have been canceled
     // but this callback may have been waiting in a queue.
-    DCHECK(!completion_callback_);
     return;
   }
 

@@ -14,7 +14,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill_assistant.metrics.FeatureModuleInstallation;
 import org.chromium.chrome.browser.modules.ModuleInstallUi;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.module_installer.ModuleInstaller;
 
 /**
  * Manages the loading of autofill assistant DFM, and provides implementation of
@@ -104,7 +103,7 @@ public class AutofillAssistantModuleEntryProvider {
                 });
         // Shows toast informing user about install start.
         ui.showInstallStartUi();
-        ModuleInstaller.getInstance().install("autofill_assistant", (success) -> {
+        AutofillAssistantModule.install((success) -> {
             if (success) {
                 // Don't show success UI from DFM, transition to autobot UI directly.
                 AutofillAssistantMetrics.recordFeatureModuleInstallation(

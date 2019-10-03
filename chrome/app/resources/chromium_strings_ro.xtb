@@ -72,7 +72,6 @@
 <translation id="3509308970982693815">Închideți toate ferestrele Chromium și încercați din nou.</translation>
 <translation id="352783484088404971">Elimină din Chromium...</translation>
 <translation id="3575459661164320785">Ai software dăunător pe computer. Chromium poate să îl elimine, să restabilească setările și să dezactiveze extensiile pentru ca browserul să funcționeze normal din nou.</translation>
-<translation id="3582788516608077514">Se actualizează Chromium...</translation>
 <translation id="358997566136285270">Sigla Chromium</translation>
 <translation id="3639635944603682591">Datele de navigare ale acestei persoane vor fi șterse de pe dispozitiv. Pentru a recupera datele, conectează-te la Chromium ca <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Deschide linkul într-o &amp;filă Chromium nouă</translation>
@@ -86,7 +85,6 @@
 <translation id="421369550622382712">Descoperă aplicații, jocuri, extensii și teme extraordinare pentru Chromium.</translation>
 <translation id="4216212958613226427">Această limbă este folosită pentru a afișa IU Chromium</translation>
 <translation id="4222580632002216401">Acum sunteți conectat(ă) la Chromium! Sincronizarea este dezactivată de administrator.</translation>
-<translation id="4224199872375172890">Chromium este actualizat.</translation>
 <translation id="4230135487732243613">Vă conectați datele Chromium cu acest cont?</translation>
 <translation id="4271805377592243930">Obține ajutor privind Chromium</translation>
 <translation id="4285930937574705105">Instalarea a eșuat din cauza unei erori necunoscute. Dacă Chromium rulează în acest moment, închideți-l și încercați din nou.</translation>
@@ -129,9 +127,7 @@
 <translation id="5698481217667032250">Afișează Chromium în această limbă</translation>
 <translation id="5820394555380036790">Sistemul de operare Chromium</translation>
 <translation id="5862307444128926510">Bun venit la Chromium</translation>
-<translation id="5877064549588274448">Canalul a fost schimbat. Reporniți dispozitivul pentru a aplica modificările.</translation>
 <translation id="5895138241574237353">Reîncepe</translation>
-<translation id="5906655207909574370">Aproape actualizat! Repornește dispozitivul pentru a finaliza actualizarea.</translation>
 <translation id="5987687638152509985">Actualizează Chromium pentru a începe sincronizarea</translation>
 <translation id="6013050204643758987">Sistemul de operare Chromium este posibil datorită unui <ph name="BEGIN_LINK_CROS_OSS" />software open source<ph name="END_LINK_CROS_OSS" /> suplimentar, cum ar fi <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="6040143037577758943">Închide</translation>
@@ -173,7 +169,6 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="6868056391275687737">Alte copii de Chromium rulează acum. Pentru a actualiza, închide-le.</translation>
 <translation id="6893813176749746474">Chromium a fost actualizat, dar nu l-ați utilizat de cel puțin 30 de zile.</translation>
 <translation id="6964305034639999644">Deschide linkul într-o fereastră Chromium inco&amp;gnito</translation>
-<translation id="6970811910055250180">Se actualizează dispozitivul...</translation>
 <translation id="6990124437352146030">Chromium are nevoie de permisiune ca să acceseze microfonul pentru acest site</translation>
 <translation id="705851970750939768">Actualizează Chromium</translation>
 <translation id="7066436765290594559">Sistemul de operare Chromium nu a putut sincroniza datele. Actualizați parola de acces pentru sincronizare.</translation>
@@ -217,7 +212,6 @@ Chromium nu poate recupera setările.</translation>
 <translation id="7975919845073681630">Aceasta este o instalare secundară a browserului Chromium și nu poate fi setat ca browser prestabilit.</translation>
 <translation id="7979877361127045932">Ascunde în meniul Chromium</translation>
 <translation id="8013436988911883588">Odată ce Chromium are acces, site-urile web îți vor putea solicita accesul.</translation>
-<translation id="8030318113982266900">Se actualizează dispozitivul pentru canalul <ph name="CHANNEL_NAME" />...</translation>
 <translation id="81770708095080097">Fișierul este periculos, așadar Chromium l-a blocat.</translation>
 <translation id="8222496066431494154">Instalează Chromium pe telefon. Vom trimite un SMS la numărul de telefon de recuperare a contului: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8248265253516264921">Dacă o imagine nu are o descriere utilă, Chromium va încerca să o completeze. Pentru a crea descrieri, imaginile sunt trimise la Google. Poți dezactiva această opțiune oricând din setări.</translation>
@@ -232,7 +226,6 @@ Chromium nu poate recupera setările.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Toate drepturile rezervate.</translation>
 <translation id="8619360774459241877">Se lansează Chromium...</translation>
 <translation id="8621669128220841554">Instalarea nu a reușit din cauza unei erori neprecizate. Descărcați Chromium din nou.</translation>
-<translation id="8667808506758191620">Dispozitivul <ph name="DEVICE_TYPE" /> este actualizat.</translation>
 <translation id="8682540261359803721">Dacă o setare nu apare în pagină, încearcă <ph name="LINK_BEGIN" />
     setările browserului Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Stabilește și ce pagină se afișează când porniți Chromium sau când căutați din caseta polivalentă.</translation>

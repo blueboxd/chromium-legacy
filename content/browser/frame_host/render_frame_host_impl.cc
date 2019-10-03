@@ -1597,6 +1597,12 @@ bool RenderFrameHostImpl::AccessibilityViewHasFocus() const {
   return false;
 }
 
+void RenderFrameHostImpl::AccessibilityViewSetFocus() {
+  RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
+  if (view)
+    view->Focus();
+}
+
 gfx::Rect RenderFrameHostImpl::AccessibilityGetViewBounds() const {
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (view)
@@ -4034,10 +4040,6 @@ void RenderFrameHostImpl::CreateNewWindow(
   // are legal arguments to window.open) make it here; FilterURL rewrites them
   // to "about:blank" -- they shouldn't be cancelled.
   GetProcess()->FilterURL(false, &params->target_url);
-  if (!GetContentClient()->browser()->ShouldAllowOpenURL(GetSiteInstance(),
-                                                         params->target_url)) {
-    params->target_url = GURL(url::kAboutBlankURL);
-  }
 
   bool effective_transient_activation_state =
       params->mimic_user_gesture ||

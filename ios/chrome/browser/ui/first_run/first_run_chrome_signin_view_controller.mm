@@ -21,7 +21,6 @@
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

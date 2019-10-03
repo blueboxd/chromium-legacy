@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Ved å bruke denne appen samtykker du i Chromes <ph name="BEGIN_LINK_TOS" />vilkår for bruk<ph name="END_LINK_TOS" /> og <ph name="BEGIN_LINK_PRIVACY" />merknad om personvern<ph name="END_LINK_PRIVACY" />.</translation>
 <translation id="2147651015520127414">Chrome bekreftet at sertifikatet for dette nettstedet er utstedt av <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Data fra Chrome-synkronisering</translation>
-<translation id="2342981853652716282">Logg på Chrome for å hente blant annet bokmerkene og passordene dine på alle enhetene du bruker.</translation>
 <translation id="2347208864470321755">Når denne funksjonen er slått på, tilbyr Chrome å oversette sider som er skrevet på andre språk ved hjelp av Google Oversetter. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">For å lagre bilder, trykk på Innstillinger for å la Chrome bruke bildene dine</translation>
 <translation id="2576431527583832481">Chrome har blitt enda bedre. En ny versjon er nå tilgjengelig.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Gjør Chrome bedre ved å sende bruksstatistikk og programstopprapporter til Google.</translation>
 <translation id="415767770115540173">Få en bedre Google-opplevelse i Chrome basert på hvor du er.</translation>
 <translation id="424864128008805179">Vil du logge av Chrome?</translation>
+<translation id="4249068189593983585">Chrome-tips. For flere fanealternativer, trykk og hold inne Vis faner-knappen på verktøylinjen, som du finner nederst eller øverst på skjermen.</translation>
 <translation id="4523886039239821078">Noen tillegg fører til at Chrome krasjer. Avinstaller:</translation>
 <translation id="5389212809648216794">Google Chrome kan ikke bruke kameraet fordi det brukes av en annen app</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Gjennomgå de oppdaterte vilkårene for Chrome.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Noen tillegg fører til at Chrome krasjer. Prøv å avinstallere dem.</translation>
 <translation id="8459495907675268833">De valgte dataene er fjernet fra Chrome og alle synkroniserte enheter. Det kan hende Google-kontoen din har andre typer nettleserlogger, for eksempel for søk og aktivitet fra andre Google-tjenester, på history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome bruker nettjenester for å forbedre nettopplevelsen din. Du kan deaktivere disse tjenestene. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 </translationbundle>

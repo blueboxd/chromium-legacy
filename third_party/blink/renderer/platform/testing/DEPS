@@ -50,4 +50,10 @@ specific_include_rules = {
     'testing_platform_support_with_mock_scheduler\.cc': [
         "+base/task/sequence_manager/test/sequence_manager_for_test.h",
     ],
+    "video_frame_utils\.cc": [
+        "+media/video/fake_gpu_memory_buffer.h",
+    ],
+    "video_frame_utils\.h": [
+        "+media/base/video_frame.h",
+    ],
 }

@@ -51,6 +51,7 @@ namespace {
 #define EGL_FEATURE_COUNT_ANGLE 0x3465
 #define EGL_FEATURE_OVERRIDES_ENABLED_ANGLE 0x3466
 #define EGL_FEATURE_OVERRIDES_DISABLED_ANGLE 0x3467
+#define EGL_FEATURE_CONDITION_ANGLE 0x3468
 #endif /* EGL_ANGLE_feature_control */
 
 scoped_refptr<gl::GLSurface> InitializeGLSurface() {
@@ -422,6 +423,8 @@ bool CollectGpuExtraInfo(GpuExtraInfo* gpu_extra_info) {
           QueryEGLStringi(display, EGL_FEATURE_BUG_ANGLE, i);
       gpu_extra_info->angle_features[i].status =
           QueryEGLStringi(display, EGL_FEATURE_STATUS_ANGLE, i);
+      gpu_extra_info->angle_features[i].condition =
+          QueryEGLStringi(display, EGL_FEATURE_CONDITION_ANGLE, i);
     }
   }
 

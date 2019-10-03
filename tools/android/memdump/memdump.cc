@@ -511,7 +511,7 @@ int main(int argc, char** argv) {
     }
 
     base::ScopedClosureRunner auto_resume_processes(
-        base::Bind(&KillAll, pids, SIGCONT));
+        base::BindOnce(&KillAll, pids, SIGCONT));
     KillAll(pids, SIGSTOP);
     for (std::vector<pid_t>::const_iterator it = pids.begin(); it != pids.end();
          ++it) {

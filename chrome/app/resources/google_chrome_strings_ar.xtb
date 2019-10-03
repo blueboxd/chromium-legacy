@@ -18,7 +18,6 @@
 <translation id="1393853151966637042">‏الحصول على مساعدة بشأن استخدام Chrome</translation>
 <translation id="1399397803214730675">‏يحتوي جهاز الكمبيوتر هذا على نسخة أحدث من Google Chrome. إذا كان برنامج Google Chrome لا يعمل، فالرجاء إزالة Google Chrome وإعادة المحاولة.</translation>
 <translation id="1434626383986940139">‏تطبيقات Chrome Canary</translation>
-<translation id="1457721931618994305">‏جارٍ تحديث Google Chrome...</translation>
 <translation id="1469002951682717133">‏مشغل تطبيقات Chrome</translation>
 <translation id="1553358976309200471">‏تحديث Chrome‏</translation>
 <translation id="1587223624401073077">‏يستخدم Google Chrome الكاميرا.</translation>
@@ -90,6 +89,7 @@
 <translation id="3065168410429928842">‏علامة تبويب Chrome</translation>
 <translation id="3080151273017101988">‏استمرار تشغيل تطبيقات الخلفية عند إغلاق Google Chrome</translation>
 <translation id="3089968997497233615">‏يتوفر إصدار جديد وأكثر أمانًا لمتصفح Google Chrome.</translation>
+<translation id="3138848678222082288">‏سيتم تثبيت الإصدارات المستقبلية من Chrome تلقائيًا. عند اكتمال عملية التنزيل هذه، ستتم إعادة تشغيل Chrome وسيكون جاهزًا للاستخدام على الفور.</translation>
 <translation id="3149510190863420837">‏تطبيقات Chrome</translation>
 <translation id="3282568296779691940">‏تسجيل الدخول إلى Chrome</translation>
 <translation id="3340978935015468852">الإعدادات</translation>
@@ -173,9 +173,7 @@
 <translation id="573759479754913123">‏حول نظام التشغيل Chrome</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">‏تعذَّر إطلاق Chrome. يُرجى إعادة المحاولة.</translation>
-<translation id="5877064549588274448">تم تغيير القناة. يمكنك إعادة تشغيل الجهاز لتدخل التغييرات حيز التنفيذ.</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
-<translation id="5906655207909574370">أوشك التحديث على الانتهاء! أعِد تشغيل الجهاز لإنهاء التحديث.</translation>
 <translation id="5940385492829620908">‏الويب والإشارات المرجعية وغيرها من عناصر Chrome توجد هنا.</translation>
 <translation id="5941830788786076944">‏جعل Google Chrome المتصفّح التلقائي</translation>
 <translation id="6014844626092547096">‏لقد سجلت الدخول الآن إلى Chrome! أوقف المشرف المزامنة.</translation>
@@ -194,16 +192,15 @@
 <translation id="6566149418543181476">‏جارٍ تحديث Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">‏أنت تستخدم <ph name="PROFILE_EMAIL" /> لمزامنة عناصرك في Chrome. لتحديث تفضيل المزامنة أو استخدام Chrome بدون حساب Google، يمكنك الانتقال إلى <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">‏تم النسخ إلى Chrome</translation>
-<translation id="6634887557811630702">‏Google Chrome محدّث.</translation>
 <translation id="6676384891291319759">الدخول إلى الإنترنت</translation>
 <translation id="6679975945624592337">‏السماح بتشغيل Google Chrome في الخلفية</translation>
 <translation id="6750954913813541382">‏لإصلاح الأخطاء الإملائية، يرسِل Chrome النص الذي تكتبه في المتصفّح إلى Google.</translation>
 <translation id="677276454032249905">‏هل تريد الخروج من Chrome على أي حال؟</translation>
 <translation id="683440813066116847">‏قاعدة الوارد إلى Google Chrome Canary للسماح بحركة مرور mDNS.</translation>
 <translation id="6885412569789873916">‏تطبيقات الإصدار التجريبي من Chrome</translation>
+<translation id="6906909733186691861">‏سيتم تثبيت الإصدارات المستقبلية من Chrome تلقائيًا.</translation>
 <translation id="6943584222992551122">‏سيتم حذف بيانات تصفُّح هذا المستخدم من هذا الجهاز. لاسترداد البيانات، يُرجى تسجيل الدخول إلى Chrome بصفتك <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">‏قاعدة الوارد إلى الإصدار التجريبي من Google Chrome للسماح بحركة مرور mDNS.</translation>
-<translation id="6970811910055250180">جارٍ تحديث الجهاز...</translation>
 <translation id="6982337800632491844">‏<ph name="DOMAIN" /> يتطلب قراءة وقبول بنود الخدمة التالية قبل استخدام هذا الجهاز. وهذه البنود لا توسع أو تعدّل أو تقيّد بنود نظام التشغيل Google Chrome.</translation>
 <translation id="6989339256997917931">‏تم تحديث متصفح Google Chrome، ولكنك لم تستخدمه منذ أكثر من 30 يومًا.</translation>
 <translation id="7098166902387133879">‏يستخدم Google Chrome الميكروفون.</translation>
@@ -241,7 +238,6 @@
 <translation id="7962410387636238736">‏لن يستلم جهاز الكمبيوتر هذا تحديثات Google Chrome لأن Windows XP وWindows Vista أصبحا غير مدعومين.</translation>
 <translation id="8008534537613507642">‏إعادة تثبيت Chrome</translation>
 <translation id="8013993649590906847">‏في حال لم تتضمن صورة ما وصفًا مفيدًا، سيحاول Chrome توفير وصف لك. لإنشاء الأوصاف، سيتم إرسال الصور إلى Google.</translation>
-<translation id="8030318113982266900">جارٍ تحديث جهازك إلى قناة <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8032142183999901390">‏بعد إزالة حسابك من Chrome، قد تحتاج إلى إعادة تحميل علامات التبويب المفتوحة لتفعيلها.</translation>
 <translation id="8129812357326543296">‏&amp;حول Google Chrome</translation>
 <translation id="8179874765710681175">‏بادِر بتثبيت Chrome على هاتفك. سنرسل رسالة قصيرة إلى هاتفك.</translation>
@@ -264,7 +260,6 @@
 <translation id="8606668294522778825">‏قد يستخدم Google Chrome خدمات الويب لتحسين تجربة التصفح. ويمكنك بشكل اختياري إيقاف هذه الخدمات. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">‏لا يستجيب Google Chrome. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="8625237574518804553">{0,plural, =1{‏ستتم إعادة تشغيل Chrome في غضون دقيقة واحدة}zero{‏ستتم إعادة تشغيل Chrome في غضون # دقيقة}two{‏ستتم إعادة تشغيل Chrome في غضون دقيقتين}few{‏ستتم إعادة تشغيل Chrome في غضون # دقائق}many{‏ستتم إعادة تشغيل Chrome في غضون # دقيقةً}other{‏ستتم إعادة تشغيل Chrome في غضون # دقيقة}}</translation>
-<translation id="8667808506758191620">جهاز <ph name="DEVICE_TYPE" /> مُحدّث.</translation>
 <translation id="8669527147644353129">‏مساعد Google Chrome</translation>
 <translation id="8679801911857917785">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chrome.</translation>
 <translation id="870251953148363156">‏&amp;تحديث Google Chrome</translation>

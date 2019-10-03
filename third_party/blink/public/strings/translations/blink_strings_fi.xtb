@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">alaviite</translation>
 <translation id="2709516037105925701">Automaattinen täyttö</translation>
 <translation id="2723001399770238859">ääni</translation>
+<translation id="2725963129578236554">kommentit</translation>
 <translation id="2746543609216772311">Arvon on oltava <ph name="MINIMUM_DATE_OR_TIME" /> tai myöhempi.</translation>
 <translation id="2759744352195237655">ponnahduspainike</translation>
 <translation id="2761667185364618470">Valitse tämä ruutu jatkaaksesi.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">Pidennä tämä teksti yli <ph name="MIN_CHARACTERS" /> merkkiin (tällä hetkellä käytössä <ph name="CURRENT_LENGTH" /> merkkiä).</translation>
 <translation id="383465348367842624"><ph name="ATSIGN" />-osaa ennen tulevassa osassa ei pitäisi olla merkkiä <ph name="INVALIDCHARACTER" />.</translation>
 <translation id="3846214748874656680">Sulje koko näytön tila.</translation>
+<translation id="3889183436948184105">muutostiedot</translation>
 <translation id="3920932319529768807">johtopäätös</translation>
 <translation id="3924558731517983934">sovellus</translation>
 <translation id="3944740393230681990">prologi</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">äänen ajan liukusäädin</translation>
 <translation id="6443871981718447451">näytä tekstitysvalikko</translation>
 <translation id="6453774872122745852">kiitokset</translation>
+<translation id="6475115390776617481">paikallaolo</translation>
 <translation id="648732519525291180">ajan valitsin</translation>
 <translation id="6550675742724504774">Asetukset</translation>
 <translation id="6572309429103589720">Kielioppivirhe</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">lisäys</translation>
 <translation id="6989848892321993519">Pidennä tämä teksti vähintään <ph name="MIN_CHARACTERS" /> merkkiin (tällä hetkellä käytössä 1 merkki).</translation>
 <translation id="7033340931668032222">ylös ja alas, niin voit muuttaa äänenvoimakkuutta</translation>
+<translation id="7034405885550056553">ehdotus</translation>
 <translation id="709897737746224366">Käytä pyydettyä muotoilua.</translation>
 <translation id="7118469954320184356">Ei kuvausta saatavilla</translation>
 <translation id="7139483182332611405">johdanto</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">syöte</translation>
 <translation id="8750798805984357768">Valitse yksi vaihtoehdoista.</translation>
 <translation id="8808573423886751634">luku</translation>
+<translation id="8822203815165896261">tekijätiedot</translation>
 <translation id="8845239796550121995">Suoratoistetaan televisioosi</translation>
 <translation id="8851136666856101339">pää</translation>
 <translation id="8875657656876809964">Videon toistovirhe</translation>

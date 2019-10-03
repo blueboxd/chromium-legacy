@@ -432,6 +432,7 @@ base::Value CreateAutocompleteMatches(
     dict.SetBoolKey("swapContentsAndDescription",
                     match->swap_contents_and_description);
     dict.SetStringKey("type", match->type);
+    dict.SetBoolKey("supportsDeletion", match->supports_deletion);
     list.Append(std::move(dict));
   }
   return list;

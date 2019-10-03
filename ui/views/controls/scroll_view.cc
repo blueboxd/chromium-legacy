@@ -18,6 +18,7 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 
@@ -159,15 +160,21 @@ class ScrollView::Viewport : public View {
 };
 
 ScrollView::ScrollView()
-    : horiz_sb_(PlatformStyle::CreateScrollBar(true)),
-      vert_sb_(PlatformStyle::CreateScrollBar(false)),
-      corner_view_(std::make_unique<ScrollCornerView>()),
+    : contents_viewport_(new Viewport(this)),
+      header_viewport_(new Viewport(this)),
+      horiz_sb_(PlatformStyle::CreateScrollBar(true).release()),
+      vert_sb_(PlatformStyle::CreateScrollBar(false).release()),
+      corner_view_(new ScrollCornerView()),
+      more_content_left_(std::make_unique<Separator>()),
+      more_content_top_(std::make_unique<Separator>()),
+      more_content_right_(std::make_unique<Separator>()),
+      more_content_bottom_(std::make_unique<Separator>()),
       scroll_with_layers_enabled_(base::FeatureList::IsEnabled(
           ::features::kUiCompositorScrollWithLayers)) {
   set_notify_enter_exit_on_child(true);
 
-  contents_viewport_ = AddChildView(std::make_unique<Viewport>(this));
-  header_viewport_ = AddChildView(std::make_unique<Viewport>(this));
+  AddChildView(contents_viewport_);
+  AddChildView(header_viewport_);
 
   // Don't add the scrollbars as children until we discover we need them
   // (ShowOrHideScrollBar).
@@ -204,7 +211,13 @@ ScrollView::ScrollView()
   });
 }
 
-ScrollView::~ScrollView() = default;
+ScrollView::~ScrollView() {
+  // The scrollbars may not have been added, delete them to ensure they get
+  // deleted.
+  delete horiz_sb_;
+  delete vert_sb_;
+  delete corner_view_;
+}
 
 // static
 std::unique_ptr<ScrollView> ScrollView::CreateScrollViewWithBorder() {
@@ -313,22 +326,20 @@ int ScrollView::GetScrollBarLayoutHeight() const {
                                                     : 0;
 }
 
-ScrollBar* ScrollView::SetHorizontalScrollBar(
-    std::unique_ptr<ScrollBar> horiz_sb) {
+void ScrollView::SetHorizontalScrollBar(ScrollBar* horiz_sb) {
   DCHECK(horiz_sb);
   horiz_sb->SetVisible(horiz_sb_->GetVisible());
+  delete horiz_sb_;
   horiz_sb->set_controller(this);
-  horiz_sb_ = std::move(horiz_sb);
-  return horiz_sb_.get();
+  horiz_sb_ = horiz_sb;
 }
 
-ScrollBar* ScrollView::SetVerticalScrollBar(
-    std::unique_ptr<ScrollBar> vert_sb) {
+void ScrollView::SetVerticalScrollBar(ScrollBar* vert_sb) {
   DCHECK(vert_sb);
   vert_sb->SetVisible(vert_sb_->GetVisible());
+  delete vert_sb_;
   vert_sb->set_controller(this);
-  vert_sb_ = std::move(vert_sb);
-  return vert_sb_.get();
+  vert_sb_ = vert_sb;
 }
 
 void ScrollView::SetHasFocusIndicator(bool has_focus_indicator) {
@@ -455,9 +466,9 @@ void ScrollView::Layout() {
   bool corner_view_required =
       horiz_sb_required && vert_sb_required && !vert_sb_->OverlapsContent();
   // Take action.
-  SetControlVisibility(horiz_sb_.get(), horiz_sb_required);
-  SetControlVisibility(vert_sb_.get(), vert_sb_required);
-  SetControlVisibility(corner_view_.get(), corner_view_required);
+  SetControlVisibility(horiz_sb_, horiz_sb_required);
+  SetControlVisibility(vert_sb_, vert_sb_required);
+  SetControlVisibility(corner_view_, corner_view_required);
 
   // Default.
   if (!horiz_sb_required) {
@@ -637,13 +648,13 @@ void ScrollView::ScrollToPosition(ScrollBar* source, int position) {
     return;
 
   gfx::ScrollOffset offset = CurrentOffset();
-  if (source == horiz_sb_.get() && horiz_sb_->GetVisible()) {
+  if (source == horiz_sb_ && horiz_sb_->GetVisible()) {
     position = AdjustPosition(offset.x(), position, contents_->width(),
                               contents_viewport_->width());
     if (offset.x() == position)
       return;
     offset.set_x(position);
-  } else if (source == vert_sb_.get() && vert_sb_->GetVisible()) {
+  } else if (source == vert_sb_ && vert_sb_->GetVisible()) {
     position = AdjustPosition(offset.y(), position, contents_->height(),
                               contents_viewport_->height());
     if (offset.y() == position)

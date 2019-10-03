@@ -24,12 +24,12 @@ NGBlockBreakToken::NGBlockBreakToken(
     NGLayoutInputNode node,
     LayoutUnit consumed_block_size,
     const NGBreakTokenVector& child_break_tokens,
-    bool has_last_resort_break,
+    NGBreakAppeal break_appeal,
     bool has_seen_all_children)
     : NGBreakToken(kBlockBreakToken, kUnfinished, node),
       consumed_block_size_(consumed_block_size),
       num_children_(child_break_tokens.size()) {
-  has_last_resort_break_ = has_last_resort_break;
+  break_appeal_ = break_appeal;
   has_seen_all_children_ = has_seen_all_children;
   for (wtf_size_t i = 0; i < child_break_tokens.size(); ++i) {
     child_break_tokens_[i] = child_break_tokens[i].get();

@@ -39,9 +39,9 @@ namespace blink {
 
 class CSSSelector;
 class ContainerNode;
-class Element;
-class LayoutScrollbar;
+class CustomScrollbar;
 class ComputedStyle;
+class Element;
 class PartNames;
 
 class SelectorChecker {
@@ -83,7 +83,7 @@ class SelectorChecker {
     Mode mode = kResolvingStyle;
     bool is_ua_rule = false;
     ComputedStyle* element_style = nullptr;
-    Member<LayoutScrollbar> scrollbar = nullptr;
+    Member<CustomScrollbar> scrollbar = nullptr;
     ScrollbarPart scrollbar_part = kNoPart;
     PartNames* part_names = nullptr;
   };
@@ -206,7 +206,7 @@ class SelectorChecker {
   Mode mode_;
   bool is_ua_rule_;
   ComputedStyle* element_style_;
-  Member<LayoutScrollbar> scrollbar_;
+  Member<CustomScrollbar> scrollbar_;
   ScrollbarPart scrollbar_part_;
   PartNames* part_names_;
   DISALLOW_COPY_AND_ASSIGN(SelectorChecker);

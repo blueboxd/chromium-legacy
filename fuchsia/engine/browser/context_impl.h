@@ -13,7 +13,6 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "fuchsia/engine/browser/cookie_manager_impl.h"
-#include "fuchsia/engine/browser/web_engine_remote_debugging.h"
 #include "fuchsia/engine/web_engine_export.h"
 
 namespace content {
@@ -22,21 +21,19 @@ class WebContents;
 }  // namespace content
 
 class FrameImpl;
+class WebEngineDevToolsController;
 
 // Implementation of Context from fuchsia.web.
 // Owns a BrowserContext instance and uses it to create new WebContents/Frames.
 // All created Frames are owned by this object.
 class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
  public:
-  // |browser_context| must outlive ContextImpl.
-  explicit ContextImpl(content::BrowserContext* browser_context);
+  // |browser_context| and |devtools_controller| must outlive ContextImpl.
+  ContextImpl(content::BrowserContext* browser_context,
+              WebEngineDevToolsController* devtools_controller);
 
   // Tears down the Context, destroying any active Frames in the process.
   ~ContextImpl() final;
-
-  content::BrowserContext* browser_context_for_test() {
-    return browser_context_;
-  }
 
   // Removes and destroys the specified |frame|.
   void DestroyFrame(FrameImpl* frame);
@@ -48,24 +45,36 @@ class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
   fidl::InterfaceHandle<fuchsia::web::Frame> CreateFrameForPopupWebContents(
       std::unique_ptr<content::WebContents> web_contents);
 
-  // Called by Frames to signal a document has been loaded and signal to the
-  // debug listeners in |web_engine_remote_debugging_| that they can now
-  // successfully connect ChromeDriver.
-  void OnDebugDevToolsPortReady();
+  // Returns the DevTools controller for this Context.
+  WebEngineDevToolsController* devtools_controller() const {
+    return devtools_controller_;
+  }
 
   // fuchsia::web::Context implementation.
   void CreateFrame(fidl::InterfaceRequest<fuchsia::web::Frame> frame) final;
+  void CreateFrameWithParams(
+      fuchsia::web::CreateFrameParams params,
+      fidl::InterfaceRequest<fuchsia::web::Frame> frame) final;
   void GetCookieManager(
       fidl::InterfaceRequest<fuchsia::web::CookieManager> manager) final;
-  void GetRemoteDebuggingPort(GetRemoteDebuggingPortCallback callback) override;
+  void GetRemoteDebuggingPort(GetRemoteDebuggingPortCallback callback) final;
 
   // Gets the underlying FrameImpl service object associated with a connected
   // |frame_ptr| client.
-  FrameImpl* GetFrameImplForTest(fuchsia::web::FramePtr* frame_ptr);
+  FrameImpl* GetFrameImplForTest(fuchsia::web::FramePtr* frame_ptr) const;
+
+  content::BrowserContext* browser_context_for_test() const {
+    return browser_context_;
+  }
 
  private:
+  // Reference to the browser implementation for this Context.
   content::BrowserContext* const browser_context_;
 
+  // Reference to the class managing the DevTools remote debugging service.
+  WebEngineDevToolsController* const devtools_controller_;
+
+  // CookieManager API implementation for this Context.
   CookieManagerImpl cookie_manager_;
   fidl::BindingSet<fuchsia::web::CookieManager> cookie_manager_bindings_;
 
@@ -76,8 +85,6 @@ class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
   // Tracks all active FrameImpl instances, so that we can request their
   // destruction when this ContextImpl is destroyed.
   std::set<std::unique_ptr<FrameImpl>, base::UniquePtrComparator> frames_;
-
-  WebEngineRemoteDebugging web_engine_remote_debugging_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextImpl);
 };

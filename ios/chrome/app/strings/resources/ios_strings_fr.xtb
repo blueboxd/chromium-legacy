@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Imposs. enreg. image</translation>
 <translation id="1180526666083833456">Synchroniser et personnaliser les données sur tous les appareils.</translation>
 <translation id="1181037720776840403">Supprimer</translation>
+<translation id="1207113853726624428">Nouvelle recherche</translation>
 <translation id="1209206284964581585">Masquer pour le moment</translation>
 <translation id="1219674500290482172">Impossible de se connecter à Internet.</translation>
 <translation id="122699739164161391">Fermer tous les onglets</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">Suggérer un mot de passe…</translation>
 <translation id="1870148520156231997">Afficher le mot de passe</translation>
 <translation id="1872096359983322073">Lampe torche</translation>
-<translation id="1876721852596493031">Envoyer les données d'utilisation</translation>
 <translation id="1911619930368729126">Importer dans Google Drive</translation>
 <translation id="1923342640370224680">Heure précédente</translation>
 <translation id="1941314575388338491">Appuyez deux fois pour copier.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> articles non lus dans la liste de lecture.</translation>
 <translation id="2230173723195178503">Page Web chargée</translation>
 <translation id="2239626343334228536">Effacement des données de navigation…</translation>
-<translation id="2256128224215992540">Suggestions de recherches et de sites</translation>
 <translation id="2267753748892043616">Ajouter un compte</translation>
 <translation id="2268044343513325586">Affiner</translation>
 <translation id="2273327106802955778">Menu Plus</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">Impossible ouvrir fichier</translation>
 <translation id="2718352093833049315">Wi-Fi uniquement</translation>
 <translation id="2747003861858887689">Champ précédent</translation>
+<translation id="2773292004659987824">Recherche en mode navigation privée</translation>
 <translation id="2780046210906776326">Aucun compte messag.</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Quitter le sélecteur d'onglets</translation>
@@ -295,7 +295,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Activer la synchronisation</translation>
 <translation id="5234764350956374838">Ignorer</translation>
-<translation id="5244474230056479698">Synchronisation avec <ph name="EMAIL" />…</translation>
 <translation id="5245322853195994030">Annuler la synchronisation</translation>
 <translation id="5271549068863921519">Enregistrer le mot de passe</translation>
 <translation id="5300589172476337783">Afficher</translation>
@@ -501,6 +500,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8281781826761538115">Par défaut : <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Nouvelle recherche</translation>
+<translation id="8323906514956095947">Appuyez de manière prolongée pour afficher plus d'options de l'onglet</translation>
 <translation id="8328777765163860529">Tout fermer</translation>
 <translation id="8407669440184693619">Aucun mot de passe trouvé pour ce site</translation>
 <translation id="842017693807136194">Connecté avec</translation>

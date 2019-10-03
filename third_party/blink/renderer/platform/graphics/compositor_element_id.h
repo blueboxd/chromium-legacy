@@ -25,11 +25,16 @@ enum class CompositorElementIdNamespace {
   kEffectClipPath,
   kVerticalScrollbar,
   kHorizontalScrollbar,
-  kOverscrollElasticity,
+  // The following values are for internal usage only.
+  kMax = kHorizontalScrollbar,
   // A sentinel to indicate the maximum representable namespace id
   // (the maximum is one less than this value).
-  kMaxRepresentableNamespaceId = 1 << kCompositorNamespaceBitCount
+  kMaxRepresentable = 1 << kCompositorNamespaceBitCount
 };
+
+static_assert(CompositorElementIdNamespace::kMax <=
+                  CompositorElementIdNamespace::kMaxRepresentable,
+              "");
 
 using CompositorElementId = cc::ElementId;
 using ScrollbarId = uint64_t;

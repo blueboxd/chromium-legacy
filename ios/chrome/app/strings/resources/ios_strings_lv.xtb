@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Attēlu nevar sagl.</translation>
 <translation id="1180526666083833456">Sinhronizējiet datus un personalizējiet iespējas vairākās ierīcēs.</translation>
 <translation id="1181037720776840403">Noņemt</translation>
+<translation id="1207113853726624428">Jauns meklēšanas vaicājums</translation>
 <translation id="1209206284964581585">Pagaidām slēpt</translation>
 <translation id="1219674500290482172">Nevar izveidot savienojumu ar internetu.</translation>
 <translation id="122699739164161391">Aizvērt visas cilnes</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">Ieteikt paroli...</translation>
 <translation id="1870148520156231997">Rādīt paroli</translation>
 <translation id="1872096359983322073">Lukturītis</translation>
-<translation id="1876721852596493031">Sūtīt liet. datus</translation>
 <translation id="1911619930368729126">Augšupielādēt Google diskā</translation>
 <translation id="1923342640370224680">Pēdējā stunda</translation>
 <translation id="1941314575388338491">Veiciet dubultskārienu, lai kopētu.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> nelasīts(-i) raksts(-i), kas pievienots(-i) lasīšanas sarakstam.</translation>
 <translation id="2230173723195178503">Tīmekļa lapa ielādēta</translation>
 <translation id="2239626343334228536">Notiek pārlūkošanas datu notīrīšana…</translation>
-<translation id="2256128224215992540">Meklēšanas un vietņu ieteikumi</translation>
 <translation id="2267753748892043616">Pievienot kontu</translation>
 <translation id="2268044343513325586">Uzlabot</translation>
 <translation id="2273327106802955778">Izvēlne Vairāk</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">Nevar atvērt failu</translation>
 <translation id="2718352093833049315">Tikai Wi-Fi</translation>
 <translation id="2747003861858887689">Iepriekšējais lauks</translation>
+<translation id="2773292004659987824">Meklēt inkognito režīmā</translation>
 <translation id="2780046210906776326">Nav e-pasta kontu</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Aizvērt ciļņu pārslēdzēju</translation>
@@ -295,7 +295,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5197255632782567636">Internets</translation>
 <translation id="5228579091201413441">Iespējot sinhronizāciju</translation>
 <translation id="5234764350956374838">Noraidīt</translation>
-<translation id="5244474230056479698">Sinhronizēšana ar <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Atcelt sinhronizēšanu</translation>
 <translation id="5271549068863921519">Saglabāt paroli</translation>
 <translation id="5300589172476337783">Rādīt</translation>
@@ -501,6 +500,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="8261506727792406068">Dzēst</translation>
 <translation id="8281781826761538115">Noklusējuma — <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Jauns meklēšanas vaicājums</translation>
+<translation id="8323906514956095947">Lai atvērtu citas ciļņu opcijas, pieskarieties un turiet.</translation>
 <translation id="8328777765163860529">Aizvērt visu</translation>
 <translation id="8407669440184693619">Šai vietnei nav atrasta neviena parole</translation>
 <translation id="842017693807136194">Pierakstījies kā</translation>

@@ -1122,6 +1122,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                            NotifyFullscreenAcquired_SameOrigin);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
                            FullscreenAfterFrameSwap);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
+                           MaxFrameCountForCrossProcessNavigation);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
+                           MaxFrameCountRemovedIframes);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
+                           MaxFrameCountInjectedIframes);
   FRIEND_TEST_ALL_PREFIXES(FormStructureBrowserTest, HTMLFiles);
   FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest, HistoryNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest, PageDoesBackAndReload);
@@ -1918,13 +1924,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // with OOPIF renderers.
   blink::WebTextAutosizerPageInfo text_autosizer_page_info_;
 
-  // Observe native theme for changes to dark mode, high contrast and preferred
-  // color scheme. Used to notify the renderer of preferred color scheme and
-  // forced colors changes.
+  // Observe native theme for changes to dark mode, and preferred color scheme.
+  // Used to notify the renderer of preferred color scheme changes.
   ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver>
       native_theme_observer_;
 
-  bool in_high_contrast_ = false;
   bool using_dark_colors_ = false;
   ui::NativeTheme::PreferredColorScheme preferred_color_scheme_ =
       ui::NativeTheme::PreferredColorScheme::kNoPreference;
@@ -1938,6 +1942,20 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // showing.
   std::unique_ptr<JavaScriptDialogNavigationDeferrer>
       javascript_dialog_navigation_deferrer_;
+
+  // The number of frames currently in this WebContents.
+  size_t frame_count_ = 0;
+
+  // The max number of frames seen in the current page hosted by this
+  // WebContents.
+  size_t max_frame_count_ = 0;
+
+  // This boolean value is used to keep track of whether we should record
+  // |max_frame_count_| when the main frame navigation is ready to commit.
+  // |max_frame_count_| should not be recorded for initial navigation for
+  // example. This is because |max_frame_count_| refers to the page that is
+  // being navigated away from.
+  bool record_max_frame_count_when_leaving_current_page_ = false;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_{this};
   base::WeakPtrFactory<WebContentsImpl> weak_factory_{this};

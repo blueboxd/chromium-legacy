@@ -16,10 +16,6 @@
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 
-namespace base {
-class RefCountedString;
-}  // namespace base
-
 namespace content {
 
 class BackgroundTracingConfigImpl;
@@ -54,8 +50,7 @@ class BackgroundTracingActiveScenario {
       BackgroundTracingManager::StartedFinalizingCallback callback);
 
   // Called by LegacyTracingSession when the final trace data is ready.
-  void OnJSONDataComplete(std::unique_ptr<const base::DictionaryValue> metadata,
-                          base::RefCountedString*);
+  void OnJSONDataComplete(std::unique_ptr<std::string>);
   // Called by the PerfettoTracingSession when the proto trace is ready.
   void OnProtoDataComplete(std::unique_ptr<std::string> proto_trace);
 

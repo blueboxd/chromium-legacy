@@ -2569,8 +2569,14 @@ WebMouseWheelEvent EventSender::GetMouseWheelEvent(gin::Arguments* args,
   event.wheel_ticks_y = static_cast<float>(vertical);
   event.delta_x = event.wheel_ticks_x;
   event.delta_y = event.wheel_ticks_y;
-  event.scroll_by_page = paged;
-  event.has_precise_scrolling_deltas = has_precise_scrolling_deltas;
+  if (paged) {
+    event.delta_units = ui::input_types::ScrollGranularity::kScrollByPage;
+  } else if (has_precise_scrolling_deltas) {
+    event.delta_units =
+        ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+  } else {
+    event.delta_units = ui::input_types::ScrollGranularity::kScrollByPixel;
+  }
   event.phase = phase;
   if (scroll_type == MouseScrollType::PIXEL) {
     event.wheel_ticks_x /= kScrollbarPixelsPerTick;
@@ -2785,9 +2791,9 @@ void EventSender::SendGesturesForMouseWheelEvent(
   InitGestureEventFromMouseWheel(wheel_event, &begin_event);
   begin_event.data.scroll_begin.delta_x_hint = wheel_event.delta_x;
   begin_event.data.scroll_begin.delta_y_hint = wheel_event.delta_y;
-  if (wheel_event.scroll_by_page) {
-    begin_event.data.scroll_begin.delta_hint_units =
-        ui::input_types::ScrollGranularity::kScrollByPage;
+  begin_event.data.scroll_begin.delta_hint_units = wheel_event.delta_units;
+  if (wheel_event.delta_units ==
+      ui::input_types::ScrollGranularity::kScrollByPage) {
     if (begin_event.data.scroll_begin.delta_x_hint) {
       begin_event.data.scroll_begin.delta_x_hint =
           begin_event.data.scroll_begin.delta_x_hint > 0 ? 1 : -1;
@@ -2796,11 +2802,6 @@ void EventSender::SendGesturesForMouseWheelEvent(
       begin_event.data.scroll_begin.delta_y_hint =
           begin_event.data.scroll_begin.delta_y_hint > 0 ? 1 : -1;
     }
-  } else {
-    begin_event.data.scroll_begin.delta_hint_units =
-        wheel_event.has_precise_scrolling_deltas
-            ? ui::input_types::ScrollGranularity::kScrollByPrecisePixel
-            : ui::input_types::ScrollGranularity::kScrollByPixel;
   }
 
   if (force_layout_on_events_)

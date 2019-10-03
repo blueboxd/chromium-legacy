@@ -6,7 +6,7 @@
 #define NGFragmentationUtils_h
 
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
@@ -36,7 +36,8 @@ bool IsForcedBreakValue(const NGConstraintSpace&, EBreakBetween);
 
 // Return true if the specified break value means that we should avoid breaking,
 // given the current fragmentation context.
-bool IsAvoidBreakValue(const NGConstraintSpace&, EBreakInside);
+template <typename Property>
+bool IsAvoidBreakValue(const NGConstraintSpace&, Property);
 
 // Return true if we're resuming layout after a previous break.
 inline bool IsResumingLayout(const NGBlockBreakToken* token) {
@@ -49,6 +50,11 @@ inline bool IsResumingLayout(const NGBlockBreakToken* token) {
 EBreakBetween CalculateBreakBetweenValue(NGLayoutInputNode child,
                                          const NGLayoutResult&,
                                          const NGBoxFragmentBuilder&);
+
+// Calculate the appeal of breaking inside this child.
+NGBreakAppeal CalculateBreakAppealInside(const NGConstraintSpace& space,
+                                         NGBlockNode child,
+                                         const NGLayoutResult&);
 
 // Set up a child's constraint space builder for block fragmentation. The child
 // participates in the same fragmentation context as parent_space. If the child

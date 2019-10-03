@@ -14,6 +14,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/proto/models.pb.h"
 
 namespace base {
 class FilePath;
@@ -73,7 +74,7 @@ class OptimizationGuideKeyedService
           optimization_types) override;
   optimization_guide::OptimizationGuideDecision CanApplyOptimization(
       content::NavigationHandle* navigation_handle,
-      optimization_guide::OptimizationTarget optimization_target,
+      optimization_guide::proto::OptimizationTarget optimization_target,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationMetadata* optimization_metadata) override;
 

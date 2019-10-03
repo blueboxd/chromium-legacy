@@ -33,22 +33,22 @@ from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models import test_failures
 from blinkpy.web_tests.models import test_results
 from blinkpy.web_tests.models import test_run_results
-
+from blinkpy.web_tests.port.driver import DriverOutput
 
 def get_result(test_name, result_type=test_expectations.PASS, run_time=0):
     failures = []
     if result_type == test_expectations.TIMEOUT:
-        failures = [test_failures.FailureTimeout()]
+        failures = [test_failures.FailureTimeout(None, None)]
     elif result_type == test_expectations.AUDIO:
-        failures = [test_failures.FailureAudioMismatch()]
+        failures = [test_failures.FailureAudioMismatch(None, None)]
     elif result_type == test_expectations.TEXT:
-        failures = [test_failures.FailureTextMismatch()]
+        failures = [test_failures.FailureTextMismatch(None, None)]
     elif result_type == test_expectations.IMAGE:
-        failures = [test_failures.FailureImageHashMismatch()]
+        failures = [test_failures.FailureImageHashMismatch(None, None)]
     elif result_type == test_expectations.CRASH:
-        failures = [test_failures.FailureCrash()]
+        failures = [test_failures.FailureCrash(None, None)]
     elif result_type == test_expectations.LEAK:
-        failures = [test_failures.FailureLeak()]
+        failures = [test_failures.FailureLeak(None, None)]
     return test_results.TestResult(test_name, failures=failures, test_run_time=run_time)
 
 
@@ -165,22 +165,34 @@ class InterpretTestFailuresTest(unittest.TestCase):
     def setUp(self):
         host = MockHost()
         self.port = host.port_factory.get(port_name='test')
+        self._actual_output = DriverOutput(None, None, None, None)
+        self._expected_output = DriverOutput(None, None, None, None)
 
     def test_interpret_test_failures(self):
         test_dict = test_run_results._interpret_test_failures(
-            [test_failures.FailureReftestMismatchDidNotOccur(self.port.abspath_for_test('foo/reftest-expected-mismatch.html'))])
+            [test_failures.FailureReftestMismatchDidNotOccur(
+                self._actual_output, self._expected_output,
+                self.port.abspath_for_test('foo/reftest-expected-mismatch.html'))])
         self.assertEqual(len(test_dict), 0)
 
-        test_dict = test_run_results._interpret_test_failures([test_failures.FailureMissingAudio()])
+        test_dict = test_run_results._interpret_test_failures(
+            [test_failures.FailureMissingAudio(
+                self._actual_output, self._expected_output)])
         self.assertIn('is_missing_audio', test_dict)
 
-        test_dict = test_run_results._interpret_test_failures([test_failures.FailureMissingResult()])
+        test_dict = test_run_results._interpret_test_failures(
+            [test_failures.FailureMissingResult(
+                self._actual_output, self._expected_output)])
         self.assertIn('is_missing_text', test_dict)
 
-        test_dict = test_run_results._interpret_test_failures([test_failures.FailureMissingImage()])
+        test_dict = test_run_results._interpret_test_failures(
+            [test_failures.FailureMissingImage(
+                self._actual_output, self._expected_output)])
         self.assertIn('is_missing_image', test_dict)
 
-        test_dict = test_run_results._interpret_test_failures([test_failures.FailureMissingImageHash()])
+        test_dict = test_run_results._interpret_test_failures(
+            [test_failures.FailureMissingImageHash(
+                self._actual_output, self._expected_output)])
         self.assertIn('is_missing_image', test_dict)
 
 

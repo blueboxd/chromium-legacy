@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import logging
 import os
+import re
 import time
 
 from telemetry.testing import tab_test_case
@@ -70,9 +71,9 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     # We will always get the UI dump and logcat sections. The logcat stack,
     # tombstones, and Crashpad stack are dependent on the necessary tools being
     # present, which they always should be. The Crashpad section actually having
-    # data is dependent on a Crashpad dump being found, which may not always be
-    # the case. So, expect 5 actual sections (6 total due to the way .split()
-    # works), the 5th possibly not having any valid data.
+    # data is dependent on a Crashpad dump being found, but that should always
+    # be the case. So, expect 5 actual sections (6 total due to the way .split()
+    # works).
     self.assertTrue(len(sections) == 6)
     self.assertTrue(sections[2].startswith('Stack from Logcat'))
     self.assertTrue(sections[3].startswith('Tombstones'))
@@ -83,11 +84,12 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     self.assertFalse(crash_function in sections[1])
     self.assertTrue(crash_function in sections[2])
     self.assertTrue(crash_function in sections[3])
-    # If we actually have a valid Crashpad stack, make sure it contains the
-    # crash function as well.
-    print(sections[4][:80])
-    if '**EMPTY**' not in sections[4]:
-      self.assertTrue(crash_function in sections[4])
+    # Depending on symbol level, etc., the Crashpad stack trace might not
+    # have the actual crash function in it. So, accept either case as valid.
+    # Matches " 0 libchrome.so!<name omitted>", which is the case with certain
+    # GN args.
+    match = re.search(r'\n\s*0.*chrome\.so\!\<name omitted\>', sections[4])
+    self.assertTrue(crash_function in sections[4] or match is not None)
 
   @decorators.Isolated
   @decorators.Disabled('android')

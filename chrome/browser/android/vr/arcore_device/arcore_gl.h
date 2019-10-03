@@ -19,6 +19,7 @@
 #include "device/vr/util/fps_meter.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/quaternion.h"
@@ -200,7 +201,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   void CloseBindingsIfOpen();
 
   mojo::Binding<device::mojom::XRPresentationProvider> presentation_binding_;
-  device::mojom::XRPresentationClientPtr submit_client_;
+  mojo::Remote<device::mojom::XRPresentationClient> submit_client_;
 
   base::OnceClosure pending_getframedata_;
 

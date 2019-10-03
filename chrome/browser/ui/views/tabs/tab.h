@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
-#include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
+#include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/animation/animation_delegate.h"

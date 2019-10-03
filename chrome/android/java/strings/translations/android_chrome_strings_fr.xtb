@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Utilisées</translation>
 <translation id="1171770572613082465">Appuyez sur le bouton "Sites populaires" pour afficher les sites Web les plus visités</translation>
 <translation id="1173894706177603556">Renommer</translation>
-<translation id="1175310183703641346">Vos favoris, votre historique, vos mots de passe et d'autres paramètres ne seront plus synchronisés avec votre compte Google</translation>
 <translation id="1178581264944972037">Suspendre</translation>
 <translation id="1181037720776840403">Supprimer</translation>
 <translation id="1188239144602654184">Lancer</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">Favori ajouté dans <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Synchronisation en arrière-plan</translation>
 <translation id="3771001275138982843">Impossible de télécharger la mise à jour</translation>
+<translation id="3771033907050503522">Ongl. navig. priv.</translation>
 <translation id="3773755127849930740">Pour permettre l'association, <ph name="BEGIN_LINK" />activez le Bluetooth<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">Envoyer à vos appareils</translation>
 <translation id="3778956594442850293">Ajouté à l'écran d'accueil</translation>
@@ -484,7 +484,6 @@ Votre compte Google conserve peut-être d'autres contenus d'historique de naviga
 <translation id="4719927025381752090">Proposer de traduire</translation>
 <translation id="4720023427747327413">Ouvrir dans <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Aidez-nous à améliorer Chrome. <ph name="BEGIN_LINK" />Répondez à notre enquête<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">Vous changez de compte synchronisé pour passer de <ph name="ACCOUNT_EMAIL_OLD" /> à <ph name="ACCOUNT_EMAIL_NEW" />. Vos données Chrome actuelles sont gérées par <ph name="MANAGED_DOMAIN" />. Cette opération entraînera la suppression de vos données de cet appareil, mais celles-ci seront conservées dans le compte <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">Mettre à jour</translation>
 <translation id="4738836084190194332">Dernière synchronisation : <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Ouvrir un nouvel onglet</translation>
@@ -668,13 +667,13 @@ N'activez la RV que si vous faites confiance à ce site.</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> économisé(s)</translation>
 <translation id="5939518447894949180">Réinitialiser</translation>
 <translation id="5942872142862698679">Utilisation de Google pour les recherches</translation>
-<translation id="5944669582486359588">En mode simplifié, Chrome charge les pages plus rapidement et consomme jusqu'à 60 % de données en moins. La technologie cloud de Google optimise les pages que vous consultez.</translation>
 <translation id="5952764234151283551">Envoie l'URL de la page que vous essayez d'ouvrir à Google</translation>
 <translation id="5956665950594638604">Ouvrir le centre d'aide dans un nouvel onglet</translation>
 <translation id="5958275228015807058">Recherchez vos fichiers et vos pages dans la section "Téléchargements"</translation>
 <translation id="5962718611393537961">Appuyer pour réduire</translation>
 <translation id="6000066717592683814">Conserver Google</translation>
 <translation id="6005538289190791541">Mot de passe suggéré</translation>
+<translation id="6036057147555329831">ICU supplémentaire</translation>
 <translation id="6039379616847168523">Accéder à l'onglet suivant</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6042308850641462728">Plus</translation>
@@ -815,7 +814,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7029809446516969842">Mots de passe</translation>
 <translation id="7053983685419859001">Bloquer</translation>
 <translation id="7055152154916055070">Redirection bloquée :</translation>
-<translation id="7062545763355031412">Accepter et changer de compte</translation>
 <translation id="7063006564040364415">Impossible de se connecter au serveur de synchronisation.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 élément sélectionné}one{# élément sélectionné}other{# éléments sélectionnés}}</translation>
 <translation id="7071521146534760487">Gérer le compte</translation>
@@ -1099,7 +1097,6 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="9139318394846604261">Achats</translation>
 <translation id="9155898266292537608">Vous pouvez également effectuer une recherche en appuyant brièvement sur un mot</translation>
 <translation id="9169507124922466868">L'historique de navigation est ouvert à moitié</translation>
-<translation id="9188680907066685419">Se déconnecter d'un compte géré</translation>
 <translation id="9204836675896933765">1 fichier restant</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Impossible de passer des appels</translation>
@@ -1108,7 +1105,6 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="932327136139879170">Accueil</translation>
 <translation id="938850635132480979">Erreur <ph name="ERROR_CODE" />.</translation>
 <translation id="945632385593298557">Accéder à votre micro</translation>
-<translation id="951339005376969845">Supprimer les données actuelles. Vous pouvez les récupérer en repassant sur le compte <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome peut utiliser <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> pour les recherches effectuées en Chine. Vous pouvez modifier cette option dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
 <translation id="965817943346481315">Bloquer si le site affiche des annonces intrusives ou trompeuses (recommandé)</translation>
 <translation id="968900484120156207">Les pages que vous consultez sont répertoriées ici</translation>

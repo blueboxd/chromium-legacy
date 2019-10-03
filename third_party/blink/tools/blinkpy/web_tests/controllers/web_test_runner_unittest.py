@@ -40,6 +40,7 @@ from blinkpy.web_tests.models.test_run_results import TestRunResults
 from blinkpy.web_tests.models.test_input import TestInput
 from blinkpy.web_tests.models.test_results import TestResult
 from blinkpy.web_tests.port.test import TestPort
+from blinkpy.web_tests.port.driver import DriverOutput
 
 
 TestExpectations = test_expectations.TestExpectations
@@ -85,8 +86,13 @@ class LockCheckingRunner(WebTestRunner):
 @unittest.skipIf(sys.platform == 'win32', 'may not clean up child processes')
 class WebTestRunnerTests(unittest.TestCase):
 
-    # pylint: disable=protected-access
+    def setUp(self):
+        self._actual_output = DriverOutput(
+            text='', image=None, image_hash=None, audio=None)
+        self._expected_output = DriverOutput(
+            text='', image=None, image_hash=None, audio=None)
 
+    # pylint: disable=protected-access
     def _runner(self, port=None):
         # FIXME: we shouldn't have to use run_web_tests.py to get the options we need.
         options = run_web_tests.parse_args(['--platform', 'test-mac-mac10.11'])[0]
@@ -139,7 +145,11 @@ class WebTestRunnerTests(unittest.TestCase):
         runner._expectations = expectations
 
         run_results = TestRunResults(expectations, 1)
-        result = TestResult(test_name=test, failures=[test_failures.FailureReftestMismatchDidNotOccur()], reftest_type=['!='])
+        result = TestResult(
+            test_name=test, failures=[
+                test_failures.FailureReftestMismatchDidNotOccur(
+                    self._actual_output, self._expected_output)],
+            reftest_type=['!='])
         runner._update_summary_with_result(run_results, result)
         self.assertEqual(1, run_results.expected)
         self.assertEqual(0, run_results.unexpected)

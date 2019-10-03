@@ -1169,7 +1169,6 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
           Se esta política não for definida, o comportamento das políticas mais específicas não será afetado.</translation>
 <translation id="2987155890997901449">Ativar ARC</translation>
 <translation id="2987227569419001736">Controla o uso da API Web Bluetooth</translation>
-<translation id="2989466284538293869">Verificar conformidade do conteúdo de uploads</translation>
 <translation id="3011301228198307065">Configura o URL padrão da página inicial no <ph name="PRODUCT_NAME" /> e impede os usuários de alterá-lo.
 
           A página inicial é aquela aberta pelo botão "Página inicial". As páginas que são abertas na inicialização são controladas pelas políticas RestoreOnStartup.
@@ -1684,7 +1683,6 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
          Se não está definida como "false", os usuários podem transferir arquivos para o Google Drive.</translation>
 <translation id="3915395663995367577">URL de um arquivo proxy .pac</translation>
 <translation id="3925377537407648234">Define resolução de tela e fator de escala</translation>
-<translation id="3936481697920057199">Verificar conformidade de conteúdo de uploads e downloads</translation>
 <translation id="3939893074578116847">Enviar pacotes de rede ao servidor de gerenciamento para monitorar o status on-line, a fim de permitir
       que o servidor detecte se o dispositivo está off-line.
 
@@ -1965,18 +1963,6 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
           O valor da política precisa ser especificado em milissegundos. Os valores são ajustados para serem menores ou iguais ao intervalo de inatividade.
 
           A mensagem de aviso só será mostrada se a ação de inatividade for para sair ou encerrar.</translation>
-<translation id="4342827592971649626">Esta política controla a verificação detalhada de downloads do usuário com o "Navegação segura". Se ela não for definida ou a configuração padrão "Não verificar arquivos" for escolhida, os downloads do usuário não serão verificados pelo "Navegação segura".
-
-      Se "Proibir a verificação de arquivos"' for escolhida, os usuários serão proibidos de verificar os downloads. Isso difere do padrão, já que alguns usuários (como os da "Proteção Avançada") conseguem enviar downloads para verificação. Essa configuração impedirá que esses usuários façam a verificação.
-
-      Se ela for definida como "Enviar downloads do usuário para verificação", os downloads serão enviados pela rede para que o "Navegação segura" faça a verificação de malware.
-
-      Se ela for definida como "Enviar uploads do usuário para verificação", os uploads serão enviados pela rede para que o "Navegação segura" faça a verificação de malware.
-
-      Se for definida como "Enviar uploads e downloads do usuário para verificação", ela seguirá as regras descritas em "Enviar uploads do usuário para verificação" e "Enviar downloads do usuário para verificação".
-
-      Consulte as políticas <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> e <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> para ver detalhes sobre como os resultados da verificação são exibidos para o usuário e o administrador.</translation>
-<translation id="4344356660952451291">Lista de domínios que precisam ter a conformidade do conteúdo de download verificada</translation>
 <translation id="4346674324214534449">Permite que você determine se os anúncios devem ser bloqueados em sites com anúncios invasivos.
 
       Se esta política for definida como 2, os anúncios serão bloqueados em sites com anúncios invasivos.
@@ -2099,7 +2085,6 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="4604931264910482931">Configurar a lista de proibições de mensagens nativas</translation>
 <translation id="4617338332148204752">Ignorar a verificação de metatags em <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configurar a lista branca de instalação de extensão</translation>
-<translation id="4632261735235986857">Proibir a verificação de arquivos</translation>
 <translation id="4632343302005518762">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> trabalhe com os tipos de conteúdo listados</translation>
 <translation id="4632566332417930481">Não permite o uso das Ferramentas para Desenvolvedores em extensões instaladas por uma política corporativa; permite o uso das Ferramentas para desenvolvedores em outros contextos</translation>
 <translation id="4633786464238689684">Faz com que as teclas superiores funcionem como teclas de função.
@@ -2239,7 +2224,6 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="4983201894483989687">Permitir a execução de plug-ins que estão desatualizados</translation>
 <translation id="4986560318567565414">Caminho para mudar do navegador alternativo para o Chrome.</translation>
 <translation id="4988291787868618635">Ação a ser realizada quando o intervalo de inatividade for atingido</translation>
-<translation id="5009903818924226868">Não verificar conformidade do conteúdo</translation>
 <translation id="5032164758660626397">Impedir que o usuário transfira arquivos grandes</translation>
 <translation id="5047604665028708335">Permitir acesso a sites fora de pacotes de conteúdo</translation>
 <translation id="5052081091120171147">Se ativada, esta política força a importação do histórico de navegação a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum histórico de navegação é importado. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
@@ -2436,16 +2420,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
           Se essa política for definida como falso, os usuários não poderão transmitir conteúdo para o dispositivo deles. Se essa política for definida como verdadeiro, os usuários poderão transmitir conteúdo. Se essa política não for definida, os usuários não poderão transmitir conteúdo para dispositivos Chrome OS inscritos, mas poderão transmitir para dispositivos não inscritos.</translation>
 <translation id="5323200200131319468">Ativar o feedback falado na tela de login.</translation>
-<translation id="5325625566921364045">Controla como o <ph name="PRODUCT_NAME" /> verifica a conformidade com as regras da empresa de dados enviados, transferidos por download, colados da área de transferência ou arrastados e soltos.
-
-      Se esta política não for definida ou for definida como "Nenhum", o <ph name="PRODUCT_NAME" /> não verificará a conformidade de nenhum dado.
-
-      Se esta política for definida como "Verificar downloads" e o usuário tentar fazer o download de um arquivo de um URL na política <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" />, o <ph name="PRODUCT_NAME" /> verificará a conformidade dos dados transferidos por download com as regras da empresa.
-
-      Se esta política for definida como "Verificar uploads" e o usuário tentar fazer upload de um arquivo para um domínio que não esteja no <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" />, o <ph name="PRODUCT_NAME" /> verificará a conformidade com as regras da empresa do arquivo enviado, de dados colados da área de transferência ou dados arrastados e soltos.
-
-      Se esta política for definida como "Verificar uploads e downloads", o <ph name="PRODUCT_NAME" /> se comportará de acordo com as regras descritas em "Verificar downloads" e "Verificar uploads".
-      </translation>
 <translation id="532848608876725157">Ativar DNS sobre HTTPS com substituto inseguro</translation>
 <translation id="5329007337159326804">Aviso: a política de versão máxima de TLS será completamente removida do <ph name="PRODUCT_NAME" /> por volta da versão 75 (aproximadamente em junho de 2019).
 
@@ -2501,7 +2475,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="5405289061476885481">Configura quais layouts de teclado são permitidos na tela de login do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política for definida como uma lista de identificadores de método de entrada, os métodos de entrada fornecidos ficarão disponíveis na tela de login. O primeiro método de entrada fornecido será pré-selecionado. Enquanto um grupo de usuários estiver focado na tela de login, o último método de entrada usado pelo usuário ficará disponível juntamente com os métodos de entrada fornecidos por esta política. Se esta política não for definida, os métodos de entrada na tela de login serão derivados da localidade em que a tela de login é exibida. Os valores que não forem identificadores de método de entrada válidos serão ignorados.</translation>
-<translation id="540659115481372611">Verificar conformidade de conteúdo de downloads</translation>
 <translation id="5412057811596122582">Se esta política for ativada ou não for configurada (padrão), o usuário receberá uma solicitação para acesso de captura de áudio, exceto para URLs configurados na lista AudioCaptureAllowedUrls, que terão acesso sem solicitação.
 
       Quando esta política for desativada, o usuário nunca receberá solicitações, e a captura de áudio ficará disponível apenas para URLs configurados na AudioCaptureAllowedUrls.
@@ -2909,10 +2882,6 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
 <translation id="6141402445226505817">Sempre usar detecção de fuso horário aproximada</translation>
 <translation id="6145799962557135888">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para executar o JavaScript. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultJavaScriptSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="614662973812186053">Esta política também controla a coleta de dados de uso e diagnóstico do Android.</translation>
-<translation id="6150961766041720393">Lista de domínios que não precisam de verificação de conformidade para arquivos enviados, dados colados da área de transferência ou dados arrastados e soltados.  A política será usada apenas se <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> for definida como ativada.
-
-      Se esta política não for definida ou for definida como uma lista vazia de domínios, a conformidade de todo o conteúdo será verificada.
-      </translation>
 <translation id="6153048425064249648">Esta política controla a geração de relatórios em nuvem do <ph name="PRODUCT_NAME" />, que faz upload de informações sobre a operação do navegador no Google Admin Console.
 
       Se esta política não for definida ou se for definida como false, não haverá coleta nem upload de dados.
@@ -3000,16 +2969,6 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
 <translation id="6281043242780654992">Configura políticas para as mensagens nativas. Os hosts de mensagens nativas presentes na lista de proibições não serão permitidos, a menos que estejam na lista de permissões.</translation>
 <translation id="6282799760374509080">Permitir ou negar captura de áudio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6305895953906663275">Esta política controla como o <ph name="PRODUCT_NAME" /> se comporta quando um usuário tenta fazer upload ou download de arquivos grandes demais para envio para verificação de malware ou conformidade de conteúdo (50 MB ou maior).  Essa restrição aplica-se apenas a arquivos que precisam ser verificados, conforme determinado por <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> e pelas políticas que controlam a lista de domínios com verificações ativadas.
-
-      Se esta política não for configurada ou for definida como "Nenhum", o <ph name="PRODUCT_NAME" /> permitirá que o usuário faça upload ou download de arquivos de qualquer tamanho.
-
-      Se esta política for definida como "Bloquear downloads grandes", arquivos grandes demais para verificação serão excluídos antes de serem disponibilizados para o usuário.  Como nem sempre é possível determinar o tamanho antes do download, o <ph name="PRODUCT_NAME" /> pode fazer o download dos arquivos e depois determinar se eles ultrapassam o tamanho permitido.
-
-      Se esta política for definida como "Bloquear uploads grandes", não será possível selecionar para upload arquivos que sejam grandes demais para verificação.
-
-      Se esta política for definida como "Bloquear upload e download de arquivos grandes", o <ph name="PRODUCT_NAME" /> se comportará de acordo com as regras descritas em "Bloquear downloads grandes" e "Bloquear uploads grandes".
-      </translation>
 <translation id="6310223829319187614">Ativar preenchimento automático do nome de domínio durante login do usuário</translation>
 <translation id="6315673513957120120">O Chrome mostra uma página de aviso quando os usuários navegam para sites que têm erros de SSL. Por padrão ou quando esta política é definida como "true", os usuários têm permissão para clicar nessas páginas de aviso.
       A definição desta política como "false" não permite que os usuários cliquem em qualquer página de aviso.</translation>
@@ -3038,7 +2997,6 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
       Se a política for definida como "False", os usuários não serão informados.</translation>
 <translation id="6394350458541421998">Esta política teve o uso suspenso a partir da versão 29 do <ph name="PRODUCT_OS_NAME" />. Em vez dela, use a política PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Fazer logout do usuário</translation>
-<translation id="6403746242226534223">Verificar em tempo real a reputação dos URLs visitados no Navegação segura</translation>
 <translation id="6406448383934634215">Se "Abrir uma lista de URLs" for selecionada como a ação de inicialização, isso permitirá que você especifique a lista de URLs que serão abertos. Se não for definida, nenhum URL será aberto na inicialização.
 
           Esta política funcionará apenas se a política "RestoreOnStartup" estiver definida como "RestoreOnStartupIsURLs".
@@ -3235,10 +3193,6 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 
       Se esta política não for definida, o cliente DNS integrado será ativado por padrão no MacOS, Android (quando nem o DNS privado nem a VPN estiverem ativados) e no ChromeOS, e os usuários poderão decidir se o cliente DNS integrado será usado pela edição de chrome://flags ou pela especificação da sinalização de uma linha de comando.</translation>
 <translation id="6843296367238757293">Essa política está obsoleta. Seu uso não é recomendável. Leia mais em https://support.google.com/chrome/a/answer/7643500</translation>
-<translation id="6845546921986645941">Quando esta política for definida como ativada, o <ph name="PRODUCT_NAME" /> informará ao Google eventos inseguros, como reutilização de senha, downloads de malware, intersticiais, não conformidade de conteúdo etc., para análise.  Alguns eventos inseguros, como conteúdo em não conformidade, dependem de outras políticas para ativar essas verificações.
-
-      Se esta política for desativada ou não for definida, o <ph name="PRODUCT_NAME" /> não informará eventos inseguros.
-      </translation>
 <translation id="684856667300805181">Esta política foi removida no <ph name="PRODUCT_NAME" /> 68 e substituída por <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6851199885688265233">Ativar o recurso de acessibilidade que destaca o cursor</translation>
 <translation id="6856743875250214792">O uso desta política está suspenso. A política foi removida na versão M66 porque era usada apenas para testes internos e representava risco de segurança.
@@ -3762,21 +3716,6 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
       </translation>
 <translation id="7632724434767231364">Nome da biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Configura a localidade do aplicativo em <ph name="PRODUCT_NAME" /> e impede que os usuários a alterem. Se ativar esta configuração, <ph name="PRODUCT_NAME" /> utilizará a localidade especificada. Se a localidade configurada não for compatível, "pt-BR" será utilizada. Se esta configuração for desativada ou não for configurada, <ph name="PRODUCT_NAME" /> utilizará a localidade preferida especificada pelo usuário (se configurada), a localidade do sistema ou a localidade padrão "pt-BR".</translation>
-<translation id="7641363659597330616">Configura os tipos de download que o <ph name="PRODUCT_NAME" /> bloqueará completamente, sem permitir que os usuários modifiquem a decisão de segurança.
-
-      Se esta política for definida, o <ph name="PRODUCT_NAME" /> impedirá determinados tipos de download, e não permitirá que o usuário ignore os avisos de segurança.
-
-      Quando a opção "Bloquear downloads perigosos" for escolhida, todos os downloads serão permitidos, exceto aqueles acompanhados dos avisos do recurso Navegação segura.
-
-      Quando a opção "Bloquear downloads potencialmente perigosos" for escolhida, todos os downloads serão permitidos, exceto aqueles acompanhados dos avisos do recurso Navegação segura de downloads potencialmente perigosos.
-
-      Quando a opção "Bloquear todos os downloads" for escolhida, todos os downloads serão bloqueados.
-
-      Quando esta política não for definida (ou se a opção "Nenhuma restrição especial" for escolhida), os downloads serão submetidos às restrições normais de segurança com base nos resultados das análises do recurso Navegação segura.
-
-      Observe que essas restrições se aplicam a downloads acionados a partir do conteúdo da página da Web, assim como da opção de menu de contexto "link para download". Essas restrições não se aplicam à opção de salvar / fazer o download da página exibida no momento, nem à opção de salvar como PDF das opções de impressão.
-
-      Consulte https://developers.google.com/safe-browsing para ver mais informações sobre o recurso Navegação segura.</translation>
 <translation id="7643883929273267746">Contas restritas que estão visíveis no <ph name="PRODUCT_NAME" /></translation>
 <translation id="7644825865811580663">Se esta política for definida como verdadeira, o <ph name="PRODUCT_NAME" /> maximizará incondicionalmente a primeira janela mostrada na primeira execução.
       Se esta política for definida como falsa ou não for configurada, a decisão de maximizar a primeira janela mostrada será baseada no tamanho da tela.</translation>
@@ -3818,10 +3757,6 @@ Se esta política não for definida, o renderizador padrão será usado para tod
 <translation id="7713608076604149344">Restrições de downloads</translation>
 <translation id="7715711044277116530">Percentual pelo qual calcular o intervalo de escurecimento da tela no modo de apresentação</translation>
 <translation id="7717938661004793600">Configurar recursos de acessibilidade do <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7744220323108979821">Lista de domínios cujo conteúdo transferido por download precisa ser verificado quanto à conformidade antes de ser salvo em armazenamento local.  A política será usada apenas se <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> for definida como ativada.
-
-      Se a política não for configurada ou for definida como uma lista vazia de domínios, nenhum conteúdo transferido por download será verificado quanto à conformidade.
-      </translation>
 <translation id="7747447585227954402">Permite que dispositivos usem um <ph name="PLUGIN_VM_NAME" /> no <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Permite autenticação de dois fatores para hosts de acesso remoto em vez de PIN especificado pelo usuário. 
 
@@ -4223,7 +4158,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
           Para ver exemplos de padrões, acesse http://www.chromium.org/developers/how-tos/chrome-frame-getting-started (link em inglês).</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Desativar o salvamento do histórico do navegador</translation>
-<translation id="8495279065011513838">Verificar conformidade do conteúdo</translation>
 <translation id="8499172469244085141">Configurações padrão (podem ser substituídas pelos usuários)</translation>
 <translation id="849962487677588458">Esta política está obsoleta e será removida no Chrome 78, sem substituição.
 
@@ -4327,7 +4261,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8685024486845674965">O aviso de proteção de senha é acionado pela reutilização da senha</translation>
 <translation id="8693243869659262736">Usar cliente DNS integrado</translation>
 <translation id="8698286761337647563">Com quantos dias de antecedência os usuários do SAML precisam ser notificados quando as senhas estiverem prestes a expirar</translation>
-<translation id="870193046368370542">Lista de domínios cujo conteúdo de upload não precisa ser verificado quanto à conformidade</translation>
 <translation id="8703488928438047864">Informa o status da placa</translation>
 <translation id="8704831857353097849">Lista de plug-ins desativados</translation>
 <translation id="8711086062295757690">Especifica a palavra-chave, que é o atalho utilizado na omnibox para acionar a pesquisa por este provedor. Esta política é opcional. Se não estiver definida, palavra-chave alguma ativará o mecanismo de pesquisa. Esta política só é considerada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>

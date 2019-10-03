@@ -4,6 +4,8 @@
 
 #include "device/gamepad/xinput_haptic_gamepad_win.h"
 
+#include "base/trace_event/trace_event.h"
+
 namespace {
 const long kRumbleMagnitudeMax = 0xffff;
 }  // namespace

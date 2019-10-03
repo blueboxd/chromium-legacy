@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Bu uygulamayı kullanarak Chrome’un <ph name="BEGIN_LINK_TOS" />Hizmet Şartları<ph name="END_LINK_TOS" />'nı ve <ph name="BEGIN_LINK_PRIVACY" />Gizlilik Uyarısı<ph name="END_LINK_PRIVACY" />'nı kabul etmiş olursunuz.</translation>
 <translation id="2147651015520127414">Chrome, bu web sitesi sertifikasının <ph name="ISSUER" /> tarafından yayınlandığını doğruladı.</translation>
 <translation id="2199719347983604670">Chrome senkronizasyonundan veriler</translation>
-<translation id="2342981853652716282">Tüm cihazlarınızda yer işaretlerinizi, şifrelerinizi almak ve daha pek çok şey yapmak için Chrome'da oturum açın.</translation>
 <translation id="2347208864470321755">Bu özellik açık durumdayken Chrome, diğer dillerde yazılmış sayfaları Google Çeviri'yi kullanarak çevirmeyi teklif eder. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Resimleri kaydetmek için Ayarlar'a dokunarak Chrome'un fotoğraflarınızı kullanmasına izin verin</translation>
 <translation id="2576431527583832481">Chrome daha da iyi hale geldi! Yeni bir sürüm var.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Google'a kullanım istatistikleri ve kilitlenme raporları göndererek Chrome'u iyileştirmeye yardımcı olun.</translation>
 <translation id="415767770115540173">Chrome'da, konumunuza dayalı olarak daha iyi bir Google deneyimi yaşayın.</translation>
 <translation id="424864128008805179">Chrome oturumu kapatılsın mı?</translation>
+<translation id="4249068189593983585">Chrome için ipucu. Sekmelerle ilgili daha fazla seçenek görmek için ekranınızın altında veya üstünde görünen araç çubuğunda Sekmeleri Göster düğmesine dokunup basılı tutun.</translation>
 <translation id="4523886039239821078">Bazı eklentiler Chrome'un kilitlenmesine neden oluyor. Lütfen şunların yüklemelerini kaldırın:</translation>
 <translation id="5389212809648216794">Kameranız başka bir uygulama tarafından kullanıldığından Google Chrome, kameranızı kullanamıyor.</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Güncellenen Chrome Hizmet Şartları'nı inceleyin.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Bazı eklentiler Chrome'un kilitlenmesine neden oluyor. Lütfen bunların yüklemesini kaldırmayı deneyin.</translation>
 <translation id="8459495907675268833">Seçilen veriler Chrome'dan ve senkronize edilen cihazlardan kaldırıldı. Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google Hesabınızla ilişkili başka biçimlerde tarama geçmişi history.google.com adresinde bulunabilir.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome, göz atma deneyiminizi iyileştirmek için web hizmetleri kullanabilir. İsterseniz, bu hizmetleri devre dışı bırakabilirsiniz. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
 </translationbundle>

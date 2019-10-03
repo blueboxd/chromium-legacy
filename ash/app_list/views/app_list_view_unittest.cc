@@ -2979,5 +2979,31 @@ TEST_F(AppListViewTest, VerticalAppsContainerMarginFitFadeoutArea) {
       80 /*expected_item_size*/);
 }
 
+// Tests that page switching in folder doesn't record AppListPageSwitcherSource
+// metric.
+TEST_F(AppListViewFocusTest, PageSwitchingNotRecordingMetric) {
+  base::HistogramTester histogram_tester;
+  Show();
+
+  histogram_tester.ExpectTotalCount("Apps.AppListPageSwitcherSource", 0);
+  // Transition to kFullscreenAllApps state and open the folder.
+  SetAppListState(ash::AppListViewState::kFullscreenAllApps);
+  folder_item_view()->RequestFocus();
+  SimulateKeyPress(ui::VKEY_RETURN, false);
+  ASSERT_TRUE(contents_view()->GetAppsContainerView()->IsInFolderView());
+
+  // Create a fling to the left so the folder view changes page.
+  constexpr float kFlingVelocityForChangingPage = 850.0f;
+  gfx::Point location = app_list_folder_view()->bounds().CenterPoint();
+  ui::GestureEventDetails details = ui::GestureEventDetails(
+      ui::ET_SCROLL_FLING_START, -kFlingVelocityForChangingPage, 0);
+  ui::GestureEvent event = ui::GestureEvent(
+      location.x(), location.y(), ui::EF_NONE, base::TimeTicks::Now(), details);
+  app_list_folder_view()->items_grid_view()->OnGestureEvent(&event);
+
+  ASSERT_TRUE(event.handled());
+  histogram_tester.ExpectTotalCount("Apps.AppListPageSwitcherSource", 0);
+}
+
 }  // namespace test
 }  // namespace app_list

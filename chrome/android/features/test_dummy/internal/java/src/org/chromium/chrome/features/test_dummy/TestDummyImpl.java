@@ -56,12 +56,14 @@ public class TestDummyImpl implements TestDummy {
     }
 
     private void showDoneDialog(Activity activity, @TestCase int testCase, boolean pass) {
-        String message = "Test Case %d: " + (pass ? "pass" : "fail");
+        String message =
+                String.format(Locale.US, "Test Case %d: %s", testCase, pass ? "pass" : "fail");
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle("Test Dummy Result");
-        builder.setMessage(String.format(Locale.US, message, testCase));
+        builder.setMessage(message);
         builder.setCancelable(true);
         builder.create().show();
+        Log.i(TAG, message); // Useful for local testing and grepping.
     }
 
     private void executeJava(Activity activity) {

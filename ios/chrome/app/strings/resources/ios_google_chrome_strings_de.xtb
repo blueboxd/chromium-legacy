@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Durch die Verwendung dieser App stimmen Sie den <ph name="BEGIN_LINK_TOS" />Nutzungsbedingungen<ph name="END_LINK_TOS" /> und <ph name="BEGIN_LINK_PRIVACY" />Datenschutzhinweisen<ph name="END_LINK_PRIVACY" /> von Chrome zu.</translation>
 <translation id="2147651015520127414">Chrome hat verifiziert, dass <ph name="ISSUER" /> das Zertifikat dieser Website ausgestellt hat.</translation>
 <translation id="2199719347983604670">Daten aus der Chrome-Synchronisierung</translation>
-<translation id="2342981853652716282">Melden Sie sich in Chrome an, um Daten wie Lesezeichen und Passwörter auf allen Ihren Geräten zu nutzen.</translation>
 <translation id="2347208864470321755">Wenn diese Funktion aktiviert ist, bietet Chrome an, Seiten in anderen Sprachen mithilfe von Google Übersetzer zu übersetzen. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Speichern Sie Bilder, indem Sie auf "Einstellungen" tippen und zulassen, dass Ihre Fotos in Chrome verwendet werden.</translation>
 <translation id="2576431527583832481">Chrome ist jetzt noch besser! Es ist eine neue Version verfügbar.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Nutzungsstatistiken und Absturzberichte zur Verbesserung von Chrome an Google senden</translation>
 <translation id="415767770115540173">Profitieren Sie von einer verbesserten Google-Nutzererfahrung in Chrome auf der Grundlage Ihres Standorts.</translation>
 <translation id="424864128008805179">Von Chrome abmelden?</translation>
+<translation id="4249068189593983585">Chrome-Tipp: Wenn Sie weitere Tab-Optionen sehen möchten, berühren und halten Sie die Schaltfläche "Tabs anzeigen" in der Symbolleiste. Sie befindet sich unten oder oben auf dem Bildschirm.</translation>
 <translation id="4523886039239821078">Einige Add-ons führen zum Ausfall von Chrome. Bitte deinstallieren Sie:</translation>
 <translation id="5389212809648216794">Google Chrome kann nicht auf die Kamera zugreifen, da diese gerade von einer anderen App verwendet wird</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Lesen Sie sich die aktualisierten Nutzungsbedingungen von Chrome durch.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Einige Add-ons führen zum Ausfall von Chrome. Bitte deinstallieren Sie diese Add-ons.</translation>
 <translation id="8459495907675268833">Die ausgewählten Daten wurden aus Chrome und von allen synchronisierten Geräten entfernt. Eventuell finden Sie unter history.google.com weitere Arten von Browserverlaufsdaten wie Suchanfragen oder Aktivitäten anderer Google-Dienste für Ihr Google-Konto.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome verwendet möglicherweise Webdienste zur Unterstützung Ihrer Onlinesuche. Sie haben die Möglichkeit, diese Dienste zu deaktivieren. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 </translationbundle>

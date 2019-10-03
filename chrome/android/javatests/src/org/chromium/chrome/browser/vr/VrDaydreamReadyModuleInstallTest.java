@@ -12,6 +12,7 @@ import android.support.test.filters.MediumTest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExternalResource;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
@@ -28,8 +29,7 @@ import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
-import org.chromium.components.module_installer.ModuleInstaller;
-import org.chromium.components.module_installer.ModuleInstallerRule;
+import org.chromium.components.module_installer.engine.InstallEngine;
 
 import java.util.HashSet;
 import java.util.List;
@@ -53,24 +53,13 @@ public class VrDaydreamReadyModuleInstallTest {
     @Rule
     public RuleChain mRuleChain;
 
-    private ModuleInstallerRule mModuleInstallerRule;
-
-    private ChromeActivityTestRule mVrTestRule;
-
     private final Set<String> mModulesRequestedDeferred = new HashSet<>();
 
     public VrDaydreamReadyModuleInstallTest(Callable<ChromeActivityTestRule> callable)
             throws Exception {
-        mVrTestRule = callable.call();
-        mModuleInstallerRule = new ModuleInstallerRule(new ModuleInstaller() {
-            @Override
-            public void installDeferred(String moduleName) {
-                mModulesRequestedDeferred.add(moduleName);
-            }
-        });
         mRuleChain =
-                RuleChain.outerRule(mModuleInstallerRule)
-                        .around(VrTestRuleUtils.wrapRuleInActivityRestrictionRule(mVrTestRule));
+                RuleChain.outerRule(new VrModuleInstallerRule())
+                        .around(VrTestRuleUtils.wrapRuleInActivityRestrictionRule(callable.call()));
     }
 
     /** Tests that the install is requested deferred. */
@@ -82,5 +71,30 @@ public class VrDaydreamReadyModuleInstallTest {
     public void testDeferredRequestOnStartup() {
         Assert.assertTrue("VR module should have been deferred installed at startup",
                 mModulesRequestedDeferred.contains("vr"));
+    }
+
+    private class VrModuleInstallerRule extends ExternalResource {
+        private final InstallEngine mOldModuleInstaller;
+        private final InstallEngine mStubModuleInstaller;
+
+        public VrModuleInstallerRule() {
+            mStubModuleInstaller = new InstallEngine() {
+                @Override
+                public void installDeferred(String moduleName) {
+                    mModulesRequestedDeferred.add(moduleName);
+                }
+            };
+            mOldModuleInstaller = VrModule.getInstallEngine();
+        }
+
+        @Override
+        protected void before() {
+            VrModule.setInstallEngine(mStubModuleInstaller);
+        }
+
+        @Override
+        protected void after() {
+            VrModule.setInstallEngine(mOldModuleInstaller);
+        }
     }
 }

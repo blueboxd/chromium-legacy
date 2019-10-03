@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">Otkvači mapu</translation>
 <translation id="3678559383040232393">Malteška tipkovnica</translation>
 <translation id="3685122418104378273">Sinkronizacija Google diska onemogućena je prema zadanim postavkama kada se upotrebljavaju mobilni podaci.</translation>
+<translation id="3689865792480713551">Otkažite <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Nije moguće otvoriti ovaj uređaj jer nije podržan njegov datotečni sustav.</translation>
 <translation id="3741243925913727067">Izrada sigurnosnih kopija fotografija i videozapisa s medijskog uređaja na Google disku.</translation>
 <translation id="3749289110408117711">Naziv datoteke</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">Američki međunarodni (PC)</translation>
 <translation id="6346310558342052870">Pristup ograničen</translation>
 <translation id="6353618411602605519">hrvatska tipkovnica</translation>
+<translation id="6356685157277930264">Prozor povratnih informacija za datoteke</translation>
 <translation id="6358884629796491903">Zmaj</translation>
 <translation id="637062427944097960">Ova je datoteka otvorena na drugoj radnoj površini. Prebacite se na korisnika <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) da biste je vidjeli.</translation>
 <translation id="6395575651121294044">Broj stavki: <ph name="NUMBER_OF_FILES" /></translation>

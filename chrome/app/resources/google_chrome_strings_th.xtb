@@ -18,7 +18,6 @@
 <translation id="1393853151966637042">รับความช่วยเหลือเกี่ยวกับการใช้ Chrome</translation>
 <translation id="1399397803214730675">คอมพิวเตอร์เครื่องนี้มี Google Chrome รุ่นใหม่กว่าแล้ว หากซอฟต์แวร์ไม่ทำงาน โปรดถอนการติดตั้ง Google Chrome แล้วลองใหม่อีกครั้ง</translation>
 <translation id="1434626383986940139">แอป Chrome Canary</translation>
-<translation id="1457721931618994305">กำลังอัปเดต Google Chrome...</translation>
 <translation id="1469002951682717133">Chrome App Launcher</translation>
 <translation id="1553358976309200471">อัปเดต Chrome</translation>
 <translation id="1587223624401073077">Google Chrome ใช้กล้องของคุณอยู่</translation>
@@ -86,6 +85,7 @@
 <translation id="3065168410429928842">แท็บ Chrome</translation>
 <translation id="3080151273017101988">เรียกใช้แอปพลิเคชันเบื้องหลังต่อไปเมื่อ Google Chrome ถูกปิดลง</translation>
 <translation id="3089968997497233615">Google Chrome มีรุ่นใหม่ที่ปลอดภัยกว่าให้ใช้งานแล้ว</translation>
+<translation id="3138848678222082288">Chrome เวอร์ชันต่อๆ ไปจะติดตั้งโดยอัตโนมัติ เมื่อดาวน์โหลดเสร็จแล้ว Chrome จะรีสตาร์ทและคุณจะเริ่มใช้งานได้ทันที</translation>
 <translation id="3149510190863420837">แอป Chrome</translation>
 <translation id="3282568296779691940">ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="3340978935015468852">การตั้งค่า</translation>
@@ -166,9 +166,7 @@
 <translation id="573759479754913123">เกี่ยวกับ Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">เปิด Chrome ไม่ได้ โปรดลองอีกครั้ง</translation>
-<translation id="5877064549588274448">เปลี่ยนช่องแล้ว รีสตาร์ทอุปกรณ์เพื่อใช้การเปลี่ยนแปลง</translation>
 <translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
-<translation id="5906655207909574370">การอัปเดตใกล้จะเสร็จเรียบร้อยแล้ว รีสตาร์ทอุปกรณ์เพื่อให้การอัปเดตเสร็จสิ้น</translation>
 <translation id="5940385492829620908">เว็บของคุณ บุ๊กมาร์ก และสิ่งอื่นๆ ใน Chrome พร้อมใช้แล้วที่นี่</translation>
 <translation id="5941830788786076944">ทำให้ Google Chrome เป็นเบราว์เซอร์เริ่มต้น</translation>
 <translation id="6014844626092547096">ขณะนี้คุณลงชื่อเข้าใช้ Chrome แล้ว! การซิงค์ถูกปิดใช้งานโดยผู้ดูแลระบบของคุณ</translation>
@@ -187,16 +185,15 @@
 <translation id="6566149418543181476">กำลังอัปเดต Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">คุณกำลังใช้ <ph name="PROFILE_EMAIL" /> ในการซิงค์ข้อมูลใน Chrome หากต้องการอัปเดตค่ากำหนดการซิงค์หรือใช้ Chrome โดยไม่มีบัญชี Google โปรดไปที่ <ph name="SETTINGS_LINK" /></translation>
 <translation id="6600954340915313787">คัดลอกไปยัง Chrome แล้ว</translation>
-<translation id="6634887557811630702">Google Chrome อัปเดตแล้ว</translation>
 <translation id="6676384891291319759">เข้าถึงอินเทอร์เน็ต</translation>
 <translation id="6679975945624592337">ให้ Google Chrome ทำงานในพื้นหลัง</translation>
 <translation id="6750954913813541382">Chrome จะส่งข้อความที่คุณพิมพ์ในเบราว์เซอร์ไปยัง Google เพื่อแก้ไขข้อผิดพลาดของการสะกดคำ</translation>
 <translation id="677276454032249905">ออกจาก Chrome ใช่ไหม</translation>
 <translation id="683440813066116847">กฎขาเข้าสำหรับ Google Chrome Canary เพื่ออนุญาตการเข้าชมแบบ mDNS</translation>
 <translation id="6885412569789873916">แอป Chrome เบต้า</translation>
+<translation id="6906909733186691861">Chrome เวอร์ชันต่อๆ ไปจะติดตั้งโดยอัตโนมัติ</translation>
 <translation id="6943584222992551122">ระบบจะลบข้อมูลการท่องเว็บของบุคคลนี้ออกจากอุปกรณ์เครื่องนี้ หากต้องการกู้ข้อมูลคืน ให้ลงชื่อเข้าใช้ Chrome ในชื่อ <ph name="USER_EMAIL" /></translation>
 <translation id="6967962315388095737">กฎขาเข้าสำหรับ Google Chrome เบต้าเพื่ออนุญาตการเข้าชมแบบ mDNS</translation>
-<translation id="6970811910055250180">กำลังอัปเดตอุปกรณ์ของคุณ...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> กำหนดว่าคุณต้องอ่านและยอมรับข้อกำหนดในการให้บริการต่อไปนี้ก่อนใช้อุปกรณ์นี้ ข้อกำหนดเหล่านี้ไม่ขยาย แก้ไข หรือจำกัดข้อกำหนดของ Google Chrome OS</translation>
 <translation id="6989339256997917931">อัปเดต Google Chrome แล้ว แต่คุณไม่ได้ใช้งานมาไม่ต่ำกว่า 30 วันแล้ว</translation>
 <translation id="7098166902387133879">Google Chrome ใช้ไมโครโฟนอยู่</translation>
@@ -234,7 +231,6 @@
 <translation id="7962410387636238736">คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดต Google Chrome อีกต่อไปเพราะระบบไม่รองรับ Windows XP และ Windows Vista แล้ว</translation>
 <translation id="8008534537613507642">ติดตั้ง Chrome ใหม่</translation>
 <translation id="8013993649590906847">หากรูปภาพไม่มีคำอธิบายที่เป็นประโยชน์ Chrome จะพยายามใส่คำอธิบายให้คุณ รูปภาพจะส่งมายัง Google เพื่อสร้างคำอธิบาย</translation>
-<translation id="8030318113982266900">กำลังอัปเดตอุปกรณ์ของคุณไปยังช่อง <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8032142183999901390">เมื่อลบบัญชีของคุณออกจาก Chrome แล้ว คุณต้องโหลดแท็บที่เปิดอยู่ซ้ำเพื่อให้มีผล</translation>
 <translation id="8129812357326543296">เกี่ยวกับ &amp;Google Chrome</translation>
 <translation id="8179874765710681175">ติดตั้ง Chrome ในโทรศัพท์ เราจะส่ง SMS ไปยังโทรศัพท์ของคุณ</translation>
@@ -257,7 +253,6 @@
 <translation id="8606668294522778825">Google Chrome อาจใช้บริการเว็บเพื่อปรับปรุงประสบการณ์การท่องเว็บของคุณ คุณสามารถเลือกปิดบริการเหล่านี้ได้ <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome ไม่ตอบสนอง เปิดใช้งานใหม่ตอนนี้หรือไม่</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome จะเปิดขึ้นมาใหม่ใน 1 นาที}other{Chrome จะเปิดขึ้นมาใหม่ใน # นาที}}</translation>
-<translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> ของคุณเป็นเวอร์ชันล่าสุดแล้ว</translation>
 <translation id="8669527147644353129">ตัวช่วยเหลือของ Google Chrome</translation>
 <translation id="8679801911857917785">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณเปิด Chrome ด้วย</translation>
 <translation id="870251953148363156">อัปเดต &amp;Google Chrome</translation>

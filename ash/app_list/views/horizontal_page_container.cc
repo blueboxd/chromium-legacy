@@ -42,7 +42,7 @@ HorizontalPageContainer::HorizontalPageContainer(ContentsView* contents_view,
   pagination_model_.AddObserver(this);
   pagination_controller_ = std::make_unique<ash::PaginationController>(
       &pagination_model_, ash::PaginationController::SCROLL_AXIS_HORIZONTAL,
-      base::BindRepeating(&RecordPageSwitcherSourceByEventType),
+      base::DoNothing(),
       contents_view_->app_list_view()->is_tablet_mode());
 
   // Add horizontal pages.

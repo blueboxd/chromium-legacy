@@ -46,6 +46,22 @@ class VIEWS_EXPORT RectHighlightPathGenerator : public HighlightPathGenerator {
 
 void VIEWS_EXPORT InstallRectHighlightPathGenerator(View* view);
 
+// Sets a centered circular highlight path.
+class VIEWS_EXPORT CircleHighlightPathGenerator
+    : public HighlightPathGenerator {
+ public:
+  CircleHighlightPathGenerator() = default;
+
+  CircleHighlightPathGenerator(const CircleHighlightPathGenerator&) = delete;
+  CircleHighlightPathGenerator& operator=(const CircleHighlightPathGenerator&) =
+      delete;
+
+  // HighlightPathGenerator:
+  SkPath GetHighlightPath(const View* view) override;
+};
+
+void VIEWS_EXPORT InstallCircleHighlightPathGenerator(View* view);
+
 }  // namespace views
 
 #endif  // UI_VIEWS_CONTROLS_HIGHLIGHT_PATH_GENERATOR_H_

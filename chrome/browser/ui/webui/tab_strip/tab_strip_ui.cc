@@ -103,6 +103,19 @@ class TabStripUIHandler : public content::WebUIMessageHandler {
                          tp.GetColor(ThemeProperties::COLOR_TAB_TEXT),
                          /* 16% opacity */ 0.16 * 255)));
 
+    colors.SetString("--tabstrip-tab-loading-spinning-color",
+                     color_utils::SkColorToRgbaString(tp.GetColor(
+                         ThemeProperties::COLOR_TAB_THROBBER_SPINNING)));
+    colors.SetString("--tabstrip-indicator-recording-color",
+                     color_utils::SkColorToRgbaString(tp.GetColor(
+                         ThemeProperties::COLOR_TAB_ALERT_RECORDING)));
+    colors.SetString("--tabstrip-indicator-pip-color",
+                     color_utils::SkColorToRgbaString(
+                         tp.GetColor(ThemeProperties::COLOR_TAB_PIP_PLAYING)));
+    colors.SetString("--tabstrip-indicator-capturing-color",
+                     color_utils::SkColorToRgbaString(tp.GetColor(
+                         ThemeProperties::COLOR_TAB_ALERT_CAPTURING)));
+
     ResolveJavascriptCallback(callback_id, colors);
   }
 

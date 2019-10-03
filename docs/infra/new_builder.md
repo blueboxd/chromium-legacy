@@ -31,28 +31,20 @@ though buildbot itself is largely deprecated). FYI builders should use
 
 ## Obtain a host
 
-When you're setting up a new builder, you'll need a host to run it.
-
-For CQ try bots, you'll likely need a large number of
-hosts to handle the load in parallel. To prepare for this, please file a
-[capacity bug][2] (internal) before proceeding.
-
+When you're setting up a new builder, you'll need a host to run it. For CQ try
+bots, you'll likely need a large number of hosts to handle the load in parallel.
 For CI / waterfall builders or manually triggered try builders, you'll typically
 only need a single host.
 
-If your bot needs to run on a physical host or needs specialized hardware (e.g.
-mac hardware, attached mobile devices, a specific GPU, etc.), please
-[file a labs bug][1] (internal). They'll help you get the host you need.
-
-If your bot can run just fine on the Google Compute Engine virtual machines
-that supply the majority of our current Linux and Windows fleets, skip to the
-next section below.
+To acquire the hosts, please file a [capacity bug][1] (internal) and describe
+the amount needed, along with any specialized hardware that's required (e.g.
+mac hardware, attached mobile devices, a specific GPU, etc.).
 
 ## Register hardware with swarming
 
-Once you've obtained hardware, you'll need to associate it with your
-new builder in swarming. You can do so by modifying the relevant swarming
-instance's configuration.
+Once your resource request has been approved and you've obtained the hardware,
+you'll need to associate it with your new builder in swarming. You can do so by
+modifying the relevant swarming instance's configuration.
 
 This configuration is written in Starlark, and then used to generate Protobuf
 files which are also checked in to the repo. Chromium's configuration is in
@@ -236,7 +228,7 @@ consoles.
 Milo's configuration schema is [here][9].
 Chromium's milo configuration is [here][10].
 
-A typical chromium builder should be added to one or two consoles 
+A typical chromium builder should be added to one or two consoles
 at most: one corresponding to its master, and possibly the main
 console, e.g.
 
@@ -324,8 +316,7 @@ If you're in need of further assistance, if you're not sure about
 one or more steps, or if you found this documentation lacking, please
 reach out to infra-dev@chromium.org or [file a bug][19]!
 
-[1]: http://go/infrasys-bug
-[2]: http://go/cci-capacity-bug
+[1]: http://go/file-chrome-resource-bug
 [3]: https://bit.ly/chromium-build-naming
 [4]: https://luci-config.appspot.com/#/services/chromium-swarm
 [5]: https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipe_modules/chromium_tests

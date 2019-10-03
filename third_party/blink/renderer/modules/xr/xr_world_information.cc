@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_world_information.h"
 
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 
 namespace blink {

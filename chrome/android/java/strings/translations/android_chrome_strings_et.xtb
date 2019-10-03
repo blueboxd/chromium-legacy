@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Kasutatud</translation>
 <translation id="1171770572613082465">Vaadake populaarseid veebisaite, puudutades nuppu „Popid saidid”</translation>
 <translation id="1173894706177603556">Muuda nime</translation>
-<translation id="1175310183703641346">Teie järjehoidjaid, ajalugu, paroole ja muud sisu ei sünkroonita enam teie Google'i kontoga</translation>
 <translation id="1178581264944972037">Peata</translation>
 <translation id="1181037720776840403">Eemalda</translation>
 <translation id="1188239144602654184">Sisene AR-i</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">Teenuses <ph name="PRODUCT_NAME" /> järjehoidj. lisatud</translation>
 <translation id="3744111561329211289">Taustal sünkroonimine</translation>
 <translation id="3771001275138982843">Värskendust ei saanud alla laadida</translation>
+<translation id="3771033907050503522">Inkogn. vahelehed</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Lülitage Bluetooth sisse<ph name="END_LINK" />, et sidumine lubada</translation>
 <translation id="3775705724665058594">Saatmine teie seadmetesse</translation>
 <translation id="3778956594442850293">Lisatud avaekraanile</translation>
@@ -484,7 +484,6 @@ Veebisaidil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 
 <translation id="4719927025381752090">Paku tõlkimist</translation>
 <translation id="4720023427747327413">Ava teenuses <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Aidake Chrome'i täiustada. <ph name="BEGIN_LINK" />Vastake küsitlusele<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">Asendate sünkroonimiskonto <ph name="ACCOUNT_EMAIL_OLD" /> kontoga <ph name="ACCOUNT_EMAIL_NEW" />. Teie olemasolevaid Chrome'i andmeid haldab <ph name="MANAGED_DOMAIN" />. Selle tulemusel kustutatakse seadmes olevad andmed, kuid need jäävad kontole <ph name="ACCOUNT_EMAIL_OLD" /> alles.</translation>
 <translation id="473775607612524610">Värskenda</translation>
 <translation id="4738836084190194332">Viimati sünkroonitud: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Uue vahelehe avamine</translation>
@@ -668,13 +667,13 @@ Enne VR-i aktiveerimist veenduge, et sait oleks usaldusväärne.</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> on säästetud</translation>
 <translation id="5939518447894949180">Lähtesta</translation>
 <translation id="5942872142862698679">Otsimiseks kasutatakse Google'it</translation>
-<translation id="5944669582486359588">Lihtsustatud režiimis laadib Chrome lehti kiiremini ja kasutab kuni 60% vähem andmemahtu. Google'i pilvetehnoloogia optimeerib külastatavaid lehti.</translation>
 <translation id="5952764234151283551">Saadab Google'ile teie soovitud lehe URL-i</translation>
 <translation id="5956665950594638604">Chrome'i abikeskuse avamine uuel vahelehel</translation>
 <translation id="5958275228015807058">Leidke oma failid ja lehed jaotisest Allalaadimised</translation>
 <translation id="5962718611393537961">Ahendamiseks puudutage</translation>
 <translation id="6000066717592683814">Säilita Google</translation>
 <translation id="6005538289190791541">Soovitatud parool</translation>
+<translation id="6036057147555329831">Täiendav ICU</translation>
 <translation id="6039379616847168523">Järgmisele vahelehele liikumine</translation>
 <translation id="6040143037577758943">Sulge</translation>
 <translation id="6042308850641462728">Rohkem</translation>
@@ -815,7 +814,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7029809446516969842">Paroolid</translation>
 <translation id="7053983685419859001">Blokeeri</translation>
 <translation id="7055152154916055070">Ümbersuunamine blokeeriti:</translation>
-<translation id="7062545763355031412">Nõustu ja vaheta kontosid</translation>
 <translation id="7063006564040364415">Sünkroonimisserveriga ei saanud ühendust.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 on valitud}other{# on valitud}}</translation>
 <translation id="7071521146534760487">Konto haldamine</translation>
@@ -1099,7 +1097,6 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="9139318394846604261">Ostlemine</translation>
 <translation id="9155898266292537608">Otsimiseks võite ka kiirelt sõna puudutada</translation>
 <translation id="9169507124922466868">Navigeerimisajalugu on pooleldi avatud</translation>
-<translation id="9188680907066685419">Hallatud kontolt väljalogimine</translation>
 <translation id="9204836675896933765">Üks fail on jäänud</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Ei saa helistada</translation>
@@ -1108,7 +1105,6 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="932327136139879170">Kodu</translation>
 <translation id="938850635132480979">Viga: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Juurdepääs mikrofonile</translation>
-<translation id="951339005376969845">Kustutage olemasolevad andmed. Need saate hankida, kui lülitate tagasi kontole <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome saab Hiinas otsimiseks kasutada teenust <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />. Seda saate muuta menüüs <ph name="BEGIN_LINK" />Seaded<ph name="END_LINK" />.</translation>
 <translation id="965817943346481315">Blokeeri, kui sait kuvab sekkuvaid või eksitavaid reklaame (soovitatav)</translation>
 <translation id="968900484120156207">Teie külastatud lehed kuvatakse siin</translation>

@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "chrome/browser/sharing/fake_local_device_info_provider.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_constants.h"
@@ -39,10 +40,6 @@ using namespace testing;
 
 namespace {
 
-const std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
-    kNoFeaturesEnabled;
-const std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
-    kClickToCallEnabled{sync_pb::SharingSpecificFields::CLICK_TO_CALL};
 const char kP256dh[] = "p256dh";
 const char kAuthSecret[] = "auth_secret";
 const char kFcmToken[] = "fcm_token";
@@ -50,7 +47,9 @@ const char kDeviceName[] = "other_name";
 const char kMessageId[] = "message_id";
 const char kAuthorizedEntity[] = "authorized_entity";
 constexpr base::TimeDelta kTtl = base::TimeDelta::FromSeconds(10);
-const char kSenderGuid[] = "test_sender_guid";
+const char kSenderFcmToken[] = "sender_fcm_token";
+const char kSenderP256dh[] = "sender_p256dh";
+const char kSenderAuthSecret[] = "sender_auth_secret";
 
 class FakeGCMDriver : public gcm::FakeGCMDriver {
  public:
@@ -138,8 +137,7 @@ class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
       syncer::LocalDeviceInfoProvider* device_info_tracker)
       : SharingDeviceRegistration(prefs,
                                   instance_id_driver,
-                                  vapid_key_manager,
-                                  device_info_tracker) {}
+                                  vapid_key_manager) {}
   ~FakeSharingDeviceRegistration() override = default;
 
   void RegisterDevice(
@@ -166,51 +164,11 @@ class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
   int unregistration_attempts_ = 0;
 };
 
-class FakeLocalDeviceInfoProvider : public syncer::LocalDeviceInfoProvider {
- public:
-  FakeLocalDeviceInfoProvider()
-      : local_device_info_(kSenderGuid,
-                           "name",
-                           "chrome_version",
-                           "user_agent",
-                           sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                           "device_id",
-                           /*last_updated_timestamp=*/base::Time::Now(),
-                           /*send_tab_to_self_receiving_enabled=*/false,
-                           /*sharing_info=*/base::nullopt) {}
-  ~FakeLocalDeviceInfoProvider() override {}
-
-  version_info::Channel GetChannel() const override {
-    return version_info::Channel::UNKNOWN;
-  }
-
-  const syncer::DeviceInfo* GetLocalDeviceInfo() const override {
-    return ready_ ? &local_device_info_ : nullptr;
-  }
-
-  std::unique_ptr<syncer::LocalDeviceInfoProvider::Subscription>
-  RegisterOnInitializedCallback(
-      const base::RepeatingClosure& callback) override {
-    return callback_list_.Add(callback);
-  }
-
-  void SetReady(bool ready) {
-    bool got_ready = !ready_ && ready;
-    ready_ = ready;
-    if (got_ready)
-      callback_list_.Notify();
-  }
-
- private:
-  syncer::DeviceInfo local_device_info_;
-  bool ready_ = true;
-  base::CallbackList<void(void)> callback_list_;
-};
-
 class SharingServiceTest : public testing::Test {
  public:
   SharingServiceTest() {
-    sync_prefs_ = new SharingSyncPreference(&prefs_);
+    sync_prefs_ = new SharingSyncPreference(&prefs_, &device_info_tracker_,
+                                            &fake_local_device_info_provider_);
     sharing_device_registration_ = new FakeSharingDeviceRegistration(
         sync_prefs_, &mock_instance_id_driver_, vapid_key_manager_,
         &fake_local_device_info_provider_);
@@ -243,12 +201,16 @@ class SharingServiceTest : public testing::Test {
         sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
         /*last_updated_timestamp=*/base::Time::Now(),
         /*send_tab_to_self_receiving_enabled=*/false,
-        /*sharing_info=*/base::nullopt);
+        syncer::DeviceInfo::SharingInfo(
+            kFcmToken, kP256dh, kAuthSecret,
+            std::set<sync_pb::SharingSpecificFields::EnabledFeatures>{
+                sync_pb::SharingSpecificFields::CLICK_TO_CALL}));
   }
 
-  static SharingSyncPreference::Device CreateFakeSyncDevice() {
-    return SharingSyncPreference::Device(kFcmToken, kP256dh, kAuthSecret,
-                                         kClickToCallEnabled);
+  static syncer::DeviceInfo::SharingInfo CreateLocalSharingInfo() {
+    return syncer::DeviceInfo::SharingInfo(
+        kSenderFcmToken, kSenderP256dh, kSenderAuthSecret,
+        std::set<sync_pb::SharingSpecificFields::EnabledFeatures>());
   }
 
   // Lazily initialized so we can test the constructor.
@@ -298,22 +260,7 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_Empty) {
   EXPECT_TRUE(candidates.empty());
 }
 
-TEST_F(SharingServiceTest, GetDeviceCandidates_NoSynced) {
-  std::string id = base::GenerateGUID();
-  std::unique_ptr<syncer::DeviceInfo> device_info =
-      CreateFakeDeviceInfo(id, kDeviceName);
-  device_info_tracker_.Add(device_info.get());
-
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(
-          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
-
-  EXPECT_TRUE(candidates.empty());
-}
-
 TEST_F(SharingServiceTest, GetDeviceCandidates_NoTracked) {
-  sync_prefs_->SetSyncDevice(base::GenerateGUID(), CreateFakeSyncDevice());
-
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
       GetSharingService()->GetDeviceCandidates(
           sync_pb::SharingSpecificFields::CLICK_TO_CALL);
@@ -321,12 +268,11 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_NoTracked) {
   EXPECT_TRUE(candidates.empty());
 }
 
-TEST_F(SharingServiceTest, GetDeviceCandidates_SyncedAndTracked) {
+TEST_F(SharingServiceTest, GetDeviceCandidates_Tracked) {
   std::string id = base::GenerateGUID();
   std::unique_ptr<syncer::DeviceInfo> device_info =
       CreateFakeDeviceInfo(id, kDeviceName);
   device_info_tracker_.Add(device_info.get());
-  sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
       GetSharingService()->GetDeviceCandidates(
@@ -340,7 +286,6 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_Expired) {
   std::unique_ptr<syncer::DeviceInfo> device_info =
       CreateFakeDeviceInfo(id, kDeviceName);
   device_info_tracker_.Add(device_info.get());
-  sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
 
   // Forward time until device expires.
   task_environment_.FastForwardBy(kDeviceExpiration +
@@ -358,7 +303,6 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_MissingRequirements) {
   std::unique_ptr<syncer::DeviceInfo> device_info =
       CreateFakeDeviceInfo(id, kDeviceName);
   device_info_tracker_.Add(device_info.get());
-  sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
 
   // Requires shared clipboard feature.
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
@@ -374,7 +318,6 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_DuplicateDeviceNames) {
   std::unique_ptr<syncer::DeviceInfo> device_info_1 =
       CreateFakeDeviceInfo(id1, kDeviceName);
   device_info_tracker_.Add(device_info_1.get());
-  sync_prefs_->SetSyncDevice(id1, CreateFakeSyncDevice());
 
   // Advance time for a bit to create a newer device.
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
@@ -384,14 +327,12 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_DuplicateDeviceNames) {
   std::unique_ptr<syncer::DeviceInfo> device_info_2 =
       CreateFakeDeviceInfo(id2, kDeviceName);
   device_info_tracker_.Add(device_info_2.get());
-  sync_prefs_->SetSyncDevice(id2, CreateFakeSyncDevice());
 
   // Add third device which is same as local device ("name").
   std::string id3 = base::GenerateGUID();
   std::unique_ptr<syncer::DeviceInfo> device_info_3 =
       CreateFakeDeviceInfo(id3, "name");
   device_info_tracker_.Add(device_info_3.get());
-  sync_prefs_->SetSyncDevice(id3, CreateFakeSyncDevice());
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
       GetSharingService()->GetDeviceCandidates(
@@ -406,9 +347,10 @@ TEST_F(SharingServiceTest, SendMessageToDeviceSuccess) {
   std::unique_ptr<syncer::DeviceInfo> device_info =
       CreateFakeDeviceInfo(id, kDeviceName);
   device_info_tracker_.Add(device_info.get());
-  sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
+  fake_local_device_info_provider_.GetMutableDeviceInfo()->set_sharing_info(
+      CreateLocalSharingInfo());
   sync_prefs_->SetFCMRegistration(SharingSyncPreference::FCMRegistration(
-      kAuthorizedEntity, kFcmToken, kP256dh, kAuthSecret, base::Time::Now()));
+      kAuthorizedEntity, base::Time::Now()));
 
   GetSharingService()->SendMessageToDevice(
       id, kTtl, chrome_browser_sharing::SharingMessage(),
@@ -436,9 +378,10 @@ TEST_F(SharingServiceTest, SendMessageToDeviceFCMNotResponding) {
   std::unique_ptr<syncer::DeviceInfo> device_info =
       CreateFakeDeviceInfo(id, kDeviceName);
   device_info_tracker_.Add(device_info.get());
-  sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
+  fake_local_device_info_provider_.GetMutableDeviceInfo()->set_sharing_info(
+      CreateLocalSharingInfo());
   sync_prefs_->SetFCMRegistration(SharingSyncPreference::FCMRegistration(
-      kAuthorizedEntity, kFcmToken, kP256dh, kAuthSecret, base::Time::Now()));
+      kAuthorizedEntity, base::Time::Now()));
 
   // FCM driver will not respond to the send request.
   fake_gcm_driver_.set_should_respond(false);
@@ -474,9 +417,10 @@ TEST_F(SharingServiceTest, SendMessageToDeviceExpired) {
   std::unique_ptr<syncer::DeviceInfo> device_info =
       CreateFakeDeviceInfo(id, kDeviceName);
   device_info_tracker_.Add(device_info.get());
-  sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
+  fake_local_device_info_provider_.GetMutableDeviceInfo()->set_sharing_info(
+      CreateLocalSharingInfo());
   sync_prefs_->SetFCMRegistration(SharingSyncPreference::FCMRegistration(
-      kAuthorizedEntity, kFcmToken, kP256dh, kAuthSecret, base::Time::Now()));
+      kAuthorizedEntity, base::Time::Now()));
 
   GetSharingService()->SendMessageToDevice(
       id, kTtl, chrome_browser_sharing::SharingMessage(),
@@ -672,7 +616,7 @@ TEST_F(SharingServiceTest, StartListeningToFCMAtConstructor) {
   // Create new SharingService instance with FCM already registered at
   // constructor.
   sync_prefs_->SetFCMRegistration(SharingSyncPreference::FCMRegistration(
-      kAuthorizedEntity, kFcmToken, kP256dh, kAuthSecret, base::Time::Now()));
+      kAuthorizedEntity, base::Time::Now()));
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   GetSharingService();
 }
@@ -686,7 +630,6 @@ TEST_F(SharingServiceTest, NoDevicesWhenSyncDisabled) {
   std::unique_ptr<syncer::DeviceInfo> device_info =
       CreateFakeDeviceInfo(id, kDeviceName);
   device_info_tracker_.Add(device_info.get());
-  sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
       GetSharingService()->GetDeviceCandidates(

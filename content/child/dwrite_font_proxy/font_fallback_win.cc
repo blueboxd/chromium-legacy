@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversion_utils.h"
+#include "base/trace_event/trace_event.h"
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_win.h"
 
 namespace mswr = Microsoft::WRL;

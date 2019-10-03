@@ -59,6 +59,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_prerendering_support.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_script_element_or_svg_script_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
@@ -2443,7 +2444,7 @@ bool PropagateScrollSnapStyleToViewport(
                  SetScrollPaddingLeft, Length());
 
   if (changed) {
-    document.GetSnapCoordinator()->SnapContainerDidChange(
+    document.GetSnapCoordinator().SnapContainerDidChange(
         *document.GetLayoutView(), false /* is_removed */);
   }
 
@@ -7554,11 +7555,11 @@ bool Document::ThreadedParsingEnabledForTesting() {
   return g_threaded_parsing_enabled_for_testing;
 }
 
-SnapCoordinator* Document::GetSnapCoordinator() {
+SnapCoordinator& Document::GetSnapCoordinator() {
   if (!snap_coordinator_)
     snap_coordinator_ = MakeGarbageCollected<SnapCoordinator>();
 
-  return snap_coordinator_.Get();
+  return *snap_coordinator_;
 }
 
 void Document::SetContextFeatures(ContextFeatures& features) {
@@ -8051,6 +8052,7 @@ void Document::PlatformColorsChanged() {
     return;
 
   GetStyleEngine().PlatformColorsChanged();
+  MediaQueryAffectingValueChanged();
 }
 
 bool Document::IsSecureContext(String& error_message) const {
@@ -8636,7 +8638,8 @@ void Document::ColorSchemeChanged() {
 
 bool Document::InForcedColorsMode() const {
   return RuntimeEnabledFeatures::ForcedColorsEnabled() &&
-         GetSettings()->GetForcedColors() != ForcedColors::kNone;
+         Platform::Current()->ThemeEngine()->ForcedColors() !=
+             ForcedColors::kNone;
 }
 
 void Document::CountUse(mojom::WebFeature feature) const {

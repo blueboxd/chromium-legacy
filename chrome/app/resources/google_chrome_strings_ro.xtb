@@ -18,7 +18,6 @@
 <translation id="1393853151966637042">Obțineți ajutor în legătură cu utilizarea Chrome</translation>
 <translation id="1399397803214730675">Acest computer are deja o versiune mai recentă de Google Chrome. Dacă software-ul nu funcționează, dezinstalați Google Chrome și încercați din nou.</translation>
 <translation id="1434626383986940139">Aplicații Chrome Canary</translation>
-<translation id="1457721931618994305">Se actualizează Google Chrome...</translation>
 <translation id="1469002951682717133">Lansatorul de aplicații Chrome</translation>
 <translation id="1553358976309200471">Actualizează Chrome</translation>
 <translation id="1587223624401073077">Google Chrome utilizează camera foto.</translation>
@@ -170,9 +169,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="573759479754913123">Despre sistemul de operare Chrome</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome nu a putut fi lansat. Încearcă din nou.</translation>
-<translation id="5877064549588274448">Canalul a fost schimbat. Reporniți dispozitivul pentru a aplica modificările.</translation>
 <translation id="5895138241574237353">Reîncepe</translation>
-<translation id="5906655207909574370">Aproape actualizat! Repornește dispozitivul pentru a finaliza actualizarea.</translation>
 <translation id="5940385492829620908">Experiența web personalizată, marcajele și celelalte date Chrome chiar aici.</translation>
 <translation id="5941830788786076944">Setează Google Chrome ca browser prestabilit</translation>
 <translation id="6014844626092547096">Sunteți conectat(ă) la Chrome! Sincronizarea este dezactivată de administrator.</translation>
@@ -191,7 +188,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="6566149418543181476">Google Chrome se actualizează (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">În prezent, folosiți <ph name="PROFILE_EMAIL" /> pentru a sincroniza datele Chrome. Pentru a actualiza preferințele de sincronizare sau pentru a folosi Chrome fără un Cont Google, accesați <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Copiat în Chrome</translation>
-<translation id="6634887557811630702">Google Chrome este actualizat.</translation>
 <translation id="6676384891291319759">Accesează internetul</translation>
 <translation id="6679975945624592337">Permite Google Chrome să ruleze în fundal</translation>
 <translation id="6750954913813541382">Pentru a corecta erorile de scriere, Chrome trimite la Google textul pe care îl introduci în browser</translation>
@@ -201,7 +197,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="6906909733186691861">Versiunile Chrome ulterioare se vor instala automat.</translation>
 <translation id="6943584222992551122">Datele de navigare ale acestei persoane vor fi șterse de pe dispozitiv. Pentru a recupera datele, conectează-te la Chrome ca <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Regula de intrare pentru Google Chrome Beta pentru a permite traficul mDNS.</translation>
-<translation id="6970811910055250180">Se actualizează dispozitivul...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> necesită să citiți și să acceptați Termenii și condițiile următoare înainte de a utiliza acest dispozitiv. Acești termeni nu extind, nu modifică și nu limitează Termenii pentru sistemul de operare Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome a fost actualizat, dar nu l-ai folosit cel puțin 30 de zile.</translation>
 <translation id="7098166902387133879">Google Chrome utilizează microfonul.</translation>
@@ -239,7 +234,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="7962410387636238736">Acest computer nu va mai primi actualizări pentru Google Chrome, deoarece Windows XP și Windows Vista nu mai sunt acceptate</translation>
 <translation id="8008534537613507642">Reinstalați Chrome</translation>
 <translation id="8013993649590906847">Dacă o imagine nu are o descriere utilă, Chrome va încerca să o completeze. Pentru a crea descrieri, imaginile sunt trimise la Google.</translation>
-<translation id="8030318113982266900">Se actualizează dispozitivul pentru canalul <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8032142183999901390">După eliminarea contului din Chrome, poate fi necesar să reîncărcați filele deschise pentru ca schimbarea să se aplice.</translation>
 <translation id="8129812357326543296">Despre &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Instalează Chrome pe telefon. Vom trimite un SMS pe telefon.</translation>
@@ -262,7 +256,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="8606668294522778825">Este posibil ca Google Chrome să folosească servicii web pentru a-ți îmbunătăți experiența de navigare. Poți să dezactivezi aceste servicii. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome nu mai răspunde. Îl repornești acum?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome se va relansa într-un minut}few{Chrome se va relansa în # minute}other{Chrome se va relansa în # de minute}}</translation>
-<translation id="8667808506758191620">Dispozitivul <ph name="DEVICE_TYPE" /> este actualizat.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Stabilește și ce pagină se afișează când porniți Chrome.</translation>
 <translation id="870251953148363156">Actualizați &amp;Google Chrome</translation>

@@ -8,7 +8,9 @@
 #include <algorithm>
 #include <iterator>
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/i18n/case_conversion.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,7 +19,7 @@
 namespace app_list {
 
 namespace {
-constexpr double kDefaultRelevanceThreshold = 0.35;
+constexpr double kDefaultRelevanceThreshold = 0.3;
 constexpr double kMinScore = 0.0;
 constexpr double kMaxScore = 1.0;
 constexpr double kFirstCharacterMatchPenalty = 0.2;
@@ -239,9 +241,21 @@ double FuzzyTokenizedStringMatch::PrefixMatcher(const TokenizedString& query,
 
 bool FuzzyTokenizedStringMatch::IsRelevant(const TokenizedString& query,
                                            const TokenizedString& text) {
+  // Find |hits_| using SequenceMatcher on original query and text.
+  for (const auto& match :
+       SequenceMatcher(query.text(), text.text()).GetMatchingBlocks()) {
+    if (match.length > 0) {
+      hits_.push_back(gfx::Range(match.pos_second_string,
+                                 match.pos_second_string + match.length));
+    }
+  }
   // |relevance_| is the average of WeightedRatio and PrefixMatcher scores.
   relevance_ = (WeightedRatio(query, text) + PrefixMatcher(query, text)) / 2;
-  return relevance_ > kDefaultRelevanceThreshold;
+
+  const double relevance_threshold = base::GetFieldTrialParamByFeatureAsDouble(
+      app_list_features::kEnableFuzzyAppSearch, "relevance_threshold",
+      kDefaultRelevanceThreshold);
+  return relevance_ > relevance_threshold;
 }
 
 }  // namespace app_list

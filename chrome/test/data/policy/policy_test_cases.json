@@ -2921,6 +2921,14 @@
     ]
   },
 
+  "ShelfAlignment": {
+    "os": ["chromeos"],
+    "test_policy": { "ShelfAlignment": "Left" },
+    "pref_mappings": [
+      { "pref": "shelf_alignment_local" }
+    ]
+  },
+
   "UserDisplayName": {
     "os": ["chromeos"]
   },

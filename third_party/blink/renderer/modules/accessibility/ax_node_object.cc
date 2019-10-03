@@ -1395,7 +1395,7 @@ bool MarkerTypeIsUsedForAccessibility(DocumentMarker::MarkerType type) {
   return DocumentMarker::MarkerTypes(
              DocumentMarker::kSpelling | DocumentMarker::kGrammar |
              DocumentMarker::kTextMatch | DocumentMarker::kActiveSuggestion |
-             DocumentMarker::kSuggestion)
+             DocumentMarker::kSuggestion | DocumentMarker::kTextFragment)
       .Contains(type);
 }
 

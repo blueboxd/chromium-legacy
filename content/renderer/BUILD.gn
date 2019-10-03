@@ -656,8 +656,6 @@ target(link_target_type, "renderer") {
       "pepper/pepper_platform_video_capture.h",
       "pepper/pepper_plugin_instance_impl.cc",
       "pepper/pepper_plugin_instance_impl.h",
-      "pepper/pepper_plugin_instance_metrics.cc",
-      "pepper/pepper_plugin_instance_metrics.h",
       "pepper/pepper_plugin_registry.cc",
       "pepper/pepper_plugin_registry.h",
       "pepper/pepper_proxy_channel_delegate_impl.cc",

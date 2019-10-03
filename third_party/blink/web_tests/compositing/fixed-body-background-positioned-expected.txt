@@ -5,15 +5,6 @@
       "drawsContent": false
     },
     {
-      "name": "Inner Viewport Container Layer",
-      "bounds": [800, 600],
-      "drawsContent": false
-    },
-    {
-      "name": "Page Scale Layer",
-      "drawsContent": false
-    },
-    {
       "name": "Inner Viewport Scroll Layer",
       "bounds": [800, 600],
       "drawsContent": false

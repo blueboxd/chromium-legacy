@@ -22,7 +22,6 @@
 <translation id="116280672541001035">المستخدَمة</translation>
 <translation id="1171770572613082465">عرض مواقع الويب الشائعة من خلال النقر على الزر "أهم المواقع"</translation>
 <translation id="1173894706177603556">إعادة تسمية</translation>
-<translation id="1175310183703641346">‏لن تتم مزامنة الإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى مع حسابك على Google بعد الآن.</translation>
 <translation id="1178581264944972037">الإيقاف مؤقتًا</translation>
 <translation id="1181037720776840403">إزالة</translation>
 <translation id="1188239144602654184">إطلاق الواقع المعزّز</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">تمت إضافة إشارة مرجعية في <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">المزامنة في الخلفية</translation>
 <translation id="3771001275138982843">تعذُّر تنزيل التحديث</translation>
+<translation id="3771033907050503522">علامات تبويب التصفح المتخفي</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />تشغيل البلوتوث<ph name="END_LINK" /> للسماح بالإقران</translation>
 <translation id="3775705724665058594">إرسال إلى أجهزتك</translation>
 <translation id="3778956594442850293">تمت الإضافة إلى الشاشة الرئيسية</translation>
@@ -484,7 +484,6 @@
 <translation id="4719927025381752090">عرض ترجمة</translation>
 <translation id="4720023427747327413">الفتح في <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">‏المساعدة في تحسين Chrome. <ph name="BEGIN_LINK" />المشاركة في الاستطلاع<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">‏أنت تجري تبديلاً لحسابات المزامنة من <ph name="ACCOUNT_EMAIL_OLD" /> إلى <ph name="ACCOUNT_EMAIL_NEW" />. يتم إدارة بيانات Chrome الحالية من خلال <ph name="MANAGED_DOMAIN" />. سيؤدي ذلك إلى حذف بياناتك من هذا الجهاز، ولكن ستظل بياناتك في <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">تحديث</translation>
 <translation id="4738836084190194332">آخر مزامنة: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">فتح علامة تبويب جديدة</translation>
@@ -668,13 +667,13 @@
 <translation id="5937580074298050696">تم توفير <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">إعادة الضبط</translation>
 <translation id="5942872142862698679">‏استخدام محرك Google للبحث</translation>
-<translation id="5944669582486359588">‏في "الوضع البسيط"، يحمِّل Chrome الصفحات بشكلٍ أسرع ويستخدم بيانات أقل بنسبة تصل إلى 60%. تعمل تكنولوجيا السحابة الإلكترونية من Google على تحسين الصفحات التي تزورها.</translation>
 <translation id="5952764234151283551">‏يُرسِل عنوان URL لصفحة تحاول الوصول إليها إلى Google.</translation>
 <translation id="5956665950594638604">‏فتح مركز مساعدة Chrome في علامة تبويب جديدة</translation>
 <translation id="5958275228015807058">العثور على الملفات والصفحات في التنزيلات</translation>
 <translation id="5962718611393537961">النقر للتصغير</translation>
 <translation id="6000066717592683814">‏الاستمرار في استخدام محرك Google</translation>
 <translation id="6005538289190791541">كلمة المرور المُقترحَة</translation>
+<translation id="6036057147555329831">وحدة الرعاية المركزية الإضافية</translation>
 <translation id="6039379616847168523">الانتقال السريع إلى علامة التبويب التالية</translation>
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="6042308850641462728">المزيد</translation>
@@ -815,7 +814,6 @@
 <translation id="7029809446516969842">كلمات المرور</translation>
 <translation id="7053983685419859001">حظر</translation>
 <translation id="7055152154916055070">تم حظر إعادة توجيه:</translation>
-<translation id="7062545763355031412">قبول الحسابات وتبديلها</translation>
 <translation id="7063006564040364415">تعذر الاتصال بخادم المزامنة.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{تم تحديد عنصر واحد}zero{تم تحديد # عنصر}two{تم تحديد عنصرين (#)}few{تم تحديد # عناصر}many{تم تحديد # عنصرًا}other{تم تحديد # عنصر}}</translation>
 <translation id="7071521146534760487">إدارة الحساب</translation>
@@ -1099,7 +1097,6 @@
 <translation id="9139318394846604261">التسوّق</translation>
 <translation id="9155898266292537608">يمكنك أيضًا البحث بنقرة سريعة على كلمة</translation>
 <translation id="9169507124922466868">سجلّ التنقل مفتوح جزئيًا</translation>
-<translation id="9188680907066685419">تسجيل الخروج من الحساب المُدار</translation>
 <translation id="9204836675896933765">ملف واحد متبقٍ</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">لا يمكن إجراء المكالمات</translation>
@@ -1108,7 +1105,6 @@
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
 <translation id="938850635132480979">الخطأ: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">الدخول إلى الميكروفون</translation>
-<translation id="951339005376969845">يمكنك حذف البيانات الحالية. يمكنك استرداد هذه البيانات بالتبديل مرة أخرى إلى <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">‏يمكن لـ Chrome استخدام <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> للبحث في الصين. ويمكنك تغيير هذا في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="965817943346481315">الحظر في حال كان موقع الويب يعرض إعلانات مضلِّلة أو غير مرغوب فيها (مُستحسَن)</translation>
 <translation id="968900484120156207">يتم عرض الصفحات التي تزورها هنا.</translation>

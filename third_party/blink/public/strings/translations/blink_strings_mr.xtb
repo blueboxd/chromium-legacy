@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">अधोलेख</translation>
 <translation id="2709516037105925701">ऑटोफिल</translation>
 <translation id="2723001399770238859">ऑडिओ</translation>
+<translation id="2725963129578236554">टिप्पण्या</translation>
 <translation id="2746543609216772311">मूल्य <ph name="MINIMUM_DATE_OR_TIME" /> किंवा नंतरचे असणे आवश्यक आहे.</translation>
 <translation id="2759744352195237655">पॉप अप बटण</translation>
 <translation id="2761667185364618470">कृपया तुम्ही पुढे चालू ठेवू इच्छित असल्यास हा बॉक्स पहा.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">कृपया हा मजकूर <ph name="MIN_CHARACTERS" /> वर्ण किंवा त्यापेक्षा अधिक मोठा करा (तुम्ही सध्‍या <ph name="CURRENT_LENGTH" /> वर्ण वापरत आहात).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' मागुन येणार्‍या भागामध्ये '<ph name="INVALIDCHARACTER" />' चिन्ह नसावे.</translation>
 <translation id="3846214748874656680">क्षेत्रेमधून बाहेर पडा</translation>
+<translation id="3889183436948184105">पुनरावृत्ती</translation>
 <translation id="3920932319529768807">निष्कर्ष</translation>
 <translation id="3924558731517983934">ॲप्लिकेशन</translation>
 <translation id="3944740393230681990">उपोद्घात</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">ऑडिओ वेळ स्क्रबर</translation>
 <translation id="6443871981718447451">सबटायटल मेनू दाखवा</translation>
 <translation id="6453774872122745852">श्रेयनिर्देश</translation>
+<translation id="6475115390776617481">लाइव्ह उपस्थिती</translation>
 <translation id="648732519525291180">वेळ निवडक</translation>
 <translation id="6550675742724504774">पर्याय</translation>
 <translation id="6572309429103589720">चुकीचे व्याकरण</translation>
@@ -183,9 +186,11 @@
 <translation id="6981594929165378967">घालणे</translation>
 <translation id="6989848892321993519">कृपया हा मजकूर <ph name="MIN_CHARACTERS" /> वर्ण किंवा त्यापेक्षा अधिक मोठा करा (तुम्ही सध्‍या 1 वर्ण वापरत आहात).</translation>
 <translation id="7033340931668032222">व्हॉल्यूम बदलण्यासाठी अप आणि डाउन बटण</translation>
+<translation id="7034405885550056553">सूचना</translation>
 <translation id="709897737746224366">कृपया विनंती केलेले स्वरूपन जुळवा.</translation>
 <translation id="7118469954320184356">कोणतेही वर्णन उपलब्ध नाही.</translation>
 <translation id="7139483182332611405">प्रस्तावना</translation>
+<translation id="7214187073215825913">आशयाची माहिती</translation>
 <translation id="7263440858009898357">कृपया सूचीमधील आयटम निवडा.</translation>
 <translation id="727747134524199931">स्तंभ शीर्षलेख</translation>
 <translation id="7320576522385648310">बफर होत आहे</translation>
@@ -242,6 +247,7 @@
 <translation id="8711688047404765493">आउटपुट</translation>
 <translation id="8750798805984357768">कृपया या पर्यायांपैकी एक निवडा.</translation>
 <translation id="8808573423886751634">प्रकरण</translation>
+<translation id="8822203815165896261">लेखकासंबंधित माहिती</translation>
 <translation id="8845239796550121995">आता तुमच्या टिव्हीवर कास्ट करत आहे</translation>
 <translation id="8851136666856101339">मुख्य</translation>
 <translation id="8875657656876809964">व्हिडिओ प्लेबॅक एरर</translation>

@@ -22,7 +22,6 @@
 <translation id="116280672541001035">ใช้ไป</translation>
 <translation id="1171770572613082465">ดูเว็บไซต์ยอดนิยมโดยการแตะปุ่ม "เว็บไซต์อันดับสูงสุด"</translation>
 <translation id="1173894706177603556">เปลี่ยนชื่อ</translation>
-<translation id="1175310183703641346">บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และอื่นๆ จะเลิกซิงค์กับบัญชี Google</translation>
 <translation id="1178581264944972037">หยุดชั่วคราว</translation>
 <translation id="1181037720776840403">นำออก</translation>
 <translation id="1188239144602654184">เริ่ม AR</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">บุ๊กมาร์กไว้ใน <ph name="PRODUCT_NAME" /> แล้ว</translation>
 <translation id="3744111561329211289">ซิงค์ในแบ็กกราวด์</translation>
 <translation id="3771001275138982843">ดาวน์โหลดอัปเดตไม่ได้</translation>
+<translation id="3771033907050503522">แท็บที่ไม่ระบุตัวตน</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />เปิดบลูทูธ<ph name="END_LINK" />เพื่อให้จับคู่ได้</translation>
 <translation id="3775705724665058594">ส่งไปยังอุปกรณ์</translation>
 <translation id="3778956594442850293">เพิ่มในหน้าจอหลักแล้ว</translation>
@@ -484,7 +484,6 @@
 <translation id="4719927025381752090">เสนอการแปล</translation>
 <translation id="4720023427747327413">เปิดใน <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">ช่วยปรับปรุง Chrome ด้วยการ<ph name="BEGIN_LINK" />ตอบแบบสำรวจ<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">คุณสลับบัญชีที่ซิงค์จาก <ph name="ACCOUNT_EMAIL_OLD" /> เป็น <ph name="ACCOUNT_EMAIL_NEW" /> และข้อมูล Chrome ที่มีอยู่จะจัดการโดย <ph name="MANAGED_DOMAIN" /> การสลับบัญชีนี้จะลบข้อมูลออกจากอุปกรณ์เครื่องนี้ แต่ข้อมูลจะยังคงอยู่ใน <ph name="ACCOUNT_EMAIL_OLD" /></translation>
 <translation id="473775607612524610">อัปเดต</translation>
 <translation id="4738836084190194332">ซิงค์ครั้งล่าสุด: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">เปิดแท็บใหม่</translation>
@@ -668,13 +667,13 @@
 <translation id="5937580074298050696">ประหยัดได้ <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
 <translation id="5942872142862698679">กำลังใช้ Google ในการค้นหา</translation>
-<translation id="5944669582486359588">ในโหมด Lite เบราว์เซอร์ Chrome จะโหลดหน้าเว็บได้เร็วขึ้นและใช้เน็ตน้อยลงสูงสุดถึง 60 เปอร์เซ็นต์ เทคโนโลยีระบบคลาวด์ของ Google ช่วยเพิ่มประสิทธิภาพหน้าเว็บที่คุณเข้าชม</translation>
 <translation id="5952764234151283551">ส่ง URL ของหน้าที่คุณพยายามเข้าถึงไปยัง Google</translation>
 <translation id="5956665950594638604">เปิดศูนย์ช่วยเหลือของ Chrome ในแท็บใหม่</translation>
 <translation id="5958275228015807058">หาไฟล์และหน้าในโฟลเดอร์ดาวน์โหลด</translation>
 <translation id="5962718611393537961">แตะเพื่อยุบ</translation>
 <translation id="6000066717592683814">ใช้ Google ต่อ</translation>
 <translation id="6005538289190791541">รหัสผ่านที่แนะนำ</translation>
+<translation id="6036057147555329831">ICU เพิ่มเติม</translation>
 <translation id="6039379616847168523">ข้ามไปยังแท็บถัดไป</translation>
 <translation id="6040143037577758943">ปิด</translation>
 <translation id="6042308850641462728">เพิ่มเติม</translation>
@@ -815,7 +814,6 @@
 <translation id="7029809446516969842">รหัสผ่าน</translation>
 <translation id="7053983685419859001">บล็อก</translation>
 <translation id="7055152154916055070">การเปลี่ยนเส้นทางถูกบล็อก</translation>
-<translation id="7062545763355031412">ยอมรับและเปลี่ยนบัญชี</translation>
 <translation id="7063006564040364415">ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์การซิงค์</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{เลือก 1 รายการ}other{เลือก # รายการ}}</translation>
 <translation id="7071521146534760487">จัดการบัญชี</translation>
@@ -1099,7 +1097,6 @@
 <translation id="9139318394846604261">ช็อปปิ้ง</translation>
 <translation id="9155898266292537608">หรือคุณจะค้นหาด้วยการแตะอย่างรวดเร็วที่คำๆ หนึ่งก็ได้เช่นกัน</translation>
 <translation id="9169507124922466868">ประวัติการนำทางเปิดอยู่ครึ่งเดียว</translation>
-<translation id="9188680907066685419">ออกจากระบบบัญชีที่มีการจัดการ</translation>
 <translation id="9204836675896933765">เหลืออีก 1 ไฟล์</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">โทรออกไม่ได้</translation>
@@ -1108,7 +1105,6 @@
 <translation id="932327136139879170">หน้าแรก</translation>
 <translation id="938850635132480979">ข้อผิดพลาด: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">เข้าถึงไมโครโฟน</translation>
-<translation id="951339005376969845">ลบข้อมูลที่มีอยู่ คุณสามารถดึงข้อมูลกลับมาโดยเปลี่ยนกลับไปเป็น <ph name="FROM_ACCOUNT" /></translation>
 <translation id="95817756606698420">Chrome สามารถใช้ <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> สำหรับการค้นหาในประเทศจีน คุณสามารถเปลี่ยนเครื่องมือค้นหาเริ่มต้นนี้ได้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="965817943346481315">บล็อกหากเว็บไซต์แสดงโฆษณาที่แทรกหรือทำให้เข้าใจผิด (แนะนำ)</translation>
 <translation id="968900484120156207">หน้าที่คุณเข้าชมจะปรากฏที่นี่</translation>

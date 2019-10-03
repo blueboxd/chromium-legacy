@@ -20,6 +20,5 @@ enum ClientLifecycleStateQuery {
 // https://w3c.github.io/ServiceWorker/#dictdef-clientqueryoptions
 dictionary ClientQueryOptions {
     boolean includeUncontrolled = false;
-    [RuntimeEnabled=ServiceWorkerFilterFrozen] ClientLifecycleStateQuery lifecycleState = "active";
     ClientType type = "window";
 };

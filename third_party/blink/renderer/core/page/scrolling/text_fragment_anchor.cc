@@ -148,7 +148,7 @@ bool TextFragmentAnchor::Invoke() {
     return !dismissed_;
 
   frame_->GetDocument()->Markers().RemoveMarkersOfTypes(
-      DocumentMarker::MarkerTypes::TextMatch());
+      DocumentMarker::MarkerTypes::TextFragment());
 
   if (user_scrolled_ && !did_scroll_into_view_)
     metrics_->ScrollCancelled();
@@ -217,8 +217,8 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
   // therefore indicate that the page text has changed.
   if (!frame_->GetDocument()
            ->Markers()
-           .MarkersIntersectingRange(range,
-                                     DocumentMarker::MarkerTypes::TextMatch())
+           .MarkersIntersectingRange(
+               range, DocumentMarker::MarkerTypes::TextFragment())
            .IsEmpty()) {
     return;
   }
@@ -265,9 +265,7 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
   EphemeralRange dom_range =
       EphemeralRange(ToPositionInDOMTree(range.StartPosition()),
                      ToPositionInDOMTree(range.EndPosition()));
-  frame_->GetDocument()->Markers().AddTextMatchMarker(
-      dom_range, TextMatchMarker::MatchStatus::kInactive);
-  frame_->GetEditor().SetMarkedTextMatchesAreHighlighted(true);
+  frame_->GetDocument()->Markers().AddTextFragmentMarker(dom_range);
 }
 
 void TextFragmentAnchor::DidFindAmbiguousMatch() {
@@ -310,8 +308,7 @@ bool TextFragmentAnchor::Dismiss() {
   DCHECK(did_scroll_into_view_ || user_scrolled_);
 
   frame_->GetDocument()->Markers().RemoveMarkersOfTypes(
-      DocumentMarker::MarkerTypes::TextMatch());
-  frame_->GetEditor().SetMarkedTextMatchesAreHighlighted(false);
+      DocumentMarker::MarkerTypes::TextFragment());
   dismissed_ = true;
   metrics_->Dismissed();
 

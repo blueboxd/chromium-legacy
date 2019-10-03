@@ -339,7 +339,6 @@
   'chromedriver_py_tests': {
     'remove_from': [
       # Timeout happens sometimes (crbug.com/951799).
-      'Win10 Tests x64',
       'Win10 Tests x64 (dbg)',
     ],
   },

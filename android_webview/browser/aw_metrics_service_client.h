@@ -31,8 +31,8 @@ namespace android_webview {
 //  - The user has not opted out (controlled by GMS).
 //  - The app has not opted out (controlled by manifest tag).
 //  - This client is in the 2% sample (controlled by client ID hash).
-// The first two are recorded in |user_and_app_consent_|, which is set by
-// SetHaveMetricsConsent(). The last is recorded in |is_in_sample_|.
+// The first two are recorded in |user_consent_| and |app_consent_|, which are
+// set by SetHaveMetricsConsent(). The last is recorded in |is_in_sample_|.
 //
 // Metrics are pseudonymously identified by a randomly-generated "client ID".
 // WebView stores this in prefs, written to the app's data directory. There's a
@@ -89,7 +89,7 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
   ~AwMetricsServiceClient() override;
 
   void Initialize(PrefService* pref_service);
-  void SetHaveMetricsConsent(bool consent);
+  void SetHaveMetricsConsent(bool user_consent, bool app_consent);
   std::unique_ptr<const base::FieldTrial::EntropyProvider>
       CreateLowEntropyProvider();
 
@@ -127,7 +127,8 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
   PrefService* pref_service_ = nullptr;
   bool init_finished_ = false;
   bool set_consent_finished_ = false;
-  bool user_and_app_consent_ = false;
+  bool user_consent_ = false;
+  bool app_consent_ = false;
   bool is_in_sample_ = false;
 
   // AwMetricsServiceClient may be created before the UI thread is promoted to

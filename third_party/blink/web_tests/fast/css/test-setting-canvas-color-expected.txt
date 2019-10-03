@@ -36,8 +36,8 @@ PASS Setting color to InfoBackground was successfully set.
 PASS Setting color to infobackground was successfully set.
 PASS Setting color to InfoText was successfully set.
 PASS Setting color to infotext was successfully set.
-FAIL Setting color to LinkText was not set but should!
-FAIL Setting color to linktext was not set but should!
+PASS Setting color to LinkText was successfully set.
+PASS Setting color to linktext was successfully set.
 PASS Setting color to Menu was successfully set.
 PASS Setting color to menu was successfully set.
 PASS Setting color to MenuText was successfully set.
@@ -54,8 +54,8 @@ PASS Setting color to ThreeDLightShadow was successfully set.
 PASS Setting color to threedlightshadow was successfully set.
 PASS Setting color to ThreeDShadow was successfully set.
 PASS Setting color to threedshadow was successfully set.
-FAIL Setting color to VisitedText was not set but should!
-FAIL Setting color to visitedtext was not set but should!
+PASS Setting color to VisitedText was successfully set.
+PASS Setting color to visitedtext was successfully set.
 PASS Setting color to Window was successfully set.
 PASS Setting color to window was successfully set.
 PASS Setting color to WindowFrame was successfully set.

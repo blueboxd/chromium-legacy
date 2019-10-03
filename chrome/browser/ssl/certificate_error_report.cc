@@ -193,6 +193,15 @@ CertificateErrorReport::CertificateErrorReport(
       debug_info->mac_combined_trust_debug_info,
       trial_report->mutable_mac_combined_trust_debug_info());
 #endif
+  if (!debug_info->trial_verification_time.is_null()) {
+    trial_report->set_trial_verification_time_usec(
+        debug_info->trial_verification_time.ToDeltaSinceWindowsEpoch()
+            .InMicroseconds());
+  }
+  if (!debug_info->trial_der_verification_time.empty()) {
+    trial_report->set_trial_der_verification_time(
+        debug_info->trial_der_verification_time);
+  }
 }
 #endif  // BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
 
@@ -244,7 +253,7 @@ void CertificateErrorReport::SetInterstitialInfo(
   interstitial_info->set_user_proceeded(proceed_decision == USER_PROCEEDED);
   interstitial_info->set_overridable(overridable == INTERSTITIAL_OVERRIDABLE);
   interstitial_info->set_interstitial_created_time_usec(
-      interstitial_time.ToInternalValue());
+      interstitial_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
 }
 
 void CertificateErrorReport::AddNetworkTimeInfo(
@@ -347,7 +356,7 @@ CertificateErrorReport::CertificateErrorReport(
     net::CertStatus cert_status)
     : cert_report_(new chrome_browser_ssl::CertLoggerRequest()) {
   base::Time now = base::Time::Now();
-  cert_report_->set_time_usec(now.ToInternalValue());
+  cert_report_->set_time_usec(now.ToDeltaSinceWindowsEpoch().InMicroseconds());
   cert_report_->set_hostname(hostname);
 
   if (!CertificateChainToString(cert, cert_report_->mutable_cert_chain())) {

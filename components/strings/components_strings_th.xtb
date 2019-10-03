@@ -45,6 +45,7 @@
 <translation id="1175875016430184367">เย็บด้วยลวดเย็บกระดาษด้านขวา 3 ครั้ง</translation>
 <translation id="1178581264944972037">หยุดชั่วคราว</translation>
 <translation id="1181037720776840403">นำออก</translation>
+<translation id="1186201132766001848">ตรวจสอบรหัสผ่าน</translation>
 <translation id="1197088940767939838">สีส้ม</translation>
 <translation id="1201402288615127009">ถัดไป</translation>
 <translation id="1201895884277373915">เพิ่มเติมจากไซต์นี้</translation>
@@ -110,6 +111,7 @@
 <translation id="1430915738399379752">พิมพ์</translation>
 <translation id="1442386063175183758">พับทบด้านขวา</translation>
 <translation id="1442987760062738829">เจาะรู</translation>
+<translation id="1450011005989029586">การละเมิดข้อมูลในเว็บไซต์หรือแอปที่ใช้ทำให้รหัสผ่านของคุณรั่วไหล Chrome ขอแนะนำให้<ph name="BOLD" />ใน <ph name="ORIGIN" /> ตอนนี้เลย</translation>
 <translation id="1455413310270022028">ยางลบ</translation>
 <translation id="1463543813647160932">5x7</translation>
 <translation id="1472675084647422956">แสดงเพิ่มเติม</translation>
@@ -153,7 +155,6 @@
 <translation id="1640244768702815859">ลอง<ph name="BEGIN_LINK" />ไปที่หน้าแรกของเว็บไซต์<ph name="END_LINK" /></translation>
 <translation id="1644574205037202324">ประวัติการเข้าชม</translation>
 <translation id="1645368109819982629">ไม่รองรับโปรโตคอล</translation>
-<translation id="1655462015569774233">{1,plural, =1{เซิร์ฟเวอร์นี้พิสูจน์ไม่ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยหมดอายุไปเมื่อวานนี้ โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ ขณะนี้นาฬิกาของคุณตั้งค่าไว้ที่วันที่ <ph name="CURRENT_DATE" /> การตั้งค่านี้ถูกต้องไหม หากไม่ถูกต้อง คุณควรแก้ไขนาฬิกาของระบบและรีเฟรชหน้านี้}other{เซิร์ฟเวอร์นี้พิสูจน์ไม่ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยหมดอายุไปเมื่อ # วันที่ผ่านมา โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ ขณะนี้นาฬิกาของคุณตั้งค่าไว้ที่วันที่ <ph name="CURRENT_DATE" /> การตั้งค่านี้ถูกต้องไหม หากไม่ถูกต้อง คุณควรแก้ไขนาฬิกาของระบบและรีเฟรชหน้านี้}}</translation>
 <translation id="1656489000284462475">การรับ</translation>
 <translation id="1662550410081243962">บันทึกและกรอกวิธีการชำระเงิน</translation>
 <translation id="1663943134801823270">ข้อมูลบัตรและที่อยู่มาจาก Chrome คุณสามารถจัดการข้อมูลเหล่านี้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
@@ -323,7 +324,6 @@
 <translation id="2501278716633472235">ย้อนกลับ</translation>
 <translation id="2503184589641749290">บัตรเดบิตและบัตรเติมเงินที่ยอมรับ</translation>
 <translation id="2505268675989099013">ปกป้องบัญชี</translation>
-<translation id="2515335152965840738">ไม่สนใจ</translation>
 <translation id="2515629240566999685">ตรวจสอบสัญญาณในพื้นที่ของคุณ</translation>
 <translation id="2521385132275182522">เย็บด้วยลวดเย็บกระดาษด้านขวาล่าง</translation>
 <translation id="2523886232349826891">บันทึกไว้เฉพาะในอุปกรณ์นี้</translation>
@@ -380,7 +380,6 @@
 <translation id="2799020568854403057">เว็บไซต์ที่จะเปิดมีแอปอันตราย</translation>
 <translation id="2799223571221894425">เปิดใหม่</translation>
 <translation id="2803306138276472711">เมื่อเร็วๆ นี้ Google Safe Browsing <ph name="BEGIN_LINK" />ตรวจพบมัลแวร์<ph name="END_LINK" />ใน <ph name="SITE" /> เว็บไซต์ที่โดยปกติจะปลอดภัยบางครั้งอาจติดมัลแวร์</translation>
-<translation id="2815364696811431560">ออกจากเว็บไซต์</translation>
 <translation id="2824775600643448204">ที่อยู่และแถบค้นหา</translation>
 <translation id="2826760142808435982">การเชื่อมต่อถูกเข้ารหัสและรับรองความถูกต้องโดยใช้ <ph name="CIPHER" /> และใช้ <ph name="KX" /> เป็นกลไกการแลกเปลี่ยนคีย์</translation>
 <translation id="2835170189407361413">ล้างฟอร์ม</translation>
@@ -454,6 +453,7 @@
 <translation id="320323717674993345">ยกเลิกการชำระเงิน</translation>
 <translation id="3207960819495026254">บุ๊กมาร์กแล้ว</translation>
 <translation id="3209034400446768650">อาจมีการเรียกเก็บเงินในหน้านี้</translation>
+<translation id="3209080785413271048">ใช้ Windows Hello เพื่อยืนยันวิธีการชำระเงินที่คุณบันทึกไว้</translation>
 <translation id="3215092763954878852">ใช้ WebAuthn ไม่ได้</translation>
 <translation id="3225919329040284222">เซิร์ฟเวอร์แสดงใบรับรองที่ไม่ตรงกับการคาดการณ์ที่มีอยู่ การคาดการณ์เหล่านี้มีอยู่ในบางเว็บไซต์ที่มีการรักษาความปลอดภัยสูงเพื่อปกป้องคุณ</translation>
 <translation id="3226128629678568754">กดปุ่มโหลดซ้ำเพื่อส่งซ้ำข้อมูลที่จำเป็นในการโหลดหน้าเว็บ</translation>
@@ -464,6 +464,7 @@
 <translation id="3234666976984236645">ตรวจหาเนื้อหาที่สำคัญบนไซต์นี้เสมอ</translation>
 <translation id="3270847123878663523">&amp;เลิกทำการจัดลำดับใหม่</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
+<translation id="3281668902344226640">ใช้ Touch ID เพื่อยืนยันวิธีการชำระเงินที่คุณบันทึกไว้</translation>
 <translation id="3282497668470633863">เพิ่มชื่อบนบัตร</translation>
 <translation id="3287510313208355388">ดาวน์โหลดเมื่อออนไลน์</translation>
 <translation id="3293642807462928945">ดูข้อมูลเพิ่มเติมเกี่ยวกับนโยบาย <ph name="POLICY_NAME" /></translation>
@@ -530,6 +531,7 @@
 <translation id="362276910939193118">แสดงประวัติการเข้าชมทั้งหมด</translation>
 <translation id="3630155396527302611">หากโปรแกรมอยู่ในรายการที่ได้รับอนุญาตให้เข้าถึงเครือข่ายอยู่แล้ว
       ลองนำโปรแกรมออกจากรายการและเพิ่มกลับเข้าไปใหม่</translation>
+<translation id="3631244953324577188">ข้อมูลไบโอเมตริก</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">การตรวจสอบสำเร็จ</translation>
 <translation id="3655670868607891010">หากคุณเห็นข้อความนี้บ่อยๆ ให้ลองไปที่ <ph name="HELP_LINK" /></translation>
@@ -605,6 +607,7 @@
 <translation id="4067947977115446013">เพิ่มที่อยู่ที่ถูกต้อง</translation>
 <translation id="4072486802667267160">เกิดข้อผิดพลาดในการประมวลผลคำสั่งซื้อของคุณ โปรดลองอีกครั้ง</translation>
 <translation id="4075732493274867456">ไคลเอ็นต์และเซิร์ฟเวอร์ไม่รองรับโปรโตคอล SSL เวอร์ชันทั่วไปหรือชุดการเข้ารหัส</translation>
+<translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">การกำหนดค่าพร็อกซีมีการตั้งค่าให้ใช้ URL สคริปต์ .pac ไม่ใช่พร็อกซีเซิร์ฟเวอร์แบบคงที่</translation>
 <translation id="4082393374666368382">การตั้งค่า - การจัดการ</translation>
 <translation id="4098354747657067197">เว็บไซต์ข้างหน้ามีการหลอกลวง</translation>
@@ -661,6 +664,7 @@
 <translation id="4258748452823770588">ลายเซ็นไม่เหมาะสม</translation>
 <translation id="4261046003697461417">เอกสารที่มีการป้องกันจะใส่หมายเหตุไม่ได้</translation>
 <translation id="4265872034478892965">อนุญาตโดยผู้ดูแลระบบ</translation>
+<translation id="4270615291506829403">เปลี่ยนรหัสผ่าน</translation>
 <translation id="4275830172053184480">รีสตาร์ทอุปกรณ์ของคุณ</translation>
 <translation id="4277028893293644418">รีเซ็ตรหัสผ่าน</translation>
 <translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> ของคุณจัดการโดย <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -687,6 +691,7 @@
 <translation id="4372948949327679948">ค่า <ph name="VALUE_TYPE" /> ที่คาดไว้</translation>
 <translation id="4377125064752653719">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่ใบรับรองที่เซิร์ฟเวอร์แจ้งมาถูกเพิกถอนโดยผู้ออกใบรับรอง ซึ่งหมายความว่าข้อมูลรับรองด้านความปลอดภัยที่เซิร์ฟเวอร์แจ้งมานั้นไม่สามารถเชื่อถือได้ คุณอาจกำลังติดต่อกับคนที่คิดจะโจมตีคุณ</translation>
 <translation id="4378154925671717803">โทรศัพท์</translation>
+<translation id="4398334096870680409">ฟีเจอร์นี้ใช้ไม่ได้ในอุปกรณ์ของคุณ</translation>
 <translation id="4406896451731180161">ผลการค้นหา</translation>
 <translation id="4408413947728134509">คุกกี้ <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">ที่อยู่ในการรับ</translation>
@@ -735,7 +740,9 @@
 <translation id="4691835149146451662">Architecture-A (ซองจดหมาย)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">การเชื่อมต่อของคุณขัดข้อง</translation>
+<translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />เรียกใช้การวินิจฉัยเครือข่ายของ Windows<ph name="END_LINK" /></translation>
+<translation id="4725851834065990915">การละเมิดข้อมูลในเว็บไซต์หรือแอปที่คุณใช้ทำให้รหัสผ่านของคุณรั่วไหล Chrome ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้โดยทันที</translation>
 <translation id="4726672564094551039">โหลดนโยบายซ้ำ</translation>
 <translation id="4728558894243024398">แพลตฟอร์ม</translation>
 <translation id="4731967714531604179">Prc2 (ซองจดหมาย)</translation>
@@ -763,7 +770,6 @@
 <translation id="4816492930507672669">พอดีกับหน้า</translation>
 <translation id="4850886885716139402">มุมมอง</translation>
 <translation id="4854362297993841467">วิธีการนำส่งสินค้านี้ไม่พร้อมให้บริการ โปรดลองใช้วิธีการอื่น</translation>
-<translation id="4864052566555297930">คำแนะนำเพื่อความปลอดภัย:</translation>
 <translation id="4876188919622883022">มุมมองอย่างง่าย</translation>
 <translation id="4876305945144899064">ไม่มีชื่อผู้ใช้</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{ไม่มี}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
@@ -989,6 +995,7 @@
 <translation id="5967592137238574583">แก้ไขข้อมูลติดต่อ</translation>
 <translation id="5967867314010545767">ลบจากประวัติการเข้าชม</translation>
 <translation id="5975083100439434680">ย่อ</translation>
+<translation id="5979084224081478209">ตรวจสอบรหัสผ่าน</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">ไม่สามารถเปิดแอปการชำระเงิน</translation>
 <translation id="5989320800837274978">ไม่มีการระบุทั้งพร็อกซีเซิร์ฟเวอร์แบบคงที่หรือ URL สคริปต์ .pac</translation>
@@ -1146,6 +1153,7 @@
 <translation id="679355240208270552">ไม่ใช้งานเนื่องจากมีการเปิดใช้การค้นหาเริ่มต้นตามนโยบาย</translation>
 <translation id="681021252041861472">ช่องที่ต้องกรอก</translation>
 <translation id="6810899417690483278">รหัสการปรับแต่ง</translation>
+<translation id="6819440013020405090">การละเมิดข้อมูลในเว็บไซต์หรือแอปที่คุณใช้ทำให้รหัสผ่านของคุณรั่วไหล Chrome ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้และเปลี่ยนรหัสผ่านที่ใช้ใน <ph name="ORIGIN" /></translation>
 <translation id="6825578344716086703">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่เซิร์ฟเวอร์แสดงใบรับรองที่ลงนามด้วยอัลกอริทึมลายเซ็นที่ไม่รัดกุม (เช่น SHA-1) ซึ่งหมายความว่าข้อมูลรับรองด้านความปลอดภัยที่เซิร์ฟเวอร์แสดงอาจถูกปลอมแปลงขึ้น และเซิร์ฟเวอร์ดังกล่าวอาจไม่ใช่เซิร์ฟเวอร์ที่คุณคิด (คุณอาจกำลังติดต่อกับผู้โจมตี)</translation>
 <translation id="6826370046007623921">ป้องกันข้อมูลรั่วไหล</translation>
 <translation id="6831043979455480757">แปลภาษา</translation>
@@ -1188,6 +1196,7 @@
 <translation id="7064851114919012435">ข้อมูลติดต่อ</translation>
 <translation id="7075452647191940183">คำขอมีขนาดใหญ่เกินไป</translation>
 <translation id="7079718277001814089">เว็บไซต์นี้มีมัลแวร์</translation>
+<translation id="70850504851191913">รายงานการละเมิดข้อมูลแล้ว</translation>
 <translation id="7087282848513945231">ประเทศ</translation>
 <translation id="7090678807593890770">ค้นหา <ph name="LINK" /> จาก Google</translation>
 <translation id="7108338896283013870">ซ่อน</translation>
@@ -1276,6 +1285,7 @@
 <translation id="7460618730930299168">การแสดงบนหน้าจอแตกต่างจากที่คุณเลือก ต้องการดำเนินการต่อไหม</translation>
 <translation id="7473891865547856676">ไม่ ขอบคุณ</translation>
 <translation id="7481312909269577407">ส่งต่อ</translation>
+<translation id="748406663033922918">ใช้การล็อกหน้าจอเพื่อยืนยันวิธีการชำระเงินที่คุณบันทึกไว้</translation>
 <translation id="7485870689360869515">ไม่พบข้อมูล</translation>
 <translation id="7498234416455752244">แก้ไขต่อ</translation>
 <translation id="7508255263130623398">รหัสอุปกรณ์นโยบายที่ส่งกลับว่างเปล่าหรือไม่ตรงกับรหัสอุปกรณ์ปัจจุบัน</translation>
@@ -1489,7 +1499,6 @@
 <translation id="8553075262323480129">การแปลล้มเหลวเนื่องจากไม่สามารถระบุภาษาของหน้าเว็บนี้ได้</translation>
 <translation id="8557066899867184262">CVC จะอยู่ที่ด้านหลังบัตร</translation>
 <translation id="8559762987265718583">ไม่สามารถเริ่มการเชื่อมต่อส่วนตัวกับ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ได้เนื่องจากวันที่และเวลาของอุปกรณ์ (<ph name="DATE_AND_TIME" />) ไม่ถูกต้อง</translation>
-<translation id="8561575143530093465"><ph name="SAFETY_TIP" /> เว็บไซต์ที่น่าสงสัย</translation>
 <translation id="8564985650692024650">Chromium ขอแนะนำให้รีเซ็ตรหัสผ่าน <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> หากคุณใช้รหัสผ่านนี้ซ้ำในเว็บไซต์อื่น</translation>
 <translation id="8571890674111243710">กำลังแปลหน้าเว็บนี้เป็นภาษา<ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">เพิ่มเบอร์โทร
@@ -1550,6 +1559,7 @@
 <translation id="8943282376843390568">เหลืองมะนาว</translation>
 <translation id="8957210676456822347">การให้สิทธิ์แคปทีฟพอร์ทัล</translation>
 <translation id="8962950042226115166">เว็บไซต์ที่น่าสงสัย</translation>
+<translation id="8966619695390250636">หรือคุณหมายถึง</translation>
 <translation id="8968766641738584599">บันทึกบัตร</translation>
 <translation id="8971063699422889582">ใบรับรองของเซิร์ฟเวอร์หมดอายุแล้ว</translation>
 <translation id="8975012916872825179">รวมข้อมูล เช่น หมายเลขโทรศัพท์ อีเมล และที่อยู่สำหรับจัดส่ง</translation>

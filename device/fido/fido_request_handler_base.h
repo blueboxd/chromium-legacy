@@ -235,6 +235,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   Observer* observer() const { return observer_; }
 
   // FidoDiscoveryBase::Observer
+  void DiscoveryStarted(
+      FidoDiscoveryBase* discovery,
+      bool success,
+      std::vector<FidoAuthenticator*> authenticators) override;
   void AuthenticatorAdded(FidoDiscoveryBase* discovery,
                           FidoAuthenticator* authenticator) override;
   void AuthenticatorRemoved(FidoDiscoveryBase* discovery,

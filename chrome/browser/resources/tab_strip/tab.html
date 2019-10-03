@@ -13,7 +13,7 @@
 
   #dragImage {
     background: var(--tabstrip-tab-background-color);
-    border-radius: var(--tabstrip-card-border-radius);
+    border-radius: var(--tabstrip-tab-border-radius);
     box-shadow: 0 0 0 1px var(--tabstrip-tab-separator-color);
     color: var(--tabstrip-tab-text-color);
     display: flex;
@@ -24,7 +24,7 @@
   }
 
   :host([active]) #dragImage {
-    box-shadow: 0 0 0 2px var(--tabstrip-focus-color);
+    box-shadow: 0 0 0 2px var(--tabstrip-tab-active-border-color);
     outline: none;
   }
 
@@ -64,7 +64,7 @@
     -webkit-mask:
         url(chrome://resources/images/throbber_small.svg)
         center/contain no-repeat;
-    background-color: currentColor;
+    background-color: var(--tabstrip-tab-loading-spinning-color);
     display: none;
   }
 
@@ -149,7 +149,7 @@
 
   #thumbnail {
     align-items: center;
-    background: var(--tabstrip-card-background-color);
+    background: var(--tabstrip-tab-background-color);
     display: flex;
     flex: 1;
     justify-content: center;
@@ -186,9 +186,10 @@
   }
 
   :host([dragging]) #dragPlaceholder {
-    background: rgba(var(--google-grey-200-rgb));
-    border-radius: var(--tabstrip-card-border-radius);
+    background: var(--tabstrip-tab-background-color);
+    border-radius: var(--tabstrip-tab-border-radius);
     height: 100%;
+    opacity: 0.5;
     width: 100%;
   }
 

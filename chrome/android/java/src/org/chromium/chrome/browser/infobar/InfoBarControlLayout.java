@@ -26,7 +26,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.widget.DualControlLayout;
-import org.chromium.chrome.browser.widget.RadioButtonLayout;
+import org.chromium.chrome.browser.ui.widget.RadioButtonLayout;
 
 import java.util.List;
 
@@ -463,8 +463,9 @@ public final class InfoBarControlLayout extends ViewGroup {
         ControlLayoutParams params = new ControlLayoutParams();
         params.mMustBeFullWidth = true;
 
-        TextView descriptionView = (TextView) LayoutInflater.from(getContext()).inflate(
-                R.layout.infobar_control_description, this, false);
+        TextView descriptionView =
+                (TextView) LayoutInflater.from(getContext())
+                        .inflate(R.layout.dialog_control_description, this, false);
         addView(descriptionView, params);
 
         descriptionView.setText(message);

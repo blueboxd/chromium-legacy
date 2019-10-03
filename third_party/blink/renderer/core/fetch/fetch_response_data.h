@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom-blink.h"
 #include "third_party/blink/public/platform/web_http_header_set.h"

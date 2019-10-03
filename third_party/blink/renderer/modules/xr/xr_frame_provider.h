@@ -26,7 +26,6 @@ class XRFrameProvider final : public GarbageCollected<XRFrameProvider> {
   explicit XRFrameProvider(XR*);
 
   XRSession* immersive_session() const { return immersive_session_; }
-  device::mojom::blink::XRPresentationClientPtr GetSubmitFrameClient();
 
   void BeginImmersiveSession(XRSession* session,
                              device::mojom::blink::XRSessionPtr session_ptr);

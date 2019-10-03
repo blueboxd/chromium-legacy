@@ -134,29 +134,35 @@ void SharingFCMHandler::OnStoreReset() {
   // TODO: Handle GCM store reset.
 }
 
+base::Optional<syncer::DeviceInfo::SharingInfo>
+SharingFCMHandler::GetSharingInfo(const SharingMessage& original_message) {
+  if (original_message.has_sender_info()) {
+    auto& sender_info = original_message.sender_info();
+    return syncer::DeviceInfo::SharingInfo(
+        sender_info.fcm_token(), sender_info.p256dh(),
+        sender_info.auth_secret(),
+        std::set<sync_pb::SharingSpecificFields::EnabledFeatures>());
+  }
+
+  return sync_preference_->GetSharingInfo(original_message.sender_guid());
+}
+
 void SharingFCMHandler::SendAckMessage(const SharingMessage& original_message,
                                        const std::string& original_message_id) {
   SharingMessage ack_message;
   ack_message.mutable_ack_message()->set_original_message_id(
       original_message_id);
 
-  base::Optional<SharingSyncPreference::Device> target;
-  if (original_message.has_sender_info()) {
-    auto& sender_info = original_message.sender_info();
-    target.emplace(sender_info.fcm_token(), sender_info.p256dh(),
-                   sender_info.auth_secret(),
-                   std::set<sync_pb::SharingSpecificFields::EnabledFeatures>());
-  } else {
-    target = sync_preference_->GetSyncedDevice(original_message.sender_guid());
-    if (!target) {
-      LOG(ERROR) << "Unable to find device in preference";
-      LogSendSharingAckMessageResult(SharingSendMessageResult::kDeviceNotFound);
-      return;
-    }
+  base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info =
+      GetSharingInfo(original_message);
+  if (!sharing_info) {
+    LOG(ERROR) << "Unable to find sharing info";
+    LogSendSharingAckMessageResult(SharingSendMessageResult::kDeviceNotFound);
+    return;
   }
 
   sharing_fcm_sender_->SendMessageToDevice(
-      std::move(*target), kAckTimeToLive, std::move(ack_message),
+      std::move(*sharing_info), kAckTimeToLive, std::move(ack_message),
       base::BindOnce(&SharingFCMHandler::OnAckMessageSent,
                      weak_ptr_factory_.GetWeakPtr(), original_message_id));
 }

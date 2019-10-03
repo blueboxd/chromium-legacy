@@ -13,14 +13,20 @@ import json
 import logging
 import re
 
-from blinkpy.common.net.buildbot import Build, filter_latest_builds
 from blinkpy.common.checkout.git import Git
+from blinkpy.common.net.buildbot import Build, filter_latest_builds
+from blinkpy.common.net.luci_auth import LuciAuth
+
 
 _log = logging.getLogger(__name__)
 
 # A refresh token may be needed for some commands, such as git cl try,
 # in order to authenticate with buildbucket.
 _COMMANDS_THAT_TAKE_REFRESH_TOKEN = ('try',)
+
+# These characters always appear at the beginning of the SearchBuilds response
+# from BuildBucket.
+SEARCHBUILDS_RESPONSE_PREFIX = ")]}'"
 
 
 class CLStatus(collections.namedtuple('CLStatus', ('status', 'try_job_results'))):
@@ -42,6 +48,17 @@ class TryJobStatus(collections.namedtuple('TryJobStatus', ('status', 'result')))
         assert status in ('SCHEDULED', 'STARTED', 'COMPLETED')
         assert result in (None, 'FAILURE', 'SUCCESS', 'CANCELED')
         return super(TryJobStatus, cls).__new__(cls, status, result)
+
+    @staticmethod
+    def from_bb_status(bb_status):
+        assert bb_status in ('SCHEDULED', 'STARTED', 'SUCCESS', 'FAILURE', 'INFRA_FAILURE', 'CANCELLED')
+        if bb_status in ('SCHEDULED', 'STARTED'):
+            return TryJobStatus(bb_status, None)
+        else:
+            # Map result INFRA_FAILURE to FAILURE to avoid introducing a new
+            # result, and it amounts to the same thing anyway.
+            return TryJobStatus('COMPLETED',
+                                'FAILURE' if bb_status == 'INFRA_FAILURE' else bb_status)
 
 
 class GitCL(object):
@@ -111,6 +128,9 @@ class GitCL(object):
 
     def _get_cl_status(self):
         return self.run(['status', '--field=status']).strip()
+
+    def _get_latest_patchset(self):
+        return self.run(['status', '--field=patch']).strip()
 
     def wait_for_try_jobs(
             self, poll_delay_seconds=10 * 60, timeout_seconds=120 * 60,
@@ -206,6 +226,30 @@ class GitCL(object):
                 builder_names, include_swarming_tasks=False, cq_only=cq_only,
                 patchset=patchset))
 
+    def latest_try_jobs_from_bb(
+            self, issue_number, builder_names=None, cq_only=False, patchset=None):
+        """Fetches a dict of Build to TryJobStatus for the latest try jobs.
+
+        This variant fetches try job data from buildbucket directly.
+
+        This includes jobs that are not yet finished and builds with infra
+        failures, so if a build is in this list, that doesn't guarantee that
+        there are results.
+
+        Args:
+            issue_number: The git cl/issue number we're working with.
+            builder_names: Optional list of builders used to filter results.
+            cq_only: If True, only include CQ jobs.
+            patchset: If given, use this patchset instead of the latest.
+
+        Returns:
+            A dict mapping Build objects to TryJobStatus objects, with
+            only the latest jobs included.
+        """
+        return self.filter_latest(
+            self.try_job_results_from_bb(
+                issue_number, builder_names, cq_only=cq_only, patchset=patchset))
+
     @staticmethod
     def filter_latest(try_results):
         """Returns the latest entries from from a Build to TryJobStatus dict."""
@@ -233,6 +277,24 @@ class GitCL(object):
             build_to_status[self._build(result)] = self._try_job_status(result)
         return build_to_status
 
+    def try_job_results_from_bb(
+            self, issue_number, builder_names=None, cq_only=False, patchset=None):
+        """Returns a dict mapping Build objects to TryJobStatus objects."""
+        raw_results_json = self.fetch_raw_try_job_results_from_bb(issue_number, patchset)
+        build_to_status = {}
+        for build in raw_results_json['builds']:
+            builder_name = build['builder']['builder']
+            if builder_names and builder_name not in builder_names:
+                continue
+            is_cq = 'tags' in build and {'key': 'user_agent', 'value': 'cq'} in build['tags']
+            is_experimental = 'tags' in build and {'key': 'cq_experimental', 'value': 'true'} in build['tags']
+            if cq_only and not (is_cq and not is_experimental):
+                continue
+            build_number = build['number']
+            status = build['status']
+            build_to_status[Build(builder_name, build_number)] = TryJobStatus.from_bb_status(status)
+        return build_to_status
+
     def fetch_raw_try_job_results(self, patchset=None):
         """Requests results of try jobs for the current CL and the parsed JSON.
 
@@ -250,6 +312,71 @@ class GitCL(object):
             _log.debug('Fetched try results to file "%s".', results_path)
             self._host.filesystem.remove(results_path)
         return json.loads(contents)
+
+    def fetch_raw_try_job_results_from_bb(self, issue_number, patchset=None):
+        """Gets try job results for the specified CL from buildbucket.
+
+        This uses the SearchBuilds rpc format specified in
+        https://cs.chromium.org/chromium/infra/go/src/go.chromium.org/luci/buildbucket/proto/rpc.proto
+
+        The response is a list of dicts of the following form:
+        {
+            "builds": [
+                {
+                    "status": <status>
+                    "builder": {
+                        "builder": <builder_name>
+                    },
+                    "number": <build_number>,
+                    "tags": [
+                        {
+                            "key": <tag key>
+                            "value": <tag value>
+                        },
+                        ... more tags
+                    ]
+                },
+                ... more builds
+        }
+
+        This method returns the JSON representation of the above response.
+        """
+        if not patchset:
+            patchset = self._get_latest_patchset()
+
+        luci_token = LuciAuth(self._host).get_access_token()
+        hed = {
+            'Authorization': 'Bearer ' + luci_token,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        data = {
+            'predicate': {
+                'gerritChanges': [
+                    {
+                        'host': 'chromium-review.googlesource.com',
+                        'project': 'chromium/src',
+                        'change': issue_number,
+                        'patchset': patchset
+                    }
+                ]
+            },
+            'fields': 'builds.*.builder.builder,builds.*.status,builds.*.tags,builds.*.number'
+        }
+        url = 'https://cr-buildbucket.appspot.com/prpc/buildbucket.v2.Builds/SearchBuilds'
+        req_body = json.dumps(data)
+        _log.debug("Sending SearchBuilds request. Url: %s with Body: %s" % (url, req_body))
+        response = self._host.web.request('POST', url, data=req_body, headers=hed)
+        if response.getcode() == 200:
+            response_body = response.read()
+            if response_body.startswith(SEARCHBUILDS_RESPONSE_PREFIX):
+                response_body = response_body[len(SEARCHBUILDS_RESPONSE_PREFIX):]
+            return json.loads(response_body)
+
+        _log.error("Failed to fetch tryjob results from buildbucket (status=%s)" % response.status)
+        _log.debug("Full SearchBuilds response: %s" % str(response))
+        return None
+
 
     @staticmethod
     def _build(result_dict):

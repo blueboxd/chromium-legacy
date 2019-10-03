@@ -18,7 +18,6 @@
 <translation id="1393853151966637042">‏קבלת עזרה לשימוש ב-Chrome</translation>
 <translation id="1399397803214730675">‏במחשב זה מותקנת כבר גירסה עדכנית יותר של Google Chrome. אם התוכנה אינה פועלת, הסר את ההתקנה של Google Chrome ונסה שוב.</translation>
 <translation id="1434626383986940139">‏אפליקציות Chrome – קאנארי</translation>
-<translation id="1457721931618994305">‏מעדכן את Google Chrome...</translation>
 <translation id="1469002951682717133">‏מרכז האפליקציות של Chrome</translation>
 <translation id="1553358976309200471">‏כדאי לעדכן את Chrome</translation>
 <translation id="1587223624401073077">‏Google Chrome משתמש במצלמה שלך.</translation>
@@ -88,6 +87,7 @@
 <translation id="3065168410429928842">‏כרטיסייה של Chrome</translation>
 <translation id="3080151273017101988">‏המשך הפעלת אפליקציות ברקע כאשר Google Chrome סגור</translation>
 <translation id="3089968997497233615">‏גרסה חדשה ובטוחה יותר של Google Chrome זמינה כעת</translation>
+<translation id="3138848678222082288">‏גרסאות עתידיות של Chrome יותקנו באופן אוטומטי. כשההורדה הזו תושלם, Chrome יופעל מחדש וניתן יהיה להמשיך בעבודה.</translation>
 <translation id="3149510190863420837">‏אפליקציות Chrome</translation>
 <translation id="3282568296779691940">‏כניסה ל-Chrome</translation>
 <translation id="3340978935015468852">הגדרות</translation>
@@ -169,9 +169,7 @@
 <translation id="573759479754913123">‏מידע על מערכת ההפעלה של Chrome</translation>
 <translation id="5795887333006832406">‏<ph name="PAGE_TITLE" /> - Google Chrome בגירסת Canary</translation>
 <translation id="5804318322022881572">‏לא ניתן היה להפעיל את Chrome. יש לנסות שוב.</translation>
-<translation id="5877064549588274448">הערוץ שונה. הפעל מחדש את המכשיר להחלת השינויים.</translation>
 <translation id="5895138241574237353">הפעל מחדש</translation>
-<translation id="5906655207909574370">העדכון כמעט הושלם! הפעל מחדש את המכשיר כדי לסיים את העדכון.</translation>
 <translation id="5940385492829620908">‏היסטוריית האתרים, הסימניות ופריטים נוספים מ-Chrome נמצאים כאן.</translation>
 <translation id="5941830788786076944">‏הפוך את Google Chrome לדפדפן ברירת המחדל</translation>
 <translation id="6014844626092547096">‏אתה מחובר כעת ל-Chrome‏! הסנכרון הושבת על ידי מנהל המערכת שלך.</translation>
@@ -190,16 +188,15 @@
 <translation id="6566149418543181476">‏מעדכן את Google Chrome‏ (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">‏אתה משתמש ב-<ph name="PROFILE_EMAIL" /> כדי לסנכרן את הפריטים שלך ב-Chrome. עבור אל '<ph name="SETTINGS_LINK" />' כדי לעדכן את העדפות הסנכרון או להשתמש ב-Chrome ללא חשבון Google.</translation>
 <translation id="6600954340915313787">‏הועתק אל Chrome</translation>
-<translation id="6634887557811630702">‏Google Chrome מעודכן.</translation>
 <translation id="6676384891291319759">גישה אל האינטרנט</translation>
 <translation id="6679975945624592337">‏Google Chrome יכול לפעול ברקע</translation>
 <translation id="6750954913813541382">‏כדי לתקן שגיאות כתיב, הטקסט שהוקלד על ידך בדפדפן נשלח אל Google על ידי Chrome</translation>
 <translation id="677276454032249905">‏לסגור את Chrome בכל זאת?</translation>
 <translation id="683440813066116847">‏כלל נכנס עבור הגרסה הניסיונית של Google Chrome על מנת לאפשר תנועת mDNS.</translation>
 <translation id="6885412569789873916">‏אפליקציות לגרסת הבטא של Chrome</translation>
+<translation id="6906909733186691861">‏גרסאות עתידיות של Chrome יותקנו באופן אוטומטי.</translation>
 <translation id="6943584222992551122">‏נתוני הגלישה של האדם הזה יימחקו מהמכשיר. כדי לשחזר את הנתונים, יש להיכנס ל-Chrome בתור<ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">‏כלל נכנס לגרסת הביטא של Google Chrome כדי לאפשר תנועת mDNS.</translation>
-<translation id="6970811910055250180">מעדכן את המכשיר שלך...</translation>
 <translation id="6982337800632491844">‏<ph name="DOMAIN" /> דורש שתקרא ותקבל את התנאים וההגבלות הבאים לפני שתשתמש במכשיר הזה. תנאים אלה אינם מרחיבים, משנים או מגבילים את התנאים לשימוש במערכת ההפעלה של Google Chrome.</translation>
 <translation id="6989339256997917931">‏Google Chrome עודכן, אך לא השתמשת בו לפחות 30 ימים.</translation>
 <translation id="7098166902387133879">‏Google Chrome משתמש במיקרופון שלך.</translation>
@@ -237,7 +234,6 @@
 <translation id="7962410387636238736">‏המחשב הזה כבר לא יקבל עדכונים ל-Google Chrome, מאחר שכבר אין תמיכה במערכות Windows XP ו-Windows Vista</translation>
 <translation id="8008534537613507642">‏התקן מחדש את Chrome</translation>
 <translation id="8013993649590906847">‏אם אין לתמונה תיאור מועיל, Chrome ינסה לספק לך תיאור. כדי ליצור תיאורים, התמונות נשלחות אל Google.</translation>
-<translation id="8030318113982266900">מעדכן את המכשיר שלך לערוץ <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8032142183999901390">‏לאחר הסרת החשבון שלך מ-Chrome, ייתכן שתידרש לטעון מחדש את הכרטיסיות הפתוחות שלך כדי שההסרה תיושם בפועל.</translation>
 <translation id="8129812357326543296">‏מידע על Google Chrome&amp;</translation>
 <translation id="8179874765710681175">‏יש להתקין את Chrome בטלפון שלך, לאחר מכן אליו הודעת SMS.</translation>
@@ -260,7 +256,6 @@
 <translation id="8606668294522778825">‏Google Chrome עשוי להשתמש בשירותי אינטרנט לשיפור חוויית הגלישה שלך. ניתן להשבית את השירותים האלה. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">‏Google Chrome אינו מגיב. להפעיל מחדש עכשיו?</translation>
 <translation id="8625237574518804553">{0,plural, =1{‏Chrome יופעל מחדש בעוד דקה}two{‏Chrome יופעל מחדש בעוד # דקות}many{‏Chrome יופעל מחדש בעוד # דקות}other{‏Chrome יופעל מחדש בעוד # דקות}}</translation>
-<translation id="8667808506758191620">ה-<ph name="DEVICE_TYPE" /> שלך מעודכן.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chrome.</translation>
 <translation id="870251953148363156">‏יש לעדכן את Google Chrome&amp;</translation>

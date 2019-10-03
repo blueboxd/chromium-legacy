@@ -12,6 +12,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -29,8 +30,11 @@ import android.content.SharedPreferences;
 import android.os.ParcelFileDescriptor;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
@@ -41,6 +45,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.init.AsyncInitTaskRunner;
@@ -84,6 +89,11 @@ public class ChromeBackupAgentTest {
         }
     }
 
+    @Rule
+    public JniMocker mocker = new JniMocker();
+    @Mock
+    private ChromeBackupAgent.Natives mChromeBackupAgentJniMock;
+
     private ChromeBackupAgent mAgent;
     private AsyncInitTaskRunner mTaskRunner;
 
@@ -97,28 +107,23 @@ public class ChromeBackupAgentTest {
 
     @Before
     public void setUp() {
-        // Create the agent to test; override the native calls and fetching the task runner, and
-        // spy on the agent to allow us to validate calls to these methods.
+        // Create the agent to test; override fetching the task runner, and spy on the agent to
+        // allow us to validate calls to these methods.
         mAgent = spy(new ChromeBackupAgent() {
             @Override
             AsyncInitTaskRunner createAsyncInitTaskRunner(CountDownLatch latch) {
                 latch.countDown();
                 return mTaskRunner;
             }
-
-            @Override
-            protected String[] nativeGetBoolBackupNames() {
-                return new String[] {"pref1"};
-            }
-
-            @Override
-            protected boolean[] nativeGetBoolBackupValues() {
-                return new boolean[] {true};
-            }
-
-            @Override
-            protected void nativeSetBoolBackupPrefs(String[] s, boolean[] b) {}
         });
+
+        MockitoAnnotations.initMocks(this);
+        mocker.mock(ChromeBackupAgentJni.TEST_HOOKS, mChromeBackupAgentJniMock);
+
+        when(mChromeBackupAgentJniMock.getBoolBackupNames(mAgent))
+                .thenReturn(new String[] {"pref1"});
+        when(mChromeBackupAgentJniMock.getBoolBackupValues(mAgent))
+                .thenReturn(new boolean[] {true});
 
         // Mock initializing the browser
         doReturn(true).when(mAgent).initializeBrowser(any(Context.class));
@@ -427,8 +432,9 @@ public class ChromeBackupAgentTest {
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         assertTrue(prefs.getBoolean(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE, false));
         assertFalse(prefs.contains("junk"));
-        verify(mAgent).nativeSetBoolBackupPrefs(
-                new String[] {"pref1", "pref2"}, new boolean[] {false, true});
+        verify(mChromeBackupAgentJniMock)
+                .setBoolBackupPrefs(
+                        mAgent, new String[] {"pref1", "pref2"}, new boolean[] {false, true});
         verify(mTaskRunner)
                 .startBackgroundTasks(
                         false /* allocateChildConnection */, true /* initVariationSeed */);
@@ -463,7 +469,8 @@ public class ChromeBackupAgentTest {
         mAgent.onRestore(backupData, 0, newState);
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         assertFalse(prefs.contains(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE));
-        verify(mAgent, never()).nativeSetBoolBackupPrefs(any(String[].class), any(boolean[].class));
+        verify(mChromeBackupAgentJniMock, never())
+                .setBoolBackupPrefs(eq(mAgent), any(String[].class), any(boolean[].class));
         verify(mTaskRunner)
                 .startBackgroundTasks(
                         false /* allocateChildConnection */, true /* initVariationSeed */);

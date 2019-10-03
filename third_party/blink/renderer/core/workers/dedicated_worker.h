@@ -32,7 +32,6 @@ class ExecutionContext;
 class PostMessageOptions;
 class ScriptState;
 class WorkerClassicScriptLoader;
-class WorkerClients;
 
 // Implementation of the Worker interface defined in the WebWorker HTML spec:
 // https://html.spec.whatwg.org/C/#worker
@@ -112,7 +111,6 @@ class CORE_EXPORT DedicatedWorker final
       network::mojom::ReferrerPolicy,
       base::Optional<network::mojom::IPAddressSpace> response_address_space);
   scoped_refptr<WebWorkerFetchContext> CreateWebWorkerFetchContext();
-  WorkerClients* CreateWorkerClients();
   // May return nullptr.
   std::unique_ptr<WebContentSettingsClient> CreateWebContentSettingsClient();
 

@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Speichern v. Bild n. möglich</translation>
 <translation id="1180526666083833456">Geräteübergreifend synchronisieren und personalisieren.</translation>
 <translation id="1181037720776840403">Entfernen</translation>
+<translation id="1207113853726624428">Neue Suche</translation>
 <translation id="1209206284964581585">Vorerst ausblenden</translation>
 <translation id="1219674500290482172">Internetverbindung kann nicht hergestellt werden.</translation>
 <translation id="122699739164161391">Alle Tabs schließen</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">Passwort vorschlagen…</translation>
 <translation id="1870148520156231997">Passwort einblenden</translation>
 <translation id="1872096359983322073">Taschenlampe</translation>
-<translation id="1876721852596493031">Nutzungsdaten senden</translation>
 <translation id="1911619930368729126">Auf Google Drive hochladen</translation>
 <translation id="1923342640370224680">Letzte Stunde</translation>
 <translation id="1941314575388338491">Tippen Sie zum Kopieren hier doppelt.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> ungelesene Artikel in Leseliste.</translation>
 <translation id="2230173723195178503">Webseite geladen</translation>
 <translation id="2239626343334228536">Browserdaten werden gelöscht…</translation>
-<translation id="2256128224215992540">Vorschläge für Suche &amp; Websites</translation>
 <translation id="2267753748892043616">Konto hinzufügen</translation>
 <translation id="2268044343513325586">Verfeinern</translation>
 <translation id="2273327106802955778">Menü "Mehr"</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">Fehler beim Öffnen der Datei</translation>
 <translation id="2718352093833049315">Nur bei WLAN</translation>
 <translation id="2747003861858887689">Vorheriges Feld</translation>
+<translation id="2773292004659987824">Inkognitosuche</translation>
 <translation id="2780046210906776326">Keine E-Mail-Konten vorhanden</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Tab-Wechsler beenden</translation>
@@ -295,7 +295,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Synchronisierung aktivieren</translation>
 <translation id="5234764350956374838">Schließen</translation>
-<translation id="5244474230056479698">Mit <ph name="EMAIL" /> synchronisieren</translation>
 <translation id="5245322853195994030">Synchronisierung abbrechen</translation>
 <translation id="5271549068863921519">Passwort speichern</translation>
 <translation id="5300589172476337783">Anzeigen</translation>
@@ -501,6 +500,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="8281781826761538115">Standard: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Neue Suche</translation>
+<translation id="8323906514956095947">Für weitere Tab-Optionen berühren und halten</translation>
 <translation id="8328777765163860529">Alle schließen</translation>
 <translation id="8407669440184693619">Keine Passwörter für diese Website gefunden</translation>
 <translation id="842017693807136194">Angemeldet mit</translation>

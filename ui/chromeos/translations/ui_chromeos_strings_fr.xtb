@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">Retirer le dossier</translation>
 <translation id="3678559383040232393">Clavier maltais</translation>
 <translation id="3685122418104378273">Par défaut, la synchronisation Google Drive est désactivée lors de l'utilisation des données mobiles.</translation>
+<translation id="3689865792480713551">Annulez <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Impossible d'ouvrir ce périphérique, car son système de fichiers n'est pas compatible.</translation>
 <translation id="3741243925913727067">Sauvegardez les photos et les vidéos de votre périphérique multimédia sur Google Drive.</translation>
 <translation id="3749289110408117711">Nom du fichier</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">Clavier international américain (PC)</translation>
 <translation id="6346310558342052870">Accès limité</translation>
 <translation id="6353618411602605519">Clavier croate</translation>
+<translation id="6356685157277930264">Fenêtre de commentaires sur les fichiers</translation>
 <translation id="6358884629796491903">Dragon</translation>
 <translation id="637062427944097960">Ce fichier est ouvert sur un autre bureau. Utilisez le compte de <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) pour l'afficher.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> éléments</translation>

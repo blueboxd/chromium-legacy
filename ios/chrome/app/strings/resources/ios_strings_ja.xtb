@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">画像を保存できません</translation>
 <translation id="1180526666083833456">デバイス間の同期とカスタマイズを行います。</translation>
 <translation id="1181037720776840403">削除</translation>
+<translation id="1207113853726624428">新しく検索</translation>
 <translation id="1209206284964581585">今は表示しない</translation>
 <translation id="1219674500290482172">インターネットに接続できません。</translation>
 <translation id="122699739164161391">すべてのタブを閉じる</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">パスワードを自動生成...</translation>
 <translation id="1870148520156231997">パスワードを表示します</translation>
 <translation id="1872096359983322073">照明</translation>
-<translation id="1876721852596493031">使用状況データ送信</translation>
 <translation id="1911619930368729126">ドライブにアップロード</translation>
 <translation id="1923342640370224680">1 時間以内</translation>
 <translation id="1941314575388338491">ダブルタップしてコピー。</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> 件のリーディング リストの記事が未読です。</translation>
 <translation id="2230173723195178503">ウェブページを読み込みました</translation>
 <translation id="2239626343334228536">閲覧データを削除しています...</translation>
-<translation id="2256128224215992540">検索とサイトの候補を表示</translation>
 <translation id="2267753748892043616">アカウントを追加</translation>
 <translation id="2268044343513325586">絞り込み</translation>
 <translation id="2273327106802955778">その他のメニュー</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">ファイルを開けません</translation>
 <translation id="2718352093833049315">Wi-Fi接続時のみ</translation>
 <translation id="2747003861858887689">前の項目</translation>
+<translation id="2773292004659987824">シークレット検索</translation>
 <translation id="2780046210906776326">メールアカウントなし</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">タブ切り替えモードを終了</translation>
@@ -295,7 +295,6 @@
 <translation id="5197255632782567636">インターネット</translation>
 <translation id="5228579091201413441">同期を有効にする</translation>
 <translation id="5234764350956374838">閉じる</translation>
-<translation id="5244474230056479698"><ph name="EMAIL" /> に同期しています</translation>
 <translation id="5245322853195994030">同期をキャンセル</translation>
 <translation id="5271549068863921519">パスワードを保存</translation>
 <translation id="5300589172476337783">表示</translation>
@@ -501,6 +500,7 @@
 <translation id="8261506727792406068">削除</translation>
 <translation id="8281781826761538115">デフォルト - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">新しく検索</translation>
+<translation id="8323906514956095947">長押しすると、タブのオプションがさらに表示されます</translation>
 <translation id="8328777765163860529">すべて閉じる</translation>
 <translation id="8407669440184693619">このサイト用のパスワードが見つかりません</translation>
 <translation id="842017693807136194">ログインに使用した ID プロバイダ</translation>

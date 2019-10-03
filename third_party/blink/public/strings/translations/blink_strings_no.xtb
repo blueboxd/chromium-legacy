@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">fotnote</translation>
 <translation id="2709516037105925701">Autofyll</translation>
 <translation id="2723001399770238859">lyd</translation>
+<translation id="2725963129578236554">kommentarer</translation>
 <translation id="2746543609216772311">Verdien må være <ph name="MINIMUM_DATE_OR_TIME" /> eller senere.</translation>
 <translation id="2759744352195237655">forgrunnsknapp</translation>
 <translation id="2761667185364618470">Kryss av denne boksen hvis du vil fortsette.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">Du må forlenge denne teksten til <ph name="MIN_CHARACTERS" /> tegn eller mer (for øyeblikket bruker du <ph name="CURRENT_LENGTH" /> tegn).</translation>
 <translation id="383465348367842624">En del etterfulgt av «<ph name="ATSIGN" />» kan ikke inneholde symbolet «<ph name="INVALIDCHARACTER" />».</translation>
 <translation id="3846214748874656680">Avslutt fullskjermmodus</translation>
+<translation id="3889183436948184105">versjon</translation>
 <translation id="3920932319529768807">konklusjon</translation>
 <translation id="3924558731517983934">program</translation>
 <translation id="3944740393230681990">prolog</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">lydtidslinje</translation>
 <translation id="6443871981718447451">vis menyen for teksting for hørselshemmede</translation>
 <translation id="6453774872122745852">omtale</translation>
+<translation id="6475115390776617481">direkte tilstedeværelse</translation>
 <translation id="648732519525291180">klokkeslettvelger</translation>
 <translation id="6550675742724504774">Alternativer</translation>
 <translation id="6572309429103589720">Grammatikkfeil</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">innsetting</translation>
 <translation id="6989848892321993519">Øk lengden på denne teksten med minst <ph name="MIN_CHARACTERS" /> tegn (du bruker for øyeblikket 1 tegn).</translation>
 <translation id="7033340931668032222">opp og ned for å endre volum</translation>
+<translation id="7034405885550056553">forslag</translation>
 <translation id="709897737746224366">Sørg for samsvar med det forespurte formatet.</translation>
 <translation id="7118469954320184356">Ingen beskrivelse er tilgjengelig.</translation>
 <translation id="7139483182332611405">forord</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">utdata</translation>
 <translation id="8750798805984357768">Velg ett av følgende alternativer.</translation>
 <translation id="8808573423886751634">kapittel</translation>
+<translation id="8822203815165896261">forfatterinfo</translation>
 <translation id="8845239796550121995">Caster til TV-en nå</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8875657656876809964">Feil ved videoavspilling</translation>

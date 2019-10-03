@@ -19,7 +19,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1393853151966637042">Obtenir de l'aide sur l'utilisation de Google Chrome</translation>
 <translation id="1399397803214730675">Une version plus récente de Google Chrome est déjà installée sur cet ordinateur. Si celle-ci ne fonctionne pas, désinstallez Google Chrome, puis réessayez.</translation>
 <translation id="1434626383986940139">Applications Chrome Canary</translation>
-<translation id="1457721931618994305">Mise à jour de Google Chrome en cours…</translation>
 <translation id="1469002951682717133">Lanceur d'applications Google Chrome</translation>
 <translation id="1553358976309200471">Mettre à jour Chrome</translation>
 <translation id="1587223624401073077">Votre webcam est en cours d'utilisation dans Google Chrome.</translation>
@@ -89,6 +88,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="3065168410429928842">Onglet Chrome</translation>
 <translation id="3080151273017101988">Poursuivre l'exécution d'applications en arrière-plan après la fermeture de Google Chrome</translation>
 <translation id="3089968997497233615">Une nouvelle version de Google Chrome encore plus sûre est disponible.</translation>
+<translation id="3138848678222082288">Les futures versions de Chrome seront installées automatiquement. Une fois ce téléchargement terminé, Chrome redémarrera, et vous pourrez de nouveau l'utiliser.</translation>
 <translation id="3149510190863420837">Applications Chrome</translation>
 <translation id="3282568296779691940">Connectez-vous à Chrome</translation>
 <translation id="3340978935015468852">paramètres</translation>
@@ -173,9 +173,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="573759479754913123">À propos de Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Impossible de lancer Chrome. Réessayez.</translation>
-<translation id="5877064549588274448">La version a été modifiée. Redémarrez votre appareil pour appliquer les modifications.</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
-<translation id="5906655207909574370">Mise à jour presque terminée. Pour la finaliser, veuillez redémarrer votre appareil.</translation>
 <translation id="5940385492829620908">Votre contenu Web, vos favoris et toutes vos données Chrome sont conservés ici.</translation>
 <translation id="5941830788786076944">Définir Google Chrome comme navigateur par défaut</translation>
 <translation id="6014844626092547096">Vous êtes maintenant connecté à Chrome. La synchronisation a été désactivée par votre administrateur.</translation>
@@ -194,16 +192,15 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6566149418543181476">Mise à jour de Google Chrome (<ph name="PROGRESS_PERCENT" />)…</translation>
 <translation id="6598387184982954187">Vous utilisez le compte <ph name="PROFILE_EMAIL" /> pour synchroniser votre contenu dans Chrome. Pour mettre à jour vos préférences de synchronisation ou pour utiliser Chrome sans compte Google, accédez à la page <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Copiée dans Chrome</translation>
-<translation id="6634887557811630702">Google Chrome est à jour.</translation>
 <translation id="6676384891291319759">Accéder à Internet</translation>
 <translation id="6679975945624592337">Laisser Google Chrome s'exécuter en arrière-plan</translation>
 <translation id="6750954913813541382">Pour corriger les fautes d'orthographe, Chrome envoie à Google le texte que vous saisissez dans le navigateur</translation>
 <translation id="677276454032249905">Quitter Chrome quand même ?</translation>
 <translation id="683440813066116847">Règle de trafic entrant pour Google Chrome Canary autorisant le trafic mDNS</translation>
 <translation id="6885412569789873916">Applications pour la version bêta de Chrome</translation>
+<translation id="6906909733186691861">Les futures versions de Chrome seront installées automatiquement.</translation>
 <translation id="6943584222992551122">Les données de navigation de cet utilisateur vont être supprimées de cet appareil. Pour les récupérer, connectez-vous à Chrome en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Règle de trafic entrant pour la version bêta de Google Chrome autorisant le trafic mDNS.</translation>
-<translation id="6970811910055250180">Mise à jour de votre appareil en cours…</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> implique que vous lisiez et acceptiez les présentes conditions d'utilisation pour utiliser cet appareil. Ces dernières n'étendent, ne modifient ni ne restreignent les conditions d'utilisation de Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome a été mis à jour, mais vous ne l'avez pas utilisé depuis plus de 30 jours.</translation>
 <translation id="7098166902387133879">Votre micro est en cours d'utilisation dans Google Chrome.</translation>
@@ -241,7 +238,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7962410387636238736">Cet ordinateur ne recevra plus les mises à jour de Google Chrome, car la compatibilité n'est plus assurée sur Windows XP et Windows Vista</translation>
 <translation id="8008534537613507642">Réinstaller Chrome</translation>
 <translation id="8013993649590906847">Si une image n'est pas accompagnée d'une description utile, Chrome essaiera de vous en proposer une. Pour nous permettre de créer des descriptions, les images sont envoyées à Google.</translation>
-<translation id="8030318113982266900">Passage de votre appareil à la version <ph name="CHANNEL_NAME" />…</translation>
 <translation id="8032142183999901390">Une fois votre compte Chrome supprimé, vous devrez peut-être charger de nouveau les onglets ouverts pour que les modifications prennent effet.</translation>
 <translation id="8129812357326543296">À propos de &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Installez Chrome sur votre téléphone. Vous y recevrez un SMS.</translation>
@@ -264,7 +260,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="8606668294522778825">Google Chrome peut utiliser des services Web pour améliorer votre confort de navigation. Vous pouvez choisir de désactiver ces services. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome ne répond pas. Voulez-vous le relancer maintenant ?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome va être relancé dans 1 minute}one{Chrome va être relancé dans # minute}other{Chrome va être relancé dans # minutes}}</translation>
-<translation id="8667808506758191620">Votre <ph name="DEVICE_TYPE" /> est à jour.</translation>
 <translation id="8669527147644353129">Application d'aide de Google Chrome</translation>
 <translation id="8679801911857917785">Elle contrôle également la page qui s'affiche au démarrage de Chrome.</translation>
 <translation id="870251953148363156">Mettre à jour &amp;Google Chrome</translation>

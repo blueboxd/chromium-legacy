@@ -8,7 +8,6 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/values.h"
 
 namespace android_webview {
 
@@ -28,8 +27,7 @@ class AwTracingController {
   ~AwTracingController();
 
   void OnTraceDataReceived(std::unique_ptr<std::string> chunk);
-  void OnTraceDataComplete(
-      std::unique_ptr<const base::DictionaryValue> metadata);
+  void OnTraceDataComplete();
 
   JavaObjectWeakGlobalRef weak_java_object_;
   base::WeakPtrFactory<AwTracingController> weak_factory_{this};

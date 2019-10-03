@@ -92,6 +92,10 @@ class MetricsRenderFrameObserver
   // ad.
   void UpdateResourceMetadata(int request_id);
 
+  // Called on the completion of a resource from network or cache to determine
+  // if it completed before FCP.
+  void MaybeSetCompletedBeforeFCP(int request_id);
+
   void SendMetrics();
   virtual mojom::PageLoadTimingPtr GetTiming() const;
   virtual std::unique_ptr<base::OneShotTimer> CreateTimer();
@@ -105,7 +109,7 @@ class MetricsRenderFrameObserver
   // information from ongoing resource requests on the previous page (or right
   // before this page loads in a new renderer).
   std::unique_ptr<PageResourceDataUse> provisional_frame_resource_data_use_;
-  int provisional_frame_resource_id = 0;
+  int provisional_frame_resource_id_ = 0;
 
   ScopedObserver<subresource_filter::AdResourceTracker,
                  subresource_filter::AdResourceTracker::Observer>
@@ -113,6 +117,9 @@ class MetricsRenderFrameObserver
 
   // Set containing all request ids that were reported as ads from the renderer.
   std::set<int> ad_request_ids_;
+
+  // Set containing all request ids that were reported as completing before FCP.
+  std::set<int> before_fcp_request_ids_;
 
   // Will be null when we're not actively sending metrics.
   std::unique_ptr<PageTimingMetricsSender> page_timing_metrics_sender_;

@@ -693,7 +693,6 @@
         'os_type': 'android',
         'test_suites': {
           'gtest_tests': 'bfcache_android_gtests',
-          'junit_tests': 'bfcache_junit_tests',
         }
       },
       'android-marshmallow-x86-fyi-rel': {

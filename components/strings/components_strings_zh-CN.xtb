@@ -45,6 +45,7 @@
 <translation id="1175875016430184367">三钉（右侧）</translation>
 <translation id="1178581264944972037">暂停</translation>
 <translation id="1181037720776840403">删除</translation>
+<translation id="1186201132766001848">检查密码</translation>
 <translation id="1197088940767939838">橙色</translation>
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1201895884277373915">来自该网站的更多内容</translation>
@@ -110,6 +111,7 @@
 <translation id="1430915738399379752">打印</translation>
 <translation id="1442386063175183758">关门折（右侧）</translation>
 <translation id="1442987760062738829">打孔</translation>
+<translation id="1450011005989029586">您使用的某个网站或应用发生了数据泄露，导致您的密码外泄。Chrome 建议您立即在 <ph name="ORIGIN" /> 上<ph name="BOLD" />。</translation>
 <translation id="1455413310270022028">橡皮擦</translation>
 <translation id="1463543813647160932">5x7</translation>
 <translation id="1472675084647422956">显示更多</translation>
@@ -153,7 +155,6 @@
 <translation id="1640244768702815859">请尝试<ph name="BEGIN_LINK" />访问该网站的首页<ph name="END_LINK" />。</translation>
 <translation id="1644574205037202324">历史记录</translation>
 <translation id="1645368109819982629">协议不受支持</translation>
-<translation id="1655462015569774233">{1,plural, =1{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书已在昨天过期。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}other{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书已在 # 天前过期。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}}</translation>
 <translation id="1656489000284462475">取货</translation>
 <translation id="1662550410081243962">保存并填写付款方式</translation>
 <translation id="1663943134801823270">信用卡选项和地址选项均来自 Chrome。您可在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中管理这些选项。</translation>
@@ -323,7 +324,6 @@
 <translation id="2501278716633472235">返回</translation>
 <translation id="2503184589641749290">接受的借记卡和预付卡</translation>
 <translation id="2505268675989099013">保护帐号</translation>
-<translation id="2515335152965840738">忽略</translation>
 <translation id="2515629240566999685">检查您所在区域的网络信号</translation>
 <translation id="2521385132275182522">钉装（右下角）</translation>
 <translation id="2523886232349826891">仅会保存在此设备上</translation>
@@ -380,7 +380,6 @@
 <translation id="2799020568854403057">您要访问的网站包含有害应用</translation>
 <translation id="2799223571221894425">重新启动</translation>
 <translation id="2803306138276472711">Google安全浏览功能最近在<ph name="SITE" />上<ph name="BEGIN_LINK" />检测到了恶意软件<ph name="END_LINK" />。平常非常安全的网站有时也会感染恶意软件。</translation>
-<translation id="2815364696811431560">离开网站</translation>
 <translation id="2824775600643448204">地址和搜索栏</translation>
 <translation id="2826760142808435982">该连接使用 <ph name="CIPHER" /> 进行加密和身份验证，并使用 <ph name="KX" /> 作为密钥交换机制。</translation>
 <translation id="2835170189407361413">清除表单</translation>
@@ -452,6 +451,7 @@
 <translation id="320323717674993345">取消付款</translation>
 <translation id="3207960819495026254">已加书签</translation>
 <translation id="3209034400446768650">此网页可能会收取费用</translation>
+<translation id="3209080785413271048">使用 Windows Hello 验证您保存的付款方式。</translation>
 <translation id="3215092763954878852">无法使用 WebAuthn</translation>
 <translation id="3225919329040284222">服务器提供的证书与内置预期证书不匹配。这些预期证书是针对某些高安全性网站提供的，以便为您提供保护。</translation>
 <translation id="3226128629678568754">按“重新加载”按钮，重新提交加载该网页所需的数据。</translation>
@@ -462,6 +462,7 @@
 <translation id="3234666976984236645">始终检测此网站上的重要内容</translation>
 <translation id="3270847123878663523">撤消顺序调整(&amp;U)</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
+<translation id="3281668902344226640">使用 Touch ID 验证您保存的付款方式。</translation>
 <translation id="3282497668470633863">添加持卡人姓名</translation>
 <translation id="3287510313208355388">联网时下载</translation>
 <translation id="3293642807462928945">详细了解“<ph name="POLICY_NAME" />”政策</translation>
@@ -527,6 +528,7 @@
 <translation id="36224234498066874">清除浏览数据...</translation>
 <translation id="362276910939193118">显示所有历史记录</translation>
 <translation id="3630155396527302611">如果它已在可访问网络的程序列表中，请尝试将它从该列表中移除，然后重新添加到其中。</translation>
+<translation id="3631244953324577188">生物识别</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">验证成功</translation>
 <translation id="3655670868607891010">如果您频繁遇到此问题，请尝试这些<ph name="HELP_LINK" />。</translation>
@@ -602,6 +604,7 @@
 <translation id="4067947977115446013">添加有效地址</translation>
 <translation id="4072486802667267160">处理您的订单时出错。请重试。</translation>
 <translation id="4075732493274867456">客户端和服务器不支持一般 SSL 协议版本或加密套件。</translation>
+<translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">代理配置已设置为使用 .pac 脚本网址，而不是固定的代理服务器。</translation>
 <translation id="4082393374666368382">设置 - 管理</translation>
 <translation id="4098354747657067197">您要访问的是诈骗网站</translation>
@@ -658,6 +661,7 @@
 <translation id="4258748452823770588">签名无效</translation>
 <translation id="4261046003697461417">无法为受保护的文档添加注释</translation>
 <translation id="4265872034478892965">您的管理员允许</translation>
+<translation id="4270615291506829403">更改您的密码</translation>
 <translation id="4275830172053184480">重启您的设备</translation>
 <translation id="4277028893293644418">重置密码</translation>
 <translation id="4279811152705618813">您的 <ph name="DEVICE_TYPE" /> 由 <ph name="ENROLLMENT_DOMAIN" /> 管理</translation>
@@ -684,6 +688,7 @@
 <translation id="4372948949327679948">应使用<ph name="VALUE_TYPE" />值。</translation>
 <translation id="4377125064752653719">您尝试访问的是 <ph name="DOMAIN" />，但服务器出示的证书已被其颁发者吊销。这表明绝对不应该信任此服务器出示的安全凭据。您可能正在与攻击者进行通信。</translation>
 <translation id="4378154925671717803">电话机</translation>
+<translation id="4398334096870680409">您的设备不支持此功能。</translation>
 <translation id="4406896451731180161">搜索结果</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" />Cookie</translation>
 <translation id="4415426530740016218">取货地址</translation>
@@ -732,7 +737,9 @@
 <translation id="4691835149146451662">Architecture-A (Envelope)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /><ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">您的连接已中断</translation>
+<translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />运行 Windows 网络诊断<ph name="END_LINK" /></translation>
+<translation id="4725851834065990915">您使用的某个网站或应用发生了数据泄露，导致您的密码被外泄。Chrome 建议您立即检查已保存的密码。</translation>
 <translation id="4726672564094551039">重新加载政策</translation>
 <translation id="4728558894243024398">平台</translation>
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
@@ -760,7 +767,6 @@
 <translation id="4816492930507672669">适合页面大小</translation>
 <translation id="4850886885716139402">视图</translation>
 <translation id="4854362297993841467">该递送方式不可用。请另选一种方式。</translation>
-<translation id="4864052566555297930">安全提示：</translation>
 <translation id="4876188919622883022">简化版视图</translation>
 <translation id="4876305945144899064">无用户名</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{无}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />、<ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />、<ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
@@ -986,6 +992,7 @@
 <translation id="5967592137238574583">修改联系信息</translation>
 <translation id="5967867314010545767">从历史记录中移除</translation>
 <translation id="5975083100439434680">缩小</translation>
+<translation id="5979084224081478209">检查密码</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">无法打开付款应用</translation>
 <translation id="5989320800837274978">固定代理服务器和 .pac 脚本网址均未指定。</translation>
@@ -1142,6 +1149,7 @@
 <translation id="679355240208270552">由于政策未启用默认搜索引擎，因此政策值已被忽略。</translation>
 <translation id="681021252041861472">必填字段</translation>
 <translation id="6810899417690483278">自定义 ID</translation>
+<translation id="6819440013020405090">您使用的某个网站或应用发生了数据泄露，导致您的密码被外泄。Chrome 建议您检查并更改您在 <ph name="ORIGIN" /> 上保存的密码。</translation>
 <translation id="6825578344716086703">您尝试访问的是 <ph name="DOMAIN" />，但是服务器出示的证书是使用弱签名算法（例如 SHA-1）签署的。这意味着服务器出示的安全凭据可能是伪造的，因此这可能并不是您想要访问的服务器（您可能正在与攻击者进行通信）。</translation>
 <translation id="6826370046007623921">数据泄露防护</translation>
 <translation id="6831043979455480757">翻译</translation>
@@ -1184,6 +1192,7 @@
 <translation id="7064851114919012435">联系信息</translation>
 <translation id="7075452647191940183">请求过大</translation>
 <translation id="7079718277001814089">此网站包含恶意软件</translation>
+<translation id="70850504851191913">已报告数据泄露</translation>
 <translation id="7087282848513945231">县</translation>
 <translation id="7090678807593890770">请在 Google 中搜索“<ph name="LINK" />”</translation>
 <translation id="7108338896283013870">隐藏</translation>
@@ -1272,6 +1281,7 @@
 <translation id="7460618730930299168">此处显示的放映时间不同于您的选择。继续？</translation>
 <translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7481312909269577407">前进</translation>
+<translation id="748406663033922918">使用“屏幕锁定”功能验证您保存的付款方式。</translation>
 <translation id="7485870689360869515">找不到数据。</translation>
 <translation id="7498234416455752244">继续修改</translation>
 <translation id="7508255263130623398">返回的政策设备 ID 为空，或与当前的设备 ID 不一致</translation>
@@ -1485,7 +1495,6 @@
 <translation id="8553075262323480129">系统无法确定该网页的语言，因此无法进行翻译。</translation>
 <translation id="8557066899867184262">银行卡验证码 (CVC) 位于银行卡背面。</translation>
 <translation id="8559762987265718583">您设备的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。</translation>
-<translation id="8561575143530093465"><ph name="SAFETY_TIP" />可疑网站</translation>
 <translation id="8564985650692024650">如果您在其他网站上重复使用了您的 <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> 密码，Chromium 建议您重置该密码。</translation>
 <translation id="8571890674111243710">正在将网页翻译成<ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">添加电话号码
@@ -1546,6 +1555,7 @@
 <translation id="8943282376843390568">绿黄色</translation>
 <translation id="8957210676456822347">强制门户授权</translation>
 <translation id="8962950042226115166">可疑网站</translation>
+<translation id="8966619695390250636">您是想？</translation>
 <translation id="8968766641738584599">保存卡片</translation>
 <translation id="8971063699422889582">服务器的证书已过期。</translation>
 <translation id="8975012916872825179">包括电话号码、电子邮件地址和送货地址等信息</translation>

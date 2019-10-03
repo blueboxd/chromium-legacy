@@ -25,6 +25,7 @@
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/message_port.h"
 #include "fuchsia/engine/browser/context_impl.h"
+#include "fuchsia/engine/browser/web_engine_devtools_controller.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/logging/logging_utils.h"
@@ -188,6 +189,7 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
       binding_(this, std::move(frame_request)) {
   web_contents_->SetDelegate(this);
   Observe(web_contents_.get());
+
   binding_.set_error_handler([this](zx_status_t status) {
     ZX_LOG_IF(ERROR, status != ZX_ERR_PEER_CLOSED, status)
         << " Frame disconnected.";
@@ -200,6 +202,7 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
 
 FrameImpl::~FrameImpl() {
   TearDownView();
+  context_->devtools_controller()->OnFrameDestroyed(web_contents_.get());
 }
 
 zx::unowned_channel FrameImpl::GetBindingChannelForTest() const {
@@ -708,5 +711,5 @@ void FrameImpl::ReadyToCommitNavigation(
 
 void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                               const GURL& validated_url) {
-  context_->OnDebugDevToolsPortReady();
+  context_->devtools_controller()->OnFrameLoaded(web_contents_.get());
 }

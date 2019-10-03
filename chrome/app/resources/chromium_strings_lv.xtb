@@ -72,7 +72,6 @@
 <translation id="3509308970982693815">Aizveriet visus Chromium logus un mēģiniet vēlreiz.</translation>
 <translation id="352783484088404971">Noņemšana no pārlūka Chromium...</translation>
 <translation id="3575459661164320785">Jūsu datorā ir kaitīga programmatūra. Pārlūkprogramma Chromium var to noņemt, atjaunot jūsu iestatījumus un atspējot paplašinājumus, lai atkal pareizi darbotos.</translation>
-<translation id="3582788516608077514">Notiek Chromium atjaunināšana...</translation>
 <translation id="358997566136285270">Chromium logotips</translation>
 <translation id="3639635944603682591">Šī lietotāja pārlūkošanas dati tiks dzēsti no šīs ierīces. Lai atkoptu datus, pierakstieties pārlūkprogrammā Chromium kā lietotājs <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Atvērt saiti jaunā Chromium &amp;cilnē</translation>
@@ -86,7 +85,6 @@
 <translation id="421369550622382712">Atklājiet lieliskas lietotnes, spēles, paplašinājumus un motīvus, ko varat izmantot pārlūkā Chromium.</translation>
 <translation id="4216212958613226427">Šī valoda tiek izmantota, lai attēlotu Chromium lietotāja saskarni</translation>
 <translation id="4222580632002216401">Jūs esat pierakstījies operētājsistēmā Chromium. Jūsu administrators ir atspējojis sinhronizēšanu.</translation>
-<translation id="4224199872375172890">Chromium ir atjaunināts.</translation>
 <translation id="4230135487732243613">Vai saistīt Chromium datus ar šo kontu?</translation>
 <translation id="4271805377592243930">Saņemt palīdzību par Chromium</translation>
 <translation id="4285930937574705105">Instalācija neizdevās nenoteiktas kļūdas dēļ. Ja Chromium šobrīd darbojas, aizveriet to un mēģiniet vēlreiz.</translation>
@@ -98,6 +96,7 @@
 <translation id="4567424176335768812">Jūs esat pierakstījies kā <ph name="USER_EMAIL_ADDRESS" />. Tagad varat piekļūt savām grāmatzīmēm, vēsturei un citiem iestatījumiem visās ierīcēs, kurās esat pierakstījies.</translation>
 <translation id="459535195905078186">Chromium lietotnes</translation>
 <translation id="4621240073146040695">Atjaunināšana ir gandrīz pabeigta. Lai pabeigtu atjaunināšanu, atkārtoti palaidiet pārlūku Chromium.</translation>
+<translation id="4661006601577405669">Nākamās Chromium versijas tiks instalētas automātiski.</translation>
 <translation id="4677944499843243528">Šķiet, ka profils tiek izmantots citā Chromium procesā (<ph name="PROCESS_ID" />) citā datorā (<ph name="HOST_NAME" />). Lai profils netiktu bojāts, pārlūkā Chromium tas ir bloķēts. Ja esat pārliecināts, ka šis profils netiek izmantots citos procesos, varat to atbloķēt un restartēt pārlūku Chromium.</translation>
 <translation id="469338717132742108">Saņemt palīdzību par Chromium OS</translation>
 <translation id="4708774505295300557">Kāds iepriekš pierakstījās pārlūkā Chromium šajā datorā, izmantojot e-pasta adresi <ph name="ACCOUNT_EMAIL_LAST" />. Lūdzu, izveidojiet jaunu Chromium lietotāju, lai nošķirtu savu informāciju.</translation>
@@ -128,9 +127,7 @@
 <translation id="5698481217667032250">Rādīt Chromium šajā valodā</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Laipni lūdzam pārlūkā Chromium!</translation>
-<translation id="5877064549588274448">Kanāls tika mainīts. Lai lietotu izmaiņas, restartējiet ierīci.</translation>
 <translation id="5895138241574237353">Restartēt</translation>
-<translation id="5906655207909574370">Atjaunināšana ir gandrīz pabeigta. Restartējiet ierīci, lai pabeigtu atjaunināšanu.</translation>
 <translation id="5987687638152509985">Lai sāktu sinhronizēšanu, atjauniniet Chromium.</translation>
 <translation id="6013050204643758987">Chromium OS darbību nodrošina papildu <ph name="BEGIN_LINK_CROS_OSS" />atklātā pirmkoda programmatūra<ph name="END_LINK_CROS_OSS" />, tāpat kā <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" /> darbību.</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
@@ -172,7 +169,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="6868056391275687737">Darbojas citas Chromium kopijas. Lai veiktu atjaunināšanu, aizveriet tās.</translation>
 <translation id="6893813176749746474">Pārlūks Chromium ir atjaunināts, bet jūs neesat to izmantojis vismaz 30 dienas.</translation>
 <translation id="6964305034639999644">Atvērt saiti inko&amp;gnito režīma logā</translation>
-<translation id="6970811910055250180">Notiek ierīces atjaunināšana...</translation>
 <translation id="6990124437352146030">Pārlūkam Chromium ir nepieciešama atļauja piekļūt jūsu mikrofonam šajā vietnē.</translation>
 <translation id="705851970750939768">Atjaunināt Chromium</translation>
 <translation id="7066436765290594559">Chromium OS nevarēja sinhronizēt jūsu datus. Lūdzu, atjauniniet savu sinhronizācijas ieejas frāzi.</translation>
@@ -192,6 +188,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> — Chromium izstrādātāju versija</translation>
 <translation id="7451052299415159299">Pārlūkam Chromium ir nepieciešama atļauja piekļūt jūsu kamerai šajā vietnē.</translation>
 <translation id="7483335560992089831">Nevar instalēt to pašu Chromium versiju, kas jau šobrīd darbojas. Aizveriet Chromium un mēģiniet vēlreiz.</translation>
+<translation id="751093125041325477">Nākamās Chromium versijas tiks instalētas automātiski. Kad lejupielāde būs pabeigta, pārlūks Chromium tiks restartēts, un pēc tam varēsiet turpināt darbu.</translation>
 <translation id="753534427205733210">{0,plural, =1{Pārlūks Chromium pēc 1 minūtes tiks restartēts}zero{Pārlūks Chromium pēc # minūtēm tiks restartēts}one{Pārlūks Chromium pēc # minūtes tiks restartēts}other{Pārlūks Chromium pēc # minūtēm tiks restartēts}}</translation>
 <translation id="7549178288319965365">Par Chromium OS</translation>
 <translation id="7561906087460245826">Notīrīt arī datus no Chromium (<ph name="URL" />)</translation>
@@ -213,7 +210,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="7975919845073681630">Šī ir Chromium papildu instalācija, un to nevar izmantot kā noklusējuma pārlūku.</translation>
 <translation id="7979877361127045932">Paslēpt Chromium izvēlnē</translation>
 <translation id="8013436988911883588">Tiklīdz pārlūkam Chromium tiks sniegta piekļuve, vietnes varēs lūgt jums piekļuvi.</translation>
-<translation id="8030318113982266900">Notiek ierīces atjaunināšana uz kanālu <ph name="CHANNEL_NAME" />...</translation>
 <translation id="81770708095080097">Šis fails ir bīstams, tāpēc Chromium to bloķēja.</translation>
 <translation id="8222496066431494154">Instalējiet pārlūku Chromium savā tālrunī. Mēs nosūtīsim īsziņu uz jūsu konta atkopšanas tālruņa numuru: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="8248265253516264921">Ja attēlam nav vērtīga apraksta, pārlūks Chromium mēģinās jums tādu nodrošināt. Lai izveidotu aprakstus, attēli tiek nosūtīti uzņēmumam Google. Jebkurā brīdī iestatījumos varat izslēgt šo iespēju.</translation>
@@ -228,7 +224,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="8586442755830160949">Autortiesības <ph name="YEAR" /> Chromium autori. Visas tiesības paturētas.</translation>
 <translation id="8619360774459241877">Notiek Chromium palaišana...</translation>
 <translation id="8621669128220841554">Instalēšana neizdevās nenoteiktas kļūdas dēļ. Lejupielādējiet pārlūku Chromium vēlreiz.</translation>
-<translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> ierīce ir atjaunināta.</translation>
 <translation id="8682540261359803721">Ja šajā lapā iestatījums nav pieejams, skatiet to sadaļā <ph name="LINK_BEGIN" />
       Pārlūkprogrammas Chromium iestatījumi<ph name="LINK_END" />.</translation>
 <translation id="8697124171261953979">Tas nosaka arī to, kāda lapa tiks rādīta, kad atvērsiet pārlūku Chromium vai meklēsiet, izmantojot universālo lodziņu.</translation>

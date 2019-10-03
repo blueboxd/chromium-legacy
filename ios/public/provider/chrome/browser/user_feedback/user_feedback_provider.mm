@@ -22,9 +22,4 @@ UIViewController* UserFeedbackProvider::CreateViewController(
   return nil;
 }
 
-UIViewController* UserFeedbackProvider::CreateViewController(
-    id<UserFeedbackDataSource> data_source) {
-  return CreateViewController(data_source, nil);
-}
-
 void UserFeedbackProvider::Synchronize() {}

@@ -2774,6 +2774,7 @@ const char kBuiltinCertificateVerifierEnabled[] =
 const char kSharingVapidKey[] = "sharing.vapid_key";
 const char kSharingSyncedDevices[] = "sharing.synced_devices";
 const char kSharingFCMRegistration[] = "sharing.fcm_registration";
+const char kSharingLocalSharingInfo[] = "sharing.local_sharing_info";
 
 #if !defined(OS_ANDROID)
 // Dictionary that contains all of the Hats Survey Metadata.

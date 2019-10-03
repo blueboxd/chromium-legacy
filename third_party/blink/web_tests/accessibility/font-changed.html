@@ -9,9 +9,9 @@
   test(() => {
     let fontFamily = document.getElementById('fontFamily');
     let axFontFamily = accessibilityController.accessibleElementById('fontFamily');
-    assert_equals(axFontFamily.fontFamily, 'AXFontFamily: -webkit-serif');
+    let initialFamily = axFontFamily.fontFamily;
     fontFamily.style.fontFamily = 'sans-serif';
-    assert_equals(axFontFamily.fontFamily, 'AXFontFamily: -webkit-sans-serif');
+    assert_not_equals(axFontFamily.fontFamily, initialFamily);
   }, 'Ensures that the font family can be dynamically changed.');
 
   test(() => {

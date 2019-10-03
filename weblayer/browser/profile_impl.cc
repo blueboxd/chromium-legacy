@@ -69,6 +69,11 @@ class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
     return nullptr;
   }
 
+  content::StorageNotificationService* GetStorageNotificationService()
+      override {
+    return nullptr;
+  }
+
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override {
     return nullptr;
   }

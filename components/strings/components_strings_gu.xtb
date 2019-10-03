@@ -45,6 +45,7 @@
 <translation id="1175875016430184367">નીચે જમણી બાજુએ સ્ટેપલ લગાવો</translation>
 <translation id="1178581264944972037">થોભો</translation>
 <translation id="1181037720776840403">કાઢી નાખો</translation>
+<translation id="1186201132766001848">પાસવર્ડ ચેક કરો</translation>
 <translation id="1197088940767939838">નારંગી</translation>
 <translation id="1201402288615127009">આગલું</translation>
 <translation id="1201895884277373915">આ સાઇટથી વધુ</translation>
@@ -110,6 +111,7 @@
 <translation id="1430915738399379752">પ્રિન્ટ</translation>
 <translation id="1442386063175183758">જમણો ગેટ ફોલ્ડ</translation>
 <translation id="1442987760062738829">કાણું પાડો</translation>
+<translation id="1450011005989029586">તમે જે સાઇટ અથવા ઍપનો ઉપયોગ કરો છો તેના પર ડેટા ઉલ્લંઘન દ્વારા તમારો પાસવર્ડ પ્રદર્શિત કરાયો છે. Chrome હમણાં <ph name="ORIGIN" /> પર <ph name="BOLD" /> સુઝાવ આપે છે.</translation>
 <translation id="1455413310270022028">ઇરેઝર</translation>
 <translation id="1463543813647160932">5x7</translation>
 <translation id="1472675084647422956">વધુ બતાવો</translation>
@@ -153,7 +155,6 @@
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />સાઇટના હોમપેજની મુલાકાત લેવાનો<ph name="END_LINK" /> પ્રયાસ કરો.</translation>
 <translation id="1644574205037202324">ઇતિહાસ</translation>
 <translation id="1645368109819982629">અસમર્થિત પ્રોટોકોલ</translation>
-<translation id="1655462015569774233">{1,plural, =1{આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; એના સુરક્ષા પ્રમાણપત્રની સમયસીમા ગઈકાલે પૂરી થઈ ગઈ. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે. તમારા કમ્પ્યુટરની ઘડિયાળને હાલમાં <ph name="CURRENT_DATE" /> પર સેટ કરવામાં આવી છે. શું તે બરાબર લાગે છે? જો ઠીક ન લાગતી હોય, તો તમારે તમારી સિસ્ટમની ઘડિયાળને ઠીક કરવી જોઈએ અને પછી આ પેજ રિફ્રેશ કરવું જોઈએ.}one{આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; એના સુરક્ષા પ્રમાણપત્રની સમયસીમા #દિવસ પહેલાં પૂરી થઈ ગઈ. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે. તમારા કમ્પ્યુટરની ઘડિયાળને હાલમાં <ph name="CURRENT_DATE" /> પર સેટ કરવામાં આવી છે. શું તે બરાબર લાગે છે? જો ઠીક ન લાગતી હોય, તો તમારે તમારી સિસ્ટમની ઘડિયાળને ઠીક કરવી જોઈએ અને પછી આ પેજ રિફ્રેશ કરવું જોઈએ.}other{આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેના સુરક્ષા પ્રમાણપત્રની સમયસીમા #દિવસ પહેલાં પૂરી થઈ ગઈ. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે. તમારા કમ્પ્યુટરની ઘડિયાળને હાલમાં <ph name="CURRENT_DATE" /> પર સેટ કરવામાં આવી છે. શું તે બરાબર લાગે છે? જો ઠીક ન લાગતી હોય, તો તમારે તમારી સિસ્ટમની ઘડિયાળને ઠીક કરવી જોઈએ અને પછી આ પેજ રિફ્રેશ કરવું જોઈએ.}}</translation>
 <translation id="1656489000284462475">પિકઅપ</translation>
 <translation id="1662550410081243962">ચુકવણી પદ્ધતિઓ સાચવો અને ભરો</translation>
 <translation id="1663943134801823270">કાર્ડ અને સરનામા Chromeમાંથી છે. તમે તેને <ph name="BEGIN_LINK" />સેટિંગ્સ<ph name="END_LINK" />માં સંચાલિત કરી શકો છો.</translation>
@@ -323,7 +324,6 @@
 <translation id="2501278716633472235">પાછા જાઓ</translation>
 <translation id="2503184589641749290">સ્વીકૃત ડેબિટ અને પ્રીપેઇડ કાર્ડ</translation>
 <translation id="2505268675989099013">એકાઉન્ટ સુરક્ષિત કરો</translation>
-<translation id="2515335152965840738">અવગણો</translation>
 <translation id="2515629240566999685">તમારા વિસ્તારમાં સિગ્નલ તપાસીને</translation>
 <translation id="2521385132275182522">નીચે જમણી બાજુએ સ્ટેપલ લાગાવો</translation>
 <translation id="2523886232349826891">કાર્ડની માહિતીને માત્ર આ ડિવાઇસ પર સાચવવામાં આવી છે</translation>
@@ -388,7 +388,6 @@
 <translation id="2799020568854403057">સાઇટ આગળ હાનિકારક ઍપ્લિકેશનો ધરાવે છે</translation>
 <translation id="2799223571221894425">ફરીથી લોંચ કરો</translation>
 <translation id="2803306138276472711">Google Safe Browsing ને તાજેતરમાં <ph name="SITE" /> પર <ph name="BEGIN_LINK" />મૉલવેર મળ્યું<ph name="END_LINK" />. વેબસાઇટ્સ કે જે સામાન્ય રીતે સુરક્ષિત છે તે ક્યારેક મૉલવેરથી દૂષિત હોય છે.</translation>
-<translation id="2815364696811431560">સાઇટ છોડી દો</translation>
 <translation id="2824775600643448204">સરનામું અને શોધ બાર</translation>
 <translation id="2826760142808435982">કનેક્શન <ph name="CIPHER" />નો ઉપયોગ કરીને એન્ક્રિપ્ટ અને પ્રમાણિત કરેલુંં છે અને મુખ્ય એક્સચેન્જ મેકેનિઝ્મ તરીકે <ph name="KX" />નો ઉપયોગ કરે છે.</translation>
 <translation id="2835170189407361413">ફોર્મ સાફ કરો</translation>
@@ -462,6 +461,7 @@
 <translation id="320323717674993345">ચુકવણી રદ કરો</translation>
 <translation id="3207960819495026254">બુકમાર્ક કરેલ</translation>
 <translation id="3209034400446768650">પેજ કદાચ નાણાં વસૂલી શકે છે</translation>
+<translation id="3209080785413271048">તમારી સાચવેલી ચુકવણી પદ્ધતિઓની ચકાસણી કરવા માટે Windows Helloનો ઉપયોગ કરો.</translation>
 <translation id="3215092763954878852">WebAuthnનો ઉપયોગ કરી શક્યાં નથી</translation>
 <translation id="3225919329040284222">સર્વર એક પ્રમાણપત્ર પ્રસ્તુત કરે છે જે બિલ્ટ-ઇન અપેક્ષાઓ સાથે મેળ ખાતું નથી. આ અપેક્ષાઓમાં તમને સુરક્ષિત રાખવા માટે અમુક ચોક્કસ, ઉચ્ચ-સુરક્ષા વેબસાઇટ્સનો સમાવેશ થાય છે.</translation>
 <translation id="3226128629678568754">પૃષ્ઠને લોડ કરવા માટે જરૂરી ડેટા ફરીથી સબમિટ કરવા માટે ફરીથી લોડ કરો બટન દબાવો.</translation>
@@ -472,6 +472,7 @@
 <translation id="3234666976984236645">હંમેશાં આ સાઇટ પરનું મહત્ત્વનું કન્ટેન્ટ શોધો</translation>
 <translation id="3270847123878663523">&amp;પુનઃક્રમાંકિત કરવું પૂર્વવત્ કરો</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
+<translation id="3281668902344226640">તમારી સાચવેલી ચુકવણી પદ્ધતિઓની ચકાસણી કરવા માટે Touch IDનો ઉપયોગ કરો.</translation>
 <translation id="3282497668470633863">કાર્ડ પર નામ ઉમેરો</translation>
 <translation id="3287510313208355388">ઑનલાઇન હોય ત્યારે ડાઉનલોડ કરો</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> નીતિ વિશે વધુ જાણો</translation>
@@ -538,6 +539,7 @@
 <translation id="362276910939193118">પૂર્ણ ઇતિહાસ બતાવો</translation>
 <translation id="3630155396527302611">જો તે પહેલાંથી જ નેટવર્ક ઍક્સેસ કરવા માટે મંજૂર પ્રોગ્રામ તરીકે સૂચિબદ્ધ હોય, તો
     તેને સૂચિમાંથી દૂર કરી અને તેને ફરીથી ઉમેરવાનો પ્રયાસ કરો.</translation>
+<translation id="3631244953324577188">બાયોમેટ્રિક્સ</translation>
 <translation id="3640766068866876100">અનુક્રમણિકા-4x6-Ext</translation>
 <translation id="3650584904733503804">માન્યતા સફળ</translation>
 <translation id="3655670868607891010">જો તમે આ વારંવાર જોઈ રહ્યાં છો, તો આ <ph name="HELP_LINK" /> અજમાવી જુઓ.</translation>
@@ -617,6 +619,7 @@
 <translation id="4067947977115446013">માન્ય સરનામું ઉમેરો</translation>
 <translation id="4072486802667267160">તમારા ઑર્ડરની પ્રક્રિયા કરતી વખતે એક ભૂલ આવી હતી. કૃપા કરીને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="4075732493274867456">ક્લાઇન્ટ અને સર્વર સામાન્ય SSL પ્રોટોકોલ વર્ઝન અથવા સાઇફર સ્યૂટની સહાય કરતા નથી.</translation>
+<translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">પ્રૉક્સી ગોઠવણી .pac સ્ક્રિપ્ટ URLનો ઉપયોગ કરવા માટે સેટ છે, ફિક્સ્ડ પ્રૉક્સી સર્વર માટે નહીંં.</translation>
 <translation id="4082393374666368382">સેટિંગ - મેનેજમેન્ટ</translation>
 <translation id="4098354747657067197">આગળ છેતરામણી સાઇટ છે</translation>
@@ -673,6 +676,7 @@
 <translation id="4258748452823770588">ખરાબ હસ્તાક્ષર</translation>
 <translation id="4261046003697461417">સંરક્ષિત દસ્તાવેજ એનોટેટ કરી શકાતા નથી</translation>
 <translation id="4265872034478892965">તમારા વ્યવસ્થાપક દ્વારા મંજૂર</translation>
+<translation id="4270615291506829403">તમારા પાસવર્ડને બદલવાનો</translation>
 <translation id="4275830172053184480">તમારું ઉપકરણ પુનઃપ્રારંભ કરો</translation>
 <translation id="4277028893293644418">પાસવર્ડ રીસેટ કરો</translation>
 <translation id="4279811152705618813">તમારા <ph name="DEVICE_TYPE" />ને <ph name="ENROLLMENT_DOMAIN" /> મેનેજ કરે છે</translation>
@@ -699,6 +703,7 @@
 <translation id="4372948949327679948">અપેક્ષિત <ph name="VALUE_TYPE" /> મૂલ્ય.</translation>
 <translation id="4377125064752653719">તમે <ph name="DOMAIN" /> પર પહોંચવાનો પ્રયાસ કર્યો, પણ સર્વર દ્વારા પ્રસ્તુત કરવામાં આવેલું પ્રમાણપત્ર તેના રજૂકર્તા દ્વારા જ રદ કરવામાં આવ્યું છે. આનો અર્થ છે કે સર્વરે પ્રસ્તુત કરેલા સુરક્ષા પ્રમાણપત્રો પૂર્ણપણે વિશ્વસનીય નથી. તમે કોઈ હુમલાખોર જોડે વાત કરતા હોઈ શકો છો.</translation>
 <translation id="4378154925671717803">ફોન</translation>
+<translation id="4398334096870680409">તમારા ડિવાઇસ પર આ સુવિધા ઉપલબ્ધ નથી.</translation>
 <translation id="4406896451731180161">શોધ પરિણામો</translation>
 <translation id="4408413947728134509">કુકી <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">પિકઅપ માટેનું સરનામું</translation>
@@ -747,7 +752,9 @@
 <translation id="4691835149146451662">સ્થાપત્ય-A (એન્વલપ)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">તમારું કનેક્શન અવરોધાયું હતું</translation>
+<translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows નેટવર્ક ડાયગ્નોસ્ટિક્સ ચલાવી રહ્યાં છે<ph name="END_LINK" /></translation>
+<translation id="4725851834065990915">તમે જે સાઇટ અથવા ઍપનો ઉપયોગ કરો છો તેના પર ડેટા ઉલ્લંઘન દ્વારા તમારો પાસવર્ડ પ્રદર્શિત કરાયો છે. Chrome તમને હમણાં જ તમારા પાસવર્ડ ચેક કરવાનો સુઝાવ આપે છે.</translation>
 <translation id="4726672564094551039">નીતિઓ ફરીથી લોડ કરો</translation>
 <translation id="4728558894243024398">પ્લેટફોર્મ</translation>
 <translation id="4731967714531604179">Prc2 (એન્વલપ)</translation>
@@ -775,7 +782,6 @@
 <translation id="4816492930507672669">પૃષ્ઠ પર ફિટ</translation>
 <translation id="4850886885716139402">જુઓ</translation>
 <translation id="4854362297993841467">વિતરણની આ પદ્ધતિ ઉપલબ્ધ નથી. કોઈ ભિન્ન પદ્ધતિ અજમાવો.</translation>
-<translation id="4864052566555297930">સુરક્ષા માટે સુઝાવ:</translation>
 <translation id="4876188919622883022">સરળ દૃશ્ય</translation>
 <translation id="4876305945144899064">કોઈ વપરાશકર્તા નામ નથી</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{એકેય નહીં}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
@@ -1002,6 +1008,7 @@
 <translation id="5967592137238574583">સંપર્ક માહિતીમાં ફેરફાર કરો</translation>
 <translation id="5967867314010545767">ઇતિહાસમાંથી દૂર કરો</translation>
 <translation id="5975083100439434680">ઝૂમ ઘટાડો</translation>
+<translation id="5979084224081478209">પાસવર્ડ ચેક કરો</translation>
 <translation id="5980920751713728343">અનુક્રમણિકા-3x5</translation>
 <translation id="598637245381783098">ચુકવણી ઍપ્લિકેશન ખોલી શકાતી નથી</translation>
 <translation id="5989320800837274978">ફિક્સ્ડ પ્રૉક્સી સર્વર કે .pac સ્ક્રિપ્ટ URL, બેમાંથી કોઈનો પણ ઉલ્લેખ કરેલો નથી.</translation>
@@ -1159,6 +1166,7 @@
 <translation id="679355240208270552">અવગણના કરી, કારણ કે નીતિએ ડિફૉલ્ટ શોધ બંધ કરેલ છે.</translation>
 <translation id="681021252041861472">ફરજિયાત</translation>
 <translation id="6810899417690483278">કસ્ટમાઇઝેશન ID</translation>
+<translation id="6819440013020405090">તમે જે સાઇટ અથવા ઍપનો ઉપયોગ કરો છો તેના પર ડેટા ઉલ્લંઘન દ્વારા તમારો પાસવર્ડ પ્રદર્શિત કરાયો છે. Chrome તમને <ph name="ORIGIN" /> પર તમારા સાચવેલા પાસવર્ડ ચેક કરવાનો અને બદલવાનો સુઝાવ આપે છે.</translation>
 <translation id="6825578344716086703">તમે <ph name="DOMAIN" /> પર પહોંચવાનો પ્રયાસ કર્યો, પરંતુ સર્વરે નબળા સહી ઍલ્ગોરિધમ (જેમ કે SHA-1)નો ઉપયોગ કરીને સહીિત કરેલું પ્રમાણપત્ર પ્રસ્તુત કર્યું. આનો અર્થ એ છે કે સર્વરે પ્રસ્તુત કરેલા સુરક્ષા પ્રમાણપત્રો બનાવટી હોય શકે છે અને તે સર્વર તમારું અપેક્ષિત સર્વર (તમે કોઈ હુમલાખોર સાથે વાર્તાલાપ કરતા હોય શકે) ન પણ હોય.</translation>
 <translation id="6826370046007623921">ડેટા નુકસાન અટકાવ</translation>
 <translation id="6831043979455480757">અનુવાદ કરો</translation>
@@ -1201,6 +1209,7 @@
 <translation id="7064851114919012435">સંપર્ક માહિતી</translation>
 <translation id="7075452647191940183">વિનંતી ખૂબ મોટી છે.</translation>
 <translation id="7079718277001814089">આ સાઇટમાં માલવેર છે</translation>
+<translation id="70850504851191913">ડેટા ઉલ્લંઘનની જાણ કરી છે</translation>
 <translation id="7087282848513945231">કાઉન્ટિ</translation>
 <translation id="7090678807593890770"><ph name="LINK" /> માટે Google પર શોધો</translation>
 <translation id="7108338896283013870">છુપાવો</translation>
@@ -1289,6 +1298,7 @@
 <translation id="7460618730930299168">તમે પસંદ કર્યું તેનાથી સ્ક્રીનિંગ અલગ છે. ચાલુ રાખીએ?</translation>
 <translation id="7473891865547856676">નહીં આભાર</translation>
 <translation id="7481312909269577407">ફોર્વર્ડ કરો</translation>
+<translation id="748406663033922918">તમારી સાચવેલી ચુકવણી પદ્ધતિઓની ચકાસણી કરવા માટે સ્ક્રીન લૉકનો ઉપયોગ કરો.</translation>
 <translation id="7485870689360869515">કોઈ ડેટા મળ્યો નથી.</translation>
 <translation id="7498234416455752244">ફેરફાર કરવાનું ચાલુ રાખો</translation>
 <translation id="7508255263130623398">પરત થયેલ નીતિ ઉપકરણ id ખાલી છે અથવા વર્તમાન ટોકન સાથે મેળ ખાતું નથી</translation>
@@ -1502,7 +1512,6 @@
 <translation id="8553075262323480129">ભાષાંતર નિષ્ફળ રહ્યું કારણ કે પૃષ્ઠની ભાષા નિર્ધારિત થઈ શકી નથી.</translation>
 <translation id="8557066899867184262">CVC તમારા કાર્ડની પાછળ હોય છે.</translation>
 <translation id="8559762987265718583"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> પર ખાનગી કનેક્શન સ્થાપિત કરી શકાતું નથી કારણ કે તમારા ઉપકરણની તારીખ અને સમય (<ph name="DATE_AND_TIME" />) અયોગ્ય છે.</translation>
-<translation id="8561575143530093465"><ph name="SAFETY_TIP" /> શંકાસ્પદ સાઇટ</translation>
 <translation id="8564985650692024650">જો તમે અન્ય સાઇટ પર <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> પાસવર્ડનો ફરી ઉપયોગ કર્યો હોય, તો Chromium તેને રીસેટ કરવાનો સુઝાવ આપે છે.</translation>
 <translation id="8571890674111243710">પૃષ્ઠને <ph name="LANGUAGE" /> માં અનુવાદિત કરી રહ્યું છે...</translation>
 <translation id="858637041960032120">ફોન નંબર ઉમેરો</translation>
@@ -1562,6 +1571,7 @@
 <translation id="8943282376843390568">લાઇમ</translation>
 <translation id="8957210676456822347">કૅપ્ટિવ પોર્ટલ પ્રમાણિત</translation>
 <translation id="8962950042226115166">શંકાસ્પદ સાઇટ</translation>
+<translation id="8966619695390250636">શું તમારો અર્થ આ હતો?</translation>
 <translation id="8968766641738584599">કાર્ડ સાચવો</translation>
 <translation id="8971063699422889582">સર્વરના પ્રમાણપત્રની સમયસીમા સમાપ્ત થઈ છે.</translation>
 <translation id="8975012916872825179">ફોન નંબર, ઇમેઇલ ઍડ્રેસ અને શિપિંગ સરનામા જેવી માહિતીનો સમાવેશ છે</translation>

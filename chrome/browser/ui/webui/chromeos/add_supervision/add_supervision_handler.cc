@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -54,6 +55,18 @@ void AddSupervisionHandler::GetInstalledArcApps(
   Profile* profile = Profile::FromWebUI(web_ui_);
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
+
+  if (arc::ArcSessionManager::Get() == nullptr) {
+    DLOG(WARNING) << "No ArcSessionManager available";
+    std::move(callback).Run({});
+    return;
+  }
+  if (arc::ArcSessionManager::Get()->state() !=
+      arc::ArcSessionManager::State::ACTIVE) {
+    DLOG(WARNING) << "ArcSessionManager is not active";
+    std::move(callback).Run({});
+    return;
+  }
 
   std::vector<std::string> installed_arc_apps;
 

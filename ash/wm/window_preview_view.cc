@@ -26,12 +26,8 @@ WindowPreviewView::WindowPreviewView(aura::Window* window,
   DCHECK(window);
   aura::client::GetTransientWindowClient()->AddObserver(this);
 
-  for (auto* window : GetTransientTreeIterator(window_)) {
-    if (window->type() == aura::client::WINDOW_TYPE_POPUP)
-      continue;
-
+  for (auto* window : GetTransientTreeIterator(window_))
     AddWindow(window);
-  }
 }
 
 WindowPreviewView::~WindowPreviewView() {
@@ -93,6 +89,12 @@ void WindowPreviewView::OnTransientChildWindowAdded(
   if (!::wm::HasTransientAncestor(parent, root) && parent != root)
     return;
 
+  if (!transient_child->parent()) {
+    transient_child->AddObserver(this);
+    unparented_transient_children_.emplace(transient_child);
+    return;
+  }
+
   AddWindow(transient_child);
 }
 
@@ -110,10 +112,24 @@ void WindowPreviewView::OnWindowDestroying(aura::Window* window) {
   RemoveWindow(window);
 }
 
+void WindowPreviewView::OnWindowParentChanged(aura::Window* window,
+                                              aura::Window* parent) {
+  if (!unparented_transient_children_.contains(window))
+    return;
+
+  DCHECK(parent);
+  unparented_transient_children_.erase(window);
+  AddWindow(window);
+}
+
 void WindowPreviewView::AddWindow(aura::Window* window) {
+  if (window->type() == aura::client::WINDOW_TYPE_POPUP)
+    return;
+
   DCHECK(!mirror_views_.contains(window));
 
-  window->AddObserver(this);
+  if (!window->HasObserver(this))
+    window->AddObserver(this);
 
   auto* mirror_view =
       window_util::IsArcPipWindow(window)

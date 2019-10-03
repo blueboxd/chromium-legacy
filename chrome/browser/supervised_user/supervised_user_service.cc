@@ -104,18 +104,6 @@ void CreateURLAccessRequest(const GURL& url,
   creator->CreateURLAccessRequest(url, std::move(callback));
 }
 
-void CreateExtensionUpdateRequest(
-    const std::string& id,
-    PermissionRequestCreator* creator,
-    SupervisedUserService::SuccessCallback callback) {
-  creator->CreateExtensionUpdateRequest(id, std::move(callback));
-}
-
-// Default callback for AddExtensionUpdateRequest.
-void ExtensionUpdateRequestSent(const std::string& id, bool success) {
-  VLOG_IF(1, !success) << "Failed sending update request for " << id;
-}
-
 base::FilePath GetBlacklistPath() {
   base::FilePath blacklist_dir;
   base::PathService::Get(chrome::DIR_USER_DATA, &blacklist_dir);
@@ -194,24 +182,6 @@ void SupervisedUserService::AddURLAccessRequest(const GURL& url,
       base::BindRepeating(CreateURLAccessRequest,
                           policy::url_util::Normalize(effective_url)),
       std::move(callback), 0);
-}
-
-void SupervisedUserService::AddExtensionUpdateRequest(
-    const std::string& extension_id,
-    const base::Version& version,
-    SuccessCallback callback) {
-  std::string id = GetExtensionRequestId(extension_id, version);
-  AddPermissionRequestInternal(
-      base::BindRepeating(CreateExtensionUpdateRequest, id),
-      std::move(callback), 0);
-}
-
-void SupervisedUserService::AddExtensionUpdateRequest(
-    const std::string& extension_id,
-    const base::Version& version) {
-  std::string id = GetExtensionRequestId(extension_id, version);
-  AddExtensionUpdateRequest(extension_id, version,
-                            base::BindOnce(ExtensionUpdateRequestSent, id));
 }
 
 // static

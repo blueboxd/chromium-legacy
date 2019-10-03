@@ -27,7 +27,7 @@
 
 namespace blink {
 
-class TextMatchMarker;
+class TextMarkerBase;
 
 class SVGInlineTextBox final : public InlineTextBox {
  public:
@@ -86,16 +86,16 @@ class SVGInlineTextBox final : public InlineTextBox {
                            const ComputedStyle&,
                            const Font&,
                            bool) const final;
-  void PaintTextMatchMarkerForeground(const PaintInfo&,
-                                      const LayoutPoint&,
-                                      const TextMatchMarker&,
-                                      const ComputedStyle&,
-                                      const Font&) const final;
-  void PaintTextMatchMarkerBackground(const PaintInfo&,
-                                      const LayoutPoint&,
-                                      const TextMatchMarker&,
-                                      const ComputedStyle&,
-                                      const Font&) const final;
+  void PaintTextMarkerForeground(const PaintInfo&,
+                                 const LayoutPoint&,
+                                 const TextMarkerBase&,
+                                 const ComputedStyle&,
+                                 const Font&) const final;
+  void PaintTextMarkerBackground(const PaintInfo&,
+                                 const LayoutPoint&,
+                                 const TextMarkerBase&,
+                                 const ComputedStyle&,
+                                 const Font&) const final;
 
   bool HitTestFragments(const HitTestLocation& hit_test_location) const;
   bool NodeAtPoint(HitTestResult&,

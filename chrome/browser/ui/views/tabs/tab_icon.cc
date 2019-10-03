@@ -12,7 +12,7 @@
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
+#include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/grit/components_scaled_resources.h"
 #include "content/public/common/url_constants.h"

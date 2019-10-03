@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_H_
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -264,7 +265,8 @@ class XR final : public EventTargetWithInlineData,
   XRSession* CreateSession(
       XRSession::SessionMode mode,
       XRSession::EnvironmentBlendMode blend_mode,
-      device::mojom::blink::XRSessionClientRequest client_request,
+      mojo::PendingReceiver<device::mojom::blink::XRSessionClient>
+          client_receiver,
       device::mojom::blink::VRDisplayInfoPtr display_info,
       bool uses_input_eventing,
       XRSessionFeatureSet enabled_features,

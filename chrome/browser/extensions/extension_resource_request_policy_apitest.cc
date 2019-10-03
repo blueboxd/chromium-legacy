@@ -14,12 +14,16 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/service_worker_test_helpers.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/common/notifications/platform_notification_data.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -537,6 +541,110 @@ IN_PROC_BROWSER_TEST_F(
   // - WebNavigationToNonExistentExtension
   EXPECT_FALSE(nav_observer.last_navigation_succeeded());
   EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, nav_observer.last_net_error_code());
+}
+
+// Tests that a service worker for a web origin can't use client.navigate() to
+// navigate to a non-web accessible resource of a Chrome extension.
+IN_PROC_BROWSER_TEST_F(
+    ExtensionResourceRequestPolicyTest,
+    WebNavigationToNonWebAccessibleResource_ViaServiceWorkerNavigate) {
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("extension_resource_request_policy")
+          .AppendASCII("inaccessible"));
+  ASSERT_TRUE(extension);
+  const GURL non_web_accessible_url =
+      extension->GetResourceURL("inaccessible-iframe-contents.html");
+
+  // Load a page that registers a service worker.
+  GURL web_page_url = embedded_test_server()->GetURL(
+      "/service_worker/create_service_worker.html");
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(), web_page_url);
+  EXPECT_EQ("DONE", EvalJs(web_contents, "register('client_api_worker.js');"));
+
+  // Load the page again so we are controlled.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/service_worker/create_service_worker.html"));
+  EXPECT_EQ(true, content::EvalJs(web_contents,
+                                  "!!navigator.serviceWorker.controller"));
+
+  // Have the service worker call client.navigate() on the page.
+  content::TestNavigationObserver nav_observer(web_contents, 1);
+  const char kNavigateScriptTemplate[] = R"(
+    (async () => {
+      const registration = await navigator.serviceWorker.ready;
+      registration.active.postMessage({command: 'navigate', url: $1});
+      return true;
+    })();
+  )";
+  EXPECT_EQ(true, content::EvalJs(web_contents,
+                                  content::JsReplace(kNavigateScriptTemplate,
+                                                     non_web_accessible_url)));
+
+  // Verify that the navigation was blocked.
+  nav_observer.Wait();
+  EXPECT_FALSE(nav_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, nav_observer.last_net_error_code());
+  EXPECT_EQ(non_web_accessible_url, nav_observer.last_navigation_url());
+  ASSERT_TRUE(nav_observer.last_initiator_origin().has_value());
+  EXPECT_EQ(url::Origin::Create(web_page_url),
+            nav_observer.last_initiator_origin().value());
+}
+
+// Tests that a service worker for a web origin can't use the openWindow API to
+// navigate to a non-web accessible resource of a Chrome extension.
+IN_PROC_BROWSER_TEST_F(
+    ExtensionResourceRequestPolicyTest,
+    WebNavigationToNonWebAccessibleResource_ViaServiceWorkerOpenWindow) {
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("extension_resource_request_policy")
+          .AppendASCII("inaccessible"));
+  ASSERT_TRUE(extension);
+  const GURL non_web_accessible_url =
+      extension->GetResourceURL("inaccessible-iframe-contents.html");
+
+  // Load a page that registers a service worker.
+  GURL web_page_url = embedded_test_server()->GetURL(
+      "/service_worker/create_service_worker.html");
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(), web_page_url);
+  EXPECT_EQ("DONE",
+            content::EvalJs(web_contents, "register('client_api_worker.js');"));
+
+  // Simulate clicking a notification - this will prompt the test service worker
+  // to call clients.openWindow(non_web_accessible_url).
+  content::WebContents* new_window = nullptr;
+  {
+    GURL target_url = non_web_accessible_url;
+    blink::PlatformNotificationData notification_data;
+    notification_data.body = base::UTF8ToUTF16(target_url.spec());
+
+    GURL scope_url = embedded_test_server()->GetURL("/service_worker/");
+    content::StoragePartition* storage_partition =
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile());
+    content::ServiceWorkerContext* context =
+        storage_partition->GetServiceWorkerContext();
+
+    content::WebContentsAddedObserver new_window_observer;
+    content::DispatchServiceWorkerNotificationClick(context, scope_url,
+                                                    notification_data);
+    new_window = new_window_observer.GetWebContents();
+  }
+
+  // Verify that the navigation in the new window will be blocked - we are
+  // disallowing navigations to non-web-accessible-resources.
+  content::TestNavigationObserver nav_observer(new_window, 1);
+  nav_observer.Wait();
+  EXPECT_FALSE(nav_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, nav_observer.last_net_error_code());
+  EXPECT_EQ(non_web_accessible_url, nav_observer.last_navigation_url());
+  ASSERT_TRUE(nav_observer.last_initiator_origin().has_value());
+  EXPECT_EQ(url::Origin::Create(web_page_url),
+            nav_observer.last_initiator_origin().value());
 }
 
 }  // namespace extensions

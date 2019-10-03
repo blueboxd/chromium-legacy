@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path_watcher.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/extensions/file_manager/device_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/drivefs_event_router.h"
@@ -59,7 +60,8 @@ class EventRouter
   ~EventRouter() override;
 
   // arc::ArcIntentHelperObserver overrides.
-  void OnIntentFiltersUpdated() override;
+  void OnIntentFiltersUpdated(
+      const base::Optional<std::string>& package_name) override;
 
   // KeyedService overrides.
   void Shutdown() override;

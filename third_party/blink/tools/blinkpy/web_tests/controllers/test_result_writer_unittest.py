@@ -39,14 +39,20 @@ from blinkpy.web_tests.models import test_failures
 
 class TestResultWriterTests(unittest.TestCase):
 
+    def setUp(self):
+        self._actual_output = DriverOutput(
+            text='', image=None, image_hash=None, audio=None)
+        self._expected_output = DriverOutput(
+            text='', image=None, image_hash=None, audio=None)
+
     def run_test(self, failures=None, files=None, filename='foo.html'):
         failures = failures or []
         host = MockSystemHost()
         host.filesystem.files = files or {}
         port = TestPort(host=host, port_name='test-mac-mac10.11', options=optparse.Values())
-        actual_output = DriverOutput(text='', image=None, image_hash=None, audio=None)
-        expected_output = DriverOutput(text='', image=None, image_hash=None, audio=None)
-        write_test_result(host.filesystem, port, '/tmp', filename, actual_output, expected_output, failures)
+        write_test_result(
+            host.filesystem, port, '/tmp', filename, self._actual_output,
+            self._expected_output, failures)
         return host.filesystem
 
     def test_success(self):
@@ -55,44 +61,51 @@ class TestResultWriterTests(unittest.TestCase):
         self.assertEqual(fs.written_files, {})
 
     def test_reference_exists(self):
-        failure = test_failures.FailureReftestMismatch()
+        failure = test_failures.FailureReftestMismatch(
+            self._actual_output, self._expected_output)
         failure.reference_filename = '/src/exists-expected.html'
         files = {'/src/exists-expected.html': 'yup'}
         fs = self.run_test(failures=[failure], files=files)
         self.assertEqual(fs.written_files, {'/tmp/exists-expected.html': 'yup'})
 
-        failure = test_failures.FailureReftestMismatchDidNotOccur()
+        failure = test_failures.FailureReftestMismatchDidNotOccur(
+            self._actual_output, self._expected_output)
         failure.reference_filename = '/src/exists-expected-mismatch.html'
         files = {'/src/exists-expected-mismatch.html': 'yup'}
         fs = self.run_test(failures=[failure], files=files)
         self.assertEqual(fs.written_files, {'/tmp/exists-expected-mismatch.html': 'yup'})
 
     def test_reference_is_missing(self):
-        failure = test_failures.FailureReftestMismatch()
+        failure = test_failures.FailureReftestMismatch(
+            self._actual_output, self._expected_output)
         failure.reference_filename = 'notfound.html'
         fs = self.run_test(failures=[failure], files={})
         self.assertEqual(fs.written_files, {})
 
-        failure = test_failures.FailureReftestMismatchDidNotOccur()
+        failure = test_failures.FailureReftestMismatchDidNotOccur(
+            self._actual_output, self._expected_output)
         failure.reference_filename = 'notfound.html'
         fs = self.run_test(failures=[failure], files={})
         self.assertEqual(fs.written_files, {})
 
     def test_reftest_image_missing(self):
-        failure = test_failures.FailureReftestNoImageGenerated()
+        failure = test_failures.FailureReftestNoImageGenerated(
+            self._actual_output, self._expected_output)
         failure.reference_filename = '/src/exists-expected.html'
         files = {'/src/exists-expected.html': 'yup'}
         fs = self.run_test(failures=[failure], files=files)
         self.assertEqual(fs.written_files, {'/tmp/exists-expected.html': 'yup'})
 
-        failure = test_failures.FailureReftestNoReferenceImageGenerated()
+        failure = test_failures.FailureReftestNoReferenceImageGenerated(
+            self._actual_output, self._expected_output)
         failure.reference_filename = '/src/exists-expected.html'
         files = {'/src/exists-expected.html': 'yup'}
         fs = self.run_test(failures=[failure], files=files)
         self.assertEqual(fs.written_files, {'/tmp/exists-expected.html': 'yup'})
 
     def test_slash_in_test_name(self):
-        failure = test_failures.FailureTestHarnessAssertion()
+        failure = test_failures.FailureTestHarnessAssertion(
+            self._actual_output, self._expected_output)
         fs = self.run_test(failures=[failure], filename='foo.html?a/b')
         self.assertTrue('/tmp/foo_a_b-actual.txt' in fs.written_files)
         self.assertEqual(set(fs.written_files.keys()), {

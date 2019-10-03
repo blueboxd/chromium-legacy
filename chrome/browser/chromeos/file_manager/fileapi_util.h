@@ -21,6 +21,11 @@
 
 class Profile;
 
+namespace base {
+class DictionaryValue;
+class ListValue;
+}  // namespace base
+
 namespace content {
 class RenderFrameHost;
 }

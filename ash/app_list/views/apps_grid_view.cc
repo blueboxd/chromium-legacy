@@ -362,7 +362,9 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
       &pagination_model_,
       folder_delegate_ ? ash::PaginationController::SCROLL_AXIS_HORIZONTAL
                        : ash::PaginationController::SCROLL_AXIS_VERTICAL,
-      base::BindRepeating(&RecordPageSwitcherSourceByEventType),
+      folder_delegate_
+          ? base::DoNothing()
+          : base::BindRepeating(&RecordPageSwitcherSourceByEventType),
       IsTabletMode());
   bounds_animator_->AddObserver(this);
 }
@@ -2226,7 +2228,8 @@ void AppsGridView::OnPageFlipTimer() {
   }
 
   pagination_model_.SelectPage(page_flip_target_, true);
-  RecordPageSwitcherSource(kDragAppToBorder, IsTabletMode());
+  if (!folder_delegate_)
+    RecordPageSwitcherSource(kDragAppToBorder, IsTabletMode());
 
   BeginHideCurrentGhostImageView();
 }
@@ -3130,8 +3133,10 @@ void AppsGridView::HandleKeyboardMove(ui::KeyboardCode key_code) {
   Layout();
   AnnounceReorder(target_index);
 
-  if (target_index.page != original_selected_view_index.page)
+  if (target_index.page != original_selected_view_index.page &&
+      !folder_delegate_) {
     RecordPageSwitcherSource(kMoveAppWithKeyboard, IsTabletMode());
+  }
 }
 
 size_t AppsGridView::GetTargetItemIndexForMove(AppListItemView* moved_view,

@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -46,7 +47,12 @@ constexpr int kDefaultDocumentCookie = 1234;
 
 class PrintPreviewObserver : PrintPreviewUI::TestDelegate {
  public:
-  PrintPreviewObserver() { PrintPreviewUI::SetDelegateForTesting(this); }
+  explicit PrintPreviewObserver(bool wait_for_loaded) {
+    if (wait_for_loaded)
+      queue_.emplace();  // DOMMessageQueue doesn't allow assignment
+    PrintPreviewUI::SetDelegateForTesting(this);
+  }
+
   ~PrintPreviewObserver() override {
     PrintPreviewUI::SetDelegateForTesting(nullptr);
   }
@@ -58,6 +64,12 @@ class PrintPreviewObserver : PrintPreviewUI::TestDelegate {
     base::RunLoop run_loop;
     base::AutoReset<base::RunLoop*> auto_reset(&run_loop_, &run_loop);
     run_loop.Run();
+
+    if (queue_.has_value()) {
+      std::string message;
+      EXPECT_TRUE(queue_->WaitForMessage(&message));
+      EXPECT_EQ("\"success\"", message);
+    }
   }
 
  private:
@@ -72,9 +84,20 @@ class PrintPreviewObserver : PrintPreviewUI::TestDelegate {
     CHECK(rendered_page_count_ <= total_page_count_);
     if (rendered_page_count_ == total_page_count_ && run_loop_) {
       run_loop_->Quit();
+
+      if (queue_.has_value()) {
+        content::ExecuteScriptAsync(
+            preview_dialog,
+            "window.addEventListener('message', event => {"
+            "  if (event.data.type === 'documentLoaded') {"
+            "    domAutomationController.send(event.data.load_state);"
+            "  }"
+            "});");
+      }
     }
   }
 
+  base::Optional<content::DOMMessageQueue> queue_;
   int total_page_count_ = 1;
   int rendered_page_count_ = 0;
   base::RunLoop* run_loop_ = nullptr;
@@ -192,7 +215,17 @@ class PrintBrowserTest : public InProcessBrowserTest {
   }
 
   void PrintAndWaitUntilPreviewIsReady(bool print_only_selection) {
-    PrintPreviewObserver print_preview_observer;
+    PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/false);
+
+    StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
+               /*print_renderer=*/nullptr,
+               /*print_preview_disabled=*/false, print_only_selection);
+
+    print_preview_observer.WaitUntilPreviewIsReady();
+  }
+
+  void PrintAndWaitUntilPreviewIsReadyAndLoaded(bool print_only_selection) {
+    PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true);
 
     StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
                /*print_renderer=*/nullptr,
@@ -279,7 +312,7 @@ class PrintExtensionBrowserTest : public extensions::ExtensionBrowserTest {
   ~PrintExtensionBrowserTest() override = default;
 
   void PrintAndWaitUntilPreviewIsReady(bool print_only_selection) {
-    PrintPreviewObserver print_preview_observer;
+    PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/false);
 
     StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
                /*print_renderer=*/nullptr,
@@ -609,6 +642,22 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest, PrintNup) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
+}
+
+IN_PROC_BROWSER_TEST_F(PrintBrowserTest, MultipagePrint) {
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/multipage.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  PrintAndWaitUntilPreviewIsReadyAndLoaded(/*print_only_selection=*/false);
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest, MultipagePrint) {
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/multipage.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  PrintAndWaitUntilPreviewIsReadyAndLoaded(/*print_only_selection=*/false);
 }
 
 }  // namespace printing

@@ -173,7 +173,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
       blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   scroll_event.SetPositionInWidget(1, 1);
-  scroll_event.has_precise_scrolling_deltas = true;
+  scroll_event.delta_units =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   scroll_event.delta_x = 0.0f;
 
   // Have the RWHVCF process a sequence of touchpad scroll events that contain

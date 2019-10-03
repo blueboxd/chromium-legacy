@@ -493,6 +493,15 @@ bool HTMLParserScriptRunner::ExecuteScriptsWaitingForParsing() {
     // document has finished parsing is still not empty, repeat these substeps
     // again from substep 1.</spec>
   }
+
+  // All scripts waiting for parsing have now executed (end of spec step 3),
+  // including any force deferred syncrhonous scripts. Now resume async
+  // script execution if it was suspended by force deferral.
+  if (suspended_async_script_execution_) {
+    DCHECK(force_deferred_scripts_.IsEmpty());
+    document_->GetScriptRunner()->SetForceDeferredExecution(false);
+    suspended_async_script_execution_ = false;
+  }
   return true;
 }
 
@@ -557,6 +566,10 @@ void HTMLParserScriptRunner::RequestForceDeferredScript(
   // execute when the document has finished parsing associated with the Document
   // of the parser that created the element.
   force_deferred_scripts_.push_back(pending_script);
+  if (!suspended_async_script_execution_) {
+    document_->GetScriptRunner()->SetForceDeferredExecution(true);
+    suspended_async_script_execution_ = true;
+  }
 }
 
 // The initial steps for 'An end tag whose tag name is "script"'

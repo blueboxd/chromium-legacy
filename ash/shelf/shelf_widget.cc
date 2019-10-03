@@ -215,6 +215,7 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
   const ShelfBackgroundType background_type =
       shelf_widget_->GetBackgroundType();
   const bool tablet_mode =
+      Shell::Get()->tablet_mode_controller() &&
       Shell::Get()->tablet_mode_controller()->InTabletMode();
   const bool in_app = ShelfConfig::Get()->is_in_app();
 

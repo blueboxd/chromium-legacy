@@ -35,6 +35,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -75,6 +76,8 @@ void SharedWorkerGlobalScope::Initialize(
     const Vector<CSPHeaderAndType>& response_csp_headers,
     const Vector<String>* response_origin_trial_tokens,
     int64_t appcache_id) {
+  CoreInitializer::GetInstance().ProvideLocalFileSystemToWorker(*this);
+
   // Step 12.3. "Set worker global scope's url to response's url."
   InitializeURL(response_url);
 

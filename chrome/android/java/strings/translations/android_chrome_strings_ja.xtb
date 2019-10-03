@@ -22,7 +22,6 @@
 <translation id="116280672541001035">使用量</translation>
 <translation id="1171770572613082465">人気のウェブサイトを表示するには、[上位のサイト] ボタンをタップします</translation>
 <translation id="1173894706177603556">名前を変更</translation>
-<translation id="1175310183703641346">ブックマーク、履歴、パスワードなどの設定は Google アカウントと同期されなくなります</translation>
 <translation id="1178581264944972037">一時停止</translation>
 <translation id="1181037720776840403">削除</translation>
 <translation id="1188239144602654184">AR を開始</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> にブックマークしました</translation>
 <translation id="3744111561329211289">バックグラウンド同期</translation>
 <translation id="3771001275138982843">アップデートをダウンロードできませんでした</translation>
+<translation id="3771033907050503522">シークレットタブ</translation>
 <translation id="3773755127849930740">ペア設定するには <ph name="BEGIN_LINK" />Bluetooth をオン<ph name="END_LINK" />にしてください</translation>
 <translation id="3775705724665058594">お使いのデバイスに送信</translation>
 <translation id="3778956594442850293">ホーム画面に追加されました</translation>
@@ -484,7 +484,6 @@
 <translation id="4719927025381752090">翻訳するか尋ねる</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> で開く</translation>
 <translation id="4720982865791209136">Chrome の品質向上にご協力ください。<ph name="BEGIN_LINK" />アンケートに回答する<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">同期アカウントを <ph name="ACCOUNT_EMAIL_OLD" /> から <ph name="ACCOUNT_EMAIL_NEW" /> に切り替えようとしています。既存の Chrome データは <ph name="MANAGED_DOMAIN" /> で管理されています。この操作を行うと、データはこのデバイスから削除されますが、<ph name="ACCOUNT_EMAIL_OLD" /> には残ります。</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4738836084190194332">最終同期: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">新しいタブを開く</translation>
@@ -668,13 +667,13 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5937580074298050696"><ph name="AMOUNT" /> 節約</translation>
 <translation id="5939518447894949180">リセット</translation>
 <translation id="5942872142862698679">検索に Google を使用します</translation>
-<translation id="5944669582486359588">ライトモードを使用すると、Chrome でページの読み込みが高速化され、データ使用量も最大 60% 抑えることができます。Google のクラウド技術により、アクセス先のページが最適化されます。</translation>
 <translation id="5952764234151283551">アクセスしようとしているページの URL を Google に送信します</translation>
 <translation id="5956665950594638604">Chrome ヘルプセンターを新しいタブで開く</translation>
 <translation id="5958275228015807058">[ダウンロード] で自分のファイルやページを探すことができます</translation>
 <translation id="5962718611393537961">タップして折りたたむ</translation>
 <translation id="6000066717592683814">Google のままにする</translation>
 <translation id="6005538289190791541">推奨パスワード</translation>
+<translation id="6036057147555329831">その他の ICU</translation>
 <translation id="6039379616847168523">次のタブに移動する</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="6042308850641462728">もっと見る</translation>
@@ -815,7 +814,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="7029809446516969842">パスワード</translation>
 <translation id="7053983685419859001">ブロック</translation>
 <translation id="7055152154916055070">リダイレクトがブロックされました</translation>
-<translation id="7062545763355031412">同意してアカウントを切り替える</translation>
 <translation id="7063006564040364415">同期サーバーに接続できませんでした。</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 件のアイテムを選択済み}other{# 件のアイテムを選択済み}}</translation>
 <translation id="7071521146534760487">アカウントを管理</translation>
@@ -1099,7 +1097,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="9139318394846604261">ショッピング</translation>
 <translation id="9155898266292537608">単語をタップするだけでも検索できます</translation>
 <translation id="9169507124922466868">ナビゲーション履歴が半分開いています</translation>
-<translation id="9188680907066685419">管理対象アカウントからログアウトする</translation>
 <translation id="9204836675896933765">残り 1 ファイル</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">通話ができません</translation>
@@ -1108,7 +1105,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="932327136139879170">ホーム</translation>
 <translation id="938850635132480979">エラー: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">マイクへのアクセス</translation>
-<translation id="951339005376969845">既存のデータを削除します。<ph name="FROM_ACCOUNT" /> に切り替えると、削除したデータを取得できます。</translation>
 <translation id="95817756606698420">中国のユーザーは Chrome での検索に <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> を使用できます。この設定は [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で変更可能です。</translation>
 <translation id="965817943346481315">煩わしい広告や誤解を招く広告が表示されるサイトの場合にブロック（推奨）</translation>
 <translation id="968900484120156207">アクセスしたページがここに表示されます</translation>

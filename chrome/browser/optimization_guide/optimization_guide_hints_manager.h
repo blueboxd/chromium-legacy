@@ -21,6 +21,8 @@
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/proto/models.pb.h"
+#include "net/nqe/effective_connection_type.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 
 namespace base {
@@ -82,13 +84,6 @@ class OptimizationGuideHintsManager
   // is called and the corresponding hints have been updated.
   void ListenForNextUpdateForTesting(base::OnceClosure next_update_closure);
 
-  // Loads the hint if available.
-  // |callback| is run when the request has finished regardless of whether there
-  // was actually a hint for that load or not. The callback can be used as a
-  // signal for tests.
-  void LoadHintForNavigation(content::NavigationHandle* navigation_handle,
-                             base::OnceClosure callback);
-
   // Registers the optimization types that have the potential for hints to be
   // called by consumers of the Optimization Guide.
   void RegisterOptimizationTypes(
@@ -109,7 +104,7 @@ class OptimizationGuideHintsManager
   // for whether the page load matches the given parameters.
   void CanApplyOptimization(
       content::NavigationHandle* navigation_handle,
-      optimization_guide::OptimizationTarget optimization_target,
+      optimization_guide::proto::OptimizationTarget optimization_target,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationTargetDecision*
           optimization_target_decision,
@@ -135,6 +130,13 @@ class OptimizationGuideHintsManager
   // implementation:
   void OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType type) override;
+
+  // Notifies |this| that a navigation with |navigation_handle| has started.
+  // |callback| is run when the request has finished regardless of whether there
+  // was actually a hint for that load or not. The callback can be used as a
+  // signal for tests.
+  void OnNavigationStartOrRedirect(content::NavigationHandle* navigation_handle,
+                                   base::OnceClosure callback);
 
  private:
   // Processes the hints component.
@@ -194,15 +196,28 @@ class OptimizationGuideHintsManager
           get_hints_response);
 
   // Called when the hints for the top hosts have been fetched from the remote
-  // Optimization Guide Service and are ready for parsing.
+  // Optimization Guide Service and are ready for parsing. This is used when
+  // fetching hints in batch mode.
   void OnTopHostsHintsFetched(
       base::Optional<
           std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
           get_hints_response);
 
+  // Called when the hints for a navigation have been fetched from the remote
+  // Optimization Guide Service and are ready for parsing. This is used when
+  // fetching hints in real-time.
+  void OnPageNavigationHintsFetched(
+      base::Optional<
+          std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
+          get_hints_response);
+
   // Called when the fetched hints have been stored in |hint_cache| and are
-  // ready to be used.
+  // ready to be used. This is used when hints were fetched in batch mode.
   void OnFetchedTopHostsHintsStored();
+
+  // Called when the fetched hints have been stored in |hint_cache| and are
+  // ready to be used. This is used when hints were fetched in real-time.
+  void OnFetchedPageNavigationHintsStored();
 
   // Returns the time when a hints fetch request was last attempted.
   base::Time GetLastHintsFetchAttemptTime() const;
@@ -213,6 +228,23 @@ class OptimizationGuideHintsManager
   // Called when the request to load a hint has completed.
   void OnHintLoaded(base::OnceClosure callback,
                     const optimization_guide::proto::Hint* loaded_hint) const;
+
+  // Returns true if |this| is allowed to fetch hints at the navigation time for
+  // |url|.
+  bool IsAllowedToFetchNavigationHints(const GURL& url) const;
+
+  // Loads the hint if available.
+  // |callback| is run when the request has finished regardless of whether there
+  // was actually a hint for that load or not. The callback can be used as a
+  // signal for tests.
+  void LoadHintForNavigation(content::NavigationHandle* navigation_handle,
+                             base::OnceClosure callback);
+
+  // Loads the hint for |url| if available.
+  // |callback| is run when the request has finished regardless of whether there
+  // was actually a hint for that |url| or not. The callback can be used as a
+  // signal for tests.
+  void LoadHintForURL(const GURL& url, base::OnceClosure callback);
 
   // The OptimizationGuideService that this guide is listening to. Not owned.
   optimization_guide::OptimizationGuideService* const
@@ -281,6 +313,9 @@ class OptimizationGuideHintsManager
 
   // Used in testing to subscribe to an update event in this class.
   base::OnceClosure next_update_closure_;
+
+  // URLs for which hints were last fetched in the real-time.
+  std::vector<GURL> navigation_urls_last_fetched_real_time_;
 
   // Used to get |weak_ptr_| to self on the UI thread.
   base::WeakPtrFactory<OptimizationGuideHintsManager> ui_weak_ptr_factory_{

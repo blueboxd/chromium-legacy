@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/overscroll_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
-#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/page/scrolling/scroll_state.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
@@ -291,7 +290,7 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
 
     DCHECK(scrollable_area);
 
-    SnapCoordinator* snap_coordinator =
+    SnapCoordinator& snap_coordinator =
         frame_->GetDocument()->GetSnapCoordinator();
     ScrollOffset delta = ToScrollDelta(physical_direction, 1);
     delta.Scale(scrollable_area->ScrollStep(granularity, kHorizontalScrollbar),
@@ -302,12 +301,12 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
     // scroll with intended end position only.
     switch (granularity) {
       case ScrollGranularity::kScrollByLine: {
-        if (snap_coordinator->SnapForDirection(*box, delta))
+        if (snap_coordinator.SnapForDirection(*box, delta))
           return true;
         break;
       }
       case ScrollGranularity::kScrollByPage: {
-        if (snap_coordinator->SnapForEndAndDirection(*box, delta))
+        if (snap_coordinator.SnapForEndAndDirection(*box, delta))
           return true;
         break;
       }
@@ -317,8 +316,8 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
                           physical_direction == kScrollRight;
         bool scrolled_y = physical_direction == kScrollUp ||
                           physical_direction == kScrollDown;
-        if (snap_coordinator->SnapForEndPosition(*box, end_position, scrolled_x,
-                                                 scrolled_y))
+        if (snap_coordinator.SnapForEndPosition(*box, end_position, scrolled_x,
+                                                scrolled_y))
           return true;
         break;
       }
@@ -749,10 +748,10 @@ bool ScrollManager::SnapAtGestureScrollEnd(const WebGestureEvent& end_event) {
   if (!previous_gesture_scrolled_node_ ||
       (!did_scroll_x_for_scroll_gesture_ && !did_scroll_y_for_scroll_gesture_))
     return false;
-  SnapCoordinator* snap_coordinator =
+  SnapCoordinator& snap_coordinator =
       frame_->GetDocument()->GetSnapCoordinator();
   LayoutBox* layout_box = LayoutBoxForSnapping();
-  if (!snap_coordinator || !layout_box)
+  if (!layout_box)
     return false;
 
   bool is_mouse_wheel =
@@ -776,10 +775,10 @@ bool ScrollManager::SnapAtGestureScrollEnd(const WebGestureEvent& end_event) {
     // limit the miscalculation to 1px.
     ScrollOffset scroll_direction =
         GetScrollDirection(last_scroll_delta_for_scroll_gesture_);
-    return snap_coordinator->SnapForDirection(*layout_box, scroll_direction);
+    return snap_coordinator.SnapForDirection(*layout_box, scroll_direction);
   }
 
-  return snap_coordinator->SnapAtCurrentPosition(
+  return snap_coordinator.SnapAtCurrentPosition(
       *layout_box, did_scroll_x_for_scroll_gesture_,
       did_scroll_y_for_scroll_gesture_);
 }
@@ -788,11 +787,11 @@ bool ScrollManager::GetSnapFlingInfo(
     const gfx::Vector2dF& natural_displacement,
     gfx::Vector2dF* out_initial_position,
     gfx::Vector2dF* out_target_position) const {
-  SnapCoordinator* snap_coordinator =
+  SnapCoordinator& snap_coordinator =
       frame_->GetDocument()->GetSnapCoordinator();
   LayoutBox* layout_box = LayoutBoxForSnapping();
   ScrollableArea* scrollable_area = ScrollableAreaForSnapping(layout_box);
-  if (!snap_coordinator || !layout_box || !scrollable_area)
+  if (!layout_box || !scrollable_area)
     return false;
 
   FloatPoint current_position = scrollable_area->ScrollPosition();
@@ -802,7 +801,7 @@ bool ScrollManager::GetSnapFlingInfo(
           gfx::ScrollOffset(*out_initial_position),
           gfx::ScrollOffset(natural_displacement));
   base::Optional<FloatPoint> snap_end =
-      snap_coordinator->GetSnapPosition(*layout_box, *strategy);
+      snap_coordinator.GetSnapPosition(*layout_box, *strategy);
   if (!snap_end.has_value())
     return false;
   *out_target_position = gfx::Vector2dF(snap_end.value());

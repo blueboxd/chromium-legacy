@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Bằng việc sử dụng ứng dụng này, bạn đồng ý với <ph name="BEGIN_LINK_TOS" />Điều khoản dịch vụ<ph name="END_LINK_TOS" /> và <ph name="BEGIN_LINK_PRIVACY" />Thông báo quyền riêng tư<ph name="END_LINK_PRIVACY" /> của Chrome.</translation>
 <translation id="2147651015520127414">Chrome xác minh <ph name="ISSUER" /> đã cấp chứng chỉ của trang web này.</translation>
 <translation id="2199719347983604670">Dữ liệu từ Chrome Sync</translation>
-<translation id="2342981853652716282">Đăng nhập vào Chrome để nhận dấu trang, mật khẩu và nhiều nội dung khác trên tất cả các thiết bị của bạn.</translation>
 <translation id="2347208864470321755">Khi tính năng này được bật, Chrome sẽ đề xuất sử dụng Google Dịch để dịch các trang viết bằng ngôn ngữ khác. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Để lưu hình ảnh, nhấn vào Cài đặt để cho phép Chrome sử dụng ảnh của bạn</translation>
 <translation id="2576431527583832481">Chrome được cải tiến hơn! Đã có phiên bản mới.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Giúp cải thiện Chrome bằng cách gửi số liệu thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="415767770115540173">Nhận trải nghiệm Google tốt hơn trong Chrome dựa vào vị trí của bạn.</translation>
 <translation id="424864128008805179">Đăng xuất khỏi Chrome?</translation>
+<translation id="4249068189593983585">Mẹo sử dụng Chrome. Để xem thêm các tùy chọn về tab, hãy chạm và giữ nút Hiển thị tab trên thanh công cụ ở đầu hoặc cuối màn hình.</translation>
 <translation id="4523886039239821078">Một số tiện ích bổ sung khiến Chrome trục trặc. Hãy gỡ cài đặt:</translation>
 <translation id="5389212809648216794">Google Chrome không thể sử dụng máy ảnh của bạn do một ứng dụng khác đang dùng máy ảnh</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Xem lại Điều khoản dịch vụ đã cập nhật của Chrome.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Một số tiện ích bổ sung khiến Chrome trục trặc. Hãy thử gỡ cài đặt chúng.</translation>
 <translation id="8459495907675268833">Dữ liệu được chọn đã bị xóa khỏi Chrome và các thiết bị được đồng bộ hóa. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác, chẳng hạn như tìm kiếm và hoạt động từ các dịch vụ khác của Google tại history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome có thể sử dụng dịch vụ web để cải thiện trải nghiệm duyệt web của bạn. Bạn có thể tùy ý vô hiệu hóa các dịch vụ này. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 </translationbundle>

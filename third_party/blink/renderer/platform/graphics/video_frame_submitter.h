@@ -13,6 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "cc/metrics/frame_sequence_tracker.h"
 #include "components/viz/client/shared_bitmap_reporter.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/shared_bitmap.h"
@@ -177,6 +178,17 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   base::OneShotTimer empty_frame_timer_;
 
   base::Optional<int> last_frame_id_;
+
+  cc::FrameSequenceTrackerCollection frame_trackers_;
+
+  // The BeginFrameArgs passed to the most recent call of OnBeginFrame().
+  // Required for FrameSequenceTrackerCollection::NotifySubmitFrame
+  viz::BeginFrameArgs last_begin_frame_args_;
+
+  // The token of the frames that are submitted outside OnBeginFrame(). These
+  // frames should be ignored by the video tracker even if they are reported as
+  // presented.
+  base::flat_set<uint32_t> ignorable_submitted_frames_;
 
   THREAD_CHECKER(thread_checker_);
 

@@ -920,7 +920,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->SetLazyLoadEnabled(prefs.lazy_load_enabled);
   settings->SetPreferredColorScheme(prefs.preferred_color_scheme);
-  settings->SetForcedColors(prefs.forced_colors);
 
   for (const auto& ect_distance_pair :
        prefs.lazy_frame_loading_distance_thresholds_px) {
@@ -1467,12 +1466,6 @@ WebView* RenderViewImpl::CreateView(
 
 blink::WebPagePopup* RenderViewImpl::CreatePopup(
     blink::WebLocalFrame* creator) {
-  return CreatePopupAndGetWidget(creator, nullptr);
-}
-
-blink::WebPagePopup* RenderViewImpl::CreatePopupAndGetWidget(
-    blink::WebLocalFrame* creator,
-    RenderWidget** output_widget) {
   mojo::PendingRemote<mojom::Widget> widget_channel;
   mojo::PendingReceiver<mojom::Widget> widget_channel_receiver =
       widget_channel.InitWithNewPipeAndPassReceiver();
@@ -1512,9 +1505,6 @@ blink::WebPagePopup* RenderViewImpl::CreatePopupAndGetWidget(
   // WebWidget which doesn't apply to this case. So we verify. This can go away
   // when RenderWidget::GetWebWidget() is just a simple accessor.
   DCHECK_EQ(popup_widget->GetWebWidget(), popup_web_widget);
-
-  if (output_widget)
-    *output_widget = popup_widget;
 
   return popup_web_widget;
 }
@@ -1823,12 +1813,16 @@ bool RenderViewImpl::CanHandleGestureEvent() {
   return true;
 }
 
+// TODO(https://crbug.com/1010509): Re-enable this in Chrome 80.
 // TODO(https://crbug.com/937569): Remove this in Chrome 82.
 bool RenderViewImpl::AllowPopupsDuringPageUnload() {
+  return true;
+#if 0
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   return command_line.HasSwitch(switches::kAllowPopupsDuringPageUnload) ||
          base::FeatureList::IsEnabled(features::kAllowPopupsDuringPageUnload);
+#endif
 }
 
 bool RenderViewImpl::CanUpdateLayout() {

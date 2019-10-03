@@ -2116,11 +2116,11 @@ void RenderWidget::ScreenRectToEmulatedIfNeeded(WebRect* window_rect) const {
 
   window_rect->x =
       emulator->ViewRectOrigin().x() +
-      (window_rect->x - emulator->original_screen_rect().origin().x()) /
+      (window_rect->x - emulator->original_view_rect().origin().x()) /
           emulator->scale();
   window_rect->y =
       emulator->ViewRectOrigin().y() +
-      (window_rect->y - emulator->original_screen_rect().origin().y()) /
+      (window_rect->y - emulator->original_view_rect().origin().y()) /
           emulator->scale();
 }
 
@@ -2135,10 +2135,10 @@ void RenderWidget::EmulatedToScreenRectIfNeeded(WebRect* window_rect) const {
     return;
 
   window_rect->x =
-      emulator->original_screen_rect().origin().x() +
+      emulator->original_view_rect().origin().x() +
       (window_rect->x - emulator->ViewRectOrigin().x()) * emulator->scale();
   window_rect->y =
-      emulator->original_screen_rect().origin().y() +
+      emulator->original_view_rect().origin().y() +
       (window_rect->y - emulator->ViewRectOrigin().y()) * emulator->scale();
 }
 

@@ -20,7 +20,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1393853151966637042">Get help with using Chrome</translation>
 <translation id="1399397803214730675">This computer already has a more recent version of Google Chrome. If the software is not working, please uninstall Google Chrome and try again.</translation>
 <translation id="1434626383986940139">Chrome Canary Apps</translation>
-<translation id="1457721931618994305">Updating Google Chrome ...</translation>
 <translation id="1469002951682717133">Chrome App Launcher</translation>
 <translation id="1553358976309200471">Update Chrome</translation>
 <translation id="1587223624401073077">Google Chrome is using your camera.</translation>
@@ -178,9 +177,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="573759479754913123">About Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Couldn't launch Chrome. Try again.</translation>
-<translation id="5877064549588274448">Channel changed. Restart your device to apply changes.</translation>
 <translation id="5895138241574237353">Restart</translation>
-<translation id="5906655207909574370">Nearly up to date! Restart your device to finish updating.</translation>
 <translation id="5940385492829620908">Your web, bookmarks and other Chrome stuff live here.</translation>
 <translation id="5941830788786076944">Make Google Chrome the default browser</translation>
 <translation id="6014844626092547096">You're now signed in to Chrome! Sync is disabled by your administrator.</translation>
@@ -199,7 +196,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6566149418543181476">Updating Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">You're using <ph name="PROFILE_EMAIL" /> to sync your Chrome stuff. To update your sync preference or to use Chrome without a Google Account, visit <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Copied to Chrome</translation>
-<translation id="6634887557811630702">Google Chrome is up to date.</translation>
 <translation id="6676384891291319759">Access the Internet</translation>
 <translation id="6679975945624592337">Let Google Chrome Run in the Background</translation>
 <translation id="6750954913813541382">To fix spelling errors, Chrome sends the text that you type in the browser to Google</translation>
@@ -209,7 +205,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6906909733186691861">Future versions of Chrome will install automatically.</translation>
 <translation id="6943584222992551122">This person's browsing data will be deleted from this device. To recover the data, sign in to Chrome as <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Inbound rule for Google Chrome Beta to allow mDNS traffic.</translation>
-<translation id="6970811910055250180">Updating your device...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> requires that you read and accept the following Terms of Service before using this device. These terms do not expand, modify or limit the Google Chrome OS Terms.</translation>
 <translation id="6989339256997917931">Google Chrome has been updated, but you haven't used it for at least 30 days.</translation>
 <translation id="7098166902387133879">Google Chrome is using your microphone.</translation>
@@ -247,7 +242,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7962410387636238736">This computer will no longer receive Google Chrome updates because Windows XP and Windows Vista are no longer supported</translation>
 <translation id="8008534537613507642">Reinstall Chrome</translation>
 <translation id="8013993649590906847">If an image doesn’t have a useful description, Chrome will try to provide one for you. To create descriptions, images are sent to Google.</translation>
-<translation id="8030318113982266900">Updating your device to <ph name="CHANNEL_NAME" /> channel...</translation>
 <translation id="8032142183999901390">After removing your account from Chrome, you may need to reload your open tabs to take effect.</translation>
 <translation id="8129812357326543296">About &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Install Chrome on your phone. We’ll send an SMS to your phone.</translation>
@@ -270,7 +264,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8606668294522778825">Google Chrome may use web services to improve your browsing experience. You may optionally disable these services. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome is unresponsive. Relaunch now?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome will relaunch in 1 minute}other{Chrome will relaunch in # minutes}}</translation>
-<translation id="8667808506758191620">Your <ph name="DEVICE_TYPE" /> is up to date.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">It also controls what page is shown when you start Chrome.</translation>
 <translation id="870251953148363156">Update &amp;Google Chrome</translation>

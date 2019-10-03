@@ -22,6 +22,11 @@ class WebThemeEngineAndroid : public blink::WebThemeEngine {
              const blink::WebRect& rect,
              const blink::WebThemeEngine::ExtraParams* extra_params,
              blink::WebColorScheme color_scheme) override;
+  blink::ForcedColors ForcedColors() const override;
+  void SetForcedColors(const blink::ForcedColors forced_colors) override;
+
+ private:
+  blink::ForcedColors forced_colors_ = blink::ForcedColors::kNone;
 };
 
 }  // namespace content

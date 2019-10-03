@@ -106,7 +106,7 @@ class PageNodeImpl
 
  private:
   friend class FrameNodeImpl;
-  friend class FreezeOriginTrialPolicyAggregatorAccess;
+  friend class PageAggregatorAccess;
   friend class FrozenFrameAggregatorAccess;
   friend class PageAlmostIdleAccess;
 
@@ -231,9 +231,8 @@ class PageNodeImpl
   // Inline storage for FrozenFrameAggregator user data.
   InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 8> frozen_frame_data_;
 
-  // Inline storage for FreezeOriginTrialPolicyAggregatorAccess user data.
-  InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 16>
-      freeze_origin_trial_policy_data_;
+  // Inline storage for PageAggregatorAccess user data.
+  InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 16> page_aggregator_data_;
 
   DISALLOW_COPY_AND_ASSIGN(PageNodeImpl);
 };

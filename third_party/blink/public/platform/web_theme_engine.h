@@ -33,6 +33,7 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_scrollbar_overlay_color_theme.h"
@@ -224,6 +225,9 @@ class WebThemeEngine {
       SystemThemeColor system_theme) const {
     return base::nullopt;
   }
+
+  virtual ForcedColors ForcedColors() const { return ForcedColors::kNone; }
+  virtual void SetForcedColors(const blink::ForcedColors forced_colors) {}
 };
 
 }  // namespace blink

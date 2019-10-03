@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
@@ -28,7 +29,6 @@ class TracingController;
 // the UI thread.
 class TracingController {
  public:
-
   CONTENT_EXPORT static TracingController* GetInstance();
 
   // An interface for trace data consumer. An implementation of this interface
@@ -41,8 +41,7 @@ class TracingController {
       : public base::RefCountedThreadSafe<TraceDataEndpoint> {
    public:
     virtual void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) = 0;
-    virtual void ReceiveTraceFinalContents(
-        std::unique_ptr<const base::DictionaryValue> metadata) = 0;
+    virtual void ReceivedTraceFinalContents() = 0;
 
    protected:
     friend class base::RefCountedThreadSafe<TraceDataEndpoint>;
@@ -51,15 +50,16 @@ class TracingController {
 
   // Create a trace endpoint that may be supplied to StopTracing
   // to capture the trace data as a string.
+  using CompletionCallback =
+      base::OnceCallback<void(std::unique_ptr<std::string>)>;
   CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateStringEndpoint(
-      const base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
-                                base::RefCountedString*)>& callback);
+      CompletionCallback callback);
 
   // Create a trace endpoint that may be supplied to StopTracing
   // to dump the trace data to a file.
   CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateFileEndpoint(
       const base::FilePath& file_path,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       base::TaskPriority write_priority = base::TaskPriority::BEST_EFFORT);
 
   // Get a set of category groups. The category groups can change as

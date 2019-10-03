@@ -4,69 +4,56 @@ Layer tree:
   "drawsContent": false,
   "children": [
     {
-      "name": "Inner Viewport Container Layer",
+      "name": "Inner Viewport Scroll Layer",
       "bounds": [800, 600],
       "drawsContent": false,
       "children": [
         {
-          "name": "Page Scale Layer",
+          "name": "LayoutView #document",
+          "bounds": [800, 600],
           "drawsContent": false,
+          "backgroundColor": "#FFFFFF",
+          "shouldFlattenTransform": false,
           "children": [
             {
-              "name": "Inner Viewport Scroll Layer",
-              "bounds": [800, 600],
+              "name": "Scrolling Layer",
+              "bounds": [780, 580],
               "drawsContent": false,
+              "flattenInheritedTransform": false,
+              "shouldFlattenTransform": false,
               "children": [
                 {
-                  "name": "LayoutView #document",
-                  "bounds": [800, 600],
-                  "drawsContent": false,
+                  "name": "Scrolling Contents Layer",
+                  "bounds": [1200, 900],
+                  "contentsOpaque": true,
                   "backgroundColor": "#FFFFFF",
-                  "shouldFlattenTransform": false,
-                  "children": [
-                    {
-                      "name": "Scrolling Layer",
-                      "bounds": [780, 580],
-                      "drawsContent": false,
-                      "flattenInheritedTransform": false,
-                      "shouldFlattenTransform": false,
-                      "children": [
-                        {
-                          "name": "Scrolling Contents Layer",
-                          "bounds": [1200, 900],
-                          "contentsOpaque": true,
-                          "backgroundColor": "#FFFFFF",
-                          "flattenInheritedTransform": false
-                        }
-                      ]
-                    }
-                  ]
+                  "flattenInheritedTransform": false
                 }
               ]
             }
           ]
+        }
+      ]
+    },
+    {
+      "name": "Overflow Controls Host Layer",
+      "bounds": [800, 600],
+      "drawsContent": false,
+      "children": [
+        {
+          "name": "Horizontal Scrollbar Layer",
+          "position": [0, 580],
+          "bounds": [780, 20]
         },
         {
-          "name": "Overflow Controls Host Layer",
-          "bounds": [800, 600],
-          "drawsContent": false,
-          "children": [
-            {
-              "name": "Horizontal Scrollbar Layer",
-              "position": [0, 580],
-              "bounds": [780, 20]
-            },
-            {
-              "name": "Vertical Scrollbar Layer",
-              "position": [780, 0],
-              "bounds": [20, 580]
-            },
-            {
-              "name": "Scroll Corner Layer",
-              "position": [780, 580],
-              "bounds": [20, 20]
-            }
-          ]
+          "name": "Vertical Scrollbar Layer",
+          "position": [780, 0],
+          "bounds": [20, 580]
+        },
+        {
+          "name": "Scroll Corner Layer",
+          "position": [780, 580],
+          "bounds": [20, 20]
         }
       ]
     }
@@ -78,15 +65,6 @@ Layer list
   "layers": [
     {
       "name": "Root Transform Layer",
-      "drawsContent": false
-    },
-    {
-      "name": "Inner Viewport Container Layer",
-      "bounds": [800, 600],
-      "drawsContent": false
-    },
-    {
-      "name": "Page Scale Layer",
       "drawsContent": false
     },
     {

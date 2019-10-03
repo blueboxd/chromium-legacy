@@ -18,6 +18,8 @@ bool TestBrowserAccessibilityDelegate::AccessibilityViewHasFocus() const {
   return false;
 }
 
+void TestBrowserAccessibilityDelegate::AccessibilityViewSetFocus() {}
+
 gfx::Rect TestBrowserAccessibilityDelegate::AccessibilityGetViewBounds() const {
   return gfx::Rect();
 }

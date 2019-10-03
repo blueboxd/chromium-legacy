@@ -48,6 +48,7 @@ std::unique_ptr<GpuBlocklist> GpuBlocklist::Create(
   list->AddSupportedFeature("android_surface_control",
                             GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL);
   list->AddSupportedFeature("metal", GPU_FEATURE_TYPE_METAL);
+  list->AddSupportedFeature("vulkan", GPU_FEATURE_TYPE_VULKAN);
   return list;
 }
 

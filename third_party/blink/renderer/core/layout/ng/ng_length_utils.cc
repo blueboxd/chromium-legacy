@@ -549,11 +549,15 @@ LayoutUnit ComputeBlockSizeForFragment(
 }
 
 // Computes size for a replaced element.
-LogicalSize ComputeReplacedSize(
-    const NGLayoutInputNode& node,
-    const NGConstraintSpace& space,
-    const base::Optional<MinMaxSize>& child_minmax) {
+void ComputeReplacedSize(const NGLayoutInputNode& node,
+                         const NGConstraintSpace& space,
+                         const base::Optional<MinMaxSize>& child_minmax,
+                         base::Optional<LogicalSize>* out_replaced_size,
+                         base::Optional<LogicalSize>* out_aspect_ratio) {
   DCHECK(node.IsReplaced());
+  DCHECK(!out_replaced_size->has_value());
+  DCHECK(!out_aspect_ratio->has_value());
+
   const ComputedStyle& style = node.Style();
 
   NGBoxStrut border_padding =
@@ -587,8 +591,10 @@ LogicalSize ComputeReplacedSize(
         space.AvailableSize().block_size, LengthResolvePhase::kLayout);
     replaced_block = ConstrainByMinMax(*replaced_block, block_min, block_max);
   }
-  if (replaced_inline && replaced_block)
-    return LogicalSize(*replaced_inline, *replaced_block);
+  if (replaced_inline && replaced_block) {
+    out_replaced_size->emplace(*replaced_inline, *replaced_block);
+    return;
+  }
 
   base::Optional<LayoutUnit> intrinsic_inline;
   base::Optional<LayoutUnit> intrinsic_block;
@@ -613,10 +619,8 @@ LogicalSize ComputeReplacedSize(
                           aspect_ratio.inline_size / aspect_ratio.block_size) +
                          border_padding.InlineSum();
     } else {
-      NGBoxStrut margins = ComputeMarginsForSelf(space, node.Style());
-      intrinsic_inline =
-          (space.AvailableSize().inline_size - margins.InlineSum())
-              .ClampNegativeToZero();
+      *out_aspect_ratio = aspect_ratio;
+      return;
     }
   }
   if (!intrinsic_block) {
@@ -712,7 +716,8 @@ LogicalSize ComputeReplacedSize(
       }
     }
   }
-  return LogicalSize(*replaced_inline, *replaced_block);
+  out_replaced_size->emplace(*replaced_inline, *replaced_block);
+  return;
 }
 
 int ResolveUsedColumnCount(int computed_count,

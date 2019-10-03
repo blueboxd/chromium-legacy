@@ -53,6 +53,7 @@ class CORE_EXPORT ScriptRunner final : public GarbageCollected<ScriptRunner>,
   }
   void Suspend();
   void Resume();
+  void SetForceDeferredExecution(bool force_deferred);
   void NotifyScriptReady(PendingScript*);
 
   static void MovePendingScript(Document&, Document&, ScriptLoader*);
@@ -68,6 +69,7 @@ class CORE_EXPORT ScriptRunner final : public GarbageCollected<ScriptRunner>,
   void ScheduleReadyInOrderScripts();
 
   void PostTask(const base::Location&);
+  void PostTasksForReadyScripts(const base::Location&);
 
   // Execute the first task in in_order_scripts_to_execute_soon_.
   // Returns true if task was run, and false otherwise.
@@ -78,6 +80,8 @@ class CORE_EXPORT ScriptRunner final : public GarbageCollected<ScriptRunner>,
   bool ExecuteAsyncTask();
 
   void ExecuteTask();
+
+  bool IsExecutionSuspended() { return is_suspended_ || is_force_deferred_; }
 
   Member<Document> document_;
 
@@ -94,13 +98,11 @@ class CORE_EXPORT ScriptRunner final : public GarbageCollected<ScriptRunner>,
 
   bool is_suspended_ = false;
 
-#ifndef NDEBUG
-  // We expect to have one posted task in flight for each script in either
-  // .._to_be_executed_soon_ queue. This invariant will be temporarily violated
-  // when the ScriptRunner is suspended. We'll use this variable to account &
-  // check this invariant for debugging.
-  int number_of_extra_tasks_ = 0;
-#endif
+  // Whether script execution is suspended due to there being force deferred
+  // scripts that have not yet been executed. This is expected to be in sync
+  // with HTMLParserScriptRunner::suspended_async_script_execution_.
+  bool is_force_deferred_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(ScriptRunner);
 };
 

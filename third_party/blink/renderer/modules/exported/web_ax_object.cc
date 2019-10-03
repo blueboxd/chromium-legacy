@@ -1445,6 +1445,7 @@ static ax::mojom::MarkerType ToAXMarkerType(
       return ax::mojom::MarkerType::kSpelling;
     case DocumentMarker::kGrammar:
       return ax::mojom::MarkerType::kGrammar;
+    case DocumentMarker::kTextFragment:
     case DocumentMarker::kTextMatch:
       return ax::mojom::MarkerType::kTextMatch;
     case DocumentMarker::kActiveSuggestion:

@@ -1147,10 +1147,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       gfx::ToCeiledInt((bounds.y() - root_view->GetViewBounds().y() + 5) *
                        scale_factor));
   SetWebEventPositions(&scroll_event, position_in_widget, root_view);
+  scroll_event.delta_units =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   scroll_event.delta_x = 0.0f;
   scroll_event.delta_y = 5.0f;
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
-  scroll_event.has_precise_scrolling_deltas = true;
   router->RouteMouseWheelEvent(root_view, &scroll_event, ui::LatencyInfo());
   scroll_begin_observer.Wait();
 
@@ -1673,10 +1674,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   SetWebEventPositions(&scroll_event, position_in_root, root_rwhv);
+  scroll_event.delta_units =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   scroll_event.delta_x = 0.0f;
   scroll_event.delta_y = 5.0f;
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
-  scroll_event.has_precise_scrolling_deltas = true;
 
   router->RouteMouseWheelEvent(root_rwhv, &scroll_event, ui::LatencyInfo());
 
@@ -4445,10 +4447,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   gfx::Point child_point_in_root(90, 90);
   SetWebEventPositions(&scroll_event, child_point_in_root, rwhv_root);
+  scroll_event.delta_units =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   scroll_event.delta_x = 0.0f;
   scroll_event.delta_y = -20.0f;
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
-  scroll_event.has_precise_scrolling_deltas = true;
 
   {
     InputEventAckWaiter await_begin_in_child(

@@ -117,7 +117,6 @@
 <translation id="4971687151119236543">Προηγούμενο κομμάτι πολυμέσων</translation>
 <translation id="5046499563572181734">Πατήστε εδώ</translation>
 <translation id="5076340679995252485">&amp;Επικόλληση</translation>
-<translation id="5137751499640340777">Έναρξη Βοηθού Google</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Τρίγωνο αποκάλυψης</translation>
 <translation id="5278860589123563674">Αποτυχία αποστολής</translation>
@@ -154,6 +153,7 @@
 <translation id="6394627529324717982">Κόμμα</translation>
 <translation id="6397363302884558537">Διακοπή ομιλίας</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Πριν από 1 δευτερόλεπτο}other{Πριν από # δευτερόλεπτα}}</translation>
+<translation id="6417265370957905582">Βοηθός Google</translation>
 <translation id="6430678249303439055">Αποκλεισμός όλων των ειδοποιήσεων από αυτή την εφαρμογή</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Πριν από 1 δευτερόλεπτο}other{Πριν από # δευτερόλεπτα}}</translation>
 <translation id="6539092367496845964">Παρουσιάστηκε κάποιο πρόβλημα. Δοκιμάστε ξανά αργότερα.</translation>
@@ -196,7 +196,6 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Περισσότερες από 1 μη αναγνωσμένες ειδοποιήσεις}other{Περισσότερες από # μη αναγνωσμένες ειδοποιήσεις}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{σε 1 λ.}other{σε # λ.}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8098075892845277643">Έναρξη φωνητικού ερωτήματος Βοηθού Google</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Πριν από 1 ώρα}other{Πριν από # ώρες}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Απομένει 1 δευτερόλεπτο}other{Απομένουν # δευτερόλεπτα}}</translation>
 <translation id="8144660977431427332">Οι αναζητήσεις σας παρέχονται από τον Βοηθό Google. <ph name="LEARN_MORE" /></translation>

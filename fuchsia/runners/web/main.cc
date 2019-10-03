@@ -26,7 +26,8 @@ int main(int argc, char** argv) {
       fuchsia::web::ContextFeatureFlags::NETWORK |
       fuchsia::web::ContextFeatureFlags::AUDIO |
       fuchsia::web::ContextFeatureFlags::VULKAN |
-      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER;
+      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER |
+      fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM;
 
   WebContentRunner runner(
       base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get(),

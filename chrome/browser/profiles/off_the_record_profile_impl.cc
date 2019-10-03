@@ -445,6 +445,11 @@ OffTheRecordProfileImpl::GetPushMessagingService() {
   return NULL;
 }
 
+content::StorageNotificationService*
+OffTheRecordProfileImpl::GetStorageNotificationService() {
+  return nullptr;
+}
+
 content::SSLHostStateDelegate*
 OffTheRecordProfileImpl::GetSSLHostStateDelegate() {
   return ChromeSSLHostStateDelegateFactory::GetForProfile(this);

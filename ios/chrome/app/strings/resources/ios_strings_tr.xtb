@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Görüntü Kaydedilemiyor</translation>
 <translation id="1180526666083833456">Cihazlar arasında senkronize edin ve kişiselleştirme yapın.</translation>
 <translation id="1181037720776840403">Kaldır</translation>
+<translation id="1207113853726624428">Yeni Arama</translation>
 <translation id="1209206284964581585">Şimdilik gizle</translation>
 <translation id="1219674500290482172">İnternet'e bağlanılamıyor.</translation>
 <translation id="122699739164161391">Tüm Sekmeleri Kapat</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">Şifre Öner...</translation>
 <translation id="1870148520156231997">Şifreyi Göster</translation>
 <translation id="1872096359983322073">Flaş</translation>
-<translation id="1876721852596493031">Kull. Veril. Gönder</translation>
 <translation id="1911619930368729126">Google Drive'a yükle</translation>
 <translation id="1923342640370224680">Son Bir Saat</translation>
 <translation id="1941314575388338491">Kopyalamak için iki kez dokunun.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> okunmamış Okuma Listesi makalesi.</translation>
 <translation id="2230173723195178503">Web sayfası yüklendi</translation>
 <translation id="2239626343334228536">Göz atma verileri temizleniyor...</translation>
-<translation id="2256128224215992540">Arama ve Site Önerileri</translation>
 <translation id="2267753748892043616">Hesap Ekle</translation>
 <translation id="2268044343513325586">Hassaslaştır</translation>
 <translation id="2273327106802955778">Diğer menüsü</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">Dosya Açılamıyor</translation>
 <translation id="2718352093833049315">Yaln. Kablosuzda</translation>
 <translation id="2747003861858887689">Önceki alan</translation>
+<translation id="2773292004659987824">Gizli Arama</translation>
 <translation id="2780046210906776326">E-posta Hesabı Yok</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Sekme Değiştirici'den Çık</translation>
@@ -295,7 +295,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5197255632782567636">İnternet</translation>
 <translation id="5228579091201413441">Senkronizasyonu etkinleştir</translation>
 <translation id="5234764350956374838">Kapat</translation>
-<translation id="5244474230056479698"><ph name="EMAIL" /> hesabıyla senkronize ediliyor</translation>
 <translation id="5245322853195994030">Senkronizasyonu iptal et</translation>
 <translation id="5271549068863921519">Şifreyi kaydet</translation>
 <translation id="5300589172476337783">Göster</translation>
@@ -501,6 +500,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="8261506727792406068">Sil</translation>
 <translation id="8281781826761538115">Varsayılan - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Yeni Arama</translation>
+<translation id="8323906514956095947">Diğer sekme seçenekleri için dokunup basılı tutun</translation>
 <translation id="8328777765163860529">Tümünü Kapat</translation>
 <translation id="8407669440184693619">Bu site için şifre bulunamadı</translation>
 <translation id="842017693807136194">Şununla Oturum Açıldı:</translation>

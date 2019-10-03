@@ -24,6 +24,12 @@ class MockWebThemeEngine : public blink::WebThemeEngine {
              const blink::WebThemeEngine::ExtraParams*,
              blink::WebColorScheme) override;
 #endif  // !defined(OS_MACOSX)
+
+  blink::ForcedColors ForcedColors() const override;
+  void SetForcedColors(const blink::ForcedColors forced_colors) override;
+
+ private:
+  blink::ForcedColors forced_colors_ = blink::ForcedColors::kNone;
 };
 
 }  // namespace test_runner

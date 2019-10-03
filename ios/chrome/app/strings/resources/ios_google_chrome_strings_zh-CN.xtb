@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">使用此应用即表示您同意遵守 Chrome 的<ph name="BEGIN_LINK_TOS" />服务条款<ph name="END_LINK_TOS" />和<ph name="BEGIN_LINK_PRIVACY" />隐私权声明<ph name="END_LINK_PRIVACY" />。</translation>
 <translation id="2147651015520127414">Chrome 已证实此网站的证书是由 <ph name="ISSUER" /> 签发的。</translation>
 <translation id="2199719347983604670">Chrome 同步的数据</translation>
-<translation id="2342981853652716282">登录 Chrome 即可获取您在所有设备上保存的书签、密码等。</translation>
 <translation id="2347208864470321755">启用此功能后，Chrome 将使用 Google 翻译对其他语言的网页进行翻译。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">要保存图片，请点按“设置”，并允许 Chrome 使用您的照片</translation>
 <translation id="2576431527583832481">Chrome 浏览器刚刚经过了改进！新版本已推出。</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">将使用情况统计信息和崩溃报告发送给 Google，帮助我们完善 Chrome。</translation>
 <translation id="415767770115540173">要在 Chrome 中获得更好的 Google 使用体验，需要用到您的位置信息。</translation>
 <translation id="424864128008805179">退出 Chrome？</translation>
+<translation id="4249068189593983585">Chrome 提示。要查看更多的标签页选项，请轻触并按住工具栏（位于屏幕底部或顶部）中的“显示标签页”按钮。</translation>
 <translation id="4523886039239821078">部分插件导致 Chrome 崩溃，请卸载这些插件：</translation>
 <translation id="5389212809648216794">由于另一个应用正在使用您的相机，因此 Google Chrome 无法使用</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />查看新版 Chrome 服务条款。<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">部分插件导致 Chrome 崩溃，请尝试卸载这些插件。</translation>
 <translation id="8459495907675268833">所选数据已从 Chrome 和同步的设备中移除。不过，您的 Google 帐号在 history.google.com 上可能有其他形式的浏览记录（例如，在其他 Google 服务中的搜索记录和活动记录）。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome 可能会使用网络服务来改善您的浏览体验。不过，您可以选择停用这些服务。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 </translationbundle>

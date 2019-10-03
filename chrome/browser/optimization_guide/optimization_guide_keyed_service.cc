@@ -45,7 +45,7 @@ GetTopHostProviderIfUserPermitted(content::BrowserContext* browser_context) {
 // navigation's OptimizationGuideNavigationData;
 void LogDecisions(
     content::NavigationHandle* navigation_handle,
-    optimization_guide::OptimizationTarget optimization_target,
+    optimization_guide::proto::OptimizationTarget optimization_target,
     optimization_guide::OptimizationTargetDecision optimization_target_decision,
     optimization_guide::proto::OptimizationType optimization_type,
     optimization_guide::OptimizationTypeDecision optimization_type_decision) {
@@ -143,8 +143,12 @@ void OptimizationGuideKeyedService::Initialize(
 
 void OptimizationGuideKeyedService::MaybeLoadHintForNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (hints_manager_ && hints_manager_->HasRegisteredOptimizationTypes())
-    hints_manager_->LoadHintForNavigation(navigation_handle, base::DoNothing());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (hints_manager_ && hints_manager_->HasRegisteredOptimizationTypes()) {
+    hints_manager_->OnNavigationStartOrRedirect(navigation_handle,
+                                                base::DoNothing());
+  }
 }
 
 void OptimizationGuideKeyedService::RegisterOptimizationTypes(
@@ -158,7 +162,7 @@ void OptimizationGuideKeyedService::RegisterOptimizationTypes(
 optimization_guide::OptimizationGuideDecision
 OptimizationGuideKeyedService::CanApplyOptimization(
     content::NavigationHandle* navigation_handle,
-    optimization_guide::OptimizationTarget optimization_target,
+    optimization_guide::proto::OptimizationTarget optimization_target,
     optimization_guide::proto::OptimizationType optimization_type,
     optimization_guide::OptimizationMetadata* optimization_metadata) {
   DCHECK(hints_manager_);

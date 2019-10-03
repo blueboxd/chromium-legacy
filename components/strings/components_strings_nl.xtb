@@ -45,6 +45,7 @@
 <translation id="1175875016430184367">Drie nietjes rechts</translation>
 <translation id="1178581264944972037">Onderbreken</translation>
 <translation id="1181037720776840403">Verwijderen</translation>
+<translation id="1186201132766001848">Wachtwoorden controleren</translation>
 <translation id="1197088940767939838">Oranje</translation>
 <translation id="1201402288615127009">Volgende</translation>
 <translation id="1201895884277373915">Meer van deze site</translation>
@@ -110,6 +111,7 @@
 <translation id="1430915738399379752">Afdrukken</translation>
 <translation id="1442386063175183758">Gatefold rechts</translation>
 <translation id="1442987760062738829">Perforeren</translation>
+<translation id="1450011005989029586">Je wachtwoord is gelekt bij een gegevenslek op een site of in een app die je gebruikt. Chrome raadt je aan nu <ph name="BOLD" /> op <ph name="ORIGIN" />.</translation>
 <translation id="1455413310270022028">Gum</translation>
 <translation id="1463543813647160932">5x7</translation>
 <translation id="1472675084647422956">Meer weergeven</translation>
@@ -153,7 +155,6 @@
 <translation id="1640244768702815859">Probeer <ph name="BEGIN_LINK" />de homepage van de site te bezoeken<ph name="END_LINK" />.</translation>
 <translation id="1644574205037202324">Geschiedenis</translation>
 <translation id="1645368109819982629">Niet-ondersteund protocol</translation>
-<translation id="1655462015569774233">{1,plural, =1{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is gisteren verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_DATE" />. Is dat correct? Zo niet, dan moet je de klok van je systeem aanpassen en vervolgens deze pagina vernieuwen.}other{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is # dagen geleden verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_DATE" />. Is dat correct? Zo niet, dan moet je de klok van je systeem aanpassen en vervolgens deze pagina vernieuwen.}}</translation>
 <translation id="1656489000284462475">Ophaaltijd</translation>
 <translation id="1662550410081243962">Betaalmethoden opslaan en invullen</translation>
 <translation id="1663943134801823270">Passen en adressen zijn afkomstig uit Chrome. Je kunt ze beheren in <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>
@@ -323,7 +324,6 @@
 <translation id="2501278716633472235">Terug</translation>
 <translation id="2503184589641749290">Geaccepteerde betaalpassen en prepaidkaarten</translation>
 <translation id="2505268675989099013">Account beschermen</translation>
-<translation id="2515335152965840738">NEGEREN</translation>
 <translation id="2515629240566999685">Check of je bereik hebt in je omgeving</translation>
 <translation id="2521385132275182522">Nietje rechtsonder</translation>
 <translation id="2523886232349826891">Alleen opgeslagen op dit apparaat</translation>
@@ -380,7 +380,6 @@
 <translation id="2799020568854403057">De volgende site bevat schadelijke apps</translation>
 <translation id="2799223571221894425">Opnieuw starten</translation>
 <translation id="2803306138276472711">Google Safe Browsing heeft onlangs <ph name="BEGIN_LINK" />malware gedetecteerd<ph name="END_LINK" /> op <ph name="SITE" />. Websites die normaal gesproken veilig zijn, worden soms geïnfecteerd met malware.</translation>
-<translation id="2815364696811431560">SITE VERLATEN</translation>
 <translation id="2824775600643448204">Adres- en zoekbalk</translation>
 <translation id="2826760142808435982">De verbinding is gecodeerd en geverifieerd met <ph name="CIPHER" /> en gebruikt <ph name="KX" /> als mechanisme voor sleuteluitwisseling.</translation>
 <translation id="2835170189407361413">Formulier leegmaken</translation>
@@ -661,6 +660,7 @@
 <translation id="4258748452823770588">Onjuiste handtekening</translation>
 <translation id="4261046003697461417">Er kunnen geen aantekeningen worden gemaakt in beveiligde documenten</translation>
 <translation id="4265872034478892965">Toegestaan door je beheerder</translation>
+<translation id="4270615291506829403">je wachtwoord te wijzigen</translation>
 <translation id="4275830172053184480">Je apparaat opnieuw opstarten</translation>
 <translation id="4277028893293644418">Wachtwoord opnieuw instellen</translation>
 <translation id="4279811152705618813">Je <ph name="DEVICE_TYPE" /> wordt beheerd door <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -738,6 +738,7 @@
 <translation id="4708268264240856090">Je verbinding is onderbroken</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows Netwerkcontrole uitvoeren<ph name="END_LINK" /></translation>
+<translation id="4725851834065990915">Je wachtwoord is gelekt bij een gegevenslek op een site of in een app die je gebruikt. Chrome raadt je aan je opgeslagen wachtwoorden nu te controleren.</translation>
 <translation id="4726672564094551039">Beleid opnieuw laden</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4731967714531604179">Prc2 (envelop)</translation>
@@ -765,7 +766,6 @@
 <translation id="4816492930507672669">Aanpassen aan pagina</translation>
 <translation id="4850886885716139402">Weergave</translation>
 <translation id="4854362297993841467">Deze bezorgingsmethode is niet beschikbaar. Kies een andere methode.</translation>
-<translation id="4864052566555297930">Veiligheidstip:</translation>
 <translation id="4876188919622883022">Vereenvoudigde weergave</translation>
 <translation id="4876305945144899064">Geen gebruikersnaam</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{Geen}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
@@ -991,6 +991,7 @@
 <translation id="5967592137238574583">Contactgegevens bewerken</translation>
 <translation id="5967867314010545767">Verwijderen uit geschiedenis</translation>
 <translation id="5975083100439434680">Uitzoomen</translation>
+<translation id="5979084224081478209">Wachtwoorden controleren</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Kan betaal-app niet openen</translation>
 <translation id="5989320800837274978">Er worden geen vaste proxyservers en geen pac-script-URL gespecificeerd.</translation>
@@ -1147,6 +1148,7 @@
 <translation id="679355240208270552">Genegeerd omdat de standaard zoekoptie door het beleid is uitgeschakeld.</translation>
 <translation id="681021252041861472">Verplicht veld</translation>
 <translation id="6810899417690483278">Aanpassings-ID</translation>
+<translation id="6819440013020405090">Je wachtwoord is gelekt bij een gegevenslek op een site of in een app die je gebruikt. Chrome raadt je aan je opgeslagen wachtwoorden te controleren en je wachtwoord op <ph name="ORIGIN" /> te wijzigen.</translation>
 <translation id="6825578344716086703">Je probeert <ph name="DOMAIN" /> te bereiken. De server heeft echter een certificaat geretourneerd dat een zwak ondertekeningsalgoritme (zoals SHA-1) gebruikt. Dit houdt in dat de betrouwbaarheidsverklaring van de server kan zijn vervalst. Het is mogelijk dat de server zelf een imitatie is (wellicht een server die je schade probeert te berokkenen).</translation>
 <translation id="6826370046007623921">Gegevensverlies voorkomen</translation>
 <translation id="6831043979455480757">Vertalen</translation>
@@ -1189,6 +1191,7 @@
 <translation id="7064851114919012435">Contactgegevens</translation>
 <translation id="7075452647191940183">Verzoek is te groot</translation>
 <translation id="7079718277001814089">Deze site bevat malware</translation>
+<translation id="70850504851191913">Gegevenslek gemeld</translation>
 <translation id="7087282848513945231">County</translation>
 <translation id="7090678807593890770">Zoek op Google naar <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Verbergen</translation>
@@ -1491,7 +1494,6 @@ Aanvullende informatie:
 <translation id="8553075262323480129">De vertaling is mislukt omdat de taal van de pagina niet kan worden bepaald.</translation>
 <translation id="8557066899867184262">De CVC-code staat op de achterkant van je pas.</translation>
 <translation id="8559762987265718583">Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van je apparaat (<ph name="DATE_AND_TIME" />) onjuist zijn.</translation>
-<translation id="8561575143530093465"><ph name="SAFETY_TIP" /> verdachte site</translation>
 <translation id="8564985650692024650">Chromium raadt je aan het wachtwoord voor <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> opnieuw in te stellen als je het voor andere sites hebt hergebruikt.</translation>
 <translation id="8571890674111243710">Pagina wordt vertaald in het <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Telnr. toevoegen</translation>
@@ -1551,6 +1553,7 @@ Aanvullende informatie:
 <translation id="8943282376843390568">Limoengroen</translation>
 <translation id="8957210676456822347">Autorisatie van captive portal</translation>
 <translation id="8962950042226115166">Verdachte site</translation>
+<translation id="8966619695390250636">Bedoelde je?</translation>
 <translation id="8968766641738584599">Pas opslaan</translation>
 <translation id="8971063699422889582">Het servercertificaat is verlopen.</translation>
 <translation id="8975012916872825179">Inclusief informatie als telefoonnummers, e-mailadressen en verzendadressen</translation>

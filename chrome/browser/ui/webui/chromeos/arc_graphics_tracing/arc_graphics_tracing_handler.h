@@ -24,7 +24,6 @@ class ArcSystemStatCollector;
 
 namespace base {
 class ListValue;
-class RefCountedString;
 }  // namespace base
 
 namespace exo {
@@ -71,8 +70,7 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
   void SetStatus(const std::string& status);
 
   void OnTracingStarted();
-  void OnTracingStopped(std::unique_ptr<const base::DictionaryValue> metadata,
-                        base::RefCountedString* trace_data);
+  void OnTracingStopped(std::unique_ptr<std::string> trace_data);
 
   // Called when graphics model is built or load. Extra string parameter
   // contains a status. In case model cannot be built/load empty |base::Value|

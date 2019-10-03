@@ -851,7 +851,9 @@ class RenderWidgetHostViewAuraOverscrollTest
                           bool precise,
                           WebMouseWheelEvent::Phase phase) {
     WebMouseWheelEvent wheel_event = SyntheticWebMouseWheelEventBuilder::Build(
-        0, 0, dX, dY, modifiers, precise);
+        0, 0, dX, dY, modifiers,
+        precise ? ui::input_types::ScrollGranularity::kScrollByPrecisePixel
+                : ui::input_types::ScrollGranularity::kScrollByPixel);
     wheel_event.phase = phase;
     widget_host_->ForwardWheelEvent(wheel_event);
     base::RunLoop().RunUntilIdle();

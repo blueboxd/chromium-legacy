@@ -30,7 +30,6 @@ static constexpr int kDefaultWinScrollbarThickness = 17;
 namespace cc {
 
 enum ScrollbarOrientation { HORIZONTAL, VERTICAL };
-enum ScrollDirection { SCROLL_BACKWARD, SCROLL_FORWARD };
 
 enum ScrollbarPart {
   THUMB,
@@ -55,15 +54,26 @@ class Scrollbar {
   virtual bool SupportsDragSnapBack() const = 0;
   virtual int ThumbThickness() const = 0;
   virtual int ThumbLength() const = 0;
+
+  // Returns the track rect relative to the scrollbar's origin.
   virtual gfx::Rect TrackRect() const = 0;
+  // Returns the back button rect relative to the scrollbar's origin.
   virtual gfx::Rect BackButtonRect() const = 0;
+  // Returns the forward button rect relative to the scrollbar's origin.
   virtual gfx::Rect ForwardButtonRect() const = 0;
+
   virtual float ThumbOpacity() const = 0;
   virtual bool HasTickmarks() const = 0;
+
+  // Whether we need to repaint the part. Only THUMB and TRACK are supported.
+  // For TRACK, the return value means that the track, any buttons or tickmarks
+  // need repaint.
   virtual bool NeedsPaintPart(ScrollbarPart part) const = 0;
-  virtual void PaintPart(PaintCanvas* canvas,
-                         ScrollbarPart part,
-                         const gfx::Rect& content_rect) = 0;
+  // Paints the part. Only THUMB, TRACK and TICKMARKS are supported. When TRACK
+  // is specified, track, buttons and tickmarks will be painted. The canvas's
+  // coordinate space is relative to the part's origin.
+  virtual void PaintPart(PaintCanvas* canvas, ScrollbarPart part) = 0;
+
   virtual bool UsesNinePatchThumbResource() const = 0;
   virtual gfx::Size NinePatchThumbCanvasSize() const = 0;
   virtual gfx::Rect NinePatchThumbAperture() const = 0;

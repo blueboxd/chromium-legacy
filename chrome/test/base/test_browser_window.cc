@@ -143,6 +143,8 @@ bool TestBrowserWindow::UpdatePageActionIcon(PageActionIconType type) {
   return false;
 }
 
+void TestBrowserWindow::ShowAvatarHighlightAnimation() {}
+
 ToolbarActionsBar* TestBrowserWindow::GetToolbarActionsBar() {
   return nullptr;
 }
@@ -190,6 +192,14 @@ ShowTranslateBubbleResult TestBrowserWindow::ShowTranslateBubble(
     translate::TranslateErrors::Type error_type,
     bool is_user_gesture) {
   return ShowTranslateBubbleResult::SUCCESS;
+}
+
+qrcode_generator::QRCodeGeneratorBubbleView*
+TestBrowserWindow::ShowQRCodeGeneratorBubble(
+    content::WebContents* contents,
+    qrcode_generator::QRCodeGeneratorBubbleController* controller,
+    const GURL& url) {
+  return nullptr;
 }
 
 autofill::SaveCardBubbleView* TestBrowserWindow::ShowSaveCreditCardBubble(

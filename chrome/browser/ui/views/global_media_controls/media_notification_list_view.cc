@@ -21,10 +21,8 @@ MediaNotificationListView::MediaNotificationListView() {
       views::BoxLayout::Orientation::kVertical));
   ClipHeightTo(0, kMediaListMaxHeight);
 
-  SetVerticalScrollBar(
-      std::make_unique<views::OverlayScrollBar>(/*horizontal=*/false));
-  SetHorizontalScrollBar(
-      std::make_unique<views::OverlayScrollBar>(/*horizontal=*/true));
+  SetVerticalScrollBar(new views::OverlayScrollBar(/*horizontal=*/false));
+  SetHorizontalScrollBar(new views::OverlayScrollBar(/*horizontal=*/true));
 }
 
 MediaNotificationListView::~MediaNotificationListView() = default;

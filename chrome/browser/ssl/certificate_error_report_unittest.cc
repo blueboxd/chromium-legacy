@@ -176,7 +176,7 @@ TEST(ErrorReportTest, SerializedReportAsProtobufWithInterstitialInfo) {
       UnorderedElementsAre(kFirstReportedCertError, kSecondReportedCertError));
 
   EXPECT_EQ(
-      interstitial_time.ToInternalValue(),
+      interstitial_time.ToDeltaSinceWindowsEpoch().InMicroseconds(),
       deserialized_report.interstitial_info().interstitial_created_time_usec());
 }
 
@@ -352,6 +352,9 @@ TEST(ErrorReportTest, TrialDebugInfo) {
       net::TrustStoreMac::TRUST_SETTINGS_DICT_CONTAINS_APPLICATION |
       net::TrustStoreMac::TRUST_SETTINGS_DICT_CONTAINS_RESULT;
 #endif
+  base::Time time = base::Time::Now();
+  debug_info->trial_verification_time = time;
+  debug_info->trial_der_verification_time = "it's just a string";
 
   CertificateErrorReport report("example.com", *unverified_cert, false, false,
                                 false, false, primary_result, trial_result,
@@ -376,6 +379,11 @@ TEST(ErrorReportTest, TrialDebugInfo) {
 #else
   EXPECT_EQ(0, trial_info.mac_combined_trust_debug_info_size());
 #endif
+  ASSERT_TRUE(trial_info.has_trial_verification_time_usec());
+  EXPECT_EQ(time.ToDeltaSinceWindowsEpoch().InMicroseconds(),
+            trial_info.trial_verification_time_usec());
+  ASSERT_TRUE(trial_info.has_trial_der_verification_time());
+  EXPECT_EQ("it's just a string", trial_info.trial_der_verification_time());
 }
 #endif  // BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
 

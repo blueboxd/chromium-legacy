@@ -137,7 +137,8 @@ void OverlayPanelLayer::SetProperties(
         rounded_bar_top_resource->size().height() -
             rounded_bar_top_resource->padding().height());
 
-    const int vertical_fudge_factor = 1;  // gets rid of a seam.
+    // TODO(donnd): fix correctly.
+    const int vertical_fudge_factor = 2;  // Create an overlap to avoid a seam.
     rounded_top_adjust = rounded_bar_top_size.height() - vertical_fudge_factor;
 
     gfx::PointF rounded_bar_top_position(

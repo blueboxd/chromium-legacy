@@ -70,6 +70,12 @@ cr.define('accessibility', function() {
     const allow = improvementsEnabled ? $('filter-allow').value : '*';
     const allowEmpty = improvementsEnabled ? $('filter-allow-empty').value : '';
     const deny = improvementsEnabled ? $('filter-deny').value : '';
+    if (improvementsEnabled) {
+      window.localStorage['chrome-accessibility-filter-allow'] = allow;
+      window.localStorage['chrome-accessibility-filter-allow-empty'] =
+          allowEmpty;
+      window.localStorage['chrome-accessibility-filter-deny'] = deny;
+    }
 
     // The calling |element| is a button with an id of the format
     // <treeId>:<requestType>, where requestType is one of 'showOrRefreshTree',
@@ -122,8 +128,17 @@ cr.define('accessibility', function() {
       addToBrowsersList(browsers[i]);
     }
 
-    // Remove filters if the flag is not enabled.
-    if (!data['improvementsEnabled']) {
+    // Cache filters so they're easily accessible on page refresh. Remove
+    // filters if the flag is not enabled.
+    if (data['improvementsEnabled']) {
+      const allow = window.localStorage['chrome-accessibility-filter-allow'];
+      const allowEmpty =
+          window.localStorage['chrome-accessibility-filter-allow-empty'];
+      const deny = window.localStorage['chrome-accessibility-filter-deny'];
+      $('filter-allow').value = allow ? allow : '*';
+      $('filter-allow-empty').value = allowEmpty ? allowEmpty : '';
+      $('filter-deny').value = deny ? deny : '';
+    } else {
       const filtersEl = $('filters');
       filtersEl.parentNode.removeChild(filtersEl);
     }

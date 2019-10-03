@@ -421,8 +421,14 @@ void LayoutFlexibleBox::RepositionLogicalHeightDependentFlexItems(
 
   AlignChildren(algorithm);
 
-  if (StyleRef().FlexWrap() == EFlexWrap::kWrapReverse)
-    FlipForWrapReverse(line_contexts, cross_axis_start_edge);
+  if (StyleRef().FlexWrap() == EFlexWrap::kWrapReverse) {
+    algorithm.FlipForWrapReverse(cross_axis_start_edge,
+                                 CrossAxisContentExtent());
+    for (FlexLine& line_context : line_contexts) {
+      for (FlexItem& flex_item : line_context.line_items)
+        ResetAlignmentForChild(*flex_item.box, flex_item.desired_location.Y());
+    }
+  }
 
   // direction:rtl + flex-direction:column means the cross-axis direction is
   // flipped.
@@ -1600,22 +1606,6 @@ void LayoutFlexibleBox::FlipForRightToLeftColumn(
       // y, so using the y axis for a column cross axis extent is correct.
       location.SetY(cross_extent - flex_item.cross_axis_size - location.Y());
       SetFlowAwareLocationForChild(*flex_item.box, location);
-    }
-  }
-}
-
-void LayoutFlexibleBox::FlipForWrapReverse(
-    const Vector<FlexLine>& line_contexts,
-    LayoutUnit cross_axis_start_edge) {
-  LayoutUnit content_extent = CrossAxisContentExtent();
-  for (const FlexLine& line_context : line_contexts) {
-    for (const FlexItem& flex_item : line_context.line_items) {
-      LayoutUnit line_cross_axis_extent = line_context.cross_axis_extent;
-      LayoutUnit original_offset =
-          line_context.cross_axis_offset - cross_axis_start_edge;
-      LayoutUnit new_offset =
-          content_extent - original_offset - line_cross_axis_extent;
-      AdjustAlignmentForChild(*flex_item.box, new_offset - original_offset);
     }
   }
 }

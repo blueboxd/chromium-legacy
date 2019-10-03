@@ -38,8 +38,8 @@ void JsJavaConfigurator::SetJsObjects(
     JsObjectInfo* js_object_info = js_object_info_pair.first->second.get();
     js_object_info->allowed_origin_rules = js_object->allowed_origin_rules;
     js_object_info->js_to_java_messaging =
-        std::move(mojo::AssociatedRemote<mojom::JsToJavaMessaging>(
-            std::move(js_object->js_to_java_messaging)));
+        mojo::AssociatedRemote<mojom::JsToJavaMessaging>(
+            std::move(js_object->js_to_java_messaging));
   }
   js_objects_.swap(js_objects);
 }

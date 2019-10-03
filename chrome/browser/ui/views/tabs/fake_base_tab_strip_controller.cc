@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
+#include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "ui/gfx/color_palette.h"
 

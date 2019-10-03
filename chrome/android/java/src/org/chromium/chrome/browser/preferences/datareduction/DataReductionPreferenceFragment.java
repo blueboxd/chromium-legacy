@@ -20,10 +20,15 @@ import org.chromium.chrome.browser.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.PreviewsLitePageInfoBar;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings.ContentLengths;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
+
+import java.text.NumberFormat;
+import java.util.Locale;
 
 /**
  * Settings fragment that allows the user to configure Data Saver.
@@ -144,13 +149,32 @@ public class DataReductionPreferenceFragment extends PreferenceFragmentCompat {
      */
     public static String generateSummary(Resources resources) {
         if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
-            String percent =
-                    DataReductionProxySettings.getInstance().getContentLengthPercentSavings();
+            ContentLengths length = DataReductionProxySettings.getInstance().getContentLengths();
+
+            // If received is less than show chart threshold than don't show summary.
+            if (ConversionUtils.bytesToKilobytes(length.getReceived())
+                    < DataReductionProxySettings.DATA_REDUCTION_SHOW_CHART_KB_THRESHOLD) {
+                return "";
+            }
+
+            String percent = generatePercentSavings(length);
             return resources.getString(
                     R.string.data_reduction_menu_item_summary_lite_mode, percent);
         } else {
             return (String) resources.getText(R.string.text_off);
         }
+    }
+
+    /**
+     * Returns formatted percent savings as string from ContentLengths
+     */
+    private static String generatePercentSavings(ContentLengths length) {
+        double savings = 0;
+        if (length.getOriginal() > 0L && length.getOriginal() > length.getReceived()) {
+            savings = (length.getOriginal() - length.getReceived()) / (double) length.getOriginal();
+        }
+        NumberFormat percentageFormatter = NumberFormat.getPercentInstance(Locale.getDefault());
+        return percentageFormatter.format(savings);
     }
 
     private void createDataReductionSwitch(boolean isEnabled) {

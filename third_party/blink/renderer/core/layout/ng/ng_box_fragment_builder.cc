@@ -80,9 +80,15 @@ void GatherInlineContainerFragmentsFromLinebox(
 }  // namespace
 
 void NGBoxFragmentBuilder::AddBreakBeforeChild(NGLayoutInputNode child,
+                                               NGBreakAppeal appeal,
                                                bool is_forced_break) {
-  if (is_forced_break)
+  break_appeal_ = appeal;
+  if (is_forced_break) {
     SetHasForcedBreak();
+    // A forced break is considered to always have perfect appeal; they should
+    // never be weighed against other potential breakpoints.
+    DCHECK_EQ(appeal, kBreakAppealPerfect);
+  }
 
   DCHECK(has_block_fragmentation_);
   SetDidBreak();
@@ -200,8 +206,8 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
     }
     if (did_break_) {
       break_token_ = NGBlockBreakToken::Create(
-          node_, consumed_block_size_, child_break_tokens_,
-          has_last_resort_break_, has_seen_all_children_);
+          node_, consumed_block_size_, child_break_tokens_, break_appeal_,
+          has_seen_all_children_);
     }
   }
 

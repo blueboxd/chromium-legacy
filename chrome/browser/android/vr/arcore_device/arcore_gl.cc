@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "chrome/browser/android/vr/arcore_device/ar_image_transport.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_impl.h"
@@ -201,7 +202,8 @@ void ArCoreGl::CreateSession(mojom::VRDisplayInfoPtr display_info,
       device::mojom::XRPresentationTransportMethod::DRAW_INTO_TEXTURE_MAILBOX;
 
   auto submit_frame_sink = device::mojom::XRPresentationConnection::New();
-  submit_frame_sink->client_request = mojo::MakeRequest(&submit_client_);
+  submit_frame_sink->client_receiver =
+      submit_client_.BindNewPipeAndPassReceiver();
   submit_frame_sink->provider = presentation_provider.PassInterface();
   submit_frame_sink->transport_options = std::move(transport_options);
 

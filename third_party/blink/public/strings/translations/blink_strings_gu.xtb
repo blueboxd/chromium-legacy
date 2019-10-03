@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">ફૂટર</translation>
 <translation id="2709516037105925701">સ્વતઃભરો</translation>
 <translation id="2723001399770238859">ઑડિઓ</translation>
+<translation id="2725963129578236554">કૉમેન્ટ</translation>
 <translation id="2746543609216772311">મૂલ્ય <ph name="MINIMUM_DATE_OR_TIME" /> અથવા પછીનું હોવું આવશ્યક છે.</translation>
 <translation id="2759744352195237655">પૉપ-અપ બટન</translation>
 <translation id="2761667185364618470">જો તમે આગળ વધવા માંગતા હો તો કૃપા કરીને આ બૉક્સને ચેક કરો.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">કૃપા કરીને આ ટેક્સ્ટને <ph name="MIN_CHARACTERS" /> અક્ષર અથવા તેથી વધુ સુધી લંબાવો (તમે હાલમાં <ph name="CURRENT_LENGTH" /> અક્ષરોનો ઉપયોગ કરી રહ્યાં છો).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' દ્વારા અનુસરાઈ રહેલા ભાગમાં '<ph name="INVALIDCHARACTER" />' પ્રતીક શામેલ હોવું જોઈએ નહીં.</translation>
 <translation id="3846214748874656680">પૂર્ણસ્ક્રીનથી બહાર નીકળો</translation>
+<translation id="3889183436948184105">પુનરાવર્તન</translation>
 <translation id="3920932319529768807">સારાંશ</translation>
 <translation id="3924558731517983934">ઍપ્લિકેશન</translation>
 <translation id="3944740393230681990">પ્રસ્તાવના</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">ઑડિઓ સમય સ્ક્રબર</translation>
 <translation id="6443871981718447451">બંધ કરેલું ઉપશીર્ષક મેનૂ દર્શાવો</translation>
 <translation id="6453774872122745852">સ્વીકૃતિઓ</translation>
+<translation id="6475115390776617481">લાઇવ ઉપસ્થિતિ</translation>
 <translation id="648732519525291180">સમય પીકર</translation>
 <translation id="6550675742724504774">વિકલ્પો</translation>
 <translation id="6572309429103589720">અમાન્ય વ્યાકરણ</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">ઉમેરો</translation>
 <translation id="6989848892321993519">કૃપા કરીને આ ટેક્સ્ટને <ph name="MIN_CHARACTERS" /> અથવા તેથી વધુ અક્ષર સુધી લંબાવો (તમે હાલમાં 1 અક્ષરનો ઉપયોગ કરી રહ્યાં છો).</translation>
 <translation id="7033340931668032222">વૉલ્યૂમમાં ફેરફાર કરવા માટે up અને down</translation>
+<translation id="7034405885550056553">સૂચન</translation>
 <translation id="709897737746224366">કૃપા કરીને વિનંતી કરેલા ફોર્મેટ સાથે મેળ કરો.</translation>
 <translation id="7118469954320184356">કોઈ વર્ણન ઉપલબ્ધ નથી.</translation>
 <translation id="7139483182332611405">પ્રસ્તાવના</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">આઉટપુટ</translation>
 <translation id="8750798805984357768">કૃપા કરીને આ વિકલ્પોમાંથી કોઈ એક પસંદ કરો.</translation>
 <translation id="8808573423886751634">પ્રકરણ</translation>
+<translation id="8822203815165896261">ચોક્કસ કન્ટેન્ટ વિશેની માહિતી</translation>
 <translation id="8845239796550121995">હમણાં તમારા TV પર કાસ્ટ કરી રહ્યાં છીએ</translation>
 <translation id="8851136666856101339">મુખ્ય</translation>
 <translation id="8875657656876809964">વીડિયો પ્લેબૅક ભૂલ</translation>

@@ -23,7 +23,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SearchEnginePreference;
-import org.chromium.chrome.browser.widget.PromoDialog;
+import org.chromium.chrome.browser.ui.widget.PromoDialog;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;

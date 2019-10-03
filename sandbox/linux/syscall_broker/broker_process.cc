@@ -59,7 +59,7 @@ BrokerProcess::~BrokerProcess() {
 }
 
 bool BrokerProcess::Init(
-    const base::Callback<bool(void)>& broker_process_init_callback) {
+    base::OnceCallback<bool(void)> broker_process_init_callback) {
   CHECK(!initialized_);
   BrokerChannel::EndPoint ipc_reader;
   BrokerChannel::EndPoint ipc_writer;
@@ -86,7 +86,7 @@ bool BrokerProcess::Init(
   // We are the broker process. Make sure to close the writer's end so that
   // we get notified if the client disappears.
   ipc_writer.reset();
-  CHECK(broker_process_init_callback.Run());
+  CHECK(std::move(broker_process_init_callback).Run());
   BrokerHost broker_host(broker_permission_list_, allowed_command_set_,
                          std::move(ipc_reader));
   for (;;) {

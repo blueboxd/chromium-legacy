@@ -22,7 +22,6 @@
 <translation id="116280672541001035">ጥቅም ላይ የዋለው</translation>
 <translation id="1171770572613082465">የ«ከፍተኛ ጣቢያዎች» አዝራሩን መታ በማድረግ ታዋቂ ድር ጣቢያዎችን ይመልከቱ</translation>
 <translation id="1173894706177603556">ዳግም ሰይም</translation>
-<translation id="1175310183703641346">የእርስዎ እልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ተጨማሪ ነገሮች ከእንግዲህ ከGoogle መለያዎ ጋር አይሰምሩም።</translation>
 <translation id="1178581264944972037">ለአፍታ አቁም</translation>
 <translation id="1181037720776840403">አስወግድ</translation>
 <translation id="1188239144602654184">AR ያስገቡ</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">በ<ph name="PRODUCT_NAME" /> ውስጥ ዕልባት ተቀምጦለታል</translation>
 <translation id="3744111561329211289">የዳራ ስምረት</translation>
 <translation id="3771001275138982843">ዝማኔውን ማውረድ አልተቻለምም</translation>
+<translation id="3771033907050503522">ማንነት የማያሳውቁ ትሮች</translation>
 <translation id="3773755127849930740">ማጣመርን ለመፍቀድ <ph name="BEGIN_LINK" />ብሉቱዝን ያብሩ<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">ወደ መሣሪያዎችዎ ይላኩ</translation>
 <translation id="3778956594442850293">ወደ የመነሻ ገጽ ታክሏል</translation>
@@ -484,7 +484,6 @@
 <translation id="4719927025381752090">ለመተርጎም ጥያቄ አቅርብ</translation>
 <translation id="4720023427747327413">በ<ph name="PRODUCT_NAME" /> ውስጥ ክፈት</translation>
 <translation id="4720982865791209136">Chrome እንዲሻሻል ያግዙ። <ph name="BEGIN_LINK" />የዳሰሳ ጥናት ይወሰዱ<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">የስምረት መለያዎችን ከ<ph name="ACCOUNT_EMAIL_OLD" /> ወደ <ph name="ACCOUNT_EMAIL_NEW" /> እየቀየሩ ነው። ነባሩ የChrome ውሂብዎ በ<ph name="MANAGED_DOMAIN" /> ነው የሚተዳደረው። ይሄ ውሂብዎን ከዚህ መሣሪያ ይሰርዘዋል፣ ነገር ግን ውሂብዎ በ<ph name="ACCOUNT_EMAIL_OLD" /> ውስጥ እንዳለ ይቀራል።</translation>
 <translation id="473775607612524610">አዘምን</translation>
 <translation id="4738836084190194332">የተመሳሰለበት የመጨረሻው ጊዜ፦ <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">አዲስ ትር ክፈት</translation>
@@ -668,13 +667,13 @@
 <translation id="5937580074298050696"><ph name="AMOUNT" /> ተቀምጧል</translation>
 <translation id="5939518447894949180">ዳግም አስጀምር</translation>
 <translation id="5942872142862698679">ለፍለጋ Googleን መጠቀም</translation>
-<translation id="5944669582486359588">በቀላል ሁነታ ላይ Chrome ገጾችን በበለጠ ፍጥነት የሚጭን ሲሆን እስከ 60 በመቶ ያነሰ ውሂብ ይጠቀማል። የGoogle ደመና ቴክኖሎጂ እርስዎ የሚጎበኟቸውን ገጾች ያተባል።</translation>
 <translation id="5952764234151283551">ሊደርሱበት እየሞከሩ ያሉትን ገጽ ዩአርኤል ወደ Google ይልካል</translation>
 <translation id="5956665950594638604">የChrome እገዛ ማዕከልን በአዲስ ትር ውስጥ ክፈት</translation>
 <translation id="5958275228015807058">የእርስዎን ፋይሎች እና ገጾች በውርዶች ውስጥ ያግኙ</translation>
 <translation id="5962718611393537961">ለመሰብሰብ መታ ያድርጉ</translation>
 <translation id="6000066717592683814">Googleን አቆየው</translation>
 <translation id="6005538289190791541">የተጠቆመ የይለፍ ቃል</translation>
+<translation id="6036057147555329831">ተጨማሪ አይሲዩ</translation>
 <translation id="6039379616847168523">ወደ ቀጣዩ ትር ዝለል</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
 <translation id="6042308850641462728">ተጨማሪ</translation>
@@ -815,7 +814,6 @@
 <translation id="7029809446516969842">የይለፍ ቃላት</translation>
 <translation id="7053983685419859001">አግድ</translation>
 <translation id="7055152154916055070">አቅጣጫ ማዞር ታግዷል፦</translation>
-<translation id="7062545763355031412">ይቀበሉ እና መለያዎችን ይቀይሩ</translation>
 <translation id="7063006564040364415">ከማመሳሰያ አገልጋዩ ጋር መገናኘት አልተቻለም።</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ተመርጧል}one{# ተመርጠዋል}other{# ተመርጠዋል}}</translation>
 <translation id="7071521146534760487">መለያን አቀናብር</translation>
@@ -1099,7 +1097,6 @@
 <translation id="9139318394846604261">ግዢ</translation>
 <translation id="9155898266292537608">እንዲሁም አንድ ቃል ላይ በፍጥነት መታ በማድረግ ፍለጋ ማድረግ ይችላሉ</translation>
 <translation id="9169507124922466868">የዳሰሳ ታሪክ በግማሽ ተከፍቷል</translation>
-<translation id="9188680907066685419">ከሚተዳደር መለያ ዘግግተህ ውጣ</translation>
 <translation id="9204836675896933765">1 ፋይል ቀርቷል</translation>
 <translation id="9206873250291191720">አ</translation>
 <translation id="9209888181064652401">ጥሪዎችን ማድረግ አይቻልም</translation>
@@ -1108,7 +1105,6 @@
 <translation id="932327136139879170">መነሻ</translation>
 <translation id="938850635132480979">ስህተት፦ <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">የእርስዎን ማይክሮፎን ይድረሱ</translation>
-<translation id="951339005376969845">ነባሩን ውሂብ ይሰርዙ። ወደ <ph name="FROM_ACCOUNT" /> መልሰው በመቀየር ሰርስረው ሊያወጡት ይችላሉ።</translation>
 <translation id="95817756606698420">Chrome በቻይና ውስጥ <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />ን ለፍለጋ መጠቀም ይችላል። ይህን በ<ph name="BEGIN_LINK" />ቅንብሮች<ph name="END_LINK" /> ውስጥ መጠቀም ይችላሉ።</translation>
 <translation id="965817943346481315">ጣቢያው ረባሽ ወይም አሳሳች ማስታወቂያዎችን የሚያሳይ ከሆነ ማገድ (የሚመከር)</translation>
 <translation id="968900484120156207">እርስዎ የሚጎበኟቸው ገጾች እዚህ ላይ ብቅ ይላሉ</translation>

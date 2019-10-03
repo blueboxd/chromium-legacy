@@ -21,6 +21,9 @@
 
 #include "third_party/blink/renderer/core/layout/svg/line/svg_inline_text_box.h"
 
+#include "third_party/blink/renderer/core/editing/markers/document_marker.h"
+#include "third_party/blink/renderer/core/editing/markers/text_marker_base.h"
+#include "third_party/blink/renderer/core/editing/markers/text_match_marker.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/pointer_events_hit_rules.h"
@@ -237,24 +240,22 @@ void SVGInlineTextBox::PaintDocumentMarker(GraphicsContext&,
   // spellchecking, etc).
 }
 
-void SVGInlineTextBox::PaintTextMatchMarkerForeground(
-    const PaintInfo& paint_info,
-    const LayoutPoint& point,
-    const TextMatchMarker& marker,
-    const ComputedStyle& style,
-    const Font& font) const {
-  SVGInlineTextBoxPainter(*this).PaintTextMatchMarkerForeground(
-      paint_info, point, marker, style, font);
+void SVGInlineTextBox::PaintTextMarkerForeground(const PaintInfo& paint_info,
+                                                 const LayoutPoint& point,
+                                                 const TextMarkerBase& marker,
+                                                 const ComputedStyle& style,
+                                                 const Font& font) const {
+  SVGInlineTextBoxPainter(*this).PaintTextMarkerForeground(paint_info, point,
+                                                           marker, style, font);
 }
 
-void SVGInlineTextBox::PaintTextMatchMarkerBackground(
-    const PaintInfo& paint_info,
-    const LayoutPoint& point,
-    const TextMatchMarker& marker,
-    const ComputedStyle& style,
-    const Font& font) const {
-  SVGInlineTextBoxPainter(*this).PaintTextMatchMarkerBackground(
-      paint_info, point, marker, style, font);
+void SVGInlineTextBox::PaintTextMarkerBackground(const PaintInfo& paint_info,
+                                                 const LayoutPoint& point,
+                                                 const TextMarkerBase& marker,
+                                                 const ComputedStyle& style,
+                                                 const Font& font) const {
+  SVGInlineTextBoxPainter(*this).PaintTextMarkerBackground(paint_info, point,
+                                                           marker, style, font);
 }
 
 FloatRect SVGInlineTextBox::CalculateBoundaries() const {

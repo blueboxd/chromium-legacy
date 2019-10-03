@@ -6926,8 +6926,10 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
   FilteringTestNetworkDelegate network_delegate;
   network_delegate.SetCookieFilter("not_stored_cookie");
   network_delegate.set_block_get_cookies();
+  TestNetLog net_log;
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
+  context.set_net_log(&net_log);
   context.Init();
   // Make sure cookies blocked from being stored are caught, and those that are
   // accepted are reported as well.
@@ -6955,6 +6957,12 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     EXPECT_EQ("stored_cookie", req->maybe_stored_cookies()[1].cookie->Name());
     EXPECT_TRUE(req->maybe_stored_cookies()[2].status.IsInclude());
     EXPECT_EQ("path_cookie", req->maybe_stored_cookies()[2].cookie->Name());
+    auto entries =
+        net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
+    EXPECT_EQ(1u, entries.size());
+    EXPECT_EQ("EXCLUDE_USER_PREFERENCES, DO_NOT_WARN",
+              GetStringValueFromParams(entries[0], "exclusion_reason"));
+    net_log.Clear();
   }
   {
     TestDelegate d;
@@ -6982,6 +6990,14 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
                     .status.HasExactlyExclusionReasonsForTesting(
                         {net::CanonicalCookie::CookieInclusionStatus::
                              EXCLUDE_USER_PREFERENCES}));
+    auto entries =
+        net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
+    EXPECT_EQ(2u, entries.size());
+    EXPECT_EQ("EXCLUDE_NOT_ON_PATH, EXCLUDE_USER_PREFERENCES, DO_NOT_WARN",
+              GetStringValueFromParams(entries[0], "exclusion_reason"));
+    EXPECT_EQ("EXCLUDE_USER_PREFERENCES, DO_NOT_WARN",
+              GetStringValueFromParams(entries[1], "exclusion_reason"));
+    net_log.Clear();
   }
 
   network_delegate.unset_block_get_cookies();
@@ -7006,6 +7022,12 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
                              EXCLUDE_NOT_ON_PATH}));
     EXPECT_EQ("stored_cookie", req->maybe_sent_cookies()[1].cookie.Name());
     EXPECT_TRUE(req->maybe_sent_cookies()[1].status.IsInclude());
+    auto entries =
+        net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
+    EXPECT_EQ(1u, entries.size());
+    EXPECT_EQ("EXCLUDE_NOT_ON_PATH, DO_NOT_WARN",
+              GetStringValueFromParams(entries[0], "exclusion_reason"));
+    net_log.Clear();
   }
 }
 

@@ -1200,7 +1200,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Khi bạn không đặt chính sách này, hoạt động của các chính sách cụ thể hơn sẽ không bị ảnh hưởng.</translation>
 <translation id="2987155890997901449">Bật ARC</translation>
 <translation id="2987227569419001736">Kiểm soát việc sử dụng API Web Bluetooth</translation>
-<translation id="2989466284538293869">Kiểm tra tính tuân thủ nội dung của tệp đã tải lên</translation>
 <translation id="3011301228198307065">Định cấu hình URL trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn không cho người dùng thay đổi URL đó.
 
           Trang chủ là trang mở ra khi người dùng nhấn nút Trang chủ. Các trang mở ra khi khởi động chịu sự kiểm soát của chính sách RestoreOnStartup.
@@ -1726,7 +1725,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu không được đặt hoặc được đặt thành False thì người dùng có thể chuyển các tệp đến Google Drive.</translation>
 <translation id="3915395663995367577">URL tới một tệp .pac proxy</translation>
 <translation id="3925377537407648234">Đặt độ phân giải màn hình và hệ số tỷ lệ</translation>
-<translation id="3936481697920057199">Kiểm tra tính tuân thủ nội dung của tệp đã tải lên và tệp đã tải xuống</translation>
 <translation id="3939893074578116847">Gửi gói mạng tới máy chủ quản lý để theo dõi trạng thái trực tuyến, để cho phép
       máy chủ phát hiện xem thiết bị có ngoại tuyến hay không.
 
@@ -2016,18 +2014,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ không sử dụng.
 
           Thông báo cảnh báo chỉ hiển thị nếu hành động ở chế độ không sử dụng là hành động đăng xuất hoặc tắt nguồn.</translation>
-<translation id="4342827592971649626">Chính sách này kiểm soát quá trình tính năng Duyệt web an toàn quét sâu các tệp người dùng đã tải xuống. Nếu bạn không đặt hoặc đặt chính sách này thành mặc định là "Không quét tệp", thì tính năng Duyệt web an toàn sẽ không quét các tệp người dùng đã tải xuống.
-
-      Nếu bạn đặt chính sách này thành "Cấm quét tệp", thì người dùng sẽ không được phép quét các tệp họ đã tải xuống. Tùy chọn này khác với tùy chọn mặc định, vì một số người dùng (chẳng hạn như người dùng Chương trình Bảo vệ nâng cao) có thể gửi các tệp họ đã tải xuống để quét. Tùy chọn cài đặt này sẽ ngăn những người dùng này quét tệp.
-
-      Nếu bạn đặt chính sách này thành "Gửi tệp người dùng đã tải xuống để quét", thì các tệp người dùng đã tải xuống sẽ được gửi qua mạng đến tính năng Duyệt web an toàn để quét tìm phần mềm độc hại.
-
-      Nếu bạn đặt chính sách này thành "Gửi tệp người dùng đã tải lên để quét", thì các tệp người dùng đã tải lên sẽ được gửi qua mạng đến tính năng Duyệt web an toàn để quét tìm phần mềm độc hại.
-
-      Nếu bạn đặt chính sách này thành "Gửi tệp người dùng đã tải lên và tải xuống để quét", thì hệ thống sẽ hoạt động theo các quy tắc nêu trong phần "Gửi tệp người dùng đã tải lên để quét" và "Gửi tệp người dùng đã tải xuống để quét".
-
-      Vui lòng xem chính sách <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> và <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> để biết thông tin chi tiết về cách kết quả quét xuất hiện đối với người dùng và quản trị viên.</translation>
-<translation id="4344356660952451291">Cần phải kiểm tra danh sách miền của nội dung tải xuống xem có tuân thủ hay không</translation>
 <translation id="4346674324214534449">Cho phép bạn thiết lập xem có chặn quảng cáo trên các trang web chứa quảng cáo xâm nhập hay không.
 
       Nếu bạn đặt chính sách này thành 2, quảng cáo sẽ bị chặn trên các trang web chứa quảng cáo xâm nhập.
@@ -2158,7 +2144,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4604931264910482931">Định cấu hình danh sách cấm nhắn tin gốc</translation>
 <translation id="4617338332148204752">Bỏ qua kiểm tra thẻ meta trong <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Định cấu hình danh sách trắng cài đặt tiện ích</translation>
-<translation id="4632261735235986857">Cấm quét tệp</translation>
 <translation id="4632343302005518762">Cho phép <ph name="PRODUCT_FRAME_NAME" /> xử lý các loại nội dung được liệt kê</translation>
 <translation id="4632566332417930481">Không cho phép sử dụng Công cụ dành cho nhà phát triển trên các tiện ích được cài đặt theo chính sách doanh nghiệp, nhưng lại cho phép sử dụng Công cụ dành cho nhà phát triển trong các ngữ cảnh khác</translation>
 <translation id="4633786464238689684">Thay đổi trạng thái mặc định của các phím hàng trên cùng thành các phím chức năng.
@@ -2300,7 +2285,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4983201894483989687">Cho phép chạy các plugin đã lỗi thời</translation>
 <translation id="4986560318567565414">Đường dẫn tới Chrome để chuyển từ trình duyệt thay thế.</translation>
 <translation id="4988291787868618635">Hành động cần thực hiện khi đạt tới độ trễ khi không sử dụng</translation>
-<translation id="5009903818924226868">Không kiểm tra tính tuân thủ nội dung</translation>
 <translation id="5032164758660626397">Ngăn người dùng chuyển các tệp có kích thước lớn</translation>
 <translation id="5047604665028708335">Cho phép truy cập vào các trang web nằm ngoài gói nội dung</translation>
 <translation id="5052081091120171147">Chính sách này nếu được bật sẽ buộc lịch sử web phải được nhập từ trình duyệt mặc định hiện tại. Nếu được bật, chính sách này cũng ảnh hưởng đến hộp thoại nhập.
@@ -2516,16 +2500,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu bạn đặt chính sách này thành False, người dùng sẽ không thể truyền nội dung đến thiết bị của họ. Nếu bạn đặt chính sách này thành True, người dùng sẽ được phép truyền nội dung. Nếu bạn không đặt chính sách này, người dùng sẽ không được phép truyền nội dung đến thiết bị Chrome OS đã đăng ký, nhưng có thể truyền đến các thiết bị không được đăng ký.</translation>
 <translation id="5323200200131319468">Bật tính năng phản hồi bằng giọng nói trên màn hình đăng nhập</translation>
-<translation id="5325625566921364045">Kiểm soát cách <ph name="PRODUCT_NAME" /> kiểm tra dữ liệu được tải lên, tải xuống, dán từ khay nhớ tạm hoặc kéo và thả xem có tuân thủ các quy tắc của doanh nghiệp hay không.
-
-      Nếu bạn không đặt hoặc đặt chính sách này thành 'None', thì <ph name="PRODUCT_NAME" /> sẽ không kiểm tra tính tuân thủ của bất kỳ dữ liệu nào.
-
-      Nếu bạn đặt chính sách này thành 'Kiểm tra tệp đã tải xuống' và người dùng cố tải tệp xuống từ một URL trong chính sách <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" />, thì <ph name="PRODUCT_NAME" /> sẽ kiểm tra dữ liệu tải xuống xem có tuân thủ các quy tắc của doanh nghiệp hay không.
-
-      Nếu bạn đặt chính sách này thành 'Kiểm tra tệp đã tải lên' và người dùng cố tải tệp lên một miền không có trong <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" />, thì <ph name="PRODUCT_NAME" /> sẽ kiểm tra tệp được tải lên, dữ liệu đã dán từ khay nhớ tạm hoặc dữ liệu đã kéo và thả xem có tuân thủ các quy tắc của doanh nghiệp hay không.
-
-      Nếu bạn đặt chính sách này thành 'Kiểm tra tệp đã tải lên và tệp đã tải xuống', thì <ph name="PRODUCT_NAME" /> sẽ hoạt động theo các quy tắc nêu trong phần 'Kiểm tra tệp đã tải xuống' và 'Kiểm tra tệp đã tải lên'.
-      </translation>
 <translation id="532848608876725157">Bật chế độ DNS qua HTTPS có phương án dự phòng cho truy vấn không an toàn</translation>
 <translation id="5329007337159326804">Cảnh báo: Chúng tôi sẽ xóa hoàn toàn chính sách phiên bản TLS tối đa khỏi <ph name="PRODUCT_NAME" /> từ khoảng phiên bản 75 (vào khoảng tháng 6 năm 2019).
 
@@ -2586,7 +2560,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5405289061476885481">Định cấu hình bố cục bàn phím được cho phép trên màn hình đăng nhập <ph name="PRODUCT_OS_NAME" />.
 
       Nếu chính sách này được đặt thành danh sách số nhận dạng phương thức nhập, phương thức nhập được cung cấp sẽ có sẵn trên màn hình đăng nhập. Phương thức nhập được cung cấp đầu tiên sẽ được chọn sẵn. Mặc dù nhóm người dùng được lấy tiêu điểm trên màn hình đăng nhập, phương thức nhập được sử dụng gần đây nhất của người dùng sẽ có sẵn ngoài phương thức nhập được cung cấp bởi chính sách này. Nếu chính sách này chưa được đặt, các phương thức nhập trên màn hình đăng nhập sẽ được lấy từ ngôn ngữ mà màn hình đăng nhập hiển thị. Các giá trị không phải số nhận dạng phương thức nhập hợp lệ sẽ bị bỏ qua.</translation>
-<translation id="540659115481372611">Kiểm tra tính tuân thủ nội dung của các tệp đã tải xuống</translation>
 <translation id="5412057811596122582">Nếu bạn bật hoặc không định cấu hình chính sách này (mặc định), người dùng sẽ được nhắc
       cấp quyền truy cập ghi âm, ngoại trừ các URL được định cấu hình trong danh sách
       AudioCaptureAllowedUrls sẽ được cấp quyền truy cập mà không hiển thị lời nhắc.
@@ -3012,10 +2985,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultImagesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
 <translation id="614662973812186053">Chính sách này cũng kiểm soát việc thu thập dữ liệu chẩn đoán và sử dụng Android.</translation>
-<translation id="6150961766041720393">Không cần phải kiểm tra tính tuân thủ đối với danh sách miền của tệp đã tải lên, dữ liệu đã dán từ khay nhớ tạm hoặc dữ liệu đã kéo và thả.  Chỉ dùng chính sách này nếu bạn đặt <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> thành bật.
-
-      Nếu bạn không đặt hoặc đặt chính sách này thành danh sách miền trống, thì mọi nội dung sẽ được kiểm tra tính tuân thủ.
-      </translation>
 <translation id="6153048425064249648">Chính sách này kiểm soát tính năng báo cáo đám mây của <ph name="PRODUCT_NAME" />. Tính năng này tải thông tin về hoạt động của trình duyệt lên Bảng điều khiển dành cho quản trị viên của Google.
 
       Khi bạn không đặt chính sách này hoặc đặt thành False, không có dữ liệu nào được thu thập hoặc tải lên.
@@ -3107,16 +3076,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6281043242780654992">Định cấu hình chính sách cho Nhắn tin gốc. Máy chủ nhắn tin gốc được đưa vào danh sách cấm sẽ không được phép trừ khi chúng được đưa vào danh sách cho phép.</translation>
 <translation id="6282799760374509080">Cho phép hoặc từ chối ghi âm</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6305895953906663275">Chính sách này kiểm soát hành vi của <ph name="PRODUCT_NAME" /> khi người dùng cố tải lên hoặc tải xuống các tệp có kích thước quá lớn (50 MB trở lên), không gửi đi quét tìm phần mềm độc hại hoặc kiểm tra tính tuân thủ của nội dung được.  Hạn chế này chỉ áp dụng với các tệp cần quét theo yêu cầu của <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> và các chính sách kiểm soát danh sách miền được phép thực hiện quá trình kiểm tra.
-
-      Nếu bạn không đặt hoặc đặt chính sách này thành 'None', thì <ph name="PRODUCT_NAME" /> sẽ cho phép người dùng tải lên hoặc tải xuống các tệp có kích thước bất kỳ.
-
-      Nếu bạn đặt chính sách này thành 'Chặn tải tệp có kích thước lớn xuống', thì các tệp không quét được do kích thước quá lớn sẽ bị xóa trước khi hiển thị với người dùng.  Do không phải lúc nào cũng xác định được kích thước trước khi tải xuống nên <ph name="PRODUCT_NAME" /> có thể tải tệp xuống rồi mới xác định xem các tệp đó có vượt quá giới hạn kích thước cho phép hay không.
-
-      Nếu bạn đặt chính sách này thành 'Chặn tải tệp có kích thước lớn lên', thì các tệp quá lớn không thể quét được sẽ không được chọn để tải lên.
-
-      Nếu bạn đặt chính sách này thành 'Chặn tải lên và tải xuống các tệp có kích thước lớn', thì <ph name="PRODUCT_NAME" /> sẽ hoạt động theo các quy tắc nêu trong phần 'Chặn tải tệp có kích thước lớn xuống' và 'Chặn tải tệp có kích thước lớn lên'.
-      </translation>
 <translation id="6310223829319187614">Bật tự động hoàn tất tên miền trong khi người dùng đăng nhập</translation>
 <translation id="6315673513957120120">Chrome hiển thị trang cảnh báo khi người dùng truy cập các trang web gặp lỗi SSL. Theo mặc định hoặc khi chính sách này được đặt thành true, người dùng được phép nhấp qua các trang cảnh báo này.
       Đặt chính sách này thành false sẽ không cho phép người dùng nhấp qua bất kỳ trang cảnh báo nào.</translation>
@@ -3145,7 +3104,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này được đặt thành sai, người dùng sẽ không được báo cáo.</translation>
 <translation id="6394350458541421998">Chính sách này đã chấm dứt kể từ phiên bản <ph name="PRODUCT_OS_NAME" /> 29. Vui lòng sử dụng chính sách PresentationScreenDimDelayScale thay vào đó.</translation>
 <translation id="6401669939808766804">Đăng xuất người dùng</translation>
-<translation id="6403746242226534223">Kiểm tra danh tiếng của các URL đã truy cập theo thời gian thực theo thông tin của tính năng Duyệt web an toàn</translation>
 <translation id="6406448383934634215">Nếu chọn 'Mở một danh sách URL' làm thao tác khởi động, thì bạn có thể chỉ định danh sách URL sẽ được mở. Nếu bạn không đặt chính sách, thì sẽ không có URL nào mở khi khởi động.
 
           Chính sách này chỉ hoạt động nếu bạn đặt chính sách 'RestoreOnStartup' thành 'RestoreOnStartupIsURLs'.
@@ -3342,10 +3300,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Nếu bạn không đặt chính sách này, thì ứng dụng DNS tích hợp sẽ được bật theo mặc định trên MacOS, Android (khi cả VPN lẫn DNS riêng đều không được bật) và ChromeOS, đồng thời người dùng sẽ có thể thay đổi tùy chọn có sử dụng ứng dụng DNS tích hợp hay không bằng cách chỉnh sửa chrome://flags hoặc chỉ định một cờ dòng lệnh.</translation>
 <translation id="6843296367238757293">Chính sách này không còn dùng nữa. Bạn không nên sử dụng chính sách này. Đọc thêm tại https://support.google.com/chrome/a/answer/7643500</translation>
-<translation id="6845546921986645941">Khi bạn đặt chính sách này thành bật, <ph name="PRODUCT_NAME" /> sẽ báo cáo các sự kiện không an toàn chẳng hạn như dùng lại mật khẩu, tệp tải xuống có phần mềm độc hại, quảng cáo xen kẽ, nội dung không tuân thủ, v.v. cho Google để phân tích.  Một số sự kiện không an toàn như nội dung không tuân thủ sẽ phụ thuộc vào các chính sách khác cho phép các hoạt động kiểm tra liên quan.
-
-      Nếu bạn không đặt hoặc đặt chính sách này thành tắt, thì <ph name="PRODUCT_NAME" /> sẽ không báo cáo các sự kiện không an toàn.
-      </translation>
 <translation id="684856667300805181">Chính sách này đã bị xóa trong <ph name="PRODUCT_NAME" /> 68 và thay thế bằng <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6851199885688265233">Bật tính năng hỗ trợ tiếp cận về làm nổi bật con trỏ</translation>
 <translation id="6856743875250214792">Chính sách này không được dùng nữa và đã bị xóa trong M66, vì chính sách này trước đây chỉ dùng để kiểm tra nội bộ và tiềm ẩn nguy cơ bảo mật.
@@ -3888,21 +3842,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       </translation>
 <translation id="7632724434767231364">Tên thư viện GSSAPI</translation>
 <translation id="7635471475589566552">Định cấu hình ngôn ngữ ứng dụng trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi ngôn ngữ này. Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ sử dụng ngôn ngữ được chỉ định. Nếu ngôn ngữ được định cấu hình không được hỗ trợ, 'en-US' sẽ được sử dụng thay thế. Nếu bạn tắt hoặc không thiết lập cài đặt này, <ph name="PRODUCT_NAME" /> sẽ sử dụng ngôn ngữ ưa thích do người dùng chỉ định (nếu được định cấu hình), ngôn ngữ hệ thống hoặc ngôn ngữ dự phòng 'en-US'.</translation>
-<translation id="7641363659597330616">Định cấu hình loại nội dung tải xuống <ph name="PRODUCT_NAME" /> sẽ chặn hoàn toàn, mà không cho phép người dùng ghi đè quyết định bảo mật này.
-
-      Nếu bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ ngăn một số loại nội dung tải xuống nhất định và không cho phép người dùng bỏ qua cảnh báo bảo mật.
-
-      Khi bạn chọn tùy chọn 'Chặn các mục tải xuống nguy hiểm', thì tất cả nội dung tải xuống đều được phép, trừ những nội dung có cảnh báo của dịch vụ Duyệt web an toàn.
-
-      Khi bạn chọn tùy chọn 'Chặn các mục tải xuống có thể gây nguy hiểm', thì tất cả nội dung tải xuống đều được phép, trừ những nội dung có cảnh báo của dịch vụ Duyệt web an toàn cho biết nội dung tải xuống có thể gây nguy hiểm.
-
-      Khi bạn chọn tùy chọn 'Chặn tất cả các mục tải xuống', thì tất cả nội dung tải xuống đều sẽ bị chặn.
-
-      Khi bạn không đặt chính sách này (hoặc bạn chọn tùy chọn 'Không có hạn chế đặc biệt'), thì sẽ áp dụng các hạn chế bảo mật thông thường cho nội dung tải xuống dựa trên kết quả phân tích của dịch vụ Duyệt web an toàn.
-
-      Lưu ý rằng những hạn chế này áp dụng cho nội dung tải xuống được kích hoạt từ nội dung trang web, cũng như tùy chọn menu ngữ cảnh 'tải liên kết xuống...'. Các hạn chế này không áp dụng cho việc lưu/tải xuống trang hiện hiển thị, cũng như không áp dụng cho việc lưu dưới dạng tệp PDF từ các tùy chọn in.
-
-      Truy cập vào https://developers.google.com/safe-browsing để biết thêm thông tin về dịch vụ Duyệt web an toàn.</translation>
 <translation id="7643883929273267746">Hạn chế các tài khoản được hiển thị trong <ph name="PRODUCT_NAME" /></translation>
 <translation id="7644825865811580663">Nếu bạn đặt chính sách này thành true, <ph name="PRODUCT_NAME" /> sẽ phóng to tối đa vô điều kiện cửa sổ đầu tiên được hiển thị trong lần chạy đầu tiên.
       Nếu bạn đặt thành false hoặc không định cấu hình chính sách này, quyết định có phóng to tối đa cửa sổ đầu tiên được hiển thị hay không sẽ dựa trên kích thước màn hình.</translation>
@@ -3941,10 +3880,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="7713608076604149344">Hạn chế tải xuống</translation>
 <translation id="7715711044277116530">Tỷ lệ phần trăm theo đó xác định độ trễ mờ màn hình ở chế độ bản trình bày</translation>
 <translation id="7717938661004793600">Định cấu hình các tính năng hỗ trợ tiếp cận của <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7744220323108979821">Cần phải kiểm tra danh sách miền của nội dung tải xuống xem có tuân thủ hay không trước khi lưu vào bộ nhớ cục bộ.  Chỉ dùng chính sách này nếu bạn đặt <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> thành bật.
-
-      Nếu bạn không đặt hoặc đặt chính sách này thành danh sách miền trống, thì sẽ không cần kiểm tra xem nội dung tải xuống có tuân thủ hay không.
-      </translation>
 <translation id="7747447585227954402">Cho phép thiết bị sử dụng một <ph name="PLUGIN_VM_NAME" /> trên <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Bật xác thực hai bước cho máy chủ truy cập từ xa thay vì mã PIN do người dùng chỉ định.
 
@@ -4353,7 +4288,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           Để biết các mẫu ví dụ, hãy xem http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Tắt lưu lịch sử trình duyệt</translation>
-<translation id="8495279065011513838">Kiểm tra tính tuân thủ của nội dung</translation>
 <translation id="8499172469244085141">Cài đặt mặc định (người dùng có thể ghi đè)</translation>
 <translation id="849962487677588458">Chính sách này không còn dùng nữa và dự kiến bị xóa trong Chrome 78 mà không có chính sách thay thế.
 
@@ -4457,7 +4391,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8685024486845674965">Cảnh báo bảo vệ mật khẩu được kích hoạt bằng cách sử dụng lại mật khẩu</translation>
 <translation id="8693243869659262736">Sử dụng máy khách DNS tích hợp</translation>
 <translation id="8698286761337647563">Số ngày thông báo trước cho người dùng SAML khi mật khẩu của họ sắp hết hạn</translation>
-<translation id="870193046368370542">Không cần phải kiểm tra tính tuân thủ đối với danh sách miền của nội dung đã tải lên</translation>
 <translation id="8703488928438047864">Báo cáo trạng thái bảng</translation>
 <translation id="8704831857353097849">Danh sách plugin bị tắt</translation>
 <translation id="8711086062295757690">Chỉ định từ khóa, là phím tắt được sử dụng trong thanh địa chỉ để kích hoạt tìm kiếm nhà cung cấp này.

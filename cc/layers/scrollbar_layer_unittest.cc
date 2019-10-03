@@ -254,6 +254,9 @@ TEST_F(ScrollbarLayerTest, RepaintOverlayWhenResourceDisposed) {
 
 class FakeNinePatchScrollbar : public FakeScrollbar {
  public:
+  FakeNinePatchScrollbar()
+      : FakeScrollbar(/*paint*/ true, /*has_thumb*/ true, /*is_overlay*/ true) {
+  }
   bool UsesNinePatchThumbResource() const override { return true; }
 };
 
@@ -1354,7 +1357,8 @@ class ScaledScrollbarLayerTestScaledRasterization : public ScrollbarLayerTest {
     scrollbar_layer->SetBounds(scrollbar_rect.size());
     scrollbar_layer->SetPosition(gfx::PointF(scrollbar_rect.origin()));
     scrollbar_layer->fake_scrollbar()->set_location(scrollbar_rect.origin());
-    scrollbar_layer->fake_scrollbar()->set_track_rect(scrollbar_rect);
+    scrollbar_layer->fake_scrollbar()->set_track_rect(
+        gfx::Rect(scrollbar_rect.size()));
 
     layer_tree_host_->SetViewportRectAndScale(
         layer_tree_host_->device_viewport_rect(), test_scale,

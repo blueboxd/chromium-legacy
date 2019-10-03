@@ -233,6 +233,19 @@ void AvatarToolbarButton::SetAutofillIconVisible(bool autofill_icon_visible) {
   UpdateText();
 }
 
+void AvatarToolbarButton::ShowAvatarHighlightAnimation() {
+  DCHECK_NE(GetState(), State::kIncognitoProfile);
+  DCHECK_NE(GetState(), State::kGuestSession);
+  DCHECK(!profile_->IsOffTheRecord());
+  ShowHighlightAnimation();
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&AvatarToolbarButton::HideHighlightAnimation,
+                     weak_ptr_factory_.GetWeakPtr()),
+      kHighlightAnimationDuration);
+}
+
 void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
   Button::NotifyClick(event);
   if (should_reset_user_email_when_no_longer_hovered_or_focused_)
@@ -340,16 +353,7 @@ void AvatarToolbarButton::OnTouchUiChanged() {
 }
 
 void AvatarToolbarButton::OnCreditCardSaved() {
-  DCHECK_NE(GetState(), State::kIncognitoProfile);
-  DCHECK_NE(GetState(), State::kGuestSession);
-  DCHECK(!profile_->IsOffTheRecord());
-  ShowHighlightAnimation();
-
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&AvatarToolbarButton::HideHighlightAnimation,
-                     weak_ptr_factory_.GetWeakPtr()),
-      kHighlightAnimationDuration);
+  ShowAvatarHighlightAnimation();
 }
 
 void AvatarToolbarButton::ExpandToShowEmail() {

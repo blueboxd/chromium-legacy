@@ -88,6 +88,7 @@ std::vector<chrome::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
     mojom_match->swap_contents_and_description =
         match.swap_contents_and_description;
     mojom_match->type = AutocompleteMatchType::ToString(match.type);
+    mojom_match->supports_deletion = match.SupportsDeletion();
     matches.push_back(std::move(mojom_match));
   }
   return matches;

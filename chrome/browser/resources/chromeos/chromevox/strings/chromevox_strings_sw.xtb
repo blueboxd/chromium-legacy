@@ -20,6 +20,7 @@
 <translation id="1087788677726983142">Ficha vichujio vya mtiririko wa tukio</translation>
 <translation id="1088219014394087294">Hakuna vichwa.</translation>
 <translation id="1106741348836243114">Washa au zima maoni ya sauti (earcons).</translation>
+<translation id="1114836634143403764">Pendekezo</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Telezesha vidole viwili kuelekea juu</translation>
 <translation id="1124771028211010580">Mtindo wa sasa wa onyesho ni wa upande kwa upande.</translation>
@@ -125,6 +126,7 @@
 <translation id="1845944666972354496">Gusa mara mbili ili uwashe</translation>
 <translation id="1846771122725914429">Onyesho la Braille ya Bluetooth</translation>
 <translation id="1865601187525349519">Mwisho wa maandishi</translation>
+<translation id="1875375785454778375">Yuko mtandaoni hivi sasa</translation>
 <translation id="1876229593313240038">hati</translation>
 <translation id="188130072164734898">Tamka saa ya sasa na tarehe.</translation>
 <translation id="1902396333223336119">Kisanduku</translation>
@@ -145,6 +147,7 @@
 <translation id="2009187674653301682">Si herufi za juu</translation>
 <translation id="2010555995361223825">Menyu za ChromeVox</translation>
 <translation id="2045490512405922022">hakijateuliwa</translation>
+<translation id="2049107626739254612">Maelezo ya usanidi</translation>
 <translation id="20601713649439366">Hakuna mlingano wa hisabati uliotangulia.</translation>
 <translation id="2063539687800151747">Epigrafu</translation>
 <translation id="207477615537953741">Ufasiri wa semantiki umezimwa</translation>
@@ -155,6 +158,7 @@
 <translation id="2110480898214777136">Funga kutoka mwanzo hadi mwisho au mwisho hadi mwanzo ndani ya ukurasa, kidirisha au metadata nyingine</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">kitufe cha ufikiaji: <ph name="KEY" /></translation>
+<translation id="2126597928985245619">Hakuna maandishi yanayopatikana ya kipengele hiki</translation>
 <translation id="2127747486437921899">Italiki</translation>
 <translation id="2138345533858834403">Huiga matokeo ya breli inayoweza kuonyeshwa upya
         katika kidirisha cha ChromeVox juu ya skrini.</translation>
@@ -260,6 +264,7 @@
 <translation id="2911433807131383493">Fungua mafunzo ya ChromeVox</translation>
 <translation id="2912405967290226587">Telezesha vidole vitatu kuelekea kulia</translation>
 <translation id="2932083475399492303">Geuza aina ya mstari kati ya muundo au mpangilio</translation>
+<translation id="293796669683825859">Maoni</translation>
 <translation id="2942710183375260152">Buluu ya Kigae Iliyokolea</translation>
 <translation id="2943596527105977722">Samawati ya Kijani Iliyokolea</translation>
 <translation id="2944762337049891859">Soma ukurasa kiotomatiki baada ya kupakiwa.</translation>
@@ -336,6 +341,7 @@
 <translation id="3324983252691184275">Nyekundu Iliyoiva</translation>
 <translation id="3338224621010291843">Kitelezi cha <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="335581015389089642">Usemi</translation>
+<translation id="3356951775008366684">Tangaza utamkaji wa kifonetiki wa neno</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{alama ya kuongeza}other{alama # za kuongeza}}</translation>
 <translation id="338583716107319301">Kitenganishi</translation>
@@ -532,6 +538,7 @@
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">chaguomsingi</translation>
 <translation id="4772771694153161212">Hayajapigiwa mstari</translation>
+<translation id="4787577491510559358">Tangaza ubadilishaji wa kipengele cha sasa</translation>
 <translation id="479989351350248267">tafuta</translation>
 <translation id="4804818685124855865">Tenganisha</translation>
 <translation id="481165870889056555">Tangaza kichwa cha ukurasa wa sasa</translation>
@@ -568,6 +575,7 @@
 <translation id="4983588134362688868">Ruka hadi mwanzo wa ukurasa</translation>
 <translation id="4986606102545753256"><ph name="NAME" />, dirisha</translation>
 <translation id="4993152509206108683">Kadiria asilimia <ph name="PERCENT" /></translation>
+<translation id="4994420463726586413">Tangaza hali ya sasa ya betri</translation>
 <translation id="4996716799442435517">Yanayoonekana</translation>
 <translation id="4997282455736854877">Kitufe cha mviringo cha <ph name="NAME" /> kimechaguliwa</translation>
 <translation id="4997475792277222884">Hakuna kipengee kinachofuata ambacho si kiungo.</translation>

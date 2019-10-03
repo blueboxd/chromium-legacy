@@ -518,6 +518,10 @@ bool ManagePasswordsUIController::ArePasswordsRevealedWhenBubbleIsOpened()
 
 void ManagePasswordsUIController::SavePasswordInternal() {
   passwords_data_.form_manager()->Save();
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  if (!browser)
+    return;
+  browser->window()->ShowAvatarHighlightAnimation();
 }
 
 void ManagePasswordsUIController::NeverSavePasswordInternal() {

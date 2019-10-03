@@ -1532,14 +1532,8 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
     case ui::VKEY_RETURN:
       if (model()->popup_model()->selected_line_state() ==
           OmniboxPopupModel::BUTTON_FOCUSED) {
-        if (!(OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
-              model()->popup_model()->SelectedLineHasTabMatch())) {
-          popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB,
-                                 event.time_stamp());
-        } else {
-          popup_view_->OpenMatch(WindowOpenDisposition::CURRENT_TAB,
-                                 event.time_stamp());
-        }
+        popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB,
+                               event.time_stamp());
       } else {
         if (alt || (shift && command)) {
           model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB,
@@ -1551,9 +1545,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
           model()->AcceptInput(WindowOpenDisposition::NEW_WINDOW,
                                event.time_stamp());
         } else {
-          if ((OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
-               model()->popup_model()->SelectedLineHasTabMatch()) ||
-              model()->popup_model()->SelectedLineIsTabSwitchSuggestion()) {
+          if (model()->popup_model()->SelectedLineIsTabSwitchSuggestion()) {
             model()->AcceptInput(WindowOpenDisposition::SWITCH_TO_TAB,
                                  event.time_stamp());
           } else {

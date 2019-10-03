@@ -60,7 +60,6 @@
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1079766198702302550">Cameratoegang altijd blokkeren</translation>
 <translation id="1082398631555931481"><ph name="THIRD_PARTY_TOOL_NAME" /> wil je Chrome-instellingen terugzetten op de oorspronkelijke standaardwaarden. Als je dit doet, worden je homepage, nieuwe tabbladpagina en zoekmachine opnieuw ingesteld, worden je extensies uitgeschakeld en worden alle tabbladen losgemaakt. Ook worden alle andere tijdelijke en gecachte gegevens, zoals cookies, content en sitegegevens, gewist.</translation>
-<translation id="1082725763867769612">Offline bestanden</translation>
 <translation id="1084824384139382525">Linkadr&amp;es kopiëren</translation>
 <translation id="1085697365578766383">Fout bij starten van virtuele machine. Probeer het opnieuw.</translation>
 <translation id="1089439967362294234">Wachtwoord wijzigen</translation>
@@ -130,7 +129,6 @@
 <translation id="1181037720776840403">Verwijderen</translation>
 <translation id="1183237619868651138">Kan <ph name="EXTERNAL_CRX_FILE" /> niet in lokale cache installeren.</translation>
 <translation id="1185924365081634987">Je kunt ook proberen te <ph name="GUEST_SIGNIN_LINK_START" />browsen als gast<ph name="GUEST_SIGNIN_LINK_END" /> om deze netwerkfout op te lossen.</translation>
-<translation id="1186201132766001848">Wachtwoorden controleren</translation>
 <translation id="1186771945450942097">Schadelijke software verwijderen</translation>
 <translation id="1187722533808055681">Activeringen vanuit inactief</translation>
 <translation id="1188807932851744811">Logbestand niet geüpload.</translation>
@@ -305,7 +303,6 @@
 <translation id="1444628761356461360">Deze instelling wordt beheerd door de eigenaar van het apparaat, <ph name="OWNER_EMAIL" />.</translation>
 <translation id="144518587530125858">Kan '<ph name="IMAGE_PATH" />' niet laden voor thema.</translation>
 <translation id="1445693676523799095">Dit kan even duren</translation>
-<translation id="1450011005989029586">Je wachtwoord is gelekt bij een gegevenslek op een site of in een app die je gebruikt. Chrome raadt je aan nu <ph name="BOLD" /> op <ph name="ORIGIN" />.</translation>
 <translation id="1451375123200651445">Webpagina, één bestand</translation>
 <translation id="1451917004835509682">Persoon met beperkte rechten toevoegen</translation>
 <translation id="1454223536435069390">&amp;Screenshot maken</translation>
@@ -605,7 +602,6 @@
 <translation id="1864111464094315414">Aanmelden</translation>
 <translation id="1864400682872660285">Koeler</translation>
 <translation id="1864454756846565995">USB-C-apparaat (poort aan achterkant)</translation>
-<translation id="1865678028973512614">Bestanden verwijderen</translation>
 <translation id="1865769994591826607">Alleen verbindingen binnen dezelfde site</translation>
 <translation id="186612162884103683">'<ph name="EXTENSION" />' kan afbeeldingen, video- en geluidsbestanden lezen en schrijven op de gecontroleerde locaties.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> is gereed voor het voltooien van je installatie.</translation>
@@ -936,7 +932,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">Notities op het vergrendelingsscherm worden automatisch opgeslagen in <ph name="LOCK_SCREEN_APP_NAME" />. Je laatste notitie blijft op het vergrendelingsscherm staan.</translation>
 <translation id="2353297238722298836">Camera en microfoon toegestaan</translation>
-<translation id="2355241457888955">Tekst naar je apparaten verzenden</translation>
 <translation id="2356070529366658676">Vragen</translation>
 <translation id="2359345697448000899">Je kunt je extensies beheren door in het gereedschapsmenu te klikken op 'Extensies'.</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
@@ -1066,7 +1061,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2534460670861217804">Beveiligde HTTP-proxy</translation>
 <translation id="253557089021624350">Aantal keepalive-activiteiten</translation>
 <translation id="2535799430745250929">Er bestaat geen mobiel netwerk</translation>
-<translation id="2536052711541161459">Aanwijzerversnelling</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> kan de volgende bestanden en mappen bekijken en bewerken</translation>
 <translation id="2538361623464451692">Synchroniseren uitgeschakeld</translation>
 <translation id="2540449034743108469">Druk op Starten om extensie-activiteit te beluisteren</translation>
@@ -1369,6 +1363,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2981113813906970160">Grote muisaanwijzer weergeven</translation>
 <translation id="2982970937345031">Anoniem melden</translation>
 <translation id="2986010903908656993">Deze pagina is geblokkeerd voor volledig beheer van MIDI-apparaten.</translation>
+<translation id="2987620471460279764">Gedeelde tekst van ander apparaat</translation>
 <translation id="2989474696604907455">niet aangesloten</translation>
 <translation id="2989786307324390836">DER Encoded Binary, één certificaat</translation>
 <translation id="2992931425024192067">Content van alle meldingen weergeven</translation>
@@ -2242,7 +2237,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4267953847983678297">Automatisch verbinding maken met mobiel netwerk</translation>
 <translation id="4268025649754414643">Sleutelcodering</translation>
 <translation id="4270393598798225102">Versie <ph name="NUMBER" /></translation>
-<translation id="4270615291506829403">je wachtwoord te wijzigen</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4275830172053184480">Je apparaat opnieuw opstarten</translation>
 <translation id="4278101229438943600">De Assistent staat klaar</translation>
@@ -2454,7 +2448,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4617001782309103936">Te kort</translation>
 <translation id="4617270414136722281">Opties voor extensies</translation>
 <translation id="4619615317237390068">Tabbladen van andere apparaten</translation>
-<translation id="462021874527520979">Bellen vanaf je apparaten</translation>
 <translation id="4620809267248568679">Deze instelling wordt door een extensie afgedwongen.</translation>
 <translation id="4623189117674524348">Het systeem kan API-toegang voor dit apparaat niet verifiëren.</translation>
 <translation id="4625078469366263107">App inschakelen</translation>
@@ -2502,7 +2495,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">De printerconfiguratie wordt bepaald door de beheerder.</translation>
 <translation id="4694604912444486114">Aap</translation>
-<translation id="4696983787092045100">Tekst naar je apparaten verzenden</translation>
 <translation id="4697551882387947560">Wanneer de browsingsessie eindigt</translation>
 <translation id="4699172675775169585">Gecachte afbeeldingen en bestanden</translation>
 <translation id="4699357559218762027">(automatisch gestart)</translation>
@@ -2520,7 +2512,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4722920479021006856"><ph name="APP_NAME" /> deelt je scherm.</translation>
 <translation id="4724450788351008910">Relatie is gewijzigd</translation>
 <translation id="4725511304875193254">Corgi</translation>
-<translation id="4725851834065990915">Je wachtwoord is gelekt bij een gegevenslek op een site of in een app die je gebruikt. Chrome raadt je aan je opgeslagen wachtwoorden nu te controleren.</translation>
 <translation id="4726710629007580002">Er zijn waarschuwingen weergegeven tijdens een poging deze extensie te installeren:</translation>
 <translation id="4727847987444062305">Beheerde gastsessie</translation>
 <translation id="4728558894243024398">Platform</translation>
@@ -2746,7 +2737,6 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="5062930723426326933">Inloggen is mislukt. Maak verbinding met internet en probeer het opnieuw.</translation>
 <translation id="5063480226653192405">Gebruik</translation>
 <translation id="5065775832226780415">Smart Lock</translation>
-<translation id="5067000372742249459">Sms verzenden naar <ph name="DEVICE_NAME" /></translation>
 <translation id="5067399438976153555">Altijd ingeschakeld</translation>
 <translation id="5067867186035333991">Vragen of <ph name="HOST" /> toegang wil tot je microfoon</translation>
 <translation id="5068918910148307423">Niet toestaan dat onlangs gesloten sites het verzenden en ontvangen van gegevens voltooien</translation>
@@ -2993,7 +2983,6 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="5436492226391861498">Wachten op proxytunnel...</translation>
 <translation id="5436510242972373446">Zoeken op <ph name="SITE_NAME" />:</translation>
 <translation id="543806387003274181">Sla je nu bestanden op en maak een nieuw account.</translation>
-<translation id="5438224778284622050">Offline bestanden verwijderen?</translation>
 <translation id="544083962418256601">Snelle links maken...</translation>
 <translation id="5442228125690314719">Fout bij maken van schijfimage. Probeer het opnieuw.</translation>
 <translation id="5442550868130618860">Automatische updates inschakelen</translation>
@@ -3326,7 +3315,6 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="5908769186679515905">Niet toestaan dat sites Flash uitvoeren</translation>
 <translation id="5910363049092958439">Af&amp;beelding opslaan als...</translation>
 <translation id="5911533659001334206">Sneltoetsenviewer</translation>
-<translation id="5911737117543891828">Tijdelijke offline Google Drive-bestanden worden verwijderd. Bestanden die je hebt ingesteld als offline beschikbaar, worden niet verwijderd van dit apparaat.</translation>
 <translation id="5912378097832178659">Zo&amp;ekmachines bewerken...</translation>
 <translation id="5914724413750400082">Modulus (<ph name="MODULUS_NUM_BITS" />-bits):
   <ph name="MODULUS_HEX_DUMP" />
@@ -3377,7 +3365,6 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="5975792506968920132">Percentage acculading</translation>
 <translation id="5976160379964388480">Overige</translation>
 <translation id="5978277834170881274">Standaard spellingcontrole gebruiken</translation>
-<translation id="5979084224081478209">Wachtwoorden controleren</translation>
 <translation id="5979421442488174909">&amp;Vertalen in het <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Als je een bladwijzer wilt instellen voor een pagina, klik je op de ster in de adresbalk</translation>
 <translation id="5984222099446776634">Recent bezocht</translation>
@@ -3929,7 +3916,6 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> kan niet worden uitgevoerd als root.</translation>
 <translation id="6812841287760418429">Wijzigingen behouden</translation>
 <translation id="6817174620439930047">Vragen als een site berichten exclusief voor het systeem wil gebruiken om toegang te krijgen tot MIDI-apparaten (aanbevolen)</translation>
-<translation id="6819440013020405090">Je wachtwoord is gelekt bij een gegevenslek op een site of in een app die je gebruikt. Chrome raadt je aan je opgeslagen wachtwoorden te controleren en je wachtwoord op <ph name="ORIGIN" /> te wijzigen.</translation>
 <translation id="682123305478866682">Bureaublad casten</translation>
 <translation id="6823506025919456619">Je moet inloggen bij Chrome om je apparaten te bekijken</translation>
 <translation id="6824564591481349393">&amp;E-mailadres kopiëren</translation>
@@ -4112,7 +4098,6 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="708060913198414444">Adres van audio k&amp;opiëren</translation>
 <translation id="7081952801286122383">Je bent incognito</translation>
 <translation id="708278670402572152">Verbreek de verbinding om te scannen</translation>
-<translation id="70850504851191913">Gegevenslek gemeld</translation>
 <translation id="7085389578340536476">Toestaan dat Chrome audio opneemt?</translation>
 <translation id="7088434364990739311">Het starten van de updatecontrole is mislukt (foutcode <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver: zip-bestanden openen en inpakken in de Bestanden-app.</translation>
@@ -4560,7 +4545,6 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">De grenzen van je display aanpassen</translation>
 <translation id="7760004034676677601">Is dit de homepage die je had verwacht?</translation>
-<translation id="7761380698973548146">Bellen vanaf je apparaten</translation>
 <translation id="7764225426217299476">Adres toevoegen</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Verplaatsen</translation>

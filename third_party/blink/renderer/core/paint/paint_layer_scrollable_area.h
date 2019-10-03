@@ -62,7 +62,7 @@ enum ResizerHitTestType { kResizerForPointer, kResizerForTouch };
 class ComputedStyle;
 class HitTestResult;
 class LayoutBox;
-class LayoutScrollbarPart;
+class LayoutCustomScrollbarPart;
 struct PaintInvalidatorContext;
 class PaintLayer;
 class ScrollingCoordinator;
@@ -337,7 +337,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   WebColorScheme UsedColorScheme() const override;
   cc::AnimationHost* GetCompositorAnimationHost() const override;
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const override;
-  void GetTickmarks(Vector<IntRect>&) const override;
+  bool HasTickmarks() const override;
+  Vector<IntRect> GetTickmarks() const override;
 
   void VisibleSizeChanged();
 
@@ -385,7 +386,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
     return HasHorizontalOverflow() || HasVerticalOverflow();
   }
 
-  LayoutScrollbarPart* ScrollCorner() const { return scroll_corner_; }
+  LayoutCustomScrollbarPart* ScrollCorner() const { return scroll_corner_; }
 
   void Resize(const IntPoint& pos, const LayoutSize& old_offset);
   IntSize OffsetFromResizeCorner(const IntPoint& absolute_point) const;
@@ -442,7 +443,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   PaintLayer* Layer() const override;
 
-  LayoutScrollbarPart* Resizer() const { return resizer_; }
+  LayoutCustomScrollbarPart* Resizer() const { return resizer_; }
 
   IntRect RectForHorizontalScrollbar(const IntRect& border_box_rect) const;
   IntRect RectForVerticalScrollbar(const IntRect& border_box_rect) const;
@@ -672,10 +673,10 @@ class CORE_EXPORT PaintLayerScrollableArea final
   ScrollOffset scroll_offset_;
 
   // LayoutObject to hold our custom scroll corner.
-  LayoutScrollbarPart* scroll_corner_;
+  LayoutCustomScrollbarPart* scroll_corner_;
 
   // LayoutObject to hold our custom resizer.
-  LayoutScrollbarPart* resizer_;
+  LayoutCustomScrollbarPart* resizer_;
 
   ScrollAnchor scroll_anchor_;
 

@@ -16,7 +16,7 @@
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/test_navigation_listener.h"
-#include "fuchsia/engine/common.h"
+#include "fuchsia/engine/switches.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -127,7 +127,7 @@ class IncognitoContextImplTest : public ContextImplTest {
   ~IncognitoContextImplTest() override = default;
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(kIncognitoSwitch);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kIncognito);
     ContextImplTest::SetUp();
   }
 

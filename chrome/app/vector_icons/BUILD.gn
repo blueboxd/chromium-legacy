@@ -81,6 +81,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "photo_camera.icon",
     "picture_in_picture_control_background.icon",
     "picture_in_picture_alt.icon",
+    "qrcode_generator.icon",
     "reader_mode.icon",
     "reload_touch.icon",
     "remove.icon",

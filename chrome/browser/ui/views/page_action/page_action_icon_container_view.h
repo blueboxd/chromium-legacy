@@ -34,6 +34,10 @@ class LocalCardMigrationIconView;
 class SaveCardIconView;
 }  // namespace autofill
 
+namespace qrcode_generator {
+class QRCodeGeneratorIconView;
+}
+
 namespace send_tab_to_self {
 class SendTabToSelfIconView;
 }
@@ -105,6 +109,8 @@ class PageActionIconContainerView : public views::View,
   ManagePasswordsIconViews* manage_passwords_icon_ = nullptr;
   NativeFileSystemAccessIconView* native_file_system_access_icon_ = nullptr;
   PwaInstallView* pwa_install_icon_ = nullptr;
+  qrcode_generator::QRCodeGeneratorIconView* qrcode_generator_icon_view_ =
+      nullptr;
   ReaderModeIconView* reader_mode_icon_ = nullptr;
   autofill::SaveCardIconView* save_card_icon_ = nullptr;
   send_tab_to_self::SendTabToSelfIconView* send_tab_to_self_icon_ = nullptr;

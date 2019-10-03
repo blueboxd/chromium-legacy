@@ -47,12 +47,14 @@
 #include <sstream>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "net/base/features.h"
 #include "net/base/url_util.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
@@ -709,13 +711,17 @@ bool CanonicalCookie::IsCookiePrefixValid(CanonicalCookie::CookiePrefix prefix,
 }
 
 CookieEffectiveSameSite CanonicalCookie::GetEffectiveSameSite() const {
+  base::TimeDelta lax_allow_unsafe_threshold_age =
+      base::FeatureList::IsEnabled(features::kShortLaxAllowUnsafeThreshold)
+          ? kShortLaxAllowUnsafeMaxAge
+          : kLaxAllowUnsafeMaxAge;
   switch (SameSite()) {
     // If a cookie does not have a SameSite attribute, the effective SameSite
     // mode depends on the SameSiteByDefaultCookies setting and whether the
     // cookie is recently-created.
     case CookieSameSite::UNSPECIFIED:
       return cookie_util::IsSameSiteByDefaultCookiesEnabled()
-                 ? (IsRecentlyCreated(kLaxAllowUnsafeMaxAge)
+                 ? (IsRecentlyCreated(lax_allow_unsafe_threshold_age)
                         ? CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE
                         : CookieEffectiveSameSite::LAX_MODE)
                  : CookieEffectiveSameSite::NO_RESTRICTION;

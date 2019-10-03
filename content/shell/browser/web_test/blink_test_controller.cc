@@ -567,10 +567,6 @@ void BlinkTestController::OverrideWebkitPrefs(WebPreferences* prefs) {
         prefs->accelerated_2d_canvas_enabled = true;
       prefs->mock_scrollbars_enabled = true;
     }
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kForceHighContrast)) {
-      prefs->forced_colors = blink::ForcedColors::kActive;
-    }
   }
 }
 

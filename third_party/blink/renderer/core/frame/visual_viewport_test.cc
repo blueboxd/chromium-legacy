@@ -533,8 +533,6 @@ TEST_P(VisualViewportTest, TestWebViewResizedBeforeAttachment) {
       frame_view.GetLayoutView()->Compositor()->RootGraphicsLayer());
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  EXPECT_FLOAT_SIZE_EQ(IntSize(320, 240),
-                       IntSize(visual_viewport.ContainerLayer()->Size()));
   EXPECT_EQ(IntSize(320, 240),
             visual_viewport.GetScrollNode()->ContainerRect().Size());
 }
@@ -2407,11 +2405,7 @@ TEST_P(VisualViewportTest, EnsureOverscrollElasticityTransformNode) {
   UpdateAllLifecyclePhases();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  auto* node = visual_viewport.GetOverscrollElasticityTransformNode();
-  CompositorElementId element_id =
-      visual_viewport.GetCompositorOverscrollElasticityElementId();
-  EXPECT_TRUE(node);
-  EXPECT_EQ(element_id, node->GetCompositorElementId());
+  EXPECT_TRUE(visual_viewport.GetOverscrollElasticityTransformNode());
 }
 
 // Ensure we create effect node for scrollbar properly.
@@ -2514,9 +2508,6 @@ TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
   ASSERT_EQ(1.25f, WebView().MinimumPageScaleFactor());
 
   VisualViewport& visual_viewport = WebView().GetPage()->GetVisualViewport();
-  EXPECT_EQ(gfx::Size(400, 600), visual_viewport.ContainerLayer()->Size());
-  EXPECT_EQ(gfx::Size(400, 600),
-            visual_viewport.ContainerLayer()->CcLayer()->bounds());
   EXPECT_EQ(gfx::Size(320, 480), visual_viewport.ScrollLayer()->Size());
   EXPECT_EQ(gfx::Size(320, 480),
             visual_viewport.ScrollLayer()->CcLayer()->bounds());
@@ -2528,9 +2519,6 @@ TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
   WebView().MainFrameWidget()->ApplyViewportChanges(
       {gfx::ScrollOffset(1, 1), gfx::Vector2dF(), 2, false, 1,
        cc::BrowserControlsState::kBoth});
-  EXPECT_EQ(gfx::Size(400, 600), visual_viewport.ContainerLayer()->Size());
-  EXPECT_EQ(gfx::Size(400, 600),
-            visual_viewport.ContainerLayer()->CcLayer()->bounds());
   EXPECT_EQ(gfx::Size(320, 480), visual_viewport.ScrollLayer()->Size());
   EXPECT_EQ(gfx::Size(320, 480),
             visual_viewport.ScrollLayer()->CcLayer()->bounds());

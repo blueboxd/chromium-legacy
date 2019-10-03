@@ -45,6 +45,7 @@
 <translation id="1175875016430184367">Triple staple right</translation>
 <translation id="1178581264944972037">I-pause</translation>
 <translation id="1181037720776840403">Alisin</translation>
+<translation id="1186201132766001848">Suriin ang mga Password</translation>
 <translation id="1197088940767939838">Orange</translation>
 <translation id="1201402288615127009">Susunod</translation>
 <translation id="1201895884277373915">Higit pa mula sa site na ito</translation>
@@ -110,6 +111,7 @@
 <translation id="1430915738399379752">I-print</translation>
 <translation id="1442386063175183758">Right gate fold</translation>
 <translation id="1442987760062738829">Punch</translation>
+<translation id="1450011005989029586">Nailantad ang iyong password dahil sa isang paglabag sa data sa isang site o app na ginagamit mo. Inirerekomenda ng Chrome na <ph name="BOLD" /> sa <ph name="ORIGIN" /> ngayon.</translation>
 <translation id="1455413310270022028">Pambura</translation>
 <translation id="1463543813647160932">5x7</translation>
 <translation id="1472675084647422956">Magpakita ng higit pa</translation>
@@ -153,7 +155,6 @@
 <translation id="1640244768702815859">Subukang <ph name="BEGIN_LINK" />bisitahin ang homepage ng site<ph name="END_LINK" />.</translation>
 <translation id="1644574205037202324">History</translation>
 <translation id="1645368109819982629">Hindi sinusuportahang protocol</translation>
-<translation id="1655462015569774233">{1,plural, =1{Hindi mapatunayan ng server na ito na ito ang <ph name="DOMAIN" />; nag-expire na ang certificate ng seguridad nito kahapon. Maaaring resulta ito ng maling configuration o kaya ng isang attacker na humahadlang sa iyong koneksyon. Sa kasalukuyan, nakatakda ang orasan ng iyong computer sa <ph name="CURRENT_DATE" />. Mukha bang tama iyon? Kung hindi, dapat mong ayusin ang orasan ng iyong system at pagkatapos ay i-refresh ang page na ito.}one{Hindi mapatunayan ng server na ito na ito ang <ph name="DOMAIN" />; nag-expire na ang certificate ng seguridad nito # araw na ang nakalipas. Maaaring resulta ito ng maling configuration o kaya ng isang attacker na humahadlang sa iyong koneksyon. Sa kasalukuyan, nakatakda ang orasan ng iyong computer sa <ph name="CURRENT_DATE" />. Mukha bang tama iyon? Kung hindi, dapat mong ayusin ang orasan ng iyong system at pagkatapos ay i-refresh ang page na ito.}other{Hindi mapatunayan ng server na ito na ito ang <ph name="DOMAIN" />; nag-expire na ang certificate ng seguridad nito # na araw na ang nakalipas. Maaaring resulta ito ng maling configuration o kaya ng isang attacker na humahadlang sa iyong koneksyon. Sa kasalukuyan, nakatakda ang orasan ng iyong computer sa <ph name="CURRENT_DATE" />. Mukha bang tama iyon? Kung hindi, dapat mong ayusin ang orasan ng iyong system at pagkatapos ay i-refresh ang page na ito.}}</translation>
 <translation id="1656489000284462475">I-pick up</translation>
 <translation id="1662550410081243962">I-save at punan ang mga paraan ng pagbabayad</translation>
 <translation id="1663943134801823270">Ang mga card at address ay mula sa Chrome. Maaari mong pamahalaan ang mga ito sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" />.</translation>
@@ -323,7 +324,6 @@
 <translation id="2501278716633472235">Bumalik</translation>
 <translation id="2503184589641749290">Mga tinatanggap na debit at prepaid card</translation>
 <translation id="2505268675989099013">Protektahan ang Account</translation>
-<translation id="2515335152965840738">BALEWALAIN</translation>
 <translation id="2515629240566999685">Suriin ang signal sa iyong lugar</translation>
 <translation id="2521385132275182522">Staple bottom right</translation>
 <translation id="2523886232349826891">Ise-save sa device lang na ito</translation>
@@ -382,7 +382,6 @@
 <translation id="2799020568854403057">Naglalaman ng mga mapaminsalang app ang pupuntahang site</translation>
 <translation id="2799223571221894425">Ilunsad Muli</translation>
 <translation id="2803306138276472711">Kamakailan lang, ang Google Safe Browsing ay <ph name="BEGIN_LINK" />nakakita ng malware<ph name="END_LINK" /> sa <ph name="SITE" />. Paminsan-minsan, nagkakaroon ng malware ang mga website na karaniwang ligtas.</translation>
-<translation id="2815364696811431560">UMALIS SA SITE</translation>
 <translation id="2824775600643448204">Address bar at bar sa paghahanap</translation>
 <translation id="2826760142808435982">Ine-encrypt at pinapatotoo ang koneksyon gamit ang <ph name="CIPHER" /> at ginagamit ang <ph name="KX" /> bilang key exchange mechanism.</translation>
 <translation id="2835170189407361413">I-clear ang form</translation>
@@ -456,6 +455,7 @@
 <translation id="320323717674993345">Kanselahin ang Pagbabayad</translation>
 <translation id="3207960819495026254">Naka-bookmark</translation>
 <translation id="3209034400446768650">Puwedeng maningil ang page</translation>
+<translation id="3209080785413271048">Gamitin ang Windows Hello para i-verify ang iyong mga naka-save na paraan ng pagbabayad.</translation>
 <translation id="3215092763954878852">Hindi magamit ang WebAuthn</translation>
 <translation id="3225919329040284222">Nagpakita ang server ng certificate na hindi tumutugma sa mga built-in na inaasahan. Ang mga inaasahang ito ay isinama para sa ilang partikular na website na may mataas na antas ng seguridad upang maprotektahan ka.</translation>
 <translation id="3226128629678568754">Pindutin ang button na i-reload upang isumiteng muli ang data na kailangan upang ma-load ang pahina.</translation>
@@ -466,6 +466,7 @@
 <translation id="3234666976984236645">Palaging tukuyin ang mahalagang content sa site na ito</translation>
 <translation id="3270847123878663523">&amp;I-undo ang Pagbabago sa Ayos</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
+<translation id="3281668902344226640">Gamitin ang Touch ID para i-verify ang iyong mga naka-save na paraan ng pagbabayad.</translation>
 <translation id="3282497668470633863">Magdagdag ng pangalan sa card</translation>
 <translation id="3287510313208355388">I-download kapag online</translation>
 <translation id="3293642807462928945">Matuto pa tungkol sa patakarang <ph name="POLICY_NAME" /></translation>
@@ -533,6 +534,7 @@
 <translation id="362276910939193118">Ipakita ang Buong History</translation>
 <translation id="3630155396527302611">Kung nakalista na ito bilang isang programang pinapahintulutang i-access ang network, subukang
       alisin ito mula sa listahan at muli itong idagdag.</translation>
+<translation id="3631244953324577188">Biometrics</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Matagumpay ang pagpapatunay</translation>
 <translation id="3655670868607891010">Kung madalas mo itong nakikita, subukan ang mga ito <ph name="HELP_LINK" />.</translation>
@@ -608,6 +610,7 @@
 <translation id="4067947977115446013">Magdagdag ng Wastong Address</translation>
 <translation id="4072486802667267160">Nagkaroon ng error sa pagproseso ng iyong order. Pakisubukang muli.</translation>
 <translation id="4075732493274867456">Hindi sinusuportahan ng client at server ang isang karaniwang bersyon o cipher suite ng SSL protocol.</translation>
+<translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">Nakatakda ang configuration ng proxy upang gumamit ng isang .pac script URL, hindi ng mga hindi nababagong proxy server.</translation>
 <translation id="4082393374666368382">Mga Setting - Pamamahala</translation>
 <translation id="4098354747657067197">Mapupunta sa nakakapanlinlang na site</translation>
@@ -664,6 +667,7 @@
 <translation id="4258748452823770588">Maling lagda</translation>
 <translation id="4261046003697461417">Hindi maaaring i-annotate ang mga protektadong dokumento</translation>
 <translation id="4265872034478892965">Pinayagan ng iyong administrator</translation>
+<translation id="4270615291506829403">palitan mo ang iyong password</translation>
 <translation id="4275830172053184480">I-restart ang iyong device</translation>
 <translation id="4277028893293644418">I-reset ang password</translation>
 <translation id="4279811152705618813">Ang iyong <ph name="DEVICE_TYPE" /> ay pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -690,6 +694,7 @@
 <translation id="4372948949327679948">Inaasahang <ph name="VALUE_TYPE" /> na halaga.</translation>
 <translation id="4377125064752653719">Tinangka mong maabot ang <ph name="DOMAIN" />, subalit ang certificate na ipinakita ng server ay binawi ng nagbigay nito. Nangangahulugan ito na ang mga kredensyal sa seguridad na ipinakita ng server ay talagang hindi dapat pagkatiwalaan. Maaaring nakikipag-ugnay ka sa isang nang-aatake.</translation>
 <translation id="4378154925671717803">Telepono</translation>
+<translation id="4398334096870680409">Hindi available ang feature na ito sa iyong device</translation>
 <translation id="4406896451731180161">mga resulta ng paghahanap</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Address sa Pag-pick up</translation>
@@ -738,7 +743,9 @@
 <translation id="4691835149146451662">Architecture-A (Envelope)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Naputol ang iyong koneksyon</translation>
+<translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Magpatakbo ng Windows Network Diagnostics<ph name="END_LINK" /></translation>
+<translation id="4725851834065990915">Nailantad ang iyong password dahil sa paglabag sa data sa isang site o app na ginagamit mo. Inirerekomenda ng Chrome na suriin ngayon ang iyong mga naka-save na password.</translation>
 <translation id="4726672564094551039">I-reload ang mga patakaran</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
@@ -766,7 +773,6 @@
 <translation id="4816492930507672669">Pagkasyahin sa pahina</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4854362297993841467">Hindi available ang pamamaraan ng paghahatid na ito. Sumubok ng ibang pamamaraan.</translation>
-<translation id="4864052566555297930">Tip para sa kaligtasan:</translation>
 <translation id="4876188919622883022">Pinasimpleng view</translation>
 <translation id="4876305945144899064">Walang username</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{Wala}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
@@ -993,6 +999,7 @@
 <translation id="5967592137238574583">I-edit ang Impormasyon ng Contact</translation>
 <translation id="5967867314010545767">Alisin sa history</translation>
 <translation id="5975083100439434680">Mag-zoom out</translation>
+<translation id="5979084224081478209">Suriin ang mga password</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Hindi mabuksan ang app sa pagbabayad</translation>
 <translation id="5989320800837274978">Hindi tunukoy ang alinman sa mga hindi nababagong proxy server o isang .pac script URL.</translation>
@@ -1150,6 +1157,7 @@
 <translation id="679355240208270552">Binalewala dahil hindi na-enable ng patakaran ang default na paghahanap.</translation>
 <translation id="681021252041861472">Kinakailangang Field</translation>
 <translation id="6810899417690483278">Customization ID</translation>
+<translation id="6819440013020405090">Nailantad ang iyong password dahil sa paglabag sa data sa isang site o app na ginagamit mo. Inirerekomenda ng Chrome na suriin ang iyong mga naka-save na password at palitan ang password mo sa <ph name="ORIGIN" />.</translation>
 <translation id="6825578344716086703">Tinangka mong abutin ang <ph name="DOMAIN" />, ngunit nagpakita ang server ng certificate na nilagdaan gamit ang isang mahinang signature algorithm (tulad ng SHA-1). Nangangahulugan ito na maaaring pineke ang mga panseguridad na kredensyal na ipinakita ng server, at ang server ay maaaring hindi ang server na inaasahan mo (maaaring nakikipag-ugnayan ka sa isang attacker).</translation>
 <translation id="6826370046007623921">Pag-iwas sa Pagkawala ng Data</translation>
 <translation id="6831043979455480757">Isalin</translation>
@@ -1192,6 +1200,7 @@
 <translation id="7064851114919012435">Impormasyon sa pakikipag-ugnayan</translation>
 <translation id="7075452647191940183">Masyadong malaki ang kahilingan</translation>
 <translation id="7079718277001814089">Naglalaman ng malware ang site na ito</translation>
+<translation id="70850504851191913">May naiulat na paglabag sa data</translation>
 <translation id="7087282848513945231">Lalawigan</translation>
 <translation id="7090678807593890770">Hanapin sa Google ang <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Itago</translation>
@@ -1280,6 +1289,7 @@ Mga karagdagang detalye:
 <translation id="7460618730930299168">Iba ang screening sa napili mo. Magpatuloy?</translation>
 <translation id="7473891865547856676">Hindi, Salamat</translation>
 <translation id="7481312909269577407">Sumulong</translation>
+<translation id="748406663033922918">Gamitin ang lock ng screen para i-verify ang iyong mga naka-save na paraan ng pagbabayad.</translation>
 <translation id="7485870689360869515">Walang nahanap na data.</translation>
 <translation id="7498234416455752244">Magpatuloy sa pag-edit</translation>
 <translation id="7508255263130623398">Walang laman ang ibinalik na device id ng patakaran o hindi ito tumutugma sa kasalukuyang device id</translation>
@@ -1493,7 +1503,6 @@ Mga karagdagang detalye:
 <translation id="8553075262323480129">Nabigo ang pag-translate dahil hindi matukoy ang wika ng pahina.</translation>
 <translation id="8557066899867184262">Makikita ang CVC sa likod ng iyong card.</translation>
 <translation id="8559762987265718583">Hindi makapagtatag ng pribadong koneksyon sa <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> dahil mali ang petsa at oras ng iyong device (<ph name="DATE_AND_TIME" />).</translation>
-<translation id="8561575143530093465"><ph name="SAFETY_TIP" /> kahina-hinalang site</translation>
 <translation id="8564985650692024650">Inirerekomenda ng Chromium na i-reset ang iyong password sa <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> kung ginamit mo ito sa iba pang site.</translation>
 <translation id="8571890674111243710">Tina-translate ang pahina sa <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Magdagdag ng numero ng telepono</translation>
@@ -1553,6 +1562,7 @@ Mga karagdagang detalye:
 <translation id="8943282376843390568">Lime</translation>
 <translation id="8957210676456822347">Pagpapahintulot sa Captive Portal</translation>
 <translation id="8962950042226115166">Kahina-hinalang site</translation>
+<translation id="8966619695390250636">Ang ibig mo bang sabihin ay?</translation>
 <translation id="8968766641738584599">I-save ang card</translation>
 <translation id="8971063699422889582">Nag-expire na ang certificate ng server.</translation>
 <translation id="8975012916872825179">May kasamang impormasyon tulad ng mga numero ng telepono, email address, at address sa pagpapadala</translation>

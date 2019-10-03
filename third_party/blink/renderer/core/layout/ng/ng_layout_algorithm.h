@@ -15,6 +15,7 @@
 namespace blink {
 
 class ComputedStyle;
+class NGEarlyBreak;
 class NGLayoutResult;
 struct MinMaxSizeInput;
 
@@ -46,16 +47,19 @@ struct NGLayoutAlgorithmParams {
   NGLayoutAlgorithmParams(NGBlockNode node,
                           const NGFragmentGeometry& fragment_geometry,
                           const NGConstraintSpace& space,
-                          const NGBlockBreakToken* break_token = nullptr)
+                          const NGBlockBreakToken* break_token = nullptr,
+                          const NGEarlyBreak* early_break = nullptr)
       : node(node),
         fragment_geometry(fragment_geometry),
         space(space),
-        break_token(break_token) {}
+        break_token(break_token),
+        early_break(early_break) {}
 
   NGBlockNode node;
   const NGFragmentGeometry& fragment_geometry;
   const NGConstraintSpace& space;
   const NGBlockBreakToken* break_token;
+  const NGEarlyBreak* early_break;
 };
 
 // Base class for all LayoutNG algorithms.

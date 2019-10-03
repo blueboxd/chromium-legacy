@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
@@ -194,7 +195,8 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   void LaunchAppForNewNote(Profile* profile, const base::FilePath& path);
 
   // arc::ArcIntentHelperObserver:
-  void OnIntentFiltersUpdated() override;
+  void OnIntentFiltersUpdated(
+      const base::Optional<std::string>& package_name) override;
 
   // arc::ArcSessionManager::Observer:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;

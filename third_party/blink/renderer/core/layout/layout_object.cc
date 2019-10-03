@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
+#include "third_party/blink/renderer/core/layout/layout_custom_scrollbar_part.h"
 #include "third_party/blink/renderer/core/layout/layout_deprecated_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_fieldset.h"
@@ -75,7 +76,6 @@
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
-#include "third_party/blink/renderer/core/layout/layout_scrollbar_part.h"
 #include "third_party/blink/renderer/core/layout/layout_table_caption.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_table_col.h"
@@ -886,7 +886,7 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
 
   // Scrollbar parts can be removed during layout. Avoid the complexity of
   // having to deal with that.
-  if (object->IsLayoutScrollbarPart())
+  if (object->IsLayoutCustomScrollbarPart())
     return false;
 
   if (const LayoutBox* layout_box = ToLayoutBoxOrNull(object)) {
@@ -1229,8 +1229,11 @@ LayoutBlock* LayoutObject::ContainingBlock(AncestorSkipInfo* skip_info) const {
     object = SpannerPlaceholder()->ContainingBlock();
   } else {
     object = Parent();
-    if (!object && IsLayoutScrollbarPart())
-      object = ToLayoutScrollbarPart(this)->GetScrollableArea()->GetLayoutBox();
+    if (!object && IsLayoutCustomScrollbarPart()) {
+      object = ToLayoutCustomScrollbarPart(this)
+                   ->GetScrollableArea()
+                   ->GetLayoutBox();
+    }
     while (object && ((object->IsInline() && !object->IsAtomicInlineLevel()) ||
                       !object->IsLayoutBlock())) {
       if (skip_info)

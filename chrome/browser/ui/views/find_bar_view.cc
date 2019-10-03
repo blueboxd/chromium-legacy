@@ -42,6 +42,7 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
@@ -52,22 +53,11 @@
 // An ImageButton that has a centered circular highlight.
 class FindBarView::FindBarButton : public views::ImageButton {
  public:
-  using ImageButton::ImageButton;
-
- protected:
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  explicit FindBarButton(views::ButtonListener* listener)
+      : ImageButton(listener) {
+    views::InstallCircleHighlightPathGenerator(this);
+  }
 };
-
-void FindBarView::FindBarButton::OnBoundsChanged(
-    const gfx::Rect& previous_bounds) {
-  const gfx::Rect bounds = GetLocalBounds();
-  auto highlight_path = std::make_unique<SkPath>();
-  const gfx::Point center = bounds.CenterPoint();
-  const int radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MAXIMUM, bounds.size());
-  highlight_path->addCircle(center.x(), center.y(), radius);
-  SetProperty(views::kHighlightPathKey, highlight_path.release());
-}
 
 class FindBarView::MatchCountLabel : public views::Label {
  public:

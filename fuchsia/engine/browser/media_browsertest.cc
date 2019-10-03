@@ -9,7 +9,6 @@
 #include "base/test/test_timeouts.h"
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/test_navigation_listener.h"
-#include "fuchsia/engine/common.h"
 #include "fuchsia/engine/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

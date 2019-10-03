@@ -18,18 +18,14 @@ namespace blink {
 
 ViewportLayersSetup::ViewportLayersSetup() {
   // TODO(wangxianzhu): Don't create unnecessary layers.
-  clip_layer_ = std::make_unique<FakeGraphicsLayer>(client_);
-  scroll_elasticity_layer_ = std::make_unique<FakeGraphicsLayer>(client_);
-  page_scale_layer_ = std::make_unique<FakeGraphicsLayer>(client_);
+  root_layer_ = std::make_unique<FakeGraphicsLayer>(client_);
   graphics_layer_ = std::make_unique<FakeGraphicsLayer>(client_);
   graphics_layer_->SetDrawsContent(true);
   graphics_layer_->SetHitTestable(true);
-  clip_layer_->AddChild(scroll_elasticity_layer_.get());
-  scroll_elasticity_layer_->AddChild(page_scale_layer_.get());
-  page_scale_layer_->AddChild(graphics_layer_.get());
-  graphics_layer_->CcLayer()->SetScrollable(clip_layer_->CcLayer()->bounds());
+  root_layer_->AddChild(graphics_layer_.get());
+  graphics_layer_->CcLayer()->SetScrollable(root_layer_->CcLayer()->bounds());
   layer_tree_ = std::make_unique<LayerTreeHostEmbedder>();
-  layer_tree_->layer_tree_host()->SetRootLayer(clip_layer_->CcLayer());
+  layer_tree_->layer_tree_host()->SetRootLayer(root_layer_->CcLayer());
 
   layer_tree_->layer_tree_host()->SetViewportRectAndScale(
       gfx::Rect(1, 1), /*device_scale_factor=*/1.f,

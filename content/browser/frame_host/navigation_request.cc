@@ -1682,6 +1682,34 @@ void NavigationRequest::OnResponseStarted(
             instance->GetIsolationContext(), common_params_->url)) {
       instance->ConvertToDefaultOrSetSite(common_params_->url);
     }
+
+    // Replace the SiteInstance of the previously committed entry if it's for a
+    // url that doesn't require a site assignment, since this new commit is
+    // assigning an incompatible site to the previous SiteInstance. This ensures
+    // the new SiteInstance can be used with the old entry if we return to it.
+    // See http://crbug.com/992198 for further context.
+    NavigationController* controller =
+        frame_tree_node_->navigator()->GetController();
+    NavigationEntryImpl* nav_entry;
+    if (controller &&
+        (nav_entry = static_cast<NavigationEntryImpl*>(
+             controller->GetLastCommittedEntry())) &&
+        !nav_entry->GetURL().IsAboutBlank() &&
+        !SiteInstanceImpl::ShouldAssignSiteForURL(nav_entry->GetURL())) {
+      scoped_refptr<FrameNavigationEntry> frame_entry =
+          nav_entry->root_node()->frame_entry;
+      scoped_refptr<SiteInstanceImpl> new_site_instance =
+          base::WrapRefCounted<SiteInstanceImpl>(static_cast<SiteInstanceImpl*>(
+              instance->GetRelatedSiteInstance(frame_entry->url()).get()));
+      nav_entry->AddOrUpdateFrameEntry(
+          frame_tree_node_, frame_entry->item_sequence_number(),
+          frame_entry->document_sequence_number(), new_site_instance.get(),
+          frame_entry->source_site_instance(), frame_entry->url(),
+          frame_entry->committed_origin(), frame_entry->referrer(),
+          frame_entry->initiator_origin(), frame_entry->redirect_chain(),
+          frame_entry->page_state(), frame_entry->method(),
+          frame_entry->post_id(), frame_entry->blob_url_loader_factory());
+    }
   }
 
   devtools_instrumentation::OnNavigationResponseReceived(*this, *response_head);

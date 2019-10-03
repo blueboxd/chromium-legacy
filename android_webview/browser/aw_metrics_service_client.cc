@@ -149,8 +149,12 @@ void AwMetricsServiceClient::Initialize(PrefService* pref_service) {
 
 void AwMetricsServiceClient::MaybeStartMetrics() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Treat the debugging flag the same as user consent because the user set it,
+  // but keep app_consent_ separate so we never persist data from an opted-out
+  // app.
+  bool user_consent_or_flag = user_consent_ || IsMetricsReportingForceEnabled();
   if (init_finished_ && set_consent_finished_) {
-    if (user_and_app_consent_) {
+    if (app_consent_ && user_consent_or_flag) {
       metrics_service_ = CreateMetricsService(metrics_state_manager_.get(),
                                               this, pref_service_);
       metrics_state_manager_->ForceClientIdCreation();
@@ -166,10 +170,12 @@ void AwMetricsServiceClient::MaybeStartMetrics() {
   }
 }
 
-void AwMetricsServiceClient::SetHaveMetricsConsent(bool consent) {
+void AwMetricsServiceClient::SetHaveMetricsConsent(bool user_consent,
+                                                   bool app_consent) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   set_consent_finished_ = true;
-  user_and_app_consent_ = consent;
+  user_consent_ = user_consent;
+  app_consent_ = app_consent;
   MaybeStartMetrics();
 }
 
@@ -181,11 +187,13 @@ AwMetricsServiceClient::CreateLowEntropyProvider() {
 
 bool AwMetricsServiceClient::IsConsentGiven() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return user_and_app_consent_;
+  return user_consent_ && app_consent_;
 }
 
 bool AwMetricsServiceClient::IsReportingEnabled() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!app_consent_)
+    return false;
   return IsMetricsReportingForceEnabled() ||
          (EnabledStateProvider::IsReportingEnabled() && is_in_sample_);
 }
@@ -264,10 +272,11 @@ bool AwMetricsServiceClient::IsInSample() {
 }
 
 // static
-void JNI_AwMetricsServiceClient_SetHaveMetricsConsent(
-    JNIEnv* env,
-    jboolean consent) {
-  AwMetricsServiceClient::GetInstance()->SetHaveMetricsConsent(consent);
+void JNI_AwMetricsServiceClient_SetHaveMetricsConsent(JNIEnv* env,
+                                                      jboolean user_consent,
+                                                      jboolean app_consent) {
+  AwMetricsServiceClient::GetInstance()->SetHaveMetricsConsent(user_consent,
+                                                               app_consent);
 }
 
 }  // namespace android_webview

@@ -1742,8 +1742,6 @@ void AutotestPrivateSetAssistantEnabledFunction::OnAssistantStatusChanged(
   if (!enabled_.has_value())
     return;
 
-  // The service could go through |NOT_READY| then to |STOPPED| during enable
-  // flow if this API is called before the initial state is reported.
   const bool not_ready = (state == ash::mojom::AssistantState::NOT_READY);
   const bool success = (enabled_.value() != not_ready);
   if (!success)

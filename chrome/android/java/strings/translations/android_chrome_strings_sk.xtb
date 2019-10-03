@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Použité</translation>
 <translation id="1171770572613082465">Klepnutím na tlačidlo Hlavné weby zobrazíte obľúbené webové stránky</translation>
 <translation id="1173894706177603556">Premenovať</translation>
-<translation id="1175310183703641346">Záložky, história, heslá a ďalší obsah sa už nebudú synchronizovať s vaším účtom Google</translation>
 <translation id="1178581264944972037">Pozastaviť</translation>
 <translation id="1181037720776840403">Odstrániť</translation>
 <translation id="1188239144602654184">Spustiť VR</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">Pridané do záložiek <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Synchronizácia na pozadí</translation>
 <translation id="3771001275138982843">Aktualizáciu sa nepodarilo stiahnuť</translation>
+<translation id="3771033907050503522">Karty inkognito</translation>
 <translation id="3773755127849930740">Povoľte párovanie <ph name="BEGIN_LINK" />zapnutím rozhrania Bluetooth<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">Odoslanie do zariadení</translation>
 <translation id="3778956594442850293">Pridané na plochu</translation>
@@ -484,7 +484,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4719927025381752090">Ponúkať preklad</translation>
 <translation id="4720023427747327413">Otvoriť v aplikácii <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Pomôžte zlepšiť Chrome. <ph name="BEGIN_LINK" />Zúčastniť sa prieskumu<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">Prepínate účty synchronizácie z účtu <ph name="ACCOUNT_EMAIL_OLD" /> na účet <ph name="ACCOUNT_EMAIL_NEW" />. Vaše súčasné údaje Chromu spravuje doména <ph name="MANAGED_DOMAIN" />. Týmto odstránite údaje z tohto zariadenia, avšak zostanú naďalej v účte <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">Aktualizovať</translation>
 <translation id="4738836084190194332">Synchronizované <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Otvorenie novej karty</translation>
@@ -668,13 +667,13 @@ Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="5937580074298050696">Ušetrené: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Resetovať</translation>
 <translation id="5942872142862698679">Na vyhľadávanie sa používa Google</translation>
-<translation id="5944669582486359588">V zjednodušenom režime načítava Chrome stránky rýchlejšie a využíva až o 60 percent menej dát. Navštevované stránky optimalizuje cloudová technológia Googlu.</translation>
 <translation id="5952764234151283551">Odošle Googlu webovú adresu stránky, na ktorú sa pokúšate prejsť</translation>
 <translation id="5956665950594638604">Otvorenie Centra pomoci prehliadača Chrome na novej karte</translation>
 <translation id="5958275228015807058">Nájdite stiahnuté súbory a stránky</translation>
 <translation id="5962718611393537961">Klepnutím zbaliť</translation>
 <translation id="6000066717592683814">Ponechať Google</translation>
 <translation id="6005538289190791541">Navrhované heslo</translation>
+<translation id="6036057147555329831">Dodatočný modul ICU</translation>
 <translation id="6039379616847168523">Prechod na ďalšiu kartu</translation>
 <translation id="6040143037577758943">Zavrieť</translation>
 <translation id="6042308850641462728">Viac</translation>
@@ -815,7 +814,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7029809446516969842">Heslá</translation>
 <translation id="7053983685419859001">Blokovať</translation>
 <translation id="7055152154916055070">Presmerovanie bolo zablokované:</translation>
-<translation id="7062545763355031412">Prijať a prepnúť účty</translation>
 <translation id="7063006564040364415">Nepodarilo sa pripojiť k synchronizačnému serveru.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 vybratá položka}few{# vybraté položky}many{Niekoľko (#) vybratých položiek}other{# vybratých položiek}}</translation>
 <translation id="7071521146534760487">Spravovať účet</translation>
@@ -1099,7 +1097,6 @@ Web NEZÍSKA prístup k fotoaparátu. Obrázky fotoaparátu sú viditeľné iba
 <translation id="9139318394846604261">Nákupy</translation>
 <translation id="9155898266292537608">Vyhľadávať môžete aj rýchlym klepnutím na slovo</translation>
 <translation id="9169507124922466868">História navigácie je dopoly otvorená</translation>
-<translation id="9188680907066685419">Odhlásenie zo spravovaného účtu</translation>
 <translation id="9204836675896933765">Zostáva 1 súbor</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Nedá sa volať</translation>
@@ -1108,7 +1105,6 @@ Web NEZÍSKA prístup k fotoaparátu. Obrázky fotoaparátu sú viditeľné iba
 <translation id="932327136139879170">Domov</translation>
 <translation id="938850635132480979">Chyba: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Prístup k mikrofónu</translation>
-<translation id="951339005376969845">Odstrániť existujúce údaje. Načítate ich prepnutím späť na účet <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome môže použiť <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> na vyhľadávanie v Číne. Táto možnosť sa dá zmeniť v <ph name="BEGIN_LINK" />Nastaveniach<ph name="END_LINK" />.</translation>
 <translation id="965817943346481315">Blokovať, ak web zobrazuje obťažujúce alebo zavádzajúce reklamy (odporúčané)</translation>
 <translation id="968900484120156207">Tu sa zobrazia vami navštívené stránky</translation>

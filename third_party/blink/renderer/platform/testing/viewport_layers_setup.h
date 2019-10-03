@@ -34,10 +34,8 @@ class ViewportLayersSetup {
   cc::AnimationHost* animation_host();
 
  private:
+  std::unique_ptr<FakeGraphicsLayer> root_layer_;
   std::unique_ptr<FakeGraphicsLayer> graphics_layer_;
-  std::unique_ptr<FakeGraphicsLayer> page_scale_layer_;
-  std::unique_ptr<FakeGraphicsLayer> scroll_elasticity_layer_;
-  std::unique_ptr<FakeGraphicsLayer> clip_layer_;
   FakeGraphicsLayerClient client_;
   std::unique_ptr<LayerTreeHostEmbedder> layer_tree_;
 };

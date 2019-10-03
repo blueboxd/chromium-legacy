@@ -429,6 +429,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
           actual_column_count >= used_column_count_ &&
           needs_more_fragments_in_outer) {
         container_builder_.SetDidBreak();
+        container_builder_.SetBreakAppeal(kBreakAppealPerfect);
         break;
       }
 
@@ -526,6 +527,15 @@ scoped_refptr<const NGBlockBreakToken> NGColumnLayoutAlgorithm::LayoutSpanner(
   LogicalOffset offset(border_scrollbar_padding_.inline_start,
                        intrinsic_block_size_);
   container_builder_.AddResult(*result, offset);
+
+  // TODO(mstensho): The correct thing would be to weigh any break inside
+  // against the appeal of breaking before the spanner, like we do in
+  // BreakBeforeChildIfNeeded() for the block layout algorithm. Just setting the
+  // appeal to perfect isn't right, but we're doing it for now, so that any
+  // break inside the spanner (in case we're nested inside another fragmentation
+  // context) isn't just discarded.
+  if (ConstraintSpace().HasBlockFragmentation())
+    container_builder_.SetBreakAppeal(kBreakAppealPerfect);
 
   NGFragment fragment(Style().GetWritingMode(), result->PhysicalFragment());
   intrinsic_block_size_ = offset.block_offset + fragment.BlockSize();

@@ -8,10 +8,10 @@
 #include <stdint.h>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "components/services/font/public/mojom/font_service.mojom.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "skia/ext/skia_utils_base.h"
 
 namespace font_service {
 
@@ -48,13 +48,13 @@ class FontServiceApp : public mojom::FontService {
                              uint32_t charset,
                              uint32_t fallbackFamilyType,
                              MatchFontWithFallbackCallback callback) override;
-  int FindOrAddPath(const SkString& path);
+  size_t FindOrAddPath(const base::FilePath& path);
 
   mojo::ReceiverSet<mojom::FontService> receivers_;
 
   // We don't want to leak paths to our callers; we thus enumerate the paths of
   // fonts.
-  std::vector<SkString> paths_;
+  std::vector<base::FilePath> paths_;
 
   DISALLOW_COPY_AND_ASSIGN(FontServiceApp);
 };

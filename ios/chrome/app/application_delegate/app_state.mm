@@ -354,9 +354,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   DCHECK([_browserLauncher browserInitializationStage] ==
          INITIALIZATION_STAGE_FOREGROUND);
   _sessionStartTime = base::TimeTicks::Now();
-  TabModel* mainTabModel =
-      _browserLauncher.interfaceProvider.mainInterface.tabModel;
-  [mainTabModel resetSessionMetrics];
 
   id<BrowserInterface> currentInterface =
       _browserLauncher.interfaceProvider.currentInterface;

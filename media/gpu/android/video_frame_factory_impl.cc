@@ -250,9 +250,15 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnYCbCrInfo(
     base::OnceClosure completion_cb,
     YCbCrHelper::OptionalInfo ycbcr_info) {
   ycbcr_info_ = std::move(ycbcr_info);
-  // Clear the helper just to free it up, though we might continue to get
-  // callbacks from it if we've posted multiple requests.
-  ycbcr_helper_.Reset();
+  if (ycbcr_info_) {
+    // Clear the helper just to free it up, though we might continue to get
+    // callbacks from it if we've posted multiple requests.
+    //
+    // We only do this if we actually get the info; we should continue to ask
+    // if we don't.  This can happen if, for example, the frame failed to render
+    // due to a timeout.
+    ycbcr_helper_.Reset();
+  }
   std::move(completion_cb).Run();
 }
 

@@ -23,6 +23,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">अ‍ॅड्रेस बारमधील तुमच्या इनपुटमध्ये www. आणि .com जोडा, त्यानंतर पेज उघडा</translation>
+<translation id="1872219238824176091">सध्याचा डेस्क काढून टाका</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, त्यानंतर <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> किंवा <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">पुढील टॅबवर जा</translation>
 <translation id="2010818616644390445">विंडोमधील अंतिम टॅबवर जा</translation>
@@ -42,6 +43,7 @@
 <translation id="2441202986792279177">विंडोंदरम्यान झटपट स्विच करा</translation>
 <translation id="2454251766545114447">झूम आउट प्रदर्शित करा</translation>
 <translation id="2478303094958140141">ChromeVox (वाचिक फीडबॅक) सुरू किंवा बंद करा</translation>
+<translation id="2488661730534396940">डावीकडील डेस्क सुरू करा</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">वेब पेज खालच्या दिशेला स्क्रोल करा</translation>
 <translation id="2574014812750545982">पेजवर झूम स्तर रीसेट करा</translation>
@@ -49,6 +51,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, त्यानंतर <ph name="TAB" /> किंवा <ph name="RIGHT" /></translation>
 <translation id="2750942583782703988">तुमचे हे पेज रीलोड करा</translation>
 <translation id="2764005613199379871">अ‍ॅड्रेस बार शोधण्यावर फोकस करा</translation>
+<translation id="2774822903829597107">नवीन डेस्क तयार करा</translation>
 <translation id="2789868185375229787">पेजवर झूम आउट करा</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> दाबा आणि एखाद्या लिंकवर क्लिक करा</translation>
 <translation id="2830827904629746450">एखादी विंडो उजवीकडे डॉक करा</translation>
@@ -100,6 +103,7 @@
 <translation id="4642092649622328492">अर्धा स्क्रीनशॉट घ्या</translation>
 <translation id="4698850295812410683">स्टायलस टूल दाखवा</translation>
 <translation id="4801989101741319327">पुढील शब्दाच्या शेवटी हलवा</translation>
+<translation id="4866066940972151697">उजवीकडील डेस्क सुरू करा</translation>
 <translation id="4916163929714267752">लिंक एका नवीन विंडोमध्ये उघडा</translation>
 <translation id="5030659775136592441">बुकमार्क व्यवस्थापक दाखवा</translation>
 <translation id="5034421018520995080">पेजच्या सर्वात वर जा</translation>

@@ -19,6 +19,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_scanner_results_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_prompt_actions_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_prompt_channel_win.h"

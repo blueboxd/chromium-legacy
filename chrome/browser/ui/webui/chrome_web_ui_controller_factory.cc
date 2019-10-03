@@ -215,7 +215,7 @@
 #endif
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/sandbox_internals_ui.h"
+#include "chrome/browser/ui/webui/sandbox/sandbox_internals_ui.h"
 #endif
 
 #if defined(USE_NSS_CERTS) && defined(USE_AURA)

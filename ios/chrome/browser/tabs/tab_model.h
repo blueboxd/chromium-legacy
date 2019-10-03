@@ -119,9 +119,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // Closes ALL the tabs.
 - (void)closeAllTabs;
 
-// Resets all session counters.
-- (void)resetSessionMetrics;
-
 // Records tab session metrics.
 - (void)recordSessionMetrics;
 

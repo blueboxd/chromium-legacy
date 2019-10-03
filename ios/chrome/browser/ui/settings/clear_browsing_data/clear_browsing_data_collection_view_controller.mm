@@ -39,7 +39,6 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 

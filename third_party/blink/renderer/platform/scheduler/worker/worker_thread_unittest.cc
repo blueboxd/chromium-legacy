@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/task_executor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -159,6 +160,13 @@ TEST_F(WorkerThreadTest, TestShutdown) {
                           WTF::CrossThreadUnretained(&delayed_task)),
       base::TimeDelta::FromMilliseconds(50));
   thread_.reset();
+}
+
+TEST_F(WorkerThreadTest, GetTaskExecutorForCurrentThreadInPostedTask) {
+  RunOnWorkerThread(FROM_HERE, base::BindOnce([]() {
+                      EXPECT_THAT(base::GetTaskExecutorForCurrentThread(),
+                                  testing::NotNull());
+                    }));
 }
 
 }  // namespace worker_thread_unittest

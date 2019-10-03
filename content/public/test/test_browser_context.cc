@@ -104,6 +104,11 @@ PushMessagingService* TestBrowserContext::GetPushMessagingService() {
   return nullptr;
 }
 
+StorageNotificationService*
+TestBrowserContext::GetStorageNotificationService() {
+  return nullptr;
+}
+
 SSLHostStateDelegate* TestBrowserContext::GetSSLHostStateDelegate() {
   if (!ssl_host_state_delegate_)
     ssl_host_state_delegate_.reset(new MockSSLHostStateDelegate());

@@ -52,10 +52,7 @@ bool PaginationController::OnScroll(const gfx::Vector2d& offset,
   if (abs(offset_magnitude) > kMinScrollToSwitchPage &&
       !pagination_model_->has_transition()) {
     const int delta = offset_magnitude > 0 ? -1 : 1;
-    if (pagination_model_->IsValidPageRelative(delta)) {
-      record_metrics_.Run(type, is_tablet_mode_);
-    }
-    pagination_model_->SelectPageRelative(delta, true);
+    SelectPageAndRecordMetric(delta, type);
     return true;
   }
 
@@ -89,10 +86,7 @@ bool PaginationController::OnGestureEvent(const ui::GestureEvent& event,
 
       if (fabs(velocity) > kMinHorizVelocityToSwitchPage) {
         const int delta = velocity < 0 ? 1 : -1;
-        if (pagination_model_->IsValidPageRelative(delta)) {
-          record_metrics_.Run(event.type(), is_tablet_mode_);
-        }
-        pagination_model_->SelectPageRelative(delta, true);
+        SelectPageAndRecordMetric(delta, event.type());
       }
       return true;
     }
@@ -149,6 +143,14 @@ bool PaginationController::EndDrag(const ui::LocatedEvent& event) {
     record_metrics_.Run(event.type(), is_tablet_mode_);
 
   return true;
+}
+
+void PaginationController::SelectPageAndRecordMetric(int delta,
+                                                     ui::EventType type) {
+  if (pagination_model_->IsValidPageRelative(delta)) {
+    record_metrics_.Run(type, is_tablet_mode_);
+  }
+  pagination_model_->SelectPageRelative(delta, true);
 }
 
 }  // namespace ash

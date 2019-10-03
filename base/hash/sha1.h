@@ -7,15 +7,21 @@
 
 #include <stddef.h>
 
+#include <array>
 #include <string>
 
 #include "base/base_export.h"
+#include "base/containers/span.h"
 
 namespace base {
 
 // These functions perform SHA-1 operations.
 
 enum { kSHA1Length = 20 };  // Length in bytes of a SHA-1 hash.
+
+// Computes the SHA-1 hash of the input |data| and returns the full hash.
+BASE_EXPORT std::array<uint8_t, kSHA1Length> SHA1HashSpan(
+    span<const uint8_t> data);
 
 // Computes the SHA-1 hash of the input string |str| and returns the full
 // hash.

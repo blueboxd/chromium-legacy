@@ -27,9 +27,7 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
-#import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 

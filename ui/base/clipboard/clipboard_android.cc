@@ -267,6 +267,10 @@ void ClipboardAndroid::OnPrimaryClipTimestampInvalidated(
   g_map.Get().OnPrimaryClipTimestampInvalidated(j_timestamp_ms);
 }
 
+int64_t ClipboardAndroid::GetLastModifiedTimeToJavaTime(JNIEnv* env) {
+  return GetLastModifiedTime().ToJavaTime();
+}
+
 void ClipboardAndroid::SetModifiedCallback(ModifiedCallback cb) {
   g_map.Get().SetModifiedCallback(std::move(cb));
 }

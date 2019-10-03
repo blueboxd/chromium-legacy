@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Brukt</translation>
 <translation id="1171770572613082465">Se populære nettsteder ved å trykke på «Populært»-knappen</translation>
 <translation id="1173894706177603556">Gi nytt navn</translation>
-<translation id="1175310183703641346">Bokmerkene, loggen, passord med mer synkroniseres ikke lenger med Google-kontoen din</translation>
 <translation id="1178581264944972037">Stans midlertidig</translation>
 <translation id="1181037720776840403">Fjern</translation>
 <translation id="1188239144602654184">Start utvidet virkelighet</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">Satt som bokmerke i <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Bakgrunnssynkronisering</translation>
 <translation id="3771001275138982843">Kunne ikke laste ned oppdateringen</translation>
+<translation id="3771033907050503522">Inkognitofaner</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Slå på Bluetooth<ph name="END_LINK" /> for å tillate tilkobling</translation>
 <translation id="3775705724665058594">Send til enhetene dine</translation>
 <translation id="3778956594442850293">Lagt til på startskjermen</translation>
@@ -484,7 +484,6 @@ Google-kontoen din kan ha andre former for nettleserlogger, for eksempel søk og
 <translation id="4719927025381752090">Tilby å oversette</translation>
 <translation id="4720023427747327413">Åpne i <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Hjelp til med å forbedre Chrome. <ph name="BEGIN_LINK" />Delta i undersøkelsen<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">Du bytter synkroniseringskonto fra <ph name="ACCOUNT_EMAIL_OLD" /> til <ph name="ACCOUNT_EMAIL_NEW" />. De eksisterende Chrome-dataene dine administreres av <ph name="MANAGED_DOMAIN" />. Dette fører til at dataene dine slettes fra denne enheten, men de fortsetter å være lagret i <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">Oppdater</translation>
 <translation id="4738836084190194332">Sist synkronisert: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Åpne en ny fane</translation>
@@ -668,13 +667,13 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5937580074298050696"><ph name="AMOUNT" /> spart</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
 <translation id="5942872142862698679">Bruker Google til å søke</translation>
-<translation id="5944669582486359588">I forenklet modus laster Chrome inn sider raskere og bruker opptil 60 prosent mindre data. Googles skyteknologi optimaliserer sidene du besøker.</translation>
 <translation id="5952764234151283551">Sender Google nettadressen til siden du prøver å åpne</translation>
 <translation id="5956665950594638604">Åpne brukerstøtten for Chrome i en ny fane</translation>
 <translation id="5958275228015807058">Du finner filene og sidene dine under Nedlastinger</translation>
 <translation id="5962718611393537961">Trykk for å skjule</translation>
 <translation id="6000066717592683814">Behold Google</translation>
 <translation id="6005538289190791541">Foreslått passord</translation>
+<translation id="6036057147555329831">Ekstra ICU</translation>
 <translation id="6039379616847168523">Gå til den neste fanen</translation>
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="6042308850641462728">Mer</translation>
@@ -815,7 +814,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7029809446516969842">Passord</translation>
 <translation id="7053983685419859001">Blokkér</translation>
 <translation id="7055152154916055070">Viderekoblingen er blokkert:</translation>
-<translation id="7062545763355031412">Godta og bytt konto</translation>
 <translation id="7063006564040364415">Kunne ikke koble til synkroniseringstjeneren.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 er valgt}other{# er valgt}}</translation>
 <translation id="7071521146534760487">Administrer kontoen</translation>
@@ -1099,7 +1097,6 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="9139318394846604261">Shopping</translation>
 <translation id="9155898266292537608">Du kan også søke med et kjapt trykk på et ord</translation>
 <translation id="9169507124922466868">Navigasjonshistorikken er halvveis åpnet</translation>
-<translation id="9188680907066685419">Logg av administrert konto</translation>
 <translation id="9204836675896933765">1 fil gjenstår</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Kan ikke ringe</translation>
@@ -1108,7 +1105,6 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="932327136139879170">Gå til startsiden</translation>
 <translation id="938850635132480979">Feil: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Tilgang til mikrofonen din</translation>
-<translation id="951339005376969845">Slett de eksisterende dataene. Du kan hente dem ut ved å bytte tilbake til <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome kan bruke <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> for søk i Kina. Du kan endre dette i <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" />.</translation>
 <translation id="965817943346481315">Blokkér hvis nettstedet viser forstyrrende eller villedende annonser (anbefalt)</translation>
 <translation id="968900484120156207">Sider du besøker, vises her</translation>

@@ -24,6 +24,7 @@
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
+#include "gpu/vulkan/buildflags.h"
 #include "ui/gfx/extension_set.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_switches.h"
@@ -64,6 +65,22 @@ GpuFeatureStatus GetMetalFeatureStatus(
     return kGpuFeatureStatusBlacklisted;
 
   if (!gpu_preferences.enable_metal)
+    return kGpuFeatureStatusDisabled;
+
+  return kGpuFeatureStatusEnabled;
+#else
+  return kGpuFeatureStatusDisabled;
+#endif
+}
+
+GpuFeatureStatus GetVulkanFeatureStatus(
+    const std::set<int>& blacklisted_features,
+    const GpuPreferences& gpu_preferences) {
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (blacklisted_features.count(GPU_FEATURE_TYPE_VULKAN))
+    return kGpuFeatureStatusBlacklisted;
+
+  if (gpu_preferences.use_vulkan == VulkanImplementationName::kNone)
     return kGpuFeatureStatusDisabled;
 
   return kGpuFeatureStatusEnabled;
@@ -312,6 +329,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithHardwareAccelerationDisabled() {
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
       kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_VULKAN] =
+      kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);
@@ -348,6 +367,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithNoGpu() {
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
       kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_VULKAN] =
+      kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);
@@ -383,6 +404,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader() {
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
+      kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_VULKAN] =
       kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
@@ -465,6 +488,8 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
                                             gpu_preferences);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
       GetMetalFeatureStatus(blacklisted_features, gpu_preferences);
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_VULKAN] =
+      GetVulkanFeatureStatus(blacklisted_features, gpu_preferences);
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);

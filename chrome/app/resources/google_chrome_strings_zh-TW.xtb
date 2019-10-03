@@ -18,7 +18,6 @@
 <translation id="1393853151966637042">前往 Chrome 說明頁面</translation>
 <translation id="1399397803214730675">這台電腦已安裝較新的 Google Chrome 版本，如果軟體無法順利運作，請解除安裝 Google Chrome，然後再試一次。</translation>
 <translation id="1434626383986940139">Chrome Canary 應用程式</translation>
-<translation id="1457721931618994305">正在更新 Google Chrome...</translation>
 <translation id="1469002951682717133">Chrome 應用程式啟動器</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1587223624401073077">Google Chrome 正在使用你的攝影機。</translation>
@@ -88,6 +87,7 @@
 <translation id="3065168410429928842">Chrome 分頁</translation>
 <translation id="3080151273017101988">Google Chrome 關閉時繼續執行背景應用程式</translation>
 <translation id="3089968997497233615">Google Chrome 推出全新版本，安全性更勝以往。</translation>
+<translation id="3138848678222082288">系統日後將自動安裝新版 Chrome。下載完成後，Chrome 會重新啟動並自動更新。</translation>
 <translation id="3149510190863420837">Chrome 應用程式</translation>
 <translation id="3282568296779691940">登入 Chrome</translation>
 <translation id="3340978935015468852">設定</translation>
@@ -171,9 +171,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="573759479754913123">關於 Chrome 作業系統</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary 版</translation>
 <translation id="5804318322022881572">無法啟動 Chrome，請再試一次。</translation>
-<translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
 <translation id="5895138241574237353">重新啟動</translation>
-<translation id="5906655207909574370">即將更新為最新版本！重新啟動您的裝置即可完成更新程序。</translation>
 <translation id="5940385492829620908">你瀏覽的網頁、書籤和其他 Chrome 設定都在這裡。</translation>
 <translation id="5941830788786076944">使用 Google Chrome 做為我的預設瀏覽器</translation>
 <translation id="6014844626092547096">你現在已登入 Chrome！但管理員已關閉同步功能。</translation>
@@ -192,16 +190,15 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="6566149418543181476">正在更新 Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">你正使用 <ph name="PROFILE_EMAIL" /> 帳戶同步處理你的 Chrome 資料。如要更新你的偏好設定，或是在未登入 Google 帳戶的情況下使用 Chrome，請前往 [<ph name="SETTINGS_LINK" />]。</translation>
 <translation id="6600954340915313787">已複製到 Chrome</translation>
-<translation id="6634887557811630702">Google Chrome 目前是最新版本。</translation>
 <translation id="6676384891291319759">連線到網際網路</translation>
 <translation id="6679975945624592337">讓 Google Chrome 在背景執行</translation>
 <translation id="6750954913813541382">Chrome 會將你在瀏覽器中輸入的文字傳送至 Google，以修正拼字錯誤</translation>
 <translation id="677276454032249905">確定要結束 Chrome 嗎？</translation>
 <translation id="683440813066116847">允許 mDNS 流量的 Google Chrome Canary 輸入規則。</translation>
 <translation id="6885412569789873916">Chrome 測試版應用程式</translation>
+<translation id="6906909733186691861">系統日後將自動安裝新版 Chrome。</translation>
 <translation id="6943584222992551122">這位使用者的瀏覽資料將從這個裝置上刪除。如要還原資料，請使用 <ph name="USER_EMAIL" /> 登入 Chrome。</translation>
 <translation id="6967962315388095737">允許 mDNS 流量的 Google Chrome 測試版輸入規則。</translation>
-<translation id="6970811910055250180">正在更新裝置...</translation>
 <translation id="6982337800632491844">在使用這個裝置前，<ph name="DOMAIN" /> 要求你詳讀並接受下列《服務條款》。這些條款不會擴展、修改或限制《Chrome 作業系統條款》。</translation>
 <translation id="6989339256997917931">Google Chrome 已更新，但你至少已有 30 天未使用該瀏覽器。</translation>
 <translation id="7098166902387133879">Google Chrome 正在使用你的麥克風。</translation>
@@ -239,7 +236,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="7962410387636238736">Google Chrome 已停止支援 Windows XP 和 Windows Vista，因此這部電腦不會再收到 Google Chrome 更新</translation>
 <translation id="8008534537613507642">重新安裝 Chrome</translation>
 <translation id="8013993649590906847">如果圖片缺少有用的說明，Chrome 會嘗試為你提供說明。系統會將圖片傳送給 Google，以便產生說明。</translation>
-<translation id="8030318113982266900">正在將裝置更新至「<ph name="CHANNEL_NAME" />」...</translation>
 <translation id="8032142183999901390">將你的帳戶從 Chrome 移除後，可能需要重新載入開啟的分頁，操作才會生效。</translation>
 <translation id="8129812357326543296">關於 Google Chrome(&amp;G)</translation>
 <translation id="8179874765710681175">在手機上安裝 Chrome。我們會傳送簡訊到你的手機。</translation>
@@ -262,7 +258,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="8606668294522778825">Google Chrome 可能會使用網路服務改善您的瀏覽體驗。不過，您可以選擇停用這些服務。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome 沒有回應，要立即重新啟動嗎？</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome 將在 1 分鐘後重新啟動}other{Chrome 將在 # 分鐘後重新啟動}}</translation>
-<translation id="8667808506758191620">您的 <ph name="DEVICE_TYPE" /> 已搭載最新版作業系統。</translation>
 <translation id="8669527147644353129">Google Chrome 小幫手</translation>
 <translation id="8679801911857917785">這個擴充功能也會控管 Chrome 啟動時所顯示的網頁。</translation>
 <translation id="870251953148363156">更新 Google Chrome(&amp;G)</translation>

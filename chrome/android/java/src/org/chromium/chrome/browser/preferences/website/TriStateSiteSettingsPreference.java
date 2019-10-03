@@ -10,7 +10,7 @@ import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.RadioButtonWithDescription;
+import org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription;
 
 import java.util.Arrays;
 import java.util.List;
@@ -58,12 +58,13 @@ public class TriStateSiteSettingsPreference
 
     @Override
     public void onCheckedChanged() {
-        if (mAllowed.isChecked())
+        if (mAllowed.isChecked()) {
             mSetting = ContentSettingValues.ALLOW;
-        else if (mAsk.isChecked())
+        } else if (mAsk.isChecked()) {
             mSetting = ContentSettingValues.ASK;
-        else if (mBlocked.isChecked())
+        } else if (mBlocked.isChecked()) {
             mSetting = ContentSettingValues.BLOCK;
+        }
 
         callChangeListener(mSetting);
     }
@@ -96,13 +97,14 @@ public class TriStateSiteSettingsPreference
      * @param setting The setting to find RadioButton for.
      */
     private RadioButtonWithDescription findRadioButton(@ContentSettingValues int setting) {
-        if (setting == ContentSettingValues.ALLOW)
+        if (setting == ContentSettingValues.ALLOW) {
             return mAllowed;
-        else if (setting == ContentSettingValues.ASK)
+        } else if (setting == ContentSettingValues.ASK) {
             return mAsk;
-        else if (setting == ContentSettingValues.BLOCK)
+        } else if (setting == ContentSettingValues.BLOCK) {
             return mBlocked;
-        else
+        } else {
             return null;
+        }
     }
 }

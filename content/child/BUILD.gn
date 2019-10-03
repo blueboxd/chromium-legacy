@@ -76,6 +76,7 @@ target(link_target_type, "child") {
     "webthemeengine_impl_conversions.h",
     "webthemeengine_impl_default.cc",
     "webthemeengine_impl_default.h",
+    "webthemeengine_impl_mac.cc",
     "webthemeengine_impl_mac.h",
   ]
 

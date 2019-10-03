@@ -7,8 +7,10 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/test/weak_mock_timer.h"
+#include "components/ukm/test_ukm_recorder.h"
 
 namespace blink {
 class WebInputEvent;
@@ -16,6 +18,7 @@ class WebInputEvent;
 
 namespace content {
 struct GlobalRequestID;
+class RenderViewHostTestHarness;
 class WebContents;
 }  // namespace content
 
@@ -39,9 +42,26 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
  public:
   using RegisterObserversCallback =
       base::RepeatingCallback<void(PageLoadTracker*)>;
-  PageLoadMetricsObserverTester(content::WebContents* web_contents,
-                                const RegisterObserversCallback& callback);
+  PageLoadMetricsObserverTester(
+      content::WebContents* web_contents,
+      content::RenderViewHostTestHarness* rfh_test_harness,
+      const RegisterObserversCallback& callback);
   ~PageLoadMetricsObserverTester() override;
+
+  // Simulates starting a navigation to the given gurl, without committing the
+  // navigation.
+  // Note: The navigation is left in a pending state and cannot be successfully
+  // completed.
+  void StartNavigation(const GURL& gurl);
+
+  // Simulates committing a navigation to the given URL with the given
+  // PageTransition.
+  void NavigateWithPageTransitionAndCommit(const GURL& url,
+                                           ui::PageTransition transition);
+
+  // Navigates to a URL that is not tracked by page_load_metrics. Useful for
+  // forcing the OnComplete method of a PageLoadMetricsObserver to run.
+  void NavigateToUntrackedUrl();
 
   // Call this to simulate sending a PageLoadTiming IPC from the render process
   // to the browser process. These will update the timing information for the
@@ -107,7 +127,13 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
                                 bool local,
                                 bool blocked_by_policy);
 
-  MetricsWebContentsObserver* observer() const;
+  MetricsWebContentsObserver* observer() const { return observer_; }
+  const base::HistogramTester& histogram_tester() const {
+    return histogram_tester_;
+  }
+  const ukm::TestAutoSetUkmRecorder& test_ukm_recorder() const {
+    return test_ukm_recorder_;
+  }
   const PageLoadMetricsObserverDelegate& GetDelegateForCommittedLoad() const;
   void RegisterObservers(PageLoadTracker* tracker);
 
@@ -125,7 +151,10 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
 
   RegisterObserversCallback register_callback_;
   content::WebContents* web_contents_;
+  content::RenderViewHostTestHarness* rfh_test_harness_;
   MetricsWebContentsObserver* observer_;
+  base::HistogramTester histogram_tester_;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadMetricsObserverTester);
 };

@@ -4,8 +4,10 @@
 
 #include "device/fido/hid/fido_hid_discovery.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/test/task_environment.h"
 #include "device/fido/fido_authenticator.h"
@@ -52,13 +54,13 @@ TEST_F(FidoHidDiscoveryTest, TestAddRemoveDevice) {
 
   fake_hid_manager_.AddFidoHidDevice("known");
 
-  EXPECT_CALL(observer, DiscoveryStarted(&discovery, true));
-  discovery.set_observer(&observer);
-  discovery.Start();
-
   // Devices initially known to the service before discovery started should be
   // reported as KNOWN.
-  EXPECT_CALL(observer, AuthenticatorAdded(&discovery, IdMatches("known")));
+  EXPECT_CALL(observer,
+              DiscoveryStarted(&discovery, true,
+                               testing::ElementsAre(IdMatches("known"))));
+  discovery.set_observer(&observer);
+  discovery.Start();
   task_environment_.RunUntilIdle();
 
   // Devices added during the discovery should be reported as ADDED.

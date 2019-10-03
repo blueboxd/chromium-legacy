@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/ui/payments/payment_request_error_view_controller_actions.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

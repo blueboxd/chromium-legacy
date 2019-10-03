@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/core/css/media_values.h"
 
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/css/media_feature_overrides.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
@@ -216,11 +218,11 @@ bool MediaValues::CalculatePrefersReducedMotion(LocalFrame* frame) {
   return frame->GetSettings()->GetPrefersReducedMotion();
 }
 
-ForcedColors MediaValues::CalculateForcedColors(LocalFrame* frame) {
-  DCHECK(frame);
-  DCHECK(frame->GetSettings());
-  DCHECK(frame->GetDocument());
-  return frame->GetDocument()->GetStyleEngine().GetForcedColors();
+ForcedColors MediaValues::CalculateForcedColors() {
+  if (Platform::Current() && Platform::Current()->ThemeEngine())
+    return Platform::Current()->ThemeEngine()->ForcedColors();
+  else
+    return ForcedColors::kNone;
 }
 
 NavigationControls MediaValues::CalculateNavigationControls(LocalFrame* frame) {

@@ -797,7 +797,7 @@ TEST_F(NoteTakingHelperTest, PlayStoreInitiallyDisabled) {
 
   // After the callback to receive intent handlers has run, the "apps received"
   // member should be updated (even if there aren't any apps).
-  helper()->OnIntentFiltersUpdated();
+  helper()->OnIntentFiltersUpdated(base::nullopt);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(helper()->play_store_enabled());
   EXPECT_TRUE(helper()->android_apps_received());
@@ -833,7 +833,7 @@ TEST_F(NoteTakingHelperTest, AddProfileWithPlayStoreEnabled) {
 
   // Notification of updated intent filters should result in the apps being
   // refreshed.
-  helper()->OnIntentFiltersUpdated();
+  helper()->OnIntentFiltersUpdated(base::nullopt);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(helper()->play_store_enabled());
   EXPECT_TRUE(helper()->android_apps_received());
@@ -920,7 +920,7 @@ TEST_F(NoteTakingHelperTest, LaunchAndroidApp) {
   handlers.emplace_back(CreateIntentHandlerInfo("App 2", kPackage2));
   intent_helper_.SetIntentHandlers(NoteTakingHelper::kIntentAction,
                                    std::move(handlers));
-  helper()->OnIntentFiltersUpdated();
+  helper()->OnIntentFiltersUpdated(base::nullopt);
   base::RunLoop().RunUntilIdle();
   helper()->SetPreferredApp(profile(), kPackage2);
 
@@ -1016,7 +1016,7 @@ TEST_F(NoteTakingHelperTest, NotifyObserverAboutAndroidApps) {
 
   // Update intent filters and check that the observer is notified again after
   // apps are received.
-  helper()->OnIntentFiltersUpdated();
+  helper()->OnIntentFiltersUpdated(base::nullopt);
   EXPECT_EQ(3, observer.num_updates());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(4, observer.num_updates());

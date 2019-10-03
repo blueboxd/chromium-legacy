@@ -18,7 +18,6 @@
 <translation id="1393853151966637042">Obtén ajuda per fer servir Chrome</translation>
 <translation id="1399397803214730675">Aquest equip ja disposa d'una versió més recent de Google Chrome. Si el programari no funciona, desinstal·leu Google Chrome i torneu-ho a provar.</translation>
 <translation id="1434626383986940139">Aplicacions de Chrome Canary</translation>
-<translation id="1457721931618994305">S'està actualitzant Google Chrome...</translation>
 <translation id="1469002951682717133">Menú d'aplicacions de Chrome</translation>
 <translation id="1553358976309200471">Actualitza Chrome</translation>
 <translation id="1587223624401073077">Google Chrome està utilitzant la càmera.</translation>
@@ -86,6 +85,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="3065168410429928842">Pestanya de Chrome</translation>
 <translation id="3080151273017101988">Continua executant aplicacions de segon pla en tancar Google Chrome</translation>
 <translation id="3089968997497233615">Hi ha disponible una nova versió més segura de Google Chrome.</translation>
+<translation id="3138848678222082288">Les versions futures de Chrome s'instal·laran automàticament. Quan finalitzi la baixada, Chrome es reiniciarà i ja el podràs utilitzar.</translation>
 <translation id="3149510190863420837">Aplicacions de Chrome</translation>
 <translation id="3282568296779691940">Inicia la sessió a Chrome</translation>
 <translation id="3340978935015468852">configuració</translation>
@@ -166,9 +166,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="573759479754913123">Sobre Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">No s'ha pogut iniciar Chrome. Torna-ho a provar.</translation>
-<translation id="5877064549588274448">El canal ha canviat. Reinicieu el dispositiu perquè s'apliquin els canvis.</translation>
 <translation id="5895138241574237353">Reinicia</translation>
-<translation id="5906655207909574370">Gairebé heu acabat. Reinicieu el dispositiu per completar l'actualització.</translation>
 <translation id="5940385492829620908">El vostre web, les adreces d'interès i altres coses de Chrome resideixen aquí.</translation>
 <translation id="5941830788786076944">Estableix Google Chrome com el navegador predeterminat</translation>
 <translation id="6014844626092547096">Heu iniciat la sessió a Chrome. El vostre administrador ha desactivat la sincronització.</translation>
@@ -187,16 +185,15 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="6566149418543181476">S'està actualitzant Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Utilitzeu <ph name="PROFILE_EMAIL" /> per sincronitzar el contingut de Chrome. Per modificar la preferència de sincronització o per utilitzar Chrome sense cap compte de Google, dirigiu-vos a <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Copiada de Chrome</translation>
-<translation id="6634887557811630702">Google Chrome està actualitzat.</translation>
 <translation id="6676384891291319759">Accedeix a Internet</translation>
 <translation id="6679975945624592337">Permet que Google Chrome s'executi en segon pla</translation>
 <translation id="6750954913813541382">Per corregir els errors d'ortografia, Chrome envia a Google el text que escrius al navegador</translation>
 <translation id="677276454032249905">Vols sortir de Chrome igualment?</translation>
 <translation id="683440813066116847">Regla d'entrada de Google Chrome Canary per permetre el trànsit de mDNS.</translation>
 <translation id="6885412569789873916">Aplicacions de Chrome Beta</translation>
+<translation id="6906909733186691861">Les versions futures de Chrome s'instal·laran automàticament.</translation>
 <translation id="6943584222992551122">Les dades de navegació d'aquesta persona se suprimiran d'aquest dispositiu. Per recuperar-les, inicia la sessió a Chrome com a <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Regla d'entrada de Google Chrome Beta per permetre el trànsit d'mDNS.</translation>
-<translation id="6970811910055250180">S'està actualitzant el dispositiu...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> exigeix que llegiu i accepteu els Termes i condicions següents abans no utilitzeu el dispositiu. Aquestes condicions no amplien, modifiquen ni restringeixen les condicions de Google Chrome OS.</translation>
 <translation id="6989339256997917931">Google Chrome està actualitzat, però no l'heu utilitzat durant un mínim de 30 dies.</translation>
 <translation id="7098166902387133879">Google Chrome està utilitzant el micròfon.</translation>
@@ -234,7 +231,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="7962410387636238736">Aquest ordinador ja no rebrà més actualitzacions de Google Chrome perquè Windows XP i Windows Vista ja no són compatibles</translation>
 <translation id="8008534537613507642">Torna a instal·lar Chrome</translation>
 <translation id="8013993649590906847">Si una imatge no té una descripció útil, Chrome provarà d'oferir-te'n una. Per crear les descripcions, les imatges s'envien a Google.</translation>
-<translation id="8030318113982266900">S'està actualitzant el vostre dispositiu al canal <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8032142183999901390">Després de suprimir el vostre compte de Chrome, pot ser que hàgiu de tornar a carregar les pestanyes obertes.</translation>
 <translation id="8129812357326543296">Quant a &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Instal·la Chrome al telèfon. T'enviarem un SMS al telèfon.</translation>
@@ -257,7 +253,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="8606668294522778825">Google Chrome pot utilitzar serveis web per millorar la vostra experiència de  navegació, però podeu desactivar-los si voleu. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome no respon. Voleu tornar-lo a iniciar ara?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome es reiniciarà d'aquí a 1 minut}other{Chrome es reiniciarà d'aquí a # minuts}}</translation>
-<translation id="8667808506758191620">El dispositiu <ph name="DEVICE_TYPE" /> està actualitzat.</translation>
 <translation id="8669527147644353129">Aplicació d'ajuda de Google Chrome</translation>
 <translation id="8679801911857917785">També controla la pàgina que es mostra quan inicieu Chrome.</translation>
 <translation id="870251953148363156">Actualitza &amp;Google Chrome</translation>

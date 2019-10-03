@@ -757,6 +757,7 @@ test("headless_browsertests") {
   deps = [
     ":headless_shell_lib",
     "//base",
+    "//cc:test_support",
     "//components/security_state/content",
     "//components/services/pdf_compositor/public/mojom",
     "//content/test:test_support",

@@ -5,11 +5,7 @@
 #ifndef PRINTING_BACKEND_PRINTING_RESTRICTIONS_H_
 #define PRINTING_BACKEND_PRINTING_RESTRICTIONS_H_
 
-#include <vector>
-
-#include "base/optional.h"
 #include "printing/printing_export.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace printing {
 
@@ -39,23 +35,6 @@ enum class PinModeRestriction {
   kNoPin = 2,
 };
 
-struct PRINTING_EXPORT PrintingRestrictions {
-  PrintingRestrictions();
-  ~PrintingRestrictions();
-
-  // A bitmask of |ColorModeRestriction| specifying the allowed color modes.
-  ColorModeRestriction color_modes;
-
-  // A bitmask of |DuplexModeRestriction| specifying the allowed duplex modes.
-  DuplexModeRestriction duplex_modes;
-
-  // Specifies allowed PIN printing modes.
-  PinModeRestriction pin_modes;
-
-  // List of page sizes in microns.
-  std::vector<gfx::Size> page_sizes_um;
-};
-
 // Dictionary key for printing policies.
 // Must coincide with the name of field in |print_preview.Policies| in
 // chrome/browser/resources/print_preview/data/destination.js
@@ -70,36 +49,6 @@ PRINTING_EXPORT extern const char kDefaultPinMode[];
 // |kPrintingSizeDefault| policies.
 PRINTING_EXPORT extern const char kPageWidthUm[];
 PRINTING_EXPORT extern const char kPageHeightUm[];
-
-// Translate color mode from |kPrintingColorDefault| policy to
-// |ColorModeRestriction| enum. Invalid values translated as |base::nullopt|.
-base::Optional<ColorModeRestriction> PRINTING_EXPORT
-GetColorModeForName(const std::string& mode_name);
-
-// Translate color mode from |kPrintingAllowedColorModes| policy to
-// |ColorModeRestriction| enum. Invalid values translated as |base::nullopt|.
-base::Optional<ColorModeRestriction> PRINTING_EXPORT
-GetAllowedColorModesForName(const std::string& mode_name);
-
-// Translate duplex mode from |kPrintingDuplexDefault| policy to
-// |DuplexModeRestriction| enum. Invalid values translated as |base::nullopt|.
-base::Optional<DuplexModeRestriction> PRINTING_EXPORT
-GetDuplexModeForName(const std::string& mode_name);
-
-// Translate color mode from |kPrintingAllowedDuplexModes| policy to
-// |DuplexModeRestriction| enum. Invalid values translated as |base::nullopt|.
-base::Optional<DuplexModeRestriction> PRINTING_EXPORT
-GetAllowedDuplexModesForName(const std::string& mode_name);
-
-// Translate PIN printing mode from |kPrintingPinDefault| policy to
-// |PinModeRestriction| enum. Invalid values translated as |base::nullopt|.
-base::Optional<PinModeRestriction> PRINTING_EXPORT
-GetPinModeForName(const std::string& mode_name);
-
-// Translate PIN printing mode from |kPrintingPinAllowedModes| policy to
-// |PinModeRestriction| enum. Invalid values translated as |base::nullopt|.
-base::Optional<PinModeRestriction> PRINTING_EXPORT
-GetAllowedPinModesForName(const std::string& mode_name);
 
 }  // namespace printing
 

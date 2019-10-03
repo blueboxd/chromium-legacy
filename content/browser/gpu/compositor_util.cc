@@ -27,6 +27,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_blocklist.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
@@ -34,6 +35,7 @@
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
+#include "gpu/vulkan/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ui/gl/gl_switches.h"
 
@@ -180,6 +182,13 @@ const GpuFeatureData GetGpuFeatureData(
      !base::FeatureList::IsEnabled(features::kMetal) /* disabled */,
      DisableInfo::NotProblem(), false /* fallback_to_software */},
 #endif
+#if BUILDFLAG(ENABLE_VULKAN)
+    {"vulkan",
+     SafeGetFeatureStatus(gpu_feature_info, gpu::GPU_FEATURE_TYPE_VULKAN),
+     !base::FeatureList::IsEnabled(features::kVulkan) &&
+         !command_line.HasSwitch(switches::kUseVulkan) /* disabled */,
+     DisableInfo::NotProblem(), false /* fallback_to_software */},
+#endif
     {"multiple_raster_threads", gpu::kGpuFeatureStatusEnabled,
      NumberOfRendererRasterThreads() == 1,
      DisableInfo::Problem("Raster is using a single thread."), false},
@@ -267,6 +276,7 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatusImpl(
         status += "_on";
       }
       if (gpu_feature_data.name == "metal" ||
+          gpu_feature_data.name == "vulkan" ||
           gpu_feature_data.name == "surface_control") {
         status += "_on";
       }

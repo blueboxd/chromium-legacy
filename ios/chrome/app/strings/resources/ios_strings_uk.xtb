@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Помилка збереження</translation>
 <translation id="1180526666083833456">Синхронізуйте та персоналізуйте служби на всіх пристроях.</translation>
 <translation id="1181037720776840403">Видалити</translation>
+<translation id="1207113853726624428">Новий пошук</translation>
 <translation id="1209206284964581585">Приховати</translation>
 <translation id="1219674500290482172">Неможливо під’єднатися до Інтернету.</translation>
 <translation id="122699739164161391">Закрити всі вкладки</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">Запропонувати пароль…</translation>
 <translation id="1870148520156231997">Показати пароль</translation>
 <translation id="1872096359983322073">Ліхтарик</translation>
-<translation id="1876721852596493031">Надсилати статистику</translation>
 <translation id="1911619930368729126">Завантажити на Google Диск</translation>
 <translation id="1923342640370224680">Остання година</translation>
 <translation id="1941314575388338491">Двічі торкніться, щоб скопіювати.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892">Непрочитаних статей у списку читання: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Веб-сторінку завантажено</translation>
 <translation id="2239626343334228536">Очищення даних веб-перегляду…</translation>
-<translation id="2256128224215992540">Пропозиції термінів і сайтів</translation>
 <translation id="2267753748892043616">Додати обліковий запис</translation>
 <translation id="2268044343513325586">Уточнити</translation>
 <translation id="2273327106802955778">Більше опцій</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">Не вдалося відкрити файл</translation>
 <translation id="2718352093833049315">Лише у Wi-Fi</translation>
 <translation id="2747003861858887689">Попереднє поле</translation>
+<translation id="2773292004659987824">Пошук у режимі інкогніто</translation>
 <translation id="2780046210906776326">Немає облік. записів</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Закрити перемикач вкладок</translation>
@@ -295,7 +295,6 @@
 <translation id="5197255632782567636">Інтернет</translation>
 <translation id="5228579091201413441">Увімкнути синхронізацію</translation>
 <translation id="5234764350956374838">Відхилити</translation>
-<translation id="5244474230056479698">Синхронізація з обліковим записом <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Скасувати синхронізацію</translation>
 <translation id="5271549068863921519">Зберегти пароль</translation>
 <translation id="5300589172476337783">Показати</translation>
@@ -501,6 +500,7 @@
 <translation id="8261506727792406068">Видалити</translation>
 <translation id="8281781826761538115">За умовчанням – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Новий пошук</translation>
+<translation id="8323906514956095947">Натисніть і утримуйте, щоб відкрити більше параметрів вкладок</translation>
 <translation id="8328777765163860529">Закрити всі</translation>
 <translation id="8407669440184693619">Немає паролів для цього сайту</translation>
 <translation id="842017693807136194">Ви ввійшли як</translation>

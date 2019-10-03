@@ -8,7 +8,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.ViewResourceFrameLayout;
+import org.chromium.chrome.browser.ui.widget.ViewResourceFrameLayout;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 

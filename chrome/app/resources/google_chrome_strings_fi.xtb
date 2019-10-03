@@ -18,7 +18,6 @@
 <translation id="1393853151966637042">Apua Chromen käytössä</translation>
 <translation id="1399397803214730675">Tietokoneessa on jo Google Chromen uudempi versio. Jos sovellus ei toimi, poista Google Chrome ja yritä uudelleen.</translation>
 <translation id="1434626383986940139">Chrome Canary -sovellukset</translation>
-<translation id="1457721931618994305">Päivitetään Google Chromea...</translation>
 <translation id="1469002951682717133">Chromen sovellusten käynnistysohjelma</translation>
 <translation id="1553358976309200471">Päivitä Chrome</translation>
 <translation id="1587223624401073077">Google Chrome käyttää kameraasi.</translation>
@@ -88,6 +87,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="3065168410429928842">Chrome-välilehti</translation>
 <translation id="3080151273017101988">Jätä taustaohjelmat käyntiin, kun Google Chrome suljetaan</translation>
 <translation id="3089968997497233615">Google Chromesta on saatavillaa uusi, turvallisempi versio.</translation>
+<translation id="3138848678222082288">Chromen tulevat versiot asennetaan automaattisesti. Kun lataus on valmis, Chrome käynnistyy uudelleen ja voit aloittaa käytön.</translation>
 <translation id="3149510190863420837">Chrome-sovellukset</translation>
 <translation id="3282568296779691940">Kirjaudu Chromeen</translation>
 <translation id="3340978935015468852">asetuksissa</translation>
@@ -169,9 +169,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="573759479754913123">Tietoja Chrome-käyttöjärjestelmästä</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chromen käynnistäminen epäonnistui. Yritä uudelleen.</translation>
-<translation id="5877064549588274448">Kanava vaihdettiin. Ota muutokset käyttöön käynnistämällä laite uudelleen.</translation>
 <translation id="5895138241574237353">Käynnistä uudelleen</translation>
-<translation id="5906655207909574370">Melkein ajan tasalla. Viimeistele päivitys käynnistämällä laite uudelleen.</translation>
 <translation id="5940385492829620908">Tämä on verkkosi, kirjanmerkkiesi ja muun Chrome-sisältösi koti.</translation>
 <translation id="5941830788786076944">Tee Google Chromesta oletusselain</translation>
 <translation id="6014844626092547096">Olet nyt kirjautunut sisään Chromeen! Järjestelmänvalvoja on poistanut synkronoinnin käytöstä.</translation>
@@ -190,16 +188,15 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="6566149418543181476">Päivitetään Google Chromea (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Synkronoit Chromen tietosi osoitteella <ph name="PROFILE_EMAIL" />. Voit vaihtaa synkronoinnin asetuksia tai siirtyä käyttämään Chromea ilman Google-tiliä käymällä <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Kopioitiin Chromeen.</translation>
-<translation id="6634887557811630702">Google Chrome on ajan tasalla.</translation>
 <translation id="6676384891291319759">Käytä internetiä</translation>
 <translation id="6679975945624592337">Jätä Google Chrome käyntiin taustalle</translation>
 <translation id="6750954913813541382">Chrome lähettää selaimeen kirjoittamasi tekstin Googlelle kirjoitusvirheiden korjaamiseksi</translation>
 <translation id="677276454032249905">Suljetaanko Chrome silti?</translation>
 <translation id="683440813066116847">Google Chrome Canaryn saapuvien yhteyksien sääntö, joka sallii mDNS-liikenteen.</translation>
 <translation id="6885412569789873916">Chromen betaversion sovellukset</translation>
+<translation id="6906909733186691861">Chromen tulevat versiot asennetaan automaattisesti.</translation>
 <translation id="6943584222992551122">Käyttäjän selaustiedot poistetaan tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromeen käyttäjänä <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Google Chromen betaversion saapuvien yhteyksien sääntö, joka sallii mDNS-liikenteen.</translation>
-<translation id="6970811910055250180">Päivitetään laitetta...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> edellyttää, että luet ja hyväksyt seuraavat käyttöehdot ennen tämän laitteen käyttöä. Nämä ehdot eivät laajenna, muokkaa tai rajoita Chrome-käyttöliittymän ehtoja.</translation>
 <translation id="6989339256997917931">Google Chrome on päivitetty, mutta et ole käyttänyt sitä ainakaan 30 päivään.</translation>
 <translation id="7098166902387133879">Google Chrome käyttää mikrofoniasi.</translation>
@@ -237,7 +234,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="7962410387636238736">Tämän tietokoneen Google Chromea ei enää päivitetä, koska Windows XP:tä ja Windows Vistaa ei enää tueta.</translation>
 <translation id="8008534537613507642">Asenna Chrome uudelleen</translation>
 <translation id="8013993649590906847">Jos kuvalla ei ole hyödyllistä kuvausta, Chrome yrittää luoda sellaisen. Kuvat lähetetään Googlelle kuvausten luomista varten.</translation>
-<translation id="8030318113982266900">Päivitetään laitteeseen kanavaa <ph name="CHANNEL_NAME" />…</translation>
 <translation id="8032142183999901390">Kun olet poistanut tilisi Chromesta, sinun on ehkä avattava avoinna olleet välilehdet uudelleen, jotta muutos tulee voimaan.</translation>
 <translation id="8129812357326543296">Tietoja &amp;Google Chromesta</translation>
 <translation id="8179874765710681175">Asenna Chrome puhelimeesi. Lähetämme tekstiviestin puhelimeen.</translation>
@@ -260,7 +256,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="8606668294522778825">Google Chrome voi käyttää verkkopalveluita selauskokemuksesi parantamiseen. Voit halutessasi poistaa nämä palvelut käytöstä. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome ei vastaa. Käynnistetäänkö uudelleen?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome käynnistetään uudelleen 1 minuutin kuluttua}other{Chrome käynnistetään uudelleen # minuutin kuluttua.}}</translation>
-<translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> on ajan tasalla.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Määrittää myös Chromen aloitussivun.</translation>
 <translation id="870251953148363156">Päivitä &amp;Google Chrome</translation>

@@ -23,8 +23,8 @@ import androidx.annotation.NonNull;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.widget.ListMenuButton;
-import org.chromium.chrome.browser.widget.dragreorder.DragReorderableListAdapter;
-import org.chromium.chrome.browser.widget.dragreorder.DragStateDelegate;
+import org.chromium.chrome.browser.ui.widget.dragreorder.DragReorderableListAdapter;
+import org.chromium.chrome.browser.ui.widget.dragreorder.DragStateDelegate;
 
 import java.util.ArrayList;
 import java.util.List;

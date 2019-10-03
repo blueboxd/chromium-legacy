@@ -1167,7 +1167,6 @@
           如果不設定這項政策，內容更特定的政策將維持相同行為，不受這項政策影響。</translation>
 <translation id="2987155890997901449">啟用 ARC</translation>
 <translation id="2987227569419001736">控制 Web Bluetooth API 使用權限</translation>
-<translation id="2989466284538293869">檢查上傳內容是否符合規範</translation>
 <translation id="3011301228198307065">設定 <ph name="PRODUCT_NAME" /> 的預設首頁網址，並禁止使用者變更這項設定。
 
           首頁是指點選 [首頁] 按鈕後開啟的網頁。啟動時開啟的網頁由 RestoreOnStartup 政策控管。
@@ -1672,7 +1671,7 @@
 
           如果將這項政策設為 False，系統將一律在登入畫面上停用虛擬鍵盤。
 
-          設定這項政策後，使用者即無法變更或覆寫。
+          設好這項政策後，使用者即無法變更或覆寫設定。
 
           如果不設定這項政策，系統會在初次顯示登入畫面時停用虛擬鍵盤，但使用者隨時可以啟用。</translation>
 <translation id="391531815696899618">如果你設為 Ture，<ph name="PRODUCT_OS_NAME" />的「檔案」應用程式就會停用 Google 雲端硬碟同步功能。這種情形下，系統無法將資料上傳至 Google 雲端硬碟。
@@ -1680,7 +1679,6 @@
           如果你設為 False 或未設定，使用者即可將檔案傳輸至 Google 雲端硬碟。</translation>
 <translation id="3915395663995367577">Proxy .pac 檔案的網址</translation>
 <translation id="3925377537407648234">設定螢幕解析度和縮放比例</translation>
-<translation id="3936481697920057199">檢查上傳及下載內容是否符合規範</translation>
 <translation id="3939893074578116847">將監控線上狀態所需的網路封包傳送到管理伺服器，
       讓伺服器偵測裝置是否處於離線狀態。
 
@@ -1835,7 +1833,7 @@
 
           如果將這項政策設為 False，系統將一律在登入畫面上停用互動朗讀功能。
 
-          設定這項政策後，使用者即無法變更或覆寫。
+          設好這項政策後，使用者即無法變更或覆寫設定。
 
           如果不設定這項政策，系統會在初次顯示登入畫面時停用互動朗讀功能，但使用者隨時可以啟用。</translation>
 <translation id="4171331498167688968">如果將這項政策設為 False，第三方軟體將可在 Chrome 的處理程序中置入可執行的程式碼。如果將這項政策設為 True 或不設定，第三方軟體將無法在 Chrome 的處理程序中置入可執行的程式碼。
@@ -1956,18 +1954,6 @@
           指定政策值時需以毫秒為單位。這項設定值必須小於或等於閒置延遲時間。
 
           只有當閒置動作設為登出或關機時，系統才會顯示警告訊息。</translation>
-<translation id="4342827592971649626">這項政策可控管安全瀏覽功能是否要對使用者下載的內容進行深度掃描。如果不設定這項政策，或設為預設的「不要掃描檔案」，安全瀏覽功能將不會掃描使用者下載的內容。
-
-      如果將這項政策設為「禁止掃描檔案」，系統將禁止使用者掃描下載內容。這項設定與預設值不同，因為特定使用者 (例如加入進階保護計畫的使用者) 可以將下載內容傳送給系統進行掃描。這項設定會禁止這些使用者掃描下載內容。
-
-      如果將這項政策設為「傳送使用者下載內容以供掃描」，系統會將使用者下載的內容透過網路傳送給安全瀏覽功能，進行惡意軟體掃描。
-
-      如果將這項政策設為「傳送使用者上傳內容以供掃描」，系統會將使用者上傳的內容透過網路傳送給安全瀏覽功能，進行惡意軟體掃描。
-
-      如果將這項政策設為「傳送使用者上傳及下載的內容以供掃描」，系統會依照「傳送使用者上傳內容以供掃描」以及「傳送使用者下載內容以供掃描」設定的規則執行作業。
-
-      如要進一步瞭解使用者和管理員如何查看掃描結果，請參閱 <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> 和 <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> 政策。</translation>
-<translation id="4344356660952451291">須檢查下載內容是否符合規範的網域清單</translation>
 <translation id="4346674324214534449">讓你設定是否禁止含侵入式廣告的網站顯示廣告。
 
       如果將這項政策的值設為 2，含侵入式廣告的網站將無法顯示廣告。
@@ -2088,7 +2074,6 @@
 <translation id="4604931264910482931">設定內建訊息傳遞黑名單</translation>
 <translation id="4617338332148204752">在 <ph name="PRODUCT_FRAME_NAME" /> 內略過中繼標記檢查</translation>
 <translation id="4625915093043961294">設定擴充功能安裝許可清單</translation>
-<translation id="4632261735235986857">禁止掃描檔案</translation>
 <translation id="4632343302005518762">允許 <ph name="PRODUCT_FRAME_NAME" /> 處理下列內容類型</translation>
 <translation id="4632566332417930481">禁止在由企業政策安裝的擴充功能中使用開發人員工具，允許在其他情況下使用開發人員工具</translation>
 <translation id="4633786464238689684">變更以鍵盤最上方一排按鍵做為功能鍵的預設行為。
@@ -2228,7 +2213,6 @@
 <translation id="4983201894483989687">允許執行過舊的外掛程式</translation>
 <translation id="4986560318567565414">從替代瀏覽器切換到 Chrome 所使用的路徑。</translation>
 <translation id="4988291787868618635">在達到閒置延遲時間時要採取的動作</translation>
-<translation id="5009903818924226868">不要檢查內容是否符合規範</translation>
 <translation id="5032164758660626397">禁止使用者傳輸大型檔案</translation>
 <translation id="5047604665028708335">允許存取內容套件以外的網站</translation>
 <translation id="5052081091120171147">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入瀏覽記錄 (也會影響匯入對話方塊的選項)。如果停用這項政策，則不會匯入瀏覽記錄。如果未設定這項政策，系統會自動匯入瀏覽記錄，或詢問使用者是否要匯入瀏覽記錄。</translation>
@@ -2428,16 +2412,6 @@
 
           如果這項政策設為 False，使用者就無法將內容投放至自己的裝置。如果這項政策設為 True，則使用者可投放內容。如果未設定這項政策，使用者就無法將內容投放至已註冊的 Chrome 作業系統裝置，但可投放至未註冊的裝置。</translation>
 <translation id="5323200200131319468">在登入畫面上啟用互動朗讀功能</translation>
-<translation id="5325625566921364045">控管 <ph name="PRODUCT_NAME" /> 如何檢查使用者上傳、下載、從剪貼簿貼上或拖曳的資料，以確認內容遵守企業規則。
-
-      如果不設定這項政策或設為「None」，<ph name="PRODUCT_NAME" /> 不會檢查資料是否符合規範。
-
-      如果將這項政策設為「檢查下載檔案」，且使用者嘗試從 <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" /> 政策中列出的網址下載檔案，<ph name="PRODUCT_NAME" /> 會檢查下載的資料是否遵守企業規則。
-
-      如果將這項政策設為「檢查上傳檔案」，且使用者嘗試將檔案上傳至未列在 <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" /> 政策中的網域，<ph name="PRODUCT_NAME" /> 會檢查使用者上傳的檔案、從剪貼簿貼上或拖曳的資料是否遵守企業規則。
-
-      如果將這項政策設為「檢查上傳及下載檔案」，<ph name="PRODUCT_NAME" /> 將依照「檢查下載檔案」和「檢查上傳檔案」設定的規則執行作業。
-      </translation>
 <translation id="532848608876725157">啟用 DNS-over-HTTPS，而且可以改用不安全查詢</translation>
 <translation id="5329007337159326804">警告：自 <ph name="PRODUCT_NAME" /> 版本 75 (2019 年 6 月左右推出) 起，我們將全面移除 TLS 最高版本政策。
 
@@ -2496,7 +2470,6 @@
 <translation id="5405289061476885481">設定 <ph name="PRODUCT_OS_NAME" /> 登入畫面可使用的鍵盤配置。
 
       如果將這項政策設為輸入法識別碼清單，登入畫面即可顯示指定的輸入法。系統會預先選取第一個指定的輸入法。在特定使用者視窗的登入畫面中，除了這項政策指定的輸入法之外，還會提供使用者最後一次使用的輸入法。如果未設定這項政策，系統會根據登入畫面顯示的語言代碼提供登入畫面的輸入法。如果值不是有效的輸入法識別碼，則會遭到忽略。</translation>
-<translation id="540659115481372611">檢查下載內容是否符合規範</translation>
 <translation id="5412057811596122582">如果啟用或不設定這項政策 (預設值)，系統會提示使用者授予
       音訊擷取權限；但如果該網址已在 AudioCaptureAllowedUrls 中設為允許的網址，
       則系統會直接授予權限，而不會提示使用者。
@@ -2902,10 +2875,6 @@
 <translation id="6141402445226505817">一律使用約略時區偵測功能</translation>
 <translation id="6145799962557135888">允許你設定網址模式清單，指定可以執行 JavaScript 的網站。如果未設定這項政策，系統會從「DefaultJavaScriptSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="614662973812186053">這項政策也可以控制 Android 使用資料和診斷資料的收集設定。</translation>
-<translation id="6150961766041720393">不須檢查上傳的檔案、從剪貼簿貼上或拖曳的資料是否符合規範的網域清單。只有在 <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 設為啟用的情況下，系統才會使用這項政策。
-
-      如果不設定這項政策或設定為空白的網域清單，系統會檢查所有內容是否符合規範。
-      </translation>
 <translation id="6153048425064249648">這項政策可控管 <ph name="PRODUCT_NAME" /> 雲端報告功能，該功能會將瀏覽器運作資訊上傳到 Google 管理控制台。
 
       如果不設定這項政策或設為 False，系統不會收集或上傳資料。
@@ -2981,17 +2950,6 @@
 <translation id="6281043242780654992">設定內建訊息傳遞政策。如要允許列入黑名單的內建訊息傳遞主機，必須將其加入許可清單。</translation>
 <translation id="6282799760374509080">允許或拒絕擷取音訊</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6305895953906663275">當使用者嘗試上傳或下載的檔案過大 (50 MB 以上)，無法傳送給系統進行惡意軟體或內容規範掃描時，這項政策可控管 <ph name="PRODUCT_NAME" /> 採取的動作。
-如果 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />、<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 或控管已啟用檢查功能的網域清單政策判斷檔案需要掃描，系統才會套用這項限制。
-
-      如果不設定這項政策或設為「None」，<ph name="PRODUCT_NAME" /> 會允許使用者上傳或下載任何大小的檔案。
-
-      如果將這項政策設為「禁止下載大型檔案」，當檔案過大而無法掃描時，系統會在將檔案提供給使用者之前就先刪除檔案。由於 <ph name="PRODUCT_NAME" /> 不一定可在下載前判定檔案大小，系統可能會先下載檔案，再判斷檔案大小是否超過允許的大小上限。
-
-      如果將這項政策設為「禁止上傳大型檔案」，使用者在上傳時將無法選取因大小過大而無法掃描的檔案。
-
-      如果將這項政策設為「禁止上傳及下載大型檔案」，<ph name="PRODUCT_NAME" /> 會依照「禁止下載大型檔案」和「禁止上傳大型檔案」設定的規則執行作業。
-      </translation>
 <translation id="6310223829319187614">允許在使用者登入過程中以自動完成功能填入網域名稱</translation>
 <translation id="6315673513957120120">當使用者瀏覽出現 SSL 錯誤的網站，Chrome 會顯示警告網頁。在預設或政策設為 True 的情況下，使用者可以忽略這類警告網頁，繼續前往原先指定的頁面。
       這項政策設為 False 時，系統會禁止使用者忽略任何警告網頁。</translation>
@@ -3020,7 +2978,6 @@
       如果這項政策設為 False，則不會回報這些使用者。</translation>
 <translation id="6394350458541421998">我們已於 <ph name="PRODUCT_OS_NAME" />版本 29 中移除這項政策。請改用 PresentationScreenDimDelayScale 政策。</translation>
 <translation id="6401669939808766804">登出使用者</translation>
-<translation id="6403746242226534223">即時檢查使用者所造訪網址的安全瀏覽信譽</translation>
 <translation id="6406448383934634215">如果選取 [開啟網址清單] 做為啟動動作，你就能指定要開啟的網址清單。如果沒有設定這項政策，啟動時就不會開啟任何網址。
 
           只有在「RestoreOnStartup」政策設為「RestoreOnStartupIsURLs」時，這項政策才會執行。
@@ -3216,10 +3173,6 @@
 
       如未設定這項政策，根據預設，系統會為 MacOS、Android (當私人 DNS 和 VPN 皆未啟用) 和 Chrome 作業系統啟用內建 DNS 用戶端；使用者可以透過編輯 chrome://flags 或指定命令列標記，自行決定是否要使用內建 DNS 用戶端。</translation>
 <translation id="6843296367238757293">這項政策已遭到淘汰，因此不建議你使用此政策。詳情請參閱 https://support.google.com/chrome/a/answer/7643500</translation>
-<translation id="6845546921986645941">如果將這項政策設為啟用，<ph name="PRODUCT_NAME" /> 會向 Google 回報不安全的事件以進行分析，例如重複使用密碼、下載惡意程式、插頁式廣告、內容不符合規範等等。有些不安全事件 (例如內容不符合規範) 和啟用這類檢查的其他政策有關。
-
-      如果不設定這項政策或設為停用，<ph name="PRODUCT_NAME" /> 將不會回報不安全的事件。
-      </translation>
 <translation id="684856667300805181">這項政策已在 <ph name="PRODUCT_NAME" /> 68 中遭到移除，並已由 <ph name="ARC_GLS_POLICY_NAME" /> 取代。</translation>
 <translation id="6851199885688265233">啟用游標醒目顯示無障礙功能</translation>
 <translation id="6856743875250214792">這項政策僅供內部測試，而且有安全性方面的問題，因此 M66 已淘汰並移除這項政策。
@@ -3731,21 +3684,6 @@
       </translation>
 <translation id="7632724434767231364">GSSAPI 資料庫名稱</translation>
 <translation id="7635471475589566552">設定「<ph name="PRODUCT_NAME" />」的應用程式語言代碼，並且禁止使用者變更語言代碼。如果你啟用這項設定，「<ph name="PRODUCT_NAME" />」就會使用指定的語言代碼。如果設定的語言代碼不受支援，就會改用「en-US」。如果停用或尚未調整這項設定，「<ph name="PRODUCT_NAME" />」就會使用使用者指定的偏好語言代碼 (如果已設定)、系統語言代碼或備用語言代碼「en-US」。</translation>
-<translation id="7641363659597330616">設定 <ph name="PRODUCT_NAME" /> 將完全封鎖的下載作業類型，不讓使用者覆寫這項安全決策。
-
-      如果設定了這項政策，<ph name="PRODUCT_NAME" /> 就會禁止特定類型的下載作業，不讓使用者略過安全性警告。
-
-      選擇 [封鎖危險下載作業] 選項後，除了會引發「安全瀏覽」警告的下載作業外，其他下載作業均可正常執行。
-
-      選擇 [封鎖有安全疑慮的下載作業] 選項後，除了有安全疑慮，會引發「安全瀏覽」警告的下載作業外，其他下載作業都可正常執行。
-
-      選擇 [封鎖所有下載作業] 選項後，所有下載作業都會受到禁止。
-
-      如未設定這項政策 (或選擇了 [無特殊限制] 選項)，系統就會根據「安全瀏覽」分析結果檢查下載作業是否符合一般安全限制。
-
-      請注意，這些限制適用於由網頁內容以及 [下載連結...] 內容選單選項所觸發的下載作業。這些限制不適用於目前顯示網頁的儲存/下載作業，或是透過列印選項儲存為 PDF 檔的作業。
-
-      如要進一步瞭解安全瀏覽功能，請前往 https://developers.google.com/safe-browsing。</translation>
 <translation id="7643883929273267746">限制在 <ph name="PRODUCT_NAME" /> 中顯示的帳戶</translation>
 <translation id="7644825865811580663">如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 首次執行時一律會將第一個顯示的視窗最大化。
       如果將這項政策設為 False 或不設定，系統會根據螢幕大小，決定是否將第一個顯示的視窗最大化。</translation>
@@ -3787,10 +3725,6 @@
 <translation id="7713608076604149344">下載限制</translation>
 <translation id="7715711044277116530">簡報模式中的螢幕調暗延遲時間延長百分比</translation>
 <translation id="7717938661004793600">設定 <ph name="PRODUCT_OS_NAME" /> 無障礙功能。</translation>
-<translation id="7744220323108979821">將下載內容儲存到本機儲存空間之前，必須檢查內容是否符合規範的網域清單。只有在 <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 設為啟用的情況下，系統才會使用這項政策。
-
-      如果不設定這項政策或設定為空白的網域清單，系統不會檢查下載內容是否符合規範。
-      </translation>
 <translation id="7747447585227954402">允許裝置在 <ph name="PRODUCT_OS_NAME" /> 使用 <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="7749402620209366169">為遠端存取主機啟用雙重驗證機制，而不採用使用者指定的 PIN。
 
@@ -3862,7 +3796,7 @@
 
           如果將這項政策設為 False，系統將一律在登入畫面上停用高對比模式。
 
-          設定這項政策後，使用者即無法變更或覆寫。
+          設好這項政策後，使用者即無法變更或覆寫設定。
 
           如果不設定這項政策，系統會在初次顯示登入畫面時停用高對比模式，但使用者隨時可以啟用。</translation>
 <translation id="787125417158068494">如果設為 SyncDisabled 或未設定，ARC 應用程式將無法使用「<ph name="PRODUCT_OS_NAME" />」憑證。
@@ -4187,7 +4121,6 @@
           如需模式範例，請參閱 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">停用儲存瀏覽記錄功能</translation>
-<translation id="8495279065011513838">檢查內容是否符合規範</translation>
 <translation id="8499172469244085141">預設設定 (使用者可覆寫)</translation>
 <translation id="849962487677588458">這項政策已淘汰且沒有替代項目，日後將從 Chrome 78 版中移除。
 
@@ -4291,7 +4224,6 @@
 <translation id="8685024486845674965">密碼遭到重複使用時，會觸發密碼保護警告</translation>
 <translation id="8693243869659262736">使用內建的 DNS 用戶端</translation>
 <translation id="8698286761337647563">當 SAML 使用者的密碼即將到期，系統要提前幾天通知</translation>
-<translation id="870193046368370542">不須檢查上傳內容是否符合規範的網域清單</translation>
 <translation id="8703488928438047864">回報主機板狀態</translation>
 <translation id="8704831857353097849">停用的外掛程式清單</translation>
 <translation id="8711086062295757690">指定關鍵字，這是網址列用來為這個引擎觸發搜尋的捷徑。這項政策是選擇性的，如果未設定，就沒有關鍵字會啟動搜尋引擎。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>

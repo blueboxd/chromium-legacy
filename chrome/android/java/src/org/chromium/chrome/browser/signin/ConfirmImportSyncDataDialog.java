@@ -19,7 +19,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
-import org.chromium.chrome.browser.widget.RadioButtonWithDescription;
+import org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription;
 
 import java.util.Arrays;
 import java.util.List;

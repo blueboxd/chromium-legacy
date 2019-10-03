@@ -611,7 +611,9 @@ class RenderWidgetHostTest : public testing::Test {
 
   void SimulateWheelEvent(float dX, float dY, int modifiers, bool precise) {
     host_->ForwardWheelEvent(SyntheticWebMouseWheelEventBuilder::Build(
-        0, 0, dX, dY, modifiers, precise));
+        0, 0, dX, dY, modifiers,
+        precise ? ui::input_types::ScrollGranularity::kScrollByPrecisePixel
+                : ui::input_types::ScrollGranularity::kScrollByPixel));
   }
 
   void SimulateWheelEvent(float dX,
@@ -620,7 +622,9 @@ class RenderWidgetHostTest : public testing::Test {
                           bool precise,
                           WebMouseWheelEvent::Phase phase) {
     WebMouseWheelEvent wheel_event = SyntheticWebMouseWheelEventBuilder::Build(
-        0, 0, dX, dY, modifiers, precise);
+        0, 0, dX, dY, modifiers,
+        precise ? ui::input_types::ScrollGranularity::kScrollByPrecisePixel
+                : ui::input_types::ScrollGranularity::kScrollByPixel);
     wheel_event.phase = phase;
     host_->ForwardWheelEvent(wheel_event);
   }
@@ -631,8 +635,10 @@ class RenderWidgetHostTest : public testing::Test {
                                          bool precise,
                                          const ui::LatencyInfo& ui_latency) {
     host_->ForwardWheelEventWithLatencyInfo(
-        SyntheticWebMouseWheelEventBuilder::Build(0, 0, dX, dY, modifiers,
-                                                  precise),
+        SyntheticWebMouseWheelEventBuilder::Build(
+            0, 0, dX, dY, modifiers,
+            precise ? ui::input_types::ScrollGranularity::kScrollByPrecisePixel
+                    : ui::input_types::ScrollGranularity::kScrollByPixel),
         ui_latency);
   }
 
@@ -643,7 +649,9 @@ class RenderWidgetHostTest : public testing::Test {
                                          const ui::LatencyInfo& ui_latency,
                                          WebMouseWheelEvent::Phase phase) {
     WebMouseWheelEvent wheel_event = SyntheticWebMouseWheelEventBuilder::Build(
-        0, 0, dX, dY, modifiers, precise);
+        0, 0, dX, dY, modifiers,
+        precise ? ui::input_types::ScrollGranularity::kScrollByPrecisePixel
+                : ui::input_types::ScrollGranularity::kScrollByPixel);
     wheel_event.phase = phase;
     host_->ForwardWheelEventWithLatencyInfo(wheel_event, ui_latency);
   }

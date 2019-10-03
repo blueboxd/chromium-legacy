@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Naudodami šią programą sutinkate su „Chrome“ <ph name="BEGIN_LINK_TOS" />paslaugų teikimo sąlygomis<ph name="END_LINK_TOS" /> ir <ph name="BEGIN_LINK_PRIVACY" />privatumo pranešimo<ph name="END_LINK_PRIVACY" /> sąlygomis.</translation>
 <translation id="2147651015520127414">„Chrome“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą.</translation>
 <translation id="2199719347983604670">„Chrome“ sinchronizavimo duomenys</translation>
-<translation id="2342981853652716282">Prisijunkite prie „Chrome“, kad galėtumėte naudoti žymes, slaptažodžius ir kitus nustatymus visuose įrenginiuose.</translation>
 <translation id="2347208864470321755">Kai ši funkcija įjungta, „Chrome“ siūlo versti kitomis kalbomis parašytus puslapius naudojant „Google“ vertėją. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Jei norite išsaugoti vaizdus, palieskite „Nustatymai“ ir leiskite „Chrome“ naudoti jūsų nuotraukas</translation>
 <translation id="2576431527583832481">„Chrome“ patobulėjo! Galima nauja versija.</translation>
@@ -52,5 +51,4 @@
 <translation id="840168496893712993">Dėl tam tikrų priedų „Chrome“ užstringa. Pabandykite juos pašalinti.</translation>
 <translation id="8459495907675268833">Pasirinkti duomenys pašalinti iš „Chrome“ ir sinchronizuojamų įrenginių. Adresu history.google.com gali būti pateikta kitų formų jūsų „Google“ paskyros istorija, pvz., paieškos ir veikla kitose „Google“ paslaugose.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">„Google Chrome“ gali naudoti žiniatinklio paslaugas naršymo patirčiai pagerinti. Galite pasirinktinai išjungti šias paslaugas. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 </translationbundle>

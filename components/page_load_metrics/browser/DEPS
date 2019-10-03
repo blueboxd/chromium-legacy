@@ -1,6 +1,7 @@
 include_rules = [
   "+content/public/common",
   "+content/public/browser",
+  "+content/public/test",
   "+components/data_reduction_proxy/core/browser",
   "+net",
   "+services/metrics",

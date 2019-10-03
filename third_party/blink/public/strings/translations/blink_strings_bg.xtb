@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">долен колонтитул</translation>
 <translation id="2709516037105925701">Автоматично попълване</translation>
 <translation id="2723001399770238859">звук</translation>
+<translation id="2725963129578236554">коментари</translation>
 <translation id="2746543609216772311">Стойността трябва да е <ph name="MINIMUM_DATE_OR_TIME" /> или по-късно.</translation>
 <translation id="2759744352195237655">бутон с изскачащ прозорец</translation>
 <translation id="2761667185364618470">Моля, поставете отметка в това квадратче, ако искате да продължите.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">Моля, удължете този текст поне до <ph name="MIN_CHARACTERS" /> знака (понастоящем използвате <ph name="CURRENT_LENGTH" />).</translation>
 <translation id="383465348367842624">Текстът преди „<ph name="ATSIGN" />“ не бива да съдържа символа „<ph name="INVALIDCHARACTER" />“.</translation>
 <translation id="3846214748874656680">Изход от цял екран</translation>
+<translation id="3889183436948184105">корекция</translation>
 <translation id="3920932319529768807">заключение</translation>
 <translation id="3924558731517983934">приложение</translation>
 <translation id="3944740393230681990">пролог</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">времеви плъзгач за аудиозаписа</translation>
 <translation id="6443871981718447451">показване на менюто за надписи</translation>
 <translation id="6453774872122745852">признания</translation>
+<translation id="6475115390776617481">текущо присъствие</translation>
 <translation id="648732519525291180">инструмент за избор на час</translation>
 <translation id="6550675742724504774">Опции</translation>
 <translation id="6572309429103589720">Невалидна граматика</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">вмъкване</translation>
 <translation id="6989848892321993519">Моля, удължете този текст до поне <ph name="MIN_CHARACTERS" /> знака (понастоящем използвате 1 знак).</translation>
 <translation id="7033340931668032222">нагоре и надолу за промяна на силата на звука</translation>
+<translation id="7034405885550056553">предложение</translation>
 <translation id="709897737746224366">Моля, спазвайте изисквания формат.</translation>
 <translation id="7118469954320184356">Няма описание.</translation>
 <translation id="7139483182332611405">предисловие</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">изход</translation>
 <translation id="8750798805984357768">Моля, изберете една от тези опции.</translation>
 <translation id="8808573423886751634">глава</translation>
+<translation id="8822203815165896261">информация за авторството</translation>
 <translation id="8845239796550121995">В момента се предава към телевизора ви</translation>
 <translation id="8851136666856101339">основен елемент</translation>
 <translation id="8875657656876809964">Грешка при възпроизвеждането на видеоклипа</translation>

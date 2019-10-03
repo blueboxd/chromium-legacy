@@ -2128,7 +2128,6 @@ RootInlineBox* LayoutBlockFlow::DetermineStartPosition(
     if (layout_state.HasInlineChild() && !SelfNeedsLayout()) {
       SetNeedsLayoutAndFullPaintInvalidation(
           layout_invalidation_reason::kFloatDescendantChanged, kMarkOnlyThis);
-      SetShouldDoFullPaintInvalidation();
     }
 
     DeleteLineBoxTree();

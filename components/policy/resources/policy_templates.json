@@ -8753,6 +8753,61 @@
       If the policy is left not set, users can choose whether the shelf should auto-hide.''',
     },
     {
+      'name': 'ShelfAlignment',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'string-enum',
+# In shelf_prefs.cc, there are 3 const char[] defining kShelfAlignmentLocal values:
+# ash::kShelfAlignmentBottom = "Bottom", ash::kShelfAlignmnetLeft = "Left",
+# ash::kShelfAlignmnetRight = "Right"
+# If any of them changed, this policy should be updated.
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'Left',
+          'Bottom',
+          'Right'
+        ],
+      },
+      'items': [
+        {
+          'name': 'Left',
+          'value': 'Left',
+          'caption': '''Position the shelf on the left side of the screen''',
+        },
+        {
+          'name': 'Bottom',
+          'value': 'Bottom',
+          'caption': '''Position the shelf at the bottom of the screen''',
+        },
+        {
+          'name': 'Right',
+          'value': 'Right',
+          'caption': '''Position the shelf on the right side of the screen''',
+        },
+      ],
+      'supported_on': ['chrome_os:79-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 'Bottom',
+      'id': 620,
+      'caption': '''Control the shelf position''',
+      'tags': [],
+      'desc': '''Control the position of the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shelf.
+
+      If this policy is set to 'Bottom', the shelf will be placed at the bottom of the screen.
+
+      If this policy is set to 'Left', the shelf will be placed on the left side of the screen.
+
+      If this policy is set to 'Right', the shelf will be placed on the right side of the screen.
+
+      If you set this policy as mandatory, users cannot change or override it.
+
+      If the policy is left not set, the shelf will be be positioned at the bottom of the screen by default and the user can change the shelf's position.''',
+    },
+    {
       'name': 'UserDisplayName',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'string',
@@ -18905,6 +18960,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 619,
+  'highest_id_currently_used': 620,
   'highest_atomic_group_id_currently_used': 37
 }

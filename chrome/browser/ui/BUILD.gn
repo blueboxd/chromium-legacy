@@ -613,8 +613,8 @@ jumbo_split_static_library("ui") {
 
   if (is_win || is_android || is_linux) {
     sources += [
-      "webui/sandbox_internals_ui.cc",
-      "webui/sandbox_internals_ui.h",
+      "webui/sandbox/sandbox_internals_ui.cc",
+      "webui/sandbox/sandbox_internals_ui.h",
     ]
   }
 
@@ -1122,6 +1122,8 @@ jumbo_split_static_library("ui") {
       "tabs/tab_menu_model.h",
       "tabs/tab_network_state.cc",
       "tabs/tab_network_state.h",
+      "tabs/tab_renderer_data.cc",
+      "tabs/tab_renderer_data.h",
       "tabs/tab_strip_model.cc",
       "tabs/tab_strip_model.h",
       "tabs/tab_strip_model_delegate.cc",
@@ -2568,6 +2570,9 @@ jumbo_split_static_library("ui") {
       "cookie_controls/cookie_controls_view.h",
       "manifest_web_app_browser_controller.cc",
       "manifest_web_app_browser_controller.h",
+      "qrcode_generator/qrcode_generator_bubble_controller.cc",
+      "qrcode_generator/qrcode_generator_bubble_controller.h",
+      "qrcode_generator/qrcode_generator_bubble_view.h",
       "send_tab_to_self/send_tab_to_self_bubble_controller.cc",
       "send_tab_to_self/send_tab_to_self_bubble_controller.h",
       "send_tab_to_self/send_tab_to_self_bubble_view.h",
@@ -3039,6 +3044,10 @@ jumbo_split_static_library("ui") {
       "views/permission_bubble/permission_prompt_impl_views.cc",
       "views/profiles/avatar_toolbar_button.cc",
       "views/profiles/avatar_toolbar_button.h",
+      "views/qrcode_generator/qrcode_generator_bubble.cc",
+      "views/qrcode_generator/qrcode_generator_bubble.h",
+      "views/qrcode_generator/qrcode_generator_icon_view.cc",
+      "views/qrcode_generator/qrcode_generator_icon_view.h",
       "views/reader_mode/reader_mode_icon_view.cc",
       "views/reader_mode/reader_mode_icon_view.h",
       "views/relaunch_notification/relaunch_notification_controller.cc",
@@ -3119,8 +3128,6 @@ jumbo_split_static_library("ui") {
       "views/tabs/tab_hover_card_bubble_view.h",
       "views/tabs/tab_icon.cc",
       "views/tabs/tab_icon.h",
-      "views/tabs/tab_renderer_data.cc",
-      "views/tabs/tab_renderer_data.h",
       "views/tabs/tab_slot_view.h",
       "views/tabs/tab_strip.cc",
       "views/tabs/tab_strip.h",

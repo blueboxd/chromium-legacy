@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Kullanılan</translation>
 <translation id="1171770572613082465">"Popüler siteler" düğmesine dokunarak popüler web sitelerini görün</translation>
 <translation id="1173894706177603556">Yeniden adlandır</translation>
-<translation id="1175310183703641346">Yer işaretleri, geçmiş, şifreler ve diğer ayarlarınız artık Google Hesabınız ile senkronize edilmeyecek.</translation>
 <translation id="1178581264944972037">Duraklat</translation>
 <translation id="1181037720776840403">Kaldır</translation>
 <translation id="1188239144602654184">AR'ye gir</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> üzerinde yer işareti koyuldu</translation>
 <translation id="3744111561329211289">Arka plan senkronizasyonu</translation>
 <translation id="3771001275138982843">Güncelleme indirilemedi</translation>
+<translation id="3771033907050503522">Gizli Sekmeler</translation>
 <translation id="3773755127849930740">Eşleşmeye izin vermek için <ph name="BEGIN_LINK" />Bluetooth'u açın<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">Cihazlarınıza gönderin</translation>
 <translation id="3778956594442850293">Ana ekrana eklendi</translation>
@@ -484,7 +484,6 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="4719927025381752090">Çevirmeyi öner</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> uygulamasında aç</translation>
 <translation id="4720982865791209136">Chrome'u daha iyi hale getirmeye yardımcı olun. <ph name="BEGIN_LINK" />Ankete katıl<ph name="END_LINK" />.</translation>
-<translation id="4730876730346568982">Senkronizasyon hesaplarını <ph name="ACCOUNT_EMAIL_OLD" /> adresinden <ph name="ACCOUNT_EMAIL_NEW" /> adresine geçiriyorsunuz. Mevcut Chrome verileriniz <ph name="MANAGED_DOMAIN" /> tarafından yönetiliyor. Bu işlem, bu cihazdaki verilerinizi silecek, ancak verileriniz <ph name="ACCOUNT_EMAIL_OLD" /> hesabında kalacak.</translation>
 <translation id="473775607612524610">Güncelle</translation>
 <translation id="4738836084190194332">Son senkronizasyon: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Yeni sekme açar</translation>
@@ -668,13 +667,13 @@ VR moduna girmeden önce bu siteye güvendiğinizden emin olun.</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> tasarruf edildi</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
 <translation id="5942872142862698679">Arama için Google kullanılıyor</translation>
-<translation id="5944669582486359588">Chrome, Basit modda sayfaları daha hızlı yükler ve yüzde 60'a kadar daha az veri kullanır. Google'ın Cloud teknolojisi, ziyaret ettiğiniz sayfaları optimize eder.</translation>
 <translation id="5952764234151283551">Erişmeye çalıştığınız sayfanın URL'sini Google'a gönderir</translation>
 <translation id="5956665950594638604">Chrome Yardım Merkezi'ni yeni bir sekmede açar</translation>
 <translation id="5958275228015807058">Dosyalarınızı ve sayfalarınızı İndirilenler bölümünde bulabilirsiniz</translation>
 <translation id="5962718611393537961">Daraltmak için dokunun</translation>
 <translation id="6000066717592683814">Google kalsın</translation>
 <translation id="6005538289190791541">Önerilen şifre</translation>
+<translation id="6036057147555329831">Ekstra ICU</translation>
 <translation id="6039379616847168523">Sonraki sekmeye gider</translation>
 <translation id="6040143037577758943">Kapat</translation>
 <translation id="6042308850641462728">Daha fazla</translation>
@@ -815,7 +814,6 @@ VR moduna girmeden önce bu siteye güvendiğinizden emin olun.</translation>
 <translation id="7029809446516969842">Şifreler</translation>
 <translation id="7053983685419859001">Engelle</translation>
 <translation id="7055152154916055070">Yönlendirme engellendi:</translation>
-<translation id="7062545763355031412">Kabul et ve hesabı değiştir</translation>
 <translation id="7063006564040364415">Senkronizasyon sunucusuna bağlanılamadı.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 öğe seçildi}other{# öğe seçildi}}</translation>
 <translation id="7071521146534760487">Hesabı yönet</translation>
@@ -1099,7 +1097,6 @@ Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.<
 <translation id="9139318394846604261">Alışveriş</translation>
 <translation id="9155898266292537608">Bir kelimeye hızlıca dokunarak da arama yapabilirsiniz</translation>
 <translation id="9169507124922466868">Gezinme geçmişi yarım açık</translation>
-<translation id="9188680907066685419">Yönetilen hesabın oturumunu kapat</translation>
 <translation id="9204836675896933765">1 dosya kaldı</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Arama yapılamıyor</translation>
@@ -1108,7 +1105,6 @@ Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.<
 <translation id="932327136139879170">Ana Sayfa</translation>
 <translation id="938850635132480979">Hata: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Mikrofonunuza erişim</translation>
-<translation id="951339005376969845">Mevcut veriler silinir. İlgili verileri tekrar <ph name="FROM_ACCOUNT" /> hesabına geçerek alabilirsiniz.</translation>
 <translation id="95817756606698420">Chrome, Çin'de arama yapmak için <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />'yu kullanabilir. Bu seçimi <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" />'da değiştirebilirsiniz.</translation>
 <translation id="965817943346481315">Site, araya giren veya yanıltıcı reklamlar gösteriyorsa engelle (önerilen)</translation>
 <translation id="968900484120156207">Ziyaret ettiğiniz sayfalar burada görünür</translation>

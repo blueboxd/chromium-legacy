@@ -583,8 +583,7 @@ void TracingControllerImpl::OnDataAvailable(const void* data,
 
 void TracingControllerImpl::CompleteFlush() {
   if (trace_data_endpoint_) {
-    trace_data_endpoint_->ReceiveTraceFinalContents(
-        std::move(filtered_metadata_));
+    trace_data_endpoint_->ReceivedTraceFinalContents();
   }
   filtered_metadata_.reset(nullptr);
   trace_data_endpoint_ = nullptr;

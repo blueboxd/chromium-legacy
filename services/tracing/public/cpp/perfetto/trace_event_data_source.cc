@@ -220,6 +220,35 @@ void TraceEventMetadataSource::GenerateJsonMetadataFromGenerator(
   }
 }
 
+std::unique_ptr<base::DictionaryValue>
+TraceEventMetadataSource::GenerateLegacyMetadataDict() {
+  DCHECK(!privacy_filtering_enabled_);
+
+  auto merged_metadata = std::make_unique<base::DictionaryValue>();
+  for (auto& generator : json_generator_functions_) {
+    std::unique_ptr<base::DictionaryValue> metadata_dict = generator.Run();
+    if (!metadata_dict) {
+      continue;
+    }
+    merged_metadata->MergeDictionary(merged_metadata.get());
+  }
+
+  base::trace_event::MetadataFilterPredicate metadata_filter =
+      base::trace_event::TraceLog::GetInstance()->GetMetadataFilterPredicate();
+
+  // This out-of-band generation of the global metadata is only used by the
+  // crash service uploader path, which always requires privacy filtering.
+  CHECK(metadata_filter);
+  for (base::DictionaryValue::Iterator it(*merged_metadata); !it.IsAtEnd();
+       it.Advance()) {
+    if (!metadata_filter.Run(it.key())) {
+      merged_metadata->SetString(it.key(), "__stripped__");
+    }
+  }
+
+  return merged_metadata;
+}
+
 void TraceEventMetadataSource::GenerateMetadata(
     std::unique_ptr<
         std::vector<TraceEventMetadataSource::JsonMetadataGeneratorFunction>>
@@ -548,7 +577,6 @@ void TraceEventDataSource::StartTracingInternal(
   std::unique_ptr<perfetto::StartupTraceWriterRegistry> unbound_writer_registry;
   {
     base::AutoLock lock(lock_);
-
     bool should_enable_filtering =
         data_source_config.chrome_config().privacy_filtering_enabled();
     if (should_enable_filtering) {

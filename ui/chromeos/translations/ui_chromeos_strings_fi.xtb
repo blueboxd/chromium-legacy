@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">Irrota kansio</translation>
 <translation id="3678559383040232393">Näppäimistö: malta</translation>
 <translation id="3685122418104378273">Google Driven synkronointi on oletuksena pois käytöstä käyttäessäsi mobiilitiedonsiirtoa.</translation>
+<translation id="3689865792480713551">Peruuta <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Tätä laitetta ei voi avata, sillä sen tiedostojärjestelmää ei tueta.</translation>
 <translation id="3741243925913727067">Varmuuskopioi medialaitteesi valokuvat ja videot Google Driveen.</translation>
 <translation id="3749289110408117711">Tiedostonimi</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">US, kansainvälinen (PC)</translation>
 <translation id="6346310558342052870">Käyttö rajoitettu</translation>
 <translation id="6353618411602605519">Näppäimistö: kroatia</translation>
+<translation id="6356685157277930264">Tiedostojen tietoikkuna</translation>
 <translation id="6358884629796491903">Lohikäärme</translation>
 <translation id="637062427944097960">Tämä tiedosto avattiin toisella työpöydällä. Näet tiedoston siirtymällä profiiliin <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> kohdetta</translation>

@@ -12,9 +12,8 @@ swarming.  This document describes how to set that up, and current restrictions.
 
 What does *not* work:
 
-* 64-bit renderer processes don't use V8 snapshots, slowing down their startup
-  ([bug](https://crbug.com/803591))
-* on Mac hosts, 32-bit builds don't use V8 snapshots either
+* `js2gtest` tests are omitted from the build ([bug](https://crbug.com/1010561))
+* on Mac hosts, 32-bit builds don't use V8 snapshots
   ([bug](https://crbug.com/794838) has more information, but this is unlikely
   to ever change)
 

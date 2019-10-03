@@ -2877,6 +2877,9 @@
     <message name="IDS_SETTINGS_LANGUAGES_ADD_DICTIONARY_WORD_LENGTH_ERROR" desc="Error message displayed to the user when the word is too long in the text input used to add a new word to the custom spell check dictionary.">
       Cannot exceed 99 letters
     </message>
+    <message name="IDS_SETTINGS_LANGUAGES_DELETE_DICTIONARY_WORD_BUTTON" desc="Message shown over the button to delete a custom word.">
+      Delete word
+    </message>
     <message name="IDS_SETTINGS_LANGUAGES_DICTIONARY_WORDS" desc="Header for the list of custom dictionary words used for spell check.">
       Custom words
     </message>

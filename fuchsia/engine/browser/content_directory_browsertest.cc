@@ -14,7 +14,7 @@
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/browser/content_directory_loader_factory.h"
-#include "fuchsia/engine/common.h"
+#include "fuchsia/engine/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -29,7 +29,8 @@ class ContentDirectoryTest : public cr_fuchsia::WebEngineBrowserTest {
   void SetUp() override {
     // Set this flag early so that the fuchsia-dir:// scheme will be
     // registered at browser startup.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(kContentDirectories);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kContentDirectories);
 
     cr_fuchsia::WebEngineBrowserTest::SetUp();
   }

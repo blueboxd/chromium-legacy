@@ -71,8 +71,7 @@ class MetalayerToolTest : public AshTestBase {
 // has enabled the metalayer AND the Assistant framework is ready.
 TEST_F(MetalayerToolTest, PaletteMenuState) {
   const mojom::AssistantState kStates[] = {mojom::AssistantState::NOT_READY,
-                                           mojom::AssistantState::READY,
-                                           mojom::AssistantState::VISIBLE};
+                                           mojom::AssistantState::READY};
   const mojom::AssistantAllowedState kAllowedStates[] = {
       mojom::AssistantAllowedState::ALLOWED,
       mojom::AssistantAllowedState::DISALLOWED_BY_POLICY,
@@ -144,7 +143,6 @@ TEST_F(MetalayerToolTest, EnablingDisablingMetalayerEnablesDisablesController) {
 
 // Verifies that disabling the metalayer support disables the tool.
 TEST_F(MetalayerToolTest, MetalayerUnsupportedDisablesPaletteTool) {
-  assistant_state()->NotifyStatusChanged(mojom::AssistantState::VISIBLE);
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
                       true);
@@ -175,7 +173,6 @@ TEST_F(MetalayerToolTest, MetalayerUnsupportedDisablesPaletteTool) {
               DisableTool(PaletteToolId::METALAYER))
       .Times(0);
   assistant_state()->NotifyStatusChanged(mojom::AssistantState::READY);
-  assistant_state()->NotifyStatusChanged(mojom::AssistantState::VISIBLE);
   testing::Mock::VerifyAndClearExpectations(palette_tool_delegate_.get());
 
   // Changing the state to NOT_READY should disable the tool.

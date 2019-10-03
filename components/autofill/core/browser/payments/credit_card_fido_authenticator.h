@@ -30,6 +30,8 @@ using blink::mojom::PublicKeyCredentialCreationOptions;
 using blink::mojom::PublicKeyCredentialCreationOptionsPtr;
 using blink::mojom::PublicKeyCredentialRequestOptions;
 using blink::mojom::PublicKeyCredentialRequestOptionsPtr;
+using device::AuthenticatorAttachment;
+using device::AuthenticatorSelectionCriteria;
 using device::CredentialType;
 using device::FidoTransportProtocol;
 using device::PublicKeyCredentialDescriptor;

@@ -64,6 +64,8 @@ bool CanAccessDocumentURL(int process_id, const GURL& document_url) {
          document_url.IsAboutSrcdoc() ||  // <iframe srcdoc= ...> case.
          document_url.IsAboutBlank() ||   // <iframe src="javascript:''"> case.
          document_url == GURL("data:,") ||  // CSP blocked_urls.
+         (document_url.SchemeIsBlob() &&    // <iframe src="blob:null/xx"> case.
+          url::Origin::Create(document_url).opaque()) ||
          security_policy->CanAccessDataForOrigin(process_id,
                                                  document_url) ||
          !security_policy->HasSecurityState(process_id);  // process shutdown.

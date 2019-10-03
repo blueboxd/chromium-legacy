@@ -18,7 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.night_mode.NightModeMetrics;
 import org.chromium.chrome.browser.preferences.themes.ThemePreferences.ThemeSetting;
-import org.chromium.chrome.browser.widget.RadioButtonWithDescription;
+import org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription;
 
 import java.util.ArrayList;
 import java.util.Collections;

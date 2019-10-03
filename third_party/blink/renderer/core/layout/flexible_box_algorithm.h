@@ -389,6 +389,9 @@ class FlexLayoutAlgorithm {
   // When lines stretch, also modifies FlexItem::cross_axis_size.
   void AlignChildren();
 
+  void FlipForWrapReverse(LayoutUnit cross_axis_start_edge,
+                          LayoutUnit cross_axis_content_size);
+
   static TransformedWritingMode GetTransformedWritingMode(const ComputedStyle&);
 
   static const StyleContentAlignmentData& ContentAlignmentNormalBehavior();

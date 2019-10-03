@@ -157,6 +157,7 @@ jumbo_source_set("config_sources") {
     "//base",
     "//build:branding_buildflags",
     "//gpu/ipc/common:gpu_preferences_interface",
+    "//gpu/vulkan:buildflags",
     "//media:media_buildflags",
     "//third_party/re2",
     "//ui/gl",

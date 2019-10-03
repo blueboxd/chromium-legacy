@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
@@ -38,7 +39,6 @@
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 #include "chrome/browser/ui/views/load_complete_listener.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
-#include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/common/buildflags.h"
 #include "components/infobars/core/infobar_container.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -346,6 +346,7 @@ class BrowserView : public BrowserWindow,
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
   bool UpdatePageActionIcon(PageActionIconType type) override;
+  void ShowAvatarHighlightAnimation() override;
   void ExecutePageActionIconForTesting(PageActionIconType type) override;
   LocationBar* GetLocationBar() const override;
   void SetFocusToLocationBar(bool select_all) override;
@@ -378,6 +379,10 @@ class BrowserView : public BrowserWindow,
       PageActionIconType icon_type,
       IntentPickerResponse callback) override;
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override;
+  qrcode_generator::QRCodeGeneratorBubbleView* ShowQRCodeGeneratorBubble(
+      content::WebContents* contents,
+      qrcode_generator::QRCodeGeneratorBubbleController* controller,
+      const GURL& url) override;
   autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
       content::WebContents* contents,
       autofill::SaveCardBubbleController* controller,

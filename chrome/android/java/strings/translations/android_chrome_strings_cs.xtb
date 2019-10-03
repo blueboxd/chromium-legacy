@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Využito</translation>
 <translation id="1171770572613082465">Populární weby zobrazíte klepnutím na tlačítko Top weby</translation>
 <translation id="1173894706177603556">Přejmenovat</translation>
-<translation id="1175310183703641346">Vaše záložky, historie, hesla a další nastavení budou synchronizovány do účtu Google.</translation>
 <translation id="1178581264944972037">Pozastavit</translation>
 <translation id="1181037720776840403">Odebrat</translation>
 <translation id="1188239144602654184">Spustit rozšířenou realitu</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">Přidáno do záložek (<ph name="PRODUCT_NAME" />)</translation>
 <translation id="3744111561329211289">Synchronizace na pozadí</translation>
 <translation id="3771001275138982843">Aktualizaci nelze stáhnout</translation>
+<translation id="3771033907050503522">Anonymní karty</translation>
 <translation id="3773755127849930740">Chcete-li povolit párování, <ph name="BEGIN_LINK" />zapněte Bluetooth<ph name="END_LINK" />.</translation>
 <translation id="3775705724665058594">Odeslat na vaše zařízení</translation>
 <translation id="3778956594442850293">Přidáno na domovskou obrazovku</translation>
@@ -484,7 +484,6 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="4719927025381752090">Nabízet překlad</translation>
 <translation id="4720023427747327413">Otevřít v aplikaci <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Pomozte Chrome zlepšit. <ph name="BEGIN_LINK" />Zúčastněte se průzkumu<ph name="END_LINK" />.</translation>
-<translation id="4730876730346568982">Přepínáte účty pro synchronizaci z <ph name="ACCOUNT_EMAIL_OLD" /> na <ph name="ACCOUNT_EMAIL_NEW" />. Vaše existující data prohlížeče Chrome jsou spravována doménou <ph name="MANAGED_DOMAIN" />. Touto akcí svá data smažete z tohoto zařízení, v účtu <ph name="ACCOUNT_EMAIL_OLD" /> však zůstanou.</translation>
 <translation id="473775607612524610">Aktualizovat</translation>
 <translation id="4738836084190194332">Poslední synchronizace: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Otevření nové karty</translation>
@@ -668,13 +667,13 @@ Před přechodem do režimu virtuální reality zkontrolujte, zda tomuto webu d�
 <translation id="5937580074298050696">Uspořeno: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Resetovat</translation>
 <translation id="5942872142862698679">K vyhledávání se používá Google</translation>
-<translation id="5944669582486359588">Ve zjednodušeném režimu načítá Chrome stránky rychleji a používá až o 60 procent méně dat. Navštívené stránky se optimalizují pomocí cloudové technologie společnosti Google.</translation>
 <translation id="5952764234151283551">Odesílá do Googlu adresu URL stránky, na kterou se pokoušíte přejít</translation>
 <translation id="5956665950594638604">Otevřít centrum nápovědy Chrome na nové kartě</translation>
 <translation id="5958275228015807058">Najděte stažené soubory a stránky</translation>
 <translation id="5962718611393537961">Klepnutím sbalíte</translation>
 <translation id="6000066717592683814">Ponechat Google</translation>
 <translation id="6005538289190791541">Navrhované heslo</translation>
+<translation id="6036057147555329831">Extra ICU</translation>
 <translation id="6039379616847168523">Přejít na další kartu</translation>
 <translation id="6040143037577758943">Zavřít</translation>
 <translation id="6042308850641462728">Více</translation>
@@ -815,7 +814,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7029809446516969842">Hesla</translation>
 <translation id="7053983685419859001">Blokovat</translation>
 <translation id="7055152154916055070">Bylo zablokováno přesměrování:</translation>
-<translation id="7062545763355031412">Přijmout a přepnout účet</translation>
 <translation id="7063006564040364415">K synchronizačnímu serveru se nelze připojit.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Vybráno: 1}few{Vybráno: #}many{Vybráno: #}other{Vybráno: #}}</translation>
 <translation id="7071521146534760487">Spravovat účet</translation>
@@ -1009,7 +1007,7 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="8445448999790540984">Hesla se nepodařilo exportovat</translation>
 <translation id="8447861592752582886">Zrušit oprávnění zařízení</translation>
 <translation id="8461694314515752532">Šifrovat synchronizovaná data pomocí vlastní heslové fráze pro synchronizaci</translation>
-<translation id="8466613982764129868">Zkontrolujte, zda je zařízení<ph name="TARGET_DEVICE_NAME" /> připojené k internetu</translation>
+<translation id="8466613982764129868">Zkontrolujte, zda je zařízení <ph name="TARGET_DEVICE_NAME" /> připojené k internetu</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Dostupné offline</translation>
 <translation id="8489271220582375723">Otevřít stránku historie</translation>
@@ -1099,7 +1097,6 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="9139318394846604261">Nákupy</translation>
 <translation id="9155898266292537608">Hledat můžete také rychlým klepnutím na slovo</translation>
 <translation id="9169507124922466868">Historie navigace je otevřená na půlce</translation>
-<translation id="9188680907066685419">Odhlásit se ze spravovaného účtu</translation>
 <translation id="9204836675896933765">Zbývá 1 soubor</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Nelze uskutečňovat hovory</translation>
@@ -1108,7 +1105,6 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="932327136139879170">Domovská stránka</translation>
 <translation id="938850635132480979">Chyba: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Přístup k mikrofonu</translation>
-<translation id="951339005376969845">Smazat existující data. Můžete je znovu načíst tím, že přepnete zpět na účet <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome může v Číně k vyhledávání používat službu <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />. Tuto volbu můžete změnit v <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" />.</translation>
 <translation id="965817943346481315">Blokovat, pokud web zobrazuje rušivé nebo zavádějící reklamy (doporučeno)</translation>
 <translation id="968900484120156207">Zde se zobrazují navštívené stránky</translation>

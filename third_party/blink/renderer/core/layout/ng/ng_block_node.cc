@@ -246,7 +246,8 @@ void SetupBoxLayoutExtraInput(const NGConstraintSpace& space,
 
 scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
     const NGConstraintSpace& constraint_space,
-    const NGBreakToken* break_token) {
+    const NGBreakToken* break_token,
+    const NGEarlyBreak* early_break) {
   // Use the old layout code and synthesize a fragment.
   if (!CanUseNewLayout())
     return RunLegacyLayout(constraint_space);
@@ -267,8 +268,9 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
 
   NGLayoutCacheStatus cache_status;
   base::Optional<NGFragmentGeometry> fragment_geometry;
-  scoped_refptr<const NGLayoutResult> layout_result = box_->CachedLayoutResult(
-      constraint_space, break_token, &fragment_geometry, &cache_status);
+  scoped_refptr<const NGLayoutResult> layout_result =
+      box_->CachedLayoutResult(constraint_space, break_token, early_break,
+                               &fragment_geometry, &cache_status);
   if (layout_result) {
     DCHECK_EQ(cache_status, NGLayoutCacheStatus::kHit);
 
@@ -303,7 +305,8 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   PrepareForLayout();
 
   NGLayoutAlgorithmParams params(*this, *fragment_geometry, constraint_space,
-                                 To<NGBlockBreakToken>(break_token));
+                                 To<NGBlockBreakToken>(break_token),
+                                 early_break);
 
   // Try to perform "simplified" layout.
   // TODO(crbug.com/992953): Add a simplified layout pass for custom layout.

@@ -7,24 +7,19 @@ package org.chromium.chrome.browser.download.ui;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService.DownloadObserver;
-import org.chromium.components.download.DownloadState;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
-import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
-import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.RenameResult;
 import org.chromium.components.offline_items_collection.ShareCallback;
@@ -194,144 +189,31 @@ public class StubbedProvider implements BackendProvider {
         mOfflineContentProvider = new StubbedOfflineContentProvider();
     }
 
-    /** See {@link #createDownloadItem(int, String, boolean, int, int)}. */
-    public static DownloadItem createDownloadItem(int which, String date) throws Exception {
-        return createDownloadItem(which, date, false, DownloadState.COMPLETE, 100);
-    }
-
-    /** Creates a new DownloadItem with pre-defined values. */
-    public static DownloadItem createDownloadItem(
-            int which, String date, boolean isIncognito, int state, int percent) throws Exception {
-        DownloadInfo.Builder builder = null;
-        if (which == 0) {
-            builder = new DownloadInfo.Builder()
-                    .setUrl("https://google.com")
-                    .setBytesReceived(1)
-                    .setFileName("first_file.jpg")
-                    .setFilePath("/storage/fake_path/Downloads/first_file.jpg")
-                    .setDownloadGuid("first_guid")
-                    .setMimeType("image/jpeg");
-        } else if (which == 1) {
-            builder = new DownloadInfo.Builder()
-                    .setUrl("https://one.com")
-                    .setBytesReceived(10)
-                    .setFileName("second_file.gif")
-                    .setFilePath("/storage/fake_path/Downloads/second_file.gif")
-                    .setDownloadGuid("second_guid")
-                    .setMimeType("image/gif");
-        } else if (which == 2) {
-            builder = new DownloadInfo.Builder()
-                    .setUrl("https://is.com")
-                    .setBytesReceived(100)
-                    .setFileName("third_file")
-                    .setFilePath("/storage/fake_path/Downloads/third_file")
-                    .setDownloadGuid("third_guid")
-                    .setMimeType("text/plain");
-        } else if (which == 3) {
-            builder = new DownloadInfo.Builder()
-                    .setUrl("https://the.com")
-                    .setBytesReceived(5)
-                    .setFileName("four.webm")
-                    .setFilePath("/storage/fake_path/Downloads/four.webm")
-                    .setDownloadGuid("fourth_guid")
-                    .setMimeType("video/webm");
-        } else if (which == 4) {
-            builder = new DownloadInfo.Builder()
-                    .setUrl("https://loneliest.com")
-                    .setBytesReceived(50)
-                    .setFileName("five.mp3")
-                    .setFilePath("/storage/fake_path/Downloads/five.mp3")
-                    .setDownloadGuid("fifth_guid")
-                    .setMimeType("audio/mp3");
-        } else if (which == 5) {
-            builder = new DownloadInfo.Builder()
-                    .setUrl("https://number.com")
-                    .setBytesReceived(500)
-                    .setFileName("six.mp3")
-                    .setFilePath("/storage/fake_path/Downloads/six.mp3")
-                    .setDownloadGuid("sixth_guid")
-                    .setMimeType("audio/mp3");
-        } else if (which == 6) {
-            builder =
-                    new DownloadInfo.Builder()
-                            .setUrl("https://sigh.com")
-                            .setBytesReceived(ONE_GIGABYTE)
-                            .setFileName("huge_image.png")
-                            .setFilePath(Environment.getExternalStorageDirectory().getAbsolutePath()
-                                    + "/fake_path/Downloads/huge_image.png")
-                            .setDownloadGuid("seventh_guid")
-                            .setMimeType("image/png");
-        } else if (which == 7) {
-            builder = new DownloadInfo.Builder()
-                    .setUrl("https://sleepy.com")
-                    .setBytesReceived(ONE_GIGABYTE / 2)
-                    .setFileName("sleep.pdf")
-                    .setFilePath("/storage/fake_path/Downloads/sleep.pdf")
-                    .setDownloadGuid("eighth_guid")
-                    .setMimeType("application/pdf");
-        } else if (which == 8) {
-            // This is a duplicate of item 7 above with a different GUID.
-            builder = new DownloadInfo.Builder()
-                    .setUrl("https://sleepy.com")
-                    .setBytesReceived(ONE_GIGABYTE / 2)
-                    .setFileName("sleep.pdf")
-                    .setFilePath("/storage/fake_path/Downloads/sleep.pdf")
-                    .setDownloadGuid("ninth_guid")
-                    .setMimeType("application/pdf");
-        } else if (which == 9) {
-            builder = new DownloadInfo.Builder()
-                    .setUrl("https://totallynew.com")
-                    .setBytesReceived(ONE_GIGABYTE / 10)
-                    .setFileName("forserious.jpg")
-                    .setFilePath(null)
-                    .setDownloadGuid("tenth_guid")
-                    .setMimeType("image/jpg");
-        } else if (which == 10) {
-            // Duplicate version of #9, but the file path has been set.
-            builder = new DownloadInfo.Builder()
-                    .setUrl("https://totallynew.com")
-                    .setBytesReceived(ONE_GIGABYTE / 10)
-                    .setFileName("forserious.jpg")
-                    .setFilePath("/storage/fake_path/Downloads/forserious.jpg")
-                    .setDownloadGuid("tenth_guid")
-                    .setMimeType("image/jpg");
-        } else {
-            return null;
-        }
-
-        builder.setIsOffTheRecord(isIncognito);
-        builder.setProgress(new Progress(100, 100L, OfflineItemProgressUnit.PERCENTAGE));
-        builder.setState(state);
-
-        DownloadItem item = new DownloadItem(false, builder.build());
-        item.setStartTime(dateToEpoch(date));
-        return item;
-    }
-
     /** Creates a new OfflineItem with pre-defined values. */
-    public static OfflineItem createOfflineItem(int which, String date) throws Exception {
+    public static OfflineItem createOfflineItem(int which, String date, int filter)
+            throws Exception {
         long startTime = dateToEpoch(date);
         int downloadState = OfflineItemState.COMPLETE;
         if (which == 0) {
             return createOfflineItem("offline_guid_1", "https://url.com", downloadState, 0,
-                    "page 1", "/data/fake_path/Downloads/first_file", startTime, 1000);
+                    "page 1", "/data/fake_path/Downloads/first_file", startTime, 1000, filter);
         } else if (which == 1) {
             return createOfflineItem("offline_guid_2", "http://stuff_and_things.com", downloadState,
-                    0, "page 2", "/data/fake_path/Downloads/file_two", startTime, 10000);
+                    0, "page 2", "/data/fake_path/Downloads/file_two", startTime, 10000, filter);
         } else if (which == 2) {
             return createOfflineItem("offline_guid_3", "https://url.com", downloadState, 100,
-                    "page 3", "/data/fake_path/Downloads/3_file", startTime, 100000);
+                    "page 3", "/data/fake_path/Downloads/3_file", startTime, 100000, filter);
         } else if (which == 3) {
-            return createOfflineItem("offline_guid_4", "https://thangs.com", downloadState, 1024,
-                    "page 4", "/data/fake_path/Downloads/4", startTime, ONE_GIGABYTE * 5L);
+            return createOfflineItem("offline_guid_4", "https://things.com", downloadState, 1024,
+                    "page 4", "/data/fake_path/Downloads/4", startTime, ONE_GIGABYTE * 5L, filter);
         } else {
             return null;
         }
     }
 
-    private static OfflineItem createOfflineItem(String guid, String url, int state,
+    public static OfflineItem createOfflineItem(String guid, String url, int state,
             long downloadProgressBytes, String title, String targetPath, long startTime,
-            long totalSize) {
+            long totalSize, int filter) {
         OfflineItem offlineItem = new OfflineItem();
         offlineItem.id = new ContentId(LegacyHelpers.LEGACY_OFFLINE_PAGE_NAMESPACE, guid);
         offlineItem.pageUrl = url;
@@ -341,7 +223,11 @@ public class StubbedProvider implements BackendProvider {
         offlineItem.filePath = targetPath;
         offlineItem.creationTimeMs = startTime;
         offlineItem.totalSizeBytes = totalSize;
-        offlineItem.filter = OfflineItemFilter.PAGE;
+        offlineItem.filter = filter;
+        if (filter == OfflineItemFilter.OTHER) {
+            offlineItem.canRename = true;
+            offlineItem.mimeType = "application/pdf";
+        }
         return offlineItem;
     }
 

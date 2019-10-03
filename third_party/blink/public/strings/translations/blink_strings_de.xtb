@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">Fußzeile</translation>
 <translation id="2709516037105925701">AutoFill</translation>
 <translation id="2723001399770238859">Audio</translation>
+<translation id="2725963129578236554">Kommentare</translation>
 <translation id="2746543609216772311">Verwenden Sie <ph name="MINIMUM_DATE_OR_TIME" /> oder einen späteren Wert.</translation>
 <translation id="2759744352195237655">Pop-up-Schaltfläche</translation>
 <translation id="2761667185364618470">Klicken Sie dieses Kästchen an, wenn Sie fortfahren möchten.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">Verlängern Sie diesen Text auf mindestens <ph name="MIN_CHARACTERS" /> Zeichen. Derzeit verwenden Sie <ph name="CURRENT_LENGTH" /> Zeichen.</translation>
 <translation id="383465348367842624">Vor dem <ph name="ATSIGN" />-Zeichen darf das Zeichen "<ph name="INVALIDCHARACTER" />" nicht verwendet werden.</translation>
 <translation id="3846214748874656680">Vollbildmodus beenden</translation>
+<translation id="3889183436948184105">Überarbeitung</translation>
 <translation id="3920932319529768807">Fazit</translation>
 <translation id="3924558731517983934">Anwendung</translation>
 <translation id="3944740393230681990">Prolog</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">Audio-Zeitachse</translation>
 <translation id="6443871981718447451">Untertitelmenü einblenden</translation>
 <translation id="6453774872122745852">Danksagung</translation>
+<translation id="6475115390776617481">Live-Personenentdeckung</translation>
 <translation id="648732519525291180">Uhrzeitauswahl</translation>
 <translation id="6550675742724504774">Optionen</translation>
 <translation id="6572309429103589720">Ungültige Grammatik</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">Einfügen</translation>
 <translation id="6989848892321993519">Verlängern Sie diesen Text auf mindestens <ph name="MIN_CHARACTERS" /> Zeichen. Derzeit verwenden Sie 1 Zeichen.</translation>
 <translation id="7033340931668032222">oben und unten zum Ändern der Lautstärke</translation>
+<translation id="7034405885550056553">Vorschlag</translation>
 <translation id="709897737746224366">Ihre Eingabe muss mit dem geforderten Format übereinstimmen.</translation>
 <translation id="7118469954320184356">Keine Beschreibung verfügbar.</translation>
 <translation id="7139483182332611405">Vorbemerkung</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">Ausgang</translation>
 <translation id="8750798805984357768">Wählen Sie eine dieser Optionen aus.</translation>
 <translation id="8808573423886751634">Kapitel</translation>
+<translation id="8822203815165896261">Authoring-Info</translation>
 <translation id="8845239796550121995">Wird gerade auf Ihren Fernseher gestreamt</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8875657656876809964">Videowiedergabefehler</translation>

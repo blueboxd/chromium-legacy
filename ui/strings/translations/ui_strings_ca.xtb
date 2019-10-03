@@ -117,7 +117,6 @@
 <translation id="4971687151119236543">Fitxer multimèdia: pista anterior</translation>
 <translation id="5046499563572181734">Toca aquí</translation>
 <translation id="5076340679995252485">Engan&amp;xa</translation>
-<translation id="5137751499640340777">Inicia l'Assistent de Google</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Triangle desplegable</translation>
 <translation id="5278860589123563674">No s'ha pogut enviar</translation>
@@ -154,6 +153,7 @@
 <translation id="6394627529324717982">Coma</translation>
 <translation id="6397363302884558537">Deixa de parlar</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{fa 1 s}other{fa # s}}</translation>
+<translation id="6417265370957905582">Assistent de Google</translation>
 <translation id="6430678249303439055">Bloqueja totes les notificacions d'aquesta aplicació</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Fa 1 segon}other{Fa # segons}}</translation>
 <translation id="6539092367496845964">S'ha produït un error. Torna-ho a provar més tard.</translation>
@@ -196,7 +196,6 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Més d'una notificació no llegida}other{Més de # notificacions no llegides}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{d'aquí a 1 min}other{d'aquí a # min}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8098075892845277643">Inicia una consulta de veu a l'Assistent de Google</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{fa 1 hora}other{fa # hores}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 s restant}other{# s restants}}</translation>
 <translation id="8144660977431427332">Les cerques es duen a terme amb la tecnologia de l'Assistent de Google. <ph name="LEARN_MORE" /></translation>

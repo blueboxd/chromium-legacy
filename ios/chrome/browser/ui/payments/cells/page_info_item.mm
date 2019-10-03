@@ -8,9 +8,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "url/url_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

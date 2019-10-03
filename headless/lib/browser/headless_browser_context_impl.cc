@@ -197,6 +197,10 @@ HeadlessBrowserContextImpl::GetPushMessagingService() {
   return nullptr;
 }
 
+content::StorageNotificationService*
+HeadlessBrowserContextImpl::GetStorageNotificationService() {
+  return nullptr;
+}
 content::SSLHostStateDelegate*
 HeadlessBrowserContextImpl::GetSSLHostStateDelegate() {
   return nullptr;

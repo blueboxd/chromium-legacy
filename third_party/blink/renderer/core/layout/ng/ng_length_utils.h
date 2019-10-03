@@ -255,10 +255,21 @@ ComputeBlockSizeForFragment(const NGConstraintSpace&,
                             const NGBoxStrut& border_padding,
                             LayoutUnit content_size);
 
-// Computes intrinsic size for replaced elements.
-CORE_EXPORT LogicalSize ComputeReplacedSize(const NGLayoutInputNode&,
-                                            const NGConstraintSpace&,
-                                            const base::Optional<MinMaxSize>&);
+// Intrinsic size for replaced elements is computed as:
+// - |out_replaced_size| intrinsic size of the element. It might have no value.
+// - |out_aspect_ratio| only set if out_replaced_size is empty.
+//   If out_replaced_size is not empty, that is the aspect ratio.
+// This routine will return one of the following:
+// - out_replaced_size, and no out_aspect_ratio
+// - out_aspect_ratio, and no out_replaced_size
+// - neither out_aspect_ratio, nor out_replaced_size
+// SVG elements can return any of the three options above.
+CORE_EXPORT void ComputeReplacedSize(
+    const NGLayoutInputNode&,
+    const NGConstraintSpace&,
+    const base::Optional<MinMaxSize>&,
+    base::Optional<LogicalSize>* out_replaced_size,
+    base::Optional<LogicalSize>* out_aspect_ratio);
 
 // Based on available inline size, CSS computed column-width, CSS computed
 // column-count and CSS used column-gap, return CSS used column-count.

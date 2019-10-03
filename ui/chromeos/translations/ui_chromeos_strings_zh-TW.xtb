@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">取消固定資料夾</translation>
 <translation id="3678559383040232393">馬爾他文鍵盤</translation>
 <translation id="3685122418104378273">使用行動數據時，Google 雲端硬碟同步功能預設為停用。</translation>
+<translation id="3689865792480713551">取消<ph name="ACTIVITY_DESCRIPTION" />。</translation>
 <translation id="3726463242007121105">這個裝置所用的檔案系統不受支援，因此系統無法開啟這個裝置。</translation>
 <translation id="3741243925913727067">將您媒體裝置上的相片和影片備份到 Google 雲端硬碟。</translation>
 <translation id="3749289110408117711">檔案名稱</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">美式國際鍵盤 (PC)</translation>
 <translation id="6346310558342052870">權限受到限制</translation>
 <translation id="6353618411602605519">克羅埃西亞文鍵盤</translation>
+<translation id="6356685157277930264">檔案狀態視窗</translation>
 <translation id="6358884629796491903">龍</translation>
 <translation id="637062427944097960">這個檔案已在其他電腦上開啟。前往 <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) 查看。</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> 個項目</translation>

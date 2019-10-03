@@ -42,19 +42,13 @@ bool ScrollbarThemeMock::UsesOverlayScrollbars() const {
   return RuntimeEnabledFeatures::OverlayScrollbarsEnabled();
 }
 
-IntRect ScrollbarThemeMock::TrackRect(const Scrollbar& scrollbar, bool) {
+IntRect ScrollbarThemeMock::TrackRect(const Scrollbar& scrollbar) {
   return scrollbar.FrameRect();
 }
 
 void ScrollbarThemeMock::PaintTrackBackground(GraphicsContext& context,
                                               const Scrollbar& scrollbar,
                                               const IntRect& track_rect) {
-  if (DrawingRecorder::UseCachedDrawingIfPossible(
-          context, scrollbar, DisplayItem::kScrollbarTrackBackground))
-    return;
-
-  DrawingRecorder recorder(context, scrollbar,
-                           DisplayItem::kScrollbarTrackBackground);
   context.FillRect(track_rect,
                    scrollbar.Enabled() ? Color::kLightGray : Color(0xFFE0E0E0));
 }
@@ -77,11 +71,11 @@ void ScrollbarThemeMock::PaintScrollCorner(GraphicsContext& context,
                                            const DisplayItemClient& scrollbar,
                                            const IntRect& corner_rect,
                                            WebColorScheme color_scheme) {
-  if (DrawingRecorder::UseCachedDrawingIfPossible(
-          context, scrollbar, DisplayItem::kScrollbarCorner))
+  if (DrawingRecorder::UseCachedDrawingIfPossible(context, scrollbar,
+                                                  DisplayItem::kScrollCorner))
     return;
 
-  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarCorner);
+  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollCorner);
   context.FillRect(corner_rect, Color::kWhite);
 }
 

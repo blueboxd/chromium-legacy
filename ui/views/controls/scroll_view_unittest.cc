@@ -44,10 +44,9 @@ class ScrollViewTestApi {
       : scroll_view_(scroll_view) {}
 
   ScrollBar* GetScrollBar(ScrollBarOrientation orientation) {
-    ScrollBar* scroll_bar = orientation == VERTICAL
-                                ? scroll_view_->vertical_scroll_bar()
-                                : scroll_view_->horizontal_scroll_bar();
-    return scroll_bar;
+    ScrollBar* scroll_bar = orientation == VERTICAL ? scroll_view_->vert_sb_
+                                                    : scroll_view_->horiz_sb_;
+    return static_cast<ScrollBar*>(scroll_bar);
   }
 
   const base::OneShotTimer& GetScrollBarTimer(
@@ -70,7 +69,7 @@ class ScrollViewTestApi {
     return ScrollBar::GetHideTimerForTesting(GetScrollBar(orientation));
   }
 
-  View* corner_view() { return scroll_view_->corner_view_.get(); }
+  View* corner_view() { return scroll_view_->corner_view_; }
   View* contents_viewport() { return scroll_view_->contents_viewport_; }
 
   Separator* more_content_left() {
@@ -1508,10 +1507,10 @@ TEST_F(ScrollViewTest, IgnoreOverlapWithHiddenHorizontalScroll) {
 
   constexpr int kThickness = 1;
   // Assume horizontal scroll bar is the default and is overlapping.
-  scroll_view_->SetHorizontalScrollBar(std::make_unique<TestScrollBar>(
+  scroll_view_->SetHorizontalScrollBar(new TestScrollBar(
       /* horizontal */ true, /* overlaps_content */ true, kThickness));
   // Assume vertical scroll bar is custom and it we want it to not overlap.
-  scroll_view_->SetVerticalScrollBar(std::make_unique<TestScrollBar>(
+  scroll_view_->SetVerticalScrollBar(new TestScrollBar(
       /* horizontal */ false, /* overlaps_content */ false, kThickness));
 
   // Also, let's turn off horizontal scroll bar.

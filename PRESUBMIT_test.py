@@ -2301,6 +2301,10 @@ class TranslationScreenshotsTest(unittest.TestCase):
   def makeInputApi(self, files):
     input_api = MockInputApi()
     input_api.files = files
+    # Override os_path.exists because the presubmit uses the actual
+    # os.path.exists.
+    input_api.CreateMockFileInPath(
+        [x.LocalPath() for x in input_api.AffectedFiles(include_deletes=True)])
     return input_api
 
   def testNoScreenshots(self):

@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">‏שימוש באפליקציה הזו מהווה הסכמה ל<ph name="BEGIN_LINK_TOS" />תנאים ולהגבלות<ph name="END_LINK_TOS" /> ול<ph name="BEGIN_LINK_PRIVACY" />הודעת הפרטיות<ph name="END_LINK_PRIVACY" /> של Chrome.</translation>
 <translation id="2147651015520127414">‏Chrome אימת ש-<ph name="ISSUER" /> הנפיק את האישור של אתר זה.</translation>
 <translation id="2199719347983604670">‏נתונים מסנכרון Chrome</translation>
-<translation id="2342981853652716282">‏יש להיכנס אל Chrome כדי לקבל גישה אל הסימניות, הסיסמאות ונתונים נוספים בכל המכשירים שלך.</translation>
 <translation id="2347208864470321755">‏כשהתכונה הזו פועלת, Chrome יציע לתרגם דפים שנכתבו בשפות אחרות באמצעות Google Translate‏. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">‏כדי לשמור תמונות, הקש על 'הגדרות' ואפשר ל-Chrome להשתמש בתמונות שלך</translation>
 <translation id="2576431527583832481">‏‫Chrome ממשיך להשתפר! קיימת גירסה חדשה.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">‏אם שולחים אלינו נתוני שימוש ודוחות קריסה, עוזרים לשפר את Chrome.</translation>
 <translation id="415767770115540173">‏תוכל ליהנות מחוויית Google משופרת ב-Chrome בהתבסס על המיקום שלך.</translation>
 <translation id="424864128008805179">‏האם לצאת מ-Chrome?</translation>
+<translation id="4249068189593983585">‏טיפ למשתמשי Chrome. כדי לקבל אפשרויות נוספות של כרטיסיות, יש ללחוץ לחיצה ארוכה על הלחצן 'הצגת כרטיסיות' בסרגל הכלים, שנמצא בחלק התחתון או העליון של המסך.</translation>
 <translation id="4523886039239821078">‏תוספים מסוימים גורמים ל-Chrome לקרוס. הסר את ההתקנה שלהם:</translation>
 <translation id="5389212809648216794">‏Google Chrome לא יכול להשתמש במצלמה כי אפליקציה אחרת משתמשת בה</translation>
 <translation id="5621912349729388018">‏<ph name="BEGIN_LINK" />עיון בתנאים ובהגבלות המעודכנים של Chrome.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">‏תוספים מסוימים גורמים ל-Chrome לקרוס. נסה להסיר את ההתקנה שלהם.</translation>
 <translation id="8459495907675268833">‏הנתונים שבחרת הוסרו מ-Chrome ומהמכשירים המסונכרנים. ייתכן שבכתובת history.google.com תוכל לגשת לסוגים אחרים של היסטוריית גלישה בחשבון Google, כמו חיפושים ופעילות משירותי Google אחרים.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">‏Google Chrome עשוי להשתמש בשירותי אינטרנט לשיפור חוויית הגלישה שלך. ניתן להשבית את השירותים האלה. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 </translationbundle>

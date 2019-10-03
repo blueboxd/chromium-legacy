@@ -601,7 +601,6 @@ TEST_F(AppStateTest, resumeSessionWithStartupParameters) {
 
   // BrowserViewInformation.
   id mainTabModel = [OCMockObject mockForClass:[TabModel class]];
-  [[mainTabModel expect] resetSessionMetrics];
   id mainBVC = [OCMockObject mockForClass:[BrowserViewController class]];
   interfaceProvider.mainInterface.tabModel = mainTabModel;
   interfaceProvider.mainInterface.bvc = mainBVC;
@@ -644,7 +643,6 @@ TEST_F(AppStateTest, resumeSessionShouldOpenNTPTabSwitcher) {
 
   // BrowserViewInformation.
   id mainTabModel = [OCMockObject mockForClass:[TabModel class]];
-  [[mainTabModel expect] resetSessionMetrics];
   id mainBVC = [OCMockObject mockForClass:[BrowserViewController class]];
   interfaceProvider.mainInterface.tabModel = mainTabModel;
   interfaceProvider.mainInterface.bvc = mainBVC;
@@ -691,8 +689,6 @@ TEST_F(AppStateTest, resumeSessionShouldOpenNTPNoTabSwitcher) {
 
   // BrowserViewInformation.
   id mainTabModel = [OCMockObject mockForClass:[TabModel class]];
-  [[mainTabModel expect] resetSessionMetrics];
-
   id dispatcher = [OCMockObject mockForProtocol:@protocol(ApplicationCommands)];
   [((id<ApplicationCommands>)[dispatcher expect]) openURLInNewTab:[OCMArg any]];
 

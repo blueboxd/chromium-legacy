@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
 #include "third_party/blink/renderer/core/css/media_values_initial_viewport.h"

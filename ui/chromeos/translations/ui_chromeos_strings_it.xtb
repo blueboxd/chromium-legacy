@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">Sblocca cartella</translation>
 <translation id="3678559383040232393">Tastiera Maltese</translation>
 <translation id="3685122418104378273">La sincronizzazione con Google Drive è disattivata per impostazione predefinita quando vengono utilizzati i dati mobili.</translation>
+<translation id="3689865792480713551">Annulla <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Impossibile aprire il dispositivo perché il suo filesystem non è supportato.</translation>
 <translation id="3741243925913727067">Effettua il backup su Google Drive di foto e video memorizzati sul tuo dispositivo multimediale.</translation>
 <translation id="3749289110408117711">Nome file</translation>
@@ -462,6 +463,7 @@
 <translation id="6339145975392024142">Inglese internazionale (PC)</translation>
 <translation id="6346310558342052870">Accesso limitato</translation>
 <translation id="6353618411602605519">Tastiera croata</translation>
+<translation id="6356685157277930264">Finestra di feedback dei file</translation>
 <translation id="6358884629796491903">Drago</translation>
 <translation id="637062427944097960">Questo file è aperto su un desktop differente. Passa a <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) per visualizzarlo.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> elementi</translation>

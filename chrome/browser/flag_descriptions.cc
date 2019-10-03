@@ -1841,8 +1841,7 @@ const char kSharingDeviceRegistrationDescription[] =
 const char kSharingUseDeviceInfoName[] =
     "Enable Sharing device registration in DeviceInfo";
 const char kSharingUseDeviceInfoDescription[] =
-    "Enables Sharing infrastructure to register devices in DeviceInfo and "
-    "remove sync requirement.";
+    "Enables Sharing infrastructure to register devices in DeviceInfo.";
 
 const char kShelfHotseatName[] = "Enable a modular design for the shelf.";
 const char kShelfHotseatDescription[] =
@@ -2938,12 +2937,6 @@ const char kOmniboxReverseAnswersName[] = "Omnibox reverse answers";
 const char kOmniboxReverseAnswersDescription[] =
     "Display answers with rows reversed (swapped); except definitions.";
 
-const char kOmniboxReverseTabSwitchLogicName[] =
-    "Omnibox reverse tab switch logic";
-const char kOmniboxReverseTabSwitchLogicDescription[] =
-    "Reverse the logic of suggestions that have a tab switch button: Have "
-    "them switch by default, and have the button navigate.";
-
 const char kOmniboxShortBookmarkSuggestionsName[] =
     "Omnibox short bookmark suggestions";
 const char kOmniboxShortBookmarkSuggestionsDescription[] =
@@ -3344,10 +3337,6 @@ const char kEnableAssistantRoutinesDescription[] = "Enable Assistant Routines.";
 const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Launcher, Shelf, Unified System Tray etc.";
-
-const char kEnableChromeOsAccountManagerName[] = "Enable Account Manager";
-const char kEnableChromeOsAccountManagerDescription[] =
-    "Enables the Chrome OS Account Manager";
 
 const char kEnableDiscoverAppName[] = "Enable Discover App";
 const char kEnableDiscoverAppDescription[] =

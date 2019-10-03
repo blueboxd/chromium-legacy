@@ -100,7 +100,6 @@ StyleEngine::StyleEngine(Document& document)
   style_recalc_root_.Update(nullptr, &document);
   if (auto* settings = GetDocument().GetSettings()) {
     preferred_color_scheme_ = settings->GetPreferredColorScheme();
-    forced_colors_ = settings->GetForcedColors();
   }
 }
 
@@ -1831,9 +1830,6 @@ void StyleEngine::UpdateColorScheme() {
   if (!settings)
     return;
 
-  ForcedColors old_forced_colors = forced_colors_;
-  forced_colors_ = settings->GetForcedColors();
-
   PreferredColorScheme old_preferred_color_scheme = preferred_color_scheme_;
   preferred_color_scheme_ = settings->GetPreferredColorScheme();
   if (const auto* overrides =
@@ -1851,8 +1847,7 @@ void StyleEngine::UpdateColorScheme() {
     preferred_color_scheme_ = PreferredColorScheme::kNoPreference;
   }
 
-  if (forced_colors_ != old_forced_colors ||
-      preferred_color_scheme_ != old_preferred_color_scheme)
+  if (preferred_color_scheme_ != old_preferred_color_scheme)
     PlatformColorsChanged();
   UpdateColorSchemeBackground();
 }
@@ -1878,7 +1873,7 @@ void StyleEngine::UpdateColorSchemeBackground() {
   bool use_dark_background = false;
 
   if (preferred_color_scheme_ == PreferredColorScheme::kDark &&
-      forced_colors_ != ForcedColors::kActive) {
+      !GetDocument().InForcedColorsMode()) {
     const ComputedStyle* style = nullptr;
     if (auto* root_element = GetDocument().documentElement())
       style = root_element->GetComputedStyle();

@@ -15,6 +15,7 @@
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/optimization_guide_enums.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/proto/models.pb.h"
 
 // A representation of optimization guide information related to a navigation.
 // This also includes methods for recording metrics based on this data.
@@ -54,10 +55,10 @@ class OptimizationGuideNavigationData {
   // Returns the latest decision made for |optimmization_target|.
   base::Optional<optimization_guide::OptimizationTargetDecision>
   GetDecisionForOptimizationTarget(
-      optimization_guide::OptimizationTarget optimization_target) const;
+      optimization_guide::proto::OptimizationTarget optimization_target) const;
   // Sets the |decision| for |optimization_target|.
   void SetDecisionForOptimizationTarget(
-      optimization_guide::OptimizationTarget optimization_target,
+      optimization_guide::proto::OptimizationTarget optimization_target,
       optimization_guide::OptimizationTargetDecision decision);
 
   // Whether the hint cache had a hint for the navigation before commit.
@@ -122,7 +123,7 @@ class OptimizationGuideNavigationData {
       optimization_type_decisions_;
 
   // The map from optimization target to the last decision made for that target.
-  std::unordered_map<optimization_guide::OptimizationTarget,
+  std::unordered_map<optimization_guide::proto::OptimizationTarget,
                      optimization_guide::OptimizationTargetDecision>
       optimization_target_decisions_;
 

@@ -26,13 +26,6 @@ void FidoTouchIdDiscovery::Start() {
     return;
   }
 
-  if (!TouchIdAuthenticator::IsAvailable(authenticator_config_)) {
-    observer()->DiscoveryStarted(this, /*success=*/false);
-    return;
-  }
-
-  observer()->DiscoveryStarted(this, /*success=*/true);
-
   // Start() is currently invoked synchronously in the
   // FidoRequestHandler ctor. Invoke AddAuthenticator() asynchronously
   // to avoid hairpinning FidoRequestHandler::AuthenticatorAdded()
@@ -43,9 +36,12 @@ void FidoTouchIdDiscovery::Start() {
 }
 
 void FidoTouchIdDiscovery::AddAuthenticator() {
-  DCHECK(TouchIdAuthenticator::IsAvailable(authenticator_config_));
+  if (!TouchIdAuthenticator::IsAvailable(authenticator_config_)) {
+    observer()->DiscoveryStarted(this, /*success=*/false);
+    return;
+  }
   authenticator_ = TouchIdAuthenticator::Create(authenticator_config_);
-  observer()->AuthenticatorAdded(this, authenticator_.get());
+  observer()->DiscoveryStarted(this, /*success=*/true, {authenticator_.get()});
 }
 
 }  // namespace mac

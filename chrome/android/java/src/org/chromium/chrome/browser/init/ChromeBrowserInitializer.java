@@ -43,8 +43,7 @@ import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerPrefs;
 import org.chromium.components.crash.browser.ChildProcessCrashObserver;
 import org.chromium.components.minidump_uploader.CrashFileManager;
-import org.chromium.components.module_installer.ModuleInstaller;
-import org.chromium.components.module_installer.observers.ModuleActivityObserver;
+import org.chromium.components.module_installer.util.ModuleUtil;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.content_public.browser.SpeechRecognition;
@@ -237,7 +236,6 @@ public class ChromeBrowserInitializer {
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch();
         ApplicationStatus.registerStateListenerForAllActivities(createActivityStateListener());
-        ApplicationStatus.registerStateListenerForAllActivities(new ModuleActivityObserver());
 
         mPreInflationStartupComplete = true;
     }
@@ -440,7 +438,7 @@ public class ChromeBrowserInitializer {
         // Needed for field trial metrics to be properly collected in ServiceManager only mode.
         FeatureUtilities.cacheNativeFlagsForServiceManagerOnlyMode();
 
-        ModuleInstaller.getInstance().recordStartupTime();
+        ModuleUtil.recordStartupTime();
     }
 
     private ActivityStateListener createActivityStateListener() {

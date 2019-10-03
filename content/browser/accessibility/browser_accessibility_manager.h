@@ -82,6 +82,7 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
 
   virtual void AccessibilityPerformAction(const ui::AXActionData& data) = 0;
   virtual bool AccessibilityViewHasFocus() const = 0;
+  virtual void AccessibilityViewSetFocus() = 0;
   virtual gfx::Rect AccessibilityGetViewBounds() const = 0;
   virtual float AccessibilityGetDeviceScaleFactor() const = 0;
   virtual void AccessibilityFatalError() = 0;

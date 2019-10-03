@@ -61,7 +61,18 @@ class TestUnifiedMessageListView : public UnifiedMessageListView {
   ~TestUnifiedMessageListView() override = default;
 
   void set_stacked_notification_count(int stacked_notification_count) {
-    stacked_notification_count_ = stacked_notification_count;
+    stacked_notifications_.clear();
+    for (int i = 0; i < stacked_notification_count; i++) {
+      std::string id = base::NumberToString(0);
+      auto notification = std::make_unique<Notification>(
+          message_center::NOTIFICATION_TYPE_BASE_FORMAT, id,
+          base::UTF8ToUTF16("test title"), base::UTF8ToUTF16("test message"),
+          gfx::Image(), base::string16() /* display_source */, GURL(),
+          message_center::NotifierId(), message_center::RichNotificationData(),
+          new message_center::NotificationDelegate());
+
+      stacked_notifications_.push_back(notification.get());
+    }
   }
 
   // UnifiedMessageListView:
@@ -72,12 +83,13 @@ class TestUnifiedMessageListView : public UnifiedMessageListView {
     return view;
   }
 
-  int GetStackedNotificationCount() const override {
-    return stacked_notification_count_;
+  std::vector<message_center::Notification*> GetStackedNotifications()
+      const override {
+    return stacked_notifications_;
   }
 
  private:
-  int stacked_notification_count_ = 0;
+  std::vector<message_center::Notification*> stacked_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(TestUnifiedMessageListView);
 };

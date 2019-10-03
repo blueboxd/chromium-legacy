@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/app_list/search/search_utils/fuzzy_tokenized_string_match.h"
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/tokenized_string.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/app_list/search/search_utils/sequence_matcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -199,4 +201,59 @@ TEST_F(FuzzyTokenizedStringMatchTest, PrefixMatchTest) {
         0.0);
   }
 }
+
+TEST_F(FuzzyTokenizedStringMatchTest, ParamThresholdTest1) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{app_list_features::kEnableFuzzyAppSearch,
+        {{"relevance_threshold", "0.4"}}}},
+      {});
+  FuzzyTokenizedStringMatch match;
+  {
+    base::string16 query(base::UTF8ToUTF16("anonymous"));
+    base::string16 text(base::UTF8ToUTF16("famous"));
+    EXPECT_FALSE(
+        match.IsRelevant(TokenizedString(query), TokenizedString(text)));
+  }
+  {
+    base::string16 query(base::UTF8ToUTF16("CC"));
+    base::string16 text(base::UTF8ToUTF16("Clash Of Clan"));
+    EXPECT_TRUE(
+        match.IsRelevant(TokenizedString(query), TokenizedString(text)));
+  }
+  {
+    base::string16 query(base::UTF8ToUTF16("Clash.of.clan"));
+    base::string16 text(base::UTF8ToUTF16("ClashOfTitan"));
+    EXPECT_TRUE(
+        match.IsRelevant(TokenizedString(query), TokenizedString(text)));
+  }
+}
+
+TEST_F(FuzzyTokenizedStringMatchTest, ParamThresholdTest2) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{app_list_features::kEnableFuzzyAppSearch,
+        {{"relevance_threshold", "0.5"}}}},
+      {});
+  FuzzyTokenizedStringMatch match;
+  {
+    base::string16 query(base::UTF8ToUTF16("anonymous"));
+    base::string16 text(base::UTF8ToUTF16("famous"));
+    EXPECT_FALSE(
+        match.IsRelevant(TokenizedString(query), TokenizedString(text)));
+  }
+  {
+    base::string16 query(base::UTF8ToUTF16("CC"));
+    base::string16 text(base::UTF8ToUTF16("Clash Of Clan"));
+    EXPECT_TRUE(
+        match.IsRelevant(TokenizedString(query), TokenizedString(text)));
+  }
+  {
+    base::string16 query(base::UTF8ToUTF16("Clash.of.clan"));
+    base::string16 text(base::UTF8ToUTF16("ClashOfTitan"));
+    EXPECT_FALSE(
+        match.IsRelevant(TokenizedString(query), TokenizedString(text)));
+  }
+}
+
 }  // namespace app_list

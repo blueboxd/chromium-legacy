@@ -318,6 +318,7 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
                        bool precise_scrolling_deltas,
                        bool scroll_by_page,
                        bool cursor_visible) {
+  DCHECK(!(precise_scrolling_deltas && scroll_by_page));
   if (ThrowIfPointOutOfBounds(context, args, gfx::Point(start_x, start_y),
                               "Start point not in bounds")) {
     return false;
@@ -354,8 +355,17 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
 
   gesture_params.speed_in_pixels_s = speed_in_pixels_s;
   gesture_params.prevent_fling = prevent_fling;
-  gesture_params.precise_scrolling_deltas = precise_scrolling_deltas;
-  gesture_params.scroll_by_page = scroll_by_page;
+
+  if (scroll_by_page) {
+    gesture_params.granularity =
+        ui::input_types::ScrollGranularity::kScrollByPage;
+  } else if (precise_scrolling_deltas) {
+    gesture_params.granularity =
+        ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+  } else {
+    gesture_params.granularity =
+        ui::input_types::ScrollGranularity::kScrollByPixel;
+  }
 
   gesture_params.anchor.SetPoint(start_x, start_y);
 

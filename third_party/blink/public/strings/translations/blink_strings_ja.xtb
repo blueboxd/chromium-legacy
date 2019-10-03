@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">フッター</translation>
 <translation id="2709516037105925701">自動入力</translation>
 <translation id="2723001399770238859">音声</translation>
+<translation id="2725963129578236554">コメント</translation>
 <translation id="2746543609216772311"><ph name="MINIMUM_DATE_OR_TIME" /> 以降の値を指定する必要があります。</translation>
 <translation id="2759744352195237655">ポップアップ ボタン</translation>
 <translation id="2761667185364618470">次に進むにはこのチェックボックスをオンにしてください。</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">このテキストは <ph name="MIN_CHARACTERS" /> 文字以上で指定してください（現在は <ph name="CURRENT_LENGTH" /> 文字です）。</translation>
 <translation id="383465348367842624">「<ph name="ATSIGN" />」の前の文字列に記号「<ph name="INVALIDCHARACTER" />」を使用しないでください。</translation>
 <translation id="3846214748874656680">全画面表示を終了</translation>
+<translation id="3889183436948184105">変更履歴</translation>
 <translation id="3920932319529768807">まとめ</translation>
 <translation id="3924558731517983934">アプリケーション</translation>
 <translation id="3944740393230681990">プロローグ</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">オーディオ再生バー</translation>
 <translation id="6443871981718447451">字幕メニューを表示</translation>
 <translation id="6453774872122745852">謝辞</translation>
+<translation id="6475115390776617481">アクセス中のユーザー</translation>
 <translation id="648732519525291180">時間選択ツール</translation>
 <translation id="6550675742724504774">オプション</translation>
 <translation id="6572309429103589720">文法が無効です</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">挿入</translation>
 <translation id="6989848892321993519">このテキストは <ph name="MIN_CHARACTERS" /> 文字以上で指定してください（現在 1 文字で指定されています）。</translation>
 <translation id="7033340931668032222">音量を変更するには上か下を押します</translation>
+<translation id="7034405885550056553">提案</translation>
 <translation id="709897737746224366">指定されている形式で入力してください。</translation>
 <translation id="7118469954320184356">説明はありません。</translation>
 <translation id="7139483182332611405">序文</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">出力</translation>
 <translation id="8750798805984357768">これらのオプションから 1 つ選択してください。</translation>
 <translation id="8808573423886751634">章</translation>
+<translation id="8822203815165896261">作成情報</translation>
 <translation id="8845239796550121995">テレビにキャストしています</translation>
 <translation id="8851136666856101339">本文</translation>
 <translation id="8875657656876809964">動画再生エラー</translation>

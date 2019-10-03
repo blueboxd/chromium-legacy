@@ -20,6 +20,7 @@
 <translation id="1087788677726983142">隱藏活動訊息串篩選器</translation>
 <translation id="1088219014394087294">沒有標題。</translation>
 <translation id="1106741348836243114">開啟或關閉音效回饋 (聽覺標示)。</translation>
+<translation id="1114836634143403764">建議</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">以雙指向上滑動</translation>
 <translation id="1124771028211010580">目前的顯示樣式為並排。</translation>
@@ -126,6 +127,7 @@
 <translation id="1845944666972354496">輕觸兩下即可啟用</translation>
 <translation id="1846771122725914429">藍牙點字顯示器</translation>
 <translation id="1865601187525349519">文字結束</translation>
+<translation id="1875375785454778375">即時狀態</translation>
 <translation id="1876229593313240038">文件</translation>
 <translation id="188130072164734898">說出目前的時間和日期。</translation>
 <translation id="1902396333223336119">儲存格</translation>
@@ -146,6 +148,7 @@
 <translation id="2009187674653301682">不是上標</translation>
 <translation id="2010555995361223825">ChromeVox 選單</translation>
 <translation id="2045490512405922022">未勾選</translation>
+<translation id="2049107626739254612">作者資訊</translation>
 <translation id="20601713649439366">沒有上一個數學運算式。</translation>
 <translation id="2063539687800151747">題詞</translation>
 <translation id="207477615537953741">語意轉譯功能已關閉</translation>
@@ -156,6 +159,7 @@
 <translation id="2110480898214777136">在網頁、對話方塊或其他容器中，從開頭跳到結尾或從結尾跳到開頭</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">快捷鍵：<ph name="KEY" /></translation>
+<translation id="2126597928985245619">這個項目沒有可用的文字</translation>
 <translation id="2127747486437921899">斜體</translation>
 <translation id="2138345533858834403">在畫面頂端的 ChromeVox 面板
         模擬可更新點字顯示器的輸出結果。</translation>
@@ -261,6 +265,7 @@
 <translation id="2911433807131383493">開啟 ChromeVox 教學課程</translation>
 <translation id="2912405967290226587">以三指向右滑動</translation>
 <translation id="2932083475399492303">切換行類型 (結構化或版面配置)</translation>
+<translation id="293796669683825859">留言</translation>
 <translation id="2942710183375260152">深岩藍</translation>
 <translation id="2943596527105977722">深金菊色</translation>
 <translation id="2944762337049891859">網頁載入完成後自動朗讀網頁內容。</translation>
@@ -337,6 +342,7 @@
 <translation id="3324983252691184275">深紅色</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> 滑桿</translation>
 <translation id="335581015389089642">語音</translation>
+<translation id="3356951775008366684">朗讀字詞的拼音發音</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{加號}other{# 個加號}}</translation>
 <translation id="338583716107319301">分隔線</translation>
@@ -533,6 +539,7 @@
 <translation id="4763480195061959176">影片</translation>
 <translation id="4764692524839457597">預設</translation>
 <translation id="4772771694153161212">沒有加上底線的文字</translation>
+<translation id="4787577491510559358">朗讀目前項目的格式</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">中斷連線</translation>
 <translation id="481165870889056555">朗讀目前網頁的標題</translation>
@@ -569,6 +576,7 @@
 <translation id="4983588134362688868">前往網頁頂端</translation>
 <translation id="4986606102545753256"><ph name="NAME" />，視窗</translation>
 <translation id="4993152509206108683">速度為百分之 <ph name="PERCENT" /></translation>
+<translation id="4994420463726586413">讀出目前的電池狀態</translation>
 <translation id="4996716799442435517">視區</translation>
 <translation id="4997282455736854877">已選取「<ph name="NAME" />」圓形按鈕</translation>
 <translation id="4997475792277222884">沒有下一個非連結項目。</translation>

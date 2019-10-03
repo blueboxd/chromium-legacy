@@ -416,7 +416,8 @@ EventRouter::EventRouter(Profile* profile)
 
 EventRouter::~EventRouter() = default;
 
-void EventRouter::OnIntentFiltersUpdated() {
+void EventRouter::OnIntentFiltersUpdated(
+    const base::Optional<std::string>& package_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BroadcastEvent(profile_,
                  extensions::events::FILE_MANAGER_PRIVATE_ON_APPS_UPDATED,

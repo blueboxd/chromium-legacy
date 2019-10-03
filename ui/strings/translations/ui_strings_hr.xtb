@@ -117,7 +117,6 @@
 <translation id="4971687151119236543">Prethodni zapis Medija</translation>
 <translation id="5046499563572181734">Dodirnite ovdje</translation>
 <translation id="5076340679995252485">&amp;Zalijepi</translation>
-<translation id="5137751499640340777">Pokretanje Google asistenta</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Trokut za otkrivanje</translation>
 <translation id="5278860589123563674">Slanje nije uspjelo</translation>
@@ -154,6 +153,7 @@
 <translation id="6394627529324717982">Zarez</translation>
 <translation id="6397363302884558537">Prestani govoriti</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Prije 1 s}one{Prije # s}few{Prije # s}other{Prije # s}}</translation>
+<translation id="6417265370957905582">Google asistent</translation>
 <translation id="6430678249303439055">Blokiraj sve obavijesti te aplikacije</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Prije 1 sekunde}one{Prije # sekunde}few{Prije # sekunde}other{Prije # sekundi}}</translation>
 <translation id="6539092367496845964">Nešto nije u redu. Pokušajte ponovo kasnije.</translation>
@@ -196,7 +196,6 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Više od jedne nepročitane obavijesti}one{Više od # nepročitane obavijesti}few{Više od # nepročitane obavijesti}other{Više od # nepročitanih obavijesti}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{za 1 m}one{za # m}few{za # m}other{za # m}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8098075892845277643">Pokretanje glasovnog upita Google asistentu</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Prije 1 sat}one{Prije # sat}few{Prije # sata}other{Prije # sati}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Još 1 s}one{Još # s}few{Još # s}other{Još # s}}</translation>
 <translation id="8144660977431427332">Vaša pretraživanja pokreće Google asistent. <ph name="LEARN_MORE" /></translation>

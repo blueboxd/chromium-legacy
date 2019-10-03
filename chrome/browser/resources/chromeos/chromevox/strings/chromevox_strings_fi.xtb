@@ -20,6 +20,7 @@
 <translation id="1087788677726983142">Piilota tapahtumastreamin suodattimet</translation>
 <translation id="1088219014394087294">Ei otsikoita.</translation>
 <translation id="1106741348836243114">Ota äänipalaute (earcon-äänimerkit) käyttöön tai poista se käytöstä.</translation>
+<translation id="1114836634143403764">Ehdotus</translation>
 <translation id="1120743664840974483">{"a": "aarne", "b": "bertta", "c": "celcius", "d": "daavid", "e": "eemeli", "f": "faarao", "g": "gideon", "h": "heikki", "i": "iivari", "j": "jussi","k": "kalle", "l": "lauri", "m": "matti", "n": "niilo", "o": "otto","p": "paavo", "q": "kuu", "r": "risto", "s": "sakari", "t": "tyyne", "u": "urho", "v": "vihtori", "w": "wiski","x": "äksä", "y": "yrjö", "z": "tseta", "å": "åke", "ä": "äiti", "ö": "öljy"}</translation>
 <translation id="1120938014254001895">Pyyhkäise ylös kahdella sormella</translation>
 <translation id="1124771028211010580">Nykyinen näyttötyyli on rinnakkainen.</translation>
@@ -126,6 +127,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="1845944666972354496">Aktivoi kaksoisnapauttamalla</translation>
 <translation id="1846771122725914429">Bluetooth-pistekirjoitusnäyttö</translation>
 <translation id="1865601187525349519">Tekstin loppu</translation>
+<translation id="1875375785454778375">Paikallaolo</translation>
 <translation id="1876229593313240038">dok.</translation>
 <translation id="188130072164734898">Sano tämänhetkinen aika ja päivämäärä.</translation>
 <translation id="1902396333223336119">Matkapuhelin</translation>
@@ -146,6 +148,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="2009187674653301682">Ei yläindeksiä</translation>
 <translation id="2010555995361223825">ChromeVox-valikot</translation>
 <translation id="2045490512405922022">ei tarkistettu</translation>
+<translation id="2049107626739254612">Tekijätiedot</translation>
 <translation id="20601713649439366">Ei edeltävää matemaattista lauseketta.</translation>
 <translation id="2063539687800151747">Epigrafi</translation>
 <translation id="207477615537953741">Semanttinen on pois käytöstä</translation>
@@ -156,6 +159,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="2110480898214777136">Rivitä teksti alusta loppuun tai lopusta alkuun sivun, valintaikkunan tai muun säiliön sisällä.</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">pääsyavain: <ph name="KEY" /></translation>
+<translation id="2126597928985245619">Tässä kohdassa ei ole tekstiä saatavilla</translation>
 <translation id="2127747486437921899">Kursivoitu</translation>
 <translation id="2138345533858834403">Simuloi päivitettävän pistekirjoitusnäytön ulostuloa
         näytön alalaidan ChromeVox-paneelissa.</translation>
@@ -261,6 +265,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="2911433807131383493">Avaa ChromeVox-opetusohjelma</translation>
 <translation id="2912405967290226587">Pyyhkäise oikealle kolmella sormella</translation>
 <translation id="2932083475399492303">Vaihda linjatyyppiä rakenteellisen ja asettelun välillä</translation>
+<translation id="293796669683825859">Kommentit</translation>
 <translation id="2942710183375260152">Tumma liuskekivensininen</translation>
 <translation id="2943596527105977722">Tumma kultapiisku</translation>
 <translation id="2944762337049891859">Lue sivu automaattisesti, kun se on latautunut.</translation>
@@ -337,6 +342,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="3324983252691184275">Karmiininpunainen</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> liukusäädin</translation>
 <translation id="335581015389089642">Puhe</translation>
+<translation id="3356951775008366684">Sano sanan ääntämys</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{plus}other{# plusmerkkiä}}</translation>
 <translation id="338583716107319301">Erotin</translation>
@@ -533,6 +539,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">oletus</translation>
 <translation id="4772771694153161212">Ei alleviivausta</translation>
+<translation id="4787577491510559358">Sano nykyisen kohteen muotoilu</translation>
 <translation id="479989351350248267">haku</translation>
 <translation id="4804818685124855865">Katkaise yhteys</translation>
 <translation id="481165870889056555">Ilmoita nykyisen sivun otsikko</translation>
@@ -569,6 +576,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="4983588134362688868">Siirry sivun yläosaan</translation>
 <translation id="4986606102545753256"><ph name="NAME" />, ikkuna</translation>
 <translation id="4993152509206108683">Nopeus <ph name="PERCENT" /> prosenttia.</translation>
+<translation id="4994420463726586413">Sano akun nykyinen tila</translation>
 <translation id="4996716799442435517">Visuaalinen</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, radiopainike valittu</translation>
 <translation id="4997475792277222884">Ei seuraavia kohteita, jotka eivät ole linkkejä.</translation>

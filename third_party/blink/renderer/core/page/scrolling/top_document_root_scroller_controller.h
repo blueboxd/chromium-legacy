@@ -15,8 +15,6 @@ namespace blink {
 class LocalFrameView;
 class Node;
 class Page;
-class GraphicsLayer;
-class PaintLayer;
 class RootFrameViewport;
 class ScrollStateCallback;
 class ScrollableArea;
@@ -50,14 +48,6 @@ class CORE_EXPORT TopDocumentRootScrollerController
   // differentiate between real custom callback and the built-in viewport
   // apply scroll. crbug.com/623079.
   bool IsViewportScrollCallback(const ScrollStateCallback*) const;
-
-  // Returns the GraphicsLayer for the global root scroller.
-  GraphicsLayer* RootScrollerLayer() const;
-
-  // Returns the GraphicsLayer for the global root scroll container.
-  GraphicsLayer* RootContainerLayer() const;
-
-  PaintLayer* RootScrollerPaintLayer() const;
 
   // Returns the Node that's the global root scroller.  See README.md for the
   // difference between this and the root scroller types in

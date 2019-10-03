@@ -64,6 +64,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
       FidoDiscoveryFactory* fido_discovery_factory,
       const base::flat_set<FidoTransportProtocol>& supported_transports,
       CtapGetAssertionRequest request_parameter,
+      bool allow_skipping_pin_touch,
       CompletionCallback completion_callback);
   ~GetAssertionRequestHandler() override;
 
@@ -108,6 +109,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
   CompletionCallback completion_callback_;
   State state_ = State::kWaitingForTouch;
   CtapGetAssertionRequest request_;
+  // If true, and if at the time the request is dispatched to the first
+  // authenticator no other authenticators are available, the request handler
+  // will skip the initial touch that is usually required to select a PIN
+  // protected authenticator.
+  bool allow_skipping_pin_touch_;
   // authenticator_ points to the authenticator that will be used for this
   // operation. It's only set after the user touches an authenticator to select
   // it, after which point that authenticator will be used exclusively through

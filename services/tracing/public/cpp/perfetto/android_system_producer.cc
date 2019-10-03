@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/trace_event/trace_log.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "services/tracing/public/cpp/traced_process_impl.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/commit_data_request.h"

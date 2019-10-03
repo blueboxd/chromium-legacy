@@ -24,7 +24,6 @@
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/base/url_request_rewrite_test_util.h"
 #include "fuchsia/engine/browser/frame_impl.h"
-#include "fuchsia/engine/common.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -170,8 +169,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, FrameDeletedBeforeContext) {
   base::RunLoop().RunUntilIdle();
 
   FrameImpl* frame_impl = context_impl()->GetFrameImplForTest(&frame);
-  MockWebContentsObserver deletion_observer(
-      frame_impl->web_contents_for_test());
+  MockWebContentsObserver deletion_observer(frame_impl->web_contents());
   base::RunLoop run_loop;
   EXPECT_CALL(deletion_observer, RenderViewDeleted(_))
       .WillOnce(InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));

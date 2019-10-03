@@ -508,12 +508,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // browser.
   void DoDeferredClose();
 
-  // Creates a Popup and also returns a reference to the RenderWidget, which is
-  // otherwise owned by the browser and un-referencable. |output_widget| is an
-  // output variable.
-  blink::WebPagePopup* CreatePopupAndGetWidget(blink::WebLocalFrame* creator,
-                                               RenderWidget** output_widget);
-
 #if defined(OS_ANDROID)
   // Make the video capture devices (e.g. webcam) stop/resume delivering video
   // frames to their clients, depending on flag |suspend|. This is called in

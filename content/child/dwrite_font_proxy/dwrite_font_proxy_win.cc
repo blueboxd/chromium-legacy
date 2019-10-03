@@ -17,6 +17,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/trace_event/trace_event.h"
 #include "content/child/dwrite_font_proxy/dwrite_localized_strings_win.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/service_names.mojom.h"

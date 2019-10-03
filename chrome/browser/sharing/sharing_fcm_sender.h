@@ -16,8 +16,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
-#include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "components/gcm_driver/web_push_common.h"
+#include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 
 namespace gcm {
@@ -25,12 +25,12 @@ class GCMDriver;
 enum class SendWebPushMessageResult;
 }  // namespace gcm
 
+class SharingSyncPreference;
 class VapidKeyManager;
 
 // Responsible for sending FCM messages within Sharing infrastructure.
 class SharingFCMSender {
  public:
-  using Device = SharingSyncPreference::Device;
   using SharingMessage = chrome_browser_sharing::SharingMessage;
   using SendMessageCallback =
       base::OnceCallback<void(SharingSendMessageResult,
@@ -47,7 +47,7 @@ class SharingFCMSender {
   // asynchronous operation succeeded, or base::nullopt if operation failed.
   // If |recipient_info| is provided, it will be used for encryption and message
   // delivery instead of looking up sync preference.
-  virtual void SendMessageToDevice(Device target,
+  virtual void SendMessageToDevice(syncer::DeviceInfo::SharingInfo target,
                                    base::TimeDelta time_to_live,
                                    SharingMessage message,
                                    SendMessageCallback callback);
@@ -59,7 +59,7 @@ class SharingFCMSender {
 
   // Actually sends the |message| to |target|. This will be called when our
   // local device info is ready.
-  void DoSendMessageToDevice(Device target,
+  void DoSendMessageToDevice(syncer::DeviceInfo::SharingInfo target,
                              base::TimeDelta time_to_live,
                              SharingMessage message,
                              SendMessageCallback callback);

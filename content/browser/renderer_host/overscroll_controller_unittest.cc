@@ -43,7 +43,9 @@ class OverscrollControllerTest : public ::testing::Test {
   bool SimulateMouseWheel(float dx, float dy) {
     DCHECK(!current_event_);
     current_event_ = std::make_unique<blink::WebMouseWheelEvent>(
-        SyntheticWebMouseWheelEventBuilder::Build(0, 0, dx, dy, 0, true));
+        SyntheticWebMouseWheelEventBuilder::Build(
+            0, 0, dx, dy, 0,
+            ui::input_types::ScrollGranularity::kScrollByPrecisePixel));
     return controller_->WillHandleEvent(*current_event_);
   }
 

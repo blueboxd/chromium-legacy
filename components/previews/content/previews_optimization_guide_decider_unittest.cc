@@ -46,14 +46,14 @@ class TestOptimizationGuideDecider
 
   optimization_guide::OptimizationGuideDecision CanApplyOptimization(
       content::NavigationHandle* navigation_handle,
-      optimization_guide::OptimizationTarget optimization_target,
+      optimization_guide::proto::OptimizationTarget optimization_target,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationMetadata* optimization_metadata)
       override {
     // Previews should always call this method with painful page load as the
     // target.
     DCHECK(optimization_target ==
-           optimization_guide::OptimizationTarget::kPainfulPageLoad);
+           optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
 
     auto response_iter = responses_.find(
         std::make_tuple(navigation_handle->GetURL(), optimization_type));

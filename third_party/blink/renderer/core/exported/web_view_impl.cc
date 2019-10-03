@@ -3234,13 +3234,11 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
   visual_viewport.AttachLayerTree(graphics_layer);
   if (graphics_layer) {
     root_graphics_layer_ = visual_viewport.RootGraphicsLayer();
-    visual_viewport_container_layer_ = visual_viewport.ContainerLayer();
     root_layer_ = root_graphics_layer_->CcLayer();
     UpdateDeviceEmulationTransform();
     MainFrameImpl()->FrameWidgetImpl()->Client()->SetRootLayer(root_layer_);
   } else {
     root_graphics_layer_ = nullptr;
-    visual_viewport_container_layer_ = nullptr;
     root_layer_ = nullptr;
     WebWidgetClient* widget_client =
         MainFrameImpl()->FrameWidgetImpl()->Client();
@@ -3402,17 +3400,6 @@ void WebViewImpl::SendScrollEndEventFromImplSide(
 }
 
 void WebViewImpl::UpdateDeviceEmulationTransform() {
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // This method may be called before a document lifecycle update runs, and
-    // attaches the |visual_viewport_container_layer_|. In that case, we will
-    // save the new transform and apply it when the container layer is attached.
-    // This is also null when CompositeAfterPaint is enabled.
-    if (visual_viewport_container_layer_) {
-      visual_viewport_container_layer_->SetTransform(
-          device_emulation_transform_);
-    }
-  }
-
   GetPage()->GetVisualViewport().SetNeedsPaintPropertyUpdate();
 
   if (MainFrameImpl()) {

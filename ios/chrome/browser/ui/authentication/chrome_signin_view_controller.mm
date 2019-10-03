@@ -53,7 +53,6 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ui/base/l10n/l10n_util.h"
 

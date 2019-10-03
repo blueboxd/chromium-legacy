@@ -951,7 +951,9 @@ TEST_F(PersonalDataManagerTest, AddProfile_Invalid) {
 }
 
 // Tests that SaveImportedProfile sets the modification date on new profiles.
-TEST_F(PersonalDataManagerTest, SaveImportedProfileSetModificationDate) {
+// Flaky. http://crbug.com/1010684
+TEST_F(PersonalDataManagerTest,
+       DISABLED_SaveImportedProfileSetModificationDate) {
   AutofillProfile profile(test::GetFullProfile());
   EXPECT_NE(base::Time(), profile.modification_date());
 

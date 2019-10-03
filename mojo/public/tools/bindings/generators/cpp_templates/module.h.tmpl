@@ -112,7 +112,7 @@ namespace {{variant}} {
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 {%- endif %}
 
-{% if not disallow_native_types %}
+{% if not disallow_native_types and uses_native_types %}
 #include "mojo/public/cpp/bindings/lib/native_enum_serialization.h"
 #include "mojo/public/cpp/bindings/lib/native_struct_serialization.h"
 {%- endif %}

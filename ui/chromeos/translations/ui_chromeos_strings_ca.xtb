@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">Deixa de fixar la carpeta</translation>
 <translation id="3678559383040232393">Teclat maltès</translation>
 <translation id="3685122418104378273">La sincronització amb Google Drive està desactivada de manera predeterminada en utilitzar les dades mòbils.</translation>
+<translation id="3689865792480713551">Cancel·la <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Aquest dispositiu no es pot obrir perquè el seu sistema de fitxers no és compatible.</translation>
 <translation id="3741243925913727067">Crea còpies de seguretat de les fotos i dels vídeos del dispositiu multimèdia a Google Drive.</translation>
 <translation id="3749289110408117711">Nom del fitxer</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">Teclat internacional dels EUA (PC)</translation>
 <translation id="6346310558342052870">Accés restringit</translation>
 <translation id="6353618411602605519">Teclat croat</translation>
+<translation id="6356685157277930264">Finestra de suggeriments en fitxers</translation>
 <translation id="6358884629796491903">Drac</translation>
 <translation id="637062427944097960">Aquest fitxer s'ha obert en un altre escriptori. Aneu a <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) per veure'l.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> elements</translation>

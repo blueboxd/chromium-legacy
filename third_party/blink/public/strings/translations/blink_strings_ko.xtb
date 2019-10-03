@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">바닥글</translation>
 <translation id="2709516037105925701">자동 완성</translation>
 <translation id="2723001399770238859">오디오</translation>
+<translation id="2725963129578236554">댓글</translation>
 <translation id="2746543609216772311">값은 <ph name="MINIMUM_DATE_OR_TIME" /> 이후여야 합니다.</translation>
 <translation id="2759744352195237655">팝업 버튼</translation>
 <translation id="2761667185364618470">계속하려면 이 확인란을 선택하세요.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">이 텍스트를 <ph name="MIN_CHARACTERS" />자 이상으로 늘리세요(현재 <ph name="CURRENT_LENGTH" />자 사용 중).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' 앞 부분에 '<ph name="INVALIDCHARACTER" />' 기호가 포함되면 안됩니다.</translation>
 <translation id="3846214748874656680">전체화면 종료</translation>
+<translation id="3889183436948184105">개정</translation>
 <translation id="3920932319529768807">결론</translation>
 <translation id="3924558731517983934">애플리케이션</translation>
 <translation id="3944740393230681990">프롤로그</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">오디오 시간 스크러버</translation>
 <translation id="6443871981718447451">자막 메뉴 표시</translation>
 <translation id="6453774872122745852">감사의 말</translation>
+<translation id="6475115390776617481">실시간 공동작업자</translation>
 <translation id="648732519525291180">시간 선택기</translation>
 <translation id="6550675742724504774">옵션</translation>
 <translation id="6572309429103589720">문법이 잘못되었습니다.</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">삽입</translation>
 <translation id="6989848892321993519">이 텍스트를 <ph name="MIN_CHARACTERS" />자 이상으로 늘리세요(현재 1자 사용 중).</translation>
 <translation id="7033340931668032222">위아래로 볼륨 조정</translation>
+<translation id="7034405885550056553">추천</translation>
 <translation id="709897737746224366">요청한 형식과 일치시키세요.</translation>
 <translation id="7118469954320184356">설명이 없습니다.</translation>
 <translation id="7139483182332611405">머리말</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">출력</translation>
 <translation id="8750798805984357768">다음 옵션 중 하나를 선택하세요.</translation>
 <translation id="8808573423886751634">장</translation>
+<translation id="8822203815165896261">저자 정보</translation>
 <translation id="8845239796550121995">TV로 전송 중</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8875657656876809964">동영상 재생 오류</translation>

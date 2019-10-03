@@ -860,36 +860,31 @@ const FeatureEntry::FeatureVariation kOmniboxDocumentProviderVariations[] = {
 const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamSERP[] = {
     {"ZeroSuggestVariant:6:*", "RemoteSendUrl"}};
 const FeatureEntry::FeatureParam
-    kOmniboxOnFocusSuggestionsParamNTPOmniboxRemote[] = {
-        {"ZeroSuggestVariant:7:*", "RemoteNoUrl"}};
-const FeatureEntry::FeatureParam
     kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal[] = {
         {"ZeroSuggestVariant:7:*", "RemoteNoUrl,Local"}};
 const FeatureEntry::FeatureParam
-    kOmniboxOnFocusSuggestionsParamNTPRealboxRemote[] = {
-        {"ZeroSuggestVariant:15:*", "RemoteNoUrl"}};
-const FeatureEntry::FeatureParam
     kOmniboxOnFocusSuggestionsParamNTPRealboxRemoteLocal[] = {
         {"ZeroSuggestVariant:15:*", "RemoteNoUrl,Local"}};
+const FeatureEntry::FeatureParam
+    kOmniboxOnFocusSuggestionsParamNTPOmniboxRealboxRemoteLocal[] = {
+        *kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal,
+        *kOmniboxOnFocusSuggestionsParamNTPRealboxRemoteLocal};
 const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
     {"SERP - RemoteSendURL", kOmniboxOnFocusSuggestionsParamSERP,
      base::size(kOmniboxOnFocusSuggestionsParamSERP),
      "t3315869" /* variation_id */},
-    {"NTP Omnibox - Remote", kOmniboxOnFocusSuggestionsParamNTPOmniboxRemote,
-     base::size(kOmniboxOnFocusSuggestionsParamNTPOmniboxRemote),
-     "t3316133" /* variation_id */},
     {"NTP Omnibox - Remote,Local",
      kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal,
      base::size(kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal),
-     "t3316133" /* variation_id */},
-    {"NTP Realbox - Remote", kOmniboxOnFocusSuggestionsParamNTPRealboxRemote,
-     base::size(kOmniboxOnFocusSuggestionsParamNTPRealboxRemote),
      "t3316133" /* variation_id */},
     {"NTP Realbox - Remote,Local",
      kOmniboxOnFocusSuggestionsParamNTPRealboxRemoteLocal,
      base::size(kOmniboxOnFocusSuggestionsParamNTPRealboxRemoteLocal),
      "t3316133" /* variation_id */},
-
+    {"NTP Omnibox,Realbox - Remote,Local",
+     kOmniboxOnFocusSuggestionsParamNTPOmniboxRealboxRemoteLocal,
+     base::size(kOmniboxOnFocusSuggestionsParamNTPOmniboxRealboxRemoteLocal),
+     "t3316133" /* variation_id */},
 };
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
@@ -2793,10 +2788,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"omnibox-reverse-answers", flag_descriptions::kOmniboxReverseAnswersName,
      flag_descriptions::kOmniboxReverseAnswersDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxReverseAnswers)},
-    {"omnibox-reverse-tab-switch-logic",
-     flag_descriptions::kOmniboxReverseTabSwitchLogicName,
-     flag_descriptions::kOmniboxReverseTabSwitchLogicDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxReverseTabSwitchLogic)},
     {"omnibox-short-bookmark-suggestions",
      flag_descriptions::kOmniboxShortBookmarkSuggestionsName,
      flag_descriptions::kOmniboxShortBookmarkSuggestionsDescription, kOsDesktop,
@@ -3641,13 +3632,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kCompositorThreadedScrollbarScrolling)},
 
 #if defined(OS_CHROMEOS)
-    {"enable-chromeos-account-manager",
-     flag_descriptions::kEnableChromeOsAccountManagerName,
-     flag_descriptions::kEnableChromeOsAccountManagerDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kAccountManager)},
-#endif
-
-#if defined(OS_CHROMEOS)
     {"enable-vaapi-jpeg-image-decode-acceleration",
      flag_descriptions::kVaapiJpegImageDecodeAccelerationName,
      flag_descriptions::kVaapiJpegImageDecodeAccelerationDescription, kOsCrOS,
@@ -4225,11 +4209,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillPruneSuggestionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillPruneSuggestions)},
 
+// TODO(https://crbug.com/1010509): Re-enable this in Chrome 80.
+#if 0
     {"allow-popups-during-page-unload",
      flag_descriptions::kAllowPopupsDuringPageUnloadName,
      flag_descriptions::kAllowPopupsDuringPageUnloadDescription,
      kOsAll | kDeprecated,
      SINGLE_VALUE_TYPE(switches::kAllowPopupsDuringPageUnload)},
+#endif
 #if defined(OS_CHROMEOS)
     {"enable-advanced-ppd-attributes",
      flag_descriptions::kEnableAdvancedPpdAttributesName,

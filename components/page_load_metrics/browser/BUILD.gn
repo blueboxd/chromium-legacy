@@ -47,11 +47,14 @@ source_set("test_support") {
   sources = [
     "page_load_metrics_test_waiter.cc",
     "page_load_metrics_test_waiter.h",
+    "test_metrics_web_contents_observer_embedder.cc",
+    "test_metrics_web_contents_observer_embedder.h",
   ]
   deps = [
     ":browser",
     "//base",
     "//components/page_load_metrics/common:page_load_metrics_mojom",
+    "//components/page_load_metrics/common:test_support",
     "//content/public/browser",
     "//content/public/common",
     "//testing/gtest",
@@ -62,13 +65,18 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "metrics_web_contents_observer_unittest.cc",
     "page_load_metrics_util_unittest.cc",
     "resource_tracker_unittest.cc",
   ]
   deps = [
     ":browser",
+    ":test_support",
+    "//base/test:test_support",
     "//components/page_load_metrics/common:page_load_metrics_mojom",
+    "//components/page_load_metrics/common:test_support",
     "//content/public/browser",
+    "//content/test:test_support",
     "//testing/gtest",
     "//url",
   ]

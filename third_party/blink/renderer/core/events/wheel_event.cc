@@ -36,8 +36,15 @@ namespace blink {
 namespace {
 
 unsigned ConvertDeltaMode(const WebMouseWheelEvent& event) {
-  return event.scroll_by_page ? WheelEvent::kDomDeltaPage
-                              : WheelEvent::kDomDeltaPixel;
+  // WebMouseWheelEvent only supports these units for the delta.
+  DCHECK(
+      event.delta_units == ui::input_types::ScrollGranularity::kScrollByPage ||
+      event.delta_units == ui::input_types::ScrollGranularity::kScrollByPixel ||
+      event.delta_units ==
+          ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
+  return event.delta_units == ui::input_types::ScrollGranularity::kScrollByPage
+             ? WheelEvent::kDomDeltaPage
+             : WheelEvent::kDomDeltaPixel;
 }
 
 // Negate a long value without integer overflow.

@@ -19,6 +19,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
@@ -186,8 +187,8 @@ public class ChromeBackupAgent extends BackupAgent {
             // immediately, so by the time it does Chrome may not be running.
             if (!initializeBrowser(backupAgent)) return false;
 
-            String[] nativeBackupNames = nativeGetBoolBackupNames();
-            boolean[] nativeBackupValues = nativeGetBoolBackupValues();
+            String[] nativeBackupNames = ChromeBackupAgentJni.get().getBoolBackupNames(this);
+            boolean[] nativeBackupValues = ChromeBackupAgentJni.get().getBoolBackupValues(this);
             assert nativeBackupNames.length == nativeBackupValues.length;
 
             for (String name : nativeBackupNames) {
@@ -362,7 +363,8 @@ public class ChromeBackupAgent extends BackupAgent {
                     count++;
                 }
             }
-            nativeSetBoolBackupPrefs(nativeBackupNames.toArray(new String[count]),
+            ChromeBackupAgentJni.get().setBoolBackupPrefs(this,
+                    nativeBackupNames.toArray(new String[count]),
                     Arrays.copyOf(nativeBackupValues, count));
         });
 
@@ -448,12 +450,10 @@ public class ChromeBackupAgent extends BackupAgent {
         }
     }
 
-    @VisibleForTesting
-    protected native String[] nativeGetBoolBackupNames();
-
-    @VisibleForTesting
-    protected native boolean[] nativeGetBoolBackupValues();
-
-    @VisibleForTesting
-    protected native void nativeSetBoolBackupPrefs(String[] name, boolean[] value);
+    @NativeMethods
+    interface Natives {
+        String[] getBoolBackupNames(ChromeBackupAgent caller);
+        boolean[] getBoolBackupValues(ChromeBackupAgent caller);
+        void setBoolBackupPrefs(ChromeBackupAgent caller, String[] name, boolean[] value);
+    }
 }

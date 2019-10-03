@@ -435,14 +435,6 @@ void ExtensionSyncService::ApplySyncData(
         extension_service()->EnableExtension(id);
       else if (extension_sync_data.supports_disable_reasons())
         reenable_after_update = true;
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-      if (!has_all_permissions && (state == INSTALLED_NEWER) &&
-          extensions::util::IsExtensionSupervised(extension, profile_)) {
-        SupervisedUserServiceFactory::GetForProfile(profile_)
-            ->AddExtensionUpdateRequest(id, extension->version());
-      }
-#endif
     } else {
       // The extension is not installed yet. Set it to enabled; we'll check for
       // permission increase (more accurately, for a version change) when it's

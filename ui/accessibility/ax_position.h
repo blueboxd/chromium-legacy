@@ -707,11 +707,14 @@ class AXPosition {
     AXPositionInstance copy = Clone();
     DCHECK(copy);
     DCHECK_GE(copy->text_offset_, 0);
-    if (!copy->AnchorChildCount() &&
-        copy->text_offset_ != copy->MaxTextOffset()) {
-      copy->child_index_ = BEFORE_TEXT;
-    } else {
-      copy->child_index_ = 0;
+    if (!copy->AnchorChildCount()) {
+      const int max_text_offset = copy->MaxTextOffset();
+      copy->child_index_ =
+          (max_text_offset != 0 && copy->text_offset_ != max_text_offset)
+              ? BEFORE_TEXT
+              : 0;
+      copy->kind_ = AXPositionKind::TREE_POSITION;
+      return copy;
     }
 
     // Blink doesn't always remove all deleted whitespace at the end of a
@@ -720,23 +723,22 @@ class AXPosition {
     // last child that we can reach with the current text offset and ignore any
     // remaining children.
     int current_offset = 0;
-    for (int i = 0; i < copy->AnchorChildCount(); ++i) {
-      AXPositionInstance child = copy->CreateChildPositionAt(i);
+    int child_index = 0;
+    for (; child_index < copy->AnchorChildCount(); ++child_index) {
+      AXPositionInstance child = copy->CreateChildPositionAt(child_index);
       DCHECK(child);
       int child_length = child->MaxTextOffsetInParent();
       if (copy->text_offset_ >= current_offset &&
           (copy->text_offset_ < (current_offset + child_length) ||
            (copy->affinity_ == ax::mojom::TextAffinity::kUpstream &&
             copy->text_offset_ == (current_offset + child_length)))) {
-        copy->child_index_ = i;
         break;
       }
 
       current_offset += child_length;
     }
-    if (current_offset >= copy->MaxTextOffset())
-      copy->child_index_ = copy->AnchorChildCount();
 
+    copy->child_index_ = child_index;
     copy->kind_ = AXPositionKind::TREE_POSITION;
     return copy;
   }

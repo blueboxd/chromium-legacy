@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK_TOS" />Conditions d'utilisation<ph name="END_LINK_TOS" /> et l'<ph name="BEGIN_LINK_PRIVACY" />Avis de confidentialité<ph name="END_LINK_PRIVACY" /> de Chrome.</translation>
 <translation id="2147651015520127414">Chrome a confirmé que le certificat de ce site Web a bien été émis par <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Données de la synchronisation Chrome</translation>
-<translation id="2342981853652716282">Connectez-vous à Chrome pour accéder à vos favoris, mots de passe et bien plus sur tous vos appareils.</translation>
 <translation id="2347208864470321755">Lorsque cette fonctionnalité est activée dans Chrome, un message s'affiche pour vous proposer que les pages de ce site rédigées dans d'autres langues soient traduites à l'aide de Google Traduction. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Pour enregistrer des images, appuyez sur Paramètres afin d'autoriser Chrome à utiliser vos photos.</translation>
 <translation id="2576431527583832481">Google Chrome s'est amélioré ! Une nouvelle version est désormais disponible.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Envoyer des statistiques d'utilisation et des rapports d'erreur pour améliorer Chrome</translation>
 <translation id="415767770115540173">Améliorez votre expérience Google dans Chrome grâce à votre position.</translation>
 <translation id="424864128008805179">Se déconnecter de Chrome ?</translation>
+<translation id="4249068189593983585">Astuce Chrome : Pour afficher plus d'options de l'onglet, appuyez de manière prolongée sur le bouton "Afficher les onglets" situé dans la barre d'outils affichée dans la partie inférieure ou supérieure de l'écran.</translation>
 <translation id="4523886039239821078">Certains modules complémentaires entraînent le plantage de Chrome. Veuillez les désinstaller.</translation>
 <translation id="5389212809648216794">Google Chrome ne peut pas utiliser l'appareil photo, car celui-ci est utilisé par une autre application</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Passez en revue les Conditions d'utilisation de Chrome mises à jour.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Certains modules complémentaires entraînent le plantage de Chrome. Veuillez essayer de les désinstaller.</translation>
 <translation id="8459495907675268833">Les données sélectionnées ont été supprimées de Chrome et des appareils synchronisés. Votre compte Google conserve peut-être d'autres formes d'historique de navigation sur la page history.google.com concernant, par exemple, vos recherches ou vos activités via d'autres services Google.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome peut utiliser des services Web pour améliorer votre confort de navigation. Vous pouvez choisir de désactiver ces services. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 </translationbundle>

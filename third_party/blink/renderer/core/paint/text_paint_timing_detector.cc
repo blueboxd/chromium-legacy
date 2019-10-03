@@ -161,12 +161,10 @@ bool TextPaintTimingDetector::ShouldWalkObject(
   // shadow element or has no elementtiming attribute, then we should not record
   // its text.
   if (!records_manager_.IsRecordingLargestTextPaint() &&
-      !TextElementTiming::NeededForElementTiming(*node))
+      !TextElementTiming::NeededForElementTiming(*node)) {
     return false;
+  }
 
-  DOMNodeId node_id = DOMNodeIds::ExistingIdForNode(node);
-  if (node_id == kInvalidDOMNodeId)
-    return true;
   // This metric defines the size of a text block by its first size, so we
   // should not walk the object if it has been recorded.
   return !records_manager_.HasRecorded(object);

@@ -169,7 +169,6 @@ ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
   // No need to update the clip since we're about to restore it to
   // `original_clip_rect_`.
   UpdateRoundedCorners(/*show=*/false, /*update_clip=*/false);
-  StopObservingImplicitAnimations();
   aura::client::GetTransientWindowClient()->RemoveObserver(this);
   window_->layer()->SetClipRect(original_clip_rect_);
 }
@@ -181,18 +180,6 @@ float ScopedOverviewTransformWindow::GetItemScale(const gfx::SizeF& source,
                                                   int title_height) {
   return std::min(2.0f, (target.height() - title_height) /
                             (source.height() - top_view_inset));
-}
-
-// static
-gfx::Transform ScopedOverviewTransformWindow::GetTransformForRect(
-    const gfx::RectF& src_rect,
-    const gfx::RectF& dst_rect) {
-  DCHECK(!src_rect.IsEmpty());
-  gfx::Transform transform;
-  transform.Translate(dst_rect.x() - src_rect.x(), dst_rect.y() - src_rect.y());
-  transform.Scale(dst_rect.width() / src_rect.width(),
-                  dst_rect.height() / src_rect.height());
-  return transform;
 }
 
 void ScopedOverviewTransformWindow::RestoreWindow(bool reset_transform) {
@@ -259,11 +246,6 @@ void ScopedOverviewTransformWindow::BeginScopedAnimation(
     }
 
     animation_settings->push_back(std::move(settings));
-  }
-
-  if (animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW &&
-      animation_settings->size() > 0u) {
-    animation_settings->front()->AddObserver(this);
   }
 }
 
@@ -435,24 +417,6 @@ void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show,
         OVERVIEW_ANIMATION_FRAME_HEADER_CLIP, window_);
     layer->SetClipRect(clip_rect);
   }
-}
-
-void ScopedOverviewTransformWindow::CancelAnimationsListener() {
-  StopObservingImplicitAnimations();
-}
-
-void ScopedOverviewTransformWindow::OnLayerAnimationStarted(
-    ui::LayerAnimationSequence* sequence) {
-  // Remove the shadow before animating because it may affect animation
-  // performance. The shadow will be added back once the animation is completed.
-  // Note that we can't use UpdateRoundedCornersAndShadow() since we don't want
-  // to update the rounded corners.
-  overview_item_->SetShadowBounds(base::nullopt);
-}
-
-void ScopedOverviewTransformWindow::OnImplicitAnimationsCompleted() {
-  overview_item_->UpdateRoundedCornersAndShadow();
-  overview_item_->OnDragAnimationCompleted();
 }
 
 void ScopedOverviewTransformWindow::OnTransientChildWindowAdded(

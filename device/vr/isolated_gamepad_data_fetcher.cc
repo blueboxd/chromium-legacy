@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "build/buildflag.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/vr_device.h"

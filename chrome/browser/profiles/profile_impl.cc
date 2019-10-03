@@ -98,6 +98,7 @@
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/startup_data.h"
+#include "chrome/browser/storage/storage_notification_service_factory.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/prefs_internals_source.h"
@@ -1212,6 +1213,11 @@ storage::SpecialStoragePolicy* ProfileImpl::GetSpecialStoragePolicy() {
 
 content::PushMessagingService* ProfileImpl::GetPushMessagingService() {
   return PushMessagingServiceFactory::GetForProfile(this);
+}
+
+content::StorageNotificationService*
+ProfileImpl::GetStorageNotificationService() {
+  return StorageNotificationServiceFactory::GetForBrowserContext(this);
 }
 
 content::SSLHostStateDelegate* ProfileImpl::GetSSLHostStateDelegate() {

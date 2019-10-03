@@ -22,7 +22,6 @@
 <translation id="116280672541001035">इस्तेमाल किया गया</translation>
 <translation id="1171770572613082465">"मुख्य साइटें" बटन पर टैप करके लोकप्रिय साइटें देखें</translation>
 <translation id="1173894706177603556">नाम बदलें</translation>
-<translation id="1175310183703641346">आपके बुकमार्क, इतिहास, पासवर्ड वगैरह अब आपके Google खाते से समन्‍वयित नहीं किए जाएंगे</translation>
 <translation id="1178581264944972037">रोकें</translation>
 <translation id="1181037720776840403">हटाएं</translation>
 <translation id="1188239144602654184">ऑगमेंटेड रिएलिटी (AR) सत्र शुरू करें</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> में बुकमार्क किया गया</translation>
 <translation id="3744111561329211289">बैकग्राउंड सिंक</translation>
 <translation id="3771001275138982843">अपडेट डाउनलोड नहीं किया जा सका</translation>
+<translation id="3771033907050503522">गुप्त टैब</translation>
 <translation id="3773755127849930740">युग्मन की अनुमति देने के लिए <ph name="BEGIN_LINK" />ब्लूटूथ चालू करें<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">अपने डिवाइस पर भेजें</translation>
 <translation id="3778956594442850293">होम स्‍क्रीन में जोड़ा गया</translation>
@@ -484,7 +484,6 @@
 <translation id="4719927025381752090">अनुवाद करना ऑफ़र करें</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> में खोलें</translation>
 <translation id="4720982865791209136">Chrome को बेहतर बनाने में सहायता करें. <ph name="BEGIN_LINK" />सर्वे में भाग लें<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">आप सिंक खातों को <ph name="ACCOUNT_EMAIL_OLD" /> से <ph name="ACCOUNT_EMAIL_NEW" /> में बदल रहे हैं. आपका मौजूदा Chrome डेटा <ph name="MANAGED_DOMAIN" /> से प्रबंधित किया जाता है. इससे आपका डेटा इस सेवा से मिट जाएगा, लेकिन आपका डेटा <ph name="ACCOUNT_EMAIL_OLD" /> में बना रहेगा.</translation>
 <translation id="473775607612524610">अपडेट करें</translation>
 <translation id="4738836084190194332">अंतिम बार सिंक किया गया: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">नया टैब खोलें</translation>
@@ -668,7 +667,6 @@
 <translation id="5937580074298050696"><ph name="AMOUNT" /> सेव किए गए</translation>
 <translation id="5939518447894949180">रीसेट करें</translation>
 <translation id="5942872142862698679">खोजने के लिए Google का उपयोग किया जा रहा है</translation>
-<translation id="5944669582486359588">'लाइट मोड' में, Chrome पेजों को ज़्यादा तेज़ी से लोड करता है और 60 प्रतिशत तक कम डेटा इस्तेमाल करता है. Google की 'क्लाउड' तकनीक आपके देखे गए पेज ऑप्टिमाइज़ करती है.</translation>
 <translation id="5952764234151283551">आप जिस पेज पर जाने की कोशिश कर रहे हैं उसका यूआरएल Google को भेजती है</translation>
 <translation id="5956665950594638604">Chrome सहायता केंद्र को नए टैब में खोलें</translation>
 <translation id="5958275228015807058">डाउनलोड में जाकर अपनी फ़ाइलें और पेज पाएं</translation>
@@ -815,7 +813,6 @@
 <translation id="7029809446516969842">पासवर्ड</translation>
 <translation id="7053983685419859001">ब्लॉक करें</translation>
 <translation id="7055152154916055070">रीडायरेक्ट ब्लॉक किया गया:</translation>
-<translation id="7062545763355031412">स्वीकार करें और खातों को बदलें</translation>
 <translation id="7063006564040364415">समन्‍वयन सर्वर से कनेक्‍ट नहीं किया जा सका.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 चुना गया}one{# चुने गए}other{# चुने गए}}</translation>
 <translation id="7071521146534760487">खाता प्रबंधित करें</translation>
@@ -1099,7 +1096,6 @@
 <translation id="9139318394846604261">शॉपिंग</translation>
 <translation id="9155898266292537608">आप किसी शब्द पर बस एक टैप करके भी खोज सकते हैं</translation>
 <translation id="9169507124922466868">नेविगेशन का इतिहास आधी स्क्रीन में खुला हुआ है</translation>
-<translation id="9188680907066685419">प्रबंधित खाते से प्रस्थान करें</translation>
 <translation id="9204836675896933765">1 फ़ाइल बची है</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">कॉल नहीं कर पा रहे</translation>
@@ -1108,7 +1104,6 @@
 <translation id="932327136139879170">होम बटन</translation>
 <translation id="938850635132480979">गड़बड़ी: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">अपना माइक्रोफ़ोन एक्सेस करें</translation>
-<translation id="951339005376969845">मौजूदा डेटा मिटाएं. आप <ph name="FROM_ACCOUNT" /> पर वापस जाकर उसे वापस ला सकते हैं.</translation>
 <translation id="95817756606698420">चीन में खोज करने के लिए Chrome, <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> का इस्तेमाल कर सकता है. आप इसे <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में बदल सकते हैं.</translation>
 <translation id="965817943346481315">अगर साइट तंग करने वाले या गुमराह करने वाले विज्ञापन दिखाई देते हैं, तो उन्हें ब्लॉक करें (सुझाव)</translation>
 <translation id="968900484120156207">आप जिन पेजों पर जाएंगे वे यहां दिखाई देंगे</translation>

@@ -257,6 +257,16 @@ WakeLockTestingContext::WakeLockTestingContext(
                          WTF::Unretained(&permission_service_)));
 }
 
+WakeLockTestingContext::~WakeLockTestingContext() {
+  // Remove the testing binder to avoid crashes between tests caused by
+  // our mocks rebinding an already-bound Binding.
+  // See https://crbug.com/1010116 for more information.
+  GetDocument()->GetBrowserInterfaceBroker().SetBinderForTesting(
+      mojom::blink::WakeLockService::Name_, {});
+  GetDocument()->GetBrowserInterfaceBroker().SetBinderForTesting(
+      mojom::blink::PermissionService::Name_, {});
+}
+
 Document* WakeLockTestingContext::GetDocument() {
   return &testing_scope_.GetDocument();
 }

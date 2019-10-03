@@ -51,10 +51,10 @@ blink::WebMouseWheelEvent CreateSyntheticWheelFromTouchpadPinchEvent(
       pinch_event.TimeStamp());
   wheel_event.SetPositionInWidget(pinch_event.PositionInWidget());
   wheel_event.SetPositionInScreen(pinch_event.PositionInScreen());
+  wheel_event.delta_units =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   wheel_event.delta_x = 0;
   wheel_event.delta_y = delta_y;
-
-  wheel_event.has_precise_scrolling_deltas = true;
 
   wheel_event.phase = phase;
   wheel_event.wheel_ticks_x = 0;

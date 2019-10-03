@@ -22,7 +22,6 @@
 <translation id="116280672541001035">ব্যবহৃত</translation>
 <translation id="1171770572613082465">"সেরা সাইট" বোতামে ট্যাপ করে জনপ্রিয় ওয়েবসাইটগুলি দেখুন</translation>
 <translation id="1173894706177603556">পুনঃনামকরণ</translation>
-<translation id="1175310183703641346">আপনার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং আরও অনেক কিছু আপনার Google অ্যাকাউন্টের সাথে আর সিঙ্ক করা হবে না</translation>
 <translation id="1178581264944972037">বিরতি</translation>
 <translation id="1181037720776840403">সরান</translation>
 <translation id="1188239144602654184">এ আর সেশন শুরু করুন</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> এ বুকমার্ক করা হয়েছে</translation>
 <translation id="3744111561329211289">পটভূমি সিঙ্ক</translation>
 <translation id="3771001275138982843">আপডেট ডাউনলোড করা যায়নি</translation>
+<translation id="3771033907050503522">ছদ্মবেশী ট্যাবগুলি</translation>
 <translation id="3773755127849930740">যুক্ত করার মঞ্জুরি দিতে <ph name="BEGIN_LINK" />ব্লুটুথ চালু করুন<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">আপনার ডিভাইসে পাঠান</translation>
 <translation id="3778956594442850293">হোম স্ক্রিনে যোগ করা হয়েছে</translation>
@@ -486,7 +486,6 @@
 <translation id="4719927025381752090">অনুবাদ করুন</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> এ খুলুন</translation>
 <translation id="4720982865791209136">Chrome উন্নত করতে সাহায্য করুন। <ph name="BEGIN_LINK" />সমীক্ষায় অংশ নিন।<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">আপনি সিঙ্ক অ্যাকাউন্টগুলি <ph name="ACCOUNT_EMAIL_OLD" /> থেকে <ph name="ACCOUNT_EMAIL_NEW" /> এ পাল্টাচ্ছেন। আপনার বিদ্যমান Chrome ডেটা <ph name="MANAGED_DOMAIN" /> দ্বারা পরিচালিত হয়। এটা এই ডিভাইস থেকে আপনার ডেটা মুছে ফেলবে, কিন্তু আপনার ডেটা <ph name="ACCOUNT_EMAIL_OLD" /> এ থেকে যাবে।</translation>
 <translation id="473775607612524610">আপডেট করুন</translation>
 <translation id="4738836084190194332">সর্বশেষ সিঙ্ক হয়েছে: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">একটি নতুন ট্যাব খুলুন</translation>
@@ -670,13 +669,13 @@
 <translation id="5937580074298050696"><ph name="AMOUNT" /> সেভ করা হয়েছে</translation>
 <translation id="5939518447894949180">রিসেট করুন</translation>
 <translation id="5942872142862698679">সার্চের জন্য Google কে ব্যবহার করছে</translation>
-<translation id="5944669582486359588">লাইট মোডে, Chrome আরও দ্রুত পৃষ্ঠা লোড করে এবং ৬০ শতাংশ পর্যন্ত কম ডেটা ব্যবহার করে। আপনি যে পৃষ্ঠাগুলিতে যান Google-এর ক্লাউড টেকনোলজি সেগুলিকে অপ্টিমাইজ করে।</translation>
 <translation id="5952764234151283551">যে পৃষ্ঠাটি দেখার চেষ্টা করছেন Google-কে সেটির ইউআরএল পাঠায়</translation>
 <translation id="5956665950594638604">Chrome সহায়তা কেন্দ্রকে একটি নতুন ট্যাবে খুলুন</translation>
 <translation id="5958275228015807058">ডাউনলোড ফোল্ডার থেকে আপনার সমস্ত ফাইল ও পৃষ্ঠাগুলি খুঁজে নিন</translation>
 <translation id="5962718611393537961">সঙ্কুচিত করতে আলতো চাপুন</translation>
 <translation id="6000066717592683814">Google কে রাখুন</translation>
 <translation id="6005538289190791541">প্রস্তাবিত পাসওয়ার্ড</translation>
+<translation id="6036057147555329831">অতিরিক্ত ICU</translation>
 <translation id="6039379616847168523">পরবর্তী ট্যাবে চলে যান</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6042308850641462728">আরও</translation>
@@ -817,7 +816,6 @@
 <translation id="7029809446516969842">পাসওয়ার্ড</translation>
 <translation id="7053983685419859001">ব্লক করুন</translation>
 <translation id="7055152154916055070">রিডাইরেক্ট ব্লক করা হয়েছে:</translation>
-<translation id="7062545763355031412">স্বীকার করে অ্যাকাউন্টগুলি সুইচ করুন</translation>
 <translation id="7063006564040364415">সিঙ্ক সার্ভারে সংযোগ করতে পারেনি৷</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{১টি বেছে নেওয়া হয়েছে}one{#টি বেছে নেওয়া হয়েছে}other{#টি বেছে নেওয়া হয়েছে}}</translation>
 <translation id="7071521146534760487">অ্যাকাউন্ট ম্যানেজ করুন</translation>
@@ -1101,7 +1099,6 @@
 <translation id="9139318394846604261">কেনাকাটা</translation>
 <translation id="9155898266292537608">এছাড়াও কোনও শব্দের উপরে ট্যাপ করেও খুঁজতে পারেন</translation>
 <translation id="9169507124922466868">নেভিগেশনের ইতিহাস অর্ধেক খোলা রয়েছে</translation>
-<translation id="9188680907066685419">ম্যানেজ করা অ্যাকাউন্ট থেকে সাইন-আউট করুন</translation>
 <translation id="9204836675896933765">১টি ফাইল বাকি</translation>
 <translation id="9206873250291191720">আ</translation>
 <translation id="9209888181064652401">কল করা যাচ্ছে না</translation>
@@ -1110,7 +1107,6 @@
 <translation id="932327136139879170">হোম</translation>
 <translation id="938850635132480979">ত্রুটি: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">আপনার মাইক্রোফোন অ্যাক্সেস করুন</translation>
-<translation id="951339005376969845">বিদ্যমান ডেটা মুছুন। আপনি <ph name="FROM_ACCOUNT" /> এ ফিরে গিয়ে এটি পুনরুদ্ধার করতে পারেন।</translation>
 <translation id="95817756606698420">Chrome, চীনে সার্চের জন্য <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> কে ব্যবহার করতে পারে। আপনি <ph name="BEGIN_LINK" />সেটিংস<ph name="END_LINK" /> থেকে এটি পরিবর্তন করতে পারেন।</translation>
 <translation id="965817943346481315">সাইটে থাকা ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন ব্লক করুন (প্রস্তাবিত)</translation>
 <translation id="968900484120156207">আপনি যে পৃষ্ঠাগুলিতে যান সেগুলি এখানে দেখানো হয়</translation>

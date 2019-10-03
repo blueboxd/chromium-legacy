@@ -18,7 +18,6 @@
 <translation id="1393853151966637042">Hankige abi Chrome'i kasutamise kohta</translation>
 <translation id="1399397803214730675">Selles arvutis on juba Google Chrome'i uuem versioon. Kui tarkvara ei tööta, desinstallige Google Chrome ja proovige uuesti.</translation>
 <translation id="1434626383986940139">Chrome Canary rakendused</translation>
-<translation id="1457721931618994305">Google Chrome'i värskendamine ...</translation>
 <translation id="1469002951682717133">Chrome'i rakenduste käiviti</translation>
 <translation id="1553358976309200471">Värskenda Chrome'i</translation>
 <translation id="1587223624401073077">Google Chrome kasutab teie kaamerat.</translation>
@@ -90,6 +89,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="3065168410429928842">Chrome'i vaheleht</translation>
 <translation id="3080151273017101988">Jätka taustal olevate rakenduste tööd, kui Google Chrome on suletud</translation>
 <translation id="3089968997497233615">Saadaval on uus ja turvalisem Google Chrome'i versioon.</translation>
+<translation id="3138848678222082288">Chrome'i tulevased versioonid installitakse automaatselt. Kui allalaadimine lõpetatakse, taaskäivitub Chrome ja saate alustada.</translation>
 <translation id="3149510190863420837">Chrome'i rakendused</translation>
 <translation id="3282568296779691940">Chrome'i sisselogimine</translation>
 <translation id="3340978935015468852">seaded</translation>
@@ -173,9 +173,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="573759479754913123">Teave Chrome OS-i kohta</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome'i ei õnnestunud käivitada. Proovige uuesti.</translation>
-<translation id="5877064549588274448">Kanal on muutunud. Muudatuste rakendamiseks taaskäivitage oma seade.</translation>
 <translation id="5895138241574237353">Taaskäivitamine</translation>
-<translation id="5906655207909574370">Seade on peaaegu ajakohane. Värskenduse lõpuleviimiseks taaskäivitage seade.</translation>
 <translation id="5940385492829620908">Siin asuvad teie veeb, järjehoidjad ja muu Chrome'i kraam.</translation>
 <translation id="5941830788786076944">Tee Google Chrome vaikebrauseriks</translation>
 <translation id="6014844626092547096">Olete nüüd Chrome'i sisse logitud. Administraator on sünkroonimise keelanud.</translation>
@@ -194,16 +192,15 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="6566149418543181476">Google Chrome'i värskendamine (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Kasutate Chrome'i kraami sünkroonimiseks kontot <ph name="PROFILE_EMAIL" />. Sünkroonimiseelistuste värskendamiseks või Chrome'i kasutamiseks ilma Google`i kontota avage <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Chrome'i kopeeritud</translation>
-<translation id="6634887557811630702">Google Chrome on ajakohane.</translation>
 <translation id="6676384891291319759">Pääs Internetti</translation>
 <translation id="6679975945624592337">Luba Google Chrome'il taustal töötada</translation>
 <translation id="6750954913813541382">Õigekirjavigade parandamiseks saadab Chrome brauseris sisestatava teksti Google'ile</translation>
 <translation id="677276454032249905">Kas väljuda Chrome'ist ikkagi?</translation>
 <translation id="683440813066116847">Sissetuleku reegel Google Chrome Canaryle mDNS-liikluse lubamiseks.</translation>
 <translation id="6885412569789873916">Chrome'i beetaversiooni rakendused</translation>
+<translation id="6906909733186691861">Chrome'i tulevased versioonid installitakse automaatselt.</translation>
 <translation id="6943584222992551122">Selle isiku sirvimisandmed kustutatakse seadmest. Andmete taastamiseks logige Chrome'i sisse kasutajana <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Sissetuleku reegel Google Chrome'i beetaversioonile mDNS-liikluse lubamiseks.</translation>
-<translation id="6970811910055250180">Teie seadme täiendamine ...</translation>
 <translation id="6982337800632491844">Domeen <ph name="DOMAIN" /> nõuab, et loete enne selle seadme kasutamist läbi järgmised teenusetingimused ja nõustute nendega. Need tingimused ei laienda, muuda ega piira Google Chrome OS-i tingimusi.</translation>
 <translation id="6989339256997917931">Google Chrome'i on värskendatud, aga te pole seda kasutanud vähemalt 30 päeva.</translation>
 <translation id="7098166902387133879">Google Chrome kasutab teie mikrofoni.</translation>
@@ -241,7 +238,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="7962410387636238736">See arvuti ei saa enam Google Chrome'i värskendusi, kuna Windows XP-d ja Windows Vistat enam ei toetata</translation>
 <translation id="8008534537613507642">Installi Chrome uuesti</translation>
 <translation id="8013993649590906847">Kui pildil puudub kasulik kirjeldus, üritab Chrome selle ise luua. Kirjelduste loomiseks saadetakse pildid Google'ile.</translation>
-<translation id="8030318113982266900">Seadet värskendatakse kanalile <ph name="CHANNEL_NAME" /> ...</translation>
 <translation id="8032142183999901390">Pärast konto eemaldamist Chrome'ist tuleb avatud vahekaardid võib-olla uuesti laadida, et need toimiksid.</translation>
 <translation id="8129812357326543296">Teave &amp;Google Chrome'i kohta</translation>
 <translation id="8179874765710681175">Installige Chrome oma telefoni. Saadame teie telefoni SMS-i.</translation>
@@ -264,7 +260,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="8606668294522778825">Google Chrome võib kasutada veebiteenuseid sirvimiskogemuse parandamiseks. Võite need teenused valikuliselt keelata. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome ei reageeri. Kas soovite kohe taaskäivitada?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome käivitatakse uuesti 1 minuti pärast}other{Chrome käivitatakse uuesti # minuti pärast}}</translation>
-<translation id="8667808506758191620">Teie <ph name="DEVICE_TYPE" /> on ajakohane.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Lisaks juhib see Chrome'i käivitamisel kuvatavat lehte.</translation>
 <translation id="870251953148363156">Värskenda &amp;Google Chrome'i</translation>

@@ -136,6 +136,7 @@
 <translation id="4405930547258349619">Základní knihovna</translation>
 <translation id="4430435636878359009">Zakázat vzdálená připojení k tomuto počítači</translation>
 <translation id="4430915108080446161">Vytváření přístupového kódu...</translation>
+<translation id="4450893287417543264">Tuto zprávu již nezobrazovat</translation>
 <translation id="4472575034687746823">Začít</translation>
 <translation id="4481276415609939789">Nemáte zaregistrované žádné počítače. Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj aplikaci Chromoting a klikněte na tlačítko <ph name="BUTTON_NAME" />.</translation>
 <translation id="4513946894732546136">Zpětná vazba</translation>
@@ -173,6 +174,7 @@
 <translation id="518094545883702183">Tyto informace jsou využity pouze při diagnostikování problému, který jste nahlásili, jsou dostupné pouze osobě, která vaši zprávu prošetřuje, a nejsou uchovávány déle než 30 dní.</translation>
 <translation id="5204575267916639804">Časté dotazy</translation>
 <translation id="5222676887888702881">Odhlásit se</translation>
+<translation id="5234764350956374838">Zavřít</translation>
 <translation id="5254120496627797685">Pokud opustíte tuto stránku, návštěvy Vzdálené plochy Chrome bude ukončena.</translation>
 <translation id="5308380583665731573">Připojení</translation>
 <translation id="5327248766486351172">Jméno</translation>

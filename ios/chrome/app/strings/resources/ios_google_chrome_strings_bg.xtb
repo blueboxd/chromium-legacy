@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">С използването на това приложение приемате <ph name="BEGIN_LINK_TOS" />Общите условия<ph name="END_LINK_TOS" /> и <ph name="BEGIN_LINK_PRIVACY" />Съобщението за поверителност<ph name="END_LINK_PRIVACY" /> на Chrome.</translation>
 <translation id="2147651015520127414">Chrome потвърди, че сертификатът на този уебсайт е издаден от <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Данни от синхронизирането в Chrome</translation>
-<translation id="2342981853652716282">Влезте в Chrome, за да получите отметките, паролите и др. на всичките си устройства.</translation>
 <translation id="2347208864470321755">Когато тази функция е включена, Chrome ще предлага да преведе написаните на други езици страници посредством Google Преводач. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">За да запазите изображения, докоснете „Настройки“ и разрешете на Chrome да използва снимките ви</translation>
 <translation id="2576431527583832481">Chrome току-що се подобри! Налице е нова версия.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Помогнете за подобряването на Chrome, като изпращате до Google статистически данни за употребата и сигнали за сривове.</translation>
 <translation id="415767770115540173">Подобрете практическата си работа с Google в Chrome въз основа на местоположението ви.</translation>
 <translation id="424864128008805179">Искате ли да излезете от Chrome?</translation>
+<translation id="4249068189593983585">Съвет за Chrome. За да видите още опции за разделите, докоснете и задръжте бутона „Показване на разделите“ в лентата с инструменти в долната или горната част на екрана.</translation>
 <translation id="4523886039239821078">Някои добавки водят до срив на Chrome. Моля, деинсталирайте:</translation>
 <translation id="5389212809648216794">Google Chrome не може да използва камерата ви, защото е заета от друго приложение</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Прегледайте актуализираните Общи условия на Chrome.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Някои добавки водят до срив на Chrome. Моля, опитайте да ги деинсталирате.</translation>
 <translation id="8459495907675268833">Избраните данни са премахнати от Chrome и синхронизираните устройства. Възможно е в профила ви в Google да има други видове история на сърфиране, съхранявани на адрес history.google.com – например търсения и активност от други наши услуги.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome може да използва уеб услуги, за да подобри сърфирането ви. Ако искате, можете да ги деактивирате. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 </translationbundle>

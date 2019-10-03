@@ -15,6 +15,8 @@ namespace net {
 // The time threshold for considering a cookie "short-lived" for the purposes of
 // allowing unsafe methods for unspecified-SameSite cookies defaulted into Lax.
 NET_EXPORT extern const base::TimeDelta kLaxAllowUnsafeMaxAge;
+// The short version of the above time threshold, to be used for tests.
+NET_EXPORT extern const base::TimeDelta kShortLaxAllowUnsafeMaxAge;
 
 enum CookiePriority {
   COOKIE_PRIORITY_LOW     = 0,

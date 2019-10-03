@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Seda rakendust kasutades nõustute Chrome'i <ph name="BEGIN_LINK_TOS" />teenusetingimuste<ph name="END_LINK_TOS" /> ja <ph name="BEGIN_LINK_PRIVACY" />privaatsusteatisega<ph name="END_LINK_PRIVACY" />.</translation>
 <translation id="2147651015520127414">Chrome kinnitas, et veebisaidi sertifikaadi väljastas <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Chrome'i sünkroonimise teave</translation>
-<translation id="2342981853652716282">Logige Chrome'i sisse, et kõikides oma seadmetes kasutada järjehoidjaid, paroole ja muud.</translation>
 <translation id="2347208864470321755">Kui see funktsioon on sisse lülitatud, pakub Chrome võimalust tõlkida teistes keeltes kirjutatud lehti Google'i tõlke abil. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Kujutiste salvestamiseks puudutage valikut Seaded, et lubada Chrome'il teie fotosid kasutada</translation>
 <translation id="2576431527583832481">Chrome muutus just veelgi paremaks! Saadaval on uus versioon.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Aidake muuta Chrome'i paremaks, saates Google'ile kasutusstatistikat ja krahhiaruandeid.</translation>
 <translation id="415767770115540173">Asukohapõhised andmed tagavad teile parema Google Chrome'i kasutuskogemuse.</translation>
 <translation id="424864128008805179">Kas logida Chrome'ist välja?</translation>
+<translation id="4249068189593983585">Chrome'i nõuanne. Vahelehtede lisavalikute nägemiseks puudutage ja hoidke all ekraanikuva üla- või alaosas tööriistaribal olevat nuppu Kuva vahelehed.</translation>
 <translation id="4523886039239821078">Mõned pistikprogrammid põhjustavad Chrome'i kokkujooksmise. Desinstallige need:</translation>
 <translation id="5389212809648216794">Google Chrome ei saa kaamerat kasutada, kuna seda kasutab muu rakendus</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Vaadake üle Chrome'i värskendatud teenusetingimused.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Mõned pistikprogrammid põhjustavad Chrome'i kokkujooksmise. Proovige need desinstallida.</translation>
 <translation id="8459495907675268833">Valitud andmed eemaldati Chrome'ist ja sünkroonitud seadmetest. Aadressil history.google.com võib teie Google'i kontol olla muus vormis sirvimisajalugu, nagu otsingud ja tegevused muudes Google'i teenustes.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome võib kasutada veebiteenuseid sirvimiskogemuse parandamiseks. Võite need teenused valikuliselt keelata. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 </translationbundle>

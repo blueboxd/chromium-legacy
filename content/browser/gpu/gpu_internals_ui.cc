@@ -505,6 +505,7 @@ std::unique_ptr<base::ListValue> GetANGLEFeatures() {
     angle_feature->SetString("description", feature.description);
     angle_feature->SetString("bug", feature.bug);
     angle_feature->SetString("status", feature.status);
+    angle_feature->SetString("condition", feature.condition);
     angle_features_list->Append(std::move(angle_feature));
   }
 

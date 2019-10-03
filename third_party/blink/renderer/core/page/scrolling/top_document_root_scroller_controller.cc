@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/overscroll_controller.h"
-#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/page/scrolling/viewport_scroll_callback.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -239,30 +238,6 @@ bool TopDocumentRootScrollerController::IsViewportScrollCallback(
     return false;
 
   return callback == viewport_apply_scroll_.Get();
-}
-
-GraphicsLayer* TopDocumentRootScrollerController::RootScrollerLayer() const {
-  ScrollableArea* area = GetScrollableArea(global_root_scroller_);
-
-  if (!area)
-    return nullptr;
-
-  GraphicsLayer* graphics_layer = area->LayerForScrolling();
-
-  // TODO(bokan): We should assert graphicsLayer here and
-  // RootScrollerController should do whatever needs to happen to ensure
-  // the root scroller gets composited.
-
-  return graphics_layer;
-}
-
-GraphicsLayer* TopDocumentRootScrollerController::RootContainerLayer() const {
-  ScrollableArea* area = GetScrollableArea(global_root_scroller_);
-  return area ? area->LayerForContainer() : nullptr;
-}
-
-PaintLayer* TopDocumentRootScrollerController::RootScrollerPaintLayer() const {
-  return root_scroller_util::PaintLayerForRootScroller(global_root_scroller_);
 }
 
 Node* TopDocumentRootScrollerController::GlobalRootScroller() const {

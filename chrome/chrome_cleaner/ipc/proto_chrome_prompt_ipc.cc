@@ -6,6 +6,7 @@
 
 #include <windows.h>
 
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
 #include "components/chrome_cleaner/public/proto/chrome_prompt.pb.h"

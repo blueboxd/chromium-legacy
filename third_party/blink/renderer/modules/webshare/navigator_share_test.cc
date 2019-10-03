@@ -118,6 +118,14 @@ class NavigatorShareTest : public testing::Test {
                            WTF::Unretained(&mock_share_service_)));
   }
 
+  void TearDown() override {
+    // Remove the testing binder to avoid crashes between tests caused by
+    // MockShareService rebinding an already-bound Binding.
+    // See https://crbug.com/1010116 for more information.
+    GetFrame().GetBrowserInterfaceBroker().SetBinderForTesting(
+        ShareService::Name_, {});
+  }
+
  public:
   MockShareService mock_share_service_;
 

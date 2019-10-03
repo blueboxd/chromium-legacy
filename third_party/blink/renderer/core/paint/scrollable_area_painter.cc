@@ -7,11 +7,11 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/custom_scrollbar_theme.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/core/paint/scrollbar_painter.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
@@ -48,9 +48,9 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
   if (const auto* resizer = GetScrollableArea().Resizer()) {
     if (!cull_rect.Intersects(abs_rect))
       return;
-    ScrollbarPainter::PaintIntoRect(*resizer, context,
-                                    PhysicalOffset(paint_offset),
-                                    PhysicalRect(abs_rect));
+    CustomScrollbarTheme::PaintIntoRect(*resizer, context,
+                                        PhysicalOffset(paint_offset),
+                                        PhysicalRect(abs_rect));
     return;
   }
 
@@ -201,9 +201,9 @@ void ScrollableAreaPainter::PaintScrollCorner(GraphicsContext& context,
   if (const auto* scroll_corner = GetScrollableArea().ScrollCorner()) {
     if (!cull_rect.Intersects(abs_rect))
       return;
-    ScrollbarPainter::PaintIntoRect(*scroll_corner, context,
-                                    PhysicalOffset(paint_offset),
-                                    PhysicalRect(abs_rect));
+    CustomScrollbarTheme::PaintIntoRect(*scroll_corner, context,
+                                        PhysicalOffset(paint_offset),
+                                        PhysicalRect(abs_rect));
     return;
   }
 

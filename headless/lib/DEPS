@@ -8,6 +8,7 @@ specific_include_rules = {
   ],
   "headless_web_contents_browsertest.cc": [
     "+cc/base/switches.h",
+    "+cc/test",
     "+components/viz/common/features.h",
     "+components/viz/common/switches.h",
     "+pdf",

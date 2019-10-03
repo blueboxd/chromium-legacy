@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Dengan menggunakan aplikasi ini, Anda menyetujui <ph name="BEGIN_LINK_TOS" />Persyaratan Layanan<ph name="END_LINK_TOS" /> dan <ph name="BEGIN_LINK_PRIVACY" />Pemberitahuan Privasi<ph name="END_LINK_PRIVACY" /> Chrome.</translation>
 <translation id="2147651015520127414">Chrome memverifikasi bahwa <ph name="ISSUER" /> menerbitkan sertifikat situs web ini.</translation>
 <translation id="2199719347983604670">Data dari sinkronisasi Chrome</translation>
-<translation id="2342981853652716282">Login ke Chrome untuk mendapatkan bookmark, sandi, dan lainnya di semua perangkat Anda.</translation>
 <translation id="2347208864470321755">Saat fitur ini diaktifkan, Chrome akan menawarkan untuk menerjemahkan halaman yang ditulis dalam bahasa lain menggunakan Google Terjemahan. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Untuk menyimpan gambar, ketuk Setelan untuk mengizinkan Chrome menggunakan foto Anda</translation>
 <translation id="2576431527583832481">Chrome jadi semakin baik! Versi baru telah tersedia.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Bantu penyempurnaan Chrome dengan mengirimkan statistik penggunaan dan laporan error ke Google.</translation>
 <translation id="415767770115540173">Dapatkan pengalaman Google yang lebih baik di Chrome berdasarkan lokasi Anda.</translation>
 <translation id="424864128008805179">Logout dari Chrome?</translation>
+<translation id="4249068189593983585">Tips Chrome. Untuk opsi tab lainnya, sentuh lama tombol Tampilkan Tab di toolbar, yang terdapat di bagian bawah atau atas layar.</translation>
 <translation id="4523886039239821078">Beberapa pengaya (pengaya) menyebabkan Chrome mogok. Uninstal:</translation>
 <translation id="5389212809648216794">Google Chrome tidak dapat menggunakan kamera karena sedang digunakan aplikasi lain</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Tinjau Persyaratan Layanan Chrome yang diperbarui.<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Beberapa add-on telah menyebabkan Chrome berhenti bekerja. Harap coba uninstal.</translation>
 <translation id="8459495907675268833">Data yang dipilih telah dihapus dari Chrome dan perangkat yang disinkronkan. Akun Google Anda mungkin memiliki bentuk histori penjelajahan lain seperti penelusuran dan aktivitas dari layanan Google lainnya di history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome dapat menggunakan layanan web untuk meningkatkan pengalaman penjelajahan Anda. Anda dapat memilih untuk menonaktifkan layanan ini. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 </translationbundle>

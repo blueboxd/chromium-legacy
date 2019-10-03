@@ -43,8 +43,7 @@ class BackgroundTracingManager {
   //
   using FinishedProcessingCallback = base::OnceCallback<void(bool success)>;
   using ReceiveCallback =
-      base::RepeatingCallback<void(const scoped_refptr<base::RefCountedString>&,
-                                   std::unique_ptr<const base::DictionaryValue>,
+      base::RepeatingCallback<void(std::unique_ptr<std::string>,
                                    FinishedProcessingCallback)>;
 
   // Set the triggering rules for when to start recording.

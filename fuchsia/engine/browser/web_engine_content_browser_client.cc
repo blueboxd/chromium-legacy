@@ -10,15 +10,45 @@
 
 #include "base/stl_util.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
 #include "fuchsia/engine/browser/url_request_rewrite_rules_manager.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
-#include "fuchsia/engine/browser/web_engine_devtools_manager_delegate.h"
-#include "fuchsia/engine/common.h"
+#include "fuchsia/engine/browser/web_engine_devtools_controller.h"
+#include "fuchsia/engine/common/web_engine_content_client.h"
 #include "fuchsia/engine/common/web_engine_url_loader_throttle.h"
 #include "fuchsia/engine/switches.h"
+
+namespace {
+
+class DevToolsManagerDelegate : public content::DevToolsManagerDelegate {
+ public:
+  DevToolsManagerDelegate(content::BrowserContext* browser_context,
+                          WebEngineDevToolsController* controller)
+      : browser_context_(browser_context), controller_(controller) {
+    DCHECK(browser_context_);
+    DCHECK(controller_);
+  }
+  ~DevToolsManagerDelegate() final = default;
+
+  // content::DevToolsManagerDelegate implementation.
+  content::BrowserContext* GetDefaultBrowserContext() final {
+    return browser_context_;
+  }
+  content::DevToolsAgentHost::List RemoteDebuggingTargets() final {
+    return controller_->RemoteDebuggingTargets();
+  }
+
+ private:
+  content::BrowserContext* const browser_context_;
+  WebEngineDevToolsController* const controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(DevToolsManagerDelegate);
+};
+
+}  // namespace
 
 WebEngineContentBrowserClient::WebEngineContentBrowserClient(
     fidl::InterfaceRequest<fuchsia::web::Context> request)
@@ -41,8 +71,8 @@ WebEngineContentBrowserClient::CreateBrowserMainParts(
 content::DevToolsManagerDelegate*
 WebEngineContentBrowserClient::GetDevToolsManagerDelegate() {
   DCHECK(main_parts_);
-  DCHECK(main_parts_->browser_context());
-  return new WebEngineDevToolsManagerDelegate(main_parts_->browser_context());
+  return new DevToolsManagerDelegate(main_parts_->browser_context(),
+                                     main_parts_->devtools_controller());
 }
 
 std::string WebEngineContentBrowserClient::GetProduct() {
@@ -52,10 +82,10 @@ std::string WebEngineContentBrowserClient::GetProduct() {
 std::string WebEngineContentBrowserClient::GetUserAgent() {
   std::string user_agent = content::BuildUserAgentFromProduct(GetProduct());
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kUserAgentProductAndVersion)) {
+          switches::kUserAgentProductAndVersion)) {
     user_agent +=
         " " + base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
-                  kUserAgentProductAndVersion);
+                  switches::kUserAgentProductAndVersion);
   }
   return user_agent;
 }
@@ -79,8 +109,9 @@ void WebEngineContentBrowserClient::
     RegisterNonNetworkNavigationURLLoaderFactories(
         int frame_tree_node_id,
         NonNetworkURLLoaderFactoryMap* factories) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kContentDirectories)) {
-    (*factories)[kFuchsiaContentDirectoryScheme] =
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kContentDirectories)) {
+    (*factories)[WebEngineContentClient::kFuchsiaContentDirectoryScheme] =
         std::make_unique<ContentDirectoryLoaderFactory>();
   }
 }
@@ -90,8 +121,9 @@ void WebEngineContentBrowserClient::
         int render_process_id,
         int render_frame_id,
         NonNetworkURLLoaderFactoryMap* factories) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kContentDirectories)) {
-    (*factories)[kFuchsiaContentDirectoryScheme] =
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kContentDirectories)) {
+    (*factories)[WebEngineContentClient::kFuchsiaContentDirectoryScheme] =
         std::make_unique<ContentDirectoryLoaderFactory>();
   }
 }
@@ -100,7 +132,7 @@ void WebEngineContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
   constexpr char const* kSwitchesToCopy[] = {
-      kContentDirectories,
+      switches::kContentDirectories,
       switches::kDisableSoftwareVideoDecoders,
       switches::kEnableWidevine,
       switches::kPlayreadyKeySystem,

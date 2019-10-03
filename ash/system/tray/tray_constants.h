@@ -126,6 +126,12 @@ constexpr int kUnifiedSystemInfoHeight = 16;
 constexpr int kUnifiedSystemInfoSpacing = 8;
 constexpr gfx::Insets kUnifiedSystemInfoDateViewPadding(3);
 
+// Constants used in StackedNotificationBar located on top of the message
+// center.
+constexpr gfx::Insets kStackedNotificationIconsContainerPadding(2, 0, 0, 6);
+constexpr int kStackedNotificationBarMaxIcons = 5;
+constexpr int kStackedNotificationIconSize = 15;
+
 // Constants used in FeaturePodsView of UnifiedSystemTray.
 constexpr gfx::Size kUnifiedFeaturePodIconSize(48, 48);
 constexpr gfx::Size kUnifiedFeaturePodSize(112, 88);

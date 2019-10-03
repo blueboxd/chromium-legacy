@@ -140,6 +140,30 @@ class WebContentsImplBrowserTest : public ContentBrowserTest {
     return web_contents->current_fullscreen_frame_;
   }
 
+ protected:
+  // Gets script to create subframe.
+  std::string GetSubframeScript(const GURL& sub_frame) {
+    const char kLoadIframeScript[] = R"(
+        let iframe = document.createElement('iframe');
+        iframe.src = $1;
+        document.body.appendChild(iframe);
+      )";
+    return JsReplace(kLoadIframeScript, sub_frame);
+  }
+
+  // Creates and loads subframe, waits for load to stop, and then returns
+  // subframe from the web contents frame tree.
+  RenderFrameHost* CreateSubframe(const GURL& sub_frame) {
+    EXPECT_TRUE(ExecuteScript(shell(), GetSubframeScript(sub_frame)));
+    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+    return static_cast<WebContentsImpl*>(shell()->web_contents())
+        ->GetFrameTree()
+        ->root()
+        ->child_at(0)
+        ->current_frame_host();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebContentsImplBrowserTest);
 };
@@ -313,6 +337,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 }
 
 namespace {
+
+const char kFrameCountUMA[] = "Navigation.MainFrame.FrameCount";
+const char kMaxFrameCountUMA[] = "Navigation.MainFrame.MaxFrameCount";
 
 // Class that waits for a particular load to finish in any frame.  This happens
 // after the commit event.
@@ -1173,16 +1200,6 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
     return (*observer.FindResource(worker))->was_cached;
   }
 
-  // Gets script to create subframe.
-  std::string GetSubframeScript(const GURL& sub_frame) {
-    const char kLoadIframeScript[] = R"(
-        let iframe = document.createElement('iframe');
-        iframe.src = $1;
-        document.body.appendChild(iframe);
-      )";
-    return JsReplace(kLoadIframeScript, sub_frame);
-  }
-
   // Gets script to create worker.
   std::string GetWorkerScript(const GURL& worker) {
     const char kLoadWorkerScript[] = "let w = new Worker($1);";
@@ -1197,19 +1214,6 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
         document.body.appendChild(script);
       )";
     return JsReplace(kLoadResourceScript, resource);
-  }
-
-  // Creates and loads subframe, waits for load to stop, and then returns
-  // subframe from the web contents frame tree.
-  RenderFrameHost* CreateSubframe(const GURL& sub_frame) {
-    EXPECT_TRUE(ExecuteScript(shell(), GetSubframeScript(sub_frame)));
-    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-
-    return static_cast<WebContentsImpl*>(shell()->web_contents())
-        ->GetFrameTree()
-        ->root()
-        ->child_at(0)
-        ->current_frame_host();
   }
 
   GURL GenURL(const std::string& host, const std::string& path) {
@@ -4015,4 +4019,161 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, MouseButtonsDontNavigate) {
   ASSERT_EQ(url_a, web_contents->GetLastCommittedURL());
 }
 
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FrameCount) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  base::HistogramTester histogram_tester;
+
+  GURL url_with_iframes =
+      embedded_test_server()->GetURL("a.com", "/page_with_iframe.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url_with_iframes));
+  shell()->Close();
+
+  // Number of samples should be only one.
+  histogram_tester.ExpectTotalCount(kFrameCountUMA, 1);
+  histogram_tester.ExpectTotalCount(kMaxFrameCountUMA, 1);
+
+  histogram_tester.ExpectBucketCount(kFrameCountUMA, /* bucket */ 2,
+                                     /* count */ 1);
+  histogram_tester.ExpectBucketCount(kMaxFrameCountUMA, 2, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       MaxFrameCountForCrossProcessNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  base::HistogramTester histogram_tester;
+
+  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  GURL url = embedded_test_server()->GetURL("a.com", "/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  EXPECT_EQ(web_contents->max_frame_count_, 1u);
+
+  GURL url_with_iframes_out_of_process =
+      embedded_test_server()->GetURL("b.com", "/page_with_iframe.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url_with_iframes_out_of_process));
+  EXPECT_EQ(web_contents->max_frame_count_, 2u);
+
+  // There should be two samples for kFrameCountUMA.
+  histogram_tester.ExpectTotalCount(kFrameCountUMA, 2);
+  histogram_tester.ExpectBucketCount(kFrameCountUMA, /* bucket */ 2,
+                                     /* count */ 1);
+  histogram_tester.ExpectBucketCount(kFrameCountUMA, /* bucket */ 1,
+                                     /* count */ 1);
+
+  // There should be only one record for KMaxFrameCountUMA as it is recorded
+  // either when a frame is destroyed or when a new page is loaded.
+  histogram_tester.ExpectTotalCount(kMaxFrameCountUMA, 1);
+  histogram_tester.ExpectBucketCount(kMaxFrameCountUMA, /* bucket */ 1,
+                                     /* count */ 1);
+
+  // Same site navigation with multiple cross process iframes.
+  GURL url_with_multiple_iframes = embedded_test_server()->GetURL(
+      "b.com", "/cross_site_iframe_factory.html?b(a,c(b),d,b)");
+  EXPECT_TRUE(NavigateToURL(shell(), url_with_multiple_iframes));
+  EXPECT_EQ(web_contents->max_frame_count_, 6u);
+
+  histogram_tester.ExpectTotalCount(kMaxFrameCountUMA, 2);
+  histogram_tester.ExpectBucketCount(kMaxFrameCountUMA, 1, 1);
+  histogram_tester.ExpectBucketCount(kMaxFrameCountUMA, 2, 1);
+
+  // Simulate tab close to check that |kMaxFrameCountUMA| gets recorded.
+  shell()->Close();
+
+  // When the shell closes, the web contents is destroyed, as a result the main
+  // frame will be destroyed. When the main frame is destroyed, the
+  // kMaxFrameCountUMA gets recorded.
+  histogram_tester.ExpectTotalCount(kMaxFrameCountUMA, 3);
+  histogram_tester.ExpectBucketCount(kMaxFrameCountUMA, 1, 1);
+  histogram_tester.ExpectBucketCount(kMaxFrameCountUMA, 2, 1);
+  histogram_tester.ExpectBucketCount(kMaxFrameCountUMA, 6, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       MaxFrameCountInjectedIframes) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  base::HistogramTester histogram_tester;
+  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  GURL url_with_iframes =
+      embedded_test_server()->GetURL("a.com", "/page_with_iframe.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url_with_iframes));
+  EXPECT_EQ(web_contents->max_frame_count_, 2u);
+
+  // |url_with_iframes| contains another iframe inside it. This means that we
+  // have 4 iframes inside.
+  auto* rfh =
+      static_cast<RenderFrameHostImpl*>(CreateSubframe(url_with_iframes));
+
+  EXPECT_EQ(web_contents->max_frame_count_, 4u);
+  EXPECT_EQ(web_contents->frame_count_, 4u);
+
+  ASSERT_NE(rfh, nullptr);
+
+  shell()->Close();
+
+  // There should be one sample for kFrameCountUMA.
+  histogram_tester.ExpectTotalCount(kFrameCountUMA, 1);
+  histogram_tester.ExpectBucketCount(kFrameCountUMA, /* bucket */ 2,
+                                     /* count */ 1);
+
+  // There should be one sample for kMaxFrameCountUMA.
+  histogram_tester.ExpectTotalCount(kMaxFrameCountUMA, 1);
+  histogram_tester.ExpectBucketCount(kMaxFrameCountUMA, /* bucket */ 4u,
+                                     /* count */ 1);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       MaxFrameCountRemovedIframes) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  base::HistogramTester histogram_tester;
+  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  GURL url_with_iframes =
+      embedded_test_server()->GetURL("a.com", "/page_with_iframe.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url_with_iframes));
+  EXPECT_EQ(web_contents->max_frame_count_, 2u);
+
+  GURL url = embedded_test_server()->GetURL("a.com", "/title1.html");
+  auto* rfh = static_cast<RenderFrameHostImpl*>(CreateSubframe(url));
+  ASSERT_NE(rfh, nullptr);
+  EXPECT_EQ(web_contents->max_frame_count_, 3u);
+  EXPECT_EQ(web_contents->frame_count_, 3u);
+
+  // Let's remove the first child.
+  auto* main_frame = web_contents->GetMainFrame();
+  auto* node_to_remove = main_frame->child_at(0);
+  FrameDeletedObserver observer(node_to_remove->current_frame_host());
+  EXPECT_TRUE(ExecuteScript(main_frame,
+                            "document.body.removeChild(document.querySelector('"
+                            "iframe').parentNode);"));
+  observer.Wait();
+
+  EXPECT_EQ(web_contents->max_frame_count_, 3u);
+  EXPECT_EQ(web_contents->frame_count_, 2u);
+
+  // Let's remove the second child.
+  node_to_remove = main_frame->child_at(0);
+  FrameDeletedObserver observer_second(node_to_remove->current_frame_host());
+  EXPECT_TRUE(ExecuteScript(
+      main_frame,
+      "document.body.removeChild(document.querySelector('iframe'));"));
+  observer_second.Wait();
+
+  EXPECT_EQ(web_contents->max_frame_count_, 3u);
+  EXPECT_EQ(web_contents->frame_count_, 1u);
+
+  shell()->Close();
+
+  // There should be one sample for kFrameCountUMA.
+  histogram_tester.ExpectTotalCount(kFrameCountUMA, 1);
+  histogram_tester.ExpectBucketCount(kFrameCountUMA, /* bucket */ 2,
+                                     /* count */ 1);
+
+  // There should be one sample for kMaxFrameCountUMA
+  histogram_tester.ExpectTotalCount(kMaxFrameCountUMA, 1);
+  histogram_tester.ExpectBucketCount(kMaxFrameCountUMA, /* bucket */ 3,
+                                     /* count */ 1);
+}
 }  // namespace content

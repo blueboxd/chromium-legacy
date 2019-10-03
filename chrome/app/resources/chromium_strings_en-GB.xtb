@@ -74,7 +74,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3509308970982693815">Please close all Chromium windows and try again.</translation>
 <translation id="352783484088404971">Remove From Chromium...</translation>
 <translation id="3575459661164320785">There's harmful software on your computer. Chromium can remove it, restore your settings and disable extensions to make your browser work normally again.</translation>
-<translation id="3582788516608077514">Updating Chromium ...</translation>
 <translation id="358997566136285270">Chromium logo</translation>
 <translation id="3639635944603682591">This person's browsing data will be deleted from this device. To recover the data, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Open link in new Chromium &amp;tab</translation>
@@ -88,7 +87,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="421369550622382712">Discover great apps, games, extensions and themes for Chromium.</translation>
 <translation id="4216212958613226427">This language is used to display the Chromium UI</translation>
 <translation id="4222580632002216401">You're now signed in to Chromium! Sync is disabled by your administrator.</translation>
-<translation id="4224199872375172890">Chromium is up to date.</translation>
 <translation id="4230135487732243613">Link my Chromium data to this account</translation>
 <translation id="4271805377592243930">Get help with Chromium</translation>
 <translation id="4285930937574705105">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
@@ -131,9 +129,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5698481217667032250">Display Chromium in this language</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Welcome to Chromium</translation>
-<translation id="5877064549588274448">Channel changed. Restart your device to apply changes.</translation>
 <translation id="5895138241574237353">Restart</translation>
-<translation id="5906655207909574370">Nearly up to date! Restart your device to finish updating.</translation>
 <translation id="5987687638152509985">Update Chromium to start sync</translation>
 <translation id="6013050204643758987">Chromium OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS" />open source software<ph name="END_LINK_CROS_OSS" />, as is <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="6040143037577758943">Close</translation>
@@ -175,7 +171,6 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="6868056391275687737">Other copies of Chromium are running. To update, close them.</translation>
 <translation id="6893813176749746474">Chromium has been updated, but you haven't used it for 30 days or more.</translation>
 <translation id="6964305034639999644">Open link in Chromium inco&amp;gnito window</translation>
-<translation id="6970811910055250180">Updating your device...</translation>
 <translation id="6990124437352146030">Chromium needs permission to access your microphone for this site</translation>
 <translation id="705851970750939768">Update Chromium</translation>
 <translation id="7066436765290594559">Chromium OS could not sync your data. Please update your Sync passphrase.</translation>
@@ -219,7 +214,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7975919845073681630">This is a secondary installation of Chromium, and cannot be made your default browser.</translation>
 <translation id="7979877361127045932">Hide in Chromium menu</translation>
 <translation id="8013436988911883588">Once Chromium has access, websites will be able to ask you for access.</translation>
-<translation id="8030318113982266900">Updating your device to <ph name="CHANNEL_NAME" /> channel...</translation>
 <translation id="81770708095080097">This file is dangerous, so Chromium has blocked it.</translation>
 <translation id="8222496066431494154">Install Chromium on your phone. We’ll send an SMS to your account recovery phone number: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8248265253516264921">If an image doesn’t have a useful description, Chromium will try to provide one for you. To create descriptions, images are sent to Google. You can turn this off in settings at any time.</translation>
@@ -234,7 +228,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8619360774459241877">Launching Chromium...</translation>
 <translation id="8621669128220841554">Installation failed due to unspecified error. Please download Chromium again.</translation>
-<translation id="8667808506758191620">Your <ph name="DEVICE_TYPE" /> is up to date.</translation>
 <translation id="8682540261359803721">If a setting doesn't show on this page, look in your <ph name="LINK_BEGIN" />
       Chromium browser settings<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">It also controls what page is shown when you start Chromium or search from the Omnibox.</translation>

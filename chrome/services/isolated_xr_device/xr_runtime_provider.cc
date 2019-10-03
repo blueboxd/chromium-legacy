@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/services/isolated_xr_device/xr_runtime_provider.h"
+
 #include "base/bind.h"
-#include "base/trace_event/common/trace_event_common.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/common/chrome_features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/vr_device_base.h"

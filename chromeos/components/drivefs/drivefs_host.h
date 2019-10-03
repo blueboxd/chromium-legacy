@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/drivefs/drivefs_auth.h"

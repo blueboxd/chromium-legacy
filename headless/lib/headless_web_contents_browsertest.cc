@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "cc/test/pixel_test_utils.h"
 #include "components/viz/common/switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -804,20 +805,16 @@ class HeadlessWebContentsBeginFrameControlViewportTest
       SkBitmap result_bitmap;
       EXPECT_TRUE(DecodePNG(png_data, &result_bitmap));
 
-      EXPECT_EQ(300, result_bitmap.width());
-      EXPECT_EQ(300, result_bitmap.height());
-      SkColor expected_color = SkColorSetRGB(0x00, 0x00, 0xff);
+      // Expext a 300x300 bitmap that is all blue.
+      SkBitmap expected_bitmap;
+      SkImageInfo info;
+      expected_bitmap.allocPixels(
+          SkImageInfo::MakeN32(300, 300, kOpaque_SkAlphaType), /*row_bytes=*/0);
+      expected_bitmap.eraseColor(SkColorSetRGB(0x00, 0x00, 0xff));
 
-      SkColor actual_color = result_bitmap.getColor(100, 100);
-      EXPECT_EQ(expected_color, actual_color);
-      actual_color = result_bitmap.getColor(0, 0);
-      EXPECT_EQ(expected_color, actual_color);
-      actual_color = result_bitmap.getColor(0, 299);
-      EXPECT_EQ(expected_color, actual_color);
-      actual_color = result_bitmap.getColor(299, 0);
-      EXPECT_EQ(expected_color, actual_color);
-      actual_color = result_bitmap.getColor(299, 299);
-      EXPECT_EQ(expected_color, actual_color);
+      EXPECT_TRUE(
+          cc::MatchesBitmap(result_bitmap, expected_bitmap,
+                            cc::ExactPixelComparator(/*discard_alpha=*/false)));
     }
 
     // Post completion to avoid deleting the WebContents on the same callstack

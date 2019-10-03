@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">By using this application, you agree to Chrome’s <ph name="BEGIN_LINK_TOS" />Terms of Service<ph name="END_LINK_TOS" /> and <ph name="BEGIN_LINK_PRIVACY" />Privacy Notice<ph name="END_LINK_PRIVACY" />.</translation>
 <translation id="2147651015520127414">Chrome verified that <ph name="ISSUER" /> issued this website's certificate.</translation>
 <translation id="2199719347983604670">Data from Chrome sync</translation>
-<translation id="2342981853652716282">Sign in to Chrome to get your bookmarks, passwords and more on all your devices.</translation>
 <translation id="2347208864470321755">When this feature is turned on, Chrome will offer to translate pages written in other languages using Google Translate. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">To save images, tap on Settings to let Chrome use your photos</translation>
 <translation id="2576431527583832481">Chrome just got better! A new version is available.</translation>
@@ -52,5 +51,4 @@
 <translation id="840168496893712993">Some add-ons cause Chrome to crash. Please try uninstalling them.</translation>
 <translation id="8459495907675268833">The selected data has been removed from Chrome and synced devices. Your Google Account may have other forms of browsing history like searches and activity from other Google services at history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome may use web services to improve your browsing experience. You may optionally disable these services. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 </translationbundle>

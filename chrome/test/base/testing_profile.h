@@ -282,6 +282,7 @@ class TestingProfile : public Profile {
   content::BrowserPluginGuestManager* GetGuestManager() override;
   storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
   content::PushMessagingService* GetPushMessagingService() override;
+  content::StorageNotificationService* GetStorageNotificationService() override;
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
   content::PermissionControllerDelegate* GetPermissionControllerDelegate()
       override;

@@ -72,7 +72,6 @@
 <translation id="3509308970982693815">Hãy đóng tất cả cửa sổ Chromium và thử lại.</translation>
 <translation id="352783484088404971">Xóa khỏi Chromium...</translation>
 <translation id="3575459661164320785">Máy tính của bạn có phần mềm độc hại. Chromium có thể xóa phần mềm này, khôi phục các tùy chọn cài đặt của bạn và tắt tiện ích để giúp trình duyệt hoạt động lại bình thường.</translation>
-<translation id="3582788516608077514">Đang cập nhật Chromium...</translation>
 <translation id="358997566136285270">Biểu trưng Chromium</translation>
 <translation id="3639635944603682591">Dữ liệu duyệt web của người này sẽ bị xóa khỏi thiết bị này. Để khôi phục dữ liệu, hãy đăng nhập vào Chromium bằng <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Mở liên kết trong tab mới của Chromium</translation>
@@ -86,7 +85,6 @@
 <translation id="421369550622382712">Khám phá các ứng dụng, trò chơi, tiện ích và chủ đề tuyệt vời cho Chromium.</translation>
 <translation id="4216212958613226427">Ngôn ngữ này dùng để hiển thị giao diện người dùng của Chromium</translation>
 <translation id="4222580632002216401">Bạn hiện đã đăng nhập vào Chromium! Quản trị viên của bạn đã tắt tính năng Đồng bộ hóa.</translation>
-<translation id="4224199872375172890">Chromium đã được cập nhật.</translation>
 <translation id="4230135487732243613">Bạn muốn liên kết dữ liệu Chromium của bạn với tài khoản này?</translation>
 <translation id="4271805377592243930">Nhận trợ giúp về Chromium</translation>
 <translation id="4285930937574705105">Không thể cài đặt do lỗi chưa xác định. Nếu Chromium hiện đang chạy, hãy đóng Chromium và thử lại.</translation>
@@ -98,6 +96,7 @@
 <translation id="4567424176335768812">Bạn đã đăng nhập với tên <ph name="USER_EMAIL_ADDRESS" />. Bây giờ, bạn có thể truy cập dấu trang, lịch sử và các cài đặt khác trên tất cả những thiết bị đã đăng nhập của bạn.</translation>
 <translation id="459535195905078186">Ứng dụng Chromium</translation>
 <translation id="4621240073146040695">Gần được cập nhật! Hãy khởi chạy lại Chromium để hoàn tất cập nhật.</translation>
+<translation id="4661006601577405669">Các phiên bản Chromium trong tương lai sẽ tự động cài đặt.</translation>
 <translation id="4677944499843243528">Dường như cấu hình này đang được quy trình Chromium khác (<ph name="PROCESS_ID" />) trên máy tính khác (<ph name="HOST_NAME" />) sử dụng. Chromium đã khóa cấu hình này để cấu hình không bị lỗi. Nếu bạn chắc chắn không có quy trình nào khác đang sử dụng cấu hình này, bạn có thể mở khóa cấu hình và chạy lại Chromium.</translation>
 <translation id="469338717132742108">Nhận trợ giúp về Chromium OS</translation>
 <translation id="4708774505295300557">Ai đó trước đây đã đăng nhập vào Chromium trên máy tính này bằng <ph name="ACCOUNT_EMAIL_LAST" />. Vui lòng tạo người dùng Chromium mới để giữ riêng biệt thông tin của bạn.</translation>
@@ -128,9 +127,7 @@
 <translation id="5698481217667032250">Hiển thị Chromium bằng ngôn ngữ này</translation>
 <translation id="5820394555380036790">Hệ điều hành Chromium</translation>
 <translation id="5862307444128926510">Chào mừng bạn đến với Chromium</translation>
-<translation id="5877064549588274448">Kênh đã thay đổi. Hãy khởi động lại thiết bị để áp dụng thay đổi.</translation>
 <translation id="5895138241574237353">Khởi động lại</translation>
-<translation id="5906655207909574370">Gần được cập nhật! Hãy khởi động lại thiết bị của bạn để hoàn tất cập nhật.</translation>
 <translation id="5987687638152509985">Cập nhật Chromium để bắt đầu đồng bộ hóa</translation>
 <translation id="6013050204643758987">Chromium OS có thể hoạt động được là nhờ <ph name="BEGIN_LINK_CROS_OSS" />phần mềm nguồn mở<ph name="END_LINK_CROS_OSS" /> bổ sung, tương tự như <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="6040143037577758943">Đóng</translation>
@@ -172,7 +169,6 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="6868056391275687737">Các bản sao khác của Chromium đang chạy. Để cập nhật, hãy đóng các bản sao này.</translation>
 <translation id="6893813176749746474">Chromium đã được cập nhật nhưng bạn đã không sử dụng trình duyệt này trong ít nhất 30 ngày.</translation>
 <translation id="6964305034639999644">Mở liên kết trong cửa sổ ẩn danh của Chromium</translation>
-<translation id="6970811910055250180">Đang cập nhật thiết bị của bạn...</translation>
 <translation id="6990124437352146030">Chromium cần có quyền truy cập vào micrô của bạn cho trang web này</translation>
 <translation id="705851970750939768">Cập nhật Chromium</translation>
 <translation id="7066436765290594559">Chromium OS không thể đồng bộ hóa dữ liệu của bạn. Vui lòng cập nhật cụm mật khẩu Đồng bộ hóa của bạn.</translation>
@@ -194,6 +190,7 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium dành cho nhà phát triển</translation>
 <translation id="7451052299415159299">Chromium cần có quyền truy cập vào máy ảnh của bạn cho trang web này</translation>
 <translation id="7483335560992089831">Không thể cài đặt phiên bản Chromium giống với phiên bản hiện đang chạy. Hãy đóng Chromium và thử lại.</translation>
+<translation id="751093125041325477">Các phiên bản Chromium trong tương lai sẽ tự động cài đặt. Khi tải xong phiên bản này xuống, Chromium sẽ khởi động lại và bạn có thể tiếp tục sử dụng.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium sẽ khởi động lại sau 1 phút}other{Chromium sẽ khởi động lại sau # phút}}</translation>
 <translation id="7549178288319965365">Giới thiệu về Chromium OS</translation>
 <translation id="7561906087460245826">Đồng thời xóa dữ liệu khỏi Chromium (<ph name="URL" />)</translation>
@@ -215,7 +212,6 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <translation id="7975919845073681630">Đây là cài đặt thứ cấp của Chromium và không thể trở thành trình duyệt mặc định của bạn.</translation>
 <translation id="7979877361127045932">Ẩn trong menu Chromium</translation>
 <translation id="8013436988911883588">Sau khi Chromium có quyền truy cập, các trang web sẽ có thể yêu cầu bạn cấp quyền truy cập.</translation>
-<translation id="8030318113982266900">Đang cập nhật thiết bị tới kênh <ph name="CHANNEL_NAME" />...</translation>
 <translation id="81770708095080097">Tệp này nguy hiểm, do đó Chromium đã chặn tệp.</translation>
 <translation id="8222496066431494154">Cài đặt Chromium trên điện thoại của bạn. Chúng tôi sẽ gửi SMS tới số điện thoại khôi phục tài khoản của bạn: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8248265253516264921">Chromium sẽ cố gắng mô tả cho bạn những hình ảnh không có nội dung mô tả hữu ích. Để tạo nội dung mô tả, các hình ảnh sẽ được gửi đến Google. Bạn có thể tắt dịch vụ này trong phần cài đặt bất kỳ lúc nào.</translation>
@@ -230,7 +226,6 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <translation id="8586442755830160949">Bản quyền <ph name="YEAR" /> Tác giả Chromium. Mọi quyền được bảo lưu.</translation>
 <translation id="8619360774459241877">Đang khởi động Chromium...</translation>
 <translation id="8621669128220841554">Không thể cài đặt do xảy ra lỗi không xác định. Hãy tải xuống Chromium lại lần nữa.</translation>
-<translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> của bạn đã cập nhật.</translation>
 <translation id="8682540261359803721">Nếu một tùy chọn cài đặt không hiển thị trên trang này, hãy tìm trong phần <ph name="LINK_BEGIN" />
       cài đặt trên trình duyệt Chrome<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chromium hoặc tìm kiếm từ Thanh địa chỉ.</translation>

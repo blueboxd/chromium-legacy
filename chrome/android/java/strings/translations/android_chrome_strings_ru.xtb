@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Использовано</translation>
 <translation id="1171770572613082465">Чтобы перейти к списку популярных сайтов, нажмите кнопку "Топ сайтов"</translation>
 <translation id="1173894706177603556">Переименовать</translation>
-<translation id="1175310183703641346">Ваши закладки, пароли, история и настройки больше не будут синхронизироваться с аккаунтом Google</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Удалить</translation>
 <translation id="1188239144602654184">Начать</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" />: добавлена закладка</translation>
 <translation id="3744111561329211289">Фоновая синхронизация</translation>
 <translation id="3771001275138982843">Не удалось скачать обновление.</translation>
+<translation id="3771033907050503522">Вкладки инкогнито</translation>
 <translation id="3773755127849930740">Чтобы разрешить подключение, <ph name="BEGIN_LINK" />включите Bluetooth<ph name="END_LINK" /></translation>
 <translation id="3775705724665058594">Отправка на свои устройства</translation>
 <translation id="3778956594442850293">Добавлено на главный экран</translation>
@@ -484,7 +484,6 @@
 <translation id="4719927025381752090">Предлагать перевести</translation>
 <translation id="4720023427747327413">Открыть в <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Помогите улучшить Chrome. <ph name="BEGIN_LINK" />Пройти опрос<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">Вы переходите с аккаунта <ph name="ACCOUNT_EMAIL_OLD" /> на <ph name="ACCOUNT_EMAIL_NEW" />. Данными Chrome управляет администратор домена <ph name="MANAGED_DOMAIN" />. Обратите внимание, что данные будут удалены с устройства, но сохранятся в аккаунте <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">Обновить</translation>
 <translation id="4738836084190194332">Последняя синхронизация: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Открыть новую вкладку</translation>
@@ -668,13 +667,13 @@
 <translation id="5937580074298050696">Сохранено: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Сбросить</translation>
 <translation id="5942872142862698679">Google используется как поисковая система по умолчанию</translation>
-<translation id="5944669582486359588">В упрощенном режиме Chrome быстрее загружает страницы и экономит до 60 % трафика. Страницы, на которые вы заходите, оптимизируются с помощью облачных технологий Google.</translation>
 <translation id="5952764234151283551">Отправлять в Google URL страниц, которые вы пытаетесь открыть</translation>
 <translation id="5956665950594638604">Открыть Справочный центр Chrome в новой вкладке</translation>
 <translation id="5958275228015807058">Скачанные файлы и веб-страницы хранятся в одноименном разделе.</translation>
 <translation id="5962718611393537961">Нажмите, чтобы свернуть</translation>
 <translation id="6000066717592683814">Использовать Google</translation>
 <translation id="6005538289190791541">Предложенный пароль</translation>
+<translation id="6036057147555329831">Дополнительный модуль ICU</translation>
 <translation id="6039379616847168523">Перейти к следующей вкладке</translation>
 <translation id="6040143037577758943">Закрыть</translation>
 <translation id="6042308850641462728">Ещё</translation>
@@ -815,7 +814,6 @@
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="7053983685419859001">Блокировать</translation>
 <translation id="7055152154916055070">Заблокирована попытка переадресации:</translation>
-<translation id="7062545763355031412">Принять и переключиться</translation>
 <translation id="7063006564040364415">Не удалось связаться с сервером синхронизации</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Выбран 1 объект}one{Выбран # объект}few{Выбрано # объекта}many{Выбрано # объектов}other{Выбрано # объекта}}</translation>
 <translation id="7071521146534760487">Настройки аккаунта</translation>
@@ -1099,7 +1097,6 @@
 <translation id="9139318394846604261">Покупки</translation>
 <translation id="9155898266292537608">Также можно выполнить поиск, нажав на слово.</translation>
 <translation id="9169507124922466868">История переходов открыта наполовину</translation>
-<translation id="9188680907066685419">Выход из управляемого аккаунта</translation>
 <translation id="9204836675896933765">Остался 1 файл</translation>
 <translation id="9206873250291191720">А</translation>
 <translation id="9209888181064652401">Звонки недоступны</translation>
@@ -1108,7 +1105,6 @@
 <translation id="932327136139879170">Главная страница</translation>
 <translation id="938850635132480979">Ошибка <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Доступ к микрофону</translation>
-<translation id="951339005376969845">Удалить сохраненные данные. Чтобы снова получить к ним доступ, переключитесь на аккаунт <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">В Китае Chrome может использовать для поиска <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />. Это можно изменить в <ph name="BEGIN_LINK" />Настройках<ph name="END_LINK" />.</translation>
 <translation id="965817943346481315">Блокировать, если сайт показывает навязчивую или вводящую в заблуждение рекламу (рекомендуется)</translation>
 <translation id="968900484120156207">Здесь будут страницы, которые вы посещали.</translation>

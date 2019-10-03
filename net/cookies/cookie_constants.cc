@@ -11,6 +11,8 @@
 namespace net {
 
 const base::TimeDelta kLaxAllowUnsafeMaxAge = base::TimeDelta::FromMinutes(2);
+const base::TimeDelta kShortLaxAllowUnsafeMaxAge =
+    base::TimeDelta::FromSeconds(10);
 
 namespace {
 

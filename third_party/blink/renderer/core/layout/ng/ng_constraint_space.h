@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_break_appeal.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
@@ -348,6 +349,15 @@ class CORE_EXPORT NGConstraintSpace final {
     return HasRareData() && rare_data_->is_in_column_bfc;
   }
 
+  // Get the appeal of the best breakpoint found so far. When progressing
+  // through layout, we know that we don't need to consider less appealing
+  // breakpoints than this.
+  NGBreakAppeal EarlyBreakAppeal() const {
+    if (!HasRareData())
+      return kBreakAppealLastResort;
+    return static_cast<NGBreakAppeal>(rare_data_->early_break_appeal);
+  }
+
   // Returns if this node is a table cell child, and which table layout mode
   // is occurring.
   NGTableCellChildLayoutMode TableCellChildLayoutMode() const {
@@ -561,7 +571,8 @@ class CORE_EXPORT NGConstraintSpace final {
           block_direction_fragmentation_type(
               static_cast<unsigned>(kFragmentNone)),
           is_inside_balanced_columns(false),
-          is_in_column_bfc(false) {}
+          is_in_column_bfc(false),
+          early_break_appeal(kBreakAppealLastResort) {}
     RareData(const RareData& other)
         : percentage_resolution_size(other.percentage_resolution_size),
           replaced_percentage_resolution_block_size(
@@ -574,7 +585,8 @@ class CORE_EXPORT NGConstraintSpace final {
           block_direction_fragmentation_type(
               other.block_direction_fragmentation_type),
           is_inside_balanced_columns(other.is_inside_balanced_columns),
-          is_in_column_bfc(other.is_in_column_bfc) {
+          is_in_column_bfc(other.is_in_column_bfc),
+          early_break_appeal(other.early_break_appeal) {
       switch (data_union_type) {
         case kNone:
           break;
@@ -629,6 +641,7 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned block_direction_fragmentation_type : 2;
     unsigned is_inside_balanced_columns : 1;
     unsigned is_in_column_bfc : 1;
+    unsigned early_break_appeal : 2;  // NGBreakAppeal
 
     bool MaySkipLayout(const RareData& other) const {
       if (fragmentainer_block_size != other.fragmentainer_block_size ||
@@ -638,7 +651,8 @@ class CORE_EXPORT NGConstraintSpace final {
           block_direction_fragmentation_type !=
               other.block_direction_fragmentation_type ||
           is_inside_balanced_columns != other.is_inside_balanced_columns ||
-          is_in_column_bfc != other.is_in_column_bfc)
+          is_in_column_bfc != other.is_in_column_bfc ||
+          early_break_appeal != other.early_break_appeal)
         return false;
 
       if (data_union_type == kNone)
@@ -659,7 +673,8 @@ class CORE_EXPORT NGConstraintSpace final {
       if (fragmentainer_block_size != kIndefiniteSize ||
           fragmentainer_space_at_bfc_start != kIndefiniteSize ||
           block_direction_fragmentation_type != kFragmentNone ||
-          is_inside_balanced_columns || is_in_column_bfc)
+          is_inside_balanced_columns || is_in_column_bfc ||
+          early_break_appeal != kBreakAppealLastResort)
         return false;
 
       if (data_union_type == kNone)

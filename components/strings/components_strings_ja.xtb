@@ -45,6 +45,7 @@
 <translation id="1175875016430184367">3 か所のステープル（右）</translation>
 <translation id="1178581264944972037">一時停止</translation>
 <translation id="1181037720776840403">削除</translation>
+<translation id="1186201132766001848">パスワードを確認</translation>
 <translation id="1197088940767939838">オレンジ</translation>
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1201895884277373915">このサイトからの他の履歴</translation>
@@ -110,6 +111,7 @@
 <translation id="1430915738399379752">印刷</translation>
 <translation id="1442386063175183758">右観音折り</translation>
 <translation id="1442987760062738829">パンチ</translation>
+<translation id="1450011005989029586">ご利用のサイトまたはアプリでのデータ侵害により、パスワードが流出しました。今すぐ <ph name="ORIGIN" /> の<ph name="BOLD" />ことをおすすめします。</translation>
 <translation id="1455413310270022028">消しゴム</translation>
 <translation id="1463543813647160932">5×7</translation>
 <translation id="1472675084647422956">表示項目を増やす</translation>
@@ -153,7 +155,6 @@
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />サイトのホームページにアクセス<ph name="END_LINK" />してみてください。</translation>
 <translation id="1644574205037202324">履歴</translation>
 <translation id="1645368109819982629">サポートされていないプロトコルです</translation>
-<translation id="1655462015569774233">{1,plural, =1{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の有効期限が昨日付けで切れています。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。パソコンの時計は現在 <ph name="CURRENT_DATE" />に設定されています。この時刻が正しくない場合は、システムの時計を修正した後このページを更新してください。}other{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の有効期限が # 日前に切れています。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。パソコンの時計は現在 <ph name="CURRENT_DATE" />に設定されています。この時刻が正しくない場合は、システムの時計を修正した後このページを更新してください。}}</translation>
 <translation id="1656489000284462475">引取</translation>
 <translation id="1662550410081243962">お支払い方法の保存と入力</translation>
 <translation id="1663943134801823270">Chrome に保存されているクレジット カードと住所です。[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で管理できます。</translation>
@@ -323,7 +324,6 @@
 <translation id="2501278716633472235">戻る</translation>
 <translation id="2503184589641749290">利用可能なデビットカードとプリペイド カード</translation>
 <translation id="2505268675989099013">アカウントを保護</translation>
-<translation id="2515335152965840738">無視</translation>
 <translation id="2515629240566999685">電波状況を確認する</translation>
 <translation id="2521385132275182522">ステープル（右下）</translation>
 <translation id="2523886232349826891">カードはこのデバイスのみに保存されます</translation>
@@ -380,7 +380,6 @@
 <translation id="2799020568854403057">アクセス先のサイトには有害なアプリがあります</translation>
 <translation id="2799223571221894425">再起動</translation>
 <translation id="2803306138276472711"><ph name="SITE" /> では最近、Google セーフ ブラウジングにより、<ph name="BEGIN_LINK" />不正なソフトウェアが検出されました<ph name="END_LINK" />。通常は安全なウェブサイトであっても、不正なソフトウェアに感染している場合があります。</translation>
-<translation id="2815364696811431560">このサイトから離れる</translation>
 <translation id="2824775600643448204">アドレス検索バー</translation>
 <translation id="2826760142808435982">接続は <ph name="CIPHER" /> を使用して暗号化および認証されており、<ph name="KX" /> が鍵交換メカニズムとして使用されています。</translation>
 <translation id="2835170189407361413">フォームをクリア</translation>
@@ -454,6 +453,7 @@
 <translation id="320323717674993345">支払いをキャンセル</translation>
 <translation id="3207960819495026254">ブックマークしました</translation>
 <translation id="3209034400446768650">このページでは料金が請求される可能性があります</translation>
+<translation id="3209080785413271048">Windows Hello を使用して、保存したお支払い方法を確認します。</translation>
 <translation id="3215092763954878852">WebAuthn を使用できませんでした</translation>
 <translation id="3225919329040284222">サーバーの提示した証明書が、組み込まれている想定の証明書と一致しません。これらの想定の証明書は、ユーザー保護のため、特定の安全性の高いウェブサイトについて用意されています。</translation>
 <translation id="3226128629678568754">ページの読み込みに必要なデータを再送信するには、再読み込みボタンを押してください。</translation>
@@ -464,6 +464,7 @@
 <translation id="3234666976984236645">このサイトの重要なコンテンツを常に検出</translation>
 <translation id="3270847123878663523">順序変更の取り消し（&amp;U）</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
+<translation id="3281668902344226640">Touch ID を使用して、保存したお支払い方法を確認します。</translation>
 <translation id="3282497668470633863">名義人名を追加</translation>
 <translation id="3287510313208355388">オンライン時にダウンロード</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> ポリシーの詳細</translation>
@@ -531,6 +532,7 @@
 <translation id="362276910939193118">全履歴を表示</translation>
 <translation id="3630155396527302611">ネットワークへのアクセスを許可されたプログラムとして既に表示されている場合は、
       いったんリストから削除し、もう一度追加してみてください。</translation>
+<translation id="3631244953324577188">生体認証システム</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">検証が正常に完了しました</translation>
 <translation id="3655670868607891010">このエラーが頻繁に表示される場合は、こちらの<ph name="HELP_LINK" />をお試しください。</translation>
@@ -606,6 +608,7 @@
 <translation id="4067947977115446013">有効なアドレスの追加</translation>
 <translation id="4072486802667267160">ご注文の処理中にエラーが発生しました。もう一度お試しください。</translation>
 <translation id="4075732493274867456">クライアントとサーバーで、共通の SSL プロトコル バージョンまたは暗号スイートがサポートされていません。</translation>
+<translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">プロキシは固定プロキシ サーバーではなく .pac スクリプト URL を使用するように設定されています。</translation>
 <translation id="4082393374666368382">設定 - 管理</translation>
 <translation id="4098354747657067197">偽のサイトにアクセスしようとしています</translation>
@@ -662,6 +665,7 @@
 <translation id="4258748452823770588">署名が不適切です</translation>
 <translation id="4261046003697461417">保護されたドキュメントに注釈を追加することはできません</translation>
 <translation id="4265872034478892965">管理者によって許可</translation>
+<translation id="4270615291506829403">パスワードを変更する</translation>
 <translation id="4275830172053184480">デバイスの再起動</translation>
 <translation id="4277028893293644418">パスワードを再設定</translation>
 <translation id="4279811152705618813">この <ph name="DEVICE_TYPE" /> は <ph name="ENROLLMENT_DOMAIN" /> によって管理されています</translation>
@@ -688,6 +692,7 @@
 <translation id="4372948949327679948"><ph name="VALUE_TYPE" /> 値が想定されます。</translation>
 <translation id="4377125064752653719"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーから提示された証明書は発行元により取り消されています。これは、サーバーから提示されたセキュリティ認証情報が信頼できないことを示しており、悪意のあるユーザーと通信しようとしている可能性があります。</translation>
 <translation id="4378154925671717803">電話</translation>
+<translation id="4398334096870680409">この機能はお使いのデバイスではご利用いただけません。</translation>
 <translation id="4406896451731180161">検索結果</translation>
 <translation id="4408413947728134509">Cookie <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">集荷先住所</translation>
@@ -736,7 +741,9 @@
 <translation id="4691835149146451662">Architecture-A（封筒）</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">接続が中断されました</translation>
+<translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows ネットワーク診断ツールを実行する<ph name="END_LINK" /></translation>
+<translation id="4725851834065990915">ご利用のサイトまたはアプリでのデータ侵害により、パスワード情報が漏洩しました。保存したパスワードをすぐに確認することをおすすめします。</translation>
 <translation id="4726672564094551039">ポリシーを再読み込み</translation>
 <translation id="4728558894243024398">プラットフォーム</translation>
 <translation id="4731967714531604179">Prc2（封筒）</translation>
@@ -764,7 +771,6 @@
 <translation id="4816492930507672669">ページサイズに合わせる</translation>
 <translation id="4850886885716139402">表示</translation>
 <translation id="4854362297993841467">この配達方法はご利用いただけません。別の方法を選択してください。</translation>
-<translation id="4864052566555297930">安全に関するヒント:</translation>
 <translation id="4876188919622883022">簡易表示</translation>
 <translation id="4876305945144899064">ユーザー名が指定されていません</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{なし}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />、<ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />、<ph name="EXAMPLE_DOMAIN_2" />、<ph name="AND_MORE" />}}</translation>
@@ -990,6 +996,7 @@
 <translation id="5967592137238574583">連絡先情報の編集</translation>
 <translation id="5967867314010545767">履歴から削除</translation>
 <translation id="5975083100439434680">縮小する</translation>
+<translation id="5979084224081478209">パスワードを確認</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">お支払いアプリを開けません</translation>
 <translation id="5989320800837274978">固定プロキシ サーバーと .pac スクリプト URL のどちらも指定されていません。</translation>
@@ -1147,6 +1154,7 @@
 <translation id="679355240208270552">ポリシーによって既定の検索エンジンが有効になっていないため、無視されました。</translation>
 <translation id="681021252041861472">必須項目</translation>
 <translation id="6810899417690483278">カスタム ID</translation>
+<translation id="6819440013020405090">ご利用のサイトまたはアプリでのデータ侵害により、パスワード情報が漏洩しました。保存したパスワードを確認して、<ph name="ORIGIN" /> のパスワードを変更することをおすすめします。</translation>
 <translation id="6825578344716086703"><ph name="DOMAIN" /> にアクセスしようとしましたが、脆弱な署名アルゴリズム（SHA-1 など）を使用して署名された証明書がサーバーから提示されました。このセキュリティ認証情報は偽装されたものである可能性があり、アクセスしようとしたサーバーとは別のサーバーが応答している可能性があります（悪意のあるユーザーと通信している可能性があります）。</translation>
 <translation id="6826370046007623921">データ損失の防止</translation>
 <translation id="6831043979455480757">翻訳</translation>
@@ -1189,6 +1197,7 @@
 <translation id="7064851114919012435">連絡先情報</translation>
 <translation id="7075452647191940183">リクエストが大きすぎます</translation>
 <translation id="7079718277001814089">このサイトには不正なソフトウェアが含まれています</translation>
+<translation id="70850504851191913">データ侵害が報告されました</translation>
 <translation id="7087282848513945231">郡</translation>
 <translation id="7090678807593890770"><ph name="LINK" /> を Google で検索してください</translation>
 <translation id="7108338896283013870">非表示</translation>
@@ -1277,6 +1286,7 @@
 <translation id="7460618730930299168">スクリーニングが選択内容と異なっています。続行しますか？</translation>
 <translation id="7473891865547856676">スキップ</translation>
 <translation id="7481312909269577407">進む</translation>
+<translation id="748406663033922918">画面ロックを使用して、保存したお支払い方法を確認します。</translation>
 <translation id="7485870689360869515">データが見つかりません。</translation>
 <translation id="7498234416455752244">編集を続ける</translation>
 <translation id="7508255263130623398">返されたポリシーのデバイス ID が空であるか、現在のデバイス ID と一致しません</translation>
@@ -1490,7 +1500,6 @@
 <translation id="8553075262323480129">ページの言語を検出できないため翻訳できません。</translation>
 <translation id="8557066899867184262">CVC はカードの裏面に記載されています。</translation>
 <translation id="8559762987265718583">デバイスの日時（<ph name="DATE_AND_TIME" />）が正しくないため、<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> へのプライベート接続を確立できません。</translation>
-<translation id="8561575143530093465"><ph name="SAFETY_TIP" /> 不審なサイト</translation>
 <translation id="8564985650692024650"><ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> パスワードを他のサイトで再使用した場合、Chromium ではパスワードの再設定を促すメッセージが表示されます。</translation>
 <translation id="8571890674111243710">ページを<ph name="LANGUAGE" />に翻訳しています...</translation>
 <translation id="858637041960032120">電話番号を追加
@@ -1551,6 +1560,7 @@
 <translation id="8943282376843390568">ライム</translation>
 <translation id="8957210676456822347">キャプティブ ポータル認証</translation>
 <translation id="8962950042226115166">不審なサイト</translation>
+<translation id="8966619695390250636">もしかして:</translation>
 <translation id="8968766641738584599">カードを保存</translation>
 <translation id="8971063699422889582">サーバーの証明書の有効期限が切れています。</translation>
 <translation id="8975012916872825179">電話番号、メールアドレス、配送先住所などの情報が含まれます</translation>

@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Porabljeno</translation>
 <translation id="1171770572613082465">Oglejte si priljubljena spletna mesta z dotikom gumba »Najb. prilj.«</translation>
 <translation id="1173894706177603556">Preimenuj</translation>
-<translation id="1175310183703641346">Vaši zaznamki, zgodovina, gesla in drugo ne bodo več sinhronizirani z Google Računom</translation>
 <translation id="1178581264944972037">Prekini</translation>
 <translation id="1181037720776840403">Odstrani</translation>
 <translation id="1188239144602654184">Začni RR</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">Dodano med zaznamke v izdelku <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sinhroniziranje v ozadju</translation>
 <translation id="3771001275138982843">Posodobitve ni bilo mogoče prenesti</translation>
+<translation id="3771033907050503522">Incognito Tabs</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Vklopite Bluetooth<ph name="END_LINK" />, če želite dovoliti seznanjanje</translation>
 <translation id="3775705724665058594">Pošiljanje v naprave</translation>
 <translation id="3778956594442850293">Dodano na začetni zaslon</translation>
@@ -484,7 +484,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4719927025381752090">Ponudi prevajanje</translation>
 <translation id="4720023427747327413">Odpri v: <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Pomagajte izboljšati Chrome. <ph name="BEGIN_LINK" />Sodelujte v anketi.<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">Preklopili boste med računoma za sinhronizacijo – z računa <ph name="ACCOUNT_EMAIL_OLD" /> na račun <ph name="ACCOUNT_EMAIL_NEW" />. Obstoječe podatke v Chromu upravlja <ph name="MANAGED_DOMAIN" />. S tem boste iz te naprave izbrisali svoje podatke, vendar bodo še vedno na voljo v računu <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">Posodobi</translation>
 <translation id="4738836084190194332">Zadnja sinhronizacija: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Odpiranje novega zavihka</translation>
@@ -668,13 +667,13 @@ Prepričajte se, da zaupate temu spletnemu mestu, preden zaženete VR.</translat
 <translation id="5937580074298050696"><ph name="AMOUNT" /> prihranka pri količini prenesenih podatkov</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
 <translation id="5942872142862698679">Uporaba iskalnika Google za iskanje</translation>
-<translation id="5944669582486359588">Chrome v lahkem načinu naloži strani hitreje in uporabi do 60 odstotkov manj podatkov. Googlova tehnologija v oblaku optimizira strani, ki jih obiščete.</translation>
 <translation id="5952764234151283551">Googlu pošlje URL strani, ki jo želite odpreti</translation>
 <translation id="5956665950594638604">Odpiranje centra za pomoč za Chrome na nov. zavih.</translation>
 <translation id="5958275228015807058">Poiščite datoteke in strani v Prenosih</translation>
 <translation id="5962718611393537961">Dotik za strnitev</translation>
 <translation id="6000066717592683814">Ohrani Google</translation>
 <translation id="6005538289190791541">Predlagano geslo</translation>
+<translation id="6036057147555329831">Dodatni model ICU</translation>
 <translation id="6039379616847168523">Premik na naslednji zavihek</translation>
 <translation id="6040143037577758943">Zapri</translation>
 <translation id="6042308850641462728">Več</translation>
@@ -815,7 +814,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7029809446516969842">Gesla</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7055152154916055070">Preusmeritev je preprečena:</translation>
-<translation id="7062545763355031412">Sprejmi in preklopi račun</translation>
 <translation id="7063006564040364415">Povezave s strežnikom za sinhronizacijo ni bilo mogoče vzpostaviti.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 izbran}one{# izbran}two{# izbrana}few{# izbrani}other{# izbranih}}</translation>
 <translation id="7071521146534760487">Upravljanje računa</translation>
@@ -1099,7 +1097,6 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="9139318394846604261">Nakupovanje</translation>
 <translation id="9155898266292537608">Prav tako lahko iščete, tako da se hitro dotaknete besede</translation>
 <translation id="9169507124922466868">Zgodovina krmarjenja je napol odprta</translation>
-<translation id="9188680907066685419">Odjava iz upravljanega računa</translation>
 <translation id="9204836675896933765">Še 1 datoteka</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Ni mogoče klicati</translation>
@@ -1108,7 +1105,6 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="932327136139879170">Domov</translation>
 <translation id="938850635132480979">Napaka: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Dostop do mikrofona</translation>
-<translation id="951339005376969845">Izbris obstoječih podatkov. Pridobite jih lahko tako, da preklopite nazaj na račun <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome lahko za iskanje na Kitajskem uporablja <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />. To je mogoče spremeniti v <ph name="BEGIN_LINK" />nastavitvah<ph name="END_LINK" />.</translation>
 <translation id="965817943346481315">Blokiraj, če spletno mesto prikazuje vsiljive ali zavajajoče oglase (priporočljivo)</translation>
 <translation id="968900484120156207">Strani, ki jih obiščete, so prikazane tu</translation>

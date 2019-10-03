@@ -57,11 +57,13 @@ Color LayoutThemeWin::SystemColor(CSSValueID css_value_id,
       return LayoutThemeDefault::SystemColor(css_value_id, color_scheme);
   }
 
-  const base::Optional<SkColor> system_color =
-      Platform::Current()->ThemeEngine()->GetSystemColor(theme_color);
-  if (system_color == base::nullopt)
-    return LayoutThemeDefault::SystemColor(css_value_id, color_scheme);
-  return Color(system_color.value());
+  if (Platform::Current() && Platform::Current()->ThemeEngine()) {
+    const base::Optional<SkColor> system_color =
+        Platform::Current()->ThemeEngine()->GetSystemColor(theme_color);
+    if (system_color)
+      return Color(system_color.value());
+  }
+  return LayoutThemeDefault::SystemColor(css_value_id, color_scheme);
 }
 
 }  // namespace blink

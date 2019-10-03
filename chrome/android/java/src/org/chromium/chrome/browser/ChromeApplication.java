@@ -49,7 +49,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.embedder_support.application.FontPreloadingWorkaround;
-import org.chromium.components.module_installer.ModuleInstaller;
+import org.chromium.components.module_installer.util.ModuleUtil;
 import org.chromium.ui.base.ResourceBundle;
 
 /**
@@ -121,7 +121,7 @@ public class ChromeApplication extends Application {
 
             // Record via UMA all modules that have been requested and are currently installed. This
             // will tell us the install penetration of each module over time.
-            ModuleInstaller.getInstance().recordModuleAvailability();
+            ModuleUtil.recordModuleAvailability();
 
             // Set Chrome factory for mapping BackgroundTask classes to TaskIds.
             ChromeBackgroundTaskFactory.setAsDefault();
@@ -129,7 +129,7 @@ public class ChromeApplication extends Application {
 
         // Write installed modules to crash keys. This needs to be done as early as possible so that
         // these values are set before any crashes are reported.
-        ModuleInstaller.getInstance().updateCrashKeys();
+        ModuleUtil.updateCrashKeys();
 
         BuildInfo.setFirebaseAppId(FirebaseConfig.getFirebaseAppId());
 

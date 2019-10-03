@@ -265,6 +265,8 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // Functions to be called back when their associated animations complete.
   void OnWindowCloseAnimationCompleted();
   void OnItemAddedAnimationCompleted();
+  void OnItemBoundsAnimationStarted();
+  void OnItemBoundsAnimationEnded();
 
   // Performs the add-item-to-overview animation (which is a fade-in plus
   // scale-up animation), on the given |window|. |target_transform| is the final

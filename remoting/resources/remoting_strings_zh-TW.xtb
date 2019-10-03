@@ -136,6 +136,7 @@
 <translation id="4405930547258349619">核心資料庫</translation>
 <translation id="4430435636878359009">停用與這台電腦的遠端連線</translation>
 <translation id="4430915108080446161">正在產生存取碼...</translation>
+<translation id="4450893287417543264">不要再顯示</translation>
 <translation id="4472575034687746823">開始使用</translation>
 <translation id="4481276415609939789">你尚未註冊任何電腦。如要為電腦啟用遠端連線，請在電腦上安裝 Chromoting，然後按一下 [<ph name="BUTTON_NAME" />]。</translation>
 <translation id="4513946894732546136">意見回饋</translation>
@@ -173,6 +174,7 @@
 <translation id="518094545883702183">這些資訊只會用於診斷您所回報的問題，並且僅供相關調查人員存取。此外，系統會在 30 天後刪除這些資訊。</translation>
 <translation id="5204575267916639804">常見問題</translation>
 <translation id="5222676887888702881">登出</translation>
+<translation id="5234764350956374838">關閉</translation>
 <translation id="5254120496627797685">如果離開這個頁面，你的 Chrome 遠端桌面工作階段也會結束。</translation>
 <translation id="5308380583665731573">連線</translation>
 <translation id="5327248766486351172">名稱</translation>

@@ -117,7 +117,6 @@
 <translation id="4971687151119236543">Попередня композиція</translation>
 <translation id="5046499563572181734">Торкніться тут</translation>
 <translation id="5076340679995252485">&amp;Вставити</translation>
-<translation id="5137751499640340777">Запустити Google Асистент</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> Пб</translation>
 <translation id="5266161281976477809">Трикутник відкривання</translation>
 <translation id="5278860589123563674">Не вдалося надіслати</translation>
@@ -154,6 +153,7 @@
 <translation id="6394627529324717982">Кома</translation>
 <translation id="6397363302884558537">Stop Speaking</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 с тому}one{# с тому}few{# с тому}many{# с тому}other{# с тому}}</translation>
+<translation id="6417265370957905582">Google Асистент</translation>
 <translation id="6430678249303439055">Блокувати всі сповіщення від цього додатка</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 секунду тому}one{# секунду тому}few{# секунди тому}many{# секунд тому}other{# секунди тому}}</translation>
 <translation id="6539092367496845964">Сталася помилка. Спробуйте пізніше.</translation>
@@ -196,7 +196,6 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Понад 1 непрочитане сповіщення}one{Понад # непрочитане сповіщення}few{Понад # непрочитані сповіщення}many{Понад # непрочитаних сповіщень}other{Понад # непрочитаного сповіщення}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{через 1 хв}one{через # хв}few{через # хв}many{через # хв}other{через # хв}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8098075892845277643">Ввести голосовий запит Google Асистента</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 годину тому}one{# годину тому}few{# години тому}many{# годин тому}other{# години тому}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Залишилась 1 с}one{Залишилася # с}few{Залишилося # с}many{Залишилося # с}other{Залишилося # с}}</translation>
 <translation id="8144660977431427332">Ваші пошукові запити виконуються за технологією Google Асистента. <ph name="LEARN_MORE" /></translation>

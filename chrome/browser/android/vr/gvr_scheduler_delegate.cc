@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "chrome/browser/android/vr/gl_browser_interface.h"
 #include "chrome/browser/android/vr/mailbox_to_surface_bridge.h"
@@ -195,7 +196,8 @@ void GvrSchedulerDelegate::ConnectPresentingService(
   }
 
   auto submit_frame_sink = device::mojom::XRPresentationConnection::New();
-  submit_frame_sink->client_request = mojo::MakeRequest(&submit_client_);
+  submit_frame_sink->client_receiver =
+      submit_client_.BindNewPipeAndPassReceiver();
   submit_frame_sink->provider = presentation_provider.PassInterface();
   submit_frame_sink->transport_options = std::move(transport_options);
 

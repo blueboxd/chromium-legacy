@@ -57,7 +57,7 @@ public class AwMetricsServiceClient {
 
     public static void setConsentSetting(Context ctx, boolean userConsent) {
         ThreadUtils.assertOnUiThread();
-        AwMetricsServiceClientJni.get().setHaveMetricsConsent(userConsent && !isAppOptedOut(ctx));
+        AwMetricsServiceClientJni.get().setHaveMetricsConsent(userConsent, !isAppOptedOut(ctx));
     }
 
     @CalledByNative
@@ -68,6 +68,6 @@ public class AwMetricsServiceClient {
 
     @NativeMethods
     interface Natives {
-        void setHaveMetricsConsent(boolean enabled);
+        void setHaveMetricsConsent(boolean userConsent, boolean appConsent);
     }
 }

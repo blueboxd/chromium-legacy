@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">Mappa rögzítésének feloldása</translation>
 <translation id="3678559383040232393">Máltai billentyűzet</translation>
 <translation id="3685122418104378273">A Google Drive szinkronizálása alapértelmezés szerint le van tiltva mobiladat-kapcsolat használatakor.</translation>
+<translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" /> megszakítása.</translation>
 <translation id="3726463242007121105">Ezt az eszközt nem lehet megnyitni, mert a fájlrendszere nem támogatott.</translation>
 <translation id="3741243925913727067">Biztonsági másolat készítése az adathordozón lévő fotókról és videókról a Google Drive-on.</translation>
 <translation id="3749289110408117711">Fájlnév</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">Amerikai nemzetközi (PC)</translation>
 <translation id="6346310558342052870">Korlátozott hozzáférés</translation>
 <translation id="6353618411602605519">Horvát billentyűzet</translation>
+<translation id="6356685157277930264">Fájlokkal kapcsolatos visszajelzésre vonatkozó ablak</translation>
 <translation id="6358884629796491903">Sárkány</translation>
 <translation id="637062427944097960">Ez a fájl meg van nyitva egy másik asztalon. A megtekintéséhez váltson át <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) profiljára.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> elem</translation>

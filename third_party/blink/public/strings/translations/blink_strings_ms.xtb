@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">pembawah</translation>
 <translation id="2709516037105925701">Autoisi</translation>
 <translation id="2723001399770238859">audio</translation>
+<translation id="2725963129578236554">ulasan</translation>
 <translation id="2746543609216772311">Nilai mestilah <ph name="MINIMUM_DATE_OR_TIME" /> atau kemudian.</translation>
 <translation id="2759744352195237655">butang timbul</translation>
 <translation id="2761667185364618470">Sila tandakan kotak ini jika anda mahu teruskan.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">Sila panjangkan teks ini kepada <ph name="MIN_CHARACTERS" /> aksara atau lebih (anda sedang menggunakan <ph name="CURRENT_LENGTH" /> aksara).</translation>
 <translation id="383465348367842624">Bahagian yang diikuti oleh '<ph name="ATSIGN" />' tidak boleh mengandungi simbol '<ph name="INVALIDCHARACTER" />'.</translation>
 <translation id="3846214748874656680">Keluar dari skrin penuh</translation>
+<translation id="3889183436948184105">semakan</translation>
 <translation id="3920932319529768807">kesimpulan</translation>
 <translation id="3924558731517983934">aplikasi</translation>
 <translation id="3944740393230681990">prolog</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">pembersih masa audio</translation>
 <translation id="6443871981718447451">tunjukkan menu sari kata</translation>
 <translation id="6453774872122745852">perakuan</translation>
+<translation id="6475115390776617481">kehadiran langsung</translation>
 <translation id="648732519525291180">pemilih masa</translation>
 <translation id="6550675742724504774">Pilihan</translation>
 <translation id="6572309429103589720">Tatabahasa tidak sah</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">penyisipan</translation>
 <translation id="6989848892321993519">Sila panjangkan teks ini kepada <ph name="MIN_CHARACTERS" /> aksara atau lebih (anda sedang menggunakan 1 aksara).</translation>
 <translation id="7033340931668032222">atas dan bawah untuk mengubah kelantangan</translation>
+<translation id="7034405885550056553">cadangan</translation>
 <translation id="709897737746224366">Sila padankan dengan format yang diminta.</translation>
 <translation id="7118469954320184356">Perihalan tidak tersedia.</translation>
 <translation id="7139483182332611405">kata penghantar</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">output</translation>
 <translation id="8750798805984357768">Sila pilih salah satu pilihan ini.</translation>
 <translation id="8808573423886751634">bab</translation>
+<translation id="8822203815165896261">maklumat pengarangan</translation>
 <translation id="8845239796550121995">Menghantar ke TV anda sekarang</translation>
 <translation id="8851136666856101339">utama</translation>
 <translation id="8875657656876809964">Ralat main balik video</translation>

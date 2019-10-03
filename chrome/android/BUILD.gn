@@ -1064,15 +1064,13 @@ if (enable_vr || enable_arcore) {
         "javatests/src/org/chromium/chrome/browser/vr/rules/VrModuleNotInstalled.java",
       ]
 
-      deps =
-          chrome_test_xr_java_deps + [
-            "//chrome/android:chrome_test_xr_java",
-            "//third_party/gvr-android-sdk:controller_test_api_java",
-            "//third_party/gvr-android-sdk:gvr_common_java",
-            ":chrome_test_util_java",
-            "//components/module_installer/android:module_installer_java",
-            "//components/module_installer/android:module_installer_test_java",
-          ]
+      deps = chrome_test_xr_java_deps + [
+               "//chrome/android:chrome_test_xr_java",
+               "//third_party/gvr-android-sdk:controller_test_api_java",
+               "//third_party/gvr-android-sdk:gvr_common_java",
+               ":chrome_test_util_java",
+               "//components/module_installer/android:module_installer_java",
+             ]
 
       data = [
         "//chrome/android/shared_preference_files/test/",

@@ -188,7 +188,6 @@ PooledSharedImageVideoProvider::GpuHelperImpl::GpuHelperImpl(
     : weak_factory_(this) {
   gpu::CommandBufferStub* stub = get_stub_cb.Run();
   if (stub) {
-    stub->AddDestructionObserver(this);
     command_buffer_helper_ = CommandBufferHelper::Create(stub);
   }
 }
@@ -212,11 +211,6 @@ void PooledSharedImageVideoProvider::GpuHelperImpl::OnSyncTokenCleared(
   codec_image_holder->codec_image_raw()->NotifyUnused();
   // Do this last, since |cb| might post to some other thread.
   std::move(cb).Run();
-}
-
-void PooledSharedImageVideoProvider::GpuHelperImpl::OnWillDestroyStub(
-    bool have_context) {
-  command_buffer_helper_ = nullptr;
 }
 
 }  // namespace media

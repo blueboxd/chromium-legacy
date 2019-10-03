@@ -312,9 +312,15 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     return;
   }
 
-  // TODO(perkj): Allow cropping / scaling of textures once
-  // https://crbug/362521 is fixed.
-  if (frame->HasTextures()) {
+  // If the frame is a texture not backed up by GPU memory we don't apply
+  // cropping/scaling and deliver the frame as-is, leaving it up to the
+  // destination to rescale it. Otherwise, cropping and scaling is soft-applied
+  // before delivery for efficiency.
+  //
+  // TODO(crbug.com/362521): Allow cropping/scaling of non-GPU memory backed
+  // textures.
+  if (frame->HasTextures() &&
+      frame->storage_type() != media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
     DoDeliverFrame(std::move(frame), estimated_capture_time);
     return;
   }

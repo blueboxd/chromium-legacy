@@ -28,6 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_TEXT_MATCH_MARKER_H_
 
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
+#include "third_party/blink/renderer/core/editing/markers/text_marker_base.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -37,7 +38,7 @@ namespace blink {
 // markers. We store whether or not the match is active, a LayoutRect used for
 // rendering the marker, and whether or not the LayoutRect is currently
 // up-to-date.
-class CORE_EXPORT TextMatchMarker final : public DocumentMarker {
+class CORE_EXPORT TextMatchMarker final : public TextMarkerBase {
  private:
   enum class LayoutStatus { kInvalid, kValidNull, kValidNotNull };
 
@@ -49,8 +50,10 @@ class CORE_EXPORT TextMatchMarker final : public DocumentMarker {
   // DocumentMarker implementations
   MarkerType GetType() const final;
 
+  // TextMarkerBase implementations
+  bool IsActiveMatch() const final;
+
   // TextMatchMarker-specific
-  bool IsActiveMatch() const;
   void SetIsActiveMatch(bool active);
 
   bool IsRendered() const;
@@ -73,6 +76,9 @@ class CORE_EXPORT TextMatchMarker final : public DocumentMarker {
 template <>
 struct DowncastTraits<TextMatchMarker> {
   static bool AllowFrom(const DocumentMarker& marker) {
+    return marker.GetType() == DocumentMarker::kTextMatch;
+  }
+  static bool AllowFrom(const TextMarkerBase& marker) {
     return marker.GetType() == DocumentMarker::kTextMatch;
   }
 };

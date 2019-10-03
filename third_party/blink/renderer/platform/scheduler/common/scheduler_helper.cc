@@ -40,6 +40,8 @@ void SchedulerHelper::InitDefaultQueues(
 
   DCHECK(sequence_manager_);
   sequence_manager_->SetDefaultTaskRunner(default_task_runner_);
+
+  simple_task_executor_.emplace(default_task_runner_);
 }
 
 SchedulerHelper::~SchedulerHelper() {

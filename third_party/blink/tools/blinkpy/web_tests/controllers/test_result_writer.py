@@ -44,6 +44,8 @@ def write_test_result(filesystem, port, results_directory, test_name, driver_out
     root_output_dir = results_directory
     writer = TestResultWriter(filesystem, port, root_output_dir, test_name)
 
+    # TODO(rmhasan): If the reference file driver output has stderr, we should
+    # write out that standard error
     if driver_output.error:
         writer.write_stderr(driver_output.error)
 

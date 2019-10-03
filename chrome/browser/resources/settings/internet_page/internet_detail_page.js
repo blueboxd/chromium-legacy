@@ -170,7 +170,6 @@ Polymer({
   },
 
   observers: [
-    'handleDeviceStateChange_(deviceState_.*)',
     'updateAlwaysOnVpnPrefValue_(prefs.arc.vpn.always_on.*)',
     'updateAlwaysOnVpnPrefEnforcement_(managedProperties_,' +
         'prefs.vpn_config_allowed.*)',
@@ -499,7 +498,7 @@ Polymer({
       this.close();
     }
     this.propertiesReceived_ = true;
-    this.outOfRange_ = !this.isDeviceStateEnabled_();
+    this.outOfRange_ = false;
     if (!this.deviceState_) {
       this.getDeviceState_();
     }
@@ -537,7 +536,7 @@ Polymer({
     this.managedProperties_ = managedProperties;
 
     this.propertiesReceived_ = true;
-    this.outOfRange_ = !this.isDeviceStateEnabled_();
+    this.outOfRange_ = false;
   },
 
   /**
@@ -581,15 +580,17 @@ Polymer({
    * @param {!mojom.ManagedProperties} managedProperties
    * @param {boolean} propertiesReceived
    * @param {boolean} outOfRange
+   * @param {?OncMojo.DeviceStateProperties} deviceState
    * @return {string} The text to display for the network connection state.
    * @private
    */
-  getStateText_: function(managedProperties, propertiesReceived, outOfRange) {
+  getStateText_: function(
+      managedProperties, propertiesReceived, outOfRange, deviceState) {
     if (!managedProperties || !propertiesReceived) {
       return '';
     }
 
-    if (outOfRange) {
+    if (this.isOutOfRangeOrNotEnabled_(outOfRange, deviceState)) {
       return managedProperties.type == mojom.NetworkType.kTether ?
           this.i18n('tetherPhoneOutOfRange') :
           this.i18n('networkOutOfRange');
@@ -652,11 +653,13 @@ Polymer({
   /**
    * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @param {boolean} outOfRange
+   * @param {?OncMojo.DeviceStateProperties} deviceState
    * @return {boolean} True if the network shown cannot initiate a connection.
    * @private
    */
-  isConnectionErrorState_: function(managedProperties, outOfRange) {
-    if (outOfRange) {
+  isConnectionErrorState_: function(
+      managedProperties, outOfRange, deviceState) {
+    if (this.isOutOfRangeOrNotEnabled_(outOfRange, deviceState)) {
       return true;
     }
 
@@ -738,11 +741,12 @@ Polymer({
    * @param {!mojom.ManagedProperties} managedProperties
    * @param {!mojom.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
+   * @param {?OncMojo.DeviceStateProperties} deviceState
    * @return {boolean}
    * @private
    */
   showConnect_: function(
-      managedProperties, globalPolicy, managedNetworkAvailable) {
+      managedProperties, globalPolicy, managedNetworkAvailable, deviceState) {
     if (!managedProperties) {
       return false;
     }
@@ -757,15 +761,24 @@ Polymer({
     if (this.isArcVpn_(managedProperties)) {
       return false;
     }
+
     if (managedProperties.connectionState !=
         mojom.ConnectionStateType.kNotConnected) {
       return false;
     }
+
+    if (deviceState &&
+        deviceState.deviceState !=
+            chromeos.networkConfig.mojom.DeviceStateType.kEnabled) {
+      return false;
+    }
+
     // Cellular is not configurable, so we always show the connect button, and
     // disable it if 'connectable' is false.
     if (managedProperties.type == mojom.NetworkType.kCellular) {
       return true;
     }
+
     // If 'connectable' is false we show the configure button.
     return managedProperties.connectable &&
         managedProperties.type != mojom.NetworkType.kEthernet;
@@ -958,14 +971,16 @@ Polymer({
    * @param {boolean} outOfRange
    * @param {!mojom.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
+   * @param {?OncMojo.DeviceStateProperties} deviceState
    * @return {boolean} Whether or not to enable the network connect button.
    * @private
    */
   enableConnect_: function(
       managedProperties, defaultNetwork, propertiesReceived, outOfRange,
-      globalPolicy, managedNetworkAvailable) {
+      globalPolicy, managedNetworkAvailable, deviceState) {
     if (!this.showConnect_(
-            managedProperties, globalPolicy, managedNetworkAvailable)) {
+            managedProperties, globalPolicy, managedNetworkAvailable,
+            deviceState)) {
       return false;
     }
     if (!propertiesReceived || outOfRange) {
@@ -981,13 +996,6 @@ Polymer({
       return false;
     }
     return true;
-  },
-
-  /** @private */
-  handleDeviceStateChange_: function() {
-    // Consider the network out of range if its associated device is not enabled
-    // (e.g., a Wi-Fi network would be out of range if Wi-Fi is off).
-    this.outOfRange_ |= !this.isDeviceStateEnabled_();
   },
 
   /** @private */
@@ -1648,11 +1656,17 @@ Polymer({
     return true;
   },
 
-  /** @return {boolean} */
-  isDeviceStateEnabled_: function() {
-    return !!this.deviceState_ &&
-        this.deviceState_.deviceState ==
-        chromeos.networkConfig.mojom.DeviceStateType.kEnabled;
+  /**
+   * @param {boolean} outOfRange
+   * @param {?OncMojo.DeviceStateProperties} deviceState
+   * @return {boolean}
+   * @private
+   */
+  isOutOfRangeOrNotEnabled_: function(outOfRange, deviceState) {
+    return outOfRange ||
+        (!!deviceState &&
+         deviceState.deviceState !=
+             chromeos.networkConfig.mojom.DeviceStateType.kEnabled);
   },
 });
 })();

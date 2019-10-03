@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 

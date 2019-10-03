@@ -574,7 +574,7 @@ class MockRuntime {
       let submit_frame_sink;
       if (result.supportsSession) {
         submit_frame_sink = {
-          clientRequest: this.presentation_provider_.getClientRequest(),
+          clientReceiver: this.presentation_provider_.getClientReceiver(),
           provider: this.presentation_provider_.bindProvider(sessionOptions),
           transportOptions: options
         };
@@ -584,7 +584,7 @@ class MockRuntime {
         this.dataProviderBinding_ = new mojo.Binding(
             device.mojom.XRFrameDataProvider, this, dataProviderRequest);
 
-        let clientRequest = mojo.makeRequest(this.sessionClient_);
+        let clientReceiver = mojo.makeRequest(this.sessionClient_);
 
         let enabled_features = [];
         for(let i = 0; i < sessionOptions.requiredFeatures.length; i++) {
@@ -605,7 +605,7 @@ class MockRuntime {
           session: {
             submitFrameSink: submit_frame_sink,
             dataProvider: dataProviderPtr,
-            clientRequest: clientRequest,
+            clientReceiver: clientReceiver,
             displayInfo: this.displayInfo_,
             enabledFeatures: enabled_features,
           }
@@ -957,7 +957,7 @@ class MockXRPresentationProvider {
     return providerPtr;
   }
 
-  getClientRequest() {
+  getClientReceiver() {
     this.submitFrameClient_ = new device.mojom.XRPresentationClientPtr();
     return mojo.makeRequest(this.submitFrameClient_);
   }

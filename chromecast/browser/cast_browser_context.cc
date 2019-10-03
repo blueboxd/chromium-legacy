@@ -121,6 +121,11 @@ content::PushMessagingService* CastBrowserContext::GetPushMessagingService() {
   return nullptr;
 }
 
+content::StorageNotificationService*
+CastBrowserContext::GetStorageNotificationService() {
+  return nullptr;
+}
+
 content::SSLHostStateDelegate* CastBrowserContext::GetSSLHostStateDelegate() {
   return nullptr;
 }

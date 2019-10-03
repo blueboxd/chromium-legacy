@@ -133,7 +133,8 @@
         on-input="onInput_" id="search" autofocus="[[autofocus]]"
         placeholder="[[placeholder]]" readonly="[[readonly]]"
         error-message="[[getErrorMessage_(errorMessage, errorMessageAllowed)]]"
-        invalid="[[shouldShowErrorMessage_(errorMessage, errorMessageAllowed)]]">
+        invalid="[[shouldShowErrorMessage_(errorMessage, errorMessageAllowed)]]"
+        on-blur="onBlur_">
       <div id="input-overlay" slot="suffix">
         <div id="input-box">
           <iron-icon id="dropdown-icon" icon="cr:arrow-drop-down"></iron-icon>

@@ -414,7 +414,14 @@ void NotifierSettingsView::NotifierButton::GridChanged() {
 
 // NotifierSettingsView -------------------------------------------------------
 
-NotifierSettingsView::NotifierSettingsView() {
+NotifierSettingsView::NotifierSettingsView()
+    : quiet_mode_icon_(nullptr),
+      quiet_mode_toggle_(nullptr),
+      header_view_(nullptr),
+      top_label_(nullptr),
+      scroll_bar_(nullptr),
+      scroller_(nullptr),
+      no_notifiers_view_(nullptr) {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
@@ -480,10 +487,11 @@ NotifierSettingsView::NotifierSettingsView() {
 
   header_view_ = AddChildView(std::move(header_view));
 
+  scroll_bar_ = new views::OverlayScrollBar(/*horizontal=*/false);
+
   auto scroller = std::make_unique<views::ScrollView>();
   scroller->SetBackgroundColor(SK_ColorTRANSPARENT);
-  scroll_bar_ = scroller->SetVerticalScrollBar(
-      std::make_unique<views::OverlayScrollBar>(/*horizontal=*/false));
+  scroller->SetVerticalScrollBar(scroll_bar_);
   scroller->SetDrawOverflowIndicator(false);
   scroller_ = AddChildView(std::move(scroller));
 

@@ -270,7 +270,7 @@ class AdsPageLoadMetricsObserverTest
     SubresourceFilterTestHarness::SetUp();
     tester_ =
         std::make_unique<page_load_metrics::PageLoadMetricsObserverTester>(
-            web_contents(),
+            web_contents(), this,
             base::BindRepeating(
                 &AdsPageLoadMetricsObserverTest::RegisterObservers,
                 base::Unretained(this)));

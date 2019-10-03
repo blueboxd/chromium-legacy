@@ -25,7 +25,9 @@ class PageSwitcher : public views::View,
   static constexpr int kMaxButtonRadius = 16;
   static constexpr int kPreferredButtonStripWidth = kMaxButtonRadius * 2;
 
-  PageSwitcher(ash::PaginationModel* model, bool vertical, bool is_tablet_mode);
+  PageSwitcher(ash::PaginationModel* model,
+               bool is_root_app_grid_page_switcher,
+               bool is_tablet_mode);
   ~PageSwitcher() override;
 
   // Overridden from views::View:
@@ -45,10 +47,10 @@ class PageSwitcher : public views::View,
   void SelectedPageChanged(int old_selected, int new_selected) override;
 
   ash::PaginationModel* model_;  // Owned by AppsGridView.
-  views::View* buttons_;    // Owned by views hierarchy.
+  views::View* buttons_;         // Owned by views hierarchy.
 
-  // True if the page switcher button strip should grow vertically.
-  const bool vertical_;
+  // True if the page switcher's root view is the AppsGridView.
+  const bool is_root_app_grid_page_switcher_;
 
   // True if button press should be ignored.
   bool ignore_button_press_ = false;

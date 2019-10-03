@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">ചിത്രം സംരക്ഷിക്കാൻ കഴിയില്ല.</translation>
 <translation id="1180526666083833456">ഉപകരണങ്ങളിലുടനീളം സമന്വയിപ്പിക്കുകയും വ്യക്തിപരമാക്കുകയും ചെയ്യുക.</translation>
 <translation id="1181037720776840403">നീക്കംചെയ്യൂ</translation>
+<translation id="1207113853726624428">പുതിയ തിരയൽ</translation>
 <translation id="1209206284964581585">ഇപ്പോഴത്തേയ്‌ക്ക് മറയ്‌ക്കുക</translation>
 <translation id="1219674500290482172">ഇന്‍റര്‍നെറ്റിലേക്ക് കണക്റ്റുചെയ്യാൻ കഴിയില്ല.</translation>
 <translation id="122699739164161391">എല്ലാ ടാബുകളും അവസാനിപ്പിക്കുക</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">പാസ്‌വേഡ് നിർദ്ദേശിക്കുക...</translation>
 <translation id="1870148520156231997">പാസ്‌വേഡ് വെളിപ്പെടുത്തുക</translation>
 <translation id="1872096359983322073">ടോർച്ച്</translation>
-<translation id="1876721852596493031">ഉപയോഗ ഡാറ്റ അയയ്ക്കൂ</translation>
 <translation id="1911619930368729126">Google ഡ്രൈവിലേക്ക് അപ്‌ലോഡ് ചെയ്യുക</translation>
 <translation id="1923342640370224680">കഴിഞ്ഞ മണിക്കൂർ</translation>
 <translation id="1941314575388338491">പകർത്താൻ ഡബിൾ ടാപ്പ് ചെയ്യുക.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892">വായനാ ലിസ്‌റ്റിലുള്ള, വായിക്കാത്ത <ph name="UNREAD_COUNT" /> ലേഖനങ്ങൾ.</translation>
 <translation id="2230173723195178503">വെബ്‌പേജ് ലോഡ് ചെയ്‌തു</translation>
 <translation id="2239626343334228536">ബ്രൗസിംഗ് ഡാറ്റ മായ്‌ക്കുന്നു...</translation>
-<translation id="2256128224215992540">തിരയലും സൈറ്റ് നിർദ്ദേശങ്ങളും</translation>
 <translation id="2267753748892043616">അക്കൗണ്ട് ചേർക്കുക</translation>
 <translation id="2268044343513325586">പരിഷ്‌ക്കരിക്കുക</translation>
 <translation id="2273327106802955778">കൂടുതൽ ഓപ്ഷൻ മെനു</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">ഫയൽ തുറക്കാനാവുന്നില്ല</translation>
 <translation id="2718352093833049315">Wi-Fi യിൽ മാത്രം</translation>
 <translation id="2747003861858887689">മുൻ ഫീൽഡ്</translation>
+<translation id="2773292004659987824">അദൃശ്യ തിരയൽ</translation>
 <translation id="2780046210906776326">ഇമെയിൽ അക്കൗണ്ടുകളൊന്നും ഇല്ല</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">ടാബ് സ്വിച്ചർ വിടുക</translation>
@@ -295,7 +295,6 @@
 <translation id="5197255632782567636">ഇന്‍റര്‍നെറ്റ്</translation>
 <translation id="5228579091201413441">സമന്വയം പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="5234764350956374838">ബഹിഷ്‌ക്കരിക്കുക</translation>
-<translation id="5244474230056479698"><ph name="EMAIL" /> ഇമെയിലിലേക്ക് സമന്വയിപ്പിക്കുന്നു</translation>
 <translation id="5245322853195994030">സമന്വയം റദ്ദാക്കുക</translation>
 <translation id="5271549068863921519">പാസ്‌വേഡ് സംരക്ഷിക്കുക</translation>
 <translation id="5300589172476337783">കാണിക്കുക</translation>
@@ -501,6 +500,7 @@
 <translation id="8261506727792406068">ഇല്ലാതാക്കുക</translation>
 <translation id="8281781826761538115">ഡിഫോൾട്ട് - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">പുതിയ തിരയൽ</translation>
+<translation id="8323906514956095947">കൂടുതൽ ടാബ് ഓപ്‌ഷനുകൾക്കായി സ്‌പർശിച്ച് പിടിക്കുക</translation>
 <translation id="8328777765163860529">എല്ലാം അടയ്‌ക്കുക</translation>
 <translation id="8407669440184693619">ഈ സൈറ്റിനുള്ള പാസ്‍വേഡുകളൊന്നും കണ്ടെത്തിയില്ല</translation>
 <translation id="842017693807136194">ഇതുപയോഗിച്ച് സൈൻ ഇൻ ചെയ്‌‌തു</translation>

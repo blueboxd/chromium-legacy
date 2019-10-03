@@ -111,9 +111,15 @@ ScrollbarOverlayColorTheme Scrollbar::GetScrollbarOverlayColorTheme() const {
                           : kScrollbarOverlayColorThemeDark;
 }
 
-void Scrollbar::GetTickmarks(Vector<IntRect>& tickmarks) const {
+bool Scrollbar::HasTickmarks() const {
+  return orientation_ == kVerticalScrollbar && scrollable_area_ &&
+         scrollable_area_->HasTickmarks();
+}
+
+Vector<IntRect> Scrollbar::GetTickmarks() const {
   if (scrollable_area_)
-    scrollable_area_->GetTickmarks(tickmarks);
+    return scrollable_area_->GetTickmarks();
+  return Vector<IntRect>();
 }
 
 bool Scrollbar::IsScrollableAreaActive() const {
@@ -145,7 +151,8 @@ void Scrollbar::OffsetDidChange() {
   current_pos_ = position;
 
   ScrollbarPart invalid_parts =
-      GetTheme().InvalidateOnThumbPositionChange(*this, old_position, position);
+      GetTheme().PartsToInvalidateOnThumbPositionChange(*this, old_position,
+                                                        position);
   SetNeedsPaintInvalidation(invalid_parts);
 
   if (pressed_part_ == kThumbPart)

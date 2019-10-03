@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">No fijar carpeta</translation>
 <translation id="3678559383040232393">Teclado maltés</translation>
 <translation id="3685122418104378273">La sincronización con Google Drive está inhabilitada de manera predeterminada cuando se usan los datos móviles.</translation>
+<translation id="3689865792480713551">Cancelar <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Este dispositivo no puede abrirse porque su sistema de archivos no es compatible.</translation>
 <translation id="3741243925913727067">Crea una copia de seguridad de las fotos y los videos del dispositivo de medios en Google Drive.</translation>
 <translation id="3749289110408117711">Nombre del archivo</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">Internacional de EE.UU. (PC)</translation>
 <translation id="6346310558342052870">El acceso está restringido</translation>
 <translation id="6353618411602605519">Teclado croata</translation>
+<translation id="6356685157277930264">Ventana de estado de los archivos</translation>
 <translation id="6358884629796491903">Dragón</translation>
 <translation id="637062427944097960">Este archivo está abierto en otro escritorio. Ve a <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) para visualizarlo.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> elementos</translation>

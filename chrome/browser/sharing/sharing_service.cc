@@ -140,9 +140,6 @@ SharingService::GetDeviceCandidates(
   if (IsSyncDisabled() || all_devices.empty() || !local_device_info)
     return device_candidates;
 
-  std::map<std::string, SharingSyncPreference::Device> synced_devices =
-      sync_prefs_->GetSyncedDevices();
-
   const base::Time min_updated_time = base::Time::Now() - kDeviceExpiration;
 
   // Sort the DeviceInfo vector so the most recently modified devices are first.
@@ -163,12 +160,12 @@ SharingService::GetDeviceCandidates(
     if (local_device_info->client_name() == device->client_name())
       continue;
 
-    auto synced_device = synced_devices.find(device->guid());
-    if (synced_device == synced_devices.end())
+    base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info =
+        sync_prefs_->GetSharingInfo(device.get());
+    if (!sharing_info ||
+        !sharing_info->enabled_features.count(required_feature)) {
       continue;
-
-    if (!synced_device->second.enabled_features.count(required_feature))
-      continue;
+    }
 
     // Only insert the first occurrence of each device name.
     auto inserted = device_names.insert(device->client_name());
@@ -227,16 +224,16 @@ void SharingService::SendMessageToDevice(
                      SharingSendMessageResult::kAckTimeout),
       kSendMessageTimeout);
 
-  base::Optional<SharingSyncPreference::Device> target =
-      sync_prefs_->GetSyncedDevice(device_guid);
-  if (!target) {
+  base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info =
+      sync_prefs_->GetSharingInfo(device_guid);
+  if (!sharing_info) {
     InvokeSendMessageCallback(message_guid,
                               SharingSendMessageResult::kDeviceNotFound);
     return;
   }
 
   fcm_sender_->SendMessageToDevice(
-      std::move(*target), time_to_live, std::move(message),
+      std::move(*sharing_info), time_to_live, std::move(message),
       base::BindOnce(&SharingService::OnMessageSent,
                      weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),
                      message_guid));

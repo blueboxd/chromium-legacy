@@ -117,7 +117,6 @@
 <translation id="4971687151119236543">Poprzedni utwór multimedialny</translation>
 <translation id="5046499563572181734">Kliknij tutaj</translation>
 <translation id="5076340679995252485">&amp;Wklej</translation>
-<translation id="5137751499640340777">Uruchom Asystenta Google</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Trójkąt rozwinięcia</translation>
 <translation id="5278860589123563674">Nie udało się wysłać</translation>
@@ -154,6 +153,7 @@
 <translation id="6394627529324717982">Przecinek</translation>
 <translation id="6397363302884558537">Przestań mówić</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 s temu}few{# s temu}many{# s temu}other{# s temu}}</translation>
+<translation id="6417265370957905582">Asystent Google</translation>
 <translation id="6430678249303439055">Blokuj wszystkie powiadomienia z tej aplikacji</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{sekundę temu}few{# sekundy temu}many{# sekund temu}other{# sekundy temu}}</translation>
 <translation id="6539092367496845964">Coś poszło nie tak. Spróbuj później.</translation>
@@ -196,7 +196,6 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Więcej niż 1 nieprzeczytane powiadomienie}few{Więcej niż # nieprzeczytane powiadomienia}many{Więcej niż # nieprzeczytanych powiadomień}other{Więcej niż # nieprzeczytanego powiadomienia}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{za 1 min}few{za # min}many{za # min}other{za # min}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8098075892845277643">Rozpocznij zapytanie głosowe za pomocą Asystenta Google</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 godzinę temu}few{# godziny temu}many{# godzin temu}other{# godziny temu}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Pozostała 1 s}few{Pozostały # s}many{Pozostało # s}other{Pozostało # s}}</translation>
 <translation id="8144660977431427332">Twoje wyszukiwania obsługuje Asystent Google. <ph name="LEARN_MORE" /></translation>

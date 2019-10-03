@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Αδύνατη αποθ.εικόνας</translation>
 <translation id="1180526666083833456">Συγχρονισμός και εξατομίκευση σε όλες τις συσκευές.</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
+<translation id="1207113853726624428">Νέα αναζήτηση</translation>
 <translation id="1209206284964581585">Προσωρινή απόκρυψη</translation>
 <translation id="1219674500290482172">Δεν είναι δυνατή η σύνδεση στο διαδίκτυο.</translation>
 <translation id="122699739164161391">Κλείσιμο όλων των καρτελών</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">Πρόταση κωδ. πρόσβ…</translation>
 <translation id="1870148520156231997">Αποκάλυψη κωδικού πρόσβασης</translation>
 <translation id="1872096359983322073">Φακός</translation>
-<translation id="1876721852596493031">Αποστ. δεδομ. χρήσης</translation>
 <translation id="1911619930368729126">Μεταφόρ.στο Google Drive</translation>
 <translation id="1923342640370224680">Τελευταία ώρα</translation>
 <translation id="1941314575388338491">Πατήστε δύο φορές για αντιγραφή.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> μη αναγνωσμένα άρθρα λίστας ανάγνωσης.</translation>
 <translation id="2230173723195178503">Η ιστοσελίδα φορτώθηκε</translation>
 <translation id="2239626343334228536">Διαγραφή δεδομένων περιήγησης…</translation>
-<translation id="2256128224215992540">Προτάσεις αναζήτησης και ιστοτόπων</translation>
 <translation id="2267753748892043616">Προσθήκη λογαριασμού</translation>
 <translation id="2268044343513325586">Περιορισμός</translation>
 <translation id="2273327106802955778">Μενού "Περισσότερα"</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">Αδύνατο άνοιγμα αρχείου</translation>
 <translation id="2718352093833049315">Μόνο σε Wi-Fi</translation>
 <translation id="2747003861858887689">Προηγούμενο πεδίο</translation>
+<translation id="2773292004659987824">Ανώνυμη αναζήτηση</translation>
 <translation id="2780046210906776326">Κανένας Λογαρ. Email</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Αποχώρηση από την εναλλαγή καρτελών</translation>
@@ -295,7 +295,6 @@
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Ενεργοποίηση συγχρονισμού</translation>
 <translation id="5234764350956374838">Παράβλεψη</translation>
-<translation id="5244474230056479698">Συγχρονισμός με <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Ακύρωση συγχρονισμού</translation>
 <translation id="5271549068863921519">Αποθήκευση κωδικού πρόσβασης</translation>
 <translation id="5300589172476337783">Εμφάνιση</translation>
@@ -502,6 +501,7 @@
 <translation id="8261506727792406068">Διαγραφή</translation>
 <translation id="8281781826761538115">Προεπιλογή - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Νέα αναζήτηση</translation>
+<translation id="8323906514956095947">Αγγίξτε παρατεταμένα για περισσότερες επιλογές καρτελών</translation>
 <translation id="8328777765163860529">Κλείσιμο όλων</translation>
 <translation id="8407669440184693619">Δεν βρέθηκαν κωδικοί πρόσβασης για αυτόν τον ιστότοπο</translation>
 <translation id="842017693807136194">Σε σύνδεση με</translation>

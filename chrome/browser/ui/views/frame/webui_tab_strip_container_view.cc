@@ -31,6 +31,13 @@ WebUITabStripContainerView::WebUITabStripContainerView(Browser* browser)
       web_view_(
           AddChildView(std::make_unique<views::WebView>(browser->profile()))) {
   SetVisible(false);
+  // TODO(crbug.com/1010589) WebContents are initially assumed to be visible by
+  // default unless explicitly hidden. The WebContents need to be set to hidden
+  // so that the visibility state of the document in JavaScript is correctly
+  // initially set to 'hidden', and the 'visibilitychange' events correctly get
+  // fired.
+  web_view_->GetWebContents()->WasHidden();
+
   SetLayoutManager(std::make_unique<views::FillLayout>());
   web_view_->LoadInitialURL(GURL(chrome::kChromeUITabStripURL));
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(

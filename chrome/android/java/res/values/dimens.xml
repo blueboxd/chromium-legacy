@@ -165,13 +165,6 @@
     <dimen name="password_manager_dialog_details_padding_bottom">8dp</dimen>
     <dimen name="password_manager_dialog_details_padding_top">12dp</dimen>
 
-    <!-- Promo dialogs -->
-    <dimen name="promo_dialog_illustration_margin">24dp</dimen>
-    <dimen name="promo_dialog_illustration_width">150dp</dimen>
-    <dimen name="promo_dialog_padding">16dp</dimen>
-    <dimen name="promo_dialog_max_content_width">320dp</dimen>
-    <dimen name="promo_dialog_min_scrollable_height">100dp</dimen>
-
     <!-- Data Saver -->
     <dimen name="data_usage_chart_height">252dp</dimen>
     <dimen name="data_reduction_main_menu_icon_width">24dp</dimen>
@@ -220,7 +213,6 @@
     <!-- Alert dialog -->
     <dimen name="dialog_padding_top">@dimen/abc_dialog_padding_top_material</dimen>
     <dimen name="dialog_padding_sides">@dimen/abc_dialog_padding_material</dimen>
-    <dimen name="dialog_max_width">600dp</dimen>
 
     <!-- ModalDialogView dimensions -->
     <dimen name="modal_dialog_control_vertical_padding">2dp</dimen>
@@ -578,15 +570,12 @@
     <dimen name="pref_languages_add_button_padding">24dp</dimen>
     <dimen name="pref_languages_item_popup_width">260dp</dimen>
 
-
     <!-- Drag-Reorderable List dimensions -->
     <dimen name="draggable_list_item_padding">16dp</dimen>
-    <dimen name="list_item_dragged_elevation">6dp</dimen>
 
     <!-- Dialog dimensions.
          https://www.google.com/design/spec/components/dialogs.html#dialogs-simple-dialogs -->
     <dimen name="dialog_width_unit">56dp</dimen>  <!-- MD dialog widths are multiples of this. -->
-    <dimen name="dialog_header_margin">14dp</dimen>
 
     <!-- Modern List Item dimensions -->
     <dimen name="list_item_min_height">64dp</dimen>
@@ -678,10 +667,6 @@
 
     <!-- Explicit Language Ask Prompt dimensions -->
     <dimen name="explicit_ask_checkbox_end_padding">4dp</dimen>
-
-    <!-- RadioButtonWithDescription dimensions -->
-    <dimen name="radio_button_with_description_lateral_padding">16dp</dimen>
-    <dimen name="radio_button_with_description_vertical_padding">10dp</dimen>
 
     <!-- History Navigation UI Item -->
     <dimen name="navigation_bubble_size">44dp</dimen>

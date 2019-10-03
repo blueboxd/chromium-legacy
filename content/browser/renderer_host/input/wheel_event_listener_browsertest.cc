@@ -84,8 +84,9 @@ class WheelEventListenerBrowserTest : public ContentBrowserTest {
     double x = 10;
     double y = 10;
     blink::WebMouseWheelEvent wheel_event =
-        SyntheticWebMouseWheelEventBuilder::Build(x, y, x, y, -20, -20, 0,
-                                                  true);
+        SyntheticWebMouseWheelEventBuilder::Build(
+            x, y, x, y, -20, -20, 0,
+            ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
     wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
     GetWidgetHost()->ForwardWheelEvent(wheel_event);
     EXPECT_EQ(INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING,

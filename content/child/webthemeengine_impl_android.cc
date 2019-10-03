@@ -227,4 +227,13 @@ void WebThemeEngineAndroid::Paint(
       canvas, NativeThemePart(part), NativeThemeState(state), gfx::Rect(rect),
       native_theme_extra_params, NativeColorScheme(color_scheme));
 }
+
+blink::ForcedColors WebThemeEngineAndroid::ForcedColors() const {
+  return forced_colors_;
+}
+
+void WebThemeEngineAndroid::SetForcedColors(
+    const blink::ForcedColors forced_colors) {
+  forced_colors_ = forced_colors;
+}
 }  // namespace content

@@ -15,19 +15,16 @@
     <!-- Control colors for toggles, checkboxes, ratio buttons, list item highlight, and accent.
          Note that these should NOT be used for icon tint. -->
     <color name="control_normal_color">@color/modern_grey_700</color>
-    <color name="light_active_color">@color/modern_blue_600</color>
     <color name="control_highlight_color">@color/modern_grey_800_alpha_38</color>
 
     <!-- Other colors -->
     <color name="dark_action_bar_color">#263238</color>
     <color name="dark_status_bar_color">#161E21</color>
-    <color name="modal_dialog_scrim_color">@color/black_alpha_65</color>
 
     <!-- Modern color palette -->
     <color name="black_alpha_12">#1F000000</color>
     <color name="black_alpha_20">#33000000</color>
     <color name="black_alpha_30">#4D000000</color>
-    <color name="black_alpha_65">#A6000000</color>
     <color name="white_alpha_65">#A6FFFFFF</color>
 
     <!-- Old color palette -->
@@ -111,11 +108,6 @@
     <color name="contextual_search_promo_background_color">@color/default_bg_color_elev_0</color>
     <color name="contextual_search_promo_border_color">#C2C2C2</color>
     <color name="contextual_search_divider_line_color">@color/modern_secondary_color</color>
-
-    <!-- Progress Bar colors -->
-    <color name="progress_bar_foreground">@color/light_active_color</color>
-    <color name="progress_bar_secondary">@color/modern_grey_600</color>
-    <color name="progress_bar_background">#3D4386F7</color>
 
     <!-- Incognito background and branding colors -->
     <color name="incognito_modern_primary_color">@color/modern_grey_900</color>

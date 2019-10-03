@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/i18n/unicodestring.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_tree.h"

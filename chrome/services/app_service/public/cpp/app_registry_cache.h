@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/sequence_checker.h"
 #include "chrome/services/app_service/public/cpp/app_update.h"

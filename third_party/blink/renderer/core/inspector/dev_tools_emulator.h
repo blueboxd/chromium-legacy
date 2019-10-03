@@ -110,7 +110,6 @@ class CORE_EXPORT DevToolsEmulator final
   struct ViewportOverride {
     FloatPoint position;
     double scale;
-    bool original_visual_viewport_masking;
   };
   base::Optional<ViewportOverride> viewport_override_;
 

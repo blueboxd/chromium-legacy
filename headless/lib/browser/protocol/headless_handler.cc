@@ -55,7 +55,12 @@ void OnBeginFrameFinished(
     ImageEncoding encoding,
     int quality,
     bool has_damage,
-    std::unique_ptr<SkBitmap> bitmap) {
+    std::unique_ptr<SkBitmap> bitmap,
+    std::string error_message) {
+  if (!error_message.empty()) {
+    callback->sendFailure(Response::Error(std::move(error_message)));
+    return;
+  }
   if (!bitmap || bitmap->drawsNothing()) {
     callback->sendSuccess(has_damage, Maybe<protocol::Binary>());
     return;
@@ -160,15 +165,11 @@ void HeadlessHandler::BeginFrame(Maybe<double> in_frame_time_ticks,
     }
   }
 
-  if (!headless_contents->BeginFrame(
-          frame_time_ticks, deadline, interval, no_display_updates,
-          capture_screenshot,
-          base::BindOnce(&OnBeginFrameFinished, std::move(callback), encoding,
-                         quality))) {
-    callback->sendFailure(Response::Error(
-        "Failed to request a frame, is another frame pending?"));
-    return;
-  }
+  headless_contents->BeginFrame(
+      frame_time_ticks, deadline, interval, no_display_updates,
+      capture_screenshot,
+      base::BindOnce(&OnBeginFrameFinished, std::move(callback), encoding,
+                     quality));
 }
 
 }  // namespace protocol

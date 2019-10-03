@@ -223,6 +223,13 @@ struct ResourceDataUpdate {
 
   // The origin of this resource.
   url.mojom.Origin origin;
+
+  // Whether this resource completed loading, either by network or cache, before
+  // FCP in the frame it belongs to. This flag can be set to true at any point
+  // during a resource load. A more recent ResourceDataUpdate can have a
+  // different flag than the previous update. Once this is set to true, it will
+  // be true for all future updates.
+  bool completed_before_fcp;
 };
 
 // Metrics about how a RenderFrame rendered since the last UpdateTiming call.

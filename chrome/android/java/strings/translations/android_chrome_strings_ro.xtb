@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Utilizate</translation>
 <translation id="1171770572613082465">Vezi site-uri populare atingând butonul „Site-uri de top”</translation>
 <translation id="1173894706177603556">Redenumește</translation>
-<translation id="1175310183703641346">Marcajele, istoricul, parolele și alte setări nu vor mai fi sincronizate cu Contul Google</translation>
 <translation id="1178581264944972037">Întrerupe</translation>
 <translation id="1181037720776840403">Elimină</translation>
 <translation id="1188239144602654184">Intră în RA</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">Marcat în <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sincronizare în fundal</translation>
 <translation id="3771001275138982843">Nu s-a putut descărca actualizarea</translation>
+<translation id="3771033907050503522">File incognito</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Activează Bluetooth<ph name="END_LINK" /> pentru a permite asocierea</translation>
 <translation id="3775705724665058594">Trimite pe dispozitivele tale</translation>
 <translation id="3778956594442850293">S-a adăugat pe ecranul de pornire</translation>
@@ -484,7 +484,6 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="4719927025381752090">Oferă traducerea</translation>
 <translation id="4720023427747327413">Deschide în <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Contribuie la îmbunătățirea browserului Chrome. <ph name="BEGIN_LINK" />Participă la sondaj.<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">Comuți contul pentru sincronizare de la <ph name="ACCOUNT_EMAIL_OLD" /> la <ph name="ACCOUNT_EMAIL_NEW" />. Datele Chrome existente sunt gestionate de <ph name="MANAGED_DOMAIN" />. Astfel, se vor șterge datele de pe acest dispozitiv, dar datele vor rămâne în <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">Actualizează</translation>
 <translation id="4738836084190194332">Ultima sincronizare: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Deschide o filă nouă</translation>
@@ -668,7 +667,6 @@ Asigură-te că site-ul este de încredere înainte să intri în RV.</translati
 <translation id="5937580074298050696"><ph name="AMOUNT" /> salvați</translation>
 <translation id="5939518447894949180">Resetează</translation>
 <translation id="5942872142862698679">Pentru căutare se folosește Google</translation>
-<translation id="5944669582486359588">În modul Lite, Chrome încarcă mai repede paginile și folosește cu până la 60% mai puține date. Tehnologia cloud de la Google optimizează paginile pe care le accesezi.</translation>
 <translation id="5952764234151283551">Trimite la Google adresa URL a unei pagini pe care încerci să o accesezi</translation>
 <translation id="5956665950594638604">Deschide Centrul de ajutor Chrome într-o filă nouă</translation>
 <translation id="5958275228015807058">Găsește fișierele și paginile în Descărcări</translation>
@@ -816,7 +814,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7029809446516969842">Parole</translation>
 <translation id="7053983685419859001">Blochează</translation>
 <translation id="7055152154916055070">Redirecționarea a fost blocată:</translation>
-<translation id="7062545763355031412">Acceptă și comută conturile</translation>
 <translation id="7063006564040364415">Nu s-a putut stabili conexiunea cu serverul de sincronizare.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 selectat}few{# selectate}other{# selectate}}</translation>
 <translation id="7071521146534760487">Gestionează contul</translation>
@@ -1100,7 +1097,6 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="9139318394846604261">Cumpărături</translation>
 <translation id="9155898266292537608">De asemenea, poți căuta atingând scurt un cuvânt</translation>
 <translation id="9169507124922466868">Istoricul de navigare este pe jumătate deschis</translation>
-<translation id="9188680907066685419">Deconectează-te de la contul gestionat</translation>
 <translation id="9204836675896933765">1 fișier rămas</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Nu pot apela</translation>
@@ -1109,7 +1105,6 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="932327136139879170">Pagina de pornire</translation>
 <translation id="938850635132480979">Eroare: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Accesează microfonul</translation>
-<translation id="951339005376969845">Șterge datele existente. Le poți recupera comutând înapoi la <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome poate să folosească <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> pentru căutare în China. Poți să schimbi acest lucru din <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" />.</translation>
 <translation id="965817943346481315">Blochează dacă site-ul afișează anunțuri deranjante sau înșelătoare (recomandat)</translation>
 <translation id="968900484120156207">Paginile pe care le accesezi apar aici</translation>

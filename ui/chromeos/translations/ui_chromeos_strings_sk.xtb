@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">Odopnúť priečinok</translation>
 <translation id="3678559383040232393">Maltézska klávesnica</translation>
 <translation id="3685122418104378273">Synchronizácia Disku Google je pri používaní mobilných dát v predvolenom nastavení zakázaná.</translation>
+<translation id="3689865792480713551">Zrušiť <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Toto zariadenie nie je možné otvoriť, pretože jeho systém súborov nie je podporovaný.</translation>
 <translation id="3741243925913727067">Zálohujte si fotky a videá z mediálneho zariadenia na Disk Google.</translation>
 <translation id="3749289110408117711">Názov súboru</translation>
@@ -463,6 +464,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6339145975392024142">Americká klávesnica s medzinárodným rozložením klávesov (PC)</translation>
 <translation id="6346310558342052870">Prístup je zakázaný</translation>
 <translation id="6353618411602605519">chorvátska klávesnica</translation>
+<translation id="6356685157277930264">Okno spätnej väzby týkajúcej sa súborov</translation>
 <translation id="6358884629796491903">Drak</translation>
 <translation id="637062427944097960">Tento súbor je otvorený na inej pracovnej ploche. Ak ho chcete zobraziť, prejdite do profilu <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
 <translation id="6395575651121294044">Počet položiek: <ph name="NUMBER_OF_FILES" /></translation>

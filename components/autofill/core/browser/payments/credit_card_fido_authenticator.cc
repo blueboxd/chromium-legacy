@@ -473,6 +473,11 @@ CreditCardFIDOAuthenticator::ParseCreationOptions(
   options->adjusted_timeout = base::TimeDelta::FromMilliseconds(
       timeout ? timeout->GetInt() : kWebAuthnTimeoutMs);
 
+  // Only allow user-verifying platform authenticators.
+  options->authenticator_selection = AuthenticatorSelectionCriteria(
+      AuthenticatorAttachment::kPlatform, /*require_resident_key=*/false,
+      UserVerificationRequirement::kRequired);
+
   // List of keys that Payments already knows about, and so should not make a
   // new credential.
   const auto* excluded_keys_list =

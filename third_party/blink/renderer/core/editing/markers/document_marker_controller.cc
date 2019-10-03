@@ -46,6 +46,8 @@
 #include "third_party/blink/renderer/core/editing/markers/spelling_marker_list_impl.h"
 #include "third_party/blink/renderer/core/editing/markers/suggestion_marker.h"
 #include "third_party/blink/renderer/core/editing/markers/suggestion_marker_list_impl.h"
+#include "third_party/blink/renderer/core/editing/markers/text_fragment_marker.h"
+#include "third_party/blink/renderer/core/editing/markers/text_fragment_marker_list_impl.h"
 #include "third_party/blink/renderer/core/editing/markers/text_match_marker.h"
 #include "third_party/blink/renderer/core/editing/markers/text_match_marker_list_impl.h"
 #include "third_party/blink/renderer/core/editing/position.h"
@@ -74,6 +76,8 @@ DocumentMarker::MarkerTypeIndex MarkerTypeToMarkerIndex(
       return DocumentMarker::kActiveSuggestionMarkerIndex;
     case DocumentMarker::kSuggestion:
       return DocumentMarker::kSuggestionMarkerIndex;
+    case DocumentMarker::kTextFragment:
+      return DocumentMarker::kTextFragmentMarkerIndex;
   }
 
   NOTREACHED();
@@ -94,6 +98,8 @@ DocumentMarkerList* CreateListForType(DocumentMarker::MarkerType type) {
       return MakeGarbageCollected<SuggestionMarkerListImpl>();
     case DocumentMarker::kTextMatch:
       return MakeGarbageCollected<TextMatchMarkerListImpl>();
+    case DocumentMarker::kTextFragment:
+      return MakeGarbageCollected<TextFragmentMarkerListImpl>();
   }
 
   NOTREACHED();
@@ -208,6 +214,14 @@ void DocumentMarkerController::AddSuggestionMarker(
   AddMarkerInternal(range, [&properties](int start_offset, int end_offset) {
     return MakeGarbageCollected<SuggestionMarker>(start_offset, end_offset,
                                                   properties);
+  });
+}
+
+void DocumentMarkerController::AddTextFragmentMarker(
+    const EphemeralRange& range) {
+  DCHECK(!document_->NeedsLayoutTreeUpdate());
+  AddMarkerInternal(range, [](int start_offset, int end_offset) {
+    return MakeGarbageCollected<TextFragmentMarker>(start_offset, end_offset);
   });
 }
 
@@ -677,6 +691,10 @@ DocumentMarkerVector DocumentMarkerController::ComputeMarkersToPaint(
                 DocumentMarker::kSuggestion))));
 
   return markers_to_paint;
+}
+
+bool DocumentMarkerController::PossiblyHasTextMatchMarkers() const {
+  return PossiblyHasMarkers(DocumentMarker::kTextMatch);
 }
 
 Vector<IntRect> DocumentMarkerController::LayoutRectsForTextMatchMarkers() {

@@ -60,7 +60,6 @@
 <translation id="1076818208934827215">Internet Explorer</translation>
 <translation id="1079766198702302550">Zugriff auf die Kamera immer blockieren</translation>
 <translation id="1082398631555931481"><ph name="THIRD_PARTY_TOOL_NAME" /> möchte Ihre Chrome-Einstellungen auf ihre ursprünglichen Standardwerte zurücksetzen. Hierdurch werden Ihre Startseite, die "Neuer Tab"-Seite und die Suchmaschine zurückgesetzt, Ihre Erweiterungen deaktiviert und sämtliche Tabs losgelöst. Außerdem werden sonstige temporäre und im Cache gespeicherte Daten wie Cookies, Inhalte und Websitedaten gelöscht.</translation>
-<translation id="1082725763867769612">Offlinedateien</translation>
 <translation id="1084824384139382525">Adr&amp;esse des Links kopieren</translation>
 <translation id="1085697365578766383">Fehler beim Starten der virtuellen Maschine. Bitte versuchen Sie es noch einmal.</translation>
 <translation id="1089439967362294234">Passwort ändern</translation>
@@ -130,7 +129,6 @@
 <translation id="1181037720776840403">Entfernen</translation>
 <translation id="1183237619868651138"><ph name="EXTERNAL_CRX_FILE" /> kann nicht im lokalen Cache installiert werden.</translation>
 <translation id="1185924365081634987">Sie können auch <ph name="GUEST_SIGNIN_LINK_START" />als Gast surfen<ph name="GUEST_SIGNIN_LINK_END" />, um den Netzwerkfehler zu beheben.</translation>
-<translation id="1186201132766001848">Passwörter prüfen</translation>
 <translation id="1186771945450942097">Schädliche Software entfernen</translation>
 <translation id="1187722533808055681">Inaktive Weckbefehle</translation>
 <translation id="1188807932851744811">Protokoll nicht hochgeladen</translation>
@@ -181,6 +179,7 @@
 <translation id="1243314992276662751">Hochladen</translation>
 <translation id="1244265436519979884">Wiederherstellung für Linux wird gerade ausgeführt</translation>
 <translation id="1244303850296295656">Erweiterungsfehler</translation>
+<translation id="1246905108078336582">Vorschlag aus Zwischenablage entfernen?</translation>
 <translation id="1249643471736608405">Das Plug-in <ph name="PLUGIN_NAME" /> wurde blockiert, weil es eingestellt wurde</translation>
 <translation id="1251366534849411931">Erwartete öffnende geschweifte Klammer: <ph name="ERROR_LINE" /></translation>
 <translation id="1252987234827889034">Profilfehler aufgetreten</translation>
@@ -304,7 +303,6 @@
 <translation id="1444628761356461360">Diese Einstellung wird vom Geräteinhaber, <ph name="OWNER_EMAIL" />, verwaltet.</translation>
 <translation id="144518587530125858">"<ph name="IMAGE_PATH" />" konnte nicht für das Design geladen werden.</translation>
 <translation id="1445693676523799095">Das kann etwas dauern</translation>
-<translation id="1450011005989029586">Wegen einer Datenpanne bei einer von Ihnen genutzten Website oder App ist Ihr Passwort in die Hände Unbefugter gelangt. Wir empfehlen Ihnen dringend, jetzt auf <ph name="ORIGIN" /> <ph name="BOLD" />.</translation>
 <translation id="1451375123200651445">Webseite, Einzeldatei</translation>
 <translation id="1451917004835509682">Betreuten Nutzer hinzufügen</translation>
 <translation id="1454223536435069390">Screenshot &amp;erstellen</translation>
@@ -324,6 +322,7 @@
 <translation id="1476607407192946488">&amp;Spracheinstellungen</translation>
 <translation id="1478340334823509079">Details: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Die Installation ist nicht aktiviert</translation>
+<translation id="1481206932476131736">Hier können Sie Ihre angemeldeten Konten verwalten. Websites, Apps und Erweiterungen in Chrome und Google Play greifen möglicherweise auf diese Konten zurück, um Ihnen – abhängig von den jeweiligen Berechtigungen – personalisierte Inhalte anzuzeigen.</translation>
 <translation id="1482626744466814421">Lesezeichen für diesen Tab erstellen…</translation>
 <translation id="1483493594462132177">Senden</translation>
 <translation id="1484979925941077974">Die Website verwendet Bluetooth</translation>
@@ -600,7 +599,6 @@
 <translation id="1864111464094315414">Anmeldung</translation>
 <translation id="1864400682872660285">Kälter</translation>
 <translation id="1864454756846565995">USB-C-Gerät (Port hinten)</translation>
-<translation id="1865678028973512614">Dateien löschen</translation>
 <translation id="1865769994591826607">Nur bei Verbindungen zur gleichen Website</translation>
 <translation id="186612162884103683">"<ph name="EXTENSION" />" kann Bilder, Video- und Sounddateien an den geprüften Orten lesen und schreiben.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> ist zum Abschließen der Installation bereit.</translation>
@@ -931,7 +929,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">Notizen auf dem Sperrbildschirm werden automatisch in <ph name="LOCK_SCREEN_APP_NAME" /> gespeichert. Ihre letzte Notiz wird weiterhin auf dem Sperrbildschirm angezeigt.</translation>
 <translation id="2353297238722298836">Kamera- und Mikrofonnutzung zulässig</translation>
-<translation id="2355241457888955">SMS an meine Geräte senden</translation>
 <translation id="2356070529366658676">Fragen</translation>
 <translation id="2359345697448000899">Klicken Sie zum Verwalten Ihrer Erweiterungen im Menü "Tools" auf "Erweiterungen".</translation>
 <translation id="2359808026110333948">Weiter</translation>
@@ -1060,7 +1057,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2534460670861217804">Sicherer HTTP-Proxy</translation>
 <translation id="253557089021624350">Keepalive-Zahl</translation>
 <translation id="2535799430745250929">Kein Mobilfunknetz vorhanden</translation>
-<translation id="2536052711541161459">Zeigerbeschleunigung</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> kann die folgenden Dateien und Ordner lesen und bearbeiten</translation>
 <translation id="2538361623464451692">Synchronisierung deaktiviert</translation>
 <translation id="2540449034743108469">Drücken Sie auf "Start", um den Listener für Erweiterungsaktivitäten zu aktivieren</translation>
@@ -1363,6 +1359,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="2981113813906970160">Großen Cursor verwenden</translation>
 <translation id="2982970937345031">Anonym melden</translation>
 <translation id="2986010903908656993">Dieser Seite wurde keine vollständige Kontrolle über MIDI-Geräte gewährt.</translation>
+<translation id="2987620471460279764">Text, der über ein anderes Gerät geteilt wurde</translation>
 <translation id="2989474696604907455">Nicht angeschlossen</translation>
 <translation id="2989786307324390836">DER-verschlüsselte Binärdatei, Einzelzertifikat</translation>
 <translation id="2992931425024192067">Alle Benachrichtigungen anzeigen</translation>
@@ -1937,6 +1934,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3820172043799983114">Ungültige PIN.</translation>
 <translation id="3820749202859700794">Elliptische SECG-Kurve secp521r1 (NIST P-521)</translation>
 <translation id="3822559385185038546">Dieser Proxy wird von Ihrem Administrator erzwungen</translation>
+<translation id="3826440694796503677">Ihr Administrator hat die Option zum Hinzufügen weiterer Google-Konten deaktiviert</translation>
 <translation id="3827306204503227641">Plug-ins ohne Sandbox weiterhin zulassen</translation>
 <translation id="3827774300009121996">&amp;Vollbildmodus</translation>
 <translation id="3828029223314399057">In Lesezeichen suchen</translation>
@@ -2032,6 +2030,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Aus Internet Explorer importiert</translation>
 <translation id="3950820424414687140">Anmelden</translation>
+<translation id="3953834000574892725">Meine Konten</translation>
 <translation id="3954354850384043518">Wird heruntergeladen</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Hertz)</translation>
 <translation id="3954953195017194676">Es sind keine kürzlich erfassten WebRTC-Ereignisprotokolle vorhanden.</translation>
@@ -2234,7 +2233,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4267953847983678297">Verbindung mit dem Mobilfunknetz automatisch herstellen</translation>
 <translation id="4268025649754414643">Schlüsselverschlüsselung</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
-<translation id="4270615291506829403">Ihr Passwort zu ändern</translation>
 <translation id="4275663329226226506">Medien</translation>
 <translation id="4275830172053184480">Gerät neu starten</translation>
 <translation id="4278101229438943600">Google Assistant ist bereit</translation>
@@ -2267,6 +2265,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4325237902968425115">"<ph name="LINUX_APP_NAME" />" wird deinstalliert...</translation>
 <translation id="4330191372652740264">Wasser mit Eis</translation>
 <translation id="4330387663455830245"><ph name="LANGUAGE" /> nie übersetzen</translation>
+<translation id="4332976768901252016">Jugendschutzeinstellungen einrichten</translation>
 <translation id="4333854382783149454">PKCS #1 SHA-1 mit RSA-Verschlüsselung</translation>
 <translation id="4336979451636460645">Netzwerkprotokolle sind hier abrufbar: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> möchte mit der App "<ph name="EXTENSION_NAME" />" kommunizieren.</translation>
@@ -2445,7 +2444,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4617001782309103936">Zu kurz</translation>
 <translation id="4617270414136722281">Erweiterungsoptionen</translation>
 <translation id="4619615317237390068">Tabs von anderen Geräten</translation>
-<translation id="462021874527520979">Über meine Geräte anrufen</translation>
 <translation id="4620809267248568679">Diese Einstellung wird durch eine Erweiterung erzwungen.</translation>
 <translation id="4623189117674524348">Das System konnte den API-Zugriff für dieses Gerät nicht autorisieren.</translation>
 <translation id="4625078469366263107">App aktivieren</translation>
@@ -2493,7 +2491,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Um die Druckerkonfiguration kümmert sich der Administrator.</translation>
 <translation id="4694604912444486114">Affe</translation>
-<translation id="4696983787092045100">SMS an meine Geräte senden</translation>
 <translation id="4697551882387947560">Beim Beenden der Browsersitzung</translation>
 <translation id="4699172675775169585">Bilder und Dateien im Cache</translation>
 <translation id="4699357559218762027">(wird automatisch gestartet)</translation>
@@ -2511,7 +2508,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4722920479021006856"><ph name="APP_NAME" /> hat Ihren Bildschirm freigegeben.</translation>
 <translation id="4724450788351008910">Zugehörigkeit geändert</translation>
 <translation id="4725511304875193254">Corgi</translation>
-<translation id="4725851834065990915">Wegen einer Datenpanne bei einer von Ihnen genutzten Website oder App ist Ihr Passwort in die Hände Unbefugter gelangt. Chrome empfiehlt, Ihre gespeicherten Passwörter jetzt zu überprüfen.</translation>
 <translation id="4726710629007580002">Beim Versuch, diese Erweiterung zu installieren, wurden Warnungen ausgegeben:</translation>
 <translation id="4727847987444062305">Verwaltete Gastsitzung</translation>
 <translation id="4728558894243024398">Plattform</translation>
@@ -2541,6 +2537,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4763830802490665879">Cookies von mehreren Websites werden beim Beenden gelöscht.</translation>
 <translation id="4765582662863429759">Zulassen, dass Android Messages SMS von Ihrem Smartphone an Ihr Chromebook übermittelt</translation>
 <translation id="4768332406694066911">Ihre Zertifikate dieser Organisationen identifizieren Sie</translation>
+<translation id="4774824109040330448">Sie können den QR-Code mit einer kompatiblen Authentifizierungs-App auf Ihrem Smartphone scannen.</translation>
 <translation id="4776146737004271126">Android-Einstellungen öffnen</translation>
 <translation id="4776917500594043016">Passwort für <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Google Play Store</translation>
@@ -2736,7 +2733,6 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="5062930723426326933">Fehler bei der Anmeldung. Bitte stellen Sie eine Internetverbindung her und versuchen Sie es erneut.</translation>
 <translation id="5063480226653192405">Verwendung</translation>
 <translation id="5065775832226780415">Smart Lock</translation>
-<translation id="5067000372742249459">SMS an <ph name="DEVICE_NAME" /> senden</translation>
 <translation id="5067399438976153555">Immer aktiviert</translation>
 <translation id="5067867186035333991">Nachfragen, wenn <ph name="HOST" /> auf Ihr Mikrofon zugreifen möchte</translation>
 <translation id="5068918910148307423">Fertigstellen des Datenversands und -empfangs von kürzlich geschlossen Websites nicht erlauben</translation>
@@ -2983,7 +2979,6 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="5436492226391861498">Warten auf Proxy-Tunnel...</translation>
 <translation id="5436510242972373446"><ph name="SITE_NAME" /> durchsuchen:</translation>
 <translation id="543806387003274181">Bitte speichern Sie jetzt Ihre Dateien und erstellen Sie ein neues Konto.</translation>
-<translation id="5438224778284622050">Offlinedateien löschen?</translation>
 <translation id="544083962418256601">Verknüpfungen erstellen...</translation>
 <translation id="5442228125690314719">Fehler beim Erstellen des Datenträgerabbilds. Bitte versuchen Sie es noch einmal.</translation>
 <translation id="5442550868130618860">Automatische Updates aktivieren</translation>
@@ -3316,7 +3311,6 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="5908769186679515905">Ausführen von Flash für Websites blockieren</translation>
 <translation id="5910363049092958439">Bi&amp;ld speichern unter...</translation>
 <translation id="5911533659001334206">Tastenkombinationsanzeige</translation>
-<translation id="5911737117543891828">Temporäre Offlinedateien aus Google Drive werden gelöscht. Dateien, die entsprechend Ihren Einstellungen offline verfügbar sind, werden nicht von diesem Gerät gelöscht.</translation>
 <translation id="5912378097832178659">Such&amp;maschinen bearbeiten...</translation>
 <translation id="5914724413750400082">Modulo (<ph name="MODULUS_NUM_BITS" /> Bits):
   <ph name="MODULUS_HEX_DUMP" />
@@ -3367,7 +3361,6 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="5975792506968920132">Akkustand in %</translation>
 <translation id="5976160379964388480">Sonstige</translation>
 <translation id="5978277834170881274">&amp;Einfache Rechtschreibprüfung verwenden</translation>
-<translation id="5979084224081478209">Passwörter prüfen</translation>
 <translation id="5979421442488174909">Überse&amp;tzen in <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Klicken Sie auf den Stern in der Adressleiste, um Seiten als Lesezeichen zu speichern</translation>
 <translation id="5984222099446776634">Kürzlich besucht</translation>
@@ -3552,6 +3545,7 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="6243280677745499710">Derzeit festgelegt</translation>
 <translation id="6243774244933267674">Server nicht verfügbar</translation>
 <translation id="6246790815526961700">Von Gerät hochladen</translation>
+<translation id="6247620186971210352">Keine Apps gefunden</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6247802389331535091">System: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">Update bereit</translation>
@@ -3780,6 +3774,7 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="6596325263575161958">Verschlüsselungsoptionen</translation>
 <translation id="6596816719288285829">IP-Adresse</translation>
 <translation id="6597017209724497268">Proben</translation>
+<translation id="6597148444736186483">Wenn Sie sich auf diesem Gerät aus dem primären Konto abmelden möchten, klicken Sie auf dem Bildschirm auf die Uhrzeit. Klicken Sie dann im eingeblendeten Menü auf "Abmelden".</translation>
 <translation id="659934686219830168">Die Synchronisierung wird gestartet, sobald Sie diese Seite verlassen</translation>
 <translation id="6602956230557165253">Verwenden Sie zum Navigieren den Rechts- und Linkspfeil.</translation>
 <translation id="6605847144724004692">Noch nicht von Nutzern bewertet.</translation>
@@ -3917,7 +3912,6 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> kann nicht als Root ausgeführt werden.</translation>
 <translation id="6812841287760418429">Änderungen beibehalten</translation>
 <translation id="6817174620439930047">Nachfragen, wenn eine Website versucht, mit systemexklusiven Meldungen auf MIDI-Geräte zuzugreifen (empfohlen)</translation>
-<translation id="6819440013020405090">Wegen einer Datenpanne bei einer von Ihnen genutzten Website oder App ist Ihr Passwort in die Hände Unbefugter gelangt. Chrome empfiehlt, Ihre gespeicherten Passwörter zu überprüfen und Ihr Passwort auf <ph name="ORIGIN" /> zu ändern.</translation>
 <translation id="682123305478866682">Desktop streamen</translation>
 <translation id="6823506025919456619">Melden Sie sich in Chrome an, um Ihre Geräte zu sehen.</translation>
 <translation id="6824564591481349393">E-Mail-Adr&amp;esse kopieren</translation>
@@ -4100,7 +4094,6 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="708060913198414444">Audioadresse k&amp;opieren</translation>
 <translation id="7081952801286122383">Inkognitomodus ist aktiviert</translation>
 <translation id="708278670402572152">Zum Scannen Verbindung trennen</translation>
-<translation id="70850504851191913">Datenpanne gemeldet</translation>
 <translation id="7085389578340536476">Chrome die Aufzeichnung von Audioinhalten gestatten?</translation>
 <translation id="7088434364990739311">Update-Prüfung konnte nicht gestartet werden. Fehlercode: <ph name="ERROR" /></translation>
 <translation id="7088561041432335295">Zip Archiver: Öffnen und packen Sie ZIP-Dateien in der App "Dateien".</translation>
@@ -4301,6 +4294,7 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="7366415735885268578">Website hinzufügen</translation>
 <translation id="7366909168761621528">Browserdaten</translation>
 <translation id="736877393389250337"><ph name="URL" /> kann in <ph name="ALTERNATIVE_BROWSER_NAME" /> nicht geöffnet werden. Bitte wenden Sie sich an Ihren Systemadministrator.</translation>
+<translation id="7370592524170198497">Ethernet-EAP:</translation>
 <translation id="7371006317849674875">Startzeit</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Mauszeiger bei Bewegung hervorheben</translation>
@@ -4308,6 +4302,7 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="7378627244592794276">Nein</translation>
 <translation id="73786666777299047">Chrome Web Store öffnen</translation>
 <translation id="7378812711085314936">Datenverbindung nutzen</translation>
+<translation id="7378962964415201590">Neues Smartphone koppeln</translation>
 <translation id="7380768571499464492"><ph name="PRINTER_NAME" /> aktualisiert</translation>
 <translation id="7385854874724088939">Beim Drucken ist ein Fehler aufgetreten. Bitte überprüfen Sie Ihren Drucker und versuchen Sie es erneut.</translation>
 <translation id="7385896526023870365">Diese Erweiterung ermöglicht keinen zusätzlichen Websitezugriff.</translation>
@@ -4318,6 +4313,7 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="7396845648024431313"><ph name="APP_NAME" /> wird beim Systemstart gestartet und auch dann weiter im Hintergrund ausgeführt, wenn Sie alle anderen <ph name="PRODUCT_NAME" />-Fenster geschlossen haben.</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400839060291901923">Verbindung auf <ph name="PHONE_NAME" /> einrichten</translation>
+<translation id="7401778920660465883">Diese Nachricht schließen</translation>
 <translation id="740624631517654988">Pop-up blockiert</translation>
 <translation id="7407430846095439694">Importieren und binden</translation>
 <translation id="7409549334477097887">Sehr groß</translation>
@@ -4545,7 +4541,6 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Bildschirmbegrenzungen anpassen</translation>
 <translation id="7760004034676677601">Ist das Ihre erwartete "Beim Start"-Seite?</translation>
-<translation id="7761380698973548146">Über meine Geräte anrufen</translation>
 <translation id="7764225426217299476">Adresse hinzufügen</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Verschieben</translation>
@@ -4641,6 +4636,7 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="7851457902707056880">Die Anmeldung ist nur über das Eigentümerkonto möglich. Bitte starten Sie das Gerät neu und melden Sie sich dann mit dem Eigentümerkonto an. Das Gerät wird in 30 Sekunden automatisch neu gestartet.</translation>
 <translation id="7851716364080026749">Zugriff auf Kamera und Mikrofon immer blockieren</translation>
 <translation id="7851720427268294554">IPP-Parser</translation>
+<translation id="78526636422538552">Option zum Hinzufügen weiterer Google-Konten ist deaktiviert</translation>
 <translation id="7853747251428735">Weitere Too&amp;ls</translation>
 <translation id="7857117644404132472">Ausnahme hinzufügen</translation>
 <translation id="7857949311770343000">Ist das die "Neuer Tab"-Seite, die Sie erwartet hatten?</translation>
@@ -4966,6 +4962,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8308179586020895837">Nachfragen, wenn <ph name="HOST" /> auf Ihre Kamera zugreifen möchte</translation>
 <translation id="830868413617744215">Beta</translation>
 <translation id="8309458809024885768">Das Zertifikat ist bereits vorhanden</translation>
+<translation id="8314089908545021657">Mit neuem Smartphone koppeln</translation>
 <translation id="8314381333424235892">Erweiterung fehlt oder wurde deinstalliert</translation>
 <translation id="831440797644402910">Dieser Ordner kann nicht geöffnet werden</translation>
 <translation id="8316618172731049784">An <ph name="DEVICE_NAME" /> senden</translation>

@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "chrome/browser/sharing/sharing_constants.h"
+#include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/gcm_driver.h"
@@ -24,10 +25,11 @@ SharingFCMSender::SharingFCMSender(
 
 SharingFCMSender::~SharingFCMSender() = default;
 
-void SharingFCMSender::SendMessageToDevice(Device target,
-                                           base::TimeDelta time_to_live,
-                                           SharingMessage message,
-                                           SendMessageCallback callback) {
+void SharingFCMSender::SendMessageToDevice(
+    syncer::DeviceInfo::SharingInfo target,
+    base::TimeDelta time_to_live,
+    SharingMessage message,
+    SendMessageCallback callback) {
   auto send_message_closure = base::BindOnce(
       &SharingFCMSender::DoSendMessageToDevice, weak_ptr_factory_.GetWeakPtr(),
       std::move(target), time_to_live, std::move(message), std::move(callback));
@@ -55,13 +57,17 @@ void SharingFCMSender::OnLocalDeviceInfoInitialized() {
   local_device_info_ready_subscription_.reset();
 }
 
-void SharingFCMSender::DoSendMessageToDevice(Device target,
-                                             base::TimeDelta time_to_live,
-                                             SharingMessage message,
-                                             SendMessageCallback callback) {
-  auto fcm_registration = sync_preference_->GetFCMRegistration();
-  if (!fcm_registration) {
-    LOG(ERROR) << "Unable to retrieve FCM registration";
+void SharingFCMSender::DoSendMessageToDevice(
+    syncer::DeviceInfo::SharingInfo target,
+    base::TimeDelta time_to_live,
+    SharingMessage message,
+    SendMessageCallback callback) {
+  base::Optional<SharingSyncPreference::FCMRegistration> fcm_registration =
+      sync_preference_->GetFCMRegistration();
+  base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info =
+      sync_preference_->GetLocalSharingInfo();
+  if (!fcm_registration || !sharing_info) {
+    LOG(ERROR) << "Unable to retrieve FCM registration or sharing info";
     std::move(callback).Run(SharingSendMessageResult::kInternalError,
                             base::nullopt);
     return;
@@ -74,9 +80,9 @@ void SharingFCMSender::DoSendMessageToDevice(Device target,
   if (message.payload_case() != SharingMessage::kAckMessage) {
     message.set_sender_device_name(local_device_info->client_name());
     auto* sender_info = message.mutable_sender_info();
-    sender_info->set_fcm_token(fcm_registration->fcm_token);
-    sender_info->set_p256dh(fcm_registration->p256dh);
-    sender_info->set_auth_secret(fcm_registration->auth_secret);
+    sender_info->set_fcm_token(sharing_info->fcm_token);
+    sender_info->set_p256dh(sharing_info->p256dh);
+    sender_info->set_auth_secret(sharing_info->auth_secret);
   }
 
   gcm::WebPushMessage web_push_message;

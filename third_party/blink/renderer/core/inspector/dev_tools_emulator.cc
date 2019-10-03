@@ -370,19 +370,8 @@ void DevToolsEmulator::DisableMobileEmulation() {
 TransformationMatrix DevToolsEmulator::ForceViewport(
     const WebFloatPoint& position,
     float scale) {
-  if (!viewport_override_) {
+  if (!viewport_override_)
     viewport_override_ = ViewportOverride();
-
-    GraphicsLayer* container_layer =
-        web_view_->GetPage()->GetVisualViewport().ContainerLayer();
-    // Disable clipping on the visual viewport layer, to ensure the whole area
-    // is painted.
-    if (container_layer) {
-      viewport_override_->original_visual_viewport_masking =
-          container_layer->MasksToBounds();
-      container_layer->SetMasksToBounds(false);
-    }
-  }
 
   viewport_override_->position = FloatPoint(position.x, position.y);
   viewport_override_->scale = scale;
@@ -393,17 +382,7 @@ TransformationMatrix DevToolsEmulator::ForceViewport(
 }
 
 TransformationMatrix DevToolsEmulator::ResetViewport() {
-  if (viewport_override_) {
-    GraphicsLayer* container_layer =
-        web_view_->GetPage()->GetVisualViewport().ContainerLayer();
-    if (container_layer) {
-      container_layer->SetMasksToBounds(
-          viewport_override_->original_visual_viewport_masking);
-    }
-
-    viewport_override_ = base::nullopt;
-  }
-
+  viewport_override_ = base::nullopt;
   return ComputeRootLayerTransform();
 }
 

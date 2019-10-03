@@ -80,15 +80,15 @@ struct XRSessionOptions {
 // apropriate based on the session creation options. (for example, an immersive
 // session ought to have a XRPresentationConnection to submit the frames to the
 // immersive environment).
-// The XRSessionClient request must be fulfilled for the session to get
+// The XRSessionClient receiver must be fulfilled for the session to get
 // information about the device it is connected to, such as focus and blur
 // events, changes to view or stage parameters, or exit present calls initiated
 // by the device.
 struct XRSession {
   XRFrameDataProvider data_provider;
-  // TODO(http://crbug.com/842025) Move where the client_request gets set to the
+  // TODO(http://crbug.com/842025) Move where the client_receiver gets set to the
   // device process then mark this as non-optional.
-  XRSessionClient&? client_request;
+  pending_receiver<XRSessionClient>? client_receiver;
   // TODO(http://crbug.com/842025) Move the information that is sent in display
   // info to more sensible places so that this doesn't need to be sent here.
   VRDisplayInfo display_info;
@@ -108,7 +108,7 @@ struct XRSession {
 // frames to a sink outside of Chrome.
 struct XRPresentationConnection {
   XRPresentationProvider provider;
-  XRPresentationClient& client_request;
+  pending_receiver<XRPresentationClient> client_receiver;
   XRPresentationTransportOptions transport_options;
 };
 

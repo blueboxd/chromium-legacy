@@ -7,6 +7,9 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "net/cert/cert_verify_proc.h"
+#include "net/cert/cert_verify_proc_builtin.h"
+#include "net/der/encode_values.h"
+#include "net/der/parse_values.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -100,6 +103,17 @@ TEST(TrialComparisonCertVerifierMojoTest, SendReportDebugInfo) {
   mac_trust_debug_info->UpdateTrustDebugInfo(kExpectedTrustDebugInfo);
 #endif
 
+  base::Time time = base::Time::Now();
+  net::der::GeneralizedTime der_time;
+  der_time.year = 2019;
+  der_time.month = 9;
+  der_time.day = 27;
+  der_time.hours = 22;
+  der_time.minutes = 11;
+  der_time.seconds = 8;
+  net::CertVerifyProcBuiltinResultDebugData::Create(&trial_result, time,
+                                                    der_time);
+
   network::mojom::TrialComparisonCertVerifierReportClientPtrInfo
       report_client_ptr;
   FakeReportClient report_client(mojo::MakeRequest(&report_client_ptr));
@@ -125,4 +139,7 @@ TEST(TrialComparisonCertVerifierMojoTest, SendReportDebugInfo) {
   EXPECT_EQ(kExpectedTrustDebugInfo,
             report.debug_info->mac_combined_trust_debug_info);
 #endif
+
+  EXPECT_EQ(time, report.debug_info->trial_verification_time);
+  EXPECT_EQ("20190927221108Z", report.debug_info->trial_der_verification_time);
 }

@@ -12,7 +12,7 @@
   :host {
     -webkit-mask: center / contain no-repeat;
     animation: fade-in 200ms ease-in forwards;
-    background-color: var(--tabstrip-primary-text-color);
+    background-color: currentColor;
     display: block;
     height: 100%;
     opacity: 0;
@@ -25,7 +25,7 @@
 
   :host([alert-state='pip']) {
     -webkit-mask-image: url(alert_indicators/picture_in_picture_alt.svg);
-    background-color: rgb(var(--google-blue-500-rgb));
+    background-color: var(--tabstrip-indicator-pip-color);
   }
 
   :host([alert-state='serial']) {
@@ -47,10 +47,12 @@
   :host([alert-state='capturing']) {
     -webkit-mask-image:
         url(alert_indicators/tab_media_capturing_with_arrow.svg);
+    background-color: var(--tabstrip-indicator-capturing-color);
   }
 
   :host([alert-state='recording']) {
     -webkit-mask-image: url(alert_indicators/tab_media_recording.svg);
+    background-color: var(--tabstrip-indicator-recording-color);
   }
 
   :host([alert-state='usb']) {

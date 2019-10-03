@@ -19,6 +19,7 @@ test.realbox.IDS = {
  * @const
  */
 test.realbox.CLASSES = {
+  REMOVE_ICON: 'remove-icon',
   SELECTED: 'selected',
   SHOW_MATCHES: 'show-matches',
 };
@@ -495,11 +496,11 @@ test.realbox.testDeleteAutocompleteResultShiftDeleteWithNoMatches = function() {
   assertFalse(keyEvent.defaultPrevented);
 };
 
-test.realbox.testDeleteAutocompleteResultShiftDeleteCantRemove = function() {
+test.realbox.testUnsupportedDeletion = function() {
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
-  const matches = [test.realbox.getSearchMatch(), test.realbox.getUrlMatch()];
+  const matches = [test.realbox.getSearchMatch({supportsDeletion: false})];
   chrome.embeddedSearch.searchBox.onqueryautocompletedone(
       {input: test.realbox.realboxEl.value, matches});
 
@@ -510,24 +511,25 @@ test.realbox.testDeleteAutocompleteResultShiftDeleteCantRemove = function() {
     shiftKey: true,
   });
   test.realbox.realboxEl.dispatchEvent(keyEvent);
-  assertTrue(keyEvent.defaultPrevented);
+  assertFalse(keyEvent.defaultPrevented);
 
-  assertEquals(1, test.realbox.deletedLines.length);
-  assertEquals(0, test.realbox.deletedLines[0]);
-
-  assertEquals(2, $(test.realbox.IDS.REALBOX_MATCHES).children.length);
-
+  // The below 2 statements shouldn't really happen in updated code but isn't
+  // terrible idea to keep testing for now. This is because SupportsDeletion()
+  // is now propagated to the client, so we shouldn't allow users (via the UI)
+  // to attempt to delete non-deletable things.
   chrome.embeddedSearch.searchBox.ondeleteautocompletematch(
       {success: false, matches: []});
-
-  assertEquals(2, $(test.realbox.IDS.REALBOX_MATCHES).children.length);
+  assertEquals(1, $(test.realbox.IDS.REALBOX_MATCHES).children.length);
 };
 
-test.realbox.testDeleteAutocompleteResultShiftDeleteCanRemove = function() {
+test.realbox.testSupportedDeletion = function() {
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
-  const matches = [test.realbox.getSearchMatch(), test.realbox.getUrlMatch()];
+  const matches = [
+    test.realbox.getSearchMatch({supportsDeletion: true}),
+    test.realbox.getUrlMatch({supportsDeletion: true}),
+  ];
   chrome.embeddedSearch.searchBox.onqueryautocompletedone(
       {input: test.realbox.realboxEl.value, matches});
 
@@ -559,4 +561,25 @@ test.realbox.testDeleteAutocompleteResultShiftDeleteCanRemove = function() {
       {success: true, matches: [test.realbox.getSearchMatch()]});
 
   assertEquals(1, $(test.realbox.IDS.REALBOX_MATCHES).children.length);
+};
+
+test.realbox.testRemoveIcon = function() {
+  test.realbox.realboxEl.value = 'hello world';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  const matches = [test.realbox.getSearchMatch({supportsDeletion: true})];
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone(
+      {input: test.realbox.realboxEl.value, matches});
+
+  const sel = `#${test.realbox.IDS.REALBOX_MATCHES}
+               .${test.realbox.CLASSES.REMOVE_ICON}`;
+  document.querySelector(sel).click();
+
+  assertEquals(1, test.realbox.deletedLines.length);
+  assertEquals(0, test.realbox.deletedLines[0]);
+
+  chrome.embeddedSearch.searchBox.ondeleteautocompletematch(
+      {success: true, matches: []});
+
+  assertEquals(0, $(test.realbox.IDS.REALBOX_MATCHES).children.length);
 };

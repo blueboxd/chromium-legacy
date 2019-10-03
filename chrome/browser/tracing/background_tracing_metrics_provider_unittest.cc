@@ -44,8 +44,7 @@ class BackgroundTracingMetricsProviderTest : public testing::Test {
     ASSERT_TRUE(
         content::BackgroundTracingManager::GetInstance()->SetActiveScenario(
             std::move(config),
-            base::BindRepeating([](const scoped_refptr<base::RefCountedString>&,
-                                   std::unique_ptr<const base::DictionaryValue>,
+            base::BindRepeating([](std::unique_ptr<std::string>,
                                    content::BackgroundTracingManager::
                                        FinishedProcessingCallback) {}),
             content::BackgroundTracingManager::ANONYMIZE_DATA));

@@ -13,7 +13,6 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
-#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "url/gurl.h"
@@ -34,7 +33,7 @@ void PageLoadMetricsObserverTestHarness::SetUp() {
   // the SourceUrlRecorderWebContentsObserver is instantiated.
   ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
   tester_ = std::make_unique<PageLoadMetricsObserverTester>(
-      web_contents(),
+      web_contents(), this,
       base::BindRepeating(
           &PageLoadMetricsObserverTestHarness::RegisterObservers,
           base::Unretained(this)));
@@ -42,10 +41,7 @@ void PageLoadMetricsObserverTestHarness::SetUp() {
 }
 
 void PageLoadMetricsObserverTestHarness::StartNavigation(const GURL& gurl) {
-  std::unique_ptr<content::NavigationSimulator> navigation =
-      content::NavigationSimulator::CreateBrowserInitiated(gurl,
-                                                           web_contents());
-  navigation->Start();
+  tester_->StartNavigation(gurl);
 }
 
 void PageLoadMetricsObserverTestHarness::SimulateTimingUpdate(
@@ -156,12 +152,17 @@ void PageLoadMetricsObserverTestHarness::SimulateDomStorageAccess(
 
 const base::HistogramTester&
 PageLoadMetricsObserverTestHarness::histogram_tester() const {
-  return histogram_tester_;
+  return tester_->histogram_tester();
 }
 
 MetricsWebContentsObserver* PageLoadMetricsObserverTestHarness::observer()
     const {
   return tester_->observer();
+}
+
+const ukm::TestAutoSetUkmRecorder&
+PageLoadMetricsObserverTestHarness::test_ukm_recorder() const {
+  return tester_->test_ukm_recorder();
 }
 
 const PageLoadMetricsObserverDelegate&
@@ -172,17 +173,11 @@ PageLoadMetricsObserverTestHarness::GetDelegateForCommittedLoad() const {
 void PageLoadMetricsObserverTestHarness::NavigateWithPageTransitionAndCommit(
     const GURL& url,
     ui::PageTransition transition) {
-  auto simulator = PageTransitionIsWebTriggerable(transition)
-                       ? content::NavigationSimulator::CreateRendererInitiated(
-                             url, main_rfh())
-                       : content::NavigationSimulator::CreateBrowserInitiated(
-                             url, web_contents());
-  simulator->SetTransition(transition);
-  simulator->Commit();
+  tester_->NavigateWithPageTransitionAndCommit(url, transition);
 }
 
 void PageLoadMetricsObserverTestHarness::NavigateToUntrackedUrl() {
-  NavigateAndCommit(GURL(url::kAboutBlankURL));
+  tester_->NavigateToUntrackedUrl();
 }
 
 const char PageLoadMetricsObserverTestHarness::kResourceUrl[] =

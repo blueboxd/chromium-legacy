@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Không thể lưu ảnh</translation>
 <translation id="1180526666083833456">Đồng bộ hóa và cá nhân hóa trên các thiết bị.</translation>
 <translation id="1181037720776840403">Xóa</translation>
+<translation id="1207113853726624428">Tìm thông tin mới</translation>
 <translation id="1209206284964581585">Ẩn ngay bây giờ</translation>
 <translation id="1219674500290482172">Không thể kết nối Internet.</translation>
 <translation id="122699739164161391">Đóng tất cả các tab</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">Đề xuất mật khẩu...</translation>
 <translation id="1870148520156231997">Hiện mật khẩu</translation>
 <translation id="1872096359983322073">Đèn pin</translation>
-<translation id="1876721852596493031">Gửi dữ liệu sử dụng</translation>
 <translation id="1911619930368729126">Tải lên Google Drive</translation>
 <translation id="1923342640370224680">Giờ vừa qua</translation>
 <translation id="1941314575388338491">Nhấn đúp để sao chép.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> bài viết chưa đọc trong Danh sách đọc.</translation>
 <translation id="2230173723195178503">Đã tải trang web</translation>
 <translation id="2239626343334228536">Đang xóa dữ liệu duyệt web...</translation>
-<translation id="2256128224215992540">Đề xuất trang web &amp; tìm kiếm</translation>
 <translation id="2267753748892043616">Thêm tài khoản</translation>
 <translation id="2268044343513325586">Tinh chỉnh</translation>
 <translation id="2273327106802955778">Menu khác</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">Không thể mở tệp</translation>
 <translation id="2718352093833049315">Chỉ trên Wi-Fi</translation>
 <translation id="2747003861858887689">Trường trước</translation>
+<translation id="2773292004659987824">Tìm kiếm ẩn danh</translation>
 <translation id="2780046210906776326">Ko có TK email nào</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Rời khỏi Trình chuyển đổi tab</translation>
@@ -295,7 +295,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Bật đồng bộ hóa</translation>
 <translation id="5234764350956374838">Loại bỏ</translation>
-<translation id="5244474230056479698">Đang đồng bộ hóa với <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Hủy đồng bộ hóa</translation>
 <translation id="5271549068863921519">Lưu mật khẩu</translation>
 <translation id="5300589172476337783">Hiển thị</translation>
@@ -501,6 +500,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="8261506727792406068">Xóa</translation>
 <translation id="8281781826761538115">Mặc định - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Tìm kiếm mới</translation>
+<translation id="8323906514956095947">Chạm và giữ để hiển thị thêm tùy chọn về tab</translation>
 <translation id="8328777765163860529">Đóng tất cả</translation>
 <translation id="8407669440184693619">Không tìm thấy mật khẩu nào cho trang web này</translation>
 <translation id="842017693807136194">Đăng nhập bằng</translation>

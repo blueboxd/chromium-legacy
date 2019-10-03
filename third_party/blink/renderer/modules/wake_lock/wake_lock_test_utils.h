@@ -150,6 +150,7 @@ class WakeLockTestingContext final {
 
  public:
   WakeLockTestingContext(MockWakeLockService* mock_wake_lock_service);
+  ~WakeLockTestingContext();
 
   Document* GetDocument();
   LocalFrame* Frame();

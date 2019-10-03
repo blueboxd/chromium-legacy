@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">нижний колонтитул</translation>
 <translation id="2709516037105925701">Автозаполнение</translation>
 <translation id="2723001399770238859">аудио</translation>
+<translation id="2725963129578236554">комментарии</translation>
 <translation id="2746543609216772311">Минимальное значение должно быть <ph name="MINIMUM_DATE_OR_TIME" />.</translation>
 <translation id="2759744352195237655">всплывающая кнопка</translation>
 <translation id="2761667185364618470">Чтобы продолжить, установите этот флажок.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">Минимально допустимое количество символов: <ph name="MIN_CHARACTERS" />. Длина текста сейчас: <ph name="CURRENT_LENGTH" />.</translation>
 <translation id="383465348367842624">Часть адреса до символа "<ph name="ATSIGN" />" не должна содержать символ "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="3846214748874656680">Обычный режим</translation>
+<translation id="3889183436948184105">версия</translation>
 <translation id="3920932319529768807">заключение</translation>
 <translation id="3924558731517983934">приложение</translation>
 <translation id="3944740393230681990">пролог</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">полоса воспроизведения</translation>
 <translation id="6443871981718447451">показать меню субтитров</translation>
 <translation id="6453774872122745852">благодарности</translation>
+<translation id="6475115390776617481">информация о соавторах, которые сейчас работают над этим документом</translation>
 <translation id="648732519525291180">окно выбора даты</translation>
 <translation id="6550675742724504774">Параметры</translation>
 <translation id="6572309429103589720">Грамматическая ошибка</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">вставка</translation>
 <translation id="6989848892321993519">Текст должен быть не короче <ph name="MIN_CHARACTERS" /> симв. Длина текста сейчас: 1 символ.</translation>
 <translation id="7033340931668032222">вверх и вниз для регулировки громкости</translation>
+<translation id="7034405885550056553">рекомендация</translation>
 <translation id="709897737746224366">Введите данные в указанном формате.</translation>
 <translation id="7118469954320184356">Нет описания.</translation>
 <translation id="7139483182332611405">вступление</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">выход</translation>
 <translation id="8750798805984357768">Выберите один из вариантов.</translation>
 <translation id="8808573423886751634">глава</translation>
+<translation id="8822203815165896261">информация об авторах</translation>
 <translation id="8845239796550121995">Транслируется на телевизор</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8875657656876809964">Ошибка при воспроизведении видео</translation>

@@ -289,4 +289,34 @@ TEST_F(VideoFrameFactoryImplTest, DoesCallYCbCrHelperIfVulkan) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(VideoFrameFactoryImplTest, NullYCbCrInfoDoesntCrash) {
+  // Sending a null YCbCrInfo then requesting a frame shouldn't cause a crash.
+  // See https://crbug.com/1007196 .
+  RequestVideoFrame();
+  auto image_record = MakeImageRecord();
+  EXPECT_CALL(*ycbcr_helper_raw_,
+              MockGetYCbCrInfo(image_record.codec_image_holder))
+      .Times(1);
+  image_record.is_vulkan = true;
+  image_provider_raw_->ProvideOneRequestedImage(&image_record);
+  base::RunLoop().RunUntilIdle();
+
+  // Provide an empty YCbCrInfo.
+  EXPECT_CALL(output_cb_, Run(_)).Times(1);
+  std::move(ycbcr_helper_raw_->cb_).Run(base::nullopt);
+  base::RunLoop().RunUntilIdle();
+
+  // It shouldn't crash on the next frame.  crbug.com/1007196
+  RequestVideoFrame();
+  auto other_image_record = MakeImageRecord();
+  other_image_record.is_vulkan = true;
+  // Should still call the helper, since it didn't get YCbCrInfo last time.
+  EXPECT_CALL(*ycbcr_helper_raw_,
+              MockGetYCbCrInfo(other_image_record.codec_image_holder))
+      .Times(1);
+  // Since we aren't sending YCbCr info, it won't call us back with a frame.
+  image_provider_raw_->ProvideOneRequestedImage(&other_image_record);
+  base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace media

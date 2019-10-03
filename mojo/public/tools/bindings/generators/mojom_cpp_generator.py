@@ -284,6 +284,17 @@ class Generator(generator.Generator):
     return any(map(mojom.ContainsHandlesOrInterfaces,
                    self.module.structs + self.module.unions))
 
+  def _ReferencesAnyNativeType(self):
+    """Returns whether this module uses native types directly or indirectly.
+
+    When false, the generated headers do not need to include
+    native_struct_serialization.h and similar.
+    """
+    m = self.module
+    # Note that interfaces can contain scoped native types.
+    return any(map(mojom.ContainsNativeTypes,
+                   m.enums + m.structs + m.interfaces))
+
   def _GetDirectlyUsedKinds(self):
     for struct in self.module.structs + self.module.unions:
       for field in struct.fields:
@@ -322,6 +333,7 @@ class Generator(generator.Generator):
       "support_lazy_serialization": self.support_lazy_serialization,
       "unions": self.module.unions,
       "uses_interfaces": self._ReferencesAnyHandleOrInterfaceType(),
+      "uses_native_types": self._ReferencesAnyNativeType(),
       "variant": self.variant,
     }
 

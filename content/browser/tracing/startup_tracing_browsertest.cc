@@ -148,10 +148,11 @@ IN_PROC_BROWSER_TEST_F(StartupTracingInProcessTest, TestFilledStartupBuffer) {
 
   base::RunLoop wait_for_stop;
   TracingControllerImpl::GetInstance()->StopTracing(
-      TracingController::CreateStringEndpoint(base::BindRepeating(
-          [](base::RepeatingClosure quit_callback,
-             std::unique_ptr<const base::DictionaryValue> metadata,
-             base::RefCountedString* data) { quit_callback.Run(); },
+      TracingController::CreateStringEndpoint(base::BindOnce(
+          [](base::OnceClosure quit_callback,
+             std::unique_ptr<std::string> data) {
+            std::move(quit_callback).Run();
+          },
           wait_for_stop.QuitClosure())));
   wait_for_stop.Run();
 }

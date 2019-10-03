@@ -18,7 +18,6 @@
 <translation id="1393853151966637042">Obtener ayuda para utilizar Chrome</translation>
 <translation id="1399397803214730675">Este equipo ya cuenta con una versión más reciente de Google Chrome. Si el software no funciona, desinstala Google Chrome y descárgalo nuevamente.</translation>
 <translation id="1434626383986940139">Aplicaciones de Chrome Canary</translation>
-<translation id="1457721931618994305">Actualizando Google Chrome...</translation>
 <translation id="1469002951682717133">Selector de aplicaciones de Google Chrome</translation>
 <translation id="1553358976309200471">Actualizar Chrome</translation>
 <translation id="1587223624401073077">Google Chrome está usando tu cámara.</translation>
@@ -88,6 +87,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="3065168410429928842">Pestaña de Chrome</translation>
 <translation id="3080151273017101988">Seguir ejecutando aplicaciones en segundo plano al cerrar Google Chrome</translation>
 <translation id="3089968997497233615">Hay disponible una versión de Google Chrome más nueva y más segura.</translation>
+<translation id="3138848678222082288">Se instalarán automáticamente las próximas versiones de Chrome. Cuando se complete esta descarga, se reiniciará Chrome y listo.</translation>
 <translation id="3149510190863420837">Aplicaciones de Chrome</translation>
 <translation id="3282568296779691940">Acceder a Chrome</translation>
 <translation id="3340978935015468852">configuración</translation>
@@ -169,9 +169,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="573759479754913123">Acerca del sistema operativo Chrome</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" />: Google Chrome Canary</translation>
 <translation id="5804318322022881572">No se pudo iniciar Chrome. Vuelve a intentarlo.</translation>
-<translation id="5877064549588274448">Se cambió el canal. Reinicia el dispositivo para aplicar los cambios.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
-<translation id="5906655207909574370">El dispositivo está casi actualizado. Reinícialo para completar la actualización.</translation>
 <translation id="5940385492829620908">Aquí puedes encontrar tus páginas web, favoritos y otros contenidos de Chrome.</translation>
 <translation id="5941830788786076944">Haga de Google Chrome su navegador predeterminado</translation>
 <translation id="6014844626092547096">Accediste a Chrome. El administrador inhabilitó la sincronización.</translation>
@@ -190,16 +188,15 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="6566149418543181476">Actualizando Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Estás utilizando <ph name="PROFILE_EMAIL" /> para sincronizar los datos de Chrome. Si quieres actualizar las preferencias de sincronización o utilizar Chrome sin una cuenta de Google, accede a <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Se copió en Chrome.</translation>
-<translation id="6634887557811630702">Google Chrome está actualizado.</translation>
 <translation id="6676384891291319759">Acceder a Internet</translation>
 <translation id="6679975945624592337">Permitir que Google Chrome se ejecute en segundo plano</translation>
 <translation id="6750954913813541382">Para corregir los errores ortográficos, Chrome envía a Google lo que escribes en el navegador</translation>
 <translation id="677276454032249905">¿Deseas salir de Chrome de todos modos?</translation>
 <translation id="683440813066116847">Regla de entrada para que Google Chrome Canary permita el tráfico mDNS.</translation>
 <translation id="6885412569789873916">Apps de Chrome Beta</translation>
+<translation id="6906909733186691861">Se instalarán automáticamente las próximas versiones de Chrome.</translation>
 <translation id="6943584222992551122">Los datos de navegación de esta persona se borrarán de este dispositivo. Para recuperarlos, accede a Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Regla de entrada para que Google Chrome Beta permita el tráfico mDNS.</translation>
-<translation id="6970811910055250180">Actualizando el dispositivo...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> requiere que leas y aceptes las siguientes Condiciones del servicio antes de usar este dispositivo. Estas condiciones no amplían, modifican ni limitan las Condiciones del Sistema operativo de Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome fue actualizado, pero no lo has utilizado en los últimos 30 días.</translation>
 <translation id="7098166902387133879">Google Chrome está usando tu micrófono.</translation>
@@ -237,7 +234,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="7962410387636238736">Esta computadora dejará de recibir actualizaciones de Google Chrome porque Windows XP y Windows Vista ya no son compatibles</translation>
 <translation id="8008534537613507642">Reinstalar Chrome</translation>
 <translation id="8013993649590906847">Si una imagen no tiene una descripción útil, Chrome intentará proporcionarte una. Para crear descripciones, se envían las imágenes a Google.</translation>
-<translation id="8030318113982266900">Actualizando el dispositivo al canal <ph name="CHANNEL_NAME" />…</translation>
 <translation id="8032142183999901390">Luego de eliminar la cuenta de Chrome, es posible que debas volver a cargar las pestañas abiertas para que se aplique el cambio.</translation>
 <translation id="8129812357326543296">Acerca de &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Instala Chrome en el teléfono. Te enviaremos un SMS a ese dispositivo.</translation>
@@ -260,7 +256,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="8606668294522778825">Es posible que Google Chrome utilice servicios web para mejorar tu experiencia de navegación (tienes la opción de inhabilitar estos servicios). <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome no responde. ¿Quieres reiniciarlo ahora?</translation>
 <translation id="8625237574518804553">{0,plural, =1{Se reiniciará Chrome en 1 minuto}other{Se reiniciará Chrome en # minutos}}</translation>
-<translation id="8667808506758191620">Tu <ph name="DEVICE_TYPE" /> está actualizado.</translation>
 <translation id="8669527147644353129">Ayuda de Google Chrome</translation>
 <translation id="8679801911857917785">También controla qué página se muestra al iniciar Chrome.</translation>
 <translation id="870251953148363156">Actualizar &amp;Google Chrome</translation>

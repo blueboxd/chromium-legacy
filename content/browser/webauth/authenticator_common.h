@@ -117,11 +117,11 @@ class CONTENT_EXPORT AuthenticatorCommon {
 
   // Replaces the current |request_| with a |MakeCredentialRequestHandler|,
   // effectively restarting the request.
-  void StartMakeCredentialRequest();
+  void StartMakeCredentialRequest(bool allow_skipping_pin_touch);
 
   // Replaces the current |request_| with a |GetAssertionRequestHandler|,
   // effectively restarting the request.
-  void StartGetAssertionRequest();
+  void StartGetAssertionRequest(bool allow_skipping_pin_touch);
 
   bool IsFocused() const;
 

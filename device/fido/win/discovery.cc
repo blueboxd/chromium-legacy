@@ -27,13 +27,6 @@ void WinWebAuthnApiAuthenticatorDiscovery::Start() {
     return;
   }
 
-  if (!api_->IsAvailable()) {
-    observer()->DiscoveryStarted(this, /*success=*/false);
-    return;
-  }
-
-  observer()->DiscoveryStarted(this, /*success=*/true);
-
   // Start() is currently invoked synchronously in the
   // FidoRequestHandler ctor. Invoke AddAuthenticator() asynchronously
   // to avoid hairpinning FidoRequestHandler::AuthenticatorAdded()
@@ -46,12 +39,12 @@ void WinWebAuthnApiAuthenticatorDiscovery::Start() {
 
 void WinWebAuthnApiAuthenticatorDiscovery::AddAuthenticator() {
   if (!api_->IsAvailable()) {
-    NOTREACHED();
+    observer()->DiscoveryStarted(this, /*success=*/false);
     return;
   }
   authenticator_ =
       std::make_unique<WinWebAuthnApiAuthenticator>(parent_window_, api_);
-  observer()->AuthenticatorAdded(this, authenticator_.get());
+  observer()->DiscoveryStarted(this, /*success=*/true, {authenticator_.get()});
 }
 
 }  // namespace device

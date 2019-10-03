@@ -162,10 +162,10 @@ class ClickToCallBrowserTest : public SyncTest {
 
   void GetDeviceFCMToken(const std::string& guid,
                          std::string* fcm_token) const {
-    auto devices = sharing_service_->GetSyncPreferences()->GetSyncedDevices();
-    auto it = devices.find(guid);
-    ASSERT_NE(devices.end(), it);
-    *fcm_token = it->second.fcm_token;
+    auto sharing_info =
+        sharing_service_->GetSyncPreferences()->GetSharingInfo(guid);
+    ASSERT_TRUE(sharing_info);
+    *fcm_token = sharing_info->fcm_token;
   }
 
   void CheckLastSharingMessageSent(

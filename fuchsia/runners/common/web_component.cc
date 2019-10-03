@@ -42,9 +42,31 @@ WebComponent::WebComponent(
       DestroyComponent(0, fuchsia::sys::TerminationReason::UNKNOWN);
     });
   }
+}
+
+WebComponent::~WebComponent() {
+  // If Modular is available, request to be removed from the Story.
+  if (module_context_)
+    module_context_->RemoveSelfFromStory();
+
+  // Send process termination details to the client.
+  controller_binding_.events().OnTerminated(termination_exit_code_,
+                                            termination_reason_);
+}
+
+void WebComponent::EnableRemoteDebugging() {
+  DCHECK(!component_started_);
+  enable_remote_debugging_ = true;
+}
+
+void WebComponent::StartComponent() {
+  DCHECK(!component_started_);
 
   // Create the underlying Frame and get its NavigationController.
-  runner_->context()->CreateFrame(frame_.NewRequest());
+  fuchsia::web::CreateFrameParams create_params;
+  create_params.set_enable_remote_debugging(enable_remote_debugging_);
+  runner_->context()->CreateFrameWithParams(std::move(create_params),
+                                            frame_.NewRequest());
 
   // If the Frame unexpectedly disconnect us then tear-down this Component.
   frame_.set_error_handler([this](zx_status_t status) {
@@ -64,21 +86,14 @@ WebComponent::WebComponent(
         base::BindOnce(&WebComponent::Kill, base::Unretained(this)));
     startup_context()->ServeOutgoingDirectory();
   }
-}
 
-WebComponent::~WebComponent() {
-  // If Modular is available, request to be removed from the Story.
-  if (module_context_)
-    module_context_->RemoveSelfFromStory();
-
-  // Send process termination details to the client.
-  controller_binding_.events().OnTerminated(termination_exit_code_,
-                                            termination_reason_);
+  component_started_ = true;
 }
 
 void WebComponent::LoadUrl(
     const GURL& url,
     std::vector<fuchsia::net::http::Header> extra_headers) {
+  DCHECK(component_started_);
   DCHECK(url.is_valid());
   fuchsia::web::NavigationControllerPtr navigation_controller;
   frame()->GetNavigationController(navigation_controller.NewRequest());

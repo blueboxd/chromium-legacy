@@ -8,7 +8,6 @@
 <translation id="1863312987075920112">Používaním tejto aplikácie vyjadrujete súhlas so <ph name="BEGIN_LINK_TOS" />zmluvnými podmienkami<ph name="END_LINK_TOS" /> a <ph name="BEGIN_LINK_PRIVACY" />upozornením o ochrane súkromia<ph name="END_LINK_PRIVACY" /> prehliadača Chrome.</translation>
 <translation id="2147651015520127414">Chrome overil, že certifikát tohto webu vydal vydavateľ <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Údaje zo synchronizácie Chromu</translation>
-<translation id="2342981853652716282">Prihláste sa do Chromu a získajte svoje záložky, heslá a ďalšie nastavenia na všetkých zariadeniach.</translation>
 <translation id="2347208864470321755">Po zapnutí tejto funkcie bude prehliadač Chrome ponúkať preloženie stránok napísaných v inom jazyku pomocou služby Prekladač Google. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Ak chcete ukladať fotky, klepnite na Nastavenia a povoľte Chromu používať fotky</translation>
 <translation id="2576431527583832481">Prehliadač Chrome bol práve vylepšený. K dispozícii je nová verzia.</translation>
@@ -25,6 +24,7 @@
 <translation id="4099578267706723511">Odosielať štatistiky používania a prehľady chýb Googlu a pomáhať tak zlepšovať Chrome</translation>
 <translation id="415767770115540173">Služby Google môžu v prehliadači Chrome vďaka údajom o polohe fungovať lepšie.</translation>
 <translation id="424864128008805179">Odhlásiť sa z Chromu?</translation>
+<translation id="4249068189593983585">Tip pre Chrome: ďalšie možnosti karty získate pridržaním tlačidla Zobraziť karty na paneli s nástrojmi, ktorý sa nachádza v dolnej alebo hornej časti obrazovky.</translation>
 <translation id="4523886039239821078">Niektoré doplnky spôsobujú zlyhanie prehliadača Chrome. Odinštalujte ich.</translation>
 <translation id="5389212809648216794">Google Chrome nemôže použiť váš fotoaparát, pretože ho práve používa iná aplikácia</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Aktualizované zmluvné podmienky prehliadača Chrome<ph name="END_LINK" /></translation>
@@ -51,5 +51,4 @@
 <translation id="840168496893712993">Niektoré doplnky spôsobujú zlyhanie prehliadača Chrome. Skúste ich odinštalovať.</translation>
 <translation id="8459495907675268833">Vybraté údaje boli odstránené z Chromu a synchronizovaných zariadení. Váš účet Google môže mať na adrese history.google.com ďalšie formy histórie prehliadania, ako napríklad vyhľadávania a aktivity v iných službách Google.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="8606668294522778825">Google Chrome vám môže uľahčiť prehliadanie pomocou webových služieb. Vybrané webové služby môžete podľa potreby vypnúť. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 </translationbundle>

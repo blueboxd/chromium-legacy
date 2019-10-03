@@ -89,7 +89,7 @@ void XRFrameProvider::BeginImmersiveSession(
       &XRFrameProvider::OnProviderConnectionError, WrapWeakPersistent(this)));
 
   frame_transport_->BindSubmitFrameClient(
-      std::move(session_ptr->submit_frame_sink->client_request));
+      std::move(session_ptr->submit_frame_sink->client_receiver));
   frame_transport_->SetTransportOptions(
       std::move(session_ptr->submit_frame_sink->transport_options));
   frame_transport_->PresentChange();

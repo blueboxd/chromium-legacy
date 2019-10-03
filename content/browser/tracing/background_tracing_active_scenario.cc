@@ -224,8 +224,7 @@ class LegacyTracingSession
       TracingControllerImpl::GetInstance()->StopTracing(
           TracingControllerImpl::CreateCallbackEndpoint(base::BindRepeating(
               [](const base::RepeatingClosure& on_failure,
-                 std::unique_ptr<const base::DictionaryValue>,
-                 base::RefCountedString*) { on_failure.Run(); },
+                 std::unique_ptr<std::string>) { on_failure.Run(); },
               std::move(on_failure))));
       return;
     }
@@ -235,12 +234,10 @@ class LegacyTracingSession
             TracingControllerImpl::CreateCallbackEndpoint(base::BindRepeating(
                 [](base::WeakPtr<BackgroundTracingActiveScenario> weak_this,
                    const base::RepeatingClosure& on_success,
-                   std::unique_ptr<const base::DictionaryValue> metadata,
-                   base::RefCountedString* file_contents) {
+                   std::unique_ptr<std::string> file_contents) {
                   on_success.Run();
                   if (weak_this) {
-                    weak_this->OnJSONDataComplete(std::move(metadata),
-                                                  file_contents);
+                    weak_this->OnJSONDataComplete(std::move(file_contents));
                   }
                 },
                 parent_scenario_->GetWeakPtr(), std::move(on_success))),
@@ -254,8 +251,7 @@ class LegacyTracingSession
       TracingControllerImpl::GetInstance()->StopTracing(
           TracingControllerImpl::CreateCallbackEndpoint(base::BindRepeating(
               [](const base::RepeatingClosure& on_abort_callback,
-                 std::unique_ptr<const base::DictionaryValue>,
-                 base::RefCountedString*) { on_abort_callback.Run(); },
+                 std::unique_ptr<std::string>) { on_abort_callback.Run(); },
               std::move(on_abort_callback))));
     } else {
       on_abort_callback.Run();
@@ -429,8 +425,7 @@ void BackgroundTracingActiveScenario::BeginFinalizing(
 }
 
 void BackgroundTracingActiveScenario::OnJSONDataComplete(
-    std::unique_ptr<const base::DictionaryValue> metadata,
-    base::RefCountedString* file_contents) {
+    std::unique_ptr<std::string> file_contents) {
   BackgroundTracingManagerImpl::RecordMetric(Metrics::FINALIZATION_STARTED);
   UMA_HISTOGRAM_MEMORY_KB("Tracing.Background.FinalizingTraceSizeInKB",
                           file_contents->size() / 1024);
@@ -439,7 +434,7 @@ void BackgroundTracingActiveScenario::OnJSONDataComplete(
   // callback.
   if (!receive_callback_.is_null()) {
     receive_callback_.Run(
-        file_contents, std::move(metadata),
+        std::move(file_contents),
         base::BindOnce(&BackgroundTracingActiveScenario::OnFinalizeComplete,
                        weak_ptr_factory_.GetWeakPtr()));
   }

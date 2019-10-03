@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">ইমেজ সেভ করা যায়নি</translation>
 <translation id="1180526666083833456">বিভিন্ন ডিভাইস জুড়ে সিঙ্ক করুন এবং নিজের পছন্দ অনুযায়ী করে নিন।</translation>
 <translation id="1181037720776840403">সরান</translation>
+<translation id="1207113853726624428">নতুন সার্চ</translation>
 <translation id="1209206284964581585">এখনকার মতো লুকান</translation>
 <translation id="1219674500290482172">ইন্টারনেটের সাথে সংযোগ করতে অক্ষম৷</translation>
 <translation id="122699739164161391">সব ট্যাব বন্ধ করুন</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">পাসওয়ার্ড সাজেস্ট করুন…</translation>
 <translation id="1870148520156231997">পাসওয়ার্ড দেখুন</translation>
 <translation id="1872096359983322073">টর্চ</translation>
-<translation id="1876721852596493031">ব্যবহারের ডেটা পাঠান</translation>
 <translation id="1911619930368729126">Google ড্রাইভে আপলোড করুন</translation>
 <translation id="1923342640370224680">শেষ ঘণ্টা</translation>
 <translation id="1941314575388338491">কপি করতে দুবার আলতো চাপুন।</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892">পড়ার তালিকাতে <ph name="UNREAD_COUNT" />টি না পড়া নিবন্ধ।</translation>
 <translation id="2230173723195178503">Webpage loaded</translation>
 <translation id="2239626343334228536">ব্রাউজিং ডেটা মোছা হচ্ছে…</translation>
-<translation id="2256128224215992540">সার্চ এবং সাইটের প্রস্তাবনা</translation>
 <translation id="2267753748892043616">অ্যাকাউন্ট যোগ করুন</translation>
 <translation id="2268044343513325586">রিফাইন করুন</translation>
 <translation id="2273327106802955778">‘আরও’ মেনু</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">ফাইল খুলতে অক্ষম</translation>
 <translation id="2718352093833049315">শুধুমাত্র ওয়াই-ফাই এ</translation>
 <translation id="2747003861858887689">পূর্ববর্তী ফিল্ড</translation>
+<translation id="2773292004659987824">ছদ্মবেশী সার্চ</translation>
 <translation id="2780046210906776326">কোনো ইমেল অ্যাকাউন্ট নেই</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">ট্যাব পরিবর্তনকারী থেকে বেরিয়ে যান</translation>
@@ -295,7 +295,6 @@
 <translation id="5197255632782567636">ইন্টারনেট</translation>
 <translation id="5228579091201413441">সিঙ্ক সক্ষম করুন</translation>
 <translation id="5234764350956374838">খারিজ</translation>
-<translation id="5244474230056479698"><ph name="EMAIL" /> এ সিঙ্ক হচ্ছে</translation>
 <translation id="5245322853195994030">সিঙ্ক বাতিল করুন</translation>
 <translation id="5271549068863921519">পাসওয়ার্ড সেভ করুন</translation>
 <translation id="5300589172476337783">দেখান</translation>
@@ -502,6 +501,7 @@
 <translation id="8261506727792406068">মুছুন</translation>
 <translation id="8281781826761538115">ডিফল্ট - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">নতুন ট্যাবে সার্চ করুন</translation>
+<translation id="8323906514956095947">আরও ট্যাবের বিকল্প দেখতে টাচ করে ধরে থাকুন</translation>
 <translation id="8328777765163860529">সমস্ত বন্ধ করুন</translation>
 <translation id="8407669440184693619">এই সাইটের জন্য কোনও পাসওয়ার্ড পাওয়া যায়নি</translation>
 <translation id="842017693807136194">এটি দিয়ে সাইন-ইন করেছেন</translation>

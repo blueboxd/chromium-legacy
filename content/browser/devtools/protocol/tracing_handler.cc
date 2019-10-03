@@ -122,8 +122,7 @@ class DevToolsTraceEndpointProxy : public TracingController::TraceDataEndpoint {
     if (TracingHandler* h = tracing_handler_.get())
       h->OnTraceDataCollected(std::move(chunk));
   }
-  void ReceiveTraceFinalContents(
-      std::unique_ptr<const base::DictionaryValue> metadata) override {
+  void ReceivedTraceFinalContents() override {
     if (TracingHandler* h = tracing_handler_.get())
       h->OnTraceComplete();
   }
@@ -152,13 +151,12 @@ class DevToolsStreamEndpoint : public TracingController::TraceDataEndpoint {
     stream_->Append(std::move(chunk));
   }
 
-  void ReceiveTraceFinalContents(
-      std::unique_ptr<const base::DictionaryValue> metadata) override {
+  void ReceivedTraceFinalContents() override {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       base::PostTask(
           FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&DevToolsStreamEndpoint::ReceiveTraceFinalContents,
-                         this, std::move(metadata)));
+          base::BindOnce(&DevToolsStreamEndpoint::ReceivedTraceFinalContents,
+                         this));
       return;
     }
     if (TracingHandler* h = tracing_handler_.get())
@@ -324,7 +322,7 @@ class TracingHandler::PerfettoTracingSession
     if (!tracing_session_host_) {
       if (endpoint_) {
         // Will delete |this|.
-        endpoint_->ReceiveTraceFinalContents(nullptr);
+        endpoint_->ReceivedTraceFinalContents();
       }
       return;
     }
@@ -344,6 +342,7 @@ class TracingHandler::PerfettoTracingSession
           this, std::move(consumer_handle));
       tracing_session_host_->DisableTracingAndEmitJson(
           agent_label_, std::move(producer_handle),
+          /*privacy_filtering_enabled=*/false,
           base::BindOnce(&PerfettoTracingSession::OnReadBuffersComplete,
                          base::Unretained(this)));
     } else {
@@ -444,7 +443,7 @@ class TracingHandler::PerfettoTracingSession
     if (endpoint_) {
       // TODO(oysteine): Signal to the client that tracing failed.
       // Will delete |this|.
-      endpoint_->ReceiveTraceFinalContents(nullptr);
+      endpoint_->ReceivedTraceFinalContents();
     }
   }
 
@@ -491,7 +490,7 @@ class TracingHandler::PerfettoTracingSession
     if (!endpoint_)
       return;
     // Will delete |this|.
-    endpoint_->ReceiveTraceFinalContents(nullptr);
+    endpoint_->ReceivedTraceFinalContents();
   }
 
   mojo::Binding<tracing::mojom::TracingSessionClient> binding_{this};
@@ -516,11 +515,11 @@ class TracingHandler::PerfettoTracingSession
 #endif
 };
 
-TracingHandler::TracingHandler(FrameTreeNode* frame_tree_node_,
+TracingHandler::TracingHandler(FrameTreeNode* frame_tree_node,
                                DevToolsIOContext* io_context)
     : DevToolsDomainHandler(Tracing::Metainfo::domainName),
       io_context_(io_context),
-      frame_tree_node_(frame_tree_node_),
+      frame_tree_node_(frame_tree_node),
       did_initiate_recording_(false),
       return_as_stream_(false),
       gzip_compression_(false),

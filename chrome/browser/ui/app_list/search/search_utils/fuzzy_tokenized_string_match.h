@@ -31,6 +31,7 @@ class FuzzyTokenizedStringMatch {
   // somewhat matched, i.e. relevance score is greater than a threshold.
   bool IsRelevant(const TokenizedString& query, const TokenizedString& text);
   double relevance() const { return relevance_; }
+  const Hits& hits() const { return hits_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FuzzyTokenizedStringMatchTest, PartialRatioTest);

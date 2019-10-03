@@ -70,6 +70,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
       const base::flat_set<FidoTransportProtocol>& supported_transports,
       CtapMakeCredentialRequest request_parameter,
       AuthenticatorSelectionCriteria authenticator_criteria,
+      bool allow_skipping_pin_touch,
       CompletionCallback completion_callback);
   ~MakeCredentialRequestHandler() override;
 
@@ -115,6 +116,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
   State state_ = State::kWaitingForTouch;
   CtapMakeCredentialRequest request_;
   AuthenticatorSelectionCriteria authenticator_selection_criteria_;
+  // If true, the request handler may skip the first touch to select a device
+  // that will require a PIN.
+  bool allow_skipping_pin_touch_;
   // authenticator_ points to the authenticator that will be used for this
   // operation. It's only set after the user touches an authenticator to select
   // it, after which point that authenticator will be used exclusively through

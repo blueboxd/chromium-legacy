@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">jalus</translation>
 <translation id="2709516037105925701">Automaatne täitmine</translation>
 <translation id="2723001399770238859">heli</translation>
+<translation id="2725963129578236554">kommentaarid</translation>
 <translation id="2746543609216772311">Väärtus peab olema <ph name="MINIMUM_DATE_OR_TIME" /> või hilisem.</translation>
 <translation id="2759744352195237655">hüpikunupp</translation>
 <translation id="2761667185364618470">Märkige see ruut, kui soovite jätkata.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">Pikendage teksti vähemalt <ph name="MIN_CHARACTERS" /> tähemärgini (kasutate praegu <ph name="CURRENT_LENGTH" /> tähemärki).</translation>
 <translation id="383465348367842624">Märgile „<ph name="ATSIGN" />” eelnev osa ei tohi sisaldada sümbolit „<ph name="INVALIDCHARACTER" />”.</translation>
 <translation id="3846214748874656680">Täisekraanilt väljumine</translation>
+<translation id="3889183436948184105">redaktsioon</translation>
 <translation id="3920932319529768807">kokkuvõte</translation>
 <translation id="3924558731517983934">rakendus</translation>
 <translation id="3944740393230681990">proloog</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">heli ajamõõdik</translation>
 <translation id="6443871981718447451">kuva subtiitrite menüü</translation>
 <translation id="6453774872122745852">tunnustused</translation>
+<translation id="6475115390776617481">reaalajas kohalolek</translation>
 <translation id="648732519525291180">kellaaja valija</translation>
 <translation id="6550675742724504774">Valikud</translation>
 <translation id="6572309429103589720">Grammatikavead</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">lisamine</translation>
 <translation id="6989848892321993519">Pikendage teksti vähemalt <ph name="MIN_CHARACTERS" /> tähemärgini (kasutate praegu ühte tähemärki).</translation>
 <translation id="7033340931668032222">hääletugevuse muutmiseks üles- ja allanoole klahvi</translation>
+<translation id="7034405885550056553">soovitus</translation>
 <translation id="709897737746224366">Vastendage nõutav vorming.</translation>
 <translation id="7118469954320184356">Kirjeldust pole.</translation>
 <translation id="7139483182332611405">eessõna</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">väljund</translation>
 <translation id="8750798805984357768">Tehke üks nendest valikutest.</translation>
 <translation id="8808573423886751634">peatükk</translation>
+<translation id="8822203815165896261">volitamisteave</translation>
 <translation id="8845239796550121995">Kantakse nüüd üle telerisse</translation>
 <translation id="8851136666856101339">pea</translation>
 <translation id="8875657656876809964">Video taasesituse viga</translation>

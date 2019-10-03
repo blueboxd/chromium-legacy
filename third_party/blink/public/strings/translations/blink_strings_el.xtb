@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">υποσέλιδο</translation>
 <translation id="2709516037105925701">Αυτόματη συμπλήρωση</translation>
 <translation id="2723001399770238859">ήχος</translation>
+<translation id="2725963129578236554">σχόλια</translation>
 <translation id="2746543609216772311">Η τιμή πρέπει να είναι <ph name="MINIMUM_DATE_OR_TIME" /> ή μεταγενέστερη.</translation>
 <translation id="2759744352195237655">αναδυόμενο κουμπί</translation>
 <translation id="2761667185364618470">Αν θέλετε να συνεχίσετε, επιλέξτε αυτό το πλαίσιο.</translation>
@@ -82,6 +83,7 @@
 <translation id="3822383571486410024">Αυξήστε την έκταση αυτού του κειμένου στους <ph name="MIN_CHARACTERS" /> χαρακτήρες ή περισσότερο (αυτήν τη στιγμή χρησιμοποιείτε <ph name="CURRENT_LENGTH" /> χαρακτήρες).</translation>
 <translation id="383465348367842624">Το τμήμα της διεύθυνσης πριν το σύμβολο "<ph name="ATSIGN" />" δεν πρέπει να περιέχει το σύμβολο "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="3846214748874656680">Έξοδος από πλήρη οθόνη</translation>
+<translation id="3889183436948184105">αναθεώρηση</translation>
 <translation id="3920932319529768807">συμπέρασμα</translation>
 <translation id="3924558731517983934">εφαρμογή</translation>
 <translation id="3944740393230681990">πρόλογος</translation>
@@ -160,6 +162,7 @@
 <translation id="6404546809543547843">δείκτης χρόνου ήχου</translation>
 <translation id="6443871981718447451">εμφάνιση μενού υποτίτλων</translation>
 <translation id="6453774872122745852">ευχαριστίες</translation>
+<translation id="6475115390776617481">παρουσία σε πραγματικό χρόνο</translation>
 <translation id="648732519525291180">εργαλείο επιλογής ώρας</translation>
 <translation id="6550675742724504774">Επιλογές</translation>
 <translation id="6572309429103589720">Μη έγκυρη γραμματική</translation>
@@ -183,6 +186,7 @@
 <translation id="6981594929165378967">εισαγωγή</translation>
 <translation id="6989848892321993519">Αυξήστε την έκταση αυτού του κειμένου στους <ph name="MIN_CHARACTERS" /> χαρακτήρες ή περισσότερο (αυτήν τη στιγμή χρησιμοποιείτε 1 χαρακτήρα).</translation>
 <translation id="7033340931668032222">επάνω και κάτω για αλλαγή της έντασης ήχου</translation>
+<translation id="7034405885550056553">πρόταση</translation>
 <translation id="709897737746224366">Αντιστοιχίστε τη ζητούμενη μορφή.</translation>
 <translation id="7118469954320184356">Δεν υπάρχει διαθέσιμη περιγραφή.</translation>
 <translation id="7139483182332611405">πρόλογος</translation>
@@ -243,6 +247,7 @@
 <translation id="8711688047404765493">έξοδος</translation>
 <translation id="8750798805984357768">Ορίστε μία από αυτές τις επιλογές.</translation>
 <translation id="8808573423886751634">κεφάλαιο</translation>
+<translation id="8822203815165896261">πληροφορίες σύνταξης</translation>
 <translation id="8845239796550121995">Γίνεται μετάδοση στην TV</translation>
 <translation id="8851136666856101339">κύριο</translation>
 <translation id="8875657656876809964">Σφάλμα αναπαραγωγής βίντεο</translation>

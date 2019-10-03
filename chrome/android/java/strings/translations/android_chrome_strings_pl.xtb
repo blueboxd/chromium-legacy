@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Użyto</translation>
 <translation id="1171770572613082465">Zobacz najpopularniejsze strony, klikając przycisk „Popularne”</translation>
 <translation id="1173894706177603556">Zmień nazwę</translation>
-<translation id="1175310183703641346">Twoje zakładki, historia, hasła i inne ustawienia przestaną być synchronizowane z Twoim kontem Google</translation>
 <translation id="1178581264944972037">Wstrzymaj</translation>
 <translation id="1181037720776840403">Usuń</translation>
 <translation id="1188239144602654184">Włącz AR</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">Utworzono zakładkę w: <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Synchronizacja w tle</translation>
 <translation id="3771001275138982843">Nie udało się pobrać aktualizacji</translation>
+<translation id="3771033907050503522">Karty incognito</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Włącz Bluetooth<ph name="END_LINK" />, by umożliwić parowanie</translation>
 <translation id="3775705724665058594">Wyślij na swoje urządzenia</translation>
 <translation id="3778956594442850293">Dodano do ekranu głównego</translation>
@@ -484,7 +484,6 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="4719927025381752090">Proponuj tłumaczenie</translation>
 <translation id="4720023427747327413">Otwórz w: <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Pomóż w ulepszaniu Chrome. <ph name="BEGIN_LINK" />Wypełnij ankietę<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">Zmieniasz synchronizowane konto <ph name="ACCOUNT_EMAIL_OLD" /> na <ph name="ACCOUNT_EMAIL_NEW" />. Twoimi istniejącymi danymi Chrome zarządza <ph name="MANAGED_DOMAIN" />. Spowoduje to usunięcie danych z tego urządzenia, ale pozostaną one na koncie <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">Aktualizuj</translation>
 <translation id="4738836084190194332">Ostatnia synchronizacja: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Otwórz nową kartę</translation>
@@ -668,13 +667,13 @@ Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.
 <translation id="5937580074298050696">Zaoszczędzono <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Resetuj</translation>
 <translation id="5942872142862698679">Korzystam z wyszukiwarki Google</translation>
-<translation id="5944669582486359588">W wersji uproszczonej Chrome szybciej ładuje strony, używając nawet o 60% mniej danych. Technologia chmurowa Google optymalizuje odwiedzane strony.</translation>
 <translation id="5952764234151283551">Adres URL strony, którą próbujesz otworzyć, zostanie wysłany do Google</translation>
 <translation id="5956665950594638604">Otwórz Centrum pomocy Chrome w nowej karcie</translation>
 <translation id="5958275228015807058">Znajdź pliki i strony w Pobranych plikach</translation>
 <translation id="5962718611393537961">Kliknij, by zwinąć</translation>
 <translation id="6000066717592683814">Zachowaj Google</translation>
 <translation id="6005538289190791541">Proponowane hasło</translation>
+<translation id="6036057147555329831">Dodatkowy moduł ICU</translation>
 <translation id="6039379616847168523">Przejdź do następnej karty</translation>
 <translation id="6040143037577758943">Zamknij</translation>
 <translation id="6042308850641462728">Więcej</translation>
@@ -815,7 +814,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7029809446516969842">Hasła</translation>
 <translation id="7053983685419859001">Blokuj</translation>
 <translation id="7055152154916055070">Zablokowano przekierowanie:</translation>
-<translation id="7062545763355031412">Zaakceptuj i przełącz konta</translation>
 <translation id="7063006564040364415">Nie udało się nawiązać połączenia z serwerem synchronizacji.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Wybrano 1}few{Wybrano #}many{Wybrano #}other{Wybrano #}}</translation>
 <translation id="7071521146534760487">Zarządzaj kontem</translation>
@@ -1099,7 +1097,6 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="9139318394846604261">Zakupy</translation>
 <translation id="9155898266292537608">Możesz też wyszukiwać szybkim kliknięciem słowa</translation>
 <translation id="9169507124922466868">Historia nawigacji jest otwarta w połowie</translation>
-<translation id="9188680907066685419">Wyloguj się z konta zarządzanego</translation>
 <translation id="9204836675896933765">Pozostał jeden plik</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Nie można wykonywać połączeń</translation>
@@ -1108,7 +1105,6 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="932327136139879170">Strona główna</translation>
 <translation id="938850635132480979">Błąd: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Dostęp do mikrofonu</translation>
-<translation id="951339005376969845">Usuń istniejące dane. Aby je pobrać, przełącz się z powrotem na konto <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome może używać <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> do wyszukiwania w Chinach. Możesz to zmienić w <ph name="BEGIN_LINK" />Ustawieniach<ph name="END_LINK" />.</translation>
 <translation id="965817943346481315">Zablokuj, jeśli na stronie wyświetlają się uciążliwe lub wprowadzające w błąd reklamy (zalecane)</translation>
 <translation id="968900484120156207">Tutaj pojawią się strony, które odwiedzisz</translation>

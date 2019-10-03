@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/browser/ui/views/theme_copying_widget.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/closure_animation_observer.h"
@@ -355,14 +354,7 @@ void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
       break;
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_SCROLL_END:
-      if (!(OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
-            model_->result().match_at(index).ShouldShowTabMatchButton())) {
-        OpenMatch(index, WindowOpenDisposition::CURRENT_TAB,
-                  event->time_stamp());
-      } else {
-        OpenMatch(index, WindowOpenDisposition::SWITCH_TO_TAB,
-                  event->time_stamp());
-      }
+      OpenMatch(index, WindowOpenDisposition::CURRENT_TAB, event->time_stamp());
       break;
     default:
       return;

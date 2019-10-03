@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">يتعذر حفظ الصورة</translation>
 <translation id="1180526666083833456">يمكنك المزامنة والحصول على اقتراحات مخصصة على جميع الأجهزة.</translation>
 <translation id="1181037720776840403">إزالة</translation>
+<translation id="1207113853726624428">بحث جديد</translation>
 <translation id="1209206284964581585">إخفاء الآن</translation>
 <translation id="1219674500290482172">يتعذر الاتصال بالإنترنت.</translation>
 <translation id="122699739164161391">إغلاق جميع علامات التبويب</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">اقتراح  كلمة مرور...</translation>
 <translation id="1870148520156231997">الكشف عن كلمة المرور</translation>
 <translation id="1872096359983322073">الكشاف</translation>
-<translation id="1876721852596493031">إرسال بيانات الاستخدام</translation>
 <translation id="1911619930368729126">‏التحميل إلى Google Drive</translation>
 <translation id="1923342640370224680">الساعة الأخيرة</translation>
 <translation id="1941314575388338491">انقر مرّتين للنسخ.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> من مقالات "قائمة القراءة" غير المقروءة.</translation>
 <translation id="2230173723195178503">تم تحميل الصفحة المطلوبة</translation>
 <translation id="2239626343334228536">جارٍ محو بيانات التصفُّح...</translation>
-<translation id="2256128224215992540">اقتراحات البحث والمواقع</translation>
 <translation id="2267753748892043616">إضافة حساب</translation>
 <translation id="2268044343513325586">تحسين</translation>
 <translation id="2273327106802955778">قائمة "المزيد"</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">تعذر فتح الملف</translation>
 <translation id="2718352093833049315">‏باستخدام شبكة Wi-Fi فقط</translation>
 <translation id="2747003861858887689">الحقل السابق</translation>
+<translation id="2773292004659987824">البحث في وضع التصفُّح المتخفي</translation>
 <translation id="2780046210906776326">لا تتوفر حسابات بريد إلكتروني</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">الخروج من أداة تغيير علامات التبويب</translation>
@@ -295,7 +295,6 @@
 <translation id="5197255632782567636">الإنترنت</translation>
 <translation id="5228579091201413441">تفعيل المزامنة</translation>
 <translation id="5234764350956374838">رفض</translation>
-<translation id="5244474230056479698">المزامنة مع <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">إلغاء المزامنة</translation>
 <translation id="5271549068863921519">حفظ كلمة المرور</translation>
 <translation id="5300589172476337783">عرض</translation>
@@ -501,6 +500,7 @@
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8281781826761538115">التلقائي - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">بحث جديد</translation>
+<translation id="8323906514956095947">اللمس مع الاستمرار لعرض المزيد من الخيارات</translation>
 <translation id="8328777765163860529">إغلاق الكل</translation>
 <translation id="8407669440184693619">لم يتم العثور على كلمات مرور لهذا الموقع الإلكتروني</translation>
 <translation id="842017693807136194">تم تسجيل الدخول باستخدام</translation>

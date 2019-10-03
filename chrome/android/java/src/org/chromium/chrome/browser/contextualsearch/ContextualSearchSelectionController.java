@@ -334,7 +334,6 @@ public class ContextualSearchSelectionController {
                 resetAllStates();
                 break;
             case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
-            case SelectionEventType.SELECTION_HANDLES_MOVED:
                 shouldHandleSelection = mShouldHandleSelectionModification;
                 mIsAdjustedSelection = true;
                 break;

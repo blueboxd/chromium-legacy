@@ -10,10 +10,6 @@ import("//build/config/fuchsia/symbol_archive.gni")
 import("//testing/test.gni")
 
 declare_args() {
-  # Enable remote debugging for WebContentRunner instances on this port.
-  # Set to 0 to disable.
-  enable_remote_debugging_on_port = 0
-
   # Allow the Cast Runner to use software decoders for rendering video.
   # TODO(crbug.com/1000858): Revisit this value once hardware playback is fixed
   #                          (fxb/13659).
@@ -22,10 +18,7 @@ declare_args() {
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
-  flags = [
-    "ENABLE_REMOTE_DEBUGGING_ON_PORT=$enable_remote_debugging_on_port",
-    "ENABLE_SOFTWARE_VIDEO_DECODERS=$enable_software_video_decoders",
-  ]
+  flags = [ "ENABLE_SOFTWARE_VIDEO_DECODERS=$enable_software_video_decoders" ]
   visibility = [ ":*" ]
 }
 
@@ -38,7 +31,6 @@ source_set("common") {
     "common/web_content_runner.h",
   ]
   deps = [
-    ":buildflags",
     "//base",
     "//fuchsia/base",
     "//fuchsia/base:modular",
@@ -61,17 +53,10 @@ source_set("cast_runner_core") {
     "cast/application_controller_impl.h",
     "cast/cast_component.cc",
     "cast/cast_component.h",
-    "cast/cast_platform_bindings_ids.h",
     "cast/cast_runner.cc",
     "cast/cast_runner.h",
     "cast/named_message_port_connector.cc",
     "cast/named_message_port_connector.h",
-    "cast/touch_input_bindings.cc",
-    "cast/touch_input_bindings.h",
-  ]
-  data = [
-    "cast/not_implemented_api_bindings.js",
-    "cast/touch_input_bindings.js",
   ]
   data_deps = [
     "//chromecast/bindings:named_message_port_connector_resources",
@@ -187,7 +172,6 @@ test("cast_runner_browsertests") {
   sources = [
     "cast/api_bindings_client_browsertest.cc",
     "cast/named_message_port_connector_browsertest.cc",
-    "cast/not_implemented_api_bindings_browsertest.cc",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   data = [

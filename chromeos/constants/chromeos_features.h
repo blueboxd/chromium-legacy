@@ -15,7 +15,6 @@ namespace features {
 // alongside the definition of their values in the .cc file. If a feature is
 // being rolled out via Finch, add a comment in the .cc file.
 
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kAccountManager;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAmbientModeFeature;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -102,7 +101,6 @@ extern const base::Feature kVideoPlayerNativeControls;
 
 // Keep alphabetized.
 
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAccountManagerEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAmbientModeEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAssistantEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsImeDecoderWithSandboxEnabled();

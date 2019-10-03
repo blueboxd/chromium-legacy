@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Obrázok sa nedá uložiť</translation>
 <translation id="1180526666083833456">Synchronizujte a prispôsobujte obsah v rôznych zariadeniach.</translation>
 <translation id="1181037720776840403">Odstrániť</translation>
+<translation id="1207113853726624428">Nové vyhľadávanie</translation>
 <translation id="1209206284964581585">Skryť</translation>
 <translation id="1219674500290482172">Nepodarilo sa pripojiť k internetu.</translation>
 <translation id="122699739164161391">Zavrieť všetky karty</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">Navrhnúť heslo…</translation>
 <translation id="1870148520156231997">Odhaliť heslo</translation>
 <translation id="1872096359983322073">Baterka</translation>
-<translation id="1876721852596493031">Odosielanie údajov o používaní</translation>
 <translation id="1911619930368729126">Nahrať na Disk Google</translation>
 <translation id="1923342640370224680">Posledná hodina</translation>
 <translation id="1941314575388338491">Dvojitým klepnutím skopírujete.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892">Počet neprečítaných článkov v čitateľskom zozname: <ph name="UNREAD_COUNT" /></translation>
 <translation id="2230173723195178503">Načítala sa webová stránka</translation>
 <translation id="2239626343334228536">Vymazávajú sa dáta prehliadania…</translation>
-<translation id="2256128224215992540">Návrhy vyhľadávania a webov</translation>
 <translation id="2267753748892043616">Pridať účet</translation>
 <translation id="2268044343513325586">Upraviť</translation>
 <translation id="2273327106802955778">Ponuka Viac</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">Súbor sa nedá otvoriť</translation>
 <translation id="2718352093833049315">Len s Wi‑Fi</translation>
 <translation id="2747003861858887689">Predchádzajúce pole</translation>
+<translation id="2773292004659987824">Anonymné vyhľadávanie</translation>
 <translation id="2780046210906776326">Žiadne e-mailové účty</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Zavrieť Prepínač kariet</translation>
@@ -295,7 +295,6 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Povoliť synchronizáciu</translation>
 <translation id="5234764350956374838">Zatvoriť</translation>
-<translation id="5244474230056479698">Synchronizácia do účtu <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Zrušiť synchronizáciu</translation>
 <translation id="5271549068863921519">Uložiť heslo</translation>
 <translation id="5300589172476337783">Zobraziť</translation>
@@ -501,6 +500,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="8261506727792406068">Odstrániť</translation>
 <translation id="8281781826761538115">Predvolené – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Nové vyhľadávanie</translation>
+<translation id="8323906514956095947">Pridržaním zobrazíte ďalšie možnosti karty</translation>
 <translation id="8328777765163860529">Zavrieť všetky</translation>
 <translation id="8407669440184693619">Nenašli sa žiadne heslá tohto webu</translation>
 <translation id="842017693807136194">Prihlásenie pomocou</translation>

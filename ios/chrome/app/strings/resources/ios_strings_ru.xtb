@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Не удалось сохранить</translation>
 <translation id="1180526666083833456">Синхронизация данных и персонализация на всех устройствах.</translation>
 <translation id="1181037720776840403">Удалить</translation>
+<translation id="1207113853726624428">Новый поиск</translation>
 <translation id="1209206284964581585">Скрыть</translation>
 <translation id="1219674500290482172">Не удалось подключиться к Интернету.</translation>
 <translation id="122699739164161391">Закрыть все вкладки</translation>
@@ -72,7 +73,6 @@
 <translation id="1828824471510190776">Сгенерировать пароль</translation>
 <translation id="1870148520156231997">Показать пароль</translation>
 <translation id="1872096359983322073">Вспышка</translation>
-<translation id="1876721852596493031">Отправка статистики</translation>
 <translation id="1911619930368729126">Загрузить на Google Диск</translation>
 <translation id="1923342640370224680">Последний час</translation>
 <translation id="1941314575388338491">Чтобы копировать, нажмите дважды.</translation>
@@ -95,7 +95,6 @@
 <translation id="2207590065820824892">Число непрочитанных статей в Списке для чтения: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Веб-страница загружена</translation>
 <translation id="2239626343334228536">Удаление данных о работе в браузере…</translation>
-<translation id="2256128224215992540">Подсказки запросов и сайтов</translation>
 <translation id="2267753748892043616">Добавить аккаунт</translation>
 <translation id="2268044343513325586">Уточнить</translation>
 <translation id="2273327106802955778">Меню "Ещё"</translation>
@@ -131,6 +130,7 @@
 <translation id="2712127207578915686">Невозможно открыть файл</translation>
 <translation id="2718352093833049315">Только Wi-Fi</translation>
 <translation id="2747003861858887689">Предыдущее поле</translation>
+<translation id="2773292004659987824">Поиск в режиме инкогнито</translation>
 <translation id="2780046210906776326">Создайте аккаунт</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Закрыть переключатель вкладок</translation>
@@ -295,7 +295,6 @@
 <translation id="5197255632782567636">Интернет</translation>
 <translation id="5228579091201413441">Включить синхронизацию</translation>
 <translation id="5234764350956374838">Закрыть</translation>
-<translation id="5244474230056479698">Синхронизация с <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Отключить</translation>
 <translation id="5271549068863921519">Сохранить пароль</translation>
 <translation id="5300589172476337783">Показать</translation>
@@ -501,6 +500,7 @@
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8281781826761538115">Язык по умолчанию: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Новый поиск</translation>
+<translation id="8323906514956095947">Нажмите и удерживайте, чтобы открыть список дополнительных действий с вкладками</translation>
 <translation id="8328777765163860529">Закрыть все</translation>
 <translation id="8407669440184693619">Паролей для этого сайта не найдено</translation>
 <translation id="842017693807136194">Выполнен вход через</translation>

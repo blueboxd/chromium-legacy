@@ -71,7 +71,7 @@ class SANDBOX_EXPORT BrokerProcess {
   // point, since we need to fork().
   // broker_process_init_callback will be called in the new broker process,
   // after fork() returns.
-  bool Init(const base::Callback<bool(void)>& broker_process_init_callback);
+  bool Init(base::OnceCallback<bool(void)> broker_process_init_callback);
 
   // Return the PID of the child created by Init().
   int broker_pid() const { return broker_pid_; }

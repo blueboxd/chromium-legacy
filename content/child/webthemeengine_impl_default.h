@@ -39,6 +39,8 @@ class WebThemeEngineDefault : public blink::WebThemeEngine {
                                     int32_t vertical_arrow_bitmap_height,
                                     int32_t horizontal_arrow_bitmap_width);
 #endif
+  blink::ForcedColors ForcedColors() const override;
+  void SetForcedColors(const blink::ForcedColors forced_colors) override;
 };
 
 }  // namespace content

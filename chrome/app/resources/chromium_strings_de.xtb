@@ -72,7 +72,6 @@
 <translation id="3509308970982693815">Schließen Sie bitte alle Chromium-Fenster und versuchen Sie es erneut.</translation>
 <translation id="352783484088404971">Aus Chromium entfernen...</translation>
 <translation id="3575459661164320785">Schädliche Software wurde auf Ihrem Computer gefunden. Chromium kann diese Software entfernen, Ihre Einstellungen wiederherstellen und Erweiterungen deaktivieren, sodass Ihr Browser wieder wie gewohnt funktioniert.</translation>
-<translation id="3582788516608077514">Chromium wird aktualisiert...</translation>
 <translation id="358997566136285270">Chromium-Logo</translation>
 <translation id="3639635944603682591">Die Browserdaten dieser Person werden von diesem Gerät gelöscht. Wenn Sie die Daten wiederherstellen möchten, melden Sie sich als <ph name="USER_EMAIL" /> in Chromium an.</translation>
 <translation id="3713809861844741608">Link in neuem Chromium-Tab öffnen</translation>
@@ -86,7 +85,6 @@
 <translation id="421369550622382712">Entdecken Sie tolle Apps, Spiele, Erweiterungen und Designs für Chromium.</translation>
 <translation id="4216212958613226427">Diese Sprache wird für die Chromium-UI verwendet</translation>
 <translation id="4222580632002216401">Sie sind nun in Chromium angemeldet. Die Synchronisierung wurde von Ihrem Administrator deaktiviert.</translation>
-<translation id="4224199872375172890">Chromium ist auf dem neuesten Stand.</translation>
 <translation id="4230135487732243613">Ihre Chromium-Daten mit diesem Konto verknüpfen?</translation>
 <translation id="4271805377592243930">Hilfe für Chromium aufrufen</translation>
 <translation id="4285930937574705105">Die Installation konnte aufgrund eines undefinierten Fehlers nicht abgeschlossen werden. Falls Chromium derzeit ausgeführt wird, schließen Sie es bitte und versuchen Sie es erneut.</translation>
@@ -98,6 +96,7 @@
 <translation id="4567424176335768812">Sie sind als <ph name="USER_EMAIL_ADDRESS" /> angemeldet. Auf allen Geräten, auf denen Sie angemeldet sind, sind nun Ihre Lesezeichen, Ihr Verlauf und andere Einstellungen verfügbar.</translation>
 <translation id="459535195905078186">Chromium-Apps</translation>
 <translation id="4621240073146040695">Fast fertig! Starten Sie Chromium neu, um die Aktualisierung abzuschließen.</translation>
+<translation id="4661006601577405669">Künftige Versionen von Chromium werden automatisch installiert.</translation>
 <translation id="4677944499843243528">Das Profil wird offenbar gerade von einem Chromium-Prozess (<ph name="PROCESS_ID" />) auf einem anderen Computer (<ph name="HOST_NAME" />) verwendet. Das Profil wurde von Chromium gesperrt, damit es nicht beschädigt wird. Wenn Sie sicher sind, dass das Profil nicht von anderen Prozessen verwendet wird, können Sie das Profil entsperren und Chromium neu starten.</translation>
 <translation id="469338717132742108">Hilfe für Chromium OS aufrufen</translation>
 <translation id="4708774505295300557">Auf diesem Computer war zuvor ein Nutzer mit dem Konto <ph name="ACCOUNT_EMAIL_LAST" /> in Chromium angemeldet. Erstellen Sie einen neuen Chromium-Nutzer, um Ihre Daten getrennt zu verwenden.</translation>
@@ -128,9 +127,7 @@
 <translation id="5698481217667032250">Chromium in dieser Sprache anzeigen</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Willkommen bei Chromium</translation>
-<translation id="5877064549588274448">Kanal wurde geändert. Starten Sie Ihr Gerät neu, um die Änderungen zu übernehmen.</translation>
 <translation id="5895138241574237353">Neu starten</translation>
-<translation id="5906655207909574370">Fast fertig! Starten Sie Ihr Gerät neu, um die Aktualisierung abzuschließen.</translation>
 <translation id="5987687638152509985">Aktualisieren Sie Chromium, um die Synchronisierung zu starten</translation>
 <translation id="6013050204643758987">Chromium OS und <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" /> werden durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS" />Open-Source-Software<ph name="END_LINK_CROS_OSS" /> möglich gemacht.</translation>
 <translation id="6040143037577758943">Schließen</translation>
@@ -172,7 +169,6 @@ Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte e
 <translation id="6868056391275687737">Andere Instanzen von Chromium sind noch aktiv. Bitte schließen Sie diese, um den Browser zu aktualisieren.</translation>
 <translation id="6893813176749746474">Chromium wurde aktualisiert, Sie haben den Browser jedoch mindestens 30 Tage nicht verwendet.</translation>
 <translation id="6964305034639999644">Link in Chromium-Inkognito-Fenster öffnen</translation>
-<translation id="6970811910055250180">Ihr Gerät wird aktualisiert...</translation>
 <translation id="6990124437352146030">Chromium benötigt für diese Website die Berechtigung, auf Ihr Mikrofon zuzugreifen</translation>
 <translation id="705851970750939768">Chromium aktualisieren</translation>
 <translation id="7066436765290594559">Chromium OS konnte Ihre Daten nicht synchronisieren. Bitte aktualisieren Sie Ihre Passphrase für die Synchronisierung.</translation>
@@ -194,6 +190,7 @@ Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium Dev</translation>
 <translation id="7451052299415159299">Chromium benötigt für diese Website die Berechtigung, auf Ihre Kamera zuzugreifen</translation>
 <translation id="7483335560992089831">Die Chromium-Version kann nicht installiert werden, da sie aktuell ausgeführt wird. Schließen Sie Chromium bitte und versuchen Sie es erneut.</translation>
+<translation id="751093125041325477">Künftige Versionen von Chromium werden automatisch installiert. Nach Abschluss des Downloads wird Chromium neu gestartet und Sie können fortfahren.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium wird in einer Minute neu gestartet}other{Chromium wird in # Minuten neu gestartet}}</translation>
 <translation id="7549178288319965365">Über Chromium OS</translation>
 <translation id="7561906087460245826">Daten aus Chromium ebenfalls löschen (<ph name="URL" />)</translation>
@@ -214,7 +211,6 @@ Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="7975919845073681630">Dies ist eine Zweitinstallation, daher kann Chromium nicht als Standardbrowser festgelegt werden.</translation>
 <translation id="7979877361127045932">Im Chromium-Menü ausblenden</translation>
 <translation id="8013436988911883588">Sobald Chromium Zugriff hat, können Websites Sie um Zugriff bitten.</translation>
-<translation id="8030318113982266900">Ihr Gerät wird auf Kanal <ph name="CHANNEL_NAME" /> aktualisiert...</translation>
 <translation id="81770708095080097">Diese Datei ist schädlich und wurde von Chromium blockiert.</translation>
 <translation id="8222496066431494154">Installieren Sie Chromium auf Ihrem Smartphone. Wir senden Ihnen eine SMS an die Telefonnummer zur Kontowiederherstellung: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="8248265253516264921">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chromium, eine für Sie zu finden. Damit entsprechende Beschreibungen erstellt werden können, werden die Bilder an Google gesendet. Sie können dies jederzeit in den Einstellungen deaktivieren.</translation>
@@ -229,7 +225,6 @@ Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Die Chromium-Autoren. Alle Rechte vorbehalten.</translation>
 <translation id="8619360774459241877">Chromium wird gestartet…</translation>
 <translation id="8621669128220841554">Die Installation konnte aufgrund eines undefinierten Fehlers nicht abgeschlossen werden. Bitte laden Sie Chromium erneut herunter.</translation>
-<translation id="8667808506758191620">Ihr <ph name="DEVICE_TYPE" /> ist auf dem neuesten Stand.</translation>
 <translation id="8682540261359803721">Wenn Sie auf dieser Seite eine Einstellung nicht finden können, sehen Sie in den <ph name="LINK_BEGIN" />Chromium-Browsereinstellungen<ph name="LINK_END" /> nach</translation>
 <translation id="8697124171261953979">Die Erweiterung legt auch fest, welche Seite beim Start von Chromium oder bei der Suche über die Omnibox angezeigt wird.</translation>
 <translation id="8704119203788522458">Dies ist Ihr persönlicher Chromium-Browser</translation>

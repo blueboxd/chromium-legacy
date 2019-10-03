@@ -89,6 +89,9 @@ class ArcIntentHelperBridge : public KeyedService,
       arc::mojom::CameraIntentAction action,
       const std::vector<uint8_t>& data,
       arc::mojom::IntentHelperInstance::HandleCameraResultCallback callback);
+  void OnIntentFiltersUpdatedForPackage(
+      const std::string& package_name,
+      std::vector<IntentFilter> intent_filters) override;
 
   // Retrieves icons for the |activities| and calls |callback|.
   // See ActivityIconLoader::GetActivityIcons() for more details.

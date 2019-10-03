@@ -92,6 +92,9 @@ const CLASSES = {
   LEFT_ALIGN_ATTRIBUTION: 'left-align-attribution',
   // Vertically centers the most visited section for a non-Google provided page.
   NON_GOOGLE_PAGE: 'non-google-page',
+  REMOVABLE: 'removable',
+  REMOVE_ICON: 'remove-icon',
+  REMOVE_MATCH: 'remove-match',
   SEARCH_ICON: 'search-icon',  // Magnifying glass/search icon.
   SELECTED: 'selected',  // A selected (via up/down arrow key) realbox match.
   SHOW_ELEMENT: 'show-element',
@@ -1220,8 +1223,10 @@ function onRealboxKeyDown(e) {
   });
 
   if (key === 'Delete' && e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
-    window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(selected);
-    e.preventDefault();
+    if (autocompleteMatches[selected].supportsDeletion) {
+      window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(selected);
+      e.preventDefault();
+    }
     return;
   }
 
@@ -1284,8 +1289,15 @@ function onRealboxInput() {
 function onRealboxWrapperFocusIn(e) {
   if (e.target.matches(`#${IDS.REALBOX}`) && !$(IDS.REALBOX).value) {
     window.chrome.embeddedSearch.searchBox.queryAutocomplete('');
-  } else if (e.target.matches(`#${IDS.REALBOX_MATCHES} a`)) {
-    const selectedIndex = selectMatchEl(e.target);
+  } else if (e.target.matches(`#${IDS.REALBOX_MATCHES} *`)) {
+    let target = e.target;
+    while (target && target.nodeName !== 'A') {
+      target = target.parentNode;
+    }
+    if (!target) {
+      return;
+    }
+    const selectedIndex = selectMatchEl(target);
     // It doesn't really make sense to use fillFromMatch() here as the focus
     // change drops the selection (and is probably just noisy to
     // screenreaders).
@@ -1374,10 +1386,13 @@ function overrideExecutableTimeoutForTesting(timeout) {
  */
 function populateAutocompleteMatches(matches) {
   const realboxMatchesEl = document.createElement('div');
+  realboxMatchesEl.role = 'listbox';
 
-  for (const [i, match] of matches.entries()) {
+  for (let i = 0; i < matches.length; ++i) {
+    const match = matches[i];
     const matchEl = document.createElement('a');
     matchEl.href = match.destinationUrl;
+    matchEl.role = 'option';
 
     let iconClass;
     if (match.isSearchType) {
@@ -1410,6 +1425,26 @@ function populateAutocompleteMatches(matches) {
     for (const col of layout) {
       col.forEach(colEl => matchEl.appendChild(colEl));
     }
+
+    if (match.supportsDeletion) {
+      const icon = document.createElement('button');
+      icon.title = configData.translatedStrings.removeSuggestion;
+      icon.classList.add(CLASSES.REMOVE_ICON);
+      icon.onclick = e => {
+        window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(i);
+        e.preventDefault();
+      };
+
+      const remove = document.createElement('div');
+      remove.classList.add(CLASSES.REMOVE_MATCH);
+
+      remove.appendChild(icon);
+      matchEl.appendChild(remove);
+      matchEl.classList.add(CLASSES.REMOVABLE);
+    }
+
+    // TODO(crbug.com/1002689): set a more useful aria-label on |matchEl|, as
+    // "Remove suggestion" is now uttered when navigating through matches.
 
     realboxMatchesEl.append(matchEl);
   }

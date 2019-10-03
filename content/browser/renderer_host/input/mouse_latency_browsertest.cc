@@ -165,11 +165,9 @@ class MouseLatencyBrowserTest : public ContentBrowserTest {
     runner_->Quit();
   }
 
-  void OnTraceDataCollected(
-      std::unique_ptr<const base::DictionaryValue> metadata,
-      base::RefCountedString* trace_data_string) {
+  void OnTraceDataCollected(std::unique_ptr<std::string> trace_data_string) {
     std::unique_ptr<base::Value> trace_data =
-        base::JSONReader::ReadDeprecated(trace_data_string->data());
+        base::JSONReader::ReadDeprecated(*trace_data_string);
     ASSERT_TRUE(trace_data);
     trace_data_ = trace_data->Clone();
     runner_->Quit();
@@ -264,8 +262,8 @@ class MouseLatencyBrowserTest : public ContentBrowserTest {
   const base::Value& StopTracing() {
     bool success = TracingController::GetInstance()->StopTracing(
         TracingController::CreateStringEndpoint(
-            base::Bind(&MouseLatencyBrowserTest::OnTraceDataCollected,
-                       base::Unretained(this))));
+            base::BindOnce(&MouseLatencyBrowserTest::OnTraceDataCollected,
+                           base::Unretained(this))));
     EXPECT_TRUE(success);
 
     // Runs until we get the OnTraceDataCollected callback, which populates

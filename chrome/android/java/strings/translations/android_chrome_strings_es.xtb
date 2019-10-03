@@ -22,7 +22,6 @@
 <translation id="116280672541001035">Usados</translation>
 <translation id="1171770572613082465">Toca el botón Populares para ver los sitios web más populares</translation>
 <translation id="1173894706177603556">Cambiar nombre</translation>
-<translation id="1175310183703641346">Tus marcadores, el historial, las contraseñas y otros datos dejarán de sincronizarse con tu cuenta de Google.</translation>
 <translation id="1178581264944972037">Pausar</translation>
 <translation id="1181037720776840403">Quitar</translation>
 <translation id="1188239144602654184">Acceder a RA</translation>
@@ -361,6 +360,7 @@
 <translation id="3739899004075612870">Marcador añadido a <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sincronización en segundo plano</translation>
 <translation id="3771001275138982843">No se ha podido descargar la actualización</translation>
+<translation id="3771033907050503522">Pestañas incógnito</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Activa el Bluetooth<ph name="END_LINK" /> para permitir la vinculación</translation>
 <translation id="3775705724665058594">Enviar a tus dispositivos</translation>
 <translation id="3778956594442850293">Se ha añadido a la pantalla de inicio</translation>
@@ -484,7 +484,6 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4719927025381752090">Ofrecer la traducción</translation>
 <translation id="4720023427747327413">Abrir en <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136"><ph name="BEGIN_LINK" />Realiza la encuesta<ph name="END_LINK" /> para ayudar a mejorar Chrome</translation>
-<translation id="4730876730346568982">Estás cambiando las cuentas de sincronización de <ph name="ACCOUNT_EMAIL_OLD" /> a <ph name="ACCOUNT_EMAIL_NEW" />. <ph name="MANAGED_DOMAIN" /> administra tus datos actuales de Chrome. Tus datos se eliminarán de este dispositivo, pero permanecerán en <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4738836084190194332">Última sincronización: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Abre una pestaña nueva</translation>
@@ -668,13 +667,13 @@ Asegúrate de que este sitio web sea de confianza antes de acceder al modo de re
 <translation id="5937580074298050696">Ahorro: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="5942872142862698679">Google se ha establecido como motor de búsqueda predeterminado</translation>
-<translation id="5944669582486359588">En el modo básico, Chrome carga las páginas más rápido y reduce el uso de datos hasta un 60 %. La tecnología de la nube de Google optimiza las páginas que visitas.</translation>
 <translation id="5952764234151283551">Envía a Google la URL de una página a la que intentas acceder</translation>
 <translation id="5956665950594638604">Abre la Ayuda de Chrome en una pestaña nueva</translation>
 <translation id="5958275228015807058">Encuentra tus archivos y páginas en la sección Descargas</translation>
 <translation id="5962718611393537961">Toca para ocultar</translation>
 <translation id="6000066717592683814">Mantener Google como motor de búsqueda predeterminado</translation>
 <translation id="6005538289190791541">Contraseña sugerida</translation>
+<translation id="6036057147555329831">ICU adicional</translation>
 <translation id="6039379616847168523">Te dirige a la siguiente pestaña</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="6042308850641462728">Más</translation>
@@ -815,7 +814,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7029809446516969842">Contraseñas</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7055152154916055070">Redirección bloqueada:</translation>
-<translation id="7062545763355031412">Aceptar y cambiar de cuenta</translation>
 <translation id="7063006564040364415">No se ha podido conectar con el servidor de sincronización.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 seleccionado}other{# seleccionados}}</translation>
 <translation id="7071521146534760487">Gestionar cuenta</translation>
@@ -1099,7 +1097,6 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="9139318394846604261">Compras</translation>
 <translation id="9155898266292537608">También puedes tocar rápidamente una palabra para hacer búsquedas</translation>
 <translation id="9169507124922466868">El historial de navegación está medio abierto</translation>
-<translation id="9188680907066685419">Cierra sesión en la cuenta gestionada</translation>
 <translation id="9204836675896933765">1 archivo restante</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">No se pueden hacer llamadas</translation>
@@ -1108,7 +1105,6 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="932327136139879170">Página principal</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Acceder al micrófono</translation>
-<translation id="951339005376969845">Elimina los datos actuales. Para recuperarlos, cambia a <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome puede utilizar <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> para hacer búsquedas en China. Puedes cambiar esta opción en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="965817943346481315">Bloquear si el sitio web muestra anuncios invasivos o engañosos (opción recomendada)</translation>
 <translation id="968900484120156207">Las páginas que visites aparecerán aquí.</translation>

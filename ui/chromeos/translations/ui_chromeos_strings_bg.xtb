@@ -223,6 +223,7 @@
 <translation id="3645531960514756307">Освобождаване на папката</translation>
 <translation id="3678559383040232393">Малтийска клавиатура</translation>
 <translation id="3685122418104378273">Синхронизирането на Google Диск е деактивирано по подразбиране, когато се използват мобилни данни.</translation>
+<translation id="3689865792480713551">Анулиране на <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Това устройство не може да бъде отворено, защото файловата му система не се поддържа.</translation>
 <translation id="3741243925913727067">Създавайте в Google Диск резервни копия на снимките и видеоклиповете от мултимедийното си устройство.</translation>
 <translation id="3749289110408117711">Име на файла</translation>
@@ -463,6 +464,7 @@
 <translation id="6339145975392024142">Американска международна (PC)</translation>
 <translation id="6346310558342052870">Достъпът е ограничен</translation>
 <translation id="6353618411602605519">Хърватска клавиатура</translation>
+<translation id="6356685157277930264">Прозорец с информация за файловете</translation>
 <translation id="6358884629796491903">Дракон</translation>
 <translation id="637062427944097960">Този файл се отвори на друг работен плот. Преминете към <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />), за да го прегледате.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> елемента</translation>

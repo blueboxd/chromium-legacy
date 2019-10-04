@@ -461,8 +461,6 @@ class PersonalDataManager : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            ClearCreditCardNonSettingsOrigins);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           MoveJapanCityToStreetAddress);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            RequestProfileServerValidity);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            GetProfileSuggestions_Validity);
@@ -549,12 +547,6 @@ class PersonalDataManager : public KeyedService,
   // were not created from the settings page.
   void ClearProfileNonSettingsOrigins();
   void ClearCreditCardNonSettingsOrigins();
-
-  // Appends the value of the city field of a JP address to its street address
-  // field, separated by a newline, and clears the city field.
-  // TODO(rouslan): Remove this migration in or after October 2019. See bug:
-  // https://crbug.com/871301
-  void MoveJapanCityToStreetAddress();
 
   // Called when the |profile| is validated by the AutofillProfileValidator,
   // updates the profiles on the |ongoing_profile_changes_| and the DB.

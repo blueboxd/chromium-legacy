@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks;
 
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MORE_TABS_CLICK_LISTENER;
@@ -23,6 +24,8 @@ class TasksViewBinder {
             view.setFakeSearchBoxClickListener(model.get(FAKE_SEARCH_BOX_CLICK_LISTENER));
         } else if (propertyKey == IS_FAKE_SEARCH_BOX_VISIBLE) {
             view.setFakeSearchBoxVisibility(model.get(IS_FAKE_SEARCH_BOX_VISIBLE));
+        } else if (propertyKey == IS_INCOGNITO) {
+            view.setIncognitoMode(model.get(IS_INCOGNITO));
         } else if (propertyKey == IS_TAB_CAROUSEL) {
             view.setIsTabCarousel(model.get(IS_TAB_CAROUSEL));
         } else if (propertyKey == IS_VOICE_RECOGNITION_BUTTON_VISIBLE) {

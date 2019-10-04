@@ -209,8 +209,8 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
   DCHECK(box.IsBox() || box.IsRenderedLegend());
 #if DCHECK_IS_ON()
   if (box.IsInlineBox()) {
-    DCHECK(paint_fragment);
-    DCHECK_EQ(&paint_fragment->PhysicalFragment(), &box);
+    if (paint_fragment)
+      DCHECK_EQ(&paint_fragment->PhysicalFragment(), &box);
   } else if (box.ChildrenInline()) {
     // If no children, there maybe or may not be NGPaintFragment.
     // TODO(kojii): To be investigated if this correct or should be fixed.

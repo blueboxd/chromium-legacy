@@ -107,12 +107,13 @@ void LayoutNGBlockFlowMixin<Base>::AddScrollingOverflowFromChildren() {
   if (physical_fragment->Children().empty())
     return;
 
-  LayoutUnit border_inline_start =
-      LayoutUnit(Base::StyleRef().BorderStartWidth());
-  LayoutUnit border_block_start =
-      LayoutUnit(Base::StyleRef().BorderBeforeWidth());
-  WritingMode writing_mode = Base::StyleRef().GetWritingMode();
-  TextDirection direction = Base::StyleRef().Direction();
+  const ComputedStyle& style = Base::StyleRef();
+  const WritingMode writing_mode = style.GetWritingMode();
+  const TextDirection direction = style.Direction();
+  const LayoutUnit border_inline_start = LayoutUnit(style.BorderStartWidth());
+  const LayoutUnit border_block_start = LayoutUnit(style.BorderBeforeWidth());
+  const PhysicalSize& size = physical_fragment->Size();
+
   // End and under padding are added to scroll overflow of inline children.
   // https://github.com/w3c/csswg-drafts/issues/129
   base::Optional<NGPhysicalBoxStrut> padding_strut;
@@ -121,17 +122,17 @@ void LayoutNGBlockFlowMixin<Base>::AddScrollingOverflowFromChildren() {
                                Base::PaddingUnder())
                         .ConvertToPhysical(writing_mode, direction);
   }
+
   // Rectangles not reachable by scroll should not be added to overflow.
-  auto IsRectReachableByScroll =
-      [&border_inline_start, &border_block_start, &writing_mode, &direction,
-       &physical_fragment](const PhysicalRect& rect) {
-        LogicalOffset rect_logical_end =
-            rect.offset.ConvertToLogical(writing_mode, direction,
-                                         physical_fragment->Size(), rect.size) +
-            rect.size.ConvertToLogical(writing_mode);
-        return (rect_logical_end.inline_offset > border_inline_start &&
-                rect_logical_end.block_offset > border_block_start);
-      };
+  auto IsRectReachableByScroll = [&border_inline_start, &border_block_start,
+                                  &writing_mode, &direction,
+                                  &size](const PhysicalRect& rect) {
+    LogicalOffset rect_logical_end =
+        rect.offset.ConvertToLogical(writing_mode, direction, size, rect.size) +
+        rect.size.ConvertToLogical(writing_mode);
+    return (rect_logical_end.inline_offset > border_inline_start &&
+            rect_logical_end.block_offset > border_block_start);
+  };
 
   bool children_inline = Base::ChildrenInline();
   PhysicalRect children_overflow;
@@ -146,11 +147,13 @@ void LayoutNGBlockFlowMixin<Base>::AddScrollingOverflowFromChildren() {
     PhysicalRect child_scrollable_overflow;
     if (child->IsFloatingOrOutOfFlowPositioned()) {
       child_scrollable_overflow = child->ScrollableOverflowForPropagation(this);
+      child_scrollable_overflow.offset +=
+          ComputeRelativeOffset(child->Style(), writing_mode, direction, size);
     } else if (children_inline && child->IsLineBox()) {
       DCHECK(child->IsLineBox());
       child_scrollable_overflow =
-          To<NGPhysicalLineBoxFragment>(*child).ScrollableOverflow(
-              this, Base::Style(), physical_fragment->Size());
+          To<NGPhysicalLineBoxFragment>(*child).ScrollableOverflow(this, &style,
+                                                                   size);
       if (padding_strut) {
         PhysicalRect linebox_rect(child.Offset(), child->Size());
         if (lineboxes_enclosing_rect)
@@ -173,8 +176,8 @@ void LayoutNGBlockFlowMixin<Base>::AddScrollingOverflowFromChildren() {
   }
 
   // LayoutOverflow takes flipped blocks coordinates, adjust as needed.
-  LayoutRect children_flipped_overflow = children_overflow.ToLayoutFlippedRect(
-      physical_fragment->Style(), physical_fragment->Size());
+  LayoutRect children_flipped_overflow =
+      children_overflow.ToLayoutFlippedRect(style, size);
   Base::AddLayoutOverflow(children_flipped_overflow);
 }
 

@@ -55,7 +55,8 @@ FrameData::ResourceMimeType FrameData::GetResourceMimeType(
   return ResourceMimeType::kOther;
 }
 
-FrameData::FrameData(FrameTreeNodeId frame_tree_node_id)
+FrameData::FrameData(FrameTreeNodeId frame_tree_node_id,
+                     int heavy_ad_network_threshold_noise)
     : bytes_(0u),
       network_bytes_(0u),
       same_origin_bytes_(0u),
@@ -66,7 +67,9 @@ FrameData::FrameData(FrameTreeNodeId frame_tree_node_id)
       is_display_none_(false),
       visibility_(FrameVisibility::kVisible),
       frame_size_(gfx::Size()),
-      heavy_ad_status_(HeavyAdStatus::kNone) {}
+      heavy_ad_status_(HeavyAdStatus::kNone),
+      heavy_ad_status_with_noise_(HeavyAdStatus::kNone),
+      heavy_ad_network_threshold_noise_(heavy_ad_network_threshold_noise) {}
 
 FrameData::~FrameData() = default;
 
@@ -184,11 +187,17 @@ void FrameData::UpdateCpuUsage(base::TimeTicks update_time,
 
 bool FrameData::MaybeTriggerHeavyAdIntervention() {
   if (user_activation_status_ == UserActivationStatus::kReceivedActivation ||
-      heavy_ad_status_ != HeavyAdStatus::kNone)
+      heavy_ad_status_with_noise_ != HeavyAdStatus::kNone)
     return false;
 
-  heavy_ad_status_ = ComputeHeavyAdStatus();
-  if (heavy_ad_status_ == HeavyAdStatus::kNone)
+  if (heavy_ad_status_ == HeavyAdStatus::kNone) {
+    heavy_ad_status_ =
+        ComputeHeavyAdStatus(false /* use_network_threshold_noise */);
+  }
+
+  heavy_ad_status_with_noise_ =
+      ComputeHeavyAdStatus(true /* use_network_threshold_noise */);
+  if (heavy_ad_status_with_noise_ == HeavyAdStatus::kNone)
     return false;
 
   // Only check if the feature is enabled once we have a heavy ad. This is done
@@ -305,7 +314,8 @@ void FrameData::UpdateFrameVisibility() {
           : FrameVisibility::kNonVisible;
 }
 
-FrameData::HeavyAdStatus FrameData::ComputeHeavyAdStatus() const {
+FrameData::HeavyAdStatus FrameData::ComputeHeavyAdStatus(
+    bool use_network_threshold_noise) const {
   // Check if the frame meets the peak CPU usage threshold.
   if (peak_windowed_cpu_percent_ >=
       heavy_ad_thresholds::kMaxPeakWindowedPercent) {
@@ -316,8 +326,12 @@ FrameData::HeavyAdStatus FrameData::ComputeHeavyAdStatus() const {
   if (GetTotalCpuUsage().InMilliseconds() >= heavy_ad_thresholds::kMaxCpuTime)
     return HeavyAdStatus::kTotalCpu;
 
-  // Check if the frame meets the network threshold.
-  if (network_bytes_ >= heavy_ad_thresholds::kMaxNetworkBytes)
+  size_t network_threshold =
+      heavy_ad_thresholds::kMaxNetworkBytes +
+      (use_network_threshold_noise ? heavy_ad_network_threshold_noise_ : 0);
+
+  // Check if the frame meets the network threshold, possible including noise.
+  if (network_bytes_ >= network_threshold)
     return HeavyAdStatus::kNetwork;
   return HeavyAdStatus::kNone;
 }

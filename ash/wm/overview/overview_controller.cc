@@ -7,16 +7,10 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/root_window_controller.h"
-#include "ash/scoped_animation_disabler.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller_impl.h"
-#include "ash/wallpaper/wallpaper_view.h"
-#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_constants.h"
@@ -24,6 +18,7 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
+#include "ash/wm/overview/overview_wallpaper_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -35,21 +30,14 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/gfx/animation/animation_delegate.h"
-#include "ui/gfx/animation/slide_animation.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
 namespace {
-
-// Do not change the wallpaper when entering or exiting overview mode when this
-// is true.
-bool g_disable_wallpaper_change_for_tests = false;
-
-constexpr int kBlurSlideDurationMs = 250;
 
 // It can take up to two frames until the frame created in the UI thread that
 // triggered animation observer is drawn. Wait 50ms in attempt to let its draw
@@ -61,11 +49,6 @@ constexpr base::TimeDelta kOcclusionPauseDurationForStart =
 // overview mode immediately, contents are ready.
 constexpr base::TimeDelta kOcclusionPauseDurationForEnd =
     base::TimeDelta::FromMilliseconds(500);
-
-bool IsWallpaperChangeAllowed() {
-  return !g_disable_wallpaper_change_for_tests &&
-         Shell::Get()->wallpaper_controller()->IsBlurAllowed();
-}
 
 // Returns whether overview mode items should be slid in or out from the top of
 // the screen.
@@ -88,173 +71,6 @@ bool ShouldSlideInOutOverview(const std::vector<aura::Window*>& windows) {
 }
 
 }  // namespace
-
-// Class that handles of blurring and dimming wallpaper upon entering and
-// exiting overview mode. Blurs the wallpaper automatically if the wallpaper is
-// not visible prior to entering overview mode (covered by a window), otherwise
-// animates the blur and dim.
-class OverviewController::OverviewWallpaperController
-    : public ui::CompositorAnimationObserver,
-      public aura::WindowObserver {
- public:
-  OverviewWallpaperController() = default;
-
-  ~OverviewWallpaperController() override {
-    if (compositor_)
-      compositor_->RemoveAnimationObserver(this);
-    for (aura::Window* root : roots_to_animate_)
-      root->RemoveObserver(this);
-  }
-
-  void Blur(bool animate_only) {
-    OnBlurChange(WallpaperAnimationState::kAddingBlur, animate_only);
-  }
-
-  void Unblur() {
-    OnBlurChange(WallpaperAnimationState::kRemovingBlur,
-                 /*animate_only=*/false);
-  }
-
-  bool has_blur() const { return state_ != WallpaperAnimationState::kNormal; }
-
-  bool has_blur_animation() const { return !!compositor_; }
-
- private:
-  enum class WallpaperAnimationState {
-    kAddingBlur,
-    kRemovingBlur,
-    kNormal,
-  };
-
-  void OnAnimationStep(base::TimeTicks timestamp) override {
-    if (start_time_ == base::TimeTicks()) {
-      start_time_ = timestamp;
-      return;
-    }
-    const float progress = (timestamp - start_time_).InMilliseconds() /
-                           static_cast<float>(kBlurSlideDurationMs);
-    const bool adding = state_ == WallpaperAnimationState::kAddingBlur;
-    if (progress > 1.0f) {
-      AnimationProgressed(adding ? 1.0f : 0.f);
-      Stop();
-    } else {
-      AnimationProgressed(adding ? progress : 1.f - progress);
-    }
-  }
-
-  void OnCompositingShuttingDown(ui::Compositor* compositor) override {
-    if (compositor_ == compositor)
-      Stop();
-  }
-
-  void Stop() {
-    if (compositor_) {
-      compositor_->RemoveAnimationObserver(this);
-      compositor_ = nullptr;
-    }
-    state_ = WallpaperAnimationState::kNormal;
-  }
-
-  void Start() {
-    DCHECK(!compositor_);
-    compositor_ = Shell::GetPrimaryRootWindow()->GetHost()->compositor();
-    compositor_->AddAnimationObserver(this);
-    start_time_ = base::TimeTicks();
-  }
-
-  void AnimationProgressed(float value) {
-    // Animate only to even numbers to reduce the load.
-    int ivalue = static_cast<int>(value * kWallpaperBlurSigma) / 2 * 2;
-    for (aura::Window* root : roots_to_animate_)
-      ApplyBlurAndOpacity(root, ivalue);
-  }
-
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override {
-    window->RemoveObserver(this);
-    auto it =
-        std::find(roots_to_animate_.begin(), roots_to_animate_.end(), window);
-    if (it != roots_to_animate_.end())
-      roots_to_animate_.erase(it);
-  }
-
-  void ApplyBlurAndOpacity(aura::Window* root, int value) {
-    DCHECK_GE(value, 0);
-    DCHECK_LE(value, 10);
-    const float opacity =
-        gfx::Tween::FloatValueBetween(value / 10.0, 1.f, kShieldOpacity);
-    auto* wallpaper_widget_controller =
-        RootWindowController::ForWindow(root)->wallpaper_widget_controller();
-    if (wallpaper_widget_controller->wallpaper_view()) {
-      wallpaper_widget_controller->wallpaper_view()->RepaintBlurAndOpacity(
-          value, opacity);
-    }
-  }
-
-  // Called when the wallpaper is to be changed. Checks to see which root
-  // windows should have their wallpaper blurs animated and fills
-  // |roots_to_animate_| accordingly. Applys blur or unblur immediately if
-  // the wallpaper does not need blur animation.
-  // When |animate_only| is true, it'll apply blur only to the root windows that
-  // requires animation.
-  void OnBlurChange(WallpaperAnimationState state, bool animate_only) {
-    Stop();
-    for (aura::Window* root : roots_to_animate_)
-      root->RemoveObserver(this);
-    roots_to_animate_.clear();
-
-    state_ = state;
-    const bool should_blur = state_ == WallpaperAnimationState::kAddingBlur;
-    if (animate_only)
-      DCHECK(should_blur);
-
-    const float value =
-        should_blur ? kWallpaperBlurSigma : kWallpaperClearBlurSigma;
-
-    OverviewSession* overview_session =
-        Shell::Get()->overview_controller()->overview_session();
-    for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
-      // No need to animate the blur on exiting as this should only be called
-      // after overview animations are finished.
-      if (should_blur) {
-        DCHECK(overview_session);
-        OverviewGrid* grid = overview_session->GetGridWithRootWindow(root);
-        bool should_animate = grid && grid->ShouldAnimateWallpaper();
-        auto* wallpaper_view = RootWindowController::ForWindow(root)
-                                   ->wallpaper_widget_controller()
-                                   ->wallpaper_view();
-        float blur_sigma =
-            wallpaper_view ? wallpaper_view->repaint_blur() : 0.f;
-        if (should_animate && animate_only &&
-            blur_sigma != kWallpaperBlurSigma) {
-          root->AddObserver(this);
-          roots_to_animate_.push_back(root);
-          continue;
-        }
-        if (should_animate == animate_only)
-          ApplyBlurAndOpacity(root, value);
-      } else {
-        ApplyBlurAndOpacity(root, value);
-      }
-    }
-
-    // Run the animation if one of the roots needs to be animated.
-    if (roots_to_animate_.empty())
-      state_ = WallpaperAnimationState::kNormal;
-    else
-      Start();
-  }
-
-  ui::Compositor* compositor_ = nullptr;
-  base::TimeTicks start_time_;
-
-  WallpaperAnimationState state_ = WallpaperAnimationState::kNormal;
-  // Vector which contains the root windows, if any, whose wallpaper should have
-  // blur animated after Blur or Unblur is called.
-  std::vector<aura::Window*> roots_to_animate_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverviewWallpaperController);
-};
 
 OverviewController::OverviewController()
     : occlusion_pause_duration_for_end_(kOcclusionPauseDurationForEnd),
@@ -664,8 +480,7 @@ void OverviewController::ToggleOverview(
     for (auto& observer : observers_)
       observer.OnOverviewModeStarting();
     overview_session_->Init(windows, hide_windows);
-    if (IsWallpaperChangeAllowed())
-      overview_wallpaper_controller_->Blur(/*animate_only=*/false);
+    overview_wallpaper_controller_->Blur(/*animate_only=*/false);
 
     // For app dragging, there are no start animations so add a delay to delay
     // animations observing when the start animation ends, such as the shelf,
@@ -685,11 +500,6 @@ void OverviewController::ToggleOverview(
                                base::Time::Now() - last_overview_session_time_);
     }
   }
-}
-
-// static
-void OverviewController::SetDoNotChangeWallpaperForTests() {
-  g_disable_wallpaper_change_for_tests = true;
 }
 
 bool OverviewController::CanEnterOverview() {
@@ -733,7 +543,7 @@ bool OverviewController::CanEndOverview(
 }
 
 void OverviewController::OnStartingAnimationComplete(bool canceled) {
-  if (IsWallpaperChangeAllowed() && !canceled)
+  if (!canceled)
     overview_wallpaper_controller_->Blur(/*animate_only=*/true);
 
   for (auto& observer : observers_)
@@ -751,7 +561,7 @@ void OverviewController::OnEndingAnimationComplete(bool canceled) {
   // Unblur when animation is completed (or right away if there was no
   // delayed animation) unless it's canceled, in which case, we should keep
   // the blur.
-  if (IsWallpaperChangeAllowed() && !canceled)
+  if (!canceled)
     overview_wallpaper_controller_->Unblur();
 
   for (auto& observer : observers_)

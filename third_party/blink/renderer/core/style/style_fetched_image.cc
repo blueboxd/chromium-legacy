@@ -141,10 +141,9 @@ void StyleFetchedImage::ImageNotifyFinished(ImageResourceContent*) {
       ToSVGImage(image).UpdateUseCounters(*document_);
   }
 
-  if (document_ && RuntimeEnabledFeatures::ElementTimingEnabled(document_)) {
-    if (LocalDOMWindow* window = document_->domWindow()) {
+  if (document_) {
+    if (LocalDOMWindow* window = document_->domWindow())
       ImageElementTiming::From(*window).NotifyBackgroundImageFinished(this);
-    }
   }
 
   // Oilpan: do not prolong the Document's lifetime.

@@ -21,7 +21,7 @@
       ],
       "device type": "iPhone 6s Plus",
       "os": "12.2",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -32,7 +32,7 @@
       ],
       "device type": "iPhone 6s",
       "os": "12.2",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -43,7 +43,7 @@
       ],
       "device type": "iPhone 6s",
       "os": "12.2",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -54,7 +54,7 @@
       ],
       "device type": "iPad Air 2",
       "os": "12.2",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -65,7 +65,7 @@
       ],
       "device type": "iPhone 6s",
       "os": "12.2",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -79,7 +79,7 @@
       "device type": "iPad Air 2",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -91,7 +91,7 @@
       "device type": "iPad Air 2",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -103,7 +103,7 @@
       "device type": "iPad Air 2",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -115,7 +115,7 @@
       "device type": "iPad Air 2",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -127,7 +127,7 @@
       "device type": "iPad Air 2",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -139,7 +139,7 @@
       "device type": "iPad Air 2",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -153,7 +153,7 @@
       "device type": "iPhone X",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -165,7 +165,7 @@
       "device type": "iPhone X",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -177,7 +177,7 @@
       "device type": "iPhone X",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -189,7 +189,7 @@
       "device type": "iPhone X",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -201,7 +201,7 @@
       "device type": "iPhone X",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -213,7 +213,7 @@
       "device type": "iPhone X",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -224,7 +224,7 @@
       ],
       "device type": "iPhone X",
       "os": "12.2",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -235,7 +235,7 @@
       ],
       "device type": "iPhone 6s Plus",
       "os": "13.0",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -246,7 +246,7 @@
       ],
       "device type": "iPhone 6s",
       "os": "13.0",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -257,7 +257,7 @@
       ],
       "device type": "iPhone 6s",
       "os": "13.0",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -268,7 +268,7 @@
       ],
       "device type": "iPad Air 2",
       "os": "13.0",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -279,7 +279,7 @@
       ],
       "device type": "iPhone 6s",
       "os": "13.0",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -293,7 +293,7 @@
       "device type": "iPad Air 2",
       "os": "13.0",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -305,7 +305,7 @@
       "device type": "iPad Air 2",
       "os": "13.0",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -317,7 +317,7 @@
       "device type": "iPad Air 2",
       "os": "13.0",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -329,7 +329,7 @@
       "device type": "iPad Air 2",
       "os": "13.0",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -341,7 +341,7 @@
       "device type": "iPad Air 2",
       "os": "13.0",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -353,7 +353,7 @@
       "device type": "iPad Air 2",
       "os": "13.0",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -367,7 +367,7 @@
       "device type": "iPhone X",
       "os": "13.0",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -379,7 +379,7 @@
       "device type": "iPhone X",
       "os": "13.0",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -391,7 +391,7 @@
       "device type": "iPhone X",
       "os": "13.0",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -403,7 +403,7 @@
       "device type": "iPhone X",
       "os": "13.0",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -415,7 +415,7 @@
       "device type": "iPhone X",
       "os": "13.0",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -427,7 +427,7 @@
       "device type": "iPhone X",
       "os": "13.0",
       "xctest": true,
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -438,7 +438,7 @@
       ],
       "device type": "iPhone X",
       "os": "13.0",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     }

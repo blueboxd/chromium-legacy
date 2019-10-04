@@ -171,13 +171,8 @@ void PaintTimingDetector::NotifyImageRemoved(
 
 void PaintTimingDetector::StopRecordingIfNeeded() {
   DCHECK(frame_view_);
-  if (text_paint_timing_detector_) {
+  if (text_paint_timing_detector_)
     text_paint_timing_detector_->StopRecordingLargestTextPaint();
-    if (!RuntimeEnabledFeatures::ElementTimingEnabled(
-            frame_view_->GetFrame().GetDocument())) {
-      text_paint_timing_detector_->StopRecordEntries();
-    }
-  }
   if (image_paint_timing_detector_)
     image_paint_timing_detector_->StopRecordEntries();
   largest_contentful_paint_calculator_ = nullptr;
@@ -207,9 +202,6 @@ bool PaintTimingDetector::NeedToNotifyInputOrScroll() const {
 
 LargestContentfulPaintCalculator*
 PaintTimingDetector::GetLargestContentfulPaintCalculator() {
-  if (!RuntimeEnabledFeatures::LargestContentfulPaintEnabled())
-    return nullptr;
-
   if (largest_contentful_paint_calculator_)
     return largest_contentful_paint_calculator_;
 

@@ -88,6 +88,7 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public BeginFrameObserverBase,
   void OnSurfaceDestroyed(const SurfaceId& surface_id) override;
   void OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                const BeginFrameArgs& args) override;
+  void set_needs_draw() { needs_draw_ = true; }
 
  protected:
   // These values inidicate how a response to the BeginFrame should be

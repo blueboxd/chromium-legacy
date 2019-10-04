@@ -141,11 +141,6 @@ class DownloadManagerCoordinatorImpl
     }
 
     @Override
-    public void showPrefetchSection() {
-        updateForUrl(Filters.toUrl(Filters.FilterType.PREFETCHED));
-    }
-
-    @Override
     public void addObserver(Observer observer) {
         mObservers.addObserver(observer);
     }

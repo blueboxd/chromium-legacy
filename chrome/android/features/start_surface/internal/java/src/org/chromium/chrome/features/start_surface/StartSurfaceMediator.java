@@ -5,6 +5,7 @@
 package org.chromium.chrome.features.start_surface;
 
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MORE_TABS_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_CLICKLISTENER;
@@ -123,6 +124,7 @@ class StartSurfaceMediator
                     updateIncognitoMode(newModel.isIncognito());
                 }
             });
+            mPropertyModel.set(IS_INCOGNITO, mIsIncognito);
 
             mPropertyModel.set(
                     BOTTOM_BAR_CLICKLISTENER, new StartSurfaceProperties.BottomBarClickListener() {
@@ -193,6 +195,7 @@ class StartSurfaceMediator
 
     void setSecondaryTasksSurfacePropertyModel(PropertyModel propertyModel) {
         mSecondaryTasksSurfacePropertyModel = propertyModel;
+        mSecondaryTasksSurfacePropertyModel.set(IS_INCOGNITO, mIsIncognito);
 
         // Secondary tasks surface is used for more Tabs or incognito mode single pane, where MV
         // tiles should be invisible.
@@ -393,6 +396,11 @@ class StartSurfaceMediator
             // Hide explore surface if going incognito. When returning to normal mode, we
             // always show the Home Pane, so the Explore Pane stays hidden.
             if (mIsIncognito) setExploreSurfaceVisibility(false);
+        }
+
+        mPropertyModel.set(IS_INCOGNITO, mIsIncognito);
+        if (mSecondaryTasksSurfacePropertyModel != null) {
+            mSecondaryTasksSurfacePropertyModel.set(IS_INCOGNITO, mIsIncognito);
         }
 
         notifyStateChange();

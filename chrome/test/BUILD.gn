@@ -81,6 +81,7 @@ if (is_android) {
   }
 
   generate_jni("test_support_jni_headers") {
+    testonly = true
     sources = [
       "android/test_support/src/org/chromium/chrome/test_support/PaymentRequestTestBridge.java",
     ]

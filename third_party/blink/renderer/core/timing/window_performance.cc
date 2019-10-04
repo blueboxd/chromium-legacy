@@ -396,7 +396,6 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
                                          const IntSize& intrinsic_size,
                                          const AtomicString& id,
                                          Element* element) {
-  DCHECK(RuntimeEnabledFeatures::ElementTimingEnabled(GetExecutionContext()));
   PerformanceElementTiming* entry = PerformanceElementTiming::Create(
       name, url, rect, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(load_time), identifier,

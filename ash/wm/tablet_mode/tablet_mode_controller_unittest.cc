@@ -25,6 +25,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_wallpaper_controller.h"
 #include "ash/wm/splitview/multi_display_overview_and_split_view_test.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -546,7 +547,7 @@ TEST_P(TabletModeControllerTest, VerticalHingeTest) {
 // Test if this case does not crash. See http://crbug.com/462806
 TEST_P(TabletModeControllerTest, DisplayDisconnectionDuringOverview) {
   // Do not animate wallpaper on entering overview.
-  OverviewController::SetDoNotChangeWallpaperForTests();
+  OverviewWallpaperController::SetDoNotChangeWallpaperForTests();
 
   UpdateDisplay("800x600,800x600");
   std::unique_ptr<aura::Window> w1(

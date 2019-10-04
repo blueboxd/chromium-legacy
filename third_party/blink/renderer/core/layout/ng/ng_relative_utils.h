@@ -14,9 +14,9 @@ namespace blink {
 class ComputedStyle;
 struct PhysicalOffset;
 
-// Implements relative positioning spec:
+// Implements the relative positioning spec:
 // https://www.w3.org/TR/css-position-3/#rel-pos
-// Return relative position offset as defined by style.
+// Returns the relative position offset as defined by |child_style|.
 CORE_EXPORT PhysicalOffset
 ComputeRelativeOffset(const ComputedStyle& child_style,
                       WritingMode container_writing_mode,

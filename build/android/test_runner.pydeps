@@ -118,9 +118,6 @@
 ../../third_party/markupsafe/__init__.py
 ../../third_party/markupsafe/_compat.py
 ../../third_party/markupsafe/_native.py
-../../tools/android/avd/avd.py
-../../tools/android/avd/proto/__init__.py
-../../tools/android/avd/proto/avd_pb2.py
 ../../tools/swarming_client/libs/__init__.py
 ../../tools/swarming_client/libs/logdog/__init__.py
 ../../tools/swarming_client/libs/logdog/bootstrap.py
@@ -172,7 +169,10 @@ pylib/local/device/local_device_linker_test_run.py
 pylib/local/device/local_device_monkey_test_run.py
 pylib/local/device/local_device_test_run.py
 pylib/local/emulator/__init__.py
+pylib/local/emulator/avd.py
 pylib/local/emulator/local_emulator_environment.py
+pylib/local/emulator/proto/__init__.py
+pylib/local/emulator/proto/avd_pb2.py
 pylib/local/local_test_server_spawner.py
 pylib/local/machine/__init__.py
 pylib/local/machine/local_machine_environment.py

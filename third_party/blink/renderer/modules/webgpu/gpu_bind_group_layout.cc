@@ -45,6 +45,9 @@ GPUBindGroupLayout* GPUBindGroupLayout::Create(
   dawn_desc.nextInChain = nullptr;
   dawn_desc.bindingCount = binding_count;
   dawn_desc.bindings = bindings.get();
+  if (webgpu_desc->hasLabel()) {
+    dawn_desc.label = webgpu_desc->label().Utf8().data();
+  }
 
   return MakeGarbageCollected<GPUBindGroupLayout>(
       device, device->GetProcs().deviceCreateBindGroupLayout(

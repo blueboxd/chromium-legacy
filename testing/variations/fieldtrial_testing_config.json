@@ -3281,25 +3281,6 @@
             ]
         }
     ],
-    "LoadingOnlyLearnHighPriorityResources": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20190626",
-                    "enable_features": [
-                        "LoadingOnlyLearnHighPriorityResources"
-                    ]
-                }
-            ]
-        }
-    ],
     "LowPriorityIframes2": [
         {
             "platforms": [

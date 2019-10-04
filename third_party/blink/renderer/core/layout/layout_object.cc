@@ -3171,12 +3171,8 @@ void LayoutObject::WillBeRemovedFromTree() {
     FindReferencingScrollAnchors(this, kClear);
   }
 
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
-      RuntimeEnabledFeatures::ElementTimingEnabled(&GetDocument())) {
-    if (LocalFrameView* frame_view = GetFrameView()) {
-      frame_view->GetPaintTimingDetector().LayoutObjectWillBeDestroyed(*this);
-    }
-  }
+  if (LocalFrameView* frame_view = GetFrameView())
+    frame_view->GetPaintTimingDetector().LayoutObjectWillBeDestroyed(*this);
 }
 
 void LayoutObject::SetNeedsPaintPropertyUpdate() {
@@ -3548,17 +3544,10 @@ void LayoutObject::ImageNotifyFinished(ImageResourceContent* image) {
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
     cache->ImageLoaded(this);
 
-  if (RuntimeEnabledFeatures::ElementTimingEnabled(&GetDocument())) {
-    LocalDOMWindow* window = GetDocument().domWindow();
-    if (window) {
-      ImageElementTiming::From(*window).NotifyImageFinished(*this, image);
-    }
-  }
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
-    if (LocalFrameView* frame_view = GetFrameView()) {
-      frame_view->GetPaintTimingDetector().NotifyImageFinished(*this, image);
-    }
-  }
+  if (LocalDOMWindow* window = GetDocument().domWindow())
+    ImageElementTiming::From(*window).NotifyImageFinished(*this, image);
+  if (LocalFrameView* frame_view = GetFrameView())
+    frame_view->GetPaintTimingDetector().NotifyImageFinished(*this, image);
 }
 
 Element* LayoutObject::OffsetParent(const Element* base) const {
@@ -3611,17 +3600,10 @@ Element* LayoutObject::OffsetParent(const Element* base) const {
 }
 
 void LayoutObject::NotifyImageFullyRemoved(ImageResourceContent* image) {
-  if (RuntimeEnabledFeatures::ElementTimingEnabled(&GetDocument())) {
-    LocalDOMWindow* window = GetDocument().domWindow();
-    if (window) {
-      ImageElementTiming::From(*window).NotifyImageRemoved(this, image);
-    }
-  }
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
-    if (LocalFrameView* frame_view = GetFrameView()) {
-      frame_view->GetPaintTimingDetector().NotifyImageRemoved(*this, image);
-    }
-  }
+  if (LocalDOMWindow* window = GetDocument().domWindow())
+    ImageElementTiming::From(*window).NotifyImageRemoved(this, image);
+  if (LocalFrameView* frame_view = GetFrameView())
+    frame_view->GetPaintTimingDetector().NotifyImageRemoved(*this, image);
 }
 
 PositionWithAffinity LayoutObject::CreatePositionWithAffinity(

@@ -2449,6 +2449,7 @@ if (is_android) {
   ]
 
   generate_jni("content_unittests_jni_headers") {
+    testonly = true
     sources = content_java_sources_needing_jni
   }
 

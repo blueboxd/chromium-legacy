@@ -27,7 +27,6 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/memory_pressure_monitor.h"
@@ -326,8 +325,10 @@ void RemoveShaderInfo(int32_t id) {
 bool has_done_stun_trials = false;
 
 // the global list of all renderer processes
-base::LazyInstance<base::IDMap<RenderProcessHost*>>::Leaky g_all_hosts =
-    LAZY_INSTANCE_INITIALIZER;
+base::IDMap<RenderProcessHost*>& GetAllHosts() {
+  static base::NoDestructor<base::IDMap<RenderProcessHost*>> s_all_hosts;
+  return *s_all_hosts;
+}
 
 // Returns the global list of RenderProcessHostCreationObserver objects.
 std::vector<RenderProcessHostCreationObserver*>& GetAllCreationObservers() {
@@ -483,7 +484,7 @@ class SessionStorageHolder : public base::SupportsUserData::Data {
 // This class manages spare RenderProcessHosts.
 //
 // There is a singleton instance of this class which manages a single spare
-// renderer (g_spare_render_process_host_manager, below). This class
+// renderer (SpareRenderProcessHostManager::GetInstance(), below). This class
 // encapsulates the implementation of
 // RenderProcessHost::WarmupSpareRenderProcessHost()
 //
@@ -503,6 +504,11 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
  public:
   SpareRenderProcessHostManager() {}
 
+  static SpareRenderProcessHostManager& GetInstance() {
+    static base::NoDestructor<SpareRenderProcessHostManager> s_instance;
+    return *s_instance;
+  }
+
   void WarmupSpareRenderProcessHost(BrowserContext* browser_context) {
     if (spare_render_process_host_ &&
         spare_render_process_host_->GetBrowserContext() == browser_context) {
@@ -517,7 +523,7 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
     // got too many processes. See also ShouldTryToUseExistingProcessHost in
     // this file.
     if (RenderProcessHost::run_renderer_in_process() ||
-        g_all_hosts.Get().size() >=
+        GetAllHosts().size() >=
             RenderProcessHostImpl::GetMaxRendererProcessCount())
       return;
 
@@ -599,7 +605,7 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
       // If the spare shouldn't be kept around, then discard it as soon as we
       // find that the current spare was mismatched.
       CleanupSpareRenderProcessHost();
-    } else if (g_all_hosts.Get().size() >=
+    } else if (GetAllHosts().size() >=
                RenderProcessHostImpl::GetMaxRendererProcessCount()) {
       // Drop the spare if we are at a process limit and the spare wasn't taken.
       // This helps avoid process reuse.
@@ -670,14 +676,11 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
   }
 
   // This is a bare pointer, because RenderProcessHost manages the lifetime of
-  // all its instances; see g_all_hosts, above.
+  // all its instances; see GetAllHosts().
   RenderProcessHost* spare_render_process_host_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SpareRenderProcessHostManager);
 };
-
-base::LazyInstance<SpareRenderProcessHostManager>::Leaky
-    g_spare_render_process_host_manager = LAZY_INSTANCE_INITIALIZER;
 
 const void* const kDefaultSubframeProcessHostHolderKey =
     &kDefaultSubframeProcessHostHolderKey;
@@ -1418,8 +1421,10 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
 // static
 void RenderProcessHost::SetMaxRendererProcessCount(size_t count) {
   g_max_renderer_count_override = count;
-  if (g_all_hosts.Get().size() > count)
-    g_spare_render_process_host_manager.Get().CleanupSpareRenderProcessHost();
+  if (GetAllHosts().size() > count) {
+    SpareRenderProcessHostManager::GetInstance()
+        .CleanupSpareRenderProcessHost();
+  }
 }
 
 // static
@@ -1530,7 +1535,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 
   CHECK(!BrowserMainRunner::ExitedMainMessageLoop());
   RegisterHost(GetID(), this);
-  g_all_hosts.Get().set_check_on_null_data(true);
+  GetAllHosts().set_check_on_null_data(true);
   // Initialize |child_process_activity_time_| to a reasonable value.
   mark_child_process_activity_time();
 
@@ -1570,7 +1575,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 void RenderProcessHostImpl::ShutDownInProcessRenderer() {
   DCHECK(g_run_renderer_in_process);
 
-  switch (g_all_hosts.Pointer()->size()) {
+  switch (GetAllHosts().size()) {
     case 0:
       return;
     case 1: {
@@ -2849,19 +2854,20 @@ void RenderProcessHostImpl::RemoveExpectedNavigationToSite(
 // static
 void RenderProcessHostImpl::NotifySpareManagerAboutRecentlyUsedBrowserContext(
     BrowserContext* browser_context) {
-  g_spare_render_process_host_manager.Get().PrepareForFutureRequests(
+  SpareRenderProcessHostManager::GetInstance().PrepareForFutureRequests(
       browser_context);
 }
 
 // static
 RenderProcessHost*
 RenderProcessHostImpl::GetSpareRenderProcessHostForTesting() {
-  return g_spare_render_process_host_manager.Get().spare_render_process_host();
+  return SpareRenderProcessHostManager::GetInstance()
+      .spare_render_process_host();
 }
 
 // static
 void RenderProcessHostImpl::DiscardSpareRenderProcessHostForTesting() {
-  g_spare_render_process_host_manager.Get().CleanupSpareRenderProcessHost();
+  SpareRenderProcessHostManager::GetInstance().CleanupSpareRenderProcessHost();
 }
 
 // static
@@ -3688,16 +3694,16 @@ bool RenderProcessHostImpl::FastShutdownStarted() {
 
 // static
 void RenderProcessHostImpl::RegisterHost(int host_id, RenderProcessHost* host) {
-  g_all_hosts.Get().AddWithID(host, host_id);
+  GetAllHosts().AddWithID(host, host_id);
 }
 
 // static
 void RenderProcessHostImpl::UnregisterHost(int host_id) {
-  RenderProcessHost* host = g_all_hosts.Get().Lookup(host_id);
+  RenderProcessHost* host = GetAllHosts().Lookup(host_id);
   if (!host)
     return;
 
-  g_all_hosts.Get().Remove(host_id);
+  GetAllHosts().Remove(host_id);
 
   // Look up the map of site to process for the given browser_context,
   // in case we need to remove this process from it.  It will be registered
@@ -3857,7 +3863,7 @@ bool RenderProcessHostImpl::IsSuitableHost(
 // static
 void RenderProcessHost::WarmupSpareRenderProcessHost(
     content::BrowserContext* browser_context) {
-  g_spare_render_process_host_manager.Get().WarmupSpareRenderProcessHost(
+  SpareRenderProcessHostManager::GetInstance().WarmupSpareRenderProcessHost(
       browser_context);
 }
 
@@ -3889,13 +3895,13 @@ void RenderProcessHost::SetRunRendererInProcess(bool value) {
 // static
 RenderProcessHost::iterator RenderProcessHost::AllHostsIterator() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return iterator(g_all_hosts.Pointer());
+  return iterator(&GetAllHosts());
 }
 
 // static
 RenderProcessHost* RenderProcessHost::FromID(int render_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return g_all_hosts.Get().Lookup(render_process_id);
+  return GetAllHosts().Lookup(render_process_id);
 }
 
 // static
@@ -3922,7 +3928,7 @@ bool RenderProcessHost::ShouldTryToUseExistingProcessHost(
   //       a renderer process for a browser context that has no existing
   //       renderers. This is OK in moderation, since the
   //       GetMaxRendererProcessCount() is conservative.
-  if (g_all_hosts.Get().size() >= GetMaxRendererProcessCount())
+  if (GetAllHosts().size() >= GetMaxRendererProcessCount())
     return true;
 
   return GetContentClient()->browser()->ShouldTryToUseExistingProcessHost(
@@ -3934,7 +3940,7 @@ RenderProcessHost* RenderProcessHostImpl::GetExistingProcessHost(
     SiteInstanceImpl* site_instance) {
   // First figure out which existing renderers we can use.
   std::vector<RenderProcessHost*> suitable_renderers;
-  suitable_renderers.reserve(g_all_hosts.Get().size());
+  suitable_renderers.reserve(GetAllHosts().size());
 
   iterator iter(AllHostsIterator());
   while (!iter.IsAtEnd()) {
@@ -3945,7 +3951,7 @@ RenderProcessHost* RenderProcessHostImpl::GetExistingProcessHost(
             site_instance->lock_url())) {
       // The spare is always considered before process reuse.
       DCHECK_NE(iter.GetCurrentValue(),
-                g_spare_render_process_host_manager.Get()
+                SpareRenderProcessHostManager::GetInstance()
                     .spare_render_process_host());
 
       suitable_renderers.push_back(iter.GetCurrentValue());
@@ -4096,8 +4102,7 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
   }
 
   // See if the spare RenderProcessHost can be used.
-  SpareRenderProcessHostManager& spare_process_manager =
-      g_spare_render_process_host_manager.Get();
+  auto& spare_process_manager = SpareRenderProcessHostManager::GetInstance();
   bool spare_was_taken = false;
   if (!render_process_host) {
     render_process_host = spare_process_manager.MaybeTakeSpareRenderProcessHost(

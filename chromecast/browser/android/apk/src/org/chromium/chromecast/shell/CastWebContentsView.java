@@ -40,8 +40,10 @@ public class CastWebContentsView extends FrameLayout {
     }
 
     private void initView() {
+        FrameLayout.LayoutParams matchParent = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
         addView(LayoutInflater.from(getContext())
-                        .inflate(R.layout.cast_web_contents_activity, null));
+                        .inflate(R.layout.cast_web_contents_activity, null), matchParent);
     }
 
     public void onStart(Bundle startArgumentsBundle) {

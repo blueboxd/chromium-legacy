@@ -931,14 +931,10 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
   ScopedPaintTimingDetectorBlockPaintHook
       scoped_paint_timing_detector_block_paint_hook;
   const auto& layout_block = To<LayoutBlock>(*layout_object);
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
-      RuntimeEnabledFeatures::ElementTimingEnabled(
-          &layout_block.GetDocument())) {
-    if (paint_info.phase == PaintPhase::kForeground) {
-      scoped_paint_timing_detector_block_paint_hook.EmplaceIfNeeded(
-          layout_block, paint_info.context.GetPaintController()
-                            .CurrentPaintChunkProperties());
-    }
+  if (paint_info.phase == PaintPhase::kForeground) {
+    scoped_paint_timing_detector_block_paint_hook.EmplaceIfNeeded(
+        layout_block,
+        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
   }
 
   if (paint_info.phase == PaintPhase::kForcedColorsModeBackplate &&
@@ -1141,8 +1137,8 @@ NGBoxFragmentPainter::MoveTo NGBoxFragmentPainter::PaintBoxItem(
     return kDontSkipChildren;
   }
 
-  // TODO(kojii): Implement.
-  // NGInlineBoxFragmentPainter(*child).Paint(paint_info, paint_offset);
+  NGInlineBoxFragmentPainter(item, *child_fragment)
+      .Paint(paint_info, paint_offset);
   return kDontSkipChildren;
 }
 

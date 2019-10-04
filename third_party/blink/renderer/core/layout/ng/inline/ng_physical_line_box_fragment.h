@@ -57,9 +57,9 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   NGLineHeightMetrics BaselineMetrics(FontBaseline) const;
 
   // Scrollable overflow. including contents, in the local coordinate.
-  // ScrollableOverflow is not precomputed/cached because it cannot be computed
-  // when LineBox is generated because it needs container dimensions to
-  // resolve relative position of its children.
+  // |ScrollableOverflow| is not precomputed/cached because it cannot be
+  // computed when LineBox is generated because it needs container dimensions
+  // to resolve relative position of its children.
   PhysicalRect ScrollableOverflow(const LayoutObject* container,
                                   const ComputedStyle* container_style,
                                   PhysicalSize container_physical_size) const;

@@ -78,18 +78,14 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
     paint_info.context.DrawBidiText(
         font, text_run_paint_info,
         FloatPoint(RoundToInt(text_x), RoundToInt(text_y)));
-    if ((RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
-         RuntimeEnabledFeatures::ElementTimingEnabled(
-             &layout_file_upload_control_.GetDocument()))) {
-      if (!font.ShouldSkipDrawing()) {
-        ScopedPaintTimingDetectorBlockPaintHook
-            scoped_paint_timing_detector_block_paint_hook;
-        scoped_paint_timing_detector_block_paint_hook.EmplaceIfNeeded(
-            layout_file_upload_control_, paint_info.context.GetPaintController()
-                                             .CurrentPaintChunkProperties());
-        PaintTimingDetector::NotifyTextPaint(
-            layout_file_upload_control_.FragmentsVisualRectBoundingBox());
-      }
+    if (!font.ShouldSkipDrawing()) {
+      ScopedPaintTimingDetectorBlockPaintHook
+          scoped_paint_timing_detector_block_paint_hook;
+      scoped_paint_timing_detector_block_paint_hook.EmplaceIfNeeded(
+          layout_file_upload_control_, paint_info.context.GetPaintController()
+                                           .CurrentPaintChunkProperties());
+      PaintTimingDetector::NotifyTextPaint(
+          layout_file_upload_control_.FragmentsVisualRectBoundingBox());
     }
   }
 

@@ -14,6 +14,7 @@
 #include "chromecast/external_mojo/public/mojom/connector.mojom.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -59,6 +60,13 @@ class ExternalConnector {
                      mojo::InterfacePtr<Interface>* ptr) {
     BindInterface(service_name, Interface::Name_,
                   mojo::MakeRequest(ptr).PassMessagePipe());
+  }
+
+  template <typename Interface>
+  void BindInterface(const std::string& service_name,
+                     mojo::PendingRemote<Interface>* ptr) {
+    BindInterface(service_name, Interface::Name_,
+                  ptr->InitWithNewPipeAndPassReceiver().PassPipe());
   }
 
   virtual void BindInterface(const std::string& service_name,

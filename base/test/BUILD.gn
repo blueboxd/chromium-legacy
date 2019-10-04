@@ -456,6 +456,7 @@ if (is_fuchsia || is_linux) {
 
 if (is_android) {
   generate_jni("base_unittests_jni_headers") {
+    testonly = true
     sources = [
       "android/java/src/org/chromium/base/ContentUriTestUtils.java",
       "android/java/src/org/chromium/base/JavaHandlerThreadHelpers.java",
@@ -463,6 +464,7 @@ if (is_android) {
   }
 
   generate_jni("test_support_jni_headers") {
+    testonly = true
     sources = [
       "android/java/src/org/chromium/base/MainReturnCodeResult.java",
       "android/java/src/org/chromium/base/MultiprocessTestClientLauncher.java",

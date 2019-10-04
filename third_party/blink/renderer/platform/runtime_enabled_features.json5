@@ -564,12 +564,6 @@
       implied_by: ["FormAssociatedCustomElements"],
     },
     {
-      // https://crbug.com/879270
-      name: "ElementTiming",
-      origin_trial_feature_name: "ElementTimingImages",
-      status: "stable",
-    },
-    {
       name: "EncryptedMediaEncryptionSchemeQuery",
       status: "test",
     },
@@ -687,13 +681,6 @@
     },
     {
       name: "FileSystem",
-      status: "stable",
-    },
-    // FirstContentfulPaintPlusPlus enables the Largest Text Paint metric, Last
-    // Text Paint metric, Largest Image Paint metric and Last Image Paint
-    // metric. See also: http://bit.ly/fcp_plus_plus
-    {
-      name: "FirstContentfulPaintPlusPlus",
       status: "stable",
     },
     // Perform style recalc traversal in the flat tree order, including marking
@@ -859,10 +846,6 @@
     {
       name: "LangClientHintHeader",
       status: "experimental",
-    },
-    {
-      name: "LargestContentfulPaint",
-      status: "stable",
     },
     {
       name: "LayoutNG",

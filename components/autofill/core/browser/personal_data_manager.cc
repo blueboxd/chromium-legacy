@@ -1376,35 +1376,6 @@ void PersonalDataManager::ClearCreditCardNonSettingsOrigins() {
     Refresh();
 }
 
-void PersonalDataManager::MoveJapanCityToStreetAddress() {
-  if (!database_helper_->GetLocalDatabase())
-    return;
-
-  // Don't run if the migration has already been performed.
-  if (pref_service_->GetBoolean(prefs::kAutofillJapanCityFieldMigrated))
-    return;
-
-  base::string16 japan_country_code = base::ASCIIToUTF16("JP");
-  base::string16 line_separator = base::ASCIIToUTF16("\n");
-  for (AutofillProfile* profile : GetProfiles()) {
-    base::string16 country_code = profile->GetRawInfo(ADDRESS_HOME_COUNTRY);
-    base::string16 city = profile->GetRawInfo(ADDRESS_HOME_CITY);
-    if (country_code == japan_country_code && !city.empty()) {
-      base::string16 street_address =
-          profile->GetRawInfo(ADDRESS_HOME_STREET_ADDRESS);
-      street_address = street_address.empty()
-                           ? city
-                           : street_address + line_separator + city;
-      profile->SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, street_address);
-      profile->SetRawInfo(ADDRESS_HOME_CITY, base::string16());
-      UpdateProfileInDB(*profile, /*enforced=*/true);
-    }
-  }
-
-  // Set the pref so that this migration is never run again.
-  pref_service_->SetBoolean(prefs::kAutofillJapanCityFieldMigrated, true);
-}
-
 void PersonalDataManager::OnValidated(const AutofillProfile* profile) {
   if (!profile)
     return;
@@ -2417,9 +2388,6 @@ void PersonalDataManager::ApplyAddressFixesAndCleanups() {
 
   // Ran everytime it is called.
   ClearProfileNonSettingsOrigins();
-
-  // One-time fix, otherwise NOP.
-  MoveJapanCityToStreetAddress();
 }
 
 void PersonalDataManager::ApplyCardFixesAndCleanups() {

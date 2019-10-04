@@ -1531,6 +1531,7 @@ _chrome_public_shared_deps = [
 ]
 
 generate_jni("test_support_jni_headers") {
+  testonly = true
   sources = [
     "javatests/src/org/chromium/chrome/browser/ServicificationBackgroundService.java",
     "javatests/src/org/chromium/chrome/browser/offlinepages/OfflineTestUtil.java",

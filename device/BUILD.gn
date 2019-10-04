@@ -366,6 +366,7 @@ if (is_android) {
   ]
 
   generate_jni("bluetooth_test_jni_headers") {
+    testonly = true
     sources = bluetooth_java_sources_needing_jni
   }
 

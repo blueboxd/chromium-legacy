@@ -51,6 +51,9 @@ GPUFence* GPUQueue::createFence(const GPUFenceDescriptor* descriptor) {
   DawnFenceDescriptor desc = {};
   desc.nextInChain = nullptr;
   desc.initialValue = descriptor->initialValue();
+  if (descriptor->hasLabel()) {
+    desc.label = descriptor->label().Utf8().data();
+  }
 
   return GPUFence::Create(device_,
                           GetProcs().queueCreateFence(GetHandle(), &desc));

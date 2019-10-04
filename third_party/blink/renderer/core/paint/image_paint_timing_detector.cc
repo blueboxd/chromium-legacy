@@ -296,8 +296,7 @@ void ImageRecordsManager::OnImageLoaded(const RecordId& record_id,
     DCHECK(!record->load_time.is_null());
   } else {
     Document* document = frame_view_->GetFrame().GetDocument();
-    if (document && document->domWindow() &&
-        RuntimeEnabledFeatures::ElementTimingEnabled(document)) {
+    if (document && document->domWindow()) {
       record->load_time = ImageElementTiming::From(*document->domWindow())
                               .GetBackgroundImageLoadTime(style_image);
     }

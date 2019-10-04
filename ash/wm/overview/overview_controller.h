@@ -21,6 +21,8 @@
 
 namespace ash {
 
+class OverviewWallpaperController;
+
 // Manages a overview session which displays an overview of all windows and
 // allows selecting a window to activate it.
 class ASH_EXPORT OverviewController : public OverviewDelegate,
@@ -110,7 +112,6 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   std::vector<aura::Window*> GetItemWindowListInOverviewGridsForTest();
 
  private:
-  class OverviewWallpaperController;
   friend class OverviewSessionTest;
   FRIEND_TEST_ALL_PREFIXES(TabletModeControllerTest,
                            DisplayDisconnectionDuringOverview);
@@ -119,9 +120,6 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   // look different.
   void ToggleOverview(OverviewSession::EnterExitOverviewType type =
                           OverviewSession::EnterExitOverviewType::kNormal);
-
-  // There is no need to blur or dim the wallpaper for tests.
-  static void SetDoNotChangeWallpaperForTests();
 
   // Returns true if it's possible to enter or exit overview mode in the current
   // configuration. This can be false at certain times, such as when the lock

@@ -157,7 +157,9 @@ void WebviewRpcInstance::ReadComplete(bool ok) {
                        base::Passed(std::move(request_))));
 
     request_ = std::make_unique<webview::WebviewRequest>();
-    io_.Read(request_.get(), &read_callback_);
+    std::unique_lock<std::mutex> l(send_lock_);
+    if (!errored_)
+      io_.Read(request_.get(), &read_callback_);
   } else if (!Initialize()) {
     io_.Finish(grpc::Status(grpc::FAILED_PRECONDITION, "Failed initialization"),
                &destroy_callback_);

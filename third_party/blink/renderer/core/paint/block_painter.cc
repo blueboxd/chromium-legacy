@@ -211,14 +211,10 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
 
   ScopedPaintTimingDetectorBlockPaintHook
       scoped_paint_timing_detector_block_paint_hook;
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
-      RuntimeEnabledFeatures::ElementTimingEnabled(
-          &layout_block_.GetDocument())) {
-    if (paint_info.phase == PaintPhase::kForeground) {
-      scoped_paint_timing_detector_block_paint_hook.EmplaceIfNeeded(
-          layout_block_, paint_info.context.GetPaintController()
-                             .CurrentPaintChunkProperties());
-    }
+  if (paint_info.phase == PaintPhase::kForeground) {
+    scoped_paint_timing_detector_block_paint_hook.EmplaceIfNeeded(
+        layout_block_,
+        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
   }
   // If we're *printing or creating a paint preview of* the foreground, paint
   // the URL.

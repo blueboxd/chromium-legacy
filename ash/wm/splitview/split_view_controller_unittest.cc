@@ -3481,6 +3481,10 @@ TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window1.get());
   EXPECT_EQ(current_grid->bounds(), work_area_bounds);
+
+  auto target_opacity = [](views::Widget* widget) {
+    return widget->GetNativeWindow()->layer()->GetTargetOpacity();
+  };
   // The drop target should be visible.
   views::Widget* drop_target_widget = current_grid->drop_target_widget();
   EXPECT_TRUE(drop_target_widget);
@@ -3489,7 +3493,7 @@ TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   EXPECT_EQ(drop_target_widget->GetNativeWindow()->bounds(),
             GetDropTargetBoundsDuringDrag(window1.get()));
   EXPECT_NE(drop_target_widget->GetNativeWindow()->bounds(), window1->bounds());
-  EXPECT_TRUE(drop_target_widget->IsVisible());
+  EXPECT_EQ(1.f, target_opacity(drop_target_widget));
 
   // Now drag |window1| to the left preview split area.
   DragWindowTo(resizer.get(),
@@ -3497,12 +3501,12 @@ TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   EXPECT_EQ(current_grid->bounds(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
                 window1.get(), SplitViewController::RIGHT));
-  EXPECT_FALSE(drop_target_widget->IsVisible());
+  EXPECT_EQ(0.f, target_opacity(drop_target_widget));
 
   // Drag it to middle.
   DragWindowTo(resizer.get(), work_area_bounds.CenterPoint());
   EXPECT_EQ(current_grid->bounds(), work_area_bounds);
-  EXPECT_TRUE(drop_target_widget->IsVisible());
+  EXPECT_EQ(1.f, target_opacity(drop_target_widget));
 
   // Drag |window1| to the right preview split area.
   DragWindowTo(resizer.get(), gfx::Point(work_area_bounds.right(),
@@ -3510,7 +3514,7 @@ TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   EXPECT_EQ(current_grid->bounds(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
                 window1.get(), SplitViewController::LEFT));
-  EXPECT_FALSE(drop_target_widget->IsVisible());
+  EXPECT_EQ(0.f, target_opacity(drop_target_widget));
 
   CompleteDrag(std::move(resizer));
   EXPECT_EQ(split_view_controller()->state(),
@@ -3535,7 +3539,7 @@ TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   // The drop target should be visible.
   drop_target_widget = current_grid->drop_target_widget();
   EXPECT_TRUE(drop_target_widget);
-  EXPECT_TRUE(drop_target_widget->IsVisible());
+  EXPECT_EQ(1.f, target_opacity(drop_target_widget));
   EXPECT_EQ(drop_target_widget->GetNativeWindow()->bounds(),
             GetDropTargetBoundsDuringDrag(window1.get()));
   EXPECT_NE(drop_target_widget->GetNativeWindow()->bounds(), window1->bounds());
@@ -3550,7 +3554,7 @@ TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   EXPECT_EQ(current_grid->bounds(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
                 window1.get(), SplitViewController::RIGHT));
-  EXPECT_FALSE(drop_target_widget->IsVisible());
+  EXPECT_EQ(0.f, target_opacity(drop_target_widget));
 
   // Drag |window1| to the left preview split area.
   DragWindowTo(resizer.get(),
@@ -3558,7 +3562,7 @@ TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   EXPECT_EQ(current_grid->bounds(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
                 window1.get(), SplitViewController::RIGHT));
-  EXPECT_FALSE(drop_target_widget->IsVisible());
+  EXPECT_EQ(0.f, target_opacity(drop_target_widget));
 
   CompleteDrag(std::move(resizer));
 
@@ -3579,7 +3583,7 @@ TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
       window1->GetRootWindow());
   drop_target_widget = current_grid->drop_target_widget();
   EXPECT_TRUE(drop_target_widget);
-  EXPECT_TRUE(drop_target_widget->IsVisible());
+  EXPECT_EQ(1.f, target_opacity(drop_target_widget));
   EXPECT_EQ(drop_target_widget->GetNativeWindow()->bounds(),
             GetDropTargetBoundsDuringDrag(window1.get()));
   EXPECT_NE(drop_target_widget->GetNativeWindow()->bounds(), window1->bounds());

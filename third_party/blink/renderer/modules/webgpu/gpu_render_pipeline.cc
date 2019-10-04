@@ -211,6 +211,9 @@ GPURenderPipeline* GPURenderPipeline::Create(
   DawnRenderPipelineDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.layout = AsDawnType(webgpu_desc->layout());
+  if (webgpu_desc->hasLabel()) {
+    dawn_desc.label = webgpu_desc->label().Utf8().data();
+  }
 
   OwnedPipelineStageDescriptor vertex_stage_info =
       AsDawnType(webgpu_desc->vertexStage());

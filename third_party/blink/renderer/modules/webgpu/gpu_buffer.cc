@@ -51,6 +51,9 @@ DawnBufferDescriptor AsDawnType(const GPUBufferDescriptor* webgpu_desc) {
   dawn_desc.nextInChain = nullptr;
   dawn_desc.usage = AsDawnEnum<DawnBufferUsage>(webgpu_desc->usage());
   dawn_desc.size = webgpu_desc->size();
+  if (webgpu_desc->hasLabel()) {
+    dawn_desc.label = webgpu_desc->label().Utf8().data();
+  }
 
   return dawn_desc;
 }

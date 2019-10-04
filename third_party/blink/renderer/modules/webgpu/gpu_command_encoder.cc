@@ -165,6 +165,9 @@ DawnCommandEncoderDescriptor AsDawnType(
 
   DawnCommandEncoderDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
+  if (webgpu_desc->hasLabel()) {
+    dawn_desc.label = webgpu_desc->label().Utf8().data();
+  }
 
   return dawn_desc;
 }
@@ -227,6 +230,9 @@ GPURenderPassEncoder* GPUCommandEncoder::beginRenderPass(
   DawnRenderPassDescriptor dawn_desc = {};
   dawn_desc.colorAttachmentCount = color_attachment_count;
   dawn_desc.colorAttachments = nullptr;
+  if (descriptor->hasLabel()) {
+    dawn_desc.label = descriptor->label().Utf8().data();
+  }
 
   std::unique_ptr<DawnRenderPassColorAttachmentDescriptor[]> color_attachments;
 

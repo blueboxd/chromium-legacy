@@ -249,9 +249,7 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
       layout_image_.StyleRef().HasFilterInducingProperty(),
       SkBlendMode::kSrcOver,
       LayoutObject::ShouldRespectImageOrientation(&layout_image_));
-  if (RuntimeEnabledFeatures::ElementTimingEnabled(
-          &layout_image_.GetDocument()) &&
-      (IsHTMLImageElement(node) || IsHTMLVideoElement(node)) &&
+  if ((IsHTMLImageElement(node) || IsHTMLVideoElement(node)) &&
       !context.ContextDisabled() && layout_image_.CachedImage() &&
       layout_image_.CachedImage()->IsLoaded()) {
     LocalDOMWindow* window = layout_image_.GetDocument().domWindow();
@@ -260,12 +258,9 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
         &layout_image_, layout_image_.CachedImage(),
         context.GetPaintController().CurrentPaintChunkProperties());
   }
-
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
-    PaintTimingDetector::NotifyImagePaint(
-        layout_image_, image->Size(), layout_image_.CachedImage(),
-        context.GetPaintController().CurrentPaintChunkProperties());
-  }
+  PaintTimingDetector::NotifyImagePaint(
+      layout_image_, image->Size(), layout_image_.CachedImage(),
+      context.GetPaintController().CurrentPaintChunkProperties());
 }
 
 }  // namespace blink

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // https://wicg.github.io/element-timing/#sec-performance-element-timing
-[Exposed=Window, RuntimeEnabled=ElementTiming]
+[Exposed=Window]
 interface PerformanceElementTiming : PerformanceEntry {
     readonly attribute DOMHighResTimeStamp renderTime;
     readonly attribute DOMHighResTimeStamp loadTime;

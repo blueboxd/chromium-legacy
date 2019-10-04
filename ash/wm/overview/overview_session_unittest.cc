@@ -38,6 +38,7 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/overview/overview_utils.h"
+#include "ash/wm/overview/overview_wallpaper_controller.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/rounded_label_widget.h"
 #include "ash/wm/overview/rounded_rect_view.h"
@@ -157,7 +158,7 @@ class OverviewSessionTest : public MultiDisplayOverviewAndSplitViewTest {
     shelf_view_test_api_->SetAnimationDuration(
         base::TimeDelta::FromMilliseconds(1));
     ScopedOverviewTransformWindow::SetImmediateCloseForTests();
-    OverviewController::SetDoNotChangeWallpaperForTests();
+    OverviewWallpaperController::SetDoNotChangeWallpaperForTests();
     FpsCounter::SetForceReportZeroAnimationForTest(true);
     ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
         true);

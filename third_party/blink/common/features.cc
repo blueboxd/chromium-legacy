@@ -40,10 +40,6 @@ const base::Feature kSmallScriptStreaming{"SmallScriptStreaming",
 const base::Feature kUserLevelMemoryPressureSignal{
     "UserLevelMemoryPressureSignal", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable FCP++ by experiment. See https://crbug.com/869924
-const base::Feature kFirstContentfulPaintPlusPlus{
-    "FirstContentfulPaintPlusPlus", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Perform memory purges after freezing only if all pages are frozen.
 const base::Feature kFreezePurgeMemoryAllPagesFrozen{
     "FreezePurgeMemoryAllPagesFrozen", base::FEATURE_DISABLED_BY_DEFAULT};

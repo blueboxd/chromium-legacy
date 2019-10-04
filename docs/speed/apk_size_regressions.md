@@ -113,7 +113,10 @@ for a description of binary size tools.**
 
 ### Growth is from Native Resources (pak files)
 
- * Ensure `compress="gzip"` is used for all `chrome:` pages.
+ * Ensure `compress="gzip"` or `compress="brotli"` is used for all
+   highly-compressible (e.g. text) resources.
+   * Brotli compresses more but is much slower to decompress. Use brotli only
+     when performance doesn't matter much (e.g. internals pages).
  * Look at the SuperSize reports from the trybot to look for unexpected
    resources, or unreasonably large symbols.
 

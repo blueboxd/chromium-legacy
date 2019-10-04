@@ -3,17 +3,10 @@
 # found in the LICENSE file.
 
 import logging
-import os
 
 from devil.utils import parallelizer
-from pylib.constants import host_paths
 from pylib.local.device import local_device_environment
-
-AVD_DIR_PATH = os.path.join(host_paths.DIR_SOURCE_ROOT, 'tools', 'android',
-                            'avd')
-with host_paths.SysPath(AVD_DIR_PATH):
-  import avd  # pylint: disable=import-error
-
+from pylib.local.emulator import avd
 
 # Mirroring https://bit.ly/2OjuxcS#23
 _MAX_ANDROID_EMULATORS = 16

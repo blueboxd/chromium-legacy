@@ -34,10 +34,7 @@ TextElementTiming& TextElementTiming::From(LocalDOMWindow& window) {
 
 TextElementTiming::TextElementTiming(LocalDOMWindow& window)
     : Supplement<LocalDOMWindow>(window),
-      performance_(DOMWindowPerformance::performance(window)) {
-  DCHECK(RuntimeEnabledFeatures::ElementTimingEnabled(
-      GetSupplementable()->document()));
-}
+      performance_(DOMWindowPerformance::performance(window)) {}
 
 // static
 FloatRect TextElementTiming::ComputeIntersectionRect(

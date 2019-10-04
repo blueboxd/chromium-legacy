@@ -169,8 +169,8 @@ SurfaceAggregator::SurfaceAggregator(SurfaceManager* manager,
       provider_(provider),
       next_render_pass_id_(1),
       aggregate_only_damaged_(aggregate_only_damaged),
-      needs_surface_occluding_damage_rect_(
-          needs_surface_occluding_damage_rect) {
+      needs_surface_occluding_damage_rect_(needs_surface_occluding_damage_rect),
+      de_jelly_enabled_(DeJellyEnabled()) {
   DCHECK(manager_);
 }
 
@@ -993,6 +993,14 @@ void SurfaceAggregator::CopyQuadsToPass(
             new_rounded_corner_info, occluding_damage_rect,
             occluding_damage_rect_valid);
 
+        if (de_jelly_enabled_) {
+          // If a surface is being drawn for a second time, clear our
+          // |de_jelly_delta_y|, as de-jelly is only needed the first time
+          // a surface draws.
+          if (!new_surfaces_.count(surface_id))
+            dest_shared_quad_state->de_jelly_delta_y = 0.0f;
+        }
+
         last_copied_source_shared_quad_state = quad->shared_quad_state;
         if (ignore_undamaged) {
           damage_rect_in_quad_space_valid = CalculateQuadSpaceDamageRect(
@@ -1440,6 +1448,9 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   // them too.
   surface->TakeCopyOutputRequestsFromClient();
 
+  if (de_jelly_enabled_ && surface->HasUndrawnActiveFrame())
+    new_surfaces_.insert(surface->surface_id());
+
   if (will_draw)
     surface->OnWillBeDrawn();
 
@@ -1603,6 +1614,7 @@ CompositorFrame SurfaceAggregator::Aggregate(
   has_cached_render_passes_ = false;
   damage_ranges_.clear();
   damage_rects_union_of_surfaces_on_top_ = gfx::Rect();
+  new_surfaces_.clear();
   DCHECK(referenced_surfaces_.empty());
   PrewalkResult prewalk_result;
   root_damage_rect_ =
@@ -1735,8 +1747,10 @@ bool SurfaceAggregator::IsRootSurface(const Surface* surface) const {
 void SurfaceAggregator::HandleDeJelly(Surface* surface) {
   TRACE_EVENT0("viz", "SurfaceAggregator::HandleDeJelly");
 
-  if (dest_pass_list_->empty() || !DeJellyActive())
+  if (dest_pass_list_->empty() || !DeJellyActive()) {
+    SetLastFrameHadJelly(false);
     return;
+  }
 
   // |jelly_clip| is the rect that contains all de-jelly'd quads. It is used as
   // an approximation for the containing non-skewed clip rect.
@@ -1765,8 +1779,12 @@ void SurfaceAggregator::HandleDeJelly(Surface* surface) {
   }
 
   // Exit if nothing was skewed.
-  if (max_skew == 0.0f)
+  if (max_skew == 0.0f) {
+    SetLastFrameHadJelly(false);
     return;
+  }
+
+  SetLastFrameHadJelly(true);
 
   // Remove the existing root render pass and create a new one which we will
   // re-copy skewed quads / render-passes to.
@@ -1984,6 +2002,17 @@ void SurfaceAggregator::AppendDeJellyQuadsForSharedQuadState(
       break;
     quad = **quad_iterator;
   }
+}
+
+void SurfaceAggregator::SetLastFrameHadJelly(bool had_jelly) {
+  // If we've just rendererd a jelly-free frame after one with jelly, we must
+  // damage the entire surface, as we may have removed jelly from an otherwise
+  // unchanged quad.
+  if (last_frame_had_jelly_ && !had_jelly) {
+    RenderPass* root_pass = dest_pass_list_->back().get();
+    root_pass->damage_rect = root_pass->output_rect;
+  }
+  last_frame_had_jelly_ = had_jelly;
 }
 
 }  // namespace viz

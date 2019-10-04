@@ -4,6 +4,6 @@
 
 // https://gpuweb.github.io/gpuweb/
 
-dictionary GPUPipelineDescriptorBase {
+dictionary GPUPipelineDescriptorBase : GPUObjectDescriptorBase {
     required GPUPipelineLayout layout;
 };

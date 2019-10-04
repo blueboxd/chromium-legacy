@@ -19,6 +19,7 @@ if (is_android) {
   }
 
   generate_jni("jni_headers") {
+    testonly = true
     sources = [
       "../../../android/java/src/org/chromium/chrome/browser/metrics/UkmUtilsForTest.java",
     ]

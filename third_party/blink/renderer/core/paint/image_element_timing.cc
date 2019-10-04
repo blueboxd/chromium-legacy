@@ -60,10 +60,7 @@ ImageElementTiming& ImageElementTiming::From(LocalDOMWindow& window) {
 }
 
 ImageElementTiming::ImageElementTiming(LocalDOMWindow& window)
-    : Supplement<LocalDOMWindow>(window) {
-  DCHECK(RuntimeEnabledFeatures::ElementTimingEnabled(
-      GetSupplementable()->document()));
-}
+    : Supplement<LocalDOMWindow>(window) {}
 
 void ImageElementTiming::NotifyImageFinished(
     const LayoutObject& layout_object,

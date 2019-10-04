@@ -17,6 +17,8 @@ public class TasksSurfaceProperties {
 
     public static final PropertyModel.WritableBooleanPropertyKey IS_FAKE_SEARCH_BOX_VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey();
+    public static final PropertyModel.WritableBooleanPropertyKey IS_INCOGNITO =
+            new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel.WritableBooleanPropertyKey IS_TAB_CAROUSEL =
             new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel
@@ -30,6 +32,6 @@ public class TasksSurfaceProperties {
             new PropertyModel.WritableObjectPropertyKey<View.OnClickListener>();
     public static final PropertyModel.WritableBooleanPropertyKey MV_TILES_VISIBLE = IS_VISIBLE;
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {IS_FAKE_SEARCH_BOX_VISIBLE,
-            IS_TAB_CAROUSEL, IS_VOICE_RECOGNITION_BUTTON_VISIBLE, FAKE_SEARCH_BOX_CLICK_LISTENER,
-            MORE_TABS_CLICK_LISTENER, MV_TILES_VISIBLE};
+            IS_INCOGNITO, IS_TAB_CAROUSEL, IS_VOICE_RECOGNITION_BUTTON_VISIBLE,
+            FAKE_SEARCH_BOX_CLICK_LISTENER, MORE_TABS_CLICK_LISTENER, MV_TILES_VISIBLE};
 }

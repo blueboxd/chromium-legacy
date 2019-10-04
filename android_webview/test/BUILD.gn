@@ -337,6 +337,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
 }
 
 generate_jni("webview_instrumentation_test_native_jni") {
+  testonly = true
   sources = [
     "../javatests/src/org/chromium/android_webview/test/MemoryMetricsLoggerTest.java",
   ]
@@ -424,6 +425,7 @@ android_library("android_webview_unittests_java") {
 }
 
 generate_jni("android_webview_unittests_jni") {
+  testonly = true
   sources = [
     "../unittestjava/src/org/chromium/android_webview/unittest/InputStreamUnittest.java",
     "../unittestjava/src/org/chromium/android_webview/unittest/MockAwContentsClientBridge.java",

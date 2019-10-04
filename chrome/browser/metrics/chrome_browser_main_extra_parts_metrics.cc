@@ -570,8 +570,7 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
-  if (!base::FeatureList::IsEnabled(kMemoryMetricsOldTiming))
-    RecordMemoryMetricsAfterDelay();
+  RecordMemoryMetricsAfterDelay();
   RecordLinuxGlibcVersion();
 #if defined(USE_X11)
   UMA_HISTOGRAM_ENUMERATION("Linux.WindowManager", GetLinuxWindowManager(),

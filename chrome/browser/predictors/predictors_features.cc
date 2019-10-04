@@ -9,7 +9,7 @@ namespace features {
 // Modifies loading predictor so that it only learns about subresources and
 // origins that are high priority.
 const base::Feature kLoadingOnlyLearnHighPriorityResources{
-    "LoadingOnlyLearnHighPriorityResources", base::FEATURE_DISABLED_BY_DEFAULT};
+    "LoadingOnlyLearnHighPriorityResources", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Modifies loading predictor so that the predictions also contain origins of
 // the redirect target of the navigation.

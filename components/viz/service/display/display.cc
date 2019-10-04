@@ -788,6 +788,14 @@ bool Display::SurfaceHasUnackedFrame(const SurfaceId& surface_id) const {
 void Display::DidFinishFrame(const BeginFrameAck& ack) {
   for (auto& observer : observers_)
     observer.OnDisplayDidFinishFrame(ack);
+
+  // Only used with experimental de-jelly effect. Forces us to produce a new
+  // un-skewed frame if the last one had a de-jelly skew applied. This prevents
+  // de-jelly skew from staying on screen for more than one frame.
+  if (aggregator_->last_frame_had_jelly()) {
+    scheduler_->SetNeedsOneBeginFrame();
+    scheduler_->set_needs_draw();
+  }
 }
 
 const SurfaceId& Display::CurrentSurfaceId() {

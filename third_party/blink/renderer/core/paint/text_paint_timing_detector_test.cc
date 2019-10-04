@@ -17,13 +17,10 @@
 
 namespace blink {
 
-class TextPaintTimingDetectorTest
-    : public testing::Test,
-      private ScopedFirstContentfulPaintPlusPlusForTest {
+class TextPaintTimingDetectorTest : public testing::Test {
  public:
   TextPaintTimingDetectorTest()
-      : ScopedFirstContentfulPaintPlusPlusForTest(true),
-        test_task_runner_(
+      : test_task_runner_(
             base::MakeRefCounted<base::TestMockTimeTaskRunner>()) {}
 
   void SetUp() override {

@@ -29,6 +29,9 @@ GPUPipelineLayout* GPUPipelineLayout::Create(
   dawn_desc.nextInChain = nullptr;
   dawn_desc.bindGroupLayoutCount = bind_group_layout_count;
   dawn_desc.bindGroupLayouts = bind_group_layouts.get();
+  if (webgpu_desc->hasLabel()) {
+    dawn_desc.label = webgpu_desc->label().Utf8().data();
+  }
 
   return MakeGarbageCollected<GPUPipelineLayout>(
       device, device->GetProcs().deviceCreatePipelineLayout(device->GetHandle(),

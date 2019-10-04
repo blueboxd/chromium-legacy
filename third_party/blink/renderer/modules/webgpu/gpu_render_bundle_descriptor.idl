@@ -4,5 +4,5 @@
 
 // https://gpuweb.github.io/gpuweb/
 
-dictionary GPURenderBundleDescriptor {
+dictionary GPURenderBundleDescriptor : GPUObjectDescriptorBase {
 };

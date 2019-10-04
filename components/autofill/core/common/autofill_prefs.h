@@ -26,7 +26,7 @@ extern const char kAutofillCreditCardFidoAuthOfferCheckboxState[];
 extern const char kAutofillCreditCardSigninPromoImpressionCount[];
 // Please use kAutofillCreditCardEnabled and kAutofillProfileEnabled instead.
 extern const char kAutofillEnabledDeprecated[];
-extern const char kAutofillJapanCityFieldMigrated[];
+extern const char kAutofillJapanCityFieldMigratedDeprecated[];
 extern const char kAutofillLastVersionDeduped[];
 extern const char kAutofillLastVersionValidated[];
 extern const char kAutofillLastVersionDisusedAddressesDeleted[];

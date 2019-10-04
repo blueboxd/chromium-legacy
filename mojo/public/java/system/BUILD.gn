@@ -14,6 +14,7 @@ group("system") {
 }
 
 generate_jni("jni_headers") {
+  testonly = true
   sources = [
     "javatests/src/org/chromium/mojo/MojoTestRule.java",
     "javatests/src/org/chromium/mojo/bindings/ValidationTestUtil.java",

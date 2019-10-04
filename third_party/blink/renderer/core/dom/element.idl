@@ -147,7 +147,7 @@ callback ScrollStateCallback = void (ScrollState scrollState);
     [RuntimeEnabled=DisplayLocking, CallWith=ScriptState] Promise<any> updateRendering();
 
     // Element Timing
-    [RuntimeEnabled=ElementTiming, Affects=Nothing, CEReactions, Reflect=elementtiming] attribute DOMString elementTiming;
+    [Affects=Nothing, CEReactions, Reflect=elementtiming] attribute DOMString elementTiming;
 };
 
 Element includes ParentNode;

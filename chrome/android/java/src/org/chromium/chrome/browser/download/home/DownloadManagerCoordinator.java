@@ -37,12 +37,6 @@ public interface DownloadManagerCoordinator {
     /** To be called to push the url containing internal state to the coordinator. */
     void updateForUrl(String url);
 
-    /**
-     * To be called to automatically show the prefetched content section of the download manager.
-     * TODO(dtrainor): This should be deprecated in place of {@link #updateForUrl(String)}.
-     */
-    void showPrefetchSection();
-
     /** Adds {@code observer} to be notified of url state changes. */
     void addObserver(Observer observer);
 

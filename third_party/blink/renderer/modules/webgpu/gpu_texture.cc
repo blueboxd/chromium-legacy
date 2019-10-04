@@ -27,6 +27,9 @@ DawnTextureDescriptor AsDawnType(const GPUTextureDescriptor* webgpu_desc) {
   dawn_desc.format = AsDawnEnum<DawnTextureFormat>(webgpu_desc->format());
   dawn_desc.mipLevelCount = webgpu_desc->mipLevelCount();
   dawn_desc.sampleCount = webgpu_desc->sampleCount();
+  if (webgpu_desc->hasLabel()) {
+    dawn_desc.label = webgpu_desc->label().Utf8().data();
+  }
 
   return dawn_desc;
 }
@@ -45,6 +48,9 @@ DawnTextureViewDescriptor AsDawnType(
   dawn_desc.baseArrayLayer = webgpu_desc->baseArrayLayer();
   dawn_desc.arrayLayerCount = webgpu_desc->arrayLayerCount();
   dawn_desc.aspect = AsDawnEnum<DawnTextureAspect>(webgpu_desc->aspect());
+  if (webgpu_desc->hasLabel()) {
+    dawn_desc.label = webgpu_desc->label().Utf8().data();
+  }
 
   return dawn_desc;
 }

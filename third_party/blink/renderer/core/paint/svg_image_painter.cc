@@ -78,13 +78,10 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
       layout_svg_image_.StyleRef().GetInterpolationQuality());
   Image::ImageDecodingMode decode_mode =
       image_element->GetDecodingModeForPainting(image->paint_image_id());
-
   paint_info.context.DrawImage(
       image.get(), decode_mode, dest_rect, &src_rect,
       layout_svg_image_.StyleRef().HasFilterInducingProperty());
-  if (RuntimeEnabledFeatures::ElementTimingEnabled(
-          &layout_svg_image_.GetDocument()) &&
-      !paint_info.context.ContextDisabled() && image_resource->CachedImage() &&
+  if (!paint_info.context.ContextDisabled() && image_resource->CachedImage() &&
       image_resource->CachedImage()->IsLoaded()) {
     LocalDOMWindow* window = layout_svg_image_.GetDocument().domWindow();
     DCHECK(window);
@@ -94,11 +91,9 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
         paint_info.context.GetPaintController().CurrentPaintChunkProperties());
   }
 
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
-    PaintTimingDetector::NotifyImagePaint(
-        layout_svg_image_, image->Size(), image_resource->CachedImage(),
-        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
-  }
+  PaintTimingDetector::NotifyImagePaint(
+      layout_svg_image_, image->Size(), image_resource->CachedImage(),
+      paint_info.context.GetPaintController().CurrentPaintChunkProperties());
 }
 
 FloatSize SVGImagePainter::ComputeImageViewportSize() const {

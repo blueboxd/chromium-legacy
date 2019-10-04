@@ -26,12 +26,7 @@
       "device type": "iPhone 6s Plus",
       "os": "13.0",
       "pool":"Chrome",
-      "host os": "Mac-10.14.4",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.5"
-          }]
-      },
+      "host os": "Mac-10.14.6",
       "priority": 30
     },
     {
@@ -39,12 +34,7 @@
       "device type": "iPhone 6s",
       "os": "13.0",
       "pool":"Chrome",
-      "host os": "Mac-10.14.4",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.5"
-          }]
-      },
+      "host os": "Mac-10.14.6",
       "priority": 30
     },
     {
@@ -52,12 +42,7 @@
       "device type": "iPhone 6s",
       "os": "13.0",
       "pool":"Chrome",
-      "host os": "Mac-10.14.4",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.5"
-          }]
-      },
+      "host os": "Mac-10.14.6",
       "priority": 30
     },
     {
@@ -65,12 +50,7 @@
       "device type": "iPhone 7",
       "os": "13.0",
       "pool":"Chrome",
-      "host os": "Mac-10.14.4",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.5"
-          }]
-      },
+      "host os": "Mac-10.14.6",
       "priority": 30
     },
     {
@@ -78,12 +58,7 @@
       "device type": "iPad Air 2",
       "os": "13.0",
       "pool":"Chrome",
-      "host os": "Mac-10.14.4",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.5"
-          }]
-      },
+      "host os": "Mac-10.14.6",
       "priority": 30
     },
     {
@@ -91,12 +66,7 @@
       "device type": "iPhone X",
       "os": "13.0",
       "pool":"Chrome",
-      "host os": "Mac-10.14.4",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.5"
-          }]
-      },
+      "host os": "Mac-10.14.6",
       "priority": 30
     },
     {
@@ -104,12 +74,7 @@
       "device type": "iPhone X",
       "os": "13.0",
       "pool":"Chrome",
-      "host os": "Mac-10.14.4",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.5"
-          }]
-      },
+      "host os": "Mac-10.14.6",
       "priority": 30
     },
     {
@@ -117,12 +82,7 @@
       "device type": "iPad Air 2",
       "os": "13.0",
       "pool":"Chrome",
-      "host os": "Mac-10.14.4",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.5"
-          }]
-      },
+      "host os": "Mac-10.14.6",
       "priority": 30
     }
   ]

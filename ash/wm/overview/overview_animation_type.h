@@ -34,9 +34,8 @@ enum OverviewAnimationType {
   // the home launcher.
   OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
   OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER,
-  // Used to fade in the drop target when dragging an application to enter
-  // overview mode.
-  OVERVIEW_ANIMATION_DROP_TARGET_FADE_IN,
+  // Used to fade the drop target when dragging an application.
+  OVERVIEW_ANIMATION_DROP_TARGET_FADE,
   // Used to fade in the label which tells users they are in overview mode with
   // no window in and out.
   OVERVIEW_ANIMATION_NO_RECENTS_FADE,

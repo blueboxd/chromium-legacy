@@ -116,6 +116,17 @@ Do you need "set solib-search-path" or "set sysroot"?
 Failed to read a valid object file image from memory.
 ```
 
+If you have ever run an ASAN build of chromium on the device, you may get
+an error like the following when you start up gdb:
+```
+/tmp/<username>-adb-gdb-tmp-<pid>/gdb.init:11: Error in sourced command file:
+"/tmp/<username>-adb-gdb-tmp-<pid>/app_process32": not in executable format: file format not recognized
+```
+If this happens, run the following command and try again:
+```shell
+$ src/android/asan/third_party/asan_device_setup.sh --revert
+```
+
 ### Using Visual Studio Code
 While the app is running, run the `gdb` command with `--ide`:
 

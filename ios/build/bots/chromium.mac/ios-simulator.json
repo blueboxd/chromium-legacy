@@ -23,7 +23,7 @@
       "include": "common_tests.json",
       "device type": "iPhone 6s",
       "os": "12.2",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -31,7 +31,7 @@
       "include": "eg_cq_tests.json",
       "device type": "iPhone 6s",
       "os": "12.2",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -39,7 +39,7 @@
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s Plus",
       "os": "13.0",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -47,7 +47,7 @@
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s",
       "os": "13.0",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -55,7 +55,7 @@
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone SE",
       "os": "13.0",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -63,7 +63,7 @@
       "include": "common_tests.json",
       "device type": "iPhone 6s",
       "os": "13.0",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -71,7 +71,7 @@
       "include": "screen_size_dependent_tests.json",
       "device type": "iPad Air 2",
       "os": "13.0",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     },
@@ -79,7 +79,7 @@
       "include": "eg_cq_tests.json",
       "device type": "iPhone 6s",
       "os": "13.0",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome",
       "priority": 30
     }

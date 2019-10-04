@@ -345,10 +345,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
   WebRuntimeFeatures::EnableFractionalScrollOffsets(
       base::FeatureList::IsEnabled(features::kFractionalScrollOffsets));
 
-  WebRuntimeFeatures::EnableFirstContentfulPaintPlusPlus(
-      base::FeatureList::IsEnabled(
-          blink::features::kFirstContentfulPaintPlusPlus));
-
   WebRuntimeFeatures::EnableGetDisplayMedia(
       base::FeatureList::IsEnabled(blink::features::kRTCGetDisplayMedia));
 

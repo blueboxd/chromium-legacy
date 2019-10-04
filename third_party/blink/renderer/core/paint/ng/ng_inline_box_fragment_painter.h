@@ -28,6 +28,7 @@ class NGInlineBoxFragmentPainterBase : public InlineBoxPainterBase {
                                    LayoutUnit* total_width) const;
 
  protected:
+  // Constructor for |NGPaintFragment|.
   NGInlineBoxFragmentPainterBase(const NGPaintFragment& inline_box_fragment,
                                  const LayoutObject& layout_object,
                                  const ComputedStyle& style,
@@ -37,7 +38,32 @@ class NGInlineBoxFragmentPainterBase : public InlineBoxPainterBase {
                              layout_object.GeneratingNode(),
                              style,
                              line_style),
-        inline_box_fragment_(inline_box_fragment) {}
+        inline_box_fragment_(inline_box_fragment.PhysicalFragment()),
+        inline_box_paint_fragment_(&inline_box_fragment) {}
+
+  // Constructor for |NGFragmentItem|.
+  NGInlineBoxFragmentPainterBase(
+      const NGFragmentItem& inline_box_item,
+      const NGPhysicalBoxFragment& inline_box_fragment,
+      const LayoutObject& layout_object,
+      const ComputedStyle& style,
+      const ComputedStyle& line_style)
+      : InlineBoxPainterBase(layout_object,
+                             &layout_object.GetDocument(),
+                             layout_object.GeneratingNode(),
+                             style,
+                             line_style),
+        inline_box_fragment_(inline_box_fragment),
+        inline_box_item_(&inline_box_item) {
+    DCHECK_EQ(inline_box_item.BoxFragment(), &inline_box_fragment);
+  }
+
+  const DisplayItemClient& GetDisplayItemClient() const {
+    if (inline_box_paint_fragment_)
+      return *inline_box_paint_fragment_;
+    DCHECK(inline_box_item_);
+    return *inline_box_item_;
+  }
 
   const virtual NGBorderEdges BorderEdges() const = 0;
 
@@ -58,7 +84,9 @@ class NGInlineBoxFragmentPainterBase : public InlineBoxPainterBase {
   void PaintBackgroundBorderShadow(const PaintInfo&,
                                    const PhysicalOffset& paint_offset);
 
-  const NGPaintFragment& inline_box_fragment_;
+  const NGPhysicalFragment& inline_box_fragment_;
+  const NGPaintFragment* inline_box_paint_fragment_ = nullptr;
+  const NGFragmentItem* inline_box_item_ = nullptr;
 };
 
 // Painter for LayoutNG inline box fragments. Delegates to NGBoxFragmentPainter
@@ -67,6 +95,7 @@ class NGInlineBoxFragmentPainter : public NGInlineBoxFragmentPainterBase {
   STACK_ALLOCATED();
 
  public:
+  // Constructor for |NGPaintFragment|.
   NGInlineBoxFragmentPainter(const NGPaintFragment& inline_box_fragment)
       : NGInlineBoxFragmentPainterBase(inline_box_fragment,
                                        *inline_box_fragment.GetLayoutObject(),
@@ -78,12 +107,25 @@ class NGInlineBoxFragmentPainter : public NGInlineBoxFragmentPainterBase {
               NGPhysicalFragment::NGBoxType::kInlineBox);
   }
 
+  // Constructor for |NGFragmentItem|.
+  NGInlineBoxFragmentPainter(const NGFragmentItem& inline_box_item,
+                             const NGPhysicalBoxFragment& inline_box_fragment)
+      : NGInlineBoxFragmentPainterBase(inline_box_item,
+                                       inline_box_fragment,
+                                       *inline_box_fragment.GetLayoutObject(),
+                                       inline_box_fragment.Style(),
+                                       inline_box_fragment.Style()) {
+    DCHECK_EQ(inline_box_fragment.Type(),
+              NGPhysicalFragment::NGFragmentType::kFragmentBox);
+    DCHECK_EQ(inline_box_fragment.BoxType(),
+              NGPhysicalFragment::NGBoxType::kInlineBox);
+  }
+
   void Paint(const PaintInfo&, const PhysicalOffset& paint_offset);
 
  private:
   const NGPhysicalBoxFragment& PhysicalFragment() const {
-    return static_cast<const NGPhysicalBoxFragment&>(
-        inline_box_fragment_.PhysicalFragment());
+    return static_cast<const NGPhysicalBoxFragment&>(inline_box_fragment_);
   }
 
   const NGBorderEdges BorderEdges() const final;
@@ -136,8 +178,7 @@ class NGLineBoxFragmentPainter : public NGInlineBoxFragmentPainterBase {
   }
 
   const NGPhysicalLineBoxFragment& PhysicalFragment() const {
-    return static_cast<const NGPhysicalLineBoxFragment&>(
-        inline_box_fragment_.PhysicalFragment());
+    return static_cast<const NGPhysicalLineBoxFragment&>(inline_box_fragment_);
   }
 
   const NGBorderEdges BorderEdges() const final { return NGBorderEdges(); }

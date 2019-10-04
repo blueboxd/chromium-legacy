@@ -27,14 +27,14 @@
       "app": "cronet_test",
       "device type": "iPhone X",
       "os": "12.2",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome"
     },
     {
       "app": "cronet_test",
       "device type": "iPhone X",
       "os": "13.0",
-      "host os": "Mac-10.14.4",
+      "host os": "Mac-10.14.6",
       "pool":"Chrome"
     }
   ]

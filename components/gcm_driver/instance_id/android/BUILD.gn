@@ -11,6 +11,7 @@ generate_jni("jni_headers") {
 }
 
 generate_jni("test_support_jni_headers") {
+  testonly = true
   sources = [
     "javatests/src/org/chromium/components/gcm_driver/instance_id/FakeInstanceIDWithSubtype.java",
   ]

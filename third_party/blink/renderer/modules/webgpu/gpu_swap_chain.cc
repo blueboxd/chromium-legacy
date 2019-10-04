@@ -24,6 +24,7 @@ GPUSwapChain::GPUSwapChain(GPUCanvasContext* context,
       device_(descriptor->device()),
       context_(context),
       usage_(AsDawnEnum<DawnTextureUsage>(descriptor->usage())) {
+  // TODO: Use label from GPUObjectDescriptorBase.
   swap_buffers_ = base::AdoptRef(new WebGPUSwapBufferProvider(
       this, GetDawnControlClient(), usage_,
       AsDawnEnum<DawnTextureFormat>(descriptor->format())));

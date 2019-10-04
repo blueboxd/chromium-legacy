@@ -37,6 +37,9 @@ GPURenderBundleEncoder* GPURenderBundleEncoder::Create(
   dawn_desc.colorFormats = color_formats.get();
   dawn_desc.depthStencilFormat = depth_stencil_format;
   dawn_desc.sampleCount = webgpu_desc->sampleCount();
+  if (webgpu_desc->hasLabel()) {
+    dawn_desc.label = webgpu_desc->label().Utf8().data();
+  }
 
   return MakeGarbageCollected<GPURenderBundleEncoder>(
       device, device->GetProcs().deviceCreateRenderBundleEncoder(
@@ -140,6 +143,9 @@ GPURenderBundle* GPURenderBundleEncoder::finish(
     const GPURenderBundleDescriptor* webgpu_desc) {
   DawnRenderBundleDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
+  if (webgpu_desc->hasLabel()) {
+    dawn_desc.label = webgpu_desc->label().Utf8().data();
+  }
 
   DawnRenderBundle render_bundle =
       GetProcs().renderBundleEncoderFinish(GetHandle(), &dawn_desc);

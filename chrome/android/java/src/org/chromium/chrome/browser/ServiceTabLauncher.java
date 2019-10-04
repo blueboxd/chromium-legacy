@@ -23,6 +23,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.BrowserServicesMetrics;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.payments.PaymentRequestImpl;
+import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
@@ -41,6 +43,8 @@ import org.chromium.webapk.lib.client.WebApkIdentityServiceClient;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 /**
@@ -75,7 +79,14 @@ public class ServiceTabLauncher {
         // Open popup window in custom tab.
         // Note that this is used by PaymentRequestEvent.openWindow().
         if (disposition == WindowOpenDisposition.NEW_POPUP) {
-            if (!createPopupCustomTab(requestId, url, incognito)) {
+            boolean success = false;
+            try {
+                success = PaymentHandlerCoordinator.isEnabled()
+                        ? PaymentRequestImpl.openPaymentHandlerWindow(new URI(url))
+                        : createPopupCustomTab(requestId, url, incognito);
+            } catch (URISyntaxException e) { /* Intentionally leave blank, so success is false. */
+            }
+            if (!success) {
                 PostTask.postTask(UiThreadTaskTraits.DEFAULT,
                         () -> onWebContentsForRequestAvailable(requestId, null));
             }

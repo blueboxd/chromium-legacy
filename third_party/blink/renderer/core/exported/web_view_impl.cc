@@ -1792,15 +1792,11 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
   // notified as input is only handled by the focused frame.
   Frame* frame = FocusedCoreFrame();
   if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
-    if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
-        RuntimeEnabledFeatures::ElementTimingEnabled(
-            local_frame->GetDocument())) {
-      if (local_frame->View() && local_frame->View()
-                                     ->GetPaintTimingDetector()
-                                     .NeedToNotifyInputOrScroll()) {
-        local_frame->View()->GetPaintTimingDetector().NotifyInputEvent(
-            input_event.GetType());
-      }
+    if (local_frame->View() && local_frame->View()
+                                   ->GetPaintTimingDetector()
+                                   .NeedToNotifyInputOrScroll()) {
+      local_frame->View()->GetPaintTimingDetector().NotifyInputEvent(
+          input_event.GetType());
     }
   }
 

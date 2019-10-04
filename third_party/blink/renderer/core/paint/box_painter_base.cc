@@ -563,17 +563,12 @@ inline bool PaintFastBottomLayer(Node* node,
       node && node->ComputedStyleRef().HasFilterInducingProperty(),
       composite_op);
 
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
-    if (info.image && info.image->IsImageResource()) {
-      PaintTimingDetector::NotifyBackgroundImagePaint(
-          node, image, To<StyleFetchedImage>(info.image.Get()),
-          paint_info.context.GetPaintController()
-              .CurrentPaintChunkProperties());
-    }
+  if (info.image && info.image->IsImageResource()) {
+    PaintTimingDetector::NotifyBackgroundImagePaint(
+        node, image, To<StyleFetchedImage>(info.image.Get()),
+        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
   }
-  if (node &&
-      RuntimeEnabledFeatures::ElementTimingEnabled(&node->GetDocument()) &&
-      info.image && info.image->IsImageResource()) {
+  if (node && info.image && info.image->IsImageResource()) {
     LocalDOMWindow* window = node->GetDocument().domWindow();
     DCHECK(window);
     ImageElementTiming::From(*window).NotifyBackgroundImagePainted(
@@ -698,16 +693,12 @@ void PaintFillLayerBackground(GraphicsContext& context,
         FloatSize(geometry.TileSize()), composite_op,
         FloatSize(geometry.SpaceSize()),
         node && node->ComputedStyleRef().HasFilterInducingProperty());
-    if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
-      if (info.image && info.image->IsImageResource()) {
-        PaintTimingDetector::NotifyBackgroundImagePaint(
-            node, image, To<StyleFetchedImage>(info.image.Get()),
-            context.GetPaintController().CurrentPaintChunkProperties());
-      }
+    if (info.image && info.image->IsImageResource()) {
+      PaintTimingDetector::NotifyBackgroundImagePaint(
+          node, image, To<StyleFetchedImage>(info.image.Get()),
+          context.GetPaintController().CurrentPaintChunkProperties());
     }
-    if (node &&
-        RuntimeEnabledFeatures::ElementTimingEnabled(&node->GetDocument()) &&
-        info.image && info.image->IsImageResource()) {
+    if (node && info.image && info.image->IsImageResource()) {
       LocalDOMWindow* window = node->GetDocument().domWindow();
       DCHECK(window);
       ImageElementTiming::From(*window).NotifyBackgroundImagePainted(

@@ -214,6 +214,10 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         mPaymentHandlerHost = host;
     }
 
+    /*package*/ URI getScope() {
+        return mScope;
+    }
+
     @Override
     public void getInstruments(String id, Map<String, PaymentMethodData> methodDataMap,
             String origin, String iframeOrigin, byte[][] unusedCertificateChain,

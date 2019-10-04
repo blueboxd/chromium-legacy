@@ -18,7 +18,6 @@ namespace {
 // was found.
 int GetSyncTransportOptInBitFieldForAccount(const PrefService* prefs,
                                             const std::string& account_hash) {
-
   auto* dictionary = prefs->GetDictionary(prefs::kAutofillSyncTransportOptIn);
 
   // If there is no dictionary it means the account didn't opt-in. Use 0 because
@@ -62,9 +61,8 @@ const char kAutofillCreditCardSigninPromoImpressionCount[] =
 // Boolean that is true if Autofill is enabled and allowed to save data.
 const char kAutofillEnabledDeprecated[] = "autofill.enabled";
 
-// Boolean that is true if Japan address city field has been migrated to be a
-// part of the street field.
-const char kAutofillJapanCityFieldMigrated[] =
+// Deprecated 10/2019.
+const char kAutofillJapanCityFieldMigratedDeprecated[] =
     "autofill.japan_city_field_migrated_to_street_address";
 
 // Integer that is set to the last version where the profile deduping routine
@@ -167,7 +165,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kAutofillCreditCardFidoAuthOfferCheckboxState, true);
   registry->RegisterIntegerPref(
       prefs::kAutofillCreditCardSigninPromoImpressionCount, 0);
-  registry->RegisterBooleanPref(prefs::kAutofillJapanCityFieldMigrated, false);
   registry->RegisterBooleanPref(prefs::kAutofillWalletImportEnabled, true);
   registry->RegisterBooleanPref(
       prefs::kAutofillWalletImportStorageCheckboxState, true);
@@ -186,6 +183,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterTimePref(prefs::kAutofillUploadEventsLastResetTimestamp,
                              base::Time());
   registry->RegisterDictionaryPref(prefs::kAutofillSyncTransportOptIn);
+
+  // Deprecated prefs registered for migration.
+  registry->RegisterBooleanPref(kAutofillJapanCityFieldMigratedDeprecated,
+                                false);
 }
 
 void MigrateDeprecatedAutofillPrefs(PrefService* prefs) {
@@ -216,6 +217,9 @@ void MigrateDeprecatedAutofillPrefs(PrefService* prefs) {
     prefs->SetBoolean(kAutofillProfileEnabled,
                       prefs->GetBoolean(kAutofillEnabledDeprecated));
   }
+
+  // Added 10/2019.
+  prefs->ClearPref(kAutofillJapanCityFieldMigratedDeprecated);
 }
 
 bool IsAutocompleteEnabled(const PrefService* prefs) {

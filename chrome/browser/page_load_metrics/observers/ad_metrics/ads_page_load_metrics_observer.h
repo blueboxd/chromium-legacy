@@ -57,6 +57,23 @@ class AdsPageLoadMetricsObserver
     DISALLOW_COPY_AND_ASSIGN(AggregateFrameInfo);
   };
 
+  // Helper class that generates a random amount of noise to apply to thresholds
+  // for heavy ads. A different noise should be generated for each frame.
+  class HeavyAdThresholdNoiseProvider {
+   public:
+    HeavyAdThresholdNoiseProvider() = default;
+    virtual ~HeavyAdThresholdNoiseProvider() = default;
+
+    // Gets a random amount of noise to add to a threshold. The generated noise
+    // is uniform random over the range 0 to kMaxThresholdNoiseBytes. Virtual
+    // for testing.
+    virtual int GetNetworkThresholdNoiseForFrame() const;
+
+    // Maximum amount of additive noise to add to the network threshold to
+    // obscure cross origin resource sizes: 1303 KB.
+    static const int kMaxNetworkThresholdNoiseBytes = 1303 * 1024;
+  };
+
   explicit AdsPageLoadMetricsObserver(base::TickClock* clock = nullptr,
                                       HeavyAdBlocklist* blocklist = nullptr);
   ~AdsPageLoadMetricsObserver() override;
@@ -100,6 +117,11 @@ class AdsPageLoadMetricsObserver
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
       content::RenderFrameHost* render_frame_host) override;
   void OnFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+
+  void SetHeavyAdThresholdNoiseProviderForTesting(
+      std::unique_ptr<HeavyAdThresholdNoiseProvider> noise_provider) {
+    heavy_ad_threshold_noise_provider_ = std::move(noise_provider);
+  }
 
  private:
   // subresource_filter::SubresourceFilterObserver:
@@ -227,6 +249,9 @@ class AdsPageLoadMetricsObserver
 
   // Whether the heavy ad blocklist feature is enabled.
   const bool heavy_ad_blocklist_enabled_;
+
+  std::unique_ptr<HeavyAdThresholdNoiseProvider>
+      heavy_ad_threshold_noise_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(AdsPageLoadMetricsObserver);
 };

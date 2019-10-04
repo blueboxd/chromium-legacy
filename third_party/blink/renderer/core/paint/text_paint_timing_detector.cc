@@ -134,7 +134,7 @@ void TextPaintTimingDetector::ReportSwapTime(base::TimeTicks timestamp) {
     return;
   if (!records_manager_.HasTextElementTiming()) {
     Document* document = frame_view_->GetFrame().GetDocument();
-    if (document && RuntimeEnabledFeatures::ElementTimingEnabled(document)) {
+    if (document) {
       LocalDOMWindow* window = document->domWindow();
       if (window) {
         records_manager_.SetTextElementTiming(
@@ -310,8 +310,7 @@ base::WeakPtr<TextRecord> LargestTextPaintManager::FindLargestPaintCandidate() {
 TextRecordsManager::TextRecordsManager(
     LocalFrameView* frame_view,
     PaintTimingDetector* paint_timing_detector) {
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled())
-    ltp_manager_.emplace(frame_view, paint_timing_detector);
+  ltp_manager_.emplace(frame_view, paint_timing_detector);
 }
 
 void TextRecordsManager::CleanUp() {

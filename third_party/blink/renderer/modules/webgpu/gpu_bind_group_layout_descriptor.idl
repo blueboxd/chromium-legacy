@@ -4,6 +4,6 @@
 
 // https://gpuweb.github.io/gpuweb/
 
-dictionary GPUBindGroupLayoutDescriptor {
+dictionary GPUBindGroupLayoutDescriptor : GPUObjectDescriptorBase {
     required sequence<GPUBindGroupLayoutBinding> bindings;
 };

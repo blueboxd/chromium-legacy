@@ -57,15 +57,12 @@ Vector<AtomicString> PerformanceObserver::supportedEntryTypes(
   Vector<AtomicString> supportedEntryTypes;
   auto* execution_context = ExecutionContext::From(script_state);
   if (execution_context->IsDocument()) {
-    if (RuntimeEnabledFeatures::ElementTimingEnabled(execution_context))
-      supportedEntryTypes.push_back(performance_entry_names::kElement);
+    supportedEntryTypes.push_back(performance_entry_names::kElement);
     if (RuntimeEnabledFeatures::EventTimingEnabled(execution_context))
       supportedEntryTypes.push_back(performance_entry_names::kEvent);
     supportedEntryTypes.push_back(performance_entry_names::kFirstInput);
-    if (RuntimeEnabledFeatures::LargestContentfulPaintEnabled()) {
-      supportedEntryTypes.push_back(
-          performance_entry_names::kLargestContentfulPaint);
-    }
+    supportedEntryTypes.push_back(
+        performance_entry_names::kLargestContentfulPaint);
     supportedEntryTypes.push_back(performance_entry_names::kLayoutShift);
     supportedEntryTypes.push_back(performance_entry_names::kLongtask);
   }

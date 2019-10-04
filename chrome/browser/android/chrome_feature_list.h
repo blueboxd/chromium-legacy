@@ -96,6 +96,7 @@ extern const base::Feature kReachedCodeProfiler;
 extern const base::Feature kReorderBookmarks;
 extern const base::Feature kReaderModeInCCT;
 extern const base::Feature kRevampedContextMenu;
+extern const base::Feature kScrollToExpandPaymentHandler;
 extern const base::Feature kSearchEnginePromoExistingDevice;
 extern const base::Feature kSearchEnginePromoNewDevice;
 extern const base::Feature kServiceManagerForBackgroundPrefetch;

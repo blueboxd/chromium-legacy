@@ -167,11 +167,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '9e951cd782c4dd3cec36c05dd7448ebfc415a389',
+  'skia_revision': '405413fcec5da5f783cbbd3bbfbb7e378981177a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '35874570ba6306d2d41a6b0a468ab7e41c99ed2e',
+  'v8_revision': '395b9e4a0479a0a4752ecabeaf492afce808072f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -887,7 +887,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'aa4d8a75604db8a824c82cca0e6f8001e6b11723',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '8a859625577b2e2a918765964a5e6ec1eb75d328',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
@@ -1269,7 +1269,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f0d7ef8e4fe6941188679e55eea3b545d1b4cc56',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '01fdeab2a3a2a8fcc5a6c86e11f7476eb8607083',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',

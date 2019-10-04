@@ -1185,6 +1185,8 @@ component("ash") {
     "wm/overview/overview_test_api.cc",
     "wm/overview/overview_utils.cc",
     "wm/overview/overview_utils.h",
+    "wm/overview/overview_wallpaper_controller.cc",
+    "wm/overview/overview_wallpaper_controller.h",
     "wm/overview/overview_window_drag_controller.cc",
     "wm/overview/overview_window_drag_controller.h",
     "wm/overview/rounded_label_widget.cc",

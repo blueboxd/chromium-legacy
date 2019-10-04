@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.SnackbarActivity;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinator;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinatorFactory;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
+import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
 import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -74,8 +75,8 @@ public class DownloadActivity extends SnackbarActivity implements ModalDialogMan
         mCurrentUrl = savedInstanceState == null
                 ? UrlConstants.DOWNLOADS_URL
                 : savedInstanceState.getString(BUNDLE_KEY_CURRENT_URL);
+        if (showPrefetchContent) mCurrentUrl = Filters.toUrl(Filters.FilterType.PREFETCHED);
         mDownloadCoordinator.updateForUrl(mCurrentUrl);
-        if (showPrefetchContent) mDownloadCoordinator.showPrefetchSection();
     }
 
     @Override

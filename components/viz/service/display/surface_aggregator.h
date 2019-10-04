@@ -64,6 +64,9 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   void SetFullDamageForSurface(const SurfaceId& surface_id);
   void set_output_is_secure(bool secure) { output_is_secure_ = secure; }
 
+  // Only used with experimental de-jelly effect.
+  bool last_frame_had_jelly() const { return last_frame_had_jelly_; }
+
   // Set the color spaces for the created RenderPasses, which is propagated
   // to the output surface.
   void SetOutputColorSpace(const gfx::ColorSpace& output_color_space);
@@ -282,6 +285,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const cc::ListContainer<DrawQuad>::Iterator& end,
       RenderPass* render_pass,
       const SharedQuadState* state);
+  // Update |last_frame_had_jelly_|, should be called once per frame.
+  void SetLastFrameHadJelly(bool had_jelly);
 
   SurfaceManager* manager_;
   DisplayResourceProvider* provider_;
@@ -381,6 +386,15 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   int64_t display_trace_id_ = -1;
   base::flat_set<SurfaceId> undrawn_surfaces_;
+
+  // Variables used for de-jelly:
+  // Whether de-jelly may be active.
+  bool de_jelly_enabled_ = false;
+  // The set of surfacees being drawn for the first time. Used to determine if
+  // de-jelly skew should be applied to a surface.
+  base::flat_set<SurfaceId> new_surfaces_;
+  // Whether the last drawn frame had de-jelly skew applied.
+  bool last_frame_had_jelly_ = false;
 
   base::WeakPtrFactory<SurfaceAggregator> weak_factory_{this};
 

@@ -43,6 +43,6 @@ class TasksSurfaceMediator {
 
         // TODO(crbug.com/982018): Enable voice recognition button in the fake search box.
         // TODO(crbug.com/982018): Enable long press and paste search in the fake search box.
-        // TODO(crbug.com/982018): Change the fake search box in incognito and dark mode.
+        // TODO(crbug.com/982018): Change the fake search box in dark mode.
     }
 }

@@ -4,7 +4,7 @@
 
 // https://gpuweb.github.io/gpuweb/
 
-dictionary GPUTextureDescriptor {
+dictionary GPUTextureDescriptor : GPUObjectDescriptorBase {
     required GPUExtent3D size;
     unsigned long arrayLayerCount = 1;
     unsigned long mipLevelCount = 1;

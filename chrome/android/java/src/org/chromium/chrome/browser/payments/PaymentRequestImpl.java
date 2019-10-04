@@ -23,11 +23,13 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.NormalizedAddressRequestDelegate;
+import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.page_info.CertificateChainHelper;
+import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
 import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator;
 import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
 import org.chromium.chrome.browser.payments.ui.LineItem;
@@ -268,10 +270,10 @@ public class PaymentRequestImpl
     private static boolean sIsLocalCanMakePaymentQueryQuotaEnforcedForTest;
 
     /**
-     * True if show() was called in any PaymentRequestImpl object. Used to prevent showing more than
-     * one PaymentRequest UI per browser process.
+     * Hold the currently showing PaymentRequest. Used to prevent showing more than one
+     * PaymentRequest UI per browser process.
      */
-    private static boolean sIsAnyPaymentRequestShowing;
+    private static PaymentRequestImpl sShowingPaymentRequest;
 
     /** Monitors changes in the TabModelSelector. */
     private final TabModelSelectorObserver mSelectorObserver = new EmptyTabModelSelectorObserver() {
@@ -376,6 +378,7 @@ public class PaymentRequestImpl
     private MicrotransactionCoordinator mMicrotransactionUi;
     private Callback<PaymentInformation> mPaymentInformationCallback;
     private PaymentInstrument mInvokedPaymentInstrument;
+    private PaymentHandlerCoordinator mPaymentHandlerUi;
     private boolean mMerchantSupportsAutofillPaymentInstruments;
     private boolean mUserCanAddCreditCard;
     private boolean mHideServerAutofillInstruments;
@@ -721,7 +724,7 @@ public class PaymentRequestImpl
                     activity, mAutofillProfiles, mContactEditor, mJourneyLogger);
         }
 
-        setIsAnyPaymentRequestShowing(true);
+        setShowingPaymentRequest(this);
         mUI = new PaymentRequestUI(activity, this, mRequestShipping,
                 /* requestShippingOption= */ mRequestShipping,
                 mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail,
@@ -865,6 +868,21 @@ public class PaymentRequestImpl
         triggerPaymentAppUiSkipIfApplicable(chromeActivity);
     }
 
+    private void dimBackgroundIfNotBottomSheetPaymentHandler(PaymentInstrument selectedInstrument) {
+        // Putting isEnabled() last is intentional. It's to ensure not to confused the unexecuted
+        // group and the disabled in A/B testing.
+        if ((selectedInstrument instanceof ServiceWorkerPaymentApp)
+                && PaymentHandlerCoordinator.isEnabled()) {
+            // When the Payment Handler (PH) UI is based on Activity, dimming the Payment
+            // Request (PR) UI does not dim the PH; when it's based on bottom-sheet, dimming
+            // the PR dims both UIs. As bottom-sheet itself has dimming effect, dimming PR
+            // is unnecessary for the bottom-sheet PH. For now, ServiceWorkerPaymentApp is the only
+            // payment app that can open the bottom-sheet.
+            return;
+        }
+        mUI.dimBackground();
+    }
+
     private void triggerPaymentAppUiSkipIfApplicable(ChromeActivity chromeActivity) {
         // If we are skipping showing the Payment Request UI, we should call into the
         // PaymentApp immediately after we determine the instruments are ready and UI is shown.
@@ -891,7 +909,7 @@ public class PaymentRequestImpl
                             && !mIsUserGestureShow)) {
                 mUI.show();
             } else {
-                mUI.dimBackground();
+                dimBackgroundIfNotBottomSheetPaymentHandler(selectedInstrument);
                 mDidRecordShowEvent = true;
                 mShouldRecordAbortReason = true;
                 mJourneyLogger.setEventOccurred(Event.SKIPPED_SHOW);
@@ -934,7 +952,7 @@ public class PaymentRequestImpl
                     mCurrencyFormatterMap.get(mRawTotal.amount.currency),
                     mUiShoppingCart.getTotal(), this::onMicrotransactionUiConfirmed,
                     this::onMicrotransactionUiDismissed)) {
-            setIsAnyPaymentRequestShowing(true);
+            setShowingPaymentRequest(this);
             mDidRecordShowEvent = true;
             mShouldRecordAbortReason = true;
             mJourneyLogger.setEventOccurred(Event.SHOWN);
@@ -1141,6 +1159,41 @@ public class PaymentRequestImpl
         }
 
         return changePaymentMethodFromInvokedApp(methodName, stringifiedData);
+    }
+
+    /**
+     *  Called to open a new PaymentHandler UI on the showing PaymentRequest.
+     *  @param url The url of the payment app to be displayed in the UI.
+     *  @return Whether the opening is successful.
+     */
+    public static boolean openPaymentHandlerWindow(URI url) {
+        return sShowingPaymentRequest != null
+                && sShowingPaymentRequest.openPaymentHandlerWindowInternal(url);
+    }
+
+    /**
+     *  Called to open a new PaymentHandler UI on this PaymentRequest.
+     *  @param url The url of the payment app to be displayed in the UI.
+     *  @return Whether the opening is successful.
+     */
+    private boolean openPaymentHandlerWindowInternal(URI url) {
+        assert mInvokedPaymentInstrument != null;
+        assert mInvokedPaymentInstrument instanceof ServiceWorkerPaymentApp;
+        assert new Origin(url.toString())
+                .equals(new Origin(((ServiceWorkerPaymentApp) mInvokedPaymentInstrument)
+                                           .getScope()
+                                           .toString()));
+
+        if (mPaymentHandlerUi != null) return false;
+        mPaymentHandlerUi = new PaymentHandlerCoordinator();
+        ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
+        if (chromeActivity == null) return false;
+        return mPaymentHandlerUi.show(chromeActivity, this::onPaymentHandlerUiDismissed);
+    }
+
+    private void onPaymentHandlerUiDismissed() {
+        ensureHideAndResetPaymentHandlerUi();
+        ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContents);
     }
 
     @Override
@@ -2531,6 +2584,12 @@ public class PaymentRequestImpl
         PersonalDataManager.getInstance().normalizeAddress(address.getProfile(), this);
     }
 
+    private void ensureHideAndResetPaymentHandlerUi() {
+        if (mPaymentHandlerUi == null) return;
+        mPaymentHandlerUi.hide();
+        mPaymentHandlerUi = null;
+    }
+
     /**
      * Closes the UI and destroys native objects. If the client is still connected, then it's
      * notified of UI hiding. This PaymentRequestImpl object can't be reused after this function is
@@ -2545,10 +2604,11 @@ public class PaymentRequestImpl
      *                       always pass "true."
      */
     private void closeUIAndDestroyNativeObjects(boolean immediateClose) {
+        ensureHideAndResetPaymentHandlerUi();
         if (mMicrotransactionUi != null) {
             mMicrotransactionUi.hide();
             mMicrotransactionUi = null;
-            setIsAnyPaymentRequestShowing(false);
+            setShowingPaymentRequest(null);
         }
 
         if (mUI != null) {
@@ -2560,7 +2620,7 @@ public class PaymentRequestImpl
                 closeClient();
             });
             mUI = null;
-            setIsAnyPaymentRequestShowing(false);
+            setShowingPaymentRequest(null);
         }
 
         mIsCurrentPaymentRequestShowing = false;
@@ -2612,16 +2672,18 @@ public class PaymentRequestImpl
     }
 
     /**
-     * @return Whether any instance of PaymentRequest has received a show() call. Don't use this
-     *         function to check whether the current instance has received a show() call.
+     * @return Whether any instance of PaymentRequest has received a show() call.
+     *         Don't use this function to check whether the current instance has
+     *         received a show() call.
      */
     private static boolean getIsAnyPaymentRequestShowing() {
-        return sIsAnyPaymentRequestShowing;
+        return sShowingPaymentRequest != null;
     }
 
-    /** @param isShowing Whether any instance of PaymentRequest has received a show() call. */
-    private static void setIsAnyPaymentRequestShowing(boolean isShowing) {
-        sIsAnyPaymentRequestShowing = isShowing;
+    /** @param paymentRequest The currently showing PaymentRequestImpl. */
+    private static void setShowingPaymentRequest(PaymentRequestImpl paymentRequest) {
+        assert sShowingPaymentRequest == null || paymentRequest == null;
+        sShowingPaymentRequest = paymentRequest;
     }
 
     @VisibleForTesting

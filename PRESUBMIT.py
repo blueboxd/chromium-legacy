@@ -1357,7 +1357,6 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'net/tools/testserver/testserver.pydeps',
     'testing/scripts/run_android_wpt.pydeps',
     'third_party/android_platform/development/scripts/stack.pydeps',
-    'tools/android/avd/avd.pydeps',
 ]
 
 

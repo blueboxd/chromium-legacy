@@ -47,9 +47,6 @@ using memory_instrumentation::HistogramProcessTypeToString;
 using memory_instrumentation::kMemoryHistogramPrefix;
 using ukm::builders::Memory_Experimental;
 
-const base::Feature kMemoryMetricsOldTiming{"MemoryMetricsOldTiming",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 namespace {
 
 const char kEffectiveSize[] = "effective_size";

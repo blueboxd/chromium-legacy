@@ -192,10 +192,6 @@ void WebRuntimeFeatures::EnableFileSystem(bool enable) {
   RuntimeEnabledFeatures::SetFileSystemEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableFirstContentfulPaintPlusPlus(bool enable) {
-  RuntimeEnabledFeatures::SetFirstContentfulPaintPlusPlusEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableForceSynchronousHTMLParsing(bool enable) {
   RuntimeEnabledFeatures::SetForceSynchronousHTMLParsingEnabled(enable);
 }

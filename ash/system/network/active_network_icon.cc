@@ -44,8 +44,6 @@ bool IsTrayIcon(network_icon::IconType icon_type) {
 ActiveNetworkIcon::ActiveNetworkIcon(TrayNetworkStateModel* model)
     : model_(model) {
   model_->AddObserver(this);
-  GetNetworkConfigService(
-      remote_cros_network_config_.BindNewPipeAndPassReceiver());
 }
 
 ActiveNetworkIcon::~ActiveNetworkIcon() {
@@ -321,7 +319,7 @@ void ActiveNetworkIcon::NetworkListChanged() {
 }
 
 void ActiveNetworkIcon::PurgeNetworkIconCache() {
-  remote_cros_network_config_->GetNetworkStateList(
+  model_->cros_network_config()->GetNetworkStateList(
       NetworkFilter::New(FilterType::kVisible, NetworkType::kAll,
                          /*limit=*/0),
       base::BindOnce(

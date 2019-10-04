@@ -27,6 +27,7 @@ jumbo_static_library("weblayer_shell_lib") {
     "app/shell_main_params.h",
     "browser/shell.cc",
     "browser/shell.h",
+    "browser/shell_android.cc",
     "common/shell_switches.cc",
     "common/shell_switches.h",
   ]

@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/exo/wayland/clients/test/wayland_client_test.h"
+#include "components/viz/test/test_gpu_service_holder.h"
 #include "mojo/core/embedder/embedder.h"
 
 namespace exo {
@@ -107,6 +108,12 @@ class ExoClientPerfTestSuite : public ash::AshTestSuite {
 
 int main(int argc, char** argv) {
   mojo::core::Init();
+
+  // The TaskEnvironment and UI thread don't get reset between tests so don't
+  // reset the GPU thread either. Destroying the GPU service is problematic
+  // because tasks on the UI thread can live on past the end of the test and
+  // keep references to GPU thread objects.
+  viz::TestGpuServiceHolder::DoNotResetOnTestExit();
 
   exo::ExoClientPerfTestSuite test_suite(argc, argv);
 

@@ -77,8 +77,8 @@ static bool IsFrameFocused(const Element& element) {
 }
 
 static bool MatchesSpatialNavigationFocusPseudoClass(const Element& element) {
-  return IsHTMLOptionElement(element) &&
-         ToHTMLOptionElement(element).SpatialNavigationFocused() &&
+  auto* option_element = DynamicTo<HTMLOptionElement>(element);
+  return option_element && option_element->SpatialNavigationFocused() &&
          IsFrameFocused(element);
 }
 
@@ -1007,9 +1007,10 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         if (input_element->ShouldAppearChecked() &&
             !input_element->ShouldAppearIndeterminate())
           return true;
-      } else if (IsHTMLOptionElement(element) &&
-                 ToHTMLOptionElement(element).Selected()) {
-        return true;
+      } else if (auto* option_element = DynamicTo<HTMLOptionElement>(element)) {
+        if (option_element->Selected()) {
+          return true;
+        }
       }
       break;
     }

@@ -600,6 +600,9 @@ XrResult xrLocateViews(XrSession session,
     RETURN_IF_FALSE(g_test_helper.UpdateViewFOV(views, view_capacity_input),
                     XR_ERROR_VALIDATION_FAILURE,
                     "xrLocateViews UpdateViewFOV failed");
+    *view_count_output = OpenXrTestHelper::kViewCount;
+    view_state->viewStateFlags =
+        XR_VIEW_STATE_POSITION_VALID_BIT | XR_VIEW_STATE_ORIENTATION_VALID_BIT;
   }
 
   return XR_SUCCESS;

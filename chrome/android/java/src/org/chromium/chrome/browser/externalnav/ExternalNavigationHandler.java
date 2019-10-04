@@ -682,6 +682,22 @@ public class ExternalNavigationHandler {
         }
     }
 
+    private @OverrideUrlLoadingResult int handleExternalIncognitoIntent(Intent targetIntent,
+            ExternalNavigationParams params, String browserFallbackUrl,
+            boolean shouldProxyForInstantApps) {
+        // This intent may leave Chrome. Warn the user that incognito does not carry over
+        // to apps out side of Chrome.
+        if (mDelegate.startIncognitoIntent(targetIntent, params.getReferrerUrl(),
+                    browserFallbackUrl, params.getTab(),
+                    params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(),
+                    shouldProxyForInstantApps)) {
+            if (DEBUG) Log.i(TAG, "Incognito navigation out");
+            return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
+        }
+        if (DEBUG) Log.i(TAG, "Failed to show incognito alert dialog.");
+        return OverrideUrlLoadingResult.NO_OVERRIDE;
+    }
+
     private @OverrideUrlLoadingResult int shouldOverrideUrlLoadingInternal(
             ExternalNavigationParams params, Intent targetIntent,
             @Nullable String browserFallbackUrl) {
@@ -794,24 +810,8 @@ public class ExternalNavigationHandler {
         assert intentResolutionMatches(debugIntent, targetIntent);
 
         if (params.isIncognito() && !mDelegate.willChromeHandleIntent(targetIntent)) {
-            // This intent may leave Chrome.  Warn the user that incognito does not carry over
-            // to apps out side of Chrome.
-            try {
-                if (!mDelegate.startIncognitoIntent(targetIntent, params.getReferrerUrl(),
-                            browserFallbackUrl, params.getTab(),
-                            params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(),
-                            shouldProxyForInstantApps)) {
-                    if (DEBUG) Log.i(TAG, "Failed to show incognito alert dialog.");
-                    return OverrideUrlLoadingResult.NO_OVERRIDE;
-                }
-            } catch (ActivityNotFoundException e) {
-                // The activity that we thought was going to handle the intent no longer exists,
-                // so catch the exception and assume Chrome can handle it.
-                Log.i(TAG, "Not showing alert dialog with no handler for intent");
-                return OverrideUrlLoadingResult.NO_OVERRIDE;
-            }
-            if (DEBUG) Log.i(TAG, "Incognito navigation out");
-            return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
+            return handleExternalIncognitoIntent(
+                    targetIntent, params, browserFallbackUrl, shouldProxyForInstantApps);
         }
 
         // Some third-party app launched Chrome with an intent, and the URL got redirected. The

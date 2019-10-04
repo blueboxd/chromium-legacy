@@ -599,15 +599,8 @@
     <dimen name="bottom_sheet_peek_height">56dp</dimen>
     <dimen name="bottom_sheet_toolbar_shadow_height">16dp</dimen>
 
-    <!-- TextBubble dimensions -->
-    <dimen name="text_bubble_margin">4dp</dimen>
-    <dimen name="text_bubble_corner_radius">8dp</dimen>
-    <dimen name="text_bubble_arrow_width">20dp</dimen>
-    <dimen name="text_bubble_arrow_height">10dp</dimen>
-    <dimen name="text_bubble_menu_anchor_y_inset">14dp</dimen>
-    <dimen name="iph_pulse_baseline_radius">16dp</dimen>
-
     <!--  Miscellaneous dimensions -->
+    <dimen name="text_bubble_menu_anchor_y_inset">14dp</dimen>
     <dimen name="action_bar_shadow_height">10dp</dimen>
     <!--  Used as a margin to force the shadow view to overlap other views. -->
     <dimen name="action_bar_shadow_margin_negative">-10dp</dimen>

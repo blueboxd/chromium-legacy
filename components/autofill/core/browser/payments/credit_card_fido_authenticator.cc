@@ -99,7 +99,7 @@ void CreditCardFIDOAuthenticator::Register(std::string card_authorization_token,
     }
   } else {
     current_flow_ = OPT_IN_FETCH_CHALLENGE_FLOW;
-    OptChange(/*opt_in=*/true);
+    OptChange();
   }
 }
 
@@ -120,7 +120,7 @@ void CreditCardFIDOAuthenticator::Authorize(
 void CreditCardFIDOAuthenticator::OptOut() {
   current_flow_ = OPT_OUT_FLOW;
   card_authorization_token_ = std::string();
-  OptChange(/*opt_in=*/false);
+  OptChange();
 }
 
 void CreditCardFIDOAuthenticator::IsUserVerifiable(
@@ -235,12 +235,29 @@ void CreditCardFIDOAuthenticator::MakeCredential(
 }
 
 void CreditCardFIDOAuthenticator::OptChange(
-    bool opt_in,
     base::Value authenticator_response) {
   payments::PaymentsClient::OptChangeRequestDetails request_details;
   request_details.app_locale =
       autofill_client_->GetPersonalDataManager()->app_locale();
-  request_details.opt_in = opt_in;
+
+  switch (current_flow_) {
+    case OPT_IN_WITH_CHALLENGE_FLOW:
+    case OPT_IN_FETCH_CHALLENGE_FLOW:
+      request_details.reason =
+          payments::PaymentsClient::OptChangeRequestDetails::ENABLE_FIDO_AUTH;
+      break;
+    case OPT_OUT_FLOW:
+      request_details.reason =
+          payments::PaymentsClient::OptChangeRequestDetails::DISABLE_FIDO_AUTH;
+      break;
+    case FOLLOWUP_AFTER_CVC_AUTH_FLOW:
+      request_details.reason = payments::PaymentsClient::
+          OptChangeRequestDetails::ADD_CARD_FOR_FIDO_AUTH;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 
   // If |authenticator_response| is set, that means the user just signed a
   // challenge. In which case, if |card_authorization_token_| is not empty, then
@@ -300,7 +317,7 @@ void CreditCardFIDOAuthenticator::OnDidGetAssertion(
     base::Value response = base::Value(base::Value::Type::DICTIONARY);
     response.SetKey("fido_assertion_info",
                     ParseAssertionResponse(std::move(assertion_response)));
-    OptChange(/*opt_in=*/true, std::move(response));
+    OptChange(std::move(response));
   }
 }
 
@@ -321,8 +338,7 @@ void CreditCardFIDOAuthenticator::OnDidMakeCredential(
     return;
   }
 
-  OptChange(/*opt_in=*/true,
-            ParseAttestationResponse(std::move(attestation_response)));
+  OptChange(ParseAttestationResponse(std::move(attestation_response)));
 }
 
 void CreditCardFIDOAuthenticator::OnDidGetOptChangeResult(

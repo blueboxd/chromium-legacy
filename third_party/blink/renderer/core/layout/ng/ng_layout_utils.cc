@@ -310,7 +310,6 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatus(
     const NGConstraintSpace& new_space,
     base::Optional<NGFragmentGeometry>* fragment_geometry) {
   DCHECK_EQ(cached_layout_result.Status(), NGLayoutResult::kSuccess);
-  DCHECK(cached_layout_result.HasValidConstraintSpaceForCaching());
 
   const NGConstraintSpace& old_space =
       cached_layout_result.GetConstraintSpaceForCaching();
@@ -346,7 +345,6 @@ bool MaySkipLegacyLayout(const NGBlockNode& node,
                          const NGLayoutResult& cached_layout_result,
                          const NGConstraintSpace& new_space) {
   DCHECK_EQ(cached_layout_result.Status(), NGLayoutResult::kSuccess);
-  DCHECK(cached_layout_result.HasValidConstraintSpaceForCaching());
 
   const NGConstraintSpace& old_space =
       cached_layout_result.GetConstraintSpaceForCaching();
@@ -372,7 +370,6 @@ bool MaySkipLayoutWithinBlockFormattingContext(
     LayoutUnit* block_offset_delta,
     NGMarginStrut* end_margin_strut) {
   DCHECK_EQ(cached_layout_result.Status(), NGLayoutResult::kSuccess);
-  DCHECK(cached_layout_result.HasValidConstraintSpaceForCaching());
   DCHECK(bfc_block_offset);
   DCHECK(block_offset_delta);
   DCHECK(end_margin_strut);
@@ -541,15 +538,6 @@ bool MaySkipLayoutWithinBlockFormattingContext(
       new_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
     return false;
 
-  return true;
-}
-
-bool IsBlockLayoutComplete(const NGConstraintSpace& space,
-                           const NGLayoutResult& result) {
-  if (result.Status() != NGLayoutResult::kSuccess)
-    return false;
-  if (space.IsIntermediateLayout())
-    return false;
   return true;
 }
 

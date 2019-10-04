@@ -143,6 +143,10 @@ TEST(ProtoConversionTest, ImpressionProtoConversion) {
   // Verify custom data.
   first_impression.custom_data = {{"url", "https://www.example.com"}};
   TestClientStateConversion(&client_state);
+
+  // Verify custom suppression duration.
+  first_impression.custom_suppression_duration = base::TimeDelta::FromDays(3);
+  TestClientStateConversion(&client_state);
 }
 
 // Verifies multiple impressions are serialized correctly.
@@ -195,7 +199,8 @@ TEST(ProtoConversionTest, NotificationEntryConversion) {
   entry.schedule_params.deliver_time_start = entry.create_time;
   entry.schedule_params.deliver_time_end =
       entry.create_time + base::TimeDelta::FromMinutes(10);
-
+  entry.schedule_params.custom_suppression_duration =
+      base::TimeDelta::FromDays(3);
   TestNotificationEntryConversion(&entry);
 }
 

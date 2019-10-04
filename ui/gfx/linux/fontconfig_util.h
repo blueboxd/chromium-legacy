@@ -18,6 +18,10 @@ struct FcPatternDeleter {
 };
 using ScopedFcPattern = std::unique_ptr<FcPattern, FcPatternDeleter>;
 
+// Retrieve the global font config. Must be called on the main thread.
+GFX_EXPORT FcConfig* GetGlobalFontConfig();
+GFX_EXPORT void OverrideGlobalFontConfigForTesting(FcConfig* config);
+
 // FcPattern accessor wrappers.
 GFX_EXPORT std::string GetFontName(FcPattern* pattern);
 GFX_EXPORT std::string GetFilename(FcPattern* pattern);

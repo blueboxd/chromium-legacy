@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
@@ -227,6 +228,9 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
                     << base::SysNSStringToUTF8([error description]);
       return;
     }
+
+    UMA_HISTOGRAM_COUNTS_100000("Session.WebStates.SerializedSize",
+                                sessionData.length / 1024);
 
     _taskRunner->PostTask(FROM_HERE, base::BindOnce(^{
                             [self performSaveSessionData:sessionData

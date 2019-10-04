@@ -109,6 +109,10 @@ std::string DebugString(const NotificationEntry* entry) {
   if (base::Contains(entry->icons_uuid, IconType::kLargeIcon))
     stream << " \n large_icons_id:"
            << entry->icons_uuid.at(IconType::kLargeIcon);
+
+  if (entry->schedule_params.custom_suppression_duration.has_value())
+    stream << " \n custom_suppression_duration:"
+           << entry->schedule_params.custom_suppression_duration.value();
   return stream.str();
 }
 
@@ -145,6 +149,10 @@ std::string DebugString(const ClientState* client_state) {
              << " value: " << pair.second;
     }
 
+    if (impression.custom_suppression_duration.has_value()) {
+      stream << " \n custom suppression duration  "
+             << impression.custom_suppression_duration.value();
+    }
     log += stream.str();
   }
 

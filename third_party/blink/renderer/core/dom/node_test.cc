@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -340,6 +341,24 @@ TEST_F(NodeTest, MutationOutsideFlatTreeStyleDirty) {
       .getElementById("nonslotted")
       ->setAttribute("style", "color:green");
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
+}
+
+TEST_F(NodeTest, SkipStyleDirtyHostChild) {
+  ScopedFlatTreeStyleRecalcForTest scope(true);
+
+  SetBodyContent("<div id=host><span></span></div>");
+  Element* host = GetDocument().getElementById("host");
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.SetInnerHTMLFromString(
+      "<div style='display:none'><slot></slot></div>");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdate());
+
+  // Check that we do not mark an element for style recalc when the element and
+  // its flat tree parent are display:none.
+  To<Element>(host->firstChild())->setAttribute("style", "color:green");
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdate());
 }
 
 TEST_F(NodeTest, ContainsChild) {

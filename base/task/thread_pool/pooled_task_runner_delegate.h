@@ -46,6 +46,10 @@ class BASE_EXPORT PooledTaskRunnerDelegate {
   virtual bool EnqueueJobTaskSource(
       scoped_refptr<JobTaskSource> task_source) = 0;
 
+  // Removes |task_source| from the priority queue.
+  virtual void RemoveJobTaskSource(
+      scoped_refptr<JobTaskSource> task_source) = 0;
+
   // Invoked when RunsTasksInCurrentSequence() is called on a
   // PooledParallelTaskRunner. Returns true if the current thread is part of the
   // ThreadGroup associated with |traits|.

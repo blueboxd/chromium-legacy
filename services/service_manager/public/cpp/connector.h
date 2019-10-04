@@ -126,9 +126,12 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
   // does, before routing the Receiver to it.
   template <typename Interface>
   void Connect(const ServiceFilter& filter,
-               mojo::PendingReceiver<Interface> receiver) {
+               mojo::PendingReceiver<Interface> receiver,
+               mojom::BindInterfacePriority priority =
+                   mojom::BindInterfacePriority::kImportant) {
     BindInterface(filter,
-                  mojo::InterfaceRequest<Interface>(std::move(receiver)));
+                  mojo::InterfaceRequest<Interface>(std::move(receiver)),
+                  priority);
   }
 
   // A variant of the above which constructs a simple ServiceFilter by service

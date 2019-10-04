@@ -178,3 +178,11 @@ source_set("linux_ozone_views_unittests_filters") {
     "//testing/buildbot/filters/ozone-linux.x11_views_unittests.filter",
   ]
 }
+
+source_set("e2e_sync_integration_tests_filters") {
+  testonly = true
+
+  data = [
+    "//testing/buildbot/filters/e2e.sync_integration_tests.filter",
+  ]
+}

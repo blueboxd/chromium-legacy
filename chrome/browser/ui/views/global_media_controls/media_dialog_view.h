@@ -48,6 +48,9 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
 
   static MediaDialogView* instance_;
 
+  // True if the dialog has been opened this session.
+  static bool has_been_opened_;
+
   // views::BubbleDialogDelegateView implementation.
   void Init() override;
   void WindowClosing() override;

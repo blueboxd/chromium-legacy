@@ -459,10 +459,13 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
       return;
     }
 
-    EolInfo eol_info;
-    eol_info.days_from_epoch = status.eol_date();
+    VLOG(1) << "Eol date received: " << status.eol_date();
 
-    VLOG(1) << "Eol date received: " << eol_info.days_from_epoch;
+    EolInfo eol_info;
+    if (status.eol_date() > -1) {
+      eol_info.eol_date = base::Time::UnixEpoch() +
+                          base::TimeDelta::FromDays(status.eol_date());
+    }
     std::move(callback).Run(eol_info);
   }
 

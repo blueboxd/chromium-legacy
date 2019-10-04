@@ -91,6 +91,7 @@ class CORE_EXPORT IntersectionObserver final
       const Vector<float>& thresholds,
       Document* document,
       EventCallback callback,
+      DeliveryBehavior behavior = kDeliverDuringPostLifecycleSteps,
       ThresholdInterpretation semantics = kFractionOfTarget,
       DOMHighResTimeStamp delay = 0,
       bool track_visbility = false,

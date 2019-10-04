@@ -12,6 +12,7 @@
 #include "chromeos/components/sync_wifi/test_specifics_generator.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace {
 
@@ -49,9 +50,9 @@ class PendingNetworkConfigurationTrackerImplTest : public testing::Test {
         kPendingNetworkConfigurationsPref);
   }
 
-  bool DoesPrefContainPendingUpdate(const std::string& ssid,
+  bool DoesPrefContainPendingUpdate(const NetworkIdentifier& id,
                                     const std::string& update_guid) const {
-    const base::Value* dict = GetPref()->FindPath(ssid);
+    const base::Value* dict = GetPref()->FindPath(id.SerializeToString());
     if (!dict)
       return false;
 
@@ -61,14 +62,14 @@ class PendingNetworkConfigurationTrackerImplTest : public testing::Test {
 
   void AssertTrackerHasMatchingUpdate(
       const std::string& update_guid,
-      const std::string& ssid,
+      const NetworkIdentifier& id,
       int completed_attempts = 0,
       const base::Optional<sync_pb::WifiConfigurationSpecificsData> specifics =
           base::nullopt) {
     base::Optional<PendingNetworkConfigurationUpdate> update =
-        tracker()->GetPendingUpdate(update_guid, ssid);
+        tracker()->GetPendingUpdate(update_guid, id);
     ASSERT_TRUE(update);
-    ASSERT_EQ(ssid, update->ssid());
+    ASSERT_EQ(id, update->id());
     ASSERT_EQ(completed_attempts, update->completed_attempts());
     std::string serialized_specifics_wants;
     std::string serialized_specifics_has;
@@ -87,103 +88,107 @@ class PendingNetworkConfigurationTrackerImplTest : public testing::Test {
 };
 
 TEST_F(PendingNetworkConfigurationTrackerImplTest, TestMarkComplete) {
-  tracker()->TrackPendingUpdate(kChangeGuid1, kFredSsid,
+  NetworkIdentifier id(kFredSsid, shill::kSecurityPsk);
+  tracker()->TrackPendingUpdate(kChangeGuid1, id,
                                 /*specifics=*/base::nullopt);
-  AssertTrackerHasMatchingUpdate(kChangeGuid1, kFredSsid);
+  AssertTrackerHasMatchingUpdate(kChangeGuid1, id);
   EXPECT_EQ(1u, GetPref()->DictSize());
-  EXPECT_TRUE(DoesPrefContainPendingUpdate(kFredSsid, kChangeGuid1));
-  tracker()->MarkComplete(kChangeGuid1, kFredSsid);
-  EXPECT_FALSE(tracker()->GetPendingUpdate(kChangeGuid1, kFredSsid));
+  EXPECT_TRUE(DoesPrefContainPendingUpdate(id, kChangeGuid1));
+  tracker()->MarkComplete(kChangeGuid1, id);
+  EXPECT_FALSE(tracker()->GetPendingUpdate(kChangeGuid1, id));
   EXPECT_EQ(0u, GetPref()->DictSize());
 }
 
 TEST_F(PendingNetworkConfigurationTrackerImplTest, TestTwoChangesSameNetwork) {
-  tracker()->TrackPendingUpdate(kChangeGuid1, kFredSsid,
+  NetworkIdentifier id(kFredSsid, shill::kSecurityPsk);
+  tracker()->TrackPendingUpdate(kChangeGuid1, id,
                                 /*specifics=*/base::nullopt);
-  tracker()->IncrementCompletedAttempts(kChangeGuid1, kFredSsid);
-  AssertTrackerHasMatchingUpdate(kChangeGuid1, kFredSsid,
+  tracker()->IncrementCompletedAttempts(kChangeGuid1, id);
+  AssertTrackerHasMatchingUpdate(kChangeGuid1, id,
                                  /*completed_attempts=*/1);
   EXPECT_EQ(1u, GetPref()->DictSize());
-  EXPECT_EQ(1, tracker()
-                   ->GetPendingUpdate(kChangeGuid1, kFredSsid)
-                   ->completed_attempts());
+  EXPECT_EQ(
+      1, tracker()->GetPendingUpdate(kChangeGuid1, id)->completed_attempts());
 
-  tracker()->TrackPendingUpdate(kChangeGuid2, kFredSsid,
+  tracker()->TrackPendingUpdate(kChangeGuid2, id,
                                 /*specifics=*/base::nullopt);
-  EXPECT_FALSE(tracker()->GetPendingUpdate(kChangeGuid1, kFredSsid));
-  AssertTrackerHasMatchingUpdate(kChangeGuid2, kFredSsid);
-  EXPECT_EQ(0, tracker()
-                   ->GetPendingUpdate(kChangeGuid2, kFredSsid)
-                   ->completed_attempts());
+  EXPECT_FALSE(tracker()->GetPendingUpdate(kChangeGuid1, id));
+  AssertTrackerHasMatchingUpdate(kChangeGuid2, id);
+  EXPECT_EQ(
+      0, tracker()->GetPendingUpdate(kChangeGuid2, id)->completed_attempts());
   EXPECT_EQ(1u, GetPref()->DictSize());
 }
 
 TEST_F(PendingNetworkConfigurationTrackerImplTest,
        TestTwoChangesDifferentNetworks) {
-  tracker()->TrackPendingUpdate(kChangeGuid1, kFredSsid,
+  NetworkIdentifier fred_id(kFredSsid, shill::kSecurityPsk);
+  NetworkIdentifier mango_id(kMangoSsid, shill::kSecurityPsk);
+  tracker()->TrackPendingUpdate(kChangeGuid1, fred_id,
                                 /*specifics=*/base::nullopt);
-  AssertTrackerHasMatchingUpdate(kChangeGuid1, kFredSsid);
-  EXPECT_TRUE(DoesPrefContainPendingUpdate(kFredSsid, kChangeGuid1));
+  AssertTrackerHasMatchingUpdate(kChangeGuid1, fred_id);
+  EXPECT_TRUE(DoesPrefContainPendingUpdate(fred_id, kChangeGuid1));
   EXPECT_EQ(1u, GetPref()->DictSize());
-  tracker()->TrackPendingUpdate(kChangeGuid2, kMangoSsid,
+  tracker()->TrackPendingUpdate(kChangeGuid2, mango_id,
                                 /*specifics=*/base::nullopt);
-  AssertTrackerHasMatchingUpdate(kChangeGuid1, kFredSsid);
-  AssertTrackerHasMatchingUpdate(kChangeGuid2, kMangoSsid);
-  EXPECT_TRUE(DoesPrefContainPendingUpdate(kFredSsid, kChangeGuid1));
-  EXPECT_TRUE(DoesPrefContainPendingUpdate(kMangoSsid, kChangeGuid2));
+  AssertTrackerHasMatchingUpdate(kChangeGuid1, fred_id);
+  AssertTrackerHasMatchingUpdate(kChangeGuid2, mango_id);
+  EXPECT_TRUE(DoesPrefContainPendingUpdate(fred_id, kChangeGuid1));
+  EXPECT_TRUE(DoesPrefContainPendingUpdate(mango_id, kChangeGuid2));
   EXPECT_EQ(2u, GetPref()->DictSize());
 }
 
 TEST_F(PendingNetworkConfigurationTrackerImplTest, TestGetPendingUpdates) {
-  tracker()->TrackPendingUpdate(kChangeGuid1, kFredSsid,
+  NetworkIdentifier fred_id(kFredSsid, shill::kSecurityPsk);
+  NetworkIdentifier mango_id(kMangoSsid, shill::kSecurityPsk);
+  tracker()->TrackPendingUpdate(kChangeGuid1, fred_id,
                                 /*specifics=*/base::nullopt);
-  tracker()->TrackPendingUpdate(kChangeGuid2, kMangoSsid,
+  tracker()->TrackPendingUpdate(kChangeGuid2, mango_id,
                                 /*specifics=*/base::nullopt);
   std::vector<PendingNetworkConfigurationUpdate> list =
       tracker()->GetPendingUpdates();
   EXPECT_EQ(2u, list.size());
   EXPECT_EQ(kChangeGuid1, list[0].change_guid());
-  EXPECT_EQ(kFredSsid, list[0].ssid());
+  EXPECT_EQ(fred_id, list[0].id());
   EXPECT_EQ(kChangeGuid2, list[1].change_guid());
-  EXPECT_EQ(kMangoSsid, list[1].ssid());
+  EXPECT_EQ(mango_id, list[1].id());
 
-  tracker()->MarkComplete(kChangeGuid1, kFredSsid);
+  tracker()->MarkComplete(kChangeGuid1, fred_id);
   list = tracker()->GetPendingUpdates();
   EXPECT_EQ(1u, list.size());
   EXPECT_EQ(kChangeGuid2, list[0].change_guid());
-  EXPECT_EQ(kMangoSsid, list[0].ssid());
+  EXPECT_EQ(mango_id, list[0].id());
 }
 
 TEST_F(PendingNetworkConfigurationTrackerImplTest, TestGetPendingUpdate) {
   sync_pb::WifiConfigurationSpecificsData specifics =
       CreateSpecifics(kFredSsid);
-  tracker()->TrackPendingUpdate(kChangeGuid1, kFredSsid, specifics);
+  NetworkIdentifier fred_id(kFredSsid, shill::kSecurityPsk);
+  NetworkIdentifier mango_id(kMangoSsid, shill::kSecurityPsk);
+  tracker()->TrackPendingUpdate(kChangeGuid1, fred_id, specifics);
 
-  AssertTrackerHasMatchingUpdate(kChangeGuid1, kFredSsid,
+  AssertTrackerHasMatchingUpdate(kChangeGuid1, fred_id,
                                  /*completed_attempts=*/0, specifics);
 
-  EXPECT_FALSE(tracker()->GetPendingUpdate(kChangeGuid2, kMangoSsid));
+  EXPECT_FALSE(tracker()->GetPendingUpdate(kChangeGuid2, mango_id));
 }
 
 TEST_F(PendingNetworkConfigurationTrackerImplTest, TestRetryCounting) {
-  tracker()->TrackPendingUpdate(kChangeGuid1, kFredSsid,
+  NetworkIdentifier id(kFredSsid, shill::kSecurityPsk);
+  tracker()->TrackPendingUpdate(kChangeGuid1, id,
                                 /*specifics=*/base::nullopt);
-  AssertTrackerHasMatchingUpdate(kChangeGuid1, kFredSsid);
+  AssertTrackerHasMatchingUpdate(kChangeGuid1, id);
   EXPECT_EQ(1u, GetPref()->DictSize());
-  EXPECT_EQ(0, tracker()
-                   ->GetPendingUpdate(kChangeGuid1, kFredSsid)
-                   ->completed_attempts());
-  tracker()->IncrementCompletedAttempts(kChangeGuid1, kFredSsid);
-  tracker()->IncrementCompletedAttempts(kChangeGuid1, kFredSsid);
-  tracker()->IncrementCompletedAttempts(kChangeGuid1, kFredSsid);
-  EXPECT_EQ(3, tracker()
-                   ->GetPendingUpdate(kChangeGuid1, kFredSsid)
-                   ->completed_attempts());
-  tracker()->IncrementCompletedAttempts(kChangeGuid1, kFredSsid);
-  tracker()->IncrementCompletedAttempts(kChangeGuid1, kFredSsid);
-  EXPECT_EQ(5, tracker()
-                   ->GetPendingUpdate(kChangeGuid1, kFredSsid)
-                   ->completed_attempts());
+  EXPECT_EQ(
+      0, tracker()->GetPendingUpdate(kChangeGuid1, id)->completed_attempts());
+  tracker()->IncrementCompletedAttempts(kChangeGuid1, id);
+  tracker()->IncrementCompletedAttempts(kChangeGuid1, id);
+  tracker()->IncrementCompletedAttempts(kChangeGuid1, id);
+  EXPECT_EQ(
+      3, tracker()->GetPendingUpdate(kChangeGuid1, id)->completed_attempts());
+  tracker()->IncrementCompletedAttempts(kChangeGuid1, id);
+  tracker()->IncrementCompletedAttempts(kChangeGuid1, id);
+  EXPECT_EQ(
+      5, tracker()->GetPendingUpdate(kChangeGuid1, id)->completed_attempts());
 }
 
 }  // namespace sync_wifi

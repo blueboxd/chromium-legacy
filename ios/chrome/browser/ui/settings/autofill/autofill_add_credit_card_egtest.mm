@@ -100,7 +100,6 @@ id<GREYMatcher> CardNumberIconView(NSString* icon_type) {
                  @"SettingsAddPaymentMethod should be enabled");
   GREYAssertTrue([ChromeEarlGrey isCreditCardScannerEnabled],
                  @"CreditCardScanner should be enabled");
-  [ChromeEarlGrey openNewTab];
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:PaymentMethodsButton()];
   [[EarlGrey selectElementWithMatcher:AddPaymentMethodButton()]

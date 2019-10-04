@@ -97,7 +97,6 @@ Layer::Inputs::Inputs(int layer_id)
       contents_opaque(false),
       is_drawable(false),
       double_sided(true),
-      should_flatten_transform(true),
       use_parent_backface_visibility(false),
       is_fast_rounded_corner(false),
       scrollable(false),
@@ -131,7 +130,6 @@ Layer::Layer()
       scroll_tree_index_(ScrollTree::kInvalidNodeId),
       property_tree_sequence_number_(-1),
       ignore_set_needs_commit_(false),
-      should_flatten_screen_space_transform_from_property_tree_(false),
       draws_content_(false),
       should_check_backface_visibility_(false),
       cache_render_surface_(false),
@@ -1215,16 +1213,6 @@ void Layer::SetPropertyTreesNeedRebuild() {
     layer_tree_host_->property_trees()->needs_rebuild = true;
 }
 
-void Layer::SetShouldFlattenTransform(bool should_flatten) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.should_flatten_transform == should_flatten)
-    return;
-  inputs_.should_flatten_transform = should_flatten;
-  SetNeedsCommit();
-  SetPropertyTreesNeedRebuild();
-  SetSubtreePropertyChanged();
-}
-
 #if DCHECK_IS_ON()
 std::string Layer::DebugName() const {
   if (inputs_.client) {
@@ -1363,8 +1351,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     layer->SetWheelEventHandlerRegion(Region());
   }
   layer->SetContentsOpaque(inputs_.contents_opaque);
-  layer->SetShouldFlattenScreenSpaceTransformFromPropertyTree(
-      should_flatten_screen_space_transform_from_property_tree_);
   layer->SetUseParentBackfaceVisibility(inputs_.use_parent_backface_visibility);
   layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
 
@@ -1478,15 +1464,6 @@ void Layer::SetSubtreePropertyChanged() {
   if (subtree_property_changed_)
     return;
   subtree_property_changed_ = true;
-  SetNeedsPushProperties();
-}
-
-void Layer::SetShouldFlattenScreenSpaceTransformFromPropertyTree(
-    bool should_flatten) {
-  if (should_flatten_screen_space_transform_from_property_tree_ ==
-      should_flatten)
-    return;
-  should_flatten_screen_space_transform_from_property_tree_ = should_flatten;
   SetNeedsPushProperties();
 }
 

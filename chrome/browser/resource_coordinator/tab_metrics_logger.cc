@@ -212,9 +212,7 @@ void TabMetricsLogger::LogForegroundedOrClosedMetrics(
   ukm::builders::TabManager_Background_ForegroundedOrClosed(ukm_source_id)
       .SetLabelId(metrics.label_id)
       .SetIsForegrounded(metrics.is_foregrounded)
-      .SetMRUIndex(metrics.mru_index)
       .SetTimeFromBackgrounded(metrics.time_from_backgrounded)
-      .SetTotalTabCount(metrics.total_tab_count)
       .SetIsDiscarded(metrics.is_discarded)
       .Record(ukm::UkmRecorder::Get());
 }

@@ -24,6 +24,11 @@ Polymer({
 
     /** @private */
     canChangeChannel_: Boolean,
+
+    eolMessageWithMonthAndYear: {
+      type: String,
+      value: '',
+    },
   },
 
   /** @override */

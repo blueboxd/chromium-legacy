@@ -468,6 +468,11 @@ void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
 
 apps::mojom::InstallSource GetInstallSource(const ArcAppListPrefs* prefs,
                                             const std::string& package_name) {
+  // TODO(crbug.com/1010821): Create a generic check for kSystem apps.
+  if (prefs->GetAppIdByPackageName(package_name) == arc::kPlayStoreAppId) {
+    return apps::mojom::InstallSource::kSystem;
+  }
+
   if (prefs->IsDefault(package_name)) {
     return apps::mojom::InstallSource::kDefault;
   }

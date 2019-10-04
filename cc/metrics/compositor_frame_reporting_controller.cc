@@ -146,15 +146,6 @@ void CompositorFrameReportingController::DidSubmitCompositorFrame(
                                             std::move(submitted_reporter));
 }
 
-void CompositorFrameReportingController::DidNotProduceFrame() {
-  if (!reporters_[PipelineStage::kActivate])
-    return;
-  reporters_[PipelineStage::kActivate]->TerminateFrame(
-      CompositorFrameReporter::FrameTerminationStatus::kDidNotProduceFrame,
-      Now());
-  reporters_[PipelineStage::kActivate] = nullptr;
-}
-
 void CompositorFrameReportingController::DidPresentCompositorFrame(
     uint32_t frame_token,
     const viz::FrameTimingDetails& details) {

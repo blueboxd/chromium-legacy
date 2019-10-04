@@ -70,19 +70,14 @@ inline LayoutUnit StaticPositionEndInset(bool is_static_position_start,
          (is_static_position_start ? size : LayoutUnit());
 }
 
-// https://www.w3.org/TR/css-position-3/#abs-replaced-width
-// Handle the special case of an element with aspect ratio, but no intrinsic
-// width or height.
 LayoutUnit ComputeShrinkToFitSize(
     const base::Optional<MinMaxSize>& child_minmax,
     LayoutUnit computed_available_size,
     LayoutUnit margin_start,
     LayoutUnit margin_end) {
-  LayoutUnit size = (computed_available_size - margin_start - margin_end)
-                        .ClampNegativeToZero();
-  if (child_minmax)
-    return child_minmax->ShrinkToFit(size);
-  return size;
+  return child_minmax->ShrinkToFit(
+      (computed_available_size - margin_start - margin_end)
+          .ClampNegativeToZero());
 }
 
 // Implement the absolute size resolution algorithm.

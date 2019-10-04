@@ -182,6 +182,7 @@ void LayoutBox::WillBeDestroyed() {
       first_inline_fragment->LayoutObjectWillBeDestroyed();
   }
 
+  SetSnapContainer(nullptr);
   LayoutBoxModelObject::WillBeDestroyed();
 }
 
@@ -483,7 +484,7 @@ void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
       old_style.ScrollPaddingLeft() != StyleRef().ScrollPaddingLeft() ||
       old_style.ScrollPaddingTop() != StyleRef().ScrollPaddingTop() ||
       old_style.ScrollPaddingRight() != StyleRef().ScrollPaddingRight()) {
-    snap_coordinator.SnapContainerDidChange(*this, false /* is_removed */);
+    snap_coordinator.SnapContainerDidChange(*this);
   }
 
   // scroll-snap-align, scroll-snap-stop and scroll-margin invalidate the snap
@@ -499,13 +500,11 @@ void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
 
 void LayoutBox::AddScrollSnapMapping() {
   SnapCoordinator& snap_coordinator = GetDocument().GetSnapCoordinator();
-  snap_coordinator.SnapContainerDidChange(*this, false /* is_removed */);
   snap_coordinator.SnapAreaDidChange(*this, Style()->GetScrollSnapAlign());
 }
 
 void LayoutBox::ClearScrollSnapMapping() {
   SnapCoordinator& snap_coordinator = GetDocument().GetSnapCoordinator();
-  snap_coordinator.SnapContainerDidChange(*this, true /* is_removed */);
   snap_coordinator.SnapAreaDidChange(*this, cc::ScrollSnapAlign());
 }
 
@@ -2305,18 +2304,19 @@ void LayoutBox::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
 
 void LayoutBox::SetCachedLayoutResult(const NGLayoutResult& layout_result,
                                       const NGBreakToken* break_token) {
+  DCHECK_EQ(layout_result.Status(), NGLayoutResult::kSuccess);
+  DCHECK(!layout_result.GetConstraintSpaceForCaching().IsIntermediateLayout());
+
   if (break_token)
-    return;
-  if (layout_result.Status() != NGLayoutResult::kSuccess)
-    return;
-  if (!layout_result.HasValidConstraintSpaceForCaching())
-    return;
-  if (layout_result.GetConstraintSpaceForCaching().IsIntermediateLayout())
     return;
   if (layout_result.PhysicalFragment().BreakToken())
     return;
 
   cached_layout_result_ = &layout_result;
+}
+
+void LayoutBox::ClearCachedLayoutResult() {
+  cached_layout_result_ = nullptr;
 }
 
 scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
@@ -2340,6 +2340,8 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
 
   if (early_break)
     return nullptr;
+
+  DCHECK_EQ(cached_layout_result->Status(), NGLayoutResult::kSuccess);
 
   // Set our initial temporary cache status to "hit".
   NGLayoutCacheStatus cache_status = NGLayoutCacheStatus::kHit;
@@ -2473,10 +2475,6 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   // and have cached a locked layout result. In that case, this function will
   // not clear the child dirty bits.
   ClearNeedsLayout();
-
-  // The checks above should be enough to bail if layout is incomplete, but
-  // let's verify:
-  DCHECK(IsBlockLayoutComplete(old_space, *cached_layout_result));
 
   // OOF-positioned nodes have to two-tier cache. The additional cache check
   // runs before the OOF-positioned sizing, and positioning calculations.

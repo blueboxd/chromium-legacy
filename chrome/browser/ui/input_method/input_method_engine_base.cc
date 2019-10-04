@@ -464,6 +464,8 @@ void InputMethodEngineBase::KeyEventHandled(const std::string& extension_id,
   }
 
   std::move(it->second.callback).Run(handled);
+  UMA_HISTOGRAM_TIMES("InputMethod.KeyEventLatency",
+                      base::Time::Now() - it->second.created_time);
   pending_key_events_.erase(it);
 }
 

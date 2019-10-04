@@ -530,6 +530,16 @@
              "--disable-smooth-scrolling"]
   },
   {
+    "prefix": "compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf",
+    "base": "fast/scrolling/scrollbars",
+    "args": ["--enable-features=CompositorThreadedScrollbarScrolling",
+             "--enable-threaded-compositing",
+             "--enable-prefer-compositing-to-lcd-text",
+             "--disable-smooth-scrolling",
+             "--force-device-scale-factor=2",
+             "--enable-use-zoom-for-dsf=false"]
+  },
+  {
     "prefix": "compositor_threaded_scrollbar_scrolling",
     "base": "paint/invalidation/scroll/sticky",
     "args": ["--enable-threaded-compositing",

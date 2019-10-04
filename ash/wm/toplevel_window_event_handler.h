@@ -30,6 +30,7 @@ class GestureEvent;
 }  // namespace ui
 
 namespace ash {
+class BackGestureAffordance;
 namespace mojom {
 enum class WindowStateType;
 }
@@ -45,6 +46,10 @@ class ASH_EXPORT ToplevelWindowEventHandler
  public:
   // The distance for swiping from left edge to go previous page.
   static constexpr int kSwipingDistanceForGoingBack = 80;
+
+  // The threshold of the fling velocity while fling from left edge to go
+  // previous page.
+  static constexpr int kFlingVelocityForGoingBack = 1000;
 
   // Describes what triggered ending the drag.
   enum class DragResult {
@@ -186,6 +191,10 @@ class ASH_EXPORT ToplevelWindowEventHandler
 
   // True if swiping from left edge to go to previous page is in progress.
   bool going_back_started_ = false;
+
+  // Used to show the affordance while swiping from left edge to go to the
+  // previout page.
+  std::unique_ptr<BackGestureAffordance> back_gesture_affordance_;
 
   base::WeakPtrFactory<ToplevelWindowEventHandler> weak_factory_{this};
 

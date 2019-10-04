@@ -4,17 +4,15 @@
 
 import json
 import os
-import re
 import sys
 
 from gpu_tests import gpu_integration_test
-from gpu_tests import cloud_storage_integration_test_base
+from gpu_tests import pixel_integration_test
 from gpu_tests import path_util
 from gpu_tests import color_profile_manager
+from gpu_tests import pixel_test_pages
 
 from py_utils import cloud_storage
-
-from telemetry.util import image_util
 
 _MAPS_PERF_TEST_PATH = os.path.join(
   path_util.GetChromiumSrcDir(), 'tools', 'perf', 'page_sets', 'maps_perf_test')
@@ -24,8 +22,7 @@ _DATA_PATH = os.path.join(path_util.GetChromiumSrcDir(),
 
 _TOLERANCE = 3
 
-class MapsIntegrationTest(
-    cloud_storage_integration_test_base.CloudStorageIntegrationTestBase):
+class MapsIntegrationTest(pixel_integration_test.PixelIntegrationTest):
   """Google Maps pixel tests.
 
   Note: this test uses the same WPR as the smoothness.maps benchmark
@@ -71,56 +68,6 @@ class MapsIntegrationTest(
       json_contents = json.load(f)
     return json_contents
 
-  @classmethod
-  def _UploadErrorImagesToCloudStorage(cls, image_name, screenshot, ref_img):
-    """For a failing run, uploads the failing image, reference image (if
-    supplied), and diff image (if reference image was supplied) to cloud
-    storage. This subsumes the functionality of the
-    archive_gpu_pixel_test_results.py script."""
-    machine_name = re.sub(r'\W+', '_',
-                          cls.GetParsedCommandLineOptions().test_machine_name)
-    upload_dir = '%s_%s_telemetry' % (
-      cls.GetParsedCommandLineOptions().build_revision, machine_name)
-    base_bucket = '%s/runs/%s' % (
-        cls._error_image_cloud_storage_bucket, upload_dir)
-    image_name_with_revision = '%s_%s.png' % (
-      image_name, cls.GetParsedCommandLineOptions().build_revision)
-    cls._UploadBitmapToCloudStorage(
-      base_bucket + '/gen', image_name_with_revision, screenshot,
-      public=True)
-    if ref_img is not None:
-      cls._UploadBitmapToCloudStorage(
-        base_bucket + '/ref', image_name_with_revision, ref_img, public=True)
-      diff_img = image_util.Diff(screenshot, ref_img)
-      cls._UploadBitmapToCloudStorage(
-        base_bucket + '/diff', image_name_with_revision, diff_img,
-        public=True)
-    print ('See http://%s.commondatastorage.googleapis.com/'
-           'view_test_results.html?%s for this run\'s test results') % (
-      cls._error_image_cloud_storage_bucket, upload_dir)
-
-  def _ValidateScreenshotSamples(self, tab, url, screenshot, expectations,
-                                 tolerance, device_pixel_ratio):
-    """Samples the given screenshot and verifies pixel color values.
-       The sample locations and expected color values are given in expectations.
-       In case any of the samples do not match the expected color, it raises
-       a Failure and dumps the screenshot locally or cloud storage depending on
-       what machine the test is being run."""
-    try:
-      self._CompareScreenshotSamples(
-        tab, screenshot, expectations, tolerance, device_pixel_ratio,
-        self.GetParsedCommandLineOptions().test_machine_name)
-    except Exception:
-      # An exception raised from self.fail() indicates a failure.
-      image_name = self._UrlToImageName(url)
-      if self.GetParsedCommandLineOptions().test_machine_name:
-        self._UploadErrorImagesToCloudStorage(image_name, screenshot, None)
-      else:
-        self._WriteErrorImages(
-          self.GetParsedCommandLineOptions().generated_dir, image_name,
-          screenshot, None)
-      raise
-
   def RunActualGpuTest(self, url, *args):
     tab = self.tab
     pixel_expectations_file = args[0]
@@ -155,8 +102,21 @@ class MapsIntegrationTest(
     # the test-machine-name argument being specified on the command
     # line.
     expected = self._ReadPixelExpectations(pixel_expectations_file)
-    self._ValidateScreenshotSamples(
-      tab, url, screenshot, expected, _TOLERANCE, dpr)
+    page = self._MapsExpectationToPixelExpectation(url, expected, _TOLERANCE)
+    self._ValidateScreenshotSamplesWithSkiaGold(
+        tab, page, screenshot, dpr, self._GetBuildIdArgs())
+
+
+  def _MapsExpectationToPixelExpectation(self, url, expected_colors, tolerance):
+    page = pixel_test_pages.PixelTestPage(
+        url=url,
+        name=('Maps_' + url),
+        # Exact test_rect is arbitrary, just needs to encapsulate all pixels
+        # that are tested.
+        test_rect=[0, 0, 600, 400],
+        tolerance=tolerance,
+        expected_colors=expected_colors)
+    return page
 
   @classmethod
   def ExpectationsFiles(cls):

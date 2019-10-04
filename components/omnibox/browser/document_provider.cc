@@ -37,6 +37,7 @@
 #include "components/omnibox/browser/document_suggestions_service.h"
 #include "components/omnibox/browser/history_provider.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
+#include "components/omnibox/browser/keyword_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/omnibox/browser/search_provider.h"
@@ -356,7 +357,8 @@ void DocumentProvider::RegisterProfilePrefs(
 }
 
 bool DocumentProvider::IsDocumentProviderAllowed(
-    AutocompleteProviderClient* client) {
+    AutocompleteProviderClient* client,
+    const AutocompleteInput& input) {
   // Feature must be on.
   if (!base::FeatureList::IsEnabled(omnibox::kDocumentProvider))
     return false;
@@ -380,9 +382,8 @@ bool DocumentProvider::IsDocumentProviderAllowed(
     return false;
 
   // We haven't received a server backoff signal.
-  if (backoff_for_session_) {
+  if (backoff_for_session_)
     return false;
-  }
 
   // Google must be set as default search provider.
   auto* template_url_service = client->GetTemplateURLService();
@@ -390,9 +391,28 @@ bool DocumentProvider::IsDocumentProviderAllowed(
     return false;
   const TemplateURL* default_provider =
       template_url_service->GetDefaultSearchProvider();
-  return default_provider != nullptr &&
-         default_provider->GetEngineType(
-             template_url_service->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
+  if (default_provider == nullptr ||
+      default_provider->GetEngineType(
+          template_url_service->search_terms_data()) != SEARCH_ENGINE_GOOGLE)
+    return false;
+  if (OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() &&
+      input.prefer_keyword()) {
+    // If a keyword provider matches, and we're explicitly in keyword mode,
+    // then the keyword provider must match the default, or the document
+    // provider.
+    AutocompleteInput keyword_input = input;
+    const TemplateURL* keyword_provider =
+        KeywordProvider::GetSubstitutingTemplateURLForInput(
+            template_url_service, &keyword_input);
+    if (keyword_provider == nullptr)
+      return true;
+    // True if not explicitly in keyword mode, or a Drive suggestion.
+    return !IsExplicitlyInKeywordMode(input, keyword_provider->keyword()) ||
+           base::StartsWith(input.text(),
+                            base::ASCIIToUTF16("drive.google.com"),
+                            base::CompareCase::SENSITIVE);
+  }
+  return true;
 }
 
 // static
@@ -425,7 +445,7 @@ void DocumentProvider::Start(const AutocompleteInput& input,
 
   // Perform various checks - feature is enabled, user is allowed to use the
   // feature, we're not under backoff, etc.
-  if (!IsDocumentProviderAllowed(client_)) {
+  if (!IsDocumentProviderAllowed(client_, input)) {
     return;
   }
 

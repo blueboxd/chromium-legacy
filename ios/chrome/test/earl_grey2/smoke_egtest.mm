@@ -208,6 +208,9 @@
                  @"NewOmniboxPopupLayout should be enabled");
   GREYAssertTrue([ChromeEarlGrey isSlimNavigationManagerEnabled],
                  @"SlimNavigationManager should be enabled");
+
+  GREYAssertEqual([ChromeEarlGrey mainTabCount], 1U,
+                  @"Exactly one new tab should be opened.");
 }
 
 // Tests isCompactWidth method in chrome_earl_grey.h.

@@ -745,8 +745,7 @@ HttpHandler::HttpHandler(
                         base::BindRepeating(&ExecuteSetNetworkConnection))),
 
       // Extension for WebAuthn API:
-      // TODO(nsatragno): Update the link to the official spec once it lands.
-      // https://github.com/w3c/webauthn/pull/1256
+      // https://w3c.github.io/webauthn/#sctn-automation
       CommandMapping(kPost, "session/:sessionId/webauthn/authenticator",
                      WrapToCommand("AddVirtualAuthenticator",
                                    base::BindRepeating(
@@ -760,7 +759,6 @@ HttpHandler::HttpHandler(
               base::BindRepeating(
                   &ExecuteWebAuthnCommand,
                   base::BindRepeating(&ExecuteRemoveVirtualAuthenticator)))),
-
       CommandMapping(
           kPost,
           "session/:sessionId/webauthn/authenticator/:authenticatorId/"
@@ -801,6 +799,7 @@ HttpHandler::HttpHandler(
                         base::BindRepeating(
                             &ExecuteWebAuthnCommand,
                             base::BindRepeating(&ExecuteSetUserVerified)))),
+
       // Extension for Permissions Standard Automation "set permission" command:
       // https://w3c.github.io/permissions/#set-permission-command
       CommandMapping(kPost, "session/:sessionId/permissions",

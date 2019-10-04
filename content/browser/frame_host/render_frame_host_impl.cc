@@ -1065,11 +1065,9 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   if (owned_render_widget_host_)
     owned_render_widget_host_->ShutdownAndDestroyWidget(false);
 
-  // TODO(https://crbug.com/1005077): There is no known reason for removing the
-  // RenderViewHostImpl here instead of automatically at the end of the
-  // destructor. In practise, not doing it here will prevent android WebView to
-  // display a new page after a long sequence of WebView creation / deletion.
-  // The real reason why this is needed needs to be investigated.
+  // This needs to be deleted before |frame_input_handler_| so associated
+  // remotes can send messages during shutdown. See crbug.com/1010478 for
+  // details.
   render_view_host_.reset();
 
   // If another frame is waiting for a beforeunload ACK from this frame,

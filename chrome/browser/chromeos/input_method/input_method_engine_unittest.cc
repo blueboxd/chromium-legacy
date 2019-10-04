@@ -357,5 +357,17 @@ TEST_F(InputMethodEngineTest, TestDisableAfterSetCompositionRange) {
   EXPECT_EQ("text", mock_ime_input_context_handler_->last_commit_text());
 }
 
+TEST_F(InputMethodEngineTest, KeyEventHandledRecordsLatencyHistogram) {
+  CreateEngine(true);
+  base::HistogramTester histogram_tester;
+
+  const std::string request_id = engine_->AddPendingKeyEvent(
+      kTestExtensionId, base::BindOnce([](bool consumed) {}));
+  histogram_tester.ExpectTotalCount("InputMethod.KeyEventLatency", 0);
+
+  engine_->KeyEventHandled(kTestExtensionId, request_id, /* handled */ true);
+  histogram_tester.ExpectTotalCount("InputMethod.KeyEventLatency", 1);
+}
+
 }  // namespace input_method
 }  // namespace chromeos

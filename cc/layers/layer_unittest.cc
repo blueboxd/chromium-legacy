@@ -334,14 +334,6 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       grand_child->PushPropertiesTo(grand_child_impl.get()));
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(top->SetShouldFlattenTransform(false));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
-      top->PushPropertiesTo(top_impl.get());
-      child->PushPropertiesTo(child_impl.get());
-      child2->PushPropertiesTo(child2_impl.get());
-      grand_child->PushPropertiesTo(grand_child_impl.get()));
-
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(top->SetTrilinearFiltering(true));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       top->PushPropertiesTo(top_impl.get());

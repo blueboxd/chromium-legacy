@@ -2206,7 +2206,7 @@ UserSessionManager::GetDefaultIMEState(Profile* profile) {
   return state;
 }
 
-void UserSessionManager::CheckEolStatus(Profile* profile) {
+void UserSessionManager::CheckEolInfo(Profile* profile) {
   if (!EolNotification::ShouldShowEolNotification())
     return;
 
@@ -2218,7 +2218,7 @@ void UserSessionManager::CheckEolStatus(Profile* profile) {
                .insert(std::make_pair(profile, std::move(eol_notification)))
                .first;
   }
-  iter->second->CheckEolStatus();
+  iter->second->CheckEolInfo();
 }
 
 void UserSessionManager::StartAccountManagerMigration(Profile* profile) {
@@ -2299,7 +2299,7 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
 
   // Check to see if this profile should show EndOfLife Notification and show
   // the message accordingly.
-  CheckEolStatus(profile);
+  CheckEolInfo(profile);
 
   // Check to see if this profile should show TPM Firmware Update Notification
   // and show the message accordingly.

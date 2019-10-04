@@ -25,7 +25,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.widget.RoundedIconGenerator;
+import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

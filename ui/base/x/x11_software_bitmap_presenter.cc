@@ -159,13 +159,13 @@ bool X11SoftwareBitmapPresenter::ShmPoolReady() const {
 }
 
 bool X11SoftwareBitmapPresenter::Resize(const gfx::Size& pixel_size) {
+  viewport_pixel_size_ = pixel_size;
   // Fallback to the non-shm codepath when |composite_| is true, which only
   // happens for status icon windows that are typically 16x16px.  It's possible
   // to add a shm codepath, but it wouldn't be buying much since it would only
   // affect windows that are tiny and infrequently updated.
   if (!composite_ && shm_pool_->Resize(pixel_size)) {
     needs_swap_ = false;
-    viewport_pixel_size_ = pixel_size;
     return true;
   }
   return false;
@@ -173,7 +173,7 @@ bool X11SoftwareBitmapPresenter::Resize(const gfx::Size& pixel_size) {
 
 SkCanvas* X11SoftwareBitmapPresenter::GetSkCanvas() {
   if (shm_pool_->Ready())
-    return new SkCanvas(shm_pool_->CurrentBitmap());
+    return shm_pool_->CurrentCanvas();
   return nullptr;
 }
 
@@ -184,7 +184,10 @@ void X11SoftwareBitmapPresenter::EndPaint(sk_sp<SkSurface> sk_surface,
   if (rect.IsEmpty())
     return;
 
+  SkPixmap skia_pixmap;
+
   if (shm_pool_->Ready()) {
+    DCHECK(!sk_surface);
     // TODO(thomasanderson): Investigate direct rendering with DRI3 to avoid any
     // unnecessary X11 IPC or buffer copying.
     if (XShmPutImage(display_, widget_, gc_, shm_pool_->CurrentImage(),
@@ -194,18 +197,17 @@ void X11SoftwareBitmapPresenter::EndPaint(sk_sp<SkSurface> sk_surface,
       XFlush(display_);
       return;
     }
+    skia_pixmap = shm_pool_->CurrentBitmap().pixmap();
+  } else {
+    DCHECK(sk_surface);
+    sk_surface->peekPixels(&skia_pixmap);
   }
 
-  if (!sk_surface)
+  if (composite_ &&
+      CompositeBitmap(display_, widget_, rect.x(), rect.y(), rect.width(),
+                      rect.height(), attributes_.depth, gc_,
+                      skia_pixmap.addr())) {
     return;
-
-  if (composite_) {
-    SkPixmap pixmap;
-    sk_surface->peekPixels(&pixmap);
-    if (CompositeBitmap(display_, widget_, rect.x(), rect.y(), rect.width(),
-                        rect.height(), attributes_.depth, gc_, pixmap.addr())) {
-      return;
-    }
   }
 
   int bpp = gfx::BitsPerPixelForPixmapDepth(display_, attributes_.depth);
@@ -219,8 +221,6 @@ void X11SoftwareBitmapPresenter::EndPaint(sk_sp<SkSurface> sk_surface,
     XImage image;
     memset(&image, 0, sizeof(image));
 
-    SkPixmap skia_pixmap;
-    sk_surface->peekPixels(&skia_pixmap);
     image.width = viewport_pixel_size_.width();
     image.height = viewport_pixel_size_.height();
     image.depth = 32;
@@ -263,10 +263,8 @@ void X11SoftwareBitmapPresenter::EndPaint(sk_sp<SkSurface> sk_surface,
     XRenderFreePicture(display_, dest_picture);
     XFreePixmap(display_, pixmap);
   } else {
-    SkPixmap pixmap;
-    sk_surface->peekPixels(&pixmap);
     gfx::PutARGBImage(display_, attributes_.visual, attributes_.depth, widget_,
-                      gc_, static_cast<const uint8_t*>(pixmap.addr()),
+                      gc_, static_cast<const uint8_t*>(skia_pixmap.addr()),
                       viewport_pixel_size_.width(),
                       viewport_pixel_size_.height(), rect.x(), rect.y(),
                       rect.x(), rect.y(), rect.width(), rect.height());

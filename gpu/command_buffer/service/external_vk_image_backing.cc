@@ -886,6 +886,11 @@ void ExternalVkImageBacking::CopyPixelsFromGLTexture() {
       gl_type = GL_UNSIGNED_INT_2_10_10_10_REV;
       bytes_per_pixel = 4;
       break;
+    case VK_FORMAT_R16G16B16A16_SFLOAT:
+      gl_format = GL_RGBA;
+      gl_type = GL_HALF_FLOAT;
+      bytes_per_pixel = 8;
+      break;
     default:
       NOTREACHED() << "Not supported resource format=" << format();
       return;
@@ -928,6 +933,8 @@ void ExternalVkImageBacking::CopyPixelsFromGLTexture() {
                      GLenum type, void* buffer) {
                     api->glReadPixelsFn(0, 0, size.width(), size.height(),
                                         format, type, buffer);
+                    DCHECK_EQ(api->glGetErrorFn(),
+                              static_cast<GLenum>(GL_NO_ERROR));
                   },
                   api, size(), gl_format, gl_type));
   api->glBindFramebufferEXTFn(GL_READ_FRAMEBUFFER, old_framebuffer);

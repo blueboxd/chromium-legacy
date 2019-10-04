@@ -13,6 +13,8 @@
 
 namespace cc {
 
+// For composited overlay scrollbars with nine-patch thumb. For overlay
+// scrollbars whose thumb is not nine-patch, use PaintedScrollbarLayer.
 class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerInterface,
                                                public Layer {
  public:
@@ -22,8 +24,7 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerInterface,
   PaintedOverlayScrollbarLayer& operator=(const PaintedOverlayScrollbarLayer&) =
       delete;
   static scoped_refptr<PaintedOverlayScrollbarLayer> Create(
-      std::unique_ptr<Scrollbar> scrollbar,
-      ElementId scroll_element_id = ElementId());
+      std::unique_ptr<Scrollbar> scrollbar);
 
   bool OpacityCanAnimateOnImplThread() const override;
 
@@ -36,8 +37,7 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerInterface,
   void PushPropertiesTo(LayerImpl* layer) override;
 
  protected:
-  PaintedOverlayScrollbarLayer(std::unique_ptr<Scrollbar> scrollbar,
-                               ElementId scroll_element_id);
+  explicit PaintedOverlayScrollbarLayer(std::unique_ptr<Scrollbar> scrollbar);
   ~PaintedOverlayScrollbarLayer() override;
 
  private:

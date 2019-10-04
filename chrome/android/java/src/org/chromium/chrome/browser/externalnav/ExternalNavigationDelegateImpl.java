@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.externalnav;
 
 import android.Manifest.permission;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
@@ -365,18 +366,18 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             final String fallbackUrl, final Tab tab, final boolean needsToCloseTab,
             final boolean proxy) {
         try {
-            startIncognitoIntentInternal(intent, referrerUrl, fallbackUrl, needsToCloseTab, proxy);
+            return startIncognitoIntentInternal(
+                    intent, referrerUrl, fallbackUrl, needsToCloseTab, proxy);
         } catch (BadTokenException e) {
             return false;
         }
-        return true;
     }
 
-    private void startIncognitoIntentInternal(final Intent intent, final String referrerUrl,
+    private boolean startIncognitoIntentInternal(final Intent intent, final String referrerUrl,
             final String fallbackUrl, final boolean needsToCloseTab, final boolean proxy) {
-        if (!hasValidTab()) return;
+        if (!hasValidTab()) return false;
         Context context = mTab.getWindowAndroid().getContext().get();
-        if (!(context instanceof Activity)) return;
+        if (!(context instanceof Activity)) return false;
 
         Activity activity = (Activity) context;
         new UiUtils.CompatibleAlertDialogBuilder(activity, R.style.Theme_Chromium_AlertDialog)
@@ -386,10 +387,18 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                         new OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                startActivity(intent, proxy);
-                                if (mTab != null && !mTab.isClosing() && mTab.isInitialized()
-                                        && needsToCloseTab) {
-                                    closeTab();
+                                try {
+                                    startActivity(intent, proxy);
+                                    if (mTab != null && !mTab.isClosing() && mTab.isInitialized()
+                                            && needsToCloseTab) {
+                                        closeTab();
+                                    }
+                                } catch (ActivityNotFoundException e) {
+                                    // The activity that we thought was going to handle the intent
+                                    // no longer exists, so catch the exception and assume Chrome
+                                    // can handle it.
+                                    loadIntent(intent, referrerUrl, fallbackUrl, mTab,
+                                            needsToCloseTab, true);
                                 }
                             }
                         })
@@ -408,6 +417,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                     }
                 })
                 .show();
+        return true;
     }
 
     @Override

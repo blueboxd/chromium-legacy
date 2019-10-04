@@ -241,8 +241,8 @@ Polymer({
       this.regulatoryInfo_ = info;
     });
 
-    this.aboutBrowserProxy_.getHasEndOfLife().then(result => {
-      this.hasEndOfLife_ = result;
+    this.aboutBrowserProxy_.getEndOfLifeInfo().then(result => {
+      this.hasEndOfLife_ = !!result.hasEndOfLife;
     });
 
     this.aboutBrowserProxy_.getEnabledReleaseNotes().then(result => {

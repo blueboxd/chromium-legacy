@@ -23,6 +23,7 @@ import android.webkit.WebViewFactory;
 import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IWebLayer;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
+import org.chromium.weblayer_private.aidl.WebLayerVersion;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -45,7 +46,8 @@ public final class WebLayer {
      * Loads the WebLayer implementation and returns the IWebLayer. This does *not* trigger the
      * implementation to start.
      */
-    private static IWebLayer connectToWebLayerImplementation(Application application) {
+    private static IWebLayer connectToWebLayerImplementation(Application application)
+            throws UnsupportedVersionException {
         try {
             // TODO: Make asset loading work on L, where WebViewDelegate doesn't exist.
             // WebViewDelegate.addWebViewAssetPath() accesses the currently loaded package info from
@@ -64,11 +66,19 @@ public final class WebLayer {
             delegate.addWebViewAssetPath(application);
 
             Context remoteContext = createRemoteContext(application);
+            Class webLayerClass = remoteContext.getClassLoader().loadClass(
+                    "org.chromium.weblayer_private.WebLayerImpl");
+
+            // Check version before doing anything else on the implementation side.
+            if (!(boolean) webLayerClass.getMethod("checkVersion", Integer.TYPE)
+                            .invoke(null, WebLayerVersion.sVersionNumber)) {
+                throw new UnsupportedVersionException(WebLayerVersion.sVersionNumber);
+            }
+
             return IWebLayer.Stub.asInterface(
-                    (IBinder) remoteContext.getClassLoader()
-                            .loadClass("org.chromium.weblayer_private.WebLayerImpl")
-                            .getMethod("create")
-                            .invoke(null));
+                    (IBinder) webLayerClass.getMethod("create").invoke(null));
+        } catch (UnsupportedVersionException e) {
+            throw e;
         } catch (Exception e) {
             throw new APICallException(e);
         }
@@ -82,7 +92,8 @@ public final class WebLayer {
      * @return a ListenableFuture whose value will contain the WebLayer once initialization
      * completes
      */
-    public static ListenableFuture<WebLayer> create(Application application) {
+    public static ListenableFuture<WebLayer> create(Application application)
+            throws UnsupportedVersionException {
         if (sFuture == null) {
             IWebLayer iWebLayer = connectToWebLayerImplementation(application);
             sFuture = new WebLayerLoadFuture(iWebLayer, application);

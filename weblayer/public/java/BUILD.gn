@@ -35,6 +35,7 @@ android_library("java") {
     "org/chromium/weblayer/Profile.java",
     "org/chromium/weblayer/WebLayer.java",
     "org/chromium/weblayer/ChildProcessService.java",
+    "org/chromium/weblayer/UnsupportedVersionException.java",
   ]
 
   deps = [

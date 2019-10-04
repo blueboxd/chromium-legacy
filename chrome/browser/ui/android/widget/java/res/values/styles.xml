@@ -40,4 +40,11 @@
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowNoTitle">true</item>
     </style>
+
+    <!-- Bubble styles -->
+    <style name="TextBubbleAnimation">
+        <item name="android:windowEnterAnimation">@anim/textbubble_in</item>
+        <item name="android:windowExitAnimation">@anim/textbubble_out</item>
+    </style>
+
 </resources>

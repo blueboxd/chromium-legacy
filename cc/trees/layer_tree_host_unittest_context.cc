@@ -984,7 +984,8 @@ class LayerTreeHostContextTestDontUseLostResources
 
     scoped_refptr<PaintedScrollbarLayer> scrollbar =
         PaintedScrollbarLayer::Create(
-            std::unique_ptr<Scrollbar>(new FakeScrollbar), layer->element_id());
+            std::unique_ptr<Scrollbar>(new FakeScrollbar));
+    scrollbar->SetScrollElementId(layer->element_id());
     scrollbar->SetBounds(gfx::Size(10, 10));
     scrollbar->SetIsDrawable(true);
     root->AddChild(scrollbar);

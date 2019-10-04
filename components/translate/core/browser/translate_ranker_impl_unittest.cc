@@ -19,8 +19,6 @@
 #include "components/assist_ranker/proto/translate_ranker_model.pb.h"
 #include "components/assist_ranker/ranker_model.h"
 #include "components/ukm/test_ukm_recorder.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"

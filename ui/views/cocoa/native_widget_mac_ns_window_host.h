@@ -453,12 +453,6 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   // Display link for getting vsync info for |display_|.
   scoped_refptr<ui::DisplayLinkMac> display_link_;
 
-  // Structure to avoid sending IOSurface mach ports over mojo.
-  // https://crbug.com/942213
-  class IOSurfaceToRemoteLayerInterceptor;
-  std::unique_ptr<IOSurfaceToRemoteLayerInterceptor>
-      io_surface_to_remote_layer_interceptor_;
-
   // The geometry of the window and its contents view, in screen coordinates.
   gfx::Rect window_bounds_in_screen_;
   gfx::Rect content_bounds_in_screen_;

@@ -258,7 +258,7 @@ void ExternalPopupMenu::GetPopupMenuInfo(WebPopupMenuInfo& info,
       popup_item.type = WebMenuItemInfo::kGroup;
     } else {
       popup_item.type = WebMenuItemInfo::kOption;
-      popup_item.checked = ToHTMLOptionElement(item_element).Selected();
+      popup_item.checked = To<HTMLOptionElement>(item_element).Selected();
     }
     popup_item.enabled = !item_element.IsDisabledFormControl();
     const ComputedStyle& style = *owner_element.ItemComputedStyle(item_element);

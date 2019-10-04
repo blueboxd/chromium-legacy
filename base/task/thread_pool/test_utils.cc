@@ -239,6 +239,11 @@ bool MockPooledTaskRunnerDelegate::EnqueueJobTaskSource(
   return true;
 }
 
+void MockPooledTaskRunnerDelegate::RemoveJobTaskSource(
+    scoped_refptr<JobTaskSource> task_source) {
+  thread_group_->RemoveTaskSource(std::move(task_source));
+}
+
 bool MockPooledTaskRunnerDelegate::IsRunningPoolWithTraits(
     const TaskTraits& traits) const {
   // |thread_group_| must be initialized with SetThreadGroup() before

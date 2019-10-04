@@ -147,12 +147,15 @@ class BaseScrollbarLayerTest : public testing::Test {
     scoped_refptr<Layer> child2;
     if (use_solid_color_scrollbar) {
       const bool kIsLeftSideVerticalScrollbar = false;
-      child2 = SolidColorScrollbarLayer::Create(
-          scrollbar->Orientation(), thumb_thickness, track_start,
-          kIsLeftSideVerticalScrollbar, child1->element_id());
+      child2 = SolidColorScrollbarLayer::Create(scrollbar->Orientation(),
+                                                thumb_thickness, track_start,
+                                                kIsLeftSideVerticalScrollbar);
+      static_cast<SolidColorScrollbarLayer*>(child2.get())
+          ->SetScrollElementId(child1->element_id());
     } else {
-      child2 = PaintedScrollbarLayer::Create(std::move(scrollbar),
-                                             child1->element_id());
+      child2 = PaintedScrollbarLayer::Create(std::move(scrollbar));
+      static_cast<PaintedScrollbarLayer*>(child2.get())
+          ->SetScrollElementId(child1->element_id());
     }
     layer_tree_root->AddChild(child1);
     layer_tree_root->InsertChild(child2, reverse_order ? 0 : 1);
@@ -207,8 +210,8 @@ TEST_F(ScrollbarLayerTest, RepaintOverlayWhenResourceDisposed) {
       new FakePaintedOverlayScrollbar);
   FakePaintedOverlayScrollbar* fake_scrollbar = scrollbar.get();
   scoped_refptr<PaintedOverlayScrollbarLayer> scrollbar_layer =
-      PaintedOverlayScrollbarLayer::Create(std::move(scrollbar),
-                                           layer_tree_root->element_id());
+      PaintedOverlayScrollbarLayer::Create(std::move(scrollbar));
+  scrollbar_layer->SetScrollElementId(layer_tree_root->element_id());
 
   // Setup.
   {
@@ -270,14 +273,14 @@ TEST_F(ScrollbarLayerTest, ScrollElementIdPushedAcrossCommit) {
   layer_b->SetElementId(LayerIdToElementIdForTesting(layer_b->id()));
 
   scoped_refptr<PaintedScrollbarLayer> painted_scrollbar_layer =
-      PaintedScrollbarLayer::Create(std::move(scrollbar1),
-                                    layer_a->element_id());
+      PaintedScrollbarLayer::Create(std::move(scrollbar1));
+  painted_scrollbar_layer->SetScrollElementId(layer_a->element_id());
   scoped_refptr<PaintedOverlayScrollbarLayer> painted_overlay_scrollbar_layer =
-      PaintedOverlayScrollbarLayer::Create(std::move(scrollbar2),
-                                           layer_a->element_id());
+      PaintedOverlayScrollbarLayer::Create(std::move(scrollbar2));
+  painted_overlay_scrollbar_layer->SetScrollElementId(layer_a->element_id());
   scoped_refptr<SolidColorScrollbarLayer> solid_color_scrollbar_layer =
-      SolidColorScrollbarLayer::Create(VERTICAL, 1, 1, false,
-                                       layer_a->element_id());
+      SolidColorScrollbarLayer::Create(VERTICAL, 1, 1, false);
+  solid_color_scrollbar_layer->SetScrollElementId(layer_a->element_id());
 
   layer_tree_host_->SetRootLayer(layer_tree_root);
   layer_tree_root->AddChild(layer_a);
@@ -336,8 +339,9 @@ TEST_F(ScrollbarLayerTest, ScrollOffsetSynchronization) {
   scoped_refptr<Layer> scroll_layer = Layer::Create();
   scroll_layer->SetElementId(LayerIdToElementIdForTesting(scroll_layer->id()));
   scoped_refptr<Layer> content_layer = Layer::Create();
-  scoped_refptr<Layer> scrollbar_layer = PaintedScrollbarLayer::Create(
-      std::move(scrollbar), scroll_layer->element_id());
+  scoped_refptr<PaintedScrollbarLayer> scrollbar_layer =
+      PaintedScrollbarLayer::Create(std::move(scrollbar));
+  scrollbar_layer->SetScrollElementId(scroll_layer->element_id());
 
   // Choose bounds to give max_scroll_offset = (30, 50).
   layer_tree_root->SetBounds(gfx::Size(70, 150));
@@ -637,11 +641,12 @@ TEST_F(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
   scoped_refptr<Layer> scroll_layer = Layer::Create();
   scroll_layer->SetElementId(LayerIdToElementIdForTesting(scroll_layer->id()));
   scoped_refptr<Layer> child1 = Layer::Create();
-  scoped_refptr<Layer> child2;
   const bool kIsLeftSideVerticalScrollbar = false;
-  child2 = SolidColorScrollbarLayer::Create(
-      scrollbar->Orientation(), kThumbThickness, kTrackStart,
-      kIsLeftSideVerticalScrollbar, scroll_layer->element_id());
+  scoped_refptr<SolidColorScrollbarLayer> child2 =
+      SolidColorScrollbarLayer::Create(scrollbar->Orientation(),
+                                       kThumbThickness, kTrackStart,
+                                       kIsLeftSideVerticalScrollbar);
+  child2->SetScrollElementId(scroll_layer->element_id());
   scroll_layer->AddChild(child1);
   scroll_layer->InsertChild(child2, 1);
   layer_tree_root->AddChild(scroll_layer);
@@ -697,7 +702,8 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerOpacity) {
   const bool kIsLeftSideVerticalScrollbar = false;
   scrollbar_layer = SolidColorScrollbarLayer::Create(
       scrollbar->Orientation(), kThumbThickness, kTrackStart,
-      kIsLeftSideVerticalScrollbar, scroll_layer->element_id());
+      kIsLeftSideVerticalScrollbar);
+  scrollbar_layer->SetScrollElementId(scroll_layer->element_id());
   scrollbar_layer->SetElementId(ElementId(300));
   scroll_layer->AddChild(child1);
   scroll_layer->InsertChild(scrollbar_layer, 1);
@@ -770,11 +776,12 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerPushProperties) {
   scoped_refptr<Layer> scroll_layer = Layer::Create();
   scroll_layer->SetElementId(LayerIdToElementIdForTesting(scroll_layer->id()));
   scoped_refptr<Layer> child1 = Layer::Create();
-  scoped_refptr<Layer> scrollbar_layer;
   const bool kIsLeftSideVerticalScrollbar = false;
-  scrollbar_layer = SolidColorScrollbarLayer::Create(
-      scrollbar->Orientation(), kThumbThickness, kTrackStart,
-      kIsLeftSideVerticalScrollbar, scroll_layer->element_id());
+  scoped_refptr<SolidColorScrollbarLayer> scrollbar_layer =
+      SolidColorScrollbarLayer::Create(scrollbar->Orientation(),
+                                       kThumbThickness, kTrackStart,
+                                       kIsLeftSideVerticalScrollbar);
+  scrollbar_layer->SetScrollElementId(scroll_layer->element_id());
   scroll_layer->AddChild(child1);
   scroll_layer->InsertChild(scrollbar_layer, 1);
   layer_tree_root->AddChild(scroll_layer);
@@ -914,9 +921,11 @@ TEST_F(AuraScrollbarLayerTest, ScrollbarLayerCreateAfterSetScrollable) {
   host_impl->ActivateSyncTree();
 
   std::unique_ptr<Scrollbar> scrollbar(new FakeScrollbar(false, true, true));
-  scoped_refptr<Layer> scrollbar_layer = SolidColorScrollbarLayer::Create(
-      scrollbar->Orientation(), kThumbThickness, kTrackStart,
-      kIsLeftSideVerticalScrollbar, scroll_layer->element_id());
+  scoped_refptr<SolidColorScrollbarLayer> scrollbar_layer =
+      SolidColorScrollbarLayer::Create(scrollbar->Orientation(),
+                                       kThumbThickness, kTrackStart,
+                                       kIsLeftSideVerticalScrollbar);
+  scrollbar_layer->SetScrollElementId(scroll_layer->element_id());
   scroll_layer->InsertChild(scrollbar_layer, 1);
 
   layer_tree_host_->UpdateLayers();
@@ -1052,10 +1061,13 @@ class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {
       const bool kIsLeftSideVerticalScrollbar = false;
       scrollbar_layer = SolidColorScrollbarLayer::Create(
           scrollbar->Orientation(), kThumbThickness, kTrackStart,
-          kIsLeftSideVerticalScrollbar, layer_tree_root->element_id());
+          kIsLeftSideVerticalScrollbar);
+      static_cast<SolidColorScrollbarLayer*>(scrollbar_layer.get())
+          ->SetScrollElementId(layer_tree_root->element_id());
     } else {
-      scrollbar_layer = PaintedScrollbarLayer::Create(
-          std::move(scrollbar), layer_tree_root->element_id());
+      scrollbar_layer = PaintedScrollbarLayer::Create(std::move(scrollbar));
+      static_cast<PaintedScrollbarLayer*>(scrollbar_layer.get())
+          ->SetScrollElementId(layer_tree_root->element_id());
     }
     layer_tree_root->AddChild(content_layer);
     layer_tree_root->AddChild(scrollbar_layer);

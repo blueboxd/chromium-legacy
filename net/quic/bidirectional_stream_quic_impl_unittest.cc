@@ -81,6 +81,33 @@ enum DelegateMethod {
   kOnFailed
 };
 
+struct TestParams {
+  quic::ParsedQuicVersion version;
+  bool client_headers_include_h2_stream_dependency;
+};
+
+// Used by ::testing::PrintToStringParamName().
+std::string PrintToString(const TestParams& p) {
+  return quic::QuicStrCat(
+      ParsedQuicVersionToString(p.version), "_",
+      (p.client_headers_include_h2_stream_dependency ? "" : "No"),
+      "Dependency");
+}
+
+std::vector<TestParams> GetTestParams() {
+  std::vector<TestParams> params;
+  quic::ParsedQuicVersionVector all_supported_versions =
+      quic::AllSupportedVersions();
+  for (const auto& version : all_supported_versions) {
+    // TODO(rch): crbug.com/978745 - Make this work with TLS
+    if (version.handshake_protocol != quic::PROTOCOL_TLS1_3) {
+      params.push_back(TestParams{version, false});
+      params.push_back(TestParams{version, true});
+    }
+  }
+  return params;
+}
+
 class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
  public:
   TestDelegateBase(IOBuffer* read_buf, int read_buf_len)
@@ -395,8 +422,7 @@ class DeleteStreamDelegate : public TestDelegateBase {
 }  // namespace
 
 class BidirectionalStreamQuicImplTest
-    : public ::testing::TestWithParam<
-          std::tuple<quic::ParsedQuicVersion, bool>>,
+    : public ::testing::TestWithParam<TestParams>,
       public WithTaskEnvironment {
  protected:
   static const bool kFin = true;
@@ -415,8 +441,9 @@ class BidirectionalStreamQuicImplTest
   };
 
   BidirectionalStreamQuicImplTest()
-      : version_(std::get<0>(GetParam())),
-        client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
+      : version_(GetParam().version),
+        client_headers_include_h2_stream_dependency_(
+            GetParam().client_headers_include_h2_stream_dependency),
         crypto_config_(
             quic::test::crypto_test_utils::ProofVerifierForTesting()),
         read_buffer_(base::MakeRefCounted<IOBufferWithSize>(4096)),
@@ -841,23 +868,10 @@ class BidirectionalStreamQuicImplTest
   HostPortPair destination_;
 };
 
-// TODO(nharper): Make these tests work with TLS.
-quic::ParsedQuicVersionVector AllSupportedVersionsWithQuicCrypto() {
-  quic::ParsedQuicVersionVector versions;
-  for (const auto& version : quic::AllSupportedVersions()) {
-    if (version.handshake_protocol == quic::PROTOCOL_QUIC_CRYPTO) {
-      versions.push_back(version);
-    }
-  }
-  return versions;
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    Version,
-    BidirectionalStreamQuicImplTest,
-    ::testing::Combine(
-        ::testing::ValuesIn(AllSupportedVersionsWithQuicCrypto()),
-        ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(Version,
+                         BidirectionalStreamQuicImplTest,
+                         ::testing::ValuesIn(GetTestParams()),
+                         ::testing::PrintToStringParamName());
 
 TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);

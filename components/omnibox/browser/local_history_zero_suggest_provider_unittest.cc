@@ -315,7 +315,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Suggestions_Freshness) {
 
 // Tests that all the search URLs that would produce a given suggestion get
 // deleted when the autocomplete match is deleted.
-TEST_F(LocalHistoryZeroSuggestProviderTest, Delete) {
+TEST_F(LocalHistoryZeroSuggestProviderTest, DISABLED_Delete) {
   LoadURLs({
       {default_search_provider(), "hello   world", "&foo=bar&aqs=1", 1},
       {default_search_provider(), "HELLO WORLD", "&foo=bar&aqs=12", 1},

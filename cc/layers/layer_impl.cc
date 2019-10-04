@@ -51,7 +51,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       layer_tree_impl_(tree_impl),
       will_always_push_properties_(will_always_push_properties),
       scrollable_(false),
-      should_flatten_screen_space_transform_from_property_tree_(false),
       layer_property_changed_not_from_property_trees_(false),
       layer_property_changed_from_property_trees_(false),
       may_contain_video_(false),
@@ -353,8 +352,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   layer->has_transform_node_ = has_transform_node_;
   layer->offset_to_transform_parent_ = offset_to_transform_parent_;
-  layer->should_flatten_screen_space_transform_from_property_tree_ =
-      should_flatten_screen_space_transform_from_property_tree_;
   layer->masks_to_bounds_ = masks_to_bounds_;
   layer->contents_opaque_ = contents_opaque_;
   layer->may_contain_video_ = may_contain_video_;

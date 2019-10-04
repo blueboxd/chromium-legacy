@@ -8,33 +8,25 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/supports_user_data.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/task_tracker.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-
-namespace content {
-class NotificationSource;
-class NotificationDetails;
-}  // namespace content
 
 class Profile;
 
 namespace dom_distiller {
 
-class DomDistillerServiceFactory;
-
 // A class which helps with lazy instantiation of the DomDistillerService, using
-// the BrowserContextKeyedServiceFactory for it. This class will delete itself
-// when the profile is destroyed.
+// the BrowserContextKeyedServiceFactory for it. This class is owned by Profile.
 class LazyDomDistillerService : public DomDistillerServiceInterface,
-                                public content::NotificationObserver {
+                                public base::SupportsUserData::Data {
  public:
-  LazyDomDistillerService(Profile* profile,
-                          const DomDistillerServiceFactory* service_factory);
+  // Creates and returns an instance for |profile|. This does not pass ownership
+  // of the returned pointer.
+  static LazyDomDistillerService* Create(Profile* profile);
+
   ~LazyDomDistillerService() override;
 
- public:
   // DomDistillerServiceInterface implementation:
   bool HasEntry(const std::string& entry_id) override;
   std::string GetUrlForEntry(const std::string& entry_id) override;
@@ -53,23 +45,14 @@ class LazyDomDistillerService : public DomDistillerServiceInterface,
   DistilledPagePrefs* GetDistilledPagePrefs() override;
 
  private:
-  // Accessor method for the backing service instance.
-  DomDistillerServiceInterface* instance() const;
+  explicit LazyDomDistillerService(Profile* profile);
 
-  // content::NotificationObserver implementation:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // Accessor method for the backing service instance.
+  DomDistillerServiceInterface* GetImpl() const;
 
   // The Profile to use when retrieving the DomDistillerService and also the
   // profile to listen for destruction of.
   Profile* profile_;
-
-  // A BrowserContextKeyedServiceFactory for the DomDistillerService.
-  const DomDistillerServiceFactory* service_factory_;
-
-  // Used to track when the profile is shut down.
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(LazyDomDistillerService);
 };

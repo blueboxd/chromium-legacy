@@ -233,9 +233,10 @@ static inline bool IsMatchingHTMLElement(const HTMLCollection& html_collection,
       return element.HasTagName(kTrTag);
     case kSelectOptions:
       return ToHTMLOptionsCollection(html_collection).ElementMatches(element);
-    case kSelectedOptions:
-      return IsHTMLOptionElement(element) &&
-             ToHTMLOptionElement(element).Selected();
+    case kSelectedOptions: {
+      auto* option_element = DynamicTo<HTMLOptionElement>(element);
+      return option_element && option_element->Selected();
+    }
     case kDataListOptions:
       return ToHTMLDataListOptionsCollection(html_collection)
           .ElementMatches(element);

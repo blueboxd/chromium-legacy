@@ -584,19 +584,22 @@ void TopControlsSlideControllerChromeOS::Refresh() {
   gfx::Transform trans;
   trans.Translate(0, y_translation);
 
-  // We need to transform webcontents native view's container rather than the
-  // webcontents native view itself. That's because the container in the case
-  // of aura is the clipping window. If we translate the webcontents native view
-  // the page will appear to scroll, but clipping window will act as a static
-  // view port that doesn't move with the top controls.
-  DCHECK(browser_view_->contents_web_view()->holder()->GetNativeViewContainer())
-      << "The web contents' native view didn't attach yet!";
-  ui::Layer* contents_container_layer = browser_view_->contents_web_view()
-                                            ->holder()
-                                            ->GetNativeViewContainer()
-                                            ->layer();
   ui::Layer* root_layer = browser_view_->frame()->GetRootView()->layer();
-  std::vector<ui::Layer*> layers = {root_layer, contents_container_layer};
+  std::vector<ui::Layer*> layers = {root_layer};
+  // We need to transform all the native views' containers of all the attached
+  // NativeViewHosts to this BrowserView, rather than the NativeViewHosts
+  // themselves. The attached NativeViewHosts can be active tab's WebContents,
+  // and the webui tabstrip (if enabled). This is because for example in the
+  // case of the tab's WebContents, the container in the case of aura is the
+  // clipping window. If we translate the WebContents native view the page will
+  // appear to scroll, but clipping window will act as a static/ view port that
+  // doesn't move with the top controls.
+  for (auto* native_view_host :
+       browser_view_->GetNativeViewHostsForTopControlsSlide()) {
+    DCHECK(native_view_host->GetNativeViewContainer())
+        << "The native view didn't attach yet to the NativeViewHost!";
+    layers.push_back(native_view_host->GetNativeViewContainer()->layer());
+  }
 
   for (auto* layer : layers) {
     ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
@@ -691,17 +694,17 @@ void TopControlsSlideControllerChromeOS::OnEndSliding() {
   // call from the renderer to set the shown ratio to a terminal value.
   is_sliding_in_progress_ = false;
 
-  // At the end of sliding, we reset the webcontents NativeViewHostAura's
-  // clipping window's layer's transform to identity. From now on, the views
-  // layout takes care of where everything is.
-  DCHECK(browser_view_->contents_web_view()->holder()->GetNativeViewContainer())
-      << "The web contents' native view didn't attach yet!";
-  ui::Layer* contents_container_layer = browser_view_->contents_web_view()
-                                            ->holder()
-                                            ->GetNativeViewContainer()
-                                            ->layer();
-  gfx::Transform transform;
-  contents_container_layer->SetTransform(transform);
+  // At the end of sliding, we reset the transforms of all the attached
+  // NativeViewHostAuras' clipping windows' layers to identity. From now on, the
+  // views layout takes care of where everything is.
+  const gfx::Transform identity_transform;
+  for (auto* native_view_host :
+       browser_view_->GetNativeViewHostsForTopControlsSlide()) {
+    DCHECK(native_view_host->GetNativeViewContainer())
+        << "The native view didn't attach yet to the NativeViewHost!";
+    native_view_host->GetNativeViewContainer()->layer()->SetTransform(
+        identity_transform);
+  }
 
   BrowserFrame* browser_frame = browser_view_->frame();
   views::View* root_view = browser_frame->GetRootView();

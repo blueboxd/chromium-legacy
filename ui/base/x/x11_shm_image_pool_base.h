@@ -44,10 +44,11 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePoolBase
 
   // Obtain state for the current frame.
   SkBitmap& CurrentBitmap();
+  SkCanvas* CurrentCanvas();
   XImage* CurrentImage();
 
-  // Switch to the next cached frame.  CurrentBitmap() and CurrentImage() will
-  // change to reflect the new frame.
+  // Switch to the next cached frame.  CurrentBitmap(), CurrentCanvas(), and
+  // CurrentImage() will change to reflect the new frame.
   void SwapBuffers(base::OnceCallback<void(const gfx::Size&)> callback);
 
   // Part of setup and teardown must be done on the event task runner.  Posting
@@ -79,11 +80,11 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePoolBase
     FrameState();
     ~FrameState();
 
+    XShmSegmentInfo shminfo_{};
+    bool shmem_attached_to_server_ = false;
     XScopedImage image;
     SkBitmap bitmap;
-#ifndef NDEBUG
-    std::size_t offset = 0;
-#endif
+    std::unique_ptr<SkCanvas> canvas;
   };
 
   struct SwapClosure {
@@ -93,7 +94,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePoolBase
     base::OnceClosure closure;
 #ifndef NDEBUG
     ShmSeg shmseg;
-    std::size_t offset;
 #endif
   };
 
@@ -112,10 +112,9 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePoolBase
   Visual* const visual_;
   const int depth_;
 
+  bool ready_ = false;
   gfx::Size pixel_size_;
   std::size_t frame_bytes_ = 0;
-  XShmSegmentInfo shminfo_{};
-  bool shmem_attached_to_server_ = false;
   std::vector<FrameState> frame_states_;
   std::size_t current_frame_index_ = 0;
   std::queue<SwapClosure> swap_closures_;

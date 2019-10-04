@@ -10,6 +10,7 @@
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"

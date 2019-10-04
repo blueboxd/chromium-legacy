@@ -62,12 +62,6 @@ bool MaySkipLayoutWithinBlockFormattingContext(
     LayoutUnit* block_offset_delta,
     NGMarginStrut* end_margin_strut);
 
-// Return true if layout is considered complete. In some cases we require more
-// than one layout pass.
-// This function never considers intermediate layouts with
-// |NGConstraintSpace::IsIntermediateLayout| to be complete.
-bool IsBlockLayoutComplete(const NGConstraintSpace&, const NGLayoutResult&);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_LAYOUT_UTILS_H_

@@ -9,8 +9,6 @@
 #include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
-#include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "ios/chrome/browser/passwords/credential_manager_util.h"
 #import "ios/chrome/browser/passwords/test/test_password_manager_client.h"
@@ -23,7 +21,6 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
@@ -51,21 +48,6 @@ constexpr char kFileOrigin[] = "file://example_file";
 
 // SSL certificate to load for testing.
 constexpr char kCertFileName[] = "ok_cert.pem";
-
-class MockLeakDetectionCheck : public password_manager::LeakDetectionCheck {
- public:
-  MOCK_METHOD3(Start, void(const GURL&, base::string16, base::string16));
-};
-
-class MockLeakDetectionCheckFactory
-    : public password_manager::LeakDetectionCheckFactory {
- public:
-  MOCK_CONST_METHOD3(TryCreateLeakCheck,
-                     std::unique_ptr<password_manager::LeakDetectionCheck>(
-                         password_manager::LeakDetectionDelegateInterface*,
-                         signin::IdentityManager*,
-                         scoped_refptr<network::SharedURLLoaderFactory>));
-};
 
 }  // namespace
 
@@ -179,18 +161,6 @@ class CredentialManagerTest : public CredentialManagerBaseTest {
 
 // Tests storing a PasswordCredential.
 TEST_F(CredentialManagerTest, StorePasswordCredential) {
-  auto mock_factory =
-      std::make_unique<testing::StrictMock<MockLeakDetectionCheckFactory>>();
-  auto* weak_factory = mock_factory.get();
-  manager_->set_leak_factory(std::move(mock_factory));
-
-  auto check_instance = std::make_unique<MockLeakDetectionCheck>();
-  EXPECT_CALL(*check_instance,
-              Start(GURL(kHttpsWebOrigin), base::ASCIIToUTF16("id"),
-                    base::ASCIIToUTF16("pencil")));
-  EXPECT_CALL(*weak_factory, TryCreateLeakCheck)
-      .WillOnce(testing::Return(testing::ByMove(std::move(check_instance))));
-
   // Call API method |store|.
   ExecuteJavaScript(
       @"var credential = new PasswordCredential({"

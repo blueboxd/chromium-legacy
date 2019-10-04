@@ -4,7 +4,6 @@
 
 #include "chrome/test/chromedriver/chrome/download_directory_override_manager.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/test/chromedriver/chrome/recorder_devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,16 +38,6 @@ TEST(DownloadDirectoryOverrideManager, OverrideSendsCommand) {
   ASSERT_EQ(kOk,
             manager.OverrideDownloadDirectoryWhenConnected(directory).code());
   ASSERT_EQ(0u, client.commands_.size());
-
-// Currently headless chrome download does not work
-// for MAC_OSX so it is designed to always return
-// true without sending a command. For more info:
-// https://bugs.chromium.org/p/chromium/issues/detail?id=979847
-#if defined(OS_MACOSX)
-  ASSERT_EQ(kOk, manager.OnConnected(&client).code());
-  ASSERT_EQ(0u, client.commands_.size());
-  return;
-#endif
 
   // On connected is called and the directory should now
   // be overridden to 'download/directory'

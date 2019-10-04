@@ -182,7 +182,8 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate)
   // contents' size. Using zeroes doesn't prevent it from scrolling and sizing
   // correctly.
   scroller->ClipHeightTo(0, 0);
-  scroller->SetVerticalScrollBar(new ZeroWidthVerticalScrollBar());
+  scroller->SetVerticalScrollBar(
+      std::make_unique<ZeroWidthVerticalScrollBar>());
   scroller->SetBackgroundColor(SK_ColorTRANSPARENT);
   AddChildView(std::move(scroller));
 
@@ -264,6 +265,13 @@ const char* SearchResultPageView::GetClassName() const {
 
 gfx::Size SearchResultPageView::CalculatePreferredSize() const {
   return gfx::Size(kWidth, kHeight);
+}
+
+void SearchResultPageView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // This bounds change is produced by search result movement (rotation, etc)
+  // and all content has to follow.
+  if (previous_bounds != GetContentsBounds())
+    layer()->SetClipRect(GetContentsBounds());
 }
 
 void SearchResultPageView::ReorderSearchResultContainers() {
@@ -521,11 +529,8 @@ gfx::Rect SearchResultPageView::GetPageBoundsForState(
     // Hides this view behind the search box by using the same bounds.
     return search_box_bounds;
   }
-
-  gfx::Rect bounds = contents_bounds;
-  bounds.Offset((contents_bounds.width() - kWidth) / 2, search_box_bounds.y());
-  bounds.set_size(GetPreferredSize());
-  return bounds;
+  return gfx::Rect(search_box_bounds.origin(),
+                   gfx::Size(search_box_bounds.width(), kHeight));
 }
 
 views::View* SearchResultPageView::GetFirstFocusableView() {

@@ -97,6 +97,22 @@ void DocumentProviderTest::SetUp() {
   default_template_url_ = turl_model->Add(std::make_unique<TemplateURL>(data));
   turl_model->SetUserSelectedDefaultSearchProvider(default_template_url_);
 
+  // Add a keyword provider.
+  data.SetShortName(base::ASCIIToUTF16("wiki"));
+  data.SetKeyword(base::ASCIIToUTF16("wikipedia.org"));
+  data.SetURL("https://en.wikipedia.org/w/index.php?search={searchTerms}");
+  data.suggestions_url =
+      "https://en.wikipedia.org/w/index.php?search={searchTerms}";
+  turl_model->Add(std::make_unique<TemplateURL>(data));
+
+  // Add another.
+  data.SetShortName(base::ASCIIToUTF16("drive"));
+  data.SetKeyword(base::ASCIIToUTF16("drive.google.com"));
+  data.SetURL("https://drive.google.com/drive/search?q={searchTerms}");
+  data.suggestions_url =
+      "https://drive.google.com/drive/search?q={searchTerms}";
+  turl_model->Add(std::make_unique<TemplateURL>(data));
+
   provider_ = DocumentProvider::Create(client_.get(), this, 4);
 }
 
@@ -107,7 +123,8 @@ void DocumentProviderTest::OnProviderUpdate(bool updated_matches) {
 TEST_F(DocumentProviderTest, CheckFeatureBehindFlag) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(omnibox::kDocumentProvider);
-  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get()));
+  EXPECT_FALSE(
+      provider_->IsDocumentProviderAllowed(client_.get(), AutocompleteInput()));
 }
 
 TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteNoIncognito) {
@@ -120,11 +137,13 @@ TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteNoIncognito) {
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
 
   // Feature starts enabled.
-  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(client_.get()));
+  EXPECT_TRUE(
+      provider_->IsDocumentProviderAllowed(client_.get(), AutocompleteInput()));
 
   // Feature should be disabled in incognito.
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(true));
-  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get()));
+  EXPECT_FALSE(
+      provider_->IsDocumentProviderAllowed(client_.get(), AutocompleteInput()));
 }
 
 TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteNoSync) {
@@ -137,11 +156,13 @@ TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteNoSync) {
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
 
   // Feature starts enabled.
-  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(client_.get()));
+  EXPECT_TRUE(
+      provider_->IsDocumentProviderAllowed(client_.get(), AutocompleteInput()));
 
   // Feature should be disabled without active sync.
   EXPECT_CALL(*client_.get(), IsSyncActive()).WillOnce(Return(false));
-  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get()));
+  EXPECT_FALSE(
+      provider_->IsDocumentProviderAllowed(client_.get(), AutocompleteInput()));
 }
 
 TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteClientSettingOff) {
@@ -154,12 +175,14 @@ TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteClientSettingOff) {
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
 
   // Feature starts enabled.
-  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(client_.get()));
+  EXPECT_TRUE(
+      provider_->IsDocumentProviderAllowed(client_.get(), AutocompleteInput()));
 
   // Disabling toggle in chrome://settings should be respected.
   PrefService* fake_prefs = client_->GetPrefs();
   fake_prefs->SetBoolean(omnibox::kDocumentSuggestEnabled, false);
-  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get()));
+  EXPECT_FALSE(
+      provider_->IsDocumentProviderAllowed(client_.get(), AutocompleteInput()));
   fake_prefs->SetBoolean(omnibox::kDocumentSuggestEnabled, true);
 }
 
@@ -173,7 +196,8 @@ TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteDefaultSearch) {
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
 
   // Feature starts enabled.
-  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(client_.get()));
+  EXPECT_TRUE(
+      provider_->IsDocumentProviderAllowed(client_.get(), AutocompleteInput()));
 
   // Switching default search disables it.
   TemplateURLService* template_url_service = client_->GetTemplateURLService();
@@ -185,10 +209,48 @@ TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteDefaultSearch) {
       template_url_service->Add(std::make_unique<TemplateURL>(data));
   template_url_service->SetUserSelectedDefaultSearchProvider(
       new_default_provider);
-  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get()));
+  EXPECT_FALSE(
+      provider_->IsDocumentProviderAllowed(client_.get(), AutocompleteInput()));
   template_url_service->SetUserSelectedDefaultSearchProvider(
       default_template_url_);
   template_url_service->Remove(new_default_provider);
+}
+
+TEST_F(DocumentProviderTest, CheckFeatureNotInExplicitKeywordMode) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {omnibox::kDocumentProvider, omnibox::kExperimentalKeywordMode}, {});
+  EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsAuthenticated()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsSyncActive()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
+
+  // Prevent document search results in explicit keyword mode.
+  {
+    AutocompleteInput input(base::ASCIIToUTF16("wikipedia.org soup"),
+                            metrics::OmniboxEventProto::NTP,
+                            TestSchemeClassifier());
+    input.set_prefer_keyword(true);
+
+    EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get(), input));
+  }
+  {
+    AutocompleteInput input(base::ASCIIToUTF16("amazon.com soup"),
+                            metrics::OmniboxEventProto::NTP,
+                            TestSchemeClassifier());
+    input.set_prefer_keyword(true);
+
+    EXPECT_TRUE(provider_->IsDocumentProviderAllowed(client_.get(), input));
+  }
+  {
+    AutocompleteInput input(base::ASCIIToUTF16("drive.google.com soup"),
+                            metrics::OmniboxEventProto::NTP,
+                            TestSchemeClassifier());
+    input.set_prefer_keyword(true);
+
+    EXPECT_TRUE(provider_->IsDocumentProviderAllowed(client_.get(), input));
+  }
 }
 
 TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteServerBackoff) {
@@ -201,11 +263,13 @@ TEST_F(DocumentProviderTest, CheckFeaturePrerequisiteServerBackoff) {
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
 
   // Feature starts enabled.
-  EXPECT_TRUE(provider_->IsDocumentProviderAllowed(client_.get()));
+  EXPECT_TRUE(
+      provider_->IsDocumentProviderAllowed(client_.get(), AutocompleteInput()));
 
   // Server setting backoff flag disables it.
   provider_->backoff_for_session_ = true;
-  EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get()));
+  EXPECT_FALSE(
+      provider_->IsDocumentProviderAllowed(client_.get(), AutocompleteInput()));
   provider_->backoff_for_session_ = false;
 }
 

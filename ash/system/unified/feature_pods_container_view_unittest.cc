@@ -60,7 +60,7 @@ class FeaturePodsContainerViewTest : public NoSessionAshTestBase,
  protected:
   void EnablePagination() {
     scoped_feature_list_->InitAndEnableFeature(
-        features::kSystemTrayFeaturePodsPagination);
+        features::kUnifiedMessageCenterRefactor);
   }
 
   void AddButtons(int count) {

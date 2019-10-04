@@ -98,6 +98,7 @@ void UsbDevice::RemoveObserver(Observer* observer) {
 }
 
 void UsbDevice::ActiveConfigurationChanged(int configuration_value) {
+  device_info_->active_configuration = configuration_value;
   for (const auto& config : configurations()) {
     if (config->configuration_value == configuration_value) {
       active_configuration_ = config.get();

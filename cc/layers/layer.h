@@ -452,14 +452,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.use_parent_backface_visibility;
   }
 
-  // Set or get if the subtree of this layer is composited in 3d-space, or if
-  // the layers are flattened into the plane of this layer. This supports the
-  // transform-style CSS property.
-  void SetShouldFlattenTransform(bool flatten);
-  bool should_flatten_transform() const {
-    return inputs_.should_flatten_transform;
-  }
-
   // When true the layer may contribute to the compositor's output. When false,
   // it does not. This property does not apply to children of the layer, they
   // may contribute while this layer does not. The layer itself will determine
@@ -697,15 +689,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return should_check_backface_visibility_;
   }
 
-  // Internal to property tree construction. The value here derives from
-  // should_flatten_transform() along with other state, and is for internal use
-  // in order to flatten the layer's ScreenSpaceTransform() in cases where the
-  // property tree did not handle it.
-  void SetShouldFlattenScreenSpaceTransformFromPropertyTree(bool should);
-  bool should_flatten_screen_space_transform_from_property_tree() const {
-    return should_flatten_screen_space_transform_from_property_tree_;
-  }
-
 #if DCHECK_IS_ON()
   // For debugging, containing information about the associated DOM, etc.
   std::string DebugName() const;
@@ -849,7 +832,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     bool is_drawable : 1;
 
     bool double_sided : 1;
-    bool should_flatten_transform : 1;
 
     bool use_parent_backface_visibility : 1;
 
@@ -935,7 +917,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // because it's used in base::AutoReset.
   bool ignore_set_needs_commit_;
 
-  bool should_flatten_screen_space_transform_from_property_tree_ : 1;
   bool draws_content_ : 1;
   bool should_check_backface_visibility_ : 1;
   // Force use of and cache render surface.

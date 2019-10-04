@@ -75,6 +75,8 @@ struct CORE_EXPORT PaintLayerScrollableAreaRareData {
   PaintLayerScrollableAreaRareData();
 
   StickyConstraintsMap sticky_constraints_map_;
+  base::Optional<cc::SnapContainerData> snap_container_data_;
+
   DISALLOW_COPY_AND_ASSIGN(PaintLayerScrollableAreaRareData);
 };
 
@@ -544,6 +546,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
   const DisplayItemClient& GetScrollingBackgroundDisplayItemClient() const {
     return scrolling_background_display_item_client_;
   }
+
+  const cc::SnapContainerData* GetSnapContainerData() const override;
+  void SetSnapContainerData(base::Optional<cc::SnapContainerData>) override;
 
   void DisposeImpl() override;
 

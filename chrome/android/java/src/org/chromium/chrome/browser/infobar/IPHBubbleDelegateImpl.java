@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.infobar.IPHInfoBarSupport.PopupState;
 import org.chromium.chrome.browser.infobar.IPHInfoBarSupport.TrackerParameters;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.widget.textbubble.TextBubble;
+import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.Tracker;
 
 /**

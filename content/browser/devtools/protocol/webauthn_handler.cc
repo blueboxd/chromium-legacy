@@ -152,12 +152,15 @@ Response WebAuthnHandler::AddVirtualAuthenticator(
       transport == device::FidoTransportProtocol::kInternal
           ? device::AuthenticatorAttachment::kPlatform
           : device::AuthenticatorAttachment::kCrossPlatform,
-      options->GetHasResidentKey(), options->GetHasUserVerification());
+      options->GetHasResidentKey(false /* default */),
+      options->GetHasUserVerification(false /* default */));
   if (!authenticator)
     return Response::Error(kErrorCreatingAuthenticator);
 
   authenticator->SetUserPresence(
       options->GetAutomaticPresenceSimulation(true /* default */));
+  authenticator->set_user_verified(
+      options->GetIsUserVerified(false /* default */));
 
   *out_authenticator_id = authenticator->unique_id();
   return Response::OK();

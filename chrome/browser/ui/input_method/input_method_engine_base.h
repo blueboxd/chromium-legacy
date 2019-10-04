@@ -219,6 +219,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
 
     std::string component_id;
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback;
+    base::Time created_time = base::Time::Now();
 
    private:
     DISALLOW_COPY_AND_ASSIGN(PendingKeyEvent);

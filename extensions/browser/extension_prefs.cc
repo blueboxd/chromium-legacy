@@ -127,9 +127,6 @@ constexpr const char kPrefAllowFileAccess[] = "newAllowFileAccess";
 // the old flag and possibly go back to that name.
 // constexpr const char kPrefAllowFileAccessOld[] = "allowFileAccess";
 
-// A preference specifying if the user dragged the app on the NTP.
-constexpr const char kPrefUserDraggedApp[] = "user_dragged_app_ntp";
-
 // Preferences that hold which permissions the user has granted the extension.
 // We explicitly keep track of these so that extensions can contain unknown
 // permissions, for backwards compatibility reasons, and we can still prompt
@@ -1529,16 +1526,6 @@ ExtensionPrefs::GetAllDelayedInstallInfo() const {
   return extensions_info;
 }
 
-bool ExtensionPrefs::WasAppDraggedByUser(
-    const std::string& extension_id) const {
-  return ReadPrefAsBooleanAndReturn(extension_id, kPrefUserDraggedApp);
-}
-
-void ExtensionPrefs::SetAppDraggedByUser(const std::string& extension_id) {
-  UpdateExtensionPref(extension_id, kPrefUserDraggedApp,
-                      std::make_unique<base::Value>(true));
-}
-
 bool ExtensionPrefs::IsFromWebStore(
     const std::string& extension_id) const {
   const base::DictionaryValue* dictionary = GetExtensionPref(extension_id);
@@ -2157,6 +2144,9 @@ void ExtensionPrefs::MigrateObsoleteExtensionPrefs() {
 
       // Added 2019-07.
       "browser_action_visible",
+
+      // Added 2019-10.
+      "user_dragged_app_ntp",
   };
 
   for (const auto& key_value : extensions_dictionary->DictItems()) {

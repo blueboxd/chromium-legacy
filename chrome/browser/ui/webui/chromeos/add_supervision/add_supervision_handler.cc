@@ -94,6 +94,7 @@ void AddSupervisionHandler::GetOAuthToken(GetOAuthTokenCallback callback) {
   scopes.insert(GaiaConstants::kPeopleApiReadOnlyOAuth2Scope);
   scopes.insert(GaiaConstants::kAccountsReauthOAuth2Scope);
   scopes.insert(GaiaConstants::kAuditRecordingOAuth2Scope);
+  scopes.insert(GaiaConstants::kClearCutOAuth2Scope);
 
   oauth2_access_token_fetcher_ =
       identity_manager_->CreateAccessTokenFetcherForAccount(

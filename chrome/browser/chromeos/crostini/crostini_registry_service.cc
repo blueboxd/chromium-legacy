@@ -18,9 +18,9 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
@@ -631,7 +631,7 @@ void CrostiniRegistryService::RecordStartupMetrics() {
   const base::DictionaryValue* apps =
       prefs_->GetDictionary(prefs::kCrostiniRegistry);
 
-  if (!IsCrostiniEnabled(profile_))
+  if (!CrostiniFeatures::Get()->IsEnabled(profile_))
     return;
 
   size_t num_apps = 0;

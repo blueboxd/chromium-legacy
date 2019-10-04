@@ -722,8 +722,11 @@ bool SwapChainPresenter::PresentToSwapChain(
   if (!nv12_image && (!y_image_memory || !uv_image_memory) &&
       !swap_chain_image) {
     DLOG(ERROR) << "Video GLImages are missing";
-    // No need to release resources as context will be lost soon.
-    return false;
+    ReleaseSwapChainResources();
+    // We don't treat this as an error because this could mean that the client
+    // sent us invalid overlay candidates which we weren't able to detect prior
+    // to this.  This would cause incorrect rendering, but not a failure loop.
+    return true;
   }
 
   std::string image_type = "software video frame";

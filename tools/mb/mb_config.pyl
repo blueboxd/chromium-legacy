@@ -788,6 +788,8 @@
       'linux-annotator-rel': 'release_trybot',
       'linux-blink-heap-concurrent-marking-tsan-rel': 'release_trybot_tsan',
       'linux-blink-heap-verification-try': 'release_trybot_enable_blink_heap_verification',
+      'linux-clang-tidy-dbg': 'debug_trybot',
+      'linux-clang-tidy-rel': 'release_trybot',
       'linux-dcheck-off-rel': 'release_trybot_dcheck_off',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
       'linux-jumbo-rel': 'jumbo_large_chunks_release_bot_compile_only',

@@ -89,6 +89,11 @@ PageNodeImpl* ProcessNodeImpl::GetPageNodeIfExclusive() const {
   return page_node;
 }
 
+int ProcessNodeImpl::GetRenderProcessId() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return render_process_host_proxy_.render_process_host_id();
+}
+
 void ProcessNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const bool inserted = frame_nodes_.insert(frame_node).second;

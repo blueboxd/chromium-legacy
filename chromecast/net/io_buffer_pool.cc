@@ -7,7 +7,6 @@
 #include <new>
 
 #include "base/synchronization/lock.h"
-#include "net/base/io_buffer.h"
 
 namespace chromecast {
 

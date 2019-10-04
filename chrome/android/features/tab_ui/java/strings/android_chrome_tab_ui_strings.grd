@@ -180,6 +180,12 @@
       <message name="IDS_TAB_GRID_DIALOG_REMOVE_FROM_GROUP" desc="This text shows on the ungroup bar in TabGridDialog. When user drags a tab and drops it on the ungroup bar, this tab will be moved out of the group.">
         Remove from group
       </message>
+      <message name="IDS_TAB_GRID_DIALOG_TOOLBAR_REMOVE_FROM_GROUP" desc="This text shows in the TabGridDialog toolbar menu as one menu item. When user selects this item, user will enter a selection mode where they can select tabs that they want to move out of tab group. Two things worth mentioning here: 1. The remove here does not mean delete, it means move tab out of tab group and becomes a single tab. 2. If the translation goes beyond 30 characters, replace it with &quot;Remove tabs&quot; to keep this text under 30 characters.">
+        Remove tabs from group
+      </message>
+      <message name="IDS_TAB_GRID_DIALOG_SELECTION_MODE_REMOVE" desc="This texts shows on the action button of tab group selection mode. When user clicks this action button, all the tabs that are currently selected will be moved out of tab group. One thing worth mentioning here is that the remove here does not mean delete, it means move tab out of tab group and becomes a single tab.">
+        Remove
+      </message>
 
       <!-- Tab Grid Drag-and-drop IPH strings -->
       <message name="IDS_IPH_DRAG_AND_DROP_INTRODUCTION" desc="This text shows on the entry point for the in-product help for drag-and-drop. It introduces that this IPH is about how to use drag-and-drop.">

@@ -121,6 +121,8 @@ class CORE_EXPORT RootFrameViewport final
                                       unsigned = 0) const final;
   scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final;
   ScrollbarTheme& GetPageScrollbarTheme() const override;
+  const cc::SnapContainerData* GetSnapContainerData() const override;
+  void SetSnapContainerData(base::Optional<cc::SnapContainerData>) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RootFrameViewportTest, DistributeScrollOrder);

@@ -59,7 +59,7 @@ bool AXMenuListPopup::ComputeAccessibilityIsIgnored(
 AXMenuListOption* AXMenuListPopup::MenuListOptionAXObject(
     HTMLElement* element) const {
   DCHECK(element);
-  if (!IsHTMLOptionElement(*element))
+  if (!IsA<HTMLOptionElement>(*element))
     return nullptr;
 
   AXObject* object = AXObjectCache().GetOrCreate(element);

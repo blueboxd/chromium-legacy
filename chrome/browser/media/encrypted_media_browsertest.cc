@@ -553,9 +553,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
   TestSimplePlayback("bear-320x240-opus-av_enc-v.webm");
 }
 
-// TODO(xhwang): Test is flaky. https://crbug.com/890124.
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
-                       DISABLED_Playback_Multiple_VideoAudio_WebM) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Multiple_VideoAudio_WebM) {
   if (!IsPlayBackPossible(CurrentKeySystem())) {
     DVLOG(0) << "Skipping test - Playback_Multiple test requires playback.";
     return;
@@ -721,13 +719,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4) {
   TestSimplePlayback("bear-640x360-v_frag-cenc.mp4");
 }
 
-// Flaky: crbug.com/847881
-#if defined(MAC_OSX)
-#define MAYBE_Playback_VideoOnly_MP4_MDAT DISABLED_Playback_VideoOnly_MP4_MDAT
-#else
-#define MAYBE_Playback_VideoOnly_MP4_MDAT Playback_VideoOnly_MP4_MDAT
-#endif
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE_Playback_VideoOnly_MP4_MDAT) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_MDAT) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
   if (CurrentSourceType() != SrcType::MSE) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
@@ -795,8 +787,7 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, InitializeCDMFail) {
 
 // When CDM crashes, we should still get a decode error and all sessions should
 // be closed.
-// Flaky: crbug.com/832800
-IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, DISABLED_CDMCrashDuringDecode) {
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, CDMCrashDuringDecode) {
   TestNonPlaybackCases(kExternalClearKeyCrashKeySystem,
                        kEmeSessionClosedAndError);
 }

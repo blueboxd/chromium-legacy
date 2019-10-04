@@ -74,7 +74,7 @@ std::unique_ptr<EventWithCallback> ScrollPredictor::ResampleScrollEvents(
     if (original_events.empty())
       return event_with_callback;
 
-    temporary_accumulated_delta_ = current_accumulated_delta_;
+    temporary_accumulated_delta_ = current_event_accumulated_delta_;
     for (auto& coalesced_event : original_events)
       ComputeAccuracy(coalesced_event.event_);
 
@@ -96,8 +96,8 @@ void ScrollPredictor::Reset() {
   predictor_->Reset();
   if (filtering_enabled_)
     filter_->Reset();
-  current_accumulated_delta_ = gfx::PointF();
-  last_accumulated_delta_ = gfx::PointF();
+  current_event_accumulated_delta_ = gfx::PointF();
+  last_predicted_accumulated_delta_ = gfx::PointF();
 }
 
 void ScrollPredictor::UpdatePrediction(const WebScopedInputEvent& event,
@@ -112,9 +112,10 @@ void ScrollPredictor::UpdatePrediction(const WebScopedInputEvent& event,
     return;
   }
 
-  current_accumulated_delta_.Offset(gesture_event.data.scroll_update.delta_x,
-                                    gesture_event.data.scroll_update.delta_y);
-  InputPredictor::InputData data = {current_accumulated_delta_,
+  current_event_accumulated_delta_.Offset(
+      gesture_event.data.scroll_update.delta_x,
+      gesture_event.data.scroll_update.delta_y);
+  InputPredictor::InputData data = {current_event_accumulated_delta_,
                                     gesture_event.TimeStamp()};
 
   predictor_->Update(data);
@@ -132,7 +133,7 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
                      gfx::PointF(gesture_event->data.scroll_update.delta_x,
                                  gesture_event->data.scroll_update.delta_y)
                          .ToString());
-  gfx::PointF predicted_accumulated_delta = current_accumulated_delta_;
+  gfx::PointF predicted_accumulated_delta = current_event_accumulated_delta_;
   InputPredictor::InputData result;
 
   base::TimeDelta prediction_delta = time_stamp - gesture_event->TimeStamp();
@@ -166,7 +167,7 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
   // back. So we set the new delta to 0 when predicted delta is in different
   // direction to the original event.
   gfx::Vector2dF new_delta =
-      predicted_accumulated_delta - last_accumulated_delta_;
+      predicted_accumulated_delta - last_predicted_accumulated_delta_;
   gesture_event->data.scroll_update.delta_x =
       (new_delta.x() * gesture_event->data.scroll_update.delta_x < 0)
           ? 0
@@ -183,8 +184,9 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
                    gfx::PointF(gesture_event->data.scroll_update.delta_x,
                                gesture_event->data.scroll_update.delta_y)
                        .ToString());
-  last_accumulated_delta_.Offset(gesture_event->data.scroll_update.delta_x,
-                                 gesture_event->data.scroll_update.delta_y);
+  last_predicted_accumulated_delta_.Offset(
+      gesture_event->data.scroll_update.delta_x,
+      gesture_event->data.scroll_update.delta_y);
 }
 
 void ScrollPredictor::ComputeAccuracy(const WebScopedInputEvent& event) {

@@ -252,6 +252,13 @@ void MaybeRestoreSplitView(bool refresh_snapped_windows) {
         Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(
             kActiveDesk);
     for (aura::Window* window : windows) {
+      if (!CanSnapInSplitview(window)) {
+        // Since we are in tablet mode, and this window is not snappable, we
+        // should maximize it.
+        WindowState::Get(window)->Maximize();
+        continue;
+      }
+
       switch (WindowState::Get(window)->GetStateType()) {
         case WindowStateType::kLeftSnapped:
           if (!split_view_controller->left_window()) {

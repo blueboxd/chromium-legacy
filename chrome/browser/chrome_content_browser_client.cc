@@ -1054,6 +1054,13 @@ base::FilePath GetModulePath(base::StringPiece16 module_name) {
 #endif  // defined(OS_WIN) && !defined(COMPONENT_BUILD) &&
         // !defined(ADDRESS_SANITIZER)
 
+void MaybeAddThrottle(
+    std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles,
+    std::unique_ptr<content::NavigationThrottle> maybe_throttle) {
+  if (maybe_throttle)
+    throttles->push_back(std::move(maybe_throttle));
+}
+
 }  // namespace
 
 std::string GetUserAgent() {
@@ -3330,13 +3337,13 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   // disabled; some of the UI is not yet correctly themed. Note: the WebUI CSS
   // explicitly uses light (instead of not dark), which is why we don't reset
   // back to no-preference. https://crbug.com/965811
-  if (contents && !base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
-    bool force_light = contents->GetURL().SchemeIs(content::kChromeUIScheme);
+  if (!base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
+    const GURL url = rvh->GetSiteInstance()->GetSiteURL();
+    bool force_light = url.SchemeIs(content::kChromeUIScheme);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     if (!force_light) {
-      force_light =
-          contents->GetURL().SchemeIs(extensions::kExtensionScheme) &&
-          contents->GetURL().host_piece() == extension_misc::kPdfExtensionId;
+      force_light = url.SchemeIs(extensions::kExtensionScheme) &&
+                    url.host_piece() == extension_misc::kPdfExtensionId;
     }
 #endif
     if (force_light)
@@ -4070,17 +4077,14 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  std::unique_ptr<content::NavigationThrottle> flash_url_throttle =
-      FlashDownloadInterception::MaybeCreateThrottleFor(handle);
-  if (flash_url_throttle)
-    throttles.push_back(std::move(flash_url_throttle));
+  MaybeAddThrottle(&throttles,
+                   FlashDownloadInterception::MaybeCreateThrottleFor(handle));
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  std::unique_ptr<content::NavigationThrottle> supervised_user_throttle =
-      SupervisedUserNavigationThrottle::MaybeCreateThrottleFor(handle);
-  if (supervised_user_throttle)
-    throttles.push_back(std::move(supervised_user_throttle));
+  MaybeAddThrottle(
+      &throttles,
+      SupervisedUserNavigationThrottle::MaybeCreateThrottleFor(handle));
 #endif
 
 #if defined(OS_ANDROID)
@@ -4137,19 +4141,15 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   throttles.push_back(
       std::make_unique<extensions::ExtensionNavigationThrottle>(handle));
 
-  std::unique_ptr<content::NavigationThrottle> user_script_throttle =
-      extensions::ExtensionsBrowserClient::Get()
-          ->GetUserScriptListener()
-          ->CreateNavigationThrottle(handle);
-  if (user_script_throttle)
-    throttles.push_back(std::move(user_script_throttle));
+  MaybeAddThrottle(&throttles, extensions::ExtensionsBrowserClient::Get()
+                                   ->GetUserScriptListener()
+                                   ->CreateNavigationThrottle(handle));
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  std::unique_ptr<content::NavigationThrottle> supervised_user_nav_throttle =
-      SupervisedUserGoogleAuthNavigationThrottle::MaybeCreate(handle);
-  if (supervised_user_nav_throttle)
-    throttles.push_back(std::move(supervised_user_nav_throttle));
+  MaybeAddThrottle(
+      &throttles,
+      SupervisedUserGoogleAuthNavigationThrottle::MaybeCreate(handle));
 #endif
 
   content::WebContents* web_contents = handle->GetWebContents();
@@ -4162,37 +4162,25 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 #if !defined(OS_ANDROID)
   // BackgroundTabNavigationThrottle is used by TabManager, which is only
   // enabled on non-Android platforms.
-  std::unique_ptr<content::NavigationThrottle>
-      background_tab_navigation_throttle = resource_coordinator::
-          BackgroundTabNavigationThrottle::MaybeCreateThrottleFor(handle);
-  if (background_tab_navigation_throttle)
-    throttles.push_back(std::move(background_tab_navigation_throttle));
+  MaybeAddThrottle(&throttles,
+                   resource_coordinator::BackgroundTabNavigationThrottle::
+                       MaybeCreateThrottleFor(handle));
 #endif
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-  std::unique_ptr<content::NavigationThrottle>
-      password_protection_navigation_throttle =
-          safe_browsing::MaybeCreateNavigationThrottle(handle);
-  if (password_protection_navigation_throttle) {
-    throttles.push_back(std::move(password_protection_navigation_throttle));
-  }
+  MaybeAddThrottle(&throttles,
+                   safe_browsing::MaybeCreateNavigationThrottle(handle));
 #endif
 
-  std::unique_ptr<content::NavigationThrottle>
-      lookalike_url_navigation_throttle = lookalikes::
-          LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(handle);
-  if (lookalike_url_navigation_throttle)
-    throttles.push_back(std::move(lookalike_url_navigation_throttle));
+  MaybeAddThrottle(
+      &throttles,
+      lookalikes::LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(
+          handle));
 
-  std::unique_ptr<content::NavigationThrottle> pdf_iframe_throttle =
-      PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(handle);
-  if (pdf_iframe_throttle)
-    throttles.push_back(std::move(pdf_iframe_throttle));
+  MaybeAddThrottle(&throttles,
+                   PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(handle));
 
-  std::unique_ptr<content::NavigationThrottle> tab_under_throttle =
-      TabUnderNavigationThrottle::MaybeCreate(handle);
-  if (tab_under_throttle)
-    throttles.push_back(std::move(tab_under_throttle));
+  MaybeAddThrottle(&throttles, TabUnderNavigationThrottle::MaybeCreate(handle));
 
   throttles.push_back(std::make_unique<PolicyBlacklistNavigationThrottle>(
       handle, handle->GetWebContents()->GetBrowserContext()));
@@ -4204,28 +4192,20 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 
   throttles.push_back(std::make_unique<LoginNavigationThrottle>(handle));
 
-  std::unique_ptr<content::NavigationThrottle> https_upgrade_timing_throttle =
-      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(handle);
-  if (https_upgrade_timing_throttle)
-    throttles.push_back(std::move(https_upgrade_timing_throttle));
+  MaybeAddThrottle(
+      &throttles,
+      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(handle));
 
 #if !defined(OS_ANDROID)
-  std::unique_ptr<content::NavigationThrottle> devtools_throttle =
-      DevToolsWindow::MaybeCreateNavigationThrottle(handle);
-  if (devtools_throttle)
-    throttles.push_back(std::move(devtools_throttle));
+  MaybeAddThrottle(&throttles,
+                   DevToolsWindow::MaybeCreateNavigationThrottle(handle));
 
-  std::unique_ptr<content::NavigationThrottle> new_tab_page_throttle =
-      NewTabPageNavigationThrottle::MaybeCreateThrottleFor(handle);
-  if (new_tab_page_throttle)
-    throttles.push_back(std::move(new_tab_page_throttle));
+  MaybeAddThrottle(
+      &throttles, NewTabPageNavigationThrottle::MaybeCreateThrottleFor(handle));
 
-  std::unique_ptr<content::NavigationThrottle>
-      google_password_manager_throttle =
-          GooglePasswordManagerNavigationThrottle::MaybeCreateThrottleFor(
-              handle);
-  if (google_password_manager_throttle)
-    throttles.push_back(std::move(google_password_manager_throttle));
+  MaybeAddThrottle(
+      &throttles,
+      GooglePasswordManagerNavigationThrottle::MaybeCreateThrottleFor(handle));
 #endif
 
   if (base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials)) {
@@ -4236,11 +4216,9 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  std::unique_ptr<content::NavigationThrottle> browser_switcher_throttle =
-      browser_switcher::BrowserSwitcherNavigationThrottle::
-          MaybeCreateThrottleFor(handle);
-  if (browser_switcher_throttle)
-    throttles.push_back(std::move(browser_switcher_throttle));
+  MaybeAddThrottle(&throttles,
+                   browser_switcher::BrowserSwitcherNavigationThrottle::
+                       MaybeCreateThrottleFor(handle));
 #endif
 
   return throttles;

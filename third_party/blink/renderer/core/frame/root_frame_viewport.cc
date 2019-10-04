@@ -606,6 +606,15 @@ ScrollbarTheme& RootFrameViewport::GetPageScrollbarTheme() const {
   return LayoutViewport().GetPageScrollbarTheme();
 }
 
+const cc::SnapContainerData* RootFrameViewport::GetSnapContainerData() const {
+  return LayoutViewport().GetSnapContainerData();
+}
+
+void RootFrameViewport::SetSnapContainerData(
+    base::Optional<cc::SnapContainerData> data) {
+  LayoutViewport().SetSnapContainerData(data);
+}
+
 void RootFrameViewport::Trace(blink::Visitor* visitor) {
   visitor->Trace(visual_viewport_);
   visitor->Trace(layout_viewport_);

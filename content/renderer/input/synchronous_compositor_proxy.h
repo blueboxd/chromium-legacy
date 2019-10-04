@@ -115,6 +115,7 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
  private:
   void DoDemandDrawSw(const SyncCompositorDemandDrawSwParams& params);
   uint32_t NextMetadataVersion();
+  void HostDisconnected();
 
   struct SharedMemoryWithSize;
 

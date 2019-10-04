@@ -251,6 +251,8 @@ class ASH_EXPORT LockScreenMediaControlsView
   MediaActionButton* play_pause_button_ = nullptr;
   media_message_center::MediaControlsProgressView* progress_ = nullptr;
 
+  std::vector<views::Button*> media_action_buttons_;
+
   // Callbacks.
   const MediaControlsEnabled media_controls_enabled_;
   const base::RepeatingClosure hide_media_controls_;

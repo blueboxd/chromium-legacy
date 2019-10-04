@@ -994,7 +994,7 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(scroll_container != NULL);
     scroll_container = scroll_container->parent();
     ASSERT_TRUE(scroll_container != NULL);
-    views::View* scroll_down_button = scroll_container->children()[1];
+    views::View* scroll_down_button = scroll_container->children()[2];
     ASSERT_TRUE(scroll_down_button);
     gfx::Point loc(scroll_down_button->width() / 2,
                    scroll_down_button->height() / 2);

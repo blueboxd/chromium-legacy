@@ -2917,6 +2917,7 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
   const base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
   cc::LayerTreeSettings settings;
 
+  settings.use_zoom_for_dsf = compositor_deps->IsUseZoomForDSFEnabled();
   settings.compositor_threaded_scrollbar_scrolling =
       base::FeatureList::IsEnabled(
           features::kCompositorThreadedScrollbarScrolling);

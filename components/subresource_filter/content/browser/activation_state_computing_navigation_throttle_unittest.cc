@@ -441,7 +441,8 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest,
   EXPECT_FALSE(state.generic_blocking_rules_disabled);
 }
 
-TEST_P(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated) {
+TEST_P(ActivationStateComputingThrottleSubFrameTest,
+       DISABLED_DisabledStatePropagated) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://allow-child-to-be-whitelisted.com/"),
       mojom::ActivationLevel::kEnabled);

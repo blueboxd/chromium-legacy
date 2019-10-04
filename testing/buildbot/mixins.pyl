@@ -481,32 +481,24 @@
   'marshmallow-x86-emulator': {
     '$mixin_append': {
       'args': [
-        '--avd-name=20190903T160000Z_android_23_google_apis_x86',
-        '--emulator-home=../../.android',
+        '--avd-config=../../tools/android/avd/proto/generic_android23.textpb',
       ],
     },
     'swarming': {
-      'cipd_packages': [
-        {
-          'cipd_package': 'chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86',
-          'location': '.android',
-          'revision': 'cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC',
-        },
-        {
-          'cipd_package': 'chromium/third_party/android_sdk/public/emulator',
-          'location': 'third_party/android_sdk/public',
-          'revision': 'f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC',
-        },
-        {
-          'cipd_package': 'chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86',
-          'location': 'third_party/android_sdk/public',
-          'revision': 'npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC',
-        },
-      ],
       'dimensions': {
         'device_os': None,
         'device_type': None,
       },
+      'named_caches': [
+        {
+          'name': 'avd_generic_android23',
+          'path': '.android',
+        },
+        {
+          'name': 'system_images_android_23_google_apis_x86',
+          'path': '.emulator_sdk',
+        },
+      ]
     },
   },
   'marshmallow_generic': {

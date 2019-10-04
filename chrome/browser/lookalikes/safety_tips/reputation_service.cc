@@ -5,7 +5,7 @@
 #include "chrome/browser/lookalikes/safety_tips/reputation_service.h"
 
 #include <string>
-#include <vector>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -170,21 +170,16 @@ void ReputationService::GetReputationStatus(const GURL& url,
                                             ReputationCheckCallback callback) {
   DCHECK(url.SchemeIsHTTPOrHTTPS());
 
-  // Skip top domains.
-  const DomainInfo navigated_domain = lookalikes::GetDomainInfo(url);
-
   LookalikeUrlService* service = LookalikeUrlService::Get(profile_);
   if (service->EngagedSitesNeedUpdating()) {
     service->ForceUpdateEngagedSites(
         base::BindOnce(&ReputationService::GetReputationStatusWithEngagedSites,
-                       weak_factory_.GetWeakPtr(), std::move(callback), url,
-                       navigated_domain));
+                       weak_factory_.GetWeakPtr(), std::move(callback), url));
     // If the engaged sites need updating, there's nothing to do until callback.
     return;
   }
 
   GetReputationStatusWithEngagedSites(std::move(callback), url,
-                                      navigated_domain,
                                       service->GetLatestEngagedSites());
 }
 
@@ -212,8 +207,9 @@ bool ReputationService::IsIgnored(const GURL& url) const {
 void ReputationService::GetReputationStatusWithEngagedSites(
     ReputationCheckCallback callback,
     const GURL& url,
-    const DomainInfo& navigated_domain,
     const std::vector<DomainInfo>& engaged_sites) {
+  const DomainInfo navigated_domain = lookalikes::GetDomainInfo(url);
+
   // 1. Engagement check
   // Ensure that this URL is not already engaged. We can't use the synchronous
   // SiteEngagementService::IsEngagementAtLeast as it has side effects.  This

@@ -15,7 +15,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.RoundedIconGenerator;
+import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.tile.TileWithTextView;
 
 /**

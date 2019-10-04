@@ -93,8 +93,17 @@ enum {
   DIR_PNACL_BASE,                   // Full path to the base dir for PNaCl.
   DIR_PNACL_COMPONENT,              // Full path to the latest PNaCl version
                                     // (subdir of DIR_PNACL_BASE).
-  DIR_BUNDLED_WIDEVINE_CDM,         // Full path to the directory containing the
-                                    // bundled Widevine CDM.
+#if defined(OS_LINUX)
+  DIR_BUNDLED_WIDEVINE_CDM,  // Full path to the directory containing the
+                             // bundled Widevine CDM.
+#if !defined(OS_CHROMEOS)
+  DIR_COMPONENT_UPDATED_WIDEVINE_CDM,  // Base directory of the Widevine CDM
+                                       // downloaded by the component
+                                       // updater.
+  FILE_COMPONENT_WIDEVINE_CDM_HINT,    // A file in a known location that points
+                                       // to the component updated Widevine CDM.
+#endif                                 // !defined(OS_CHROMEOS)
+#endif                                 // defined(OS_LINUX)
   FILE_RESOURCES_PACK,  // Full path to the .pak file containing binary data.
                         // This includes data for internal pages (e.g., html
                         // files and images), unless these resources are

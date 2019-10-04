@@ -1867,6 +1867,7 @@
                     '|content/browser/webauth/'\
                     '|device/fido/'\
                     '|third_party/blink/public/mojom/webauthn/'\
+                    '|third_party/blink/web_tests/external/wpt/webauthn/'\
                     '|third_party/microsoft_webauthn/',
     },
     'webgpu': {

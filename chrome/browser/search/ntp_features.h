@@ -23,7 +23,8 @@ extern const base::Feature kFirstRunDefaultSearchShortcut;
 extern const base::Feature kNtpRealbox;
 
 // Returns true if either kNtpRealbox or omnibox::kZeroSuggestionsOnNTPRealbox
-// are enabled.
+// are enabled; or omnibox::kOnFocusSuggestions is enabled and configured to
+// show suggestions of some type in the NTP Realbox.
 bool IsNtpRealboxEnabled();
 
 extern const base::Feature kDismissNtpPromos;

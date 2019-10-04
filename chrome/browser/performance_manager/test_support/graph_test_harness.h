@@ -76,14 +76,15 @@ struct TestNodeWrapper<FrameNodeImpl>::Factory {
       GraphImpl* graph,
       ProcessNodeImpl* process_node,
       PageNodeImpl* page_node,
-      FrameNodeImpl* parent_frame_node = nullptr,
-      int frame_tree_node_id = 0,
+      FrameNodeImpl* parent_frame_node,
+      int frame_tree_node_id,
+      int render_frame_id,
       const base::UnguessableToken& token = base::UnguessableToken::Create(),
       int32_t browsing_instance_id = 0,
       int32_t site_instance_id = 0) {
     return std::make_unique<FrameNodeImpl>(
         graph, process_node, page_node, parent_frame_node, frame_tree_node_id,
-        token, browsing_instance_id, site_instance_id);
+        render_frame_id, token, browsing_instance_id, site_instance_id);
   }
 };
 
@@ -168,6 +169,26 @@ class TestNodeWrapper<SystemNodeImpl> {
   DISALLOW_COPY_AND_ASSIGN(TestNodeWrapper);
 };
 
+class TestGraphImpl : public GraphImpl {
+ public:
+  TestGraphImpl();
+  ~TestGraphImpl() override;
+
+  // Creates a frame node with an automatically generated routing id, different
+  // from previously generated routing ids. Useful for tests that don't care
+  // about the frame routing id but need to avoid collisions in
+  // |GraphImpl::frames_by_id_|. Caveat: The generated routing id is not
+  // guaranteed to be different from routing ids set explicitly by the test.
+  TestNodeWrapper<FrameNodeImpl> CreateFrameNodeAutoId(
+      ProcessNodeImpl* process_node,
+      PageNodeImpl* page_node,
+      FrameNodeImpl* parent_frame_node = nullptr,
+      int frame_tree_node_id = 0);
+
+ private:
+  int next_frame_routing_id_ = 0;
+};
+
 class GraphTestHarness : public ::testing::Test {
  public:
   GraphTestHarness();
@@ -183,6 +204,15 @@ class GraphTestHarness : public ::testing::Test {
                                               std::forward<Args>(args)...);
   }
 
+  TestNodeWrapper<FrameNodeImpl> CreateFrameNodeAutoId(
+      ProcessNodeImpl* process_node,
+      PageNodeImpl* page_node,
+      FrameNodeImpl* parent_frame_node = nullptr,
+      int frame_tree_node_id = 0) {
+    return graph()->CreateFrameNodeAutoId(
+        process_node, page_node, parent_frame_node, frame_tree_node_id);
+  }
+
   TestNodeWrapper<SystemNodeImpl> GetSystemNode() {
     return TestNodeWrapper<SystemNodeImpl>(
         graph()->FindOrCreateSystemNodeImpl());
@@ -195,11 +225,11 @@ class GraphTestHarness : public ::testing::Test {
   void AdvanceClock(base::TimeDelta delta) { task_env_.FastForwardBy(delta); }
 
   base::test::TaskEnvironment& task_env() { return task_env_; }
-  GraphImpl* graph() { return &graph_; }
+  TestGraphImpl* graph() { return &graph_; }
 
  private:
   base::test::TaskEnvironment task_env_;
-  GraphImpl graph_;
+  TestGraphImpl graph_;
 };
 
 }  // namespace performance_manager

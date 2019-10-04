@@ -74,7 +74,7 @@ int FeaturePodsContainerView::GetExpandedHeight() const {
   int number_of_lines = (visible_count + kUnifiedFeaturePodItemsInRow - 1) /
                         kUnifiedFeaturePodItemsInRow;
 
-  if (features::IsSystemTrayFeaturePodsPaginationEnabled())
+  if (features::IsUnifiedMessageCenterRefactorEnabled())
     number_of_lines = std::min(number_of_lines, feature_pod_rows_);
 
   return kUnifiedFeaturePodBottomPadding +
@@ -315,7 +315,7 @@ void FeaturePodsContainerView::CalculateIdealBoundsForFeaturePods() {
 }
 
 int FeaturePodsContainerView::GetTilesPerPage() const {
-  if (features::IsSystemTrayFeaturePodsPaginationEnabled())
+  if (features::IsUnifiedMessageCenterRefactorEnabled())
     return kUnifiedFeaturePodItemsInRow * feature_pod_rows_;
   else
     return children().size();

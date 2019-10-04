@@ -348,11 +348,11 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   if (!context_document->CanExecuteScripts(kAboutToExecuteScript))
     return false;
 
-  // Set |is_import_map| only if BuiltInModuleInfraEnabled().
+  // Set |is_import_map| only if ImportMapsEnabled().
   if (is_import_map) {
     Modulator* modulator = Modulator::From(
         ToScriptStateForMainWorld(context_document->GetFrame()));
-    if (!modulator->BuiltInModuleInfraEnabled())
+    if (!modulator->ImportMapsEnabled())
       is_import_map = false;
   }
 

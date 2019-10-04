@@ -86,8 +86,10 @@ void FakeUpdateEngineClient::GetEolStatus(GetEolStatusCallback callback) {
 }
 
 void FakeUpdateEngineClient::GetEolInfo(GetEolInfoCallback callback) {
+  UpdateEngineClient::EolInfo eol_info;
+  eol_info.eol_date = eol_date_;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), EolInfo()));
+      FROM_HERE, base::BindOnce(std::move(callback), eol_info));
 }
 
 void FakeUpdateEngineClient::SetUpdateOverCellularPermission(

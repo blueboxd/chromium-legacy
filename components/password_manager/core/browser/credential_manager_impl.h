@@ -53,11 +53,11 @@ class CredentialManagerImpl
   // Exposed publicly for testing.
   PasswordStore::FormDigest GetSynthesizedFormForOrigin() const;
 
-#if defined(UNIT_TEST)
+#if defined(UNIT_TEST) && !defined(OS_IOS)
   void set_leak_factory(std::unique_ptr<LeakDetectionCheckFactory> factory) {
     leak_delegate_.set_leak_factory(std::move(factory));
   }
-#endif  // defined(UNIT_TEST)
+#endif  // defined(UNIT_TEST) && !defined(OS_IOS)
 
  private:
   // CredentialManagerPendingRequestTaskDelegate:
@@ -95,8 +95,10 @@ class CredentialManagerImpl
   std::unique_ptr<CredentialManagerPendingPreventSilentAccessTask>
       pending_require_user_mediation_;
 
+#if !defined(OS_IOS)
   // Helper for making the requests on leak detection.
   LeakDetectionDelegate leak_delegate_;
+#endif  // !defined(OS_IOS)
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerImpl);
 };

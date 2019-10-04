@@ -280,7 +280,8 @@ class QuicChromiumClientStreamTest
 INSTANTIATE_TEST_SUITE_P(
     Version,
     QuicChromiumClientStreamTest,
-    ::testing::ValuesIn(quic::AllSupportedTransportVersions()));
+    ::testing::ValuesIn(quic::AllSupportedTransportVersions()),
+    ::testing::PrintToStringParamName());
 
 TEST_P(QuicChromiumClientStreamTest, Handle) {
   testing::InSequence seq;

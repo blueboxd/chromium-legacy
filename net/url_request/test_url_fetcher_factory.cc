@@ -42,8 +42,7 @@ ScopedURLFetcherFactory::~ScopedURLFetcherFactory() {
 }
 
 TestURLFetcher::TestURLFetcher(int id, const GURL& url, URLFetcherDelegate* d)
-    : owner_(nullptr),
-      id_(id),
+    : id_(id),
       original_url_(url),
       delegate_(d),
       delegate_for_tests_(nullptr),
@@ -61,8 +60,6 @@ TestURLFetcher::TestURLFetcher(int id, const GURL& url, URLFetcherDelegate* d)
 TestURLFetcher::~TestURLFetcher() {
   if (delegate_for_tests_)
     delegate_for_tests_->OnRequestEnd(id_);
-  if (owner_)
-    owner_->RemoveFetcherFromMap(id_);
 }
 
 void TestURLFetcher::SetUploadData(const std::string& upload_content_type,
@@ -317,43 +314,6 @@ void TestURLFetcher::SetResponseFilePath(const base::FilePath& path) {
   fake_response_file_path_ = path;
 }
 
-TestURLFetcherFactory::TestURLFetcherFactory()
-    : ScopedURLFetcherFactory(this),
-      delegate_for_tests_(nullptr),
-      remove_fetcher_on_delete_(false) {}
-
-TestURLFetcherFactory::~TestURLFetcherFactory() = default;
-
-std::unique_ptr<URLFetcher> TestURLFetcherFactory::CreateURLFetcher(
-    int id,
-    const GURL& url,
-    URLFetcher::RequestType request_type,
-    URLFetcherDelegate* d,
-    NetworkTrafficAnnotationTag traffic_annotation) {
-  TestURLFetcher* fetcher = new TestURLFetcher(id, url, d);
-  if (remove_fetcher_on_delete_)
-    fetcher->set_owner(this);
-  fetcher->SetDelegateForTests(delegate_for_tests_);
-  fetchers_[id] = fetcher;
-  return std::unique_ptr<URLFetcher>(fetcher);
-}
-
-TestURLFetcher* TestURLFetcherFactory::GetFetcherByID(int id) const {
-  auto i = fetchers_.find(id);
-  return i == fetchers_.end() ? NULL : i->second;
-}
-
-void TestURLFetcherFactory::RemoveFetcherFromMap(int id) {
-  auto i = fetchers_.find(id);
-  DCHECK(i != fetchers_.end());
-  fetchers_.erase(i);
-}
-
-void TestURLFetcherFactory::SetDelegateForTests(
-    TestURLFetcherDelegateForTests* delegate_for_tests) {
-  delegate_for_tests_ = delegate_for_tests;
-}
-
 FakeURLFetcher::FakeURLFetcher(const GURL& url,
                                URLFetcherDelegate* d,
                                const std::string& response_data,
@@ -472,20 +432,6 @@ void FakeURLFetcherFactory::SetFakeResponse(
 
 void FakeURLFetcherFactory::ClearFakeResponses() {
   fake_responses_.clear();
-}
-
-URLFetcherImplFactory::URLFetcherImplFactory() = default;
-
-URLFetcherImplFactory::~URLFetcherImplFactory() = default;
-
-std::unique_ptr<URLFetcher> URLFetcherImplFactory::CreateURLFetcher(
-    int id,
-    const GURL& url,
-    URLFetcher::RequestType request_type,
-    URLFetcherDelegate* d,
-    NetworkTrafficAnnotationTag traffic_annotation) {
-  return std::unique_ptr<URLFetcher>(
-      new URLFetcherImpl(url, request_type, d, traffic_annotation));
 }
 
 }  // namespace net

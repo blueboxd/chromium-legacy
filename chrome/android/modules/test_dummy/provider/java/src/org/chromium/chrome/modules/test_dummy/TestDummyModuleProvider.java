@@ -4,31 +4,52 @@
 
 package org.chromium.chrome.modules.test_dummy;
 
-import android.app.Activity;
-import android.content.Intent;
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.module_installer.engine.InstallListener;
 
-/** Installs the test dummy module and launches the test dummy implementation. */
+/** Installs and loads the test dummy module. */
+@JNINamespace("test_dummy")
 public class TestDummyModuleProvider {
-    /**
-     * Launches test dummy. Installs test dummy module if necessary.
-     *
-     * @param intent A test dummy intent encoding the desired test scenario.
-     * @param activity The activity the test dummy will run in.
-     */
-    public static void launchTestDummy(Intent intent, Activity activity) {
-        if (!TestDummyModule.isInstalled()) {
-            installAndLaunchTestDummy(intent, activity);
-            return;
-        }
-        TestDummyModule.getImpl().getTestDummy().launch(intent, activity);
+    private static boolean sIsModuleLoaded;
+
+    /** Returns true if the module is installed. */
+    public static boolean isModuleInstalled() {
+        ThreadUtils.assertOnUiThread();
+        return TestDummyModule.isInstalled();
     }
 
-    private static void installAndLaunchTestDummy(Intent intent, Activity activity) {
-        TestDummyModule.install((success) -> {
-            if (!success) {
-                throw new RuntimeException("Failed to install module.");
-            }
-            TestDummyModule.getImpl().getTestDummy().launch(intent, activity);
-        });
+    /**
+     * Installs the module.
+     *
+     * Can only be called if the module is not installed.
+     *
+     * @param onFinished Called when the install has finished.
+     */
+    public static void installModule(InstallListener onFinished) {
+        ThreadUtils.assertOnUiThread();
+        TestDummyModule.install(onFinished);
+    }
+
+    /**
+     * Returns the test dummy provider from inside the module.
+     *
+     * Can only be called if the module is installed. Maps native resources into memory on first
+     * call.
+     */
+    public static TestDummyProvider getTestDummyProvider() {
+        ThreadUtils.assertOnUiThread();
+        assert isModuleInstalled();
+        if (!sIsModuleLoaded) {
+            TestDummyModuleProviderJni.get().loadNative();
+            sIsModuleLoaded = true;
+        }
+        return TestDummyModule.getImpl();
+    }
+
+    @NativeMethods
+    interface Natives {
+        void loadNative();
     }
 }

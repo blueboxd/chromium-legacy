@@ -190,13 +190,18 @@ class LocalDeviceInstrumentationTestRun(
 
         steps.append(use_webview_provider)
 
-      def install_helper(apk, modules=None, permissions=None):
+      def install_helper(apk, modules=None, fake_modules=None,
+                         permissions=None):
 
         @instrumentation_tracing.no_tracing
         @trace_event.traced
         def install_helper_internal(d, apk_path=None):
           # pylint: disable=unused-argument
-          d.Install(apk, modules=modules, permissions=permissions)
+          d.Install(
+              apk,
+              modules=modules,
+              fake_modules=fake_modules,
+              permissions=permissions)
 
         return install_helper_internal
 
@@ -207,19 +212,6 @@ class LocalDeviceInstrumentationTestRun(
           # pylint: disable=unused-argument
           installer.Install(d, json_path, apk=apk, permissions=permissions)
         return incremental_install_helper_internal
-
-      if self._test_instance.apk_under_test:
-        permissions = self._test_instance.apk_under_test.GetPermissions()
-        if self._test_instance.apk_under_test_incremental_install_json:
-          steps.append(incremental_install_helper(
-                           self._test_instance.apk_under_test,
-                           self._test_instance.
-                               apk_under_test_incremental_install_json,
-                           permissions))
-        else:
-          steps.append(
-              install_helper(self._test_instance.apk_under_test,
-                             self._test_instance.modules, permissions))
 
       permissions = self._test_instance.test_apk.GetPermissions()
       if self._test_instance.test_apk_incremental_install_json:
@@ -235,6 +227,23 @@ class LocalDeviceInstrumentationTestRun(
 
       steps.extend(
           install_helper(apk) for apk in self._test_instance.additional_apks)
+
+      # The apk under test needs to be installed last since installing other
+      # apks after will unintentionally clear the fake module directory.
+      # TODO(wnwen): Make this more robust, fix crbug.com/1010954.
+      if self._test_instance.apk_under_test:
+        permissions = self._test_instance.apk_under_test.GetPermissions()
+        if self._test_instance.apk_under_test_incremental_install_json:
+          steps.append(
+              incremental_install_helper(
+                  self._test_instance.apk_under_test,
+                  self._test_instance.apk_under_test_incremental_install_json,
+                  permissions))
+        else:
+          steps.append(
+              install_helper(self._test_instance.apk_under_test,
+                             self._test_instance.modules,
+                             self._test_instance.fake_modules, permissions))
 
       @trace_event.traced
       def set_debug_app(dev):

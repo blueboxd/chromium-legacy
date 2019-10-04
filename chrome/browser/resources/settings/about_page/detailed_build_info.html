@@ -57,6 +57,13 @@
         </settings-channel-switcher-dialog>
       </template>
     </div>
+    <div id="endOfLifeSectionContainer"
+        class="settings-box two-line single-column"
+        hidden="[[!eolMessageWithMonthAndYear]]">
+      <div>$i18n{aboutEndOfLifeTitle}</div>
+      <div class="secondary" inner-h-t-m-l="[[eolMessageWithMonthAndYear]]">
+      </div>
+    </div>
     <div class="settings-box two-line single-column"
         hidden$="[[!shouldShowVersion_(versionInfo_.arcVersion)]]">
       <div>$i18n{aboutArcVersionLabel}</div>

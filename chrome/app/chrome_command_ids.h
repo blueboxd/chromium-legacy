@@ -142,9 +142,7 @@
 #define IDC_DEV_TOOLS_CONSOLE           40005
 #define IDC_TASK_MANAGER                40006
 #define IDC_DEV_TOOLS_DEVICES           40007
-#if defined(GOOGLE_CHROME_BUILD)
 #define IDC_FEEDBACK                    40008
-#endif
 #define IDC_SHOW_BOOKMARK_BAR           40009
 #define IDC_SHOW_HISTORY                40010
 #define IDC_SHOW_BOOKMARK_MANAGER       40011

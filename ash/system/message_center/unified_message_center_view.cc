@@ -19,6 +19,7 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/message_center/message_center.h"
@@ -94,7 +95,7 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
   scroller_->SetContents(
       std::make_unique<ScrollerContentsView>(message_list_view_, this));
   scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  scroller_->SetVerticalScrollBar(scroll_bar_);
+  scroller_->SetVerticalScrollBar(base::WrapUnique(scroll_bar_));
   scroller_->SetDrawOverflowIndicator(false);
   AddChildView(scroller_);
 }

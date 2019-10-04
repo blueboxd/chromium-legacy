@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/input_method/input_method_engine.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
 #include "chrome/test/base/testing_profile.h"
@@ -297,6 +298,17 @@ TEST_F(InputMethodEngineTest, TestDisableAfterSetComposition) {
 
   EXPECT_EQ(1, mock_ime_input_context_handler_->commit_text_call_count());
   EXPECT_EQ("hello", mock_ime_input_context_handler_->last_commit_text());
+}
+
+TEST_F(InputMethodEngineTest, KeyEventHandledRecordsLatencyHistogram) {
+  base::HistogramTester histogram_tester;
+
+  const std::string request_id = engine_->AddPendingKeyEvent(
+      kTestExtensionId, base::BindOnce([](bool consumed) {}));
+  histogram_tester.ExpectTotalCount("InputMethod.KeyEventLatency", 0);
+
+  engine_->KeyEventHandled(kTestExtensionId, request_id, /* handled */ true);
+  histogram_tester.ExpectTotalCount("InputMethod.KeyEventLatency", 1);
 }
 
 }  // namespace input_method

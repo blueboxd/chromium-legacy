@@ -22,8 +22,6 @@ namespace blink {
 
 namespace {
 
-static const char kStdScheme[] = "std";
-
 // TODO(https://crbug.com/928549): Audit and improve error messages throughout
 // this file.
 
@@ -47,6 +45,7 @@ void AddIgnoredValueMessage(ConsoleLogger& logger,
 // href="https://wicg.github.io/import-maps/#normalize-a-specifier-key">
 String NormalizeSpecifierKey(const String& key_string,
                              const KURL& base_url,
+                             bool support_builtin_modules,
                              ConsoleLogger& logger) {
   // <spec step="1">If specifierKey is the empty string, then:</spec>
   if (key_string.IsEmpty()) {
@@ -61,7 +60,8 @@ String NormalizeSpecifierKey(const String& key_string,
 
   // <spec step="2">Let url be the result of parsing a URL-like import
   // specifier, given specifierKey and baseURL.</spec>
-  ParsedSpecifier key = ParsedSpecifier::Create(key_string, base_url);
+  ParsedSpecifier key =
+      ParsedSpecifier::Create(key_string, base_url, support_builtin_modules);
 
   switch (key.GetType()) {
     case ParsedSpecifier::Type::kInvalid:
@@ -70,17 +70,6 @@ String NormalizeSpecifierKey(const String& key_string,
       return key_string;
 
     case ParsedSpecifier::Type::kURL:
-      // <spec
-      // href="https://wicg.github.io/import-maps/#parse-a-url-like-import-specifier"
-      // step="4">If url’s scheme is either a fetch scheme or "std", then return
-      // url.</spec>
-      //
-      // TODO(hiroshige): Perhaps we should move this into ParsedSpecifier.
-      if (!SchemeRegistry::IsFetchScheme(key.GetUrl().Protocol()) &&
-          key.GetUrl().Protocol() != kStdScheme) {
-        // <spec step="4">Return specifierKey.</spec>
-        return key_string;
-      }
       // <spec step="3">If url is not null, then return the serialization of
       // url.</spec>
       return key.GetImportMapKeyString();
@@ -93,10 +82,12 @@ String NormalizeSpecifierKey(const String& key_string,
 KURL NormalizeValue(const String& key,
                     const String& value_string,
                     const KURL& base_url,
+                    bool support_builtin_modules,
                     ConsoleLogger& logger) {
   // <spec step="3.3.2">Let addressURL be the result of parsing a URL-like
   // import specifier given potentialAddress and baseURL.</spec>
-  ParsedSpecifier value = ParsedSpecifier::Create(value_string, base_url);
+  ParsedSpecifier value =
+      ParsedSpecifier::Create(value_string, base_url, support_builtin_modules);
 
   switch (value.GetType()) {
     case ParsedSpecifier::Type::kInvalid:
@@ -109,11 +100,6 @@ KURL NormalizeValue(const String& key,
       return NullURL();
 
     case ParsedSpecifier::Type::kBare:
-      // TODO(hiroshige): Switch this into aliasing with std: URLs.
-      if (value.GetImportMapKeyString().StartsWith("@std/"))
-        return KURL("import:" + value.GetImportMapKeyString());
-
-      // Do not allow bare specifiers except for @std/.
       AddIgnoredValueMessage(logger, key, "Bare specifier: " + value_string);
       return NullURL();
 
@@ -150,6 +136,7 @@ KURL NormalizeValue(const String& key,
 ImportMap* ImportMap::Parse(const Modulator& modulator,
                             const String& input,
                             const KURL& base_url,
+                            bool support_builtin_modules,
                             ConsoleLogger& logger,
                             ScriptValue* error_to_rethrow) {
   DCHECK(error_to_rethrow);
@@ -192,8 +179,8 @@ ImportMap* ImportMap::Parse(const Modulator& modulator,
     // <spec step="4.2">Set sortedAndNormalizedImports to the result of sorting
     // and normalizing a specifier map given parsed["imports"] and
     // baseURL.</spec>
-    sorted_and_normalized_imports =
-        SortAndNormalizeSpecifierMap(imports, base_url, logger);
+    sorted_and_normalized_imports = SortAndNormalizeSpecifierMap(
+        imports, base_url, support_builtin_modules, logger);
   }
 
   // TODO(crbug.com/927181): Process "scopes" entry (Steps 5 and 6).
@@ -212,6 +199,7 @@ ImportMap* ImportMap::Parse(const Modulator& modulator,
 ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
     const JSONObject* imports,
     const KURL& base_url,
+    bool support_builtin_modules,
     ConsoleLogger& logger) {
   // <spec step="1">Let normalized be an empty map.</spec>
   SpecifierMap normalized;
@@ -223,8 +211,8 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
 
     // <spec step="2.1">Let normalizedSpecifierKey be the result of normalizing
     // a specifier key given specifierKey and baseURL.</spec>
-    const String normalized_specifier_key =
-        NormalizeSpecifierKey(entry.first, base_url, logger);
+    const String normalized_specifier_key = NormalizeSpecifierKey(
+        entry.first, base_url, support_builtin_modules, logger);
 
     // <spec step="2.2">If normalizedSpecifierKey is null, then continue.</spec>
     if (normalized_specifier_key.IsEmpty())
@@ -258,8 +246,8 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
                                  "Internal error in GetString().");
           break;
         }
-        KURL value =
-            NormalizeValue(entry.first, value_string, base_url, logger);
+        KURL value = NormalizeValue(entry.first, value_string, base_url,
+                                    support_builtin_modules, logger);
 
         // <spec step="3.3.5">Append addressURL to
         // validNormalizedAddresses.</spec>
@@ -292,8 +280,8 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
             // <spec step="3.3.1.2">Continue.</spec>
             continue;
           }
-          KURL value =
-              NormalizeValue(entry.first, value_string, base_url, logger);
+          KURL value = NormalizeValue(entry.first, value_string, base_url,
+                                      support_builtin_modules, logger);
 
           // <spec step="3.3.5">Append addressURL to
           // validNormalizedAddresses.</spec>

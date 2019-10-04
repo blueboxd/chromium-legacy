@@ -274,6 +274,11 @@ void ScheduleParamsToProto(ScheduleParams* params,
     proto->set_deliver_time_end(
         TimeToMilliseconds(params->deliver_time_end.value()));
   }
+
+  if (params->custom_suppression_duration.has_value()) {
+    proto->set_custom_suppression_duration_ms(
+        TimeDeltaToMilliseconds(params->custom_suppression_duration.value()));
+  }
 }
 
 // Converts ScheduleParams from proto buffer type.
@@ -295,6 +300,10 @@ void ScheduleParamsFromProto(proto::ScheduleParams* proto,
   }
   if (proto->has_deliver_time_end()) {
     params->deliver_time_end = MillisecondsToTime(proto->deliver_time_end());
+  }
+  if (proto->has_custom_suppression_duration_ms()) {
+    params->custom_suppression_duration =
+        MillisecondsToTimeDelta(proto->custom_suppression_duration_ms());
   }
 }
 
@@ -334,6 +343,12 @@ void ClientStateToProto(ClientState* client_state,
       auto* data = impression_ptr->add_custom_data();
       data->set_key(pair.first);
       data->set_value(pair.second);
+    }
+
+    if (impression.custom_suppression_duration.has_value()) {
+      impression_ptr->set_custom_suppression_duration_ms(
+          TimeDeltaToMilliseconds(
+              impression.custom_suppression_duration.value()));
     }
   }
 
@@ -378,6 +393,11 @@ void ClientStateFromProto(proto::ClientState* proto,
     for (int i = 0; i < proto_impression.custom_data_size(); ++i) {
       const auto& pair = proto_impression.custom_data(i);
       impression.custom_data.emplace(pair.key(), pair.value());
+    }
+
+    if (proto_impression.has_custom_suppression_duration_ms()) {
+      impression.custom_suppression_duration = MillisecondsToTimeDelta(
+          proto_impression.custom_suppression_duration_ms());
     }
 
     client_state->impressions.emplace_back(std::move(impression));

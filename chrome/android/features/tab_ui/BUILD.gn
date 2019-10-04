@@ -120,6 +120,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabListRecyclerView.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabManagementDelegateImpl.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabProperties.java",
+    "java/src/org/chromium/chrome/browser/tasks/tab_management/TabSelectionEditorActionProvider.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabSelectionEditorCoordinator.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabSelectionEditorLayout.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabSelectionEditorLayoutBinder.java",

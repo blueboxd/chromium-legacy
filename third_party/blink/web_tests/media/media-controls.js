@@ -404,6 +404,19 @@ function textTrackListItemInnerCheckbox(trackListItem) {
   return null;
 }
 
+function textTrackListItemInnerKindIndicator(trackListItem) {
+  const children = trackListItem.children;
+  for (var i = 0; i < children.length; i++) {
+    const child = children[i];
+    const pseudoId = internals.shadowPseudoId(child);
+    if (pseudoId == "-internal-media-controls-text-track-list-kind-captions" ||
+        pseudoId == "-internal-media-controls-text-track-list-kind-subtitles") {
+      return child;
+    }
+  }
+  return null;
+}
+
 function clickCaptionButton(video, callback) {
   openOverflowAndClickButton(video, captionsOverflowItem(video), callback);
 }

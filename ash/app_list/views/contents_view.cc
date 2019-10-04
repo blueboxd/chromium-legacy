@@ -26,6 +26,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -42,6 +43,10 @@ namespace {
 // opacity changes from 0 to 1.
 constexpr float kExpandArrowOpacityStartProgress = 0.61;
 constexpr float kExpandArrowOpacityEndProgress = 1;
+constexpr int kHorizontalMarginRatio = 16;
+constexpr int kHorizontalMarginRatioForSmallWidth = 12;
+constexpr int kSmallContentWidthThreshold = 600;
+constexpr int kSearchBarMinWidth = 440;
 
 bool ShouldShowDenseLayout(int height,
                            ash::AppListViewState target_view_state) {
@@ -147,11 +152,13 @@ void ContentsView::ResetForShow() {
   // QueryChanged(). Since it wants to reset to kStateApps, first reset the
   // search box and then set its active state to kStateApps.
   GetSearchBoxView()->ResetForShow();
-  SetActiveState(ash::AppListState::kStateApps, /*animate=*/false);
-  // Make other pages invisible.
+  // Make sure the default visibilities of the pages. This should be done before
+  // SetActiveState() since it checks the visibility of the pages.
+  horizontal_page_container_->SetVisible(true);
   search_results_page_view_->SetVisible(false);
   if (assistant_page_view_)
     assistant_page_view_->SetVisible(false);
+  SetActiveState(ash::AppListState::kStateApps, /*animate=*/false);
   // In side shelf, the opacity of the contents is not animated so set it to the
   // final state. In tablet mode, opacity of the elements is controlled by the
   // HomeLauncherGestureHandler which expects these elements to be opaque.
@@ -252,6 +259,21 @@ int ContentsView::NumLauncherPages() const {
 
 AppsContainerView* ContentsView::GetAppsContainerView() {
   return horizontal_page_container_->apps_container_view();
+}
+
+gfx::Size ContentsView::AdjustSearchBoxSizeToFitMargins(
+    const gfx::Size& preferred_size) const {
+  if (!app_list_features::IsScalableAppListEnabled())
+    return preferred_size;
+  const int content_bounds_width = GetContentsBounds().width();
+  const int margin_ratio = content_bounds_width <= kSmallContentWidthThreshold
+                               ? kHorizontalMarginRatioForSmallWidth
+                               : kHorizontalMarginRatio;
+  const int width_upper_bound =
+      content_bounds_width - 2 * (content_bounds_width / margin_ratio);
+  return gfx::Size(base::ClampToRange(preferred_size.width(),
+                                      kSearchBarMinWidth, width_upper_bound),
+                   preferred_size.height());
 }
 
 void ContentsView::SetActiveStateInternal(int page_index, bool animate) {
@@ -518,7 +540,7 @@ gfx::Size ContentsView::GetSearchBoxSize(ash::AppListState state) const {
   AppListPage* page = GetPageView(GetPageIndexForState(state));
   gfx::Size size_preferred_by_page = page->GetPreferredSearchBoxSize();
   if (!size_preferred_by_page.IsEmpty())
-    return size_preferred_by_page;
+    return AdjustSearchBoxSizeToFitMargins(size_preferred_by_page);
 
   gfx::Size preferred_size = GetSearchBoxView()->GetPreferredSize();
 
@@ -530,7 +552,7 @@ gfx::Size ContentsView::GetSearchBoxSize(ash::AppListState state) const {
         AppListConfig::instance().search_box_height_for_dense_layout());
   }
 
-  return preferred_size;
+  return AdjustSearchBoxSizeToFitMargins(preferred_size);
 }
 
 gfx::Rect ContentsView::GetSearchBoxBoundsForViewState(

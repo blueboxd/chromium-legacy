@@ -93,7 +93,6 @@ class CC_EXPORT CompositorTimingHistory {
                bool current_frame_had_raf,
                bool next_frame_has_pending_raf);
   void DidSubmitCompositorFrame(uint32_t frame_token);
-  void DidNotProduceFrame();
   void DidReceiveCompositorFrameAck();
   void DidPresentCompositorFrame(uint32_t frame_token,
                                  const viz::FrameTimingDetails& details);

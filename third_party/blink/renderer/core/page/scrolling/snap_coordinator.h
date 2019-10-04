@@ -21,8 +21,11 @@ class LayoutBox;
 // positions for a given snap container.
 //
 // Snap container:
-//   An scroll container that has 'scroll-snap-type' value other
+//   A scroll container that has 'scroll-snap-type' value other
 //   than 'none'.
+//   However, we maintain a snap container entry for a scrollable area even if
+//   its snap type is 'none'. This is because while the scroller does not snap,
+//   it still captures the snap areas in its subtree.
 // Snap area:
 //   A snap container's descendant that contributes snap positions. An element
 //   only contributes snap positions to its nearest ancestor (on the element’s
@@ -36,12 +39,11 @@ class CORE_EXPORT SnapCoordinator final
   ~SnapCoordinator();
   void Trace(blink::Visitor* visitor) {}
 
-  void SnapContainerDidChange(LayoutBox&, bool is_removed);
-  void SnapAreaDidChange(LayoutBox&, cc::ScrollSnapAlign);
+  void AddSnapContainer(LayoutBox& snap_container);
+  void RemoveSnapContainer(LayoutBox& snap_container);
 
-  // Returns the SnapContainerData if the snap container has one.
-  base::Optional<cc::SnapContainerData> GetSnapContainerData(
-      const LayoutBox& snap_container) const;
+  void SnapContainerDidChange(LayoutBox&);
+  void SnapAreaDidChange(LayoutBox&, cc::ScrollSnapAlign);
 
   // Calculate the SnapAreaData for the specific snap area in its snap
   // container.
@@ -90,7 +92,7 @@ class CORE_EXPORT SnapCoordinator final
 
   void UpdateSnapContainerData(LayoutBox&);
 
-  HashMap<LayoutBox*, cc::SnapContainerData> snap_container_map_;
+  HashSet<LayoutBox*> snap_containers_;
   DISALLOW_COPY_AND_ASSIGN(SnapCoordinator);
 };
 

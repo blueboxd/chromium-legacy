@@ -550,6 +550,7 @@ void SVGAnimateElement::WillChangeAnimationTarget() {
   SVGAnimationElement::WillChangeAnimationTarget();
   // Should be cleared by the above.
   DCHECK(!animated_value_);
+  ResetCachedAnimationState();
 }
 
 void SVGAnimateElement::DidChangeAnimationTarget() {
@@ -557,7 +558,6 @@ void SVGAnimateElement::DidChangeAnimationTarget() {
   // HasValidTarget() which depends on the animation type being resolved.
   UpdateTargetProperty();
   SVGAnimationElement::DidChangeAnimationTarget();
-  ResetCachedAnimationState();
 }
 
 void SVGAnimateElement::SetAttributeName(const QualifiedName& attribute_name) {

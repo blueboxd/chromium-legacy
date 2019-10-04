@@ -4,6 +4,7 @@
 
 #include "base/task/post_job.h"
 
+#include "base/task/scoped_set_task_priority_for_current_thread.h"
 #include "base/task/thread_pool/job_task_source.h"
 #include "base/task/thread_pool/pooled_task_runner_delegate.h"
 
@@ -16,7 +17,6 @@ JobDelegate::JobDelegate(
     : task_source_(task_source),
       pooled_task_runner_delegate_(pooled_task_runner_delegate) {
   DCHECK(task_source_);
-  DCHECK(pooled_task_runner_delegate_);
 #if DCHECK_IS_ON()
   recorded_increase_version_ = task_source_->GetConcurrencyIncreaseVersion();
   // Record max concurrency before running the worker task.
@@ -43,7 +43,8 @@ bool JobDelegate::ShouldYield() {
 #endif  // DCHECK_IS_ON()
   const bool should_yield =
       task_source_->ShouldYield() ||
-      pooled_task_runner_delegate_->ShouldYield(task_source_);
+      (pooled_task_runner_delegate_ &&
+       pooled_task_runner_delegate_->ShouldYield(task_source_));
 
 #if DCHECK_IS_ON()
   last_should_yield_ = should_yield;
@@ -97,6 +98,63 @@ void JobDelegate::AssertExpectedConcurrency(size_t expected_max_concurrency) {
   recorded_increase_version_ = task_source_->GetConcurrencyIncreaseVersion();
   recorded_max_concurrency_ = task_source_->GetMaxConcurrency();
 #endif  // DCHECK_IS_ON()
+}
+
+JobHandle::JobHandle(scoped_refptr<internal::JobTaskSource> task_source)
+    : task_source_(std::move(task_source)) {}
+
+JobHandle::~JobHandle() {
+  DCHECK(!task_source_)
+      << "The Job must be cancelled, detached or joined before its "
+         "JobHandle is destroyed.";
+}
+
+JobHandle::JobHandle(JobHandle&&) = default;
+
+JobHandle& JobHandle::operator=(JobHandle&& other) {
+  DCHECK(!task_source_)
+      << "The Job must be cancelled, detached or joined before its "
+         "JobHandle is re-assigned.";
+  task_source_ = std::move(other.task_source_);
+  return *this;
+}
+
+void JobHandle::UpdatePriority(TaskPriority new_priority) {
+  task_source_->delegate()->UpdatePriority(task_source_, new_priority);
+}
+
+void JobHandle::NotifyConcurrencyIncrease() {
+  task_source_->NotifyConcurrencyIncrease();
+}
+
+void JobHandle::Join() {
+  DCHECK_GE(internal::GetTaskPriorityForCurrentThread(),
+            task_source_->priority_racy())
+      << "Join may not be called on Job with higher priority than the current "
+         "one.";
+  UpdatePriority(internal::GetTaskPriorityForCurrentThread());
+  bool must_run = task_source_->WillJoin();
+  while (must_run)
+    must_run = task_source_->RunJoinTask();
+  // Remove |task_source_| from the ThreadPool to prevent access to
+  // |max_concurrency_callback| after Join().
+  task_source_->delegate()->RemoveJobTaskSource(task_source_);
+  task_source_ = nullptr;
+}
+
+void JobHandle::Cancel() {
+  task_source_->Cancel();
+  Join();
+}
+
+void JobHandle::CancelAndDetach() {
+  task_source_->Cancel();
+  Detach();
+}
+
+void JobHandle::Detach() {
+  DCHECK(task_source_);
+  task_source_ = nullptr;
 }
 
 }  // namespace experimental

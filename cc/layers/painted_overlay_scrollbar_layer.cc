@@ -31,17 +31,14 @@ std::unique_ptr<LayerImpl> PaintedOverlayScrollbarLayer::CreateLayerImpl(
 }
 
 scoped_refptr<PaintedOverlayScrollbarLayer>
-PaintedOverlayScrollbarLayer::Create(std::unique_ptr<Scrollbar> scrollbar,
-                                     ElementId scroll_element_id) {
-  return base::WrapRefCounted(new PaintedOverlayScrollbarLayer(
-      std::move(scrollbar), scroll_element_id));
+PaintedOverlayScrollbarLayer::Create(std::unique_ptr<Scrollbar> scrollbar) {
+  return base::WrapRefCounted(
+      new PaintedOverlayScrollbarLayer(std::move(scrollbar)));
 }
 
 PaintedOverlayScrollbarLayer::PaintedOverlayScrollbarLayer(
-    std::unique_ptr<Scrollbar> scrollbar,
-    ElementId scroll_element_id)
+    std::unique_ptr<Scrollbar> scrollbar)
     : scrollbar_(std::move(scrollbar)),
-      scroll_element_id_(scroll_element_id),
       thumb_thickness_(scrollbar_->ThumbThickness()),
       thumb_length_(scrollbar_->ThumbLength()) {
   DCHECK(scrollbar_->HasThumb());

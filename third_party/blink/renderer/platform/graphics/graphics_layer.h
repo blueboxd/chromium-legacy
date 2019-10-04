@@ -134,8 +134,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   const TransformationMatrix& Transform() const { return transform_; }
   void SetTransform(const TransformationMatrix&);
 
-  bool ShouldFlattenTransform() const;
-  void SetShouldFlattenTransform(bool);
   void SetRenderingContext(int id);
 
   bool MasksToBounds() const;

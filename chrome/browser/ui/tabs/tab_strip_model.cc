@@ -477,9 +477,11 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsImpl(
   if (create_historical_tab)
     delegate_->CreateHistoricalTab(raw_web_contents);
 
+  base::Optional<int> next_selected_index =
+      order_controller_->DetermineNewSelectedIndex(index);
+
   NotifyGroupChange(index, UngroupTab(index), base::nullopt);
 
-  int next_selected_index = order_controller_->DetermineNewSelectedIndex(index);
   std::unique_ptr<WebContentsData> old_data = std::move(contents_data_[index]);
   contents_data_.erase(contents_data_.begin() + index);
 
@@ -497,9 +499,10 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsImpl(
         selection_model_.set_active(selection_model_.selected_indices()[0]);
         selection_model_.set_anchor(selection_model_.active());
       } else {
+        DCHECK(next_selected_index.has_value());
         // The active tab was removed and nothing is selected. Reset the
         // selection and send out notification.
-        selection_model_.SetSelectedIndex(next_selected_index);
+        selection_model_.SetSelectedIndex(next_selected_index.value());
       }
     }
   }
@@ -885,15 +888,6 @@ std::vector<int> TabStripModel::ListTabsInGroup(TabGroupId group) const {
       result.push_back(i);
   }
   return result;
-}
-
-bool TabStripModel::IsGroupPinned(TabGroupId group) const {
-  for (const auto& contents_datum : contents_data_) {
-    if (contents_datum->group() == group)
-      return contents_datum->pinned();
-  }
-  NOTREACHED();
-  return false;
 }
 
 int TabStripModel::IndexOfFirstNonPinnedTab() const {
@@ -1539,8 +1533,6 @@ int TabStripModel::InsertWebContentsAtImpl(
 
   bool active = (add_types & ADD_ACTIVE) != 0;
   bool pin = (add_types & ADD_PINNED) != 0;
-  if (group.has_value())
-    pin = IsGroupPinned(group.value());
   index = ConstrainInsertionIndex(index, pin);
 
   // Have to get the active contents before we monkey with the contents
@@ -1850,9 +1842,9 @@ void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
     }
   }
 
+  // Unpin tabs when grouping -- the states should be mutually exclusive.
   std::vector<int> new_indices = indices;
-  if (IsTabPinned(new_indices[0]))
-    new_indices = SetTabsPinned(new_indices, true);
+  new_indices = SetTabsPinned(new_indices, false);
 
   MoveTabsIntoGroupImpl(new_indices, destination_index, new_group);
 
@@ -1866,11 +1858,9 @@ void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
 void TabStripModel::AddToExistingGroupImpl(const std::vector<int>& indices,
                                            TabGroupId group) {
   int destination_index = -1;
-  bool pin = false;
   for (int i = contents_data_.size() - 1; i >= 0; i--) {
     if (contents_data_[i]->group() == group) {
       destination_index = i + 1;
-      pin = IsTabPinned(i);
       break;
     }
   }
@@ -1881,7 +1871,8 @@ void TabStripModel::AddToExistingGroupImpl(const std::vector<int>& indices,
     if (GetTabGroupForTab(candidate_index) != group)
       new_indices.push_back(candidate_index);
   }
-  new_indices = SetTabsPinned(new_indices, pin);
+  // Unpin tabs when grouping -- the states should be mutually exclusive.
+  new_indices = SetTabsPinned(new_indices, false);
 
   MoveTabsIntoGroupImpl(new_indices, destination_index, group);
 }
@@ -1915,6 +1906,8 @@ void TabStripModel::MoveTabsIntoGroupImpl(const std::vector<int>& indices,
 void TabStripModel::MoveAndSetGroup(int index,
                                     int new_index,
                                     base::Optional<TabGroupId> new_group) {
+  DCHECK(!IsTabPinned(index));
+
   // Ungroup tab before moving, so that if this is the last tab in the group
   // observers can delete that group.
   base::Optional<TabGroupId> old_group = UngroupTab(index);
@@ -1964,6 +1957,12 @@ void TabStripModel::SetTabPinnedImpl(int index, bool pinned) {
   DCHECK(ContainsIndex(index));
   if (contents_data_[index]->pinned() == pinned)
     return;
+
+  if (pinned) {
+    // Upgroup tabs if pinning -- the states should be mutually exclusive.
+    base::Optional<TabGroupId> old_group = UngroupTab(index);
+    NotifyGroupChange(index, old_group, base::nullopt);
+  }
 
   // The tab's position may have to change as the pinned tab state is changing.
   int non_pinned_tab_index = IndexOfFirstNonPinnedTab();

@@ -391,8 +391,11 @@ const IDNTestCase kIdnCases[] = {
     // ѕсоԗе.com is Cyrillic with Latin lookalikes.
     {"xn--e1ari3f61c.com", L"\x0455\x0441\x043e\x0517\x0435.com", false},
 
-    // ыоԍ.com is Cyrillic with Latin lookalikes
+    // ыоԍ.com is Cyrillic with Latin lookalikes.
     {"xn--n1az74c.com", L"\x044b\x043e\x050d.com", false},
+
+    // сю.com is Cyrillic with Latin lookalikes.
+    {"xn--q1a0a.com", L"\x0441\x044e.com", false},
 
     // Combining Diacritic marks after a script other than Latin-Greek-Cyrillic
     {"xn--rsa2568fvxya.com", L"\xd55c\x0301\xae00.com", false},  // 한́글.com

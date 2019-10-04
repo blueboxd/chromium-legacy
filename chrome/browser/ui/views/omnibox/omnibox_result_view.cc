@@ -37,6 +37,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #if defined(OS_WIN)
 #include "base/win/atl.h"
 #endif
@@ -105,6 +106,9 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
     if (!remove_suggestion_button_) {
       remove_suggestion_button_ = views::CreateVectorImageButton(this);
       remove_suggestion_button_->set_owned_by_client();
+
+      views::InstallCircleHighlightPathGenerator(
+          remove_suggestion_button_.get());
 
       // TODO(tommycli): Make sure this is visible in Dark Mode.
       views::SetImageFromVectorIcon(remove_suggestion_button_.get(),

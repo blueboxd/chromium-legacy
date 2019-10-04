@@ -14,6 +14,7 @@
 #include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "base/bind.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/onc/onc_constants.h"
 #include "components/vector_icons/vector_icons.h"

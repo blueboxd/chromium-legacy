@@ -38,7 +38,7 @@ class TestProcessNodeImpl : public ProcessNodeImpl {
 // Pr: process(pid:1)
 // Pg: page
 struct MockSinglePageInSingleProcessGraph {
-  explicit MockSinglePageInSingleProcessGraph(GraphImpl* graph);
+  explicit MockSinglePageInSingleProcessGraph(TestGraphImpl* graph);
   ~MockSinglePageInSingleProcessGraph();
   TestNodeWrapper<SystemNodeImpl> system;
   TestNodeWrapper<TestProcessNodeImpl> process;
@@ -61,7 +61,7 @@ struct MockSinglePageInSingleProcessGraph {
 // Pr: process(pid:1)
 struct MockMultiplePagesInSingleProcessGraph
     : public MockSinglePageInSingleProcessGraph {
-  explicit MockMultiplePagesInSingleProcessGraph(GraphImpl* graph);
+  explicit MockMultiplePagesInSingleProcessGraph(TestGraphImpl* graph);
   ~MockMultiplePagesInSingleProcessGraph();
   TestNodeWrapper<PageNodeImpl> other_page;
   TestNodeWrapper<FrameNodeImpl> other_frame;
@@ -85,7 +85,7 @@ struct MockMultiplePagesInSingleProcessGraph
 // OPr: other_process(pid:2)
 struct MockSinglePageWithMultipleProcessesGraph
     : public MockSinglePageInSingleProcessGraph {
-  explicit MockSinglePageWithMultipleProcessesGraph(GraphImpl* graph);
+  explicit MockSinglePageWithMultipleProcessesGraph(TestGraphImpl* graph);
   ~MockSinglePageWithMultipleProcessesGraph();
   TestNodeWrapper<TestProcessNodeImpl> other_process;
   TestNodeWrapper<FrameNodeImpl> child_frame;
@@ -111,7 +111,7 @@ struct MockSinglePageWithMultipleProcessesGraph
 // OPr: other_process(pid:2)
 struct MockMultiplePagesWithMultipleProcessesGraph
     : public MockMultiplePagesInSingleProcessGraph {
-  explicit MockMultiplePagesWithMultipleProcessesGraph(GraphImpl* graph);
+  explicit MockMultiplePagesWithMultipleProcessesGraph(TestGraphImpl* graph);
   ~MockMultiplePagesWithMultipleProcessesGraph();
   TestNodeWrapper<TestProcessNodeImpl> other_process;
   TestNodeWrapper<FrameNodeImpl> child_frame;

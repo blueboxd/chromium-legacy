@@ -1345,7 +1345,7 @@ bool HTMLCanvasElement::IsSupportedInteractiveCanvasFallback(
 
   // An option element that is in a list of options of a select element with a
   // "multiple" attribute or with a display size greater than 1.
-  if (IsHTMLOptionElement(element) && element.parentNode() &&
+  if (IsA<HTMLOptionElement>(element) && element.parentNode() &&
       IsHTMLSelectElement(*element.parentNode())) {
     const HTMLSelectElement& select_element =
         ToHTMLSelectElement(*element.parentNode());

@@ -106,9 +106,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 // Enables the Supervised User Deprecation notices.
 ASH_PUBLIC_EXPORT extern const base::Feature kSupervisedUserDeprecationNotice;
 
-// Enables pagination for feature pod buttons in the system tray
-ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayFeaturePodsPagination;
-
 // Enables side volume button control based on screen orientation feature.
 // TODO(https://crbug.com/937907): Remove this after the feature is fully
 // launched.
@@ -163,8 +160,6 @@ ASH_PUBLIC_EXPORT bool IsVirtualDesksEnabled();
 ASH_PUBLIC_EXPORT bool IsVirtualDesksGesturesEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSupervisedUserDeprecationNoticeEnabled();
-
-ASH_PUBLIC_EXPORT bool IsSystemTrayFeaturePodsPaginationEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSwapSideVolumeButtonsForOrientationEnabled();
 

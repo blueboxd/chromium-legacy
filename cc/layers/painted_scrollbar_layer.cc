@@ -21,17 +21,13 @@ std::unique_ptr<LayerImpl> PaintedScrollbarLayer::CreateLayerImpl(
 }
 
 scoped_refptr<PaintedScrollbarLayer> PaintedScrollbarLayer::Create(
-    std::unique_ptr<Scrollbar> scrollbar,
-    ElementId scroll_element_id) {
-  return base::WrapRefCounted(
-      new PaintedScrollbarLayer(std::move(scrollbar), scroll_element_id));
+    std::unique_ptr<Scrollbar> scrollbar) {
+  return base::WrapRefCounted(new PaintedScrollbarLayer(std::move(scrollbar)));
 }
 
 PaintedScrollbarLayer::PaintedScrollbarLayer(
-    std::unique_ptr<Scrollbar> scrollbar,
-    ElementId scroll_element_id)
+    std::unique_ptr<Scrollbar> scrollbar)
     : scrollbar_(std::move(scrollbar)),
-      scroll_element_id_(scroll_element_id),
       internal_contents_scale_(1.f),
       supports_drag_snap_back_(false),
       thumb_thickness_(scrollbar_->ThumbThickness()),

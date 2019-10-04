@@ -35,6 +35,7 @@ class DummyModulator : public Modulator {
   V8CacheOptions GetV8CacheOptions() const override;
   bool IsScriptingDisabled() const override;
 
+  bool ImportMapsEnabled() const override;
   bool BuiltInModuleInfraEnabled() const override;
   bool BuiltInModuleEnabled(blink::layered_api::Module) const override;
   void BuiltInModuleUseCount(blink::layered_api::Module) const override;

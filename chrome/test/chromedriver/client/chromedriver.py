@@ -190,6 +190,10 @@ class ChromeDriver(object):
       assert type(chrome_switches) is list
       options['args'] = chrome_switches
 
+      # TODO(crbug.com/1011000): Work around a bug with headless on Mac.
+      if util.GetPlatformName() == 'mac' and '--headless' in chrome_switches:
+        options['excludeSwitches'] = ['--enable-logging']
+
     if mobile_emulation:
       assert type(mobile_emulation) is dict
       options['mobileEmulation'] = mobile_emulation
@@ -628,7 +632,7 @@ class ChromeDriver(object):
 
   def AddVirtualAuthenticator(self, protocol=None, transport=None,
                               hasResidentKey=None, hasUserVerification=None,
-                              isUserVerified=None):
+                              isUserConsenting=None, isUserVerified=None):
     options = {}
     if protocol is not None:
       options['protocol'] = protocol
@@ -638,6 +642,8 @@ class ChromeDriver(object):
       options['hasResidentKey'] = hasResidentKey
     if hasUserVerification is not None:
       options['hasUserVerification'] = hasUserVerification
+    if isUserConsenting is not None:
+      options['isUserConsenting'] = isUserConsenting
     if isUserVerified is not None:
       options['isUserVerified'] = isUserVerified
 

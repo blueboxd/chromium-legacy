@@ -147,8 +147,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   const AtomicString& HttpMethod() const;
   const Referrer& GetReferrer() const;
   const KURL& UnreachableURL() const;
-  EncodedFormData* HttpBody() const;
-  const base::UnguessableToken& AppcacheHostId() const;
 
   void DidChangePerformanceTiming();
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag);
@@ -224,8 +222,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   };
   InitialScrollState& GetInitialScrollState() { return initial_scroll_state_; }
 
-  bool WasBlockedAfterCSP() { return was_blocked_after_csp_; }
-
   void DispatchLinkHeaderPreloads(const base::Optional<ViewportDescription>&,
                                   PreloadHelper::MediaPreloadPolicy);
 
@@ -268,29 +264,17 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   UseCounterHelper& GetUseCounterHelper() { return use_counter_; }
   Dactyloscoper& GetDactyloscoper() { return dactyloscoper_; }
 
-  int ErrorCode() const { return error_code_; }
-
-  network::mojom::IPAddressSpace GetIPAddressSpace() const {
-    return ip_address_space_;
-  }
-
   PrefetchedSignedExchangeManager* GetPrefetchedSignedExchangeManager() const;
 
   // UseCounter
   void CountUse(mojom::WebFeature) override;
   void CountDeprecation(mojom::WebFeature) override;
 
-  // The caller owns the |clock| which must outlive the DocumentLoader.
-  void SetTickClockForTesting(const base::TickClock* clock) { clock_ = clock; }
   void SetApplicationCacheHostForTesting(ApplicationCacheHostForFrame* host) {
     application_cache_host_ = host;
   }
 
   void SetLoadingJavaScriptUrl() { loading_url_as_javascript_ = true; }
-
-  WebURLRequest::PreviewsState previews_state() const {
-    return previews_state_;
-  }
 
   bool HadTransientActivation() const { return had_transient_activation_; }
 
@@ -415,9 +399,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   base::Optional<WebOriginPolicy> origin_policy_;
   scoped_refptr<const SecurityOrigin> requestor_origin_;
   KURL unreachable_url_;
-  int error_code_;
   std::unique_ptr<WebNavigationBodyLoader> body_loader_;
-  base::UnguessableToken appcache_host_id_;
   network::mojom::IPAddressSpace ip_address_space_ =
       network::mojom::IPAddressSpace::kUnknown;
 
@@ -468,7 +450,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   ClientHintsPreferences client_hints_preferences_;
   InitialScrollState initial_scroll_state_;
 
-  bool was_blocked_after_csp_;
+  bool was_blocked_by_csp_;
 
   enum State { kNotStarted, kProvisional, kCommitted, kSentDidFinishLoad };
   State state_;

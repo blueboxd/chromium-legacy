@@ -290,16 +290,7 @@ Node::InsertionNotificationRequest SVGSMILElement::InsertedInto(
         SMILTimeWithOrigin(SMILTime(), SMILTimeOrigin::kAttribute));
   }
 
-  if (is_waiting_for_first_interval_)
-    ResolveFirstInterval();
-
-  if (time_container_) {
-    time_container_->MarkIntervalsDirty();
-    time_container_->ScheduleIntervalUpdate();
-  }
-
   BuildPendingResource();
-
   return kInsertionDone;
 }
 
@@ -597,19 +588,8 @@ void SVGSMILElement::SetTargetElement(SVGElement* target) {
   if (target == target_element_)
     return;
   WillChangeAnimationTarget();
-
-  // If the animation state is not Inactive, always reset to a clear state
-  // before leaving the old target element.
-  if (GetActiveState() != kInactive)
-    EndedActiveInterval();
-
   target_element_ = target;
   DidChangeAnimationTarget();
-
-  // If the animation is scheduled and there's an active interval, then
-  // revalidate the animation value.
-  if (GetActiveState() != kInactive && is_scheduled_)
-    StartedActiveInterval();
 }
 
 SMILTime SVGSMILElement::Elapsed() const {
@@ -941,6 +921,30 @@ void SVGSMILElement::UpdateInterval(SMILTime presentation_time) {
   interval_has_changed_ = true;
 }
 
+void SVGSMILElement::AddedToTimeContainer() {
+  DCHECK(time_container_);
+  if (is_waiting_for_first_interval_)
+    ResolveFirstInterval();
+
+  SMILTime current_presentation_time = time_container_->CurrentDocumentTime();
+  if (IntervalBegin() <= current_presentation_time ||
+      NextProgressTime(current_presentation_time).IsFinite()) {
+    time_container_->MarkIntervalsDirty();
+    time_container_->ScheduleIntervalUpdate();
+  }
+
+  // If there's an active interval, then revalidate the animation value.
+  if (GetActiveState() != kInactive)
+    StartedActiveInterval();
+}
+
+void SVGSMILElement::RemovedFromTimeContainer() {
+  DCHECK(time_container_);
+  // If the element is active reset to a clear state.
+  if (GetActiveState() != kInactive)
+    EndedActiveInterval();
+}
+
 const SMILInterval& SVGSMILElement::GetActiveInterval(SMILTime elapsed) const {
   // If there's no current interval, return the previous interval.
   if (!interval_.IsResolved())
@@ -1247,6 +1251,7 @@ void SVGSMILElement::WillChangeAnimationTarget() {
   DCHECK(time_container_);
   DCHECK(target_element_);
   time_container_->Unschedule(this, target_element_, attribute_name_);
+  RemovedFromTimeContainer();
   is_scheduled_ = false;
 }
 
@@ -1255,6 +1260,7 @@ void SVGSMILElement::DidChangeAnimationTarget() {
   if (!time_container_ || !HasValidTarget())
     return;
   time_container_->Schedule(this, target_element_, attribute_name_);
+  AddedToTimeContainer();
   is_scheduled_ = true;
 }
 

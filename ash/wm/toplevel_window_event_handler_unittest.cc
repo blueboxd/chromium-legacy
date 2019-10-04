@@ -1011,27 +1011,64 @@ TEST_F(ToplevelWindowEventHandlerTest, RunMoveLoopFailsDuringInProgressDrag) {
   EXPECT_EQ("10,11 100x100", window1->bounds().ToString());
 }
 
-TEST_F(ToplevelWindowEventHandlerTest, SwipingFromLeftEdgeToGoBack) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      ash::features::kSwipingFromLeftEdgeToGoBack);
-  std::unique_ptr<aura::Window> w1 = CreateTestWindow();
-  TabletModeControllerTestApi().EnterTabletMode();
+class ToplevelWindowEventHandlerBackGestureTest : public AshTestBase {
+ public:
+  ToplevelWindowEventHandlerBackGestureTest() = default;
+  ~ToplevelWindowEventHandlerBackGestureTest() override = default;
 
-  AcceleratorControllerImpl* controller =
-      Shell::Get()->accelerator_controller();
+  void SetUp() override {
+    AshTestBase::SetUp();
 
-  // Register an accelerator that looks for back presses.
-  ui::Accelerator accelerator_back_press(ui::VKEY_BROWSER_BACK, ui::EF_NONE);
-  accelerator_back_press.set_key_state(ui::Accelerator::KeyState::PRESSED);
-  ui::TestAcceleratorTarget target_back_press;
-  controller->Register({accelerator_back_press}, &target_back_press);
+    feature_list_.InitAndEnableFeature(
+        ash::features::kSwipingFromLeftEdgeToGoBack);
+    top_window_ = CreateTestWindow();
+    TabletModeControllerTestApi().EnterTabletMode();
+  }
 
-  // Register an accelerator that looks for back releases.
-  ui::Accelerator accelerator_back_release(ui::VKEY_BROWSER_BACK, ui::EF_NONE);
-  accelerator_back_release.set_key_state(ui::Accelerator::KeyState::RELEASED);
-  ui::TestAcceleratorTarget target_back_release;
-  controller->Register({accelerator_back_release}, &target_back_release);
+  void TearDown() override {
+    top_window_.reset();
+    AshTestBase::TearDown();
+  }
+
+  void RegisterBackPressAndRelease(ui::TestAcceleratorTarget* back_press,
+                                   ui::TestAcceleratorTarget* back_release) {
+    AcceleratorControllerImpl* controller =
+        Shell::Get()->accelerator_controller();
+
+    // Register an accelerator that looks for back presses.
+    ui::Accelerator accelerator_back_press(ui::VKEY_BROWSER_BACK, ui::EF_NONE);
+    accelerator_back_press.set_key_state(ui::Accelerator::KeyState::PRESSED);
+    controller->Register({accelerator_back_press}, back_press);
+
+    // Register an accelerator that looks for back releases.
+    ui::Accelerator accelerator_back_release(ui::VKEY_BROWSER_BACK,
+                                             ui::EF_NONE);
+    accelerator_back_release.set_key_state(ui::Accelerator::KeyState::RELEASED);
+    controller->Register({accelerator_back_release}, back_release);
+  }
+
+  // Send gesture event with |type| to the toplevel window event handler.
+  void SendGestureEvent(const gfx::Point& position,
+                        int scroll_x,
+                        int scroll_y,
+                        ui::EventType type) {
+    ui::GestureEvent event = ui::GestureEvent(
+        position.x(), position.y(), ui::EF_NONE, base::TimeTicks::Now(),
+        ui::GestureEventDetails(type, scroll_x, scroll_y));
+    ui::Event::DispatcherApi(&event).set_target(top_window_.get());
+    ash::Shell::Get()->toplevel_window_event_handler()->OnGestureEvent(&event);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  std::unique_ptr<aura::Window> top_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventHandlerBackGestureTest);
+};
+
+TEST_F(ToplevelWindowEventHandlerBackGestureTest, SwipingFromLeftEdgeToGoBack) {
+  ui::TestAcceleratorTarget target_back_press, target_back_release;
+  RegisterBackPressAndRelease(&target_back_press, &target_back_release);
 
   // Tests that swiping from the left less than |kSwipingDistanceForGoingBack|
   // should not go to previous page.
@@ -1052,6 +1089,35 @@ TEST_F(ToplevelWindowEventHandlerTest, SwipingFromLeftEdgeToGoBack) {
       gfx::Point(ToplevelWindowEventHandler::kSwipingDistanceForGoingBack + 10,
                  100),
       base::TimeDelta::FromMilliseconds(100), 3);
+  EXPECT_EQ(1, target_back_press.accelerator_count());
+  EXPECT_EQ(1, target_back_release.accelerator_count());
+}
+
+TEST_F(ToplevelWindowEventHandlerBackGestureTest, FlingFromLeftEdgeToGoBack) {
+  ui::TestAcceleratorTarget target_back_press, target_back_release;
+  RegisterBackPressAndRelease(&target_back_press, &target_back_release);
+
+  // Tests that fling from the left with velocity smaller than
+  // |kFlingVelocityForGoingBack| should not go to previous page.
+  gfx::Point start(0, 100);
+  gfx::Point update_and_end(200, 100);
+  SendGestureEvent(start, 0, 0, ui::ET_GESTURE_SCROLL_BEGIN);
+  SendGestureEvent(update_and_end, update_and_end.x() - start.x(), 0,
+                   ui::ET_GESTURE_SCROLL_UPDATE);
+  SendGestureEvent(update_and_end,
+                   ToplevelWindowEventHandler::kFlingVelocityForGoingBack - 10,
+                   0, ui::ET_SCROLL_FLING_START);
+  EXPECT_EQ(0, target_back_press.accelerator_count());
+  EXPECT_EQ(0, target_back_release.accelerator_count());
+
+  // Tests that fling from the left with velocity larger than
+  // |kFlingVelocityForGoingBack| should go to previous page.
+  SendGestureEvent(start, 0, 0, ui::ET_GESTURE_SCROLL_BEGIN);
+  SendGestureEvent(update_and_end, update_and_end.x() - start.x(), 0,
+                   ui::ET_GESTURE_SCROLL_UPDATE);
+  SendGestureEvent(update_and_end,
+                   ToplevelWindowEventHandler::kFlingVelocityForGoingBack + 10,
+                   0, ui::ET_SCROLL_FLING_START);
   EXPECT_EQ(1, target_back_press.accelerator_count());
   EXPECT_EQ(1, target_back_release.accelerator_count());
 }

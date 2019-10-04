@@ -245,6 +245,12 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_parse_public_header, true)
 // length-prefixed connection IDs.
 QUIC_FLAG(bool, FLAGS_quic_prober_uses_length_prefixed_connection_ids, false)
 
+// When true, QuicFramer allows parsing failures of source connection ID for
+// the PROX version.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_parse_prox_source_connection_id,
+          false)
+
 // If true and H2PR connection option is received, write_blocked_streams_ uses
 // HTTP2 (tree-style) priority write scheduler.
 QUIC_FLAG(bool,
@@ -382,6 +388,16 @@ QUIC_FLAG(
 // If true, server drops client initial packets in datagrams < 1200 bytes.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_donot_process_small_initial_packets,
+          false)
+
+// If true, treat queued QUIC packets as sent.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_treat_queued_packets_as_sent,
+          false)
+
+// Call NeuterHandshakePackets() at most once per connection.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_neuter_handshake_packets_once,
           false)
 
 // If true, support HTTP/3 priority in v99.

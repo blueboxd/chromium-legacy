@@ -39,8 +39,7 @@ class OpenXrRenderLoop : public XRCompositorCommon {
 
   bool UpdateDisplayInfo();
   bool UpdateEyeParameters();
-  bool UpdateEye(const XrView& view,
-                 const gfx::Point3F& center,
+  bool UpdateEye(const XrView& view_head,
                  const gfx::Size& view_size,
                  mojom::VREyeParametersPtr* eye) const;
   bool UpdateStageParameters();

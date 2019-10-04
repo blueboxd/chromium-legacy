@@ -172,6 +172,13 @@ bool PasswordProtectionService::ShouldShowModalWarning(
     return false;
   }
 
+  if (password_type.account_type() ==
+          ReusedPasswordAccountType::SAVED_PASSWORD &&
+      base::FeatureList::IsEnabled(
+          safe_browsing::kPasswordProtectionForSavedPasswords)) {
+    return verdict_type == LoginReputationClientResponse::PHISHING;
+  }
+
   return (verdict_type == LoginReputationClientResponse::PHISHING ||
           verdict_type == LoginReputationClientResponse::LOW_REPUTATION) &&
          IsWarningEnabled(password_type);
@@ -546,6 +553,12 @@ bool PasswordProtectionService::IsSupportedPasswordTypeForModalWarning(
     ReusedPasswordAccountType password_type) const {
   if (password_type.account_type() ==
       ReusedPasswordAccountType::NON_GAIA_ENTERPRISE)
+    return true;
+
+  if (password_type.account_type() ==
+          ReusedPasswordAccountType::SAVED_PASSWORD &&
+      base::FeatureList::IsEnabled(
+          safe_browsing::kPasswordProtectionForSavedPasswords))
     return true;
 
   if (password_type.account_type() != ReusedPasswordAccountType::GMAIL &&

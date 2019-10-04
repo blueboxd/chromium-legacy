@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/system/network/tray_network_state_model.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -41,10 +42,32 @@ std::vector<VpnProviderPtr> CopyProviders(
 
 }  // namespace
 
-using VpnListTest = AshTestBase;
+class VpnListTest : public AshTestBase {
+ public:
+  VpnListTest() = default;
+  ~VpnListTest() override = default;
+
+  void SetUp() override {
+    AshTestBase::SetUp();
+    network_state_model_ = std::make_unique<TrayNetworkStateModel>();
+  }
+
+  void TearDown() override {
+    network_state_model_.reset();
+    AshTestBase::TearDown();
+  }
+
+  VpnList& GetVpnList() { return *network_state_model_->vpn_list(); }
+
+ private:
+  std::unique_ptr<TrayNetworkStateModel> network_state_model_;
+  std::unique_ptr<VpnList> vpn_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(VpnListTest);
+};
 
 TEST_F(VpnListTest, BuiltInProvider) {
-  VpnList vpn_list;
+  VpnList& vpn_list = GetVpnList();
 
   // The VPN list should only contain the built-in provider.
   ASSERT_EQ(1u, vpn_list.extension_vpn_providers().size());
@@ -54,7 +77,7 @@ TEST_F(VpnListTest, BuiltInProvider) {
 }
 
 TEST_F(VpnListTest, ThirdPartyProviders) {
-  VpnList vpn_list;
+  VpnList& vpn_list = GetVpnList();
   // The VpnList model doesn't sort by launch time or otherwise do anything
   // with the value, so we use the same value for all instances and di a single
   // verification that it gets set.
@@ -143,7 +166,7 @@ TEST_F(VpnListTest, ThirdPartyProviders) {
 }
 
 TEST_F(VpnListTest, Observers) {
-  VpnList vpn_list;
+  VpnList& vpn_list = GetVpnList();
 
   // Observers are not notified when they are added.
   TestVpnListObserver observer;

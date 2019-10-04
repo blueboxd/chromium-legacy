@@ -59,10 +59,6 @@ export class TabElement extends CustomElement {
     this.closeButtonEl_.addEventListener('click', this.onClose_.bind(this));
   }
 
-  connectedCallback() {
-    this.setAttribute('draggable', 'true');
-  }
-
   /** @return {!Tab} */
   get tab() {
     return this.tab_;
@@ -75,6 +71,7 @@ export class TabElement extends CustomElement {
     // the tab is navigating to a new document.
     this.toggleAttribute('loading', tab.status === STATUS.LOADING);
     this.toggleAttribute('pinned', tab.pinned);
+    this.setAttribute('draggable', tab.pinned);
 
     if (!this.tab_ || this.tab_.title !== tab.title) {
       this.titleTextEl_.textContent = tab.title;

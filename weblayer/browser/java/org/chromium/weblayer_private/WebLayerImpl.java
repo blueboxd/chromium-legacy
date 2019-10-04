@@ -22,6 +22,7 @@ import org.chromium.weblayer_private.aidl.IObjectWrapper;
 import org.chromium.weblayer_private.aidl.IProfile;
 import org.chromium.weblayer_private.aidl.IWebLayer;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
+import org.chromium.weblayer_private.aidl.WebLayerVersion;
 
 @UsedByReflection("WebLayer")
 public final class WebLayerImpl extends IWebLayer.Stub {
@@ -37,6 +38,14 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     }
 
     private WebLayerImpl() {}
+
+    /**
+     * Returns true if the client and implementation versions are compatible.
+     */
+    @UsedByReflection("WebLayer")
+    public static boolean checkVersion(int clientVersion) {
+        return clientVersion == WebLayerVersion.sVersionNumber;
+    }
 
     @Override
     public IProfile createProfile(String path) {

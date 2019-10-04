@@ -43,8 +43,10 @@ base::Lock& GetLock() {
   return *lock;
 }
 
-// We expect |GetLock()| to be acquired before accessing this variable.
+// We expect GetLock() to be acquired before accessing these variables.
 TestGpuServiceHolder* g_holder = nullptr;
+bool g_should_register_listener = true;
+bool g_registered_listener = false;
 
 class InstanceResetter : public testing::EmptyTestEventListener {
  public:
@@ -65,14 +67,22 @@ class InstanceResetter : public testing::EmptyTestEventListener {
 TestGpuServiceHolder* TestGpuServiceHolder::GetInstance() {
   base::AutoLock locked(GetLock());
 
-  // Make sure all TestGpuServiceHolders are deleted at process exit.
+  // Make sure the global TestGpuServiceHolder is delete after each test. The
+  // listener will always be registered with gtest even if gtest isn't
+  // otherwised used. This should do nothing in the non-gtest case.
+  if (!g_registered_listener && g_should_register_listener) {
+    g_registered_listener = true;
+    testing::TestEventListeners& listeners =
+        testing::UnitTest::GetInstance()->listeners();
+    listeners.Append(new InstanceResetter);
+  }
+
+  // Make sure the global TestGpuServiceHolder is deleted at process exit.
   static bool registered_cleanup = false;
   if (!registered_cleanup) {
     registered_cleanup = true;
-    base::AtExitManager::RegisterTask(base::BindOnce([]() {
-      if (g_holder)
-        delete g_holder;
-    }));
+    base::AtExitManager::RegisterTask(
+        base::BindOnce(&TestGpuServiceHolder::ResetInstance));
   }
 
   if (!g_holder) {
@@ -92,14 +102,12 @@ void TestGpuServiceHolder::ResetInstance() {
 }
 
 // static
-void TestGpuServiceHolder::DestroyInstanceAfterEachTest() {
-  static bool registered_listener = false;
-  if (!registered_listener) {
-    registered_listener = true;
-    testing::TestEventListeners& listeners =
-        testing::UnitTest::GetInstance()->listeners();
-    listeners.Append(new InstanceResetter);
-  }
+void TestGpuServiceHolder::DoNotResetOnTestExit() {
+  base::AutoLock locked(GetLock());
+
+  // This must be called before GetInstance() is ever called.
+  DCHECK(!g_registered_listener);
+  g_should_register_listener = false;
 }
 
 TestGpuServiceHolder::TestGpuServiceHolder(

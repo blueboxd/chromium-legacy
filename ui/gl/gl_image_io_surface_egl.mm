@@ -101,12 +101,13 @@ GLImageIOSurfaceEGL::~GLImageIOSurfaceEGL() {
 
 void GLImageIOSurfaceEGL::ReleaseTexImage(unsigned target) {
   DCHECK(target == GL_TEXTURE_RECTANGLE_ARB);
-  DCHECK(pbuffer_ != EGL_NO_SURFACE);
-  DCHECK(texture_bound_);
+  if (texture_bound_) {
+    DCHECK(pbuffer_ != EGL_NO_SURFACE);
 
-  EGLBoolean result = eglReleaseTexImage(display_, pbuffer_, EGL_BACK_BUFFER);
-  DCHECK(result == EGL_TRUE);
-  texture_bound_ = false;
+    EGLBoolean result = eglReleaseTexImage(display_, pbuffer_, EGL_BACK_BUFFER);
+    DCHECK(result == EGL_TRUE);
+    texture_bound_ = false;
+  }
 }
 
 bool GLImageIOSurfaceEGL::BindTexImageImpl(unsigned internalformat) {

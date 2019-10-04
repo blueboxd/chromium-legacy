@@ -1717,9 +1717,11 @@ AutotestPrivateSetAssistantEnabledFunction::Run() {
   if (!err_msg.empty())
     return RespondNow(Error(err_msg));
 
-  auto new_state = params->enabled ? ash::mojom::AssistantState::READY
-                                   : ash::mojom::AssistantState::NOT_READY;
-  if (ash::AssistantState::Get()->assistant_state() == new_state)
+  // Any state that's not |NOT_READY| would be considered a ready state.
+  const bool not_ready = (ash::AssistantState::Get()->assistant_state() ==
+                          ash::mojom::AssistantState::NOT_READY);
+  const bool success = (params->enabled != not_ready);
+  if (success)
     return RespondNow(NoArguments());
 
   // Assistant service has not responded yet, set up a delayed timer to wait for

@@ -29,8 +29,8 @@ import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper.MenuButtonState;
 import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
+import org.chromium.chrome.browser.ui.widget.highlight.PulseDrawable;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.browser.widget.PulseDrawable;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**

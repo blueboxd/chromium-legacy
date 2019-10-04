@@ -140,6 +140,7 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
   std::unique_ptr<FrameNodeImpl> frame = performance_manager_->CreateFrameNode(
       process_node, page_node_.get(), parent_frame_node,
       render_frame_host->GetFrameTreeNodeId(),
+      render_frame_host->GetRoutingID(),
       render_frame_host->GetDevToolsFrameToken(),
       site_instance->GetBrowsingInstanceId(), site_instance->GetId(),
       base::BindOnce(

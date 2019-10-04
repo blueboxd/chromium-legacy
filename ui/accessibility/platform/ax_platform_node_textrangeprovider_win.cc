@@ -399,15 +399,19 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETATTRIBUTEVALUE);
 
   base::win::ScopedVariant attribute_value_variant;
-  AXNodeRange range(start_->Clone(), end_->Clone());
 
-  for (const AXNodeRange& leaf_text_range : range) {
-    AXPositionInstanceType* anchor_start = leaf_text_range.anchor();
-    AXPlatformNodeDelegate* delegate = GetDelegate(anchor_start);
-    DCHECK(anchor_start && delegate);
+  // The range is inclusive, so advance our endpoint to the next position
+  auto end = end_->CreateNextAnchorPosition();
+
+  // Iterate over anchor positions
+  for (auto it = start_->Clone();
+       it->anchor_id() != end->anchor_id() || it->tree_id() != end->tree_id();
+       it = it->CreateNextAnchorPosition()) {
+    AXPlatformNodeDelegate* delegate = GetDelegate(it.get());
+    DCHECK(it && delegate);
 
     AXPlatformNodeWin* platform_node = static_cast<AXPlatformNodeWin*>(
-        delegate->GetFromNodeID(anchor_start->anchor_id()));
+        delegate->GetFromNodeID(it->anchor_id()));
     DCHECK(platform_node);
 
     base::win::ScopedVariant current_variant;

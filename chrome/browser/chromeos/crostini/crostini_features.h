@@ -22,7 +22,11 @@ class CrostiniFeatures {
   // When check_policy is false, returns true if crostini UI is not forbidden by
   // hardware, flags, etc, even if it is forbidden by the enterprise policy. The
   // UI uses this to indicate that crostini is available but disabled by policy.
-  virtual bool IsUIAllowed(Profile*, bool check_policy);
+  virtual bool IsUIAllowed(Profile*, bool check_policy = true);
+
+  // Returns whether if Crostini has been enabled, i.e. the user has launched it
+  // at least once and not deleted it.
+  virtual bool IsEnabled(Profile* profile);
 
   // Returns true if policy allows export import UI.
   virtual bool IsExportImportUIAllowed(Profile*);

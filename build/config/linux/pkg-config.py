@@ -79,7 +79,7 @@ def GetPkgConfigPrefixToStrip(options, args):
   # To support this correctly, it's necessary to extract the prefix to strip
   # from pkg-config's |prefix| variable.
   prefix = subprocess.check_output([options.pkg_config,
-      "--variable=prefix"] + args, env=os.environ)
+      "--variable=prefix"] + args, env=os.environ).decode('utf-8')
   if prefix[-4] == '/usr':
     return prefix[4:]
   return prefix
@@ -158,7 +158,7 @@ def main():
   if options.version_as_components:
     cmd = [options.pkg_config, "--modversion"] + args
     try:
-      version_string = subprocess.check_output(cmd)
+      version_string = subprocess.check_output(cmd).decode('utf-8')
     except:
       sys.stderr.write('Error from pkg-config.\n')
       return 1
@@ -171,7 +171,7 @@ def main():
     if options.debug:
       sys.stderr.write('Running: %s\n' % cmd)
     try:
-      libdir = subprocess.check_output(cmd)
+      libdir = subprocess.check_output(cmd).decode('utf-8')
     except:
       print("Error from pkg-config.")
       return 1
@@ -183,7 +183,7 @@ def main():
     if options.debug:
       sys.stderr.write('Running: %s\n' % cmd)
     try:
-      dridriverdir = subprocess.check_output(cmd)
+      dridriverdir = subprocess.check_output(cmd).decode('utf-8')
     except:
       print("Error from pkg-config.")
       return 1
@@ -195,7 +195,7 @@ def main():
     sys.stderr.write('Running: %s\n' % ' '.join(cmd))
 
   try:
-    flag_string = subprocess.check_output(cmd)
+    flag_string = subprocess.check_output(cmd).decode('utf-8')
   except:
     sys.stderr.write('Could not run pkg-config.\n')
     return 1

@@ -88,79 +88,6 @@ TEST_F(PropertyTreeBuilderTest, EffectTreeTransformIdTest) {
   EXPECT_LT(node->transform_id, transform_tree_size);
 }
 
-TEST_F(PropertyTreeBuilderTest, TransformsForFlatteningLayer) {
-  // For layers that flatten their subtree, there should be an orthographic
-  // projection (for x and y values) in the middle of the transform sequence.
-  // Note that the way the code is currently implemented, it is not expected to
-  // use a canonical orthographic projection.
-
-  auto root = Layer::Create();
-  host()->SetRootLayer(root);
-  auto child = Layer::Create();
-  root->AddChild(child);
-  child->SetIsDrawable(true);
-  auto grand_child = Layer::Create();
-  child->AddChild(grand_child);
-  grand_child->SetIsDrawable(true);
-  auto great_grand_child = Layer::Create();
-  grand_child->AddChild(great_grand_child);
-  great_grand_child->SetIsDrawable(true);
-
-  gfx::Transform rotation_about_y_axis;
-  rotation_about_y_axis.RotateAboutYAxis(30.0);
-
-  root->SetBounds(gfx::Size(100, 100));
-  child->SetTransform(rotation_about_y_axis);
-  child->SetBounds(gfx::Size(10, 10));
-  child->SetForceRenderSurfaceForTesting(true);
-  grand_child->SetTransform(rotation_about_y_axis);
-  grand_child->SetBounds(gfx::Size(10, 10));
-  great_grand_child->SetBounds(gfx::Size(10, 10));
-
-  // No layers in this test should preserve 3d.
-  ASSERT_TRUE(root->should_flatten_transform());
-  ASSERT_TRUE(child->should_flatten_transform());
-  ASSERT_TRUE(grand_child->should_flatten_transform());
-  ASSERT_TRUE(great_grand_child->should_flatten_transform());
-
-  gfx::Transform expected_child_draw_transform = rotation_about_y_axis;
-  gfx::Transform expected_child_screen_space_transform = rotation_about_y_axis;
-  gfx::Transform expected_grand_child_draw_transform =
-      rotation_about_y_axis;  // draws onto child's render surface
-  gfx::Transform flattened_rotation_about_y = rotation_about_y_axis;
-  flattened_rotation_about_y.FlattenTo2d();
-  gfx::Transform expected_grand_child_screen_space_transform =
-      flattened_rotation_about_y * rotation_about_y_axis;
-  gfx::Transform expected_great_grand_child_draw_transform =
-      flattened_rotation_about_y;
-  gfx::Transform expected_great_grand_child_screen_space_transform =
-      flattened_rotation_about_y * flattened_rotation_about_y;
-
-  CommitAndActivate();
-
-  // The child's draw transform should have been taken by its surface.
-  ASSERT_TRUE(GetRenderSurfaceImpl(child));
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_child_draw_transform,
-      GetRenderSurfaceImpl(child)->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_child_screen_space_transform,
-      GetRenderSurfaceImpl(child)->screen_space_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
-                                  ImplOf(child)->DrawTransform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_screen_space_transform,
-                                  ImplOf(child)->ScreenSpaceTransform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_draw_transform,
-                                  ImplOf(grand_child)->DrawTransform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_screen_space_transform,
-                                  ImplOf(grand_child)->ScreenSpaceTransform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_draw_transform,
-                                  ImplOf(great_grand_child)->DrawTransform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_great_grand_child_screen_space_transform,
-      ImplOf(great_grand_child)->ScreenSpaceTransform());
-}
-
 TEST_F(PropertyTreeBuilderTest, RenderSurfaceForNonAxisAlignedClipping) {
   auto root = Layer::Create();
   host()->SetRootLayer(root);
@@ -385,54 +312,6 @@ TEST_F(PropertyTreeBuilderTest, ForceRenderSurface) {
 
   EXPECT_TRUE(GetRenderSurfaceImpl(root));
   EXPECT_EQ(GetRenderSurfaceImpl(render_surface1), GetRenderSurfaceImpl(root));
-}
-
-TEST_F(PropertyTreeBuilderTest, RenderSurfacesFlattenScreenSpaceTransform) {
-  // Render surfaces act as a flattening point for their subtree, so should
-  // always flatten the target-to-screen space transform seen by descendants.
-  auto root = Layer::Create();
-  host()->SetRootLayer(root);
-  auto parent = Layer::Create();
-  root->AddChild(parent);
-  auto child = Layer::Create();
-  parent->AddChild(child);
-  auto grand_child = Layer::Create();
-  child->AddChild(grand_child);
-
-  gfx::Transform rotation_about_y_axis;
-  rotation_about_y_axis.RotateAboutYAxis(30.0);
-
-  root->SetBounds(gfx::Size(100, 100));
-  parent->SetTransform(rotation_about_y_axis);
-  parent->SetBounds(gfx::Size(10, 10));
-  parent->SetForceRenderSurfaceForTesting(true);
-  child->SetBounds(gfx::Size(10, 10));
-  child->SetIsDrawable(true);
-  grand_child->SetBounds(gfx::Size(10, 10));
-  grand_child->SetIsDrawable(true);
-  grand_child->SetShouldFlattenTransform(false);
-
-  CommitAndActivate();
-
-  EXPECT_TRUE(GetRenderSurfaceImpl(parent));
-  EXPECT_EQ(GetRenderSurfaceImpl(child), GetRenderSurfaceImpl(parent));
-  EXPECT_EQ(GetRenderSurfaceImpl(grand_child), GetRenderSurfaceImpl(parent));
-
-  EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
-                                  ImplOf(child)->DrawTransform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
-                                  ImplOf(grand_child)->DrawTransform());
-
-  // The screen-space transform inherited by |child| and |grand_child|
-  // should have been flattened at their render target. In particular, the fact
-  // that |grand_child| happens to preserve 3d shouldn't affect this
-  // flattening.
-  gfx::Transform flattened_rotation_about_y = rotation_about_y_axis;
-  flattened_rotation_about_y.FlattenTo2d();
-  EXPECT_TRANSFORMATION_MATRIX_EQ(flattened_rotation_about_y,
-                                  ImplOf(child)->ScreenSpaceTransform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(flattened_rotation_about_y,
-                                  ImplOf(grand_child)->ScreenSpaceTransform());
 }
 
 TEST_F(PropertyTreeBuilderTest, VisibleRectWithClippingAndFilters) {
@@ -751,64 +630,6 @@ TEST_F(PropertyTreeBuilderTest, BackFaceCullingWithAnimatingTransforms) {
   EXPECT_TRUE(ImplOf(animating_child)->visible_layer_rect().IsEmpty());
 
   EXPECT_EQ(gfx::Rect(100, 100), ImplOf(child2)->visible_layer_rect());
-}
-
-TEST_F(PropertyTreeBuilderTest, DoNotIncludeBackfaceInvisibleSurfaces) {
-  auto root = Layer::Create();
-  host()->SetRootLayer(root);
-  auto back_facing = Layer::Create();
-  root->AddChild(back_facing);
-
-  auto render_surface1 = Layer::Create();
-  back_facing->AddChild(render_surface1);
-  auto child1 = Layer::Create();
-  render_surface1->AddChild(child1);
-
-  auto flattener = Layer::Create();
-  back_facing->AddChild(flattener);
-  auto render_surface2 = Layer::Create();
-  flattener->AddChild(render_surface2);
-  auto child2 = Layer::Create();
-  render_surface2->AddChild(child2);
-
-  child1->SetIsDrawable(true);
-  child2->SetIsDrawable(true);
-
-  root->SetBounds(gfx::Size(50, 50));
-  back_facing->SetBounds(gfx::Size(50, 50));
-  back_facing->SetShouldFlattenTransform(false);
-
-  render_surface1->SetBounds(gfx::Size(30, 30));
-  render_surface1->SetShouldFlattenTransform(false);
-  render_surface1->SetForceRenderSurfaceForTesting(true);
-  render_surface1->SetDoubleSided(false);
-  child1->SetBounds(gfx::Size(20, 20));
-
-  flattener->SetBounds(gfx::Size(30, 30));
-  render_surface2->SetBounds(gfx::Size(30, 30));
-  render_surface2->SetShouldFlattenTransform(false);
-  render_surface2->SetForceRenderSurfaceForTesting(true);
-  render_surface2->SetDoubleSided(false);
-  child2->SetBounds(gfx::Size(20, 20));
-
-  CommitAndActivate();
-
-  EXPECT_EQ(3u, GetRenderSurfaceList().size());
-  EXPECT_EQ(2, GetRenderSurfaceList().at(0)->num_contributors());
-  EXPECT_EQ(1, GetRenderSurfaceList().at(1)->num_contributors());
-
-  gfx::Transform rotation_transform;
-  rotation_transform.RotateAboutXAxis(180.0);
-  back_facing->SetTransform(rotation_transform);
-
-  CommitAndActivate();
-
-  // render_surface1 is in the same 3d rendering context as back_facing and is
-  // not double sided, so it should not be in RSLL. render_surface2 is also not
-  // double-sided, but will still be in RSLL as it's in a different 3d rendering
-  // context.
-  EXPECT_EQ(2u, GetRenderSurfaceList().size());
-  EXPECT_EQ(1, GetRenderSurfaceList().at(0)->num_contributors());
 }
 
 // Verify that having animated opacity but current opacity 1 still creates

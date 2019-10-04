@@ -334,8 +334,8 @@ ScrollableUsersListView::ScrollableUsersListView(
   SetBackgroundColor(SK_ColorTRANSPARENT);
   SetDrawOverflowIndicator(false);
 
-  SetVerticalScrollBar(new UsersListScrollBar(false));
-  SetHorizontalScrollBar(new UsersListScrollBar(true));
+  SetVerticalScrollBar(std::make_unique<UsersListScrollBar>(false));
+  SetHorizontalScrollBar(std::make_unique<UsersListScrollBar>(true));
 
   observer_.Add(Shell::Get()->wallpaper_controller());
 }

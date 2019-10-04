@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkRow.Location;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.ui.widget.dragreorder.DragReorderableListAdapter;
-import org.chromium.chrome.browser.widget.ViewHighlighter;
+import org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighter;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 

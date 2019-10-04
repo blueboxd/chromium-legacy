@@ -41,6 +41,7 @@ public class TabGroupUiToolbarView extends FrameLayout {
 
         mLeftButton = findViewById(R.id.toolbar_left_button);
         mRightButton = findViewById(R.id.toolbar_right_button);
+        mMenuButton = findViewById(R.id.toolbar_menu_button);
         mContainerView = (ViewGroup) findViewById(R.id.toolbar_container_view);
         mTitleTextView = (TextView) findViewById(R.id.title);
         mMainContent = findViewById(R.id.main_content);

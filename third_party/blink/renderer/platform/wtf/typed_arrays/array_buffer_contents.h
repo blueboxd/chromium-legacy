@@ -57,7 +57,7 @@ class WTF_EXPORT ArrayBufferContents {
     DISALLOW_COPY_AND_ASSIGN(DataHandle);
 
    public:
-    DataHandle() : DataHandle(nullptr, 0, nullptr, nullptr) {}
+    DataHandle() {}
 
     DataHandle(void* data,
                size_t length,
@@ -77,6 +77,8 @@ class WTF_EXPORT ArrayBufferContents {
 
     // Move operator
     DataHandle& operator=(DataHandle&& other) {
+      if (data_)
+        deleter_(data_, data_length_, deleter_info_);
       data_ = other.data_;
       data_length_ = other.data_length_;
       deleter_ = other.deleter_;
@@ -93,11 +95,11 @@ class WTF_EXPORT ArrayBufferContents {
     operator bool() const { return data_; }
 
    private:
-    void* data_;
-    size_t data_length_;
+    void* data_ = nullptr;
+    size_t data_length_ = 0;
 
-    DataDeleter deleter_;
-    void* deleter_info_;
+    DataDeleter deleter_ = nullptr;
+    void* deleter_info_ = nullptr;
   };
 
   enum InitializationPolicy { kZeroInitialize, kDontInitialize };

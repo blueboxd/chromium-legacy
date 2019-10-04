@@ -7,6 +7,7 @@
 #include <d3d11.h>
 
 #include "base/feature_list.h"
+#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/gpu/windows/d3d11_copying_texture_wrapper.h"
 #include "ui/gfx/geometry/size.h"
@@ -35,6 +36,8 @@ bool SupportsZeroCopy(const gpu::GpuPreferences& preferences,
   if (!preferences.enable_zero_copy_dxgi_video)
     return false;
 
+  // If we're ignoring workarounds, then pretend that it does support
+  // zero copy.  Otherwise, believe the workaround.
   if (!base::FeatureList::IsEnabled(kD3D11VideoDecoderIgnoreWorkarounds))
     if (workarounds.disable_dxgi_zero_copy_video)
       return false;
@@ -46,7 +49,8 @@ bool SupportsZeroCopy(const gpu::GpuPreferences& preferences,
 std::unique_ptr<TextureSelector> TextureSelector::Create(
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GpuDriverBugWorkarounds& workarounds,
-    const VideoDecoderConfig& config) {
+    const VideoDecoderConfig& config,
+    MediaLog* media_log) {
   bool supports_nv12_decode_swap_chain =
       gl::DirectCompositionSurfaceWin::IsDecodeSwapChainSupported();
   bool needs_texture_copy = !SupportsZeroCopy(gpu_preferences, workarounds);
@@ -69,11 +73,13 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
   }
 
   if ((input_dxgi_format != output_dxgi_format) || needs_texture_copy) {
+    MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder is copying textures";
     return std::make_unique<CopyTextureSelector>(
         PIXEL_FORMAT_NV12, input_dxgi_format, output_dxgi_format, decoder_guid,
         config.coded_size(), config.is_encrypted(),
         supports_nv12_decode_swap_chain);  // TODO(tmathmeyer) false always?
   } else {
+    MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder is binding textures";
     return std::make_unique<TextureSelector>(
         PIXEL_FORMAT_NV12, output_dxgi_format, decoder_guid,
         config.coded_size(), config.is_encrypted(),

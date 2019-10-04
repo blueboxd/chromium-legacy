@@ -37,6 +37,11 @@ bool CrostiniFeatures::IsUIAllowed(Profile* profile, bool check_policy) {
   return crostini::IsCrostiniUIAllowedForProfile(profile);
 }
 
+bool CrostiniFeatures::IsEnabled(Profile* profile) {
+  return g_crostini_features->IsUIAllowed(profile) &&
+         profile->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled);
+}
+
 bool CrostiniFeatures::IsExportImportUIAllowed(Profile* profile) {
   return g_crostini_features->IsUIAllowed(profile, true) &&
          base::FeatureList::IsEnabled(chromeos::features::kCrostiniBackup) &&

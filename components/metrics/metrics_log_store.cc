@@ -44,16 +44,14 @@ MetricsLogStore::MetricsLogStore(PrefService* local_state,
                                  size_t max_ongoing_log_size,
                                  const std::string& signing_key)
     : unsent_logs_loaded_(false),
-      initial_log_queue_(std::unique_ptr<UnsentLogStoreMetricsImpl>(
-                             new UnsentLogStoreMetricsImpl()),
+      initial_log_queue_(std::make_unique<UnsentLogStoreMetricsImpl>(),
                          local_state,
                          prefs::kMetricsInitialLogs,
                          kInitialLogsSaveLimit,
                          kStorageByteLimitPerLogType,
                          0,
                          signing_key),
-      ongoing_log_queue_(std::unique_ptr<UnsentLogStoreMetricsImpl>(
-                             new UnsentLogStoreMetricsImpl()),
+      ongoing_log_queue_(std::make_unique<UnsentLogStoreMetricsImpl>(),
                          local_state,
                          prefs::kMetricsOngoingLogs,
                          kOngoingLogsSaveLimit,

@@ -86,6 +86,8 @@ class DocumentProvider : public AutocompleteProvider {
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            CheckFeaturePrerequisiteDefaultSearch);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
+                           CheckFeatureNotInExplicitKeywordMode);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            CheckFeaturePrerequisiteServerBackoff);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, IsInputLikelyURL);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, ParseDocumentSearchResults);
@@ -116,7 +118,8 @@ class DocumentProvider : public AutocompleteProvider {
 
   // Determines whether the profile/session/window meet the feature
   // prerequisites.
-  bool IsDocumentProviderAllowed(AutocompleteProviderClient* client);
+  bool IsDocumentProviderAllowed(AutocompleteProviderClient* client,
+                                 const AutocompleteInput& input);
 
   // Determines if the input is a URL, or is the start of the user entering one.
   // We avoid queries for these cases for quality and scaling reasons.

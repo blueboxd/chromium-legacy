@@ -104,7 +104,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   static const uint32_t kDimension;
   static const uint32_t kSwapCount;
   static const uint32_t kMinSwapchainBuffering;
-  static const uint32_t kMaxViewCount;
+  static const uint32_t kViewCount;
   static const XrViewConfigurationView kViewConfigView;
   static XrViewConfigurationView kViewConfigurationViews[];
   static const XrViewConfigurationType kViewConfigurationType;

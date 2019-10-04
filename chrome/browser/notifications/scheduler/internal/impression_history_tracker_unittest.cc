@@ -84,20 +84,10 @@ class MockImpressionStore : public CollectionStore<ClientState> {
   DISALLOW_COPY_AND_ASSIGN(MockImpressionStore);
 };
 
-class MockDelegate : public ImpressionHistoryTracker::Delegate {
- public:
-  MockDelegate() = default;
-  ~MockDelegate() = default;
-  MOCK_METHOD0(OnImpressionUpdated, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockDelegate);
-};
-
 // TODO(xingliu): Add more test cases following the test doc.
 class ImpressionHistoryTrackerTest : public ::testing::Test {
  public:
-  ImpressionHistoryTrackerTest() : store_(nullptr), delegate_(nullptr) {}
+  ImpressionHistoryTrackerTest() : store_(nullptr) {}
   ~ImpressionHistoryTrackerTest() override = default;
 
   void SetUp() override {
@@ -111,7 +101,6 @@ class ImpressionHistoryTrackerTest : public ::testing::Test {
   void CreateTracker(const TestCase& test_case) {
     auto store = std::make_unique<MockImpressionStore>();
     store_ = store.get();
-    delegate_ = std::make_unique<MockDelegate>();
 
     impression_trakcer_ = std::make_unique<ImpressionHistoryTrackerImpl>(
         config_, test_case.registered_clients, std::move(store), &clock_);
@@ -128,13 +117,12 @@ class ImpressionHistoryTrackerTest : public ::testing::Test {
               std::move(cb).Run(true, std::move(entries));
             }));
     base::RunLoop loop;
-    impression_trakcer_->Init(
-        delegate_.get(), base::BindOnce(
-                             [](base::RepeatingClosure closure, bool success) {
-                               EXPECT_TRUE(success);
-                               std::move(closure).Run();
-                             },
-                             loop.QuitClosure()));
+    impression_trakcer_->Init(base::BindOnce(
+        [](base::RepeatingClosure closure, bool success) {
+          EXPECT_TRUE(success);
+          std::move(closure).Run();
+        },
+        loop.QuitClosure()));
     loop.Run();
   }
 
@@ -161,7 +149,6 @@ class ImpressionHistoryTrackerTest : public ::testing::Test {
 
   const SchedulerConfig& config() const { return config_; }
   MockImpressionStore* store() { return store_; }
-  MockDelegate* delegate() { return delegate_.get(); }
   ImpressionHistoryTracker* tracker() { return impression_trakcer_.get(); }
   test::FakeClock* clock() { return &clock_; }
 
@@ -171,7 +158,6 @@ class ImpressionHistoryTrackerTest : public ::testing::Test {
   SchedulerConfig config_;
   std::unique_ptr<ImpressionHistoryTracker> impression_trakcer_;
   MockImpressionStore* store_;
-  std::unique_ptr<MockDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ImpressionHistoryTrackerTest);
 };
@@ -186,7 +172,6 @@ TEST_F(ImpressionHistoryTrackerTest, NewReigstedClient) {
 
   CreateTracker(test_case);
   EXPECT_CALL(*store(), Add(_, _, _));
-  EXPECT_CALL(*delegate(), OnImpressionUpdated()).Times(0);
   InitTrackerWithData(test_case);
   VerifyClientStates(test_case);
 }
@@ -199,7 +184,6 @@ TEST_F(ImpressionHistoryTrackerTest, DeprecateClient) {
 
   CreateTracker(test_case);
   EXPECT_CALL(*store(), Delete(_, _));
-  EXPECT_CALL(*delegate(), OnImpressionUpdated()).Times(0);
   InitTrackerWithData(test_case);
   VerifyClientStates(test_case);
 }
@@ -221,7 +205,6 @@ TEST_F(ImpressionHistoryTrackerTest, DeleteExpiredImpression) {
   CreateTracker(test_case);
   EXPECT_CALL(*store(), Update(_, _, _));
   InitTrackerWithData(test_case);
-  EXPECT_CALL(*delegate(), OnImpressionUpdated()).Times(0);
   VerifyClientStates(test_case);
 }
 
@@ -244,7 +227,6 @@ TEST_F(ImpressionHistoryTrackerTest, AddImpression) {
   Impression::CustomData custom_data = {{"url", "https://www.example.com"}};
   auto custom_suppression_duration = base::TimeDelta::FromDays(56);
   EXPECT_CALL(*store(), Update(_, _, _));
-  EXPECT_CALL(*delegate(), OnImpressionUpdated());
   tracker()->AddImpression(SchedulerClientType::kTest1, kGuid1,
                            impression_mapping, custom_data,
                            custom_suppression_duration);
@@ -274,7 +256,6 @@ TEST_F(ImpressionHistoryTrackerTest, ClickNoImpression) {
   CreateTracker(test_case);
   InitTrackerWithData(test_case);
   EXPECT_CALL(*store(), Update(_, _, _)).Times(0);
-  EXPECT_CALL(*delegate(), OnImpressionUpdated()).Times(0);
   UserActionData action_data(SchedulerClientType::kTest1,
                              UserActionType::kClick, kGuid1);
   tracker()->OnUserAction(action_data);
@@ -307,7 +288,6 @@ TEST_F(ImpressionHistoryTrackerTest, ConsecutiveDismisses) {
 
   CreateTracker(test_case);
   InitTrackerWithData(test_case);
-  EXPECT_CALL(*delegate(), OnImpressionUpdated());
   EXPECT_CALL(*store(), Update(_, _, _));
   UserActionData action_data(SchedulerClientType::kTest1,
                              UserActionType::kDismiss, "guid2");
@@ -407,7 +387,6 @@ TEST_P(ImpressionHistoryTrackerUserActionTest, UserAction) {
   CreateTracker(test_case);
   InitTrackerWithData(test_case);
   EXPECT_CALL(*store(), Update(_, _, _));
-  EXPECT_CALL(*delegate(), OnImpressionUpdated());
 
   // Trigger user action.
   if (GetParam().user_feedback == UserFeedback::kClick) {

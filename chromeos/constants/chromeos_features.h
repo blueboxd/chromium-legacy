@@ -45,6 +45,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kDriveFs;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kDriveFsMirroring;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kEolWarningNotifications;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEnableFileManagerFeedbackPanel;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEnableFileManagerFormatDialog;

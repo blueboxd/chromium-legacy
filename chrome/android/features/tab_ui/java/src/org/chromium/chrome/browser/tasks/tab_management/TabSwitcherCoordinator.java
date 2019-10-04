@@ -87,7 +87,7 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
         mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
-                context, container, tabModelSelector, tabContentManager);
+                context, container, tabModelSelector, tabContentManager, null);
 
         mMediator = new TabSwitcherMediator(this, containerViewModel, tabModelSelector,
                 fullscreenManager, container, mTabSelectionEditorCoordinator.getController(), mode);

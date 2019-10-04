@@ -282,7 +282,8 @@ TEST_F(MetricsWebContentsObserverTest, SuccessfulMainFrameNavigation) {
   CheckNoErrorEvents();
 }
 
-TEST_F(MetricsWebContentsObserverTest, MainFrameNavigationInternalAbort) {
+TEST_F(MetricsWebContentsObserverTest,
+       DISABLED_MainFrameNavigationInternalAbort) {
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
   web_contents_tester->NavigateAndFail(
@@ -486,7 +487,7 @@ TEST_F(MetricsWebContentsObserverTest, NullNavigationStartError) {
       page_load_metrics::internal::INVALID_NULL_NAVIGATION_START, 1);
 }
 
-TEST_F(MetricsWebContentsObserverTest, TimingOrderError) {
+TEST_F(MetricsWebContentsObserverTest, DISABLED_TimingOrderError) {
   mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
@@ -1204,7 +1205,7 @@ TEST_F(MetricsWebContentsObserverTest,
   CheckNoErrorEvents();
 }
 
-TEST_F(MetricsWebContentsObserverTest, LongestInputInMainFrame) {
+TEST_F(MetricsWebContentsObserverTest, DISABLED_LongestInputInMainFrame) {
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
 

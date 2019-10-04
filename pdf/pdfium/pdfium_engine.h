@@ -245,18 +245,18 @@ class PDFiumEngine : public PDFEngine,
   // If this has been run once, it will not notify the client again.
   void FinishLoadingDocument();
 
-  // Applies the current layout to the PDFiumPage objects. This primarily
-  // involves updating the PDFiumPage rectangles from the corresponding layout
-  // page rectangles.
-  //
-  // TODO(kmoon): Conceivably, the PDFiumPages wouldn't need to store page
-  // rectangles at all, and we could get rid of this step. This is a pretty
-  // involved change, however.
-  void ApplyCurrentLayoutToPages(bool reload);
-
-  // Loads information about the pages in the document and calculate the
-  // document size.
+  // Loads information about the pages in the document and performs layout.
   void LoadPageInfo(bool reload);
+
+  // Loads information about the pages in the document, calculating and
+  // returning the individual page sizes.
+  //
+  // Note that the page rects of any new pages will be left uninitialized, so
+  // layout must be performed immediately after calling this method.
+  //
+  // TODO(kmoon): LoadPageSizes() is a bit misnomer, but LoadPageInfo() is
+  // taken right now...
+  std::vector<pp::Size> LoadPageSizes(bool reload);
 
   void LoadBody();
 

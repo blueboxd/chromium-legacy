@@ -32,23 +32,8 @@ class ImpressionHistoryTracker : public UserActionHandler {
       std::map<SchedulerClientType, std::unique_ptr<ClientState>>;
   using InitCallback = base::OnceCallback<void(bool)>;
 
-  // TODO(xingliu): Delete this.
-  class Delegate {
-   public:
-    Delegate() = default;
-    virtual ~Delegate() = default;
-
-    // Called when the impression data is updated.
-    // TODO(xingliu): Rename this, only need to call this when the background
-    // task needs to reschedule to another time.
-    virtual void OnImpressionUpdated() = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
-  };
-
   // Initializes the impression tracker.
-  virtual void Init(Delegate* delegate, InitCallback callback) = 0;
+  virtual void Init(InitCallback callback) = 0;
 
   // Add a new impression, called after the notification is shown.
   virtual void AddImpression(
@@ -97,7 +82,7 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
 
  private:
   // ImpressionHistoryTracker implementation.
-  void Init(Delegate* delegate, InitCallback callback) override;
+  void Init(InitCallback callback) override;
   void AddImpression(SchedulerClientType type,
                      const std::string& guid,
                      const Impression::ImpressionResultMap& impression_mapping,
@@ -164,9 +149,6 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
   void SetNeedsUpdate(SchedulerClientType type, bool needs_update);
   bool NeedsUpdate(SchedulerClientType type) const;
 
-  // Notifies the delegate about impression data update.
-  void NotifyImpressionUpdate();
-
   // Finds an impression that needs to update based on notification id.
   Impression* FindImpressionNeedsUpdate(const std::string& notification_guid);
 
@@ -197,8 +179,6 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
 
   // If the database needs an update when any of the impression data is updated.
   std::map<SchedulerClientType, bool> need_update_db_;
-
-  Delegate* delegate_;
 
   // The clock to provide the current timestamp.
   base::Clock* clock_;

@@ -8,6 +8,60 @@ import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+
+  weblayer_browsertests_manifest =
+      "${target_gen_dir}/weblayer_browsertests_manifest/AndroidManifest.xml"
+
+  jinja_template("weblayer_browsertests_manifest") {
+    testonly = true
+    input = "//weblayer/shell/android/browsertests_apk/AndroidManifest.xml"
+    output = weblayer_browsertests_manifest
+  }
+
+  android_library("weblayer_browsertests_java") {
+    testonly = true
+    java_files = [
+      "../shell/android/browsertests_apk/src/org/chromium/weblayer_browsertests_apk/WebLayerBrowserTestsActivity.java",
+      "../shell/android/browsertests_apk/src/org/chromium/weblayer_browsertests_apk/WebLayerBrowserTestsApplication.java",
+    ]
+    deps = [
+      ":weblayer_browsertests_manifest",
+      "//base:base_java",
+      "//base:base_java_test_support",
+      "//content/public/android:content_java",
+      "//content/public/test/android:content_java_test_support",
+      "//testing/android/native_test:native_test_java",
+      "//third_party/android_deps:android_support_v4_java",
+      "//third_party/android_deps:com_android_support_support_compat_java",
+      "//ui/android:ui_java",
+      "//weblayer/public/java",
+    ]
+
+    android_manifest_for_lint = weblayer_browsertests_manifest
+  }
+}
+
+if (is_android) {
+  android_assets("weblayer_test_assets") {
+    testonly = true
+    sources = [
+      "$root_out_dir/weblayer.pak",
+    ]
+    disable_compression = true
+    deps = [
+      "//third_party/icu:icu_assets",
+      "//weblayer/shell:pak",
+    ]
+    if (use_v8_context_snapshot) {
+      deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
+    } else {
+      deps += [ "//v8:v8_external_startup_data_assets" ]
+    }
+  }
+}
+
 test("weblayer_browsertests") {
   data = [
     "$root_out_dir/weblayer_shell.pak",
@@ -44,4 +98,28 @@ test("weblayer_browsertests") {
     "weblayer_browser_test_utils.cc",
     "weblayer_browser_test_utils.h",
   ]
+
+  if (is_android) {
+    sources += [
+      "../shell/android/browsertests_apk/weblayer_browser_tests_jni_onload.cc",
+    ]
+    deps += [
+      ":weblayer_browsertests_java",
+      ":weblayer_test_assets",
+      "//content/public/test/android:android_test_message_pump_support_java",
+      "//content/test:android_test_message_pump_support",
+      "//content/test:android_test_message_pump_support",
+      "//services/tracing:test_utils",
+      "//testing/android/native_test:native_test_support",
+      "//ui/android:android",
+      "//ui/touch_selection:touch_selection",
+
+      # Needed for WebLayerImpl.
+      "//weblayer/browser/java",
+    ]
+    android_manifest =
+        "${target_gen_dir}/weblayer_browsertests_manifest/AndroidManifest.xml"
+    android_manifest_dep = ":weblayer_browsertests_manifest"
+    use_default_launcher = false
+  }
 }

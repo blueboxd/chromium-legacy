@@ -525,8 +525,7 @@ function %(name)s() {}
           'const _k%(name)s_%(method_name)s_Ordinal = %(ordinal)sn;\n' % {
               'name': name,
               'method_name': method_name,
-              # TODO(https://crbug.com/991300): Use |ordinal| once it is 64-bit.
-              'ordinal': method.generated_ordinal
+              'ordinal': method.ordinal
           })
 
     self.f.write('\n')

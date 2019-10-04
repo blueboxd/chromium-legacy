@@ -11,6 +11,7 @@ test_dummy_module_desc = {
   java_deps = [
     "//chrome/android/features/test_dummy/internal:java",
     "//chrome/android/modules/test_dummy/internal:java",
+    "//chrome/android/modules/test_dummy/internal:pak_assets",
   ]
 
   native_deps = [

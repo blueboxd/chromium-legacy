@@ -2719,9 +2719,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
 // This test tests that browser process hittesting ignores frames with
 // pointer-events: none.
-// crbug.com/968970: the test is flaky.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       DISABLED_SurfaceHitTestPointerEventsNoneChanged) {
+                       SurfaceHitTestPointerEventsNoneChanged) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame_pointer-events_none.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -2732,6 +2731,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
   FrameTreeNode* child_node1 = root->child_at(0);
   FrameTreeNode* child_node2 = root->child_at(1);
+
   GURL site_url(embedded_test_server()->GetURL("bar.com", "/title1.html"));
   EXPECT_EQ(site_url, child_node2->current_url());
   EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
@@ -2749,6 +2749,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
 
+  // This is to make sure that the hit_test_data is clean before running the
+  // hit_test_data_change_observer below.
+  WaitForHitTestData(child_node1->current_frame_host());
   WaitForHitTestData(child_node2->current_frame_host());
 
   // Target input event to child1 frame.

@@ -19,8 +19,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   static scoped_refptr<PaintedScrollbarLayer> Create(
-      std::unique_ptr<Scrollbar> scrollbar,
-      ElementId element_id = ElementId());
+      std::unique_ptr<Scrollbar> scrollbar);
 
   PaintedScrollbarLayer(const PaintedScrollbarLayer&) = delete;
   PaintedScrollbarLayer& operator=(const PaintedScrollbarLayer&) = delete;
@@ -40,8 +39,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   }
 
  protected:
-  PaintedScrollbarLayer(std::unique_ptr<Scrollbar> scrollbar,
-                        ElementId scroll_element_id);
+  explicit PaintedScrollbarLayer(std::unique_ptr<Scrollbar> scrollbar);
   ~PaintedScrollbarLayer() override;
 
   // For unit tests

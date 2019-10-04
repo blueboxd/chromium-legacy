@@ -153,6 +153,10 @@ class WebView {
   virtual Status DispatchTouchEvents(const std::list<TouchEvent>& events,
                                      bool async_dispatch_events) = 0;
 
+  // Dispatch a single touch event with more than one touch point.
+  virtual Status DispatchTouchEventWithMultiPoints(
+      const std::list<TouchEvent>& events,
+      bool async_dispatch_events) = 0;
   // Dispatch a sequence of key events.
   virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events,
                                    bool async_dispatch_events) = 0;

@@ -4,7 +4,6 @@
 
 #include "device/vr/openxr/openxr_api_wrapper.h"
 
-#include <directxmath.h>
 #include <stdint.h>
 #include <algorithm>
 #include <array>
@@ -117,7 +116,8 @@ void OpenXrApiWrapper::Reset() {
   view_configs_.clear();
   color_swapchain_images_.clear();
   frame_state_ = {};
-  views_.clear();
+  origin_from_eye_views_.clear();
+  head_from_eye_views_.clear();
   layer_projection_views_.clear();
 }
 
@@ -299,8 +299,9 @@ XrResult OpenXrApiWrapper::InitSession(
   // Since the objects in these arrays are used on every frame,
   // we don't want to create and destroy these objects every frame,
   // so create the number of objects we need and reuse them.
-  views_.resize(view_configs_.size());
-  layer_projection_views_.resize(view_configs_.size());
+  origin_from_eye_views_.resize(kNumViews);
+  head_from_eye_views_.resize(kNumViews);
+  layer_projection_views_.resize(kNumViews);
 
   // Make sure all of the objects we initialized are there.
   DCHECK(HasSession());
@@ -457,7 +458,7 @@ XrResult OpenXrApiWrapper::EndFrame() {
   XrCompositionLayerProjection* multi_projection_layer_ptr =
       &multi_projection_layer;
   multi_projection_layer.space = local_space_;
-  multi_projection_layer.viewCount = views_.size();
+  multi_projection_layer.viewCount = origin_from_eye_views_.size();
   multi_projection_layer.views = layer_projection_views_.data();
 
   XrFrameEndInfo end_frame_info = {XR_TYPE_FRAME_END_INFO};
@@ -476,25 +477,15 @@ XrResult OpenXrApiWrapper::EndFrame() {
 XrResult OpenXrApiWrapper::UpdateProjectionLayers() {
   XrResult xr_result;
 
-  XrViewState view_state = {XR_TYPE_VIEW_STATE};
-
-  XrViewLocateInfo view_locate_info = {XR_TYPE_VIEW_LOCATE_INFO};
-
-  view_locate_info.viewConfigurationType = kSupportedViewConfiguration;
-  view_locate_info.displayTime = frame_state_.predictedDisplayTime;
-  view_locate_info.space = local_space_;
-
-  uint32_t view_count = 0;
-  RETURN_IF_XR_FAILED(xrLocateViews(session_, &view_locate_info, &view_state,
-                                    views_.size(), &view_count, views_.data()));
+  RETURN_IF_XR_FAILED(
+      LocateViews(XR_REFERENCE_SPACE_TYPE_LOCAL, &origin_from_eye_views_));
+  RETURN_IF_XR_FAILED(
+      LocateViews(XR_REFERENCE_SPACE_TYPE_VIEW, &head_from_eye_views_));
 
   gfx::Size view_size = GetViewSize();
-
-  DCHECK(view_count <= views_.size());
-  DCHECK(view_count <= layer_projection_views_.size());
-
-  for (uint32_t view_index = 0; view_index < view_count; view_index++) {
-    const XrView& view = views_[view_index];
+  for (uint32_t view_index = 0; view_index < origin_from_eye_views_.size();
+       view_index++) {
+    const XrView& view = origin_from_eye_views_[view_index];
 
     XrCompositionLayerProjectionView& layer_projection_view =
         layer_projection_views_[view_index];
@@ -512,6 +503,47 @@ XrResult OpenXrApiWrapper::UpdateProjectionLayers() {
     layer_projection_view.subImage.imageRect.offset.x =
         view_size.width() * view_index;
     layer_projection_view.subImage.imageRect.offset.y = 0;
+  }
+
+  return xr_result;
+}
+
+XrResult OpenXrApiWrapper::LocateViews(XrReferenceSpaceType type,
+                                       std::vector<XrView>* views) const {
+  DCHECK(HasSession());
+
+  XrResult xr_result;
+
+  XrViewState view_state = {XR_TYPE_VIEW_STATE};
+  XrViewLocateInfo view_locate_info = {XR_TYPE_VIEW_LOCATE_INFO};
+  view_locate_info.viewConfigurationType = kSupportedViewConfiguration;
+  view_locate_info.displayTime = frame_state_.predictedDisplayTime;
+
+  switch (type) {
+    case XR_REFERENCE_SPACE_TYPE_LOCAL:
+      view_locate_info.space = local_space_;
+      break;
+    case XR_REFERENCE_SPACE_TYPE_VIEW:
+      view_locate_info.space = view_space_;
+      break;
+    case XR_REFERENCE_SPACE_TYPE_STAGE:
+    case XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT:
+    case XR_REFERENCE_SPACE_TYPE_MAX_ENUM:
+      NOTREACHED();
+  }
+
+  std::vector<XrView> new_views(kNumViews);
+  uint32_t view_count;
+  RETURN_IF_XR_FAILED(xrLocateViews(session_, &view_locate_info, &view_state,
+                                    new_views.size(), &view_count,
+                                    new_views.data()));
+  DCHECK(view_count == kNumViews);
+
+  // If the position or orientation is not valid, don't update the views so that
+  // the previous valid views are used instead.
+  if ((view_state.viewStateFlags & XR_VIEW_STATE_POSITION_VALID_BIT) &&
+      (view_state.viewStateFlags & XR_VIEW_STATE_ORIENTATION_VALID_BIT)) {
+    *views = std::move(new_views);
   }
 
   return xr_result;
@@ -567,6 +599,13 @@ XrResult OpenXrApiWrapper::GetHeadPose(
   }
 
   return xr_result;
+}
+
+void OpenXrApiWrapper::GetHeadFromEyes(XrView* left, XrView* right) const {
+  DCHECK(HasSession());
+
+  *left = head_from_eye_views_[0];
+  *right = head_from_eye_views_[1];
 }
 
 XrResult OpenXrApiWrapper::GetLuid(LUID* luid) const {
@@ -649,17 +688,6 @@ std::string OpenXrApiWrapper::GetRuntimeName() const {
   } else {
     return kDefaultRuntimeName;
   }
-}
-
-const XrView& OpenXrApiWrapper::GetView(uint32_t index) const {
-  DCHECK(HasSession());
-
-  // XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO so the OpenXR runtime must have
-  // returned two view configurations.
-  DCHECK(views_.size() == kNumViews);
-  DCHECK(index < kNumViews);
-
-  return views_[index];
 }
 
 XrResult OpenXrApiWrapper::GetStageBounds(XrExtent2Df* stage_bounds) const {

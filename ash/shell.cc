@@ -101,7 +101,6 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/system/network/sms_observer.h"
-#include "ash/system/network/vpn_list.h"
 #include "ash/system/night_light/night_light_controller_impl.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/peripheral_battery_notifier.h"
@@ -541,7 +540,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       shell_state_(std::make_unique<ShellState>()),
       shutdown_controller_(std::make_unique<ShutdownControllerImpl>()),
       system_tray_notifier_(std::make_unique<SystemTrayNotifier>()),
-      vpn_list_(std::make_unique<VpnList>()),
       window_cycle_controller_(std::make_unique<WindowCycleController>()),
       native_cursor_manager_(nullptr) {
   // Ash doesn't properly remove pre-target-handlers.

@@ -21,6 +21,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/memory_pressure_monitor.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/metrics/field_trial.h"
@@ -366,14 +367,20 @@ std::unique_ptr<base::MemoryPressureMonitor> CreateMemoryPressureMonitor(
   if (command_line.HasSwitch(switches::kBrowserTest))
     return nullptr;
 
+  std::unique_ptr<util::MultiSourceMemoryPressureMonitor> monitor;
+
 #if defined(OS_CHROMEOS)
   if (chromeos::switches::MemoryPressureHandlingEnabled())
-    return std::make_unique<util::MultiSourceMemoryPressureMonitor>();
+    monitor = std::make_unique<util::MultiSourceMemoryPressureMonitor>();
 #elif defined(OS_MACOSX) || defined(OS_WIN)
-  return std::make_unique<util::MultiSourceMemoryPressureMonitor>();
+  monitor = std::make_unique<util::MultiSourceMemoryPressureMonitor>();
 #endif
   // No memory monitor on other platforms...
-  return nullptr;
+
+  if (monitor)
+    monitor->Start();
+
+  return monitor;
 }
 
 #if defined(OS_CHROMEOS)

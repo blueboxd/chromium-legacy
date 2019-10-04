@@ -1475,6 +1475,40 @@ class PixelTestPages(object):
         expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
 
       PixelTestPage(
+        'pixel_video_vp9_i420a.html',
+        base_name + '_DirectComposition_Video_VP9_I420A',
+        test_rect=[0, 0, 240, 135],
+        browser_args=browser_args,
+        other_args={'no_overlay': True},
+        tolerance=tolerance_dc_vp9,
+        expected_colors=[
+          {
+            'comment': 'top left video, yellow',
+            'location': [5, 5],
+            'size': [110, 57],
+            'color': [255, 255, 143],
+          },
+          {
+            'comment': 'top right video, red',
+            'location': [125, 5],
+            'size': [110, 57],
+            'color': [251, 130, 143],
+          },
+          {
+            'comment': 'bottom left video, blue',
+            'location': [5, 72],
+            'size': [110, 57],
+            'color': [135, 130, 254],
+          },
+          {
+            'comment': 'bottom right video, green',
+            'location': [125, 72],
+            'size': [110, 57],
+            'color': [160, 255, 142],
+          }
+        ]),
+
+      PixelTestPage(
         'pixel_video_underlay.html',
         base_name + '_DirectComposition_Underlay',
         test_rect=[0, 0, 240, 136],

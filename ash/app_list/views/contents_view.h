@@ -232,6 +232,11 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void AddSearchBoxUpdateObserver(SearchBoxUpdateObserver* observer);
   void RemoveSearchBoxUpdateObserver(SearchBoxUpdateObserver* observer);
 
+  // Adjusts search box view size so it fits within the contents view margins
+  // (when centered).
+  gfx::Size AdjustSearchBoxSizeToFitMargins(
+      const gfx::Size& preferred_size) const;
+
  private:
   // Sets the active launcher page.
   void SetActiveStateInternal(int page_index, bool animate);

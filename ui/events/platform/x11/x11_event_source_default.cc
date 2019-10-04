@@ -39,14 +39,21 @@ Event::Properties GetEventPropertiesFromXKeyEvent(const XKeyEvent& xev) {
 }
 
 std::unique_ptr<KeyEvent> CreateKeyEvent(const XEvent& xev) {
+  // In CrOS/Linux builds, keep DomCode/DomKey unset in KeyEvent translation,
+  // so they are extracted lazily in KeyEvent::ApplyLayout() which makes it
+  // possible for CrOS to support host system keyboard layouts.
+#if defined(OS_CHROMEOS)
+  auto key_event = std::make_unique<KeyEvent>(EventTypeFromXEvent(xev),
+                                              KeyboardCodeFromXKeyEvent(&xev),
+                                              EventFlagsFromXEvent(xev));
+#else
   base::TimeTicks timestamp = EventTimeFromXEvent(xev);
   ValidateEventTimeClock(&timestamp);
-
   auto key_event = std::make_unique<KeyEvent>(
       EventTypeFromXEvent(xev), KeyboardCodeFromXKeyEvent(&xev),
       CodeFromXEvent(&xev), EventFlagsFromXEvent(xev),
       GetDomKeyFromXEvent(&xev), timestamp);
-
+#endif
   // Attach keyboard group to |key_event|'s properties
   key_event->SetProperties(GetEventPropertiesFromXKeyEvent(xev.xkey));
   return key_event;

@@ -143,6 +143,9 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       GetScrollAnimator().SetCurrentOffset(scroll_offset_);
     element->SetSavedLayerScrollOffset(ScrollOffset());
   }
+
+  GetLayoutBox()->GetDocument().GetSnapCoordinator().AddSnapContainer(
+      *GetLayoutBox());
 }
 
 PaintLayerScrollableArea::~PaintLayerScrollableArea() {
@@ -157,6 +160,9 @@ void PaintLayerScrollableArea::DidScroll(const FloatPoint& position) {
 
 void PaintLayerScrollableArea::DisposeImpl() {
   rare_data_.reset();
+
+  GetLayoutBox()->GetDocument().GetSnapCoordinator().RemoveSnapContainer(
+      *GetLayoutBox());
 
   if (InResizeMode() && !GetLayoutBox()->DocumentBeingDestroyed()) {
     if (LocalFrame* frame = GetLayoutBox()->GetFrame())
@@ -1610,6 +1616,18 @@ int PaintLayerScrollableArea::HorizontalScrollbarHeight(
     return 0;
   }
   return HorizontalScrollbar()->ScrollbarThickness();
+}
+
+const cc::SnapContainerData* PaintLayerScrollableArea::GetSnapContainerData()
+    const {
+  return RareData() && RareData()->snap_container_data_
+             ? &RareData()->snap_container_data_.value()
+             : nullptr;
+}
+
+void PaintLayerScrollableArea::SetSnapContainerData(
+    base::Optional<cc::SnapContainerData> data) {
+  EnsureRareData().snap_container_data_ = data;
 }
 
 void PaintLayerScrollableArea::SnapAfterScrollbarScrolling(

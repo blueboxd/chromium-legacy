@@ -378,14 +378,21 @@ float ScrollbarController::GetScrollerToScrollbarRatio() {
   const LayerImpl* owner_scroll_layer =
       layer_tree_host_impl_->active_tree()->ScrollableLayerByElementId(
           currently_captured_scrollbar_->scroll_element_id());
-  float viewport_length =
+  const float viewport_length =
       orientation == ScrollbarOrientation::VERTICAL
           ? owner_scroll_layer->scroll_container_bounds().height()
           : (owner_scroll_layer->scroll_container_bounds().width());
+
+  // For platforms which have use_zoom_for_dsf set to false (like Mac), the
+  // device_scale_factor should not be used while determining the
+  // scaled_scroller_to_scrollbar_ratio as thumb drag would appear jittery due
+  // to constant over and under corrections.
+  // (See ScrollbarController::ScreenSpaceScaleFactor()).
   float scaled_scroller_to_scrollbar_ratio =
       ((scroll_layer_length - viewport_length) /
        (scrollbar_track_length - scrollbar_thumb_length)) *
-      layer_tree_host_impl_->active_tree()->device_scale_factor();
+      ScreenSpaceScaleFactor();
+
   return scaled_scroller_to_scrollbar_ratio;
 }
 
@@ -597,8 +604,20 @@ int ScrollbarController::GetScrollDeltaForScrollbarPart(
     default:
       scroll_delta = 0;
   }
-  return scroll_delta *
-         layer_tree_host_impl_->active_tree()->device_scale_factor();
+
+  return scroll_delta * ScreenSpaceScaleFactor();
+}
+
+float ScrollbarController::ScreenSpaceScaleFactor() const {
+  // TODO(arakeri): When crbug.com/716231 is fixed, this needs to be updated.
+  // If use_zoom_for_dsf is false, the click deltas and thumb drag ratios
+  // shouldn't be scaled. For example: On Mac, when the use_zoom_for_dsf is
+  // false and the device_scale_factor is 2, the scroll delta for pointer clicks
+  // on arrows would be incorrectly calculated as 80px instead of 40px. This is
+  // also necessary to ensure that hit testing works as intended.
+  return layer_tree_host_impl_->settings().use_zoom_for_dsf
+             ? layer_tree_host_impl_->active_tree()->device_scale_factor()
+             : 1.f;
 }
 
 gfx::PointF ScrollbarController::GetScrollbarRelativePosition(
@@ -606,7 +625,17 @@ gfx::PointF ScrollbarController::GetScrollbarRelativePosition(
     bool* clipped) {
   gfx::Transform inverse_screen_space_transform(
       gfx::Transform::kSkipInitialization);
-  if (!currently_captured_scrollbar_->ScreenSpaceTransform().GetInverse(
+
+  // If use_zoom_for_dsf is false, the ScreenSpaceTransform needs to be scaled
+  // down by the DSF to ensure that position_in_widget is transformed correctly.
+  const float scale =
+      !layer_tree_host_impl_->settings().use_zoom_for_dsf
+          ? 1.f / layer_tree_host_impl_->active_tree()->device_scale_factor()
+          : 1.f;
+  gfx::Transform scaled_screen_space_transform(
+      currently_captured_scrollbar_->ScreenSpaceTransform());
+  scaled_screen_space_transform.PostScale(scale, scale);
+  if (!scaled_screen_space_transform.GetInverse(
           &inverse_screen_space_transform))
     return gfx::PointF(0, 0);
 

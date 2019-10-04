@@ -478,12 +478,6 @@
         <item name="android:popupElevation" tools:targetApi="21">0dp</item>
     </style>
 
-    <!-- Bubble styles -->
-    <style name="TextBubbleAnimation">
-        <item name="android:windowEnterAnimation">@anim/textbubble_in</item>
-        <item name="android:windowExitAnimation">@anim/textbubble_out</item>
-    </style>
-
     <!-- First Run Experience -->
     <style name="FreTitle">
         <item name="android:layout_width">wrap_content</item>

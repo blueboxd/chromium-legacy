@@ -1100,7 +1100,7 @@ VISIT_PROTO_FIELDS(
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::WifiConfigurationSpecificsData& proto) {
-  VISIT_BYTES(ssid);
+  VISIT_BYTES(hex_ssid);
   VISIT_ENUM(security_type);
   VISIT_BYTES(passphrase);
   VISIT_ENUM(automatically_connect);

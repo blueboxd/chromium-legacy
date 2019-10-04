@@ -1382,7 +1382,7 @@ TEST_P(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
 
   UnlockScreen();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
-  EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
+  EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
 }
 
 // Tests that the shelf should be visible when in overview mode.
@@ -2567,8 +2567,8 @@ TEST_P(ShelfLayoutManagerTest, TabletModeTransitionWithAppListVisible) {
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
 }
 
-// Verify that the shelf doesn't have the opaque background if it's auto-hide
-// status.
+// Verify that the auto-hide shelf has default background by default and has
+// maxmimized background when a window is maximized.
 TEST_P(ShelfLayoutManagerTest, ShelfBackgroundColorAutoHide) {
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
 
@@ -2577,8 +2577,23 @@ TEST_P(ShelfLayoutManagerTest, ShelfBackgroundColorAutoHide) {
   w1->Show();
   wm::ActivateWindow(w1.get());
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
+
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
+}
+
+// Verify that the shelf has a maximized background when a window is in the
+// fullscreen state.
+TEST_P(ShelfLayoutManagerTest, ShelfBackgroundColorFullscreen) {
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
+
+  std::unique_ptr<aura::Window> w1(CreateTestWindow());
+  w1->Show();
+  wm::ActivateWindow(w1.get());
+  EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
+
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
 }
 
 // Verify the hit bounds of the status area extend to the edge of the shelf.

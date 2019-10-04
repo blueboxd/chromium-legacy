@@ -4,6 +4,8 @@
 
 #include "net/url_request/url_request_http_job.h"
 
+#include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/base_switches.h"
@@ -81,6 +83,20 @@
 #endif
 
 namespace {
+
+base::Value CookieExcludedNetLogParams(const std::string& operation,
+                                       const std::string& cookie_name,
+                                       const std::string& exclusion_reason,
+                                       net::NetLogCaptureMode capture_mode) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("operation", operation);
+  dict.SetStringKey("exclusion_reason", exclusion_reason);
+  if (net::NetLogCaptureIncludesSensitive(capture_mode) &&
+      !cookie_name.empty()) {
+    dict.SetStringKey("name", cookie_name);
+  }
+  return dict;
+}
 
 // Records details about the most-specific trust anchor in |spki_hashes|,
 // which is expected to be ordered with the leaf cert first and the root cert
@@ -675,14 +691,16 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
     maybe_sent_cookies.push_back({cookie_with_status.cookie, status});
   }
 
-  // TODO(crbug.com/1005217): Add cookie name if capture mode includes sensitive
-  // values.
   if (request_->net_log().IsCapturing()) {
     for (const auto& cookie_and_status : maybe_sent_cookies) {
       if (!cookie_and_status.status.IsInclude()) {
-        request_->net_log().AddEventWithStringParams(
-            NetLogEventType::COOKIE_INCLUSION_STATUS, "exclusion_reason",
-            cookie_and_status.status.GetDebugString());
+        request_->net_log().AddEvent(
+            NetLogEventType::COOKIE_INCLUSION_STATUS,
+            [&](NetLogCaptureMode capture_mode) {
+              return CookieExcludedNetLogParams(
+                  "send", cookie_and_status.cookie.Name(),
+                  cookie_and_status.status.GetDebugString(), capture_mode);
+            });
       }
     }
   }
@@ -786,12 +804,14 @@ void URLRequestHttpJob::OnSetCookieResult(
     base::Optional<CanonicalCookie> cookie,
     std::string cookie_string,
     CanonicalCookie::CookieInclusionStatus status) {
-  // TODO(crbug.com/1005217): Add cookie name if capture mode includes sensitive
-  // values.
   if (!status.IsInclude() && request_->net_log().IsCapturing()) {
-    request_->net_log().AddEventWithStringParams(
-        NetLogEventType::COOKIE_INCLUSION_STATUS, "exclusion_reason",
-        status.GetDebugString());
+    request_->net_log().AddEvent(NetLogEventType::COOKIE_INCLUSION_STATUS,
+                                 [&](NetLogCaptureMode capture_mode) {
+                                   return CookieExcludedNetLogParams(
+                                       "store",
+                                       cookie ? cookie.value().Name() : "",
+                                       status.GetDebugString(), capture_mode);
+                                 });
   }
   set_cookie_status_list_.emplace_back(std::move(cookie),
                                        std::move(cookie_string), status);

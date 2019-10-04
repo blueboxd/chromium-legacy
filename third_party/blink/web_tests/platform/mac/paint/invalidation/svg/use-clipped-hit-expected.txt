@@ -1,10 +1,8 @@
-ALERT: was: ,false
-ALERT: shouldBe: true,false
 {
   "layers": [
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [500, 400],
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
@@ -14,8 +12,8 @@ ALERT: shouldBe: true,false
           "reason": "chunk disappeared"
         },
         {
-          "object": "InlineTextBox 'Failed'",
-          "rect": [90, 116, 40, 18],
+          "object": "InlineTextBox 'Passed'",
+          "rect": [90, 116, 44, 18],
           "reason": "chunk appeared"
         }
       ]

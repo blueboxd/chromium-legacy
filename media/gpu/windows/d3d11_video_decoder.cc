@@ -258,8 +258,8 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  texture_selector_ =
-      TextureSelector::Create(gpu_preferences_, gpu_workarounds_, config);
+  texture_selector_ = TextureSelector::Create(
+      gpu_preferences_, gpu_workarounds_, config, media_log_.get());
   if (!texture_selector_) {
     NotifyError("D3DD11: Config provided unsupported profile");
     return;
@@ -762,8 +762,10 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
   const std::string uma_name("Media.D3D11.WasVideoSupported");
 
   // This workaround accounts for almost half of all startup results, and it's
-  // unclear that it's relevant here.
-  if (!base::FeatureList::IsEnabled(kD3D11VideoDecoderIgnoreWorkarounds)) {
+  // unclear that it's relevant here.  If it's off, or if we're allowed to copy
+  // pictures in case binding isn't allowed, then proceed with init.
+  if (!base::FeatureList::IsEnabled(kD3D11VideoDecoderIgnoreWorkarounds) &&
+      !base::FeatureList::IsEnabled(kD3D11VideoDecoderCopyPictures)) {
     // Must allow zero-copy of nv12 textures.
     if (!gpu_preferences.enable_zero_copy_dxgi_video) {
       UMA_HISTOGRAM_ENUMERATION(uma_name,

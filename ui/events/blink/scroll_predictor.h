@@ -68,11 +68,12 @@ class ScrollPredictor {
   // Whether predicted scroll events should be filtered or not
   bool filtering_enabled_ = false;
 
-  // Total scroll delta, used for prediction. Reset when GestureScrollBegin
-  gfx::PointF current_accumulated_delta_;
-  // Accumulated delta from last vsync, use to calculate delta_x and delta_y for
-  // the aggregated event.
-  gfx::PointF last_accumulated_delta_;
+  // Total scroll delta from original scroll update events, used for calculating
+  // predictions. Reset on GestureScrollBegin.
+  gfx::PointF current_event_accumulated_delta_;
+  // Predicted accumulated delta from last vsync, use for calculating delta_x
+  // and delta_y for the resampled/predicted event.
+  gfx::PointF last_predicted_accumulated_delta_;
 
   // Whether current scroll event should be resampled.
   bool should_resample_scroll_events_ = false;
@@ -80,7 +81,7 @@ class ScrollPredictor {
   // Records the timestamp for last event added to predictor. Use for
   // reporting the accuracy metrics.
   base::TimeTicks last_event_timestamp_;
-  // Total scroll data, similar as current_accumulated_delta_, used for
+  // Total scroll data, similar as current_event_accumulated_delta_, used for
   // calculating accuracy.
   gfx::PointF temporary_accumulated_delta_;
 

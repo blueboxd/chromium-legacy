@@ -872,6 +872,130 @@ TEST_F(HttpStreamFactoryJobControllerTest,
   EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
 }
 
+TEST_F(HttpStreamFactoryJobControllerTest,
+       DoNotDelayMainJobIfQuicWasRecentlyBroken) {
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::COLD_START);
+  quic_data_ = std::make_unique<MockQuicData>(
+      HttpNetworkSession::Params().quic_params.supported_versions.front());
+  quic_data_->AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  tcp_data_ = std::make_unique<SequencedSocketData>();
+  tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.google.com");
+
+  Initialize(request_info);
+  url::SchemeHostPort server(request_info.url);
+  AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
+  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  session_->http_server_properties()->SetQuicAlternativeService(
+      server, NetworkIsolationKey(), alternative_service, expiration,
+      session_->params().quic_params.supported_versions);
+
+  // Enable QUIC but mark the alternative service as recently broken.
+  QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();
+  quic_stream_factory->set_is_quic_known_to_work_on_current_network(true);
+  session_->http_server_properties()->MarkAlternativeServiceRecentlyBroken(
+      alternative_service, NetworkIsolationKey());
+
+  request_ =
+      job_controller_->Start(&request_delegate_, nullptr, net_log_.bound(),
+                             HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY);
+
+  EXPECT_TRUE(job_controller_->main_job());
+  EXPECT_TRUE(job_controller_->alternative_job());
+
+  // The main job shouldn't have any delay since QUIC was recently broken.
+  EXPECT_FALSE(job_controller_->ShouldWait(
+      const_cast<net::HttpStreamFactory::Job*>(job_controller_->main_job())));
+
+  // Make |alternative_job| succeed.
+  auto http_stream = std::make_unique<HttpBasicStream>(
+      std::make_unique<ClientSocketHandle>(), false);
+  EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, http_stream.get()));
+
+  HttpStreamFactoryJobPeer::SetStream(job_factory_.alternative_job(),
+                                      std::move(http_stream));
+  job_controller_->OnStreamReady(job_factory_.alternative_job(), SSLConfig());
+
+  base::RunLoop().RunUntilIdle();
+
+  // Check that alternative job is bound while main job is destroyed.
+  EXPECT_FALSE(job_controller_->main_job());
+  EXPECT_TRUE(job_controller_->alternative_job());
+
+  request_.reset();
+  VerifyBrokenAlternateProtocolMapping(request_info, false);
+  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+}
+
+TEST_F(HttpStreamFactoryJobControllerTest,
+       DelayMainJobAfterRecentlyBrokenQuicWasConfirmed) {
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::COLD_START);
+  quic_data_ = std::make_unique<MockQuicData>(
+      HttpNetworkSession::Params().quic_params.supported_versions.front());
+  quic_data_->AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  tcp_data_ = std::make_unique<SequencedSocketData>();
+  tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.google.com");
+
+  Initialize(request_info);
+  url::SchemeHostPort server(request_info.url);
+  AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
+  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  session_->http_server_properties()->SetQuicAlternativeService(
+      server, NetworkIsolationKey(), alternative_service, expiration,
+      session_->params().quic_params.supported_versions);
+
+  // Enable QUIC but mark the alternative service as recently broken.
+  QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();
+  quic_stream_factory->set_is_quic_known_to_work_on_current_network(true);
+  session_->http_server_properties()->MarkAlternativeServiceRecentlyBroken(
+      alternative_service, NetworkIsolationKey());
+
+  // Confirm the alt service.
+  session_->http_server_properties()->ConfirmAlternativeService(
+      alternative_service, NetworkIsolationKey());
+
+  request_ =
+      job_controller_->Start(&request_delegate_, nullptr, net_log_.bound(),
+                             HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY);
+
+  EXPECT_TRUE(job_controller_->main_job());
+  EXPECT_TRUE(job_controller_->alternative_job());
+
+  // The main job should wait but it should be unblocked because QUIC job
+  // doesn't return immediately.
+  EXPECT_TRUE(job_controller_->ShouldWait(
+      const_cast<net::HttpStreamFactory::Job*>(job_controller_->main_job())));
+  EXPECT_FALSE(JobControllerPeer::main_job_is_blocked(job_controller_));
+
+  // Make |alternative_job| succeed.
+  auto http_stream = std::make_unique<HttpBasicStream>(
+      std::make_unique<ClientSocketHandle>(), false);
+  EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, http_stream.get()));
+
+  HttpStreamFactoryJobPeer::SetStream(job_factory_.alternative_job(),
+                                      std::move(http_stream));
+  job_controller_->OnStreamReady(job_factory_.alternative_job(), SSLConfig());
+
+  base::RunLoop().RunUntilIdle();
+
+  // Check that alternative job is bound while main job is destroyed.
+  EXPECT_FALSE(job_controller_->main_job());
+  EXPECT_TRUE(job_controller_->alternative_job());
+
+  request_.reset();
+  VerifyBrokenAlternateProtocolMapping(request_info, false);
+  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+}
+
 void HttpStreamFactoryJobControllerTest::TestOnStreamFailedForBothJobs(
     bool alt_job_retried_on_non_default_network) {
   quic_data_ = std::make_unique<MockQuicData>(

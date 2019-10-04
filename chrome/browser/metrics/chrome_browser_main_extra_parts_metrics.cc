@@ -66,6 +66,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/shell_integration_win.h"
+#include "printing/backend/win_helper.h"
 #endif  // defined(OS_WIN)
 
 namespace {
@@ -226,6 +227,10 @@ void RecordStartupMetrics() {
 
   UMA_HISTOGRAM_BOOLEAN("Windows.HasHighResolutionTimeTicks",
                         base::TimeTicks::IsHighResolution());
+
+  // Metric of interest specifically for Windows 7 printing.
+  UMA_HISTOGRAM_BOOLEAN("Windows.HasOpenXpsSupport",
+                        printing::XPSModule::IsOpenXpsCapable());
 #endif  // defined(OS_WIN)
 
   bluetooth_utility::ReportBluetoothAvailability();

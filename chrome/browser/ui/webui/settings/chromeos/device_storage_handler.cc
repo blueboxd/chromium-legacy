@@ -25,8 +25,10 @@
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -366,7 +368,7 @@ void StorageHandler::OnGetAndroidSize(bool succeeded,
 }
 
 void StorageHandler::UpdateCrostiniSize() {
-  if (!crostini::IsCrostiniEnabled(profile_)) {
+  if (!crostini::CrostiniFeatures::Get()->IsEnabled(profile_)) {
     return;
   }
 

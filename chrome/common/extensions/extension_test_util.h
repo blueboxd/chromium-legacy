@@ -55,7 +55,6 @@ scoped_refptr<extensions::Extension> LoadManifestStrict(
 scoped_refptr<extensions::Extension> LoadManifest(const std::string& dir,
                                                   const std::string& test_file);
 
-void SetGalleryURL(const GURL& new_url);
 void SetGalleryUpdateURL(const GURL& new_url);
 
 // Returns a ScopedCurrentChannel object to use in tests if one is necessary for

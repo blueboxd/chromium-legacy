@@ -205,8 +205,8 @@ TEST_F(ProcessNodeImplTest, PublicInterface) {
   // Create a small frame-tree so that GetFrameNodes can be well tested.
   auto page_node = CreateNode<PageNodeImpl>();
   auto main_frame_node =
-      CreateNode<FrameNodeImpl>(process_node.get(), page_node.get());
-  auto child_frame_node = CreateNode<FrameNodeImpl>(
+      CreateFrameNodeAutoId(process_node.get(), page_node.get());
+  auto child_frame_node = CreateFrameNodeAutoId(
       process_node.get(), page_node.get(), main_frame_node.get());
 
   // Simply test that the public interface impls yield the same result as their

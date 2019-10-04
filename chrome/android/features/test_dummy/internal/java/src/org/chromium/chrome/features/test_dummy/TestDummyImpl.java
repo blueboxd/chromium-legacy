@@ -29,6 +29,7 @@ public class TestDummyImpl implements TestDummy {
         int EXECUTE_JAVA = 0;
         int EXECUTE_NATIVE = 1;
         int LOAD_JAVA_RESOURCE = 2;
+        int LOAD_NATIVE_RESOURCE = 3;
     }
 
     @Override
@@ -45,6 +46,9 @@ public class TestDummyImpl implements TestDummy {
             case TestCase.LOAD_JAVA_RESOURCE:
                 loadJavaResource(activity);
                 break;
+            case TestCase.LOAD_NATIVE_RESOURCE:
+                loadNativeResource(activity);
+                break;
             default:
                 throw new RuntimeException("Unknown test case " + testCase);
         }
@@ -53,6 +57,7 @@ public class TestDummyImpl implements TestDummy {
     @NativeMethods
     interface Natives {
         int execute();
+        String loadResource();
     }
 
     private void showDoneDialog(Activity activity, @TestCase int testCase, boolean pass) {
@@ -93,5 +98,10 @@ public class TestDummyImpl implements TestDummy {
             result = false;
         }
         showDoneDialog(activity, TestCase.LOAD_JAVA_RESOURCE, result);
+    }
+
+    private void loadNativeResource(Activity activity) {
+        boolean result = TestDummyImplJni.get().loadResource().equals("Hello, World!");
+        showDoneDialog(activity, TestCase.LOAD_NATIVE_RESOURCE, result);
     }
 }

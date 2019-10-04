@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -34,12 +35,20 @@ void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
       switches::autoplay::kNoUserGestureRequiredPolicy);
   command_line->AppendSwitch(switches::kExposeInternalsForTesting);
 
-  scoped_feature_list_.InitWithFeatures(
-      // Enable audio thread hang dumps to help triage bot failures.
-      /*enabled_features=*/{features::kDumpOnAudioServiceHang},
-      // Disable fallback after decode error to avoid unexpected test pass on
-      // the fallback path.
-      /*disabled_features=*/{media::kFallbackAfterDecodeError});
+  std::vector<base::Feature> disabled_features = {
+    // Disable fallback after decode error to avoid unexpected test pass on
+    // the fallback path.
+    media::kFallbackAfterDecodeError,
+
+#if defined(OS_LINUX)
+    // Disable out of process audio on Linux due to process spawn
+    // failures. http://crbug.com/986021
+    features::kAudioServiceOutOfProcess,
+#endif
+  };
+
+  scoped_feature_list_.InitWithFeatures({/* enabled_features */},
+                                        disabled_features);
 }
 
 void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,
@@ -162,13 +171,11 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearSilentTheora) {
 }
 #endif  // !defined(OS_ANDROID)
 
-// crbug.com/1001364: disabled due to flakiness.
-IN_PROC_BROWSER_TEST_P(MediaTest, DISABLED_VideoBearWebm) {
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWebm) {
   PlayVideo("bear.webm", GetParam());
 }
 
-// crbug.com/1001364: disabled due to flakiness.
-IN_PROC_BROWSER_TEST_P(MediaTest, DISABLED_AudioBearOpusWebm) {
+IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearOpusWebm) {
   PlayVideo("bear-opus.webm", GetParam());
 }
 
@@ -190,8 +197,7 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearHighBitDepthVP9) {
   PlayVideo("bear-320x180-hi10p-vp9.webm", GetParam());
 }
 
-// Flaky, disabled. https://crbug.com/1001364.
-IN_PROC_BROWSER_TEST_P(MediaTest, DISABLED_VideoBear12DepthVP9) {
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBear12DepthVP9) {
   PlayVideo("bear-320x180-hi12p-vp9.webm", GetParam());
 }
 #endif
@@ -212,8 +218,7 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMovPcmS16be) {
   PlayVideo("bear_pcm_s16be.mov", GetParam());
 }
 
-// crbug.com/1001364: disabled due to flakiness.
-IN_PROC_BROWSER_TEST_P(MediaTest, DISABLED_VideoBearMovPcmS24be) {
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMovPcmS24be) {
   PlayVideo("bear_pcm_s24be.mov", GetParam());
 }
 
@@ -244,8 +249,7 @@ IN_PROC_BROWSER_TEST_F(MediaTest, VideoBearRotated270) {
 
 #if !defined(OS_ANDROID)
 // Android devices usually only support baseline, main and high.
-// Flaky, disabled. https://crbug.com/1001364.
-IN_PROC_BROWSER_TEST_P(MediaTest, DISABLED_VideoBearHighBitDepthMp4) {
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearHighBitDepthMp4) {
   PlayVideo("bear-320x180-hi10p.mp4", GetParam());
 }
 
@@ -292,23 +296,15 @@ IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearFlacOgg) {
   PlayVideo("bear-flac.ogg", GetParam());
 }
 
-// Flaky on Linux. See https://crbug.com/979259
-#if defined(OS_LINUX)
-#define MAYBE_VideoBearWavAlaw DISABLED_VideoBearWavAlaw
-#else
-#define MAYBE_VideoBearWavAlaw VideoBearWavAlaw
-#endif
-IN_PROC_BROWSER_TEST_P(MediaTest, MAYBE_VideoBearWavAlaw) {
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavAlaw) {
   PlayAudio("bear_alaw.wav", GetParam());
 }
 
-// crbug.com/1001364: disabled due to flakiness.
-IN_PROC_BROWSER_TEST_P(MediaTest, DISABLED_VideoBearWavMulaw) {
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavMulaw) {
   PlayAudio("bear_mulaw.wav", GetParam());
 }
 
-// crbug.com/1001364: disabled due to flakiness.
-IN_PROC_BROWSER_TEST_P(MediaTest, DISABLED_VideoBearWavPcm) {
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavPcm) {
   PlayAudio("bear_pcm.wav", GetParam());
 }
 
@@ -320,12 +316,7 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavPcm192kHz) {
   PlayAudio("bear_192kHz.wav", GetParam());
 }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-#define MAYBE_VideoTulipWebm DISABLED_VideoTulipWebm
-#else
-#define MAYBE_VideoTulipWebm VideoTulipWebm
-#endif
-IN_PROC_BROWSER_TEST_P(MediaTest, MAYBE_VideoTulipWebm) {
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoTulipWebm) {
   PlayVideo("tulip2.webm", GetParam());
 }
 

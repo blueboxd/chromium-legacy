@@ -542,8 +542,6 @@ gfx::Transform ScreenSpaceTransformInternal(LayerType* layer,
                        layer->offset_to_transform_parent().y());
   gfx::Transform ssxform = tree.ToScreen(layer->transform_tree_index());
   xform.ConcatTransform(ssxform);
-  if (layer->should_flatten_screen_space_transform_from_property_tree())
-    xform.FlattenTo2d();
   return xform;
 }
 
@@ -1233,8 +1231,6 @@ gfx::Transform DrawTransform(const LayerImpl* layer,
   transform_tree.property_trees()->GetToTarget(
       layer->transform_tree_index(), layer->render_target_effect_tree_index(),
       &xform);
-  if (layer->should_flatten_screen_space_transform_from_property_tree())
-    xform.FlattenTo2d();
   xform.Translate(layer->offset_to_transform_parent().x(),
                   layer->offset_to_transform_parent().y());
   return xform;

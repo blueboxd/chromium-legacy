@@ -95,12 +95,6 @@ class BLINK_EXPORT WebDocumentLoader {
   virtual bool HasUnreachableURL() const = 0;
   virtual WebURL UnreachableURL() const = 0;
 
-  // The error code for loading an error page.
-  virtual int ErrorCode() const = 0;
-
-  // The IPAddressSpace associated with this loader.
-  virtual network::mojom::IPAddressSpace GetIPAddressSpace() const = 0;
-
   // Returns all redirects that occurred (both client and server) before
   // at last committing the current page.  This will contain one entry
   // for each intermediate URL, and one entry for the last URL (so if

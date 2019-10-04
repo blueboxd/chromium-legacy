@@ -44,10 +44,15 @@ void RestartNavigation(LocalFrame* frame) {
 ApplicationCacheHostForFrame::ApplicationCacheHostForFrame(
     DocumentLoader* document_loader,
     const BrowserInterfaceBrokerProxy& interface_broker_proxy,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const base::UnguessableToken& appcache_host_id)
     : ApplicationCacheHost(interface_broker_proxy, std::move(task_runner)),
       local_frame_(document_loader->GetFrame()),
-      document_loader_(document_loader) {}
+      document_loader_(document_loader) {
+  // PlzNavigate: The browser passes the ID to be used.
+  if (!appcache_host_id.is_empty())
+    SetHostID(appcache_host_id);
+}
 
 void ApplicationCacheHostForFrame::Detach() {
   ApplicationCacheHost::Detach();
@@ -141,12 +146,11 @@ void ApplicationCacheHostForFrame::WillStartLoadingMainResource(
   if (!IsApplicationCacheEnabled())
     return;
 
-  // PlzNavigate: The browser passes the ID to be used.
-  DCHECK(GetHostID().is_empty());
-  if (!document_loader_->AppcacheHostId().is_empty())
-    SetHostID(document_loader_->AppcacheHostId());
-  else
+  if (GetHostID().is_empty()) {
+    // If we did not get host id from the browser, we postpone creation of a new
+    // one until this point, where we actually load non-empty document.
     SetHostID(base::UnguessableToken::Create());
+  }
 
   // We defer binding to backend to avoid unnecessary binding around creating
   // empty documents. At this point, we're initiating a main resource load for

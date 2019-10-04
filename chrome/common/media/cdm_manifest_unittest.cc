@@ -505,9 +505,16 @@ TEST(CdmManifestTest, FileManifestLite) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   auto manifest_path = temp_dir.GetPath().AppendASCII("manifest.json");
 
-  // Only a version is required in the manifest to parse correctly.
+  // Only a version plus fields to satisfy compatibility are required in the
+  // manifest to parse correctly.
   base::Value manifest(base::Value::Type::DICTIONARY);
   manifest.SetStringKey(extensions::manifest_keys::kVersion, "1.2.3.4");
+  manifest.SetStringKey(kCdmModuleVersionsName,
+                        base::NumberToString(kSupportedCdmModuleVersion));
+  manifest.SetStringKey(kCdmInterfaceVersionsName,
+                        base::NumberToString(kSupportedCdmInterfaceVersion));
+  manifest.SetStringKey(kCdmHostVersionsName,
+                        base::NumberToString(kSupportedCdmHostVersion));
   WriteManifestToFile(manifest, manifest_path);
 
   base::Version version;

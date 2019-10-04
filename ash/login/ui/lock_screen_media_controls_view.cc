@@ -70,6 +70,9 @@ constexpr int kChangeTrackIconSize = 14;
 constexpr int kSeekingIconsSize = 26;
 constexpr gfx::Size kMediaControlsButtonRowSize =
     gfx::Size(300, kMediaButtonSize.height());
+constexpr gfx::Size kMediaButtonGroupSize =
+    gfx::Size(2 * kMediaButtonSize.width() + kMediaButtonRowSeparator,
+              kMediaButtonSize.height());
 constexpr int kArtworkCornerRadius = 4;
 constexpr int kMediaActionButtonCornerRadius = kMediaButtonSize.width() / 2;
 
@@ -282,6 +285,13 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
 
   // |button_row_| contains the buttons for controlling playback.
   auto button_row = std::make_unique<NonAccessibleView>();
+
+  // left_control_group contains previous_track_button and seek_backward_button.
+  auto left_control_group = std::make_unique<NonAccessibleView>();
+
+  // right_control_group contains next_track_button and seek_forward_button.
+  auto right_control_group = std::make_unique<NonAccessibleView>();
+
   auto* button_row_layout =
       button_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal, kButtonRowInsets,
@@ -290,18 +300,44 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
       views::BoxLayout::CrossAxisAlignment::kCenter);
   button_row_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
+
+  auto* left_control_group_layout =
+      left_control_group->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+          kMediaButtonRowSeparator));
+  left_control_group_layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kCenter);
+  left_control_group_layout->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kEnd);
+
+  auto* right_control_group_layout =
+      right_control_group->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+          kMediaButtonRowSeparator));
+  right_control_group_layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kCenter);
+  right_control_group_layout->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kStart);
+
   button_row->SetPreferredSize(kMediaControlsButtonRowSize);
   button_row_ = contents_view_->AddChildView(std::move(button_row));
 
-  button_row_->AddChildView(std::make_unique<MediaActionButton>(
-      this, kChangeTrackIconSize, MediaSessionAction::kPreviousTrack,
-      l10n_util::GetStringUTF16(
-          IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PREVIOUS_TRACK)));
+  left_control_group->SetPreferredSize(kMediaButtonGroupSize);
+  right_control_group->SetPreferredSize(kMediaButtonGroupSize);
 
-  button_row_->AddChildView(std::make_unique<MediaActionButton>(
-      this, kSeekingIconsSize, MediaSessionAction::kSeekBackward,
-      l10n_util::GetStringUTF16(
-          IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_SEEK_BACKWARD)));
+  media_action_buttons_.push_back(
+      left_control_group->AddChildView(std::make_unique<MediaActionButton>(
+          this, kChangeTrackIconSize, MediaSessionAction::kPreviousTrack,
+          l10n_util::GetStringUTF16(
+              IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PREVIOUS_TRACK))));
+
+  media_action_buttons_.push_back(
+      left_control_group->AddChildView(std::make_unique<MediaActionButton>(
+          this, kSeekingIconsSize, MediaSessionAction::kSeekBackward,
+          l10n_util::GetStringUTF16(
+              IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_SEEK_BACKWARD))));
+
+  button_row_->AddChildView(std::move(left_control_group));
 
   // |play_pause_button_| toggles playback. If the current media is playing, the
   // tag will be |MediaSessionAction::kPause|. If the current media is paused,
@@ -311,16 +347,21 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
           this, kPlayPauseIconSize, MediaSessionAction::kPause,
           l10n_util::GetStringUTF16(
               IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PAUSE)));
+  media_action_buttons_.push_back(play_pause_button_);
 
-  button_row_->AddChildView(std::make_unique<MediaActionButton>(
-      this, kSeekingIconsSize, MediaSessionAction::kSeekForward,
-      l10n_util::GetStringUTF16(
-          IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_SEEK_FORWARD)));
+  media_action_buttons_.push_back(
+      right_control_group->AddChildView(std::make_unique<MediaActionButton>(
+          this, kSeekingIconsSize, MediaSessionAction::kSeekForward,
+          l10n_util::GetStringUTF16(
+              IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_SEEK_FORWARD))));
 
-  button_row_->AddChildView(std::make_unique<MediaActionButton>(
-      this, kChangeTrackIconSize, MediaSessionAction::kNextTrack,
-      l10n_util::GetStringUTF16(
-          IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_NEXT_TRACK)));
+  media_action_buttons_.push_back(
+      right_control_group->AddChildView(std::make_unique<MediaActionButton>(
+          this, kChangeTrackIconSize, MediaSessionAction::kNextTrack,
+          l10n_util::GetStringUTF16(
+              IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_NEXT_TRACK))));
+
+  button_row_->AddChildView(std::move(right_control_group));
 
   // Set child view data to default values initially, until the media controller
   // observers are triggered by a change in media session state.
@@ -632,8 +673,7 @@ void LockScreenMediaControlsView::UpdateActionButtonsVisibility() {
                                                  ignored_actions, kMaxActions);
 
   bool should_invalidate = false;
-  for (auto* view : button_row_->children()) {
-    views::Button* action_button = views::Button::AsButton(view);
+  for (views::Button* action_button : media_action_buttons_) {
     bool should_show = base::Contains(
         visible_actions,
         media_message_center::GetActionFromButtonTag(*action_button));

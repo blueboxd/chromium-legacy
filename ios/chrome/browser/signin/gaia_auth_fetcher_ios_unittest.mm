@@ -15,7 +15,6 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/signin/gaia_auth_fetcher_ios_wk_webview_bridge.h"
 #include "ios/web/public/test/web_task_environment.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"

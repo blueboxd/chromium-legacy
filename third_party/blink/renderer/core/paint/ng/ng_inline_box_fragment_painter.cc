@@ -229,30 +229,29 @@ NGInlineBoxFragmentPainterBase::GetBorderPaintType(
     const PhysicalRect& adjusted_frame_rect,
     IntRect& adjusted_clip_rect,
     bool object_has_multiple_boxes) const {
-  adjusted_clip_rect = PixelSnappedIntRect(adjusted_frame_rect);
-  if (inline_box_fragment_.Parent() &&
-      inline_box_fragment_.Style().HasBorderDecoration()) {
-    const NinePieceImage& border_image =
-        inline_box_fragment_.Style().BorderImage();
-    StyleImage* border_image_source = border_image.GetImage();
-    bool has_border_image =
-        border_image_source && border_image_source->CanRender();
-    if (has_border_image && !border_image_source->IsLoaded())
-      return kDontPaintBorders;
+  const ComputedStyle& style = inline_box_fragment_.Style();
+  if (!style.HasBorderDecoration())
+    return kDontPaintBorders;
 
-    // The simple case is where we either have no border image or we are the
-    // only box for this object.  In those cases only a single call to draw is
-    // required.
-    if (!has_border_image || !object_has_multiple_boxes)
-      return kPaintBordersWithoutClip;
+  const NinePieceImage& border_image = style.BorderImage();
+  StyleImage* border_image_source = border_image.GetImage();
+  bool has_border_image =
+      border_image_source && border_image_source->CanRender();
+  if (has_border_image && !border_image_source->IsLoaded())
+    return kDontPaintBorders;
 
-    // We have a border image that spans multiple lines.
-    adjusted_clip_rect = PixelSnappedIntRect(NGClipRectForNinePieceImageStrip(
-        inline_box_fragment_.Style(), BorderEdges(), border_image,
-        adjusted_frame_rect));
-    return kPaintBordersWithClip;
+  // The simple case is where we either have no border image or we are the
+  // only box for this object.  In those cases only a single call to draw is
+  // required.
+  if (!has_border_image || !object_has_multiple_boxes) {
+    adjusted_clip_rect = PixelSnappedIntRect(adjusted_frame_rect);
+    return kPaintBordersWithoutClip;
   }
-  return kDontPaintBorders;
+
+  // We have a border image that spans multiple lines.
+  adjusted_clip_rect = PixelSnappedIntRect(NGClipRectForNinePieceImageStrip(
+      style, BorderEdges(), border_image, adjusted_frame_rect));
+  return kPaintBordersWithClip;
 }
 
 void NGInlineBoxFragmentPainterBase::PaintNormalBoxShadow(

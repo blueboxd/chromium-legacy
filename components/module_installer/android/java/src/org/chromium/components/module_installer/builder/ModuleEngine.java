@@ -17,7 +17,8 @@ import org.chromium.components.module_installer.engine.InstallListener;
  * modules can be moved in and out from the base more easily.
  */
 class ModuleEngine implements InstallEngine {
-    private static InstallEngine sInternalEngine;
+    private static InstallEngine sInstallEngine;
+    private static EngineFactory sEngineFactory;
 
     private final String mImplClassName;
 
@@ -27,12 +28,12 @@ class ModuleEngine implements InstallEngine {
 
     public ModuleEngine(String implClassName, EngineFactory engineFactory) {
         mImplClassName = implClassName;
-        sInternalEngine = engineFactory.getEngine();
+        sEngineFactory = engineFactory;
     }
 
     @Override
     public void initActivity(Activity activity) {
-        sInternalEngine.initActivity(activity);
+        getEngine().initActivity(activity);
     }
 
     @Override
@@ -49,11 +50,19 @@ class ModuleEngine implements InstallEngine {
 
     @Override
     public void installDeferred(String moduleName) {
-        sInternalEngine.installDeferred(moduleName);
+        getEngine().installDeferred(moduleName);
     }
 
     @Override
     public void install(String moduleName, InstallListener listener) {
-        sInternalEngine.install(moduleName, listener);
+        getEngine().install(moduleName, listener);
+    }
+
+    private static InstallEngine getEngine() {
+        // Lazily instantiate the engine - related to crbug/1010887.
+        if (sInstallEngine == null) {
+            sInstallEngine = sEngineFactory.getEngine();
+        }
+        return sInstallEngine;
     }
 }

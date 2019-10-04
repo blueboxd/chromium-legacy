@@ -1658,8 +1658,7 @@ IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest,
   background_tracing_helper.WaitForScenarioAborted();
 }
 
-// Flaky failures in all OSes: crbug.com/1008387
-IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest, DISABLED_ProtoTraceReceived) {
+IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest, ProtoTraceReceived) {
   TestBackgroundTracingHelper background_tracing_helper;
 
   std::unique_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
@@ -1670,9 +1669,11 @@ IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest, DISABLED_ProtoTraceReceived) 
 
   EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
       std::move(config), base::DoNothing(),
-      BackgroundTracingManager::NO_DATA_FILTERING));
+      BackgroundTracingManager::ANONYMIZE_DATA));
 
   background_tracing_helper.WaitForTracingEnabled();
+
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
 
   TestTriggerHelper trigger_helper;
   BackgroundTracingManager::GetInstance()->TriggerNamedEvent(

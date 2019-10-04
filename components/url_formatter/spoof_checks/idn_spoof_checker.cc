@@ -147,7 +147,7 @@ IDNSpoofChecker::IDNSpoofChecker() {
   // These Cyrillic letters look like Latin. A domain label entirely made of
   // these letters is blocked as a simplified whole-script-spoofable.
   cyrillic_letters_latin_alike_ = icu::UnicodeSet(
-      icu::UnicodeString::fromUTF8("[аысԁеԍһіјӏорԗԛѕԝхуъЬҽпгѵѡ]"), status);
+      icu::UnicodeString::fromUTF8("[аысԁеԍһіюјӏорԗԛѕԝхуъЬҽпгѵѡ]"), status);
   cyrillic_letters_latin_alike_.freeze();
 
   cyrillic_letters_ =

@@ -92,6 +92,21 @@ DWORD CreateRestrictedToken(HANDLE effective_token,
       privilege_exceptions.push_back(SE_CHANGE_NOTIFY_NAME);
       break;
     }
+    case USER_RESTRICTED_NON_ADMIN: {
+      sid_exceptions.push_back(WinBuiltinUsersSid);
+      sid_exceptions.push_back(WinWorldSid);
+      sid_exceptions.push_back(WinInteractiveSid);
+      sid_exceptions.push_back(WinAuthenticatedUserSid);
+      privilege_exceptions.push_back(SE_CHANGE_NOTIFY_NAME);
+      restricted_token.AddRestrictingSid(WinBuiltinUsersSid);
+      restricted_token.AddRestrictingSid(WinWorldSid);
+      restricted_token.AddRestrictingSid(WinInteractiveSid);
+      restricted_token.AddRestrictingSid(WinAuthenticatedUserSid);
+      restricted_token.AddRestrictingSid(WinRestrictedCodeSid);
+      restricted_token.AddRestrictingSidCurrentUser();
+      restricted_token.AddRestrictingSidLogonSession();
+      break;
+    }
     case USER_INTERACTIVE: {
       sid_exceptions.push_back(WinBuiltinUsersSid);
       sid_exceptions.push_back(WinWorldSid);

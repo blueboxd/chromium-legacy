@@ -67,3 +67,16 @@ cast_source_set("output_stream_connection") {
     ":proto",
   ]
 }
+
+cast_source_set("audio_socket_service") {
+  sources = [
+    "audio_socket_service.cc",
+    "audio_socket_service.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/media/audio:audio_buildflags",
+    "//net",
+  ]
+}

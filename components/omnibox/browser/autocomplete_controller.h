@@ -59,8 +59,10 @@ class AutocompleteController : public AutocompleteProviderListener,
 
   // |provider_types| is a bitmap containing AutocompleteProvider::Type values
   // that will (potentially, depending on platform, flags, etc.) be
-  // instantiated. |template_url_service| is used to create URLs from the
-  // autocomplete results.
+  // instantiated. |provider_client| is passed to all those providers, and
+  // is used to get access to the template URL service. |delegate| is a
+  // proxy for UI elements which need to be notified when the results get
+  // updated.
   AutocompleteController(
       std::unique_ptr<AutocompleteProviderClient> provider_client,
       AutocompleteControllerDelegate* delegate,

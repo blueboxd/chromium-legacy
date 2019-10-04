@@ -613,9 +613,8 @@ void AboutUIHTMLSource::StartDataRequest(
     if (idr == IDR_ABOUT_UI_CREDITS_HTML) {
       response = about_ui::GetCredits(true /*include_scripts*/);
     } else {
-      response = ui::ResourceBundle::GetSharedInstance()
-                     .GetRawDataResource(idr)
-                     .as_string();
+      response =
+          ui::ResourceBundle::GetSharedInstance().DecompressDataResource(idr);
     }
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   } else if (source_name_ == chrome::kChromeUILinuxProxyConfigHost) {

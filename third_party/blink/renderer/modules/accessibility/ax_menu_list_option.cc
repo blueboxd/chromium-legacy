@@ -73,7 +73,7 @@ AXObject* AXMenuListOption::ComputeParent() const {
   Node* node = GetNode();
   if (!node)
     return nullptr;
-  HTMLSelectElement* select = ToHTMLOptionElement(node)->OwnerSelectElement();
+  auto* select = To<HTMLOptionElement>(node)->OwnerSelectElement();
   if (!select)
     return nullptr;
   AXObject* select_ax_object = AXObjectCache().GetOrCreate(select);
@@ -212,7 +212,7 @@ HTMLSelectElement* AXMenuListOption::ParentSelectNode() const {
   if (!GetNode())
     return nullptr;
 
-  if (auto* option = ToHTMLOptionElementOrNull(GetNode()))
+  if (auto* option = DynamicTo<HTMLOptionElement>(GetNode()))
     return option->OwnerSelectElement();
 
   return nullptr;

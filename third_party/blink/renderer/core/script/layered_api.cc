@@ -19,10 +19,6 @@ namespace {
 static const char kStdScheme[] = "std";
 static const char kInternalScheme[] = "std-internal";
 
-static const char kImportScheme[] = "import";
-
-constexpr char kBuiltinSpecifierPrefix[] = "@std/";
-
 constexpr char kTopLevelScriptPostfix[] = "/index.mjs";
 
 const LayeredAPIResource* GetResourceFromPath(const Modulator& modulator,
@@ -46,10 +42,6 @@ String GetBuiltinPath(const KURL& url) {
   if (url.ProtocolIs(kStdScheme))
     return url.GetPath();
 
-  const StringView prefix(kBuiltinSpecifierPrefix);
-  if (url.ProtocolIs(kImportScheme) && url.GetPath().StartsWith(prefix))
-    return url.GetPath().Substring(prefix.length());
-
   return String();
 }
 
@@ -57,8 +49,6 @@ String GetBuiltinPath(const KURL& url) {
 KURL ResolveFetchingURL(const Modulator& modulator, const KURL& url) {
   // <spec step="1">If url's scheme is not "std", return url.</spec>
   // <spec step="2">Let path be url's path[0].</spec>
-  // Note: Also accepts "import:@std/x".
-  // See the comment at GetBuiltinPath() declaration.
   String path = GetBuiltinPath(url);
   if (path.IsNull())
     return url;

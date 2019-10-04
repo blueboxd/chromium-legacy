@@ -35,9 +35,6 @@
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/test/gtest_util.h"
 #include "net/test/scoped_disable_exit_on_dfatal.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -191,7 +188,7 @@ class AutoAdvancingTestClock : public base::Clock {
   ~AutoAdvancingTestClock() override;
 
   base::Time Now() const override;
-  void Advance(TimeDelta delta);
+  void Advance(base::TimeDelta delta);
   int call_count() const { return call_count_; }
 
  private:
@@ -294,7 +291,6 @@ class GCMClientImplTest : public testing::Test,
   void SetFeatureParams(const base::Feature& feature,
                         const base::FieldTrialParams& params);
 
-  void SetUpUrlFetcherFactory();
   void InitializeInvalidationFieldTrial();
 
   void BuildGCMClient(base::TimeDelta clock_step);
@@ -416,9 +412,6 @@ class GCMClientImplTest : public testing::Test,
   AutoAdvancingTestClock* clock() const {
     return static_cast<AutoAdvancingTestClock*>(gcm_client_->clock_);
   }
-  net::TestURLFetcherFactory* url_fetcher_factory() {
-    return &url_fetcher_factory_;
-  }
   network::TestURLLoaderFactory* url_loader_factory() {
     return &test_url_loader_factory_;
   }
@@ -448,19 +441,13 @@ class GCMClientImplTest : public testing::Test,
 
   std::unique_ptr<GCMClientImpl> gcm_client_;
 
-  net::TestURLFetcherFactory url_fetcher_factory_;
-
   // Injected to GCM client.
-  scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 GCMClientImplTest::GCMClientImplTest()
-    : last_event_(NONE),
-      last_result_(GCMClient::UNKNOWN_ERROR),
-      url_request_context_getter_(new net::TestURLRequestContextGetter(
-          task_environment_.GetMainThreadTaskRunner())) {}
+    : last_event_(NONE), last_result_(GCMClient::UNKNOWN_ERROR) {}
 
 GCMClientImplTest::~GCMClientImplTest() {}
 
@@ -470,7 +457,6 @@ void GCMClientImplTest::SetUp() {
   BuildGCMClient(base::TimeDelta());
   InitializeGCMClient();
   StartGCMClient();
-  SetUpUrlFetcherFactory();
   InitializeInvalidationFieldTrial();
   ASSERT_NO_FATAL_FAILURE(
       CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken, std::string(),
@@ -478,10 +464,6 @@ void GCMClientImplTest::SetUp() {
 }
 
 void GCMClientImplTest::TearDown() {
-}
-
-void GCMClientImplTest::SetUpUrlFetcherFactory() {
-  url_fetcher_factory_.set_remove_fetcher_on_delete(true);
 }
 
 void GCMClientImplTest::SetFeatureParams(const base::Feature& feature,
@@ -1422,7 +1404,6 @@ void GCMClientImplStartAndStopTest::SetUp() {
 }
 
 void GCMClientImplStartAndStopTest::DefaultCompleteCheckin() {
-  SetUpUrlFetcherFactory();
   ASSERT_NO_FATAL_FAILURE(
       CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken, std::string(),
                       std::map<std::string, std::string>()));

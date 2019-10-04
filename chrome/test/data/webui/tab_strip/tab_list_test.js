@@ -5,11 +5,11 @@
 import 'chrome://tab-strip/tab_list.js';
 
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {TabStripViewProxy} from 'chrome://tab-strip/tab_strip_view_proxy.js';
 import {TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
-import {ThemeProxy} from 'chrome://tab-strip/theme_proxy.js';
 
+import {TestTabStripViewProxy} from './test_tab_strip_view_proxy.js';
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
-import {TestThemeProxy} from './test_theme_proxy.js';
 
 class MockDataTransfer extends DataTransfer {
   constructor() {
@@ -52,8 +52,8 @@ suite('TabList', () => {
   let callbackRouter;
   let optionsCalled;
   let tabList;
+  let testTabStripViewProxy;
   let testTabsApiProxy;
-  let testThemeProxy;
 
   const currentWindow = {
     id: 1001,
@@ -103,15 +103,14 @@ suite('TabList', () => {
     testTabsApiProxy = new TestTabsApiProxy();
     testTabsApiProxy.setCurrentWindow(currentWindow);
     TabsApiProxy.instance_ = testTabsApiProxy;
+    callbackRouter = testTabsApiProxy.callbackRouter;
 
-    testThemeProxy = new TestThemeProxy();
-    testThemeProxy.setColors({
+    testTabStripViewProxy = new TestTabStripViewProxy();
+    testTabStripViewProxy.setColors({
       '--background-color': 'white',
       '--foreground-color': 'black',
     });
-    ThemeProxy.instance_ = testThemeProxy;
-
-    callbackRouter = testTabsApiProxy.callbackRouter;
+    TabStripViewProxy.instance_ = testTabStripViewProxy;
 
     tabList = document.createElement('tabstrip-tab-list');
     document.body.appendChild(tabList);
@@ -119,20 +118,24 @@ suite('TabList', () => {
     return testTabsApiProxy.whenCalled('getCurrentWindow');
   });
 
+  teardown(() => {
+    testTabsApiProxy.reset();
+    testTabStripViewProxy.reset();
+  });
+
   test('sets theme colors on init', async () => {
-    await testThemeProxy.whenCalled('getColors');
+    await testTabStripViewProxy.whenCalled('getColors');
     assertEquals(tabList.style.getPropertyValue('--background-color'), 'white');
     assertEquals(tabList.style.getPropertyValue('--foreground-color'), 'black');
   });
 
   test('updates theme colors when theme changes', async () => {
-    testThemeProxy.resetResolver('getColors');
-    testThemeProxy.setColors({
+    testTabStripViewProxy.setColors({
       '--background-color': 'pink',
       '--foreground-color': 'blue',
     });
     webUIListenerCallback('theme-changed');
-    await testThemeProxy.whenCalled('getColors');
+    await testTabStripViewProxy.whenCalled('getColors');
     assertEquals(tabList.style.getPropertyValue('--background-color'), 'pink');
     assertEquals(tabList.style.getPropertyValue('--foreground-color'), 'blue');
   });
@@ -167,6 +170,20 @@ suite('TabList', () => {
     tabElements = getUnpinnedTabs();
     assertEquals(currentWindow.tabs.length + 2, tabElements.length);
     assertEquals(tabElements[0].tab, prependedTab);
+  });
+
+  test('adds a new tab element to the start when it is active', async () => {
+    const newActiveTab = {
+      active: true,
+      id: 3,
+      index: 3,
+      title: 'New tab',
+      windowId: currentWindow.id,
+    };
+    callbackRouter.onCreated.dispatchEvent(newActiveTab);
+    const [tabId, newIndex] = await testTabsApiProxy.whenCalled('moveTab');
+    assertEquals(tabId, newActiveTab.id);
+    assertEquals(newIndex, 0);
   });
 
   test(
@@ -264,6 +281,8 @@ suite('TabList', () => {
   });
 
   test('activating a tab off-screen scrolls to it', async () => {
+    testTabStripViewProxy.setVisible(true);
+
     const scrollPadding = 32;
 
     // Mock the width of each tab element
@@ -365,7 +384,10 @@ suite('TabList', () => {
       });
 
   test('dragstart sets a drag image offset by the event coordinates', () => {
-    const draggedTab = getUnpinnedTabs()[0];
+    // Drag and drop only works for pinned tabs
+    currentWindow.tabs.forEach(pinTabAt);
+
+    const draggedTab = getPinnedTabs()[0];
     const mockDataTransfer = new MockDataTransfer();
     const dragStartEvent = new DragEvent('dragstart', {
       bubbles: true,
@@ -385,10 +407,13 @@ suite('TabList', () => {
   });
 
   test('dragover moves tabs', async () => {
+    // Drag and drop only works for pinned tabs
+    currentWindow.tabs.forEach(pinTabAt);
+
     const draggedIndex = 0;
     const dragOverIndex = 1;
-    const draggedTab = getUnpinnedTabs()[draggedIndex];
-    const dragOverTab = getUnpinnedTabs()[dragOverIndex];
+    const draggedTab = getPinnedTabs()[draggedIndex];
+    const dragOverTab = getPinnedTabs()[dragOverIndex];
     const mockDataTransfer = new MockDataTransfer();
 
     // Dispatch a dragstart event to start the drag process
@@ -413,4 +438,23 @@ suite('TabList', () => {
     assertEquals(tabId, currentWindow.tabs[draggedIndex].id);
     assertEquals(newIndex, dragOverIndex);
   });
+
+  test(
+      'when the tab strip closes, the active tab should move to the start',
+      async () => {
+        // Mock activating the 2nd tab
+        callbackRouter.onActivated.dispatchEvent({
+          tabId: currentWindow.tabs[1].id,
+          windowId: currentWindow.id,
+        });
+        testTabsApiProxy.resetResolver('moveTab');
+
+        // Mock tab strip going from visible to hidden
+        testTabStripViewProxy.setVisible(false);
+        document.dispatchEvent(new Event('visibilitychange'));
+
+        const [moveId, newIndex] = await testTabsApiProxy.whenCalled('moveTab');
+        assertEquals(moveId, currentWindow.tabs[1].id);
+        assertEquals(newIndex, 0);
+      });
 });

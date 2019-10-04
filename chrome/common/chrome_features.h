@@ -245,7 +245,8 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kGdiTextPrinting;
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kGeoLanguage;
 
-#if !defined(OS_ANDROID) && defined(GOOGLE_CHROME_BUILD)
+#if !defined(OS_ANDROID)
+// Only has an effect in branded builds.
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kGoogleBrandedContextMenu;
 #endif
@@ -266,7 +267,8 @@ extern const base::Feature kHappinessTrackingSurveysForDesktopDemo;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHTTPAuthCommittedInterstitials;
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN)
+// Only has an effect in branded builds.
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kIncompatibleApplicationsWarning;
 #endif
@@ -446,7 +448,8 @@ extern const base::Feature kAppManagement;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kTabMetricsLogging;
 #endif
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN)
+// Only has an effect in branded builds.
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kThirdPartyModulesBlocking;
 #endif

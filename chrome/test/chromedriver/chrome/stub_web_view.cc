@@ -132,6 +132,12 @@ Status StubWebView::DispatchTouchEvents(const std::list<TouchEvent>& events,
   return Status(kOk);
 }
 
+Status StubWebView::DispatchTouchEventWithMultiPoints(
+    const std::list<TouchEvent>& events,
+    bool async_dispatch_events) {
+  return Status(kOk);
+}
+
 Status StubWebView::DispatchKeyEvents(const std::list<KeyEvent>& events,
                                       bool async_dispatch_events) {
   return Status(kOk);

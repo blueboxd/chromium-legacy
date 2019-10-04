@@ -87,12 +87,6 @@ scoped_refptr<Extension> LoadManifest(const std::string& dir,
   return LoadManifest(dir, test_file, Extension::NO_FLAGS);
 }
 
-void SetGalleryURL(const GURL& new_url) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitchASCII(switches::kAppsGalleryURL, new_url.spec());
-  extensions::ExtensionsClient::Get()->InitializeWebStoreUrls(command_line);
-}
-
 void SetGalleryUpdateURL(const GURL& new_url) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(switches::kAppsGalleryUpdateURL,

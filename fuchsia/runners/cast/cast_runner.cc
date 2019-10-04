@@ -136,6 +136,7 @@ void CastRunner::MaybeStartComponent(
       std::make_unique<CastComponent>(this, std::move(*pending_component));
   pending_components_.erase(pending_component);
 
+  component->StartComponent();
   component->LoadUrl(std::move(cast_app_url),
                      std::vector<fuchsia::net::http::Header>());
   RegisterComponent(std::move(component));

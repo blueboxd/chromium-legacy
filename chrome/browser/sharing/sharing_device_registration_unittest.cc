@@ -241,7 +241,8 @@ TEST_F(SharingDeviceRegistrationTest, IsSharedClipboardSupported_False) {
   EXPECT_FALSE(sharing_device_registration_.IsSharedClipboardSupported());
 }
 
-TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
+// Disabled as a result of crbug.com/1010998
+TEST_F(SharingDeviceRegistrationTest, DISABLED_RegisterDeviceTest_Success) {
   SetInstanceIDFCMResult(InstanceID::Result::SUCCESS);
   SetInstanceIDFCMToken(kFCMToken);
   fake_device_info_tracker_.Add(
@@ -276,7 +277,8 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
   EXPECT_TRUE(fcm_registration_);
 }
 
-TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_VapidKeysUnchanged) {
+// Disabled as a result of crbug.com/1010998
+TEST_F(SharingDeviceRegistrationTest, DISABLED_RegisterDeviceTest_VapidKeysUnchanged) {
   SetInstanceIDFCMToken(kFCMToken);
   SetInstanceIDFCMResult(InstanceID::Result::SUCCESS);
   fake_device_info_tracker_.Add(
@@ -306,7 +308,8 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_VapidKeysUnchanged) {
   EXPECT_TRUE(fcm_registration_);
 }
 
-TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Expired) {
+// Disabled as a result of crbug.com/1010998
+TEST_F(SharingDeviceRegistrationTest, DISABLED_RegisterDeviceTest_Expired) {
   SetInstanceIDFCMResult(InstanceID::Result::SUCCESS);
   fake_device_info_tracker_.Add(
       fake_local_device_info_provider_.GetLocalDeviceInfo());
@@ -357,7 +360,8 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_FatalError) {
   EXPECT_FALSE(fcm_registration_);
 }
 
-TEST_F(SharingDeviceRegistrationTest, UnregisterDeviceTest_Success) {
+// Disabled as a result of crbug.com/1010998
+TEST_F(SharingDeviceRegistrationTest, DISABLED_UnregisterDeviceTest_Success) {
   SetInstanceIDFCMResult(InstanceID::Result::SUCCESS);
   fake_device_info_tracker_.Add(
       fake_local_device_info_provider_.GetLocalDeviceInfo());

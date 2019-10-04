@@ -8,6 +8,8 @@
 #include "base/base_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/task/task_traits.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -23,8 +25,9 @@ class BASE_EXPORT JobDelegate {
  public:
   // A JobDelegate is instantiated for each worker task that is run.
   // |task_source| is the task source whose worker task is running with this
-  // delegate and |pooled_task_runner_delegate| provides communication with the
-  // thread pool.
+  // delegate and |pooled_task_runner_delegate| is used by ShouldYield() to
+  // check whether the pool wants this worker task to yield (null if this worker
+  // should never yield -- e.g. when the main thread is a worker).
   JobDelegate(internal::JobTaskSource* task_source,
               internal::PooledTaskRunnerDelegate* pooled_task_runner_delegate);
   ~JobDelegate();
@@ -65,6 +68,57 @@ class BASE_EXPORT JobDelegate {
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(JobDelegate);
+};
+
+// Handle returned when posting a Job. Provides methods to control execution of
+// the posted Job.
+class BASE_EXPORT JobHandle {
+ public:
+  // A job must either be joined, canceled or detached before the JobHandle is
+  // destroyed.
+  ~JobHandle();
+
+  JobHandle(JobHandle&&);
+  JobHandle& operator=(JobHandle&&);
+
+  // Update this Job's priority.
+  void UpdatePriority(TaskPriority new_priority);
+
+  // Notifies the scheduler that max concurrency was increased, and the number
+  // of worker should be adjusted accordingly. This *must* be invoked shortly
+  // after |max_concurrency_callback| starts returning a value larger than
+  // previously returned values. This usually happens when new work items are
+  // added and the API user wants additional |worker_task| to run concurrently.
+  // TODO(839091): Update comment to be more specific about
+  // |max_concurrency_callback| once PostJob() landed.
+  void NotifyConcurrencyIncrease();
+
+  // Contributes to the job on this thread. Doesn't return until all tasks have
+  // completed and max concurrency becomes 0. This also promotes this Job's
+  // priority to be at least as high as the calling thread's priority.
+  void Join();
+
+  // Forces all existing workers to yield ASAP. Waits until they have all
+  // returned from the Job's callback before returning.
+  void Cancel();
+
+  // Forces all existing workers to yield ASAP but doesn’t wait for them.
+  // Warning, this is dangerous if the Job's callback is bound to or has access
+  // to state which may be deleted after this call.
+  void CancelAndDetach();
+
+  // Can be invoked before ~JobHandle() to avoid waiting on the job completing.
+  void Detach();
+
+ private:
+  // TODO(839091): Update friendship once PostJob is used.
+  friend class internal::JobTaskSource;
+
+  explicit JobHandle(scoped_refptr<internal::JobTaskSource> task_source);
+
+  scoped_refptr<internal::JobTaskSource> task_source_;
+
+  DISALLOW_COPY_AND_ASSIGN(JobHandle);
 };
 
 }  // namespace experimental

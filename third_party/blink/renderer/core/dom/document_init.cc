@@ -94,19 +94,15 @@ DocumentLoader* DocumentInit::MasterDocumentLoader() const {
 }
 
 WebSandboxFlags DocumentInit::GetSandboxFlags() const {
-  DocumentLoader* loader = MasterDocumentLoader();
   WebSandboxFlags flags = sandbox_flags_;
-  if (loader) {
+  if (DocumentLoader* loader = MasterDocumentLoader())
     flags |= loader->GetFrame()->Loader().EffectiveSandboxFlags();
-
-    // If the load was blocked by CSP, force the Document's origin to be unique,
-    // so that the blocked document appears to be a normal cross-origin
-    // document's load per CSP spec:
-    // https://www.w3.org/TR/CSP3/#directive-frame-ancestors.
-    if (loader->WasBlockedAfterCSP()) {
-      flags |= WebSandboxFlags::kOrigin;
-    }
-  }
+  // If the load was blocked by CSP, force the Document's origin to be unique,
+  // so that the blocked document appears to be a normal cross-origin
+  // document's load per CSP spec:
+  // https://www.w3.org/TR/CSP3/#directive-frame-ancestors.
+  if (blocked_by_csp_)
+    flags |= WebSandboxFlags::kOrigin;
   return flags;
 }
 
@@ -211,6 +207,11 @@ DocumentInit& DocumentInit::WithIPAddressSpace(
 
 DocumentInit& DocumentInit::WithSrcdocDocument(bool is_srcdoc_document) {
   is_srcdoc_document_ = is_srcdoc_document;
+  return *this;
+}
+
+DocumentInit& DocumentInit::WithBlockedByCSP(bool blocked_by_csp) {
+  blocked_by_csp_ = blocked_by_csp;
   return *this;
 }
 

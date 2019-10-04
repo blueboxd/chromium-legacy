@@ -141,9 +141,14 @@ bool HTMLSelectElement::HasPlaceholderLabelOption() const {
 
   // TODO(tkent): This function is called in CSS selector matching. Using
   // listItems() might have performance impact.
-  if (GetListItems().size() == 0 || !IsHTMLOptionElement(GetListItems()[0]))
+  if (GetListItems().size() == 0)
     return false;
-  return ToHTMLOptionElement(GetListItems()[0].Get())->value().IsEmpty();
+
+  auto* option_element = DynamicTo<HTMLOptionElement>(GetListItems()[0].Get());
+  if (!option_element)
+    return false;
+
+  return option_element->value().IsEmpty();
 }
 
 String HTMLSelectElement::validationMessage() const {
@@ -461,7 +466,7 @@ HTMLOptionElement* HTMLSelectElement::OptionAtListIndex(int list_index) const {
   const ListItems& items = GetListItems();
   if (static_cast<wtf_size_t>(list_index) >= items.size())
     return nullptr;
-  return ToHTMLOptionElementOrNull(items[list_index].Get());
+  return DynamicTo<HTMLOptionElement>(items[list_index].Get());
 }
 
 // Returns the 1st valid OPTION |skip| items from |listIndex| in direction
@@ -481,15 +486,16 @@ HTMLOptionElement* HTMLSelectElement::NextValidOption(int list_index,
        list_index += direction) {
     --skip;
     HTMLElement* element = list_items[list_index];
-    if (!IsHTMLOptionElement(*element))
+    auto* option_element = DynamicTo<HTMLOptionElement>(element);
+    if (!option_element)
       continue;
-    if (ToHTMLOptionElement(*element).IsDisplayNone())
+    if (option_element->IsDisplayNone())
       continue;
     if (element->IsDisabledFormControl())
       continue;
     if (!UsesMenuList() && !element->GetLayoutObject())
       continue;
-    last_good_option = ToHTMLOptionElement(element);
+    last_good_option = option_element;
     if (skip <= 0)
       break;
   }
@@ -572,9 +578,9 @@ void HTMLSelectElement::SaveLastSelection() {
 
   last_on_change_selection_.clear();
   for (auto& element : GetListItems()) {
-    last_on_change_selection_.push_back(
-        IsHTMLOptionElement(*element) &&
-        ToHTMLOptionElement(element.Get())->Selected());
+    auto* option_element = DynamicTo<HTMLOptionElement>(element.Get());
+    last_on_change_selection_.push_back(option_element &&
+                                        option_element->Selected());
   }
 }
 
@@ -664,8 +670,8 @@ void HTMLSelectElement::ListBoxOnChange() {
   bool fire_on_change = false;
   for (unsigned i = 0; i < items.size(); ++i) {
     HTMLElement* element = items[i];
-    bool selected = IsHTMLOptionElement(*element) &&
-                    ToHTMLOptionElement(element)->Selected();
+    auto* option_element = DynamicTo<HTMLOptionElement>(element);
+    bool selected = option_element && option_element->Selected();
     if (selected != last_on_change_selection_[i])
       fire_on_change = true;
     last_on_change_selection_[i] = selected;
@@ -781,7 +787,7 @@ void HTMLSelectElement::RecalcListItems() const {
       }
     }
 
-    if (IsHTMLOptionElement(*current_html_element))
+    if (IsA<HTMLOptionElement>(*current_html_element))
       list_items_.push_back(current_html_element);
 
     if (IsA<HTMLHRElement>(*current_html_element))
@@ -869,8 +875,8 @@ void HTMLSelectElement::setSelectedIndex(int index) {
 int HTMLSelectElement::SelectedListIndex() const {
   int index = 0;
   for (const auto& item : GetListItems()) {
-    if (IsHTMLOptionElement(item) &&
-        ToHTMLOptionElement(item.Get())->Selected())
+    auto* option_element = DynamicTo<HTMLOptionElement>(item.Get());
+    if (option_element && option_element->Selected())
       return index;
     ++index;
   }
@@ -1134,10 +1140,8 @@ FormControlState HTMLSelectElement::SaveFormControlState() const {
   wtf_size_t length = items.size();
   FormControlState state;
   for (wtf_size_t i = 0; i < length; ++i) {
-    if (!IsHTMLOptionElement(*items[i]))
-      continue;
-    HTMLOptionElement* option = ToHTMLOptionElement(items[i].Get());
-    if (!option->Selected())
+    auto* option = DynamicTo<HTMLOptionElement>(items[i].Get());
+    if (!option || !option->Selected())
       continue;
     state.Append(option->value());
     state.Append(String::Number(i));
@@ -1154,9 +1158,10 @@ wtf_size_t HTMLSelectElement::SearchOptionsForValue(
   const ListItems& items = GetListItems();
   wtf_size_t loop_end_index = std::min(items.size(), list_index_end);
   for (wtf_size_t i = list_index_start; i < loop_end_index; ++i) {
-    if (!IsHTMLOptionElement(items[i]))
+    auto* option_element = DynamicTo<HTMLOptionElement>(items[i].Get());
+    if (!option_element)
       continue;
-    if (ToHTMLOptionElement(items[i].Get())->value() == value)
+    if (option_element->value() == value)
       return i;
   }
   return kNotFound;
@@ -1176,17 +1181,20 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
   DCHECK_GE(state.ValueSize(), 2u);
   if (!IsMultiple()) {
     unsigned index = state[1].ToUInt();
-    if (index < items_size && IsHTMLOptionElement(items[index]) &&
-        ToHTMLOptionElement(items[index].Get())->value() == state[0]) {
-      ToHTMLOptionElement(items[index].Get())->SetSelectedState(true);
-      ToHTMLOptionElement(items[index].Get())->SetDirty(true);
-      last_on_change_option_ = ToHTMLOptionElement(items[index].Get());
+    auto* option_element =
+        index < items_size ? DynamicTo<HTMLOptionElement>(items[index].Get())
+                           : nullptr;
+    if (option_element && option_element->value() == state[0]) {
+      option_element->SetSelectedState(true);
+      option_element->SetDirty(true);
+      last_on_change_option_ = option_element;
     } else {
       wtf_size_t found_index = SearchOptionsForValue(state[0], 0, items_size);
       if (found_index != kNotFound) {
-        ToHTMLOptionElement(items[found_index].Get())->SetSelectedState(true);
-        ToHTMLOptionElement(items[found_index].Get())->SetDirty(true);
-        last_on_change_option_ = ToHTMLOptionElement(items[found_index].Get());
+        auto* option_element = To<HTMLOptionElement>(items[found_index].Get());
+        option_element->SetSelectedState(true);
+        option_element->SetDirty(true);
+        last_on_change_option_ = option_element;
       }
     }
   } else {
@@ -1194,10 +1202,12 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
     for (wtf_size_t i = 0; i < state.ValueSize(); i += 2) {
       const String& value = state[i];
       const unsigned index = state[i + 1].ToUInt();
-      if (index < items_size && IsHTMLOptionElement(items[index]) &&
-          ToHTMLOptionElement(items[index].Get())->value() == value) {
-        ToHTMLOptionElement(items[index].Get())->SetSelectedState(true);
-        ToHTMLOptionElement(items[index].Get())->SetDirty(true);
+      auto* option_element =
+          index < items_size ? DynamicTo<HTMLOptionElement>(items[index].Get())
+                             : nullptr;
+      if (option_element && option_element->value() == value) {
+        option_element->SetSelectedState(true);
+        option_element->SetDirty(true);
         start_index = index + 1;
       } else {
         wtf_size_t found_index =
@@ -1206,8 +1216,9 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
           found_index = SearchOptionsForValue(value, 0, start_index);
         if (found_index == kNotFound)
           continue;
-        ToHTMLOptionElement(items[found_index].Get())->SetSelectedState(true);
-        ToHTMLOptionElement(items[found_index].Get())->SetDirty(true);
+        auto* option_element = To<HTMLOptionElement>(items[found_index].Get());
+        option_element->SetSelectedState(true);
+        option_element->SetDirty(true);
         start_index = found_index + 1;
       }
     }
@@ -1473,10 +1484,7 @@ void HTMLSelectElement::UpdateSelectedState(HTMLOptionElement* clicked_option,
 }
 
 HTMLOptionElement* HTMLSelectElement::EventTargetOption(const Event& event) {
-  Node* target_node = event.target()->ToNode();
-  if (!target_node || !IsHTMLOptionElement(*target_node))
-    return nullptr;
-  return ToHTMLOptionElement(target_node);
+  return DynamicTo<HTMLOptionElement>(event.target()->ToNode());
 }
 
 int HTMLSelectElement::ListIndexForOption(const HTMLOptionElement& option) {
@@ -1887,7 +1895,7 @@ String HTMLSelectElement::ItemText(const Element& element) const {
   String item_string;
   if (auto* optgroup = DynamicTo<HTMLOptGroupElement>(element))
     item_string = optgroup->GroupLabelText();
-  else if (auto* option = ToHTMLOptionElementOrNull(element))
+  else if (auto* option = DynamicTo<HTMLOptionElement>(element))
     item_string = option->TextIndentedToRespectGroupLabel();
 
   if (GetLayoutObject() && GetLayoutObject()->Style())
@@ -1896,7 +1904,7 @@ String HTMLSelectElement::ItemText(const Element& element) const {
 }
 
 bool HTMLSelectElement::ItemIsDisplayNone(Element& element) const {
-  if (auto* option = ToHTMLOptionElementOrNull(element))
+  if (auto* option = DynamicTo<HTMLOptionElement>(element))
     return option->IsDisplayNone();
   const ComputedStyle* style = ItemComputedStyle(element);
   return !style || style->Display() == EDisplay::kNone;

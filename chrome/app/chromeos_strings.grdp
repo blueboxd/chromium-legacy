@@ -2093,11 +2093,17 @@
   <message name="IDS_EOL_NOTIFICATION_TITLE" desc="Notification title shown to inform the user that this device is no longer supported.">
     Final software update
   </message>
-  <message name="IDS_EOL_NOTIFICATION_EOL" desc="Notification shown to inform the user that this device will no longer receive latest software updates.">
+  <message name="IDS_EOL_NOTIFICATION_EOL" desc="Notification message shown to inform the user that this device will no longer receive latest software updates.">
     This is the last automatic software and security update for this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. To get future updates, upgrade to a newer model.
   </message>
   <message name="IDS_EOL_DISMISS_BUTTON" desc="A button label shown in the notification for eol status change to dismiss the notification.">
     Don't remind me again
+  </message>
+  <message name="IDS_PENDING_EOL_NOTIFICATION_TITLE" desc="Notification title shown to inform the user that this device will no longer be supported after a certain period of time.">
+    Updates end <ph name="MONTH_AND_YEAR">$1<ex>June 2020</ex></ph>
+  </message>
+  <message name="IDS_PENDING_EOL_NOTIFICATION_MESSAGE" desc="Notification message shown to inform the user that this device will no longer receive latest software updates after a certain period of time.">
+    You'll still be able to use this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> after that time, but it will no longer get automatic software and security updates
   </message>
 
   <!-- TPM Firmware Update Notification Strings -->

@@ -4,6 +4,8 @@
 
 static_library("sync_wifi") {
   sources = [
+    "network_identifier.cc",
+    "network_identifier.h",
     "pending_network_configuration_tracker.h",
     "pending_network_configuration_tracker_impl.cc",
     "pending_network_configuration_tracker_impl.h",
@@ -17,6 +19,7 @@ static_library("sync_wifi") {
   ]
   deps = [
     "//base",
+    "//chromeos/network:network",
     "//components/keyed_service/core",
     "//components/prefs:prefs",
     "//components/sync",
@@ -27,6 +30,7 @@ static_library("sync_wifi") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "network_identifier_unittest.cc",
     "pending_network_configuration_tracker_impl_unittest.cc",
     "test_specifics_generator.h",
     "wifi_configuration_bridge_unittest.cc",
@@ -34,6 +38,7 @@ source_set("unit_tests") {
   deps = [
     ":sync_wifi",
     "//base/test:test_support",
+    "//chromeos/network:network",
     "//components/sync:test_support",
     "//components/sync_preferences:test_support",
     "//testing/gtest",

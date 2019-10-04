@@ -182,7 +182,10 @@
         </div>
         <template is="dom-if" route-path="/help/details">
           <settings-subpage page-title="$i18n{aboutDetailedBuildInfo}">
-            <settings-detailed-build-info></settings-detailed-build-info>
+            <settings-detailed-build-info
+                eol-message-with-month-and-year=
+                    "[[eolMessageWithMonthAndYear_]]">
+            </settings-detailed-build-info>
           </settings-subpage>
         </template>
       </settings-animated-pages>

@@ -94,6 +94,10 @@ const base::Feature kEnableFileManagerFormatDialog{
 const base::Feature kEnableFileManagerPiexWasm{
     "PiexWasm", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables Device End Of Lifetime warning notifications.
+const base::Feature kEolWarningNotifications{"EolWarningNotifications",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enable or disable pointer lock for exo windows.
 const base::Feature kExoPointerLock{"ExoPointerLock",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

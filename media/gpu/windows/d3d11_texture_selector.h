@@ -17,6 +17,8 @@
 
 namespace media {
 
+class MediaLog;
+
 // Stores different pixel formats and DGXI formats, and checks for decoder
 // GUID support.
 class MEDIA_GPU_EXPORT TextureSelector {
@@ -32,7 +34,8 @@ class MEDIA_GPU_EXPORT TextureSelector {
   static std::unique_ptr<TextureSelector> Create(
       const gpu::GpuPreferences& gpu_preferences,
       const gpu::GpuDriverBugWorkarounds& workarounds,
-      const VideoDecoderConfig& config);
+      const VideoDecoderConfig& config,
+      MediaLog* media_log);
 
   bool SupportsDevice(Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device);
   ComD3D11Texture2D CreateOutputTexture(ComD3D11Device device, gfx::Size size);

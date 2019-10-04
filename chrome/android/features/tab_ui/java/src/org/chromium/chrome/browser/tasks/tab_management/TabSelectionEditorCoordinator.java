@@ -38,6 +38,11 @@ class TabSelectionEditorCoordinator {
         void show(List<Tab> tabs);
 
         /**
+         * Hides the TabSelectionEditor.
+         */
+        void hide();
+
+        /**
          * @return Whether or not the TabSelectionEditor consumed the event.
          */
         boolean handleBackPressed();
@@ -45,13 +50,14 @@ class TabSelectionEditorCoordinator {
         /**
          * Configure the Toolbar for TabSelectionEditor. The default button text is "Group".
          * @param actionButtonText Button text for the action button.
-         * @param actionButtonOnClickListener Click listener for the action button.
+         * @param actionProvider The {@link TabSelectionEditorActionProvider} that specifies the
+         *         action when action button gets clicked.
          * @param actionButtonEnablingThreshold The minimum threshold to enable the action button.
          *         If it's -1 use the default value.
          * @param navigationButtonOnClickListener Click listener for the navigation button.
          */
         void configureToolbar(@Nullable String actionButtonText,
-                @Nullable View.OnClickListener actionButtonOnClickListener,
+                @Nullable TabSelectionEditorActionProvider actionProvider,
                 int actionButtonEnablingThreshold,
                 @Nullable View.OnClickListener navigationButtonOnClickListener);
     }
@@ -67,7 +73,8 @@ class TabSelectionEditorCoordinator {
     private final TabSelectionEditorMediator mTabSelectionEditorMediator;
 
     public TabSelectionEditorCoordinator(Context context, View parentView,
-            TabModelSelector tabModelSelector, TabContentManager tabContentManager) {
+            TabModelSelector tabModelSelector, TabContentManager tabContentManager,
+            TabSelectionEditorLayout.TabSelectionEditorLayoutPositionProvider positionProvider) {
         mContext = context;
         mParentView = parentView;
         mTabModelSelector = tabModelSelector;
@@ -80,7 +87,8 @@ class TabSelectionEditorCoordinator {
                 .inflate(R.layout.tab_selection_editor_layout, null)
                 .findViewById(R.id.selectable_list);
         mTabSelectionEditorLayout.initialize(mParentView, mTabListCoordinator.getContainerView(),
-                mTabListCoordinator.getContainerView().getAdapter(), mSelectionDelegate);
+                mTabListCoordinator.getContainerView().getAdapter(), mSelectionDelegate,
+                positionProvider);
         mSelectionDelegate.setSelectionModeEnabledForZeroItems(true);
 
         mTabSelectionEditorLayoutChangeProcessor = PropertyModelChangeProcessor.create(
@@ -117,6 +125,7 @@ class TabSelectionEditorCoordinator {
      */
     public void destroy() {
         mTabListCoordinator.destroy();
+        mTabSelectionEditorLayout.destroy();
         mTabSelectionEditorMediator.destroy();
         mTabSelectionEditorLayoutChangeProcessor.destroy();
     }

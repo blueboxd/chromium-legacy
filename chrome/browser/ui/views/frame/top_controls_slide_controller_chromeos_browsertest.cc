@@ -24,6 +24,7 @@
 #include "chrome/browser/permissions/permission_request_impl.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
@@ -257,6 +258,12 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
     return test_controller_;
   }
 
+  // InProcessBrowserTest:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kWebUITabStrip);
+    InProcessBrowserTest::SetUp();
+  }
+
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
 
@@ -315,16 +322,14 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
     ASSERT_FALSE(root_view_layer);
 
     // The contents layer transform should be restored to identity.
-    gfx::Transform expected_transform;
-    DCHECK(
-        browser_view->contents_web_view()->holder()->GetNativeViewContainer());
-    ui::Layer* contents_container_layer = browser_view->contents_web_view()
-                                              ->holder()
-                                              ->GetNativeViewContainer()
-                                              ->layer();
-    ASSERT_TRUE(contents_container_layer);
-    CompareTranslations(expected_transform,
-                        contents_container_layer->transform());
+    const gfx::Transform expected_transform;
+    EXPECT_FALSE(browser_view->GetNativeViewHostsForTopControlsSlide().empty());
+    for (auto* host : browser_view->GetNativeViewHostsForTopControlsSlide()) {
+      ASSERT_TRUE(host->GetNativeViewContainer());
+      ASSERT_TRUE(host->GetNativeViewContainer()->layer());
+      CompareTranslations(expected_transform,
+                          host->GetNativeViewContainer()->layer()->transform());
+    }
 
     // The BrowserView layout should be adjusted properly:
     const gfx::Rect& top_container_bounds =
@@ -401,18 +406,14 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
     const float y_translation = top_controls_height * (shown_ratio - 1.f);
     expected_transform.Translate(0, y_translation);
 
-    ASSERT_TRUE(browser_view()
-                    ->contents_web_view()
-                    ->holder()
-                    ->GetNativeViewContainer());
-    ui::Layer* contents_container_layer = browser_view()
-                                              ->contents_web_view()
-                                              ->holder()
-                                              ->GetNativeViewContainer()
-                                              ->layer();
-    ASSERT_TRUE(contents_container_layer);
-    CompareTranslations(expected_transform,
-                        contents_container_layer->transform());
+    EXPECT_FALSE(
+        browser_view()->GetNativeViewHostsForTopControlsSlide().empty());
+    for (auto* host : browser_view()->GetNativeViewHostsForTopControlsSlide()) {
+      ASSERT_TRUE(host->GetNativeViewContainer());
+      ASSERT_TRUE(host->GetNativeViewContainer()->layer());
+      CompareTranslations(expected_transform,
+                          host->GetNativeViewContainer()->layer()->transform());
+    }
     CompareTranslations(expected_transform, root_view_layer->transform());
   }
 

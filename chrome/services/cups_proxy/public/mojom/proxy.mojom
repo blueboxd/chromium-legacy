@@ -27,5 +27,6 @@ interface CupsProxier {
   // returned headers and ipp_message.
   ProxyRequest@0(string method, string url, string version,
                  array<HttpHeader> headers, array<uint8> body) =>
-                 (array<HttpHeader> headers, array<uint8> ipp_message);
+                 (array<HttpHeader> headers, array<uint8> ipp_message,
+                 [MinVersion=1] int32 http_status_code);
 };

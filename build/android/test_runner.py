@@ -315,6 +315,11 @@ def AddEmulatorOptions(parser):
       help='Path to the avd config textpb. '
       '(See //tools/android/avd/proto/ for message definition'
       ' and existing textpb files.)')
+  parser.add_argument(
+      '--emulator-count',
+      type=int,
+      default=1,
+      help='Number of emulators to use.')
 
 
 def AddGTestOptions(parser):
@@ -417,6 +422,12 @@ def AddInstrumentationTestOptions(parser):
       dest='modules',
       help='Specify Android App Bundle modules to install in addition to the '
       'base module.')
+  parser.add_argument(
+      '--fake-module',
+      action='append',
+      dest='fake_modules',
+      help='Specify Android App Bundle modules to fake install in addition to '
+      'the real modules.')
   parser.add_argument(
       '--coverage-dir',
       type=os.path.realpath,

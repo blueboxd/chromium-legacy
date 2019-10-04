@@ -31,6 +31,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/shlwapi.h"
 #include "base/win/windows_version.h"
+#include "build/branding_buildflags.h"
 #include "chrome/app/chrome_watcher_client_win.h"
 #include "chrome/app/chrome_watcher_command_line_win.h"
 #include "chrome/browser/active_use_util.h"
@@ -275,7 +276,7 @@ class ChromiumDllLoader : public MainDllLoader {
 };
 
 MainDllLoader* MakeMainDllLoader() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return new ChromeDllLoader();
 #else
   return new ChromiumDllLoader();

@@ -21,7 +21,7 @@ constexpr float kProximityRatio = 1.0 / 3.0;
 }  // namespace
 // TODO(sunyunjia): Move the static functions to an anonymous namespace.
 
-SnapCoordinator::SnapCoordinator() : snap_container_map_() {}
+SnapCoordinator::SnapCoordinator() : snap_containers_() {}
 
 SnapCoordinator::~SnapCoordinator() = default;
 
@@ -44,13 +44,46 @@ static LayoutBox* FindSnapContainer(const LayoutBox& snap_area) {
   return box;
 }
 
-void SnapCoordinator::SnapContainerDidChange(LayoutBox& snap_container,
-                                             bool is_removed) {
-  if (is_removed) {
-    snap_container_map_.erase(&snap_container);
-    return;
-  }
+static ScrollableArea* ScrollableAreaForSnapping(const LayoutBox& layout_box) {
+  return layout_box.IsLayoutView()
+             ? layout_box.GetFrameView()->GetScrollableArea()
+             : layout_box.GetScrollableArea();
+}
 
+// Snap types are categorized according to the spec
+// https://drafts.csswg.org/css-scroll-snap-1/#snap-axis
+static cc::ScrollSnapType GetPhysicalSnapType(const LayoutBox& snap_container) {
+  cc::ScrollSnapType scroll_snap_type =
+      snap_container.Style()->GetScrollSnapType();
+  if (scroll_snap_type.axis == cc::SnapAxis::kInline) {
+    if (snap_container.Style()->IsHorizontalWritingMode())
+      scroll_snap_type.axis = cc::SnapAxis::kX;
+    else
+      scroll_snap_type.axis = cc::SnapAxis::kY;
+  }
+  if (scroll_snap_type.axis == cc::SnapAxis::kBlock) {
+    if (snap_container.Style()->IsHorizontalWritingMode())
+      scroll_snap_type.axis = cc::SnapAxis::kY;
+    else
+      scroll_snap_type.axis = cc::SnapAxis::kX;
+  }
+  // Writing mode does not affect the cases where axis is kX, kY or kBoth.
+  return scroll_snap_type;
+}
+
+void SnapCoordinator::AddSnapContainer(LayoutBox& snap_container) {
+  snap_containers_.insert(&snap_container);
+}
+
+void SnapCoordinator::RemoveSnapContainer(LayoutBox& snap_container) {
+  // TODO(majidvp): The snap areas assigned to this container may need to be
+  // re-assigned. http://crbug.com/1007456
+  snap_container.ClearSnapAreas();
+  snap_container.SetNeedsPaintPropertyUpdate();
+  snap_containers_.erase(&snap_container);
+}
+
+void SnapCoordinator::SnapContainerDidChange(LayoutBox& snap_container) {
   // Scroll snap properties have no effect on the document element instead they
   // are propagated to (See Document::PropagateStyleToViewport) and handled by
   // the LayoutView.
@@ -61,16 +94,15 @@ void SnapCoordinator::SnapContainerDidChange(LayoutBox& snap_container,
   bool is_scroll_container =
       snap_container.IsLayoutView() || snap_container.HasOverflowClip();
   if (!is_scroll_container) {
-    snap_container_map_.erase(&snap_container);
-    snap_container.ClearSnapAreas();
-    snap_container.SetNeedsPaintPropertyUpdate();
+    DCHECK(!ScrollableAreaForSnapping(snap_container));
+    DCHECK(!snap_containers_.Contains(&snap_container));
     return;
   }
 
   // Note that even if scroll snap type is 'none' we continue to maintain its
   // snap container entry as long as the element is a scroller. This is because
   // while the scroller does not snap, it still captures the snap areas in its
-  // subtree for whom it is the nearest  ancestor scroll container per spec [1].
+  // subtree for whom it is the nearest ancestor scroll container per spec [1].
   //
   // [1] https://drafts.csswg.org/css-scroll-snap/#overview
 
@@ -112,47 +144,22 @@ void SnapCoordinator::SnapAreaDidChange(LayoutBox& snap_area,
 }
 
 void SnapCoordinator::UpdateAllSnapContainerData() {
-  for (const auto& entry : snap_container_map_) {
-    UpdateSnapContainerData(*entry.key);
-  }
-}
-
-static ScrollableArea* ScrollableAreaForSnapping(const LayoutBox& layout_box) {
-  return layout_box.IsLayoutView()
-             ? layout_box.GetFrameView()->GetScrollableArea()
-             : layout_box.GetScrollableArea();
-}
-
-static cc::ScrollSnapType GetPhysicalSnapType(const LayoutBox& snap_container) {
-  cc::ScrollSnapType scroll_snap_type =
-      snap_container.Style()->GetScrollSnapType();
-  if (scroll_snap_type.axis == cc::SnapAxis::kInline) {
-    if (snap_container.Style()->IsHorizontalWritingMode())
-      scroll_snap_type.axis = cc::SnapAxis::kX;
-    else
-      scroll_snap_type.axis = cc::SnapAxis::kY;
-  }
-  if (scroll_snap_type.axis == cc::SnapAxis::kBlock) {
-    if (snap_container.Style()->IsHorizontalWritingMode())
-      scroll_snap_type.axis = cc::SnapAxis::kY;
-    else
-      scroll_snap_type.axis = cc::SnapAxis::kX;
-  }
-  // Writing mode does not affect the cases where axis kX, kY or kBoth.
-  return scroll_snap_type;
+  for (auto* container : snap_containers_)
+    UpdateSnapContainerData(*container);
 }
 
 void SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {
   cc::SnapContainerData snap_container_data(
       GetPhysicalSnapType(snap_container));
 
+  ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
+  DCHECK(scrollable_area);
+  DCHECK(snap_containers_.Contains(&snap_container));
+
   // When snap type is 'none' we don't perform any snapping so there is no need
   // to keep the area data up to date. So just update the type and skip updating
   // areas as an optimization.
   if (!snap_container_data.scroll_snap_type().is_none) {
-    ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
-    if (!scrollable_area)
-      return;
     FloatPoint max_position = scrollable_area->ScrollOffsetToPosition(
         scrollable_area->MaximumScrollOffset());
     snap_container_data.set_max_position(
@@ -210,11 +217,12 @@ void SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {
     }
   }
 
-  auto old_snap_container_data = GetSnapContainerData(snap_container);
-  if (old_snap_container_data != snap_container_data)
+  const auto* old_snap_container_data = scrollable_area->GetSnapContainerData();
+  if (!old_snap_container_data ||
+      *old_snap_container_data != snap_container_data)
     snap_container.SetNeedsPaintPropertyUpdate();
 
-  snap_container_map_.Set(&snap_container, snap_container_data);
+  scrollable_area->SetSnapContainerData(snap_container_data);
 }
 
 static cc::ScrollSnapAlign GetPhysicalAlignment(
@@ -283,13 +291,14 @@ cc::SnapAreaData SnapCoordinator::CalculateSnapAreaData(
 base::Optional<FloatPoint> SnapCoordinator::GetSnapPosition(
     const LayoutBox& snap_container,
     const cc::SnapSelectionStrategy& strategy) const {
-  // const_cast is safe here because we only need to modify the type to match
-  // the key type, not actually mutating the object.
-  auto iter = snap_container_map_.find(&const_cast<LayoutBox&>(snap_container));
-  if (iter == snap_container_map_.end())
+  const auto* optional_data =
+      snap_container.GetScrollableArea()
+          ? snap_container.GetScrollableArea()->GetSnapContainerData()
+          : nullptr;
+  if (!optional_data)
     return base::nullopt;
 
-  const cc::SnapContainerData& data = iter->value;
+  const cc::SnapContainerData& data = *optional_data;
   if (!data.size())
     return base::nullopt;
 
@@ -358,7 +367,7 @@ bool SnapCoordinator::PerformSnapping(
 
   base::Optional<FloatPoint> snap_point =
       GetSnapPosition(snap_container, strategy);
-  if (!snap_point.has_value())
+  if (!snap_point)
     return false;
 
   scrollable_area->CancelScrollAnimation();
@@ -369,21 +378,10 @@ bool SnapCoordinator::PerformSnapping(
   return true;
 }
 
-base::Optional<cc::SnapContainerData> SnapCoordinator::GetSnapContainerData(
-    const LayoutBox& snap_container) const {
-  // const_cast is safe here because we only need to modify the type to match
-  // the key type, not actually mutating the object.
-  auto iter = snap_container_map_.find(&const_cast<LayoutBox&>(snap_container));
-  if (iter != snap_container_map_.end()) {
-    return iter->value;
-  }
-  return base::nullopt;
-}
-
 #ifndef NDEBUG
 
 void SnapCoordinator::ShowSnapAreaMap() {
-  for (auto* const container : snap_container_map_.Keys())
+  for (auto* const container : snap_containers_)
     ShowSnapAreasFor(container);
 }
 
@@ -397,12 +395,12 @@ void SnapCoordinator::ShowSnapAreasFor(const LayoutBox* container) {
 }
 
 void SnapCoordinator::ShowSnapDataFor(const LayoutBox* snap_container) {
-  // const_cast is safe here because we only need to modify the type to match
-  // the key type, not actually mutating the object.
-  auto iter = snap_container_map_.find(const_cast<LayoutBox*>(snap_container));
-  if (iter == snap_container_map_.end())
-    return;
-  LOG(INFO) << iter->value;
+  const auto* optional_data =
+      ScrollableAreaForSnapping(*snap_container)
+          ? ScrollableAreaForSnapping(*snap_container)->GetSnapContainerData()
+          : nullptr;
+  if (optional_data)
+    LOG(INFO) << *optional_data;
 }
 
 #endif

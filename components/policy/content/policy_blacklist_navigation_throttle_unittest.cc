@@ -222,7 +222,7 @@ TEST_F(PolicyBlacklistNavigationThrottleTest, PolicyChange) {
   }
 }
 
-TEST_F(PolicyBlacklistNavigationThrottleTest, Failure) {
+TEST_F(PolicyBlacklistNavigationThrottleTest, DISABLED_Failure) {
   SetSafeSitesFilterBehavior(SafeSitesFilterBehavior::kSafeSitesFilterEnabled);
   stub_url_checker_.SetUpFailedResponse();
 

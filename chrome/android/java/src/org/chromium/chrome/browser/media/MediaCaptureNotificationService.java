@@ -243,8 +243,12 @@ public class MediaCaptureNotificationService extends Service {
                                 R.string.media_notification_link_text, url));
             }
 
-            builder.setContentTitle(
-                    ContextUtils.getApplicationContext().getString(R.string.app_name));
+            // From Android N, notification by default has the app name and title should not be the
+            // same as app name.
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                builder.setContentTitle(
+                        ContextUtils.getApplicationContext().getString(R.string.app_name));
+            }
             contentText = descriptionText.toString();
         }
         builder.setContentText(contentText);

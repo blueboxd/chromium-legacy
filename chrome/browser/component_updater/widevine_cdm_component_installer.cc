@@ -34,6 +34,10 @@
 #include "third_party/widevine/cdm/buildflags.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
+#if defined(OS_LINUX)
+#include "chrome/common/media/component_widevine_cdm_hint_file_linux.h"
+#endif
+
 #if !BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
 #error This file should only be compiled when Widevine CDM component is enabled
 #endif
@@ -83,6 +87,11 @@ base::FilePath GetPlatformDirectory(const base::FilePath& base_path) {
   return base_path.AppendASCII("_platform_specific").AppendASCII(platform_arch);
 }
 
+#if !defined(OS_LINUX)
+// On Linux the Widevine CDM is loaded at startup before the zygote is locked
+// down. As a result there is no need to register the CDM with Chrome as it
+// can't be used until Chrome is restarted. Instead we simply update the hint
+// file so that startup can load this new version next time.
 void RegisterWidevineCdmWithChrome(
     const base::Version& cdm_version,
     const base::FilePath& cdm_install_dir,
@@ -107,6 +116,7 @@ void RegisterWidevineCdmWithChrome(
                        cdm_path, kWidevineCdmFileSystemId,
                        std::move(capability), kWidevineKeySystem, false));
 }
+#endif  // !defined(OS_LINUX)
 
 }  // namespace
 
@@ -234,11 +244,19 @@ void WidevineCdmComponentInstallerPolicy::UpdateCdmPath(
     return;
   }
 
+#if defined(OS_LINUX)
+  VLOG(1) << "Updating hint file with Widevine CDM " << cdm_version;
+
+  // This is running on a thread that allows IO, so simply update the hint file.
+  if (!UpdateWidevineCdmHintFile(cdm_install_dir))
+    PLOG(WARNING) << "Failed to update Widevine CDM hint path.";
+#else
   base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
       ->PostTask(
           FROM_HERE,
           base::BindOnce(&RegisterWidevineCdmWithChrome, cdm_version,
                          absolute_cdm_install_dir, base::Passed(&manifest)));
+#endif
 }
 
 void RegisterWidevineCdmComponent(ComponentUpdateService* cus) {

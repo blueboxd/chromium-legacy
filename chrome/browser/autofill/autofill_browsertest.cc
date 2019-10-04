@@ -45,7 +45,6 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -215,9 +214,6 @@ class AutofillTest : public InProcessBrowserTest {
   content::WebContents* web_contents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
-
- private:
-  net::TestURLFetcherFactory url_fetcher_factory_;
 };
 
 // Test that Autofill aggregates a minimum valid profile.

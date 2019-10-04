@@ -166,6 +166,20 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     }
     bool HasBidiLevel() const { return bidi_level != 0xff; }
     bool IsPlaceholder() const { return !HasFragment() && !HasBidiLevel(); }
+    bool IsOpaqueToBidiReordering() const {
+      if (IsPlaceholder())
+        return true;
+      // Skip all inline boxes. Fragments for inline boxes maybe created earlier
+      // if they have no children.
+      if (layout_result) {
+        const LayoutObject* layout_object =
+            layout_result->PhysicalFragment().GetLayoutObject();
+        DCHECK(layout_object);
+        if (layout_object->IsLayoutInline())
+          return true;
+      }
+      return false;
+    }
     const NGPhysicalFragment* PhysicalFragment() const {
       if (layout_result)
         return &layout_result->PhysicalFragment();

@@ -16,7 +16,7 @@ class TestAboutPageBrowserProxy extends TestBrowserProxy {
       methodNames.push(
           'getChannelInfo', 'getVersionInfo', 'getRegulatoryInfo',
           'checkInternetConnection', 'getEnabledReleaseNotes',
-          'getHasEndOfLife', 'launchReleaseNotes', 'openOsHelpPage',
+          'getEndOfLifeInfo', 'launchReleaseNotes', 'openOsHelpPage',
           'refreshTPMFirmwareUpdateStatus', 'setChannel');
     }
 
@@ -52,8 +52,10 @@ class TestAboutPageBrowserProxy extends TestBrowserProxy {
         updateAvailable: false,
       };
 
-      /** @private {boolean|Promise} */
-      this.hasEndOfLife_ = false;
+      this.endOfLifeInfo_ = {
+        hasEndOfLife: false,
+        aboutPageEndOfLifeMessage: '',
+      };
     }
   }
 
@@ -130,9 +132,10 @@ if (cr.isChromeOS) {
     this.regulatoryInfo_ = regulatoryInfo;
   };
 
-  /** @param {boolean|Promise} hasEndOfLife */
-  TestAboutPageBrowserProxy.prototype.setHasEndOfLife = function(hasEndOfLife) {
-    this.hasEndOfLife_ = hasEndOfLife;
+  /** @param {!EndOfLifeInfo} endOfLifeInfo */
+  TestAboutPageBrowserProxy.prototype.setEndOfLifeInfo = function(
+      endOfLifeInfo) {
+    this.endOfLifeInfo_ = endOfLifeInfo;
   };
 
   /** @param {boolean|Promise} hasReleaseNotes */
@@ -178,9 +181,9 @@ if (cr.isChromeOS) {
   };
 
   /** @override */
-  TestAboutPageBrowserProxy.prototype.getHasEndOfLife = function() {
-    this.methodCalled('getHasEndOfLife');
-    return Promise.resolve(this.hasEndOfLife_);
+  TestAboutPageBrowserProxy.prototype.getEndOfLifeInfo = function() {
+    this.methodCalled('getEndOfLifeInfo');
+    return Promise.resolve(this.endOfLifeInfo_);
   };
 
   /** @override */

@@ -953,6 +953,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void SetFirstInlineFragment(NGPaintFragment*) final;
 
   void SetCachedLayoutResult(const NGLayoutResult&, const NGBreakToken*);
+  void ClearCachedLayoutResult();
   const NGLayoutResult* GetCachedLayoutResult() const {
     return cached_layout_result_.get();
   }

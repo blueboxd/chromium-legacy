@@ -70,6 +70,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -419,8 +420,8 @@ void AboutHandler::RegisterMessages() {
       base::BindRepeating(&AboutHandler::HandleRefreshTPMFirmwareUpdateStatus,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "getHasEndOfLife",
-      base::BindRepeating(&AboutHandler::HandleGetHasEndOfLife,
+      "getEndOfLifeInfo",
+      base::BindRepeating(&AboutHandler::HandleGetEndOfLifeInfo,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getEnabledReleaseNotes",
@@ -704,22 +705,31 @@ void AboutHandler::RefreshTPMFirmwareUpdateStatus(
   FireWebUIListener("tpm-firmware-update-status-changed", *event);
 }
 
-void AboutHandler::HandleGetHasEndOfLife(const base::ListValue* args) {
+void AboutHandler::HandleGetEndOfLifeInfo(const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
-  version_updater_->GetEolStatus(
-      base::BindOnce(&AboutHandler::OnGetEndOfLifeStatus,
-                     weak_factory_.GetWeakPtr(), callback_id));
+  version_updater_->GetEolInfo(base::BindOnce(&AboutHandler::OnGetEndOfLifeInfo,
+                                              weak_factory_.GetWeakPtr(),
+                                              callback_id));
 }
 
-void AboutHandler::OnGetEndOfLifeStatus(std::string callback_id,
-                                        update_engine::EndOfLifeStatus status) {
-  // Check for EndOfLifeStatus::kEol only because
-  // EndOfLifeStatus::kSecurityOnly state is no longer supported.
-  ResolveJavascriptCallback(
-      base::Value(callback_id),
-      base::Value(status == update_engine::EndOfLifeStatus::kEol));
+void AboutHandler::OnGetEndOfLifeInfo(
+    std::string callback_id,
+    chromeos::UpdateEngineClient::EolInfo eol_info) {
+  base::Value response(base::Value::Type::DICTIONARY);
+  if (!eol_info.eol_date.is_null()) {
+    response.SetBoolKey("hasEndOfLife", eol_info.eol_date <= base::Time::Now());
+    response.SetStringKey("aboutPageEndOfLifeMessage",
+                          l10n_util::GetStringFUTF16(
+                              IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_MESSAGE,
+                              base::TimeFormatMonthAndYear(eol_info.eol_date),
+                              base::ASCIIToUTF16(chrome::kEolNotificationURL)));
+  } else {
+    response.SetBoolKey("hasEndOfLife", false);
+    response.SetStringKey("aboutPageEndOfLifeMessage", "");
+  }
+  ResolveJavascriptCallback(base::Value(callback_id), response);
 }
 
 #endif  // defined(OS_CHROMEOS)

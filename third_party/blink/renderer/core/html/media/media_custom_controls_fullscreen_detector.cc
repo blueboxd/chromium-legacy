@@ -51,6 +51,7 @@ void MediaCustomControlsFullscreenDetector::Attach() {
       WTF::BindRepeating(
           &MediaCustomControlsFullscreenDetector::OnIntersectionChanged,
           WrapWeakPersistent(this)),
+      IntersectionObserver::kDeliverDuringPostLifecycleSteps,
       IntersectionObserver::kFractionOfTarget, 0, false, true);
 }
 

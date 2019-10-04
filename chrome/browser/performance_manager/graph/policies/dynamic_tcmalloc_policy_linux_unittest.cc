@@ -88,7 +88,7 @@ class DynamicTcmallocPolicyTest : public ::testing::Test {
     process_node_ = CreateNode<ProcessNodeImpl>();
     page_node_ = CreateNode<PageNodeImpl>();
     frame_node_ =
-        CreateNode<FrameNodeImpl>(process_node().get(), page_node().get());
+        graph()->CreateFrameNodeAutoId(process_node().get(), page_node().get());
 
     // Create a Process so this process node doesn't bail on Process.IsValid();
     const base::Process self = base::Process::Current();
@@ -119,7 +119,7 @@ class DynamicTcmallocPolicyTest : public ::testing::Test {
                                               std::forward<Args>(args)...);
   }
 
-  GraphImpl* graph() { return &graph_; }
+  TestGraphImpl* graph() { return &graph_; }
   content::BrowserTaskEnvironment* browser_env() { return &browser_env_; }
   TestNodeWrapper<ProcessNodeImpl>& process_node() { return process_node_; }
   TestNodeWrapper<PageNodeImpl>& page_node() { return page_node_; }
@@ -131,7 +131,7 @@ class DynamicTcmallocPolicyTest : public ::testing::Test {
 
  private:
   content::BrowserTaskEnvironment browser_env_;
-  GraphImpl graph_;
+  TestGraphImpl graph_;
   MockDynamicTcmallocPolicy* policy_ = nullptr;  // Not owned.
 
   TestNodeWrapper<ProcessNodeImpl> process_node_;

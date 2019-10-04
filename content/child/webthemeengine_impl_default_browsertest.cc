@@ -14,7 +14,8 @@ class WebThemeEngineImplDefaultBrowserTest : public ContentBrowserTest {
 };
 
 #if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(WebThemeEngineImplDefaultBrowserTest, GetSystemColor) {
+IN_PROC_BROWSER_TEST_F(WebThemeEngineImplDefaultBrowserTest,
+                       DISABLED_GetSystemColor) {
   GURL url(
       "data:text/html,"
       "<!doctype html><html>"

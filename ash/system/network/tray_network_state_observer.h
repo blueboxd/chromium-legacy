@@ -16,6 +16,9 @@ class TrayNetworkStateObserver : public base::CheckedObserver {
 
   // The list of networks changed. The frequency of this event is limited.
   virtual void NetworkListChanged() {}
+
+  // The list of VPN providers changed.
+  virtual void VpnProvidersChanged() {}
 };
 
 }  // namespace ash

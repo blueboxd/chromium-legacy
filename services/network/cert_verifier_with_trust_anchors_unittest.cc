@@ -43,17 +43,19 @@ class CertVerifierWithTrustAnchorsTest : public testing::Test {
     ASSERT_TRUE(test_nss_user_.constructed_successfully());
     test_nss_user_.FinishInit();
 
-    test_cert_db_.reset(new net::NSSCertDatabaseChromeOS(
+    test_cert_db_ = std::make_unique<net::NSSCertDatabaseChromeOS>(
         crypto::GetPublicSlotForChromeOSUser(test_nss_user_.username_hash()),
         crypto::GetPrivateSlotForChromeOSUser(
             test_nss_user_.username_hash(),
-            base::RepeatingCallback<void(crypto::ScopedPK11Slot)>())));
+            base::RepeatingCallback<void(crypto::ScopedPK11Slot)>()));
 
-    cert_verifier_.reset(new CertVerifierWithTrustAnchors(base::BindRepeating(
-        &CertVerifierWithTrustAnchorsTest::OnTrustAnchorUsed,
-        base::Unretained(this))));
-    cert_verifier_->InitializeOnIOThread(new network::CertVerifyProcChromeOS(
-        crypto::GetPublicSlotForChromeOSUser(test_nss_user_.username_hash())));
+    cert_verifier_ =
+        std::make_unique<CertVerifierWithTrustAnchors>(base::BindRepeating(
+            &CertVerifierWithTrustAnchorsTest::OnTrustAnchorUsed,
+            base::Unretained(this)));
+    cert_verify_proc_ = base::MakeRefCounted<network::CertVerifyProcChromeOS>(
+        crypto::GetPublicSlotForChromeOSUser(test_nss_user_.username_hash()));
+    cert_verifier_->InitializeOnIOThread(cert_verify_proc_);
 
     test_ca_cert_ = LoadCertificate("root_ca_cert.pem", net::CA_CERT);
     ASSERT_TRUE(test_ca_cert_);
@@ -89,9 +91,7 @@ class CertVerifierWithTrustAnchorsTest : public testing::Test {
   }
 
   bool SupportsAdditionalTrustAnchors() {
-    scoped_refptr<net::CertVerifyProc> proc =
-        net::CertVerifyProc::CreateDefault(/*cert_net_fetcher=*/nullptr);
-    return proc->SupportsAdditionalTrustAnchors();
+    return cert_verify_proc_->SupportsAdditionalTrustAnchors();
   }
 
   // Returns whether |cert_verifier| signalled usage of one of the additional
@@ -110,6 +110,7 @@ class CertVerifierWithTrustAnchorsTest : public testing::Test {
   net::ScopedCERTCertificateList test_ca_cert_list_;
   std::unique_ptr<net::NSSCertDatabaseChromeOS> test_cert_db_;
   std::unique_ptr<CertVerifierWithTrustAnchors> cert_verifier_;
+  scoped_refptr<net::CertVerifyProc> cert_verify_proc_;
 
  private:
   void OnTrustAnchorUsed() { trust_anchor_used_ = true; }

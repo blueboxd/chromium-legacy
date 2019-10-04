@@ -67,7 +67,7 @@ const base::Feature kTabOutlinesInLowContrastThemes{
 // Enables a more prominent active tab title in dark mode to aid with
 // accessibility.
 const base::Feature kProminentDarkModeActiveTabTitle{
-    "ProminentDarkModeActiveTabTitle", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ProminentDarkModeActiveTabTitle", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables a web-based separator that's only used for performance testing. See
 // https://crbug.com/993502.

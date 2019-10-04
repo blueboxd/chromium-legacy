@@ -43,6 +43,9 @@ class CastComponent : public WebComponent,
   CastComponent(CastRunner* runner, CastComponentParams params);
   ~CastComponent() override;
 
+  // WebComponent overrides.
+  void StartComponent() override;
+
  private:
   // TODO(crbug.com/953958): Remove this.
   void InitializeCastPlatformBindings();
@@ -63,9 +66,10 @@ class CastComponent : public WebComponent,
   std::unique_ptr<cr_fuchsia::AgentManager> agent_manager_;
   chromium::cast::ApplicationConfig application_config_;
   chromium::cast::UrlRequestRewriteRulesProviderPtr rewrite_rules_provider_;
+  std::vector<fuchsia::web::UrlRequestRewriteRule> initial_rewrite_rules_;
 
   bool constructor_active_ = false;
-  NamedMessagePortConnector connector_;
+  std::unique_ptr<NamedMessagePortConnector> connector_;
   std::unique_ptr<ApiBindingsClient> api_bindings_client_;
   std::unique_ptr<ApplicationControllerImpl> application_controller_;
 

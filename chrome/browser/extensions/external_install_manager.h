@@ -34,6 +34,9 @@ class ExternalInstallManager : public ExtensionRegistryObserver,
                          bool is_first_run);
   ~ExternalInstallManager() override;
 
+  // Called when the associated profile will be destroyed.
+  void Shutdown();
+
   // Returns true if prompting for external extensions is enabled.
   static bool IsPromptingEnabled();
 

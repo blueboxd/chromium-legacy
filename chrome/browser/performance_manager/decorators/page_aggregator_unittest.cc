@@ -27,7 +27,7 @@ class PageAggregatorTest : public GraphTestHarness {
 };
 
 void ExpectInitialOriginTrialFreezingPolicyWorks(
-    GraphImpl* mock_graph,
+    TestGraphImpl* mock_graph,
     InterventionPolicy f0_policy,
     InterventionPolicy f1_policy,
     InterventionPolicy f0_policy_aggregated,
@@ -42,8 +42,8 @@ void ExpectInitialOriginTrialFreezingPolicyWorks(
 
   // Create an initial frame. Expect the policy to be |f0_policy_aggregated|
   // when it is made current.
-  TestNodeWrapper<FrameNodeImpl> f0 = TestNodeWrapper<FrameNodeImpl>::Create(
-      mock_graph, process.get(), page.get());
+  TestNodeWrapper<FrameNodeImpl> f0 =
+      mock_graph->CreateFrameNodeAutoId(process.get(), page.get());
   f0->SetOriginTrialFreezePolicy(f0_policy);
   EXPECT_EQ(InterventionPolicy::kDefault, page->origin_trial_freeze_policy());
   f0->SetIsCurrent(true);
@@ -51,8 +51,8 @@ void ExpectInitialOriginTrialFreezingPolicyWorks(
 
   // Create a second frame and expect the page policy to be
   // |f0f1_policy_aggregated| when it is made current.
-  TestNodeWrapper<FrameNodeImpl> f1 = TestNodeWrapper<FrameNodeImpl>::Create(
-      mock_graph, process.get(), page.get(), f0.get(), 1);
+  TestNodeWrapper<FrameNodeImpl> f1 =
+      mock_graph->CreateFrameNodeAutoId(process.get(), page.get(), f0.get(), 1);
   f1->SetOriginTrialFreezePolicy(f1_policy);
   f1->SetIsCurrent(true);
   EXPECT_EQ(f0f1_policy_aggregated, page->origin_trial_freeze_policy());
@@ -189,8 +189,8 @@ TEST_F(PageAggregatorTest, OriginTrialFreezingPolicyChanges) {
       TestNodeWrapper<ProcessNodeImpl>::Create(graph());
   TestNodeWrapper<PageNodeImpl> page =
       TestNodeWrapper<PageNodeImpl>::Create(graph());
-  TestNodeWrapper<FrameNodeImpl> frame = TestNodeWrapper<FrameNodeImpl>::Create(
-      graph(), process.get(), page.get());
+  TestNodeWrapper<FrameNodeImpl> frame =
+      graph()->CreateFrameNodeAutoId(process.get(), page.get());
   frame->SetIsCurrent(true);
 
   EXPECT_EQ(InterventionPolicy::kUnknown, page->origin_trial_freeze_policy());

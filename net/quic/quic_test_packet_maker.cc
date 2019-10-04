@@ -164,10 +164,11 @@ QuicTestPacketMaker::MakeConnectivityProbingPacket(uint64_t num,
   quic::QuicFramer framer(quic::test::SupportedVersions(version_),
                           clock_->Now(), perspective_,
                           quic::kQuicDefaultConnectionIdLength);
-  framer.SetInitialObfuscators(perspective_ == quic::Perspective::IS_CLIENT
-                                   ? header_.destination_connection_id
-                                   : header_.source_connection_id);
-  if (encryption_level_ != quic::ENCRYPTION_INITIAL) {
+  if (encryption_level_ == quic::ENCRYPTION_INITIAL) {
+    framer.SetInitialObfuscators(perspective_ == quic::Perspective::IS_CLIENT
+                                     ? header_.destination_connection_id
+                                     : header_.source_connection_id);
+  } else {
     framer.SetEncrypter(encryption_level_,
                         std::make_unique<quic::NullEncrypter>(perspective_));
   }
@@ -626,10 +627,11 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
   quic::QuicFramer framer(quic::test::SupportedVersions(version_),
                           clock_->Now(), perspective_,
                           quic::kQuicDefaultConnectionIdLength);
-  framer.SetInitialObfuscators(perspective_ == quic::Perspective::IS_CLIENT
-                                   ? header_.destination_connection_id
-                                   : header_.source_connection_id);
-  if (encryption_level_ != quic::ENCRYPTION_INITIAL) {
+  if (encryption_level_ == quic::ENCRYPTION_INITIAL) {
+    framer.SetInitialObfuscators(perspective_ == quic::Perspective::IS_CLIENT
+                                     ? header_.destination_connection_id
+                                     : header_.source_connection_id);
+  } else {
     framer.SetEncrypter(encryption_level_,
                         std::make_unique<quic::NullEncrypter>(perspective_));
   }
@@ -1101,10 +1103,11 @@ QuicTestPacketMaker::MakeMultipleFramesPacket(
   quic::QuicFramer framer(quic::test::SupportedVersions(version_),
                           clock_->Now(), perspective_,
                           quic::kQuicDefaultConnectionIdLength);
-  framer.SetInitialObfuscators(perspective_ == quic::Perspective::IS_CLIENT
-                                   ? header_.destination_connection_id
-                                   : header_.source_connection_id);
-  if (encryption_level_ != quic::ENCRYPTION_INITIAL) {
+  if (encryption_level_ == quic::ENCRYPTION_INITIAL) {
+    framer.SetInitialObfuscators(perspective_ == quic::Perspective::IS_CLIENT
+                                     ? header_.destination_connection_id
+                                     : header_.source_connection_id);
+  } else {
     framer.SetEncrypter(encryption_level_,
                         std::make_unique<quic::NullEncrypter>(perspective_));
   }

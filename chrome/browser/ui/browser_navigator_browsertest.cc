@@ -1571,6 +1571,33 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       NavigateFromNoTabStripWindowToOptions) {
+  {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
+    ShowSettings(browser());
+    observer.Wait();
+  }
+  {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
+    chrome::AddSelectedTabWithURL(browser(), GetGoogleURL(),
+                                  ui::PAGE_TRANSITION_LINK);
+    observer.Wait();
+  }
+  Browser* app_browser = CreateBrowserForApp("TestApp", browser()->profile());
+
+  // This load should cause a window and tab switch.
+  ShowSingletonTab(app_browser, GetSettingsURL());
+
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(GetSettingsURL(),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, CloseSingletonTab) {
   for (int i = 0; i < 2; ++i) {
     content::WindowedNotificationObserver observer(

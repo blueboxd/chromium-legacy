@@ -14,8 +14,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/fake_oauth_token_getter.h"
 #include "remoting/host/gcd_rest_client.h"
@@ -67,7 +65,6 @@ class GcdStateUpdaterTest : public testing::Test {
  protected:
   base::test::TaskEnvironment task_environment_;
   base::SimpleTestClock test_clock_;
-  net::TestURLFetcherFactory url_fetcher_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>
       test_shared_url_loader_factory_;

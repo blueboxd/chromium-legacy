@@ -14,7 +14,7 @@ namespace {
 sync_pb::WifiConfigurationSpecificsData CreateSpecifics(
     const std::string& ssid) {
   sync_pb::WifiConfigurationSpecificsData specifics;
-  specifics.set_ssid(ssid);
+  specifics.set_hex_ssid(ssid);
   specifics.set_security_type(
       sync_pb::WifiConfigurationSpecificsData::SECURITY_TYPE_PSK);
   specifics.set_passphrase("password");

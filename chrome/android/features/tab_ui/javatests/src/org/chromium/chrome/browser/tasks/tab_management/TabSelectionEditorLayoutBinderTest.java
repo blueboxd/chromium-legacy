@@ -47,6 +47,8 @@ public class TabSelectionEditorLayoutBinderTest extends DummyUiActivityTestCase 
         super.setUpTest();
 
         ViewGroup view = new LinearLayout(getActivity());
+        TabSelectionEditorLayout.TabSelectionEditorLayoutPositionProvider positionProvider =
+                () -> null;
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             getActivity().setContentView(view);
@@ -68,7 +70,7 @@ public class TabSelectionEditorLayoutBinderTest extends DummyUiActivityTestCase 
                 public int getItemCount() {
                     return 0;
                 }
-            }, mSelectionDelegate);
+            }, mSelectionDelegate, positionProvider);
         });
         mMCP = PropertyModelChangeProcessor.create(
                 mModel, mEditorLayoutView, TabSelectionEditorLayoutBinder::bind);

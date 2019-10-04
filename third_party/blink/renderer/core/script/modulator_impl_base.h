@@ -41,6 +41,7 @@ class ModulatorImplBase : public Modulator {
 
   bool IsScriptingDisabled() const override;
 
+  bool ImportMapsEnabled() const override;
   bool BuiltInModuleInfraEnabled() const override;
   bool BuiltInModuleEnabled(layered_api::Module) const override;
   void BuiltInModuleUseCount(layered_api::Module) const override;

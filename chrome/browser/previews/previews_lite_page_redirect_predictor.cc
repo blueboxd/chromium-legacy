@@ -74,18 +74,17 @@ bool PreviewsLitePageRedirectPredictor::ECTIsSlow() const {
   if (!g_browser_process->network_quality_tracker())
     return false;
 
-  switch (g_browser_process->network_quality_tracker()
-              ->GetEffectiveConnectionType()) {
-    case net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
-    case net::EFFECTIVE_CONNECTION_TYPE_2G:
-      return true;
-    case net::EFFECTIVE_CONNECTION_TYPE_3G:
-    case net::EFFECTIVE_CONNECTION_TYPE_4G:
-    case net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
-    case net::EFFECTIVE_CONNECTION_TYPE_OFFLINE:
-    case net::EFFECTIVE_CONNECTION_TYPE_LAST:
-      return false;
+  net::EffectiveConnectionType ect =
+      g_browser_process->network_quality_tracker()
+          ->GetEffectiveConnectionType();
+
+  if (ect == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN ||
+      ect == net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+    return false;
   }
+
+  return ect <= previews::params::
+                    LitePageRedirectPreviewPreresolvePreconnectECTThreshold();
 }
 
 bool PreviewsLitePageRedirectPredictor::PageIsBlacklisted(

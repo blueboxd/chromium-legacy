@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "chromeos/components/sync_wifi/network_identifier.h"
 #include "components/sync/protocol/wifi_configuration_specifics.pb.h"
 
 namespace sync_wifi {
@@ -19,7 +20,7 @@ namespace sync_wifi {
 class PendingNetworkConfigurationUpdate {
  public:
   PendingNetworkConfigurationUpdate(
-      const std::string& ssid,
+      const NetworkIdentifier& id,
       const std::string& change_guid,
       const base::Optional<sync_pb::WifiConfigurationSpecificsData>& specifics,
       int completed_attempts);
@@ -27,8 +28,8 @@ class PendingNetworkConfigurationUpdate {
       const PendingNetworkConfigurationUpdate& update);
   virtual ~PendingNetworkConfigurationUpdate();
 
-  // The SSID of the network.
-  const std::string& ssid() const { return ssid_; }
+  // The identifier for the network.
+  const NetworkIdentifier& id() const { return id_; }
 
   // A unique ID for each change.
   const std::string& change_guid() const { return change_guid_; }
@@ -46,7 +47,7 @@ class PendingNetworkConfigurationUpdate {
   bool IsDeleteOperation() const;
 
  private:
-  const std::string ssid_;
+  const NetworkIdentifier id_;
   const std::string change_guid_;
   const base::Optional<sync_pb::WifiConfigurationSpecificsData> specifics_;
   int completed_attempts_;

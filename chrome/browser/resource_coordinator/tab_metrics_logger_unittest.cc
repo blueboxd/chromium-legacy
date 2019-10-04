@@ -406,8 +406,6 @@ TEST_F(TabMetricsLoggerUKMTest, LogForegroundedOrClosedMetrics) {
   foc_metrics.is_foregrounded = false;
   foc_metrics.is_discarded = true;
   foc_metrics.time_from_backgrounded = 1234;
-  foc_metrics.mru_index = 4;
-  foc_metrics.total_tab_count = 7;
   foc_metrics.label_id = 5678;
 
   GetLogger()->LogForegroundedOrClosedMetrics(GetSourceId(), foc_metrics);
@@ -425,10 +423,8 @@ TEST_F(TabMetricsLoggerUKMTest, LogForegroundedOrClosedMetrics) {
                                 {"IsDiscarded", foc_metrics.is_discarded},
                                 {"IsForegrounded", foc_metrics.is_foregrounded},
                                 {"LabelId", foc_metrics.label_id},
-                                {"MRUIndex", foc_metrics.mru_index},
                                 {"TimeFromBackgrounded",
                                  foc_metrics.time_from_backgrounded},
-                                {"TotalTabCount", foc_metrics.total_tab_count},
                             });
 }
 

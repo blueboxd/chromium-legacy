@@ -52,7 +52,7 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   ~AppListPresenterImpl() override;
 
   // Returns app list window or NULL if it is not visible.
-  aura::Window* GetWindow();
+  aura::Window* GetWindow() const;
 
   // Returns app list view if one exists, or NULL otherwise.
   AppListView* GetView() { return view_; }
@@ -83,8 +83,13 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
                                  app_list::AppListShowSource show_source,
                                  base::TimeTicks event_time_stamp);
 
-  // Returns current visibility of the app list.
-  bool IsVisible() const;
+  // Returns current visibility of the app list. Deprecated, use
+  // |IsAtLeastPartiallyVisible| instead.
+  bool IsVisibleDeprecated() const;
+
+  // Returns whether the app list is visible. This will only return false if
+  // the app list is entirely occluded.
+  bool IsAtLeastPartiallyVisible() const;
 
   // Returns target visibility. This may differ from IsVisible() if a visibility
   // transition is in progress.

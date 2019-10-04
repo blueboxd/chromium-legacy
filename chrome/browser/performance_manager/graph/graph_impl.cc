@@ -71,8 +71,9 @@ GraphImpl::~GraphImpl() {
   DCHECK(process_node_observers_.empty());
   DCHECK(system_node_observers_.empty());
 
-  // All process nodes should have been removed already.
+  // All process and frame nodes should have been removed already.
   DCHECK(processes_by_pid_.empty());
+  DCHECK(frames_by_id_.empty());
 
   // All nodes should have been removed.
   DCHECK(nodes_.empty());
@@ -327,13 +328,24 @@ bool GraphImpl::NodeInGraph(const NodeBase* node) {
   return it != nodes_.end();
 }
 
-ProcessNodeImpl* GraphImpl::GetProcessNodeByPid(base::ProcessId pid) {
+ProcessNodeImpl* GraphImpl::GetProcessNodeByPid(base::ProcessId pid) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = processes_by_pid_.find(pid);
   if (it == processes_by_pid_.end())
     return nullptr;
 
-  return ProcessNodeImpl::FromNodeBase(it->second);
+  return it->second;
+}
+
+FrameNodeImpl* GraphImpl::GetFrameNodeById(int render_process_id,
+                                           int render_frame_id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto it =
+      frames_by_id_.find(ProcessAndFrameId(render_process_id, render_frame_id));
+  if (it == frames_by_id_.end())
+    return nullptr;
+
+  return it->second;
 }
 
 std::vector<ProcessNodeImpl*> GraphImpl::GetAllProcessNodeImpls() const {
@@ -368,6 +380,16 @@ size_t GraphImpl::GetNodeAttachedDataCountForTesting(const Node* node,
   }
 
   return count;
+}
+
+GraphImpl::ProcessAndFrameId::ProcessAndFrameId(int render_process_id,
+                                                int render_frame_id)
+    : render_process_id(render_process_id), render_frame_id(render_frame_id) {}
+
+bool GraphImpl::ProcessAndFrameId::operator<(
+    const ProcessAndFrameId& other) const {
+  return std::tie(render_process_id, render_frame_id) <
+         std::tie(other.render_process_id, other.render_frame_id);
 }
 
 void GraphImpl::AddNewNode(NodeBase* new_node) {
@@ -412,6 +434,23 @@ void GraphImpl::BeforeProcessPidChange(ProcessNodeImpl* process,
   }
   if (new_pid != base::kNullProcessId)
     processes_by_pid_[new_pid] = process;
+}
+
+void GraphImpl::RegisterFrameNodeForId(int render_process_id,
+                                       int render_frame_id,
+                                       FrameNodeImpl* frame_node) {
+  auto insert_result = frames_by_id_.insert(
+      {ProcessAndFrameId(render_process_id, render_frame_id), frame_node});
+  DCHECK(insert_result.second);
+}
+
+void GraphImpl::UnregisterFrameNodeForId(int render_process_id,
+                                         int render_frame_id,
+                                         FrameNodeImpl* frame_node) {
+  const ProcessAndFrameId process_and_frame_id(render_process_id,
+                                               render_frame_id);
+  DCHECK_EQ(frames_by_id_.find(process_and_frame_id)->second, frame_node);
+  frames_by_id_.erase(process_and_frame_id);
 }
 
 template <typename NodeType, typename ReturnNodeType>

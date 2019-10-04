@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/components/sync_wifi/synced_network_updater.h"
 #include "chromeos/components/sync_wifi/test_specifics_generator.h"
 #include "components/sync/model/entity_change.h"
@@ -46,7 +47,7 @@ std::unique_ptr<syncer::EntityData> GenerateWifiEntityData(
   entity_data->specifics.mutable_wifi_configuration()
       ->mutable_client_only_encrypted_data()
       ->CopyFrom(data);
-  entity_data->name = data.ssid();
+  entity_data->name = data.hex_ssid();
   return entity_data;
 }
 
@@ -58,7 +59,7 @@ bool VectorContainsSsid(
     const std::vector<sync_pb::WifiConfigurationSpecificsData>& v,
     std::string s) {
   for (sync_pb::WifiConfigurationSpecificsData specifics : v) {
-    if (specifics.ssid() == s)
+    if (specifics.hex_ssid() == s)
       return true;
   }
   return false;
@@ -74,7 +75,7 @@ class TestSyncedNetworkUpdater : public SyncedNetworkUpdater {
     return add_update_calls_;
   }
 
-  const std::vector<std::string>& remove_calls() { return remove_calls_; }
+  const std::vector<NetworkIdentifier>& remove_calls() { return remove_calls_; }
 
  private:
   void AddOrUpdateNetwork(
@@ -82,12 +83,12 @@ class TestSyncedNetworkUpdater : public SyncedNetworkUpdater {
     add_update_calls_.push_back(specifics);
   }
 
-  void RemoveNetwork(const std::string& ssid) override {
-    remove_calls_.push_back(ssid);
+  void RemoveNetwork(const NetworkIdentifier& id) override {
+    remove_calls_.push_back(id);
   }
 
   std::vector<sync_pb::WifiConfigurationSpecificsData> add_update_calls_;
-  std::vector<std::string> remove_calls_;
+  std::vector<NetworkIdentifier> remove_calls_;
 };
 
 class WifiConfigurationBridgeTest : public testing::Test {
@@ -117,10 +118,10 @@ class WifiConfigurationBridgeTest : public testing::Test {
       specifics.mutable_client_only_encrypted_data()->CopyFrom(data);
       entity_data->specifics.mutable_wifi_configuration()->CopyFrom(specifics);
 
-      entity_data->name = data.ssid();
+      entity_data->name = data.hex_ssid();
 
-      changes.push_back(
-          syncer::EntityChange::CreateAdd(data.ssid(), std::move(entity_data)));
+      changes.push_back(syncer::EntityChange::CreateAdd(
+          data.hex_ssid(), std::move(entity_data)));
     }
     return changes;
   }
@@ -217,11 +218,12 @@ TEST_F(WifiConfigurationBridgeTest, ApplySyncChangesOneAdd) {
 
 TEST_F(WifiConfigurationBridgeTest, ApplySyncChangesOneDeletion) {
   WifiConfigurationSpecificsData entry = CreateSpecifics(kSsidMeow);
+  NetworkIdentifier id = NetworkIdentifier::FromProto(entry);
 
   syncer::EntityChangeList add_changes;
 
   add_changes.push_back(syncer::EntityChange::CreateAdd(
-      kSsidMeow, GenerateWifiEntityData(entry)));
+      id.SerializeToString(), GenerateWifiEntityData(entry)));
 
   bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
                              std::move(add_changes));
@@ -235,16 +237,17 @@ TEST_F(WifiConfigurationBridgeTest, ApplySyncChangesOneDeletion) {
   EXPECT_TRUE(VectorContainsSsid(networks, kSsidMeow));
 
   syncer::EntityChangeList delete_changes;
-  delete_changes.push_back(syncer::EntityChange::CreateDelete(kSsidMeow));
+  delete_changes.push_back(
+      syncer::EntityChange::CreateDelete(id.SerializeToString()));
 
   bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
                              std::move(delete_changes));
   EXPECT_TRUE(bridge()->GetAllSsidsForTesting().empty());
 
-  const std::vector<std::string>& removed_networks =
+  const std::vector<NetworkIdentifier>& removed_networks =
       synced_network_updater()->remove_calls();
   EXPECT_EQ(1u, removed_networks.size());
-  EXPECT_TRUE(VectorContainsString(removed_networks, kSsidMeow));
+  EXPECT_EQ(removed_networks[0], id);
 }
 
 }  // namespace

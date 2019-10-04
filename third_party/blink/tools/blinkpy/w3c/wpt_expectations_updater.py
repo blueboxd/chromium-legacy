@@ -105,7 +105,7 @@ class WPTExpectationsUpdater(object):
 
     def get_latest_try_jobs(self):
         """Returns the latest finished try jobs as Build objects."""
-        return self.git_cl.latest_try_jobs(self._get_try_bots(), patchset=self.patchset)
+        return self.git_cl.latest_try_jobs(builder_names=self._get_try_bots(), patchset=self.patchset)
 
     def get_failing_results_dict(self, build):
         """Returns a nested dict of failing test results.

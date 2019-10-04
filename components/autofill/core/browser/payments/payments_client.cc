@@ -58,7 +58,7 @@ const char kUnmaskCardRequestFormat[] =
     "&s7e_13_cvc=%s";
 
 const char kOptChangeRequestPath[] =
-    "payments/apis/chromepaymentsservice/autofillauthoptchange";
+    "payments/apis/chromepaymentsservice/updateautofilluserpreference";
 
 const char kGetUploadDetailsRequestPath[] =
     "payments/apis/chromepaymentsservice/getdetailsforsavecard";
@@ -489,38 +489,63 @@ class OptChangeRequest : public PaymentsRequest {
                           std::move(chrome_user_context));
     }
 
-    request_dict.SetKey("opt_in", base::Value(request_details_.opt_in));
+    std::string reason;
+    switch (request_details_.reason) {
+      case PaymentsClient::OptChangeRequestDetails::ENABLE_FIDO_AUTH:
+        reason = "ENABLE_FIDO_AUTH";
+        break;
+      case PaymentsClient::OptChangeRequestDetails::DISABLE_FIDO_AUTH:
+        reason = "DISABLE_FIDO_AUTH";
+        break;
+      case PaymentsClient::OptChangeRequestDetails::ADD_CARD_FOR_FIDO_AUTH:
+        reason = "ADD_CARD_FOR_FIDO_AUTH";
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+    request_dict.SetKey("reason", base::Value(reason));
 
+    base::Value fido_authentication_info(base::Value::Type::DICTIONARY);
     if (request_details_.fido_authenticator_response.is_dict()) {
-      request_dict.SetKey(
+      fido_authentication_info.SetKey(
           "fido_authenticator_response",
           std::move(request_details_.fido_authenticator_response));
     }
 
     if (!request_details_.card_authorization_token.empty()) {
-      request_dict.SetKey(
+      fido_authentication_info.SetKey(
           "card_authorization_token",
           base::Value(request_details_.card_authorization_token));
     }
 
+    request_dict.SetKey("fido_authentication_info",
+                        std::move(fido_authentication_info));
+
     std::string request_content;
     base::JSONWriter::Write(request_dict, &request_content);
-    VLOG(3) << "autofillauthoptchange request body: " << request_content;
+    VLOG(3) << "updateautofilluserpreference request body: " << request_content;
     return request_content;
   }
 
   void ParseResponse(const base::Value& response) override {
-    const auto* user_is_opted_in =
-        response.FindKeyOfType("user_is_opted_in", base::Value::Type::BOOLEAN);
-    if (user_is_opted_in)
-      response_details_.user_is_opted_in = user_is_opted_in->GetBool();
+    const auto* fido_authentication_info = response.FindKeyOfType(
+        "fido_authentication_info", base::Value::Type::DICTIONARY);
+    if (!fido_authentication_info)
+      return;
 
-    const auto* fido_creation_options = response.FindKeyOfType(
+    const auto* user_status =
+        fido_authentication_info->FindStringKey("user_status");
+    if (user_status && *user_status != "UNKNOWN_USER_STATUS")
+      response_details_.user_is_opted_in =
+          (*user_status == "FIDO_AUTH_ENABLED");
+
+    const auto* fido_creation_options = fido_authentication_info->FindKeyOfType(
         "fido_creation_options", base::Value::Type::DICTIONARY);
     if (fido_creation_options)
       response_details_.fido_creation_options = fido_creation_options->Clone();
 
-    const auto* fido_request_options = response.FindKeyOfType(
+    const auto* fido_request_options = fido_authentication_info->FindKeyOfType(
         "fido_request_options", base::Value::Type::DICTIONARY);
     if (fido_request_options)
       response_details_.fido_request_options = fido_request_options->Clone();
@@ -1010,7 +1035,7 @@ PaymentsClient::OptChangeRequestDetails::OptChangeRequestDetails() {}
 PaymentsClient::OptChangeRequestDetails::OptChangeRequestDetails(
     const OptChangeRequestDetails& other) {
   app_locale = other.app_locale;
-  opt_in = other.opt_in;
+  reason = other.reason;
   fido_authenticator_response = other.fido_authenticator_response.Clone();
   card_authorization_token = other.card_authorization_token;
 }

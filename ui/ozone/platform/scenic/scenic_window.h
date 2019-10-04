@@ -105,6 +105,9 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
   // Entity node for the |view_|.
   scenic::EntityNode node_;
 
+  // Node in |scenic_session_| for receiving input that hits within our View.
+  scenic::ShapeNode input_node_;
+
   // Node in |scenic_session_| for rendering (hit testing disabled).
   scenic::EntityNode render_node_;
 

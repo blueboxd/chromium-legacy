@@ -1384,11 +1384,12 @@ int SearchProvider::GetVerbatimRelevance(bool* relevance_from_server) const {
 bool SearchProvider::ShouldCurbDefaultSuggestions() const {
   // Only curb if the global experimental keyword feature is enabled, we're
   // in keyword mode and we believe the user selected the mode explicitly.
-  if (providers_.has_keyword_provider())
+  if (providers_.has_keyword_provider()) {
     return InExplicitExperimentalKeywordMode(input_,
                                              providers_.keyword_provider());
-  else
+  } else {
     return false;
+  }
 }
 
 int SearchProvider::CalculateRelevanceForVerbatim() const {

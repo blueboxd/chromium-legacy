@@ -33,6 +33,7 @@ jumbo_source_set("common") {
     "device_memory/approximated_device_memory.cc",
     "dom_storage/session_storage_namespace_id.cc",
     "experiments/memory_ablation_experiment.cc",
+    "feature_policy/document_policy.cc",
     "feature_policy/feature_policy.cc",
     "feature_policy/policy_value.cc",
     "features.cc",

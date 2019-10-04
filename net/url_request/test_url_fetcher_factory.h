@@ -163,11 +163,6 @@ class TestURLFetcher : public URLFetcher {
 
   void GetExtraRequestHeaders(HttpRequestHeaders* headers) const;
 
-  // Sets owner of this class.  Set it to a non-NULL value if you want
-  // to automatically unregister this fetcher from the owning factory
-  // upon destruction.
-  void set_owner(TestURLFetcherFactory* owner) { owner_ = owner; }
-
   // Unique ID in our factory.
   int id() const { return id_; }
 
@@ -210,7 +205,6 @@ class TestURLFetcher : public URLFetcher {
     TEMP_FILE  // Write to a temp file
   };
 
-  TestURLFetcherFactory* owner_;
   const int id_;
   const GURL original_url_;
   URLFetcherDelegate* delegate_;
@@ -243,43 +237,6 @@ class TestURLFetcher : public URLFetcher {
   std::unique_ptr<URLFetcherResponseWriter> response_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLFetcher);
-};
-
-typedef TestURLFetcher::DelegateForTests TestURLFetcherDelegateForTests;
-
-// Simple URLFetcherFactory method that creates TestURLFetchers. All fetchers
-// are registered in a map by the id passed to the create method.
-// Optionally, a fetcher may be automatically unregistered from the map upon
-// its destruction.
-class TestURLFetcherFactory : public URLFetcherFactory,
-                              public ScopedURLFetcherFactory {
- public:
-  TestURLFetcherFactory();
-  ~TestURLFetcherFactory() override;
-
-  std::unique_ptr<URLFetcher> CreateURLFetcher(
-      int id,
-      const GURL& url,
-      URLFetcher::RequestType request_type,
-      URLFetcherDelegate* d,
-      NetworkTrafficAnnotationTag traffic_annotation) override;
-  TestURLFetcher* GetFetcherByID(int id) const;
-  void RemoveFetcherFromMap(int id);
-  void SetDelegateForTests(TestURLFetcherDelegateForTests* delegate_for_tests);
-  void set_remove_fetcher_on_delete(bool remove_fetcher_on_delete) {
-    remove_fetcher_on_delete_ = remove_fetcher_on_delete;
-  }
-
- private:
-  // Maps from id passed to create to the returned URLFetcher.
-  typedef std::map<int, TestURLFetcher*> Fetchers;
-  Fetchers fetchers_;
-  TestURLFetcherDelegateForTests* delegate_for_tests_;
-  // Whether to automatically unregister a fetcher from this factory upon its
-  // destruction, false by default.
-  bool remove_fetcher_on_delete_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestURLFetcherFactory);
 };
 
 // The FakeURLFetcher and FakeURLFetcherFactory classes are similar to the
@@ -462,24 +419,6 @@ class FakeURLFetcherFactory : public URLFetcherFactory,
       HttpStatusCode response_code,
       URLRequestStatus::Status status);
   DISALLOW_COPY_AND_ASSIGN(FakeURLFetcherFactory);
-};
-
-// This is an implementation of URLFetcherFactory that will create a
-// URLFetcherImpl. It can be use in conjunction with a FakeURLFetcherFactory in
-// integration tests to control the behavior of some requests but execute
-// all the other ones.
-class URLFetcherImplFactory : public URLFetcherFactory {
- public:
-  URLFetcherImplFactory();
-  ~URLFetcherImplFactory() override;
-
-  // This method will create a real URLFetcher.
-  std::unique_ptr<URLFetcher> CreateURLFetcher(
-      int id,
-      const GURL& url,
-      URLFetcher::RequestType request_type,
-      URLFetcherDelegate* d,
-      NetworkTrafficAnnotationTag traffic_annotation) override;
 };
 
 }  // namespace net

@@ -21,9 +21,6 @@
 #include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "google_apis/gaia/oauth2_access_token_manager_test_util.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -732,7 +729,7 @@ TEST_F(ProfileOAuth2TokenServiceTest, FixRequestErrorIfPossible) {
        max_reties >= 0 && consumer_.number_of_successful_tokens_ != 1;
        --max_reties) {
     base::RunLoop().RunUntilIdle();
-    base::PlatformThread::Sleep(TimeDelta::FromSeconds(1));
+    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
   }
 
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);

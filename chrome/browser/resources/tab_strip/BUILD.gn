@@ -11,8 +11,8 @@ js_type_check("closure_compile") {
     ":custom_element",
     ":tab",
     ":tab_list",
+    ":tab_strip_view_proxy",
     ":tabs_api_proxy",
-    ":theme_proxy",
   ]
 }
 
@@ -43,7 +43,7 @@ js_library("tab_list") {
   externs_list = [ "$externs_path/chrome.js" ]
 }
 
-js_library("theme_proxy") {
+js_library("tab_strip_view_proxy") {
   deps = [
     "//ui/webui/resources/js:cr.m",
   ]

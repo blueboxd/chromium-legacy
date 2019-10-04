@@ -133,11 +133,6 @@ class NET_EXPORT SSLInfo {
   // True if there was a certificate error which should be treated as fatal,
   // and false otherwise.
   bool is_fatal_cert_error = false;
-
-  // Indicates if the server connected to signaled that it is part of a
-  // post-quantum experiment. I.e. it would have negotiated CECPQ2 or CECPQ2b
-  // key exchanges if they were requested.
-  bool server_in_post_quantum_experiment = false;
 };
 
 }  // namespace net

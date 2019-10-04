@@ -719,9 +719,6 @@ void AppLauncherHandler::HandleReorderApps(const base::ListValue* args) {
 
   // Don't update the page; it already knows the apps have been reordered.
   base::AutoReset<bool> auto_reset(&ignore_changes_, true);
-  ExtensionPrefs* extension_prefs =
-      ExtensionPrefs::Get(extension_service_->GetBrowserContext());
-  extension_prefs->SetAppDraggedByUser(dragged_app_id);
   ExtensionSystem::Get(extension_service_->GetBrowserContext())
       ->app_sorting()
       ->OnExtensionMoved(dragged_app_id, predecessor_to_moved_ext,

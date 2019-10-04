@@ -6,6 +6,7 @@
 
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
+#include "chromeos/components/sync_wifi/network_identifier.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -17,13 +18,15 @@ const char kChangeGuidKey[] = "ChangeGuid";
 const char kCompletedAttemptsKey[] = "CompletedAttempts";
 const char kSpecificsKey[] = "Specifics";
 
-std::string GeneratePath(const std::string& ssid, const std::string& subkey) {
-  return base::StringPrintf("%s.%s", ssid.c_str(), subkey.c_str());
+std::string GeneratePath(const sync_wifi::NetworkIdentifier& id,
+                         const std::string& subkey) {
+  return base::StringPrintf("%s.%s", id.SerializeToString().c_str(),
+                            subkey.c_str());
 }
 
 sync_wifi::PendingNetworkConfigurationUpdate ConvertToPendingUpdate(
     base::Value* dict,
-    const std::string ssid) {
+    const sync_wifi::NetworkIdentifier& id) {
   std::string* change_guid = dict->FindStringKey(kChangeGuidKey);
   base::Optional<sync_pb::WifiConfigurationSpecificsData> specifics;
   std::string* specifics_string = dict->FindStringKey(kSpecificsKey);
@@ -39,7 +42,7 @@ sync_wifi::PendingNetworkConfigurationUpdate ConvertToPendingUpdate(
   DCHECK(completed_attempts);
 
   return sync_wifi::PendingNetworkConfigurationUpdate(
-      ssid, *change_guid, specifics, completed_attempts.value());
+      id, *change_guid, specifics, completed_attempts.value());
 }
 
 }  // namespace
@@ -63,7 +66,7 @@ PendingNetworkConfigurationTrackerImpl::
 
 void PendingNetworkConfigurationTrackerImpl::TrackPendingUpdate(
     const std::string& change_guid,
-    const std::string& ssid,
+    const NetworkIdentifier& id,
     const base::Optional<sync_pb::WifiConfigurationSpecificsData>& specifics) {
   std::string serialized_specifics;
   if (!specifics)
@@ -71,27 +74,27 @@ void PendingNetworkConfigurationTrackerImpl::TrackPendingUpdate(
   else
     CHECK(specifics->SerializeToString(&serialized_specifics));
 
-  dict_.SetPath(GeneratePath(ssid, kChangeGuidKey), base::Value(change_guid));
-  dict_.SetPath(GeneratePath(ssid, kSpecificsKey),
+  dict_.SetPath(GeneratePath(id, kChangeGuidKey), base::Value(change_guid));
+  dict_.SetPath(GeneratePath(id, kSpecificsKey),
                 base::Value(serialized_specifics));
-  dict_.SetPath(GeneratePath(ssid, kCompletedAttemptsKey), base::Value(0));
+  dict_.SetPath(GeneratePath(id, kCompletedAttemptsKey), base::Value(0));
   pref_service_->Set(kPendingNetworkConfigurationsPref, dict_);
 }
 
 void PendingNetworkConfigurationTrackerImpl::MarkComplete(
     const std::string& change_guid,
-    const std::string& ssid) {
-  if (!GetPendingUpdate(change_guid, ssid))
+    const NetworkIdentifier& id) {
+  if (!GetPendingUpdate(change_guid, id))
     return;
 
-  dict_.RemovePath(ssid);
+  dict_.RemovePath(id.SerializeToString());
   pref_service_->Set(kPendingNetworkConfigurationsPref, dict_);
 }
 
 void PendingNetworkConfigurationTrackerImpl::IncrementCompletedAttempts(
     const std::string& change_guid,
-    const std::string& ssid) {
-  std::string path = GeneratePath(ssid, kCompletedAttemptsKey);
+    const NetworkIdentifier& id) {
+  std::string path = GeneratePath(id, kCompletedAttemptsKey);
   base::Optional<int> completed_attempts = dict_.FindIntPath(path);
   dict_.SetIntPath(path, completed_attempts.value() + 1);
 }
@@ -100,21 +103,22 @@ std::vector<PendingNetworkConfigurationUpdate>
 PendingNetworkConfigurationTrackerImpl::GetPendingUpdates() {
   std::vector<PendingNetworkConfigurationUpdate> list;
   for (const auto& entry : dict_.DictItems()) {
-    list.push_back(
-        ConvertToPendingUpdate(/*dict=*/&entry.second, /*ssid=*/entry.first));
+    list.push_back(ConvertToPendingUpdate(
+        /*dict=*/&entry.second,
+        NetworkIdentifier::DeserializeFromString(entry.first)));
   }
   return list;
 }
 base::Optional<PendingNetworkConfigurationUpdate>
 PendingNetworkConfigurationTrackerImpl::GetPendingUpdate(
     const std::string& change_guid,
-    const std::string& ssid) {
+    const NetworkIdentifier& id) {
   std::string* found_id =
-      dict_.FindStringPath(GeneratePath(ssid, kChangeGuidKey));
+      dict_.FindStringPath(GeneratePath(id, kChangeGuidKey));
   if (!found_id || *found_id != change_guid)
     return base::nullopt;
 
-  return ConvertToPendingUpdate(dict_.FindPath(ssid), ssid);
+  return ConvertToPendingUpdate(dict_.FindPath(id.SerializeToString()), id);
 }
 
 }  // namespace sync_wifi

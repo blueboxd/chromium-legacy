@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/media/audio/fake_external_audio_pipeline_support.h"
@@ -73,7 +74,8 @@ class ExternalAudioPipelineTest : public ::testing::Test {
   ExternalAudioPipelineTest()
       : external_audio_pipeline_support_(
             testing::GetFakeExternalAudioPipelineSupport()),
-        message_loop_(std::make_unique<base::MessageLoop>()) {}
+        message_loop_(
+            std::make_unique<base::MessageLoop>(base::MessagePumpType::IO)) {}
 
   void SetUp() override {
     // Set that external library is supported.

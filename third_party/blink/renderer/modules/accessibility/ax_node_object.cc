@@ -583,7 +583,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
                                         : ax::mojom::Role::kPopUpButton;
   }
 
-  if (auto* option = ToHTMLOptionElementOrNull(*GetNode())) {
+  if (auto* option = DynamicTo<HTMLOptionElement>(*GetNode())) {
     HTMLSelectElement* select_element = option->OwnerSelectElement();
     return !select_element || select_element->IsMultiple()
                ? ax::mojom::Role::kListBoxOption

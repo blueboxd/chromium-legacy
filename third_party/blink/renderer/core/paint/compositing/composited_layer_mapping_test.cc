@@ -34,10 +34,6 @@ class CompositedLayerMappingTest : public RenderingTest {
         .ComputeInterestRect(graphics_layer, previous_interest_rect);
   }
 
-  bool ShouldFlattenTransform(const GraphicsLayer& layer) const {
-    return layer.ShouldFlattenTransform();
-  }
-
   bool InterestRectChangedEnoughToRepaint(const IntRect& previous_interest_rect,
                                           const IntRect& new_interest_rect,
                                           const IntSize& layer_size) {
@@ -518,31 +514,6 @@ TEST_F(CompositedLayerMappingTest, ClippedBigLayer) {
   // Offscreen layers are painted as usual.
   EXPECT_EQ(IntRect(0, 0, 4001, 4001),
             RecomputeInterestRect(paint_layer->GraphicsLayerBacking()));
-}
-
-TEST_F(CompositedLayerMappingTest, ScrollContentsFlattenForScroller) {
-  SetBodyInnerHTML(R"HTML(
-    <style>div::-webkit-scrollbar{ width: 5px; }</style>
-    <div id='scroller' style='width: 100px; height: 100px; overflow:
-    scroll; will-change: transform'>
-    <div style='width: 1000px; height: 1000px;'>Foo</div>Foo</div>
-  )HTML");
-
-  UpdateAllLifecyclePhasesForTest();
-  Element* element = GetDocument().getElementById("scroller");
-  PaintLayer* paint_layer =
-      ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
-  CompositedLayerMapping* composited_layer_mapping =
-      paint_layer->GetCompositedLayerMapping();
-
-  ASSERT_TRUE(composited_layer_mapping);
-
-  EXPECT_FALSE(
-      ShouldFlattenTransform(*composited_layer_mapping->MainGraphicsLayer()));
-  EXPECT_FALSE(
-      ShouldFlattenTransform(*composited_layer_mapping->ScrollingLayer()));
-  EXPECT_TRUE(ShouldFlattenTransform(
-      *composited_layer_mapping->ScrollingContentsLayer()));
 }
 
 TEST_F(CompositedLayerMappingTest, InterestRectChangedEnoughToRepaintEmpty) {

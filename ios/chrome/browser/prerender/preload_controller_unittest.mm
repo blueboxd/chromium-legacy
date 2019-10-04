@@ -12,7 +12,6 @@
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/prerender/preload_controller.h"
 #include "ios/web/public/test/web_task_environment.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
 
@@ -60,8 +59,6 @@ class PreloadControllerTest : public PlatformTest {
     // cellular connection.
     network_change_notifier_.reset(new TestNetworkChangeNotifier);
 
-    test_url_fetcher_factory_.reset(new net::TestURLFetcherFactory());
-
     controller_ = [[PreloadController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }
@@ -101,7 +98,6 @@ class PreloadControllerTest : public PlatformTest {
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<TestNetworkChangeNotifier> network_change_notifier_;
-  std::unique_ptr<net::TestURLFetcherFactory> test_url_fetcher_factory_;
   PreloadController* controller_;
 };
 

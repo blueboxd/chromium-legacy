@@ -38,9 +38,13 @@ template("fuzzer_test") {
     assert(defined(invoker.sources), "Need sources in $target_name.")
 
     test_deps = [ "//testing/libfuzzer:libfuzzer_main" ]
+    test_data_deps = []
 
     if (defined(invoker.deps)) {
       test_deps += invoker.deps
+    }
+    if (defined(invoker.data_deps)) {
+      test_data_deps += invoker.data_deps
     }
 
     if (defined(invoker.seed_corpus) || defined(invoker.seed_corpuses)) {
@@ -157,6 +161,7 @@ template("fuzzer_test") {
       owners_file_name = target_name + ".owners"
       action(owners_file_name) {
         script = "//testing/libfuzzer/gen_fuzzer_owners.py"
+        pool = "//testing/libfuzzer:fuzzer_owners_pool"
         args = [
           "--owners",
           rebase_path("$root_build_dir/" + owners_file_name, root_build_dir),
@@ -181,7 +186,7 @@ template("fuzzer_test") {
           "$root_build_dir/$owners_file_name",
         ]
       }
-      test_deps += [ ":" + owners_file_name ]
+      test_data_deps += [ ":" + owners_file_name ]
     }
 
     test(target_name) {
@@ -196,6 +201,7 @@ template("fuzzer_test") {
                                "libs",
                              ])
       deps = test_deps
+      data_deps = test_data_deps
 
       if (defined(invoker.additional_configs)) {
         configs += invoker.additional_configs

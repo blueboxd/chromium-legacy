@@ -143,7 +143,7 @@ class AppServiceProxy : public KeyedService,
     apps::IconLoader* overriding_icon_loader_for_testing_;
   };
 
-  void Initialize(Profile* profile);
+  void Initialize();
 
   void AddAppIconSource(Profile* profile);
 
@@ -178,6 +178,8 @@ class AppServiceProxy : public KeyedService,
   std::unique_ptr<ExtensionApps> extension_apps_;
   std::unique_ptr<ExtensionApps> extension_web_apps_;
 #endif  // OS_CHROMEOS
+
+  Profile* profile_;
 
   base::WeakPtrFactory<AppServiceProxy> weak_ptr_factory_{this};
 

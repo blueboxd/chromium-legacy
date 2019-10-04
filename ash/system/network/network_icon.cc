@@ -4,6 +4,7 @@
 
 #include "ash/system/network/network_icon.h"
 
+#include <tuple>
 #include <utility>
 
 #include "ash/public/cpp/ash_features.h"
@@ -14,6 +15,7 @@
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/network/network_icon_animation_observer.h"
 #include "ash/system/tray/tray_constants.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/ranges.h"
@@ -138,23 +140,14 @@ bool IsTrayIcon(IconType icon_type) {
          icon_type == ICON_TYPE_TRAY_OOBE;
 }
 
-bool IconTypeIsDark(IconType icon_type) {
-  // Dark icon is used for OOBE tray icon because the background is white.
-  return icon_type == ICON_TYPE_TRAY_OOBE;
-}
-
 bool IconTypeHasVPNBadge(IconType icon_type) {
   return (icon_type != ICON_TYPE_LIST && icon_type != ICON_TYPE_MENU_LIST);
-}
-
-gfx::Size GetSizeForBaseIconSize(const gfx::Size& base_icon_size) {
-  return base_icon_size;
 }
 
 gfx::ImageSkia CreateNetworkIconImage(const gfx::ImageSkia& icon,
                                       const Badges& badges) {
   return gfx::CanvasImageSource::MakeImageSkia<NetworkIconImageSource>(
-      GetSizeForBaseIconSize(icon.size()), icon, badges);
+      icon.size(), icon, badges);
 }
 
 //------------------------------------------------------------------------------
@@ -199,28 +192,36 @@ gfx::ImageSkia GetImageForIndex(ImageType image_type,
 gfx::ImageSkia* ConnectingWirelessImage(ImageType image_type,
                                         IconType icon_type,
                                         double animation) {
-  static const int kImageCount = kNumNetworkImages - 1;
-  static gfx::ImageSkia* s_bars_images_dark[kImageCount];
-  static gfx::ImageSkia* s_bars_images_light[kImageCount];
-  static gfx::ImageSkia* s_arcs_images_dark[kImageCount];
-  static gfx::ImageSkia* s_arcs_images_light[kImageCount];
-  int index = animation * nextafter(static_cast<float>(kImageCount), 0);
-  index = base::ClampToRange(index, 0, kImageCount - 1);
-  gfx::ImageSkia** images;
-  bool dark = IconTypeIsDark(icon_type);
-  if (image_type == BARS)
-    images = dark ? s_bars_images_dark : s_bars_images_light;
-  else
-    images = dark ? s_arcs_images_dark : s_arcs_images_light;
-  if (!images[index]) {
+  // Connecting icons animate by adjusting their signal strength up and down,
+  // but the empty (no signal) image is skipped for aesthetic reasons.
+  static const int kNumConnectingImages = kNumNetworkImages - 1;
+
+  // Cache of images used to avoid redrawing the icon during every animation;
+  // the key is a tuple including a bool representing whether the icon displays
+  // bars (as oppose to arcs), the IconType, and an int representing the index
+  // of the image (with respect to GetImageForIndex()).
+  static base::flat_map<std::tuple<bool, IconType, int>, gfx::ImageSkia*>
+      s_image_cache;
+
+  // Note that if |image_type| is NONE, arcs are displayed by default.
+  bool is_bars_image = image_type == BARS;
+
+  int index =
+      animation * nextafter(static_cast<float>(kNumConnectingImages), 0);
+  index = base::ClampToRange(index, 0, kNumConnectingImages - 1);
+
+  auto map_key = std::make_tuple(is_bars_image, icon_type, index);
+
+  if (!s_image_cache.contains(map_key)) {
     // Lazily cache images.
     // TODO(estade): should the alpha be applied in SignalStrengthImageSource?
     gfx::ImageSkia source = GetImageForIndex(image_type, icon_type, index + 1);
-    images[index] =
+    s_image_cache[map_key] =
         new gfx::ImageSkia(gfx::ImageSkiaOperations::CreateTransparentImage(
             source, kConnectingImageAlpha));
   }
-  return images[index];
+
+  return s_image_cache[map_key];
 }
 
 gfx::ImageSkia ConnectingVpnImage(double animation) {

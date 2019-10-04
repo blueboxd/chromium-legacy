@@ -13,6 +13,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/test_support/graph_impl.h"
+#include "chrome/browser/performance_manager/test_support/graph_test_harness.h"
 #include "chrome/browser/performance_manager/test_support/mock_graphs.h"
 #include "chrome/browser/ui/webui/discards/discards.mojom.h"
 #include "content/public/test/browser_task_environment.h"
@@ -119,7 +120,7 @@ class DiscardsGraphDumpImplTest : public testing::Test {
   void TearDown() override { graph_.TearDown(); }
 
  protected:
-  performance_manager::GraphImpl graph_;
+  performance_manager::TestGraphImpl graph_;
 };
 
 }  // namespace

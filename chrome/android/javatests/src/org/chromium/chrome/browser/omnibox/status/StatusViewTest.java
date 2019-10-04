@@ -12,6 +12,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
@@ -28,12 +29,15 @@ import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.browser.ui.widget.CompositeTouchDelegate;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.test.util.UiRestriction;
 
 /**
  * Tests for {@link StatusView} and {@link StatusViewBinder}.
@@ -62,6 +66,8 @@ public class StatusViewTest extends DummyUiActivityTestCase {
                                   .inflate(R.layout.location_status, view, true)
                                   .findViewById(R.id.location_bar_status);
             mStatusView.setCompositeTouchDelegate(new CompositeTouchDelegate(view));
+            mStatusView.setToolbarCommonPropertiesModel(
+                    new LocationBarModel(mStatusView.getContext()));
             mStatusModel = new PropertyModel.Builder(StatusProperties.ALL_KEYS).build();
             mStatusMCP = PropertyModelChangeProcessor.create(
                     mStatusModel, mStatusView, new StatusViewBinder());
@@ -129,5 +135,25 @@ public class StatusViewTest extends DummyUiActivityTestCase {
         });
         onView(withId(R.id.location_bar_status_icon))
                 .check((view, e) -> assertNotNull(mStatusView.getTouchDelegateForTesting()));
+    }
+
+    @Test
+    @MediumTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @Feature({"Omnibox"})
+    public void testSearchEngineLogo_noIncognitoPadding() {
+        // Set incognito badge visible.
+        runOnUiThreadBlocking(
+                () -> { mStatusModel.set(StatusProperties.INCOGNITO_BADGE_VISIBLE, true); });
+        onView(withId(R.id.location_bar_incognito_badge)).check(matches(isCompletelyDisplayed()));
+
+        runOnUiThreadBlocking(() -> {
+            mStatusModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_logo_googleg_24dp);
+        });
+        onView(withId(R.id.location_bar_incognito_badge)).check((view, e) -> {
+            ViewGroup.MarginLayoutParams params =
+                    (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+            assertEquals(params.getMarginEnd(), 0);
+        });
     }
 }

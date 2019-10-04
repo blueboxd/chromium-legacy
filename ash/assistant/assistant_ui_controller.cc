@@ -694,8 +694,10 @@ void AssistantUiController::OnEvent(const ui::Event& event) {
 
   const gfx::Rect screen_bounds =
       container_view_->GetWidget()->GetWindowBoundsInScreen();
-  const gfx::Rect keyboard_bounds = keyboard::KeyboardUIController::Get()
-                                        ->GetWorkspaceOccludedBoundsInScreen();
+  const gfx::Rect keyboard_bounds =
+      keyboard::KeyboardUIController::Get()->IsKeyboardVisible()
+          ? keyboard::KeyboardUIController::Get()->GetVisualBoundsInScreen()
+          : gfx::Rect();
 
   // Pressed events outside our widget bounds should result in hiding of the
   // Assistant UI. The exception to this rule is if the user is interacting

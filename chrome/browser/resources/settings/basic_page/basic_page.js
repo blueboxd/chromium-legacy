@@ -153,11 +153,6 @@ Polymer({
       this.showChangePassword = visibility;
     });
 
-    if (loadTimeData.getBoolean('passwordProtectionAvailable')) {
-      settings.ChangePasswordBrowserProxyImpl.getInstance()
-          .initializeChangePasswordHandler();
-    }
-
     if (settings.AndroidAppsBrowserProxyImpl) {
       this.addWebUIListener(
           'android-apps-info-update', this.androidAppsInfoUpdate_.bind(this));

@@ -50,6 +50,8 @@ std::string GetTokenLevelInEnglish(TokenLevel token) {
       return "Restricted Same Access";
     case USER_UNPROTECTED:
       return "Unprotected";
+    case USER_RESTRICTED_NON_ADMIN:
+      return "Restricted Non Admin";
     case USER_LAST:
     default:
       DCHECK(false) << "Unknown TokenType";

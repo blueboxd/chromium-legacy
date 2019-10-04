@@ -63,7 +63,6 @@
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/base/ui_base_switches.h"
@@ -916,8 +915,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptIfLinkClicked) {
 #endif
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                        MAYBE_VerifyPasswordGenerationUpload) {
-  // Prevent Autofill requests from actually going over the wire.
-  net::TestURLFetcherFactory factory;
   // Disable Autofill requesting access to AddressBook data. This causes
   // the test to hang on Mac.
   autofill::test::DisableSystemServices(browser()->profile()->GetPrefs());

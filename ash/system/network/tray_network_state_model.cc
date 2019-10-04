@@ -8,9 +8,13 @@
 #include <string>
 
 #include "ash/public/cpp/network_config_service.h"
+#include "ash/system/network/vpn_list.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
@@ -46,6 +50,84 @@ NetworkStatePropertiesPtr GetConnectingOrConnected(
 
 namespace ash {
 
+class TrayNetworkStateModel::Impl
+    : public chromeos::network_config::mojom::CrosNetworkConfigObserver {
+ public:
+  explicit Impl(TrayNetworkStateModel* model) : model_(model) {
+    ash::GetNetworkConfigService(
+        remote_cros_network_config_.BindNewPipeAndPassReceiver());
+    remote_cros_network_config_->AddObserver(
+        cros_network_config_observer_receiver_.BindNewPipeAndPassRemote());
+  }
+  ~Impl() override = default;
+
+  void GetActiveNetworks() {
+    DCHECK(remote_cros_network_config_);
+    remote_cros_network_config_->GetNetworkStateList(
+        NetworkFilter::New(FilterType::kActive, NetworkType::kAll,
+                           /*limit=*/0),
+        base::BindOnce(&TrayNetworkStateModel::Impl::OnActiveNetworksChanged,
+                       base::Unretained(this)));
+  }
+
+  void GetVirtualNetworks() {
+    DCHECK(remote_cros_network_config_);
+    remote_cros_network_config_->GetNetworkStateList(
+        NetworkFilter::New(FilterType::kConfigured, NetworkType::kVPN,
+                           /*limit=*/0),
+        base::BindOnce(&TrayNetworkStateModel::OnGetVirtualNetworks,
+                       base::Unretained(model_)));
+  }
+
+  void GetDeviceStateList() {
+    DCHECK(remote_cros_network_config_);
+    remote_cros_network_config_->GetDeviceStateList(
+        base::BindOnce(&TrayNetworkStateModel::OnGetDeviceStateList,
+                       base::Unretained(model_)));
+  }
+
+  void SetNetworkTypeEnabledState(NetworkType type, bool enabled) {
+    DCHECK(remote_cros_network_config_);
+    remote_cros_network_config_->SetNetworkTypeEnabledState(type, enabled,
+                                                            base::DoNothing());
+  }
+
+  chromeos::network_config::mojom::CrosNetworkConfig* cros_network_config() {
+    return remote_cros_network_config_.get();
+  }
+
+ private:
+  // CrosNetworkConfigObserver
+  void OnActiveNetworksChanged(
+      std::vector<NetworkStatePropertiesPtr> networks) override {
+    model_->UpdateActiveNetworks(std::move(networks));
+    model_->SendActiveNetworkStateChanged();
+  }
+
+  void OnNetworkStateChanged(
+      chromeos::network_config::mojom::NetworkStatePropertiesPtr /* network */)
+      override {}
+
+  void OnNetworkStateListChanged() override {
+    model_->NotifyNetworkListChanged();
+    GetVirtualNetworks();
+  }
+
+  void OnDeviceStateListChanged() override { GetDeviceStateList(); }
+
+  void OnVpnProvidersChanged() override { model_->NotifyVpnProvidersChanged(); }
+
+  void OnNetworkCertificatesChanged() override {}
+
+  TrayNetworkStateModel* model_;
+  mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
+      remote_cros_network_config_;
+  mojo::Receiver<chromeos::network_config::mojom::CrosNetworkConfigObserver>
+      cros_network_config_observer_receiver_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(Impl);
+};
+
 TrayNetworkStateModel::TrayNetworkStateModel()
     : update_frequency_(kUpdateFrequencyMs) {
   if (ui::ScopedAnimationDurationScaleMode::duration_scale_mode() !=
@@ -53,17 +135,17 @@ TrayNetworkStateModel::TrayNetworkStateModel()
     update_frequency_ = 0;  // Send updates immediately for tests.
   }
 
-  GetNetworkConfigService(
-      remote_cros_network_config_.BindNewPipeAndPassReceiver());
-  remote_cros_network_config_->AddObserver(
-      cros_network_config_observer_receiver_.BindNewPipeAndPassRemote());
+  impl_ = std::make_unique<Impl>(this);
+  vpn_list_ = std::make_unique<VpnList>(this);
 
-  GetActiveNetworks();
-  GetVirtualNetworks();
-  GetDeviceStateList();
+  impl_->GetActiveNetworks();
+  impl_->GetVirtualNetworks();
+  impl_->GetDeviceStateList();
 }
 
-TrayNetworkStateModel::~TrayNetworkStateModel() = default;
+TrayNetworkStateModel::~TrayNetworkStateModel() {
+  vpn_list_.reset();
+}
 
 void TrayNetworkStateModel::AddObserver(TrayNetworkStateObserver* observer) {
   observer_list_.AddObserver(observer);
@@ -88,39 +170,12 @@ DeviceStateType TrayNetworkStateModel::GetDeviceState(NetworkType type) {
 
 void TrayNetworkStateModel::SetNetworkTypeEnabledState(NetworkType type,
                                                        bool enabled) {
-  DCHECK(remote_cros_network_config_);
-  remote_cros_network_config_->SetNetworkTypeEnabledState(type, enabled,
-                                                          base::DoNothing());
+  impl_->SetNetworkTypeEnabledState(type, enabled);
 }
 
-// CrosNetworkConfigObserver
-
-void TrayNetworkStateModel::OnActiveNetworksChanged(
-    std::vector<NetworkStatePropertiesPtr> networks) {
-  UpdateActiveNetworks(std::move(networks));
-  SendActiveNetworkStateChanged();
-}
-
-void TrayNetworkStateModel::OnNetworkStateChanged(
-    chromeos::network_config::mojom::NetworkStatePropertiesPtr /* network */) {}
-
-void TrayNetworkStateModel::OnNetworkStateListChanged() {
-  NotifyNetworkListChanged();
-  GetVirtualNetworks();
-}
-
-void TrayNetworkStateModel::OnDeviceStateListChanged() {
-  GetDeviceStateList();
-}
-
-void TrayNetworkStateModel::OnVpnProvidersChanged() {}
-
-void TrayNetworkStateModel::OnNetworkCertificatesChanged() {}
-
-void TrayNetworkStateModel::GetDeviceStateList() {
-  DCHECK(remote_cros_network_config_);
-  remote_cros_network_config_->GetDeviceStateList(base::BindOnce(
-      &TrayNetworkStateModel::OnGetDeviceStateList, base::Unretained(this)));
+chromeos::network_config::mojom::CrosNetworkConfig*
+TrayNetworkStateModel::cros_network_config() {
+  return impl_->cros_network_config();
 }
 
 void TrayNetworkStateModel::OnGetDeviceStateList(
@@ -133,16 +188,7 @@ void TrayNetworkStateModel::OnGetDeviceStateList(
     devices_.emplace(std::make_pair(type, std::move(device)));
   }
 
-  GetActiveNetworks();  // Will trigger an observer event.
-}
-
-void TrayNetworkStateModel::GetActiveNetworks() {
-  DCHECK(remote_cros_network_config_);
-  remote_cros_network_config_->GetNetworkStateList(
-      NetworkFilter::New(FilterType::kActive, NetworkType::kAll,
-                         /*limit=*/0),
-      base::BindOnce(&TrayNetworkStateModel::OnActiveNetworksChanged,
-                     base::Unretained(this)));
+  impl_->GetActiveNetworks();  // Will trigger an observer event.
 }
 
 void TrayNetworkStateModel::UpdateActiveNetworks(
@@ -199,15 +245,6 @@ void TrayNetworkStateModel::UpdateActiveNetworks(
       GetConnectingOrConnected(connecting_non_cellular, connected_non_cellular);
 }
 
-void TrayNetworkStateModel::GetVirtualNetworks() {
-  DCHECK(remote_cros_network_config_);
-  remote_cros_network_config_->GetNetworkStateList(
-      NetworkFilter::New(FilterType::kConfigured, NetworkType::kVPN,
-                         /*limit=*/0),
-      base::BindOnce(&TrayNetworkStateModel::OnGetVirtualNetworks,
-                     base::Unretained(this)));
-}
-
 void TrayNetworkStateModel::OnGetVirtualNetworks(
     std::vector<NetworkStatePropertiesPtr> networks) {
   has_vpn_ = !networks.empty();
@@ -220,6 +257,11 @@ void TrayNetworkStateModel::NotifyNetworkListChanged() {
       FROM_HERE, base::TimeDelta::FromMilliseconds(update_frequency_),
       base::BindRepeating(&TrayNetworkStateModel::SendNetworkListChanged,
                           base::Unretained(this)));
+}
+
+void TrayNetworkStateModel::NotifyVpnProvidersChanged() {
+  for (auto& observer : observer_list_)
+    observer.VpnProvidersChanged();
 }
 
 void TrayNetworkStateModel::SendActiveNetworkStateChanged() {

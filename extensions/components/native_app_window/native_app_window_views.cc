@@ -12,6 +12,7 @@
 #include "extensions/common/draggable_region.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -21,7 +22,9 @@
 
 namespace native_app_window {
 
-NativeAppWindowViews::NativeAppWindowViews() = default;
+NativeAppWindowViews::NativeAppWindowViews() {
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+}
 
 void NativeAppWindowViews::Init(
     extensions::AppWindow* app_window,
@@ -307,12 +310,6 @@ void NativeAppWindowViews::RenderViewHostChanged(
 
 // views::View implementation.
 
-void NativeAppWindowViews::Layout() {
-  DCHECK(web_view_);
-  web_view_->SetBounds(0, 0, width(), height());
-  OnViewWasResized();
-}
-
 void NativeAppWindowViews::ViewHierarchyChanged(
     const views::ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this) {
@@ -328,6 +325,10 @@ gfx::Size NativeAppWindowViews::GetMinimumSize() const {
 
 gfx::Size NativeAppWindowViews::GetMaximumSize() const {
   return size_constraints_.GetMaximumSize();
+}
+
+void NativeAppWindowViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  OnViewWasResized();
 }
 
 void NativeAppWindowViews::OnFocus() {

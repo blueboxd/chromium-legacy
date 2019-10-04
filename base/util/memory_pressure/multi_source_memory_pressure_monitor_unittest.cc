@@ -14,6 +14,7 @@ namespace util {
 TEST(MultiSourceMemoryPressureMonitorTest, RunDispatchCallback) {
   base::test::TaskEnvironment task_environment;
   MultiSourceMemoryPressureMonitor monitor;
+  monitor.Start();
   auto* aggregator = monitor.aggregator_for_testing();
 
   bool callback_called = false;

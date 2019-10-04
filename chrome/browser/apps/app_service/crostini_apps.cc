@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/apps/app_service/dip_px_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -64,7 +65,7 @@ void CrostiniApps::Initialize(
   if (!registry_) {
     return;
   }
-  crostini_enabled_ = crostini::IsCrostiniEnabled(profile_);
+  crostini_enabled_ = crostini::CrostiniFeatures::Get()->IsEnabled(profile_);
 
   registry_->AddObserver(this);
 
@@ -178,7 +179,8 @@ void CrostiniApps::OnAppIconUpdated(const std::string& app_id,
 }
 
 void CrostiniApps::OnCrostiniEnabledChanged() {
-  crostini_enabled_ = profile_ && crostini::IsCrostiniEnabled(profile_);
+  crostini_enabled_ =
+      profile_ && crostini::CrostiniFeatures::Get()->IsEnabled(profile_);
   auto show = crostini_enabled_ ? apps::mojom::OptionalBool::kTrue
                                 : apps::mojom::OptionalBool::kFalse;
 

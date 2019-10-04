@@ -1,5 +1,0 @@
-specific_include_rules = {
-  "run_all_unittests\.cc": [
-    "+components/viz/test/test_gpu_service_holder.h",
-  ],
-}

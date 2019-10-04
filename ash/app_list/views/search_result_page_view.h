@@ -47,6 +47,7 @@ class APP_LIST_EXPORT SearchResultPageView
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   // AppListPage overrides:
   void OnHidden() override;

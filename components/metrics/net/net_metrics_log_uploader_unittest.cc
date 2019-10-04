@@ -11,7 +11,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "components/encrypted_messages/encrypted_message.pb.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"

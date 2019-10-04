@@ -496,14 +496,6 @@ class ExtensionPrefs : public KeyedService {
   // information.
   std::unique_ptr<ExtensionsInfo> GetAllDelayedInstallInfo() const;
 
-  // Returns true if the user repositioned the app on the app launcher via drag
-  // and drop.
-  bool WasAppDraggedByUser(const std::string& extension_id) const;
-
-  // Sets a flag indicating that the user repositioned the app on the app
-  // launcher by drag and dropping it.
-  void SetAppDraggedByUser(const std::string& extension_id);
-
   // Returns true if there is an extension which controls the preference value
   //  for |pref_key| *and* it is specific to incognito mode.
   bool HasIncognitoPrefValue(const std::string& pref_key) const;

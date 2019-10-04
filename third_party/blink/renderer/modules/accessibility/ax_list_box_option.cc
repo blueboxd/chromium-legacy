@@ -77,10 +77,9 @@ AccessibilitySelectedState AXListBoxOption::IsSelected() const {
   if (!GetNode() || !CanSetSelectedAttribute())
     return kSelectedStateUndefined;
 
-  return (IsHTMLOptionElement(GetNode()) &&
-          ToHTMLOptionElement(GetNode())->Selected())
-             ? kSelectedStateTrue
-             : kSelectedStateFalse;
+  auto* option_element = DynamicTo<HTMLOptionElement>(GetNode());
+  return (option_element && option_element->Selected()) ? kSelectedStateTrue
+                                                        : kSelectedStateFalse;
 }
 
 bool AXListBoxOption::IsSelectedOptionActive() const {
@@ -124,7 +123,7 @@ String AXListBoxOption::TextAlternative(bool recursive,
     return text_alternative;
 
   name_from = ax::mojom::NameFrom::kContents;
-  text_alternative = ToHTMLOptionElement(GetNode())->DisplayLabel();
+  text_alternative = To<HTMLOptionElement>(GetNode())->DisplayLabel();
   if (name_sources) {
     name_sources->push_back(NameSource(found_text_alternative));
     name_sources->back().type = name_from;
@@ -151,7 +150,7 @@ bool AXListBoxOption::OnNativeSetSelectedAction(bool selected) {
   if ((is_selected && selected) || (!is_selected && !selected))
     return false;
 
-  select_element->SelectOptionByAccessKey(ToHTMLOptionElement(GetNode()));
+  select_element->SelectOptionByAccessKey(To<HTMLOptionElement>(GetNode()));
   return true;
 }
 
@@ -159,7 +158,7 @@ HTMLSelectElement* AXListBoxOption::ListBoxOptionParentNode() const {
   if (!GetNode())
     return nullptr;
 
-  if (auto* option = ToHTMLOptionElementOrNull(GetNode()))
+  if (auto* option = DynamicTo<HTMLOptionElement>(GetNode()))
     return option->OwnerSelectElement();
 
   return nullptr;

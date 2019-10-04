@@ -29,6 +29,8 @@ class MockPooledTaskRunnerDelegate : public PooledTaskRunnerDelegate {
   MOCK_CONST_METHOD1(ShouldYield, bool(const TaskSource* task_source));
   MOCK_METHOD1(EnqueueJobTaskSource,
                bool(scoped_refptr<JobTaskSource> task_source));
+  MOCK_METHOD1(RemoveJobTaskSource,
+               void(scoped_refptr<JobTaskSource> task_source));
   MOCK_CONST_METHOD1(IsRunningPoolWithTraits, bool(const TaskTraits& traits));
   MOCK_METHOD2(UpdatePriority,
                void(scoped_refptr<TaskSource> task_source,
@@ -224,6 +226,68 @@ TEST_F(ThreadPoolJobTaskSourceTest, RunTasksInParallel) {
 
   std::move(task_c->task).Run();
   EXPECT_FALSE(registered_task_source_c.DidProcessTask());
+}
+
+// Verifies the normal flow of running the join task until completion.
+TEST_F(ThreadPoolJobTaskSourceTest, RunJoinTask) {
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      DoNothing(), /* num_tasks_to_run */ 2);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, ThreadPool(), &pooled_task_runner_delegate_);
+
+  EXPECT_TRUE(task_source->WillJoin());
+  // Intentionally run |worker_task| twice to make sure RunJoinTask() calls
+  // it again. This can happen in production if the joining thread spuriously
+  // return and needs to run again.
+  EXPECT_TRUE(task_source->RunJoinTask());
+  EXPECT_FALSE(task_source->RunJoinTask());
+}
+
+// Verifies that WillJoin() doesn't allow a joining thread to contribute
+// after Cancel() is called.
+TEST_F(ThreadPoolJobTaskSourceTest, CancelJoinTask) {
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      DoNothing(), /* num_tasks_to_run */ 2);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, ThreadPool(), &pooled_task_runner_delegate_);
+
+  task_source->Cancel();
+  EXPECT_FALSE(task_source->WillJoin());
+}
+
+// Verifies that RunJoinTask() doesn't allow a joining thread to contribute
+// after Cancel() is called.
+TEST_F(ThreadPoolJobTaskSourceTest, JoinCancelTask) {
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      DoNothing(), /* num_tasks_to_run */ 2);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, ThreadPool(), &pooled_task_runner_delegate_);
+
+  EXPECT_TRUE(task_source->WillJoin());
+  task_source->Cancel();
+  EXPECT_FALSE(task_source->RunJoinTask());
+}
+
+// Verifies that the join task can run in parallel with worker tasks up to
+// |max_concurrency|.
+TEST_F(ThreadPoolJobTaskSourceTest, RunJoinTaskInParallel) {
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      DoNothing(), /* num_tasks_to_run */ 2);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, ThreadPool(), &pooled_task_runner_delegate_);
+
+  auto registered_task_source =
+      RegisteredTaskSource::CreateForTesting(task_source);
+  EXPECT_EQ(registered_task_source.WillRunTask(),
+            TaskSource::RunStatus::kAllowedNotSaturated);
+  auto worker_task = registered_task_source.TakeTask();
+
+  EXPECT_TRUE(task_source->WillJoin());
+
+  std::move(worker_task->task).Run();
+  EXPECT_FALSE(registered_task_source.DidProcessTask());
+
+  EXPECT_FALSE(task_source->RunJoinTask());
 }
 
 // Verifies that a call to NotifyConcurrencyIncrease() calls the delegate

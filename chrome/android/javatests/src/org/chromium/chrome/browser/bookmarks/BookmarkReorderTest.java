@@ -9,8 +9,8 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
-import static org.chromium.chrome.browser.ViewHighlighterTestUtils.checkHighlightOff;
-import static org.chromium.chrome.browser.ViewHighlighterTestUtils.checkHighlightPulse;
+import static org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighterTestUtils.checkHighlightOff;
+import static org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighterTestUtils.checkHighlightPulse;
 
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;

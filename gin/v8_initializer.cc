@@ -266,9 +266,9 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
   }
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+  // TODO(v8:7624): Remove natives and all remaining infrastructure.
   v8::StartupData natives;
   GetMappedFileData(g_mapped_natives, &natives);
-  v8::V8::SetNativesDataBlob(&natives);
 
   if (g_mapped_snapshot) {
     v8::StartupData snapshot;

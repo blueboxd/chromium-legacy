@@ -281,8 +281,8 @@ MetricsStateManager::CreateDefaultEntropyProvider() {
   if (enabled_state_provider_->IsConsentGiven() ||
       !provisional_client_id_.empty()) {
     UpdateEntropySourceReturnedValue(ENTROPY_SOURCE_HIGH);
-    return std::unique_ptr<const base::FieldTrial::EntropyProvider>(
-        new variations::SHA1EntropyProvider(GetHighEntropySource()));
+    return std::make_unique<variations::SHA1EntropyProvider>(
+        GetHighEntropySource());
   }
 
   UpdateEntropySourceReturnedValue(ENTROPY_SOURCE_LOW);

@@ -64,6 +64,17 @@ constexpr float kSuggestionChipOpacityEndProgress = 1;
 // The app list transition progress value for fullscreen state.
 constexpr float kAppListFullscreenProgressValue = 2.0;
 
+// Returns ideal horizontal padding for apps container with provided contents
+// bounds.
+int GetContainerHorizontalPaddingForBounds(const gfx::Rect& bounds) {
+  const int horizontal_margin_ratio =
+      (app_list_features::IsScalableAppListEnabled() &&
+       bounds.width() <= kAppsGridMarginSmallWidthThreshold)
+          ? kAppsGridMarginRatioForSmallWidth
+          : kAppsGridMarginRatio;
+  return bounds.width() / horizontal_margin_ratio;
+}
+
 }  // namespace
 
 // static
@@ -278,6 +289,10 @@ void AppsContainerView::Layout() {
           contents_view_->app_list_view()->GetAppListTransitionProgress(
               AppListView::kProgressFlagNone)));
       chip_container_rect.set_height(kSuggestionChipContainerHeight);
+      if (app_list_features::IsScalableAppListEnabled()) {
+        chip_container_rect.Inset(GetContainerHorizontalPaddingForBounds(rect),
+                                  0);
+      }
       suggestion_chip_container_view_->SetBoundsRect(chip_container_rect);
 
       // Leave the same available bounds for the apps grid view in both
@@ -479,13 +494,8 @@ const gfx::Insets& AppsContainerView::CalculateMarginsForAvailableBounds(
       calculate_margin(ideal_vertical_margin, available_height,
                        min_grid_size.height(), max_grid_size.height());
 
-  const int horizontal_margin_ratio =
-      (app_list_features::IsScalableAppListEnabled() &&
-       available_bounds.width() < kAppsGridMarginSmallWidthThreshold)
-          ? kAppsGridMarginRatioForSmallWidth
-          : kAppsGridMarginRatio;
   const int ideal_horizontal_margin =
-      available_bounds.width() / horizontal_margin_ratio;
+      GetContainerHorizontalPaddingForBounds(available_bounds);
   const int horizontal_margin =
       calculate_margin(ideal_horizontal_margin, available_bounds.width(),
                        min_grid_size.width(), max_grid_size.width());

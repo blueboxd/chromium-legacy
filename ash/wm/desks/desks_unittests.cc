@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
@@ -47,9 +48,14 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/compositor_extra/shadow.h"
+#include "ui/display/display.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/background.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/client_view.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/window_modality_controller.h"
 #include "ui/wm/core/window_util.h"
@@ -1849,6 +1855,81 @@ TEST_F(TabletModeDesksTest, BackdropsStacking) {
   auto* desk_2_backdrop = desk_2_backdrop_controller->backdrop_window();
   EXPECT_TRUE(IsStackedBelow(desk_2_backdrop, win3.get()));
   EXPECT_TRUE(IsStackedBelow(desk_2_backdrop, win4.get()));
+}
+
+namespace {
+
+// A client view that returns a given minimum size to be used on the widget's
+// native window.
+class TestClientView : public views::ClientView {
+ public:
+  TestClientView(views::Widget* widget, const gfx::Size& minimum_size)
+      : views::ClientView(widget, widget->widget_delegate()->GetContentsView()),
+        minimum_size_(minimum_size) {}
+  ~TestClientView() override = default;
+
+  // views::ClientView:
+  gfx::Size GetMinimumSize() const override { return minimum_size_; }
+
+ private:
+  const gfx::Size minimum_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestClientView);
+};
+
+}  // namespace
+
+TEST_F(TabletModeDesksTest, RestoringUnsnappableWindowsInSplitView) {
+  UpdateDisplay("600x400");
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+
+  // Setup an app window that cannot be snapped in landscape orientation, but
+  // can be snapped in portrait orientation.
+  auto window = CreateAppWindow(gfx::Rect(350, 350));
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window.get());
+  widget->non_client_view()->set_client_view(
+      new TestClientView(widget, gfx::Size(350, 100)));
+  EXPECT_FALSE(CanSnapInSplitview(window.get()));
+
+  // Change to a portrait orientation and expect it's possible to snap the
+  // window.
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  test_api.SetDisplayRotation(display::Display::ROTATE_270,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kPortraitPrimary);
+  EXPECT_TRUE(CanSnapInSplitview(window.get()));
+
+  // Snap the window in this orientation.
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
+  EXPECT_EQ(window.get(), split_view_controller->left_window());
+  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+
+  // Create a second desk, switch to it, and change back the orientation to
+  // landscape, in which the window is not snappable. The window still exists on
+  // the first desk, so nothing should change.
+  auto* controller = DesksController::Get();
+  NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+  const Desk* desk_2 = controller->desks()[1].get();
+  ActivateDesk(desk_2);
+  EXPECT_EQ(desk_2, controller->active_desk());
+  test_api.SetDisplayRotation(display::Display::ROTATE_0,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kLandscapePrimary);
+
+  // Switch back to the first desk, and expect that SplitView is not restored,
+  // since the only available window on that desk is not snappable.
+  const Desk* desk_1 = controller->desks()[0].get();
+  ActivateDesk(desk_1);
+  EXPECT_EQ(desk_1, controller->active_desk());
+  EXPECT_FALSE(split_view_controller->InSplitViewMode());
+  EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
 }
 
 TEST_F(DesksTest, MiniViewsTouchGestures) {

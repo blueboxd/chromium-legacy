@@ -9,21 +9,21 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/system/network/tray_network_state_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 
 namespace ash {
+
+class TrayNetworkStateModel;
 
 // This delegate provides UI code in ash, e.g. |VPNListView|, with access to the
 // list of VPN providers enabled in the primary user's profile. The delegate
 // furthermore allows the UI code to request that a VPN provider show its "add
 // network" dialog and allows UI code to request to launch Arc VPN provider.
-class ASH_EXPORT VpnList
-    : public chromeos::network_config::mojom::CrosNetworkConfigObserver {
+class ASH_EXPORT VpnList : public TrayNetworkStateObserver {
  public:
   using VpnProvider = chromeos::network_config::mojom::VpnProvider;
   using VpnProviderPtr = chromeos::network_config::mojom::VpnProviderPtr;
@@ -42,7 +42,7 @@ class ASH_EXPORT VpnList
     DISALLOW_ASSIGN(Observer);
   };
 
-  VpnList();
+  explicit VpnList(TrayNetworkStateModel* model);
   ~VpnList() override;
 
   const std::vector<VpnProviderPtr>& extension_vpn_providers() {
@@ -60,17 +60,8 @@ class ASH_EXPORT VpnList
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // CrosNetworkConfigObserver
-  void OnActiveNetworksChanged(
-      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
-          networks) override;
-  void OnNetworkStateChanged(
-      chromeos::network_config::mojom::NetworkStatePropertiesPtr network)
-      override;
-  void OnNetworkStateListChanged() override;
-  void OnDeviceStateListChanged() override;
-  void OnVpnProvidersChanged() override;
-  void OnNetworkCertificatesChanged() override;
+  // TrayNetworkStateObserver
+  void VpnProvidersChanged() override;
 
   void SetVpnProvidersForTest(std::vector<VpnProviderPtr> providers);
 
@@ -84,10 +75,7 @@ class ASH_EXPORT VpnList
   // Adds the built-in OpenVPN/L2TP provider to |extension_vpn_providers_|.
   void AddBuiltInProvider();
 
-  mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
-      cros_network_config_;
-  mojo::Receiver<chromeos::network_config::mojom::CrosNetworkConfigObserver>
-      cros_network_config_observer_{this};
+  TrayNetworkStateModel* model_;
 
   // Cache of VPN providers, including the built-in OpenVPN/L2TP provider and
   // other providers added by extensions in the primary user's profile.

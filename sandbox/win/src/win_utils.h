@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <windows.h>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -140,6 +141,12 @@ DWORD GetLastErrorFromNtStatus(NTSTATUS status);
 // address space layout randomization. This uses the process' PEB to extract
 // the base address. This should only be called on new, suspended processes.
 void* GetProcessBaseAddress(HANDLE process);
+
+// Calls GetTokenInformation with the desired |info_class| and returns a
+// |buffer| and the Win32 error code.
+DWORD GetTokenInformation(HANDLE token,
+                          TOKEN_INFORMATION_CLASS info_class,
+                          std::unique_ptr<BYTE[]>* buffer);
 
 }  // namespace sandbox
 

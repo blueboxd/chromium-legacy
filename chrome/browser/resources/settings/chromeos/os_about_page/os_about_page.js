@@ -63,6 +63,12 @@ Polymer({
     },
 
     /** @private */
+    eolMessageWithMonthAndYear_: {
+      type: String,
+      value: '',
+    },
+
+    /** @private */
     hasInternetConnection_: {
       type: Boolean,
       value: false,
@@ -185,8 +191,9 @@ Polymer({
       this.regulatoryInfo_ = info;
     });
 
-    this.aboutBrowserProxy_.getHasEndOfLife().then(result => {
-      this.hasEndOfLife_ = result;
+    this.aboutBrowserProxy_.getEndOfLifeInfo().then(result => {
+      this.hasEndOfLife_ = !!result.hasEndOfLife;
+      this.eolMessageWithMonthAndYear_ = result.aboutPageEndOfLifeMessage || '';
     });
 
     this.aboutBrowserProxy_.getEnabledReleaseNotes().then(result => {

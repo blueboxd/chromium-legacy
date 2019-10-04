@@ -102,10 +102,6 @@ jumbo_static_library("browser") {
     "import/password_csv_reader.h",
     "import/password_importer.cc",
     "import/password_importer.h",
-    "leak_detection_delegate.cc",
-    "leak_detection_delegate.h",
-    "leak_detection_delegate_helper.cc",
-    "leak_detection_delegate_helper.h",
     "leak_detection_dialog_utils.cc",
     "leak_detection_dialog_utils.h",
     "leaked_credentials_table.cc",
@@ -247,7 +243,6 @@ jumbo_static_library("browser") {
     "//components/keyed_service/core",
     "//components/os_crypt",
     "//components/password_manager/core/browser/form_parsing",
-    "//components/password_manager/core/browser/leak_detection:leak_detection",
     "//components/password_manager/core/browser/leak_detection:leak_detection_interface_headers",
     "//components/password_manager/core/common",
     "//components/pref_registry",
@@ -281,8 +276,15 @@ jumbo_static_library("browser") {
       "hsts_query.h",
       "http_credentials_cleaner.cc",
       "http_credentials_cleaner.h",
+      "leak_detection_delegate.cc",
+      "leak_detection_delegate.h",
+      "leak_detection_delegate_helper.cc",
+      "leak_detection_delegate_helper.h",
     ]
-    deps += [ "//components/safe_browsing/common:safe_browsing_prefs" ]
+    deps += [
+      "//components/password_manager/core/browser/leak_detection:leak_detection",
+      "//components/safe_browsing/common:safe_browsing_prefs",
+    ]
   }
 
   if ((is_posix && !is_mac && !is_ios) || is_fuchsia) {
@@ -515,8 +517,6 @@ source_set("unit_tests") {
     "import/csv_reader_unittest.cc",
     "import/password_csv_reader_unittest.cc",
     "import/password_importer_unittest.cc",
-    "leak_detection_delegate_helper_unittest.cc",
-    "leak_detection_delegate_unittest.cc",
     "leak_detection_dialog_utils_unittest.cc",
     "leaked_credentials_table_unittest.cc",
     "login_database_unittest.cc",
@@ -564,6 +564,8 @@ source_set("unit_tests") {
     sources += [
       "hsts_query_unittest.cc",
       "http_credentials_cleaner_unittest.cc",
+      "leak_detection_delegate_helper_unittest.cc",
+      "leak_detection_delegate_unittest.cc",
     ]
   }
   if (password_reuse_detection_support) {
@@ -596,9 +598,7 @@ source_set("unit_tests") {
     "//components/password_manager/core/browser:proto",
     "//components/password_manager/core/browser/form_parsing:unit_tests",
     "//components/password_manager/core/browser/form_parsing/fuzzer:unit_tests",
-    "//components/password_manager/core/browser/leak_detection",
     "//components/password_manager/core/browser/leak_detection:leak_detection_interface_headers",
-    "//components/password_manager/core/browser/leak_detection:unit_tests",
     "//components/password_manager/core/common",
     "//components/prefs:test_support",
     "//components/security_state/core",
@@ -628,6 +628,13 @@ source_set("unit_tests") {
     deps += [
       "//components/safe_browsing:features",
       "//components/safe_browsing/common:safe_browsing_prefs",
+    ]
+  }
+
+  if (!is_ios) {
+    deps += [
+      "//components/password_manager/core/browser/leak_detection",
+      "//components/password_manager/core/browser/leak_detection:unit_tests",
     ]
   }
 }

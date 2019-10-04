@@ -96,13 +96,13 @@ class ASH_EXPORT NotifierSettingsView : public views::View,
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  views::ImageView* quiet_mode_icon_;
-  views::ToggleButton* quiet_mode_toggle_;
-  views::View* header_view_;
-  views::Label* top_label_;
-  views::ScrollBar* scroll_bar_;
-  views::ScrollView* scroller_;
-  views::View* no_notifiers_view_;
+  views::ImageView* quiet_mode_icon_ = nullptr;
+  views::ToggleButton* quiet_mode_toggle_ = nullptr;
+  views::View* header_view_ = nullptr;
+  views::Label* top_label_ = nullptr;
+  views::ScrollBar* scroll_bar_ = nullptr;
+  views::ScrollView* scroller_ = nullptr;
+  views::View* no_notifiers_view_ = nullptr;
   std::set<NotifierButton*> buttons_;
 
   DISALLOW_COPY_AND_ASSIGN(NotifierSettingsView);

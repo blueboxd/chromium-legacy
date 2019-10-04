@@ -480,11 +480,20 @@ void NGBlockNode::FinishLayout(
     const NGConstraintSpace& constraint_space,
     const NGBreakToken* break_token,
     scoped_refptr<const NGLayoutResult> layout_result) {
-  if (!IsBlockLayoutComplete(constraint_space, *layout_result))
+  if (constraint_space.IsIntermediateLayout())
     return;
+
+  // If we abort layout and don't clear the cached layout-result, we can end
+  // up in a state where the layout-object tree doesn't match fragment tree
+  // referenced by this layout-result.
+  if (layout_result->Status() != NGLayoutResult::kSuccess) {
+    box_->ClearCachedLayoutResult();
+    return;
+  }
 
   if (!constraint_space.HasBlockFragmentation())
     box_->SetCachedLayoutResult(*layout_result, break_token);
+
   if (block_flow) {
     auto* child = GetLayoutObjectForFirstChildNode(block_flow);
     bool has_inline_children =
@@ -1174,7 +1183,8 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
     CopyBaselinesFromLegacyLayout(constraint_space, &builder);
     layout_result = builder.ToBoxFragment();
 
-    box_->SetCachedLayoutResult(*layout_result, /* break_token */ nullptr);
+    if (!constraint_space.IsIntermediateLayout())
+      box_->SetCachedLayoutResult(*layout_result, /* break_token */ nullptr);
 
     // If |SetCachedLayoutResult| did not update cached |LayoutResult|,
     // |NeedsLayout()| flag should not be cleared.

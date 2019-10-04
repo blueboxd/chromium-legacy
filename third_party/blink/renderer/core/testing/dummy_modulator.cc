@@ -59,6 +59,10 @@ bool DummyModulator::IsScriptingDisabled() const {
   return false;
 }
 
+bool DummyModulator::ImportMapsEnabled() const {
+  return false;
+}
+
 bool DummyModulator::BuiltInModuleInfraEnabled() const {
   return false;
 }

@@ -916,6 +916,11 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
   frame->set_color_space(video_frame->ColorSpace());
 
   bool allow_overlay = false;
+#if defined(OS_WIN)
+  // Windows direct composition path only supports dual GMB NV12 video overlays.
+  allow_overlay = (output_format_ ==
+                   GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB);
+#else
   switch (output_format_) {
     case GpuVideoAcceleratorFactories::OutputFormat::I420:
       allow_overlay =
@@ -925,9 +930,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
       allow_overlay = true;
       break;
     case GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB:
-#if defined(OS_WIN)
-      allow_overlay = true;
-#endif
+      // Only used on Windows where we can't use single NV12 textures.
       break;
     case GpuVideoAcceleratorFactories::OutputFormat::XR30:
     case GpuVideoAcceleratorFactories::OutputFormat::XB30:
@@ -946,7 +949,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
     case GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED:
       break;
   }
-
+#endif  // OS_WIN
   frame->metadata()->MergeMetadataFrom(video_frame->metadata());
   frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY,
                                 allow_overlay);

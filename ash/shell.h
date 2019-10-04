@@ -187,7 +187,6 @@ class TrayAction;
 class TrayBluetoothHelper;
 class VideoActivityNotifier;
 class VideoDetector;
-class VpnList;
 class WallpaperControllerImpl;
 class WaylandServerController;
 class WindowCycleController;
@@ -490,7 +489,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   UserMetricsRecorder* metrics() { return user_metrics_recorder_.get(); }
   VideoDetector* video_detector() { return video_detector_.get(); }
-  VpnList* vpn_list() { return vpn_list_.get(); }
   WallpaperControllerImpl* wallpaper_controller() {
     return wallpaper_controller_.get();
   }
@@ -676,7 +674,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ToastManagerImpl> toast_manager_;
   std::unique_ptr<TouchDevicesController> touch_devices_controller_;
   std::unique_ptr<TrayAction> tray_action_;
-  std::unique_ptr<VpnList> vpn_list_;
   std::unique_ptr<WallpaperControllerImpl> wallpaper_controller_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<OverviewController> overview_controller_;

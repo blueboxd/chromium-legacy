@@ -5087,5 +5087,40 @@ TEST_F(NGColumnLayoutAlgorithmTest, AvoidBreakBetweenBreakAtEarlyClassC) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, AvoidBreakBeforeBlockReplacedContent) {
+  // Replaced content is unbreakable. Don't break right before it if we have
+  // break-before:avoid, though.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        column-fill: auto;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:22px; height:40px;"></div>
+        <div style="width:33px; height:50px; break-inside:avoid;"></div>
+        <img style="break-before:avoid; display:block; width:44px; height:50px;">
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:22x40
+      offset:110,0 size:100x100
+        offset:0,0 size:33x50
+        offset:0,50 size:44x50
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 }  // anonymous namespace
 }  // namespace blink

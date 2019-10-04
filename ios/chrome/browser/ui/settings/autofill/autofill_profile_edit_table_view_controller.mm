@@ -204,6 +204,7 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
         autofill::AutofillType(field.autofillType), locale));
     item.autofillUIType = AutofillUITypeFromAutofillType(field.autofillType);
     item.textFieldEnabled = self.tableView.editing;
+    item.hideIcon = !self.tableView.editing;
     item.autoCapitalizationType = field.autoCapitalizationType;
     item.returnKeyType = field.returnKeyType;
     item.keyboardType = field.keyboardType;

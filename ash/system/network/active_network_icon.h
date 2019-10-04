@@ -15,8 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 
 namespace gfx {
 class ImageSkia;
@@ -92,9 +91,6 @@ class ASH_EXPORT ActiveNetworkIcon : public TrayNetworkStateObserver {
   GetNetworkForType(Type type);
 
   TrayNetworkStateModel* model_;
-
-  mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
-      remote_cros_network_config_;
 
   int cellular_uninitialized_msg_ = 0;
   base::Time uninitialized_state_time_;

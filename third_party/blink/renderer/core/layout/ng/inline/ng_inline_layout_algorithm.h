@@ -74,7 +74,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                                    const NGInlineItemResult&,
                                    NGInlineBoxState*);
 
-  void BidiReorder();
+  void BidiReorder(TextDirection base_direction);
 
   void PlaceControlItem(const NGInlineItem&,
                         const NGLineInfo&,

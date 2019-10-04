@@ -39,9 +39,6 @@ class TabActivityWatcher : public BrowserListObserver,
   base::Optional<float> CalculateReactivationScore(
       content::WebContents* web_contents);
 
-  // Log TabFeatures for oldest n tabs.
-  void LogOldestNTabFeatures();
-
   // Logs TabMetrics of all |tabs|; and sorts them by descending importance,
   // so that the last tab is the first candidate that will be discarded.
   void LogAndMaybeSortLifecycleUnitWithTabRanker(
@@ -56,9 +53,6 @@ class TabActivityWatcher : public BrowserListObserver,
   // Helper class to observe WebContents.
   // TODO(michaelpg): Merge this into TabLifecycleUnit.
   class WebContentsData;
-
-  // Returns all WebContentsData* sorted by MoreRecentlyUsed.
-  std::vector<WebContentsData*> GetSortedWebContentsData();
 
   // Called When A Tab is closed, log necessary metrics and erase the
   // |web_contents_data| pointer in |all_closing_tabs_|.
@@ -75,9 +69,6 @@ class TabActivityWatcher : public BrowserListObserver,
   void TabPinnedStateChanged(TabStripModel* tab_strip_model,
                              content::WebContents* contents,
                              int index) override;
-  void WillCloseAllTabs(TabStripModel* tab_strip_model) override;
-  void CloseAllTabsStopped(TabStripModel* tab_strip_model,
-                           CloseAllStoppedReason reason) override;
 
   // BrowserTabStripTrackerDelegate:
   bool ShouldTrackBrowser(Browser* browser) override;
@@ -93,9 +84,6 @@ class TabActivityWatcher : public BrowserListObserver,
 
   // Loads the Tab Ranker model on first use and calculates tab scores.
   std::unique_ptr<tab_ranker::TabScorePredictor> predictor_;
-
-  // All WebContentsData of the browser that is currently in closing_all mode.
-  base::flat_set<WebContentsData*> all_closing_tabs_;
 
   DISALLOW_COPY_AND_ASSIGN(TabActivityWatcher);
 };

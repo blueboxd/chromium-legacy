@@ -615,8 +615,8 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
       Shell::Get()->split_view_controller()->InSplitViewMode();
   const bool maximized =
       in_split_view_mode ||
-      (state_.visibility_state != SHELF_AUTO_HIDE &&
-       state_.window_state == WorkspaceWindowState::kMaximized &&
+      state_.window_state == WorkspaceWindowState::kFullscreen ||
+      (state_.window_state == WorkspaceWindowState::kMaximized &&
        !Shell::Get()
             ->home_screen_controller()
             ->home_launcher_gesture_handler()

@@ -405,7 +405,7 @@ class HttpNetworkTransactionTest : public PlatformTest,
     base::RunLoop().RunUntilIdle();
     // Set an initial delay to ensure that the first call to TimeTicks::Now()
     // before incrementing the counter does not return a null value.
-    FastForwardBy(TimeDelta::FromSeconds(1));
+    FastForwardBy(base::TimeDelta::FromSeconds(1));
   }
 
   void TearDown() override {

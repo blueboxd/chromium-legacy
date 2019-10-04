@@ -102,7 +102,7 @@ class ScrollPredictorTest : public testing::Test {
   }
 
   gfx::PointF GetLastAccumulatedDelta() {
-    return scroll_predictor_->last_accumulated_delta_;
+    return scroll_predictor_->last_predicted_accumulated_delta_;
   }
 
   bool GetResamplingState() {

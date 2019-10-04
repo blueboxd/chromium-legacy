@@ -86,9 +86,8 @@ class NotificationSchedulerTest : public testing::Test {
 
  protected:
   void Init() {
-    EXPECT_CALL(*impression_tracker(), Init(_, _))
-        .WillOnce(Invoke([&](ImpressionHistoryTracker::Delegate* delegate,
-                             ImpressionHistoryTracker::InitCallback callback) {
+    EXPECT_CALL(*impression_tracker(), Init(_))
+        .WillOnce(Invoke([&](ImpressionHistoryTracker::InitCallback callback) {
           std::move(callback).Run(true);
         }));
 
@@ -160,9 +159,8 @@ TEST_F(NotificationSchedulerTest, InitSuccess) {
 
 // Tests the case when impression tracker failed to initialize.
 TEST_F(NotificationSchedulerTest, InitImpressionTrackerFailed) {
-  EXPECT_CALL(*impression_tracker(), Init(_, _))
-      .WillOnce(Invoke([](ImpressionHistoryTracker::Delegate* delegate,
-                          ImpressionHistoryTracker::InitCallback callback) {
+  EXPECT_CALL(*impression_tracker(), Init(_))
+      .WillOnce(Invoke([](ImpressionHistoryTracker::InitCallback callback) {
         // Impression tracker failed to load.
         std::move(callback).Run(false);
       }));
@@ -181,9 +179,8 @@ TEST_F(NotificationSchedulerTest, InitImpressionTrackerFailed) {
 
 // Tests the case when scheduled notification manager failed to initialize.
 TEST_F(NotificationSchedulerTest, InitScheduledNotificationManagerFailed) {
-  EXPECT_CALL(*impression_tracker(), Init(_, _))
-      .WillOnce(Invoke([](ImpressionHistoryTracker::Delegate* delegate,
-                          ImpressionHistoryTracker::InitCallback callback) {
+  EXPECT_CALL(*impression_tracker(), Init(_))
+      .WillOnce(Invoke([](ImpressionHistoryTracker::InitCallback callback) {
         std::move(callback).Run(true);
       }));
 

@@ -37,10 +37,16 @@ class DocumentLoaderTest : public testing::Test {
   }
 
   void TearDown() override {
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
+    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
   }
+
+  class ScopedLoaderDelegate {
+   public:
+    ScopedLoaderDelegate(WebURLLoaderTestDelegate* delegate) {
+      url_test_helpers::SetLoaderDelegate(delegate);
+    }
+    ~ScopedLoaderDelegate() { url_test_helpers::SetLoaderDelegate(nullptr); }
+  };
 
   WebLocalFrameImpl* MainFrame() { return web_view_helper_.LocalMainFrame(); }
 
@@ -58,9 +64,8 @@ TEST_F(DocumentLoaderTest, SingleChunk) {
     }
   } delegate;
 
-  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(&delegate);
+  ScopedLoaderDelegate loader_delegate(&delegate);
   frame_test_helpers::LoadFrame(MainFrame(), "https://example.com/foo.html");
-  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(nullptr);
 
   // TODO(dcheng): How should the test verify that the original callback is
   // invoked? The test currently still passes even if the test delegate
@@ -82,9 +87,8 @@ TEST_F(DocumentLoaderTest, MultiChunkNoReentrancy) {
     }
   } delegate;
 
-  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(&delegate);
+  ScopedLoaderDelegate loader_delegate(&delegate);
   frame_test_helpers::LoadFrame(MainFrame(), "https://example.com/foo.html");
-  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(nullptr);
 }
 
 // Finally, test reentrant callbacks to DocumentLoader::BodyDataReceived().
@@ -171,13 +175,13 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
   web_view_helper_.GetWebView()->GetPage()->GetSettings().SetPluginsEnabled(
       true);
 
-  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(
-      &main_frame_client);
-  frame_test_helpers::LoadFrameDontWait(
-      MainFrame(), url_test_helpers::ToKURL("https://example.com/foo.html"));
-  main_frame_client.Serve();
-  frame_test_helpers::PumpPendingRequestsForFrameToLoad(MainFrame());
-  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(nullptr);
+  {
+    ScopedLoaderDelegate loader_delegate(&main_frame_client);
+    frame_test_helpers::LoadFrameDontWait(
+        MainFrame(), url_test_helpers::ToKURL("https://example.com/foo.html"));
+    main_frame_client.Serve();
+    frame_test_helpers::PumpPendingRequestsForFrameToLoad(MainFrame());
+  }
 
   // Sanity check that we did actually test reeentrancy.
   EXPECT_TRUE(main_frame_client.ServedReentrantly());

@@ -166,17 +166,12 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
   switch (params.disposition) {
     case WindowOpenDisposition::SWITCH_TO_TAB:
 #if !defined(OS_ANDROID)
-      for (auto browser_it = BrowserList::GetInstance()->begin_last_active();
-           browser_it != BrowserList::GetInstance()->end_last_active();
-           ++browser_it) {
-        Browser* browser = *browser_it;
-        // When tab switching, only look at same profile and anonymity level.
-        if (browser->profile()->IsSameProfileAndType(profile)) {
-          int index = GetIndexOfExistingTab(browser, params);
-          if (index >= 0)
-            return {browser, index};
-        }
-      }
+    {
+      std::pair<Browser*, int> index =
+          GetIndexAndBrowserOfExistingTab(profile, params);
+      if (index.first)
+        return index;
+    }
 #endif
       FALLTHROUGH;
     case WindowOpenDisposition::CURRENT_TAB:
@@ -189,6 +184,15 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
       int index = GetIndexOfExistingTab(params.browser, params);
       if (index >= 0)
         return {params.browser, index};
+      // If this window can't open tabs, then it would load in a random
+      // window, potentially opening a second copy. Instead, make an extra
+      // effort to see if there's an already open copy.
+      if (params.browser && !WindowCanOpenTabs(params.browser)) {
+        std::pair<Browser*, int> index =
+            GetIndexAndBrowserOfExistingTab(profile, params);
+        if (index.first)
+          return index;
+      }
     }
       FALLTHROUGH;
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:

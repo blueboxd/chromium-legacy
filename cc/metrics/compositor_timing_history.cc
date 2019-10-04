@@ -1049,10 +1049,6 @@ void CompositorTimingHistory::DidSubmitCompositorFrame(uint32_t frame_token) {
   submit_start_time_ = Now();
 }
 
-void CompositorTimingHistory::DidNotProduceFrame() {
-  compositor_frame_reporting_controller_->DidNotProduceFrame();
-}
-
 void CompositorTimingHistory::DidReceiveCompositorFrameAck() {
   DCHECK_NE(base::TimeTicks(), submit_start_time_);
   base::TimeDelta submit_to_ack_duration = Now() - submit_start_time_;

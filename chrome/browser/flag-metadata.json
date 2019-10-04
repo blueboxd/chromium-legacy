@@ -1901,9 +1901,9 @@
     "expiry_milestone": 82
   },
   {
-    "name": "enable-web-authentication-cable-support",
+    "name": "enable-web-authentication-cable-v2-support",
     "owners": [ "webauthn-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 84
   },
   {
     "name": "enable-web-authentication-pin-support",
@@ -2206,6 +2206,11 @@
     "expiry_milestone": 81
   },
   {
+    "name": "fuzzy-app-search",
+    "owners": [ "thanhdng", "jiameng" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "gaia-action-buttons",
     "owners": [ "jeroendh", "rsorokin" ],
     "expiry_milestone": 79
@@ -2424,6 +2429,11 @@
     // capture a memlog without disturbing the situation under test by
     // restarting to apply a switch. It should not be removed.
     "expiry_milestone": -1
+  },
+  {
+    "name": "message-center-redesign",
+    "owners": ["amehfooz", "tengs"],
+    "expiry_milestone": 81
   },
   {
     "name": "mime-handler-view-in-cross-process-frame",
@@ -3168,11 +3178,6 @@
     "name": "system-keyboard-lock",
     "owners": [ "joedow", "garykac", "jamiewalch" ],
     "expiry_milestone": 79
-  },
-  {
-    "name": "system-tray-pagination",
-    "owners": ["amehfooz", "tengs"],
-    "expiry_milestone": 81
   },
   {
     "name": "tab-groups",

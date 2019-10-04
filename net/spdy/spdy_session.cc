@@ -2801,12 +2801,6 @@ void SpdySession::DeleteStream(std::unique_ptr<SpdyStream> stream, int status) {
   }
 }
 
-void SpdySession::RecordPingRTTHistogram(base::TimeDelta duration) {
-  UMA_HISTOGRAM_CUSTOM_TIMES("Net.SpdyPing.RTT", duration,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMinutes(10), 100);
-}
-
 void SpdySession::RecordHistograms() {
   UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdyStreamsPerSession",
                               streams_initiated_count_, 1, 300, 50);
@@ -3024,7 +3018,6 @@ void SpdySession::OnPing(spdy::SpdyPingId unique_id, bool is_ack) {
 
   // Record RTT in histogram when there are no more pings in flight.
   base::TimeDelta ping_duration = time_func_() - last_ping_sent_time_;
-  RecordPingRTTHistogram(ping_duration);
   if (network_quality_estimator_) {
     network_quality_estimator_->RecordSpdyPingLatency(host_port_pair(),
                                                       ping_duration);

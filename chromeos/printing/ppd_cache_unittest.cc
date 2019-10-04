@@ -15,8 +15,6 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/printing/ppd_cache.h"
-#include "net/url_request/test_url_request_interceptor.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -118,7 +116,7 @@ TEST_F(PpdCacheTest, HitAge) {
   task_environment_.RunUntilIdle();
   EXPECT_EQ(captured_find_results_, 1);
   // The age should be well under a second, but accept anything under an hour.
-  EXPECT_LT(find_result_.age, TimeDelta::FromHours(1));
+  EXPECT_LT(find_result_.age, base::TimeDelta::FromHours(1));
 }
 
 }  // namespace

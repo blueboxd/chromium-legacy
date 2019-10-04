@@ -138,6 +138,19 @@ const char* GetAsString(PointerType type) {
   }
 }
 
+std::unique_ptr<base::DictionaryValue> GenerateTouchPoint(
+    const TouchEvent& event) {
+  std::unique_ptr<base::DictionaryValue> point(new base::DictionaryValue());
+  point->SetInteger("x", event.x);
+  point->SetInteger("y", event.y);
+  point->SetDouble("radiusX", event.radiusX);
+  point->SetDouble("radiusY", event.radiusY);
+  point->SetDouble("rotationAngle", event.rotationAngle);
+  point->SetDouble("force", event.force);
+  point->SetInteger("id", event.id);
+  return point;
+}
+
 }  // namespace
 
 WebViewImpl::WebViewImpl(const std::string& id,
@@ -556,14 +569,7 @@ Status WebViewImpl::DispatchTouchEvent(const TouchEvent& event,
   std::unique_ptr<base::ListValue> point_list(new base::ListValue);
   Status status(kOk);
   if (type == "touchStart" || type == "touchMove") {
-    std::unique_ptr<base::DictionaryValue> point(new base::DictionaryValue());
-    point->SetInteger("x", event.x);
-    point->SetInteger("y", event.y);
-    point->SetDouble("radiusX", event.radiusX);
-    point->SetDouble("radiusY", event.radiusY);
-    point->SetDouble("rotationAngle", event.rotationAngle);
-    point->SetDouble("force", event.force);
-    point->SetInteger("id", event.id);
+    std::unique_ptr<base::DictionaryValue> point = GenerateTouchPoint(event);
     point_list->Append(std::move(point));
   }
   params.Set("touchPoints", std::move(point_list));
@@ -582,6 +588,33 @@ Status WebViewImpl::DispatchTouchEvents(const std::list<TouchEvent>& events,
     Status status = DispatchTouchEvent(*it, async_dispatch_events);
     if (status.IsError())
       return status;
+  }
+  return Status(kOk);
+}
+
+Status WebViewImpl::DispatchTouchEventWithMultiPoints(
+    const std::list<TouchEvent>& events,
+    bool async_dispatch_events) {
+  if (events.size() == 0)
+    return Status(kOk);
+
+  base::DictionaryValue params;
+  std::string type = GetAsString(events.front().type);
+  params.SetString("type", type);
+  std::unique_ptr<base::ListValue> point_list(new base::ListValue);
+  Status status(kOk);
+  for (auto it = events.begin(); it != events.end(); ++it) {
+    if (type == "touchStart" || type == "touchMove") {
+      std::unique_ptr<base::DictionaryValue> point = GenerateTouchPoint(*it);
+      point_list->Append(std::move(point));
+    }
+  }
+  params.Set("touchPoints", std::move(point_list));
+  if (async_dispatch_events) {
+    status = client_->SendCommandAndIgnoreResponse("Input.dispatchTouchEvent",
+                                                   params);
+  } else {
+    status = client_->SendCommand("Input.dispatchTouchEvent", params);
   }
   return Status(kOk);
 }

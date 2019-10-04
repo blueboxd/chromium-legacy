@@ -2533,6 +2533,7 @@ source_set("unit_tests") {
     "drive/drive_integration_service_unittest.cc",
     "drive/file_system_util_unittest.cc",
     "drive/write_on_cache_file_unittest.cc",
+    "eol_notification_unittest.cc",
     "events/event_rewriter_unittest.cc",
     "extensions/active_tab_permission_granter_delegate_chromeos_unittest.cc",
     "extensions/default_app_order_unittest.cc",

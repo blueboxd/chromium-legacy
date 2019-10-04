@@ -130,7 +130,7 @@ class CrostiniManager::CrostiniRestarter
   void Restart() {
     is_initial_install_ = crostini_manager_->GetInstallerViewStatus();
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (!IsCrostiniUIAllowedForProfile(profile_)) {
+    if (!CrostiniFeatures::Get()->IsUIAllowed(profile_)) {
       LOG(ERROR) << "Crostini UI not allowed for profile "
                  << profile_->GetProfileUserName();
       std::move(completed_callback_).Run(CrostiniResult::NOT_ALLOWED);

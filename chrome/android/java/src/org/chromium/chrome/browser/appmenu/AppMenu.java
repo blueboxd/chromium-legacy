@@ -40,7 +40,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
-import org.chromium.chrome.browser.widget.ViewHighlighter;
+import org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighter;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;

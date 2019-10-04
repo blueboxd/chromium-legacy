@@ -2,18 +2,18 @@
   "layers": [
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [500, 400],
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "NGPhysicalLineBoxFragment",
-          "rect": [8, 68, 484, 20],
+          "rect": [8, 68, 784, 20],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalLineBoxFragment",
-          "rect": [8, 8, 484, 20],
+          "rect": [8, 8, 784, 20],
           "reason": "geometry"
         },
         {

@@ -233,9 +233,13 @@ a rotation of 180 degrees in mp4 meta data.
 Actual video frames are the same as four-colors.mp4, except it specifies
 a rotation of 270 degrees in mp4 meta data.
 
-#### four-colors-vp9.web
+#### four-colors-vp9.webm
 A 960x540 vp9 video with 4 color blocks (Y,R,G,B) in every frame. This is
 converted from four-colors.mp4 by ffmpeg.
+
+#### four-colors-vp9-i420a.webm
+A 960x540 yuva420p vp9 video with 4 color blocks (Y,R,G,B) in every frame. This
+is converted from four-colors.mp4 by adding an opacity of 0.5 using ffmpeg.
 
 #### bear-320x180-hi10p.mp4
 #### bear-320x240-vp9_profile2.webm

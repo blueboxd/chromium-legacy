@@ -5349,6 +5349,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_FIND" desc="The tooltip for the find button">
         Find
       </message>
+      <message name="IDS_TOOLTIP_WEBUI_TAB_STRIP_TOGGLE_BUTTON" desc="The tooltip for toggling the tab strip">
+        Toggle tab strip
+      </message>
 
       <!-- Strings for intent picker -->
       <if expr="not is_android">

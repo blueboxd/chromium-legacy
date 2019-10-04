@@ -12,6 +12,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/numerics/ranges.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -360,7 +361,8 @@ std::string DeathRegex(const std::string& regex) {
 
 class StreamMixerTest : public testing::Test {
  protected:
-  StreamMixerTest() : message_loop_(new base::MessageLoop()) {
+  StreamMixerTest()
+      : message_loop_(new base::MessageLoop(base::MessagePumpType::IO)) {
     auto output = std::make_unique<NiceMock<MockMixerOutput>>();
     mock_output_ = output.get();
     mixer_ = std::make_unique<StreamMixer>(std::move(output), nullptr,

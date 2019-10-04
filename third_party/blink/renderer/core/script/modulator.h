@@ -120,6 +120,7 @@ class CORE_EXPORT Modulator : public GarbageCollected<Modulator>,
   // "scripting is disabled for settings's responsible browsing context"
   virtual bool IsScriptingDisabled() const = 0;
 
+  virtual bool ImportMapsEnabled() const = 0;
   virtual bool BuiltInModuleInfraEnabled() const = 0;
   virtual bool BuiltInModuleEnabled(layered_api::Module) const = 0;
   virtual void BuiltInModuleUseCount(layered_api::Module) const = 0;

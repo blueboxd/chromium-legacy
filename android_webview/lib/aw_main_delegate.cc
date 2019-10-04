@@ -95,9 +95,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // Web Notification API and the Push API are not supported (crbug.com/434712)
   cl->AppendSwitch(switches::kDisableNotifications);
 
-  // WebRTC hardware decoding is not supported, internal bug 15075307
-  cl->AppendSwitch(switches::kDisableWebRtcHWDecoding);
-
   // Check damage in OnBeginFrame to prevent unnecessary draws.
   cl->AppendSwitch(cc::switches::kCheckDamageEarly);
 

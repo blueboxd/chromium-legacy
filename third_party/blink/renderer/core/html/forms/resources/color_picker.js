@@ -1669,6 +1669,7 @@ class FormatToggler extends HTMLElement {
     this.adjustFormatLabelVisibility_();
 
     this.upDownIcon_ = document.createElement('span');
+    this.upDownIcon_.setAttribute('id', 'up-down-icon');
     this.upDownIcon_.innerHTML =
         '<svg width="6" height="8" viewBox="0 0 6 8" fill="none" ' +
         'xmlns="http://www.w3.org/2000/svg"><path d="M1.18359 ' +

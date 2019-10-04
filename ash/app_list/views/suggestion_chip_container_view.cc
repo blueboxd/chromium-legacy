@@ -28,6 +28,11 @@ namespace {
 // The spacing between chips.
 constexpr int kChipSpacing = 8;
 
+// The minimum allowed number of suggestion chips shown in the container
+// (provided that the suggestoin chip results contain at least than number of
+// items).
+constexpr int kMinimumSuggestionChipNumber = 3;
+
 bool IsPolicySuggestionChip(const SearchResult& result) {
   return result.display_location() ==
              ash::SearchResultDisplayLocation::kSuggestionChipContainer &&
@@ -61,11 +66,9 @@ SuggestionChipContainerView::SuggestionChipContainerView(
   layer()->SetFillsBoundsOpaquely(false);
 
   DCHECK(contents_view);
-  views::BoxLayout* layout_manager =
-      SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-          kChipSpacing));
-  layout_manager->set_main_axis_alignment(
+  layout_manager_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), kChipSpacing));
+  layout_manager_->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
 
   for (size_t i = 0; i < static_cast<size_t>(
@@ -166,17 +169,71 @@ void SuggestionChipContainerView::Layout() {
   // Only show the chips that fit in this view's contents bounds.
   int total_width = 0;
   const int max_width = GetContentsBounds().width();
+
+  bool has_hidden_chip = false;
+  std::vector<views::View*> shown_chips;
   for (auto* chip : suggestion_chip_views_) {
-    if (!chip->result())
-      break;
-    const gfx::Size size = chip->GetPreferredSize();
-    if (size.width() + total_width > max_width) {
+    layout_manager_->ClearFlexForView(chip);
+
+    if (!chip->result()) {
       chip->SetVisible(false);
-    } else {
-      chip->SetVisible(true);
-      chip->SetSize(size);
+      continue;
     }
+
+    const gfx::Size size = chip->GetPreferredSize();
+    if (has_hidden_chip ||
+        (size.width() + total_width > max_width &&
+         shown_chips.size() >= kMinimumSuggestionChipNumber)) {
+      chip->SetVisible(false);
+      has_hidden_chip = true;
+      continue;
+    }
+
+    chip->SetVisible(true);
+    shown_chips.push_back(chip);
+
     total_width += (total_width == 0 ? 0 : kChipSpacing) + size.width();
+  }
+
+  // If current suggestion chip width is over the max value, reduce the width by
+  // flexing views whose width is above average for the available space.
+  if (total_width > max_width && shown_chips.size() > 0) {
+    // Remove spacing between chips from total width to get the width available
+    // to visible suggestion chip views.
+    int available_width = std::max(
+        0, max_width - (kMinimumSuggestionChipNumber - 1) * kChipSpacing);
+
+    std::vector<views::View*> views_to_flex;
+    views_to_flex.swap(shown_chips);
+
+    // Do not flex views whose width is below average available width per chip,
+    // as flexing those would actually increase their size. Repeat this until
+    // there are no more views to remove from consideration for flexing
+    // (removing a view increases the average available space for the remaining
+    // views, so another view's size might fit into the remaining space).
+    for (size_t i = 0; i < kMinimumSuggestionChipNumber - 1; ++i) {
+      if (views_to_flex.empty())
+        break;
+
+      std::vector<views::View*> next_views_to_flex;
+      const int avg_width = available_width / views_to_flex.size();
+      for (auto* view : views_to_flex) {
+        gfx::Size view_size = view->GetPreferredSize();
+        if (view_size.width() <= avg_width) {
+          available_width -= view_size.width();
+        } else {
+          next_views_to_flex.push_back(view);
+        }
+      }
+
+      if (views_to_flex.size() == next_views_to_flex.size())
+        break;
+      views_to_flex.swap(next_views_to_flex);
+    }
+
+    // Flex the views that are left over.
+    for (auto* view : views_to_flex)
+      layout_manager_->SetFlexForView(view, 1);
   }
 
   views::View::Layout();

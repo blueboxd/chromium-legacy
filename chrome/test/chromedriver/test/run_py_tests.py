@@ -107,9 +107,6 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'MobileEmulationCapabilityTest.testTapElement',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=946023
     'ChromeDriverTest.testWindowFullScreen',
-    'ChromeDownloadDirTest.testFileDownloadAfterTabHeadless',
-    'ChromeDownloadDirTest.testFileDownloadWithClickHeadless',
-    'ChromeDownloadDirTest.testFileDownloadWithGetHeadless',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
@@ -947,6 +944,43 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       "id": "pointer1"}]})
     self._driver.PerformActions(actions)
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
+
+  def testActionsMultiTouchPoint(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>old</div>";'
+        'var div = document.getElementsByTagName("div")[0];'
+        'window.events = [];'
+        'var touch_point_count = 0;'
+        'div.style["width"] = "100px";'
+        'div.style["height"] = "100px";'
+        'div.addEventListener("pointerdown", function() {'
+        '  touch_point_count++;'
+        '  window.events.push('
+        '      {x: event.clientX, y: event.clientY});'
+        '});'
+        'return div;')
+    actions = ({"actions": [{
+      "type":"pointer",
+      "actions":[{"type": "pointerMove", "x": 10, "y": 10},
+                 {"type": "pointerDown"},
+                 {"type": "pointerUp"}],
+      "parameters": {"pointerType": "touch"},
+      "id": "pointer1"},
+      {
+      "type":"pointer",
+      "actions":[{"type": "pointerMove", "x": 15, "y": 15},
+                 {"type": "pointerDown"},
+                 {"type": "pointerUp"}],
+      "parameters": {"pointerType": "touch"},
+      "id": "pointer2"}]})
+    self._driver.PerformActions(actions)
+    events = self._driver.ExecuteScript('return window.events')
+    self.assertEquals(2, len(events))
+    self.assertEquals(10, events[0]['x'])
+    self.assertEquals(10, events[0]['y'])
+    self.assertEquals(15, events[1]['x'])
+    self.assertEquals(15, events[1]['y'])
 
   def testActionsMulti(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -2394,6 +2428,23 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
         transport = 'usb',
         hasResidentKey = False,
         hasUserVerification = False,
+        isUserConsenting = True,
+        isUserVerified = True,
+    )
+    result = self._driver.ExecuteAsyncScript(script)
+    self.assertEquals('OK', result['status'])
+    self.assertEquals(['usb'], result['credential']['transports'])
+
+  def testAddVirtualAuthenticatorDefaultParams(self):
+    script = """
+      let done = arguments[0];
+      registerCredential().then(done);
+    """
+    self._driver.Load(self.GetHttpsUrlForFile(
+        '/chromedriver/webauthn_test.html', 'chromedriver.test'))
+    self._driver.AddVirtualAuthenticator(
+        protocol = 'ctap2',
+        transport = 'usb',
     )
     result = self._driver.ExecuteAsyncScript(script)
     self.assertEquals('OK', result['status'])
@@ -2501,6 +2552,7 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
         transport = 'usb',
         hasResidentKey = True,
         hasUserVerification = True,
+        isUserVerified = True,
     )['authenticatorId']
 
     # Register a credential via the webauthn API.
@@ -2529,8 +2581,6 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
     authenticatorId = self._driver.AddVirtualAuthenticator(
         protocol = 'ctap2',
         transport = 'usb',
-        hasResidentKey = True,
-        hasUserVerification = True,
     )['authenticatorId']
 
     # Register two credentials.
@@ -2562,8 +2612,6 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
     authenticatorId = self._driver.AddVirtualAuthenticator(
         protocol = 'ctap2',
         transport = 'usb',
-        hasResidentKey = True,
-        hasUserVerification = True,
     )['authenticatorId']
 
     # Register a credential via the webauthn API.

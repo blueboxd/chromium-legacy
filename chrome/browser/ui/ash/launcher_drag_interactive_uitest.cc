@@ -75,11 +75,10 @@ IN_PROC_BROWSER_TEST_P(LauncherDragTest, Open) {
       display_bounds.bottom() - ash::ShelfConfig::Get()->shelf_size() / 2);
   gfx::Point end_point(start_point);
   end_point.set_y(10);
-  ui_test_utils::DragEventGenerator generator(
+  auto generator = ui_test_utils::DragEventGenerator::CreateForTouch(
       std::make_unique<ui_test_utils::InterpolatedProducer>(
-          start_point, end_point, base::TimeDelta::FromMilliseconds(1000)),
-      /*touch=*/true);
-  generator.Wait();
+          start_point, end_point, base::TimeDelta::FromMilliseconds(1000)));
+  generator->Wait();
 
   shell_test_api.WaitForLauncherAnimationState(
       ash::AppListViewState::kFullscreenAllApps);
@@ -102,11 +101,10 @@ IN_PROC_BROWSER_TEST_P(LauncherDragTest, Close) {
   gfx::Point end_point(start_point);
   end_point.set_y(display_bounds.bottom() -
                   ash::ShelfConfig::Get()->shelf_size() / 2);
-  ui_test_utils::DragEventGenerator generator(
+  auto generator = ui_test_utils::DragEventGenerator::CreateForTouch(
       std::make_unique<ui_test_utils::InterpolatedProducer>(
-          start_point, end_point, base::TimeDelta::FromMilliseconds(1000)),
-      /*touch=*/true);
-  generator.Wait();
+          start_point, end_point, base::TimeDelta::FromMilliseconds(1000)));
+  generator->Wait();
 
   shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kClosed);
 }

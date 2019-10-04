@@ -205,14 +205,11 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return bitfields_.subtree_modified_margin_strut;
   }
 
-  // Returns true if the space stored with this layout result, is valid.
-  bool HasValidConstraintSpaceForCaching() const {
-    return bitfields_.has_valid_space;
-  }
-
   // Returns the space which generated this object for caching purposes.
   const NGConstraintSpace& GetConstraintSpaceForCaching() const {
-    DCHECK(bitfields_.has_valid_space);
+#if DCHECK_IS_ON()
+    DCHECK(has_valid_space_);
+#endif
     return space_;
   }
 
@@ -287,8 +284,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // Delegate constructor that sets up what it can, based on the builder.
   NGLayoutResult(
       scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
-      NGContainerFragmentBuilder* builder,
-      bool cache_space);
+      NGContainerFragmentBuilder* builder);
 
   static NGExclusionSpace MergeExclusionSpaces(
       const NGLayoutResult& other,
@@ -330,14 +326,12 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     // never uninitialized (potentially allowing a dangling pointer).
     Bitfields()
         : Bitfields(
-              /* has_valid_space */ false,
               /* is_self_collapsing */ false,
               /* is_pushed_by_floats */ false,
               /* adjoining_object_types */ kAdjoiningNone,
               /* has_descendant_that_depends_on_percentage_block_size */
               false) {}
-    Bitfields(bool has_valid_space,
-              bool is_self_collapsing,
+    Bitfields(bool is_self_collapsing,
               bool is_pushed_by_floats,
               NGAdjoiningObjectTypes adjoining_object_types,
               bool has_descendant_that_depends_on_percentage_block_size)
@@ -345,7 +339,6 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
           has_rare_data_exclusion_space(false),
           has_oof_positioned_offset(false),
           is_bfc_block_offset_nullopt(false),
-          has_valid_space(has_valid_space),
           has_forced_break(false),
           is_self_collapsing(is_self_collapsing),
           is_pushed_by_floats(is_pushed_by_floats),
@@ -363,7 +356,6 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     unsigned has_oof_positioned_offset : 1;
     unsigned is_bfc_block_offset_nullopt : 1;
 
-    unsigned has_valid_space : 1;
     unsigned has_forced_break : 1;
 
     unsigned is_self_collapsing : 1;
@@ -382,7 +374,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   };
 
   // The constraint space which generated this layout result, may not be valid
-  // as indicated by |Bitfields::has_valid_space|.
+  // as indicated by |has_valid_space_|.
   const NGConstraintSpace space_;
 
   scoped_refptr<const NGPhysicalContainerFragment> physical_fragment_;
@@ -406,6 +398,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   LayoutUnit intrinsic_block_size_;
   Bitfields bitfields_;
+
+#if DCHECK_IS_ON()
+  bool has_valid_space_ = false;
+#endif
 };
 
 }  // namespace blink

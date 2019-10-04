@@ -9,10 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-
-namespace net {
-class IOBuffer;
-}  // namespace net
+#include "net/base/io_buffer.h"
 
 namespace chromecast {
 

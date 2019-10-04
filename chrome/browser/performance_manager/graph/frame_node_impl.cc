@@ -21,6 +21,7 @@ FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,
                              PageNodeImpl* page_node,
                              FrameNodeImpl* parent_frame_node,
                              int frame_tree_node_id,
+                             int render_frame_id,
                              const base::UnguessableToken& dev_tools_token,
                              int32_t browsing_instance_id,
                              int32_t site_instance_id)
@@ -30,6 +31,7 @@ FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,
       page_node_(page_node),
       process_node_(process_node),
       frame_tree_node_id_(frame_tree_node_id),
+      render_frame_id_(render_frame_id),
       dev_tools_token_(dev_tools_token),
       browsing_instance_id_(browsing_instance_id),
       site_instance_id_(site_instance_id) {
@@ -107,6 +109,10 @@ ProcessNodeImpl* FrameNodeImpl::process_node() const {
 
 int FrameNodeImpl::frame_tree_node_id() const {
   return frame_tree_node_id_;
+}
+
+int FrameNodeImpl::render_frame_id() const {
+  return render_frame_id_;
 }
 
 const base::UnguessableToken& FrameNodeImpl::dev_tools_token() const {
@@ -406,6 +412,10 @@ void FrameNodeImpl::RemoveChildFrame(FrameNodeImpl* child_frame_node) {
 void FrameNodeImpl::JoinGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // Enable querying this node using process and frame routing ids.
+  graph()->RegisterFrameNodeForId(process_node_->GetRenderProcessId(),
+                                  render_frame_id_, this);
+
   // Wire this up to the other nodes in the graph.
   if (parent_frame_node_)
     parent_frame_node_->AddChildFrame(this);
@@ -434,6 +444,10 @@ void FrameNodeImpl::LeaveGraph() {
   // And leave the process.
   DCHECK(graph()->NodeInGraph(process_node_));
   process_node_->RemoveFrame(this);
+
+  // Disable querying this node using process and frame routing ids.
+  graph()->UnregisterFrameNodeForId(process_node_->GetRenderProcessId(),
+                                    render_frame_id_, this);
 }
 
 bool FrameNodeImpl::HasFrameNodeInAncestors(FrameNodeImpl* frame_node) const {

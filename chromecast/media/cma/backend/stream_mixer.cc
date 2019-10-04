@@ -30,6 +30,7 @@
 #include "chromecast/media/cma/backend/cast_audio_json.h"
 #include "chromecast/media/cma/backend/filter_group.h"
 #include "chromecast/media/cma/backend/interleaved_channel_mixer.h"
+#include "chromecast/media/cma/backend/mixer_service_receiver.h"
 #include "chromecast/media/cma/backend/post_processing_pipeline_impl.h"
 #include "chromecast/media/cma/backend/post_processing_pipeline_parser.h"
 #include "chromecast/public/media/mixer_output_stream.h"
@@ -218,6 +219,15 @@ StreamMixer::StreamMixer(
         base::BindRepeating(&StreamMixer::OnHealthCheckFailed,
                             base::Unretained(this)));
     LOG(INFO) << "Mixer health checker started";
+
+    io_thread_ = std::make_unique<base::Thread>("MixerIO");
+    base::Thread::Options io_options;
+    io_options.message_pump_type = base::MessagePumpType::IO;
+    io_options.priority = base::ThreadPriority::REALTIME_AUDIO;
+    CHECK(io_thread_->StartWithOptions(io_options));
+    io_task_runner_ = io_thread_->task_runner();
+  } else {
+    io_task_runner_ = mixer_task_runner_;
   }
 
   if (fixed_output_sample_rate_ != MixerOutputStream::kInvalidSampleRate) {
@@ -238,6 +248,8 @@ StreamMixer::StreamMixer(
     ExternalAudioPipelineShlib::AddExternalMediaVolumeChangeRequestObserver(
         external_volume_observer_.get());
   }
+
+  receiver_ = base::SequenceBound<MixerServiceReceiver>(io_task_runner_, this);
 }
 
 void StreamMixer::OnHealthCheckFailed() {
@@ -358,6 +370,8 @@ void StreamMixer::EnableDynamicChannelCountForTest(bool enable) {
 
 StreamMixer::~StreamMixer() {
   LOG(INFO) << __func__;
+
+  receiver_.Reset();
 
   mixer_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&StreamMixer::FinalizeOnMixerThread,

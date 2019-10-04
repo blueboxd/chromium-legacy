@@ -72,6 +72,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/mouse_constants.h"
 #include "ui/views/view_class_properties.h"
@@ -145,6 +146,7 @@ class TransparentButton : public views::Button {
   explicit TransparentButton(views::ButtonListener* listener)
       : Button(listener) {
     SetFocusForPlatform();
+    views::InstallRectHighlightPathGenerator(this);
     SetInkDropMode(InkDropMode::ON);
   }
   ~TransparentButton() override {}
@@ -189,6 +191,7 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
       time_download_warning_shown_(base::Time()),
       accessible_alert_(accessible_alert),
       announce_accessible_alert_soon_(false) {
+  views::InstallRectHighlightPathGenerator(this);
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   model_->AddObserver(this);
 
@@ -460,14 +463,6 @@ void DownloadItemView::Layout() {
         gfx::Point(width() - dropdown_button_->width() - kEndPadding,
                    (height() - dropdown_button_->height()) / 2));
   }
-}
-
-void DownloadItemView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  auto path = std::make_unique<SkPath>();
-  path->addRect(RectToSkRect(GetLocalBounds()));
-  SetProperty(views::kHighlightPathKey, path.release());
-
-  InkDropHostView::OnBoundsChanged(previous_bounds);
 }
 
 void DownloadItemView::UpdateDropdownButton() {

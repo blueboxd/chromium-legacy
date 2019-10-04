@@ -289,6 +289,12 @@ class AutocompleteProvider
   static bool InExplicitExperimentalKeywordMode(const AutocompleteInput& input,
                                                 const base::string16& keyword);
 
+  // Uses the keyword entry mode in |input| (and possibly compare the length
+  // of the user input vs |keyword|) to decide if the user intentionally
+  // entered keyword mode.
+  static bool IsExplicitlyInKeywordMode(const AutocompleteInput& input,
+                                        const base::string16& keyword);
+
  protected:
   friend class base::RefCountedThreadSafe<AutocompleteProvider>;
   FRIEND_TEST_ALL_PREFIXES(BookmarkProviderTest, InlineAutocompletion);

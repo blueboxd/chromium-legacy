@@ -378,6 +378,7 @@ ExtensionService::~ExtensionService() {
 void ExtensionService::Shutdown() {
   ExtensionManagementFactory::GetForBrowserContext(profile())->RemoveObserver(
       this);
+  external_install_manager_->Shutdown();
 }
 
 void ExtensionService::Init() {

@@ -573,8 +573,8 @@ extern const char kEnableSharedArrayBufferDescription[];
 extern const char kEnableWasmName[];
 extern const char kEnableWasmDescription[];
 
-extern const char kEnableWebAuthenticationCableSupportName[];
-extern const char kEnableWebAuthenticationCableSupportDescription[];
+extern const char kEnableWebAuthenticationCableV2SupportName[];
+extern const char kEnableWebAuthenticationCableV2SupportDescription[];
 
 extern const char kEnableWebUsbName[];
 extern const char kEnableWebUsbDescription[];
@@ -1743,12 +1743,9 @@ extern const char kProactiveTabFreezeAndDiscardDescription[];
 extern const char kWebUIA11yEnhancementsName[];
 extern const char kWebUIA11yEnhancementsDescription[];
 
-#if defined(GOOGLE_CHROME_BUILD)
-
+// Only used in branded builds.
 extern const char kGoogleBrandedContextMenuName[];
 extern const char kGoogleBrandedContextMenuDescription[];
-
-#endif  // defined(GOOGLE_CHROME_BUILD)
 
 #endif  // defined(OS_ANDROID)
 
@@ -2073,6 +2070,9 @@ extern const char kFirstRunUiTransitionsDescription[];
 extern const char kFsNosymfollowName[];
 extern const char kFsNosymfollowDescription[];
 
+extern const char kFuzzyAppSearchName[];
+extern const char kFuzzyAppSearchDescription[];
+
 extern const char kGaiaActionButtonsName[];
 extern const char kGaiaActionButtonsDescription[];
 
@@ -2144,8 +2144,8 @@ extern const char kStreamlinedUsbPrinterSetupDescription[];
 extern const char kSyncWifiConfigurationsName[];
 extern const char kSyncWifiConfigurationsDescription[];
 
-extern const char kSystemTrayPaginationName[];
-extern const char kSystemTrayPaginationDescription[];
+extern const char kMessageCenterRedesignName[];
+extern const char kMessageCenterRedesignDescription[];
 
 extern const char kTetherName[];
 extern const char kTetherDescription[];

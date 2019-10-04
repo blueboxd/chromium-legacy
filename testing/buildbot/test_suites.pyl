@@ -3783,6 +3783,20 @@
           '${buildername}',
           '--extra-browser-args=--enable-features=UseSkiaRenderer',
         ],
+        'precommit_args': [
+          # Gerrit issue ID
+          '--review-patch-issue',
+          '${patch_issue}',
+          # Patch set number
+          '--review-patch-set',
+          '${patch_set}',
+          # Buildbucket ID
+          '--buildbucket-build-id',
+          '${buildbucket_build_id}',
+        ],
+        'swarming': {
+          'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
+        },
       },
       'screenshot_sync': {
         'args': [
@@ -3869,6 +3883,20 @@
           '--test-machine-name',
           '${buildername}',
         ],
+        'precommit_args': [
+          # Gerrit issue ID
+          '--review-patch-issue',
+          '${patch_issue}',
+          # Patch set number
+          '--review-patch-set',
+          '${patch_set}',
+          # Buildbucket ID
+          '--buildbucket-build-id',
+          '${buildbucket_build_id}',
+        ],
+        'swarming': {
+          'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
+        },
       },
       'pixel_skia': {
         'name': 'pixel_skia_gold_test',

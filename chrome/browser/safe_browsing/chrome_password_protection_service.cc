@@ -360,7 +360,11 @@ void ChromePasswordProtectionService::ShowModalWarning(
   DCHECK(password_type.account_type() == ReusedPasswordAccountType::GMAIL ||
          password_type.account_type() == ReusedPasswordAccountType::GSUITE ||
          password_type.account_type() ==
-             ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
+             ReusedPasswordAccountType::NON_GAIA_ENTERPRISE ||
+         (password_type.account_type() ==
+              ReusedPasswordAccountType::SAVED_PASSWORD &&
+          base::FeatureList::IsEnabled(
+              safe_browsing::kPasswordProtectionForSavedPasswords)));
   // Don't show warning again if there is already a modal warning showing.
   if (IsModalWarningShowingInWebContents(web_contents))
     return;
@@ -461,7 +465,16 @@ void ChromePasswordProtectionService::OnUserAction(
     const std::string& verdict_token,
     WarningUIType ui_type,
     WarningAction action) {
-  LogWarningAction(ui_type, action, password_type);
+  // Only log modal warning dialog action for all password types except for
+  // signed-in non-syncing type for now. We log for signed-in non-syncing type
+  // only when we are about to send the event to SecurityEventRecorder because
+  // we don't want to count non-unconsented primary accounts.
+  bool is_signed_in_non_syncing =
+      !password_type.is_account_syncing() &&
+      (password_type.account_type() == ReusedPasswordAccountType::GMAIL ||
+       password_type.account_type() == ReusedPasswordAccountType::GSUITE);
+  if (!is_signed_in_non_syncing)
+    LogWarningAction(ui_type, action, password_type);
 
   switch (ui_type) {
     case WarningUIType::PAGE_INFO:
@@ -668,6 +681,12 @@ void ChromePasswordProtectionService::
       // SecurityEventRecorder only supports unconsented primary accounts.
       if (gaia::AreEmailsSame(unconsented_primary_account_info.email,
                               username_for_last_shown_warning())) {
+        // We currently only send a security event recorder ONLY when a
+        // signed-in non-syncing user clicks on "Protect Account" button.
+        LogWarningAction(WarningUIType::MODAL_DIALOG,
+                         WarningAction::CHANGE_PASSWORD,
+                         GetPasswordProtectionReusedPasswordAccountType(
+                             password_type, username_for_last_shown_warning()));
         WebUIInfoSingleton::GetInstance()->AddToSecurityEvents(
             gaia_password_reuse_event);
         SecurityEventRecorderFactory::GetForProfile(profile_)
@@ -1259,7 +1278,9 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
   if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT) {
     if (password_type.account_type() ==
         ReusedPasswordAccountType::SAVED_PASSWORD)
-      return IsExtendedReporting();
+      return IsExtendedReporting() ||
+             base::FeatureList::IsEnabled(
+                 safe_browsing::kPasswordProtectionForSavedPasswords);
 
     PasswordProtectionTrigger trigger_level =
         GetPasswordProtectionWarningTriggerPref(password_type);

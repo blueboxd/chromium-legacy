@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/common/performance_manager/mojom/tcmalloc.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace performance_manager {
 namespace mechanism {
@@ -17,7 +17,8 @@ class TcmallocTunablesImpl : public tcmalloc::mojom::TcmallocTunables {
   ~TcmallocTunablesImpl() override;
   TcmallocTunablesImpl();
 
-  static void Create(tcmalloc::mojom::TcmallocTunablesRequest request);
+  static void Create(
+      mojo::PendingReceiver<tcmalloc::mojom::TcmallocTunables> receiver);
 
  protected:
   // TcmallocTunables impl:

@@ -464,7 +464,7 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node, int parent_index) {
       }
     }
 
-    if (auto* option_element = ToHTMLOptionElementOrNull(*element)) {
+    if (auto* option_element = DynamicTo<HTMLOptionElement>(*element)) {
       if (option_element->Selected()) {
         SetRare(nodes->getOptionSelected(nullptr), index);
       }

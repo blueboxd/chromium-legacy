@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/dom_distiller/lazy_dom_distiller_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
@@ -29,11 +28,8 @@ void RegisterViewerSource(Profile* profile) {
   if (!dom_distiller::IsDomDistillerEnabled())
     return;
 
-  DomDistillerServiceFactory* dom_distiller_service_factory =
-      DomDistillerServiceFactory::GetInstance();
-  // The LazyDomDistillerService deletes itself when the profile is destroyed.
   LazyDomDistillerService* lazy_service =
-      new LazyDomDistillerService(profile, dom_distiller_service_factory);
+      LazyDomDistillerService::Create(profile);
   std::unique_ptr<DistillerUIHandle> ui_handle;
 
 #if defined(OS_ANDROID)

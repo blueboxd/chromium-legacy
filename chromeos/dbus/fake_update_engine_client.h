@@ -61,8 +61,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeUpdateEngineClient
 
   // Sets the default update_engine::StatusResult. GetLastStatus() returns the
   // value set here if |status_queue_| is empty.
-
   void set_default_status(const update_engine::StatusResult& status);
+
+  void set_eol_date(const base::Time& eol_date) { eol_date_ = eol_date; }
 
   // Sets a value returned by RequestUpdateCheck().
   void set_update_check_result(
@@ -111,6 +112,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeUpdateEngineClient
   int can_rollback_call_count_ = 0;
   int update_over_cellular_permission_count_ = 0;
   int update_over_cellular_one_time_permission_count_ = 0;
+  base::Time eol_date_;
 };
 
 }  // namespace chromeos

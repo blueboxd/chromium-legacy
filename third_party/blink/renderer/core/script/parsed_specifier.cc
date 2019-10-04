@@ -4,7 +4,17 @@
 
 #include "third_party/blink/renderer/core/script/parsed_specifier.h"
 
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+
 namespace blink {
+
+namespace {
+
+static const char kStdScheme[] = "std";
+
+constexpr char kBuiltinSpecifierPrefix[] = "@std/";
+
+}  // namespace
 
 // <specdef href="https://html.spec.whatwg.org/#resolve-a-module-specifier">
 // <specdef label="import-specifier"
@@ -14,7 +24,22 @@ namespace blink {
 // handle kBare cases properly, depending on contexts and whether import maps
 // are enabled.
 ParsedSpecifier ParsedSpecifier::Create(const String& specifier,
-                                        const KURL& base_url) {
+                                        const KURL& base_url,
+                                        bool support_builtin_modules) {
+  if (support_builtin_modules) {
+    // Not spec'ed: we support @std/foo specifiers as an alias of std:foo.
+    const StringView prefix(kBuiltinSpecifierPrefix);
+    if (specifier.StartsWith(prefix)) {
+      StringBuilder url_string;
+      url_string.Append(kStdScheme);
+      url_string.Append(":");
+      url_string.Append(specifier.Substring(prefix.length()));
+      KURL url(NullURL(), url_string.ToString());
+      if (url.IsValid())
+        return ParsedSpecifier(url);
+    }
+  }
+
   // <spec step="1">Apply the URL parser to specifier. If the result is not
   // failure, return the result.</spec>
   //

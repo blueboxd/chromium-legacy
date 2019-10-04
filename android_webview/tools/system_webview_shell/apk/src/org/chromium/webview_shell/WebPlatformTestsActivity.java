@@ -176,7 +176,7 @@ public class WebPlatformTestsActivity extends Activity {
         if (parent != null) parent.removeView(childLayout);
         WebView childWebView = mLayoutToWebViewBiMap.get(childLayout);
         removeAndDestroyWebView(childWebView);
-        mLayoutToWebViewBiMap.remove(childLayout, childWebView);
+        mLayoutToWebViewBiMap.remove(childLayout);
         if (mTestCallback != null) mTestCallback.onChildLayoutRemoved();
     }
 

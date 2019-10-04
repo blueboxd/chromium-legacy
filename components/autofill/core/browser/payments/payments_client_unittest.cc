@@ -211,9 +211,10 @@ class PaymentsClientTest : public testing::Test {
 
   // If |opt_in| is set to true, then opts the user in to use FIDO
   // authentication for card unmasking. Otherwise opts the user out.
-  void StartOptChangeRequest(bool opt_in) {
+  void StartOptChangeRequest(
+      PaymentsClient::OptChangeRequestDetails::Reason reason) {
     PaymentsClient::OptChangeRequestDetails request_details;
-    request_details.opt_in = opt_in;
+    request_details.reason = reason;
     client_->OptChange(
         request_details,
         base::BindOnce(&PaymentsClientTest::OnDidGetOptChangeResult,
@@ -528,15 +529,19 @@ TEST_F(PaymentsClientTest, UnmaskLogsBlankCvcLength) {
 }
 
 TEST_F(PaymentsClientTest, OptInSuccess) {
-  StartOptChangeRequest(/*opt_in=*/true);
+  StartOptChangeRequest(
+      PaymentsClient::OptChangeRequestDetails::ENABLE_FIDO_AUTH);
   IssueOAuthToken();
-  ReturnResponse(net::HTTP_OK, "{ \"user_is_opted_in\": true }");
+  ReturnResponse(net::HTTP_OK,
+                 "{ \"fido_authentication_info\": { \"user_status\": "
+                 "\"FIDO_AUTH_ENABLED\"}}");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
   EXPECT_TRUE(opt_change_response_.user_is_opted_in.value());
 }
 
 TEST_F(PaymentsClientTest, OptInServerUnresponsive) {
-  StartOptChangeRequest(/*opt_in=*/true);
+  StartOptChangeRequest(
+      PaymentsClient::OptChangeRequestDetails::ENABLE_FIDO_AUTH);
   IssueOAuthToken();
   ReturnResponse(net::HTTP_REQUEST_TIMEOUT, "");
   EXPECT_EQ(AutofillClient::NETWORK_ERROR, result_);
@@ -544,19 +549,25 @@ TEST_F(PaymentsClientTest, OptInServerUnresponsive) {
 }
 
 TEST_F(PaymentsClientTest, OptOutSuccess) {
-  StartOptChangeRequest(/*opt_in=*/false);
+  StartOptChangeRequest(
+      PaymentsClient::OptChangeRequestDetails::DISABLE_FIDO_AUTH);
   IssueOAuthToken();
-  ReturnResponse(net::HTTP_OK, "{ \"user_is_opted_in\": false }");
+  ReturnResponse(net::HTTP_OK,
+                 "{ \"fido_authentication_info\": { \"user_status\": "
+                 "\"FIDO_AUTH_DISABLED\"}}");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
   EXPECT_FALSE(opt_change_response_.user_is_opted_in.value());
 }
 
 TEST_F(PaymentsClientTest, EnrollAttemptReturnsCreationOptions) {
-  StartOptChangeRequest(/*opt_in=*/true);
+  StartOptChangeRequest(
+      PaymentsClient::OptChangeRequestDetails::ENABLE_FIDO_AUTH);
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK,
-                 "{ \"user_is_opted_in\": false, \"fido_creation_options\": { "
-                 "\"relying_party_id\": \"google.com\"} }");
+                 "{ \"fido_authentication_info\": { \"user_status\": "
+                 "\"FIDO_AUTH_DISABLED\","
+                 "\"fido_creation_options\": {"
+                 "\"relying_party_id\": \"google.com\"}}}");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
   EXPECT_FALSE(opt_change_response_.user_is_opted_in.value());
   EXPECT_EQ("google.com",

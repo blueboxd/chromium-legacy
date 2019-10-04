@@ -216,60 +216,6 @@ uint64_t g_last_bridged_native_widget_id = 0;
 
 }  // namespace
 
-// A gfx::CALayerParams may pass the content to be drawn across processes via
-// either an IOSurface (sent as mach port) or a CAContextID (which is an
-// integer). For historical reasons, software compositing uses IOSurfaces.
-// The mojo connection to the app shim process does not support sending mach
-// ports, which results in nothing being drawn when using software compositing.
-// To work around this issue, this structure creates a CALayer that uses the
-// IOSurface as its contents, and hosts this CALayer in a CAContext that is
-// the gfx::CALayerParams is then pointed to.
-// https://crbug.com/942213
-class NativeWidgetMacNSWindowHost::IOSurfaceToRemoteLayerInterceptor {
- public:
-  IOSurfaceToRemoteLayerInterceptor() = default;
-  ~IOSurfaceToRemoteLayerInterceptor() = default;
-
-  void UpdateCALayerParams(gfx::CALayerParams* ca_layer_params) {
-    DCHECK(ca_layer_params->io_surface_mach_port);
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
-        IOSurfaceLookupFromMachPort(ca_layer_params->io_surface_mach_port));
-
-    ScopedCAActionDisabler disabler;
-    // Lazily create |io_surface_layer_| and |ca_context_|.
-    if (!io_surface_layer_) {
-      io_surface_layer_.reset([[CALayer alloc] init]);
-      [io_surface_layer_ setContentsGravity:kCAGravityTopLeft];
-      [io_surface_layer_ setAnchorPoint:CGPointMake(0, 0)];
-    }
-    if (!ca_context_) {
-      CGSConnectionID connection_id = CGSMainConnectionID();
-      ca_context_.reset([[CAContext contextWithCGSConnection:connection_id
-                                                     options:@{}] retain]);
-      [ca_context_ setLayer:io_surface_layer_];
-    }
-
-    // Update |io_surface_layer_| to draw the contents of |ca_layer_params|.
-    id new_contents = static_cast<id>(io_surface.get());
-    [io_surface_layer_ setContents:new_contents];
-    gfx::Size bounds_dip = gfx::ConvertSizeToDIP(ca_layer_params->scale_factor,
-                                                 ca_layer_params->pixel_size);
-    [io_surface_layer_
-        setBounds:CGRectMake(0, 0, bounds_dip.width(), bounds_dip.height())];
-    if ([io_surface_layer_ contentsScale] != ca_layer_params->scale_factor)
-      [io_surface_layer_ setContentsScale:ca_layer_params->scale_factor];
-
-    // Change |ca_layer_params| to use |ca_context_| instead of an IOSurface.
-    ca_layer_params->ca_context_id = [ca_context_ contextId];
-    ca_layer_params->io_surface_mach_port.reset();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IOSurfaceToRemoteLayerInterceptor);
-  base::scoped_nsobject<CAContext> ca_context_;
-  base::scoped_nsobject<CALayer> io_surface_layer_;
-};
-
 // static
 NativeWidgetMacNSWindowHost* NativeWidgetMacNSWindowHost::GetFromNativeWindow(
     gfx::NativeWindow native_window) {
@@ -1494,28 +1440,8 @@ void NativeWidgetMacNSWindowHost::UpdateVisualState() {
 // NativeWidgetMacNSWindowHost, AcceleratedWidgetMac:
 
 void NativeWidgetMacNSWindowHost::AcceleratedWidgetCALayerParamsUpdated() {
-  const gfx::CALayerParams* ca_layer_params =
-      compositor_->widget()->GetCALayerParams();
-  if (ca_layer_params) {
-    // Replace IOSurface mach ports with CAContextIDs only when using the
-    // out-of-process bridge (to reduce risk, because this workaround is being
-    // merged to late-life-cycle release branches) and when an IOSurface
-    // mach port has been specified (in practice, when software compositing is
-    // enabled).
-    // https://crbug.com/942213
-    if (remote_ns_window_ptr_ && ca_layer_params->io_surface_mach_port) {
-      gfx::CALayerParams updated_ca_layer_params = *ca_layer_params;
-      if (!io_surface_to_remote_layer_interceptor_) {
-        io_surface_to_remote_layer_interceptor_ =
-            std::make_unique<IOSurfaceToRemoteLayerInterceptor>();
-      }
-      io_surface_to_remote_layer_interceptor_->UpdateCALayerParams(
-          &updated_ca_layer_params);
-      remote_ns_window_ptr_->SetCALayerParams(updated_ca_layer_params);
-    } else {
-      GetNSWindowMojo()->SetCALayerParams(*ca_layer_params);
-    }
-  }
+  if (const auto* ca_layer_params = compositor_->widget()->GetCALayerParams())
+    GetNSWindowMojo()->SetCALayerParams(*ca_layer_params);
 
   // Take this opportunity to update the VSync parameters, if needed.
   if (display_link_) {

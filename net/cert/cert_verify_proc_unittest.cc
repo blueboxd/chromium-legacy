@@ -2383,6 +2383,157 @@ TEST_P(CertVerifyProcInternalTest, CRLSetDuringPathBuilding) {
   }
 }
 
+TEST_P(CertVerifyProcInternalTest, ValidityDayPlus5MinutesBeforeNotBefore) {
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
+  base::Time not_before = base::Time::Now() + base::TimeDelta::FromDays(1) +
+                          base::TimeDelta::FromMinutes(5);
+  base::Time not_after = base::Time::Now() + base::TimeDelta::FromDays(30);
+  leaf->SetValidity(not_before, not_after);
+
+  // Trust the root and build a chain to verify that includes the intermediate.
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
+  ASSERT_TRUE(chain.get());
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error =
+      Verify(chain.get(), "www.example.com", flags,
+             CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
+  // Current time is before certificate's notBefore. Verification should fail.
+  EXPECT_THAT(error, IsError(ERR_CERT_DATE_INVALID));
+  EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_DATE_INVALID);
+}
+
+TEST_P(CertVerifyProcInternalTest, ValidityDayBeforeNotBefore) {
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
+  base::Time not_before = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time not_after = base::Time::Now() + base::TimeDelta::FromDays(30);
+  leaf->SetValidity(not_before, not_after);
+
+  // Trust the root and build a chain to verify that includes the intermediate.
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
+  ASSERT_TRUE(chain.get());
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error =
+      Verify(chain.get(), "www.example.com", flags,
+             CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
+  if (verify_proc_type() == CERT_VERIFY_PROC_NSS) {
+    // NSS seems to give a 24 hour buffer before the notBefore date where it
+    // will accept a certificate that isn't actually valid yet. ¯\_(ツ)_/¯
+    EXPECT_THAT(error, IsOk());
+  } else {
+    // Current time is before certificate's notBefore. Verification should fail.
+    EXPECT_THAT(error, IsError(ERR_CERT_DATE_INVALID));
+    EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_DATE_INVALID);
+  }
+}
+
+TEST_P(CertVerifyProcInternalTest, ValidityJustBeforeNotBefore) {
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
+  base::Time not_before = base::Time::Now() + base::TimeDelta::FromMinutes(5);
+  base::Time not_after = base::Time::Now() + base::TimeDelta::FromDays(30);
+  leaf->SetValidity(not_before, not_after);
+
+  // Trust the root and build a chain to verify that includes the intermediate.
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
+  ASSERT_TRUE(chain.get());
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error =
+      Verify(chain.get(), "www.example.com", flags,
+             CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
+  if (verify_proc_type() == CERT_VERIFY_PROC_NSS) {
+    // NSS seems to give a 24 hour buffer before the notBefore date where it
+    // will accept a certificate that isn't actually valid yet. ¯\_(ツ)_/¯
+    EXPECT_THAT(error, IsOk());
+  } else {
+    // Current time is before certificate's notBefore. Verification should fail.
+    EXPECT_THAT(error, IsError(ERR_CERT_DATE_INVALID));
+    EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_DATE_INVALID);
+  }
+}
+
+TEST_P(CertVerifyProcInternalTest, ValidityJustAfterNotBefore) {
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
+  base::Time not_before = base::Time::Now() - base::TimeDelta::FromSeconds(1);
+  base::Time not_after = base::Time::Now() + base::TimeDelta::FromDays(30);
+  leaf->SetValidity(not_before, not_after);
+
+  // Trust the root and build a chain to verify that includes the intermediate.
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
+  ASSERT_TRUE(chain.get());
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error =
+      Verify(chain.get(), "www.example.com", flags,
+             CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
+  // Current time is between notBefore and notAfter. Verification should
+  // succeed.
+  EXPECT_THAT(error, IsOk());
+}
+
+TEST_P(CertVerifyProcInternalTest, ValidityJustBeforeNotAfter) {
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
+  base::Time not_before = base::Time::Now() - base::TimeDelta::FromDays(30);
+  base::Time not_after = base::Time::Now() + base::TimeDelta::FromMinutes(5);
+  leaf->SetValidity(not_before, not_after);
+
+  // Trust the root and build a chain to verify that includes the intermediate.
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
+  ASSERT_TRUE(chain.get());
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error =
+      Verify(chain.get(), "www.example.com", flags,
+             CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
+  // Current time is between notBefore and notAfter. Verification should
+  // succeed.
+  EXPECT_THAT(error, IsOk());
+}
+
+TEST_P(CertVerifyProcInternalTest, ValidityJustAfterNotAfter) {
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
+  base::Time not_before = base::Time::Now() - base::TimeDelta::FromDays(30);
+  base::Time not_after = base::Time::Now() - base::TimeDelta::FromSeconds(1);
+  leaf->SetValidity(not_before, not_after);
+
+  // Trust the root and build a chain to verify that includes the intermediate.
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
+  ASSERT_TRUE(chain.get());
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error =
+      Verify(chain.get(), "www.example.com", flags,
+             CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
+  // Current time is after certificate's notAfter. Verification should fail.
+  EXPECT_THAT(error, IsError(ERR_CERT_DATE_INVALID));
+  EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_DATE_INVALID);
+}
+
 class CertVerifyProcNameNormalizationTest : public CertVerifyProcInternalTest {
  protected:
   void SetUp() override {

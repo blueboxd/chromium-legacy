@@ -74,7 +74,7 @@
         <structure name="IDR_MD_LOGIN_JS" file="resources\chromeos\login\md_login.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_OOBE_HTML" file="resources\chromeos\login\oobe.html" flattenhtml="true" type="chrome_html" variables="OOBE=oobe" expand_variables="true"/>
         <structure name="IDR_OOBE_JS" file="resources\chromeos\login\oobe.js" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_KEYBOARD_UTILS_JS" file="resources\chromeos\keyboard\keyboard_utils.js" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_KEYBOARD_UTILS_JS" file="resources\chromeos\keyboard\keyboard_utils.js" flattenhtml="true" type="chrome_html" compress="gzip"/>
         <structure name="IDR_CHROMEOS_DISCOVER_APP_HTML" file="resources\chromeos\login\discover\discover_app.html" flattenhtml="true" type="chrome_html"/>
         <structure name="IDR_CHROMEOS_DISCOVER_APP_JS" file="resources\chromeos\login\discover\discover_app.js" flattenhtml="true" type="chrome_html"/>
         <structure name="IDR_CHROMEOS_DISCOVER_MANIFEST" file="resources\chromeos\login\discover\manifest.json" flattenhtml="true" type="chrome_html"/>

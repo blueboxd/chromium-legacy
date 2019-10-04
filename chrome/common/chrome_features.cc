@@ -132,7 +132,7 @@ const base::Feature kTabMetricsLogging{"TabMetricsLogging",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN)
 // Enables the blocking of third-party modules. This feature requires Windows 8
 // or higher because it depends on the ProcessExtensionPointDisablePolicy
 // mitigation, which was not available on Windows 7.
@@ -385,10 +385,10 @@ const base::Feature kGdiTextPrinting{"GdiTextPrinting",
 const base::Feature kGeoLanguage{"GeoLanguage",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if !defined(OS_ANDROID) && defined(GOOGLE_CHROME_BUILD)
+#if !defined(OS_ANDROID)
 const base::Feature kGoogleBrandedContextMenu{
     "GoogleBrandedContextMenu", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // !defined(OS_ANDROID) && defined(GOOGLE_CHROME_BUILD)
+#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 // Enables or disables the Happiness Tracking System for the device.
@@ -419,7 +419,7 @@ const base::Feature kHTTPAuthCommittedInterstitials{
 const base::Feature kLookalikeUrlNavigationSuggestionsUI{
     "LookalikeUrlNavigationSuggestionsUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN)
 // A feature that controls whether Chrome warns about incompatible applications.
 // This feature requires Windows 10 or higher to work because it depends on
 // the "Apps & Features" system settings.

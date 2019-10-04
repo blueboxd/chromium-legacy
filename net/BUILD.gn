@@ -1416,6 +1416,7 @@ component("net") {
       "third_party/quiche/src/quic/core/crypto/proof_verifier.h",
       "third_party/quiche/src/quic/core/crypto/quic_compressed_certs_cache.cc",
       "third_party/quiche/src/quic/core/crypto/quic_compressed_certs_cache.h",
+      "third_party/quiche/src/quic/core/crypto/quic_crypter.cc",
       "third_party/quiche/src/quic/core/crypto/quic_crypter.h",
       "third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.cc",
       "third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h",

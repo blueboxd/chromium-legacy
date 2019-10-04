@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
@@ -39,6 +40,19 @@ import org.chromium.ui.widget.Toast;
  * StatusView is a location bar's view displaying status (icons and/or text).
  */
 public class StatusView extends LinearLayout {
+    @VisibleForTesting
+    class StatusViewDelegate {
+        /** @see {@link SearchEngineLogoUtils#shouldShowSearchEngineLogo} */
+        boolean shouldShowSearchEngineLogo(boolean isIncognito) {
+            return SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito);
+        }
+
+        /** @see {@link SearchEngineLogoUtils#isSearchEngineLogoEnabled()} */
+        boolean isSearchEngineLogoEnabled() {
+            return SearchEngineLogoUtils.isSearchEngineLogoEnabled();
+        }
+    }
+
     private @Nullable View mIncognitoBadge;
     private int mIncognitoBadgeEndPaddingWithIcon;
     private int mIncognitoBadgeEndPaddingWithoutIcon;
@@ -62,6 +76,7 @@ public class StatusView extends LinearLayout {
 
     private TouchDelegate mTouchDelegate;
     private CompositeTouchDelegate mCompositeTouchDelegate;
+    private StatusViewDelegate mDelegate;
 
     private boolean mLastTouchDelegateRtlness;
     private Rect mLastTouchDelegateRect;
@@ -70,6 +85,7 @@ public class StatusView extends LinearLayout {
 
     public StatusView(Context context, AttributeSet attributes) {
         super(context, attributes);
+        mDelegate = new StatusViewDelegate();
     }
 
     @Override
@@ -95,7 +111,7 @@ public class StatusView extends LinearLayout {
     public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
             boolean isSearchEngineGoogle, String searchEngineUrl) {
         if (mToolbarCommonPropertiesModel != null
-                && SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                && mDelegate.shouldShowSearchEngineLogo(
                         mToolbarCommonPropertiesModel.isIncognito())) {
             LinearLayout.LayoutParams layoutParams =
                     new LinearLayout.LayoutParams(mIconView.getLayoutParams());
@@ -387,11 +403,15 @@ public class StatusView extends LinearLayout {
     private void updateIncognitoBadgeEndPadding() {
         if (mIncognitoBadge == null) return;
 
+        int endPadding = -1;
+        if (mDelegate.isSearchEngineLogoEnabled()) {
+            endPadding = 0;
+        } else {
+            endPadding = mIconRes != 0 ? mIncognitoBadgeEndPaddingWithIcon
+                                       : mIncognitoBadgeEndPaddingWithoutIcon;
+        }
         mIncognitoBadge.setPaddingRelative(mIncognitoBadge.getPaddingStart(),
-                mIncognitoBadge.getPaddingTop(),
-                mIconRes != 0 ? mIncognitoBadgeEndPaddingWithIcon
-                              : mIncognitoBadgeEndPaddingWithoutIcon,
-                mIncognitoBadge.getPaddingBottom());
+                mIncognitoBadge.getPaddingTop(), endPadding, mIncognitoBadge.getPaddingBottom());
     }
 
     /**
@@ -485,5 +505,9 @@ public class StatusView extends LinearLayout {
 
     TouchDelegate getTouchDelegateForTesting() {
         return mTouchDelegate;
+    }
+
+    void setDelegateForTesting(StatusViewDelegate delegate) {
+        mDelegate = delegate;
     }
 }

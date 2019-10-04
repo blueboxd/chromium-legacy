@@ -77,6 +77,30 @@ const char kServerHostname[] = "test.example.com";
 const uint16_t kServerPort = 443;
 const size_t kMaxReadersPerQuicSession = 5;
 
+struct TestParams {
+  quic::ParsedQuicVersion version;
+  bool client_headers_include_h2_stream_dependency;
+};
+
+// Used by ::testing::PrintToStringParamName().
+std::string PrintToString(const TestParams& p) {
+  return quic::QuicStrCat(
+      ParsedQuicVersionToString(p.version), "_",
+      (p.client_headers_include_h2_stream_dependency ? "" : "No"),
+      "Dependency");
+}
+
+std::vector<TestParams> GetTestParams() {
+  std::vector<TestParams> params;
+  quic::ParsedQuicVersionVector all_supported_versions =
+      quic::AllSupportedVersions();
+  for (const auto& version : all_supported_versions) {
+    params.push_back(TestParams{version, false});
+    params.push_back(TestParams{version, true});
+  }
+  return params;
+}
+
 // A subclass of QuicChromiumClientSession that allows OnPathDegrading to be
 // mocked.
 class TestingQuicChromiumClientSession : public QuicChromiumClientSession {
@@ -87,13 +111,13 @@ class TestingQuicChromiumClientSession : public QuicChromiumClientSession {
 };
 
 class QuicChromiumClientSessionTest
-    : public ::testing::TestWithParam<
-          std::tuple<quic::ParsedQuicVersion, bool>>,
+    : public ::testing::TestWithParam<TestParams>,
       public WithTaskEnvironment {
  public:
   QuicChromiumClientSessionTest()
-      : version_(std::get<0>(GetParam())),
-        client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
+      : version_(GetParam().version),
+        client_headers_include_h2_stream_dependency_(
+            GetParam().client_headers_include_h2_stream_dependency),
         crypto_config_(
             quic::test::crypto_test_utils::ProofVerifierForTesting()),
         default_read_(new MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)),
@@ -257,11 +281,10 @@ class QuicChromiumClientSessionTest
   bool migrate_session_early_v2_;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    VersionIncludeStreamDependencySequence,
-    QuicChromiumClientSessionTest,
-    ::testing::Combine(::testing::ValuesIn(quic::AllSupportedVersions()),
-                       ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
+                         QuicChromiumClientSessionTest,
+                         ::testing::ValuesIn(GetTestParams()),
+                         ::testing::PrintToStringParamName());
 
 // TODO(950069): Add testing for frame_origin in NetworkIsolationKey using
 // kAppendInitiatingFrameOriginToNetworkIsolationKey.

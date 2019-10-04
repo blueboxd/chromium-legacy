@@ -10,9 +10,9 @@
 #include "ash/public/cpp/notification_utils.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
@@ -296,7 +296,7 @@ void CrosUsbDetector::ConnectToDeviceManager() {
 
 bool CrosUsbDetector::ShouldShowNotification(
     const device::mojom::UsbDeviceInfo& device_info) {
-  if (!crostini::IsCrostiniEnabled(profile())) {
+  if (!crostini::CrostiniFeatures::Get()->IsEnabled(profile())) {
     return false;
   }
   if (device::UsbDeviceFilterMatches(*adb_device_filter_, device_info) ||

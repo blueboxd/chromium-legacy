@@ -177,7 +177,7 @@ TEST_F(SubframeNavigationFilteringThrottleTest, DISABLED_FilterOnRedirect) {
                 GURL("https://example.test/disallowed.html")));
 }
 
-TEST_F(SubframeNavigationFilteringThrottleTest, DryRunOnStart) {
+TEST_F(SubframeNavigationFilteringThrottleTest, DISABLED_DryRunOnStart) {
   InitializeDocumentSubresourceFilter(GURL("https://example.test"),
                                       mojom::ActivationLevel::kDryRun);
   const GURL url("https://example.test/disallowed.html");

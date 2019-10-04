@@ -1493,9 +1493,20 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             }
             if (mExperimentalButtonAnimationRunning) {
                 if (mLocationBar.getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
-                    locationBarClipLeft += ViewCompat.getPaddingStart(mLocationBar);
+                    locationBarClipLeft += mLocationBar.getPaddingStart();
                 } else {
-                    locationBarClipRight -= ViewCompat.getPaddingEnd(mLocationBar);
+                    locationBarClipRight -= mLocationBar.getPaddingEnd();
+                }
+            }
+
+            // Offset the clip rect by a set amount to ensure the Google G is completely inside the
+            // omnibox background when animating in.
+            if (SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito())
+                    && isLocationBarShownInNTP() && urlHasFocus() && mUrlFocusChangeInProgress) {
+                if (mLocationBar.getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
+                    locationBarClipRight -= mLocationBar.getPaddingStart();
+                } else {
+                    locationBarClipLeft += mLocationBar.getPaddingStart();
                 }
             }
 

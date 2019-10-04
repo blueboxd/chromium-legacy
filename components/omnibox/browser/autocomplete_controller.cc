@@ -702,8 +702,8 @@ void AutocompleteController::UpdateKeywordDescriptions(
       i->description.clear();
       i->description_class.clear();
       DCHECK(!i->keyword.empty());
-      if ((i->keyword != last_keyword &&
-           !ShouldCurbKeywordDescriptions(i->keyword))) {
+      if (i->keyword != last_keyword &&
+          !ShouldCurbKeywordDescriptions(i->keyword)) {
         const TemplateURL* template_url =
             i->GetTemplateURL(template_url_service_, false);
         if (template_url) {

@@ -604,32 +604,6 @@ TEST_F(RenderFrameImplTest, TestDocumentInterfaceBrokerOverride) {
   frame_interface_broker.Flush();
 }
 
-TEST_F(RenderFrameImplTest, IPAddressSpace) {
-  // Verifies that the IPAddressSpace provided in the commit navigation params
-  // influences the web-visible `.addressSpace`.
-  auto common_params = CreateCommonNavigationParams();
-  common_params->url = GURL("data:text/html,ip_address_space");
-  common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
-
-  network::mojom::IPAddressSpace values[] = {
-      network::mojom::IPAddressSpace::kUnknown,
-      network::mojom::IPAddressSpace::kLocal,
-      network::mojom::IPAddressSpace::kPrivate,
-      network::mojom::IPAddressSpace::kPublic};
-
-  for (auto value : values) {
-    auto commit_params = CreateCommitNavigationParams();
-    commit_params->ip_address_space = value;
-    GetMainRenderFrame()->Navigate(common_params.Clone(),
-                                   commit_params.Clone());
-    base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(value, GetMainRenderFrame()
-                         ->GetWebFrame()
-                         ->GetDocumentLoader()
-                         ->GetIPAddressSpace());
-  }
-}
-
 // RenderFrameRemoteInterfacesTest ------------------------------------
 
 namespace {

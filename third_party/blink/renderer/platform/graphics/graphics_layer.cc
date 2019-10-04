@@ -599,13 +599,6 @@ const gfx::Point3F& GraphicsLayer::TransformOrigin() const {
   return CcLayer()->transform_origin();
 }
 
-bool GraphicsLayer::ShouldFlattenTransform() const {
-  return CcLayer()->should_flatten_transform();
-}
-
-void GraphicsLayer::SetShouldFlattenTransform(bool should_flatten) {
-  CcLayer()->SetShouldFlattenTransform(should_flatten);
-}
 
 bool GraphicsLayer::MasksToBounds() const {
   return CcLayer()->masks_to_bounds();

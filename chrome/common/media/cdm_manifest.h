@@ -30,9 +30,11 @@ bool ParseCdmManifest(const base::Value& manifest,
 
 // Reads the file |manifest_path| which is assumed to be a CDM manifest and
 // extracts the necessary information from it to update |version| and
-// |capability|. Returns true on success, false if there are errors in the file.
-// If this method returns false, |version| and |capability| may or may not be
-// updated.
+// |capability|. This also verifies that the read CDM manifest is compatible
+// with Chrome (by calling IsCdmManifestCompatibleWithChrome()). Returns true on
+// success, false if there are errors in the file or the manifest is not
+// compatible with this version of Chrome. If this method returns false,
+// |version| and |capability| may or may not be updated.
 bool ParseCdmManifestFromPath(const base::FilePath& manifest_path,
                               base::Version* version,
                               content::CdmCapability* capability);

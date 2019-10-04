@@ -366,6 +366,7 @@ bool ParseCdmManifestFromPath(const base::FilePath& manifest_path,
     return false;
   }
 
-  return GetVersion(*manifest, version) &&
+  return IsCdmManifestCompatibleWithChrome(*manifest) &&
+         GetVersion(*manifest, version) &&
          ParseCdmManifest(*manifest, capability);
 }

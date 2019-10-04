@@ -118,12 +118,16 @@ IN_PROC_BROWSER_TEST_P(SplitViewTest, ResizeTwoWindows) {
   TRACE_EVENT_ASYNC_BEGIN0("ui", "Interaction.ui_WindowResize", this);
   gfx::Point end_position(start_position);
   end_position.set_x(end_position.x() - 60);
-  ui_test_utils::DragEventGenerator generator(
-      std::make_unique<ui_test_utils::InterpolatedProducer>(
-          start_position, end_position,
-          base::TimeDelta::FromMilliseconds(1000)),
-      use_touch());
-  generator.Wait();
+  auto generator =
+      use_touch() ? ui_test_utils::DragEventGenerator::CreateForTouch(
+                        std::make_unique<ui_test_utils::InterpolatedProducer>(
+                            start_position, end_position,
+                            base::TimeDelta::FromMilliseconds(1000)))
+                  : ui_test_utils::DragEventGenerator::CreateForMouse(
+                        std::make_unique<ui_test_utils::InterpolatedProducer>(
+                            start_position, end_position,
+                            base::TimeDelta::FromMilliseconds(1000)));
+  generator->Wait();
   TRACE_EVENT_ASYNC_END0("ui", "Interaction.ui_WindowResize", this);
 
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
@@ -150,12 +154,16 @@ IN_PROC_BROWSER_TEST_P(SplitViewTest, ResizeWithOverview) {
   TRACE_EVENT_ASYNC_BEGIN0("ui", "Interaction.ui_WindowResize", this);
   gfx::Point end_position(start_position);
   end_position.set_x(end_position.x() - 60);
-  ui_test_utils::DragEventGenerator generator(
-      std::make_unique<ui_test_utils::InterpolatedProducer>(
-          start_position, end_position,
-          base::TimeDelta::FromMilliseconds(1000)),
-      use_touch());
-  generator.Wait();
+  auto generator =
+      use_touch() ? ui_test_utils::DragEventGenerator::CreateForTouch(
+                        std::make_unique<ui_test_utils::InterpolatedProducer>(
+                            start_position, end_position,
+                            base::TimeDelta::FromMilliseconds(1000)))
+                  : ui_test_utils::DragEventGenerator::CreateForMouse(
+                        std::make_unique<ui_test_utils::InterpolatedProducer>(
+                            start_position, end_position,
+                            base::TimeDelta::FromMilliseconds(1000)));
+  generator->Wait();
   TRACE_EVENT_ASYNC_END0("ui", "Interaction.ui_WindowResize", this);
 
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);

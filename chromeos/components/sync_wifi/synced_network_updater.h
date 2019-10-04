@@ -15,6 +15,8 @@ class WifiConfigurationSpecificsData;
 
 namespace sync_wifi {
 
+class NetworkIdentifier;
+
 // Applies updates to synced networks to the local networking stack.
 class SyncedNetworkUpdater {
  public:
@@ -22,7 +24,7 @@ class SyncedNetworkUpdater {
 
   virtual void AddOrUpdateNetwork(
       const sync_pb::WifiConfigurationSpecificsData& specifics) = 0;
-  virtual void RemoveNetwork(const std::string& ssid) = 0;
+  virtual void RemoveNetwork(const NetworkIdentifier& id) = 0;
 
  protected:
   SyncedNetworkUpdater() = default;

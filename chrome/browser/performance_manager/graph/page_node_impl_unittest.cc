@@ -42,11 +42,11 @@ TEST_F(PageNodeImplTest, AddFrameBasic) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   auto page_node = CreateNode<PageNodeImpl>();
   auto parent_frame =
-      CreateNode<FrameNodeImpl>(process_node.get(), page_node.get());
-  auto child1_frame = CreateNode<FrameNodeImpl>(
-      process_node.get(), page_node.get(), parent_frame.get(), 1);
-  auto child2_frame = CreateNode<FrameNodeImpl>(
-      process_node.get(), page_node.get(), parent_frame.get(), 2);
+      CreateFrameNodeAutoId(process_node.get(), page_node.get());
+  auto child1_frame = CreateFrameNodeAutoId(process_node.get(), page_node.get(),
+                                            parent_frame.get(), 1);
+  auto child2_frame = CreateFrameNodeAutoId(process_node.get(), page_node.get(),
+                                            parent_frame.get(), 2);
 
   // Validate that all frames are tallied to the page.
   EXPECT_EQ(3u, GraphImplOperations::GetFrameNodes(page_node.get()).size());
@@ -55,8 +55,8 @@ TEST_F(PageNodeImplTest, AddFrameBasic) {
 TEST_F(PageNodeImplTest, RemoveFrame) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   auto page_node = CreateNode<PageNodeImpl>();
-  auto frame_node = CreateNode<FrameNodeImpl>(process_node.get(),
-                                              page_node.get(), nullptr, 0);
+  auto frame_node =
+      CreateFrameNodeAutoId(process_node.get(), page_node.get(), nullptr, 0);
 
   // Ensure correct page-frame relationship has been established.
   auto frame_nodes = GraphImplOperations::GetFrameNodes(page_node.get());

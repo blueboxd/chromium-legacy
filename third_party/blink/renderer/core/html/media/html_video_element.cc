@@ -357,6 +357,7 @@ void HTMLVideoElement::ActivateViewportIntersectionMonitoring(bool activate) {
         {}, {kMostlyFillViewportThreshold}, &(GetDocument()),
         WTF::BindRepeating(&HTMLVideoElement::OnViewportIntersectionChanged,
                            WrapWeakPersistent(this)),
+        IntersectionObserver::kDeliverDuringPostLifecycleSteps,
         IntersectionObserver::kFractionOfRoot);
     viewport_intersection_observer_->observe(this);
   } else if (!activate && viewport_intersection_observer_) {

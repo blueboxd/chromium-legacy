@@ -5,7 +5,6 @@
 #include "chrome/test/chromedriver/chrome/download_directory_override_manager.h"
 
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -34,14 +33,6 @@ Status DownloadDirectoryOverrideManager::OnConnected(DevToolsClient* client) {
 }
 
 Status DownloadDirectoryOverrideManager::ApplyOverride() {
-// Currently whenever a Page.setDownloadBehavior gets sent
-// in headless mode on OS_MACOSX, headless chrome crashes.
-// Filed a bug with chromium that can be followed here:
-// https://bugs.chromium.org/p/chromium/issues/detail?id=979847
-#if defined(OS_MACOSX)
-  return Status(kOk);
-#endif
-
   base::DictionaryValue params;
   params.SetString("behavior", "allow");
   params.SetString("downloadPath", *download_directory_);

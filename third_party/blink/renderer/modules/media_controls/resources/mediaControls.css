@@ -1312,6 +1312,32 @@ video::-internal-media-controls-scrubbing-message {
   display: none;
 }
 
+video::-internal-media-controls-text-track-list-kind-captions {
+    -webkit-appearance: none;
+    background-image: -webkit-image-set(
+      url(ic_closed_caption.svg) 1x);
+    background-size: 32px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    height: 20px;
+    width: 20px;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+video::-internal-media-controls-text-track-list-kind-subtitles {
+    -webkit-appearance: none;
+    background-image: -webkit-image-set(
+      url(ic_subtitles.svg) 1x);
+    background-size: 32px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    height: 20px;
+    width: 20px;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
 /**
  * VR styling.
  */

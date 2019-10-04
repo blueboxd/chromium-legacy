@@ -871,7 +871,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   BrowserContext* const browser_context_;
 
   // Owned by |browser_context_|.
-  StoragePartitionImpl* storage_partition_impl_;
+  StoragePartitionImpl* const storage_partition_impl_;
 
   // Keeps track of the BindingIds  returned by storage_partition_impl_->Bind()
   // calls so we can Unbind() them on cleanup.

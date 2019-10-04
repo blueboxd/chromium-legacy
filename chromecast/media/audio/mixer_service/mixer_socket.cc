@@ -51,14 +51,40 @@ bool ReceiveProto(const char* data, int size, Generic* message) {
 
 }  // namespace
 
+bool MixerSocket::Delegate::HandleMetadata(const Generic& message) {
+  return true;
+}
+
+bool MixerSocket::Delegate::HandleAudioData(char* data,
+                                            int size,
+                                            int64_t timestamp) {
+  return true;
+}
+
+bool MixerSocket::Delegate::HandleAudioBuffer(
+    scoped_refptr<net::IOBuffer> buffer,
+    char* data,
+    int size,
+    int64_t timestamp) {
+  return HandleAudioData(data, size, timestamp);
+}
+
 // static
 constexpr size_t MixerSocket::kAudioHeaderSize;
 constexpr size_t MixerSocket::kAudioMessageHeaderSize;
 
-MixerSocket::MixerSocket(std::unique_ptr<net::StreamSocket> socket)
-    : SmallMessageSocket(std::move(socket)) {}
+MixerSocket::MixerSocket(std::unique_ptr<net::StreamSocket> socket,
+                         Delegate* delegate)
+    : SmallMessageSocket(std::move(socket)), delegate_(delegate) {
+  DCHECK(delegate_);
+}
 
 MixerSocket::~MixerSocket() = default;
+
+void MixerSocket::SetDelegate(Delegate* delegate) {
+  DCHECK(delegate);
+  delegate_ = delegate;
+}
 
 // static
 void MixerSocket::PrepareAudioBuffer(net::IOBuffer* audio_buffer,
@@ -150,18 +176,18 @@ void MixerSocket::OnSendUnblocked() {
 
 void MixerSocket::OnError(int error) {
   LOG(ERROR) << "Socket error from " << this << ": " << error;
-  OnConnectionError();
+  delegate_->OnConnectionError();
 }
 
 void MixerSocket::OnEndOfStream() {
-  OnConnectionError();
+  delegate_->OnConnectionError();
 }
 
 bool MixerSocket::OnMessage(char* data, int size) {
   int16_t type;
   if (size < static_cast<int>(sizeof(type))) {
     LOG(ERROR) << "Invalid message size " << size << " from " << this;
-    OnConnectionError();
+    delegate_->OnConnectionError();
     return false;
   }
 
@@ -179,21 +205,47 @@ bool MixerSocket::OnMessage(char* data, int size) {
   }
 }
 
-bool MixerSocket::ParseMetadata(char* data, int size) {
-  Generic message;
-  if (!ReceiveProto(data, size, &message)) {
-    OnConnectionError();
+bool MixerSocket::OnMessageBuffer(scoped_refptr<net::IOBuffer> buffer,
+                                  int size) {
+  if (size < static_cast<int>(sizeof(uint16_t) + sizeof(int16_t))) {
+    LOG(ERROR) << "Invalid buffer size " << size << " from " << this;
+    delegate_->OnConnectionError();
     return false;
   }
 
-  return HandleMetadata(message);
+  char* data = buffer->data() + sizeof(uint16_t);
+  size -= sizeof(uint16_t);
+  int16_t type;
+  memcpy(&type, data, sizeof(type));
+  data += sizeof(type);
+  size -= sizeof(type);
+
+  switch (static_cast<MessageType>(type)) {
+    case MessageType::kMetadata:
+      return ParseMetadata(data, size);
+    case MessageType::kAudio:
+      return ParseAudioBuffer(std::move(buffer), data, size);
+    default:
+      return true;  // Ignore unhandled message types.
+  }
+}
+
+bool MixerSocket::ParseMetadata(char* data, int size) {
+  Generic message;
+  if (!ReceiveProto(data, size, &message)) {
+    LOG(INFO) << "Invalid metadata message from " << this;
+    delegate_->OnConnectionError();
+    return false;
+  }
+
+  return delegate_->HandleMetadata(message);
 }
 
 bool MixerSocket::ParseAudio(char* data, int size) {
   int64_t timestamp;
   if (size < static_cast<int>(sizeof(timestamp))) {
     LOG(ERROR) << "Invalid audio packet size " << size << " from " << this;
-    OnConnectionError();
+    delegate_->OnConnectionError();
     return false;
   }
 
@@ -201,31 +253,24 @@ bool MixerSocket::ParseAudio(char* data, int size) {
   data += sizeof(timestamp);
   size -= sizeof(timestamp);
 
-  return HandleAudioData(data, size, timestamp);
+  return delegate_->HandleAudioData(data, size, timestamp);
 }
 
-MixerClientSocket::MixerClientSocket(std::unique_ptr<net::StreamSocket> socket,
-                                     Delegate* delegate)
-    : MixerSocket(std::move(socket)), delegate_(delegate) {
-  DCHECK(delegate_);
-}
+bool MixerSocket::ParseAudioBuffer(scoped_refptr<net::IOBuffer> buffer,
+                                   char* data,
+                                   int size) {
+  int64_t timestamp;
+  if (size < static_cast<int>(sizeof(timestamp))) {
+    LOG(ERROR) << "Invalid audio buffer size " << size << " from " << this;
+    delegate_->OnConnectionError();
+    return false;
+  }
 
-MixerClientSocket::~MixerClientSocket() = default;
+  memcpy(&timestamp, data, sizeof(timestamp));
+  data += sizeof(timestamp);
+  size -= sizeof(timestamp);
 
-bool MixerClientSocket::HandleMetadata(const Generic& message) {
-  delegate_->HandleMetadata(message);
-  return true;
-}
-
-bool MixerClientSocket::HandleAudioData(char* data,
-                                        int size,
-                                        int64_t timestamp) {
-  delegate_->HandleAudioData(data, size, timestamp);
-  return true;
-}
-
-void MixerClientSocket::OnConnectionError() {
-  delegate_->OnConnectionError();
+  return delegate_->HandleAudioBuffer(std::move(buffer), data, size, timestamp);
 }
 
 }  // namespace mixer_service

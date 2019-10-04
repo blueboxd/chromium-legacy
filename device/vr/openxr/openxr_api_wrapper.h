@@ -53,10 +53,10 @@ class OpenXrApiWrapper {
 
   XrResult GetHeadPose(base::Optional<gfx::Quaternion>* orientation,
                        base::Optional<gfx::Point3F>* position) const;
+  void GetHeadFromEyes(XrView* left, XrView* right) const;
 
   bool HasPosition() const;
   gfx::Size GetViewSize() const;
-  const XrView& GetView(uint32_t index) const;
   XrTime GetPredictedDisplayTime() const;
   XrResult GetLuid(LUID* luid) const;
   std::string GetRuntimeName() const;
@@ -83,6 +83,8 @@ class OpenXrApiWrapper {
 
   XrResult BeginSession();
   XrResult UpdateProjectionLayers();
+  XrResult LocateViews(XrReferenceSpaceType type,
+                       std::vector<XrView>* views) const;
 
   bool HasInstance() const;
   bool HasSystem() const;
@@ -121,7 +123,8 @@ class OpenXrApiWrapper {
   // These objects store information about the current frame. They're
   // valid only while a session is active, and they are updated each frame.
   XrFrameState frame_state_;
-  std::vector<XrView> views_;
+  std::vector<XrView> origin_from_eye_views_;
+  std::vector<XrView> head_from_eye_views_;
   std::vector<XrCompositionLayerProjectionView> layer_projection_views_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenXrApiWrapper);

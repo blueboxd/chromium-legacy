@@ -33,9 +33,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) UpdateEngineClient : public DBusClient {
 
   // Holds information related to end-of-life.
   struct EolInfo {
-    // The number of days since Unix Epoch, all negative values signify an
-    // invalid value.
-    int64_t days_from_epoch = -1;
+    // The End of Life date. |eol_date.is_null()| will be true to signify an
+    // invalid value. More than one classes will use this UpdateEngineClient, so
+    // this field is used to maintain consistency instead of converting the End
+    // of Life date, that is received in days since epoch, in possibly different
+    // ways and at different locations.
+    base::Time eol_date;
   };
 
   // Interface for observing changes from the update engine.

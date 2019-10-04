@@ -806,6 +806,10 @@
       settable_from_internals: true,
     },
     {
+      name: "ImportMaps",
+      implied_by: ["ExperimentalProductivityFeatures", "BuiltInModuleInfra"],
+    },
+    {
       name: "InertAttribute",
       status: "experimental",
     },

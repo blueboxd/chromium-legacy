@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/android/rules.gni")
 import("//chrome/android/modules/buildflags.gni")
+import("//tools/grit/grit_rule.gni")
 
 android_resources("java_resources") {
   resource_dirs = [ "java/res" ]
@@ -34,7 +35,9 @@ source_set("native") {
 
   deps = [
     ":jni_headers",
+    ":resources_native",
     "//base",
+    "//ui/base",
   ]
 }
 
@@ -46,7 +49,9 @@ source_set("native") {
 android_library("base_module_java") {
   deps = [
     "//base:base_java",
+    "//chrome/android/features/test_dummy/public:java",
     "//chrome/android/modules/test_dummy/provider:java",
+    "//chrome/android/modules/test_dummy/public:java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
   ]
   java_files = [
@@ -58,4 +63,16 @@ generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/chrome/features/test_dummy/TestDummyImpl.java",
   ]
+}
+
+# Cannot call this just "resources" since all targets with that name in
+# //chrome/android need a build_config, which grit targets don't have.
+grit("resources_native") {
+  source = "resources/resources.grd"
+  outputs = [
+    "grit/test_dummy_resources.h",
+    "test_dummy_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chrome"
+  depfile_dir = target_gen_dir
 }

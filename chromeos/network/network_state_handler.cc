@@ -1431,8 +1431,12 @@ void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
                                                const base::Value& value) {
   SCOPED_NET_LOG_IF_SLOW();
   DeviceState* device = GetModifiableDeviceState(device_path);
-  if (!device)
+  if (!device || !device->update_received()) {
+    // Shill may send a device property update before processing Chrome's
+    // initial GetProperties request. If this occurs, the initial request will
+    // include the changed property value so we can ignore this update.
     return;
+  }
   if (!device->PropertyChanged(key, value))
     return;
 

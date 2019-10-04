@@ -10,10 +10,6 @@ import("//build/config/fuchsia/symbol_archive.gni")
 import("//testing/test.gni")
 
 declare_args() {
-  # Enable remote debugging for WebContentRunner instances on this port.
-  # Set to 0 to disable.
-  enable_remote_debugging_on_port = 0
-
   # Allow the Cast Runner to use software decoders for rendering video.
   # TODO(crbug.com/1000858): Revisit this value once hardware playback is fixed
   #                          (fxb/13659).
@@ -22,10 +18,7 @@ declare_args() {
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
-  flags = [
-    "ENABLE_REMOTE_DEBUGGING_ON_PORT=$enable_remote_debugging_on_port",
-    "ENABLE_SOFTWARE_VIDEO_DECODERS=$enable_software_video_decoders",
-  ]
+  flags = [ "ENABLE_SOFTWARE_VIDEO_DECODERS=$enable_software_video_decoders" ]
   visibility = [ ":*" ]
 }
 
@@ -38,7 +31,6 @@ source_set("common") {
     "common/web_content_runner.h",
   ]
   deps = [
-    ":buildflags",
     "//base",
     "//fuchsia/base",
     "//fuchsia/base:modular",

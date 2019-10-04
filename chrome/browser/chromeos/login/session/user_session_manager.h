@@ -289,7 +289,7 @@ class UserSessionManager
 
   // Check to see if given profile should show EndOfLife Notification
   // and show the message accordingly.
-  void CheckEolStatus(Profile* profile);
+  void CheckEolInfo(Profile* profile);
 
   // Starts migrating accounts to Chrome OS Account Manager.
   void StartAccountManagerMigration(Profile* profile);

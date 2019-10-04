@@ -223,6 +223,9 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void ConnectConditions();
   void DisconnectConditions();
 
+  void AddedToTimeContainer();
+  void RemovedFromTimeContainer();
+
   void NotifyDependentsOnNewInterval(const SMILInterval& interval);
   void NotifyDependentsOnRepeat(unsigned repeat_nr, SMILTime repeat_time);
 

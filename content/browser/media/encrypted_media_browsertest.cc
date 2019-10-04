@@ -264,16 +264,13 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {
 }
 
 // TODO(crbug.com/707127): Decide when it's supported on Android.
-// FLAKY: crbug.com/1001399
 #if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
-                       DISABLED_Playback_VideoOnly_WebM_VP9Profile2) {
+                       Playback_VideoOnly_WebM_VP9Profile2) {
   TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.webm");
 }
 
-// Flaky, disabled. https://crbug.com/1001364.
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
-                       DISABLED_Playback_VideoOnly_MP4_VP9Profile2) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9Profile2) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
   if (CurrentSourceType() != SrcType::MSE) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
@@ -288,9 +285,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM_AV1) {
   TestSimplePlayback("bear-av1-cenc.webm");
 }
 
-// Flaky, disabled. https://crbug.com/1001364.
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
-                       DISABLED_Playback_VideoOnly_WebM_AV1_10bit) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM_AV1_10bit) {
   TestSimplePlayback("bear-av1-320x180-10bit-cenc.webm");
 }
 

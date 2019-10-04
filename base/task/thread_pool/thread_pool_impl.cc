@@ -426,6 +426,14 @@ bool ThreadPoolImpl::EnqueueJobTaskSource(
   return true;
 }
 
+void ThreadPoolImpl::RemoveJobTaskSource(
+    scoped_refptr<JobTaskSource> task_source) {
+  auto transaction = task_source->BeginTransaction();
+  ThreadGroup* const current_thread_group =
+      GetThreadGroupForTraits(transaction.traits());
+  current_thread_group->RemoveTaskSource(std::move(task_source));
+}
+
 bool ThreadPoolImpl::IsRunningPoolWithTraits(const TaskTraits& traits) const {
   return GetThreadGroupForTraits(traits)->IsBoundToCurrentThread();
 }

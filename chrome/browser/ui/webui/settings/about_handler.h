@@ -162,15 +162,15 @@ class AboutHandler : public settings::SettingsPageUIHandler,
                                  const base::FilePath& label_dir_path,
                                  const std::string& text);
 
-  // Retrieves device end of life status.
-  // Will asynchronously resolve the provided callback with a boolean
-  // indicating whether the device has reached end-of-life status (will no
-  // longer receive updates).
-  void HandleGetHasEndOfLife(const base::ListValue* args);
+  // Retrieves device End of Life information which contains the End of Life
+  // date. Will asynchronously resolve the provided callback with an object
+  // containing a boolean indicating whether the device has reached/passed End
+  // of Life, and an End Of Life description formatted with the month and year.
+  void HandleGetEndOfLifeInfo(const base::ListValue* args);
 
-  // Callbacks for version_updater_->GetEolStatus calls.
-  void OnGetEndOfLifeStatus(std::string callback_id,
-                            update_engine::EndOfLifeStatus status);
+  // Callbacks for version_updater_->GetEolInfo calls.
+  void OnGetEndOfLifeInfo(std::string callback_id,
+                          chromeos::UpdateEngineClient::EolInfo eol_info);
 #endif
 
   // Specialized instance of the VersionUpdater used to update the browser.

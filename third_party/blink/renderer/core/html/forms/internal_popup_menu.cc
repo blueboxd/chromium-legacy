@@ -270,7 +270,7 @@ void InternalPopupMenu::WriteDocument(SharedBuffer* data) {
     Element& child = *items[context.list_index_];
     if (!IsA<HTMLOptGroupElement>(child.parentNode()))
       context.FinishGroupIfNecessary();
-    if (auto* option = ToHTMLOptionElementOrNull(child))
+    if (auto* option = DynamicTo<HTMLOptionElement>(child))
       AddOption(context, *option);
     else if (auto* optgroup = DynamicTo<HTMLOptGroupElement>(child))
       AddOptGroup(context, *optgroup);
@@ -536,7 +536,7 @@ void InternalPopupMenu::Update() {
     Element& child = *items[context.list_index_];
     if (!IsA<HTMLOptGroupElement>(child.parentNode()))
       context.FinishGroupIfNecessary();
-    if (auto* option = ToHTMLOptionElementOrNull(child))
+    if (auto* option = DynamicTo<HTMLOptionElement>(child))
       AddOption(context, *option);
     else if (auto* optgroup = DynamicTo<HTMLOptGroupElement>(child))
       AddOptGroup(context, *optgroup);

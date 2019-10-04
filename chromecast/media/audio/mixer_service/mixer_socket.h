@@ -27,8 +27,42 @@ namespace mixer_service {
 // Not thread-safe; all usage of a given instance must be on the same sequence.
 class MixerSocket : public SmallMessageSocket {
  public:
-  explicit MixerSocket(std::unique_ptr<net::StreamSocket> socket);
+  class Delegate {
+   public:
+    // Called when metadata is received from the other side of the connection.
+    // Return |true| if the socket should continue to receive messages.
+    virtual bool HandleMetadata(const Generic& message);
+
+    // Called when audio data is received from the other side of the connection.
+    // Return |true| if the socket should continue to receive messages.
+    virtual bool HandleAudioData(char* data, int size, int64_t timestamp);
+
+    // Called when audio data is received from the other side of the connection
+    // using an IOBufferPool. The |buffer| reference may be held as long as
+    // needed by the delegate implementation. The buffer contains the full
+    // message header including size; the |data| points to the audio data, and
+    // the |size| is the size of the audio data. |data| will always be
+    // kAudioMessageHeaderSize bytes past the start of the buffer.
+    // Return |true| if the socket should continue to receive messages.
+    virtual bool HandleAudioBuffer(scoped_refptr<net::IOBuffer> buffer,
+                                   char* data,
+                                   int size,
+                                   int64_t timestamp);
+
+    // Called when the connection is lost; no further data will be sent or
+    // received after OnConnectionError() is called. It is safe to delete the
+    // MixerSocket inside the OnConnectionError() implementation.
+    virtual void OnConnectionError() {}
+
+   protected:
+    virtual ~Delegate() = default;
+  };
+
+  MixerSocket(std::unique_ptr<net::StreamSocket> socket, Delegate* delegate);
   ~MixerSocket() override;
+
+  // Changes the delegate.
+  void SetDelegate(Delegate* delegate);
 
   // 16-bit type and 64-bit timestamp.
   static constexpr size_t kAudioHeaderSize = sizeof(int16_t) + sizeof(int64_t);
@@ -56,60 +90,25 @@ class MixerSocket : public SmallMessageSocket {
   // Sends an arbitrary protobuf across the connection.
   void SendProto(const google::protobuf::MessageLite& message);
 
- protected:
-  // Called when metadata is received from the other side of the connection.
-  virtual bool HandleMetadata(const Generic& message) = 0;
-
-  // Called when audio data is received from the other side of the connection.
-  virtual bool HandleAudioData(char* data, int size, int64_t timestamp) = 0;
-
-  // Called when the connection is lost; no further data will be sent or
-  // received after OnConnectionError() is called. It is safe to delete |this|
-  // inside the OnConnectionError() implementation.
-  virtual void OnConnectionError() = 0;
-
  private:
   // SmallMessageSocket implementation:
   void OnSendUnblocked() override;
   void OnError(int error) override;
   void OnEndOfStream() override;
   bool OnMessage(char* data, int size) override;
+  bool OnMessageBuffer(scoped_refptr<net::IOBuffer> buffer, int size) override;
 
   bool ParseMetadata(char* data, int size);
   bool ParseAudio(char* data, int size);
+  bool ParseAudioBuffer(scoped_refptr<net::IOBuffer> buffer,
+                        char* data,
+                        int size);
+
+  Delegate* delegate_;
 
   std::queue<scoped_refptr<net::IOBuffer>> write_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(MixerSocket);
-};
-
-// Handles client-side sending messages to the mixer service and receiving them
-// from the mixer service. Also not thread-safe.
-class MixerClientSocket : public MixerSocket {
- public:
-  class Delegate {
-   public:
-    virtual void HandleMetadata(const Generic& message) {}
-    virtual void HandleAudioData(char* data, int size, int64_t timestamp) {}
-    virtual void OnConnectionError() {}
-
-   protected:
-    virtual ~Delegate() = default;
-  };
-
-  MixerClientSocket(std::unique_ptr<net::StreamSocket> socket,
-                    Delegate* delegate);
-  ~MixerClientSocket() override;
-
- private:
-  // MixerSocket implementation:
-  bool HandleMetadata(const Generic& message) override;
-  bool HandleAudioData(char* data, int size, int64_t timestamp) override;
-  void OnConnectionError() override;
-
-  Delegate* const delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(MixerClientSocket);
 };
 
 }  // namespace mixer_service

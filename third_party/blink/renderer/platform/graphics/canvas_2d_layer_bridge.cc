@@ -139,6 +139,8 @@ bool Canvas2DLayerBridge::ShouldAccelerate(AccelerationHint hint) const {
     accelerate = true;
   } else if (acceleration_mode_ == kDisableAcceleration) {
     accelerate = false;
+  } else if (acceleration_mode_ == kEnableAcceleration) {
+    accelerate = true;
   } else {
     accelerate = hint == kPreferAcceleration ||
                  hint == kPreferAccelerationAfterVisibilityChange;

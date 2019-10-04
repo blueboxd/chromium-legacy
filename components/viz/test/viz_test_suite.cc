@@ -6,7 +6,6 @@
 
 #include "base/threading/thread_id_name_manager.h"
 #include "components/viz/test/paths.h"
-#include "components/viz/test/test_gpu_service_holder.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
 namespace viz {
@@ -23,7 +22,6 @@ void VizTestSuite::Initialize() {
       base::test::TaskEnvironment::MainThreadType::UI);
 
   gl::GLSurfaceTestSupport::InitializeOneOff();
-  TestGpuServiceHolder::DestroyInstanceAfterEachTest();
   Paths::RegisterPathProvider();
 
   base::ThreadIdNameManager::GetInstance()->SetName("Main");

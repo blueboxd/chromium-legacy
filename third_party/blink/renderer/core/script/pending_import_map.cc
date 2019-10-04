@@ -24,8 +24,9 @@ PendingImportMap* PendingImportMap::CreateInline(ScriptElementBase& element,
 
   ScriptValue error_to_rethrow;
   ImportMap* import_map =
-      ImportMap::Parse(*modulator, import_map_text, base_url, *context_document,
-                       &error_to_rethrow);
+      ImportMap::Parse(*modulator, import_map_text, base_url,
+                       modulator->BuiltInModuleInfraEnabled(),
+                       *context_document, &error_to_rethrow);
   return MakeGarbageCollected<PendingImportMap>(
       script_state, element, import_map, error_to_rethrow, *context_document);
 }

@@ -70,11 +70,6 @@ namespace net {
 
 namespace {
 
-#if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
-constexpr base::FeatureParam<std::string> kPostQuantumGroup{
-    &features::kPostQuantumCECPQ2, "group", ""};
-#endif
-
 // This constant can be any non-negative/non-zero value (eg: it does not
 // overlap with any value of the net::Error range, including net::OK).
 const int kSSLClientSocketNoPendingResult = 1;
@@ -325,33 +320,6 @@ class SSLClientSocketImpl::SSLContext {
     SSL_CTX_add_cert_compression_alg(
         ssl_ctx_.get(), TLSEXT_cert_compression_brotli,
         nullptr /* compression not supported */, DecompressBrotliCert);
-#endif
-
-#if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
-    // CECPQ2b is only optimised for x86-64 and aarch64, and is too slow on
-    // other CPUs to even experiment with.
-    const std::string post_quantum_group = kPostQuantumGroup.Get();
-    if (!post_quantum_group.empty()) {
-      bool send_signal = false;
-      if (post_quantum_group == "Control") {
-        send_signal = true;
-      } else if (post_quantum_group == "CECPQ2") {
-        send_signal = true;
-        static const int kCurves[] = {NID_CECPQ2, NID_X25519,
-                                      NID_X9_62_prime256v1, NID_secp384r1};
-        SSL_CTX_set1_curves(ssl_ctx_.get(), kCurves, base::size(kCurves));
-      } else if (post_quantum_group == "CECPQ2b") {
-        send_signal = true;
-        static const int kCurves[] = {NID_CECPQ2b, NID_X25519,
-                                      NID_X9_62_prime256v1, NID_secp384r1};
-        SSL_CTX_set1_curves(ssl_ctx_.get(), kCurves, base::size(kCurves));
-      }
-      // The "Random" group is configured on the |SSL*|, below.
-
-      if (send_signal) {
-        SSL_CTX_enable_pq_experiment_signal(ssl_ctx_.get());
-      }
-    }
 #endif
   }
 
@@ -631,8 +599,6 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->key_exchange_group = SSL_get_curve_id(ssl_.get());
   ssl_info->peer_signature_algorithm =
       SSL_get_peer_signature_algorithm(ssl_.get());
-  ssl_info->server_in_post_quantum_experiment =
-      SSL_pq_experiment_signal_seen(ssl_.get());
 
   SSLConnectionStatusSetCipherSuite(
       static_cast<uint16_t>(SSL_CIPHER_get_id(cipher)),
@@ -909,36 +875,6 @@ int SSLClientSocketImpl::Init() {
   SSL_set_renegotiate_mode(ssl_.get(), ssl_renegotiate_freely);
 
   SSL_set_shed_handshake_config(ssl_.get(), 1);
-
-#if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
-  // CECPQ2b is only optimised for x86-64 and aarch64, and is too slow on
-  // other CPUs to even experiment with.
-  const std::string post_quantum_group = kPostQuantumGroup.Get();
-  // The Random group does per-connection randomisation and so is configured
-  // on the |SSL*|. Other groups are configured on the |SSL_CTX*|, above.
-  if (post_quantum_group == "Random") {
-    uint8_t coins;
-    base::RandBytes(&coins, sizeof(coins));
-    switch (coins % 3) {
-      case 0: {
-        static const int kCurves[] = {NID_CECPQ2, NID_X25519,
-                                      NID_X9_62_prime256v1, NID_secp384r1};
-        SSL_set1_curves(ssl_.get(), kCurves, base::size(kCurves));
-        break;
-      }
-
-      case 1: {
-        static const int kCurves[] = {NID_CECPQ2b, NID_X25519,
-                                      NID_X9_62_prime256v1, NID_secp384r1};
-        SSL_set1_curves(ssl_.get(), kCurves, base::size(kCurves));
-        break;
-      }
-
-      case 2:
-        break;
-    }
-  }
-#endif
 
   // TODO(https://crbug.com/775438), if |ssl_config_.privacy_mode| is enabled,
   // this should always continue with no client certificate.

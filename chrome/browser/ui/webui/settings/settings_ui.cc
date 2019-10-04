@@ -55,7 +55,6 @@
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/safe_browsing/buildflags.h"
 #include "components/unified_consent/feature.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -146,11 +145,6 @@
 
 #if BUILDFLAG(ENABLE_PRINTING) && !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/settings/printing_handler.h"
-#endif
-
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
-#include "chrome/browser/ui/webui/settings/change_password_handler.h"
 #endif
 
 namespace settings {
@@ -250,20 +244,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
     AddSettingsPageUIHandler(
         std::make_unique<IncompatibleApplicationsHandler>());
 #endif  // OS_WIN && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
-  bool password_protection_available = false;
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  safe_browsing::ChromePasswordProtectionService* password_protection =
-      safe_browsing::ChromePasswordProtectionService::
-          GetPasswordProtectionService(profile);
-  password_protection_available = !!password_protection;
-  if (password_protection) {
-    AddSettingsPageUIHandler(
-        std::make_unique<ChangePasswordHandler>(profile, password_protection));
-  }
-#endif
-  html_source->AddBoolean("passwordProtectionAvailable",
-                          password_protection_available);
 
 #if !defined(OS_CHROMEOS)
   html_source->AddBoolean(

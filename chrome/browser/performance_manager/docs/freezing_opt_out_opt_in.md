@@ -49,6 +49,7 @@ On desktop, a page will not be frozen if:
 * The page is currently visible.
 * The page is currently being inspected by DevTools.
 * The page is currently capturing a window or screen.
+* The page is currently holding a Web Lock or an IndexedDB transaction.
 * The page is sharing its BrowsingInstance with another page.
 
 Pages which meet one of the above criteria are the ones that are the most likely

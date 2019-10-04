@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -539,7 +540,7 @@ void ChromeLauncherController::UpdateV1AppState(const std::string& app_id) {
 ash::ShelfID ChromeLauncherController::GetShelfIDForWebContents(
     content::WebContents* contents) {
   std::string app_id = launcher_controller_helper_->GetAppID(contents);
-  if (app_id.empty() && crostini::IsCrostiniEnabled(profile()))
+  if (app_id.empty() && crostini::CrostiniFeatures::Get()->IsEnabled(profile()))
     app_id = GetCrostiniAppIdFromContents(contents);
   if (app_id.empty() && ContentCanBeHandledByGmailApp(contents))
     app_id = kGmailAppId;

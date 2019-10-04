@@ -86,8 +86,6 @@ ApplicationCacheHost::CacheInfo ApplicationCacheHost::ApplicationCacheInfo() {
 }
 
 const base::UnguessableToken& ApplicationCacheHost::GetHostID() const {
-  if (!backend_host_.is_bound())
-    return base::UnguessableToken::Null();
   return host_id_;
 }
 

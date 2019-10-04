@@ -47,7 +47,7 @@ void StoreNoClientInfoBackup(const ClientInfo& /* client_info */) {
 }
 
 std::unique_ptr<ClientInfo> ReturnNoBackup() {
-  return std::unique_ptr<ClientInfo>();
+  return nullptr;
 }
 
 class TestMetricsService : public MetricsService {

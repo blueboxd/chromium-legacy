@@ -112,14 +112,6 @@ class CC_EXPORT LayerImpl {
     return offset_to_transform_parent_;
   }
 
-  void SetShouldFlattenScreenSpaceTransformFromPropertyTree(
-      bool should_flatten) {
-    should_flatten_screen_space_transform_from_property_tree_ = should_flatten;
-  }
-  bool should_flatten_screen_space_transform_from_property_tree() const {
-    return should_flatten_screen_space_transform_from_property_tree_;
-  }
-
   bool is_clipped() const { return draw_properties_.is_clipped; }
 
   LayerTreeImpl* layer_tree_impl() const { return layer_tree_impl_; }
@@ -486,8 +478,6 @@ class CC_EXPORT LayerImpl {
   // layer's bounds correspond to the scroll node's bounds (both |bounds| and
   // |scroll_container_bounds|).
   bool scrollable_ : 1;
-
-  bool should_flatten_screen_space_transform_from_property_tree_ : 1;
 
   // Tracks if drawing-related properties have changed since last redraw.
   // TODO(wutao): We want to distinquish the sources of change so that we can

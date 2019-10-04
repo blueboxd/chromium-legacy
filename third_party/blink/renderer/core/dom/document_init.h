@@ -118,6 +118,7 @@ class CORE_EXPORT DocumentInit final {
   network::mojom::IPAddressSpace GetIPAddressSpace() const;
 
   DocumentInit& WithSrcdocDocument(bool is_srcdoc_document);
+  DocumentInit& WithBlockedByCSP(bool blocked_by_csp);
 
   DocumentInit& WithRegistrationContext(V0CustomElementRegistrationContext*);
   V0CustomElementRegistrationContext* RegistrationContext(Document*) const;
@@ -177,6 +178,10 @@ class CORE_EXPORT DocumentInit final {
   // affects security checks, since srcdoc's content comes directly from
   // the parent document, not from loading a URL.
   bool is_srcdoc_document_ = false;
+
+  // Whether the actual document was blocked by csp and we are creating a dummy
+  // empty document instead.
+  bool blocked_by_csp_ = false;
 
   Member<V0CustomElementRegistrationContext> registration_context_;
   bool create_new_registration_context_;

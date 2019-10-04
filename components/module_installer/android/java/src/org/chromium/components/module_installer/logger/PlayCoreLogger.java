@@ -28,13 +28,13 @@ public class PlayCoreLogger implements Logger {
     }
 
     @Override
-    public void logRequestFailure(String moduleName, @SplitInstallErrorCode int status) {
-        mFailureLogger.logRequestFailure(moduleName, status);
+    public void logRequestFailure(String moduleName, @SplitInstallErrorCode int errorCode) {
+        mFailureLogger.logRequestFailure(moduleName, errorCode);
     }
 
     @Override
-    public void logStatusFailure(String moduleName, @SplitInstallErrorCode int status) {
-        mFailureLogger.logStatusFailure(moduleName, status);
+    public void logStatusFailure(String moduleName, @SplitInstallErrorCode int errorCode) {
+        mFailureLogger.logStatusFailure(moduleName, errorCode);
     }
 
     @Override

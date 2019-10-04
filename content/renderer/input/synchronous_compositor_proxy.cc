@@ -401,12 +401,23 @@ void SynchronousCompositorProxy::BindChannel(
   control_host_.Bind(std::move(control_host));
   host_.Bind(std::move(host));
   receiver_.Bind(std::move(compositor_request));
+  receiver_.set_disconnect_handler(base::BindOnce(
+      &SynchronousCompositorProxy::HostDisconnected, base::Unretained(this)));
 
   if (layer_tree_frame_sink_)
     LayerTreeFrameSinkCreated();
 
   if (needs_begin_frame_)
     host_->SetNeedsBeginFrames(true);
+}
+
+void SynchronousCompositorProxy::HostDisconnected() {
+  // It is possible due to bugs that the Host is disconnected without pausing
+  // begin frames. This causes hard-to-reproduce but catastrophic bug of
+  // blocking the renderer main thread forever on a commit. See
+  // crbug.com/1010478 for when this happened. This is to prevent a similar
+  // bug in the future.
+  SetBeginFrameSourcePaused(true);
 }
 
 }  // namespace content

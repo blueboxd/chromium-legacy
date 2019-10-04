@@ -122,6 +122,8 @@ if (use_ozone) {
         "evdev/touch_filter/horizontally_aligned_touch_noise_filter.h",
         "evdev/touch_filter/low_pressure_filter.cc",
         "evdev/touch_filter/low_pressure_filter.h",
+        "evdev/touch_filter/neural_stylus_palm_detection_filter_util.cc",
+        "evdev/touch_filter/neural_stylus_palm_detection_filter_util.h",
         "evdev/touch_filter/open_palm_detection_filter.cc",
         "evdev/touch_filter/open_palm_detection_filter.h",
         "evdev/touch_filter/palm_detection_filter.cc",

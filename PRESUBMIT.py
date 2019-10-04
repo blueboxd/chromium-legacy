@@ -1047,7 +1047,8 @@ _BANNED_CPP_FUNCTIONS = (
       'GetAddressOf',
       (
         'Improper use of Microsoft::WRL::ComPtr<T>::GetAddressOf() has been ',
-        'implicated in a few leaks. Use operator& instead.'
+        'implicated in a few leaks. Use operator& instead. See ',
+        'http://crbug.com/914910 for more conversion guidance.'
       ),
       True,
       (),
@@ -4373,7 +4374,7 @@ def _CheckForIncludeGuards(input_api, output_api):
               errors.append(output_api.PresubmitPromptWarning(
                 'Header using the wrong include guard name %s' % guard_name,
                 ['%s:%d' % (f.LocalPath(), line_number + 1)],
-                'Expected: %r\nFound: %r' % (expected_guard, guard_name)))
+                'Expected: %r\nFound:    %r' % (expected_guard, guard_name)))
       else:
         # The line after #ifndef should have a #define of the same name.
         if line_number == guard_line_number + 1:
@@ -4504,6 +4505,8 @@ def CheckChangeOnCommit(input_api, output_api):
   results.extend(
       input_api.canned_checks.CheckPatchFormatted(input_api, output_api))
   results.extend(input_api.canned_checks.CheckChangeHasBugField(
+      input_api, output_api))
+  results.extend(input_api.canned_checks.CheckChangeHasNoUnwantedTags(
       input_api, output_api))
   results.extend(input_api.canned_checks.CheckChangeHasDescription(
       input_api, output_api))

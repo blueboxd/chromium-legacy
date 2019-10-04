@@ -79,7 +79,7 @@ class ProxyManagerImpl : public ProxyManager {
   void ProxyResponseToCaller(const std::vector<uint8_t>& response);
 
   // Fail in-flight request.
-  void Fail(const std::string& error_message);
+  void Fail(const std::string& error_message, int http_status_code);
 
   // Delegate providing necessary Profile dependencies.
   std::unique_ptr<CupsProxyServiceDelegate> delegate_;
@@ -156,7 +156,7 @@ void ProxyManagerImpl::ProxyRequest(
   // directly.
   if (in_flight_) {
     DVLOG(1) << "CupsPrintService Error: Already have an in-flight request";
-    std::move(cb).Run({}, {});
+    std::move(cb).Run({}, {}, HTTP_STATUS_SERVICE_UNAVAILABLE);
     return;
   }
 
@@ -166,7 +166,8 @@ void ProxyManagerImpl::ProxyRequest(
   // TODO(crbug.com/945409): Rename in both proxy.mojom's: url -> endpoint.
   auto request_buffer = RebuildIppRequest(method, url, version, headers, body);
   if (!request_buffer) {
-    return Fail("Failed to rebuild incoming IPP request");
+    return Fail("Failed to rebuild incoming IPP request",
+                HTTP_STATUS_SERVER_ERROR);
   }
 
   // Save request.
@@ -194,14 +195,14 @@ void ProxyManagerImpl::OnParseIpp(
   DCHECK(in_flight_);
 
   if (!parsed_request) {
-    return Fail("Failed to parse IPP request");
+    return Fail("Failed to parse IPP request", HTTP_STATUS_BAD_REQUEST);
   }
 
   // Validate parsed request.
   auto valid_request =
       ipp_validator_->ValidateIppRequest(std::move(parsed_request));
   if (!valid_request) {
-    return Fail("Failed to validate IPP request");
+    return Fail("Failed to validate IPP request", HTTP_STATUS_BAD_REQUEST);
   }
 
   // Save newly validated request.
@@ -209,7 +210,7 @@ void ProxyManagerImpl::OnParseIpp(
 
   auto opcode = ippGetOperation(in_flight_->request.ipp.get());
   if (opcode == IPP_OP_CUPS_NONE) {
-    return Fail("Failed to parse IPP operation ID");
+    return Fail("Failed to parse IPP operation ID", HTTP_STATUS_BAD_REQUEST);
   }
 
   // Since Chrome is the source-of-truth for printers on ChromeOS, for
@@ -240,7 +241,8 @@ void ProxyManagerImpl::SpoofGetPrinters() {
       delegate_->GetPrinters(chromeos::PrinterClass::kEnterprise));
   auto response = BuildGetDestsResponse(in_flight_->request, printers);
   if (!response.has_value()) {
-    return Fail("Failed to spoof CUPS-Get-Printers response");
+    return Fail("Failed to spoof CUPS-Get-Printers response",
+                HTTP_STATUS_SERVER_ERROR);
   }
 
   ProxyResponseToCaller(response->buffer);
@@ -252,7 +254,7 @@ void ProxyManagerImpl::OnInstallPrinter(InstallPrinterResult res) {
   DCHECK(in_flight_);
 
   if (res != InstallPrinterResult::kSuccess) {
-    return Fail("Failed to pre-install printer");
+    return Fail("Failed to pre-install printer", HTTP_STATUS_SERVER_ERROR);
   }
 
   ProxyToCups();
@@ -272,7 +274,7 @@ void ProxyManagerImpl::OnProxyToCups(
   DCHECK(in_flight_);
 
   if (!response) {
-    return Fail("Failed to proxy request");
+    return Fail("Failed to proxy request", HTTP_STATUS_SERVER_ERROR);
   }
 
   ProxyResponseToCaller(*response);
@@ -286,14 +288,16 @@ void ProxyManagerImpl::ProxyResponseToCaller(
   auto end_of_headers = net::HttpUtil::LocateEndOfHeaders(response_str.data(),
                                                           response_str.size());
   if (end_of_headers < 0) {
-    return Fail("IPP response missing end of headers");
+    return Fail("IPP response missing end of headers",
+                HTTP_STATUS_SERVER_ERROR);
   }
 
   base::StringPiece headers_slice(response_str.data(), end_of_headers);
   scoped_refptr<net::HttpResponseHeaders> response_headers =
       net::HttpResponseHeaders::TryToCreate(headers_slice);
   if (!response_headers) {
-    return Fail("Failed to parse HTTP response headers");
+    return Fail("Failed to parse HTTP response headers",
+                HTTP_STATUS_SERVER_ERROR);
   }
 
   std::vector<ipp_converter::HttpHeader> parsed_headers;
@@ -309,19 +313,20 @@ void ProxyManagerImpl::ProxyResponseToCaller(
 
   // Send parsed response back to caller.
   std::move(in_flight_->cb)
-      .Run(std::move(parsed_headers), std::move(ipp_message));
+      .Run(std::move(parsed_headers), std::move(ipp_message), HTTP_STATUS_OK);
   in_flight_.reset();
 }
 
 // TODO(crbug.com/945409): Fail with comprehensive HTTP Error response.
 // Fails current request by running its callback with an empty response and
 // clearing in_flight_.
-void ProxyManagerImpl::Fail(const std::string& error_message) {
+void ProxyManagerImpl::Fail(const std::string& error_message,
+                            int http_status_code) {
   DCHECK(in_flight_);
 
   DVLOG(1) << "CupsPrintService Error: " << error_message;
 
-  std::move(in_flight_->cb).Run({}, {});
+  std::move(in_flight_->cb).Run({}, {}, http_status_code);
   in_flight_.reset();
 }
 

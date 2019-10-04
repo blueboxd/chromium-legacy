@@ -681,6 +681,7 @@ TEST_P(ThreadGroupTest, CancelJobTaskSource) {
   scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
       FROM_HERE, {ThreadPool()}, &mock_pooled_task_runner_delegate_);
 
+  experimental::JobHandle job_handle = task_source->GetHandleForTesting();
   mock_pooled_task_runner_delegate_.EnqueueJobTaskSource(task_source);
 
   // Wait for at least 1 task to start running.
@@ -691,7 +692,7 @@ TEST_P(ThreadGroupTest, CancelJobTaskSource) {
   }
 
   // Cancels pending tasks and unblocks running ones.
-  task_source->Cancel();
+  job_handle.Cancel();
 
   // This should not block since the job got cancelled.
   task_tracker_.FlushForTesting();
@@ -774,6 +775,33 @@ TEST_P(ThreadGroupTest, ScheduleEmptyJobTaskSource) {
 
   // This should not block since there's no task to run.
   task_tracker_.FlushForTesting();
+}
+
+// Verify that Join() on a job contributes to max concurrency and waits for all
+// workers to return.
+TEST_P(ThreadGroupTest, JoinJobTaskSource) {
+  StartThreadGroup();
+
+  WaitableEvent threads_continue;
+  RepeatingClosure threads_continue_barrier = BarrierClosure(
+      kMaxTasks + 1,
+      BindOnce(&WaitableEvent::Signal, Unretained(&threads_continue)));
+
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      BindLambdaForTesting([&](experimental::JobDelegate*) {
+        threads_continue_barrier.Run();
+        test::WaitWithoutBlockingObserver(&threads_continue);
+      }),
+      /* num_tasks_to_run */ kMaxTasks + 1);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, {ThreadPool()}, &mock_pooled_task_runner_delegate_);
+
+  experimental::JobHandle job_handle = task_source->GetHandleForTesting();
+  mock_pooled_task_runner_delegate_.EnqueueJobTaskSource(task_source);
+  job_handle.Join();
+  // All worker tasks should complete before Join() returns.
+  EXPECT_EQ(0U, job_task->GetMaxConcurrency());
+  EXPECT_EQ(1U, task_source->HasOneRef());
 }
 
 // Verify that the maximum number of BEST_EFFORT tasks that can run concurrently

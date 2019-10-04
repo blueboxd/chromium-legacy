@@ -28,8 +28,6 @@ TestPasswordManagerClient::TestPasswordManagerClient()
       password_manager::prefs::kCredentialsEnableAutosignin, true);
   prefs_->registry()->RegisterBooleanPref(
       password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, true);
-  prefs_->registry()->RegisterBooleanPref(
-      password_manager::prefs::kPasswordLeakDetectionEnabled, true);
 }
 
 TestPasswordManagerClient::~TestPasswordManagerClient() = default;

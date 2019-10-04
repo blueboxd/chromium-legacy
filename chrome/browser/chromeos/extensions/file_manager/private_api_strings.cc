@@ -9,7 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_string_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
@@ -40,7 +40,7 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   dict->SetBoolean("ARC_USB_STORAGE_UI_ENABLED",
                    base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature));
   dict->SetBoolean("CROSTINI_ENABLED",
-                   crostini::IsCrostiniEnabled(
+                   crostini::CrostiniFeatures::Get()->IsEnabled(
                        Profile::FromBrowserContext(browser_context())));
   dict->SetBoolean("FEEDBACK_PANEL_ENABLED",
                    base::FeatureList::IsEnabled(

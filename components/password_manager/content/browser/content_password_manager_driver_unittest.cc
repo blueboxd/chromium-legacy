@@ -228,7 +228,8 @@ TEST_F(ContentPasswordManagerDriverTest, ClearPasswordsOnAutofill) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ContentPasswordManagerDriverTest, NotInformAboutBlacklistedForm) {
+TEST_F(ContentPasswordManagerDriverTest,
+       DISABLED_NotInformAboutBlacklistedForm) {
   std::unique_ptr<ContentPasswordManagerDriver> driver(
       new ContentPasswordManagerDriver(main_rfh(), &password_manager_client_,
                                        &autofill_client_));

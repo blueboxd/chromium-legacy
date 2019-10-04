@@ -13,7 +13,7 @@ import com.google.android.libraries.feed.api.host.stream.TooltipInfo;
 
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.widget.textbubble.TextBubble;
+import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.widget.ViewRectProvider;
 

@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
@@ -303,7 +304,7 @@ std::string ContainerIdToString(const ContainerId& container_id) {
 }
 
 bool IsUninstallable(Profile* profile, const std::string& app_id) {
-  if (!IsCrostiniEnabled(profile))
+  if (!CrostiniFeatures::Get()->IsEnabled(profile))
     return false;
   if (app_id == kCrostiniTerminalId &&
       !crostini::CrostiniManager::GetForProfile(profile)
@@ -344,11 +345,6 @@ bool IsCrostiniUIAllowedForProfile(Profile* profile, bool check_policy) {
     return IsCrostiniAllowedForProfile(profile);
   }
   return IsCrostiniAllowedForProfileImpl(profile);
-}
-
-bool IsCrostiniEnabled(Profile* profile) {
-  return IsCrostiniUIAllowedForProfile(profile) &&
-         profile->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled);
 }
 
 bool IsCrostiniRunning(Profile* profile) {

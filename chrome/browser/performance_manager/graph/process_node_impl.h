@@ -76,6 +76,10 @@ class ProcessNodeImpl
 
   const base::flat_set<FrameNodeImpl*>& frame_nodes() const;
 
+  // Returns the render process id (equivalent to RenderProcessHost::GetID()),
+  // or ChildProcessHost::kInvalidUniqueID if this is not a renderer.
+  int GetRenderProcessId() const;
+
   // If this process is associated with only one page, returns that page.
   // Otherwise, returns nullptr.
   PageNodeImpl* GetPageNodeIfExclusive() const;

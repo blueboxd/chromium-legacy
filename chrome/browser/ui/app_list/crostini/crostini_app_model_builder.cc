@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/app_list/crostini/crostini_app_model_builder.h"
 
 #include "base/bind.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_item.h"
@@ -89,7 +89,7 @@ void CrostiniAppModelBuilder::InsertCrostiniAppItem(
     const std::string& app_id,
     const crostini::CrostiniRegistryService::Registration& registration) {
   if (app_id == crostini::kCrostiniTerminalId &&
-      !crostini::IsCrostiniEnabled(profile())) {
+      !crostini::CrostiniFeatures::Get()->IsEnabled(profile())) {
     // If Crostini isn't enabled, don't show the Terminal item until it
     // becomes enabled.
     return;
@@ -158,7 +158,7 @@ void CrostiniAppModelBuilder::OnAppIconUpdated(const std::string& app_id,
 
 void CrostiniAppModelBuilder::OnCrostiniEnabledChanged() {
   const bool unsynced_change = false;
-  if (crostini::IsCrostiniEnabled(profile())) {
+  if (crostini::CrostiniFeatures::Get()->IsEnabled(profile())) {
     // If Terminal has been installed before and has not been cleaned up
     // correctly, it needs to be removed.
     RemoveApp(crostini::kCrostiniTerminalId, unsynced_change);

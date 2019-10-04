@@ -380,7 +380,7 @@ TEST_F(ContentCaptureReceiverTest, DISABLED_DidCaptureContentWithUpdate) {
             content_capture_receiver_manager_helper()->captured_data());
 }
 
-TEST_F(ContentCaptureReceiverTest, DidUpdateContent) {
+TEST_F(ContentCaptureReceiverTest, DISABLED_DidUpdateContent) {
   DidCaptureContent(test_data(), true /* first_data */);
   EXPECT_TRUE(
       content_capture_receiver_manager_helper()->parent_session().empty());

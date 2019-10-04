@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipViewHolder;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.autofill_assistant.AutofillAssistantPreferences;
-import org.chromium.chrome.browser.widget.textbubble.TextBubble;
+import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.widget.ViewRectProvider;

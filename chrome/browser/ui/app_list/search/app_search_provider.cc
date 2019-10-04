@@ -34,10 +34,10 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/chromeos/release_notes/release_notes_storage.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -319,7 +319,7 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
       // requires a few characters before being shown in search results.
       if ((update.AppType() == apps::mojom::AppType::kCrostini) &&
           (update.AppId() == crostini::kCrostiniTerminalId) &&
-          !crostini::IsCrostiniEnabled(profile())) {
+          !crostini::CrostiniFeatures::Get()->IsEnabled(profile())) {
         apps_vector->back()->set_recommendable(false);
         apps_vector->back()->set_relevance_threshold(
             kCrostiniTerminalRelevanceThreshold);
@@ -776,7 +776,7 @@ class CrostiniDataSource : public IconCachedDataSource,
       if (app_id == crostini::kCrostiniTerminalId) {
         // Until it's been installed, the Terminal is hidden and requires
         // a few characters before being shown in search results.
-        if (!crostini::IsCrostiniEnabled(profile())) {
+        if (!crostini::CrostiniFeatures::Get()->IsEnabled(profile())) {
           apps->back()->set_recommendable(false);
           apps->back()->set_relevance_threshold(
               kCrostiniTerminalRelevanceThreshold);

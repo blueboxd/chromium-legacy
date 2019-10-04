@@ -1111,7 +1111,11 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
       reused_password_account_type, LoginReputationClientResponse::PHISHING));
 
-  // Don't show modal warning if it is a saved password reuse.
+  // Don't show modal warning if it is a saved password reuse and the experiment
+  // isn't on.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      safe_browsing::kPasswordProtectionForSignedInUsers);
   reused_password_account_type.set_account_type(
       ReusedPasswordAccountType::SAVED_PASSWORD);
   EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
@@ -1120,8 +1124,17 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
 
   {
     base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures(
-        {}, {safe_browsing::kPasswordProtectionForSignedInUsers});
+    feature_list.InitAndEnableFeature(
+        safe_browsing::kPasswordProtectionForSavedPasswords);
+    EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
+        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+        reused_password_account_type, LoginReputationClientResponse::PHISHING));
+  }
+
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        safe_browsing::kPasswordProtectionForSignedInUsers);
 
     // Don't show modal warning if non-sync gaia account experiment is not
     // on.
@@ -1258,8 +1271,8 @@ TEST_P(PasswordProtectionServiceTest, VerifyIsSupportedPasswordTypeForPinging) {
       PasswordType::ENTERPRISE_PASSWORD));
   {
     base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures(
-        {}, {safe_browsing::kPasswordProtectionForSignedInUsers});
+    feature_list.InitAndDisableFeature(
+        safe_browsing::kPasswordProtectionForSignedInUsers);
     // Only ping for signed in, non-syncing users if the experiment is on.
     EXPECT_FALSE(
         password_protection_service_->IsSupportedPasswordTypeForPinging(

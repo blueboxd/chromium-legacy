@@ -133,7 +133,8 @@ bool QueryFontconfig(const FontRenderParamsQuery& query,
                         FontWeightToFCWeight(query.weight));
   }
 
-  FcConfigSubstitute(NULL, query_pattern.get(), FcMatchPattern);
+  FcConfig* config = GetGlobalFontConfig();
+  FcConfigSubstitute(config, query_pattern.get(), FcMatchPattern);
   FcDefaultSubstitute(query_pattern.get());
 
   ScopedFcPattern result_pattern;
@@ -147,12 +148,12 @@ bool QueryFontconfig(const FontRenderParamsQuery& query,
     FcPatternDel(result_pattern.get(), FC_FAMILY);
     FcPatternDel(result_pattern.get(), FC_PIXEL_SIZE);
     FcPatternDel(result_pattern.get(), FC_SIZE);
-    FcConfigSubstituteWithPat(NULL, result_pattern.get(), query_pattern.get(),
+    FcConfigSubstituteWithPat(config, result_pattern.get(), query_pattern.get(),
                               FcMatchFont);
   } else {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("fonts"), "FcFontMatch");
     FcResult result;
-    result_pattern.reset(FcFontMatch(NULL, query_pattern.get(), &result));
+    result_pattern.reset(FcFontMatch(config, query_pattern.get(), &result));
     if (!result_pattern)
       return false;
   }

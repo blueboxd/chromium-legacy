@@ -387,8 +387,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -403,19 +402,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -424,6 +413,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -443,8 +442,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -459,19 +457,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -480,6 +468,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -499,8 +497,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -515,19 +512,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -536,6 +523,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -555,8 +552,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -571,19 +567,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -592,6 +578,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -611,8 +607,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -627,19 +622,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -648,6 +633,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -667,8 +662,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -683,19 +677,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -704,6 +688,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -723,8 +717,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -739,19 +732,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -760,6 +743,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -779,8 +772,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -795,19 +787,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -816,6 +798,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -835,8 +827,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -852,19 +843,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -873,6 +854,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -893,8 +884,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -909,19 +899,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -930,6 +910,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -949,8 +939,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -965,19 +954,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -986,6 +965,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1005,8 +994,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1021,19 +1009,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -1042,6 +1020,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1061,8 +1049,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1077,19 +1064,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -1098,6 +1075,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1118,8 +1105,7 @@
           "--gtest_filter=-*UsingRealWebcam*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1134,19 +1120,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -1155,6 +1131,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1174,8 +1160,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1190,19 +1175,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -1211,6 +1186,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1230,8 +1215,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1246,19 +1230,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -1267,6 +1241,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1286,8 +1270,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1302,19 +1285,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -1323,6 +1296,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1342,8 +1325,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1358,19 +1340,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -1379,6 +1351,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1398,8 +1380,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1414,19 +1395,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -1435,6 +1406,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1454,8 +1435,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1470,19 +1450,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -1491,6 +1461,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1513,8 +1493,7 @@
           "--gtest_filter=-org.chromium.chrome.browser.FeaturesAnnotationsTest#testFeaturesSetExistingFlags",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1530,19 +1509,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -1551,6 +1520,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1571,8 +1550,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1587,19 +1565,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -1608,6 +1576,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1627,8 +1605,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1643,19 +1620,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -1664,6 +1631,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1684,8 +1661,7 @@
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1701,19 +1677,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -1722,6 +1688,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1741,8 +1717,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1757,19 +1732,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -1778,6 +1743,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1798,8 +1773,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1814,19 +1788,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -1835,6 +1799,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1856,8 +1830,7 @@
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1873,19 +1846,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -1894,6 +1857,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1914,8 +1887,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1930,19 +1902,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -1951,6 +1913,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -1972,8 +1944,7 @@
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -1989,19 +1960,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2010,6 +1971,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2030,8 +2001,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2046,19 +2016,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2067,6 +2027,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2087,8 +2057,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2103,19 +2072,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2124,6 +2083,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2143,8 +2112,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2159,19 +2127,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2180,6 +2138,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2199,8 +2167,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2215,19 +2182,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2236,6 +2193,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2255,8 +2222,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2271,19 +2237,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2292,6 +2248,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2311,8 +2277,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2327,19 +2292,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2348,6 +2303,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2367,8 +2332,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2383,19 +2347,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2404,6 +2358,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2423,8 +2387,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2439,19 +2402,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2460,6 +2413,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2479,8 +2442,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2495,19 +2457,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2516,6 +2468,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2535,8 +2497,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2551,19 +2512,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2572,6 +2523,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2591,8 +2552,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2607,19 +2567,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2628,6 +2578,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2647,8 +2607,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2663,19 +2622,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2684,6 +2633,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2703,8 +2662,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2719,19 +2677,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2740,6 +2688,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2759,8 +2717,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2775,19 +2732,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2796,6 +2743,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2815,8 +2772,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2831,19 +2787,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2852,6 +2798,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2871,8 +2827,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2887,19 +2842,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2908,6 +2853,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2927,8 +2882,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2943,19 +2897,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -2964,6 +2908,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -2983,8 +2937,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -2999,19 +2952,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3020,6 +2963,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3039,8 +2992,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -3055,19 +3007,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3076,6 +3018,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3095,8 +3047,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -3111,19 +3062,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3132,6 +3073,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3151,8 +3102,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -3167,19 +3117,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3188,6 +3128,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3207,8 +3157,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -3223,19 +3172,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3244,6 +3183,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3263,8 +3212,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -3279,19 +3227,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3300,6 +3238,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3319,8 +3267,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -3335,19 +3282,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3356,6 +3293,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3376,8 +3323,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -3392,19 +3338,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3413,6 +3349,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3432,8 +3378,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -3448,19 +3393,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3469,6 +3404,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3488,8 +3433,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -3504,19 +3448,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3525,6 +3459,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3544,8 +3488,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -3560,19 +3503,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3581,6 +3514,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3600,8 +3543,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -3616,19 +3558,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3637,6 +3569,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3656,8 +3598,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -3672,19 +3613,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3693,6 +3624,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3712,8 +3653,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -3728,19 +3668,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3749,6 +3679,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3768,8 +3708,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -3784,19 +3723,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3805,6 +3734,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3824,8 +3763,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -3840,19 +3778,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3861,6 +3789,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3880,8 +3818,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -3896,19 +3833,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3917,6 +3844,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3936,8 +3873,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -3952,19 +3888,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -3973,6 +3899,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -3993,8 +3929,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -4009,19 +3944,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -4030,6 +3955,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -4049,8 +3984,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -4065,19 +3999,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -4086,6 +4010,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -4105,8 +4039,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -4121,19 +4054,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -4142,6 +4065,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -4164,8 +4097,7 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_webview_instrumentation_test_apk.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -4181,19 +4113,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -4202,6 +4124,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -4222,8 +4154,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "merge": {
           "args": [
@@ -4238,19 +4169,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
             }
           ],
           "dimension_sets": [
@@ -4259,6 +4180,16 @@
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
             }
           ],
           "output_links": [
@@ -4279,8 +4210,7 @@
       {
         "args": [
           "--gtest-benchmark-name=components_perftests",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "isolate_name": "components_perftests",
         "merge": {
@@ -4292,23 +4222,6 @@
         "name": "components_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
-            }
-          ],
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -4316,14 +4229,23 @@
               "device_type": null,
               "os": "Ubuntu-16.04"
             }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
+            }
           ]
         }
       },
       {
         "args": [
           "--platform=android",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "isolate_name": "content_shell_crash_test",
         "merge": {
@@ -4333,23 +4255,6 @@
         "name": "content_shell_crash_test",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
-            }
-          ],
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -4357,13 +4262,22 @@
               "device_type": null,
               "os": "Ubuntu-16.04"
             }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
+            }
           ]
         }
       },
       {
         "args": [
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "isolate_name": "monochrome_apk_checker",
         "merge": {
@@ -4373,23 +4287,6 @@
         "name": "monochrome_apk_checker",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
-            }
-          ],
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -4397,13 +4294,22 @@
               "device_type": null,
               "os": "Ubuntu-16.04"
             }
+          ],
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
+            }
           ]
         }
       },
       {
         "args": [
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "isolate_name": "telemetry_perf_unittests",
         "merge": {
@@ -4413,23 +4319,6 @@
         "name": "telemetry_perf_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
-            }
-          ],
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -4439,6 +4328,16 @@
             }
           ],
           "idempotent": false,
+          "named_caches": [
+            {
+              "name": "avd_generic_android23",
+              "path": ".android"
+            },
+            {
+              "name": "system_images_android_23_google_apis_x86",
+              "path": ".emulator_sdk"
+            }
+          ],
           "shards": 12
         }
       }

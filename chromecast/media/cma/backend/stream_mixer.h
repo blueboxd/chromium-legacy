@@ -19,6 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/sequence_bound.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chromecast/media/cma/backend/loopback_handler.h"
@@ -37,6 +38,7 @@ namespace media {
 
 class AudioOutputRedirector;
 class InterleavedChannelMixer;
+class MixerServiceReceiver;
 class MixerOutputStream;
 class PostProcessingPipelineFactory;
 
@@ -188,6 +190,8 @@ class StreamMixer : public MixerControl {
   std::unique_ptr<MixerPipeline> mixer_pipeline_;
   std::unique_ptr<base::Thread> mixer_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> mixer_task_runner_;
+  std::unique_ptr<base::Thread> io_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   std::unique_ptr<LoopbackHandler, LoopbackHandler::Deleter> loopback_handler_;
   std::unique_ptr<ThreadHealthChecker> health_checker_;
 
@@ -234,6 +238,8 @@ class StreamMixer : public MixerControl {
   const bool external_audio_pipeline_supported_;
   std::unique_ptr<BaseExternalMediaVolumeChangeRequestObserver>
       external_volume_observer_;
+
+  base::SequenceBound<MixerServiceReceiver> receiver_;
 
   base::WeakPtrFactory<StreamMixer> weak_factory_;
 

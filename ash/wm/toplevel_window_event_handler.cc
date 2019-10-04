@@ -7,6 +7,7 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
+#include "ash/wm/back_gesture_affordance.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_resizer.h"
@@ -841,20 +842,35 @@ bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
     return false;
 
   switch (event->type()) {
-    case ui::ET_GESTURE_SCROLL_BEGIN:
+    case ui::ET_GESTURE_SCROLL_BEGIN: {
       going_back_started_ = StartedAwayFromLeftArea(event);
-      if (going_back_started_)
-        return true;
-      break;
+      if (!going_back_started_)
+        break;
+      back_gesture_affordance_ =
+          std::make_unique<BackGestureAffordance>(event->location());
+
+      aura::Window* window = static_cast<aura::Window*>(event->target());
+      DCHECK(window);
+      ui::Layer* parent = window->layer()->parent();
+      parent->Add(back_gesture_affordance_->painted_layer());
+      parent->StackAtTop(back_gesture_affordance_->painted_layer());
+      return true;
+    }
     case ui::ET_GESTURE_SCROLL_UPDATE:
       if (!going_back_started_)
         break;
-      // TODO(crbug.com/1002733): Update the arrow animation.
+      DCHECK(back_gesture_affordance_);
+      back_gesture_affordance_->SetDragProgress(event->location().x());
       return true;
     case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_SCROLL_FLING_START: {
       if (!going_back_started_)
         break;
-      if (event->location().x() >= kSwipingDistanceForGoingBack) {
+      DCHECK(back_gesture_affordance_);
+      if ((event->type() == ui::ET_GESTURE_SCROLL_END &&
+           event->location().x() >= kSwipingDistanceForGoingBack) ||
+          (event->type() == ui::ET_SCROLL_FLING_START &&
+           event->details().velocity_x() >= kFlingVelocityForGoingBack)) {
         aura::Window* root_window =
             window_util::GetRootWindowAt(event->location());
         ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED, ui::VKEY_BROWSER_BACK,
@@ -865,12 +881,13 @@ bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
                                        ui::VKEY_BROWSER_BACK, ui::EF_NONE);
         ignore_result(
             root_window->GetHost()->SendEventToSink(&release_key_event));
+        back_gesture_affordance_->Complete();
       } else {
-        // TODO(crbug.com/1002733): Revert going back animation.
+        back_gesture_affordance_->Abort();
       }
       going_back_started_ = false;
       return true;
-    // TODO(crbug.com/1002733): Add support for fling event.
+    }
     default:
       break;
   }

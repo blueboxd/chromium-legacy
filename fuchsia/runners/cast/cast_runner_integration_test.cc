@@ -22,6 +22,7 @@
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/string_util.h"
+#include "fuchsia/base/test_devtools_list_fetcher.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/base/url_request_rewrite_test_util.h"
 #include "fuchsia/runners/cast/cast_runner.h"
@@ -168,11 +169,17 @@ class CastRunnerIntegrationTest : public testing::Test {
             base::MakeExpectedNotRunClosure(FROM_HERE, "Run() timed out.")) {
     // Create the CastRunner, published into |test_services_|.
     constexpr fuchsia::web::ContextFeatureFlags kFeatures = {};
+
+    fuchsia::web::CreateContextParams create_context_params =
+        WebContentRunner::BuildCreateContextParams(
+            fidl::InterfaceHandle<fuchsia::io::Directory>(), kFeatures);
+
+    const uint16_t kRemoteDebuggingAnyPort = 0;
+    create_context_params.set_remote_debugging_port(kRemoteDebuggingAnyPort);
+
     cast_runner_ = std::make_unique<CastRunner>(
         &outgoing_directory_,
-        WebContentRunner::CreateWebContext(
-            WebContentRunner::BuildCreateContextParams(
-                fidl::InterfaceHandle<fuchsia::io::Directory>(), kFeatures)));
+        WebContentRunner::CreateWebContext(std::move(create_context_params)));
 
     // Connect to the CastRunner's fuchsia.sys.Runner interface.
     fidl::InterfaceHandle<fuchsia::io::Directory> directory;
@@ -301,7 +308,7 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
   const char kBlankAppId[] = "00000000";
   const char kBlankAppPath[] = "/defaultresponse";
   app_config_manager_.AddAppMapping(kBlankAppId,
-                                    test_server_.GetURL(kBlankAppPath));
+                                    test_server_.GetURL(kBlankAppPath), false);
 
   // Launch the test-app component.
   fuchsia::sys::ComponentControllerPtr component_controller =
@@ -348,7 +355,7 @@ TEST_F(CastRunnerIntegrationTest, ApiBindings) {
   const char kBlankAppId[] = "00000000";
   const char kBlankAppPath[] = "/echo.html";
   app_config_manager_.AddAppMapping(kBlankAppId,
-                                    test_server_.GetURL(kBlankAppPath));
+                                    test_server_.GetURL(kBlankAppPath), false);
 
   std::vector<chromium::cast::ApiBinding> binding_list;
   chromium::cast::ApiBinding echo_binding;
@@ -410,7 +417,7 @@ TEST_F(CastRunnerIntegrationTest, UrlRequestRewriteRulesProvider) {
   const char kEchoAppId[] = "00000000";
   const char kEchoAppPath[] = "/echoheader?Test";
   const GURL echo_app_url = test_server_.GetURL(kEchoAppPath);
-  app_config_manager_.AddAppMapping(kEchoAppId, echo_app_url);
+  app_config_manager_.AddAppMapping(kEchoAppId, echo_app_url, false);
 
   // Launch the test-app component.
   fuchsia::sys::ComponentControllerPtr component_controller =
@@ -448,8 +455,8 @@ TEST_F(CastRunnerIntegrationTest, UrlRequestRewriteRulesProvider) {
 TEST_F(CastRunnerIntegrationTest, ApplicationControllerBound) {
   const char kCastChannelAppId[] = "00000001";
   const char kCastChannelAppPath[] = "/defaultresponse";
-  app_config_manager_.AddAppMapping(kCastChannelAppId,
-                                    test_server_.GetURL(kCastChannelAppPath));
+  app_config_manager_.AddAppMapping(
+      kCastChannelAppId, test_server_.GetURL(kCastChannelAppPath), false);
 
   fuchsia::sys::ComponentControllerPtr component_controller =
       StartCastComponent(base::StringPrintf("cast:%s", kCastChannelAppId));
@@ -470,8 +477,8 @@ TEST_F(CastRunnerIntegrationTest, ApplicationControllerNotSupported) {
 
   provide_controller_receiver_ = false;
 
-  app_config_manager_.AddAppMapping(kCastChannelAppId,
-                                    test_server_.GetURL(kCastChannelAppPath));
+  app_config_manager_.AddAppMapping(
+      kCastChannelAppId, test_server_.GetURL(kCastChannelAppPath), false);
 
   fuchsia::sys::ComponentControllerPtr component_controller =
       StartCastComponent(base::StringPrintf("cast:%s", kCastChannelAppId));
@@ -492,8 +499,8 @@ TEST_F(CastRunnerIntegrationTest, Lifecycle) {
 
   provide_controller_receiver_ = false;
 
-  app_config_manager_.AddAppMapping(kCastChannelAppId,
-                                    test_server_.GetURL(kCastChannelAppPath));
+  app_config_manager_.AddAppMapping(
+      kCastChannelAppId, test_server_.GetURL(kCastChannelAppPath), false);
 
   fuchsia::sys::ComponentControllerPtr component_controller =
       StartCastComponent(base::StringPrintf("cast:%s", kCastChannelAppId));
@@ -508,6 +515,46 @@ TEST_F(CastRunnerIntegrationTest, Lifecycle) {
     run_loop.Quit();
   });
   run_loop.Run();
+}
+
+// Verify an App launched with remote debugging enabled is properly reachable.
+TEST_F(CastRunnerIntegrationTest, RemoteDebugging) {
+  const char kBlankAppId[] = "00000000";
+  const char kBlankAppPath[] = "/defaultresponse";
+  const GURL kBlankAppUrl = test_server_.GetURL(kBlankAppPath);
+
+  app_config_manager_.AddAppMapping(kBlankAppId, kBlankAppUrl, true);
+
+  // Launch the test-app component.
+  fuchsia::sys::ComponentControllerPtr component_controller =
+      StartCastComponent(base::StringPrintf("cast:%s", kBlankAppId));
+  component_controller.set_error_handler(&ComponentErrorHandler);
+
+  // Get the remote debugging port from the Context.
+  uint16_t remote_debugging_port = 0;
+  {
+    base::RunLoop run_loop;
+    cr_fuchsia::ResultReceiver<
+        fuchsia::web::Context_GetRemoteDebuggingPort_Result>
+        port_receiver(run_loop.QuitClosure());
+    cast_runner_->context()->GetRemoteDebuggingPort(
+        cr_fuchsia::CallbackToFitFunction(port_receiver.GetReceiveCallback()));
+    run_loop.Run();
+
+    ASSERT_TRUE(port_receiver->is_response());
+    remote_debugging_port = port_receiver->response().port;
+    ASSERT_TRUE(remote_debugging_port != 0);
+  }
+
+  // Connect to the debug service and ensure we get the proper response.
+  base::Value devtools_list =
+      cr_fuchsia::GetDevToolsListFromPort(remote_debugging_port);
+  ASSERT_TRUE(devtools_list.is_list());
+  EXPECT_EQ(devtools_list.GetList().size(), 1u);
+
+  base::Value* devtools_url = devtools_list.GetList()[0].FindPath("url");
+  ASSERT_TRUE(devtools_url->is_string());
+  EXPECT_EQ(devtools_url->GetString(), kBlankAppUrl.spec());
 }
 
 }  // namespace castrunner

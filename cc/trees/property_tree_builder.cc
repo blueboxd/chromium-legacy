@@ -38,7 +38,6 @@ struct DataForRecursion {
   int closest_ancestor_with_cached_render_surface;
   int closest_ancestor_with_copy_request;
   SkColor safe_opaque_background_color;
-  bool should_flatten;
   bool animation_axis_aligned_since_render_target;
   bool not_axis_aligned_since_last_clip;
   gfx::Transform compound_transform_since_render_target;
@@ -250,12 +249,9 @@ bool PropertyTreeBuilderContext::AddTransformNodeIfNeeded(
   }
 
   if (!requires_node) {
-    data_for_children->should_flatten |= layer->should_flatten_transform();
     gfx::Vector2dF local_offset = layer->position().OffsetFromOrigin() +
                                   layer->transform().To2dTranslation();
     layer->SetOffsetToTransformParent(parent_offset + local_offset);
-    layer->SetShouldFlattenScreenSpaceTransformFromPropertyTree(
-        data_from_ancestor.should_flatten);
     layer->SetTransformTreeIndex(parent_index);
     return false;
   }
@@ -275,7 +271,6 @@ bool PropertyTreeBuilderContext::AddTransformNodeIfNeeded(
 
   node->scrolls = is_scrollable;
   node->should_be_snapped = is_snapped;
-  node->flattens_inherited_transform = data_for_children->should_flatten;
 
   if (is_root) {
     // Root layer and page scale layer should not have transform or offset.
@@ -292,10 +287,6 @@ bool PropertyTreeBuilderContext::AddTransformNodeIfNeeded(
         parent_offset + layer->position().OffsetFromOrigin();
   }
 
-  // Surfaces inherently flatten transforms.
-  data_for_children->should_flatten =
-      layer->should_flatten_transform() || has_surface;
-
   node->has_potential_animation = has_potentially_animated_transform;
   node->is_currently_animating = TransformIsAnimating(mutator_host_, layer);
   GetAnimationScales(mutator_host_, layer, &node->maximum_animation_scale,
@@ -307,9 +298,6 @@ bool PropertyTreeBuilderContext::AddTransformNodeIfNeeded(
   transform_tree_.UpdateTransforms(node->id);
 
   layer->SetOffsetToTransformParent(gfx::Vector2dF());
-
-  // Flattening (if needed) will be handled by |node|.
-  layer->SetShouldFlattenScreenSpaceTransformFromPropertyTree(false);
 
   return true;
 }
@@ -381,8 +369,7 @@ RenderSurfaceReason ComputeRenderSurfaceReason(const MutatorHost& mutator_host,
   bool may_have_transparency =
       layer->EffectiveOpacity() != 1.f ||
       HasPotentiallyRunningOpacityAnimation(mutator_host, layer);
-  if (may_have_transparency && layer->should_flatten_transform() &&
-      at_least_two_layers_in_subtree_draw_content) {
+  if (may_have_transparency && at_least_two_layers_in_subtree_draw_content) {
     DCHECK(!is_root);
     return RenderSurfaceReason::kOpacity;
   }
@@ -618,8 +605,6 @@ void PropertyTreeBuilderContext::AddScrollNodeIfNeeded(
     node.bounds = layer->bounds();
     node.container_bounds = layer->scroll_container_bounds();
     node.offset_to_transform_parent = layer->offset_to_transform_parent();
-    node.should_flatten =
-        layer->should_flatten_screen_space_transform_from_property_tree();
     node.user_scrollable_horizontal = layer->GetUserScrollableHorizontal();
     node.user_scrollable_vertical = layer->GetUserScrollableVertical();
     node.element_id = layer->element_id();
@@ -655,10 +640,8 @@ void SetBackfaceVisibilityTransform(Layer* layer, bool created_transform_node) {
     // In addition, we need to check if (1) there might be a local 3D transform
     // on the layer that might turn it to the backface, or (2) it is not drawn
     // into a flattened space.
-    layer->SetShouldCheckBackfaceVisibility(
-        !layer->double_sided() &&
-        (created_transform_node ||
-         !layer->parent()->should_flatten_transform()));
+    layer->SetShouldCheckBackfaceVisibility(!layer->double_sided() &&
+                                            created_transform_node);
   }
 }
 
@@ -746,7 +729,6 @@ void PropertyTreeBuilderContext::BuildPropertyTrees() {
       EffectTree::kInvalidNodeId;
   data_for_recursion.closest_ancestor_with_copy_request =
       EffectTree::kInvalidNodeId;
-  data_for_recursion.should_flatten = false;
   data_for_recursion.compound_transform_since_render_target = gfx::Transform();
   data_for_recursion.animation_axis_aligned_since_render_target = true;
   data_for_recursion.not_axis_aligned_since_last_clip = false;

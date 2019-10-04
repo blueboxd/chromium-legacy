@@ -1131,8 +1131,7 @@ void QuicStreamRequest::OnConnectionFailedOnDefaultNetwork() {
 base::TimeDelta QuicStreamRequest::GetTimeDelayForWaitingJob() const {
   if (!factory_)
     return base::TimeDelta();
-  return factory_->GetTimeDelayForWaitingJob(
-      session_key_.server_id(), session_key_.network_isolation_key());
+  return factory_->GetTimeDelayForWaitingJob(session_key_);
 }
 
 void QuicStreamRequest::SetPriority(RequestPriority priority) {
@@ -1711,8 +1710,7 @@ void QuicStreamFactory::set_is_quic_known_to_work_on_current_network(
 }
 
 base::TimeDelta QuicStreamFactory::GetTimeDelayForWaitingJob(
-    const quic::QuicServerId& server_id,
-    const NetworkIsolationKey& network_isolation_key) {
+    const QuicSessionKey& session_key) {
   // If |is_quic_known_to_work_on_current_network_| is false, then one of the
   // following is true:
   // 1) This is startup and QuicStreamFactory::CreateSession() and
@@ -1731,8 +1729,14 @@ base::TimeDelta QuicStreamFactory::GetTimeDelayForWaitingJob(
     }
   }
 
-  int64_t srtt = 1.5 * GetServerNetworkStatsSmoothedRttInMicroseconds(
-                           server_id, network_isolation_key);
+  // QUIC was recently broken. Do not delay the main job.
+  if (WasQuicRecentlyBroken(session_key)) {
+    return base::TimeDelta();
+  }
+
+  int64_t srtt =
+      1.5 * GetServerNetworkStatsSmoothedRttInMicroseconds(
+                session_key.server_id(), session_key.network_isolation_key());
   // Picked 300ms based on mean time from
   // Net.QuicSession.HostResolution.HandshakeConfirmedTime histogram.
   const int kDefaultRTT = 300 * quic::kNumMicrosPerMilli;

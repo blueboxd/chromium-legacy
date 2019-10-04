@@ -26,7 +26,7 @@ namespace mixer_service {
 // Mixer service connection for an audio output stream. Not thread-safe; all
 // usage of a given instance must be on the same sequence.
 class OutputStreamConnection : public MixerConnection,
-                               public MixerClientSocket::Delegate {
+                               public MixerSocket::Delegate {
  public:
   class Delegate {
    public:
@@ -63,6 +63,13 @@ class OutputStreamConnection : public MixerConnection,
   // audio; this is only meaningful when params.use_start_timestamp is |true|.
   void SendNextBuffer(int filled_frames, int64_t pts = 0);
 
+  // Sends a preallocated audio buffer. The buffer does not need to be prepared
+  // first using MixerSocket::PrepareAudioBuffer(), since that is done inside
+  // this method.
+  void SendAudioBuffer(scoped_refptr<net::IOBuffer> audio_buffer,
+                       int filled_frames,
+                       int64_t pts);
+
   // Sets the volume multiplier for this audio stream.
   void SetVolumeMultiplier(float multiplier);
 
@@ -86,17 +93,17 @@ class OutputStreamConnection : public MixerConnection,
   void OnConnected(std::unique_ptr<net::StreamSocket> socket) override;
   void OnConnectionError() override;
 
-  // MixerClientSocket::Delegate implementation:
-  void HandleMetadata(const Generic& message) override;
+  // MixerSocket::Delegate implementation:
+  bool HandleMetadata(const Generic& message) override;
 
   Delegate* const delegate_;
-  const OutputStreamParams params_;
+  OutputStreamParams params_;
 
   const int frame_size_;
   const int fill_size_frames_;
   const scoped_refptr<net::IOBuffer> audio_buffer_;
 
-  std::unique_ptr<MixerClientSocket> socket_;
+  std::unique_ptr<MixerSocket> socket_;
   float volume_multiplier_ = 1.0f;
 
   int64_t start_timestamp_ = INT64_MIN;
@@ -105,6 +112,7 @@ class OutputStreamConnection : public MixerConnection,
   float playback_rate_ = 1.0f;
 
   bool paused_ = false;
+  bool sent_eos_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(OutputStreamConnection);
 };

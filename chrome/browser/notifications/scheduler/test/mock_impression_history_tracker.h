@@ -19,7 +19,7 @@ class MockImpressionHistoryTracker : public ImpressionHistoryTracker {
   MockImpressionHistoryTracker();
   ~MockImpressionHistoryTracker() override;
 
-  MOCK_METHOD2(Init, void(Delegate*, base::OnceCallback<void(bool)>));
+  MOCK_METHOD1(Init, void(ImpressionHistoryTracker::InitCallback));
   MOCK_METHOD5(AddImpression,
                void(SchedulerClientType,
                     const std::string&,

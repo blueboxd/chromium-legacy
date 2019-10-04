@@ -11,6 +11,7 @@
       transport: "usb",
       hasResidentKey: true,
       hasUserVerification: true,
+      isUserVerified: true,
     },
   })).result.authenticatorId;
 

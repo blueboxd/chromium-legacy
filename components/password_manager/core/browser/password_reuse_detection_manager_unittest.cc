@@ -24,7 +24,7 @@ namespace password_manager {
 
 namespace {
 
-constexpr size_t kMaxNumberOfCharactersToStore = 30;
+constexpr size_t kMaxNumberOfCharactersToStore = 45;
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:

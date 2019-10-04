@@ -90,6 +90,12 @@ message BufferPushResult {
 // Indicates that EOS for an audio output stream has been played out.
 message EosPlayedOut {}
 
+// Indicates that an audio output stream is ready for playback (ie, has enough
+// audio data to exceed the start threshold, and has output delay information).
+message ReadyForPlayback {
+  optional fixed64 delay_microseconds = 1;
+}
+
 // Indicates current stream config for a loopback / redirected audio stream.
 // Sent whenever the config changes; will be sent at least once before any audio
 // data is sent.
@@ -167,14 +173,15 @@ message Generic {
   optional SetPaused set_paused = 5;
   optional BufferPushResult push_result = 6;
   optional EosPlayedOut eos_played_out = 7;
-  optional StreamConfig stream_config = 8;
-  optional LoopbackDataRequest loopback_request = 9;
-  optional RedirectionRequest redirection_request = 10;
-  optional RedirectedStreamPatterns redirected_stream_patterns = 11;
-  optional SetDeviceVolume set_device_volume = 12;
-  optional SetDeviceMuted set_device_muted = 13;
-  optional SetVolumeLimit set_volume_limit = 14;
-  optional ConfigurePostprocessor configure_postprocessor = 15;
-  optional ReloadPostprocessors reload_postprocessors = 16;
-  optional Error error = 17;
+  optional ReadyForPlayback ready_for_playback = 8;
+  optional StreamConfig stream_config = 9;
+  optional LoopbackDataRequest loopback_request = 10;
+  optional RedirectionRequest redirection_request = 11;
+  optional RedirectedStreamPatterns redirected_stream_patterns = 12;
+  optional SetDeviceVolume set_device_volume = 13;
+  optional SetDeviceMuted set_device_muted = 14;
+  optional SetVolumeLimit set_volume_limit = 15;
+  optional ConfigurePostprocessor configure_postprocessor = 16;
+  optional ReloadPostprocessors reload_postprocessors = 17;
+  optional Error error = 18;
 }

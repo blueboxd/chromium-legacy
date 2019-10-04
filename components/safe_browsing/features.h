@@ -51,6 +51,9 @@ extern const base::Feature kDeepScanningOfDownloads;
 // APP.
 extern const base::Feature kForceUseAPDownloadProtection;
 
+// Enable password protection for non-Google accounts.
+extern const base::Feature kPasswordProtectionForSavedPasswords;
+
 // Enable GAIA password protection for signed-in users.
 extern const base::Feature kPasswordProtectionForSignedInUsers;
 

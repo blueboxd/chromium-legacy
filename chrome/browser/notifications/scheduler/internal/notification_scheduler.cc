@@ -39,25 +39,21 @@ class NotificationSchedulerImpl;
 class InitHelper {
  public:
   using InitCallback = base::OnceCallback<void(bool)>;
-  InitHelper() : context_(nullptr), impression_tracker_delegate_(nullptr) {}
+  InitHelper() : context_(nullptr) {}
 
   ~InitHelper() = default;
 
   // Initializes subsystems in notification scheduler, |callback| will be
   // invoked if all initializations finished or anyone of them failed. The
   // object should be destroyed along with the |callback|.
-  void Init(NotificationSchedulerContext* context,
-            ImpressionHistoryTracker::Delegate* impression_tracker_delegate,
-            InitCallback callback) {
+  void Init(NotificationSchedulerContext* context, InitCallback callback) {
     // TODO(xingliu): Initialize the databases in parallel, we currently
     // initialize one by one to work around a shared db issue. See
     // https://crbug.com/978680.
     context_ = context;
-    impression_tracker_delegate_ = impression_tracker_delegate;
     callback_ = std::move(callback);
 
     context_->impression_tracker()->Init(
-        impression_tracker_delegate_,
         base::BindOnce(&InitHelper::OnImpressionTrackerInitialized,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -79,7 +75,6 @@ class InitHelper {
   }
 
   NotificationSchedulerContext* context_;
-  ImpressionHistoryTracker::Delegate* impression_tracker_delegate_;
   InitCallback callback_;
 
   base::WeakPtrFactory<InitHelper> weak_ptr_factory_{this};
@@ -196,8 +191,7 @@ class DisplayHelper {
 };
 
 // Implementation of NotificationScheduler.
-class NotificationSchedulerImpl : public NotificationScheduler,
-                                  public ImpressionHistoryTracker::Delegate {
+class NotificationSchedulerImpl : public NotificationScheduler {
  public:
   NotificationSchedulerImpl(
       std::unique_ptr<NotificationSchedulerContext> context)
@@ -209,7 +203,7 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   // NotificationScheduler implementation.
   void Init(InitCallback init_callback) override {
     init_helper_ = std::make_unique<InitHelper>();
-    init_helper_->Init(context_.get(), this,
+    init_helper_->Init(context_.get(),
                        base::BindOnce(&NotificationSchedulerImpl::OnInitialized,
                                       weak_ptr_factory_.GetWeakPtr(),
                                       std::move(init_callback)));
@@ -286,12 +280,6 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   void OnStopTask() override {
     stats::LogBackgroundTaskEvent(stats::BackgroundTaskEvent::kStopByOS);
     ScheduleBackgroundTask();
-  }
-
-  // ImpressionHistoryTracker::Delegate implementation.
-  void OnImpressionUpdated() override {
-    // TODO(xingliu): Remove ImpressionHistoryTracker::Delegate, and add a
-    // browser test for user action hooks.
   }
 
   void FindNotificationToShow(TaskFinishedCallback task_finish_callback) {

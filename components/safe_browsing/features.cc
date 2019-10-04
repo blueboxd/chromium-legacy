@@ -44,6 +44,10 @@ const base::Feature kDeepScanningOfDownloads{
 const base::Feature kForceUseAPDownloadProtection{
     "ForceUseAPDownloadProtection", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPasswordProtectionForSavedPasswords{
+    "SafeBrowsingPasswordProtectionForSignedInUsers",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kPasswordProtectionForSignedInUsers{
     "SafeBrowsingPasswordProtectionForSignedInUsers",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -114,6 +118,7 @@ constexpr struct {
     {&kCaptureSafetyNetId, true},
     {&kCommittedSBInterstitials, true},
     {&kForceUseAPDownloadProtection, false},
+    {&kPasswordProtectionForSavedPasswords, true},
     {&kPasswordProtectionForSignedInUsers, true},
     {&kRealTimeUrlLookupEnabled, true},
     {&kRealTimeUrlLookupFetchAllowlist, true},

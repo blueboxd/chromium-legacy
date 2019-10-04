@@ -23,12 +23,17 @@ class FakeCrostiniFeatures : public CrostiniFeatures {
 
   // CrostiniFeatures:
   bool IsUIAllowed(Profile* profile, bool check_policy) override;
+  bool IsEnabled(Profile* profile) override;
   bool IsExportImportUIAllowed(Profile* profile) override;
   bool IsRootAccessAllowed(Profile* profile) override;
 
   void set_ui_allowed(bool allowed) {
     ui_allowed_set_ = true;
     ui_allowed_ = allowed;
+  }
+  void set_enabled(bool enabled) {
+    enabled_set_ = true;
+    enabled_ = enabled;
   }
   void set_export_import_ui_allowed(bool allowed) {
     export_import_ui_allowed_set_ = true;
@@ -46,6 +51,8 @@ class FakeCrostiniFeatures : public CrostiniFeatures {
 
   bool ui_allowed_set_ = false;
   bool ui_allowed_ = false;
+  bool enabled_ = false;
+  bool enabled_set_ = false;
   bool export_import_ui_allowed_set_ = false;
   bool export_import_ui_allowed_ = false;
   bool root_access_allowed_set_ = false;

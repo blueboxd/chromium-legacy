@@ -236,6 +236,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.image = [_avatarCache resizedAvatarForIdentity:identity];
   item.text = identity.userEmail;
   item.chromeIdentity = identity;
+  item.accessibilityIdentifier = identity.userEmail;
   item.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 }
 

@@ -2053,6 +2053,19 @@ int BrowserView::GetBookmarkBarContentVerticalOffset() const {
   return -GetBottomInsetOfLocationBarWithinToolbar() / 2;
 }
 
+std::vector<views::NativeViewHost*>
+BrowserView::GetNativeViewHostsForTopControlsSlide() const {
+  std::vector<views::NativeViewHost*> results;
+  results.push_back(contents_web_view_->holder());
+
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (base::FeatureList::IsEnabled(features::kWebUITabStrip))
+    results.push_back(webui_tab_strip_->GetNativeViewHost());
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+
+  return results;
+}
+
 int BrowserView::GetBottomInsetOfLocationBarWithinToolbar() const {
   return (toolbar_->height() - GetLocationBarView()->height() -
           bookmark_bar_view_->GetToolbarOverlap()) /

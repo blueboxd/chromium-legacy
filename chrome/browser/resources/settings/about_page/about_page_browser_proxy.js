@@ -43,6 +43,14 @@ let VersionInfo;
 let AboutPageUpdateInfo;
 
 /**
+ * @typedef {{
+ *   hasEndOfLife: (boolean|undefined),
+ *   eolMessageWithMonthAndYear: (string|undefined),
+ * }}
+ */
+let EndOfLifeInfo;
+
+/**
  * Enumeration of all possible browser channels.
  * @enum {string}
  */
@@ -209,9 +217,9 @@ cr.define('settings', function() {
     /**
      * Checks if the device has reached end-of-life status and will no longer
      * receive updates.
-     * @return {!Promise<boolean>}
+     * @return {!Promise<!EndOfLifeInfo>}
      */
-    getHasEndOfLife() {}
+    getEndOfLifeInfo() {}
 
     /**
      * Request TPM firmware update status from the browser. It results in one or
@@ -319,8 +327,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    getHasEndOfLife() {
-      return cr.sendWithPromise('getHasEndOfLife');
+    getEndOfLifeInfo() {
+      return cr.sendWithPromise('getEndOfLifeInfo');
     }
 
     /** @override */

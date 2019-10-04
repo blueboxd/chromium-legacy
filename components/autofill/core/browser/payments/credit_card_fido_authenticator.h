@@ -142,8 +142,7 @@ class CreditCardFIDOAuthenticator
       PublicKeyCredentialCreationOptionsPtr creation_options);
 
   // Makes a request to payments to either opt-in or opt-out the user.
-  void OptChange(bool opt_in,
-                 base::Value authenticator_response = base::Value());
+  void OptChange(base::Value authenticator_response = base::Value());
 
   // The callback invoked from the WebAuthn prompt including the
   // |assertion_response|, which will be sent to Google Payments to retrieve

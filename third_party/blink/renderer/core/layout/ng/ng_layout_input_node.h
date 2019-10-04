@@ -134,6 +134,14 @@ class CORE_EXPORT NGLayoutInputNode {
            (box_->IsBody() || box_->IsTableCell());
   }
 
+  // Return true if this node is monolithic for block fragmentation.
+  bool IsMonolithic() const {
+    // Lines are always monolithic. We cannot block-fragment inside them.
+    if (IsInline())
+      return true;
+    return box_->GetPaginationBreakability() == LayoutBox::kForbidBreaks;
+  }
+
   bool CreatesNewFormattingContext() const {
     return IsBlock() && box_->CreatesNewFormattingContext();
   }

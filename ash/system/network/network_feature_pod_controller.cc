@@ -12,6 +12,7 @@
 #include "ash/system/network/network_feature_pod_button.h"
 #include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using chromeos::network_config::mojom::NetworkStateProperties;

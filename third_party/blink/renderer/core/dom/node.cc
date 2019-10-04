@@ -1322,19 +1322,21 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
   if (!GetComputedStyle()) {
     // If we don't have a computed style, and our parent element does not have a
     // computed style it's not necessary to mark this node for style recalc.
-    // TODO(crbug.com/972752): We should look at the flat tree parent here when
-    // doing flat tree recalc.
-    if (Element* parent = ParentOrShadowHostElement()) {
+    if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
+      if (auto* parent = GetStyleRecalcParent()) {
+        DCHECK(parent->IsElementNode());
+        if (!parent->GetComputedStyle())
+          return;
+      } else if (GetDocument().documentElement() != this) {
+        // If this is the root element, and it does not have a parent computed
+        // style, we still need to mark it for style recalc since it may change
+        // from display:none. Otherwise, the node is not in the flat tree, and
+        // we can return here.
+        return;
+      }
+    } else if (auto* parent = ParentOrShadowHostElement()) {
       if (!parent->GetComputedStyle())
         return;
-    } else if (GetDocument().documentElement() != this) {
-      // The root element does not have a parent computed style, but we still
-      // need to mark it for style recalc since it may change from display:none.
-      // Otherwise, the node is not in the flat tree, and we can return here.
-      // TODO(crbug.com/972752): We will not hit this code-path until we use the
-      // flat tree parent above since a non-slotted shadow host child will use
-      // its shadow host as the parent.
-      return;
     }
   }
 

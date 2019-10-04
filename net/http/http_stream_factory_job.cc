@@ -397,12 +397,17 @@ bool HttpStreamFactory::Job::CanUseExistingSpdySession() const {
     return false;
   }
 
+  if (is_websocket_)
+    return try_websocket_over_http2_;
+
+  DCHECK(origin_url_.SchemeIsHTTPOrHTTPS());
+
   // We need to make sure that if a HTTP/2 session was created for
   // https://somehost/ then we do not use that session for http://somehost:443/.
   // The only time we can use an existing session is if the request URL is
   // https (the normal case) or if we are connecting to a HTTP/2 proxy.
   // https://crbug.com/133176
-  return origin_url_.SchemeIs(url::kHttpsScheme) || try_websocket_over_http2_ ||
+  return origin_url_.SchemeIs(url::kHttpsScheme) ||
          proxy_info_.proxy_server().is_https();
 }
 
@@ -792,9 +797,9 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
 
         bool is_blocking_request_for_session;
         existing_spdy_session_ = session_->spdy_session_pool()->RequestSession(
-            spdy_session_key_, enable_ip_based_pooling_,
-            try_websocket_over_http2_, net_log_, resume_callback, this,
-            &spdy_session_request_, &is_blocking_request_for_session);
+            spdy_session_key_, enable_ip_based_pooling_, is_websocket_,
+            net_log_, resume_callback, this, &spdy_session_request_,
+            &is_blocking_request_for_session);
         if (!existing_spdy_session_ && should_throttle_connect &&
             !is_blocking_request_for_session) {
           net_log_.AddEvent(NetLogEventType::HTTP_STREAM_JOB_THROTTLED);
@@ -813,8 +818,8 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
         // callback.
         existing_spdy_session_ =
             session_->spdy_session_pool()->FindAvailableSession(
-                spdy_session_key_, enable_ip_based_pooling_,
-                try_websocket_over_http2_, net_log_);
+                spdy_session_key_, enable_ip_based_pooling_, is_websocket_,
+                net_log_);
       }
     }
     if (existing_spdy_session_) {
@@ -950,6 +955,13 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
       was_alpn_negotiated_ = true;
       negotiated_protocol_ = proxy_socket->GetProxyNegotiatedProtocol();
       using_spdy_ = true;
+
+      // Using unencrypted websockets over an H2 proxy is not currently
+      // supported.
+      // TODO(mmenke): Should this case be treated like
+      // |try_websocket_over_http2_|, or should we force HTTP/1.1?
+      if (is_websocket_ && !try_websocket_over_http2_)
+        return ERR_NOT_IMPLEMENTED;
     }
   }
 
@@ -1091,7 +1103,7 @@ int HttpStreamFactory::Job::DoCreateStream() {
     // WebSocket over HTTP/2 is only allowed to use existing HTTP/2 connections.
     // Therefore |using_spdy_| could not have been set unless a connection had
     // already been found.
-    DCHECK(!try_websocket_over_http2_);
+    DCHECK(!is_websocket_);
 
     session_->spdy_session_pool()->push_promise_index()->ClaimPushedStream(
         spdy_session_key_, origin_url_, request_info_, &existing_spdy_session_,

@@ -2445,7 +2445,7 @@ bool PropagateScrollSnapStyleToViewport(
 
   if (changed) {
     document.GetSnapCoordinator().SnapContainerDidChange(
-        *document.GetLayoutView(), false /* is_removed */);
+        *document.GetLayoutView());
   }
 
   return changed;

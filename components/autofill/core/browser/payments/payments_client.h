@@ -127,9 +127,22 @@ class PaymentsClient {
     ~OptChangeRequestDetails();
 
     std::string app_locale;
-    // Set to true if user will be opted-in for FIDO authentication for card
-    // unmasking. False otherwise.
-    bool opt_in;
+
+    // The reason for making the request.
+    enum Reason {
+      // Unknown default.
+      UNKNOWN_REASON = 0,
+      // The user wants to enable FIDO authentication for card unmasking.
+      ENABLE_FIDO_AUTH = 1,
+      // The user wants to disable FIDO authentication for card unmasking.
+      DISABLE_FIDO_AUTH = 2,
+      // The user is authorizing a new card for future FIDO authentication
+      // unmasking.
+      ADD_CARD_FOR_FIDO_AUTH = 3,
+    };
+
+    // Reason for the request.
+    Reason reason;
     // Signature required for enrolling user into FIDO authentication for future
     // card unmasking.
     base::Value fido_authenticator_response;

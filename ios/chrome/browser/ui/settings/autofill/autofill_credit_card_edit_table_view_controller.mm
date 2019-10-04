@@ -159,6 +159,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       _creditCard, GetApplicationContext()->GetApplicationLocale());
   cardholderNameitem.textFieldEnabled = isEditing;
   cardholderNameitem.autofillUIType = AutofillUITypeCreditCardHolderFullName;
+  cardholderNameitem.hideIcon = !isEditing;
   [model addItem:cardholderNameitem
       toSectionWithIdentifier:SectionIdentifierFields];
 
@@ -176,8 +177,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   cardNumberItem.textFieldEnabled = isEditing;
   cardNumberItem.autofillUIType = AutofillUITypeCreditCardNumber;
   cardNumberItem.keyboardType = UIKeyboardTypeNumberPad;
-  cardNumberItem.identifyingIcon =
-      [self cardTypeIconFromNetwork:_creditCard.network().c_str()];
+  cardNumberItem.hideIcon = !isEditing;
+  // Hide credit card icon when editing.
+  if (!isEditing) {
+    cardNumberItem.identifyingIcon =
+        [self cardTypeIconFromNetwork:_creditCard.network().c_str()];
+  }
   [model addItem:cardNumberItem
       toSectionWithIdentifier:SectionIdentifierFields];
 
@@ -191,6 +196,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   expirationMonthItem.textFieldEnabled = isEditing;
   expirationMonthItem.autofillUIType = AutofillUITypeCreditCardExpMonth;
   expirationMonthItem.keyboardType = UIKeyboardTypeNumberPad;
+  expirationMonthItem.hideIcon = !isEditing;
   [model addItem:expirationMonthItem
       toSectionWithIdentifier:SectionIdentifierFields];
 
@@ -205,6 +211,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   expirationYearItem.autofillUIType = AutofillUITypeCreditCardExpYear;
   expirationYearItem.keyboardType = UIKeyboardTypeNumberPad;
   expirationYearItem.returnKeyType = UIReturnKeyDone;
+  expirationYearItem.hideIcon = !isEditing;
   [model addItem:expirationYearItem
       toSectionWithIdentifier:SectionIdentifierFields];
 

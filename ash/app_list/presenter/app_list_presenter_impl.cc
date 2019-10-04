@@ -75,7 +75,7 @@ AppListPresenterImpl::~AppListPresenterImpl() {
   }
 }
 
-aura::Window* AppListPresenterImpl::GetWindow() {
+aura::Window* AppListPresenterImpl::GetWindow() const {
   return is_target_visibility_show_ && view_
              ? view_->GetWidget()->GetNativeWindow()
              : nullptr;
@@ -106,6 +106,7 @@ void AppListPresenterImpl::Show(int64_t display_id,
     AppListView* view = new AppListView(delegate_->GetAppListViewDelegate());
     delegate_->Init(view, display_id);
     SetView(view);
+    view_->GetWidget()->GetNativeWindow()->TrackOcclusionState();
   }
   delegate_->ShowForDisplay(display_id);
 
@@ -193,8 +194,14 @@ ash::ShelfAction AppListPresenterImpl::ToggleAppList(
   return ash::SHELF_ACTION_APP_LIST_SHOWN;
 }
 
-bool AppListPresenterImpl::IsVisible() const {
+bool AppListPresenterImpl::IsVisibleDeprecated() const {
   return delegate_->IsVisible();
+}
+
+bool AppListPresenterImpl::IsAtLeastPartiallyVisible() const {
+  const auto* window = GetWindow();
+  return window &&
+         window->occlusion_state() == aura::Window::OcclusionState::VISIBLE;
 }
 
 bool AppListPresenterImpl::GetTargetVisibility() const {
@@ -298,7 +305,7 @@ void AppListPresenterImpl::OnTabletModeChanged(bool started) {
     if (GetTargetVisibility())
       view_->OnTabletModeChanged(true);
   } else {
-    if (IsVisible())
+    if (IsVisibleDeprecated())
       view_->OnTabletModeChanged(false);
   }
 }

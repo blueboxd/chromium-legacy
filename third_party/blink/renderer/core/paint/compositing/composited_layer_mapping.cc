@@ -900,8 +900,6 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
   UpdateContentsOpaque();
   UpdateRasterizationPolicy();
   UpdateAfterPartResize();
-  UpdateShouldFlattenTransform();
-  UpdateChildrenTransform();
   UpdateCompositingReasons();
 }
 
@@ -1320,10 +1318,6 @@ void CompositedLayerMapping::UpdateDrawsContentAndPaintsHitTest() {
     mask_layer_->SetDrawsContent(true);
 }
 
-void CompositedLayerMapping::UpdateChildrenTransform() {
-  UpdateShouldFlattenTransform();
-}
-
 bool CompositedLayerMapping::ToggleScrollbarLayerIfNeeded(
     std::unique_ptr<GraphicsLayer>& layer,
     bool needs_layer,
@@ -1535,29 +1529,6 @@ static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping,
     f(mapping->DecorationOutlineLayer());
 }
 
-void CompositedLayerMapping::UpdateShouldFlattenTransform() {
-  // TODO(trchen): Simplify logic here.
-  //
-  // The code here is equivalent to applying kApplyToLayersAffectedByPreserve3D
-  // layer with the computed ShouldPreserve3D() value, then disable flattening
-  // on kApplyToChildContainingLayers layers if the current layer has
-  // perspective transform, then again disable flattening on main layer and
-  // scrolling layer if we have scrolling layer. See crbug.com/521768.
-  //
-  // If we toggle flattening back and forth as said above, it will result in
-  // unnecessary redrawing because the compositor doesn't have delayed
-  // invalidation for this flag. See crbug.com/783614.
-  bool is_flat = !owning_layer_.ShouldPreserve3D();
-
-  if (GraphicsLayer* layer = ScrollingLayer())
-    layer->SetShouldFlattenTransform(false);
-  graphics_layer_->SetShouldFlattenTransform(is_flat && !HasScrollingLayer());
-  if (GraphicsLayer* layer = ScrollingContentsLayer())
-    layer->SetShouldFlattenTransform(is_flat);
-  if (GraphicsLayer* layer = ForegroundLayer())
-    layer->SetShouldFlattenTransform(is_flat);
-}
-
 struct AnimatingData {
   STACK_ALLOCATED();
 
@@ -1710,7 +1681,6 @@ bool CompositedLayerMapping::UpdateSquashingLayers(
     if (!squashing_containment_layer_) {
       squashing_containment_layer_ =
           CreateGraphicsLayer(CompositingReason::kLayerForSquashingContainer);
-      squashing_containment_layer_->SetShouldFlattenTransform(false);
       layers_changed = true;
     }
     DCHECK(squashing_layer_);

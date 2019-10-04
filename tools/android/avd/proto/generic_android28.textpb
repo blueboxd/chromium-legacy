@@ -22,4 +22,4 @@ avd_package {
   version: "J5MFTg7OhekLKsOX7bmkVTSCDzohydCvXrn4sJzy0xsC"
   dest_path: ".android"
 }
-avd_name: "20190716T160000Z_android_28_google_apis_x86"
+avd_name: "android_28_google_apis_x86"

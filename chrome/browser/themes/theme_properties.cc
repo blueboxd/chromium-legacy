@@ -157,7 +157,7 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
       return gfx::kGoogleGrey900;
     case ThemeProperties::COLOR_BOOKMARK_TEXT:
     case ThemeProperties::COLOR_TAB_TEXT:
-      return gfx::kGoogleGrey100;
+      return SK_ColorWHITE;
     case ThemeProperties::COLOR_NTP_TEXT:
       return gfx::kGoogleGrey200;
     case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:

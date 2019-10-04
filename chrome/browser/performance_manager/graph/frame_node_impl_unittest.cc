@@ -22,7 +22,7 @@ using FrameNodeImplTest = GraphTestHarness;
 TEST_F(FrameNodeImplTest, SafeDowncast) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto frame = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  auto frame = CreateFrameNodeAutoId(process.get(), page.get());
   FrameNode* node = frame.get();
   EXPECT_EQ(frame.get(), FrameNodeImpl::FromNode(node));
   NodeBase* base = frame.get();
@@ -35,18 +35,18 @@ using FrameNodeImplDeathTest = FrameNodeImplTest;
 TEST_F(FrameNodeImplDeathTest, SafeDowncast) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto frame = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  auto frame = CreateFrameNodeAutoId(process.get(), page.get());
   ASSERT_DEATH_IF_SUPPORTED(PageNodeImpl::FromNodeBase(frame.get()), "");
 }
 
 TEST_F(FrameNodeImplTest, AddFrameHierarchyBasic) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto parent_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
-  auto child2_node = CreateNode<FrameNodeImpl>(process.get(), page.get(),
-                                               parent_node.get(), 1);
-  auto child3_node = CreateNode<FrameNodeImpl>(process.get(), page.get(),
-                                               parent_node.get(), 2);
+  auto parent_node = CreateFrameNodeAutoId(process.get(), page.get());
+  auto child2_node =
+      CreateFrameNodeAutoId(process.get(), page.get(), parent_node.get(), 1);
+  auto child3_node =
+      CreateFrameNodeAutoId(process.get(), page.get(), parent_node.get(), 2);
 
   EXPECT_EQ(nullptr, parent_node->parent_frame_node());
   EXPECT_EQ(2u, parent_node->child_frame_nodes().size());
@@ -54,10 +54,31 @@ TEST_F(FrameNodeImplTest, AddFrameHierarchyBasic) {
   EXPECT_EQ(parent_node.get(), child3_node->parent_frame_node());
 }
 
+TEST_F(FrameNodeImplTest, GetFrameNodeById) {
+  RenderProcessHostProxy render_process_proxy_a(42);
+  RenderProcessHostProxy render_process_proxy_b(43);
+  auto process_a = CreateNode<ProcessNodeImpl>(render_process_proxy_a);
+  auto process_b = CreateNode<ProcessNodeImpl>(render_process_proxy_b);
+  auto page = CreateNode<PageNodeImpl>();
+  auto frame_a1 = CreateFrameNodeAutoId(process_a.get(), page.get());
+  auto frame_a2 = CreateFrameNodeAutoId(process_a.get(), page.get());
+  auto frame_b1 = CreateFrameNodeAutoId(process_b.get(), page.get());
+
+  EXPECT_EQ(graph()->GetFrameNodeById(process_a->GetRenderProcessId(),
+                                      frame_a1->render_frame_id()),
+            frame_a1.get());
+  EXPECT_EQ(graph()->GetFrameNodeById(process_a->GetRenderProcessId(),
+                                      frame_a2->render_frame_id()),
+            frame_a2.get());
+  EXPECT_EQ(graph()->GetFrameNodeById(process_b->GetRenderProcessId(),
+                                      frame_b1->render_frame_id()),
+            frame_b1.get());
+}
+
 TEST_F(FrameNodeImplTest, NavigationCommitted_SameDocument) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  auto frame_node = CreateFrameNodeAutoId(process.get(), page.get());
   EXPECT_TRUE(frame_node->url().is_empty());
   const GURL url("http://www.foo.com/");
   frame_node->OnNavigationCommitted(url, /* same_document */ true);
@@ -67,7 +88,7 @@ TEST_F(FrameNodeImplTest, NavigationCommitted_SameDocument) {
 TEST_F(FrameNodeImplTest, NavigationCommitted_DifferentDocument) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  auto frame_node = CreateFrameNodeAutoId(process.get(), page.get());
   EXPECT_TRUE(frame_node->url().is_empty());
   const GURL url("http://www.foo.com/");
   frame_node->OnNavigationCommitted(url, /* same_document */ false);
@@ -77,9 +98,9 @@ TEST_F(FrameNodeImplTest, NavigationCommitted_DifferentDocument) {
 TEST_F(FrameNodeImplTest, RemoveChildFrame) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto parent_frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
-  auto child_frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get(),
-                                                    parent_frame_node.get(), 1);
+  auto parent_frame_node = CreateFrameNodeAutoId(process.get(), page.get());
+  auto child_frame_node = CreateFrameNodeAutoId(process.get(), page.get(),
+                                                parent_frame_node.get(), 1);
 
   // Ensure correct Parent-child relationships have been established.
   EXPECT_EQ(1u, parent_frame_node->child_frame_nodes().size());
@@ -143,7 +164,7 @@ TEST_F(FrameNodeImplTest, ObserverWorks) {
   // Create a frame node and expect a matching call to "OnFrameNodeAdded".
   EXPECT_CALL(obs, OnFrameNodeAdded(_))
       .WillOnce(Invoke(&obs, &MockObserver::SetCreatedFrameNode));
-  auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  auto frame_node = CreateFrameNodeAutoId(process.get(), page.get());
   testing::Mock::VerifyAndClear(&obs);
 
   const FrameNode* raw_frame_node = frame_node.get();
@@ -189,7 +210,7 @@ TEST_F(FrameNodeImplTest, ObserverWorks) {
 TEST_F(FrameNodeImplTest, IsAdFrame) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  auto frame_node = CreateFrameNodeAutoId(process.get(), page.get());
 
   MockObserver obs;
   graph()->AddFrameNodeObserver(&obs);
@@ -207,7 +228,7 @@ TEST_F(FrameNodeImplTest, IsAdFrame) {
 TEST_F(FrameNodeImplTest, HoldsWebLock) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  auto frame_node = CreateFrameNodeAutoId(process.get(), page.get());
 
   MockObserver obs;
   graph()->AddFrameNodeObserver(&obs);
@@ -228,7 +249,7 @@ TEST_F(FrameNodeImplTest, HoldsWebLock) {
 TEST_F(FrameNodeImplTest, HoldsIndexedDBLock) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  auto frame_node = CreateFrameNodeAutoId(process.get(), page.get());
 
   MockObserver obs;
   graph()->AddFrameNodeObserver(&obs);
@@ -251,7 +272,7 @@ TEST_F(FrameNodeImplTest, Priority) {
 
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  auto frame_node = CreateFrameNodeAutoId(process.get(), page.get());
 
   MockObserver obs;
   graph()->AddFrameNodeObserver(&obs);
@@ -299,7 +320,7 @@ TEST_F(FrameNodeImplTest, Priority) {
 TEST_F(FrameNodeImplTest, PublicInterface) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  auto frame_node = CreateFrameNodeAutoId(process.get(), page.get());
   const FrameNode* public_frame_node = frame_node.get();
 
   // Simply test that the public interface impls yield the same result as their

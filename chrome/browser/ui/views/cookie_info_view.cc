@@ -25,6 +25,48 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/window/dialog_delegate.h"
 
+namespace {
+
+// Normally, a textfield would eat gesture events in one of two ways:
+//  - When active, it processes the events and marks the events as handled.
+//    Even in single-line text fields, we do still need the ability to scroll
+//    horizontally to see the entire text.
+//  - When inactive, the events are not processed by the view, but are also not
+//    routed up the view hierarchy.
+//
+// This class is identical to views::Textfield, but passes gesture events down
+// to the containing ScrollView. When disabled, it refuses all input events,
+// allowing for correct propagation.
+//
+// See crbug.com/1008806 for an example of how the dialog breaks without this
+// change.
+//
+// TODO(crbug.com/1011082): Solve this in the general case.
+class GestureScrollableTextfield : public views::Textfield {
+ public:
+  explicit GestureScrollableTextfield(views::ScrollView* scroll_parent)
+      : scroll_parent_(scroll_parent),
+        on_enabled_subscription_(AddEnabledChangedCallback(
+            base::BindRepeating(&GestureScrollableTextfield::OnEnabledChanged,
+                                base::Unretained(this)))) {}
+
+ private:
+  // views::Textfield:
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    scroll_parent_->OnGestureEvent(event);
+    Textfield::OnGestureEvent(event);
+  }
+
+  void OnEnabledChanged() {
+    set_can_process_events_within_subtree(GetEnabled());
+  }
+
+  views::ScrollView* const scroll_parent_;
+  views::PropertyChangedSubscription on_enabled_subscription_;
+};
+
+}  // anonymous namespace
+
 ///////////////////////////////////////////////////////////////////////////////
 // CookieInfoView, public:
 
@@ -87,7 +129,7 @@ void CookieInfoView::ViewHierarchyChanged(
 views::Textfield* CookieInfoView::AddLabelRow(int layout_id,
                                               views::GridLayout* layout,
                                               int label_message_id) {
-  auto textfield = std::make_unique<views::Textfield>();
+  auto textfield = std::make_unique<GestureScrollableTextfield>(this);
   auto label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(label_message_id));
   textfield->SetAssociatedLabel(label.get());

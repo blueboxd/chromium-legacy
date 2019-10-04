@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL scroll anchoring accounts for scroll-padding assert_equals: Shouldn't anchor to #changer, since it's covered by scroll-padding expected 150 but got 50
+Harness: the test ran to completion.
+

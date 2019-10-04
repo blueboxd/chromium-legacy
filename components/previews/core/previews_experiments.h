@@ -149,6 +149,11 @@ GURL LitePageRedirectProbeURL();
 // server or the origin.
 base::TimeDelta LitePageRedirectPreviewPreresolvePreconnectInterval();
 
+// The ect threshold at which, or below, we should preresolve or preconnect for
+// lite page redirect previews.
+net::EffectiveConnectionType
+LitePageRedirectPreviewPreresolvePreconnectECTThreshold();
+
 // The duration in between probes to the lite page redirect server.
 base::TimeDelta LitePageRedirectPreviewProbeInterval();
 

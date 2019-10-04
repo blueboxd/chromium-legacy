@@ -103,10 +103,10 @@ class IsolationContextMetricsTest : public GraphTestHarness {
       int32_t browsing_instance_id,
       int32_t site_instance_id,
       FrameNodeImpl* parent_frame_node = nullptr) {
-    return CreateNode<FrameNodeImpl>(process_node, page_node, parent_frame_node,
-                                     0 /* frame_tree_node_id */,
-                                     base::UnguessableToken::Create(),
-                                     browsing_instance_id, site_instance_id);
+    return CreateNode<FrameNodeImpl>(
+        process_node, page_node, parent_frame_node, 0 /* frame_tree_node_id */,
+        ++next_render_frame_id_, base::UnguessableToken::Create(),
+        browsing_instance_id, site_instance_id);
   }
 
   // Advance time until the timer fires.
@@ -119,6 +119,7 @@ class IsolationContextMetricsTest : public GraphTestHarness {
 
   base::HistogramTester histogram_tester_;
   TestIsolationContextMetrics* metrics_;
+  int next_render_frame_id_ = 0;
 };
 
 // static

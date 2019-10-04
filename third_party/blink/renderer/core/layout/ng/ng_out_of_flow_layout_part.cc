@@ -584,7 +584,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
     // should not be constrained by intrinsic size in this case.
     // https://www.w3.org/TR/CSS22/visudet.html#inline-replaced-width
     if (is_replaced_with_only_aspect_ratio)
-      min_max_size.reset();
+      min_max_size = MinMaxSize{LayoutUnit(), LayoutUnit::NearlyMax()};
   } else if (should_be_considered_as_replaced) {
     replaced_size =
         LogicalSize{min_max_size->ShrinkToFit(

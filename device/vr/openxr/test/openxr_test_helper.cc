@@ -26,7 +26,7 @@ const char* OpenXrTestHelper::kExtensions[] = {
 const uint32_t OpenXrTestHelper::kDimension = 128;
 const uint32_t OpenXrTestHelper::kSwapCount = 1;
 const uint32_t OpenXrTestHelper::kMinSwapchainBuffering = 3;
-const uint32_t OpenXrTestHelper::kMaxViewCount = 2;
+const uint32_t OpenXrTestHelper::kViewCount = 2;
 const XrViewConfigurationView OpenXrTestHelper::kViewConfigView = {
     XR_TYPE_VIEW_CONFIGURATION_VIEW, nullptr,
     OpenXrTestHelper::kDimension,    OpenXrTestHelper::kDimension,

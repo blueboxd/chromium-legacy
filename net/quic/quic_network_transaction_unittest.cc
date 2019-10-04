@@ -117,34 +117,46 @@ static const char kQuicAlternativeServiceDifferentPortHeader[] =
 const char kDefaultServerHostName[] = "mail.example.org";
 const char kDifferentHostname[] = "different.example.com";
 
+struct TestParams {
+  quic::ParsedQuicVersion version;
+  bool client_headers_include_h2_stream_dependency;
+};
+
+// Used by ::testing::PrintToStringParamName().
+std::string PrintToString(const TestParams& p) {
+  return quic::QuicStrCat(
+      ParsedQuicVersionToString(p.version), "_",
+      (p.client_headers_include_h2_stream_dependency ? "" : "No"),
+      "Dependency");
+}
+
 // Run QuicNetworkTransactionWithDestinationTest instances with all value
 // combinations of version and destination_type.
 struct PoolingTestParams {
-  friend std::ostream& operator<<(std::ostream& os,
-                                  const PoolingTestParams& p) {
-    os << "{ version: " << ParsedQuicVersionToString(p.version)
-       << ", destination_type: ";
-    switch (p.destination_type) {
-      case SAME_AS_FIRST:
-        os << "SAME_AS_FIRST";
-        break;
-      case SAME_AS_SECOND:
-        os << "SAME_AS_SECOND";
-        break;
-      case DIFFERENT:
-        os << "DIFFERENT";
-        break;
-    }
-    os << ", client_headers_include_h2_stream_dependency: "
-       << p.client_headers_include_h2_stream_dependency;
-    os << " }";
-    return os;
-  }
-
   quic::ParsedQuicVersion version;
   DestinationType destination_type;
   bool client_headers_include_h2_stream_dependency;
 };
+
+// Used by ::testing::PrintToStringParamName().
+std::string PrintToString(const PoolingTestParams& p) {
+  const char* destination_string = "";
+  switch (p.destination_type) {
+    case SAME_AS_FIRST:
+      destination_string = "SAME_AS_FIRST";
+      break;
+    case SAME_AS_SECOND:
+      destination_string = "SAME_AS_SECOND";
+      break;
+    case DIFFERENT:
+      destination_string = "DIFFERENT";
+      break;
+  }
+  return quic::QuicStrCat(
+      ParsedQuicVersionToString(p.version), "_", destination_string, "_",
+      (p.client_headers_include_h2_stream_dependency ? "" : "No"),
+      "Dependency");
+}
 
 std::string GenerateQuicVersionsListForAltSvcHeader(
     const quic::ParsedQuicVersionVector& versions) {
@@ -155,6 +167,20 @@ std::string GenerateQuicVersionsListForAltSvcHeader(
     result.append(base::NumberToString(version.transport_version));
   }
   return result;
+}
+
+std::vector<TestParams> GetTestParams() {
+  std::vector<TestParams> params;
+  quic::ParsedQuicVersionVector all_supported_versions =
+      quic::AllSupportedVersions();
+  for (const quic::ParsedQuicVersion version : all_supported_versions) {
+    // TODO(rch): crbug.com/978745 - Make this work with TLS
+    if (version.handshake_protocol != quic::PROTOCOL_TLS1_3) {
+      params.push_back(TestParams{version, false});
+      params.push_back(TestParams{version, true});
+    }
+  }
+  return params;
 }
 
 std::vector<PoolingTestParams> GetPoolingTestParams() {
@@ -261,13 +287,13 @@ class TestSocketPerformanceWatcherFactory
 
 class QuicNetworkTransactionTest
     : public PlatformTest,
-      public ::testing::WithParamInterface<
-          std::tuple<quic::ParsedQuicVersion, bool>>,
+      public ::testing::WithParamInterface<TestParams>,
       public WithTaskEnvironment {
  protected:
   QuicNetworkTransactionTest()
-      : version_(std::get<0>(GetParam())),
-        client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
+      : version_(GetParam().version),
+        client_headers_include_h2_stream_dependency_(
+            GetParam().client_headers_include_h2_stream_dependency),
         supported_versions_(quic::test::SupportedVersions(version_)),
         random_generator_(0),
         client_maker_(
@@ -1045,22 +1071,10 @@ class QuicNetworkTransactionTest
   }
 };
 
-quic::ParsedQuicVersionVector AllSupportedVersionsWithoutTls() {
-  quic::ParsedQuicVersionVector versions;
-  for (auto version : quic::AllSupportedVersions()) {
-    // TODO(rch): crbug.com/978745 - Make this work with TLS
-    if (version.handshake_protocol != quic::PROTOCOL_TLS1_3) {
-      versions.push_back(version);
-    }
-  }
-  return versions;
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    VersionIncludeStreamDependencySequence,
-    QuicNetworkTransactionTest,
-    ::testing::Combine(::testing::ValuesIn(AllSupportedVersionsWithoutTls()),
-                       ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
+                         QuicNetworkTransactionTest,
+                         ::testing::ValuesIn(GetTestParams()),
+                         ::testing::PrintToStringParamName());
 
 // TODO(950069): Add testing for frame_origin in NetworkIsolationKey using
 // kAppendInitiatingFrameOriginToNetworkIsolationKey.
@@ -7354,7 +7368,8 @@ class QuicNetworkTransactionWithDestinationTest
 
 INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
                          QuicNetworkTransactionWithDestinationTest,
-                         ::testing::ValuesIn(GetPoolingTestParams()));
+                         ::testing::ValuesIn(GetPoolingTestParams()),
+                         ::testing::PrintToStringParamName());
 
 // A single QUIC request fails because the certificate does not match the origin
 // hostname, regardless of whether it matches the alternative service hostname.

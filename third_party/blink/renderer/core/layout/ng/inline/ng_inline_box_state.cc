@@ -404,8 +404,6 @@ unsigned NGInlineLayoutStateStack::UpdateBoxDataFragmentRange(
   // Find the first line box item that should create a box fragment.
   for (; index < line_box->size(); index++) {
     NGLineBoxFragmentBuilder::Child* start = &(*line_box)[index];
-    if (start->IsPlaceholder())
-      continue;
     const unsigned box_data_index = start->box_data_index;
     if (!box_data_index)
       continue;
@@ -423,8 +421,6 @@ unsigned NGInlineLayoutStateStack::UpdateBoxDataFragmentRange(
     const unsigned start_index = index;
     for (index++; index < line_box->size(); index++) {
       NGLineBoxFragmentBuilder::Child* end = &(*line_box)[index];
-      if (end->IsPlaceholder())
-        continue;
 
       // If we found another box that maybe included in this box, update it
       // first. Updating will change |end->box_data_index| so that we can

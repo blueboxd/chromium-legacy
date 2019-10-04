@@ -461,6 +461,9 @@
             "experiments": [
                 {
                     "name": "Enabled_20190503",
+                    "params": {
+                        "u'default_light_theme": "true"
+                    },
                     "enable_features": [
                         "AndroidNightMode"
                     ]
@@ -4188,6 +4191,26 @@
                     },
                     "enable_features": [
                         "ParallelDownloading"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PartitionConnectionsByNetworkIsolationKey": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "PartitionConnectionsAndSSLSessions",
+                    "enable_features": [
+                        "PartitionConnectionsByNetworkIsolationKey",
+                        "PartitionSSLSessionsByNetworkIsolationKey"
                     ]
                 }
             ]

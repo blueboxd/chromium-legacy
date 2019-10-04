@@ -722,8 +722,9 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   blink::WebWidgetClient web_widget_client;
   blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, frame);
 
-  base::Value html(ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_PRINT_HEADER_FOOTER_TEMPLATE_PAGE));
+  base::Value html(
+      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+          IDR_PRINT_HEADER_FOOTER_TEMPLATE_PAGE));
   // Load page with script to avoid async operations.
   ExecuteScript(frame, kPageLoadScriptFormat, html);
 

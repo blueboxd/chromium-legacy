@@ -338,7 +338,8 @@ class MockApplicationCacheHost final : public ApplicationCacheHostForFrame {
   explicit MockApplicationCacheHost(DocumentLoader* loader)
       : ApplicationCacheHostForFrame(loader,
                                      GetEmptyBrowserInterfaceBroker(),
-                                     /*task_runner=*/nullptr) {}
+                                     /*task_runner=*/nullptr,
+                                     base::UnguessableToken()) {}
   ~MockApplicationCacheHost() override = default;
 
   void SelectCacheWithoutManifest() override {

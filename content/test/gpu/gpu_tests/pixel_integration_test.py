@@ -302,23 +302,7 @@ class PixelIntegrationTest(
             int(page.test_rect[1] * dpr), int(page.test_rect[2] * dpr),
             int(page.test_rect[3] * dpr))
 
-      # Get all the information that goldctl requires.
-      parsed_options = self.GetParsedCommandLineOptions()
-      build_id_args = [
-        '--commit',
-        parsed_options.build_revision,
-      ]
-      # If --review-patch-issue is passed, then we assume we're running on a
-      # trybot.
-      if parsed_options.review_patch_issue:
-        build_id_args += [
-          '--issue',
-          parsed_options.review_patch_issue,
-          '--patchset',
-          parsed_options.review_patch_set,
-          '--jobid',
-          parsed_options.buildbucket_build_id
-        ]
+      build_id_args = self._GetBuildIdArgs()
 
       # Compare images against approved images/colors.
       if page.expected_colors:
@@ -335,6 +319,26 @@ class PixelIntegrationTest(
       if do_page_action:
         # Assume that page actions might have killed the GPU process.
         self._RestartBrowser('Must restart after page actions')
+
+  def _GetBuildIdArgs(self):
+    # Get all the information that goldctl requires.
+    parsed_options = self.GetParsedCommandLineOptions()
+    build_id_args = [
+      '--commit',
+      parsed_options.build_revision,
+    ]
+    # If --review-patch-issue is passed, then we assume we're running on a
+    # trybot.
+    if parsed_options.review_patch_issue:
+      build_id_args += [
+        '--issue',
+        parsed_options.review_patch_issue,
+        '--patchset',
+        parsed_options.review_patch_set,
+        '--jobid',
+        parsed_options.buildbucket_build_id
+      ]
+    return build_id_args
 
   def _UploadTestResultToSkiaGold(self, image_name, screenshot,
                                   tab, page, build_id_args=None):

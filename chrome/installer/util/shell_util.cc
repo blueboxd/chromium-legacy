@@ -2024,7 +2024,6 @@ bool ShellUtil::MakeChromeDefault(int shell_change,
   return ret;
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
 // static
 bool ShellUtil::LaunchUninstallAppsSettings() {
   DCHECK_GE(base::win::GetVersion(), base::win::Version::WIN10);
@@ -2045,7 +2044,6 @@ bool ShellUtil::LaunchUninstallAppsSettings() {
       kControlPanelAppModelId, L"page=SettingsPageAppsSizes", AO_NONE, &pid);
   return SUCCEEDED(hr);
 }
-#endif  // defined(GOOGLE_CHROME_BUILD)
 
 bool ShellUtil::ShowMakeChromeDefaultSystemUI(
     const base::FilePath& chrome_exe) {

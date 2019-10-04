@@ -57,6 +57,9 @@ using testing::_;
 using testing::AnyNumber;
 using testing::Return;
 
+namespace net {
+namespace test {
+
 namespace {
 
 static const char kOriginHost[] = "www.google.com";
@@ -78,15 +81,37 @@ static const int kLen33 = kLen3 + kLen3;
 static const char kMsg333[] = "bye!bye!bye!";
 static const int kLen333 = kLen3 + kLen3 + kLen3;
 
+struct TestParams {
+  quic::ParsedQuicVersion version;
+  bool client_headers_include_h2_stream_dependency;
+};
+
+// Used by ::testing::PrintToStringParamName().
+std::string PrintToString(const TestParams& p) {
+  return quic::QuicStrCat(
+      ParsedQuicVersionToString(p.version), "_",
+      (p.client_headers_include_h2_stream_dependency ? "" : "No"),
+      "Dependency");
+}
+
+std::vector<TestParams> GetTestParams() {
+  std::vector<TestParams> params;
+  quic::ParsedQuicVersionVector all_supported_versions =
+      quic::AllSupportedVersions();
+  for (const auto& version : all_supported_versions) {
+    // TODO(rch): crbug.com/978745 - Make this work with v99.
+    if (version.transport_version != quic::QUIC_VERSION_99) {
+      params.push_back(TestParams{version, false});
+      params.push_back(TestParams{version, true});
+    }
+  }
+  return params;
+}
+
 }  // anonymous namespace
 
-namespace net {
-namespace test {
-
-class QuicProxyClientSocketTest
-    : public ::testing::TestWithParam<
-          std::tuple<quic::ParsedQuicVersion, bool>>,
-      public WithTaskEnvironment {
+class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
+                                  public WithTaskEnvironment {
  protected:
   static const bool kFin = true;
   static const bool kIncludeVersion = true;
@@ -124,11 +149,12 @@ class QuicProxyClientSocketTest
   }
 
   QuicProxyClientSocketTest()
-      : version_(std::get<0>(GetParam())),
+      : version_(GetParam().version),
         client_data_stream_id1_(
             quic::QuicUtils::GetHeadersStreamId(version_.transport_version) +
             quic::QuicUtils::StreamIdDelta(version_.transport_version)),
-        client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
+        client_headers_include_h2_stream_dependency_(
+            GetParam().client_headers_include_h2_stream_dependency),
         mock_quic_data_(version_),
         crypto_config_(
             quic::test::crypto_test_utils::ProofVerifierForTesting()),
@@ -950,8 +976,7 @@ TEST_P(QuicProxyClientSocketTest, WriteSplitsLargeDataIntoMultiplePackets) {
   std::string data(numDataPackets * quic::kDefaultMaxPacketSize, 'x');
   quic::QuicStreamOffset offset = kLen1 + header.length();
 
-  if (version_.transport_version == quic::QUIC_VERSION_99 ||
-      version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
     numDataPackets++;
   }
   size_t total_data_length = 0;
@@ -969,32 +994,12 @@ TEST_P(QuicProxyClientSocketTest, WriteSplitsLargeDataIntoMultiplePackets) {
                            {header2, std::string(data.c_str(),
                                                  max_packet_data_length - 7)}));
       offset += max_packet_data_length - header2.length() - 1;
-    } else if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 && i == 0) {
-      mock_quic_data_.AddWrite(
-          SYNCHRONOUS,
-          ConstructDataPacket(
-              write_packet_index++,
-              std::string(data.c_str(), max_packet_data_length - 4)));
-      offset += max_packet_data_length - 4;
     } else if (version_.transport_version == quic::QUIC_VERSION_99 &&
                i == numDataPackets - 1) {
       mock_quic_data_.AddWrite(
           SYNCHRONOUS, ConstructDataPacket(write_packet_index++,
                                            std::string(data.c_str(), 7)));
       offset += 7;
-    } else if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-               i == numDataPackets - 1) {
-      mock_quic_data_.AddWrite(
-          SYNCHRONOUS, ConstructDataPacket(write_packet_index++,
-                                           std::string(data.c_str(), 12)));
-      offset += 12;
-    } else if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
-      mock_quic_data_.AddWrite(
-          SYNCHRONOUS,
-          ConstructDataPacket(
-              write_packet_index++,
-              std::string(data.c_str(), max_packet_data_length - 4)));
-      offset += max_packet_data_length - 4;
     } else {
       mock_quic_data_.AddWrite(
           SYNCHRONOUS, ConstructDataPacket(
@@ -1980,11 +1985,10 @@ TEST_P(QuicProxyClientSocketTest, RstWithReadAndWritePendingDelete) {
   EXPECT_FALSE(write_callback_.have_result());
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    VersionIncludeStreamDependencySequence,
-    QuicProxyClientSocketTest,
-    ::testing::Combine(::testing::ValuesIn(quic::AllVersionsExcept99()),
-                       ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
+                         QuicProxyClientSocketTest,
+                         ::testing::ValuesIn(GetTestParams()),
+                         ::testing::PrintToStringParamName());
 
 }  // namespace test
 }  // namespace net

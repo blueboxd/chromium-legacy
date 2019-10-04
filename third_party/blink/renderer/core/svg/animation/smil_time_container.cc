@@ -106,13 +106,6 @@ void SMILTimeContainer::Schedule(SVGSMILElement* animation,
     sandwich = MakeGarbageCollected<SMILAnimationSandwich>();
 
   sandwich->Schedule(animation);
-
-  SMILTime latest_update = CurrentDocumentTime();
-  if (animation->IntervalBegin() <= latest_update ||
-      animation->NextProgressTime(latest_update).IsFinite()) {
-    MarkIntervalsDirty();
-    ScheduleIntervalUpdate();
-  }
 }
 
 void SMILTimeContainer::Unschedule(SVGSMILElement* animation,

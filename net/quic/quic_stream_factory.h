@@ -477,9 +477,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool is_quic_known_to_work_on_current_network);
 
   // It returns the amount of time waiting job should be delayed.
-  base::TimeDelta GetTimeDelayForWaitingJob(
-      const quic::QuicServerId& server_id,
-      const NetworkIsolationKey& network_isolation_key);
+  base::TimeDelta GetTimeDelayForWaitingJob(const QuicSessionKey& session_key);
 
   QuicChromiumConnectionHelper* helper() { return helper_.get(); }
 

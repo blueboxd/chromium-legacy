@@ -38,12 +38,16 @@ class IntersectionObserverDelegateImpl final
     : public IntersectionObserverDelegate {
 
  public:
-  IntersectionObserverDelegateImpl(ExecutionContext* context,
-                                   IntersectionObserver::EventCallback callback)
-      : context_(context), callback_(std::move(callback)) {}
+  IntersectionObserverDelegateImpl(
+      ExecutionContext* context,
+      IntersectionObserver::EventCallback callback,
+      IntersectionObserver::DeliveryBehavior delivery_behavior)
+      : context_(context),
+        callback_(std::move(callback)),
+        delivery_behavior_(delivery_behavior) {}
 
   IntersectionObserver::DeliveryBehavior GetDeliveryBehavior() const override {
-    return IntersectionObserver::kDeliverDuringPostLifecycleSteps;
+    return delivery_behavior_;
   }
 
   void Deliver(const HeapVector<Member<IntersectionObserverEntry>>& entries,
@@ -61,6 +65,7 @@ class IntersectionObserverDelegateImpl final
  private:
   WeakMember<ExecutionContext> context_;
   IntersectionObserver::EventCallback callback_;
+  IntersectionObserver::DeliveryBehavior delivery_behavior_;
   DISALLOW_COPY_AND_ASSIGN(IntersectionObserverDelegateImpl);
 };
 
@@ -203,6 +208,7 @@ IntersectionObserver* IntersectionObserver::Create(
     const Vector<float>& thresholds,
     Document* document,
     EventCallback callback,
+    DeliveryBehavior behavior,
     ThresholdInterpretation semantics,
     DOMHighResTimeStamp delay,
     bool track_visibility,
@@ -210,7 +216,7 @@ IntersectionObserver* IntersectionObserver::Create(
     ExceptionState& exception_state) {
   IntersectionObserverDelegateImpl* intersection_observer_delegate =
       MakeGarbageCollected<IntersectionObserverDelegateImpl>(
-          document, std::move(callback));
+          document, std::move(callback), behavior);
   return MakeGarbageCollected<IntersectionObserver>(
       *intersection_observer_delegate, nullptr, root_margin, thresholds,
       semantics, delay, track_visibility, always_report_root_bounds);

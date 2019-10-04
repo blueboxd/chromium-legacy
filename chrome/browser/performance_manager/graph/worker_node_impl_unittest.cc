@@ -78,7 +78,7 @@ TEST_F(WorkerNodeImplTest, ConstProperties) {
 TEST_F(WorkerNodeImplTest, AddWorkerNodes) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto frame = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  auto frame = CreateFrameNodeAutoId(process.get(), page.get());
   auto dedicated_worker = CreateNode<WorkerNodeImpl>(
       WorkerNode::WorkerType::kDedicated, process.get());
   auto shared_worker = CreateNode<WorkerNodeImpl>(
@@ -117,7 +117,7 @@ TEST_F(WorkerNodeImplTest, AddWorkerNodes) {
 TEST_F(WorkerNodeImplTest, ClientsOfServiceWorkers) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto frame = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  auto frame = CreateFrameNodeAutoId(process.get(), page.get());
   auto dedicated_worker = CreateNode<WorkerNodeImpl>(
       WorkerNode::WorkerType::kDedicated, process.get());
   auto shared_worker = CreateNode<WorkerNodeImpl>(
@@ -156,7 +156,7 @@ TEST_F(WorkerNodeImplTest, ClientsOfServiceWorkers) {
 TEST_F(WorkerNodeImplTest, NestedDedicatedWorkers) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto frame = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  auto frame = CreateFrameNodeAutoId(process.get(), page.get());
   auto parent_worker = CreateNode<WorkerNodeImpl>(
       WorkerNode::WorkerType::kDedicated, process.get());
   auto child_worker_1 = CreateNode<WorkerNodeImpl>(
@@ -247,7 +247,7 @@ TEST_F(WorkerNodeImplTest, Observer_AddWorkerNodes) {
 
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto frame = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  auto frame = CreateFrameNodeAutoId(process.get(), page.get());
   auto dedicated_worker = CreateNode<WorkerNodeImpl>(
       WorkerNode::WorkerType::kDedicated, process.get());
   auto shared_worker = CreateNode<WorkerNodeImpl>(
@@ -285,7 +285,7 @@ TEST_F(WorkerNodeImplTest, Observer_ClientsOfServiceWorkers) {
 
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto frame = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  auto frame = CreateFrameNodeAutoId(process.get(), page.get());
   auto dedicated_worker = CreateNode<WorkerNodeImpl>(
       WorkerNode::WorkerType::kDedicated, process.get());
   auto shared_worker = CreateNode<WorkerNodeImpl>(

@@ -96,8 +96,9 @@ const char* AssistantPageView::GetClassName() const {
 }
 
 gfx::Size AssistantPageView::CalculatePreferredSize() const {
-  constexpr int width = ash::kPreferredWidthDip;
-  return gfx::Size(width, GetHeightForWidth(width));
+  constexpr int kWidth = ash::kPreferredWidthDip;
+  return contents_view_->AdjustSearchBoxSizeToFitMargins(
+      gfx::Size(kWidth, GetHeightForWidth(kWidth)));
 }
 
 int AssistantPageView::GetHeightForWidth(int width) const {
@@ -220,10 +221,10 @@ gfx::Rect AssistantPageView::GetPageBoundsForState(
     ash::AppListState state,
     const gfx::Rect& contents_bounds,
     const gfx::Rect& search_box_bounds) const {
-  gfx::Rect bounds = contents_bounds;
-  bounds.Offset((bounds.width() - ash::kPreferredWidthDip) / 2,
-                search_box_bounds.y());
-  bounds.set_size(GetPreferredSize());
+  gfx::Rect bounds =
+      gfx::Rect(gfx::Point(contents_bounds.x(), search_box_bounds.y()),
+                GetPreferredSize());
+  bounds.Offset((contents_bounds.width() - bounds.width()) / 2, 0);
   return bounds;
 }
 

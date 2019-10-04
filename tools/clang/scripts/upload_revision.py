@@ -30,8 +30,12 @@ is_win = sys.platform.startswith('win32')
 def PatchRevision(clang_git_revision, clang_svn_revision, clang_sub_revision):
   with open(UPDATE_PY_PATH, 'rb') as f:
     content = f.read()
+  m = re.search("CLANG_REVISION = '([0-9a-f]+)'", content)
+  clang_old_git_revision = m.group(1)
   m = re.search("CLANG_SVN_REVISION = '([0-9]+)'", content)
-  clang_old_revision = m.group(1)
+  clang_old_svn_revision = m.group(1)
+  m = re.search("CLANG_SUB_REVISION = ([0-9]+)", content)
+  clang_old_sub_revision = m.group(1)
 
   content = re.sub("CLANG_REVISION = '[0-9a-f]+'",
                    "CLANG_REVISION = '{}'".format(clang_git_revision),
@@ -44,7 +48,7 @@ def PatchRevision(clang_git_revision, clang_svn_revision, clang_sub_revision):
                    content, count=1)
   with open(UPDATE_PY_PATH, 'wb') as f:
     f.write(content)
-  return clang_old_revision
+  return clang_old_git_revision, clang_old_svn_revision, clang_old_sub_revision
 
 
 def Git(args):
@@ -73,17 +77,22 @@ def main():
       clang_svn_revision, clang_git_revision[:8], clang_sub_revision))
   print("Chrome revision: {}".format(git_revision))
 
-  clang_old_revision = PatchRevision(clang_git_revision, clang_svn_revision,
-                                     clang_sub_revision)
+  clang_old_git_revision, clang_old_svn_revision, clang_old_sub_revision = \
+      PatchRevision(clang_git_revision, clang_svn_revision, clang_sub_revision)
 
-  Git(["checkout", "-b", "clang-{}-{}-{}".format(clang_svn_revision,
-                                                 clang_git_revision[:8],
-                                                 clang_sub_revision)])
+  rev_string = "{}-{}-{}".format(clang_svn_revision,
+                                 clang_git_revision[:8],
+                                 clang_sub_revision)
+  Git(["checkout", "-b", "clang-{}".format(rev_string)])
   Git(["add", UPDATE_PY_PATH])
 
+  old_rev_string = "{}-{}-{}".format(clang_old_svn_revision,
+                                     clang_old_git_revision[:8],
+                                     clang_old_sub_revision)
+
   commit_message = 'Ran `{}`.'.format(' '.join(sys.argv))
-  Git(["commit", "-m", "Roll clang {}:{}.\n\n{}".format(
-      clang_old_revision, clang_svn_revision, commit_message)])
+  Git(["commit", "-m", "Roll clang {} : {}.\n\n{}".format(
+      old_rev_string, rev_string, commit_message)])
 
   Git(["cl", "upload", "-f", "--bypass-hooks"])
   Git(["cl", "try", "-B", "luci.chromium.try",

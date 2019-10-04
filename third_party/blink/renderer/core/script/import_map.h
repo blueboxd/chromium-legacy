@@ -28,6 +28,7 @@ class CORE_EXPORT ImportMap final : public GarbageCollected<ImportMap> {
   static ImportMap* Parse(const Modulator&,
                           const String& text,
                           const KURL& base_url,
+                          bool support_builtin_modules,
                           ConsoleLogger& logger,
                           ScriptValue* error_to_rethrow);
 
@@ -57,6 +58,7 @@ class CORE_EXPORT ImportMap final : public GarbageCollected<ImportMap> {
   base::Optional<MatchResult> MatchPrefix(const ParsedSpecifier&) const;
   static SpecifierMap SortAndNormalizeSpecifierMap(const JSONObject* imports,
                                                    const KURL& base_url,
+                                                   bool support_builtin_modules,
                                                    ConsoleLogger&);
 
   base::Optional<KURL> ResolveImportsMatchInternal(

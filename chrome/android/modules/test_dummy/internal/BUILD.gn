@@ -56,3 +56,13 @@ generate_jni_registration("jni_registration") {
   header_output = "$target_gen_dir/jni_registration.h"
   namespace = "test_dummy"
 }
+
+android_assets("pak_assets") {
+  sources = [
+    "$root_gen_dir/chrome/test_dummy_resources.pak",
+  ]
+  deps = [
+    "//chrome/android/features/test_dummy/internal:resources_native",
+  ]
+  disable_compression = true
+}

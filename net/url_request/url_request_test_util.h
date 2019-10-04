@@ -46,8 +46,6 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "url/url_util.h"
 
-using base::TimeDelta;
-
 namespace net {
 
 //-----------------------------------------------------------------------------

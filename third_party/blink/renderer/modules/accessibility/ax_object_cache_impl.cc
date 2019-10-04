@@ -272,10 +272,10 @@ AXObject* AXObjectCacheImpl::Get(LayoutObject* layout_object) {
 // Returns true if |node| is an <option> element and its parent <select>
 // is a menu list (not a list box).
 static bool IsMenuListOption(const Node* node) {
-  if (!IsHTMLOptionElement(node))
+  auto* option_element = DynamicTo<HTMLOptionElement>(node);
+  if (!option_element)
     return false;
-  const HTMLSelectElement* select =
-      ToHTMLOptionElement(node)->OwnerSelectElement();
+  const HTMLSelectElement* select = option_element->OwnerSelectElement();
   if (!select)
     return false;
   const LayoutObject* layout_object = select->GetLayoutObject();
@@ -411,7 +411,7 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
   if (node && node->IsMediaElement())
     return AccessibilityMediaElement::Create(layout_object, *this);
 
-  if (IsHTMLOptionElement(node))
+  if (IsA<HTMLOptionElement>(node))
     return MakeGarbageCollected<AXListBoxOption>(layout_object, *this);
 
   if (IsHTMLInputElement(node) &&
@@ -444,7 +444,7 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
 
 AXObject* AXObjectCacheImpl::CreateFromNode(Node* node) {
   if (IsMenuListOption(node)) {
-    return MakeGarbageCollected<AXMenuListOption>(ToHTMLOptionElement(node),
+    return MakeGarbageCollected<AXMenuListOption>(To<HTMLOptionElement>(node),
                                                   *this);
   }
 

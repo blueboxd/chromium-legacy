@@ -172,6 +172,9 @@
   # END chrome/ WebUI resources section
 
   # START chrome/ miscellaneous section.
+  "chrome/android/features/test_dummy/internal/resources/resources.grd": {
+    "includes": [14070],
+  },
   "chrome/common/common_resources.grd": {
     "includes": [14160],
   },
@@ -327,9 +330,6 @@
   },
   "ash/components/ash_components_strings.grd": {
     "messages": [23740],
-  },
-  "ash/components/resources/ash_components_resources.grd": {
-    "structures": [23955],
   },
   "ash/keyboard/ui/keyboard_resources.grd": {
     "includes": [23960],

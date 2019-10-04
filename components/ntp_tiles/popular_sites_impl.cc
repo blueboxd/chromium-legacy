@@ -220,7 +220,7 @@ base::Value DefaultPopularSites() {
   }
   std::unique_ptr<base::ListValue> sites =
       base::ListValue::From(base::JSONReader::ReadDeprecated(
-          ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+          ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
               IDR_DEFAULT_POPULAR_SITES_JSON)));
   DCHECK(sites);
   for (base::Value& site : *sites) {

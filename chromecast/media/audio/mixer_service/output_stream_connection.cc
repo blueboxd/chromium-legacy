@@ -43,6 +43,7 @@ OutputStreamConnection::OutputStreamConnection(Delegate* delegate,
   DCHECK(delegate_);
   DCHECK_GT(params_.sample_rate(), 0);
   DCHECK_GT(params_.num_channels(), 0);
+  params_.set_fill_size_frames(fill_size_frames_);
 }
 
 OutputStreamConnection::~OutputStreamConnection() = default;
@@ -52,12 +53,27 @@ void OutputStreamConnection::Connect() {
 }
 
 void OutputStreamConnection::SendNextBuffer(int filled_frames, int64_t pts) {
+  SendAudioBuffer(audio_buffer_, filled_frames, pts);
+}
+
+void OutputStreamConnection::SendAudioBuffer(
+    scoped_refptr<net::IOBuffer> audio_buffer,
+    int filled_frames,
+    int64_t pts) {
   if (!socket_) {
     LOG(INFO) << "Tried to send buffer without a connection";
     return;
   }
+  if (sent_eos_) {
+    // Don't send any more data after the EOS buffer.
+    return;
+  }
 
-  socket_->SendAudioBuffer(audio_buffer_, filled_frames * frame_size_, pts);
+  if (filled_frames == 0) {
+    sent_eos_ = true;
+  }
+  socket_->SendAudioBuffer(std::move(audio_buffer), filled_frames * frame_size_,
+                           pts);
 }
 
 void OutputStreamConnection::SetVolumeMultiplier(float multiplier) {
@@ -111,7 +127,7 @@ void OutputStreamConnection::Resume() {
 
 void OutputStreamConnection::OnConnected(
     std::unique_ptr<net::StreamSocket> socket) {
-  socket_ = std::make_unique<MixerClientSocket>(std::move(socket), this);
+  socket_ = std::make_unique<MixerSocket>(std::move(socket), this);
   socket_->ReceiveMessages();
 
   Generic message;
@@ -141,10 +157,10 @@ void OutputStreamConnection::OnConnectionError() {
   Connect();
 }
 
-void OutputStreamConnection::HandleMetadata(const Generic& message) {
+bool OutputStreamConnection::HandleMetadata(const Generic& message) {
   if (message.has_eos_played_out()) {
     delegate_->OnEosPlayed();
-    return;
+    return true;
   }
 
   if (message.has_push_result()) {
@@ -152,6 +168,7 @@ void OutputStreamConnection::HandleMetadata(const Generic& message) {
         audio_buffer_->data() + MixerSocket::kAudioMessageHeaderSize,
         fill_size_frames_, message.push_result().next_playback_timestamp());
   }
+  return true;
 }
 
 }  // namespace mixer_service

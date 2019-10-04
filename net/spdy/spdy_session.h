@@ -801,7 +801,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // that |stream| may hold the last reference to the session.
   void DeleteStream(std::unique_ptr<SpdyStream> stream, int status);
 
-  void RecordPingRTTHistogram(base::TimeDelta duration);
   void RecordHistograms();
   void RecordProtocolErrorHistogram(SpdyProtocolErrorDetails details);
   static void RecordPushedStreamVaryResponseHeaderHistogram(

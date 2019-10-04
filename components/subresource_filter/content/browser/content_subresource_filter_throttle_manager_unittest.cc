@@ -337,8 +337,16 @@ INSTANTIATE_TEST_SUITE_P(,
                          ::testing::Values(WILL_START_REQUEST,
                                            WILL_PROCESS_RESPONSE));
 
+// Flaky on Win and Linux. http://crbug.com/1010687
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_ActivateMainFrameAndFilterSubframeNavigation \
+  DISABLED_ActivateMainFrameAndFilterSubframeNavigation
+#else
+#define MAYBE_ActivateMainFrameAndFilterSubframeNavigation \
+  ActivateMainFrameAndFilterSubframeNavigation
+#endif
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
-       ActivateMainFrameAndFilterSubframeNavigation) {
+       MAYBE_ActivateMainFrameAndFilterSubframeNavigation) {
   // Commit a navigation that triggers page level activation.
   NavigateAndCommitMainFrame(GURL(kTestURLWithActivation));
   ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);

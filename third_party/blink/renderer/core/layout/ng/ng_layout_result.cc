@@ -27,6 +27,10 @@ struct SameSizeAsNGLayoutResult : public RefCounted<SameSizeAsNGLayoutResult> {
   };
   LayoutUnit intrinsic_block_size;
   unsigned bitfields[1];
+
+#if DCHECK_IS_ON()
+  bool has_valid_space;
+#endif
 };
 
 static_assert(sizeof(NGLayoutResult) == sizeof(SameSizeAsNGLayoutResult),
@@ -38,8 +42,7 @@ NGLayoutResult::NGLayoutResult(
     scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
     NGBoxFragmentBuilder* builder)
     : NGLayoutResult(std::move(physical_fragment),
-                     builder,
-                     /* cache_space */ true) {
+                     static_cast<NGContainerFragmentBuilder*>(builder)) {
   bitfields_.is_initial_block_size_indefinite =
       builder->is_initial_block_size_indefinite_;
   bitfields_.subtree_modified_margin_strut =
@@ -64,13 +67,11 @@ NGLayoutResult::NGLayoutResult(
     scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
     NGLineBoxFragmentBuilder* builder)
     : NGLayoutResult(std::move(physical_fragment),
-                     builder,
-                     /* cache_space */ false) {}
+                     static_cast<NGContainerFragmentBuilder*>(builder)) {}
 
 NGLayoutResult::NGLayoutResult(EStatus status, NGBoxFragmentBuilder* builder)
     : NGLayoutResult(/* physical_fragment */ nullptr,
-                     builder,
-                     /* cache_space */ false) {
+                     static_cast<NGContainerFragmentBuilder*>(builder)) {
   bitfields_.status = status;
   DCHECK_NE(status, kSuccess)
       << "Use the other constructor for successful layout";
@@ -113,17 +114,19 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
 
   if (new_end_margin_strut != NGMarginStrut() || HasRareData())
     EnsureRareData()->end_margin_strut = new_end_margin_strut;
+
+#if DCHECK_IS_ON()
+  has_valid_space_ = other.has_valid_space_;
+#endif
 }
 
 NGLayoutResult::NGLayoutResult(
     scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
-    NGContainerFragmentBuilder* builder,
-    bool cache_space)
+    NGContainerFragmentBuilder* builder)
     : space_(builder->space_ ? NGConstraintSpace(*builder->space_)
                              : NGConstraintSpace()),
       physical_fragment_(std::move(physical_fragment)),
       bitfields_(
-          /* has_valid_space */ cache_space && builder->space_,
           /* is_self_collapsing */ builder->is_self_collapsing_,
           /* is_pushed_by_floats */ builder->is_pushed_by_floats_,
           /* adjoining_object_types */ builder->adjoining_object_types_,
@@ -177,6 +180,10 @@ NGLayoutResult::NGLayoutResult(
     bitfields_.is_bfc_block_offset_nullopt =
         !builder->bfc_block_offset_.has_value();
   }
+
+#if DCHECK_IS_ON()
+  has_valid_space_ = builder->space_;
+#endif
 }
 
 NGLayoutResult::~NGLayoutResult() {
@@ -231,7 +238,6 @@ void NGLayoutResult::CheckSameForSimplifiedLayout(
   DCHECK(EndMarginStrut() == other.EndMarginStrut());
   DCHECK_EQ(MinimalSpaceShortage(), other.MinimalSpaceShortage());
 
-  DCHECK_EQ(bitfields_.has_valid_space, other.bitfields_.has_valid_space);
   DCHECK_EQ(bitfields_.has_forced_break, other.bitfields_.has_forced_break);
   DCHECK_EQ(bitfields_.is_self_collapsing, other.bitfields_.is_self_collapsing);
   DCHECK_EQ(bitfields_.is_pushed_by_floats,

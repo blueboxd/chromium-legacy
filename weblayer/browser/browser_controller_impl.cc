@@ -24,8 +24,19 @@
 
 namespace weblayer {
 
+namespace {
+
+#if defined(OS_ANDROID)
+BrowserController* g_last_browser_controller;
+#endif
+
+}  // namespace
+
 BrowserControllerImpl::BrowserControllerImpl(ProfileImpl* profile)
     : profile_(profile) {
+#if defined(OS_ANDROID)
+  g_last_browser_controller = this;
+#endif
   content::WebContents::CreateParams create_params(
       profile_->GetBrowserContext());
   web_contents_ = content::WebContents::Create(create_params);
@@ -149,5 +160,11 @@ std::unique_ptr<BrowserController> BrowserController::Create(Profile* profile) {
   return std::make_unique<BrowserControllerImpl>(
       static_cast<ProfileImpl*>(profile));
 }
+
+#if defined(OS_ANDROID)
+BrowserController* BrowserController::GetLastControllerForTesting() {
+  return g_last_browser_controller;
+}
+#endif
 
 }  // namespace weblayer

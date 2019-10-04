@@ -148,7 +148,7 @@ TEST_F(WorkingSetTrimmerPolicyChromeOSTest, DontTrimIfNotInvisibleLongEnough) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   auto page_node = CreateNode<PageNodeImpl>();
   auto parent_frame =
-      CreateNode<FrameNodeImpl>(process_node.get(), page_node.get());
+      CreateFrameNodeAutoId(process_node.get(), page_node.get());
 
   // Since we've never walked the graph we should do so now.
   const base::TimeTicks clock_time = NowTicks();
@@ -200,7 +200,7 @@ TEST_F(WorkingSetTrimmerPolicyChromeOSTest, TrimIfInvisibleLongEnough) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   auto page_node = CreateNode<PageNodeImpl>();
   auto parent_frame =
-      CreateNode<FrameNodeImpl>(process_node.get(), page_node.get());
+      CreateFrameNodeAutoId(process_node.get(), page_node.get());
 
   ASSERT_EQ(1u, graph()->GetAllPageNodes().size());
 

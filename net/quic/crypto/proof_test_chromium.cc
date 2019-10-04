@@ -125,7 +125,8 @@ class ProofTest : public ::testing::TestWithParam<quic::QuicTransportVersion> {
 INSTANTIATE_TEST_SUITE_P(
     QuicTransportVersion,
     ProofTest,
-    ::testing::ValuesIn(quic::AllSupportedTransportVersions()));
+    ::testing::ValuesIn(quic::AllSupportedTransportVersions()),
+    ::testing::PrintToStringParamName());
 
 TEST_P(ProofTest, Verify) {
   std::unique_ptr<quic::ProofSource> source(

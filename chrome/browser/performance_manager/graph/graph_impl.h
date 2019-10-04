@@ -91,7 +91,11 @@ class GraphImpl : public Graph {
   const NodeSet& nodes() { return nodes_; }
 
   // Retrieves the process node with PID |pid|, if any.
-  ProcessNodeImpl* GetProcessNodeByPid(base::ProcessId pid);
+  ProcessNodeImpl* GetProcessNodeByPid(base::ProcessId pid) const;
+
+  // Retrieves the frame node with the routing ids of the process and the frame.
+  FrameNodeImpl* GetFrameNodeById(int render_process_id,
+                                  int render_frame_id) const;
 
   // Returns true if |node| is in this graph.
   bool NodeInGraph(const NodeBase* node);
@@ -122,7 +126,15 @@ class GraphImpl : public Graph {
   const std::vector<Observer*>& GetObservers() const;
 
  private:
-  using ProcessByPidMap = std::unordered_map<base::ProcessId, ProcessNodeImpl*>;
+  struct ProcessAndFrameId {
+    ProcessAndFrameId(int render_process_id, int render_frame_id);
+    bool operator<(const ProcessAndFrameId& other) const;
+    int render_process_id;
+    int render_frame_id;
+  };
+
+  using ProcessByPidMap = std::map<base::ProcessId, ProcessNodeImpl*>;
+  using FrameById = std::map<ProcessAndFrameId, FrameNodeImpl*>;
 
   void OnNodeAdded(NodeBase* node);
   void OnBeforeNodeRemoved(NodeBase* node);
@@ -136,6 +148,15 @@ class GraphImpl : public Graph {
   void BeforeProcessPidChange(ProcessNodeImpl* process,
                               base::ProcessId new_pid);
 
+  // Frame id map for use by FrameNodeImpl.
+  friend class FrameNodeImpl;
+  void RegisterFrameNodeForId(int render_process_id,
+                              int render_frame_id,
+                              FrameNodeImpl* frame_node);
+  void UnregisterFrameNodeForId(int render_process_id,
+                                int render_frame_id,
+                                FrameNodeImpl* frame_node);
+
   template <typename NodeType, typename ReturnNodeType>
   std::vector<ReturnNodeType> GetAllNodesOfType() const;
 
@@ -144,6 +165,7 @@ class GraphImpl : public Graph {
   std::unique_ptr<SystemNodeImpl> system_node_;
   NodeSet nodes_;
   ProcessByPidMap processes_by_pid_;
+  FrameById frames_by_id_;
   ukm::UkmRecorder* ukm_recorder_ = nullptr;
 
   // Typed observers.

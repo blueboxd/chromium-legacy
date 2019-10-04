@@ -2784,6 +2784,8 @@ TEST_P(OverviewSessionTest, ShelfAlignmentChangeWhileInOverview) {
   EXPECT_FALSE(InOverviewSession());
 }
 
+// TODO(sammiequon): Merge this into SplitViewOverviewSessionTest and rename
+// that to TabletModeOverviewSessionTest.
 class OverviewSessionNewLayoutTest : public OverviewSessionTest {
  public:
   OverviewSessionNewLayoutTest() = default;
@@ -2992,7 +2994,7 @@ TEST_P(OverviewSessionNewLayoutTest, HorizontalScrollingOnOverviewItem) {
 }
 
 // A unique test class for testing flings in overview as those rely on observing
-// compositior animations which require a mock time task environment.
+// compositor animations which require a mock time task environment.
 class OverviewSessionNewLayoutFlingTest : public AshTestBase {
  public:
   OverviewSessionNewLayoutFlingTest()
@@ -3359,6 +3361,11 @@ TEST_P(SplitViewOverviewSessionTest, DragOverviewWindowToSnap) {
 
 // Verify the correct behavior when dragging windows in overview mode.
 TEST_P(SplitViewOverviewSessionTest, OverviewDragControllerBehavior) {
+  // TODO(sammiequon): Make this work once this feature is enabled by default
+  // for good.
+  if (base::FeatureList::IsEnabled(features::kNewOverviewLayout))
+    return;
+
   aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
 
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();

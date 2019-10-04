@@ -94,7 +94,6 @@ class DownloadItemView : public views::InkDropHostView,
 
   // views::View:
   void Layout() override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   gfx::Size CalculatePreferredSize() const override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;

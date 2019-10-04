@@ -87,7 +87,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             self._selected_try_bots = frozenset(try_builders)
 
         jobs = self.git_cl.latest_try_jobs(
-            self.selected_try_bots, patchset=options.patchset)
+            builder_names=self.selected_try_bots, patchset=options.patchset)
         self._log_jobs(jobs)
         builders_with_no_jobs = self.selected_try_bots - {b.builder_name for b in jobs}
 

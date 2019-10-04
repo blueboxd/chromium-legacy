@@ -107,16 +107,17 @@ const char kNonCachedIPAddress[] = "192.168.0.1";
 // Run QuicStreamFactoryTest instances with all value combinations of version
 // and enable_connection_racting.
 struct TestParams {
-  friend std::ostream& operator<<(std::ostream& os, const TestParams& p) {
-    os << "{ version: " << ParsedQuicVersionToString(p.version)
-       << ", client_headers_include_h2_stream_dependency: "
-       << p.client_headers_include_h2_stream_dependency << " }";
-    return os;
-  }
-
   quic::ParsedQuicVersion version;
   bool client_headers_include_h2_stream_dependency;
 };
+
+// Used by ::testing::PrintToStringParamName().
+std::string PrintToString(const TestParams& p) {
+  return quic::QuicStrCat(
+      ParsedQuicVersionToString(p.version), "_",
+      (p.client_headers_include_h2_stream_dependency ? "" : "No"),
+      "Dependency");
+}
 
 std::vector<TestParams> GetTestParams() {
   std::vector<TestParams> params;
@@ -135,31 +136,30 @@ std::vector<TestParams> GetTestParams() {
 // Run QuicStreamFactoryWithDestinationTest instances with all value
 // combinations of version, enable_connection_racting, and destination_type.
 struct PoolingTestParams {
-  friend std::ostream& operator<<(std::ostream& os,
-                                  const PoolingTestParams& p) {
-    os << "{ version: " << ParsedQuicVersionToString(p.version)
-       << ", destination_type: ";
-    switch (p.destination_type) {
-      case SAME_AS_FIRST:
-        os << "SAME_AS_FIRST";
-        break;
-      case SAME_AS_SECOND:
-        os << "SAME_AS_SECOND";
-        break;
-      case DIFFERENT:
-        os << "DIFFERENT";
-        break;
-    }
-    os << ", client_headers_include_h2_stream_dependency: "
-       << p.client_headers_include_h2_stream_dependency;
-    os << " }";
-    return os;
-  }
-
   quic::ParsedQuicVersion version;
   DestinationType destination_type;
   bool client_headers_include_h2_stream_dependency;
 };
+
+// Used by ::testing::PrintToStringParamName().
+std::string PrintToString(const PoolingTestParams& p) {
+  const char* destination_string = "";
+  switch (p.destination_type) {
+    case SAME_AS_FIRST:
+      destination_string = "SAME_AS_FIRST";
+      break;
+    case SAME_AS_SECOND:
+      destination_string = "SAME_AS_SECOND";
+      break;
+    case DIFFERENT:
+      destination_string = "DIFFERENT";
+      break;
+  }
+  return quic::QuicStrCat(
+      ParsedQuicVersionToString(p.version), "_", destination_string, "_",
+      (p.client_headers_include_h2_stream_dependency ? "" : "No"),
+      "Dependency");
+}
 
 std::vector<PoolingTestParams> GetPoolingTestParams() {
   std::vector<PoolingTestParams> params;
@@ -922,7 +922,8 @@ class QuicStreamFactoryTest : public QuicStreamFactoryTestBase,
 
 INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
                          QuicStreamFactoryTest,
-                         ::testing::ValuesIn(GetTestParams()));
+                         ::testing::ValuesIn(GetTestParams()),
+                         ::testing::PrintToStringParamName());
 
 TEST_P(QuicStreamFactoryTest, Create) {
   Initialize();
@@ -10492,7 +10493,8 @@ class QuicStreamFactoryWithDestinationTest
 
 INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
                          QuicStreamFactoryWithDestinationTest,
-                         ::testing::ValuesIn(GetPoolingTestParams()));
+                         ::testing::ValuesIn(GetPoolingTestParams()),
+                         ::testing::PrintToStringParamName());
 
 // A single QUIC request fails because the certificate does not match the origin
 // hostname, regardless of whether it matches the alternative service hostname.

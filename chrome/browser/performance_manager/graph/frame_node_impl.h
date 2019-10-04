@@ -52,12 +52,14 @@ class FrameNodeImpl
 
   // Construct a frame node associated with a |process_node|, a |page_node| and
   // optionally with a |parent_frame_node|. For the main frame of |page_node|
-  // the |parent_frame_node| parameter should be nullptr.
+  // the |parent_frame_node| parameter should be nullptr. |render_frame_id| is
+  // the routing id of the frame (from RenderFrameHost::GetRoutingID).
   FrameNodeImpl(GraphImpl* graph,
                 ProcessNodeImpl* process_node,
                 PageNodeImpl* page_node,
                 FrameNodeImpl* parent_frame_node,
                 int frame_tree_node_id,
+                int render_frame_id,
                 const base::UnguessableToken& dev_tools_token,
                 int32_t browsing_instance_id,
                 int32_t site_instance_id);
@@ -83,6 +85,7 @@ class FrameNodeImpl
   PageNodeImpl* page_node() const;
   ProcessNodeImpl* process_node() const;
   int frame_tree_node_id() const;
+  int render_frame_id() const;
   const base::UnguessableToken& dev_tools_token() const;
   int32_t browsing_instance_id() const;
   int32_t site_instance_id() const;
@@ -139,7 +142,6 @@ class FrameNodeImpl
   bool IsAdFrame() const override;
   bool HoldsWebLock() const override;
   bool HoldsIndexedDBLock() const override;
-
   const base::flat_set<const WorkerNode*> GetChildWorkerNodes() const override;
   const PriorityAndReason& GetPriorityAndReason() const override;
 
@@ -190,6 +192,8 @@ class FrameNodeImpl
   // Can be used to tie together "sibling" frames, where a navigation is ongoing
   // in a new frame that will soon replace the existing one.
   const int frame_tree_node_id_;
+  // The routing id of the frame.
+  const int render_frame_id_;
   // A unique identifier shared with all representations of this node across
   // content and blink. The token is only defined by the browser process and
   // is never sent back from the renderer in control calls. It should never be

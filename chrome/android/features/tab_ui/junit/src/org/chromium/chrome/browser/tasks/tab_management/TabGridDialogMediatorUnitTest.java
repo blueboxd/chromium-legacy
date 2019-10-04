@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -70,6 +71,7 @@ public class TabGridDialogMediatorUnitTest {
     private static final String TAB3_TITLE = "Tab3";
     private static final String DIALOG_TITLE1 = "1 Tab";
     private static final String DIALOG_TITLE2 = "2 Tabs";
+    private static final String REMOVE_BUTTON_STRING = "Remove";
     private static final int TAB1_ID = 456;
     private static final int TAB2_ID = 789;
     private static final int TAB3_ID = 123;
@@ -104,6 +106,8 @@ public class TabGridDialogMediatorUnitTest {
     TabGroupModelFilter mTabGroupModelFilter;
     @Mock
     TabModel mTabModel;
+    @Mock
+    TabSelectionEditorCoordinator.TabSelectionEditorController mTabSelectionEditorController;
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
 
@@ -160,11 +164,14 @@ public class TabGridDialogMediatorUnitTest {
                 .when(mAnimationParamsProvider)
                 .getAnimationParamsForTab(anyInt());
         doReturn(mTabCreator).when(mTabCreatorManager).getTabCreator(anyBoolean());
+        doReturn(REMOVE_BUTTON_STRING)
+                .when(mContext)
+                .getString(R.string.tab_grid_dialog_selection_mode_remove);
 
         mModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
-        mMediator =
-                new TabGridDialogMediator(mContext, mDialogController, mModel, mTabModelSelector,
-                        mTabCreatorManager, mTabSwitcherResetHandler, mAnimationParamsProvider, "");
+        mMediator = new TabGridDialogMediator(mContext, mDialogController, mModel,
+                mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler,
+                mAnimationParamsProvider, mTabSelectionEditorController, "");
     }
 
     @After
@@ -182,6 +189,14 @@ public class TabGridDialogMediatorUnitTest {
                 instanceOf(View.OnClickListener.class));
         assertThat(mModel.get(TabGridPanelProperties.ADD_CLICK_LISTENER),
                 instanceOf(View.OnClickListener.class));
+    }
+
+    @Test
+    public void setupDialogSelectionEditor() {
+        // The dialog selection editor for ungrouping should be setup.
+        verify(mTabSelectionEditorController)
+                .configureToolbar(eq(REMOVE_BUTTON_STRING),
+                        any(TabSelectionEditorActionProvider.class), eq(1), eq(null));
     }
 
     @Test
@@ -417,7 +432,8 @@ public class TabGridDialogMediatorUnitTest {
         // For strip we don't play zoom-in/zoom-out for show/hide dialog, and thus
         // the animationParamsProvider is null.
         mMediator = new TabGridDialogMediator(mContext, mDialogController, mModel,
-                mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler, null, "");
+                mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler, null,
+                mTabSelectionEditorController, "");
         // Mock that the dialog is hidden and animation source Rect and header title are all null.
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
         mModel.set(TabGridPanelProperties.ANIMATION_PARAMS, null);

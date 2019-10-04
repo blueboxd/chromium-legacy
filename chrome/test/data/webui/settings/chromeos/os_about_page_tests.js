@@ -405,9 +405,10 @@ cr.define('settings_about_page', function() {
          * @return {!Promise}
          */
         async function checkHasEndOfLife(isShowing) {
-          await aboutBrowserProxy.whenCalled('getHasEndOfLife');
+          await aboutBrowserProxy.whenCalled('getEndOfLifeInfo');
           const {endOfLifeMessageContainer} = page.$;
           assertTrue(!!endOfLifeMessageContainer);
+
           assertEquals(isShowing, !endOfLifeMessageContainer.hidden);
 
           // Update status message should be hidden before user has
@@ -431,22 +432,53 @@ cr.define('settings_about_page', function() {
 
         // Force test proxy to not respond to JS requests.
         // End of life message should still be hidden in this case.
-        aboutBrowserProxy.setHasEndOfLife(new Promise(() => {}));
+        aboutBrowserProxy.setEndOfLifeInfo(new Promise(function(res, rej) {}));
         await initNewPage();
         await checkHasEndOfLife(false);
-        aboutBrowserProxy.setHasEndOfLife(true);
+        aboutBrowserProxy.setEndOfLifeInfo({
+          hasEndOfLife: true,
+          endOfLifeAboutMessage: '',
+        });
         await initNewPage();
         await checkHasEndOfLife(true);
-        aboutBrowserProxy.setHasEndOfLife(false);
+        aboutBrowserProxy.setEndOfLifeInfo({
+          hasEndOfLife: false,
+          endOfLifeAboutMessage: '',
+        });
         await initNewPage();
         await checkHasEndOfLife(false);
       });
 
-      test('detailed build info page', () => {
+      test('detailed build info page', async () => {
+        async function checkEndOfLifeSection() {
+          await aboutBrowserProxy.whenCalled('getEndOfLifeInfo');
+          const buildInfoPage = page.$$('settings-detailed-build-info');
+          assertTrue(!!buildInfoPage.$['endOfLifeSectionContainer']);
+          assertFalse(buildInfoPage.$['endOfLifeSectionContainer'].hidden);
+        }
+
+        aboutBrowserProxy.setEndOfLifeInfo({
+          hasEndOfLife: true,
+          aboutPageEndOfLifeMessage: '',
+        });
+        await initNewPage();
         page.scroller = page.offsetParent;
         assertTrue(!!page.$['detailed-build-info-trigger']);
         page.$['detailed-build-info-trigger'].click();
-        assertTrue(!!page.$$('settings-detailed-build-info'));
+        const buildInfoPage = page.$$('settings-detailed-build-info');
+        assertTrue(!!buildInfoPage);
+        assertTrue(!!buildInfoPage.$['endOfLifeSectionContainer']);
+        assertTrue(buildInfoPage.$['endOfLifeSectionContainer'].hidden);
+
+        aboutBrowserProxy.setEndOfLifeInfo({
+          hasEndOfLife: true,
+          aboutPageEndOfLifeMessage: 'message',
+        });
+        await initNewPage();
+        page.scroller = page.offsetParent;
+        assertTrue(!!page.$['detailed-build-info-trigger']);
+        page.$['detailed-build-info-trigger'].click();
+        checkEndOfLifeSection();
       });
 
       test('GetHelp', function() {

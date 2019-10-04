@@ -5,7 +5,7 @@
 #include "chrome/renderer/performance_manager/mechanisms/tcmalloc_tunables_impl.h"
 
 #include "base/allocator/allocator_extension.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace performance_manager {
 namespace mechanism {
@@ -20,9 +20,9 @@ TcmallocTunablesImpl::~TcmallocTunablesImpl() = default;
 
 // Static
 void TcmallocTunablesImpl::Create(
-    tcmalloc::mojom::TcmallocTunablesRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<TcmallocTunablesImpl>(),
-                          std::move(request));
+    mojo::PendingReceiver<tcmalloc::mojom::TcmallocTunables> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<TcmallocTunablesImpl>(),
+                              std::move(receiver));
 }
 
 void TcmallocTunablesImpl::SetMaxTotalThreadCacheBytes(uint32_t size_bytes) {

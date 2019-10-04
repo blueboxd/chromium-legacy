@@ -29,15 +29,30 @@ class DragEventGenerator {
     virtual const base::TimeDelta GetDuration() const = 0;
   };
 
-  DragEventGenerator(std::unique_ptr<PointProducer> producer,
-                     bool touch = false,
-                     bool hover = false,
-                     bool use_120fps = false);
   ~DragEventGenerator();
+
+  // If |hover| is true, do not send a initial mouse press event. Generates
+  // events at 120 hertz if |use_120fps|.
+  static std::unique_ptr<DragEventGenerator> CreateForMouse(
+      std::unique_ptr<PointProducer> producer,
+      bool hover = false,
+      bool use_120fps = false);
+  // If |long_press| is true wait a bit until a long press event is sent before
+  // starting dragging.
+  static std::unique_ptr<DragEventGenerator> CreateForTouch(
+      std::unique_ptr<PointProducer> producer,
+      bool long_press = false,
+      bool use_120fps = false);
 
   void Wait();
 
  private:
+  DragEventGenerator(std::unique_ptr<PointProducer> producer,
+                     bool touch = false,
+                     bool hover = false,
+                     bool use_120fps = false,
+                     bool long_press = false);
+
   void Done(const gfx::Point position);
   void GenerateNext();
   base::TimeDelta GetNextFrameDuration() const;

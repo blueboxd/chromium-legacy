@@ -142,7 +142,8 @@ public class TabGridDialogMenuCoordinator {
         ModelList itemList = new ModelList();
         itemList.add(new ListItem(ListItemType.MENU_ITEM,
                 buildPropertyModel(context,
-                        org.chromium.chrome.tab_ui.R.string.tab_grid_dialog_remove_from_group,
+                        org.chromium.chrome.tab_ui.R.string
+                                .tab_grid_dialog_toolbar_remove_from_group,
                         R.id.ungroup_tab)));
         return itemList;
     }

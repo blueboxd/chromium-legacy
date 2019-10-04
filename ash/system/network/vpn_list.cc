@@ -7,23 +7,23 @@
 #include <utility>
 
 #include "ash/public/cpp/network_config_service.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/network/tray_network_state_model.h"
 #include "base/logging.h"
 
 namespace ash {
 
 VpnList::Observer::~Observer() = default;
 
-VpnList::VpnList() {
+VpnList::VpnList(TrayNetworkStateModel* model) : model_(model) {
+  model_->AddObserver(this);
   AddBuiltInProvider();
-
-  ash::GetNetworkConfigService(
-      cros_network_config_.BindNewPipeAndPassReceiver());
-  cros_network_config_->AddObserver(
-      cros_network_config_observer_.BindNewPipeAndPassRemote());
-  OnVpnProvidersChanged();
+  VpnProvidersChanged();
 }
 
-VpnList::~VpnList() = default;
+VpnList::~VpnList() {
+  model_->RemoveObserver(this);
+}
 
 bool VpnList::HaveExtensionOrArcVpnProviders() const {
   for (const VpnProviderPtr& extension_provider : extension_vpn_providers_) {
@@ -41,23 +41,10 @@ void VpnList::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void VpnList::OnActiveNetworksChanged(
-    std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
-        networks) {}
-
-void VpnList::OnNetworkStateChanged(
-    chromeos::network_config::mojom::NetworkStatePropertiesPtr network) {}
-
-void VpnList::OnNetworkStateListChanged() {}
-
-void VpnList::OnDeviceStateListChanged() {}
-
-void VpnList::OnVpnProvidersChanged() {
-  cros_network_config_->GetVpnProviders(
+void VpnList::VpnProvidersChanged() {
+  model_->cros_network_config()->GetVpnProviders(
       base::BindOnce(&VpnList::OnGetVpnProviders, base::Unretained(this)));
 }
-
-void VpnList::OnNetworkCertificatesChanged() {}
 
 void VpnList::SetVpnProvidersForTest(std::vector<VpnProviderPtr> providers) {
   OnGetVpnProviders(std::move(providers));

@@ -90,6 +90,30 @@ const char kUploadData[] = "Really nifty data!";
 const char kDefaultServerHostName[] = "www.example.org";
 const uint16_t kDefaultServerPort = 443;
 
+struct TestParams {
+  quic::ParsedQuicVersion version;
+  bool client_headers_include_h2_stream_dependency;
+};
+
+// Used by ::testing::PrintToStringParamName().
+std::string PrintToString(const TestParams& p) {
+  return quic::QuicStrCat(
+      ParsedQuicVersionToString(p.version), "_",
+      (p.client_headers_include_h2_stream_dependency ? "" : "No"),
+      "Dependency");
+}
+
+std::vector<TestParams> GetTestParams() {
+  std::vector<TestParams> params;
+  quic::ParsedQuicVersionVector all_supported_versions =
+      quic::AllSupportedVersions();
+  for (const auto& version : all_supported_versions) {
+    params.push_back(TestParams{version, false});
+    params.push_back(TestParams{version, true});
+  }
+  return params;
+}
+
 class TestQuicConnection : public quic::QuicConnection {
  public:
   TestQuicConnection(const quic::ParsedQuicVersionVector& versions,
@@ -176,8 +200,7 @@ class QuicHttpStreamPeer {
   }
 };
 
-class QuicHttpStreamTest : public ::testing::TestWithParam<
-                               std::tuple<quic::ParsedQuicVersion, bool>>,
+class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
                            public WithTaskEnvironment {
  public:
   void CloseStream(QuicHttpStream* stream, int /*rv*/) { stream->Close(false); }
@@ -199,8 +222,9 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   };
 
   QuicHttpStreamTest()
-      : version_(std::get<0>(GetParam())),
-        client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
+      : version_(GetParam().version),
+        client_headers_include_h2_stream_dependency_(
+            GetParam().client_headers_include_h2_stream_dependency),
         crypto_config_(
             quic::test::crypto_test_utils::ProofVerifierForTesting()),
         read_buffer_(base::MakeRefCounted<IOBufferWithSize>(4096)),
@@ -719,11 +743,10 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   std::vector<PacketToWrite> writes_;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    VersionIncludeStreamDependencySequence,
-    QuicHttpStreamTest,
-    ::testing::Combine(::testing::ValuesIn(quic::AllSupportedVersions()),
-                       ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
+                         QuicHttpStreamTest,
+                         ::testing::ValuesIn(GetTestParams()),
+                         ::testing::PrintToStringParamName());
 
 TEST_P(QuicHttpStreamTest, RenewStreamForAuth) {
   Initialize();

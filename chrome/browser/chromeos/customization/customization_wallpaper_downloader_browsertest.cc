@@ -23,8 +23,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 

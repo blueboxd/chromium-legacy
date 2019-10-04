@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
@@ -197,8 +198,8 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
     WebURLResponse response(script_url_);
     response.SetMimeType("text/javascript");
     response.SetHttpStatusCode(200);
-    Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(script_url_,
-                                                                response, "");
+    url_test_helpers::RegisterMockedURLLoadWithCustomResponse(script_url_, "",
+                                                              response);
   }
 
   std::unique_ptr<WebEmbeddedWorkerStartData> CreateStartData() {
@@ -219,9 +220,7 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
     // QuitClosure to wait until all the tasks run before test completion.
     test::RunPendingTasks();
 
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
+    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
   }
 
   WebURL script_url_;
@@ -268,12 +267,7 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger) {
 
 TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
   WebURL script_url = url_test_helpers::ToKURL(kNotFoundScriptURL);
-  WebURLResponse response;
-  response.SetMimeType("text/javascript");
-  response.SetHttpStatusCode(404);
-  ResourceError error = ResourceError::Failure(script_url);
-  Platform::Current()->GetURLLoaderMockFactory()->RegisterErrorURL(
-      script_url, response, error);
+  url_test_helpers::RegisterMockedErrorURLLoad(script_url);
   std::unique_ptr<WebEmbeddedWorkerStartData> start_data = CreateStartData();
   start_data->script_url = script_url;
 

@@ -3221,6 +3221,12 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   heading_data.id = 3;
   heading_data.role = ax::mojom::Role::kHeading;
   heading_data.AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel, 6);
+  heading_data.AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
+                               0xDEADBEEFU);
+  heading_data.AddIntAttribute(ax::mojom::IntAttribute::kColor, 0xDEADC0DEU);
+  heading_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
+  heading_data.SetTextPosition(ax::mojom::TextPosition::kSuperscript);
+  heading_data.AddState(ax::mojom::State::kEditable);
   heading_data.child_ids = {4};
 
   ui::AXNodeData heading_text_data;
@@ -3239,6 +3245,10 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ui::AXNodeData mark_data;
   mark_data.id = 5;
   mark_data.role = ax::mojom::Role::kMark;
+  mark_data.AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
+                            0xDEADBEEFU);
+  mark_data.AddIntAttribute(ax::mojom::IntAttribute::kColor, 0xDEADC0DEU);
+  mark_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
   mark_data.child_ids = {6};
 
   ui::AXNodeData mark_text_data;
@@ -3254,6 +3264,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   list_data.id = 7;
   list_data.role = ax::mojom::Role::kList;
   list_data.child_ids = {8, 10};
+  list_data.AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
+                            0xDEADBEEFU);
+  list_data.AddIntAttribute(ax::mojom::IntAttribute::kColor, 0xDEADC0DEU);
 
   ui::AXNodeData list_item_data;
   list_item_data.id = 8;
@@ -3262,6 +3275,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   list_item_data.AddIntAttribute(
       ax::mojom::IntAttribute::kListStyle,
       static_cast<int>(ax::mojom::ListStyle::kOther));
+  list_item_data.AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
+                                 0xDEADBEEFU);
+  list_item_data.AddIntAttribute(ax::mojom::IntAttribute::kColor, 0xDEADC0DEU);
 
   ui::AXNodeData list_item_text_data;
   list_item_text_data.id = 9;
@@ -3278,6 +3294,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   list_item2_data.AddIntAttribute(
       ax::mojom::IntAttribute::kListStyle,
       static_cast<int>(ax::mojom::ListStyle::kDisc));
+  list_item2_data.AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
+                                  0xDEADBEEFU);
+  list_item2_data.AddIntAttribute(ax::mojom::IntAttribute::kColor, 0xDEADC0DEU);
 
   ui::AXNodeData list_item2_text_data;
   list_item2_text_data.id = 11;

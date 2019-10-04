@@ -174,9 +174,9 @@ IN_PROC_BROWSER_TEST_P(WindowResizeTest, Single) {
   producer->ProducePointsTo(mid_point, base::TimeDelta::FromSeconds(1));
   producer->ProducePointsTo(end_point, base::TimeDelta::FromSeconds(1));
 
-  ui_test_utils::DragEventGenerator generator(std::move(producer),
-                                              /*use_touch=*/false);
-  generator.Wait();
+  auto generator =
+      ui_test_utils::DragEventGenerator::CreateForMouse(std::move(producer));
+  generator->Wait();
 }
 
 IN_PROC_BROWSER_TEST_P(WindowResizeTest, Multi) {
@@ -209,9 +209,9 @@ IN_PROC_BROWSER_TEST_P(WindowResizeTest, Multi) {
   producer->ProducePointsTo(start_point, base::TimeDelta::FromSeconds(1));
   start_point.Offset(120, 0);
   producer->ProducePointsTo(start_point, base::TimeDelta::FromSeconds(1));
-  ui_test_utils::DragEventGenerator generator(std::move(producer),
-                                              /*use_touch=*/false);
-  generator.Wait();
+  auto generator =
+      ui_test_utils::DragEventGenerator::CreateForMouse(std::move(producer));
+  generator->Wait();
 }
 
 INSTANTIATE_TEST_SUITE_P(,

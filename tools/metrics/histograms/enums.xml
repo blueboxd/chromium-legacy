@@ -6383,6 +6383,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Is phishing"/>
 </enum>
 
+<enum name="BooleanIsRepeat">
+  <int value="0" label="First"/>
+  <int value="1" label="Repeat"/>
+</enum>
+
 <enum name="BooleanIsShared">
   <int value="0" label="Not Shared"/>
   <int value="1" label="Is Shared"/>
@@ -35374,6 +35379,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1466862366" label="TouchToFillAndroid:enabled"/>
   <int value="-1466759286" label="TabModalJsDialog:disabled"/>
   <int value="-1465172796" label="CCTModule:disabled"/>
+  <int value="-1464832541" label="EnableFuzzyAppSearch:disabled"/>
   <int value="-1463489219" label="OfflinePagesCTSuppressNotifications:enabled"/>
   <int value="-1463410070" label="IPH_DemoMode:enabled"/>
   <int value="-1461261930" label="OutOfBlinkCORS:disabled"/>
@@ -35396,7 +35402,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1446425986" label="ProtectSyncCredentialOnReauth:disabled"/>
   <int value="-1444051091" label="ash-disable-night-light"/>
   <int value="-1443796945" label="OfflinePagesSharing:disabled"/>
-  <int value="-1442753429" label="SystemTrayFeaturePodsPagination:disabled"/>
   <int value="-1441695001" label="OmniboxOnFocusSuggestions:enabled"/>
   <int value="-1441340278" label="NewTabPageIcons:enabled"/>
   <int value="-1440440375" label="WebVrAutopresent:enabled"/>
@@ -35519,6 +35524,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1302904242" label="enable-navigation-tracing"/>
   <int value="-1302859198" label="enable-stylus-virtual-keyboard:disabled"/>
   <int value="-1297079591" label="EnableRemovingAllThirdPartyCookies:disabled"/>
+  <int value="-1294656363" label="UnifiedMessageCenterRefactor:enabled"/>
   <int value="-1294050129" label="ContentFullscreen:disabled"/>
   <int value="-1293987566" label="OmniboxZeroSuggestionsOnNTPRealbox:disabled"/>
   <int value="-1292615467"
@@ -35568,6 +35574,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1248478422" label="enable-zip-archiver-packer"/>
   <int value="-1246840031" label="OptInImeMenu:disabled"/>
   <int value="-1243694853" label="DeferAllScript:disabled"/>
+  <int value="-1241868814" label="WebAuthenticationPhoneSupport:disabled"/>
   <int value="-1241747717" label="enable-android-password-link"/>
   <int value="-1241002324" label="FocusMode:enabled"/>
   <int value="-1239262870" label="TextFragmentAnchor:enabled"/>
@@ -36710,6 +36717,7 @@ from previous Chrome versions.
       label="AutofillEnableLocalCardMigrationForNonSyncUser:enabled"/>
   <int value="291389947" label="PercentBasedScrolling:disabled"/>
   <int value="291482671" label="ExperimentalFlingAnimation:disabled"/>
+  <int value="291866104" label="WebAuthenticationPhoneSupport:enabled"/>
   <int value="292560715" label="ViewsCastDialog:disabled"/>
   <int value="293134455" label="AutofillSendBillingCustomerNumber:disabled"/>
   <int value="293996306" label="ArrayPrototypeValues:disabled"/>
@@ -36806,6 +36814,7 @@ from previous Chrome versions.
   <int value="402143634" label="enable-search-button-in-omnibox-always"/>
   <int value="403288255" label="enable-wheel-scroll-latching"/>
   <int value="403741682" label="CrostiniBackup:enabled"/>
+  <int value="403939322" label="UnifiedMessageCenterRefactor:disabled"/>
   <int value="405329388"
       label="FramebustingNeedsSameOriginOrUserGesture:enabled"/>
   <int value="408190863" label="OmniboxDisableInstantExtendedLimit:disabled"/>
@@ -37237,6 +37246,7 @@ from previous Chrome versions.
       label="disable-hide-inactive-stacked-tab-close-buttons"/>
   <int value="1022424308" label="SignedExchangeSubresourcePrefetch:enabled"/>
   <int value="1022992701" label="enable-origin-chip-always"/>
+  <int value="1024560563" label="EnableFuzzyAppSearch:enabled"/>
   <int value="1027252926" label="SyncSupportSecondaryAccount:enabled"/>
   <int value="1033148287" label="NTPShortcuts:disabled"/>
   <int value="1033412163" label="OmniboxDisplayTitleForCurrentUrl:enabled"/>
@@ -37952,7 +37962,6 @@ from previous Chrome versions.
   <int value="1957472162"
       label="AutofillUpstreamEditableExpirationDate:disabled"/>
   <int value="1958387645" label="ScanCardsInWebPayments:enabled"/>
-  <int value="1959020463" label="SystemTrayFeaturePodsPagination:enabled"/>
   <int value="1959148757" label="OffMainThreadFetch:enabled"/>
   <int value="1960169775" label="NewPhotoPicker:disabled"/>
   <int value="1961425320" label="force-qtkit"/>

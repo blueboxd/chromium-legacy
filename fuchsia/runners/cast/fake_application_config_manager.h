@@ -22,13 +22,16 @@ class FakeApplicationConfigManager
 
   // Associates a Cast application |id| with a url, to be served from the
   // EmbeddedTestServer.
-  void AddAppMapping(const std::string& id, const GURL& url);
+  void AddAppMapping(const std::string& id,
+                     const GURL& url,
+                     bool enable_remote_debugging);
 
   // chromium::cast::ApplicationConfigManager interface.
   void GetConfig(std::string id, GetConfigCallback config_callback) override;
 
  private:
-  std::map<std::string, GURL> id_to_url_;
+  std::map<std::string, chromium::cast::ApplicationConfig>
+      id_to_application_config_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeApplicationConfigManager);
 };

@@ -168,7 +168,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   void FinishAccumulatingSquashingLayers(
       wtf_size_t next_squashed_layer_index,
       Vector<PaintLayer*>& layers_needing_paint_invalidation);
-  void UpdateShouldFlattenTransform();
   void UpdateElementId();
 
   // GraphicsLayerClient interface
@@ -367,7 +366,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   bool UpdateScrollingLayers(bool scrolling_layers);
   bool UpdateSquashingLayers(bool needs_squashing_layers);
   void UpdateDrawsContentAndPaintsHitTest();
-  void UpdateChildrenTransform();
   void UpdateCompositedBounds();
   void UpdateSnapContainerData();
 

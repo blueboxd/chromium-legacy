@@ -2473,36 +2473,39 @@ void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
     FinishLoadingDocument();
 }
 
-// TODO(kmoon): This should be the only method that sets |PDFiumPage::rect_|.
-void PDFiumEngine::ApplyCurrentLayoutToPages(bool reload) {
+void PDFiumEngine::LoadPageInfo(bool reload) {
+  std::vector<pp::Size> page_sizes = LoadPageSizes(reload);
+  if (page_sizes.empty())
+    return;
+
+  if (two_up_view_) {
+    layout_.ComputeTwoUpViewLayout(page_sizes);
+  } else {
+    layout_.ComputeSingleViewLayout(page_sizes);
+  }
+
+  DCHECK_EQ(pages_.size(), layout_.page_count());
   for (size_t i = 0; i < layout_.page_count(); ++i) {
-    const pp::Rect& page_rect = layout_.page_bounds_rect(i);
-    if (!reload) {
-      // The page is not marked as being available even if |doc_complete| is
-      // true because FPDFAvail_IsPageAvail() still has to be called for this
-      // page, which will be done in FinishLoadingDocument().
-      auto page = std::make_unique<PDFiumPage>(this, i);
-      page->set_rect(page_rect);
-      pages_.push_back(std::move(page));
-    } else if (i < pages_.size()) {
-      pages_[i]->set_rect(page_rect);
-    } else {
-      auto page = std::make_unique<PDFiumPage>(this, i);
-      page->set_rect(page_rect);
-      if (FPDFAvail_IsPageAvail(fpdf_availability(), i, nullptr))
-        page->MarkAvailable();
-      pages_.push_back(std::move(page));
-    }
+    // TODO(kmoon): This should be the only place that sets |PDFiumPage::rect_|.
+    pages_[i]->set_rect(layout_.page_bounds_rect(i));
+  }
+
+  CalculateVisiblePages();
+  if (layout_.dirty()) {
+    layout_.clear_dirty();
+    client_->ProposeDocumentLayout(layout_);
   }
 }
 
-void PDFiumEngine::LoadPageInfo(bool reload) {
-  if (!doc_loader_)
-    return;
-  if (pages_.empty() && reload)
-    return;
-  pending_pages_.clear();
+std::vector<pp::Size> PDFiumEngine::LoadPageSizes(bool reload) {
   std::vector<pp::Size> page_sizes;
+  if (!doc_loader_)
+    return page_sizes;
+  if (pages_.empty() && reload)
+    return page_sizes;
+  DCHECK(reload || pages_.empty()) << "!reload expects no existing pages";
+
+  pending_pages_.clear();
   size_t new_page_count = FPDF_GetPageCount(doc());
 
   bool doc_complete = doc_loader_->IsDocumentComplete();
@@ -2531,13 +2534,15 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
     page_sizes.push_back(size);
   }
 
-  if (two_up_view_) {
-    layout_.ComputeTwoUpViewLayout(page_sizes);
-  } else {
-    layout_.ComputeSingleViewLayout(page_sizes);
+  // Add new pages. If !reload, do not mark page as available even if
+  // |doc_complete| is true because FPDFAvail_IsPageAvail() still has to be
+  // called for this page, which will be done in FinishLoadingDocument().
+  for (size_t i = pages_.size(); i < new_page_count; ++i) {
+    auto page = std::make_unique<PDFiumPage>(this, i);
+    if (reload && FPDFAvail_IsPageAvail(fpdf_availability(), i, nullptr))
+      page->MarkAvailable();
+    pages_.push_back(std::move(page));
   }
-
-  ApplyCurrentLayoutToPages(reload);
 
   // Remove pages that do not exist anymore.
   if (pages_.size() > new_page_count) {
@@ -2547,11 +2552,7 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
     pages_.resize(new_page_count);
   }
 
-  CalculateVisiblePages();
-  if (layout_.dirty()) {
-    layout_.clear_dirty();
-    client_->ProposeDocumentLayout(layout_);
-  }
+  return page_sizes;
 }
 
 void PDFiumEngine::LoadBody() {

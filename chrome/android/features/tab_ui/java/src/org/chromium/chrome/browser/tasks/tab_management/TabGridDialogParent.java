@@ -46,7 +46,8 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Parent for TabGridDialog component.
  */
-public class TabGridDialogParent {
+public class TabGridDialogParent
+        implements TabSelectionEditorLayout.TabSelectionEditorLayoutPositionProvider {
     private static final int DIALOG_ANIMATION_DURATION = 300;
     private static final int DIALOG_ALPHA_ANIMATION_DURATION = 150;
     private static final int CARD_FADE_ANIMATION_DURATION = 50;
@@ -649,6 +650,22 @@ public class TabGridDialogParent {
         mCurrentDialogAnimator = mHideDialogAnimation;
         mScrimView.hideScrim(true);
         mHideDialogAnimation.start();
+    }
+
+    /**
+     * {@link TabSelectionEditorLayout.TabSelectionEditorLayoutPositionProvider} implementation.
+     * Returns a {@link Rect} that indicates the current position of dialog.
+     */
+    @Override
+    public Rect getSelectionEditorPositionRect() {
+        Rect positionRect = new Rect();
+        mDialogContainerView.getGlobalVisibleRect(positionRect);
+        Rect parentRect = new Rect();
+        mParent.getGlobalVisibleRect(parentRect);
+
+        // Offset by the status bar height.
+        positionRect.offset(0, parentRect.top);
+        return positionRect;
     }
 
     /**

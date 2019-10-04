@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLABLE_AREA_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLABLE_AREA_H_
 
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
@@ -135,6 +136,10 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   void ContentAreaDidShow() const;
   void ContentAreaDidHide() const;
 
+  virtual const cc::SnapContainerData* GetSnapContainerData() const {
+    return nullptr;
+  }
+  virtual void SetSnapContainerData(base::Optional<cc::SnapContainerData>) {}
   virtual void SnapAfterScrollbarScrolling(ScrollbarOrientation) {}
 
   void FinishCurrentScrollAnimations() const;

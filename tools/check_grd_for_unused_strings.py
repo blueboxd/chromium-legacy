@@ -141,8 +141,6 @@ def main():
     grd_files = [
       os.path.join(ash_base_dir, 'ash_strings.grd'),
       os.path.join(ash_components_dir, 'ash_components_strings.grd'),
-      os.path.join(ash_components_dir, 'resources',
-                   'ash_components_resources.grd'),
       os.path.join(chrome_app_dir, 'chromium_strings.grd'),
       os.path.join(chrome_app_dir, 'generated_resources.grd'),
       os.path.join(chrome_app_dir, 'google_chrome_strings.grd'),

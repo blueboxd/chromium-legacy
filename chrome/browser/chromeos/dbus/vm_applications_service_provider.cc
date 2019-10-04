@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
@@ -77,7 +78,7 @@ void VmApplicationsServiceProvider::UpdateApplicationList(
   }
 
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
-  if (crostini::IsCrostiniEnabled(profile)) {
+  if (crostini::CrostiniFeatures::Get()->IsEnabled(profile)) {
     crostini::CrostiniRegistryService* registry_service =
         crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
     registry_service->UpdateApplicationList(request);
@@ -103,7 +104,7 @@ void VmApplicationsServiceProvider::LaunchTerminal(
   }
 
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
-  if (crostini::IsCrostiniEnabled(profile) &&
+  if (crostini::CrostiniFeatures::Get()->IsEnabled(profile) &&
       request.owner_id() == crostini::CryptohomeIdForProfile(profile)) {
     crostini::LaunchContainerTerminal(
         profile, request.vm_name(), request.container_name(),
@@ -130,7 +131,7 @@ void VmApplicationsServiceProvider::UpdateMimeTypes(
   }
 
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
-  if (crostini::IsCrostiniEnabled(profile)) {
+  if (crostini::CrostiniFeatures::Get()->IsEnabled(profile)) {
     crostini::CrostiniMimeTypesService* mime_types_service =
         crostini::CrostiniMimeTypesServiceFactory::GetForProfile(profile);
     mime_types_service->UpdateMimeTypes(request);

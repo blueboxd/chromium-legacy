@@ -26,13 +26,11 @@ void TestProcessNodeImpl::SetProcessWithPid(base::ProcessId pid,
 }
 
 MockSinglePageInSingleProcessGraph::MockSinglePageInSingleProcessGraph(
-    GraphImpl* graph)
+    TestGraphImpl* graph)
     : system(TestNodeWrapper<SystemNodeImpl>::Create(graph)),
       process(TestNodeWrapper<TestProcessNodeImpl>::Create(graph)),
       page(TestNodeWrapper<PageNodeImpl>::Create(graph)),
-      frame(TestNodeWrapper<FrameNodeImpl>::Create(graph,
-                                                   process.get(),
-                                                   page.get())) {
+      frame(graph->CreateFrameNodeAutoId(process.get(), page.get())) {
   process->SetProcessWithPid(1, base::Process::Current(), base::Time::Now());
 }
 
@@ -43,14 +41,13 @@ MockSinglePageInSingleProcessGraph::~MockSinglePageInSingleProcessGraph() {
 }
 
 MockMultiplePagesInSingleProcessGraph::MockMultiplePagesInSingleProcessGraph(
-    GraphImpl* graph)
+    TestGraphImpl* graph)
     : MockSinglePageInSingleProcessGraph(graph),
       other_page(TestNodeWrapper<PageNodeImpl>::Create(graph)),
-      other_frame(TestNodeWrapper<FrameNodeImpl>::Create(graph,
-                                                         process.get(),
-                                                         other_page.get(),
-                                                         nullptr,
-                                                         1)) {}
+      other_frame(graph->CreateFrameNodeAutoId(process.get(),
+                                               other_page.get(),
+                                               nullptr,
+                                               1)) {}
 
 MockMultiplePagesInSingleProcessGraph::
     ~MockMultiplePagesInSingleProcessGraph() {
@@ -59,14 +56,13 @@ MockMultiplePagesInSingleProcessGraph::
 }
 
 MockSinglePageWithMultipleProcessesGraph::
-    MockSinglePageWithMultipleProcessesGraph(GraphImpl* graph)
+    MockSinglePageWithMultipleProcessesGraph(TestGraphImpl* graph)
     : MockSinglePageInSingleProcessGraph(graph),
       other_process(TestNodeWrapper<TestProcessNodeImpl>::Create(graph)),
-      child_frame(TestNodeWrapper<FrameNodeImpl>::Create(graph,
-                                                         other_process.get(),
-                                                         page.get(),
-                                                         frame.get(),
-                                                         2)) {
+      child_frame(graph->CreateFrameNodeAutoId(other_process.get(),
+                                               page.get(),
+                                               frame.get(),
+                                               2)) {
   other_process->SetProcessWithPid(2, base::Process::Current(),
                                    base::Time::Now());
 }
@@ -75,14 +71,13 @@ MockSinglePageWithMultipleProcessesGraph::
     ~MockSinglePageWithMultipleProcessesGraph() = default;
 
 MockMultiplePagesWithMultipleProcessesGraph::
-    MockMultiplePagesWithMultipleProcessesGraph(GraphImpl* graph)
+    MockMultiplePagesWithMultipleProcessesGraph(TestGraphImpl* graph)
     : MockMultiplePagesInSingleProcessGraph(graph),
       other_process(TestNodeWrapper<TestProcessNodeImpl>::Create(graph)),
-      child_frame(TestNodeWrapper<FrameNodeImpl>::Create(graph,
-                                                         other_process.get(),
-                                                         other_page.get(),
-                                                         other_frame.get(),
-                                                         3)) {
+      child_frame(graph->CreateFrameNodeAutoId(other_process.get(),
+                                               other_page.get(),
+                                               other_frame.get(),
+                                               3)) {
   other_process->SetProcessWithPid(2, base::Process::Current(),
                                    base::Time::Now());
 }

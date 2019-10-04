@@ -409,13 +409,6 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
                                  base::TimeDelta::FromMilliseconds(1),
                                  base::TimeDelta::FromMinutes(1), 100);
     }
-
-    if (ssl_info.server_in_post_quantum_experiment) {
-      UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_PostQuantum",
-                                 connect_duration,
-                                 base::TimeDelta::FromMilliseconds(1),
-                                 base::TimeDelta::FromMinutes(1), 100);
-    }
   }
 
   base::UmaHistogramSparse("Net.SSL_Connection_Error", std::abs(result));

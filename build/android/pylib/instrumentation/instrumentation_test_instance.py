@@ -447,6 +447,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._apk_under_test = None
     self._apk_under_test_incremental_install_json = None
     self._modules = None
+    self._fake_modules = None
     self._package_info = None
     self._suite = None
     self._test_apk = None
@@ -547,6 +548,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
       self._suite = self._suite[:-len('_incremental')]
 
     self._modules = args.modules
+    self._fake_modules = args.fake_modules
 
     self._test_jar = args.test_jar
     self._test_support_apk = apk_helper.ToHelper(os.path.join(
@@ -720,6 +722,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def modules(self):
     return self._modules
+
+  @property
+  def fake_modules(self):
+    return self._fake_modules
 
   @property
   def coverage_directory(self):

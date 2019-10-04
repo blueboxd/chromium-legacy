@@ -64,25 +64,23 @@ class UnsentLogStoreTest : public testing::Test {
 class TestUnsentLogStore : public UnsentLogStore {
  public:
   TestUnsentLogStore(PrefService* service, size_t min_log_bytes)
-      : UnsentLogStore(std::unique_ptr<UnsentLogStoreMetricsImpl>(
-                          new UnsentLogStoreMetricsImpl()),
-                      service,
-                      kTestPrefName,
-                      kLogCountLimit,
-                      min_log_bytes,
-                      0,
-                      std::string()) {}
+      : UnsentLogStore(std::make_unique<UnsentLogStoreMetricsImpl>(),
+                       service,
+                       kTestPrefName,
+                       kLogCountLimit,
+                       min_log_bytes,
+                       0,
+                       std::string()) {}
   TestUnsentLogStore(PrefService* service,
-                    size_t min_log_bytes,
-                    const std::string& signing_key)
-      : UnsentLogStore(std::unique_ptr<UnsentLogStoreMetricsImpl>(
-                          new UnsentLogStoreMetricsImpl()),
-                      service,
-                      kTestPrefName,
-                      kLogCountLimit,
-                      min_log_bytes,
-                      0,
-                      signing_key) {}
+                     size_t min_log_bytes,
+                     const std::string& signing_key)
+      : UnsentLogStore(std::make_unique<UnsentLogStoreMetricsImpl>(),
+                       service,
+                       kTestPrefName,
+                       kLogCountLimit,
+                       min_log_bytes,
+                       0,
+                       signing_key) {}
 
   // Stages and removes the next log, while testing it's value.
   void ExpectNextLog(const std::string& expected_log) {

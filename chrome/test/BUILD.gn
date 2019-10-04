@@ -438,6 +438,7 @@ group("telemetry_gpu_integration_test") {
     "//media/test/data/four-colors-rot-180.mp4",
     "//media/test/data/four-colors-rot-270.mp4",
     "//media/test/data/four-colors-vp9.webm",
+    "//media/test/data/four-colors-vp9-i420a.webm",
 
     # For power
     "//media/test/data/bear-1280x720.mp4",
@@ -3945,6 +3946,9 @@ test("unit_tests") {
 
       # Android uses different way of showing feedback page
       "../browser/feedback/show_feedback_page_unittest.cc",
+
+      # NTP is in native code on Android.
+      "../browser/search/ntp_features_unittest.cc",
     ]
     if (is_posix || is_fuchsia) {
       sources += [ "../browser/process_singleton_posix_unittest.cc" ]
@@ -5206,6 +5210,11 @@ test("unit_tests") {
     sources += [ "../gpu/widevine_cdm_proxy_factory_unittest.cc" ]
   }
 
+  if (enable_widevine_cdm_component && is_desktop_linux) {
+    sources +=
+        [ "../common/media/component_widevine_cdm_hint_file_linux_unittest.cc" ]
+  }
+
   if (enable_openscreen) {
     include_dirs = [ "//third_party/openscreen/src" ]
 
@@ -6114,6 +6123,7 @@ if (!is_android && !is_fuchsia) {
 
     data_deps = [
       "//third_party/mesa_headers",
+      "//testing/buildbot/filters:e2e_sync_integration_tests_filters",
     ]
 
     if (is_mac) {

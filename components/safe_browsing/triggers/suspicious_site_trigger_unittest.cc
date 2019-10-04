@@ -274,7 +274,7 @@ TEST_F(SuspiciousSiteTriggerTest, SuspiciousHitAfterLoad) {
   ExpectNoReportRejection();
 }
 
-TEST_F(SuspiciousSiteTriggerTest, ReportRejectedByTriggerManager) {
+TEST_F(SuspiciousSiteTriggerTest, DISABLED_ReportRejectedByTriggerManager) {
   // If the trigger manager rejects the report then no report is sent.
   CreateTrigger(/*monitor_mode=*/false);
 

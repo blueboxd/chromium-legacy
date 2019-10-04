@@ -85,12 +85,13 @@ HotseatWidget::DelegateView::~DelegateView() {
 void HotseatWidget::DelegateView::Init(
     ScrollableShelfView* scrollable_shelf_view,
     ui::Layer* parent_layer) {
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+
   if (!chromeos::switches::ShouldShowScrollableShelf())
     return;
 
   if (wallpaper_controller_)
     wallpaper_controller_->AddObserver(this);
-  SetLayoutManager(std::make_unique<views::FillLayout>());
   SetParentLayer(parent_layer);
 
   DCHECK(scrollable_shelf_view);

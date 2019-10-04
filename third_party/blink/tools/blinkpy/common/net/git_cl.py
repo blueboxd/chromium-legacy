@@ -51,6 +51,7 @@ class TryJobStatus(collections.namedtuple('TryJobStatus', ('status', 'result')))
 
     @staticmethod
     def from_bb_status(bb_status):
+        """Converts a buildbucket status into a TryJobStatus object."""
         assert bb_status in ('SCHEDULED', 'STARTED', 'SUCCESS', 'FAILURE', 'INFRA_FAILURE', 'CANCELLED')
         if bb_status in ('SCHEDULED', 'STARTED'):
             return TryJobStatus(bb_status, None)
@@ -147,7 +148,8 @@ class GitCL(object):
         def finished_try_job_results_or_none():
             cl_status = self._get_cl_status()
             _log.debug('Fetched CL status: %s', cl_status)
-            try_job_results = self.latest_try_jobs(cq_only=cq_only)
+            issue_number = self.get_issue_number()
+            try_job_results = self.latest_try_jobs(issue_number, cq_only=cq_only)
             _log.debug('Fetched try results: %s', try_job_results)
             if (cl_status == 'closed' or
                     (try_job_results and self.all_finished(try_job_results))):
@@ -204,30 +206,8 @@ class GitCL(object):
         self._host.print_('Timed out waiting%s.' % message)
         return None
 
-    def latest_try_jobs(self, builder_names=None, cq_only=False, patchset=None):
-        """Fetches a dict of Build to TryJobStatus for the latest try jobs.
-
-        This includes jobs that are not yet finished and builds with infra
-        failures, so if a build is in this list, that doesn't guarantee that
-        there are results.
-
-        Args:
-            builder_names: Optional list of builders used to filter results.
-            cq_only: If True, only include CQ jobs.
-            patchset: If given, use this patchset instead of the latest.
-
-        Returns:
-            A dict mapping Build objects to TryJobStatus objects, with
-            only the latest jobs included.
-        """
-        # TODO(crbug.com/771438): Update filter_latest to handle Swarming tasks.
-        return self.filter_latest(
-            self.try_job_results(
-                builder_names, include_swarming_tasks=False, cq_only=cq_only,
-                patchset=patchset))
-
-    def latest_try_jobs_from_bb(
-            self, issue_number, builder_names=None, cq_only=False, patchset=None):
+    def latest_try_jobs(
+            self, issue_number=None, builder_names=None, cq_only=False, patchset=None):
         """Fetches a dict of Build to TryJobStatus for the latest try jobs.
 
         This variant fetches try job data from buildbucket directly.
@@ -246,8 +226,10 @@ class GitCL(object):
             A dict mapping Build objects to TryJobStatus objects, with
             only the latest jobs included.
         """
+        if not issue_number:
+            issue_number = self.get_issue_number()
         return self.filter_latest(
-            self.try_job_results_from_bb(
+            self.try_job_results(
                 issue_number, builder_names, cq_only=cq_only, patchset=patchset))
 
     @staticmethod
@@ -259,29 +241,14 @@ class GitCL(object):
         return {b: s for b, s in try_results.items() if b in latest_builds}
 
     def try_job_results(
-            self, builder_names=None, include_swarming_tasks=True,
-            cq_only=False, patchset=None):
+            self, issue_number=None, builder_names=None, cq_only=False, patchset=None):
         """Returns a dict mapping Build objects to TryJobStatus objects."""
-        raw_results = self.fetch_raw_try_job_results(patchset=patchset)
+        if not issue_number:
+            issue_number = self.get_issue_number()
+        raw_results_json = self.fetch_raw_try_job_results(issue_number, patchset)
         build_to_status = {}
-        for result in raw_results:
-            if builder_names and result['builder_name'] not in builder_names:
-                continue
-            is_swarming_task = result['url'] and '/task/' in result['url']
-            if is_swarming_task and not include_swarming_tasks:
-                continue
-            is_cq = 'user_agent:cq' in result.get('tags', [])
-            is_experimental = 'cq_experimental:true' in result.get('tags', [])
-            if cq_only and not (is_cq and not is_experimental):
-                continue
-            build_to_status[self._build(result)] = self._try_job_status(result)
-        return build_to_status
-
-    def try_job_results_from_bb(
-            self, issue_number, builder_names=None, cq_only=False, patchset=None):
-        """Returns a dict mapping Build objects to TryJobStatus objects."""
-        raw_results_json = self.fetch_raw_try_job_results_from_bb(issue_number, patchset)
-        build_to_status = {}
+        if 'builds' not in raw_results_json:
+            return build_to_status
         for build in raw_results_json['builds']:
             builder_name = build['builder']['builder']
             if builder_names and builder_name not in builder_names:
@@ -290,30 +257,12 @@ class GitCL(object):
             is_experimental = 'tags' in build and {'key': 'cq_experimental', 'value': 'true'} in build['tags']
             if cq_only and not (is_cq and not is_experimental):
                 continue
-            build_number = build['number']
+            build_number = build.get('number')
             status = build['status']
             build_to_status[Build(builder_name, build_number)] = TryJobStatus.from_bb_status(status)
         return build_to_status
 
-    def fetch_raw_try_job_results(self, patchset=None):
-        """Requests results of try jobs for the current CL and the parsed JSON.
-
-        The return value is expected to be a list of dicts, which each are
-        expected to have the fields "builder_name", "status", "result", and
-        "url". The format is determined by the output of "git cl try-results".
-        """
-        with self._host.filesystem.mkdtemp() as temp_directory:
-            results_path = self._host.filesystem.join(temp_directory, 'try-results.json')
-            command = ['try-results', '--json', results_path]
-            if patchset:
-                command.extend(['--patchset', str(patchset)])
-            self.run(command)
-            contents = self._host.filesystem.read_text_file(results_path)
-            _log.debug('Fetched try results to file "%s".', results_path)
-            self._host.filesystem.remove(results_path)
-        return json.loads(contents)
-
-    def fetch_raw_try_job_results_from_bb(self, issue_number, patchset=None):
+    def fetch_raw_try_job_results(self, issue_number, patchset=None):
         """Gets try job results for the specified CL from buildbucket.
 
         This uses the SearchBuilds rpc format specified in

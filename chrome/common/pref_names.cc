@@ -794,6 +794,7 @@ const char kQuickUnlockPinSecret[] = "quick_unlock.pin.secret";
 // An integer pref. Indicates the number of fingerprint records registered.
 const char kQuickUnlockFingerprintRecord[] = "quick_unlock.fingerprint.record";
 
+// Deprecated (crbug/998983) in favor of kEndOfLifeDate.
 // An integer pref. Holds one of several values:
 // 0: Supported. Device is in supported state.
 // 1: Security Only. Device is in Security-Only update (after initial 5 years).
@@ -801,8 +802,20 @@ const char kQuickUnlockFingerprintRecord[] = "quick_unlock.fingerprint.record";
 // This value needs to be consistent with EndOfLifeStatus enum.
 const char kEolStatus[] = "eol_status";
 
-// Boolean pref indicating the End Of Life notification was dismissed by the
-// user.
+// A Time pref.  Holds the last used Eol Date and is compared to the latest Eol
+// Date received to make changes to Eol notifications accordingly.
+const char kEndOfLifeDate[] = "eol_date";
+
+// Boolean pref indicating that the first warning End Of Life month and year
+// notification was dismissed by the user.
+const char kFirstEolWarningDismissed[] = "first_eol_warning_dismissed";
+
+// Boolean pref indicating that the second warning End Of Life month and year
+// notification was dismissed by the user.
+const char kSecondEolWarningDismissed[] = "second_eol_warning_dismissed";
+
+// Boolean pref indicating that the End Of Life final update notification was
+// dismissed by the user.
 const char kEolNotificationDismissed[] = "eol_notification_dismissed";
 
 // A list of allowed quick unlock modes. A quick unlock mode can only be used if

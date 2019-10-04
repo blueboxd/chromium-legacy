@@ -249,6 +249,13 @@ base::TimeDelta LitePageRedirectPreviewPreresolvePreconnectInterval() {
       "preresolveconnect_interval_in_seconds", 60));
 }
 
+net::EffectiveConnectionType
+LitePageRedirectPreviewPreresolvePreconnectECTThreshold() {
+  return GetParamValueAsECTByFeature(features::kLitePageServerPreviews,
+                                     "preresolveconnect_ect_threshold",
+                                     net::EFFECTIVE_CONNECTION_TYPE_2G);
+}
+
 base::TimeDelta LitePageRedirectPreviewProbeInterval() {
   return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
       features::kLitePageServerPreviews, "probe_interval_in_seconds", 30));

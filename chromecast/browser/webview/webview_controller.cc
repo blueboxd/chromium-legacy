@@ -290,13 +290,11 @@ void WebviewController::HandleEvaluateJavascript(
 void WebviewController::HandleAddJavascriptChannels(
     const webview::AddJavascriptChannelsRequest& request) {
   // TODO(dnicoara): Handle this.
-  client_->OnError("Unimplemented add_javascript_channels()");
 }
 
 void WebviewController::HandleRemoveJavascriptChannels(
     const webview::RemoveJavascriptChannelsRequest& request) {
   // TODO(dnicoara): Handle this.
-  client_->OnError("Unimplemented remove_javascript_channels()");
 }
 
 void WebviewController::HandleGetCurrentUrl(int64_t id) {

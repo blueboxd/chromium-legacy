@@ -589,7 +589,6 @@ void Scheduler::SendDidNotProduceFrame(const viz::BeginFrameArgs& args) {
   if (last_begin_frame_ack_.source_id == args.source_id &&
       last_begin_frame_ack_.sequence_number == args.sequence_number)
     return;
-  compositor_timing_history_->DidNotProduceFrame();
   last_begin_frame_ack_ = viz::BeginFrameAck(args, false /* has_damage */);
   client_->DidNotProduceFrame(last_begin_frame_ack_);
 }

@@ -125,8 +125,8 @@ String ElementInnerTextCollector::RunOn(const Element& element) {
   // See also: https://github.com/whatwg/html/issues/3797
   if (IsHTMLSelectElement(element))
     ProcessSelectElement(ToHTMLSelectElement(element));
-  else if (IsHTMLOptionElement(element))
-    ProcessOptionElement(ToHTMLOptionElement(element));
+  else if (auto* option_element = DynamicTo<HTMLOptionElement>(element))
+    ProcessOptionElement(*option_element);
   else
     ProcessChildren(element);
   return result_.Finish();
@@ -311,11 +311,11 @@ void ElementInnerTextCollector::ProcessNode(const Node& node) {
   //   child boxes are as normal for non-replaced block-level CSS boxes.
   if (IsHTMLSelectElement(node))
     return ProcessSelectElement(ToHTMLSelectElement(node));
-  if (IsHTMLOptionElement(node)) {
+  if (auto* option_element = DynamicTo<HTMLOptionElement>(node)) {
     // Since child nodes of OPTION are not rendered, we use dedicated function.
     // e.g. <div>ab<option>12</div>cd</div>innerText == "ab\n12\ncd"
     // Note: "label" attribute doesn't affect value of innerText.
-    return ProcessOptionElement(ToHTMLOptionElement(node));
+    return ProcessOptionElement(*option_element);
   }
 
   // 5. If node is a Text node, then for each CSS text box produced by node.
@@ -386,8 +386,8 @@ void ElementInnerTextCollector::ProcessOptionElement(
 void ElementInnerTextCollector::ProcessSelectElement(
     const HTMLSelectElement& select_element) {
   for (const Node& child : NodeTraversal::ChildrenOf(select_element)) {
-    if (IsHTMLOptionElement(child)) {
-      ProcessOptionElement(ToHTMLOptionElement(child));
+    if (auto* option_element = DynamicTo<HTMLOptionElement>(child)) {
+      ProcessOptionElement(*option_element);
       continue;
     }
     if (!IsA<HTMLOptGroupElement>(child))
@@ -396,8 +396,8 @@ void ElementInnerTextCollector::ProcessSelectElement(
     // e.g. <div>a<select><optgroup></select>b</div>.innerText == "a\nb"
     result_.EmitRequiredLineBreak(1);
     for (const Node& maybe_option : NodeTraversal::ChildrenOf(child)) {
-      if (IsHTMLOptionElement(maybe_option))
-        ProcessOptionElement(ToHTMLOptionElement(maybe_option));
+      if (auto* option_element = DynamicTo<HTMLOptionElement>(maybe_option))
+        ProcessOptionElement(*option_element);
     }
     result_.EmitRequiredLineBreak(1);
   }

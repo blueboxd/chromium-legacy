@@ -641,32 +641,6 @@ class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
 TEST_F(ExtensionPrefsOnExtensionInstalled,
        ExtensionPrefsOnExtensionInstalled) {}
 
-class ExtensionPrefsAppDraggedByUser : public ExtensionPrefsTest {
- public:
-  void Initialize() override {
-    extension_ = prefs_.AddExtension("on_extension_installed");
-    EXPECT_FALSE(prefs()->WasAppDraggedByUser(extension_->id()));
-    prefs()->OnExtensionInstalled(extension_.get(),
-                                  Extension::ENABLED,
-                                  syncer::StringOrdinal(),
-                                  std::string());
-  }
-
-  void Verify() override {
-    // Set the flag and see if it persisted.
-    prefs()->SetAppDraggedByUser(extension_->id());
-    EXPECT_TRUE(prefs()->WasAppDraggedByUser(extension_->id()));
-
-    // Make sure it doesn't change on consecutive calls.
-    prefs()->SetAppDraggedByUser(extension_->id());
-    EXPECT_TRUE(prefs()->WasAppDraggedByUser(extension_->id()));
-  }
-
- private:
-  scoped_refptr<Extension> extension_;
-};
-TEST_F(ExtensionPrefsAppDraggedByUser, ExtensionPrefsAppDraggedByUser) {}
-
 class ExtensionPrefsFlags : public ExtensionPrefsTest {
  public:
   void Initialize() override {

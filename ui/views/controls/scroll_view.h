@@ -15,6 +15,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
+#include "ui/views/controls/separator.h"
 
 namespace gfx {
 class ScrollOffset;
@@ -116,14 +117,15 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   int GetScrollBarLayoutWidth() const;
   int GetScrollBarLayoutHeight() const;
 
-  // Returns the horizontal/vertical scrollbar. This may return NULL.
-  const ScrollBar* horizontal_scroll_bar() const { return horiz_sb_; }
-  const ScrollBar* vertical_scroll_bar() const { return vert_sb_; }
+  // Returns the horizontal/vertical scrollbar. This may return null.
+  ScrollBar* horizontal_scroll_bar() { return horiz_sb_.get(); }
+  const ScrollBar* horizontal_scroll_bar() const { return horiz_sb_.get(); }
+  ScrollBar* vertical_scroll_bar() { return vert_sb_.get(); }
+  const ScrollBar* vertical_scroll_bar() const { return vert_sb_.get(); }
 
-  // Customize the scrollbar design. ScrollView takes the ownership of the
-  // specified ScrollBar. |horiz_sb| and |vert_sb| cannot be NULL.
-  void SetHorizontalScrollBar(ScrollBar* horiz_sb);
-  void SetVerticalScrollBar(ScrollBar* vert_sb);
+  // Customize the scrollbar design. |horiz_sb| and |vert_sb| cannot be null.
+  ScrollBar* SetHorizontalScrollBar(std::unique_ptr<ScrollBar> horiz_sb);
+  ScrollBar* SetVerticalScrollBar(std::unique_ptr<ScrollBar> vert_sb);
 
   // Gets/Sets whether this ScrollView has a focus indicator or not.
   bool GetHasFocusIndicator() const { return draw_focus_indicator_; }
@@ -225,27 +227,29 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   // The current contents and its viewport. |contents_| is contained in
   // |contents_viewport_|.
   View* contents_ = nullptr;
-  View* contents_viewport_;
+  View* contents_viewport_ = nullptr;
 
   // The current header and its viewport. |header_| is contained in
   // |header_viewport_|.
   View* header_ = nullptr;
-  View* header_viewport_;
+  View* header_viewport_ = nullptr;
 
   // Horizontal scrollbar.
-  ScrollBar* horiz_sb_;
+  std::unique_ptr<ScrollBar> horiz_sb_;
 
   // Vertical scrollbar.
-  ScrollBar* vert_sb_;
+  std::unique_ptr<ScrollBar> vert_sb_;
 
   // Corner view.
-  View* corner_view_;
+  std::unique_ptr<View> corner_view_;
 
   // Hidden content indicators
-  std::unique_ptr<Separator> more_content_left_;
-  std::unique_ptr<Separator> more_content_top_;
-  std::unique_ptr<Separator> more_content_right_;
-  std::unique_ptr<Separator> more_content_bottom_;
+  std::unique_ptr<Separator> more_content_left_ = std::make_unique<Separator>();
+  std::unique_ptr<Separator> more_content_top_ = std::make_unique<Separator>();
+  std::unique_ptr<Separator> more_content_right_ =
+      std::make_unique<Separator>();
+  std::unique_ptr<Separator> more_content_bottom_ =
+      std::make_unique<Separator>();
 
   // The min and max height for the bounded scroll view. These are negative
   // values if the view is not bounded.

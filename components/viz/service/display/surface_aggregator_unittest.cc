@@ -3983,8 +3983,9 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     // therefore the whole render pass should be damaged.
     EXPECT_EQ(gfx::Rect(0, 0, 5, 5), aggregated_pass_list[0]->damage_rect);
     EXPECT_EQ(1u, aggregated_pass_list[0]->quad_list.size());
-    EXPECT_EQ(gfx::Rect(SurfaceSize()), aggregated_pass_list[1]->damage_rect);
-    EXPECT_EQ(1u, aggregated_pass_list[1]->quad_list.size());
+
+    EXPECT_EQ(gfx::Rect(1, 1), aggregated_pass_list[1]->damage_rect);
+    EXPECT_EQ(0u, aggregated_pass_list[1]->quad_list.size());
 
     // First render pass draw quad overlaps with damage rect and has background
     // filter, so it should be damaged. SurfaceDrawQuad is after background
@@ -4038,7 +4039,8 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     // Pass 0 has background blur filter but does NOT overlap with damage rect.
     EXPECT_EQ(gfx::Rect(), aggregated_pass_list[0]->damage_rect);
     EXPECT_EQ(0u, aggregated_pass_list[0]->quad_list.size());
-    EXPECT_EQ(gfx::Rect(SurfaceSize()), aggregated_pass_list[1]->damage_rect);
+
+    EXPECT_EQ(gfx::Rect(1, 1, 3, 3), aggregated_pass_list[1]->damage_rect);
     EXPECT_EQ(1u, aggregated_pass_list[1]->quad_list.size());
 
     // First render pass draw quad is outside damage rect, so shouldn't be

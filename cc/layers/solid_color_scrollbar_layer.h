@@ -20,8 +20,7 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
       ScrollbarOrientation orientation,
       int thumb_thickness,
       int track_start,
-      bool is_left_side_vertical_scrollbar,
-      ElementId scroll_element_id);
+      bool is_left_side_vertical_scrollbar);
 
   SolidColorScrollbarLayer(const SolidColorScrollbarLayer&) = delete;
   SolidColorScrollbarLayer& operator=(const SolidColorScrollbarLayer&) = delete;
@@ -43,30 +42,14 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
   SolidColorScrollbarLayer(ScrollbarOrientation orientation,
                            int thumb_thickness,
                            int track_start,
-                           bool is_left_side_vertical_scrollbar,
-                           ElementId scroll_element_id);
+                           bool is_left_side_vertical_scrollbar);
   ~SolidColorScrollbarLayer() override;
 
- private:
-  friend class LayerSerializationTest;
-
-  // Encapsulate all data, callbacks, interfaces received from the embedder.
-  struct SolidColorScrollbarLayerInputs {
-    SolidColorScrollbarLayerInputs(ScrollbarOrientation orientation,
-                                   int thumb_thickness,
-                                   int track_start,
-                                   bool is_left_side_vertical_scrollbar,
-                                   ElementId scroll_element_id);
-    ~SolidColorScrollbarLayerInputs();
-
-    ElementId scroll_element_id;
-    ScrollbarOrientation orientation;
-    int thumb_thickness;
-    int track_start;
-    bool is_left_side_vertical_scrollbar;
-  };
-
-  SolidColorScrollbarLayerInputs solid_color_scrollbar_layer_inputs_;
+  ElementId scroll_element_id_;
+  ScrollbarOrientation orientation_;
+  int thumb_thickness_;
+  int track_start_;
+  bool is_left_side_vertical_scrollbar_;
 };
 
 }  // namespace cc

@@ -28,17 +28,17 @@ class PendingNetworkConfigurationTrackerImpl
   // sync_wifi::PendingNetworkConfigurationTracker::
   void TrackPendingUpdate(
       const std::string& change_guid,
-      const std::string& ssid,
+      const NetworkIdentifier& id,
       const base::Optional<sync_pb::WifiConfigurationSpecificsData>& specifics)
       override;
   void MarkComplete(const std::string& change_guid,
-                    const std::string& ssid) override;
+                    const NetworkIdentifier& id) override;
   void IncrementCompletedAttempts(const std::string& change_guid,
-                                  const std::string& ssid) override;
+                                  const NetworkIdentifier& id) override;
   std::vector<PendingNetworkConfigurationUpdate> GetPendingUpdates() override;
   base::Optional<PendingNetworkConfigurationUpdate> GetPendingUpdate(
       const std::string& change_guid,
-      const std::string& ssid) override;
+      const NetworkIdentifier& id) override;
 
  private:
   PrefService* pref_service_;

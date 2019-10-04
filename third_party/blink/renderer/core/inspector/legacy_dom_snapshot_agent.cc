@@ -252,7 +252,7 @@ int LegacyDOMSnapshotAgent::VisitNode(Node* node,
       }
     }
 
-    if (auto* option_element = ToHTMLOptionElementOrNull(*element))
+    if (auto* option_element = DynamicTo<HTMLOptionElement>(*element))
       value->setOptionSelected(option_element->Selected());
 
     if (element->GetPseudoId()) {

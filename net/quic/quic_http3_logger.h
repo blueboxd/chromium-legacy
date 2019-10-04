@@ -29,7 +29,8 @@ class NET_EXPORT_PRIVATE QuicHttp3Logger : public quic::Http3DebugVisitor {
   void OnPeerControlStreamCreated(quic::QuicStreamId stream_id) override;
   void OnPeerQpackEncoderStreamCreated(quic::QuicStreamId stream_id) override;
   void OnPeerQpackDecoderStreamCreated(quic::QuicStreamId stream_id) override;
-  void OnSettingsFrame(const quic::SettingsFrame& frame) override;
+  void OnSettingsFrameReceived(const quic::SettingsFrame& frame) override;
+  void OnSettingsFrameSent(const quic::SettingsFrame& frame) override;
 
  private:
   NetLogWithSource net_log_;

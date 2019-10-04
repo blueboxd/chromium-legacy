@@ -281,11 +281,11 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
 
 VPNListView::VPNListView(DetailedViewDelegate* delegate, LoginStatus login)
     : NetworkStateListDetailedView(delegate, LIST_TYPE_VPN, login) {
-  Shell::Get()->vpn_list()->AddObserver(this);
+  model()->vpn_list()->AddObserver(this);
 }
 
 VPNListView::~VPNListView() {
-  Shell::Get()->vpn_list()->RemoveObserver(this);
+  model()->vpn_list()->RemoveObserver(this);
 }
 
 void VPNListView::UpdateNetworkList() {
@@ -434,13 +434,13 @@ void VPNListView::AddProvidersAndNetworks(const NetworkStateList& networks) {
   // profile.
   std::vector<VpnProviderPtr> extension_providers;
   for (const VpnProviderPtr& provider :
-       Shell::Get()->vpn_list()->extension_vpn_providers()) {
+       model()->vpn_list()->extension_vpn_providers()) {
     extension_providers.push_back(provider->Clone());
   }
   // Copy the list of Arc VPN providers installed in the primary user's profile.
   std::vector<VpnProviderPtr> arc_providers;
   for (const VpnProviderPtr& provider :
-       Shell::Get()->vpn_list()->arc_vpn_providers()) {
+       model()->vpn_list()->arc_vpn_providers()) {
     arc_providers.push_back(provider->Clone());
   }
 

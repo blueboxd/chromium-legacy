@@ -6,7 +6,7 @@ package org.chromium.components.module_installer.logger;
 
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus;
 
-import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 
 class SplitInstallStatusLogger {
     // FeatureModuleInstallingStatus defined in //tools/metrics/histograms/enums.xml.
@@ -67,6 +67,7 @@ class SplitInstallStatusLogger {
 
     private void recordInstallStatus(String moduleName, int status) {
         String name = "Android.FeatureModules.InstallingStatus." + moduleName;
-        RecordHistogram.recordEnumeratedHistogram(name, status, COUNT);
+        EnumeratedHistogramSample sample = new EnumeratedHistogramSample(name, COUNT);
+        sample.record(status);
     }
 }

@@ -815,6 +815,7 @@ android_library("chrome_test_java") {
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/browser/android/metrics:ukm_utils_java",
     "//chrome/browser/ui/android/widget:java",
+    "//chrome/browser/ui/android/widget:test_support_java",
     "//chrome/browser/util/android:java",
     "//chrome/test/android:chrome_java_test_support",
     "//chrome/test/android/test_trusted_web_activity:test_trusted_web_activity_java",
@@ -2181,6 +2182,22 @@ instrumentation_test_runner("chrome_modern_public_bundle_smoke_test") {
   never_incremental = true
   modules = [ "test_dummy" ]
   extra_args = _bundle_smoke_test_extra_args
+}
+
+_bundle_fake_modules_smoke_test_extra_args = [
+  # These are in addition to the ones listed in _bundle_smoke_test_extra_args.
+  "--fake-feature-module-install",
+]
+
+instrumentation_test_runner(
+    "chrome_modern_public_bundle_fake_modules_smoke_test") {
+  apk_under_test = ":chrome_modern_public_bundle_apks"
+  android_test_apk = ":chrome_bundle_smoke_test_apk"
+  android_test_apk_name = "ChromeBundleSmokeTest"
+  never_incremental = true
+  fake_modules = [ "test_dummy" ]
+  extra_args =
+      _bundle_smoke_test_extra_args + _bundle_fake_modules_smoke_test_extra_args
 }
 
 # Public webview targets don't work with non-public sdks.

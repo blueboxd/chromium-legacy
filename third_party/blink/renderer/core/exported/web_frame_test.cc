@@ -7468,6 +7468,35 @@ TEST_F(WebFrameTest, PushStateStartsAndStops) {
   EXPECT_EQ(client.StopLoadingCount(), 2);
 }
 
+TEST_F(WebFrameTest, IPAddressSpace) {
+  frame_test_helpers::WebViewHelper web_view_helper;
+  WebViewImpl* web_view =
+      web_view_helper.InitializeAndLoad("data:text/html,ip_address_space");
+
+  network::mojom::IPAddressSpace values[] = {
+      network::mojom::IPAddressSpace::kUnknown,
+      network::mojom::IPAddressSpace::kLocal,
+      network::mojom::IPAddressSpace::kPrivate,
+      network::mojom::IPAddressSpace::kPublic};
+
+  for (auto value : values) {
+    auto params = std::make_unique<WebNavigationParams>();
+    params->url = url_test_helpers::ToKURL("about:blank");
+    params->navigation_timings.navigation_start = base::TimeTicks::Now();
+    params->navigation_timings.fetch_start = base::TimeTicks::Now();
+    params->is_browser_initiated = true;
+    params->ip_address_space = value;
+    web_view_helper.LocalMainFrame()->CommitNavigation(
+        std::move(params), nullptr, base::DoNothing::Once());
+    frame_test_helpers::PumpPendingRequestsForFrameToLoad(
+        web_view_helper.LocalMainFrame());
+
+    ExecutionContext* context =
+        web_view->MainFrameImpl()->GetFrame()->GetDocument();
+    EXPECT_EQ(value, context->GetSecurityContext().AddressSpace());
+  }
+}
+
 class TestDidNavigateCommitTypeWebFrameClient
     : public frame_test_helpers::TestWebFrameClient {
  public:

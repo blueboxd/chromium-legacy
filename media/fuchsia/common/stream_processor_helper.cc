@@ -121,11 +121,12 @@ void StreamProcessorHelper::ProcessEos() {
 }
 
 void StreamProcessorHelper::Reset() {
-  if (active_stream_) {
+  if (!active_stream_) {
+    // Nothing to do if we don't have an active stream.
     return;
   }
 
-  if (processor_ && active_stream_) {
+  if (processor_) {
     processor_->CloseCurrentStream(stream_lifetime_ordinal_,
                                    /*release_input_buffers=*/false,
                                    /*release_output_buffers=*/false);
@@ -133,7 +134,6 @@ void StreamProcessorHelper::Reset() {
 
   stream_lifetime_ordinal_ += 2;
   active_stream_ = false;
-  input_packets_.clear();
 }
 
 void StreamProcessorHelper::OnStreamFailed(uint64_t stream_lifetime_ordinal,
@@ -259,6 +259,7 @@ void StreamProcessorHelper::OnOutputPacket(fuchsia::media::Packet output_packet,
   if (!output_packet.has_header() ||
       !output_packet.header().has_buffer_lifetime_ordinal() ||
       !output_packet.header().has_packet_index() ||
+      !output_packet.has_stream_lifetime_ordinal() ||
       !output_packet.has_buffer_index()) {
     DLOG(ERROR) << "Received OnOutputPacket() with missing required fields.";
     OnError();
@@ -267,6 +268,13 @@ void StreamProcessorHelper::OnOutputPacket(fuchsia::media::Packet output_packet,
 
   if (output_packet.header().buffer_lifetime_ordinal() !=
       output_buffer_lifetime_ordinal_) {
+    return;
+  }
+
+  if (output_packet.stream_lifetime_ordinal() != stream_lifetime_ordinal_) {
+    // Output packets from old streams still need to be recycled.
+    OnRecycleOutputBuffer(output_buffer_lifetime_ordinal_,
+                          output_packet.header().packet_index());
     return;
   }
 

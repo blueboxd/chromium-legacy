@@ -27,6 +27,7 @@ fieldset {
 }
 
 #mainContent {
+  max-width: 100%;
   width: 35em;
   padding: 1em;
   margin-top: 1em;
@@ -36,6 +37,7 @@ fieldset {
 #settingsContainer {
   position: absolute;
   width: inherit;
+  max-width: 90%;
   flex: 1 1 auto;
   display: flex;
   justify-content: flex-end;

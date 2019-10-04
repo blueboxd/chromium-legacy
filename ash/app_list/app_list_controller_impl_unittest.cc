@@ -121,7 +121,10 @@ TEST_F(AppListControllerImplTest, AppListHiddenWhenShelfAlignmentChanges) {
       {SHELF_ALIGNMENT_LEFT, SHELF_ALIGNMENT_RIGHT, SHELF_ALIGNMENT_BOTTOM});
   for (ash::ShelfAlignment alignment : alignments) {
     ShowAppListNow();
-    EXPECT_TRUE(Shell::Get()->app_list_controller()->presenter()->IsVisible());
+    EXPECT_TRUE(Shell::Get()
+                    ->app_list_controller()
+                    ->presenter()
+                    ->IsVisibleDeprecated());
     shelf->SetAlignment(alignment);
     EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());
   }

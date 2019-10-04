@@ -8,6 +8,7 @@
 
 #if defined(OS_LINUX)
 #include <fontconfig/fontconfig.h>
+#include "ui/gfx/linux/fontconfig_util.h"
 #endif
 
 #if defined(OS_WIN)
@@ -24,14 +25,9 @@ void InitializeFonts() {
   // the long delay the user would have seen on first rendering.
 
 #if defined(OS_LINUX)
-  // Without this call, the FontConfig library gets implicitly initialized
-  // on the first call to FontConfig. Since it's not safe to initialize it
-  // concurrently from multiple threads, we explicitly initialize it here
-  // to prevent races when there are multiple renderer's querying the library:
-  // http://crbug.com/404311
-  // Note that future calls to FcInit() are safe no-ops per the FontConfig
-  // interface.
-  FcInit();
+  // Ensures the config is created on this thread.
+  FcConfig* config = GetGlobalFontConfig();
+  DCHECK(config);
 #endif  // OS_LINUX
 
 #if defined(OS_WIN)

@@ -7522,6 +7522,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="MRUIndex">
+    <obsolete>
+      Deprecated 10/2019 in favor MRUIndex in TabMetrics.
+    </obsolete>
     <summary>
       Index of the tab in most-recently-used order. A value of N means there are
       N tabs more recently used than the one that is being foregrounded or
@@ -7546,6 +7549,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="TotalTabCount">
+    <obsolete>
+      Deprecated 10/2019 in favor TotalTabCount in TabMetrics.
+    </obsolete>
     <summary>
       Total number of tabs open across all non-incognito browser windows. Helps
       contextualize the MRUIndex value.

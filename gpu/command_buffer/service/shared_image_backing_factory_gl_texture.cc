@@ -1091,8 +1091,11 @@ SharedImageBackingFactoryGLTexture::MakeBacking(
   if (passthrough) {
     scoped_refptr<gles2::TexturePassthrough> passthrough_texture =
         base::MakeRefCounted<gles2::TexturePassthrough>(service_id, target);
-    if (image)
+    if (image) {
       passthrough_texture->SetLevelImage(target, 0, image.get());
+      passthrough_texture->set_is_bind_pending(image_state ==
+                                               gles2::Texture::UNBOUND);
+    }
 
     // Get the texture size from ANGLE and set it on the passthrough texture.
     GLint texture_memory_size = 0;

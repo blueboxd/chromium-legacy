@@ -122,6 +122,10 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   // Block to be executed during object tearDown.
   ProceduralBlock _tearDownHandler;
 
+  // This flag indicates whether test method -setUp steps are executed during a
+  // test method.
+  BOOL _executedTestMethodSetUp;
+
   BOOL _isHTTPServerStopped;
   BOOL _isMockAuthenticationDisabled;
   std::unique_ptr<net::EmbeddedTestServer> _testServer;
@@ -248,6 +252,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   // Reset any remaining sign-in state from previous tests.
   [ChromeEarlGrey signOutAndClearAccounts];
   [ChromeEarlGrey openNewTab];
+  _executedTestMethodSetUp = YES;
 }
 
 // Tear down called once per test, to close all tabs and menus, and clear the
@@ -291,6 +296,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 #endif
   }
   [super tearDown];
+  _executedTestMethodSetUp = NO;
 }
 
 #pragma mark - Public methods
@@ -439,8 +445,20 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   // +setUpHelper can not be called twice during setup process.
   if (gExecutedSetUpForTestCase) {
     [ChromeTestCase setUpHelper];
+
+    // Do not call test method setup steps if the app was relaunched before
+    // -setUp is executed. If do so, two new tabs will be opened before test
+    // method starts.
+    if (_executedTestMethodSetUp) {
+      [self resetAppState];
+
+      ResetAuthentication();
+
+      // Reset any remaining sign-in state from previous tests.
+      [ChromeEarlGrey signOutAndClearAccounts];
+      [ChromeEarlGrey openNewTab];
+    }
   }
-  [self resetAppState];
 }
 
 @end

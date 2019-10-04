@@ -124,10 +124,6 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
           ? *existing_profile
           : autofill::AutofillProfile(base::GenerateGUID(), kSettingsOrigin);
 
-  // Strings from JavaScript use UTF-8 encoding. This container is used as an
-  // intermediate container for functions which require UTF-16 strings.
-  std::vector<base::string16> string16Container;
-
   if (address->full_names) {
     std::string full_name;
     if (!address->full_names->empty())

@@ -93,12 +93,13 @@ bool GetFallbackFont(const Font& font,
   FcCharSetDestroy(charset);
 
   // Match a font fallback.
-  FcConfigSubstitute(nullptr, pattern.get(), FcMatchPattern);
+  FcConfig* config = GetGlobalFontConfig();
+  FcConfigSubstitute(config, pattern.get(), FcMatchPattern);
   FcDefaultSubstitute(pattern.get());
 
   FcResult fc_result;
   ScopedFcPattern matched_pattern(
-      FcFontMatch(nullptr, pattern.get(), &fc_result));
+      FcFontMatch(config, pattern.get(), &fc_result));
   if (!matched_pattern || !IsValidFontFromPattern(matched_pattern.get()))
     return false;
 
@@ -131,10 +132,11 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
   FcPatternAddString(pattern, FC_FAMILY,
                      reinterpret_cast<const FcChar8*>(font_family.c_str()));
 
-  if (FcConfigSubstitute(nullptr, pattern, FcMatchPattern) == FcTrue) {
+  FcConfig* config = GetGlobalFontConfig();
+  if (FcConfigSubstitute(config, pattern, FcMatchPattern) == FcTrue) {
     FcDefaultSubstitute(pattern);
     FcResult result;
-    FcFontSet* fonts = FcFontSort(nullptr, pattern, FcTrue, nullptr, &result);
+    FcFontSet* fonts = FcFontSort(config, pattern, FcTrue, nullptr, &result);
     if (fonts) {
       std::set<std::string> fallback_names;
       for (int i = 0; i < fonts->nfont; ++i) {

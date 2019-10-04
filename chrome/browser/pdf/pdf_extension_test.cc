@@ -2404,6 +2404,21 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest, WebLinks) {
   RunTextExtractionTest(FILE_PATH_LITERAL("weblinks.pdf"));
 }
 
+// Test data of inline text boxes for PDF with multi-line and various font-sized
+// text.
+IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest,
+                       ParagraphsAndHeadingUntagged) {
+  RunTextExtractionTest(
+      FILE_PATH_LITERAL("paragraphs-and-heading-untagged.pdf"));
+}
+
+// Test data of inline text boxes for PDF with text, weblinks, images and
+// annotation links.
+IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest,
+                       LinksImagesAndText) {
+  RunTextExtractionTest(FILE_PATH_LITERAL("text-image-link.pdf"));
+}
+
 class PDFExtensionAccessibilityTreeDumpTest
     : public PDFExtensionTest,
       public ::testing::WithParamInterface<size_t> {
@@ -2605,4 +2620,9 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, WebLinks) {
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, Images) {
   RunPDFTest(FILE_PATH_LITERAL("image_alt_text.pdf"));
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest,
+                       LinksImagesAndText) {
+  RunPDFTest(FILE_PATH_LITERAL("text-image-link.pdf"));
 }

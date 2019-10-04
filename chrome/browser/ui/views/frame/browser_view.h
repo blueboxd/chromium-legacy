@@ -570,6 +570,14 @@ class BrowserView : public BrowserWindow,
   // below them.
   int GetBookmarkBarContentVerticalOffset() const;
 
+  // Returns all the NativeViewHosts attached to this BrowserView which should
+  // be transformed as part of the TopControlsSlide behavior with touch scroll
+  // gestures. These NativeViewHosts include the one hosting the active tab's\
+  // WebContents, and the one hosting the webui tabstrip contents (if the
+  // feature is enabled).
+  std::vector<views::NativeViewHost*> GetNativeViewHostsForTopControlsSlide()
+      const;
+
  private:
   // Do not friend BrowserViewLayout. Use the BrowserViewLayoutDelegate
   // interface to keep these two classes decoupled and testable.

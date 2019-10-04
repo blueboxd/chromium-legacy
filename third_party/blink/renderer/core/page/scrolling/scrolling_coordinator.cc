@@ -263,14 +263,14 @@ CreateScrollbarLayer(Scrollbar& scrollbar, float device_scale_factor) {
   auto layer_group =
       std::make_unique<ScrollingCoordinator::ScrollbarLayerGroup>();
   if (theme.UsesOverlayScrollbars() && theme.UsesNinePatchThumbResource()) {
-    auto scrollbar_layer = cc::PaintedOverlayScrollbarLayer::Create(
-        std::move(scrollbar_delegate), /*scroll_element_id=*/cc::ElementId());
+    auto scrollbar_layer =
+        cc::PaintedOverlayScrollbarLayer::Create(std::move(scrollbar_delegate));
     scrollbar_layer->SetElementId(scrollbar.GetElementId());
     layer_group->scrollbar_layer = scrollbar_layer.get();
     layer_group->layer = std::move(scrollbar_layer);
   } else {
-    auto scrollbar_layer = cc::PaintedScrollbarLayer::Create(
-        std::move(scrollbar_delegate), /*scroll_element_id=*/cc::ElementId());
+    auto scrollbar_layer =
+        cc::PaintedScrollbarLayer::Create(std::move(scrollbar_delegate));
     scrollbar_layer->SetElementId(scrollbar.GetElementId());
     layer_group->scrollbar_layer = scrollbar_layer.get();
     layer_group->layer = std::move(scrollbar_layer);
@@ -292,7 +292,7 @@ ScrollingCoordinator::CreateSolidColorScrollbarLayer(
       orientation == kHorizontalScrollbar ? cc::HORIZONTAL : cc::VERTICAL;
   auto scrollbar_layer = cc::SolidColorScrollbarLayer::Create(
       cc_orientation, thumb_thickness, track_start,
-      is_left_side_vertical_scrollbar, cc::ElementId());
+      is_left_side_vertical_scrollbar);
   scrollbar_layer->SetElementId(element_id);
 
   auto layer_group = std::make_unique<ScrollbarLayerGroup>();

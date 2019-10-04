@@ -359,9 +359,6 @@ class TabStripModel {
   // Returns the list of tabs in the given |group|.
   std::vector<int> ListTabsInGroup(TabGroupId group) const;
 
-  // Returns true if the tabs in the given |group| are pinned.
-  bool IsGroupPinned(TabGroupId group) const;
-
   // Returns the index of the first tab that is not a pinned tab. This returns
   // |count()| if all of the tabs are pinned tabs, and 0 if none of the tabs are
   // pinned tabs.

@@ -2103,8 +2103,9 @@ NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(
   } else {
     LayoutUnit space_left = FragmentainerSpaceAvailable() - block_offset;
     bool want_break;
-    if (child.IsInline()) {
-      // If the line doesn't fit, we need a break.
+    if (child.IsMonolithic()) {
+      // If the monolithic piece of content (e.g. a line, or block-level
+      // replaced content) doesn't fit, we need a break.
       NGFragment fragment(ConstraintSpace().GetWritingMode(),
                           physical_fragment);
       want_break = fragment.BlockSize() > space_left;

@@ -862,8 +862,7 @@ const char kEnableNewAppMenuIcon[] = "enable-new-app-menu-icon";
 const char kGuest[] = "guest";
 #endif
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && \
-    !defined(GOOGLE_CHROME_BUILD)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 // Enables Machine level user cloud policy on Chromium build. This policy is
 // always enabled on the branded builds.
 const char kEnableChromeBrowserCloudManagement[] =

@@ -2,12 +2,34 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/android/rules.gni")
+import("//chrome/android/modules/buildflags.gni")
 
 android_library("java") {
   deps = [
+    "//base:base_java",
+    "//base:jni_java",
     "//chrome/android/features/test_dummy/public:java",
     "//chrome/android/modules/test_dummy/public:java",
   ]
   java_files = [ "java/src/org/chromium/chrome/modules/test_dummy/TestDummyModuleProvider.java" ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+}
+
+generate_jni("jni_headers") {
+  sources = [
+    "java/src/org/chromium/chrome/modules/test_dummy/TestDummyModuleProvider.java",
+  ]
+}
+
+source_set("native") {
+  deps = [
+    ":jni_headers",
+    "//base",
+    "//ui/base",
+  ]
+  sources = [
+    "test_dummy_module_provider.cc",
+  ]
 }

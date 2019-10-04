@@ -4,11 +4,13 @@
 
 import './tab.js';
 
+import {assert} from 'chrome://resources/js/assert.m.js';
 import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
+
 import {CustomElement} from './custom_element.js';
 import {TabElement} from './tab.js';
+import {TabStripViewProxy} from './tab_strip_view_proxy.js';
 import {TabsApiProxy} from './tabs_api_proxy.js';
-import {ThemeProxy} from './theme_proxy.js';
 
 /**
  * The amount of padding to leave between the edge of the screen and the active
@@ -68,6 +70,9 @@ class TabListElement extends CustomElement {
     /** @private {!Element} */
     this.scrollingParent_ = document.documentElement;
 
+    /** @private {!TabStripViewProxy} */
+    this.tabStripViewProxy_ = TabStripViewProxy.getInstance();
+
     /** @private {!TabsApiProxy} */
     this.tabsApi_ = TabsApiProxy.getInstance();
 
@@ -79,14 +84,11 @@ class TabListElement extends CustomElement {
         /** @type {!Element} */ (
             this.shadowRoot.querySelector('#tabsContainer'));
 
-    /** @private {!ThemeProxy} */
-    this.themeProxy_ = ThemeProxy.getInstance();
-
     /** @private {number} */
     this.windowId_;
 
     addWebUIListener('theme-changed', () => this.fetchAndUpdateColors_());
-    this.themeProxy_.startObserving();
+    this.tabStripViewProxy_.observeThemeChanges();
 
     addWebUIListener(
         'tab-thumbnail-updated', this.tabThumbnailUpdated_.bind(this));
@@ -97,6 +99,8 @@ class TabListElement extends CustomElement {
         'dragend', (e) => this.onDragEnd_(/** @type {!DragEvent} */ (e)));
     this.addEventListener(
         'dragover', (e) => this.onDragOver_(/** @type {!DragEvent} */ (e)));
+    document.addEventListener(
+        'visibilitychange', () => this.moveOrScrollToActiveTab_());
   }
 
   /**
@@ -124,10 +128,7 @@ class TabListElement extends CustomElement {
           }
         }
 
-        const activeTab = this.getActiveTab_();
-        if (activeTab) {
-          this.scrollToTab_(activeTab);
-        }
+        this.moveOrScrollToActiveTab_();
       }
 
       this.tabsApiHandler_.onAttached.addListener(
@@ -171,7 +172,7 @@ class TabListElement extends CustomElement {
 
   /** @private */
   fetchAndUpdateColors_() {
-    this.themeProxy_.getColors().then(colors => {
+    this.tabStripViewProxy_.getColors().then(colors => {
       for (const [cssVariable, rgbaValue] of Object.entries(colors)) {
         this.style.setProperty(cssVariable, rgbaValue);
       }
@@ -209,6 +210,22 @@ class TabListElement extends CustomElement {
     }
   }
 
+  /** @private */
+  moveOrScrollToActiveTab_() {
+    const activeTab = this.getActiveTab_();
+    if (!activeTab) {
+      return;
+    }
+
+    if (!this.tabStripViewProxy_.isVisible() && !activeTab.tab.pinned &&
+        this.tabsContainerElement_.firstChild !== activeTab) {
+      this.tabsApi_.moveTab(
+          activeTab.tab.id, this.pinnedTabsContainerElement_.childElementCount);
+    } else {
+      this.scrollToTab_(activeTab);
+    }
+  }
+
   /**
    * @param {!DragEvent} event
    * @private
@@ -232,8 +249,7 @@ class TabListElement extends CustomElement {
       return pathItem !== this.draggedItem_ && isTabElement(pathItem);
     });
 
-    if (!dragOverItem || !this.draggedItem_ ||
-        dragOverItem.tab.pinned !== this.draggedItem_.tab.pinned) {
+    if (!dragOverItem || !this.draggedItem_ || !dragOverItem.tab.pinned) {
       return;
     }
 
@@ -254,6 +270,7 @@ class TabListElement extends CustomElement {
       return;
     }
 
+    assert(draggedItem.tab.pinned);
     this.draggedItem_ = /** @type {!TabElement} */ (draggedItem);
     this.draggedItem_.setDragging(true);
     event.dataTransfer.effectAllowed = 'move';
@@ -282,7 +299,7 @@ class TabListElement extends CustomElement {
     if (newlyActiveTab) {
       newlyActiveTab.tab = /** @type {!Tab} */ (
           Object.assign({}, newlyActiveTab.tab, {active: true}));
-      this.scrollToTab_(newlyActiveTab);
+      this.moveOrScrollToActiveTab_();
     }
   }
 
@@ -314,8 +331,22 @@ class TabListElement extends CustomElement {
     }
 
     const tabElement = this.createTabElement_(tab);
-    this.insertTabOrMoveTo_(tabElement, tab.index);
-    this.addAnimationPromise_(tabElement.slideIn());
+
+    if (tab.active && !tab.pinned &&
+        tab.index !== this.pinnedTabsContainerElement_.childElementCount) {
+      // Newly created active tabs should first be moved to the very beginning
+      // of the tab strip to enforce the tab strip's most recently used ordering
+      this.tabsApi_
+          .moveTab(tab.id, this.pinnedTabsContainerElement_.childElementCount)
+          .then(() => {
+            this.insertTabOrMoveTo_(
+                tabElement, this.pinnedTabsContainerElement_.childElementCount);
+            this.addAnimationPromise_(tabElement.slideIn());
+          });
+    } else {
+      this.insertTabOrMoveTo_(tabElement, tab.index);
+      this.addAnimationPromise_(tabElement.slideIn());
+    }
   }
 
   /**

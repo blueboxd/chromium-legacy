@@ -78,6 +78,7 @@ MediaNotificationContainerImpl::MediaNotificationContainerImpl(
 
   auto dismiss_button = std::make_unique<DismissButton>(this);
   dismiss_button->SetPreferredSize(kDismissButtonSize);
+  dismiss_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   dismiss_button->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_GLOBAL_MEDIA_CONTROLS_DISMISS_ICON_TOOLTIP_TEXT));
   dismiss_button_ =

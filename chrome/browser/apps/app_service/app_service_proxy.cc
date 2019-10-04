@@ -75,8 +75,9 @@ AppServiceProxy::AppServiceProxy(Profile* profile)
     : inner_icon_loader_(this),
       icon_coalescer_(&inner_icon_loader_),
       outer_icon_loader_(&icon_coalescer_,
-                         apps::IconCache::GarbageCollectionPolicy::kEager) {
-  Initialize(profile);
+                         apps::IconCache::GarbageCollectionPolicy::kEager),
+      profile_(profile) {
+  Initialize();
 }
 
 AppServiceProxy::~AppServiceProxy() = default;
@@ -87,17 +88,18 @@ void AppServiceProxy::ReInitializeForTesting(Profile* profile) {
   // after full profile initialization to ensure the App Service implementation
   // has all of profile state it needs.
   app_service_.reset();
-  Initialize(profile);
+  profile_ = profile;
+  Initialize();
 }
 
-void AppServiceProxy::Initialize(Profile* profile) {
-  if (!profile) {
+void AppServiceProxy::Initialize() {
+  if (!profile_) {
     return;
   }
 
   // We only initialize the App Service for regular or guest profiles. Non-guest
   // off-the-record profiles do not get an instance.
-  if (profile->IsOffTheRecord() && !profile->IsGuestSession()) {
+  if (profile_->IsOffTheRecord() && !profile_->IsGuestSession()) {
     return;
   }
 
@@ -116,18 +118,18 @@ void AppServiceProxy::Initialize(Profile* profile) {
     // responsibility isn't intrinsically part of the AppServiceProxy, but doing
     // that here, for each such app type, is as good a place as any.
     built_in_chrome_os_apps_ =
-        std::make_unique<BuiltInChromeOsApps>(app_service_, profile);
-    crostini_apps_ = std::make_unique<CrostiniApps>(app_service_, profile);
+        std::make_unique<BuiltInChromeOsApps>(app_service_, profile_);
+    crostini_apps_ = std::make_unique<CrostiniApps>(app_service_, profile_);
     extension_apps_ = std::make_unique<ExtensionApps>(
-        app_service_, profile, apps::mojom::AppType::kExtension);
+        app_service_, profile_, apps::mojom::AppType::kExtension);
     extension_web_apps_ = std::make_unique<ExtensionApps>(
-        app_service_, profile, apps::mojom::AppType::kWeb);
+        app_service_, profile_, apps::mojom::AppType::kWeb);
 
     // Asynchronously add app icon source, so we don't do too much work in the
     // constructor.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&AppServiceProxy::AddAppIconSource,
-                                  weak_ptr_factory_.GetWeakPtr(), profile));
+                                  weak_ptr_factory_.GetWeakPtr(), profile_));
 #endif  // OS_CHROMEOS
   }
 }

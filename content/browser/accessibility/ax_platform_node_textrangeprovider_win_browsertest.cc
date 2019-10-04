@@ -382,6 +382,51 @@ class AXPlatformNodeTextRangeProviderWinBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       GetAttributeValue) {
+  LoadInitialAccessibilityTreeFromHtml(std::string(R"HTML(
+      <!DOCTYPE html>
+      <html>
+        <body>
+          <div style="font-size: 16px">
+            <span style="font-size: 12px">Text1</span>
+            Text2
+          </div>
+        </body>
+      </html>
+  )HTML"));
+
+  ComPtr<IUnknown> mix_attribute_value;
+  EXPECT_HRESULT_SUCCEEDED(
+      UiaGetReservedMixedAttributeValue(&mix_attribute_value));
+
+  auto* node = FindNode(ax::mojom::Role::kStaticText, "Text1");
+  ASSERT_NE(nullptr, node);
+  EXPECT_TRUE(node->PlatformIsLeaf());
+  EXPECT_EQ(0u, node->PlatformChildCount());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(*node, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"Text1");
+
+  base::win::ScopedVariant value;
+  EXPECT_HRESULT_SUCCEEDED(text_range_provider->GetAttributeValue(
+      UIA_FontSizeAttributeId, value.Receive()));
+  EXPECT_EQ(value.type(), VT_R8);
+  EXPECT_EQ(V_R8(value.ptr()), 12.0);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Paragraph));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"Text1 Text2");
+
+  EXPECT_HRESULT_SUCCEEDED(text_range_provider->GetAttributeValue(
+      UIA_FontSizeAttributeId, value.Receive()));
+  EXPECT_EQ(value.type(), VT_UNKNOWN);
+  EXPECT_EQ(V_UNKNOWN(value.ptr()), mix_attribute_value.Get())
+      << "expected 'mixed attribute value' interface pointer";
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
                        GetBoundingRectangles) {
   LoadInitialAccessibilityTreeFromHtml(std::string(R"HTML(
       <!DOCTYPE html>

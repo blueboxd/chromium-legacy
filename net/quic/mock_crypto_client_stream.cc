@@ -20,6 +20,7 @@ using quic::ConnectionCloseBehavior;
 using quic::CryptoHandshakeMessage;
 using quic::CryptoMessageParser;
 using quic::ENCRYPTION_FORWARD_SECURE;
+using quic::ENCRYPTION_INITIAL;
 using quic::ENCRYPTION_ZERO_RTT;
 using quic::kAESG;
 using quic::kC255;
@@ -171,6 +172,7 @@ bool MockCryptoClientStream::CryptoConnect() {
               ENCRYPTION_FORWARD_SECURE,
               QuicMakeUnique<NullDecrypter>(Perspective::IS_CLIENT));
         }
+        session()->connection()->SetEncrypter(ENCRYPTION_INITIAL, nullptr);
         session()->connection()->SetEncrypter(
             ENCRYPTION_FORWARD_SECURE,
             QuicMakeUnique<NullEncrypter>(Perspective::IS_CLIENT));
@@ -245,6 +247,7 @@ void MockCryptoClientStream::SendOnCryptoHandshakeEvent(
             ENCRYPTION_FORWARD_SECURE,
             QuicMakeUnique<NullDecrypter>(Perspective::IS_CLIENT));
       }
+      session()->connection()->SetEncrypter(ENCRYPTION_INITIAL, nullptr);
       session()->connection()->SetEncrypter(
           ENCRYPTION_FORWARD_SECURE,
           QuicMakeUnique<NullEncrypter>(Perspective::IS_CLIENT));

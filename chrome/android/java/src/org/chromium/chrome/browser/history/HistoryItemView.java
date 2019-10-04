@@ -23,8 +23,8 @@ import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.util.ViewUtils;
-import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 
 /**
@@ -147,8 +147,9 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
      */
     public void setRemoveButtonVisible(boolean visible) {
         mRemoveButtonVisible = visible;
-        if (!PrefServiceBridge.getInstance().getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY))
+        if (!PrefServiceBridge.getInstance().getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY)) {
             return;
+        }
 
         mRemoveButton.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
     }

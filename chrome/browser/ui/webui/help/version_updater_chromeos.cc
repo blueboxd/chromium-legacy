@@ -239,20 +239,21 @@ void VersionUpdaterCros::OnGetChannel(const ChannelCallback& cb,
   cb.Run(current_channel);
 }
 
-void VersionUpdaterCros::GetEolStatus(EolStatusCallback cb) {
+void VersionUpdaterCros::GetEolInfo(EolInfoCallback cb) {
   UpdateEngineClient* update_engine_client =
       DBusThreadManager::Get()->GetUpdateEngineClient();
 
-  // Request the Eol Status. Bind to a weak_ptr bound method rather than passing
+  // Request the EolInfo. Bind to a weak_ptr bound method rather than passing
   // |cb| directly so that |cb| does not outlive |this|.
-  update_engine_client->GetEolStatus(
-      base::BindOnce(&VersionUpdaterCros::OnGetEolStatus,
+  update_engine_client->GetEolInfo(
+      base::BindOnce(&VersionUpdaterCros::OnGetEolInfo,
                      weak_ptr_factory_.GetWeakPtr(), std::move(cb)));
 }
 
-void VersionUpdaterCros::OnGetEolStatus(EolStatusCallback cb,
-                                        update_engine::EndOfLifeStatus status) {
-  std::move(cb).Run(status);
+void VersionUpdaterCros::OnGetEolInfo(
+    EolInfoCallback cb,
+    chromeos::UpdateEngineClient::EolInfo eol_info) {
+  std::move(cb).Run(std::move(eol_info));
 }
 
 VersionUpdaterCros::VersionUpdaterCros(content::WebContents* web_contents)

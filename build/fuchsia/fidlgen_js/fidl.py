@@ -293,7 +293,7 @@ class InterfaceMethodParameter:
 
 
 class InterfaceMethod:
-    def __init__(self, has_request, has_response, maybe_attributes, maybe_request, maybe_request_alignment, maybe_request_size, maybe_response, maybe_response_alignment, maybe_response_size, name, ordinal, generated_ordinal):
+    def __init__(self, has_request, has_response, maybe_attributes, maybe_request, maybe_request_alignment, maybe_request_size, maybe_response, maybe_response_alignment, maybe_response_size, name, ordinal):
         self.has_request = has_request
         self.has_response = has_response
         self.maybe_attributes = maybe_attributes
@@ -305,8 +305,6 @@ class InterfaceMethod:
         self.maybe_response_size = maybe_response_size
         self.name = name
         self.ordinal = ordinal
-        # TODO(https://crbug.com/991300): Remove once |ordinal| is 64-bit.
-        self.generated_ordinal = generated_ordinal
 
     @staticmethod
     def from_dict(obj):
@@ -322,9 +320,7 @@ class InterfaceMethod:
         maybe_response_size = from_union([from_int, from_none], obj.get(u"maybe_response_size"))
         name = from_str(obj.get(u"name"))
         ordinal = from_int(obj.get(u"ordinal"))
-        # TODO(https://crbug.com/991300): Remove once |ordinal| is 64-bit.
-        generated_ordinal = from_int(obj.get(u"generated_ordinal"))
-        return InterfaceMethod(has_request, has_response, maybe_attributes, maybe_request, maybe_request_alignment, maybe_request_size, maybe_response, maybe_response_alignment, maybe_response_size, name, ordinal, generated_ordinal)
+        return InterfaceMethod(has_request, has_response, maybe_attributes, maybe_request, maybe_request_alignment, maybe_request_size, maybe_response, maybe_response_alignment, maybe_response_size, name, ordinal)
 
     def to_dict(self):
         result = {}
@@ -339,8 +335,6 @@ class InterfaceMethod:
         result[u"maybe_response_size"] = from_union([from_int, from_none], self.maybe_response_size)
         result[u"name"] = from_str(self.name)
         result[u"ordinal"] = from_int(self.ordinal)
-        # TODO(https://crbug.com/991300): Remove once |ordinal| is 64-bit.
-        result[u"generated_ordinal"] = from_int(self.generated_ordinal)
         return result
 
 

@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "ui/base/ui_base_features.h"
 
@@ -41,7 +42,11 @@ const base::Feature kNtpRealbox{"NtpRealbox",
 
 bool IsNtpRealboxEnabled() {
   return base::FeatureList::IsEnabled(kNtpRealbox) ||
-         base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTPRealbox);
+         base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTPRealbox) ||
+         (base::FeatureList::IsEnabled(omnibox::kOnFocusSuggestions) &&
+          !OmniboxFieldTrial::GetZeroSuggestVariants(
+               metrics::OmniboxEventProto::NTP_REALBOX)
+               .empty());
 }
 
 // If enabled, "middle slot" promos on the bottom of the NTP will show a dismiss

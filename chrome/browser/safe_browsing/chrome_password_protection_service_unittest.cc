@@ -405,6 +405,10 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyUserPopulationForSavedPasswordEntryPing) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      safe_browsing::kPasswordProtectionForSignedInUsers);
+
   ReusedPasswordAccountType reused_password_type;
   reused_password_type.set_account_type(
       ReusedPasswordAccountType::SAVED_PASSWORD);
@@ -429,6 +433,16 @@ TEST_F(ChromePasswordProtectionServiceTest,
   EXPECT_TRUE(service_->IsPingingEnabled(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
       &reason));
+
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        safe_browsing::kPasswordProtectionForSavedPasswords);
+    service_->ConfigService(false /*incognito*/, false /*SBER*/);
+    EXPECT_TRUE(service_->IsPingingEnabled(
+        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+        reused_password_type, &reason));
+  }
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,

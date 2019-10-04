@@ -797,6 +797,15 @@ template("test_runner_script") {
       }
     }
 
+    if (defined(invoker.fake_modules)) {
+      foreach(fake_module, invoker.fake_modules) {
+        executable_args += [
+          "--fake-module",
+          fake_module,
+        ]
+      }
+    }
+
     if (defined(invoker.extra_args)) {
       executable_args += invoker.extra_args
     }

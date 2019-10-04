@@ -3583,6 +3583,7 @@ if (enable_java_templates) {
   #   ignore_all_data_deps: Don't build data_deps and additional_apks.
   #   modules: Extra dynamic feature modules to install for test target. Can
   #     only be used if |apk_under_test| is an Android app bundle.
+  #   fake_modules: Similar to |modules| but fake installed instead.
   #   never_incremental: Disable incremental builds.
   #   proguard_enabled: Enable proguard
   #   public_deps: List of public dependencies
@@ -3626,6 +3627,7 @@ if (enable_java_templates) {
                                  "data_deps",
                                  "deps",
                                  "extra_args",
+                                 "fake_modules",
                                  "ignore_all_data_deps",
                                  "modules",
                                  "proguard_enabled",

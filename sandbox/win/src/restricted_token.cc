@@ -15,27 +15,14 @@
 
 namespace {
 
-// Calls GetTokenInformation with the desired |info_class| and returns a buffer
-// with the result.
+// Wrapper for utility version to unwrap ScopedHandle.
 std::unique_ptr<BYTE[]> GetTokenInfo(const base::win::ScopedHandle& token,
                                      TOKEN_INFORMATION_CLASS info_class,
                                      DWORD* error) {
-  // Get the required buffer size.
-  DWORD size = 0;
-  ::GetTokenInformation(token.Get(), info_class, nullptr, 0, &size);
-  if (!size) {
-    *error = ::GetLastError();
+  std::unique_ptr<BYTE[]> buffer;
+  *error = sandbox::GetTokenInformation(token.Get(), info_class, &buffer);
+  if (*error != ERROR_SUCCESS)
     return nullptr;
-  }
-
-  std::unique_ptr<BYTE[]> buffer(new BYTE[size]);
-  if (!::GetTokenInformation(token.Get(), info_class, buffer.get(), size,
-                             &size)) {
-    *error = ::GetLastError();
-    return nullptr;
-  }
-
-  *error = ERROR_SUCCESS;
   return buffer;
 }
 

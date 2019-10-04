@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_REPUTATION_SERVICE_H_
 #define CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_REPUTATION_SERVICE_H_
 
+#include <set>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/lookalikes/safety_tips/safety_tip_ui.h"
@@ -64,7 +67,6 @@ class ReputationService : public KeyedService {
   void GetReputationStatusWithEngagedSites(
       ReputationCheckCallback callback,
       const GURL& url,
-      const lookalikes::DomainInfo& navigated_domain,
       const std::vector<lookalikes::DomainInfo>& engaged_sites);
 
   // Set of origins that we've warned about, and the user has explicitly

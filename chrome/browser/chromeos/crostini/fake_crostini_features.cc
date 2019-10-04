@@ -21,6 +21,12 @@ bool FakeCrostiniFeatures::IsUIAllowed(Profile* profile, bool check_policy) {
   return original_features_->IsUIAllowed(profile, check_policy);
 }
 
+bool FakeCrostiniFeatures::IsEnabled(Profile* profile) {
+  if (enabled_set_)
+    return enabled_;
+  return original_features_->IsEnabled(profile);
+}
+
 bool FakeCrostiniFeatures::IsExportImportUIAllowed(Profile* profile) {
   if (export_import_ui_allowed_set_)
     return export_import_ui_allowed_;

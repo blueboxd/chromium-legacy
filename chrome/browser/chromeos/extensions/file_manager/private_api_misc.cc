@@ -23,8 +23,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
@@ -681,7 +681,7 @@ FileManagerPrivateMountCrostiniFunction::Run() {
   // files into Linux files should still work.
   Profile* profile =
       Profile::FromBrowserContext(browser_context())->GetOriginalProfile();
-  DCHECK(crostini::IsCrostiniEnabled(profile));
+  DCHECK(crostini::CrostiniFeatures::Get()->IsEnabled(profile));
   crostini::CrostiniManager::GetForProfile(profile)->RestartCrostini(
       crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
       base::BindOnce(&FileManagerPrivateMountCrostiniFunction::RestartCallback,

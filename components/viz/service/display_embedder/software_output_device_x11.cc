@@ -39,9 +39,13 @@ SoftwareOutputDeviceX11::~SoftwareOutputDeviceX11() {
 void SoftwareOutputDeviceX11::Resize(const gfx::Size& pixel_size,
                                      float scale_factor) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // See comment in X11SoftwarePainter::Resize
-  if (!x11_software_bitmap_presenter_.Resize(pixel_size))
+  // See comment in X11SoftwareBitmapPresenter::Resize
+  if (x11_software_bitmap_presenter_.Resize(pixel_size)) {
+    viewport_pixel_size_ = pixel_size;
+    surface_ = nullptr;
+  } else {
     SoftwareOutputDevice::Resize(pixel_size, scale_factor);
+  }
 }
 
 SkCanvas* SoftwareOutputDeviceX11::BeginPaint(const gfx::Rect& damage_rect) {

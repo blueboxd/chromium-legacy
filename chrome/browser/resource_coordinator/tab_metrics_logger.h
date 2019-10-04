@@ -50,8 +50,6 @@ class TabMetricsLogger {
     bool is_foregrounded = false;
     bool is_discarded = false;
     int64_t time_from_backgrounded = 0;
-    int mru_index = 0;
-    int total_tab_count = 0;
     int64_t label_id = 0;
   };
 

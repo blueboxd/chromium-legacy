@@ -205,9 +205,12 @@ int ShelfConfig::status_area_hit_region_padding() const {
 
 bool ShelfConfig::is_in_app() const {
   Shell* shell = Shell::Get();
-  return !shell->overview_controller()->InOverviewSession() &&
-         shell->session_controller()->GetSessionState() ==
-             session_manager::SessionState::ACTIVE &&
+  const auto* overview = shell->overview_controller();
+  const auto* session = shell->session_controller();
+  if (!overview || !session)
+    return false;
+  return !overview->InOverviewSession() &&
+         session->GetSessionState() == session_manager::SessionState::ACTIVE &&
          !is_app_list_visible_;
 }
 

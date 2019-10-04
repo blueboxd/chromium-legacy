@@ -18,7 +18,7 @@ using base::TimeDelta;
 namespace password_manager {
 
 namespace {
-constexpr size_t kMaxNumberOfCharactersToStore = 30;
+constexpr size_t kMaxNumberOfCharactersToStore = 45;
 constexpr TimeDelta kMaxInactivityTime = TimeDelta::FromSeconds(10);
 }
 

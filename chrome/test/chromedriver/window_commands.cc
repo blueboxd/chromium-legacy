@@ -1288,7 +1288,8 @@ Status ExecutePerformActions(Session* session,
   for (size_t i = 0; i < longest_action_list_size; i++) {
     // Find the last pointer action, and it has to be sent synchronously by
     // default.
-    size_t last_action = 0;
+    size_t last_action_index = 0;
+    size_t last_touch_index = 0;
     for (size_t j = 0; j < actions_list.size(); j++) {
       if (actions_list[j].size() > i) {
         const base::DictionaryValue* action = actions_list[j][i].get();
@@ -1296,8 +1297,14 @@ Status ExecutePerformActions(Session* session,
         std::string action_type;
         action->GetString("type", &type);
         action->GetString("subtype", &action_type);
-        if (type != "none" && action_type != "pause") {
-          last_action = j;
+        if (type != "none" && action_type != "pause")
+          last_action_index = j;
+
+        if (type == "pointer") {
+          std::string pointer_type;
+          action->GetString("pointerType", &pointer_type);
+          if (pointer_type == "touch")
+            last_touch_index = j;
         }
       }
     }
@@ -1306,6 +1313,7 @@ Status ExecutePerformActions(Session* session,
     // (https://w3c.github.io/webdriver/#dfn-computing-the-tick-duration).
     // This is the duration for actions in one tick.
     int tick_duration = 0;
+    std::list<TouchEvent> dispatch_touch_events;
     for (size_t j = 0; j < actions_list.size(); j++) {
       if (actions_list[j].size() > i) {
         const base::DictionaryValue* action = actions_list[j][i].get();
@@ -1351,7 +1359,7 @@ Status ExecutePerformActions(Session* session,
           tick_duration = std::max(tick_duration, duration);
         } else {
           bool async_dispatch_event = true;
-          if (j == last_action) {
+          if (j == last_action_index) {
             async_dispatch_event = false;
             GetOptionalBool(action, "asyncDispatch", &async_dispatch_event);
           }
@@ -1486,10 +1494,14 @@ Status ExecutePerformActions(Session* session,
                 action_input_states[j]->SetInteger("pressed", 0);
               }
               if (has_touch_start[id]) {
-                Status status =
-                    web_view->DispatchTouchEvent(event, async_dispatch_event);
-                if (status.IsError())
-                  return status;
+                event.id = dispatch_touch_events.size();
+                dispatch_touch_events.push_back(event);
+                if (j == last_touch_index) {
+                  Status status = web_view->DispatchTouchEventWithMultiPoints(
+                      dispatch_touch_events, async_dispatch_event);
+                  if (status.IsError())
+                    return status;
+                }
               }
               if (action_type == "pointerUp")
                 has_touch_start[id] = false;

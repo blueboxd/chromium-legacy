@@ -6,11 +6,54 @@
 
 #include <fontconfig/fontconfig.h>
 
+#include "base/no_destructor.h"
 #include "ui/gfx/font_render_params.h"
 
 namespace gfx {
 
 namespace {
+
+// A singleton class to wrap a global font-config configuration. The
+// configuration reference counter is incremented to avoid the deletion of the
+// structure while being used. This class is single-threaded and should only be
+// used on the UI-Thread.
+class GFX_EXPORT GlobalFontConfig {
+ public:
+  GlobalFontConfig() {
+    // Without this call, the FontConfig library gets implicitly initialized
+    // on the first call to FontConfig. Since it's not safe to initialize it
+    // concurrently from multiple threads, we explicitly initialize it here
+    // to prevent races when there are multiple renderer's querying the library:
+    // http://crbug.com/404311
+    // Note that future calls to FcInit() are safe no-ops per the FontConfig
+    // interface.
+    FcInit();
+
+    // Increment the reference counter to avoid the config to be deleted while
+    // being used (see http://crbug.com/1004254).
+    fc_config_ = FcConfigGetCurrent();
+    FcConfigReference(fc_config_);
+  }
+
+  ~GlobalFontConfig() { FcConfigDestroy(fc_config_); }
+
+  // Retrieve the native font-config FcConfig pointer.
+  FcConfig* Get() const { return fc_config_; }
+
+  // Override the font-config configuration.
+  void OverrideForTesting(FcConfig* config) { fc_config_ = config; }
+
+  // Retrieve the global font-config configuration.
+  static GlobalFontConfig* GetInstance() {
+    static base::NoDestructor<GlobalFontConfig> fontconfig;
+    return fontconfig.get();
+  }
+
+ private:
+  FcConfig* fc_config_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(GlobalFontConfig);
+};
 
 // Converts Fontconfig FC_HINT_STYLE to FontRenderParams::Hinting.
 FontRenderParams::Hinting ConvertFontconfigHintStyle(int hint_style) {
@@ -72,6 +115,14 @@ bool GetFontConfigPropertyAsBool(FcPattern* pattern, const char* property) {
 }
 
 }  // namespace
+
+FcConfig* GetGlobalFontConfig() {
+  return GlobalFontConfig::GetInstance()->Get();
+}
+
+void OverrideGlobalFontConfigForTesting(FcConfig* config) {
+  return GlobalFontConfig::GetInstance()->OverrideForTesting(config);
+}
 
 std::string GetFontName(FcPattern* pattern) {
   return GetFontConfigPropertyAsString(pattern, FC_FAMILY);

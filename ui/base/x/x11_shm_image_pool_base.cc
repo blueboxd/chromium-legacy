@@ -38,6 +38,18 @@ constexpr float kShmResizeThreshold = 1.5f;
 constexpr float kShmResizeShrinkThreshold =
     1.0f / (kShmResizeThreshold * kShmResizeThreshold);
 
+std::size_t MaxShmSegmentSizeImpl() {
+  struct shminfo info;
+  if (shmctl(0, IPC_INFO, reinterpret_cast<struct shmid_ds*>(&info)) == -1)
+    return 0;
+  return info.shmmax;
+}
+
+std::size_t MaxShmSegmentSize() {
+  static std::size_t max_size = MaxShmSegmentSizeImpl();
+  return max_size;
+}
+
 }  // namespace
 
 XShmImagePoolBase::FrameState::FrameState() = default;
@@ -90,8 +102,8 @@ bool XShmImagePoolBase::Resize(const gfx::Size& pixel_size) {
   for (std::size_t i = 0; i < frame_states_.size(); ++i) {
     FrameState& state = frame_states_[i];
     state.image.reset(XShmCreateImage(display_, visual_, depth_, ZPixmap,
-                                      nullptr, &shminfo_, pixel_size.width(),
-                                      pixel_size.height()));
+                                      nullptr, &state.shminfo_,
+                                      pixel_size.width(), pixel_size.height()));
     if (!state.image)
       return false;
     std::size_t current_frame_bytes =
@@ -108,45 +120,50 @@ bool XShmImagePoolBase::Resize(const gfx::Size& pixel_size) {
     Cleanup();
 
     frame_bytes_ = needed_frame_bytes * kShmResizeThreshold;
-
-    shminfo_.shmid = shmget(IPC_PRIVATE, frame_bytes_ * frame_states_.size(),
-                            IPC_CREAT | SHM_R | SHM_W);
-    if (shminfo_.shmid < 0)
-      return false;
-    shminfo_.shmaddr = reinterpret_cast<char*>(shmat(shminfo_.shmid, 0, 0));
-    if (shminfo_.shmaddr == reinterpret_cast<char*>(-1)) {
-      shmctl(shminfo_.shmid, IPC_RMID, 0);
-      return false;
+    if (MaxShmSegmentSize() > 0 && frame_bytes_ > MaxShmSegmentSize()) {
+      if (MaxShmSegmentSize() >= needed_frame_bytes)
+        frame_bytes_ = MaxShmSegmentSize();
+      else
+        return false;
     }
+
+    for (FrameState& state : frame_states_) {
+      state.shminfo_.shmid =
+          shmget(IPC_PRIVATE, frame_bytes_, IPC_CREAT | SHM_R | SHM_W);
+      if (state.shminfo_.shmid < 0)
+        return false;
+      state.shminfo_.shmaddr =
+          reinterpret_cast<char*>(shmat(state.shminfo_.shmid, 0, 0));
+      if (state.shminfo_.shmaddr == reinterpret_cast<char*>(-1)) {
+        shmctl(state.shminfo_.shmid, IPC_RMID, 0);
+        return false;
+      }
 #if defined(OS_LINUX)
-    // On Linux, a shmid can still be attached after IPC_RMID if otherwise kept
-    // alive.  Detach before XShmAttach to prevent a memory leak in case the
-    // process dies.
-    shmctl(shminfo_.shmid, IPC_RMID, 0);
+      // On Linux, a shmid can still be attached after IPC_RMID if otherwise
+      // kept alive.  Detach before XShmAttach to prevent a memory leak in case
+      // the process dies.
+      shmctl(state.shminfo_.shmid, IPC_RMID, 0);
 #endif
-    DCHECK(!shmem_attached_to_server_);
-    if (!XShmAttach(display_, &shminfo_))
-      return false;
-    shmem_attached_to_server_ = true;
+      DCHECK(!state.shmem_attached_to_server_);
+      if (!XShmAttach(display_, &state.shminfo_))
+        return false;
+      state.shmem_attached_to_server_ = true;
 #if !defined(OS_LINUX)
-    // The Linux-specific shmctl behavior above may not be portable, so we're
-    // forced to do IPC_RMID after the server has attached to the segment.
-    // XShmAttach is asynchronous, so we must also sync.
-    XSync(display_, x11::False);
-    shmctl(shminfo_.shmid, IPC_RMID, 0);
+      // The Linux-specific shmctl behavior above may not be portable, so we're
+      // forced to do IPC_RMID after the server has attached to the segment.
+      // XShmAttach is asynchronous, so we must also sync.
+      XSync(display_, x11::False);
+      shmctl(shminfo_.shmid, IPC_RMID, 0);
 #endif
-    // If this class ever needs to use XShmGetImage(), this needs to be
-    // changed to read-write.
-    shminfo_.readOnly = true;
+      // If this class ever needs to use XShmGetImage(), this needs to be
+      // changed to read-write.
+      state.shminfo_.readOnly = true;
+    }
   }
 
   for (std::size_t i = 0; i < frame_states_.size(); ++i) {
     FrameState& state = frame_states_[i];
-    const std::size_t offset = i * needed_frame_bytes;
-#ifndef NDEBUG
-    state.offset = offset;
-#endif
-    state.image->data = shminfo_.shmaddr + offset;
+    state.image->data = state.shminfo_.shmaddr;
     SkImageInfo image_info = SkImageInfo::Make(
         state.image->width, state.image->height,
         state.image->byte_order == LSBFirst ? kBGRA_8888_SkColorType
@@ -157,23 +174,30 @@ bool XShmImagePoolBase::Resize(const gfx::Size& pixel_size) {
                                     state.image->bytes_per_line)) {
       return false;
     }
+    state.canvas = std::make_unique<SkCanvas>(state.bitmap);
   }
 
   pixel_size_ = pixel_size;
   cleanup.release();
+  ready_ = true;
   return true;
 }
 
 bool XShmImagePoolBase::Ready() {
   DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
-
-  return shmem_attached_to_server_;
+  return ready_;
 }
 
 SkBitmap& XShmImagePoolBase::CurrentBitmap() {
   DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
 
   return frame_states_[current_frame_index_].bitmap;
+}
+
+SkCanvas* XShmImagePoolBase::CurrentCanvas() {
+  DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
+
+  return frame_states_[current_frame_index_].canvas.get();
 }
 
 XImage* XShmImagePoolBase::CurrentImage() {
@@ -190,8 +214,7 @@ void XShmImagePoolBase::SwapBuffers(
   SwapClosure& swap_closure = swap_closures_.back();
   swap_closure.closure = base::BindOnce(std::move(callback), pixel_size_);
 #ifndef NDEBUG
-  swap_closure.shmseg = shminfo_.shmseg;
-  swap_closure.offset = frame_states_[current_frame_index_].offset;
+  swap_closure.shmseg = frame_states_[current_frame_index_].shminfo_.shmseg;
 #endif
 
   current_frame_index_ = (current_frame_index_ + 1) % frame_states_.size();
@@ -225,7 +248,7 @@ void XShmImagePoolBase::DispatchShmCompletionEvent(XShmCompletionEvent event) {
   SwapClosure& swap_ack = swap_closures_.front();
 #ifndef NDEBUG
   DCHECK_EQ(event.shmseg, swap_ack.shmseg);
-  DCHECK_EQ(event.offset, swap_ack.offset);
+  DCHECK_EQ(event.offset, 0UL);
 #endif
 
   std::move(swap_ack.closure).Run();
@@ -259,16 +282,18 @@ void XShmImagePoolBase::TeardownOnGpu() {
 }
 
 void XShmImagePoolBase::Cleanup() {
-  if (shminfo_.shmaddr)
-    shmdt(shminfo_.shmaddr);
-  if (shmem_attached_to_server_) {
-    XShmDetach(display_, &shminfo_);
-    shmem_attached_to_server_ = false;
+  for (FrameState& state : frame_states_) {
+    if (state.shminfo_.shmaddr)
+      shmdt(state.shminfo_.shmaddr);
+    if (state.shmem_attached_to_server_)
+      XShmDetach(display_, &state.shminfo_);
+    state.shmem_attached_to_server_ = false;
+    state.shminfo_ = {};
   }
-  shminfo_ = {};
   frame_bytes_ = 0;
   pixel_size_ = gfx::Size();
   current_frame_index_ = 0;
+  ready_ = false;
 }
 
 }  // namespace ui

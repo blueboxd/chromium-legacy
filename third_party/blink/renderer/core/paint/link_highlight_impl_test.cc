@@ -449,9 +449,7 @@ class LinkHighlightSquashingImplTest : public testing::Test,
   }
 
   void TearDown() override {
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
+    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
 
     // Ensure we fully clean up while scoped settings are enabled. Without this,
     // garbage collection would occur after Scoped[setting]ForTest is out of

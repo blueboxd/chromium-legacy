@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/tracing/agent_registry.h"
 #include "services/tracing/coordinator.h"
@@ -70,10 +71,10 @@ class ServiceListener : public service_manager::mojom::ServiceManagerListener {
     // remains alive. Subsequent TracedProcess endpoints will be dropped and
     // their calls will never be processed.
 
-    mojom::TracedProcessPtr traced_process;
-    connector_->BindInterface(
+    mojo::Remote<mojom::TracedProcess> traced_process;
+    connector_->Connect(
         service_manager::ServiceFilter::ForExactIdentity(identity),
-        mojo::MakeRequest(&traced_process),
+        traced_process.BindNewPipeAndPassReceiver(),
         service_manager::mojom::BindInterfacePriority::kBestEffort);
 
     auto new_connection_request = mojom::ConnectToTracingRequest::New();
@@ -141,7 +142,7 @@ class ServiceListener : public service_manager::mojom::ServiceManagerListener {
 
  private:
   void OnProcessConnected(
-      mojom::TracedProcessPtr traced_process,
+      mojo::Remote<mojom::TracedProcess> traced_process,
       uint32_t pid,
       mojo::PendingReceiver<mojom::PerfettoService> service_receiver,
       mojo::PendingReceiver<mojom::AgentRegistry> registry_receiver) {

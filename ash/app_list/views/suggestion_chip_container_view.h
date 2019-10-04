@@ -38,8 +38,8 @@ class SuggestionChipContainerView : public SearchResultContainerView {
   void OnTabletModeChanged(bool started);
 
  private:
-
   ContentsView* contents_view_ = nullptr;  // Not owned
+  views::BoxLayout* layout_manager_ = nullptr;  // Not owned
 
   std::vector<SearchResultSuggestionChipView*> suggestion_chip_views_;  // Owned
 

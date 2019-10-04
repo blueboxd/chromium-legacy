@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/chromeos/printing/history/print_job_info_proto_conversions.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -343,9 +345,20 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
                       const printing::proto::PrintSettings& settings) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    auto printer =
-        CupsPrintersManagerFactory::GetForBrowserContext(profile_)->GetPrinter(
-            printer_name);
+    Profile* profile = ProfileManager::GetPrimaryUserProfile();
+    if (!profile) {
+      LOG(WARNING) << "Cannot find printer without a valid profile.";
+      return false;
+    }
+
+    auto* manager = CupsPrintersManagerFactory::GetForBrowserContext(profile);
+    if (!manager) {
+      LOG(WARNING)
+          << "CupsPrintersManager could not be found for the current profile.";
+      return false;
+    }
+
+    base::Optional<Printer> printer = manager->GetPrinter(printer_name);
     if (!printer) {
       LOG(WARNING)
           << "Printer was removed while job was in progress.  It cannot "

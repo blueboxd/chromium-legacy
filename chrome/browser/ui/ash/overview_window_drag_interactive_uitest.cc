@@ -136,11 +136,11 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, NormalDrag) {
   gfx::Point start_point = GetStartLocation(display_size);
   gfx::Point end_point(start_point);
   end_point.set_x(end_point.x() + display_size.width() / 2);
-  ui_test_utils::DragEventGenerator generator(
+  auto generator = ui_test_utils::DragEventGenerator::CreateForTouch(
       std::make_unique<ui_test_utils::InterpolatedProducer>(
           start_point, end_point, base::TimeDelta::FromMilliseconds(1000)),
-      /*touch=*/true);
-  generator.Wait();
+      /*long_press=*/true);
+  generator->Wait();
 }
 
 // The test is flaky because close notification is not the right singal.
@@ -160,12 +160,11 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DISABLED_DragToClose) {
   gfx::Point end_point(start_point);
   end_point.set_y(0);
   end_point.set_x(end_point.x() + 10);
-  ui_test_utils::DragEventGenerator generator(
+  auto generator = ui_test_utils::DragEventGenerator::CreateForTouch(
       std::make_unique<ui_test_utils::InterpolatedProducer>(
           start_point, end_point, base::TimeDelta::FromMilliseconds(500),
-          gfx::Tween::EASE_IN_2),
-      /*touch=*/true);
-  generator.Wait();
+          gfx::Tween::EASE_IN_2));
+  generator->Wait();
 
   ui_test_utils::WaitForBrowserToClose(chrome::FindLastActive());
 }
@@ -184,11 +183,11 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DragToSnap) {
   gfx::Point start_point = GetStartLocation(GetDisplaySize(browser_window));
   gfx::Point end_point(start_point);
   end_point.set_x(0);
-  ui_test_utils::DragEventGenerator generator(
+  auto generator = ui_test_utils::DragEventGenerator::CreateForTouch(
       std::make_unique<ui_test_utils::InterpolatedProducer>(
           start_point, end_point, base::TimeDelta::FromMilliseconds(1000)),
-      /*touch=*/true);
-  generator.Wait();
+      /*long_press=*/true);
+  generator->Wait();
 
   Browser* active = chrome::FindLastActive();
   // Wait for the window to be snapped.

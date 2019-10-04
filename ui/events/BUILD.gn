@@ -627,6 +627,7 @@ if (!is_ios) {
         "ozone/evdev/touch_event_converter_evdev_unittest.cc",
         "ozone/evdev/touch_filter/false_touch_finder_unittest.cc",
         "ozone/evdev/touch_filter/heuristic_stylus_palm_detection_filter_unittest.cc",
+        "ozone/evdev/touch_filter/neural_stylus_palm_detection_filter_util_unittest.cc",
         "ozone/evdev/touch_filter/open_palm_detection_filter_unittest.cc",
         "ozone/evdev/touch_filter/palm_detection_filter_factory_unittest.cc",
       ]

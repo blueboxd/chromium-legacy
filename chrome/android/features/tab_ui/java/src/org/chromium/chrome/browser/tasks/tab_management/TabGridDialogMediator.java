@@ -13,6 +13,7 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.tab.Tab;
@@ -26,6 +27,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
@@ -88,13 +90,17 @@ public class TabGridDialogMediator {
     private final TabSwitcherMediator.ResetHandler mTabSwitcherResetHandler;
     private final AnimationParamsProvider mAnimationParamsProvider;
     private final DialogHandler mTabGridDialogHandler;
+    private final TabSelectionEditorCoordinator
+            .TabSelectionEditorController mTabSelectionEditorController;
     private final String mComponentName;
     private int mCurrentTabId = Tab.INVALID_TAB_ID;
 
     TabGridDialogMediator(Context context, DialogController dialogController, PropertyModel model,
             TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager,
             TabSwitcherMediator.ResetHandler tabSwitcherResetHandler,
-            AnimationParamsProvider animationParamsProvider, String componentName) {
+            AnimationParamsProvider animationParamsProvider,
+            TabSelectionEditorCoordinator.TabSelectionEditorController tabSelectionEditorController,
+            String componentName) {
         mContext = context;
         mModel = model;
         mTabModelSelector = tabModelSelector;
@@ -103,6 +109,7 @@ public class TabGridDialogMediator {
         mTabSwitcherResetHandler = tabSwitcherResetHandler;
         mAnimationParamsProvider = animationParamsProvider;
         mTabGridDialogHandler = new DialogHandler();
+        mTabSelectionEditorController = tabSelectionEditorController;
         mComponentName = componentName;
 
         // Register for tab model.
@@ -178,9 +185,14 @@ public class TabGridDialogMediator {
             }
         };
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
+        assert mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
+                        instanceof TabGroupModelFilter;
 
         // Setup toolbar property model.
         setupToolbarClickHandlers();
+
+        // Setup dialog selection editor.
+        setupDialogSelectionEditor();
 
         // Setup ScrimView observer.
         setupScrimViewObserver();
@@ -195,6 +207,7 @@ public class TabGridDialogMediator {
                         mAnimationParamsProvider.getAnimationParamsForTab(mCurrentTabId));
             }
         }
+        mTabSelectionEditorController.hide();
         mDialogController.resetWithListOfTabs(null);
     }
 
@@ -272,6 +285,17 @@ public class TabGridDialogMediator {
         mModel.set(
                 TabGridPanelProperties.COLLAPSE_CLICK_LISTENER, getCollapseButtonClickListener());
         mModel.set(TabGridPanelProperties.ADD_CLICK_LISTENER, getAddButtonClickListener());
+        mModel.set(TabGridPanelProperties.MENU_CLICK_LISTENER, getMenuButtonClickListener());
+    }
+
+    private void setupDialogSelectionEditor() {
+        TabSelectionEditorActionProvider actionProvider = new TabSelectionEditorActionProvider(
+                mTabModelSelector, mTabSelectionEditorController,
+                TabSelectionEditorActionProvider.TabSelectionEditorAction.UNGROUP);
+
+        String actionButtonText =
+                mContext.getString(R.string.tab_grid_dialog_selection_mode_remove);
+        mTabSelectionEditorController.configureToolbar(actionButtonText, actionProvider, 1, null);
     }
 
     private void setupScrimViewObserver() {
@@ -318,7 +342,13 @@ public class TabGridDialogMediator {
     }
 
     private View.OnClickListener getMenuButtonClickListener() {
-        return TabGridDialogMenuCoordinator.getTabGridDialogMenuOnClickListener(null);
+        Callback<Integer> callback = result -> {
+            if (result == R.id.ungroup_tab) {
+                List<Tab> tabs = getRelatedTabs(mCurrentTabId);
+                mTabSelectionEditorController.show(tabs);
+            }
+        };
+        return TabGridDialogMenuCoordinator.getTabGridDialogMenuOnClickListener(callback);
     }
 
     private List<Tab> getRelatedTabs(int tabId) {

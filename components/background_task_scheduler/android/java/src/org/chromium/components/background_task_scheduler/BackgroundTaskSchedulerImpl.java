@@ -7,6 +7,7 @@ package org.chromium.components.background_task_scheduler;
 import android.content.Context;
 import android.os.Build;
 
+import org.chromium.base.BuildConfig;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -208,7 +209,10 @@ class BackgroundTaskSchedulerImpl implements BackgroundTaskScheduler {
     }
 
     private boolean osUpgradeChangesDelegateType(int oldSdkInt, int newSdkInt) {
-        return oldSdkInt < Build.VERSION_CODES.M && newSdkInt >= Build.VERSION_CODES.M;
+        // Assuming no upgrades from L->N (without going through M) allows us to remove
+        // GCMNetworkManager codepaths for Monochrome and above.
+        return BuildConfig.MIN_SDK_VERSION < Build.VERSION_CODES.N
+                && oldSdkInt < Build.VERSION_CODES.M && newSdkInt >= Build.VERSION_CODES.M;
     }
 
     private void selectDelegateAndCancel(

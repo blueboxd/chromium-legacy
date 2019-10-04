@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "media/base/media_util.h"
 #include "media/base/win/d3d11_mocks.h"
 #include "media/gpu/windows/d3d11_texture_selector.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -42,7 +43,8 @@ class D3D11TextureSelectorUnittest : public ::testing::Test {
     prefs.enable_zero_copy_dxgi_video = zero_copy_enabled;
     gpu::GpuDriverBugWorkarounds workarounds;
     workarounds.disable_dxgi_zero_copy_video = false;
-    return TextureSelector::Create(prefs, workarounds, config);
+    auto media_log = std::make_unique<NullMediaLog>();
+    return TextureSelector::Create(prefs, workarounds, config, media_log.get());
   }
 };
 

@@ -4,11 +4,12 @@
 
 #include "device/vr/openxr/openxr_render_loop.h"
 
-#include <directxmath.h>
-
 #include "device/vr/openxr/openxr_api_wrapper.h"
 #include "device/vr/openxr/openxr_input_helper.h"
 #include "device/vr/util/transform_utils.h"
+#include "ui/gfx/geometry/angle_conversions.h"
+#include "ui/gfx/transform.h"
+#include "ui/gfx/transform_util.h"
 
 namespace device {
 
@@ -205,27 +206,19 @@ bool OpenXrRenderLoop::UpdateEyeParameters() {
     changed = true;
   }
 
-  const XrView left = openxr_->GetView(0);
-  const XrView right = openxr_->GetView(1);
-
-  gfx::Point3F center =
-      gfx::Point3F((left.pose.position.x + right.pose.position.x) / 2,
-                   (left.pose.position.y + right.pose.position.y) / 2,
-                   (left.pose.position.z + right.pose.position.z) / 2);
-
+  XrView left;
+  XrView right;
+  openxr_->GetHeadFromEyes(&left, &right);
   gfx::Size view_size = GetViewSize();
 
-  changed |=
-      UpdateEye(left, center, view_size, &current_display_info_->left_eye);
+  changed |= UpdateEye(left, view_size, &current_display_info_->left_eye);
 
-  changed |=
-      UpdateEye(right, center, view_size, &current_display_info_->right_eye);
+  changed |= UpdateEye(right, view_size, &current_display_info_->right_eye);
 
   return changed;
 }
 
-bool OpenXrRenderLoop::UpdateEye(const XrView& view,
-                                 const gfx::Point3F& center,
+bool OpenXrRenderLoop::UpdateEye(const XrView& view_head,
                                  const gfx::Size& view_size,
                                  mojom::VREyeParametersPtr* eye) const {
   bool changed = false;
@@ -234,8 +227,8 @@ bool OpenXrRenderLoop::UpdateEye(const XrView& view,
   // that instead of just building a transformation matrix from the translation
   // component.
   gfx::Transform head_from_eye = vr_utils::MakeTranslationTransform(
-      view.pose.position.x - center.x(), view.pose.position.y - center.y(),
-      view.pose.position.z - center.z());
+      view_head.pose.position.x, view_head.pose.position.y,
+      view_head.pose.position.z);
 
   if ((*eye)->head_from_eye != head_from_eye) {
     (*eye)->head_from_eye = head_from_eye;
@@ -252,11 +245,11 @@ bool OpenXrRenderLoop::UpdateEye(const XrView& view,
     changed = true;
   }
 
-  mojom::VRFieldOfViewPtr fov = mojom::VRFieldOfView::New(
-      DirectX::XMConvertToDegrees(view.fov.angleUp),
-      -DirectX::XMConvertToDegrees(view.fov.angleDown),
-      -DirectX::XMConvertToDegrees(view.fov.angleLeft),
-      DirectX::XMConvertToDegrees(view.fov.angleRight));
+  mojom::VRFieldOfViewPtr fov =
+      mojom::VRFieldOfView::New(gfx::RadToDeg(view_head.fov.angleUp),
+                                gfx::RadToDeg(-view_head.fov.angleDown),
+                                gfx::RadToDeg(-view_head.fov.angleLeft),
+                                gfx::RadToDeg(view_head.fov.angleRight));
   if (!(*eye)->field_of_view || !fov->Equals(*(*eye)->field_of_view)) {
     (*eye)->field_of_view = std::move(fov);
     changed = true;

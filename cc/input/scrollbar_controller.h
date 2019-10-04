@@ -74,6 +74,9 @@ class CC_EXPORT ScrollbarController {
     float scroll_position_at_start_;
   };
 
+  // Returns the DSF based on whether use-zoom-for-dsf is enabled.
+  float ScreenSpaceScaleFactor() const;
+
   // Helper to convert scroll offset to autoscroll velocity.
   float InitialDeltaToAutoscrollVelocity(gfx::ScrollOffset scroll_offset) const;
 

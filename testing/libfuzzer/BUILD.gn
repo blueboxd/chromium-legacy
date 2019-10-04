@@ -53,3 +53,9 @@ config("no_clusterfuzz") {
 # noop to tag seed corpus rules.
 source_set("seed_corpus") {
 }
+
+if (use_fuzzing_engine) {
+  pool("fuzzer_owners_pool") {
+    depth = 1
+  }
+}

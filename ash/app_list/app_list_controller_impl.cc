@@ -940,7 +940,7 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
     }
   }
 
-  if (presenter_.IsVisible() && result->is_omnibox_search() &&
+  if (presenter_.IsVisibleDeprecated() && result->is_omnibox_search() &&
       IsAssistantAllowedAndEnabled() &&
       app_list_features::IsEmbeddedAssistantUIEnabled()) {
     // Record the assistant result. Other types of results are recorded in
@@ -1407,7 +1407,7 @@ int64_t AppListControllerImpl::GetDisplayIdToShowAppListOn() {
 }
 
 void AppListControllerImpl::ResetHomeLauncherIfShown() {
-  if (!IsTabletMode() || !presenter_.IsVisible())
+  if (!IsTabletMode() || !presenter_.IsVisibleDeprecated())
     return;
 
   auto* const keyboard_controller = keyboard::KeyboardUIController::Get();

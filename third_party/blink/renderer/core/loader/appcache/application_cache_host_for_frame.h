@@ -19,7 +19,8 @@ class CORE_EXPORT ApplicationCacheHostForFrame : public ApplicationCacheHost {
   ApplicationCacheHostForFrame(
       DocumentLoader* document_loader,
       const BrowserInterfaceBrokerProxy& interface_broker_proxy,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      const base::UnguessableToken& appcache_host_id);
 
   // ApplicationCacheHost:
   void Detach() override;

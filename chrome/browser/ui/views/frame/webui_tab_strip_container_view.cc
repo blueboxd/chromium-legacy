@@ -46,6 +46,10 @@ WebUITabStripContainerView::WebUITabStripContainerView(Browser* browser)
       web_view_->web_contents());
 }
 
+views::NativeViewHost* WebUITabStripContainerView::GetNativeViewHost() {
+  return web_view_->holder();
+}
+
 std::unique_ptr<ToolbarButton>
 WebUITabStripContainerView::CreateNewTabButton() {
   auto new_tab_button = std::make_unique<ToolbarButton>(this);
@@ -55,12 +59,20 @@ WebUITabStripContainerView::CreateNewTabButton() {
   return new_tab_button;
 }
 
-// TODO(pbos): Replace this button with tab counter. Remember to add a tooltip.
+// TODO(crbug.com/992972): Replace this button with tab counter. Consider
+// replacing the "toggle" string with a separate show/hide tooltip string.
 std::unique_ptr<ToolbarButton>
 WebUITabStripContainerView::CreateToggleButton() {
   auto toggle_button = std::make_unique<ToolbarButton>(this);
   toggle_button->SetID(VIEW_ID_WEBUI_TAB_STRIP_TOGGLE_BUTTON);
+  toggle_button->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_TOOLTIP_WEBUI_TAB_STRIP_TOGGLE_BUTTON));
   return toggle_button;
+}
+
+int WebUITabStripContainerView::GetHeightForWidth(int w) const {
+  constexpr int kWebUITabStripHeightDp = 248;
+  return kWebUITabStripHeightDp;
 }
 
 void WebUITabStripContainerView::ButtonPressed(views::Button* sender,

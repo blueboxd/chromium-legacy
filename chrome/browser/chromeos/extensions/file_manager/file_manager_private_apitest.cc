@@ -11,10 +11,9 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/browser/chromeos/drive/drivefs_test_support.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
@@ -331,20 +330,6 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
             chromeos::disks::MountCondition::MOUNT_CONDITION_NONE));
   }
 
-  void EnableCrostiniForProfile(
-      base::test::ScopedFeatureList* scoped_feature_list) {
-    // TODO(joelhockey): Setting prefs and features to allow crostini is not
-    // ideal.  It would be better if the crostini interface allowed for testing
-    // without such tight coupling.
-    browser()->profile()->GetPrefs()->SetBoolean(
-        crostini::prefs::kCrostiniEnabled, true);
-    scoped_feature_list->InitWithFeatures({features::kCrostini}, {});
-    // Profile must be signed in with email for crostini.
-    signin::SetPrimaryAccount(
-        IdentityManagerFactory::GetForProfileIfExists(browser()->profile()),
-        "testuser@gmail.com");
-  }
-
   void ExpectCrostiniMount() {
     std::string known_hosts;
     base::Base64Encode("[hostname]:2222 pubkey", &known_hosts);
@@ -474,8 +459,9 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Recent) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  EnableCrostiniForProfile(&scoped_feature_list);
+  crostini::FakeCrostiniFeatures crostini_features;
+  crostini_features.set_ui_allowed(true);
+  crostini_features.set_enabled(true);
 
   // Setup CrostiniManager for testing.
   crostini::CrostiniManager* crostini_manager =
@@ -516,8 +502,9 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, CrostiniIncognito) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  EnableCrostiniForProfile(&scoped_feature_list);
+  crostini::FakeCrostiniFeatures crostini_features;
+  crostini_features.set_ui_allowed(true);
+  crostini_features.set_enabled(true);
 
   // Setup CrostiniManager for testing.
   crostini::CrostiniManager* crostini_manager =

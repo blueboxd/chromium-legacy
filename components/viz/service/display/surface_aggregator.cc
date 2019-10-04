@@ -1237,8 +1237,13 @@ void SurfaceAggregator::FindChildSurfaces(
       auto child_pass_it = render_pass_map->find(child_pass_id);
       DCHECK(child_pass_it != render_pass_map->end());
       RenderPassMapEntry& child_pass_entry = child_pass_it->second;
-      if (child_pass_entry.has_pixel_moving_backdrop_filter)
-        in_moved_pixel_pass = true;
+      // TODO(crbug/1011042): Here, we used to set |in_moved_pixel_pass| to true
+      // if the child render pass has a pixel-moving backdrop filter. This
+      // behavior was added in r687426 to fix another problem, but caused a huge
+      // performance issue in some cases that enabled background blur, by
+      // expanding the damage rect unnecessarily to the entire screen
+      // (crbug/1008740). This is removed now, but a proper fix for the
+      // pixel-moving backdrop filter should be implemented.
       render_pass_dependencies_[remapped_pass_id].insert(
           remapped_child_pass_id);
       FindChildSurfaces(

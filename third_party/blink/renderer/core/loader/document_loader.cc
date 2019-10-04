@@ -125,7 +125,7 @@ DocumentLoader::DocumentLoader(
       document_load_timing_(*this),
       service_worker_network_provider_(
           std::move(params_->service_worker_network_provider)),
-      was_blocked_after_csp_(false),
+      was_blocked_by_csp_(false),
       state_(kNotStarted),
       in_commit_data_(false),
       data_buffer_(SharedBuffer::Create()),
@@ -164,9 +164,7 @@ DocumentLoader::DocumentLoader(
   origin_policy_ = params_->origin_policy;
   requestor_origin_ = params_->requestor_origin;
   unreachable_url_ = params_->unreachable_url;
-  error_code_ = params_->error_code;
   previews_state_ = params_->previews_state;
-  appcache_host_id_ = params_->appcache_host_id;
   ip_address_space_ = params_->ip_address_space;
 
   WebNavigationTimings& timings = params_->navigation_timings;
@@ -237,7 +235,7 @@ DocumentLoader::DocumentLoader(
           params_->response.ToResourceResponse().CurrentRequestUrl());
       origin_to_commit_ = request_url_origin->DeriveNewOpaqueOrigin();
 
-      was_blocked_after_csp_ = true;
+      was_blocked_by_csp_ = true;
       KURL blocked_url = SecurityOrigin::UrlWithUniqueOpaqueOrigin();
       original_url_ = blocked_url;
       url_ = blocked_url;
@@ -486,14 +484,6 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
 
 const KURL& DocumentLoader::UrlForHistory() const {
   return UnreachableURL().IsEmpty() ? Url() : UnreachableURL();
-}
-
-EncodedFormData* DocumentLoader::HttpBody() const {
-  return http_body_.get();
-}
-
-const base::UnguessableToken& DocumentLoader::AppcacheHostId() const {
-  return appcache_host_id_;
 }
 
 void DocumentLoader::FillNavigationParamsForErrorPage(
@@ -1142,7 +1132,8 @@ void DocumentLoader::StartLoadingInternal() {
   state_ = kProvisional;
   application_cache_host_ = MakeGarbageCollected<ApplicationCacheHostForFrame>(
       this, GetFrame()->Client()->GetBrowserInterfaceBroker(),
-      GetFrame()->GetTaskRunner(TaskType::kNetworking));
+      GetFrame()->GetTaskRunner(TaskType::kNetworking),
+      params_->appcache_host_id);
 
   if (url_.IsEmpty() &&
       !GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument()) {
@@ -1513,6 +1504,7 @@ void DocumentLoader::InstallNewDocument(
           .WithOriginToCommit(origin_to_commit_)
           .WithIPAddressSpace(ip_address_space_)
           .WithSrcdocDocument(loading_srcdoc_)
+          .WithBlockedByCSP(was_blocked_by_csp_)
           .WithNewRegistrationContext()
           .WithFeaturePolicyHeader(feature_policy.ToString())
           .WithOriginTrialsHeader(

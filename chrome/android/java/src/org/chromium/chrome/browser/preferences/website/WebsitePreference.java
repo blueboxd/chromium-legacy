@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.preferences.ChromeImageViewPreference;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.widget.RoundedIconGenerator;
+import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 
 /**
  * A preference that displays a website's favicon and URL and, optionally, the amount of local

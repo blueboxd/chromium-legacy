@@ -32,7 +32,6 @@
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/drivefs_test_support.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -1521,10 +1520,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   std::vector<base::Feature> enabled_features;
   std::vector<base::Feature> disabled_features;
 
-  if (!IsGuestModeTest()) {
-    enabled_features.emplace_back(features::kCrostini);
-  }
-
   if (IsFilesNgTest()) {
     enabled_features.emplace_back(chromeos::features::kFilesNG);
   }
@@ -1606,14 +1601,15 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
       test_util::WaitUntilDriveMountPointIsAdded(profile());
     }
 
-    // Init crostini.  Set prefs to enable crostini, set VM and container
-    // running for testing, and register CustomMountPointCallback.
-    // TODO(joelhockey): It would be better if the crostini interface allowed
-    // for testing without such tight coupling.
+    // Init crostini.  Set VM and container running for testing, and register
+    // CustomMountPointCallback.
     crostini_volume_ = std::make_unique<CrostiniTestVolume>();
-    profile()->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
-    crostini_features_.set_root_access_allowed(true);
-    crostini_features_.set_export_import_ui_allowed(true);
+    if (!IsIncognitoModeTest()) {
+      crostini_features_.set_ui_allowed(true);
+      crostini_features_.set_enabled(true);
+      crostini_features_.set_root_access_allowed(true);
+      crostini_features_.set_export_import_ui_allowed(true);
+    }
     crostini::CrostiniManager* crostini_manager =
         crostini::CrostiniManager::GetForProfile(
             profile()->GetOriginalProfile());

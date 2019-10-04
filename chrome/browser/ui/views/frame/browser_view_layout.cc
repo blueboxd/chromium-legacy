@@ -411,10 +411,9 @@ int BrowserViewLayout::LayoutTabStripRegion(int top) {
 int BrowserViewLayout::LayoutWebUITabStrip(int top) {
   if (!webui_tab_strip_ || !webui_tab_strip_->GetVisible())
     return top;
-  constexpr int kWebUiTabStripHeightDp = 248;
-  webui_tab_strip_->SetBounds(vertical_layout_rect_.x(), top,
-                              vertical_layout_rect_.width(),
-                              kWebUiTabStripHeightDp);
+  webui_tab_strip_->SetBounds(
+      vertical_layout_rect_.x(), top, vertical_layout_rect_.width(),
+      webui_tab_strip_->GetHeightForWidth(vertical_layout_rect_.width()));
   return webui_tab_strip_->bounds().bottom();
 }
 

@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_NETWORK_TRAY_NETWORK_STATE_MODEL_H_
 #define ASH_SYSTEM_NETWORK_TRAY_NETWORK_STATE_MODEL_H_
 
+#include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -13,20 +14,20 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
+#include "mojo/public/cpp/bindings/struct_ptr.h"
 
 namespace ash {
+
+class VpnList;
 
 // TrayNetworkStateModel observes the mojo interface and tracks the devices
 // and active networks. It has UI observers that are informed when important
 // changes occur.
-class ASH_EXPORT TrayNetworkStateModel
-    : public chromeos::network_config::mojom::CrosNetworkConfigObserver {
+class ASH_EXPORT TrayNetworkStateModel {
  public:
   TrayNetworkStateModel();
-  ~TrayNetworkStateModel() override;
+  ~TrayNetworkStateModel();
 
   void AddObserver(TrayNetworkStateObserver* observer);
   void RemoveObserver(TrayNetworkStateObserver* observer);
@@ -44,9 +45,8 @@ class ASH_EXPORT TrayNetworkStateModel
       chromeos::network_config::mojom::NetworkType type,
       bool enabled);
 
-  chromeos::network_config::mojom::CrosNetworkConfig* cros_network_config() {
-    return remote_cros_network_config_.get();
-  }
+  // This used to be inlined but now requires details from the Impl class.
+  chromeos::network_config::mojom::CrosNetworkConfig* cros_network_config();
 
   const chromeos::network_config::mojom::NetworkStateProperties*
   default_network() const {
@@ -65,43 +65,28 @@ class ASH_EXPORT TrayNetworkStateModel
     return active_vpn_.get();
   }
   bool has_vpn() const { return has_vpn_; }
+  VpnList* vpn_list() { return vpn_list_.get(); }
 
  private:
-  // CrosNetworkConfigObserver
-  void OnActiveNetworksChanged(
-      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
-          networks) override;
-  void OnNetworkStateChanged(
-      chromeos::network_config::mojom::NetworkStatePropertiesPtr network)
-      override;
-  void OnNetworkStateListChanged() override;
-  void OnDeviceStateListChanged() override;
-  void OnVpnProvidersChanged() override;
-  void OnNetworkCertificatesChanged() override;
-
-  void GetDeviceStateList();
   void OnGetDeviceStateList(
       std::vector<chromeos::network_config::mojom::DeviceStatePropertiesPtr>
           devices);
 
-  void GetActiveNetworks();
   void UpdateActiveNetworks(
       std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
           networks);
 
-  void GetVirtualNetworks();
   void OnGetVirtualNetworks(
       std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
           networks);
 
   void NotifyNetworkListChanged();
+  void NotifyVpnProvidersChanged();
   void SendActiveNetworkStateChanged();
   void SendNetworkListChanged();
 
-  mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
-      remote_cros_network_config_;
-  mojo::Receiver<chromeos::network_config::mojom::CrosNetworkConfigObserver>
-      cros_network_config_observer_receiver_{this};
+  class Impl;
+  std::unique_ptr<Impl> impl_;
 
   base::ObserverList<TrayNetworkStateObserver> observer_list_;
 
@@ -122,6 +107,7 @@ class ASH_EXPORT TrayNetworkStateModel
   chromeos::network_config::mojom::NetworkStatePropertiesPtr active_cellular_;
   chromeos::network_config::mojom::NetworkStatePropertiesPtr active_vpn_;
   bool has_vpn_ = false;
+  std::unique_ptr<VpnList> vpn_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayNetworkStateModel);
 };

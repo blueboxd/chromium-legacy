@@ -82,9 +82,8 @@ IN_PROC_BROWSER_TEST_F(OverviewScrollTest, Basic) {
   const gfx::Point start_point =
       display_bounds.top_right() + gfx::Vector2d(-1, 1);
   const gfx::Point end_point = display_bounds.origin() + gfx::Vector2d(1, 1);
-  ui_test_utils::DragEventGenerator generator(
+  auto generator = ui_test_utils::DragEventGenerator::CreateForTouch(
       std::make_unique<ui_test_utils::InterpolatedProducer>(
-          start_point, end_point, base::TimeDelta::FromMilliseconds(1000)),
-      /*touch=*/true);
-  generator.Wait();
+          start_point, end_point, base::TimeDelta::FromMilliseconds(1000)));
+  generator->Wait();
 }

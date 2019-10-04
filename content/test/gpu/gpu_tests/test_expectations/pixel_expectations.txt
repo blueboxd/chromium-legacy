@@ -178,9 +178,6 @@ crbug.com/974380 [ win ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorke
 crbug.com/974380 [ mac ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Skip ]
 crbug.com/974383 [ mac ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
 
-# Also producing blank images on Intel
-crbug.com/974383 [ linux skia-renderer use-vulkan intel ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
-
 # Fails on Intel
 crbug.com/991289 [ linux skia-renderer intel ] Pixel_CSS3DBlueBox [ Skip ]
 

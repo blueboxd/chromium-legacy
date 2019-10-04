@@ -45,7 +45,7 @@ namespace {
 constexpr base::TimeDelta kEmailExpansionDuration =
     base::TimeDelta::FromSeconds(3);
 
-constexpr base::TimeDelta kAvatorHighlightAnimationDuration =
+constexpr base::TimeDelta kAvatarHighlightAnimationDuration =
     base::TimeDelta::FromSeconds(2);
 
 ProfileAttributesEntry* GetProfileAttributesEntry(Profile* profile) {
@@ -243,7 +243,7 @@ void AvatarToolbarButton::ShowAvatarHighlightAnimation() {
       FROM_HERE,
       base::BindOnce(&AvatarToolbarButton::HideHighlightAnimation,
                      weak_ptr_factory_.GetWeakPtr()),
-      kAvatorHighlightAnimationDuration);
+      kAvatarHighlightAnimationDuration);
 }
 
 void AvatarToolbarButton::NotifyClick(const ui::Event& event) {

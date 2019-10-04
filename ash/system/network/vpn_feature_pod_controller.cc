@@ -15,6 +15,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -30,13 +31,16 @@ bool IsVPNVisibleInSystemTray() {
   if (login_status == LoginStatus::NOT_LOGGED_IN)
     return false;
 
+  TrayNetworkStateModel* model =
+      Shell::Get()->system_tray_model()->network_state_model();
+
   // Show the VPN entry in the ash tray bubble if at least one third-party VPN
   // provider is installed.
-  if (Shell::Get()->vpn_list()->HaveExtensionOrArcVpnProviders())
+  if (model->vpn_list()->HaveExtensionOrArcVpnProviders())
     return true;
 
   // Also show the VPN entry if at least one VPN network is configured.
-  return Shell::Get()->system_tray_model()->network_state_model()->has_vpn();
+  return model->has_vpn();
 }
 
 }  // namespace

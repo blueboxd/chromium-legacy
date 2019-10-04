@@ -40,8 +40,7 @@ class DeviceChooserContentView : public views::View,
 
   // views::View:
   gfx::Size GetMinimumSize() const override;
-  void Layout() override;
-  gfx::Size CalculatePreferredSize() const override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   // ui::TableModel:
   int RowCount() override;
@@ -84,10 +83,6 @@ class DeviceChooserContentView : public views::View,
    public:
     explicit BluetoothStatusContainer(views::ButtonListener* listener);
 
-    // view::Views:
-    gfx::Size CalculatePreferredSize() const override;
-    void Layout() override;
-
     void ShowScanningLabelAndThrobber();
     void ShowReScanButton(bool enabled);
 
@@ -96,9 +91,6 @@ class DeviceChooserContentView : public views::View,
     views::Label* scanning_label() { return scanning_label_; }
 
    private:
-    int GetThrobberLabelSpacing() const;
-    void CenterVertically(views::View* view);
-
     views::LabelButton* re_scan_button_;
     views::Throbber* throbber_;
     views::Label* scanning_label_;

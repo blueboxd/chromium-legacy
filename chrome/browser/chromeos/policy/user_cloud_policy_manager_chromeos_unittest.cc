@@ -60,10 +60,6 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -357,7 +353,6 @@ class UserCloudPolicyManagerChromeOSTest
   PolicyBundle expected_bundle_;
 
   // Policy infrastructure.
-  net::TestURLFetcherFactory test_url_fetcher_factory_;
   TestingPrefServiceSimple prefs_;
   MockConfigurationPolicyObserver observer_;
   MockDeviceManagementService device_management_service_;
@@ -758,10 +753,6 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, NonBlockingFirstFetch) {
   EXPECT_TRUE(manager_->core()->service()->IsInitializationComplete());
   EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   EXPECT_FALSE(manager_->core()->client()->is_registered());
-
-  // The manager is waiting for the refresh token, and hasn't started any
-  // fetchers.
-  EXPECT_FALSE(test_url_fetcher_factory_.GetFetcherByID(0));
 
   AccountInfo account_info =
       identity_test_env()->MakePrimaryAccountAvailable(kEmail);

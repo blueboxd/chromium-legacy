@@ -31,7 +31,7 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData()
       three_d_enabled(false),
       immersive_mode(false),
       strict_mode(true),
-      display_mode(kWebDisplayModeBrowser),
+      display_mode(blink::mojom::DisplayMode::kBrowser),
       display_shape(kDisplayShapeRect),
       color_gamut(ColorSpaceGamut::kUnknown),
       preferred_color_scheme(PreferredColorScheme::kNoPreference),
@@ -168,7 +168,7 @@ const String MediaValuesCached::MediaType() const {
   return data_.media_type;
 }
 
-WebDisplayMode MediaValuesCached::DisplayMode() const {
+blink::mojom::DisplayMode MediaValuesCached::DisplayMode() const {
   return data_.display_mode;
 }
 

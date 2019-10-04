@@ -58,11 +58,13 @@ def CallAndRecordIfStale(
   new_metadata.AddStrings(input_strings)
 
   for path in input_paths:
-    if _IsZipFile(path):
+    # It's faster to md5 an entire zip file than it is to just locate & hash
+    # its central directory (which is what this used to do).
+    if pass_changes and _IsZipFile(path):
       entries = _ExtractZipEntries(path)
       new_metadata.AddZipFile(path, entries)
     else:
-      new_metadata.AddFile(path, _Md5ForPath(path))
+      new_metadata.AddFile(path, _ComputeTagForPath(path))
 
   old_metadata = None
   force = force or _FORCE_REBUILD
@@ -369,27 +371,15 @@ class _Metadata(object):
     return (entry['path'] for entry in subentries)
 
 
-def _UpdateMd5ForFile(md5, path, block_size=2**16):
-  with open(path, 'rb') as infile:
-    while True:
-      data = infile.read(block_size)
-      if not data:
-        break
-      md5.update(data)
-
-
-def _UpdateMd5ForDirectory(md5, dir_path):
-  for root, _, files in os.walk(dir_path):
-    for f in files:
-      _UpdateMd5ForFile(md5, os.path.join(root, f))
-
-
-def _Md5ForPath(path):
+def _ComputeTagForPath(path):
+  stat = os.stat(path)
+  if stat.st_size > 1 * 1024 * 1024:
+    # Fallback to mtime for large files so that md5_check does not take too long
+    # to run.
+    return stat.st_mtime
   md5 = hashlib.md5()
-  if os.path.isdir(path):
-    _UpdateMd5ForDirectory(md5, path)
-  else:
-    _UpdateMd5ForFile(md5, path)
+  with open(path, 'rb') as f:
+    md5.update(f.read())
   return md5.hexdigest()
 
 

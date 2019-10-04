@@ -15,7 +15,7 @@ namespace network {
 
 namespace test {
 
-UDPSocketTestHelper::UDPSocketTestHelper(mojom::UDPSocketPtr* socket)
+UDPSocketTestHelper::UDPSocketTestHelper(mojo::Remote<mojom::UDPSocket>* socket)
     : socket_(socket) {}
 
 UDPSocketTestHelper::~UDPSocketTestHelper() {}

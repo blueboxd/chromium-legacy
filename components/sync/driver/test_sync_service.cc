@@ -115,8 +115,9 @@ void TestSyncService::SetPassphraseRequired(bool required) {
   user_settings_.SetPassphraseRequired(required);
 }
 
-void TestSyncService::SetPassphraseRequiredForDecryption(bool required) {
-  user_settings_.SetPassphraseRequiredForDecryption(required);
+void TestSyncService::SetPassphraseRequiredForPreferredDataTypes(
+    bool required) {
+  user_settings_.SetPassphraseRequiredForPreferredDataTypes(required);
 }
 
 void TestSyncService::SetIsUsingSecondaryPassphrase(bool enabled) {

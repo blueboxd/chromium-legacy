@@ -1892,16 +1892,18 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 
   params.client_name = client_name;
 
-  viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request =
-      mojo::MakeRequest(&params.pipes.compositor_frame_sink_info);
-  viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client;
-  params.pipes.client_request =
-      mojo::MakeRequest(&compositor_frame_sink_client);
+  mojo::PendingReceiver<viz::mojom::CompositorFrameSink>
+      compositor_frame_sink_receiver = params.pipes.compositor_frame_sink_remote
+                                           .InitWithNewPipeAndPassReceiver();
+  mojo::PendingRemote<viz::mojom::CompositorFrameSinkClient>
+      compositor_frame_sink_client;
+  params.pipes.client_receiver =
+      compositor_frame_sink_client.InitWithNewPipeAndPassReceiver();
 
   if (is_gpu_compositing_disabled_) {
     DCHECK(!web_test_mode());
     frame_sink_provider_->CreateForWidget(
-        widget_routing_id, std::move(compositor_frame_sink_request),
+        widget_routing_id, std::move(compositor_frame_sink_receiver),
         std::move(compositor_frame_sink_client));
     frame_sink_provider_->RegisterRenderFrameMetadataObserver(
         widget_routing_id,
@@ -1987,7 +1989,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   }
 #endif
   frame_sink_provider_->CreateForWidget(
-      widget_routing_id, std::move(compositor_frame_sink_request),
+      widget_routing_id, std::move(compositor_frame_sink_receiver),
       std::move(compositor_frame_sink_client));
   frame_sink_provider_->RegisterRenderFrameMetadataObserver(
       widget_routing_id,

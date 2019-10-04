@@ -10,6 +10,9 @@ declare_args() {
 
 dev_ui_module_desc = {
   name = "dev_ui"
+
+  # These deps are also used to support non-bundle flows, e.g., APK builds and
+  # unit tests.
   java_deps = [
     "//chrome/android/features/dev_ui:java",
     "//chrome/android/features/dev_ui:pak_assets",

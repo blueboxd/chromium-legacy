@@ -1725,14 +1725,15 @@ bool Browser::IsFullscreenForTabOrPending(const WebContents* web_contents) {
       ->IsFullscreenForTabOrPending(web_contents);
 }
 
-blink::WebDisplayMode Browser::GetDisplayMode(const WebContents* web_contents) {
+blink::mojom::DisplayMode Browser::GetDisplayMode(
+    const WebContents* web_contents) {
   if (window_->IsFullscreen())
-    return blink::kWebDisplayModeFullscreen;
+    return blink::mojom::DisplayMode::kFullscreen;
 
   if (is_type_app() || is_type_devtools())
-    return blink::kWebDisplayModeStandalone;
+    return blink::mojom::DisplayMode::kStandalone;
 
-  return blink::kWebDisplayModeBrowser;
+  return blink::mojom::DisplayMode::kBrowser;
 }
 
 void Browser::RegisterProtocolHandler(WebContents* web_contents,

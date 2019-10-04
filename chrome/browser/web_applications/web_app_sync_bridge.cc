@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/optional.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
@@ -26,6 +25,7 @@
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/protocol/web_app_specifics.pb.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -40,8 +40,8 @@ std::unique_ptr<syncer::EntityData> CreateSyncEntityData(const WebApp& app) {
       entity_data->specifics.mutable_web_app();
   specifics->set_launch_url(app.launch_url().spec());
   specifics->set_name(app.name());
-  specifics->set_launch_container(app.launch_container() ==
-                                          LaunchContainer::kWindow
+  specifics->set_launch_container(app.display_mode() ==
+                                          blink::mojom::DisplayMode::kStandalone
                                       ? sync_pb::WebAppSpecifics::WINDOW
                                       : sync_pb::WebAppSpecifics::TAB);
   if (app.theme_color().has_value())
@@ -124,12 +124,13 @@ void WebAppSyncBridge::Init(base::OnceClosure callback) {
                                          std::move(callback)));
 }
 
-void WebAppSyncBridge::SetAppLaunchContainer(const AppId& app_id,
-                                             LaunchContainer launch_container) {
+void WebAppSyncBridge::SetAppDisplayMode(
+    const AppId& app_id,
+    blink::mojom::DisplayMode display_mode) {
   ScopedRegistryUpdate update(this);
   WebApp* web_app = update->UpdateApp(app_id);
   if (web_app)
-    web_app->SetLaunchContainer(launch_container);
+    web_app->SetDisplayMode(display_mode);
 }
 
 void WebAppSyncBridge::SetAppIsLocallyInstalledForTesting(

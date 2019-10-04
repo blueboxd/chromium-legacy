@@ -4,7 +4,7 @@
 
 // https://wicg.github.io/contact-api/spec/#contacts-manager
 
-enum ContactProperty { "email", "name", "tel" };
+enum ContactProperty { "address", "email", "name", "tel" };
 
 dictionary ContactsSelectOptions {
     boolean multiple = false;

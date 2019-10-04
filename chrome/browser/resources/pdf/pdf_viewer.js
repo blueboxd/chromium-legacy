@@ -36,6 +36,17 @@ let NavigateMessageData;
 /**
  * @typedef {{
  *   type: string,
+ *   page: number,
+ *   x: number,
+ *   y: number,
+ *   zoom: number
+ * }}
+ */
+let DestinationMessageData;
+
+/**
+ * @typedef {{
+ *   type: string,
  *   title: string,
  *   bookmarks: !Array<!Bookmark>,
  *   canSerializeDocument: boolean,
@@ -344,6 +355,10 @@ class PDFViewer {
       } else if (e.detail.origin == 'pageselector') {
         PDFMetrics.record(PDFMetrics.UserAction.PAGE_SELECTOR_NAVIGATE);
       }
+    });
+
+    document.body.addEventListener('change-zoom', e => {
+      this.viewport_.setZoom(e.detail.zoom);
     });
 
     document.body.addEventListener('change-page-and-xy', e => {
@@ -1175,6 +1190,12 @@ class PDFViewer {
         const navigateData = /** @type {!NavigateMessageData} */ (data);
         this.handleNavigate_(navigateData.url, navigateData.disposition);
         return;
+      case 'navigateToDestination':
+        const destinationData = /** @type {!DestinationMessageData} */ (data);
+        this.handleNavigateToDestination_(
+            destinationData.page, destinationData.x, destinationData.y,
+            destinationData.zoom);
+        return;
       case 'printPreviewLoaded':
         this.handlePrintPreviewLoaded_();
         return;
@@ -1270,6 +1291,28 @@ class PDFViewer {
           url, PdfNavigator.WindowOpenDisposition.NEW_BACKGROUND_TAB);
     } else {
       this.navigator_.navigate(url, disposition);
+    }
+  }
+
+  /**
+   * Handles an internal navigation request to a destination from the current
+   * controller.
+   *
+   * @param {number} page
+   * @param {number} x
+   * @param {number} y
+   * @param {number} zoom
+   * @private
+   */
+  handleNavigateToDestination_(page, x, y, zoom) {
+    if (zoom) {
+      this.viewport_.setZoom(zoom);
+    }
+
+    if (x || y) {
+      this.viewport_.goToPageAndXY(page, x ? x : 0, y ? y : 0);
+    } else {
+      this.viewport_.goToPage(page);
     }
   }
 

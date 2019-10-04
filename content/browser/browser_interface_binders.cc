@@ -24,9 +24,11 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/shared_worker_instance.h"
+#include "content/public/browser/webvr_service_provider.h"
 #include "content/public/common/content_features.h"
 #include "device/gamepad/gamepad_monitor.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "media/capture/mojom/image_capture.mojom.h"
 #include "media/mojo/mojom/video_decode_perf_history.mojom.h"
 #include "media/mojo/services/video_decode_perf_history.h"
@@ -270,6 +272,9 @@ void PopulateBinderMapWithContext(
       base::BindRepeating(&PictureInPictureServiceImpl::Create));
   map->Add<blink::mojom::WakeLockService>(
       base::BindRepeating(&WakeLockServiceImpl::Create));
+  map->Add<device::mojom::VRService>(
+      base::BindRepeating(&WebvrServiceProvider::BindWebvrService));
+
   GetContentClient()->browser()->RegisterBrowserInterfaceBindersForFrame(map);
 }
 

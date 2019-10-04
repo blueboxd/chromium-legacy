@@ -167,11 +167,13 @@ interface ServiceWorker {
   // ServiceWorker is the first interface available on the
   // service worker thread. It establishes the |service_worker_host| connection
   // and passes information used to populate
-  // ServiceWorkerGlobalScope#registration object. JavaScript execution of the
+  // ServiceWorkerGlobalScope#registration object and
+  // ServiceWorkerGlobalScope#serviceWorker object. JavaScript execution of the
   // service worker does not start until this message is received.
   InitializeGlobalScope(
       pending_associated_remote<ServiceWorkerHost> service_worker_host,
       ServiceWorkerRegistrationObjectInfo registration_info,
+      ServiceWorkerObjectInfo service_worker_info,
       FetchHandlerExistence fetch_handler_existence);
 
   DispatchInstallEvent()

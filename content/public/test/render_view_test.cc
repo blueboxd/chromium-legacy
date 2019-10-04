@@ -695,7 +695,7 @@ void RenderViewTest::Resize(gfx::Size new_size,
   visual_properties.top_controls_height = 0.f;
   visual_properties.browser_controls_shrink_blink_size = false;
   visual_properties.is_fullscreen_granted = is_fullscreen_granted;
-  visual_properties.display_mode = blink::kWebDisplayModeBrowser;
+  visual_properties.display_mode = blink::mojom::DisplayMode::kBrowser;
   RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
   RenderWidget* render_widget = view->GetWidget();
   std::unique_ptr<IPC::Message> resize_message(

@@ -591,10 +591,10 @@ locale.  The strings in this file are specific to iOS.
         Reading List
       </message>
       <message name="IDS_IOS_CONTENT_SUGGESTIONS_READING_LIST_ACCESSIBILITY_LABEL_ONE_UNREAD" desc="The accessibility label to use for the reading list content suggestion cell when there is only a single unread article [Length: unlimited]">
-        1 unread Reading List article.
+        1 unread article.
       </message>
       <message name="IDS_IOS_CONTENT_SUGGESTIONS_READING_LIST_ACCESSIBILITY_LABEL" desc="The accessibility label to use for the reading list content suggestion cell when there are multiple unread articles [Length: unlimited]">
-        <ph name="UNREAD_COUNT">$1<ex>4</ex></ph> unread Reading List articles.
+        <ph name="UNREAD_COUNT">$1<ex>4</ex></ph> unread articles.
       </message>
       <message name="IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS" desc="The Recent Tabs title on the new tab page [Length: 10em]">
         Recent Tabs

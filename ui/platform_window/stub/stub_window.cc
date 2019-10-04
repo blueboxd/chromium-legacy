@@ -79,6 +79,11 @@ void StubWindow::Deactivate() {
 
 void StubWindow::SetUseNativeFrame(bool use_native_frame) {}
 
+bool StubWindow::ShouldUseNativeFrame() const {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
 void StubWindow::SetCursor(PlatformCursor cursor) {}
 
 void StubWindow::MoveCursorTo(const gfx::Point& location) {}

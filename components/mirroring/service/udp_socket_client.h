@@ -9,6 +9,7 @@
 #include "base/component_export.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_endpoint.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
@@ -65,7 +66,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) UdpSocketClient final
   // when StartReceiving() is called.
   media::cast::PacketReceiverCallbackWithStatus packet_receiver_callback_;
 
-  network::mojom::UDPSocketPtr udp_socket_;
+  mojo::Remote<network::mojom::UDPSocket> udp_socket_;
 
   // Set by SendPacket() when the sending is not allowed. Once set, SendPacket()
   // can only be called again when a previous sending completes successfully.

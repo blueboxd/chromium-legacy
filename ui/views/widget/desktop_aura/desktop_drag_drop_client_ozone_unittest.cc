@@ -56,6 +56,7 @@ class FakePlatformWindow : public ui::PlatformWindow, public ui::WmDragHandler {
   void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override {}
   gfx::Rect GetRestoredBoundsInPixels() const override { return gfx::Rect(); }
   void SetUseNativeFrame(bool use_native_frame) override {}
+  bool ShouldUseNativeFrame() const override { return false; }
 
   // ui::WmDragHandler
   void StartDrag(const OSExchangeData& data,

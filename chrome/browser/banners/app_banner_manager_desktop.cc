@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_features.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -129,8 +130,8 @@ bool AppBannerManagerDesktop::IsWebAppConsideredInstalled() {
 bool AppBannerManagerDesktop::ShouldAllowWebAppReplacementInstall() {
   web_app::AppId app_id = web_app::GenerateAppIdFromURL(manifest_.start_url);
   DCHECK(registrar().IsLocallyInstalled(app_id));
-  auto launch_container = registrar().GetAppLaunchContainer(app_id);
-  return launch_container == web_app::LaunchContainer::kTab;
+  auto display_mode = registrar().GetAppDisplayMode(app_id);
+  return display_mode == blink::mojom::DisplayMode::kBrowser;
 }
 
 void AppBannerManagerDesktop::ShowBannerUi(WebappInstallSource install_source) {
@@ -165,9 +166,9 @@ void AppBannerManagerDesktop::OnWebAppInstalled(
   base::Optional<web_app::AppId> app_id =
       registrar().FindAppWithUrlInScope(validated_url_);
   if (app_id.has_value() && *app_id == installed_app_id &&
-      registrar().GetAppLaunchContainer(*app_id) ==
-          web_app::LaunchContainer::kWindow) {
-    OnInstall(blink::kWebDisplayModeStandalone);
+      registrar().GetAppDisplayMode(*app_id) ==
+          blink::mojom::DisplayMode::kStandalone) {
+    OnInstall(blink::mojom::DisplayMode::kStandalone);
   }
 }
 

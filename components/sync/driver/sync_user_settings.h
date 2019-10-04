@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNC_DRIVER_SYNC_USER_SETTINGS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
@@ -94,6 +95,9 @@ class SyncUserSettings : public syncer::DataTypeEncryptionHandler {
   // Whether a passphrase is required to decrypt the data for any currently
   // enabled data type.
   virtual bool IsPassphraseRequiredForPreferredDataTypes() const = 0;
+  // Whether trusted vault keys are required for encryption or decryption to
+  // proceed for any currently enabled data type.
+  virtual bool IsTrustedVaultKeyRequiredForPreferredDataTypes() const = 0;
   // Whether a "secondary" passphrase is in use (aka explicit passphrase), which
   // means either a custom or a frozen implicit passphrase.
   virtual bool IsUsingSecondaryPassphrase() const = 0;
@@ -108,10 +112,13 @@ class SyncUserSettings : public syncer::DataTypeEncryptionHandler {
   // Asynchronously decrypts pending keys using |passphrase|. Returns false
   // immediately if the passphrase could not be used to decrypt a locally cached
   // copy of encrypted keys; returns true otherwise.
-  // TODO(crbug.com/1010189): Introduce a dedicated API for trusted vault
-  // decryption keys.
   virtual bool SetDecryptionPassphrase(const std::string& passphrase)
       WARN_UNUSED_RESULT = 0;
+  // Analogous to SetDecryptionPassphrase but specifically for
+  // TRUSTED_VAULT_PASSPHRASE: it provides new decryption keys that could
+  // allow decrypting pending Nigori keys.
+  virtual void AddTrustedVaultDecryptionKeys(
+      const std::vector<std::string>& keys) = 0;
 };
 
 }  // namespace syncer

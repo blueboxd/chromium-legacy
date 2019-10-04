@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
@@ -41,11 +40,12 @@ SocketFactory::SocketFactory(net::NetLog* net_log,
 
 SocketFactory::~SocketFactory() {}
 
-void SocketFactory::CreateUDPSocket(mojom::UDPSocketRequest request,
-                                    mojom::UDPSocketListenerPtr listener) {
-  udp_socket_bindings_.AddBinding(
+void SocketFactory::CreateUDPSocket(
+    mojo::PendingReceiver<mojom::UDPSocket> receiver,
+    mojom::UDPSocketListenerPtr listener) {
+  udp_socket_receivers_.Add(
       std::make_unique<UDPSocket>(std::move(listener), net_log_),
-      std::move(request));
+      std::move(receiver));
 }
 
 void SocketFactory::CreateTCPServerSocket(

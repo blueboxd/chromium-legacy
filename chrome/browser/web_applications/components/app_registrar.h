@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class GURL;
@@ -77,7 +78,8 @@ class AppRegistrar {
       const AppId& app_id) const = 0;
   virtual const GURL& GetAppLaunchURL(const AppId& app_id) const = 0;
   virtual base::Optional<GURL> GetAppScope(const AppId& app_id) const = 0;
-  virtual LaunchContainer GetAppLaunchContainer(const AppId& app_id) const = 0;
+  virtual blink::mojom::DisplayMode GetAppDisplayMode(
+      const web_app::AppId& app_id) const = 0;
 
   virtual std::vector<AppId> GetAppIds() const = 0;
 

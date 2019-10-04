@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom-blink.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -39,7 +40,8 @@ class PLATFORM_EXPORT DocumentResourceCoordinator final {
  private:
   explicit DocumentResourceCoordinator(service_manager::InterfaceProvider*);
 
-  resource_coordinator::mojom::blink::DocumentCoordinationUnitPtr service_;
+  mojo::Remote<resource_coordinator::mojom::blink::DocumentCoordinationUnit>
+      service_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentResourceCoordinator);
 };

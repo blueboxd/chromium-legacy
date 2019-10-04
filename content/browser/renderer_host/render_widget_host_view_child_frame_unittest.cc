@@ -40,7 +40,9 @@
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "ui/base/ui_base_features.h"
@@ -145,16 +147,15 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     test_frame_connector_->SetView(view_);
     view_->SetFrameConnectorDelegate(test_frame_connector_);
 
-    viz::mojom::CompositorFrameSinkPtr sink;
-    viz::mojom::CompositorFrameSinkRequest sink_request =
-        mojo::MakeRequest(&sink);
-    viz::mojom::CompositorFrameSinkClientRequest client_request =
-        mojo::MakeRequest(&renderer_compositor_frame_sink_ptr_);
+    mojo::PendingRemote<viz::mojom::CompositorFrameSink> sink;
+    mojo::PendingReceiver<viz::mojom::CompositorFrameSink> sink_receiver =
+        sink.InitWithNewPipeAndPassReceiver();
     renderer_compositor_frame_sink_ =
         std::make_unique<FakeRendererCompositorFrameSink>(
-            std::move(sink), std::move(client_request));
+            std::move(sink), renderer_compositor_frame_sink_remote_
+                                 .BindNewPipeAndPassReceiver());
     view_->DidCreateNewRendererCompositorFrameSink(
-        renderer_compositor_frame_sink_ptr_.get());
+        renderer_compositor_frame_sink_remote_.get());
   }
 
   void TearDown() override {
@@ -198,7 +199,8 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
   MockRenderWidgetHostVisualPropertiesManager visual_properties_manager_;
 
  private:
-  viz::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_ptr_;
+  mojo::Remote<viz::mojom::CompositorFrameSinkClient>
+      renderer_compositor_frame_sink_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewChildFrameTest);
 };

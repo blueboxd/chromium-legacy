@@ -10,6 +10,8 @@
 #include "chrome/test/base/web_ui_browser_test.h"
 #include "chrome/test/data/webui/web_ui_test.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace {
@@ -39,7 +41,8 @@ class MojoWebUIBrowserTest : public BaseWebUIBrowserTest,
       mojo::ScopedMessagePipeHandle* interface_pipe) override;
 
  private:
-  void BindTestRunner(web_ui_test::mojom::TestRunnerRequest request);
+  void BindTestRunner(
+      mojo::PendingReceiver<web_ui_test::mojom::TestRunner> receiver);
 
   WebUITestPageHandler* test_page_handler_;
 

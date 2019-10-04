@@ -28,19 +28,27 @@ message SourcesProto {
   required bool default = 5;
 }
 
-// Full WebApp object data. Note on database identities:
+// Full WebApp object data. See detailed comments in
+// chrome/browser/web_applications/web_app.h. Note on database identities:
 // app_id is a hash of launch_url. app_id is the client tag for sync system.
 // app_id is the storage key in ModelTypeStore.
 message WebAppProto {
-  // Synced data.
-  required sync_pb.WebAppSpecifics specifics = 1;
-
-  // Local data. Not to be synced.
+  // Synced data. It is replicated across all devices with WEB_APPS.
   //
-  optional string description = 2;
-  optional string scope = 3;
-  required SourcesProto sources = 4;
-  required bool is_locally_installed = 5;
+  // |sync_data.name| and |sync_data.theme_color| are read by a device to
+  // generate a placeholder icon. Any device may write new values to synced
+  // |name| and |theme_color|. A random last update wins.
+  required sync_pb.WebAppSpecifics sync_data = 1;
+
+  // Local data. May vary across devices. Not to be synced.
+  //
+  required string name = 2;
+  optional uint32 theme_color = 3;
+  optional string description = 4;
+  optional string scope = 5;
+  required SourcesProto sources = 6;
+  required bool is_locally_installed = 7;
+  optional bool is_sync_placeholder = 8;
   // A list of icon infos.
-  repeated WebAppIconInfoProto icons = 6;
+  repeated WebAppIconInfoProto icons = 9;
 }

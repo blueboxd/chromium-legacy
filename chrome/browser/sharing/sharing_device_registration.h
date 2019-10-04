@@ -45,13 +45,13 @@ class SharingDeviceRegistration {
   // Un-registers device with sharing sync preferences.
   virtual void UnregisterDevice(RegistrationCallback callback);
 
+  // Returns if device can handle receiving of shared clipboard contents.
+  virtual bool IsSharedClipboardSupported() const;
+
   // For testing
   void SetEnabledFeaturesForTesting(
       std::set<sync_pb::SharingSpecificFields_EnabledFeatures>
           enabled_feautres);
-
-  // Returns if device can handle receiving of shared clipboard contents.
-  bool IsSharedClipboardSupported() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SharingDeviceRegistrationTest,

@@ -87,7 +87,7 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
   info.name = ConvertJavaStringToUTF16(env, java_name);
   info.short_name = ConvertJavaStringToUTF16(env, java_short_name);
   info.user_title = info.short_name;
-  info.display = static_cast<blink::WebDisplayMode>(java_display_mode);
+  info.display = static_cast<blink::mojom::DisplayMode>(java_display_mode);
   info.orientation =
       static_cast<blink::WebScreenOrientationLockType>(java_orientation);
   info.theme_color = JavaColorToOptionalSkColor(java_theme_color);

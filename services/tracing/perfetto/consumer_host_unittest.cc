@@ -143,9 +143,10 @@ class ThreadedPerfettoService : public mojom::TracingSessionClient {
   }
 
   void EnableTracingOnSequence(const perfetto::TraceConfig& config) {
-    tracing::mojom::TracingSessionClientPtr tracing_session_client;
+    mojo::PendingRemote<tracing::mojom::TracingSessionClient>
+        tracing_session_client;
     binding_ = std::make_unique<mojo::Binding<mojom::TracingSessionClient>>(
-        this, mojo::MakeRequest(&tracing_session_client));
+        this, tracing_session_client.InitWithNewPipeAndPassReceiver());
 
     consumer_->EnableTracing(
         mojo::MakeRequest(&tracing_session_host_),
@@ -672,8 +673,9 @@ class MockConsumerHost : public mojom::TracingSessionClient {
 
   void EnableTracing(const perfetto::TraceConfig& config,
                      mojom::TracingClientPriority priority) {
-    tracing::mojom::TracingSessionClientPtr tracing_session_client;
-    binding_.Bind(mojo::MakeRequest(&tracing_session_client));
+    mojo::PendingRemote<tracing::mojom::TracingSessionClient>
+        tracing_session_client;
+    binding_.Bind(tracing_session_client.InitWithNewPipeAndPassReceiver());
 
     binding_.set_connection_error_handler(base::BindOnce(
         &MockConsumerHost::OnConnectionLost, base::Unretained(this)));

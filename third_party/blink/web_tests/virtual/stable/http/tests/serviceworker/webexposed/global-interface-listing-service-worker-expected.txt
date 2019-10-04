@@ -2652,6 +2652,7 @@ interface WritableStreamDefaultWriter
     getter onpush
     getter onsync
     getter registration
+    getter serviceWorker
     method gc
     method skipWaiting
     setter onabortpayment

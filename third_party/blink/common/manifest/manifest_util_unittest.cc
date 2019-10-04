@@ -8,34 +8,33 @@
 
 namespace blink {
 
-TEST(ManifestUtilTest, WebDisplayModeConversions) {
+TEST(ManifestUtilTest, DisplayModeConversions) {
   struct ReversibleConversion {
-    blink::WebDisplayMode display_mode;
+    blink::mojom::DisplayMode display_mode;
     std::string lowercase_display_mode_string;
   } reversible_conversions[] = {
-      {blink::kWebDisplayModeUndefined, ""},
-      {blink::kWebDisplayModeBrowser, "browser"},
-      {blink::kWebDisplayModeMinimalUi, "minimal-ui"},
-      {blink::kWebDisplayModeStandalone, "standalone"},
-      {blink::kWebDisplayModeFullscreen, "fullscreen"},
+      {blink::mojom::DisplayMode::kUndefined, ""},
+      {blink::mojom::DisplayMode::kBrowser, "browser"},
+      {blink::mojom::DisplayMode::kMinimalUi, "minimal-ui"},
+      {blink::mojom::DisplayMode::kStandalone, "standalone"},
+      {blink::mojom::DisplayMode::kFullscreen, "fullscreen"},
   };
 
   for (const ReversibleConversion& conversion : reversible_conversions) {
-    EXPECT_EQ(
-        conversion.display_mode,
-        WebDisplayModeFromString(conversion.lowercase_display_mode_string));
+    EXPECT_EQ(conversion.display_mode,
+              DisplayModeFromString(conversion.lowercase_display_mode_string));
     EXPECT_EQ(conversion.lowercase_display_mode_string,
-              WebDisplayModeToString(conversion.display_mode));
+              DisplayModeToString(conversion.display_mode));
   }
 
-  // WebDisplayModeFromString() should work with non-lowercase strings.
-  EXPECT_EQ(blink::kWebDisplayModeFullscreen,
-            WebDisplayModeFromString("Fullscreen"));
+  // DisplayModeFromString() should work with non-lowercase strings.
+  EXPECT_EQ(blink::mojom::DisplayMode::kFullscreen,
+            DisplayModeFromString("Fullscreen"));
 
-  // WebDisplayModeFromString() should return
-  // blink::WebDisplayModeUndefined if the string isn't known.
-  EXPECT_EQ(blink::kWebDisplayModeUndefined,
-            WebDisplayModeFromString("random"));
+  // DisplayModeFromString() should return
+  // DisplayMode::kUndefined if the string isn't known.
+  EXPECT_EQ(blink::mojom::DisplayMode::kUndefined,
+            DisplayModeFromString("random"));
 }
 
 TEST(ManifestUtilTest, WebScreenOrientationLockTypeConversions) {

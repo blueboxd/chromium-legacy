@@ -60,7 +60,7 @@ void WebApksHandler::OnWebApkInfoRetrieved(const WebApkInfo& webapk_info) {
   result.SetString("manifestUrl", webapk_info.manifest_url);
   result.SetString("manifestStartUrl", webapk_info.manifest_start_url);
   result.SetString("displayMode",
-                   blink::WebDisplayModeToString(webapk_info.display));
+                   blink::DisplayModeToString(webapk_info.display));
   result.SetString("orientation", blink::WebScreenOrientationLockTypeToString(
                                       webapk_info.orientation));
   result.SetString("themeColor",

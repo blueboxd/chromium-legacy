@@ -69,12 +69,6 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
       IntentPickerCloseReason close_reason,
       bool should_persist);
 
-  static void RecordUma(const std::string& selected_app_package,
-                        PickerEntryType entry_type,
-                        IntentPickerCloseReason close_reason,
-                        Source source,
-                        bool should_persist);
-
   static bool IsGoogleRedirectorUrlForTesting(const GURL& url);
 
   static bool ShouldOverrideUrlLoadingForTesting(const GURL& previous_url,
@@ -156,6 +150,14 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   // Checks whether we can create the apps_navigation_throttle.
   static bool CanCreate(content::WebContents* web_contents);
 
+  static void RecordUma(const std::string& selected_app_package,
+                        PickerEntryType entry_type,
+                        IntentPickerCloseReason close_reason,
+                        Source source,
+                        bool should_persist,
+                        PickerAction action,
+                        Platform platform);
+
   // Determines the destination of the current navigation. We know that if the
   // |picker_action| is either ERROR or DIALOG_DEACTIVATED the navigation MUST
   // stay in Chrome, and when |picker_action| is PWA_APP_PRESSED the navigation
@@ -164,6 +166,12 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   static Platform GetDestinationPlatform(
       const std::string& selected_launch_name,
       PickerAction picker_action);
+
+  // Converts the provided |entry_type|, |close_reason| and |should_persist|
+  // boolean to a PickerAction value for recording in UMA.
+  static PickerAction GetPickerAction(PickerEntryType entry_type,
+                                      IntentPickerCloseReason close_reason,
+                                      bool should_persist);
 
   // If an installed PWA exists that can handle |url|, prepends it to |apps| and
   // returns the new list.
@@ -223,12 +231,6 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
                            TestGetDestinationPlatform);
   FRIEND_TEST_ALL_PREFIXES(chromeos::ChromeOsAppsNavigationThrottleTest,
                            TestGetDestinationPlatform);
-
-  // Converts the provided |entry_type|, |close_reason| and |should_persist|
-  // boolean to a PickerAction value for recording in UMA.
-  static PickerAction GetPickerAction(PickerEntryType entry_type,
-                                      IntentPickerCloseReason close_reason,
-                                      bool should_persist);
 
   content::NavigationThrottle::ThrottleCheckResult HandleRequest();
 

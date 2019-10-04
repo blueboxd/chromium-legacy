@@ -26,7 +26,7 @@ ShareTarget::~ShareTarget() {}
 
 ShortcutInfo::ShortcutInfo(const GURL& shortcut_url)
     : url(shortcut_url),
-      display(blink::kWebDisplayModeBrowser),
+      display(blink::mojom::DisplayMode::kBrowser),
       orientation(blink::kWebScreenOrientationLockDefault),
       source(SOURCE_ADD_TO_HOMESCREEN_SHORTCUT),
       ideal_splash_image_size_in_px(0),
@@ -56,12 +56,12 @@ void ShortcutInfo::UpdateFromManifest(const blink::Manifest& manifest) {
   scope = manifest.scope;
 
   // Set the display based on the manifest value, if any.
-  if (manifest.display != blink::kWebDisplayModeUndefined)
+  if (manifest.display != blink::mojom::DisplayMode::kUndefined)
     display = manifest.display;
 
-  if (display == blink::kWebDisplayModeStandalone ||
-      display == blink::kWebDisplayModeFullscreen ||
-      display == blink::kWebDisplayModeMinimalUi) {
+  if (display == blink::mojom::DisplayMode::kStandalone ||
+      display == blink::mojom::DisplayMode::kFullscreen ||
+      display == blink::mojom::DisplayMode::kMinimalUi) {
     source = SOURCE_ADD_TO_HOMESCREEN_STANDALONE;
     // Set the orientation based on the manifest value, or ignore if the display
     // mode is different from 'standalone', 'fullscreen' or 'minimal-ui'.

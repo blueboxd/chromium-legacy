@@ -99,7 +99,7 @@ TEST_F(ManifestParserTest, ValidNoContentParses) {
   ASSERT_TRUE(manifest->name.IsNull());
   ASSERT_TRUE(manifest->short_name.IsNull());
   ASSERT_TRUE(manifest->start_url.IsEmpty());
-  ASSERT_EQ(manifest->display, kWebDisplayModeUndefined);
+  ASSERT_EQ(manifest->display, blink::mojom::DisplayMode::kUndefined);
   ASSERT_EQ(manifest->orientation, kWebScreenOrientationLockDefault);
   ASSERT_FALSE(manifest->has_theme_color);
   ASSERT_FALSE(manifest->has_background_color);
@@ -452,7 +452,7 @@ TEST_F(ManifestParserTest, DisplayParseRules) {
   // Smoke test.
   {
     auto& manifest = ParseManifest("{ \"display\": \"browser\" }");
-    EXPECT_EQ(manifest->display, kWebDisplayModeBrowser);
+    EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kBrowser);
     EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -460,14 +460,14 @@ TEST_F(ManifestParserTest, DisplayParseRules) {
   // Trim whitespaces.
   {
     auto& manifest = ParseManifest("{ \"display\": \"  browser  \" }");
-    EXPECT_EQ(manifest->display, kWebDisplayModeBrowser);
+    EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kBrowser);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Don't parse if name isn't a string.
   {
     auto& manifest = ParseManifest("{ \"display\": {} }");
-    EXPECT_EQ(manifest->display, kWebDisplayModeUndefined);
+    EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kUndefined);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
         "property 'display' ignored,"
@@ -478,7 +478,7 @@ TEST_F(ManifestParserTest, DisplayParseRules) {
   // Don't parse if name isn't a string.
   {
     auto& manifest = ParseManifest("{ \"display\": 42 }");
-    EXPECT_EQ(manifest->display, kWebDisplayModeUndefined);
+    EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kUndefined);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
         "property 'display' ignored,"
@@ -489,7 +489,7 @@ TEST_F(ManifestParserTest, DisplayParseRules) {
   // Parse fails if string isn't known.
   {
     auto& manifest = ParseManifest("{ \"display\": \"browser_something\" }");
-    EXPECT_EQ(manifest->display, kWebDisplayModeUndefined);
+    EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kUndefined);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("unknown 'display' value ignored.", errors()[0]);
   }
@@ -497,35 +497,35 @@ TEST_F(ManifestParserTest, DisplayParseRules) {
   // Accept 'fullscreen'.
   {
     auto& manifest = ParseManifest("{ \"display\": \"fullscreen\" }");
-    EXPECT_EQ(manifest->display, kWebDisplayModeFullscreen);
+    EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kFullscreen);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept 'fullscreen'.
   {
     auto& manifest = ParseManifest("{ \"display\": \"standalone\" }");
-    EXPECT_EQ(manifest->display, kWebDisplayModeStandalone);
+    EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kStandalone);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept 'minimal-ui'.
   {
     auto& manifest = ParseManifest("{ \"display\": \"minimal-ui\" }");
-    EXPECT_EQ(manifest->display, kWebDisplayModeMinimalUi);
+    EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kMinimalUi);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept 'browser'.
   {
     auto& manifest = ParseManifest("{ \"display\": \"browser\" }");
-    EXPECT_EQ(manifest->display, kWebDisplayModeBrowser);
+    EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kBrowser);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Case insensitive.
   {
     auto& manifest = ParseManifest("{ \"display\": \"BROWSER\" }");
-    EXPECT_EQ(manifest->display, kWebDisplayModeBrowser);
+    EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kBrowser);
     EXPECT_EQ(0u, GetErrorCount());
   }
 }

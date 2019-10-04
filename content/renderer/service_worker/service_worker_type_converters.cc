@@ -17,7 +17,7 @@ TypeConverter<blink::WebServiceWorkerObjectInfo,
   if (!input) {
     return blink::WebServiceWorkerObjectInfo(
         blink::mojom::kInvalidServiceWorkerVersionId,
-        blink::mojom::ServiceWorkerState::kUnknown, blink::WebURL(),
+        blink::mojom::ServiceWorkerState::kParsed, blink::WebURL(),
         mojo::ScopedInterfaceEndpointHandle() /* host_remote */,
         mojo::ScopedInterfaceEndpointHandle() /* receiver */);
   }

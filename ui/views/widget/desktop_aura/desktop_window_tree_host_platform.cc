@@ -115,9 +115,13 @@ DesktopWindowTreeHostPlatform::~DesktopWindowTreeHostPlatform() {
   DestroyDispatcher();
 }
 
+aura::Window* DesktopWindowTreeHostPlatform::GetContentWindow() {
+  return desktop_native_widget_aura_->content_window();
+}
+
 void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
   if (params.type == Widget::InitParams::TYPE_WINDOW)
-    content_window()->SetProperty(aura::client::kAnimationsDisabledKey, true);
+    GetContentWindow()->SetProperty(aura::client::kAnimationsDisabledKey, true);
 
   // If we have a parent, record the parent/child relationship. We use this
   // data during destruction to make sure that when we try to close a parent
@@ -191,7 +195,7 @@ void DesktopWindowTreeHostPlatform::Close() {
   if (close_widget_factory_.HasWeakPtrs() || !platform_window())
     return;
 
-  content_window()->Hide();
+  GetContentWindow()->Hide();
 
   // Hide while waiting for the close.
   // Please note that it's better to call WindowTreeHost::Hide, which also calls
@@ -289,7 +293,7 @@ void DesktopWindowTreeHostPlatform::Show(ui::WindowShowState show_state,
         IsActive() ? show_state : ui::SHOW_STATE_INACTIVE);
   }
 
-  desktop_native_widget_aura_->content_window()->Show();
+  GetContentWindow()->Show();
 }
 
 bool DesktopWindowTreeHostPlatform::IsVisible() const {
@@ -320,9 +324,9 @@ void DesktopWindowTreeHostPlatform::CenterWindow(const gfx::Size& size) {
 
   // If |window_|'s transient parent bounds are big enough to contain |size|,
   // use them instead.
-  if (wm::GetTransientParent(content_window())) {
+  if (wm::GetTransientParent(GetContentWindow())) {
     gfx::Rect transient_parent_rect =
-        wm::GetTransientParent(content_window())->GetBoundsInScreen();
+        wm::GetTransientParent(GetContentWindow())->GetBoundsInScreen();
     if (transient_parent_rect.height() >= size.height() &&
         transient_parent_rect.width() >= size.width()) {
       parent_bounds_in_pixels = ToPixelRect(transient_parent_rect);
@@ -471,13 +475,14 @@ bool DesktopWindowTreeHostPlatform::SetWindowTitle(
 
 void DesktopWindowTreeHostPlatform::ClearNativeFocus() {
   // This method is weird and misnamed. Instead of clearing the native focus,
-  // it sets the focus to our content_window(), which will trigger a cascade
+  // it sets the focus to our content_window, which will trigger a cascade
   // of focus changes into views.
-  if (content_window() && aura::client::GetFocusClient(content_window()) &&
-      content_window()->Contains(
-          aura::client::GetFocusClient(content_window())->GetFocusedWindow())) {
-    aura::client::GetFocusClient(content_window())
-        ->FocusWindow(content_window());
+  if (GetContentWindow() && aura::client::GetFocusClient(GetContentWindow()) &&
+      GetContentWindow()->Contains(
+          aura::client::GetFocusClient(GetContentWindow())
+              ->GetFocusedWindow())) {
+    aura::client::GetFocusClient(GetContentWindow())
+        ->FocusWindow(GetContentWindow());
   }
 }
 
@@ -506,7 +511,7 @@ NonClientFrameView* DesktopWindowTreeHostPlatform::CreateNonClientFrameView() {
 }
 
 bool DesktopWindowTreeHostPlatform::ShouldUseNativeFrame() const {
-  return false;
+  return platform_window()->ShouldUseNativeFrame();
 }
 
 bool DesktopWindowTreeHostPlatform::ShouldWindowContentsBeTransparent() const {
@@ -650,9 +655,9 @@ void DesktopWindowTreeHostPlatform::OnWindowStateChanged(
   if (is_minimized != was_minimized) {
     if (is_minimized) {
       SetVisible(false);
-      content_window()->Hide();
+      GetContentWindow()->Hide();
     } else {
-      content_window()->Show();
+      GetContentWindow()->Show();
       SetVisible(true);
     }
   }
@@ -685,10 +690,6 @@ base::Optional<gfx::Size>
 DesktopWindowTreeHostPlatform::GetMaximumSizeForWindow() {
   return ToPixelRect(gfx::Rect(native_widget_delegate()->GetMaximumSize()))
       .size();
-}
-
-aura::Window* DesktopWindowTreeHostPlatform::content_window() {
-  return desktop_native_widget_aura_->content_window();
 }
 
 gfx::Rect DesktopWindowTreeHostPlatform::ToDIPRect(

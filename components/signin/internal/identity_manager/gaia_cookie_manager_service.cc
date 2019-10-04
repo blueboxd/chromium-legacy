@@ -74,7 +74,7 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
 
 // Name of the GAIA cookie that is being observed to detect when available
 // accounts have changed in the content-area.
-const char* const kGaiaCookieName = "APISID";
+const char* const kGaiaCookieName = "SAPISID";
 
 // State of requests to Gaia logout endpoint. Used as entry for histogram
 // |Signin.GaiaCookieManager.Logout|.

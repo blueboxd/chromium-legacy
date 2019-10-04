@@ -73,8 +73,8 @@ void DisplayCutoutHostImpl::DidFinishNavigation(
   // |RenderFrameHost|.
   RenderWidgetHostImpl* rwh =
       web_contents_impl_->GetRenderViewHost()->GetWidget();
-  blink::WebDisplayMode mode = web_contents_impl_->GetDisplayMode(rwh);
-  if (mode == blink::WebDisplayMode::kWebDisplayModeFullscreen)
+  blink::mojom::DisplayMode mode = web_contents_impl_->GetDisplayMode(rwh);
+  if (mode == blink::mojom::DisplayMode::kFullscreen)
     SetCurrentRenderFrameHost(web_contents_impl_->GetMainFrame());
 }
 

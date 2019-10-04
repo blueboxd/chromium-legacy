@@ -22,6 +22,8 @@
 #include "content/common/content_export.h"
 #include "content/public/common/process_type.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "ppapi/c/pp_instance.h"
@@ -66,7 +68,7 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
 
   using CreateUDPSocketCallback = base::RepeatingCallback<void(
       network::mojom::NetworkContext* network_context,
-      network::mojom::UDPSocketRequest socket_request,
+      mojo::PendingReceiver<network::mojom::UDPSocket> socket_receiver,
       network::mojom::UDPSocketListenerPtr socket_listener)>;
 
   static void SetCreateUDPSocketCallbackForTesting(
@@ -209,7 +211,7 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
   // Bound (in a Mojo sense) when binding (in a network sense) starts. Closed in
   // Close() and on Mojo pipe errors. Must only be accessed (and destroyed) on
   // UI thread.
-  network::mojom::UDPSocketPtr socket_;
+  mojo::Remote<network::mojom::UDPSocket> socket_;
 
   // Bound (in a Mojo sense) when binding (in a network sense) completes.
   // Binding late avoids receiving data when still setting up the socket. Closed

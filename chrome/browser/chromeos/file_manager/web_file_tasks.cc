@@ -22,6 +22,7 @@
 #include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -117,10 +118,10 @@ void ExecuteWebTask(Profile* profile,
       apps::mojom::LaunchContainer::kLaunchContainerWindow;
 
   // If the app isn't configured to open in a window, it should open as a tab.
-  if (registrar.GetAppLaunchContainer(task.app_id) !=
-      web_app::LaunchContainer::kWindow) {
-    DCHECK_EQ(registrar.GetAppLaunchContainer(task.app_id),
-              web_app::LaunchContainer::kTab);
+  if (registrar.GetAppDisplayMode(task.app_id) !=
+      blink::mojom::DisplayMode::kStandalone) {
+    DCHECK_EQ(registrar.GetAppDisplayMode(task.app_id),
+              blink::mojom::DisplayMode::kBrowser);
     launch_container = apps::mojom::LaunchContainer::kLaunchContainerTab;
   }
 

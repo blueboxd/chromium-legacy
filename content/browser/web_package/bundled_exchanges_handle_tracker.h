@@ -7,8 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "content/browser/web_package/bundled_exchanges_reader.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace content {
 
@@ -18,8 +17,8 @@ class BundledExchangesReader;
 // This class is used to track navigations within the bundled exchanges file.
 class BundledExchangesHandleTracker {
  public:
-  explicit BundledExchangesHandleTracker(
-      scoped_refptr<BundledExchangesReader> reader);
+  BundledExchangesHandleTracker(scoped_refptr<BundledExchangesReader> reader,
+                                const GURL& target_inner_url);
   ~BundledExchangesHandleTracker();
 
   // Returns a BundledExchangesHandle to handle the navigation request to |url|
@@ -30,6 +29,7 @@ class BundledExchangesHandleTracker {
 
  private:
   scoped_refptr<BundledExchangesReader> reader_;
+  const GURL target_inner_url_;
 
   DISALLOW_COPY_AND_ASSIGN(BundledExchangesHandleTracker);
 };

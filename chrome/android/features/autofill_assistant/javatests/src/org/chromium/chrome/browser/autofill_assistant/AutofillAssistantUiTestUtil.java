@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -200,5 +201,14 @@ class AutofillAssistantUiTestUtil {
     public static void startOnBlankPage(CustomTabActivityTestRule testRule) {
         testRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
                 InstrumentationRegistry.getTargetContext(), "about:blank"));
+    }
+    /**
+     * Starts Autofill Assistant on the given {@code activity} and injects the given {@code
+     * testService}.
+     */
+    public static void startAutofillAssistant(
+            ChromeActivity activity, AutofillAssistantTestService testService) {
+        testService.scheduleForInjection();
+        TestThreadUtils.runOnUiThreadBlocking(() -> AutofillAssistantFacade.start(activity));
     }
 }

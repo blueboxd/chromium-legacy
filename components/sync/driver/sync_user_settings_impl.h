@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNC_DRIVER_SYNC_USER_SETTINGS_IMPL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "components/sync/base/model_type.h"
@@ -54,12 +55,15 @@ class SyncUserSettingsImpl : public SyncUserSettings {
   ModelTypeSet GetEncryptedDataTypes() const override;
   bool IsPassphraseRequired() const override;
   bool IsPassphraseRequiredForPreferredDataTypes() const override;
+  bool IsTrustedVaultKeyRequiredForPreferredDataTypes() const override;
   bool IsUsingSecondaryPassphrase() const override;
   base::Time GetExplicitPassphraseTime() const override;
   PassphraseType GetPassphraseType() const override;
 
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
+  void AddTrustedVaultDecryptionKeys(
+      const std::vector<std::string>& keys) override;
 
   void SetSyncRequestedIfNotSetExplicitly();
 

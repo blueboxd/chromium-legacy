@@ -575,6 +575,10 @@ ServiceWorkerRegistration* ServiceWorkerGlobalScope::registration() {
   return registration_;
 }
 
+::blink::ServiceWorker* ServiceWorkerGlobalScope::serviceWorker() {
+  return service_worker_;
+}
+
 ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* script_state) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   // FIXME: short-term fix, see details at:
@@ -752,6 +756,7 @@ void ServiceWorkerGlobalScope::DispatchExtendableEventWithRespondWith(
 void ServiceWorkerGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(clients_);
   visitor->Trace(registration_);
+  visitor->Trace(service_worker_);
   visitor->Trace(service_worker_objects_);
   visitor->Trace(pending_preload_fetch_events_);
   WorkerGlobalScope::Trace(visitor);
@@ -1433,6 +1438,7 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
     mojo::PendingAssociatedRemote<mojom::blink::ServiceWorkerHost>
         service_worker_host,
     mojom::blink::ServiceWorkerRegistrationObjectInfoPtr registration_info,
+    mojom::blink::ServiceWorkerObjectInfoPtr service_worker_info,
     mojom::blink::FetchHandlerExistence fetch_hander_existence) {
   DCHECK(IsContextThread());
   DCHECK(!global_scope_initialized_);
@@ -1449,6 +1455,14 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
   DCHECK(registration_info->receiver.is_valid());
   registration_ = MakeGarbageCollected<ServiceWorkerRegistration>(
       GetExecutionContext(), std::move(registration_info));
+
+  // Set ServiceWorkerGlobalScope#serviceWorker.
+  DCHECK_NE(service_worker_info->version_id,
+            mojom::blink::kInvalidServiceWorkerVersionId);
+  DCHECK(service_worker_info->host_remote.is_valid());
+  DCHECK(service_worker_info->receiver.is_valid());
+  service_worker_ = ::blink::ServiceWorker::From(
+      GetExecutionContext(), std::move(service_worker_info));
 
   SetFetchHandlerExistence(fetch_hander_existence);
 

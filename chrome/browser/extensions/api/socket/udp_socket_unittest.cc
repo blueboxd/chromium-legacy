@@ -19,6 +19,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/api/socket/udp_socket.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/test_completion_callback.h"
@@ -37,11 +38,11 @@ class UDPSocketUnitTest : public extensions::ExtensionServiceTestBase {
     network::mojom::NetworkContext* network_context =
         content::BrowserContext::GetDefaultStoragePartition(profile())
             ->GetNetworkContext();
-    network::mojom::UDPSocketPtrInfo socket;
+    mojo::PendingRemote<network::mojom::UDPSocket> socket;
     network::mojom::UDPSocketListenerPtr listener_ptr;
     network::mojom::UDPSocketListenerRequest listener_request =
         mojo::MakeRequest(&listener_ptr);
-    network_context->CreateUDPSocket(mojo::MakeRequest(&socket),
+    network_context->CreateUDPSocket(socket.InitWithNewPipeAndPassReceiver(),
                                      std::move(listener_ptr));
     return std::make_unique<UDPSocket>(
         std::move(socket), std::move(listener_request), "abcdefghijklmnopqrst");

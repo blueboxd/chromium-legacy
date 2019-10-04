@@ -38,6 +38,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   base::Time GetExplicitPassphraseTime() const;
   bool IsPassphraseRequired() const;
   bool IsUsingSecondaryPassphrase() const;
+  bool IsTrustedVaultKeyRequired() const;
   void EnableEncryptEverything();
   bool IsEncryptEverythingEnabled() const;
   void SetEncryptionPassphrase(const std::string& passphrase);

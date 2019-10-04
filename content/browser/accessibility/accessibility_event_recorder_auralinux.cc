@@ -63,7 +63,7 @@ class AccessibilityEventRecorderAuraLinux : public AccessibilityEventRecorder {
   AtspiEventListener* atspi_event_listener_ = nullptr;
   base::ProcessId pid_;
   base::StringPiece application_name_match_pattern_;
-  std::vector<unsigned int> atk_listener_ids_;
+  static std::vector<unsigned int> atk_listener_ids_;
   static AccessibilityEventRecorderAuraLinux* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityEventRecorderAuraLinux);
@@ -72,6 +72,9 @@ class AccessibilityEventRecorderAuraLinux : public AccessibilityEventRecorder {
 // static
 AccessibilityEventRecorderAuraLinux*
     AccessibilityEventRecorderAuraLinux::instance_ = nullptr;
+std::vector<unsigned int>
+    content::AccessibilityEventRecorderAuraLinux::atk_listener_ids_ =
+        std::vector<unsigned int>();
 
 // static
 gboolean AccessibilityEventRecorderAuraLinux::OnATKEventReceived(
@@ -146,6 +149,8 @@ void AccessibilityEventRecorderAuraLinux::AddATKEventListener(
 }
 
 void AccessibilityEventRecorderAuraLinux::AddATKEventListeners() {
+  if (atk_listener_ids_.size() >= 1)
+    return;
   GObject* gobject = G_OBJECT(g_object_new(G_TYPE_OBJECT, nullptr, nullptr));
   g_object_unref(atk_no_op_object_new(gobject));
   g_object_unref(gobject);

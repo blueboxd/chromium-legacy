@@ -130,14 +130,15 @@ VRServiceImpl::~VRServiceImpl() {
   runtime_manager_->RemoveService(this);
 }
 
-void VRServiceImpl::Create(content::RenderFrameHost* render_frame_host,
-                           device::mojom::VRServiceRequest request) {
+void VRServiceImpl::Create(
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<device::mojom::VRService> receiver) {
   std::unique_ptr<VRServiceImpl> vr_service_impl =
       std::make_unique<VRServiceImpl>(render_frame_host);
 
   VRServiceImpl* impl = vr_service_impl.get();
-  impl->binding_ =
-      mojo::MakeStrongBinding(std::move(vr_service_impl), std::move(request));
+  impl->receiver_ = mojo::MakeSelfOwnedReceiver(std::move(vr_service_impl),
+                                                std::move(receiver));
 }
 
 void VRServiceImpl::InitializationComplete() {
@@ -194,11 +195,11 @@ void VRServiceImpl::RenderFrameDeleted(content::RenderFrameHost* host) {
   if (host != render_frame_host_)
     return;
 
-  // Binding should always be live here, as this is a StrongBinding.
-  // Close the binding (and delete this VrServiceImpl) when the RenderFrameHost
+  // Receiver should always be live here, as this is a SelfOwnedReceiver.
+  // Close the receiver (and delete this VrServiceImpl) when the RenderFrameHost
   // is deleted.
-  DCHECK(binding_.get());
-  binding_->Close();
+  DCHECK(receiver_.get());
+  receiver_->Close();
 }
 
 void VRServiceImpl::OnWebContentsFocusChanged(content::RenderWidgetHost* host,

@@ -41,6 +41,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
@@ -1102,8 +1103,8 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_LaunchContainer) {
     params.launch_container = LaunchContainer::kDefault;
     auto app_id = InstallWebAppWithParams(params);
 
-    EXPECT_EQ(LaunchContainer::kTab,
-              registrar().GetAppById(app_id)->launch_container());
+    EXPECT_EQ(blink::mojom::DisplayMode::kBrowser,
+              registrar().GetAppById(app_id)->display_mode());
   }
   {
     CreateDataToRetrieve(GURL("https://example.org/"), /*open_as_window*/ true);
@@ -1112,8 +1113,8 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_LaunchContainer) {
     params.launch_container = LaunchContainer::kDefault;
     auto app_id = InstallWebAppWithParams(params);
 
-    EXPECT_EQ(LaunchContainer::kWindow,
-              registrar().GetAppById(app_id)->launch_container());
+    EXPECT_EQ(blink::mojom::DisplayMode::kStandalone,
+              registrar().GetAppById(app_id)->display_mode());
   }
   {
     CreateDataToRetrieve(GURL("https://example.au/"), /*open_as_window*/ true);
@@ -1122,8 +1123,8 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_LaunchContainer) {
     params.launch_container = LaunchContainer::kTab;
     auto app_id = InstallWebAppWithParams(params);
 
-    EXPECT_EQ(LaunchContainer::kTab,
-              registrar().GetAppById(app_id)->launch_container());
+    EXPECT_EQ(blink::mojom::DisplayMode::kBrowser,
+              registrar().GetAppById(app_id)->display_mode());
   }
   {
     CreateDataToRetrieve(GURL("https://example.app/"),
@@ -1133,8 +1134,8 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_LaunchContainer) {
     params.launch_container = LaunchContainer::kWindow;
     auto app_id = InstallWebAppWithParams(params);
 
-    EXPECT_EQ(LaunchContainer::kWindow,
-              registrar().GetAppById(app_id)->launch_container());
+    EXPECT_EQ(blink::mojom::DisplayMode::kStandalone,
+              registrar().GetAppById(app_id)->display_mode());
   }
 }
 

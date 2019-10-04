@@ -276,7 +276,8 @@ TEST_F(WorkerThreadTest, SyncTerminate_OnIdle) {
   // idle.
   worker_thread_->WaitForInit();
 
-  WorkerThread::TerminateAllWorkersForTesting();
+  worker_thread_->TerminateForTesting();
+  worker_thread_->WaitForShutdownForTesting();
 
   // The worker thread may gracefully shut down before forcible termination
   // runs.
@@ -296,19 +297,19 @@ TEST_F(WorkerThreadTest, AsyncTerminate_ImmediatelyAfterStart) {
   EXPECT_EQ(ExitCode::kGracefullyTerminated, GetExitCode());
 }
 
-// Disabled due to flakiness: https://crbug.com/1003217.
-TEST_F(WorkerThreadTest, DISABLED_SyncTerminate_ImmediatelyAfterStart) {
+TEST_F(WorkerThreadTest, SyncTerminate_ImmediatelyAfterStart) {
   ExpectReportingCallsForWorkerPossiblyTerminatedBeforeInitialization();
   Start();
 
   // There are two possible cases depending on timing:
   // (1) If the thread hasn't been initialized on the worker thread yet,
-  // TerminateAllWorkersForTesting() should wait for initialization and shut
-  // down the thread immediately after that.
+  // TerminateForTesting() should wait for initialization and shut down the
+  // thread immediately after that.
   // (2) If the thread has already been initialized on the worker thread,
-  // TerminateAllWorkersForTesting() should synchronously forcibly terminates
-  // the worker execution.
-  WorkerThread::TerminateAllWorkersForTesting();
+  // TerminateForTesting() should synchronously forcibly terminates the worker
+  // script execution.
+  worker_thread_->TerminateForTesting();
+  worker_thread_->WaitForShutdownForTesting();
   ExitCode exit_code = GetExitCode();
   EXPECT_TRUE(ExitCode::kGracefullyTerminated == exit_code ||
               ExitCode::kSyncForciblyTerminated == exit_code);
@@ -343,9 +344,9 @@ TEST_F(WorkerThreadTest, SyncTerminate_WhileTaskIsRunning) {
   StartWithSourceCodeNotToFinish();
   reporting_proxy_->WaitUntilScriptEvaluation();
 
-  // TerminateAllWorkersForTesting() synchronously terminates the worker
-  // execution.
-  WorkerThread::TerminateAllWorkersForTesting();
+  // TerminateForTesting() synchronously terminates the worker script execution.
+  worker_thread_->TerminateForTesting();
+  worker_thread_->WaitForShutdownForTesting();
   EXPECT_EQ(ExitCode::kSyncForciblyTerminated, GetExitCode());
 }
 
@@ -362,9 +363,10 @@ TEST_F(WorkerThreadTest,
   EXPECT_TRUE(IsForcibleTerminationTaskScheduled());
   EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
 
-  // TerminateAllWorkersForTesting() should overtake the scheduled forcible
-  // termination task.
-  WorkerThread::TerminateAllWorkersForTesting();
+  // TerminateForTesting() should overtake the scheduled forcible termination
+  // task.
+  worker_thread_->TerminateForTesting();
+  worker_thread_->WaitForShutdownForTesting();
   EXPECT_FALSE(IsForcibleTerminationTaskScheduled());
   EXPECT_EQ(ExitCode::kSyncForciblyTerminated, GetExitCode());
 }

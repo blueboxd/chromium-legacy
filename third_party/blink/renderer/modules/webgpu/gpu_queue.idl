@@ -9,6 +9,6 @@
 ] interface GPUQueue {
     void submit(sequence<GPUCommandBuffer> buffers);
 
-    GPUFence createFence(optional GPUFenceDescriptor descriptor);
+    GPUFence createFence(optional GPUFenceDescriptor descriptor = {});
     void signal(GPUFence fence, unsigned long long signalValue);
 };

@@ -135,6 +135,11 @@ bool SyncUserSettingsImpl::IsPassphraseRequiredForPreferredDataTypes() const {
   return IsEncryptedDatatypeEnabled() && IsPassphraseRequired();
 }
 
+bool SyncUserSettingsImpl::IsTrustedVaultKeyRequiredForPreferredDataTypes()
+    const {
+  return IsEncryptedDatatypeEnabled() && crypto_->IsTrustedVaultKeyRequired();
+}
+
 bool SyncUserSettingsImpl::IsUsingSecondaryPassphrase() const {
   return crypto_->IsUsingSecondaryPassphrase();
 }
@@ -163,6 +168,12 @@ bool SyncUserSettingsImpl::SetDecryptionPassphrase(
   bool result = crypto_->SetDecryptionPassphrase(passphrase);
   UMA_HISTOGRAM_BOOLEAN("Sync.PassphraseDecryptionSucceeded", result);
   return result;
+}
+
+void SyncUserSettingsImpl::AddTrustedVaultDecryptionKeys(
+    const std::vector<std::string>& keys) {
+  DVLOG(1) << "Adding trusted vault decryption keys.";
+  crypto_->AddTrustedVaultDecryptionKeys(keys);
 }
 
 void SyncUserSettingsImpl::SetSyncRequestedIfNotSetExplicitly() {

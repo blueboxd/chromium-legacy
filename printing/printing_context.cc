@@ -69,25 +69,25 @@ PrintingContext::Result PrintingContext::OnError() {
 
 PrintingContext::Result PrintingContext::UsePdfSettings() {
   base::Value pdf_settings(base::Value::Type::DICTIONARY);
-  pdf_settings.SetKey(kSettingHeaderFooterEnabled, base::Value(false));
-  pdf_settings.SetKey(kSettingShouldPrintBackgrounds, base::Value(false));
-  pdf_settings.SetKey(kSettingShouldPrintSelectionOnly, base::Value(false));
-  pdf_settings.SetKey(kSettingMarginsType, base::Value(printing::NO_MARGINS));
-  pdf_settings.SetKey(kSettingCollate, base::Value(true));
-  pdf_settings.SetKey(kSettingCopies, base::Value(1));
-  pdf_settings.SetKey(kSettingColor, base::Value(printing::COLOR));
-  pdf_settings.SetKey(kSettingDpiHorizontal, base::Value(kPointsPerInch));
-  pdf_settings.SetKey(kSettingDpiVertical, base::Value(kPointsPerInch));
-  pdf_settings.SetKey(kSettingDuplexMode, base::Value(printing::SIMPLEX));
-  pdf_settings.SetKey(kSettingLandscape, base::Value(false));
-  pdf_settings.SetKey(kSettingDeviceName, base::Value(""));
-  pdf_settings.SetKey(kSettingPrintToPDF, base::Value(true));
-  pdf_settings.SetKey(kSettingCloudPrintDialog, base::Value(false));
-  pdf_settings.SetKey(kSettingPrintWithPrivet, base::Value(false));
-  pdf_settings.SetKey(kSettingPrintWithExtension, base::Value(false));
-  pdf_settings.SetKey(kSettingScaleFactor, base::Value(100));
-  pdf_settings.SetKey(kSettingRasterizePdf, base::Value(false));
-  pdf_settings.SetKey(kSettingPagesPerSheet, base::Value(1));
+  pdf_settings.SetBoolKey(kSettingHeaderFooterEnabled, false);
+  pdf_settings.SetBoolKey(kSettingShouldPrintBackgrounds, false);
+  pdf_settings.SetBoolKey(kSettingShouldPrintSelectionOnly, false);
+  pdf_settings.SetIntKey(kSettingMarginsType, printing::NO_MARGINS);
+  pdf_settings.SetBoolKey(kSettingCollate, true);
+  pdf_settings.SetIntKey(kSettingCopies, 1);
+  pdf_settings.SetIntKey(kSettingColor, printing::COLOR);
+  pdf_settings.SetIntKey(kSettingDpiHorizontal, kPointsPerInch);
+  pdf_settings.SetIntKey(kSettingDpiVertical, kPointsPerInch);
+  pdf_settings.SetIntKey(kSettingDuplexMode, printing::SIMPLEX);
+  pdf_settings.SetBoolKey(kSettingLandscape, false);
+  pdf_settings.SetStringKey(kSettingDeviceName, "");
+  pdf_settings.SetBoolKey(kSettingPrintToPDF, true);
+  pdf_settings.SetBoolKey(kSettingCloudPrintDialog, false);
+  pdf_settings.SetBoolKey(kSettingPrintWithPrivet, false);
+  pdf_settings.SetBoolKey(kSettingPrintWithExtension, false);
+  pdf_settings.SetIntKey(kSettingScaleFactor, 100);
+  pdf_settings.SetBoolKey(kSettingRasterizePdf, false);
+  pdf_settings.SetIntKey(kSettingPagesPerSheet, 1);
   return UpdatePrintSettings(std::move(pdf_settings));
 }
 

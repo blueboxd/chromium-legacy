@@ -11063,6 +11063,37 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="CRAS_CLIENT_TYPE_CROSVM"/>
 </enum>
 
+<enum name="CrasDeviceType">
+  <summary>
+    List of the device type of CRAS. The list can be found in
+    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/master/cras/src/server/cras_server_metrics.c
+    (enum CRAS_METRICS_DEVICE_TYPE).
+  </summary>
+  <int value="0" label="CRAS_METRICS_DEVICE_INTERNAL_SPEAKER"/>
+  <int value="1" label="CRAS_METRICS_DEVICE_HEADPHONE"/>
+  <int value="2" label="CRAS_METRICS_DEVICE_HDMI"/>
+  <int value="3" label="CRAS_METRICS_DEVICE_HAPTIC"/>
+  <int value="4" label="CRAS_METRICS_DEVICE_LINEOUT"/>
+  <int value="5" label="CRAS_METRICS_DEVICE_INTERNAL_MIC"/>
+  <int value="6" label="CRAS_METRICS_DEVICE_FRONT_MIC"/>
+  <int value="7" label="CRAS_METRICS_DEVICE_REAR_MIC"/>
+  <int value="8" label="CRAS_METRICS_DEVICE_KEYBOARD_MIC"/>
+  <int value="9" label="CRAS_METRICS_DEVICE_MIC"/>
+  <int value="10" label="CRAS_METRICS_DEVICE_HOTWORD"/>
+  <int value="11" label="CRAS_METRICS_DEVICE_POST_MIX_LOOPBACK"/>
+  <int value="12" label="CRAS_METRICS_DEVICE_POST_DSP_LOOPBACK"/>
+  <int value="13" label="CRAS_METRICS_DEVICE_USB"/>
+  <int value="14" label="CRAS_METRICS_DEVICE_A2DP"/>
+  <int value="15" label="CRAS_METRICS_DEVICE_HFP"/>
+  <int value="16" label="CRAS_METRICS_DEVICE_HSP"/>
+  <int value="17" label="CRAS_METRICS_DEVICE_BLUETOOTH"/>
+  <int value="18" label="CRAS_METRICS_DEVICE_NO_DEVICE"/>
+  <int value="19" label="CRAS_METRICS_DEVICE_NORMAL_FALLBACK"/>
+  <int value="20" label="CRAS_METRICS_DEVICE_ABNORMAL_FALLBACK"/>
+  <int value="21" label="CRAS_METRICS_DEVICE_SILENT_HOTWORD"/>
+  <int value="22" label="CRAS_METRICS_DEVICE_UNKNOWN"/>
+</enum>
+
 <enum name="CrashExitCodes">
 <!-- These are abs() raw exit codes, so always positive. See MapCrashExitCodeForHistogram  function. See also the WindowsExitCode enum. -->
 
@@ -24752,7 +24783,7 @@ Called by update_net_error_codes.py.-->
   <int value="2977" label="AutoplayDynamicDelegation"/>
   <int value="2978" label="ToggleEventHandlerDuringParsing"/>
   <int value="2979" label="FragmentDoubleHash"/>
-  <int value="2980" label="V8RegExpMatchAllWithNonGlobalRegExp"/>
+  <int value="2980" label="V8RegExpMatchAllWithNonGlobalRegExp (obsolete)"/>
   <int value="2981" label="OBSOLETE_CSSValueOverflowXOverlay"/>
   <int value="2982" label="OBSOLETE_CSSValueOverflowYOverlay"/>
   <int value="2983" label="ContentIndexAdd"/>
@@ -24820,6 +24851,7 @@ Called by update_net_error_codes.py.-->
   <int value="3041" label="FragmentHasTildeAtTilde"/>
   <int value="3042" label="FragmentHasAmpersandDelimiterQuestion"/>
   <int value="3043" label="InvalidFragmentDirective"/>
+  <int value="3044" label="ContactsManagerGetProperties"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -35242,6 +35274,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1645071473" label="ChromeColors:disabled"/>
   <int value="-1641832607" label="DragToPinTabs:enabled"/>
   <int value="-1638815914" label="enable-experimental-productivity-features"/>
+  <int value="-1634895178" label="SharingDeriveVapidKey:disabled"/>
   <int value="-1634878515" label="ChromeHomeModernLayout:enabled"/>
   <int value="-1634490190"
       label="AutofillCreditCardLocalCardMigration:disabled"/>
@@ -36690,6 +36723,7 @@ from previous Chrome versions.
   <int value="241187301" label="BrowserTouchBar:disabled"/>
   <int value="244697230" label="enable-theme-color-in-tabbed-mode"/>
   <int value="245896533" label="SearchSuggestionsOnLocalNtp:enabled"/>
+  <int value="245919941" label="SharingDeriveVapidKey:enabled"/>
   <int value="250855010" label="WebAssemblyBaseline:disabled"/>
   <int value="255375615" label="stop-non-timers-in-background:enabled"/>
   <int value="258621334"

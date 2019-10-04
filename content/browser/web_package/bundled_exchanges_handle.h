@@ -19,6 +19,7 @@ namespace content {
 class BundledExchangesSource;
 class BundledExchangesURLLoaderFactory;
 class BundledExchangesHandleTracker;
+class BundledExchangesNavigationInfo;
 class BundledExchangesReader;
 class NavigationLoaderInterceptor;
 
@@ -31,6 +32,8 @@ class BundledExchangesHandle {
       std::unique_ptr<BundledExchangesSource> source);
   static std::unique_ptr<BundledExchangesHandle> CreateForTrackedNavigation(
       scoped_refptr<BundledExchangesReader> reader);
+  static std::unique_ptr<BundledExchangesHandle> CreateForNavigationInfo(
+      std::unique_ptr<BundledExchangesNavigationInfo> navigation_info);
 
   ~BundledExchangesHandle();
 
@@ -56,20 +59,27 @@ class BundledExchangesHandle {
   // subresource loading in unsigned bundled exchanges file.
   const GURL& base_url_override() const { return base_url_override_; }
 
+  const BundledExchangesNavigationInfo* navigation_info() const {
+    return navigation_info_.get();
+  }
+
  private:
   BundledExchangesHandle();
 
   void SetInterceptor(std::unique_ptr<NavigationLoaderInterceptor> interceptor);
 
   // Called when succeeded to load the bundled exchanges file.
+  // |target_inner_url| is the URL of the resource in the bundled exchanges
+  // file, which are used for the navigation.
   void OnBundledExchangesFileLoaded(
-      const GURL& base_url_override,
+      const GURL& target_inner_url,
       std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory);
 
   std::unique_ptr<NavigationLoaderInterceptor> interceptor_;
 
   GURL base_url_override_;
-  scoped_refptr<BundledExchangesReader> reader_;
+  std::unique_ptr<BundledExchangesNavigationInfo> navigation_info_;
+
   std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory_;
 
   base::WeakPtrFactory<BundledExchangesHandle> weak_factory_{this};

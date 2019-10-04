@@ -239,13 +239,15 @@ KURL ManifestParser::ParseScope(const JSONObject* object,
   return scope;
 }
 
-WebDisplayMode ManifestParser::ParseDisplay(const JSONObject* object) {
+blink::mojom::DisplayMode ManifestParser::ParseDisplay(
+    const JSONObject* object) {
   base::Optional<String> display = ParseString(object, "display", Trim);
   if (!display.has_value())
-    return kWebDisplayModeUndefined;
+    return blink::mojom::DisplayMode::kUndefined;
 
-  WebDisplayMode display_enum = WebDisplayModeFromString(display->Utf8());
-  if (display_enum == kWebDisplayModeUndefined)
+  blink::mojom::DisplayMode display_enum =
+      DisplayModeFromString(display->Utf8());
+  if (display_enum == blink::mojom::DisplayMode::kUndefined)
     AddErrorInfo("unknown 'display' value ignored.");
   return display_enum;
 }

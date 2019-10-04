@@ -5,9 +5,11 @@
 #ifndef MEDIA_GPU_TEST_VIDEO_PLAYER_VIDEO_PLAYER_TEST_ENVIRONMENT_H_
 #define MEDIA_GPU_TEST_VIDEO_PLAYER_VIDEO_PLAYER_TEST_ENVIRONMENT_H_
 
+#include <limits>
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "media/gpu/test/video_frame_file_writer.h"
 #include "media/gpu/test/video_test_environment.h"
 
 namespace media {
@@ -25,6 +27,17 @@ enum class FrameOutputMode {
   kAll       // Output all frames.
 };
 
+// Frame output configuration.
+struct FrameOutputConfig {
+  // The frame output mode controls which frames will be output.
+  FrameOutputMode output_mode = FrameOutputMode::kNone;
+  // The maximum number of frames that will be output.
+  uint64_t output_limit = std::numeric_limits<uint64_t>::max();
+  // The format of frames that are output.
+  VideoFrameFileWriter::OutputFormat output_format =
+      VideoFrameFileWriter::OutputFormat::kPNG;
+};
+
 // Test environment for video decode tests. Performs setup and teardown once for
 // the entire test run.
 class VideoPlayerTestEnvironment : public VideoTestEnvironment {
@@ -33,9 +46,9 @@ class VideoPlayerTestEnvironment : public VideoTestEnvironment {
       const base::FilePath& video_path,
       const base::FilePath& video_metadata_path,
       bool enable_validator,
-      FrameOutputMode frame_output_mode,
-      const base::FilePath& output_folder,
-      bool use_vd);
+      bool use_vd,
+      const FrameOutputConfig& frame_output_config = FrameOutputConfig(),
+      const base::FilePath& output_folder = base::FilePath());
   ~VideoPlayerTestEnvironment() override;
 
   // Set up video test environment, called once for entire test run.
@@ -45,27 +58,35 @@ class VideoPlayerTestEnvironment : public VideoTestEnvironment {
   const media::test::Video* Video() const;
   // Check whether frame validation is enabled.
   bool IsValidatorEnabled() const;
-  // Get the frame output mode.
-  FrameOutputMode GetFrameOutputMode() const;
-  // Get the output folder.
-  const base::FilePath& OutputFolder() const;
   // Check whether we should use VD-based video decoders instead of VDA-based.
   bool UseVD() const;
+
+  // Get the frame output mode.
+  FrameOutputMode GetFrameOutputMode() const;
+  // Get the file format used when outputting frames.
+  VideoFrameFileWriter::OutputFormat GetFrameOutputFormat() const;
+  // Get the maximum number of frames that will be output.
+  uint64_t GetFrameOutputLimit() const;
+  // Get the output folder.
+  const base::FilePath& OutputFolder() const;
+
   // Whether import mode is supported, valid after SetUp() has been called.
   bool ImportSupported() const;
 
  private:
   VideoPlayerTestEnvironment(std::unique_ptr<media::test::Video> video,
                              bool enable_validator,
-                             FrameOutputMode frame_output_mode,
-                             const base::FilePath& output_folder,
-                             bool use_vd);
+                             bool use_vd,
+                             const FrameOutputConfig& frame_output_config,
+                             const base::FilePath& output_folder);
 
   const std::unique_ptr<media::test::Video> video_;
   const bool enable_validator_;
-  const FrameOutputMode frame_output_mode_;
-  const base::FilePath output_folder_;
   const bool use_vd_;
+
+  const FrameOutputConfig frame_output_config_;
+  const base::FilePath output_folder_;
+
   // TODO(dstaessens): Remove this once all allocate-only platforms reached EOL.
   bool import_supported_ = false;
 };

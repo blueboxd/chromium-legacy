@@ -11,16 +11,33 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/omnibox_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_ranking_event.pb.h"
+#include "chrome/grit/browser_resources.h"
 #include "chromeos/constants/devicetype.h"
+#include "chromeos/services/machine_learning/public/cpp/service_connection.h"
+#include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
+#include "components/assist_ranker/example_preprocessing.h"
+#include "components/crx_file/id_util.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
+#include "mojo/public/cpp/bindings/map.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace app_list {
 namespace {
 
+using chromeos::machine_learning::mojom::BuiltinModelId;
+using chromeos::machine_learning::mojom::BuiltinModelSpec;
+using chromeos::machine_learning::mojom::CreateGraphExecutorResult;
+using chromeos::machine_learning::mojom::ExecuteResult;
+using chromeos::machine_learning::mojom::FloatList;
+using chromeos::machine_learning::mojom::Int64List;
+using chromeos::machine_learning::mojom::LoadModelResult;
+using chromeos::machine_learning::mojom::Tensor;
+using chromeos::machine_learning::mojom::TensorPtr;
+using chromeos::machine_learning::mojom::ValueList;
 using ukm::GetExponentialBucketMinForCounts1000;
 
 // How long to wait for a URL to enter the history service before querying it
@@ -118,6 +135,81 @@ Category CategoryFromResultType(ash::SearchResultType type, int subtype) {
 
 int GetExponentialBucketMinForSeconds(int64_t sample) {
   return ukm::GetExponentialBucketMin(sample, kBucketExponentForSeconds);
+}
+void LoadModelCallback(LoadModelResult result) {
+  if (result != LoadModelResult::OK) {
+    LOG(ERROR) << "Failed to load Search Ranker model.";
+    // TODO(crbug.com/1006133): Add UMA metrics here.
+  }
+}
+
+void CreateGraphExecutorCallback(CreateGraphExecutorResult result) {
+  if (result != CreateGraphExecutorResult::OK) {
+    LOG(ERROR) << "Failed to create a Search Ranker Graph Executor.";
+    // TODO(crbug.com/1006133): Add UMA metrics here.
+  }
+}
+
+// Populates |example| using |features|.
+void PopulateRankerExample(const SearchRankingItem::Features& features,
+                           assist_ranker::RankerExample* example) {
+  CHECK(example);
+
+  auto& ranker_example_features = *example->mutable_features();
+  ranker_example_features["QueryLength"].set_int32_value(
+      features.query_length());
+  ranker_example_features["RelevanceScore"].set_int32_value(
+      features.relevance_score());
+  ranker_example_features["Category"].set_int32_value(features.category());
+  ranker_example_features["HourOfDay"].set_int32_value(features.hour_of_day());
+  ranker_example_features["DayOfWeek"].set_int32_value(features.day_of_week());
+  ranker_example_features["LaunchesThisSession"].set_int32_value(
+      features.launches_this_session());
+  if (features.has_file_extension()) {
+    ranker_example_features["FileExtension"].set_int32_value(
+        features.file_extension());
+  }
+  if (features.has_time_since_last_launch()) {
+    ranker_example_features["TimeSinceLastLaunch"].set_int32_value(
+        features.time_since_last_launch());
+    ranker_example_features["TimeOfLastLaunch"].set_int32_value(
+        features.time_of_last_launch());
+  }
+  const auto& launches = features.launches_at_hour();
+  for (int hour = 0; hour < launches.size(); hour++) {
+    ranker_example_features["LaunchesAtHour" + base::StringPrintf("%02d", hour)]
+        .set_int32_value(launches[hour]);
+  }
+  if (features.has_domain()) {
+    ranker_example_features["Domain"].set_string_value(features.domain());
+    ranker_example_features["HasDomain"].set_int32_value(1);
+  }
+}
+
+// Loads the preprocessor config protobuf, which will be used later to convert
+// a RankerExample to a vectorized float for inactivity score calculation.
+// Returns nullptr if cannot load or parse the config.
+std::unique_ptr<assist_ranker::ExamplePreprocessorConfig>
+LoadExamplePreprocessorConfig() {
+  auto config = std::make_unique<assist_ranker::ExamplePreprocessorConfig>();
+
+  const int res_id = IDR_SEARCH_RANKER_20190923_EXAMPLE_PREPROCESSOR_CONFIG_PB;
+
+  scoped_refptr<base::RefCountedMemory> raw_config =
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(res_id);
+  if (!raw_config || !raw_config->front()) {
+    LOG(ERROR) << "Failed to load SearchRanker example preprocessor config.";
+    // TODO(crbug.com/1006133): Add UMA metrics here.
+    return nullptr;
+  }
+
+  if (!config->ParseFromArray(raw_config->front(), raw_config->size())) {
+    LOG(ERROR) << "Failed to parse SearchRanker example preprocessor config.";
+    // TODO(crbug.com/1006133): Add UMA metrics here.
+    return nullptr;
+  }
+
+  return config;
 }
 }  // namespace
 
@@ -389,6 +481,132 @@ void SearchRankingEventLogger::LogEvent(
 
   if (event_recorded_for_testing_)
     std::move(event_recorded_for_testing_).Run();
+}
+
+void SearchRankingEventLogger::CreateRankings(Mixer::SortedResults* results,
+                                              int query_length) {
+  for (const auto& result : *results) {
+    if (!result.result) {
+      continue;
+    }
+    SearchRankingItem proto;
+    std::vector<float> vectorized_features;
+
+    PopulateSearchRankingItem(&proto, result.result, query_length,
+                              false /*use_for_logging*/);
+    if (!PreprocessInput(proto.features(), &vectorized_features)) {
+      return;
+    }
+    DoInference(vectorized_features, result.result->id());
+  }
+}
+
+std::map<std::string, float> SearchRankingEventLogger::RetrieveRankings() {
+  return prediction_;
+}
+
+void SearchRankingEventLogger::LazyInitialize() {
+  if (!preprocessor_config_) {
+    preprocessor_config_ = LoadExamplePreprocessorConfig();
+  }
+}
+
+bool SearchRankingEventLogger::PreprocessInput(
+    const SearchRankingItem::Features& features,
+    std::vector<float>* vectorized_features) {
+  DCHECK(vectorized_features);
+  LazyInitialize();
+
+  if (!preprocessor_config_) {
+    LOG(ERROR) << "Failed to create preprocessor config.";
+    // TODO(crbug.com/1006133): Add UMA metrics here.
+    return false;
+  }
+
+  assist_ranker::RankerExample ranker_example;
+  PopulateRankerExample(features, &ranker_example);
+
+  int preprocessor_error = assist_ranker::ExamplePreprocessor::Process(
+      *preprocessor_config_, &ranker_example, true);
+  // kNoFeatureIndexFound can occur normally (e.g., when the domain name
+  // isn't known to the model or a rarely seen enum value is used).
+  if (preprocessor_error != assist_ranker::ExamplePreprocessor::kSuccess &&
+      preprocessor_error !=
+          assist_ranker::ExamplePreprocessor::kNoFeatureIndexFound) {
+    LOG(ERROR) << "Failed to vectorize features using ExamplePreprocessor.";
+    // TODO(crbug.com/1006133): Add UMA metrics here.
+    return false;
+  }
+
+  const auto& extracted_features =
+      ranker_example.features()
+          .at(assist_ranker::ExamplePreprocessor::kVectorizedFeatureDefaultName)
+          .float_list()
+          .float_value();
+  vectorized_features->assign(extracted_features.begin(),
+                              extracted_features.end());
+  return true;
+}
+
+void SearchRankingEventLogger::DoInference(const std::vector<float>& features,
+                                           const std::string& id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindGraphExecutorIfNeeded();
+
+  // Prepare the input tensor.
+  std::map<std::string, TensorPtr> inputs;
+  auto tensor = Tensor::New();
+  tensor->shape = Int64List::New();
+  tensor->shape->value = std::vector<int64_t>({1, features.size()});
+  tensor->data = ValueList::New();
+  tensor->data->set_float_list(FloatList::New());
+  tensor->data->get_float_list()->value =
+      std::vector<double>(std::begin(features), std::end(features));
+  inputs.emplace(std::string("input"), std::move(tensor));
+
+  const std::vector<std::string> outputs({std::string("output")});
+  // Execute
+  executor_->Execute(mojo::MapToFlatMap(std::move(inputs)), std::move(outputs),
+                     base::BindOnce(&SearchRankingEventLogger::ExecuteCallback,
+                                    weak_factory_.GetWeakPtr(), id));
+}
+
+void SearchRankingEventLogger::BindGraphExecutorIfNeeded() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!model_) {
+    // Load the model.
+    auto spec = BuiltinModelSpec::New(BuiltinModelId::SEARCH_RANKER_20190923);
+    chromeos::machine_learning::ServiceConnection::GetInstance()
+        ->LoadBuiltinModel(std::move(spec), model_.BindNewPipeAndPassReceiver(),
+                           base::BindOnce(&LoadModelCallback));
+  }
+
+  if (!executor_) {
+    // Get the graph executor.
+    model_->CreateGraphExecutor(executor_.BindNewPipeAndPassReceiver(),
+                                base::BindOnce(&CreateGraphExecutorCallback));
+    executor_.set_disconnect_handler(base::BindOnce(
+        &SearchRankingEventLogger::OnConnectionError, base::Unretained(this)));
+  }
+}
+
+void SearchRankingEventLogger::OnConnectionError() {
+  LOG(WARNING) << "Mojo connection for ML service closed.";
+  executor_.reset();
+  model_.reset();
+}
+
+void SearchRankingEventLogger::ExecuteCallback(
+    const std::string& id,
+    ExecuteResult result,
+    const base::Optional<std::vector<TensorPtr>> outputs) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (result != ExecuteResult::OK) {
+    LOG(ERROR) << "Search Ranker inference execution failed.";
+    // TODO(crbug.com/1006133): Add UMA metrics here.
+    return;
+  }
+  prediction_[id] = outputs.value()[0]->data->get_float_list()->value[0];
 }
 
 }  // namespace app_list

@@ -42,4 +42,7 @@ extern const base::Feature kOptionalArticleThumbnail;
 // Feature flag for embedders to block restore urls.
 extern const base::Feature kEmbedderBlockRestoreUrl;
 
+// Feature flag disabling animation on low battery.
+extern const base::Feature kDisableAnimationOnLowBattery;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

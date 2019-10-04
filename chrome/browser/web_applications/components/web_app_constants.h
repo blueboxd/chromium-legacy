@@ -35,8 +35,6 @@ enum class LaunchContainer {
   kWindow,
 };
 
-const char* LaunchContainerEnumToStr(LaunchContainer launch_container);
-
 // The result of an attempted web app installation, uninstallation or update.
 //
 // This is an enum, instead of a struct with multiple fields (e.g. one field for

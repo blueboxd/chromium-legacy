@@ -23,7 +23,7 @@ using ::testing::_;
 TEST(OAuthMultiloginResultTest, TryParseCookiesFromValue) {
   OAuthMultiloginResult result("");
   // SID: typical response for a domain cookie
-  // APISID: typical response for a host cookie
+  // SAPISID: typical response for a host cookie
   // SSID: not canonical cookie because of the wrong path, should not be added
   // HSID: canonical but not valid because of the wrong host value, still will
   // be parsed but domain_ field will be empty. Also it is expired.
@@ -41,7 +41,7 @@ TEST(OAuthMultiloginResultTest, TryParseCookiesFromValue) {
               "maxAge":63070000
             },
             {
-              "name":"APISID",
+              "name":"SAPISID",
               "value":"vAlUe2",
               "host":"google.com",
               "path":"/",
@@ -88,8 +88,8 @@ TEST(OAuthMultiloginResultTest, TryParseCookiesFromValue) {
                       expiration_time, /*is_secure=*/true,
                       /*is_http_only=*/false, net::CookieSameSite::UNSPECIFIED,
                       net::CookiePriority::COOKIE_PRIORITY_HIGH),
-      CanonicalCookie("APISID", "vAlUe2", "google.com", "/", time_now, time_now,
-                      expiration_time, /*is_secure=*/false,
+      CanonicalCookie("SAPISID", "vAlUe2", "google.com", "/", time_now,
+                      time_now, expiration_time, /*is_secure=*/false,
                       /*is_http_only=*/true, net::CookieSameSite::LAX_MODE,
                       net::CookiePriority::COOKIE_PRIORITY_HIGH),
       CanonicalCookie("HSID", "vAlUe4", "", "/", time_now, time_now, time_now,

@@ -102,6 +102,7 @@ include_rules = [
   "+components/feed",
   "+components/feedback",
   "+components/flags_ui",
+  "+components/games/core",
   "+components/gcm_driver",
   "+components/google/core/browser",
   "+components/google/core/common",

@@ -124,6 +124,10 @@ void DrmWindowHost::Deactivate() {
 
 void DrmWindowHost::SetUseNativeFrame(bool use_native_frame) {}
 
+bool DrmWindowHost::ShouldUseNativeFrame() const {
+  return false;
+}
+
 void DrmWindowHost::SetCursor(PlatformCursor cursor) {
   cursor_->SetCursor(widget_, cursor);
 }

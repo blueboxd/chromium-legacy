@@ -319,6 +319,10 @@ void X11Window::SetUseNativeFrame(bool use_native_frame) {
   XWindow::SetUseNativeFrame(use_native_frame);
 }
 
+bool X11Window::ShouldUseNativeFrame() const {
+  return XWindow::use_native_frame();
+}
+
 void X11Window::SetCursor(PlatformCursor cursor) {
   // X11PlatformWindowOzone has different type of PlatformCursor. Thus, use this
   // only for X11 and Ozone will manage this by itself.

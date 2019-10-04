@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <memory>
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"

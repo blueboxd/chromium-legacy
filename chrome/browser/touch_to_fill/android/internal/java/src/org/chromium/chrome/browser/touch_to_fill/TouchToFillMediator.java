@@ -8,7 +8,6 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CR
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 
-import org.chromium.base.Callback;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -21,7 +20,6 @@ import java.util.List;
 class TouchToFillMediator implements TouchToFillProperties.ViewEventListener {
     private TouchToFillComponent.Delegate mDelegate;
     private PropertyModel mModel;
-    private Callback<Credential> mCallback;
 
     void initialize(TouchToFillComponent.Delegate delegate, PropertyModel model) {
         assert delegate != null;
@@ -29,11 +27,8 @@ class TouchToFillMediator implements TouchToFillProperties.ViewEventListener {
         mModel = model;
     }
 
-    void showCredentials(
-            String formattedUrl, List<Credential> credentials, Callback<Credential> callback) {
-        assert callback != null;
+    void showCredentials(String formattedUrl, List<Credential> credentials) {
         assert credentials != null;
-        mCallback = callback;
         mModel.set(FORMATTED_URL, formattedUrl);
         mModel.set(VISIBLE, true);
         mModel.get(CREDENTIAL_LIST).clear();
@@ -44,7 +39,7 @@ class TouchToFillMediator implements TouchToFillProperties.ViewEventListener {
     public void onSelectItemAt(int position) {
         assert position >= 0 && position < mModel.get(CREDENTIAL_LIST).size();
         mModel.set(VISIBLE, false);
-        mCallback.onResult(mModel.get(CREDENTIAL_LIST).get(position));
+        mDelegate.onCredentialSelected(mModel.get(CREDENTIAL_LIST).get(position));
     }
 
     @Override

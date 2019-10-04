@@ -41,17 +41,8 @@ DawnColorStateDescriptor AsDawnType(
 
   DawnColorStateDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
-
-  GPUBlendDescriptor* gpu_alpha_blend = webgpu_desc->hasAlphaBlend()
-                                            ? webgpu_desc->alphaBlend()
-                                            : GPUBlendDescriptor::Create();
-  dawn_desc.alphaBlend = AsDawnType(gpu_alpha_blend);
-
-  GPUBlendDescriptor* gpu_color_blend = webgpu_desc->hasColorBlend()
-                                            ? webgpu_desc->colorBlend()
-                                            : GPUBlendDescriptor::Create();
-  dawn_desc.colorBlend = AsDawnType(gpu_color_blend);
-
+  dawn_desc.alphaBlend = AsDawnType(webgpu_desc->alphaBlend());
+  dawn_desc.colorBlend = AsDawnType(webgpu_desc->colorBlend());
   dawn_desc.writeMask =
       AsDawnEnum<DawnColorWriteMask>(webgpu_desc->writeMask());
   dawn_desc.format = AsDawnEnum<DawnTextureFormat>(webgpu_desc->format());
@@ -85,16 +76,8 @@ DawnDepthStencilStateDescriptor AsDawnType(
       AsDawnEnum<DawnCompareFunction>(webgpu_desc->depthCompare());
   dawn_desc.depthWriteEnabled = webgpu_desc->depthWriteEnabled();
   dawn_desc.format = AsDawnEnum<DawnTextureFormat>(webgpu_desc->format());
-  if (webgpu_desc->hasStencilBack()) {
-    dawn_desc.stencilBack = AsDawnType(webgpu_desc->stencilBack());
-  } else {
-    dawn_desc.stencilBack = DawnStencilStateFaceDescriptor{};
-  }
-  if (webgpu_desc->hasStencilFront()) {
-    dawn_desc.stencilFront = AsDawnType(webgpu_desc->stencilFront());
-  } else {
-    dawn_desc.stencilFront = DawnStencilStateFaceDescriptor{};
-  }
+  dawn_desc.stencilBack = AsDawnType(webgpu_desc->stencilBack());
+  dawn_desc.stencilFront = AsDawnType(webgpu_desc->stencilFront());
   dawn_desc.stencilReadMask = webgpu_desc->stencilReadMask();
   dawn_desc.stencilWriteMask = webgpu_desc->stencilWriteMask();
 
@@ -240,34 +223,24 @@ GPURenderPipeline* GPURenderPipeline::Create(
     dawn_desc.fragmentStage = nullptr;
   }
 
-  DawnVertexInputInfo vertex_input_info;
-  if (webgpu_desc->hasVertexInput()) {
-    // TODO(crbug.com/dawn/131): Update Dawn to match WebGPU vertex input
-    v8::Isolate* isolate = script_state->GetIsolate();
-    ExceptionState exception_state(isolate,
-                                   ExceptionState::kConstructionContext,
-                                   "GPUVertexInputDescriptor");
-    vertex_input_info = GPUVertexInputAsDawnInputState(
-        isolate, webgpu_desc->vertexInput(), exception_state);
-    dawn_desc.vertexInput = &std::get<0>(vertex_input_info);
+  // TODO(crbug.com/dawn/131): Update Dawn to match WebGPU vertex input
+  v8::Isolate* isolate = script_state->GetIsolate();
+  ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
+                                 "GPUVertexInputDescriptor");
+  DawnVertexInputInfo vertex_input_info = GPUVertexInputAsDawnInputState(
+      isolate, webgpu_desc->vertexInput(), exception_state);
+  dawn_desc.vertexInput = &std::get<0>(vertex_input_info);
 
-    if (exception_state.HadException()) {
-      return nullptr;
-    }
-  } else {
-    dawn_desc.vertexInput = nullptr;
+  if (exception_state.HadException()) {
+    return nullptr;
   }
 
   dawn_desc.primitiveTopology =
       AsDawnEnum<DawnPrimitiveTopology>(webgpu_desc->primitiveTopology());
 
   DawnRasterizationStateDescriptor rasterization_state;
-  if (webgpu_desc->hasRasterizationState()) {
-    rasterization_state = AsDawnType(webgpu_desc->rasterizationState());
-    dawn_desc.rasterizationState = &rasterization_state;
-  } else {
-    dawn_desc.rasterizationState = nullptr;
-  }
+  rasterization_state = AsDawnType(webgpu_desc->rasterizationState());
+  dawn_desc.rasterizationState = &rasterization_state;
 
   dawn_desc.sampleCount = webgpu_desc->sampleCount();
 

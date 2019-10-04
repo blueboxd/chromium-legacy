@@ -212,8 +212,8 @@ interface ConsumerHost {
   // one in progress, the relative priorities will be used to figure out which
   // one to be able to (keep) tracing; if the priorities are the same, the new
   // session will take precedence.
-  EnableTracing(TracingSessionHost& tracing_session_host,
-                TracingSessionClient tracing_session_client,
+  EnableTracing(pending_receiver<TracingSessionHost> tracing_session_host,
+                pending_remote<TracingSessionClient> tracing_session_client,
                 TraceConfig config,
                 TracingClientPriority priority);
 };

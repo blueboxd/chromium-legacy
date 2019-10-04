@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNC_DRIVER_TEST_SYNC_USER_SETTINGS_H_
 
 #include <string>
+#include <vector>
 
 #include "components/sync/driver/sync_user_settings.h"
 
@@ -43,18 +44,22 @@ class TestSyncUserSettings : public SyncUserSettings {
   syncer::ModelTypeSet GetEncryptedDataTypes() const override;
   bool IsPassphraseRequired() const override;
   bool IsPassphraseRequiredForPreferredDataTypes() const override;
+  bool IsTrustedVaultKeyRequiredForPreferredDataTypes() const override;
   bool IsUsingSecondaryPassphrase() const override;
   base::Time GetExplicitPassphraseTime() const override;
   PassphraseType GetPassphraseType() const override;
 
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
+  void AddTrustedVaultDecryptionKeys(
+      const std::vector<std::string>& keys) override;
 
   void SetFirstSetupComplete();
   void ClearFirstSetupComplete();
   void SetEncryptEverythingAllowed(bool allowed);
   void SetPassphraseRequired(bool required);
-  void SetPassphraseRequiredForDecryption(bool required);
+  void SetPassphraseRequiredForPreferredDataTypes(bool required);
+  void SetTrustedVaultKeyRequiredForPreferredDataTypes(bool required);
   void SetIsUsingSecondaryPassphrase(bool enabled);
 
  private:
@@ -64,7 +69,8 @@ class TestSyncUserSettings : public SyncUserSettings {
   bool sync_everything_enabled_ = true;
 
   bool passphrase_required_ = false;
-  bool passphrase_required_for_decryption_ = false;
+  bool passphrase_required_for_preferred_data_types_ = false;
+  bool trusted_vault_key_required_for_preferred_data_types_ = false;
   bool using_secondary_passphrase_ = false;
 };
 

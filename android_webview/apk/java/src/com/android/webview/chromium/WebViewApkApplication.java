@@ -58,7 +58,7 @@ public class WebViewApkApplication extends Application {
         // Either "webview_service", or "webview_apk".
         // "webview_service" is meant to be very light-weight and never load the native library.
         if (ContextUtils.getProcessName().contains(":webview_")) {
-            PathUtils.setPrivateDataDirectorySuffix("webview");
+            PathUtils.setPrivateDataDirectorySuffix("webview", "WebView");
             CommandLineUtil.initCommandLine();
         }
     }

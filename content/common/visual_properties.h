@@ -10,7 +10,7 @@
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "content/common/content_export.h"
 #include "content/public/common/screen_info.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
@@ -103,7 +103,8 @@ struct CONTENT_EXPORT VisualProperties {
   bool is_fullscreen_granted = false;
 
   // The display mode.
-  blink::WebDisplayMode display_mode = blink::kWebDisplayModeUndefined;
+  blink::mojom::DisplayMode display_mode =
+      blink::mojom::DisplayMode::kUndefined;
 
   // This represents the latest capture sequence number requested. When this is
   // incremented, that means the caller wants to synchronize surfaces which

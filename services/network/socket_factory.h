@@ -10,7 +10,9 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -42,7 +44,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
   virtual ~SocketFactory();
 
   // These all correspond to the NetworkContext methods of the same name.
-  void CreateUDPSocket(mojom::UDPSocketRequest request,
+  void CreateUDPSocket(mojo::PendingReceiver<mojom::UDPSocket> receiver,
                        mojom::UDPSocketListenerPtr listener);
   void CreateTCPServerSocket(
       const net::IPEndPoint& local_addr,
@@ -94,7 +96,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
 
   net::ClientSocketFactory* client_socket_factory_;
   TLSSocketFactory tls_socket_factory_;
-  mojo::StrongBindingSet<mojom::UDPSocket> udp_socket_bindings_;
+  mojo::UniqueReceiverSet<mojom::UDPSocket> udp_socket_receivers_;
   mojo::StrongBindingSet<mojom::TCPServerSocket> tcp_server_socket_bindings_;
   mojo::StrongBindingSet<mojom::TCPConnectedSocket>
       tcp_connected_socket_bindings_;

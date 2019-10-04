@@ -358,27 +358,33 @@ class NavigationEnabledTestClient : public TestClient {
     disposition_ = disposition;
   }
 
-  void ScrollToX(int x_in_screen_coords) override {
-    x_scroll_offset_ = x_in_screen_coords;
-  }
-
-  void ScrollToY(int y_in_screen_coords, bool compensate_for_toolbar) override {
-    y_scroll_offset_ = y_in_screen_coords;
-    compensate_for_toolbar_ = compensate_for_toolbar;
+  void NavigateToDestination(int page,
+                             const float* x_in_pixels,
+                             const float* y_in_pixels,
+                             const float* zoom) override {
+    page_ = page;
+    if (x_in_pixels)
+      x_in_pixels_ = *x_in_pixels;
+    if (y_in_pixels)
+      y_in_pixels_ = *y_in_pixels;
+    if (zoom)
+      zoom_ = *zoom;
   }
 
   const std::string& url() const { return url_; }
   WindowOpenDisposition disposition() const { return disposition_; }
-  int x_scroll_offset() const { return x_scroll_offset_; }
-  int y_scroll_offset() const { return y_scroll_offset_; }
-  bool compensate_for_toolbar() const { return compensate_for_toolbar_; }
+  int page() const { return page_; }
+  int x_in_pixels() const { return x_in_pixels_; }
+  int y_in_pixels() const { return y_in_pixels_; }
+  float zoom() const { return zoom_; }
 
  private:
   std::string url_;
   WindowOpenDisposition disposition_ = WindowOpenDisposition::UNKNOWN;
-  int x_scroll_offset_ = 0;
-  int y_scroll_offset_ = 0;
-  bool compensate_for_toolbar_ = false;
+  int page_ = -1;
+  float x_in_pixels_ = 0;
+  float y_in_pixels_ = 0;
+  float zoom_ = 0;
 };
 
 TEST_F(AccessibilityTest, TestWebLinkClickActionHandling) {
@@ -407,9 +413,10 @@ TEST_F(AccessibilityTest, TestInternalLinkClickActionHandling) {
   action_data.page_index = 0;
   action_data.link_index = 1;
   engine->HandleAccessibilityAction(action_data);
-  EXPECT_EQ(266, client.x_scroll_offset());
-  EXPECT_EQ(1159, client.y_scroll_offset());
-  EXPECT_TRUE(client.compensate_for_toolbar());
+  EXPECT_EQ(1, client.page());
+  EXPECT_EQ(266, client.x_in_pixels());
+  EXPECT_EQ(89, client.y_in_pixels());
+  EXPECT_FLOAT_EQ(1.75, client.zoom());
   EXPECT_TRUE(client.url().empty());
 }
 

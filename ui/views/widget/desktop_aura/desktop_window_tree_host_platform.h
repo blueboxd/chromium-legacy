@@ -24,6 +24,10 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
       DesktopNativeWidgetAura* desktop_native_widget_aura);
   ~DesktopWindowTreeHostPlatform() override;
 
+  // Accessor for DesktopNativeWidgetAura::content_window().
+  aura::Window* GetContentWindow();
+  const aura::Window* GetContentWindow() const;
+
   // DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
@@ -112,8 +116,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   DesktopNativeWidgetAura* desktop_native_widget_aura() {
     return desktop_native_widget_aura_;
   }
-  // Accessor for DesktopNativeWidgetAura::content_window().
-  aura::Window* content_window();
 
   // These are not general purpose methods and must be used with care. Please
   // make sure you understand the rounding direction before using.

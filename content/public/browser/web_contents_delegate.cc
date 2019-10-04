@@ -174,9 +174,9 @@ bool WebContentsDelegate::IsFullscreenForTabOrPending(
   return false;
 }
 
-blink::WebDisplayMode WebContentsDelegate::GetDisplayMode(
+blink::mojom::DisplayMode WebContentsDelegate::GetDisplayMode(
     const WebContents* web_contents) {
-  return blink::kWebDisplayModeBrowser;
+  return blink::mojom::DisplayMode::kBrowser;
 }
 
 ColorChooser* WebContentsDelegate::OpenColorChooser(

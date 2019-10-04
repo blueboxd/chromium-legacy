@@ -28,8 +28,8 @@
 
 #include <memory>
 
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/shape_properties.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
@@ -273,8 +273,8 @@ class CORE_EXPORT LocalFrameView final
   void SetMediaType(const AtomicString&);
   void AdjustMediaTypeForPrinting(bool printing);
 
-  WebDisplayMode DisplayMode() { return display_mode_; }
-  void SetDisplayMode(WebDisplayMode);
+  blink::mojom::DisplayMode DisplayMode() { return display_mode_; }
+  void SetDisplayMode(blink::mojom::DisplayMode);
 
   DisplayShape GetDisplayShape() { return display_shape_; }
   void SetDisplayShape(DisplayShape);
@@ -834,7 +834,7 @@ class CORE_EXPORT LocalFrameView final
 
   Member<LocalFrame> frame_;
 
-  WebDisplayMode display_mode_;
+  blink::mojom::DisplayMode display_mode_;
 
   DisplayShape display_shape_;
 

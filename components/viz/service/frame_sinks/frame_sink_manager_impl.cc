@@ -185,13 +185,13 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
 
 void FrameSinkManagerImpl::CreateCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
-    mojom::CompositorFrameSinkRequest request,
-    mojom::CompositorFrameSinkClientPtr client) {
+    mojo::PendingReceiver<mojom::CompositorFrameSink> receiver,
+    mojo::PendingRemote<mojom::CompositorFrameSinkClient> client) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!base::Contains(sink_map_, frame_sink_id));
 
   sink_map_[frame_sink_id] = std::make_unique<CompositorFrameSinkImpl>(
-      this, frame_sink_id, std::move(request), std::move(client));
+      this, frame_sink_id, std::move(receiver), std::move(client));
 }
 
 void FrameSinkManagerImpl::DestroyCompositorFrameSink(

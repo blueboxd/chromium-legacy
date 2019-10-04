@@ -19,6 +19,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -149,22 +150,22 @@ base::Optional<GURL> BookmarkAppRegistrar::GetAppScope(
   return base::nullopt;
 }
 
-web_app::LaunchContainer BookmarkAppRegistrar::GetAppLaunchContainer(
+blink::mojom::DisplayMode BookmarkAppRegistrar::GetAppDisplayMode(
     const web_app::AppId& app_id) const {
   const Extension* extension = GetExtension(app_id);
   if (!extension)
-    return web_app::LaunchContainer::kWindow;
+    return blink::mojom::DisplayMode::kStandalone;
 
   switch (extensions::GetLaunchContainer(
       extensions::ExtensionPrefs::Get(profile()), extension)) {
     case LaunchContainer::kLaunchContainerWindow:
     case LaunchContainer::kLaunchContainerPanelDeprecated:
-      return web_app::LaunchContainer::kWindow;
+      return blink::mojom::DisplayMode::kStandalone;
     case LaunchContainer::kLaunchContainerTab:
-      return web_app::LaunchContainer::kTab;
+      return blink::mojom::DisplayMode::kBrowser;
     case LaunchContainer::kLaunchContainerNone:
       NOTREACHED();
-      return web_app::LaunchContainer::kDefault;
+      return blink::mojom::DisplayMode::kUndefined;
   }
 }
 

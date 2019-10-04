@@ -114,7 +114,7 @@ class OffscreenTab : protected content::WebContentsDelegate,
       const blink::WebFullscreenOptions& options) final;
   void ExitFullscreenModeForTab(content::WebContents* contents) final;
   bool IsFullscreenForTabOrPending(const content::WebContents* contents) final;
-  blink::WebDisplayMode GetDisplayMode(
+  blink::mojom::DisplayMode GetDisplayMode(
       const content::WebContents* contents) final;
   void RequestMediaAccessPermission(
       content::WebContents* contents,

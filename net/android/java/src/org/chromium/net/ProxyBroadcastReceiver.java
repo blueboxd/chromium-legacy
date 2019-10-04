@@ -19,7 +19,7 @@ final class ProxyBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, final Intent intent) {
         if (intent.getAction().equals(Proxy.PROXY_CHANGE_ACTION)) {
-            mListener.updateProxyConfigFromConnectivityManager();
+            mListener.updateProxyConfigFromConnectivityManager(intent);
         }
     }
 }

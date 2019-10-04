@@ -635,7 +635,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Layout4) {
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Bookmark) {
-  RunTestsInFile("bookmarks_test.js", "test-bookmarks.pdf");
+  RunTestsInFile("bookmarks_test.js", "test-bookmarks-with-zoom.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Navigator) {

@@ -35,6 +35,8 @@
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
 #include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
@@ -106,8 +108,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       mojom::RootCompositorFrameSinkParamsPtr params) override;
   void CreateCompositorFrameSink(
       const FrameSinkId& frame_sink_id,
-      mojom::CompositorFrameSinkRequest request,
-      mojom::CompositorFrameSinkClientPtr client) override;
+      mojo::PendingReceiver<mojom::CompositorFrameSink> receiver,
+      mojo::PendingRemote<mojom::CompositorFrameSinkClient> client) override;
   void DestroyCompositorFrameSink(
       const FrameSinkId& frame_sink_id,
       DestroyCompositorFrameSinkCallback callback) override;

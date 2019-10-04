@@ -147,6 +147,11 @@ const char kDetectMainThreadFreezeDescription[] =
     "A crash report will be uploaded if the main thread is frozen more than "
     "the time specified by this flag.";
 
+const char kDisableAnimationOnLowBatteryName[] =
+    "Disable animations on low battery";
+const char kDisableAnimationOnLowBatteryDescription[] =
+    "Disable animations when battery level goes below 20%";
+
 const char kDragAndDropName[] = "Drag and Drop";
 const char kDragAndDropDescription[] = "Enable support for drag and drop.";
 

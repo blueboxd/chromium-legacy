@@ -56,6 +56,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
@@ -514,14 +515,13 @@ class RenderWidgetHostTest : public testing::Test {
     host_->Init();
     host_->DisableGestureDebounce();
 
-    viz::mojom::CompositorFrameSinkPtr sink;
-    viz::mojom::CompositorFrameSinkRequest sink_request =
-        mojo::MakeRequest(&sink);
-    viz::mojom::CompositorFrameSinkClientRequest client_request =
-        mojo::MakeRequest(&renderer_compositor_frame_sink_ptr_);
+    mojo::PendingRemote<viz::mojom::CompositorFrameSink> sink;
+    mojo::PendingReceiver<viz::mojom::CompositorFrameSink> sink_receiver =
+        sink.InitWithNewPipeAndPassReceiver();
     renderer_compositor_frame_sink_ =
         std::make_unique<FakeRendererCompositorFrameSink>(
-            std::move(sink), std::move(client_request));
+            std::move(sink), renderer_compositor_frame_sink_remote_
+                                 .BindNewPipeAndPassReceiver());
 
     mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
         renderer_render_frame_metadata_observer_remote;
@@ -538,8 +538,8 @@ class RenderWidgetHostTest : public testing::Test {
             std::move(render_frame_metadata_observer_remote));
 
     host_->RequestCompositorFrameSink(
-        std::move(sink_request),
-        std::move(renderer_compositor_frame_sink_ptr_));
+        std::move(sink_receiver),
+        renderer_compositor_frame_sink_remote_.Unbind());
     host_->RegisterRenderFrameMetadataObserver(
         std::move(render_frame_metadata_observer_client_receiver),
         std::move(renderer_render_frame_metadata_observer_remote));
@@ -743,7 +743,8 @@ class RenderWidgetHostTest : public testing::Test {
   SyntheticWebTouchEvent touch_event_;
 
   BrowserTaskEnvironment task_environment_;
-  viz::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_ptr_;
+  mojo::Remote<viz::mojom::CompositorFrameSinkClient>
+      renderer_compositor_frame_sink_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);
 };

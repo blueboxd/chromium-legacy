@@ -70,6 +70,7 @@
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -817,10 +818,12 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   root_params->send_swap_size_notifications = true;
 
   // Create interfaces for a root CompositorFrameSink.
-  viz::mojom::CompositorFrameSinkAssociatedPtrInfo sink_info;
-  root_params->compositor_frame_sink = mojo::MakeRequest(&sink_info);
-  viz::mojom::CompositorFrameSinkClientRequest client_request =
-      mojo::MakeRequest(&root_params->compositor_frame_sink_client);
+  mojo::PendingAssociatedRemote<viz::mojom::CompositorFrameSink> sink_remote;
+  root_params->compositor_frame_sink =
+      sink_remote.InitWithNewEndpointAndPassReceiver();
+  mojo::PendingReceiver<viz::mojom::CompositorFrameSinkClient> client_receiver =
+      root_params->compositor_frame_sink_client
+          .InitWithNewPipeAndPassReceiver();
   root_params->display_private = mojo::MakeRequest(&display_private_);
   display_client_ = std::make_unique<AndroidHostDisplayClient>(this);
   root_params->display_client =
@@ -853,8 +856,8 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   params.gpu_memory_buffer_manager = BrowserMainLoop::GetInstance()
                                          ->gpu_channel_establish_factory()
                                          ->GetGpuMemoryBufferManager();
-  params.pipes.compositor_frame_sink_associated_info = std::move(sink_info);
-  params.pipes.client_request = std::move(client_request);
+  params.pipes.compositor_frame_sink_associated_remote = std::move(sink_remote);
+  params.pipes.client_receiver = std::move(client_receiver);
   params.hit_test_data_provider =
       std::make_unique<viz::HitTestDataProviderDrawQuad>(
           false /* should_ask_for_child_region */,

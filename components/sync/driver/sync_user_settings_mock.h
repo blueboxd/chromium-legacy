@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNC_DRIVER_SYNC_USER_SETTINGS_MOCK_H_
 
 #include <string>
+#include <vector>
 
 #include "components/sync/driver/sync_user_settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,12 +40,15 @@ class SyncUserSettingsMock : public SyncUserSettings {
   MOCK_CONST_METHOD0(GetEncryptedDataTypes, ModelTypeSet());
   MOCK_CONST_METHOD0(IsPassphraseRequired, bool());
   MOCK_CONST_METHOD0(IsPassphraseRequiredForPreferredDataTypes, bool());
+  MOCK_CONST_METHOD0(IsTrustedVaultKeyRequiredForPreferredDataTypes, bool());
   MOCK_CONST_METHOD0(IsUsingSecondaryPassphrase, bool());
   MOCK_CONST_METHOD0(GetExplicitPassphraseTime, base::Time());
   MOCK_CONST_METHOD0(GetPassphraseType, PassphraseType());
 
   MOCK_METHOD1(SetEncryptionPassphrase, void(const std::string&));
   MOCK_METHOD1(SetDecryptionPassphrase, bool(const std::string&));
+  MOCK_METHOD1(AddTrustedVaultDecryptionKeys,
+               void(const std::vector<std::string>&));
 };
 
 }  // namespace syncer

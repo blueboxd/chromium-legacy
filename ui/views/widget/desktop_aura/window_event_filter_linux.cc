@@ -16,49 +16,46 @@
 #include "ui/events/event_utils.h"
 #include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 #include "ui/views/linux_ui/linux_ui.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
 
 WindowEventFilterLinux::WindowEventFilterLinux(
-    DesktopWindowTreeHost* window_tree_host,
+    DesktopWindowTreeHostLinux* desktop_window_tree_host,
     ui::WmMoveResizeHandler* handler)
-    : window_tree_host_(window_tree_host), handler_(handler) {}
+    : desktop_window_tree_host_(desktop_window_tree_host), handler_(handler) {}
 
 WindowEventFilterLinux::~WindowEventFilterLinux() = default;
 
-void WindowEventFilterLinux::OnMouseEvent(ui::MouseEvent* event) {
+void WindowEventFilterLinux::HandleMouseEventWithHitTest(
+    int hit_test,
+    ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_PRESSED)
     return;
 
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-  if (!target->delegate())
-    return;
-
   int previous_click_component = HTNOWHERE;
-  int component = target->delegate()->GetNonClientComponent(event->location());
   if (event->IsLeftMouseButton()) {
     previous_click_component = click_component_;
-    click_component_ = component;
+    click_component_ = hit_test;
   }
 
-  if (component == HTCAPTION) {
+  if (hit_test == HTCAPTION) {
     OnClickedCaption(event, previous_click_component);
-  } else if (component == HTMAXBUTTON) {
+  } else if (hit_test == HTMAXBUTTON) {
     OnClickedMaximizeButton(event);
   } else {
-    if (target->GetProperty(aura::client::kResizeBehaviorKey) &
+    if (desktop_window_tree_host_->GetContentWindow()->GetProperty(
+            aura::client::kResizeBehaviorKey) &
         aura::client::kResizeBehaviorCanResize) {
-      MaybeDispatchHostWindowDragMovement(component, event);
+      MaybeDispatchHostWindowDragMovement(hit_test, event);
     }
   }
 }
 
 void WindowEventFilterLinux::OnClickedCaption(ui::MouseEvent* event,
                                               int previous_click_component) {
-  aura::Window* target = static_cast<aura::Window*>(event->target());
   LinuxUI* linux_ui = LinuxUI::instance();
 
   views::LinuxUI::WindowFrameActionSource action_type;
@@ -84,6 +81,7 @@ void WindowEventFilterLinux::OnClickedCaption(ui::MouseEvent* event,
     return;
   }
 
+  auto* content_window = desktop_window_tree_host_->GetContentWindow();
   LinuxUI::WindowFrameAction action =
       linux_ui ? linux_ui->GetWindowFrameAction(action_type) : default_action;
   switch (action) {
@@ -94,21 +92,24 @@ void WindowEventFilterLinux::OnClickedCaption(ui::MouseEvent* event,
       event->SetHandled();
       break;
     case LinuxUI::WindowFrameAction::kMinimize:
-      window_tree_host_->Minimize();
+      desktop_window_tree_host_->Minimize();
       event->SetHandled();
       break;
     case LinuxUI::WindowFrameAction::kToggleMaximize:
-      if (target->GetProperty(aura::client::kResizeBehaviorKey) &
-          aura::client::kResizeBehaviorCanMaximize)
+
+      if (content_window->GetProperty(aura::client::kResizeBehaviorKey) &
+          aura::client::kResizeBehaviorCanMaximize) {
         ToggleMaximizedState();
+      }
       event->SetHandled();
       break;
     case LinuxUI::WindowFrameAction::kMenu:
-      views::Widget* widget = views::Widget::GetWidgetForNativeView(target);
+      views::Widget* widget =
+          views::Widget::GetWidgetForNativeView(content_window);
       if (!widget)
         break;
       views::View* view = widget->GetContentsView();
-      if (!view)
+      if (!view || !view->context_menu_controller())
         break;
       gfx::Point location(event->location());
       views::View::ConvertPointToScreen(view, &location);
@@ -119,13 +120,14 @@ void WindowEventFilterLinux::OnClickedCaption(ui::MouseEvent* event,
 }
 
 void WindowEventFilterLinux::OnClickedMaximizeButton(ui::MouseEvent* event) {
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(target);
+  auto* content_window = desktop_window_tree_host_->GetContentWindow();
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(content_window);
   if (!widget)
     return;
 
-  gfx::Rect display_work_area =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(target).work_area();
+  gfx::Rect display_work_area = display::Screen::GetScreen()
+                                    ->GetDisplayNearestWindow(content_window)
+                                    .work_area();
   gfx::Rect bounds = widget->GetWindowBoundsInScreen();
   if (event->IsMiddleMouseButton()) {
     bounds.set_y(display_work_area.y());
@@ -141,10 +143,10 @@ void WindowEventFilterLinux::OnClickedMaximizeButton(ui::MouseEvent* event) {
 }
 
 void WindowEventFilterLinux::ToggleMaximizedState() {
-  if (window_tree_host_->IsMaximized())
-    window_tree_host_->Restore();
+  if (desktop_window_tree_host_->IsMaximized())
+    desktop_window_tree_host_->Restore();
   else
-    window_tree_host_->Maximize();
+    desktop_window_tree_host_->Maximize();
 }
 
 void WindowEventFilterLinux::LowerWindow() {}
@@ -157,15 +159,11 @@ void WindowEventFilterLinux::MaybeDispatchHostWindowDragMovement(
     // Some platforms (eg X11) may require last pointer location not in the
     // local surface coordinates, but rather in the screen coordinates for
     // interactive move/resize.
-    aura::Window* target = static_cast<aura::Window*>(event->target());
-    const auto scale_factor = display::Screen::GetScreen()
-                                  ->GetDisplayNearestWindow(target)
-                                  .device_scale_factor();
-    gfx::Point last_cursor_location_in_dip =
-        aura::Env::GetInstance()->last_mouse_location();
-    handler_->DispatchHostWindowDragMovement(
-        hittest,
-        gfx::ScaleToFlooredPoint(last_cursor_location_in_dip, scale_factor));
+    auto bounds_in_px =
+        desktop_window_tree_host_->AsWindowTreeHost()->GetBoundsInPixels();
+    auto screen_point_in_px = event->root_location();
+    screen_point_in_px.Offset(bounds_in_px.x(), bounds_in_px.y());
+    handler_->DispatchHostWindowDragMovement(hittest, screen_point_in_px);
     event->StopPropagation();
     return;
   }

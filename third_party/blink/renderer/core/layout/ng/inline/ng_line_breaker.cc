@@ -299,7 +299,6 @@ void NGLineBreaker::PrepareNextLine(NGLineInfo* line_info) {
   // regardless of 'text-indent'.
   position_ = line_info->TextIndent();
 
-  overflow_item_index_ = 0;
   ResetRewindLoopDetector();
 }
 
@@ -1543,8 +1542,6 @@ bool NGLineBreaker::ShouldHangTraillingSpaces(const NGInlineItem& item) {
 // At this point, item_results does not fit into the current line, and there
 // are no break opportunities in item_results.back().
 void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
-  overflow_item_index_ = std::max(overflow_item_index_, item_index_);
-
   // Compute the width needing to rewind. When |width_to_rewind| goes negative,
   // items can fit within the line.
   LayoutUnit available_width = AvailableWidthToFit();
@@ -1645,7 +1642,6 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
     if (!item_results->IsEmpty())
       Rewind(0, line_info);
     state_ = LineBreakState::kContinue;
-    overflow_item_index_ = 0;
     ResetRewindLoopDetector();
     return;
   }

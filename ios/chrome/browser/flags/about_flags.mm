@@ -554,6 +554,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kConfirmInfobarMessagesUIName,
      flag_descriptions::kConfirmInfobarMessagesUIDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kConfirmInfobarMessagesUI)},
+    {"disable-animation-on-low-battery",
+     flag_descriptions::kDisableAnimationOnLowBatteryName,
+     flag_descriptions::kDisableAnimationOnLowBatteryDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kDisableAnimationOnLowBattery)},
 };
 
 // Add all switches from experimental flags to |command_line|.

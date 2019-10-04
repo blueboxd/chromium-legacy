@@ -35,6 +35,8 @@
 
 namespace content {
 
+class BundledExchangesNavigationInfo;
+
 class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
  public:
   // Represents a tree of FrameNavigationEntries that make up this joint session
@@ -435,6 +437,11 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
     back_forward_cache_metrics_ = metrics;
   }
 
+  void set_bundled_exchanges_navigation_info(
+      std::unique_ptr<BundledExchangesNavigationInfo>
+          bundled_exchanges_navigation_info);
+  BundledExchangesNavigationInfo* bundled_exchanges_navigation_info() const;
+
  private:
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   // Session/Tab restore save portions of this class so that it can be recreated
@@ -570,6 +577,16 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // with implement back-forward cache.
   // It is preserved at commit but not persisted.
   scoped_refptr<BackForwardCacheMetrics> back_forward_cache_metrics_;
+
+  // Keeps the bundled exchanges related information when |this| is for a
+  // navigation within a bundled exchanges file. Used when
+  // BundledHTTPExchanges feature is enabled or
+  // TrustableBundledExchangesFileUrl switch is set.
+  // TODO(995177): Support Session/Tab restore.
+  // TODO(995177): Consider if this should be here or in FrameNavigationEntry
+  // for a correct iframe support.
+  std::unique_ptr<BundledExchangesNavigationInfo>
+      bundled_exchanges_navigation_info_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationEntryImpl);
 };

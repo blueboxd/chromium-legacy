@@ -45,7 +45,7 @@ media::VideoPixelFormat ToVideoPixelFormat(uint32_t fourcc_fmt) {
       return media::PIXEL_FORMAT_I420;
 
     case V4L2_PIX_FMT_RGB32:
-      return media::PIXEL_FORMAT_ARGB;
+      return media::PIXEL_FORMAT_BGRA;
 
     default:
       return media::PIXEL_FORMAT_UNKNOWN;

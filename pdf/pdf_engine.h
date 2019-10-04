@@ -168,6 +168,13 @@ class PDFEngine {
     virtual void NavigateTo(const std::string& url,
                             WindowOpenDisposition disposition) {}
 
+    // Navigate to the given destination. Zero-based |page| index. |x|, |y| and
+    // |zoom| are optional and can be nullptr.
+    virtual void NavigateToDestination(int page,
+                                       const float* x,
+                                       const float* y,
+                                       const float* zoom) {}
+
     // Updates the cursor.
     virtual void UpdateCursor(PP_CursorType_Dev cursor) {}
 

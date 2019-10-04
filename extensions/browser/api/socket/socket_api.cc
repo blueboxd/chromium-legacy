@@ -245,7 +245,7 @@ bool SocketCreateFunction::Prepare() {
       socket_listener_request_ = mojo::MakeRequest(&listener_ptr);
       content::BrowserContext::GetDefaultStoragePartition(browser_context())
           ->GetNetworkContext()
-          ->CreateUDPSocket(mojo::MakeRequest(&socket_),
+          ->CreateUDPSocket(socket_.InitWithNewPipeAndPassReceiver(),
                             std::move(listener_ptr));
       break;
     }

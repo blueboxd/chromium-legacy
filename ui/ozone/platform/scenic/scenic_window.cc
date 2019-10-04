@@ -158,6 +158,11 @@ void ScenicWindow::Deactivate() {
 
 void ScenicWindow::SetUseNativeFrame(bool use_native_frame) {}
 
+bool ScenicWindow::ShouldUseNativeFrame() const {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
 void ScenicWindow::SetCursor(PlatformCursor cursor) {
   NOTIMPLEMENTED_LOG_ONCE();
 }

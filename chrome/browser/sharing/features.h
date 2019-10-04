@@ -17,4 +17,7 @@ extern const base::Feature kSharingUseDeviceInfo;
 // Feature flag to enable QR Code Generator (currently desktop-only).
 extern const base::Feature kSharingQRCodeGenerator;
 
+// Feature flag to enable deriving VAPID key from Sync.
+extern const base::Feature kSharingDeriveVapidKey;
+
 #endif  // CHROME_BROWSER_SHARING_FEATURES_H_

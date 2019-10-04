@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/address_family.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_interfaces.h"
@@ -63,13 +64,14 @@ void GetNetworkListOnUIThread(
 
 void CreateUDPSocketOnUIThread(
     content::BrowserContext* profile,
-    network::mojom::UDPSocketRequest request,
+    mojo::PendingReceiver<network::mojom::UDPSocket> receiver,
     network::mojom::UDPSocketListenerPtr listener_ptr) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   network::mojom::NetworkContext* network_context =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetNetworkContext();
-  network_context->CreateUDPSocket(std::move(request), std::move(listener_ptr));
+  network_context->CreateUDPSocket(std::move(receiver),
+                                   std::move(listener_ptr));
 }
 
 }  // namespace
@@ -152,10 +154,10 @@ void PrivetTrafficDetector::Helper::Bind() {
   network::mojom::UDPSocketListenerRequest listener_request =
       mojo::MakeRequest(&listener_ptr);
   listener_binding_.Bind(std::move(listener_request));
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&CreateUDPSocketOnUIThread, profile_,
-                     mojo::MakeRequest(&socket_), std::move(listener_ptr)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&CreateUDPSocketOnUIThread, profile_,
+                                socket_.BindNewPipeAndPassReceiver(),
+                                std::move(listener_ptr)));
 
   network::mojom::UDPSocketOptionsPtr socket_options =
       network::mojom::UDPSocketOptions::New();

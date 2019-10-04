@@ -11,6 +11,7 @@
 #include "base/task/post_task.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/web_package/bundled_exchanges_handle_tracker.h"
+#include "content/browser/web_package/bundled_exchanges_navigation_info.h"
 #include "content/browser/web_package/bundled_exchanges_reader.h"
 #include "content/browser/web_package/bundled_exchanges_source.h"
 #include "content/browser/web_package/bundled_exchanges_url_loader_factory.h"
@@ -32,7 +33,7 @@ namespace content {
 namespace {
 
 using DoneCallback = base::OnceCallback<void(
-    const GURL& base_url_override,
+    const GURL& target_inner_url,
     std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory)>;
 
 const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
@@ -304,8 +305,7 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
           resource_request, std::move(client),
           net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
       std::move(done_callback_)
-          .Run(
-              /*base_url_override=*/GURL(), std::move(url_loader_factory_));
+          .Run(resource_request.url, std::move(url_loader_factory_));
       return;
     }
 
@@ -401,8 +401,7 @@ class InterceptorForTrackedNavigationFromTrustableFile final
         resource_request, std::move(client),
         net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
     std::move(done_callback_)
-        .Run(
-            /*base_url_override=*/GURL(), std::move(url_loader_factory_));
+        .Run(resource_request.url, std::move(url_loader_factory_));
   }
 
   std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory_;
@@ -484,9 +483,7 @@ class InterceptorForTrackedNavigationFromFile final
         new_resource_request, std::move(client),
         net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
     std::move(done_callback_)
-        .Run(
-            /*base_url_override=*/original_request_url_,
-            std::move(url_loader_factory_));
+        .Run(original_request_url_, std::move(url_loader_factory_));
   }
 
   std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory_;
@@ -501,6 +498,108 @@ class InterceptorForTrackedNavigationFromFile final
       this};
 
   DISALLOW_COPY_AND_ASSIGN(InterceptorForTrackedNavigationFromFile);
+};
+
+// A class to inherit NavigationLoaderInterceptor for the history navigation to
+// a BundledExchanges file.
+// - MaybeCreateLoader() is called for the history navigation request. It
+//   continues on CreateURLLoader() to create the loader for the main resource.
+//   - If OnMetadataReady() has not been called yet:
+//       Wait for OnMetadataReady() to be called.
+//   - If OnMetadataReady() was called with an error:
+//       Completes the request with ERR_INVALID_BUNDLED_EXCHANGES.
+//   - If OnMetadataReady() was called whthout errors:
+//       Creates the loader for the main resource.
+class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
+ public:
+  InterceptorForNavigationInfo(
+      std::unique_ptr<BundledExchangesNavigationInfo> navigation_info,
+      DoneCallback done_callback)
+      : reader_(base::MakeRefCounted<BundledExchangesReader>(
+            navigation_info->source().Clone())),
+        target_inner_url_(navigation_info->target_inner_url()),
+        done_callback_(std::move(done_callback)) {
+    reader_->ReadMetadata(
+        base::BindOnce(&InterceptorForNavigationInfo::OnMetadataReady,
+                       weak_factory_.GetWeakPtr()));
+  }
+  ~InterceptorForNavigationInfo() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  }
+
+ private:
+  // NavigationLoaderInterceptor implementation
+  void MaybeCreateLoader(const network::ResourceRequest& resource_request,
+                         BrowserContext* browser_context,
+                         LoaderCallback callback,
+                         FallbackCallback fallback_callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    std::move(callback).Run(
+        base::BindOnce(&InterceptorForNavigationInfo::CreateURLLoader,
+                       weak_factory_.GetWeakPtr()));
+  }
+
+  void CreateURLLoader(const network::ResourceRequest& resource_request,
+                       network::mojom::URLLoaderRequest request,
+                       network::mojom::URLLoaderClientPtr client) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    if (metadata_error_) {
+      client->OnComplete(network::URLLoaderCompletionStatus(
+          net::ERR_INVALID_BUNDLED_EXCHANGES));
+      return;
+    }
+
+    if (!url_loader_factory_) {
+      pending_resource_request_ = resource_request;
+      pending_request_ = std::move(request);
+      pending_client_ = std::move(client);
+      return;
+    }
+
+    network::ResourceRequest new_resource_request = resource_request;
+    new_resource_request.url = target_inner_url_;
+    url_loader_factory_->CreateLoaderAndStart(
+        std::move(request), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
+        new_resource_request, std::move(client),
+        net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
+    std::move(done_callback_)
+        .Run(target_inner_url_, std::move(url_loader_factory_));
+  }
+
+  void OnMetadataReady(data_decoder::mojom::BundleMetadataParseErrorPtr error) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK(!url_loader_factory_);
+
+    if (error) {
+      metadata_error_ = std::move(error);
+    } else {
+      url_loader_factory_ = std::make_unique<BundledExchangesURLLoaderFactory>(
+          std::move(reader_));
+    }
+
+    if (pending_request_) {
+      DCHECK(pending_client_);
+      CreateURLLoader(pending_resource_request_, std::move(pending_request_),
+                      std::move(pending_client_));
+    }
+  }
+
+  scoped_refptr<BundledExchangesReader> reader_;
+  const GURL target_inner_url_;
+  DoneCallback done_callback_;
+
+  network::ResourceRequest pending_resource_request_;
+  network::mojom::URLLoaderRequest pending_request_;
+  network::mojom::URLLoaderClientPtr pending_client_;
+
+  std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory_;
+  data_decoder::mojom::BundleMetadataParseErrorPtr metadata_error_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<InterceptorForNavigationInfo> weak_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(InterceptorForNavigationInfo);
 };
 
 }  // namespace
@@ -551,6 +650,18 @@ BundledExchangesHandle::CreateForTrackedNavigation(
   return handle;
 }
 
+// static
+std::unique_ptr<BundledExchangesHandle>
+BundledExchangesHandle::CreateForNavigationInfo(
+    std::unique_ptr<BundledExchangesNavigationInfo> navigation_info) {
+  auto handle = base::WrapUnique(new BundledExchangesHandle());
+  handle->SetInterceptor(std::make_unique<InterceptorForNavigationInfo>(
+      std::move(navigation_info),
+      base::BindOnce(&BundledExchangesHandle::OnBundledExchangesFileLoaded,
+                     handle->weak_factory_.GetWeakPtr())));
+  return handle;
+}
+
 BundledExchangesHandle::BundledExchangesHandle() = default;
 
 BundledExchangesHandle::~BundledExchangesHandle() = default;
@@ -576,7 +687,7 @@ BundledExchangesHandle::MaybeCreateTracker() {
   if (!url_loader_factory_)
     return nullptr;
   return std::make_unique<BundledExchangesHandleTracker>(
-      url_loader_factory_->reader());
+      url_loader_factory_->reader(), navigation_info_->target_inner_url());
 }
 
 bool BundledExchangesHandle::IsReadyForLoading() {
@@ -589,9 +700,13 @@ void BundledExchangesHandle::SetInterceptor(
 }
 
 void BundledExchangesHandle::OnBundledExchangesFileLoaded(
-    const GURL& base_url_override,
+    const GURL& target_inner_url,
     std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory) {
-  base_url_override_ = base_url_override;
+  auto source = url_loader_factory->reader()->source().Clone();
+  if (!source->is_trusted())
+    base_url_override_ = target_inner_url;
+  navigation_info_ = std::make_unique<BundledExchangesNavigationInfo>(
+      std::move(source), target_inner_url);
   url_loader_factory_ = std::move(url_loader_factory);
 }
 

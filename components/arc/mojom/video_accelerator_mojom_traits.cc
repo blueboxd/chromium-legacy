@@ -238,10 +238,10 @@ bool StructTraits<arc::mojom::SizeDataView, gfx::Size>::Read(
 }
 
 // static
-bool StructTraits<arc::mojom::MediaVideoFramePlaneDataView,
-                  media::ColorPlaneLayout>::
-    Read(arc::mojom::MediaVideoFramePlaneDataView data,
-         media::ColorPlaneLayout* out) {
+bool StructTraits<
+    arc::mojom::ColorPlaneLayoutDataView,
+    media::ColorPlaneLayout>::Read(arc::mojom::ColorPlaneLayoutDataView data,
+                                   media::ColorPlaneLayout* out) {
   out->offset = data.offset();
   out->stride = data.stride();
   out->size = data.size();

@@ -28,12 +28,11 @@
 
 namespace ui {
 
-GbmPixmapWayland::GbmPixmapWayland(WaylandBufferManagerGpu* buffer_manager,
-                                   gfx::AcceleratedWidget widget)
-    : buffer_manager_(buffer_manager), widget_(widget) {}
+GbmPixmapWayland::GbmPixmapWayland(WaylandBufferManagerGpu* buffer_manager)
+    : buffer_manager_(buffer_manager) {}
 
 GbmPixmapWayland::~GbmPixmapWayland() {
-  if (gbm_bo_ && widget_ != gfx::kNullAcceleratedWidget)
+  if (gbm_bo_)
     buffer_manager_->DestroyBuffer(widget_, GetUniqueId());
 }
 
@@ -81,11 +80,14 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
     return false;
   }
 
-  // The pixmap can be created as a staging buffer and not be mapped to any of
-  // the existing widgets.
-  if (widget_ != gfx::kNullAcceleratedWidget)
-    CreateDmabufBasedBuffer();
+  CreateDmabufBasedBuffer();
   return true;
+}
+
+void GbmPixmapWayland::SetAcceleratedWiget(gfx::AcceleratedWidget widget) {
+  DCHECK(widget != gfx::kNullAcceleratedWidget);
+  DCHECK(widget_ == gfx::kNullAcceleratedWidget);
+  widget_ = widget;
 }
 
 bool GbmPixmapWayland::AreDmaBufFdsValid() const {
@@ -136,6 +138,12 @@ bool GbmPixmapWayland::ScheduleOverlayPlane(
     const gfx::RectF& crop_rect,
     bool enable_blend,
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
+  // If the widget this pixmap backs has not been assigned before, do it now.
+  if (widget_ == gfx::kNullAcceleratedWidget)
+    SetAcceleratedWiget(widget);
+
+  DCHECK_EQ(widget_, widget);
+
   auto* surface = buffer_manager_->GetSurface(widget);
   // This must never be hit.
   DCHECK(surface);

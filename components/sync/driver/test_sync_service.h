@@ -47,7 +47,7 @@ class TestSyncService : public SyncService {
   void SetNonEmptyLastCycleSnapshot();
   void SetDetailedSyncStatus(bool engine_available, SyncStatus status);
   void SetPassphraseRequired(bool required);
-  void SetPassphraseRequiredForDecryption(bool required);
+  void SetPassphraseRequiredForPreferredDataTypes(bool required);
   void SetIsUsingSecondaryPassphrase(bool enabled);
 
   void FireStateChanged();

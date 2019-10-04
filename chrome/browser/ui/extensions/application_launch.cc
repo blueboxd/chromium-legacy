@@ -46,6 +46,7 @@
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -417,8 +418,10 @@ WebContents* ShowApplicationWindow(Profile* profile,
   //                focus explicitly.
   web_contents->SetInitialFocus();
 
-  web_launch::WebLaunchFilesHelper::SetLaunchPaths(web_contents, url,
-                                                   params.launch_files);
+  if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI)) {
+    web_launch::WebLaunchFilesHelper::SetLaunchPaths(web_contents, url,
+                                                     params.launch_files);
+  }
 
   return web_contents;
 }

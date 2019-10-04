@@ -77,6 +77,7 @@ include_rules = [
     "-third_party/blink/renderer/modules",
     "+third_party/skia/include",
     "+ui/base/ime/mojom/ime_types.mojom-blink.h",
+    "+ui/base/ime/mojom/ime_types.mojom-blink-forward.h",
     "+ui/base/resource/scale_factor.h",
     "+ui/gfx/geometry",
     "+ui/gfx/skia_util.h",

@@ -34,6 +34,8 @@ enum BuiltinModelId {
   TOP_CAT_20190722 = 4,
   // The Smart Dim (20190521) ML model.
   SMART_DIM_20190521 = 5,
+  // The Search Ranker (20190923) ML model.
+  SEARCH_RANKER_20190923 = 6,
 };
 
 // These values are persisted to logs. Entries should not be renumbered and

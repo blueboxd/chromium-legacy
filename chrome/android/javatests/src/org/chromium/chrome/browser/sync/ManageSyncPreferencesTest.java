@@ -344,7 +344,7 @@ public class ManageSyncPreferencesTest {
         mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         // Trigger PassphraseDialogFragment to be shown when taping on Encryption.
-        pss.setPassphraseRequiredForDecryption(true);
+        pss.setPassphraseRequiredForPreferredDataTypes(true);
 
         final ManageSyncPreferences fragment = startManageSyncPreferences();
         Preference encryption = getEncryption(fragment);
@@ -356,7 +356,7 @@ public class ManageSyncPreferencesTest {
         // Simulate OnPassphraseAccepted from external event by setting PassphraseRequired to false
         // and triggering syncStateChanged().
         // PassphraseDialogFragment should be dismissed.
-        pss.setPassphraseRequiredForDecryption(false);
+        pss.setPassphraseRequiredForPreferredDataTypes(false);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             pss.syncStateChanged();
             fragment.getFragmentManager().executePendingTransactions();

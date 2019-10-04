@@ -63,7 +63,7 @@ class FakeAppBannerManagerDesktop : public banners::AppBannerManagerDesktop {
   }
 
  protected:
-  void OnInstall(blink::WebDisplayMode display) override {
+  void OnInstall(blink::mojom::DisplayMode display) override {
     AppBannerManager::OnInstall(display);
     if (on_install_)
       std::move(on_install_).Run();

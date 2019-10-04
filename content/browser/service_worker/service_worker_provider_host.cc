@@ -616,8 +616,8 @@ void ServiceWorkerProviderHost::RemoveMatchingRegistration(
   matching_registrations_.erase(key);
 }
 
-ServiceWorkerRegistration*
-ServiceWorkerProviderHost::MatchRegistration() const {
+ServiceWorkerRegistration* ServiceWorkerProviderHost::MatchRegistration()
+    const {
   auto it = matching_registrations_.rbegin();
   for (; it != matching_registrations_.rend(); ++it) {
     if (it->second->is_uninstalled())
@@ -1374,6 +1374,21 @@ ServiceWorkerProviderHost::CreateServiceWorkerRegistrationObjectInfo(
       std::make_unique<ServiceWorkerRegistrationObjectHost>(
           context_, this, std::move(registration));
   return registration_object_hosts_[registration_id]->CreateObjectInfo();
+}
+
+blink::mojom::ServiceWorkerObjectInfoPtr
+ServiceWorkerProviderHost::CreateServiceWorkerObjectInfoToSend(
+    scoped_refptr<ServiceWorkerVersion> version) {
+  int64_t version_id = version->version_id();
+  auto existing_object_host = service_worker_object_hosts_.find(version_id);
+  if (existing_object_host != service_worker_object_hosts_.end()) {
+    return existing_object_host->second->CreateCompleteObjectInfoToSend();
+  }
+  service_worker_object_hosts_[version_id] =
+      std::make_unique<ServiceWorkerObjectHost>(context_, this,
+                                                std::move(version));
+  return service_worker_object_hosts_[version_id]
+      ->CreateCompleteObjectInfoToSend();
 }
 
 template <typename CallbackType, typename... Args>

@@ -21,8 +21,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 enum class WebappInstallSource;
@@ -146,7 +146,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // redundant for the beforeinstallprompt event's promise being resolved, but
   // is required by the install event spec.
   // This is virtual for testing.
-  virtual void OnInstall(blink::WebDisplayMode display);
+  virtual void OnInstall(blink::mojom::DisplayMode display);
 
   // Sends a message to the renderer that the user accepted the banner.
   void SendBannerAccepted();

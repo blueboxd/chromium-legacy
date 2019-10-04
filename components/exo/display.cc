@@ -111,14 +111,22 @@ std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
   // Using zero-copy for optimal performance.
   bool use_zero_copy = true;
 
+#if defined(ARCH_CPU_X86_FAMILY)
+  // TODO(dcastagna): Re-enable NV12 format as HW overlay once b/113362843
+  // is addressed.
+  bool is_overlay_candidate = format != gfx::BufferFormat::YUV_420_BIPLANAR;
+#else
+  bool is_overlay_candidate = true;
+#endif
+
   return std::make_unique<Buffer>(
       std::move(gpu_memory_buffer),
       gpu::NativeBufferNeedsPlatformSpecificTextureTarget(format)
           ? gpu::GetPlatformSpecificTextureTarget()
           : GL_TEXTURE_2D,
       // COMMANDS_COMPLETED queries are required by native pixmaps.
-      GL_COMMANDS_COMPLETED_CHROMIUM, use_zero_copy,
-      /*is_overlay_candidate=*/true, y_invert);
+      GL_COMMANDS_COMPLETED_CHROMIUM, use_zero_copy, is_overlay_candidate,
+      y_invert);
 }
 #endif  // defined(USE_OZONE)
 

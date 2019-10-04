@@ -91,13 +91,17 @@ class BundledExchangesBrowserTestBase : public ContentBrowserTest {
     EXPECT_EQ(ok, title_watcher.WaitAndGetTitle());
   }
 
-  void NavigateToURLAndWaitForTitle(const GURL& url, const std::string& title) {
+  void ExecuteScriptAndWaitForTitle(const std::string& script,
+                                    const std::string& title) {
     base::string16 title16 = base::ASCIIToUTF16(title);
     TitleWatcher title_watcher(shell()->web_contents(), title16);
-    EXPECT_TRUE(ExecuteScript(
-        shell()->web_contents(),
-        base::StringPrintf("location.href = '%s';", url.spec().c_str())));
+    EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
     EXPECT_EQ(title16, title_watcher.WaitAndGetTitle());
+  }
+
+  void NavigateToURLAndWaitForTitle(const GURL& url, const std::string& title) {
+    ExecuteScriptAndWaitForTitle(
+        base::StringPrintf("location.href = '%s';", url.spec().c_str()), title);
   }
 
  private:
@@ -279,17 +283,43 @@ IN_PROC_BROWSER_TEST_P(BundledExchangesTrustableFileBrowserTest, RangeRequest) {
   RunTestScript("test-range-request.js");
 }
 
-IN_PROC_BROWSER_TEST_P(BundledExchangesTrustableFileBrowserTest, Navigation) {
+IN_PROC_BROWSER_TEST_P(BundledExchangesTrustableFileBrowserTest, Navigations) {
   // Don't run the test if we couldn't override BrowserClient. It happens only
   // on Android Kitkat or older systems.
   if (!original_client_)
     return;
 
   NavigateToBundleAndWaitForReady(test_data_url(), GURL(kTestPageUrl));
+  // Move to page 1.
   NavigateToURLAndWaitForTitle(GURL(kTestPage1Url), "Page 1");
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
             GURL(kTestPage1Url));
+  // Move to page 2.
   NavigateToURLAndWaitForTitle(GURL(kTestPage2Url), "Page 2");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            GURL(kTestPage2Url));
+  // Back to page 1.
+  ExecuteScriptAndWaitForTitle("history.back();", "Page 1");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            GURL(kTestPage1Url));
+
+  // Back to the initial page.
+  ExecuteScriptAndWaitForTitle("history.back();", "Ready");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), GURL(kTestPageUrl));
+
+  // Move to page 1.
+  ExecuteScriptAndWaitForTitle("history.forward();", "Page 1");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            GURL(kTestPage1Url));
+
+  // Reload.
+  ExecuteScriptAndWaitForTitle("document.title = 'reset';", "reset");
+  ExecuteScriptAndWaitForTitle("location.reload();", "Page 1");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            GURL(kTestPage1Url));
+
+  // Move to page 2.
+  ExecuteScriptAndWaitForTitle("history.forward();", "Page 2");
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
             GURL(kTestPage2Url));
 }
@@ -387,11 +417,43 @@ IN_PROC_BROWSER_TEST_P(BundledExchangesFileBrowserTest, Navigations) {
       test_data_url,
       bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
           test_data_url, GURL(kTestPageUrl)));
+  // Move to page 1.
   NavigateToURLAndWaitForTitle(GURL(kTestPage1Url), "Page 1");
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
             bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
                 test_data_url, GURL(kTestPage1Url)));
+  // Move to page 2.
   NavigateToURLAndWaitForTitle(GURL(kTestPage2Url), "Page 2");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
+                test_data_url, GURL(kTestPage2Url)));
+
+  // Back to page 1.
+  ExecuteScriptAndWaitForTitle("history.back();", "Page 1");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
+                test_data_url, GURL(kTestPage1Url)));
+  // Back to the initial page.
+  ExecuteScriptAndWaitForTitle("history.back();", "Ready");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
+                test_data_url, GURL(kTestPageUrl)));
+
+  // Move to page 1.
+  ExecuteScriptAndWaitForTitle("history.forward();", "Page 1");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
+                test_data_url, GURL(kTestPage1Url)));
+
+  // Reload.
+  ExecuteScriptAndWaitForTitle("document.title = 'reset';", "reset");
+  ExecuteScriptAndWaitForTitle("location.reload();", "Page 1");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
+                test_data_url, GURL(kTestPage1Url)));
+
+  // Move to page 2.
+  ExecuteScriptAndWaitForTitle("history.forward();", "Page 2");
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
             bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
                 test_data_url, GURL(kTestPage2Url)));

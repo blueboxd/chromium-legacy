@@ -19,13 +19,20 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_ranking_event.pb.h"
+#include "chromeos/services/machine_learning/public/mojom/graph_executor.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/tensor.mojom.h"
+#include "components/assist_ranker/proto/example_preprocessor.pb.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 class ChromeSearchResult;
 
 namespace app_list {
 
-// Performs UKM logging of search ranking events in the launcher's results list.
+// TODO(crbug.com/1006133): This is class logs and does inference on a search
+// ranking event. The class name doesn't reflect what it does. We should
+// refactor it in future CLs.
 class SearchRankingEventLogger {
  public:
   SearchRankingEventLogger(Profile* profile,
@@ -45,6 +52,11 @@ class SearchRankingEventLogger {
   // Sets a testing-only closure to inform tests when a UKM event has been
   // recorded.
   void SetEventRecordedForTesting(base::OnceClosure closure);
+
+  // Computes scores for a list of search result item using ML Service.
+  void CreateRankings(Mixer::SortedResults* results, int query_length);
+  // Retrieve the scores.
+  std::map<std::string, float> RetrieveRankings();
 
  private:
   // Stores state necessary for logging a given search result that is
@@ -75,6 +87,39 @@ class SearchRankingEventLogger {
   // source ID.
   void LogEvent(const SearchRankingItem& result,
                 base::Optional<ukm::SourceId> source_id);
+
+  // Create vectorized features from SearchRankingItem. Returns true if
+  // |vectorized_features| is successfully populated.
+  bool PreprocessInput(const SearchRankingItem::Features& features,
+                       std::vector<float>* vectorized_features);
+
+  // Call ML Service to do the inference.
+  void DoInference(const std::vector<float>& features, const std::string& id);
+
+  // Stores the ranking score for an |app_id| in the |ranking_map_|.
+  // Executed by the ML Service when an Execute call is complete.
+  void ExecuteCallback(
+      const std::string& id,
+      ::chromeos::machine_learning::mojom::ExecuteResult result,
+      base::Optional<
+          std::vector<::chromeos::machine_learning::mojom::TensorPtr>> outputs);
+
+  void LazyInitialize();
+
+  // Initializes the graph executor for the ML service if it's not already
+  // available.
+  void BindGraphExecutorIfNeeded();
+
+  void OnConnectionError();
+
+  std::map<std::string, float> prediction_;
+
+  // Remotes used to execute functions in the ML service server end.
+  mojo::Remote<::chromeos::machine_learning::mojom::Model> model_;
+  mojo::Remote<::chromeos::machine_learning::mojom::GraphExecutor> executor_;
+
+  std::unique_ptr<assist_ranker::ExamplePreprocessorConfig>
+      preprocessor_config_;
 
   SearchController* search_controller_;
   // Some events do not have an associated URL and so are logged directly with

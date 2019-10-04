@@ -9,7 +9,8 @@
 
 #include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 
 namespace viz {
@@ -19,7 +20,7 @@ class FakeCompositorFrameSinkClient : public mojom::CompositorFrameSinkClient {
   FakeCompositorFrameSinkClient();
   ~FakeCompositorFrameSinkClient() override;
 
-  mojom::CompositorFrameSinkClientPtr BindInterfacePtr();
+  mojo::PendingRemote<mojom::CompositorFrameSinkClient> BindInterfaceRemote();
 
   // mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
@@ -40,7 +41,7 @@ class FakeCompositorFrameSinkClient : public mojom::CompositorFrameSinkClient {
 
   std::vector<ReturnedResource> returned_resources_;
 
-  mojo::Binding<mojom::CompositorFrameSinkClient> binding_;
+  mojo::Receiver<mojom::CompositorFrameSinkClient> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeCompositorFrameSinkClient);
 };

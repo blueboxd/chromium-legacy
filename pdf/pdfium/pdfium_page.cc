@@ -624,7 +624,8 @@ PDFiumPage::Area PDFiumPage::GetDestinationTarget(FPDF_DEST destination,
 
   target->page = page_index;
 
-  base::Optional<gfx::PointF> xy = GetPageXYTarget(destination);
+  base::Optional<gfx::PointF> xy;
+  GetPageDestinationTarget(destination, &xy, &target->zoom);
   if (xy) {
     gfx::PointF point = TransformPageToScreenXY(xy.value());
     target->x_in_pixels = point.x();
@@ -634,9 +635,13 @@ PDFiumPage::Area PDFiumPage::GetDestinationTarget(FPDF_DEST destination,
   return DOCLINK_AREA;
 }
 
-base::Optional<gfx::PointF> PDFiumPage::GetPageXYTarget(FPDF_DEST destination) {
+void PDFiumPage::GetPageDestinationTarget(FPDF_DEST destination,
+                                          base::Optional<gfx::PointF>* xy,
+                                          base::Optional<float>* zoom_value) {
+  *xy = base::nullopt;
+  *zoom_value = base::nullopt;
   if (!available_)
-    return {};
+    return;
 
   FPDF_BOOL has_x_coord;
   FPDF_BOOL has_y_coord;
@@ -647,10 +652,14 @@ base::Optional<gfx::PointF> PDFiumPage::GetPageXYTarget(FPDF_DEST destination) {
   FPDF_BOOL success = FPDFDest_GetLocationInPage(
       destination, &has_x_coord, &has_y_coord, &has_zoom, &x, &y, &zoom);
 
-  if (!success || !has_x_coord || !has_y_coord)
-    return {};
+  if (!success)
+    return;
 
-  return {gfx::PointF(x, y)};
+  if (has_x_coord && has_y_coord)
+    *xy = gfx::PointF(x, y);
+
+  if (has_zoom)
+    *zoom_value = zoom;
 }
 
 gfx::PointF PDFiumPage::TransformPageToScreenXY(const gfx::PointF& xy) {

@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
@@ -30,7 +30,8 @@ bool InstallFinalizer::CanReparentTab(const AppId& app_id,
   // Reparent the web contents into its own window only if that is the
   // app's launch type.
   DCHECK(registrar_);
-  if (registrar_->GetAppLaunchContainer(app_id) != LaunchContainer::kWindow)
+  if (registrar_->GetAppDisplayMode(app_id) !=
+      blink::mojom::DisplayMode::kStandalone)
     return false;
 
   return ui_manager().CanReparentAppTabToWindow(app_id, shortcut_created);

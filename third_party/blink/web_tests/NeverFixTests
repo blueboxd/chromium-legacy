@@ -2055,9 +2055,9 @@ external/wpt/webgpu/ [ WontFix ]
 # But will not change the existing behavior for Blink CORS when expectations are
 # changed for the spec update, other features side-effects, and so on.
 # TODO(cbur.com/870173): Double check following failed tests later.
-crbug.com/870173 external/wpt/fetch/sec-metadata/appcache.tentative.https.sub.html [ WontFix ]
-crbug.com/870173 external/wpt/fetch/sec-metadata/redirect/redirect-http-upgrade.tentative.sub.html [ WontFix ]
-crbug.com/870173 external/wpt/fetch/sec-metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ WontFix ]
+crbug.com/870173 external/wpt/fetch/metadata/appcache.tentative.https.sub.html [ WontFix ]
+crbug.com/870173 external/wpt/fetch/metadata/redirect/redirect-http-upgrade.tentative.sub.html [ WontFix ]
+crbug.com/870173 external/wpt/fetch/metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ WontFix ]
 crbug.com/870173 external/wpt/resource-timing/cors-preflight.any.html [ WontFix ]
 crbug.com/870173 external/wpt/resource-timing/cors-preflight.any.worker.html [ WontFix ]
 crbug.com/870173 http/tests/devtools/console-xhr-logging.js [ WontFix ]
@@ -2072,8 +2072,8 @@ crbug.com/870173 http/tests/security/script-crossorigin-redirect-credentials.htm
 crbug.com/870173 http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ WontFix ]
 crbug.com/870173 http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ WontFix ]
 crbug.com/870173 mhtml/cid_in_html_resource.html [ WontFix ]
-crbug.com/870173 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/redirect/redirect-http-upgrade.tentative.sub.html [ WontFix ]
-crbug.com/870173 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ WontFix ]
+crbug.com/870173 virtual/omt-worker-fetch/external/wpt/fetch/metadata/redirect/redirect-http-upgrade.tentative.sub.html [ WontFix ]
+crbug.com/870173 virtual/omt-worker-fetch/external/wpt/fetch/metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ WontFix ]
 crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.html [ WontFix ]
 crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.worker.html [ WontFix ]
 crbug.com/870173 virtual/omt-worker-fetch/http/tests/workers/worker-redirect.html [ WontFix ]

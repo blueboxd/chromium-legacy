@@ -47,9 +47,9 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
@@ -3840,7 +3840,7 @@ TEST_F(WebViewTest, ChangeDisplayMode) {
       WebFrameContentDumper::DumpWebViewAsText(web_view, 21).Utf8();
   EXPECT_EQ("regular-ui", content);
 
-  web_view->SetDisplayMode(kWebDisplayModeMinimalUi);
+  web_view->SetDisplayMode(blink::mojom::DisplayMode::kMinimalUi);
   content = WebFrameContentDumper::DumpWebViewAsText(web_view, 21).Utf8();
   EXPECT_EQ("minimal-ui", content);
   web_view_helper_.Reset();

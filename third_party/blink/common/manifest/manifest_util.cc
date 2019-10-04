@@ -5,35 +5,36 @@
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 
 #include "base/strings/string_util.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace blink {
 
-std::string WebDisplayModeToString(blink::WebDisplayMode display) {
+std::string DisplayModeToString(blink::mojom::DisplayMode display) {
   switch (display) {
-    case blink::kWebDisplayModeUndefined:
+    case blink::mojom::DisplayMode::kUndefined:
       return "";
-    case blink::kWebDisplayModeBrowser:
+    case blink::mojom::DisplayMode::kBrowser:
       return "browser";
-    case blink::kWebDisplayModeMinimalUi:
+    case blink::mojom::DisplayMode::kMinimalUi:
       return "minimal-ui";
-    case blink::kWebDisplayModeStandalone:
+    case blink::mojom::DisplayMode::kStandalone:
       return "standalone";
-    case blink::kWebDisplayModeFullscreen:
+    case blink::mojom::DisplayMode::kFullscreen:
       return "fullscreen";
   }
   return "";
 }
 
-blink::WebDisplayMode WebDisplayModeFromString(const std::string& display) {
+blink::mojom::DisplayMode DisplayModeFromString(const std::string& display) {
   if (base::LowerCaseEqualsASCII(display, "browser"))
-    return blink::kWebDisplayModeBrowser;
+    return blink::mojom::DisplayMode::kBrowser;
   if (base::LowerCaseEqualsASCII(display, "minimal-ui"))
-    return blink::kWebDisplayModeMinimalUi;
+    return blink::mojom::DisplayMode::kMinimalUi;
   if (base::LowerCaseEqualsASCII(display, "standalone"))
-    return blink::kWebDisplayModeStandalone;
+    return blink::mojom::DisplayMode::kStandalone;
   if (base::LowerCaseEqualsASCII(display, "fullscreen"))
-    return blink::kWebDisplayModeFullscreen;
-  return blink::kWebDisplayModeUndefined;
+    return blink::mojom::DisplayMode::kFullscreen;
+  return blink::mojom::DisplayMode::kUndefined;
 }
 
 std::string WebScreenOrientationLockTypeToString(

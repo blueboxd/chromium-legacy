@@ -183,7 +183,7 @@ void DesktopWindowTreeHostX11::Init(const Widget::InitParams& params) {
 
 void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
-  window()->SetProperty(kViewsWindowForRootWindow, content_window());
+  window()->SetProperty(kViewsWindowForRootWindow, GetContentWindow());
   window()->SetProperty(kHostForRootWindow, this);
 
   // Ensure that the X11DesktopHandler exists so that it tracks create/destroy
@@ -238,7 +238,7 @@ Widget::MoveLoopResult DesktopWindowTreeHostX11::RunMoveLoop(
   wm::WindowMoveSource window_move_source =
       source == Widget::MOVE_LOOP_SOURCE_MOUSE ? wm::WINDOW_MOVE_SOURCE_MOUSE
                                                : wm::WINDOW_MOVE_SOURCE_TOUCH;
-  if (x11_window_move_client_->RunMoveLoop(content_window(), drag_offset,
+  if (x11_window_move_client_->RunMoveLoop(GetContentWindow(), drag_offset,
                                            window_move_source) ==
       wm::MOVE_SUCCESSFUL)
     return Widget::MOVE_LOOP_SUCCESSFUL;
@@ -253,10 +253,6 @@ void DesktopWindowTreeHostX11::EndMoveLoop() {
 void DesktopWindowTreeHostX11::SetVisibilityChangedAnimationsEnabled(
     bool value) {
   // Much like the previous NativeWidgetGtk, we don't have anything to do here.
-}
-
-bool DesktopWindowTreeHostX11::ShouldUseNativeFrame() const {
-  return GetXWindow()->use_native_frame();
 }
 
 void DesktopWindowTreeHostX11::FrameTypeChanged() {

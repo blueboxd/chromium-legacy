@@ -104,7 +104,7 @@ SetUpDistinctCase(syncer::TestSyncService* service,
       service->SetDetailedSyncStatus(false, syncer::SyncStatus());
       service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
       service->SetPassphraseRequired(true);
-      service->SetPassphraseRequiredForDecryption(true);
+      service->SetPassphraseRequiredForPreferredDataTypes(true);
       return std::make_pair(sync_ui_util::SYNC_ERROR,
                             sync_ui_util::ENTER_PASSPHRASE);
     }

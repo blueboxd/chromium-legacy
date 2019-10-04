@@ -155,30 +155,11 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
     case PickerEntryType::kDevice:
       NOTREACHED();
   }
-  RecordUma(launch_name, entry_type, close_reason, Source::kHttpOrHttps,
-            should_persist);
-}
-
-// static
-void AppsNavigationThrottle::RecordUma(const std::string& selected_app_package,
-                                       PickerEntryType entry_type,
-                                       IntentPickerCloseReason close_reason,
-                                       Source source,
-                                       bool should_persist) {
   PickerAction action =
       GetPickerAction(entry_type, close_reason, should_persist);
-  Platform platform = GetDestinationPlatform(selected_app_package, action);
-
-  // TODO(crbug.com/985233) For now External Protocol Dialog is only querying
-  // ARC apps.
-  if (source == Source::kExternalProtocol) {
-    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.ExternalProtocolDialog", action);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerAction", action);
-
-    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerDestinationPlatform",
-                              platform);
-  }
+  Platform platform = GetDestinationPlatform(launch_name, action);
+  RecordUma(launch_name, entry_type, close_reason, Source::kHttpOrHttps,
+            should_persist, action, platform);
 }
 
 // static
@@ -278,6 +259,26 @@ bool AppsNavigationThrottle::CanCreate(content::WebContents* web_contents) {
 }
 
 // static
+void AppsNavigationThrottle::RecordUma(const std::string& selected_app_package,
+                                       PickerEntryType entry_type,
+                                       IntentPickerCloseReason close_reason,
+                                       Source source,
+                                       bool should_persist,
+                                       PickerAction action,
+                                       Platform platform) {
+  // TODO(crbug.com/985233) For now External Protocol Dialog is only querying
+  // ARC apps.
+  if (source == Source::kExternalProtocol) {
+    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.ExternalProtocolDialog", action);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerAction", action);
+
+    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerDestinationPlatform",
+                              platform);
+  }
+}
+
+// static
 AppsNavigationThrottle::Platform AppsNavigationThrottle::GetDestinationPlatform(
     const std::string& selected_launch_name,
     PickerAction picker_action) {
@@ -303,6 +304,42 @@ AppsNavigationThrottle::Platform AppsNavigationThrottle::GetDestinationPlatform(
   }
   NOTREACHED();
   return Platform::ARC;
+}
+
+// static
+AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
+    PickerEntryType entry_type,
+    IntentPickerCloseReason close_reason,
+    bool should_persist) {
+  switch (close_reason) {
+    case IntentPickerCloseReason::ERROR_BEFORE_PICKER:
+      return PickerAction::ERROR_BEFORE_PICKER;
+    case IntentPickerCloseReason::ERROR_AFTER_PICKER:
+      return PickerAction::ERROR_AFTER_PICKER;
+    case IntentPickerCloseReason::DIALOG_DEACTIVATED:
+      return PickerAction::DIALOG_DEACTIVATED;
+    case IntentPickerCloseReason::PREFERRED_APP_FOUND:
+      return PickerAction::PREFERRED_ACTIVITY_FOUND;
+    case IntentPickerCloseReason::STAY_IN_CHROME:
+      return should_persist ? PickerAction::CHROME_PREFERRED_PRESSED
+                            : PickerAction::CHROME_PRESSED;
+    case IntentPickerCloseReason::OPEN_APP:
+      switch (entry_type) {
+        case PickerEntryType::kUnknown:
+          NOTREACHED();
+          return PickerAction::INVALID;
+        case PickerEntryType::kArc:
+          return should_persist ? PickerAction::ARC_APP_PREFERRED_PRESSED
+                                : PickerAction::ARC_APP_PRESSED;
+        case PickerEntryType::kWeb:
+          return PickerAction::PWA_APP_PRESSED;
+        case PickerEntryType::kDevice:
+          return PickerAction::DEVICE_PRESSED;
+      }
+  }
+
+  NOTREACHED();
+  return PickerAction::INVALID;
 }
 
 // static
@@ -419,42 +456,6 @@ IntentPickerResponse AppsNavigationThrottle::GetOnPickerClosedCallback(
 
 bool AppsNavigationThrottle::navigate_from_link() {
   return navigate_from_link_;
-}
-
-// static
-AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
-    PickerEntryType entry_type,
-    IntentPickerCloseReason close_reason,
-    bool should_persist) {
-  switch (close_reason) {
-    case IntentPickerCloseReason::ERROR_BEFORE_PICKER:
-      return PickerAction::ERROR_BEFORE_PICKER;
-    case IntentPickerCloseReason::ERROR_AFTER_PICKER:
-      return PickerAction::ERROR_AFTER_PICKER;
-    case IntentPickerCloseReason::DIALOG_DEACTIVATED:
-      return PickerAction::DIALOG_DEACTIVATED;
-    case IntentPickerCloseReason::PREFERRED_APP_FOUND:
-      return PickerAction::PREFERRED_ACTIVITY_FOUND;
-    case IntentPickerCloseReason::STAY_IN_CHROME:
-      return should_persist ? PickerAction::CHROME_PREFERRED_PRESSED
-                            : PickerAction::CHROME_PRESSED;
-    case IntentPickerCloseReason::OPEN_APP:
-      switch (entry_type) {
-        case PickerEntryType::kUnknown:
-          NOTREACHED();
-          return PickerAction::INVALID;
-        case PickerEntryType::kArc:
-          return should_persist ? PickerAction::ARC_APP_PREFERRED_PRESSED
-                                : PickerAction::ARC_APP_PRESSED;
-        case PickerEntryType::kWeb:
-          return PickerAction::PWA_APP_PRESSED;
-        case PickerEntryType::kDevice:
-          return PickerAction::DEVICE_PRESSED;
-      }
-  }
-
-  NOTREACHED();
-  return PickerAction::INVALID;
 }
 
 content::NavigationThrottle::ThrottleCheckResult

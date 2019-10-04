@@ -16,6 +16,8 @@
 #include "chrome/browser/performance_manager/graph/properties.h"
 #include "chrome/browser/performance_manager/public/graph/process_node.h"
 #include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace performance_manager {
 
@@ -46,8 +48,8 @@ class ProcessNodeImpl
 
   ~ProcessNodeImpl() override;
 
-  void Bind(
-      resource_coordinator::mojom::ProcessCoordinationUnitRequest request);
+  void Bind(mojo::PendingReceiver<
+            resource_coordinator::mojom::ProcessCoordinationUnit> receiver);
 
   // resource_coordinator::mojom::ProcessCoordinationUnit implementation:
   void SetExpectedTaskQueueingDuration(base::TimeDelta duration) override;
@@ -149,7 +151,8 @@ class ProcessNodeImpl
 
   void LeaveGraph() override;
 
-  mojo::Binding<resource_coordinator::mojom::ProcessCoordinationUnit> binding_;
+  mojo::Receiver<resource_coordinator::mojom::ProcessCoordinationUnit>
+      receiver_{this};
 
   base::TimeDelta cumulative_cpu_usage_;
   uint64_t private_footprint_kb_ = 0u;

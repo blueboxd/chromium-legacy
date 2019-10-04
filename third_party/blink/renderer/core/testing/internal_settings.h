@@ -27,7 +27,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_INTERNAL_SETTINGS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_INTERNAL_SETTINGS_H_
 
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/renderer/core/editing/editing_behavior_types.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/internal_settings_generated.h"
@@ -63,7 +63,7 @@ class InternalSettings final : public InternalSettingsGenerated,
     IntSize original_text_autosizing_window_size_override_;
     float original_accessibility_font_scale_factor_;
     String original_media_type_override_;
-    WebDisplayMode original_display_mode_override_;
+    blink::mojom::DisplayMode original_display_mode_override_;
     bool original_mock_scrollbars_enabled_;
     bool original_mock_gesture_tap_highlights_enabled_;
     bool lang_attribute_aware_form_control_ui_enabled_;

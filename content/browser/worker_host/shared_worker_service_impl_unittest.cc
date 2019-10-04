@@ -289,6 +289,38 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
   base::RunLoop().RunUntilIdle();
 }
 
+// Tests that the shared worker will not be started if the hosting web contents
+// is destroyed while the script is being fetched.
+TEST_F(SharedWorkerServiceImplTest, WebContentsDestroyed) {
+  std::unique_ptr<TestWebContents> web_contents =
+      CreateWebContents(GURL("http://example.com/"));
+  TestRenderFrameHost* render_frame_host = web_contents->GetMainFrame();
+  MockRenderProcessHost* renderer_host = render_frame_host->GetProcess();
+  const int process_id = renderer_host->GetID();
+  renderer_host->OverrideBinderForTesting(
+      blink::mojom::SharedWorkerFactory::Name_,
+      base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
+                          base::Unretained(this), process_id));
+
+  MockSharedWorkerClient client;
+  MessagePortChannel local_port;
+  const GURL kUrl("http://example.com/w.js");
+  ConnectToSharedWorker(MakeSharedWorkerConnector(
+                            renderer_host, render_frame_host->GetRoutingID()),
+                        kUrl, "name", &client, &local_port);
+
+  // Now asynchronously destroy |web_contents| so that the startup sequence at
+  // least reaches SharedWorkerServiceImpl::DidCreateScriptLoader().
+  // reaches at least the DidCreateScriptLoader()
+  base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                     std::move(web_contents));
+
+  base::RunLoop().RunUntilIdle();
+
+  // The shared worker creation request was dropped.
+  EXPECT_TRUE(!client.CheckReceivedOnCreated());
+}
+
 TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   // The first renderer host.
   std::unique_ptr<TestWebContents> web_contents0 =

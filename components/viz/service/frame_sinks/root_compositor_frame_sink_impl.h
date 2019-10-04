@@ -15,6 +15,10 @@
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
@@ -90,8 +94,9 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   RootCompositorFrameSinkImpl(
       FrameSinkManagerImpl* frame_sink_manager,
       const FrameSinkId& frame_sink_id,
-      mojom::CompositorFrameSinkAssociatedRequest frame_sink_request,
-      mojom::CompositorFrameSinkClientPtr frame_sink_client,
+      mojo::PendingAssociatedReceiver<mojom::CompositorFrameSink>
+          frame_sink_receiver,
+      mojo::PendingRemote<mojom::CompositorFrameSinkClient> frame_sink_client,
       mojom::DisplayPrivateAssociatedRequest display_request,
       mojom::DisplayClientPtr display_client,
       std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
@@ -112,9 +117,9 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
 
   BeginFrameSource* begin_frame_source();
 
-  mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client_;
-  mojo::AssociatedBinding<mojom::CompositorFrameSink>
-      compositor_frame_sink_binding_;
+  mojo::Remote<mojom::CompositorFrameSinkClient> compositor_frame_sink_client_;
+  mojo::AssociatedReceiver<mojom::CompositorFrameSink>
+      compositor_frame_sink_receiver_;
   // |display_client_| may be nullptr on platforms that do not use it.
   mojom::DisplayClientPtr display_client_;
   mojo::AssociatedBinding<mojom::DisplayPrivate> display_private_binding_;

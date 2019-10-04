@@ -21,6 +21,7 @@
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "components/gcm_driver/web_push_common.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/sync/protocol/device_info_specifics.pb.h"
 #include "components/sync_device_info/device_info_tracker.h"
@@ -155,6 +156,9 @@ class SharingService : public KeyedService,
   // Returns true if required sync feature is disabled. Returns false if sync is
   // in transitioning state.
   bool IsSyncDisabled() const;
+
+  // Returns all required sync data types to enable Sharing feature.
+  syncer::ModelTypeSet GetRequiredSyncDataTypes() const;
 
   std::unique_ptr<SharingSyncPreference> sync_prefs_;
   std::unique_ptr<VapidKeyManager> vapid_key_manager_;

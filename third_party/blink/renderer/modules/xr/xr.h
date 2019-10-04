@@ -299,7 +299,8 @@ class XR final : public EventTargetWithInlineData,
 
   Member<XRFrameProvider> frame_provider_;
   HeapHashSet<WeakMember<XRSession>> sessions_;
-  device::mojom::blink::VRServicePtr service_;
+
+  mojo::Remote<device::mojom::blink::VRService> service_;
   mojo::Remote<device::mojom::blink::XRFrameDataProvider>
       magic_window_provider_;
   device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr

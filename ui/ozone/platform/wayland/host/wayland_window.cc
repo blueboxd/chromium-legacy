@@ -498,7 +498,16 @@ void WaylandWindow::Deactivate() {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WaylandWindow::SetUseNativeFrame(bool use_native_frame) {}
+void WaylandWindow::SetUseNativeFrame(bool use_native_frame) {
+  // See comment below in ShouldUseNativeFrame.
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+bool WaylandWindow::ShouldUseNativeFrame() const {
+  // This depends on availability of XDG-Decoration protocol extension.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
 
 void WaylandWindow::SetCursor(PlatformCursor cursor) {
   scoped_refptr<BitmapCursorOzone> bitmap =

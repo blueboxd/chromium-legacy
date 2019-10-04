@@ -10,6 +10,7 @@
 #include "base/json/string_escape.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/common/trace_event_common.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/basic_types.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/sliced_protobuf_input_stream.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_packet.pb.h"
 
@@ -91,21 +92,30 @@ void TrackEventJSONExporter::ProcessPackets(
     DCHECK(decoded);
 
     // If this is a different packet_sequence_id we have to reset all our state
-    // and wait for the first state_clear before emitting anything.
+    // and wait for the first state_clear before emitting anything. However, we
+    // shouldn't do this for packets emitted by the service since they may
+    // appear anywhere in the stream.
     if (packet.trusted_packet_sequence_id() !=
-        current_state_->trusted_packet_sequence_id) {
-      stats_.sequences_seen++;
-      StartNewState(packet.trusted_packet_sequence_id(),
-                    packet.incremental_state_cleared());
-    } else if (packet.incremental_state_cleared()) {
-      stats_.incremental_state_resets++;
-      ResetIncrementalState();
-    } else if (packet.previous_packet_dropped()) {
-      // If we've lost packets we can no longer trust any timestamp data and
-      // other state which might have been dropped. We will keep skipping events
-      // until we start a new sequence.
-      stats_.packets_with_previous_packet_dropped++;
-      current_state_->incomplete = true;
+        perfetto::kServicePacketSequenceID) {
+      if (packet.trusted_packet_sequence_id() !=
+          current_state_->trusted_packet_sequence_id) {
+        stats_.sequences_seen++;
+        StartNewState(packet.trusted_packet_sequence_id(),
+                      packet.incremental_state_cleared());
+      } else if (packet.incremental_state_cleared()) {
+        stats_.incremental_state_resets++;
+        ResetIncrementalState();
+      } else if (packet.previous_packet_dropped()) {
+        // If we've lost packets we can no longer trust any timestamp data and
+        // other state which might have been dropped. We will keep skipping
+        // events until we start a new sequence.
+        stats_.packets_with_previous_packet_dropped++;
+        current_state_->incomplete = true;
+      }
+    } else {
+      // We assume the service doesn't use incremental state or lose packets.
+      DCHECK(!packet.incremental_state_cleared());
+      DCHECK(!packet.previous_packet_dropped());
     }
 
     // Now we process the data from the packet. First by getting the interned

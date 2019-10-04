@@ -237,7 +237,7 @@ TEST(MediaQueryEvaluatorTest, Cached) {
   data.three_d_enabled = true;
   data.media_type = media_type_names::kScreen;
   data.strict_mode = true;
-  data.display_mode = kWebDisplayModeBrowser;
+  data.display_mode = blink::mojom::DisplayMode::kBrowser;
   data.display_shape = kDisplayShapeRect;
   data.immersive_mode = false;
 

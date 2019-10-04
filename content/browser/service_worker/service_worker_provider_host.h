@@ -313,6 +313,14 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   CreateServiceWorkerRegistrationObjectInfo(
       scoped_refptr<ServiceWorkerRegistration> registration);
 
+  // For service worker execution contexts.
+  // Returns an object info representing |self.serviceWorker|. The object
+  // info holds a Mojo connection to the ServiceWorkerObjectHost for the
+  // |serviceWorker| to ensure the host stays alive while the object info is
+  // alive. See documentation.
+  blink::mojom::ServiceWorkerObjectInfoPtr CreateServiceWorkerObjectInfoToSend(
+      scoped_refptr<ServiceWorkerVersion> version);
+
   // Returns a ServiceWorkerObjectHost instance for |version| for this provider
   // host. A new instance is created if one does not already exist.
   // ServiceWorkerObjectHost will have an ownership of the |version|.

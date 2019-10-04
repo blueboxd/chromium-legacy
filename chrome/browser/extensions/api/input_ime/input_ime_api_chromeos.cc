@@ -444,12 +444,13 @@ bool InputImeEventRouter::RegisterImeExtension(
 
   std::unique_ptr<InputMethodEngineBase::Observer> observer(
       new ImeObserverChromeOS(extension_id, profile));
-  auto* engine = new chromeos::InputMethodEngine();
+  auto engine = std::make_unique<chromeos::InputMethodEngine>();
   engine->Initialize(std::move(observer), extension_id.c_str(), profile);
-  engine_map_[extension_id] = engine;
+  engine_map_[extension_id] = std::move(engine);
   chromeos::UserSessionManager::GetInstance()
       ->GetDefaultIMEState(profile)
-      ->AddInputMethodExtension(extension_id, descriptors, engine);
+      ->AddInputMethodExtension(extension_id, descriptors,
+                                engine_map_[extension_id].get());
 
   return true;
 }
@@ -460,7 +461,6 @@ void InputImeEventRouter::UnregisterAllImes(const std::string& extension_id) {
     chromeos::input_method::InputMethodManager::Get()
         ->GetActiveIMEState()
         ->RemoveInputMethodExtension(extension_id);
-    delete it->second;
     engine_map_.erase(it);
   }
 }
@@ -468,13 +468,13 @@ void InputImeEventRouter::UnregisterAllImes(const std::string& extension_id) {
 InputMethodEngine* InputImeEventRouter::GetEngine(
     const std::string& extension_id) {
   auto it = engine_map_.find(extension_id);
-  return (it != engine_map_.end()) ? it->second : nullptr;
+  return (it != engine_map_.end()) ? it->second.get() : nullptr;
 }
 
 InputMethodEngineBase* InputImeEventRouter::GetEngineIfActive(
     const std::string& extension_id) {
   auto it = engine_map_.find(extension_id);
-  return (it != engine_map_.end() && it->second->IsActive()) ? it->second
+  return (it != engine_map_.end() && it->second->IsActive()) ? it->second.get()
                                                              : nullptr;
 }
 

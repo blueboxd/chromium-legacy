@@ -398,17 +398,17 @@ int32_t PepperUDPSocketMessageFilter::OnMsgBind(
           ->GetNetworkContext();
   if (g_create_udp_socket_callback_for_testing) {
     g_create_udp_socket_callback_for_testing->Run(
-        network_context, mojo::MakeRequest(&socket_),
+        network_context, socket_.BindNewPipeAndPassReceiver(),
         std::move(udp_socket_listener));
   } else {
-    network_context->CreateUDPSocket(mojo::MakeRequest(&socket_),
+    network_context->CreateUDPSocket(socket_.BindNewPipeAndPassReceiver(),
                                      std::move(udp_socket_listener));
   }
 
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();
   // Watch the socket for errors during the the Bind call.
-  socket_.set_connection_error_handler(
+  socket_.set_disconnect_handler(
       base::BindOnce(&PepperUDPSocketMessageFilter::SendBindError,
                      base::Unretained(this), reply_context, PP_ERROR_FAILED));
 
@@ -598,7 +598,7 @@ void PepperUDPSocketMessageFilter::OnBindComplete(
   binding_.Bind(std::move(listener_request));
   binding_.set_connection_error_handler(base::BindOnce(
       &PepperUDPSocketMessageFilter::PipeClosed, base::Unretained(this)));
-  socket_.set_connection_error_handler(base::BindOnce(
+  socket_.set_disconnect_handler(base::BindOnce(
       &PepperUDPSocketMessageFilter::PipeClosed, base::Unretained(this)));
   socket_->ReceiveMore(UDPSocketResourceConstants::kPluginReceiveBufferSlots);
 }

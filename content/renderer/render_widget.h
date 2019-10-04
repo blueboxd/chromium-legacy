@@ -54,7 +54,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/referrer_policy.mojom.h"
 #include "third_party/blink/public/common/frame/occlusion_state.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
@@ -160,7 +160,7 @@ class CONTENT_EXPORT RenderWidget
   RenderWidget(int32_t widget_routing_id,
                CompositorDependencies* compositor_deps,
                PageProperties* page_properties,
-               blink::WebDisplayMode display_mode,
+               blink::mojom::DisplayMode display_mode,
                bool is_undead,
                bool hidden,
                bool never_visible,
@@ -185,7 +185,7 @@ class CONTENT_EXPORT RenderWidget
       int32_t,
       CompositorDependencies*,
       PageProperties*,
-      blink::WebDisplayMode display_mode,
+      blink::mojom::DisplayMode display_mode,
       bool is_undead,
       bool never_visible,
       mojo::PendingReceiver<mojom::Widget> widget_receiver);
@@ -201,7 +201,7 @@ class CONTENT_EXPORT RenderWidget
       int32_t widget_routing_id,
       CompositorDependencies* compositor_deps,
       PageProperties* page_properties,
-      blink::WebDisplayMode display_mode,
+      blink::mojom::DisplayMode display_mode,
       bool is_undead,
       bool never_visible);
 
@@ -214,7 +214,7 @@ class CONTENT_EXPORT RenderWidget
       int32_t widget_routing_id,
       CompositorDependencies* compositor_deps,
       PageProperties* page_properties,
-      blink::WebDisplayMode display_mode,
+      blink::mojom::DisplayMode display_mode,
       bool hidden,
       bool never_visible,
       mojo::PendingReceiver<mojom::Widget> widget_receiver);
@@ -284,7 +284,7 @@ class CONTENT_EXPORT RenderWidget
 
   const gfx::Size& size() const { return size_; }
   bool is_fullscreen_granted() const { return is_fullscreen_granted_; }
-  blink::WebDisplayMode display_mode() const { return display_mode_; }
+  blink::mojom::DisplayMode display_mode() const { return display_mode_; }
   bool is_hidden() const { return is_hidden_; }
   // Temporary for debugging purposes...
   bool closing() const { return closing_; }
@@ -996,7 +996,7 @@ class CONTENT_EXPORT RenderWidget
   bool is_fullscreen_granted_ = false;
 
   // Indicates the display mode.
-  blink::WebDisplayMode display_mode_;
+  blink::mojom::DisplayMode display_mode_;
 
   // It is possible that one ImeEventGuard is nested inside another
   // ImeEventGuard. We keep track of the outermost one, and update it as needed.

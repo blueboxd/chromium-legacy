@@ -346,6 +346,18 @@ void SharedWorkerServiceImpl::StartWorker(
     return;
   }
 
+  // Also drop this request if |client|'s render frame host no longer exists and
+  // the worker has no other clients. This is possible if the frame was deleted
+  // between the CreateWorker() and DidCreateScriptLoader() calls. This avoids
+  // starting a shared worker and immediately stopping it because its sole
+  // client is already being torn down and avoids sending a OnClientAdded()
+  // notification for a frame that is already destroyed.
+  if (!RenderFrameHost::FromID(client_process_id, frame_id) &&
+      !host->HasClients()) {
+    DestroyHost(host.get());
+    return;
+  }
+
   // Get the factory used to instantiate the new shared worker instance in
   // the target process.
   mojo::PendingRemote<blink::mojom::SharedWorkerFactory> factory;

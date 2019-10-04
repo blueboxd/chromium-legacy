@@ -1855,6 +1855,8 @@ jumbo_source_set("browser") {
     "web_package/bundled_exchanges_handle.h",
     "web_package/bundled_exchanges_handle_tracker.cc",
     "web_package/bundled_exchanges_handle_tracker.h",
+    "web_package/bundled_exchanges_navigation_info.cc",
+    "web_package/bundled_exchanges_navigation_info.h",
     "web_package/bundled_exchanges_reader.cc",
     "web_package/bundled_exchanges_reader.h",
     "web_package/bundled_exchanges_source.cc",

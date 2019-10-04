@@ -643,6 +643,7 @@ TEST(VideoFrame, AllocationSize_OddSize) {
             << VideoPixelFormatToString(format);
         break;
       case PIXEL_FORMAT_ARGB:
+      case PIXEL_FORMAT_BGRA:
       case PIXEL_FORMAT_XRGB:
       case PIXEL_FORMAT_I420A:
       case PIXEL_FORMAT_ABGR:

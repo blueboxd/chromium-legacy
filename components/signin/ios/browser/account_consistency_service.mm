@@ -371,7 +371,7 @@ void AccountConsistencyService::ApplyCookieRequests() {
         FinishedApplyingCookieRequest(false);
         return;
       }
-      // Create expiration date of Now+2y to roughly follow the APISID cookie.
+      // Create expiration date of Now+2y to roughly follow the SAPISID cookie.
       expiration_date =
           (base::Time::Now() + base::TimeDelta::FromDays(730)).ToJsTime();
       break;
@@ -471,7 +471,7 @@ void AccountConsistencyService::OnBrowsingDataRemoved() {
   base::DictionaryValue dict;
   prefs_->Set(kDomainsWithCookiePref, dict);
 
-  // APISID cookie has been removed, notify the GCMS.
+  // SAPISID cookie has been removed, notify the GCMS.
   // TODO(https://crbug.com/930582) : Remove the need to expose this method
   // or move it to the network::CookieManager.
   identity_manager_->GetAccountsCookieMutator()->ForceTriggerOnCookieChange();

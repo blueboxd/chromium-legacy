@@ -136,6 +136,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // ServiceWorkerGlobalScope.idl
   ServiceWorkerClients* clients();
   ServiceWorkerRegistration* registration();
+  ::blink::ServiceWorker* serviceWorker();
 
   ScriptPromise fetch(ScriptState*,
                       const RequestInfo&,
@@ -372,6 +373,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       mojo::PendingAssociatedRemote<mojom::blink::ServiceWorkerHost>
           service_worker_host,
       mojom::blink::ServiceWorkerRegistrationObjectInfoPtr registration_info,
+      mojom::blink::ServiceWorkerObjectInfoPtr service_worker_info,
       mojom::blink::FetchHandlerExistence fetch_hander_existence) override;
   void DispatchInstallEvent(DispatchInstallEventCallback callback) override;
   void DispatchActivateEvent(DispatchActivateEventCallback callback) override;
@@ -450,6 +452,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
 
   Member<ServiceWorkerClients> clients_;
   Member<ServiceWorkerRegistration> registration_;
+  Member<::blink::ServiceWorker> service_worker_;
+
   // Map from service worker version id to JavaScript ServiceWorker object in
   // current execution context.
   HeapHashMap<int64_t,

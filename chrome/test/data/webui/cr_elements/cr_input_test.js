@@ -48,6 +48,12 @@ suite('cr-input', function() {
     });
   });
 
+  test('UnsupportedTypeThrows', function() {
+    assertThrows(function() {
+      crInput.type = 'checkbox';
+    });
+  });
+
   test('togglingDisableModifiesTabIndexCorrectly', function() {
     // Do innerHTML instead of createElement to make sure it's correct right
     // after being attached, and not messed up by disabledChanged_.

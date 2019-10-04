@@ -1773,14 +1773,14 @@ TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {
   trace_analyzer::TraceEventVector events;
   size_t idx = 0;
 
-  // Sequence 1 is complete with no data loss and 3 events. 2 with delta
+  // Sequence 10 is complete with no data loss and 3 events. 2 with delta
   // timestamps and one with an absolute timestamps 1 us further than the delta
   // events.
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedEventName(1, "sequence_1", &trace_packet_protos);
+  AddInternedEventName(1, "sequence_10", &trace_packet_protos);
   AddInternedEventCategory(1, "event_category_1", &trace_packet_protos);
   trace_packet_protos.emplace_back();
   auto* track_event = trace_packet_protos.back().mutable_track_event();
@@ -1796,16 +1796,16 @@ TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {
   trace_packet_protos.back().mutable_track_event()->set_thread_time_absolute_us(
       666);
   for (; idx < trace_packet_protos.size(); ++idx) {
-    trace_packet_protos[idx].set_trusted_packet_sequence_id(1);
+    trace_packet_protos[idx].set_trusted_packet_sequence_id(10);
   }
 
-  // Sequence 2 alternates between emitting an event dropping packets and
+  // Sequence 20 alternates between emitting an event dropping packets and
   // clearing incremental state.
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedEventName(2, "sequence_2", &trace_packet_protos);
+  AddInternedEventName(2, "sequence_20", &trace_packet_protos);
   AddInternedEventCategory(2, "event_category_2", &trace_packet_protos);
 
   trace_packet_protos.emplace_back();
@@ -1832,7 +1832,7 @@ TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {
       /* thread_name = */ base::nullopt, kReferenceTimeUs + 4 * 3,
       kReferenceThreadTimeUs + 3 * 3, &trace_packet_protos);
   trace_packet_protos.back().set_incremental_state_cleared(true);
-  AddInternedEventName(2, "sequence_2", &trace_packet_protos);
+  AddInternedEventName(2, "sequence_20", &trace_packet_protos);
   AddInternedEventCategory(2, "event_category_2", &trace_packet_protos);
 
   trace_packet_protos.emplace_back();
@@ -1844,13 +1844,13 @@ TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {
     trace_packet_protos[idx].set_trusted_packet_sequence_id(2);
   }
 
-  // Sequence 3 emits a single event to ensure that sequence 2 doesn't prevent
+  // Sequence 30 emits a single event to ensure that sequence 2 doesn't prevent
   // these events from being emitted.
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
                             ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
-  AddInternedEventName(3, "sequence_3", &trace_packet_protos);
+  AddInternedEventName(3, "sequence_30", &trace_packet_protos);
   AddInternedEventCategory(3, "event_category_3", &trace_packet_protos);
   trace_packet_protos.emplace_back();
   track_event = trace_packet_protos.back().mutable_track_event();
@@ -1860,13 +1860,13 @@ TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {
   *track_event->mutable_legacy_event() =
       CreateLegacyEvent(/* name_iid = */ 3, kLegacyFlags, kLegacyPhase);
   for (; idx < trace_packet_protos.size(); ++idx) {
-    trace_packet_protos[idx].set_trusted_packet_sequence_id(3);
+    trace_packet_protos[idx].set_trusted_packet_sequence_id(30);
   }
 
   FinalizePackets(trace_packet_protos);
 
   ASSERT_EQ(3u, trace_analyzer()->FindEvents(
-                    Query(Query::EVENT_NAME) == Query::String("sequence_1"),
+                    Query(Query::EVENT_NAME) == Query::String("sequence_10"),
                     &events));
   EXPECT_EQ(kReferenceTimeUs + 4, events[0]->timestamp);
   EXPECT_EQ(kReferenceThreadTimeUs + 3, events[0]->thread_timestamp);
@@ -1876,7 +1876,7 @@ TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {
   EXPECT_EQ(666, events[2]->thread_timestamp);
 
   ASSERT_EQ(2u, trace_analyzer()->FindEvents(
-                    Query(Query::EVENT_NAME) == Query::String("sequence_2"),
+                    Query(Query::EVENT_NAME) == Query::String("sequence_20"),
                     &events));
   EXPECT_EQ(kReferenceTimeUs + 4, events[0]->timestamp);
   EXPECT_EQ(kReferenceThreadTimeUs + 3, events[0]->thread_timestamp);
@@ -1885,7 +1885,7 @@ TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {
   EXPECT_EQ(kReferenceThreadTimeUs + 3 * 4, events[1]->thread_timestamp);
 
   ASSERT_EQ(1u, trace_analyzer()->FindEvents(
-                    Query(Query::EVENT_NAME) == Query::String("sequence_3"),
+                    Query(Query::EVENT_NAME) == Query::String("sequence_30"),
                     &events));
   EXPECT_EQ(kReferenceTimeUs + 4, events[0]->timestamp);
   EXPECT_EQ(kReferenceThreadTimeUs + 3, events[0]->thread_timestamp);

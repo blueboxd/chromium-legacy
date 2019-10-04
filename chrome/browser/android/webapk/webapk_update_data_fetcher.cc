@@ -271,7 +271,7 @@ void WebApkUpdateDataFetcher::OnDataAvailable(
       java_primary_icon_url, java_primary_icon_murmur2_hash, java_primary_icon,
       java_is_primary_icon_maskable, java_badge_icon_url,
       java_badge_icon_murmur2_hash, java_badge_icon, java_icon_urls,
-      info_.display, info_.orientation,
+      static_cast<int>(info_.display), info_.orientation,
       OptionalSkColorToJavaColor(info_.theme_color),
       OptionalSkColorToJavaColor(info_.background_color), java_share_action,
       java_share_params_title, java_share_params_text, java_share_params_url,

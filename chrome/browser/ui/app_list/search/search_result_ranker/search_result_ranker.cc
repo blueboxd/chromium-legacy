@@ -208,7 +208,10 @@ void SearchResultRanker::InitializeRankers(
           "QueryBasedMixedTypesGroup",
           profile_->GetPath().AppendASCII("results_list_group_ranker.pb"),
           config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
-
+    } else if (GetFieldTrialParamByFeatureAsBool(
+                   app_list_features::kEnableQueryBasedMixedTypesRanker,
+                   "use_aggregated_model", false)) {
+      use_aggregated_search_ranking_inference_ = true;
     } else {
       // Item ranker model.
       const std::string config_json = GetFieldTrialParamValueByFeature(
@@ -356,6 +359,11 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
             [](const Mixer::SortData& a, const Mixer::SortData& b) {
               return a.score > b.score;
             });
+  std::map<std::string, float> search_ranker_score_map;
+  if (!last_query_.empty() && use_aggregated_search_ranking_inference_) {
+    search_ranking_event_logger_->CreateRankings(results, last_query_.size());
+    search_ranker_score_map = search_ranking_event_logger_->RetrieveRankings();
+  }
 
   std::map<std::string, float> ranking_map;
   if (using_aggregated_app_inference_)
@@ -396,6 +404,9 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
               result.score + rank_it->second * results_list_boost_coefficient_,
               3.0);
         }
+      } else if (!last_query_.empty() &&
+                 use_aggregated_search_ranking_inference_) {
+        result.score = search_ranker_score_map[result.result->id()];
       }
     } else if (model == Model::APPS) {
       if (using_aggregated_app_inference_) {

@@ -377,7 +377,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, EarlyTemplateLoad) {
 }
 
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
-                       DistillerJavaScriptExposed) {
+                       DISABLED_DistillerJavaScriptExposed) {
   // Navigate to a distiller URL.
   GURL url(std::string(kDomDistillerScheme) + "://url");
   NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);

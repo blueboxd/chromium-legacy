@@ -246,6 +246,7 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
 
   context.DrawImage(
       image.get(), decode_mode, FloatRect(pixel_snapped_dest_rect), &src_rect,
+      layout_image_.StyleRef().HasFilterInducingProperty(),
       SkBlendMode::kSrcOver,
       LayoutObject::ShouldRespectImageOrientation(&layout_image_));
   if (RuntimeEnabledFeatures::ElementTimingEnabled(

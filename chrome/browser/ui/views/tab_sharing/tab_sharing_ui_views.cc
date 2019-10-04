@@ -94,10 +94,12 @@ void SetContentsBorderVisible(content::WebContents* contents, bool visible) {
 }
 
 base::string16 GetTabName(content::WebContents* tab) {
-  GURL url = tab->GetURL();
-  return content::IsOriginSecure(url)
-             ? base::UTF8ToUTF16(net::GetHostAndOptionalPort(url))
-             : url_formatter::FormatUrlForSecurityDisplay(url.GetOrigin());
+  GURL url = tab->GetLastCommittedURL();
+  const base::string16 tab_name =
+      content::IsOriginSecure(url)
+          ? base::UTF8ToUTF16(net::GetHostAndOptionalPort(url))
+          : url_formatter::FormatUrlForSecurityDisplay(url.GetOrigin());
+  return tab_name.empty() ? tab->GetTitle() : tab_name;
 }
 
 }  // namespace

@@ -56,12 +56,12 @@ TEST_F(WebGPUFenceTest, InitialValue) {
   dawn::Device device = dawn::Device::Acquire(webgpu()->GetDefaultDevice());
   dawn::Queue queue = device.CreateQueue();
   {
-    dawn::FenceDescriptor fence_desc{nullptr, 0};
+    dawn::FenceDescriptor fence_desc{nullptr, nullptr, 0};
     dawn::Fence fence = queue.CreateFence(&fence_desc);
     EXPECT_EQ(fence.GetCompletedValue(), 0u);
   }
   {
-    dawn::FenceDescriptor fence_desc{nullptr, 2};
+    dawn::FenceDescriptor fence_desc{nullptr, nullptr, 2};
     dawn::Fence fence = queue.CreateFence(&fence_desc);
     EXPECT_EQ(fence.GetCompletedValue(), 2u);
   }
@@ -75,7 +75,7 @@ TEST_F(WebGPUFenceTest, GetCompletedValue) {
   }
   dawn::Device device = dawn::Device::Acquire(webgpu()->GetDefaultDevice());
   dawn::Queue queue = device.CreateQueue();
-  dawn::FenceDescriptor fence_desc{nullptr, 0};
+  dawn::FenceDescriptor fence_desc{nullptr, nullptr, 0};
   dawn::Fence fence = queue.CreateFence(&fence_desc);
   queue.Signal(fence, 2u);
   WaitForFence(device, fence, 2u);
@@ -91,7 +91,7 @@ TEST_F(WebGPUFenceTest, OnCompletion) {
   }
   dawn::Device device = dawn::Device::Acquire(webgpu()->GetDefaultDevice());
   dawn::Queue queue = device.CreateQueue();
-  dawn::FenceDescriptor fence_desc{nullptr, 0};
+  dawn::FenceDescriptor fence_desc{nullptr, nullptr, 0};
   dawn::Fence fence = queue.CreateFence(&fence_desc);
   queue.Signal(fence, 2u);
 
@@ -110,7 +110,7 @@ TEST_F(WebGPUFenceTest, SignalManyTimes) {
   }
   dawn::Device device = dawn::Device::Acquire(webgpu()->GetDefaultDevice());
   dawn::Queue queue = device.CreateQueue();
-  dawn::FenceDescriptor fence_desc{nullptr, 0};
+  dawn::FenceDescriptor fence_desc{nullptr, nullptr, 0};
   dawn::Fence fence = queue.CreateFence(&fence_desc);
 
   uint64_t max_value = 1000000u;

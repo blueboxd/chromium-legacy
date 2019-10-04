@@ -556,6 +556,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     // Update the TableView and TableViewModel sections to match the new
     // sessionState.
     // Turn Off animations since UITableViewRowAnimationNone still animates.
+    BOOL animationsWereEnabled = [UIView areAnimationsEnabled];
     [UIView setAnimationsEnabled:NO];
     if (newSessionState ==
         SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) {
@@ -569,7 +570,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       }
                                completion:nil];
     }
-    [UIView setAnimationsEnabled:YES];
+    [UIView setAnimationsEnabled:animationsWereEnabled];
   }
 
   // Table updates must happen before |sessionState| gets updated, since some

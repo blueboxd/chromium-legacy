@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_APPLICATION_CACHE_ERROR_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_APPLICATION_CACHE_ERROR_EVENT_H_
 
-#include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/events/application_cache_error_event_init.h"

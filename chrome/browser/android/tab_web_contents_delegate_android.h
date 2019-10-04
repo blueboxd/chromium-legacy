@@ -58,7 +58,7 @@ class TabWebContentsDelegateAndroid
       override;
   void CloseContents(content::WebContents* web_contents) override;
   bool ShouldFocusLocationBarByDefault(content::WebContents* source) override;
-  blink::WebDisplayMode GetDisplayMode(
+  blink::mojom::DisplayMode GetDisplayMode(
       const content::WebContents* web_contents) override;
   void FindReply(content::WebContents* web_contents,
                  int request_id,

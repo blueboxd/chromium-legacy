@@ -88,8 +88,6 @@
 
 # Failing on all platforms, need to be triaged, see https://crbug.com/1010870.
 -WebContentsImplBrowserTest.MaxFrameCountForCrossProcessNavigation
-# Flaky
--BookmarksCommandManagerTest.All
 
 # Failing on android only, need to be triaged, see https://crbug.com/1006267.
 -BackForwardCacheMetricsBrowserTest.Fetch
@@ -99,3 +97,10 @@
 -WebRtcBrowserTest.CanSetupH264VideoCallOnSupportedDevice
 -WithoutCORBProtectionSniffing/CrossSiteDocumentBlockingTest.AllowImagesWithSniffing/0
 -WithCORBProtectionSniffing/CrossSiteDocumentBlockingTest.AllowImagesWithSniffing/0
+
+# Flaky on android only, need to be triaged, see https://crbug.com/1006267.
+-IndexedDBBrowserTestWithVersion987654SSVData.DestroyTest
+-MSE_ClearKey/EncryptedMediaTest.Playback_VideoAudio_WebM/0
+-MediaSessionImplBrowserTest.Async_Unducking_Inactive
+-MidiBrowserTest.RequestMIDIAccess
+-RenderViewHostTest.IsFocusedElementEditable

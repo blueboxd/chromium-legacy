@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/trace_event/trace_event.h"
-#include "build/build_config.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/ozone/platform/drm/common/drm_overlay_candidates.h"
 #include "ui/ozone/public/overlay_surface_candidate.h"
@@ -125,21 +124,6 @@ bool DrmOverlayManager::CanHandleCandidate(
                                   gfx::ToNearestRect(candidate.display_rect))) {
     return false;
   }
-
-#if defined(ARCH_CPU_X86_FAMILY)
-  // TODO(dcastagna|oshima): Re-enable NV12 format as HW overlay once
-  // b/113362843 is addressed.
-  if (candidate.format == gfx::BufferFormat::YUV_420_BIPLANAR) {
-    // Reject buffer whose cropped horizontal coordinates doesn't fall on
-    // even pixel boundary.
-    int nearest_x = gfx::ToRoundedInt(candidate.buffer_size.width() *
-                                      candidate.crop_rect.x());
-    int nearest_width = gfx::ToRoundedInt(candidate.buffer_size.width() *
-                                          candidate.crop_rect.width());
-    if (nearest_x % 2 != 0 || nearest_width % 2 != 0)
-      return false;
-  }
-#endif
 
   return true;
 }

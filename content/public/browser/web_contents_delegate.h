@@ -25,9 +25,9 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/window_container_type.mojom-forward.h"
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom-forward.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_security_style.h"
 #include "third_party/blink/public/web/web_fullscreen_options.h"
@@ -436,11 +436,12 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual bool IsFullscreenForTabOrPending(const WebContents* web_contents);
 
   // Returns the actual display mode of the top-level browsing context.
-  // For example, it should return 'blink::WebDisplayModeFullscreen' whenever
-  // the browser window is put to fullscreen mode (either by the end user,
-  // or HTML API or from a web manifest setting).
-  // See http://w3c.github.io/manifest/#dfn-display-mode
-  virtual blink::WebDisplayMode GetDisplayMode(const WebContents* web_contents);
+  // For example, it should return 'blink::mojom::DisplayModeFullscreen'
+  // whenever the browser window is put to fullscreen mode (either by the end
+  // user, or HTML API or from a web manifest setting). See
+  // http://w3c.github.io/manifest/#dfn-display-mode
+  virtual blink::mojom::DisplayMode GetDisplayMode(
+      const WebContents* web_contents);
 
   // Register a new handler for URL requests with the given scheme.
   // |user_gesture| is true if the registration is made in the context of a user

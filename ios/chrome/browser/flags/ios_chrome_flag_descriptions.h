@@ -118,6 +118,11 @@ extern const char kDcheckIsFatalDescription[];
 extern const char kDetectMainThreadFreezeName[];
 extern const char kDetectMainThreadFreezeDescription[];
 
+// Title and description for the flag to disable animations when battery
+// level is below a certain level.
+extern const char kDisableAnimationOnLowBatteryName[];
+extern const char kDisableAnimationOnLowBatteryDescription[];
+
 // Title and description for the flag to enable drag and drop.
 extern const char kDragAndDropName[];
 extern const char kDragAndDropDescription[];

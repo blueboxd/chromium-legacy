@@ -1441,6 +1441,13 @@ message ChromeDesktopReportRequest {
   optional string os_user_name = 8;
 }
 
+// Report user level status on Chrome OS platform. Chrome OS equivalent of
+// ChromeDesktopReportRequest.
+message ChromeOsUserReportRequest {
+  // Browser related info.
+  optional BrowserReport browser_report = 1;
+}
+
 // A validation issue from validating a policy value that was contained in
 // the payload of the policy fetch response.
 message PolicyValueValidationIssue {
@@ -1657,6 +1664,11 @@ message DeviceStatusReportResponse {
 // upload errors will be set in the containing DeviceManagementResponse or
 // eventually at the HTTP level as mentioned in a TODO.
 message ChromeDesktopReportResponse {}
+
+// Response from DMServer to a ChromeOS user report request. The report
+// upload errors will be set in the containing DeviceManagementResponse or
+// eventually at the HTTP level as mentioned in a TODO.
+message ChromeOsUserReportResponse {}
 
 // Response from DMServer to update user devices' status.
 // It is possible that status report fails but policy request succeed.  In such
@@ -2480,6 +2492,7 @@ message ChildStatusReportResponse {
 //     * device_state_retrieval
 //     * enterprise_check
 //     * chrome_desktop_report
+//     * chrome_os_user_report
 //     * ping
 //     * policy
 //     * register
@@ -2515,8 +2528,8 @@ message ChildStatusReportResponse {
 //   * For unregister, policy, status, cert_upload, remote_commands,
 //     gcm_id_update, active_directory_enroll_play_user,
 //     active_directory_play_activity, active_directory_user_signin,
-//     policy_validation_report, chrome_desktop_report
-//     and refresh_account requests
+//     policy_validation_report, chrome_desktop_report,
+//     chrome_os_user_report and refresh_account requests
 //     Authorization: GoogleDMToken token=<dm token from register>
 //
 //   * The Authorization header isn't used for enterprise_check,
@@ -2528,6 +2541,7 @@ message ChildStatusReportResponse {
 // HTTP query parameter - request, as listed below. Other requests within the
 // container will be ignored.
 //   chrome_desktop_report: chrome_desktop_report_request
+//   chrome_os_user_report: chrome_os_user_report_request
 //   cert_upload: cert_upload_request
 //   check_device_pairing: check_device_pairing_request
 //   device_pairing: device_pairing_request
@@ -2654,7 +2668,10 @@ message DeviceManagementRequest {
   // Request from device for SAML IdP URL address.
   optional PublicSamlUserRequest public_saml_user_request = 32;
 
-  // Next id: 33.
+  // A ChromeOS user report request.
+  optional ChromeOsUserReportRequest chrome_os_user_report_request = 33;
+
+  // Next id: 34.
 }
 
 // Response from server to device.
@@ -2776,5 +2793,8 @@ message DeviceManagementResponse {
   // Response to public SAML session user request.
   optional PublicSamlUserResponse public_saml_user_response = 31;
 
-  // Next id: 32.
+  // Response to a ChromeOS user report request.
+  optional ChromeOsUserReportResponse chrome_os_user_report_response = 32;
+
+  // Next id: 33.
 }

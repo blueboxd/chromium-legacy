@@ -21,11 +21,11 @@
 #include "device/vr/public/cpp/session_mode.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace content {
 class RenderFrameHost;
@@ -53,7 +53,7 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
   ~VRServiceImpl() override;
 
   static void Create(content::RenderFrameHost* render_frame_host,
-                     device::mojom::VRServiceRequest request);
+                     mojo::PendingReceiver<device::mojom::VRService> receiver);
 
   // device::mojom::VRService implementation
   void SetClient(mojo::PendingRemote<device::mojom::VRServiceClient>
@@ -155,7 +155,7 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
   mojo::RemoteSet<device::mojom::XRSessionClient> session_clients_;
   mojo::Remote<device::mojom::VRServiceClient> service_client_;
   content::RenderFrameHost* render_frame_host_;
-  mojo::StrongBindingPtr<VRService> binding_;
+  mojo::SelfOwnedReceiverRef<VRService> receiver_;
   InterfaceSet<device::mojom::XRSessionControllerPtr> magic_window_controllers_;
 
   // List of callbacks to run when initialization is completed.

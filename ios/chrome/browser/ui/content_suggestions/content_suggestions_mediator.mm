@@ -367,9 +367,10 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 
   // Reloading the section with animations looks bad because the section
   // border with the new collapsed height draws before the elements collapse.
+  BOOL animationsWereEnabled = [UIView areAnimationsEnabled];
   [UIView setAnimationsEnabled:NO];
   [self.dataSink reloadSection:sectionInfo];
-  [UIView setAnimationsEnabled:YES];
+  [UIView setAnimationsEnabled:animationsWereEnabled];
 }
 
 #pragma mark - ContentSuggestionsServiceObserver

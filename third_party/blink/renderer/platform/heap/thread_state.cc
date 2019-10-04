@@ -672,8 +672,6 @@ void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
       // Stop concurrent markers
       marker_scheduler_->CancelAndWait();
       active_markers_ = 0;
-      // Flush the last remaining references concurrent markers found.
-      Heap().FlushV8References();
     }
     DisableIncrementalMarkingBarrier();
     current_gc_data_.reason = reason;
@@ -1110,8 +1108,6 @@ void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state) {
 
   bool complete = MarkPhaseAdvanceMarking(
       base::TimeTicks::Now() + next_incremental_marking_step_duration_);
-
-  Heap().FlushV8References();
 
   if (base::FeatureList::IsEnabled(
           blink::features::kBlinkHeapConcurrentMarking)) {

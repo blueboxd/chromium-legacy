@@ -33,7 +33,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
     bool immersive_mode;
     bool strict_mode;
     String media_type;
-    WebDisplayMode display_mode;
+    blink::mojom::DisplayMode display_mode;
     DisplayShape display_shape;
     ColorSpaceGamut color_gamut;
     PreferredColorScheme preferred_color_scheme;
@@ -102,7 +102,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   Document* GetDocument() const override;
   bool HasValues() const override;
   const String MediaType() const override;
-  WebDisplayMode DisplayMode() const override;
+  blink::mojom::DisplayMode DisplayMode() const override;
   DisplayShape GetDisplayShape() const override;
   ColorSpaceGamut ColorGamut() const override;
   PreferredColorScheme GetPreferredColorScheme() const override;

@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_VALUES_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_VALUES_H_
 
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/pointer_properties.h"
 #include "third_party/blink/public/platform/shape_properties.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -74,7 +74,7 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
   virtual bool ThreeDEnabled() const = 0;
   virtual bool InImmersiveMode() const = 0;
   virtual const String MediaType() const = 0;
-  virtual WebDisplayMode DisplayMode() const = 0;
+  virtual blink::mojom::DisplayMode DisplayMode() const = 0;
   virtual bool StrictMode() const = 0;
   virtual Document* GetDocument() const = 0;
   virtual bool HasValues() const = 0;
@@ -98,7 +98,7 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
   static int CalculateMonochromeBitsPerComponent(LocalFrame*);
   static int CalculateDefaultFontSize(LocalFrame*);
   static const String CalculateMediaType(LocalFrame*);
-  static WebDisplayMode CalculateDisplayMode(LocalFrame*);
+  static blink::mojom::DisplayMode CalculateDisplayMode(LocalFrame*);
   static bool CalculateThreeDEnabled(LocalFrame*);
   static bool CalculateInImmersiveMode(LocalFrame*);
   static PointerType CalculatePrimaryPointerType(LocalFrame*);

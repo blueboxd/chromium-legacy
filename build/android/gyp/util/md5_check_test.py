@@ -80,7 +80,11 @@ class TestMd5Check(unittest.TestCase):
     CheckCallAndRecord(True, 'should call when record doesn\'t exist',
                        expected_changes='Previous stamp file not found.',
                        added_or_modified_only=False)
+    CheckCallAndRecord(True, 'pass_changes changed')
     CheckCallAndRecord(False, 'should not call when nothing changed')
+    input_files = input_files[::-1]
+    CheckCallAndRecord(False, 'reordering of inputs shouldn\'t trigger call')
+
     CheckCallAndRecord(False, 'should not call when nothing changed #2',
                        outputs_specified=True, outputs_missing=False)
     CheckCallAndRecord(True, 'should call when output missing',
@@ -96,9 +100,6 @@ class TestMd5Check(unittest.TestCase):
     CheckCallAndRecord(True, 'changed input file should trigger call',
                        expected_changes='*Modified: %s' % input_file1.name,
                        added_or_modified_only=True)
-
-    input_files = input_files[::-1]
-    CheckCallAndRecord(False, 'reordering of inputs shouldn\'t trigger call')
 
     input_files = input_files[:1]
     CheckCallAndRecord(True, 'removing file should trigger call',
@@ -138,7 +139,6 @@ class TestMd5Check(unittest.TestCase):
                        expected_changes='*Modified: %s*Subpath modified: %s' % (
                                         input_file2.name, 'path/1.txt'),
                        added_or_modified_only=True)
-    CheckCallAndRecord(False, 'should not call when nothing changed')
 
     _WriteZipFile(input_file2.name, [])
     CheckCallAndRecord(True, 'removed subpath should trigger call',

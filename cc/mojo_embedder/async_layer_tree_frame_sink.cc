@@ -66,9 +66,9 @@ AsyncLayerTreeFrameSink::UnboundMessagePipes::UnboundMessagePipes() = default;
 AsyncLayerTreeFrameSink::UnboundMessagePipes::~UnboundMessagePipes() = default;
 
 bool AsyncLayerTreeFrameSink::UnboundMessagePipes::HasUnbound() const {
-  return client_request.is_pending() &&
-         (compositor_frame_sink_info.is_valid() ^
-          compositor_frame_sink_associated_info.is_valid());
+  return client_receiver.is_valid() &&
+         (compositor_frame_sink_remote.is_valid() ^
+          compositor_frame_sink_associated_remote.is_valid());
 }
 
 AsyncLayerTreeFrameSink::UnboundMessagePipes::UnboundMessagePipes(
@@ -86,7 +86,6 @@ AsyncLayerTreeFrameSink::AsyncLayerTreeFrameSink(
       synthetic_begin_frame_source_(
           std::move(params->synthetic_begin_frame_source)),
       pipes_(std::move(params->pipes)),
-      client_binding_(this),
       wants_animate_only_begin_frames_(params->wants_animate_only_begin_frames),
       receive_begin_frame_histogram_(
           GetHistogramNamed("GraphicsPipeline.%s.ReceivedBeginFrame",
@@ -110,22 +109,22 @@ bool AsyncLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
     return false;
 
   DCHECK(pipes_.HasUnbound());
-  if (pipes_.compositor_frame_sink_info.is_valid()) {
-    compositor_frame_sink_.Bind(std::move(pipes_.compositor_frame_sink_info));
-    compositor_frame_sink_.set_connection_error_with_reason_handler(
+  if (pipes_.compositor_frame_sink_remote.is_valid()) {
+    compositor_frame_sink_.Bind(std::move(pipes_.compositor_frame_sink_remote));
+    compositor_frame_sink_.set_disconnect_with_reason_handler(
         base::BindOnce(&AsyncLayerTreeFrameSink::OnMojoConnectionError,
                        weak_factory_.GetWeakPtr()));
     compositor_frame_sink_ptr_ = compositor_frame_sink_.get();
-  } else if (pipes_.compositor_frame_sink_associated_info.is_valid()) {
+  } else if (pipes_.compositor_frame_sink_associated_remote.is_valid()) {
     compositor_frame_sink_associated_.Bind(
-        std::move(pipes_.compositor_frame_sink_associated_info));
-    compositor_frame_sink_associated_.set_connection_error_with_reason_handler(
+        std::move(pipes_.compositor_frame_sink_associated_remote));
+    compositor_frame_sink_associated_.set_disconnect_with_reason_handler(
         base::BindOnce(&AsyncLayerTreeFrameSink::OnMojoConnectionError,
                        weak_factory_.GetWeakPtr()));
     compositor_frame_sink_ptr_ = compositor_frame_sink_associated_.get();
   }
-  client_binding_.Bind(std::move(pipes_.client_request),
-                       compositor_task_runner_);
+  client_receiver_.Bind(std::move(pipes_.client_receiver),
+                        compositor_task_runner_);
 
   if (synthetic_begin_frame_source_) {
     client->SetBeginFrameSource(synthetic_begin_frame_source_.get());
@@ -146,7 +145,7 @@ void AsyncLayerTreeFrameSink::DetachFromClient() {
   client_->SetBeginFrameSource(nullptr);
   begin_frame_source_.reset();
   synthetic_begin_frame_source_.reset();
-  client_binding_.Close();
+  client_receiver_.reset();
   compositor_frame_sink_.reset();
   compositor_frame_sink_associated_.reset();
   compositor_frame_sink_ptr_ = nullptr;

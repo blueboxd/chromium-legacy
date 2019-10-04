@@ -6,7 +6,10 @@
 #define CONTENT_TEST_FAKE_RENDERER_COMPOSITOR_FRAME_SINK_H_
 
 #include "components/viz/common/frame_timing_details_map.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 
 namespace content {
@@ -17,8 +20,8 @@ class FakeRendererCompositorFrameSink
     : public viz::mojom::CompositorFrameSinkClient {
  public:
   FakeRendererCompositorFrameSink(
-      viz::mojom::CompositorFrameSinkPtr sink,
-      viz::mojom::CompositorFrameSinkClientRequest request);
+      mojo::PendingRemote<viz::mojom::CompositorFrameSink> sink,
+      mojo::PendingReceiver<viz::mojom::CompositorFrameSinkClient> receiver);
   ~FakeRendererCompositorFrameSink() override;
 
   bool did_receive_ack() { return did_receive_ack_; }
@@ -43,8 +46,8 @@ class FakeRendererCompositorFrameSink
   void Flush();
 
  private:
-  mojo::Binding<viz::mojom::CompositorFrameSinkClient> binding_;
-  viz::mojom::CompositorFrameSinkPtr sink_;
+  mojo::Receiver<viz::mojom::CompositorFrameSinkClient> receiver_;
+  mojo::Remote<viz::mojom::CompositorFrameSink> sink_;
   bool did_receive_ack_ = false;
   std::vector<viz::ReturnedResource> last_reclaimed_resources_;
 

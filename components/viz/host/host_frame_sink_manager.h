@@ -25,6 +25,8 @@
 #include "components/viz/host/viz_host_export.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 
 namespace base {
@@ -129,9 +131,10 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   //
   // If there is already a CompositorFrameSink for |frame_sink_id| then calling
   // this will destroy the existing CompositorFrameSink and create a new one.
-  void CreateCompositorFrameSink(const FrameSinkId& frame_sink_id,
-                                 mojom::CompositorFrameSinkRequest request,
-                                 mojom::CompositorFrameSinkClientPtr client);
+  void CreateCompositorFrameSink(
+      const FrameSinkId& frame_sink_id,
+      mojo::PendingReceiver<mojom::CompositorFrameSink> receiver,
+      mojo::PendingRemote<mojom::CompositorFrameSinkClient> client);
 
   // Registers FrameSink hierarchy. It's expected that the parent will embed
   // the child. If |parent_frame_sink_id| is registered then it will be added as

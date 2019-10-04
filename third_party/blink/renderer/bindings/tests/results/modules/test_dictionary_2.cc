@@ -14,6 +14,7 @@ namespace blink {
 
 TestDictionary2::TestDictionary2() {
   setDefaultEmptyDictionary(MakeGarbageCollected<TestDictionary>());
+  setDefaultEmptyDictionaryForUnion(TestDictionaryOrLong::FromTestDictionary(MakeGarbageCollected<TestDictionary>()));
 }
 
 TestDictionary2::~TestDictionary2() = default;
@@ -22,8 +23,13 @@ void TestDictionary2::setDefaultEmptyDictionary(TestDictionary* value) {
   default_empty_dictionary_ = value;
 }
 
+void TestDictionary2::setDefaultEmptyDictionaryForUnion(const TestDictionaryOrLong& value) {
+  default_empty_dictionary_for_union_ = value;
+}
+
 void TestDictionary2::Trace(blink::Visitor* visitor) {
   visitor->Trace(default_empty_dictionary_);
+  visitor->Trace(default_empty_dictionary_for_union_);
   IDLDictionaryBase::Trace(visitor);
 }
 

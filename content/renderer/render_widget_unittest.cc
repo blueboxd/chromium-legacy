@@ -173,7 +173,7 @@ class InteractiveRenderWidget : public RenderWidget {
       : RenderWidget(++next_routing_id_,
                      compositor_deps,
                      page_properties,
-                     blink::kWebDisplayModeUndefined,
+                     blink::mojom::DisplayMode::kUndefined,
                      false,
                      false,
                      false,
@@ -443,7 +443,7 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
   bool ShouldAckSyntheticInputImmediately() override { return true; }
   void CancelPagePopupForWidget() override {}
   void ApplyNewDisplayModeForWidget(
-      blink::WebDisplayMode new_display_mode) override {}
+      blink::mojom::DisplayMode new_display_mode) override {}
   void ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,
                                       const gfx::Size& max_size) override {}
   void DisableAutoResizeForWidget() override {}

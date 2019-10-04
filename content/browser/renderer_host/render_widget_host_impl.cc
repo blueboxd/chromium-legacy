@@ -356,7 +356,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
       hung_renderer_delay_(TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
       new_content_rendering_delay_(
           TimeDelta::FromMilliseconds(kNewContentRenderingDelayMs)),
-      compositor_frame_sink_binding_(this),
+      compositor_frame_sink_receiver_(this),
       frame_token_message_queue_(
           std::make_unique<FrameTokenMessageQueue>(this)),
       render_frame_metadata_provider_(
@@ -2968,22 +2968,24 @@ void RenderWidgetHostImpl::RequestCompositionUpdates(bool immediate_request,
 }
 
 void RenderWidgetHostImpl::RequestCompositorFrameSink(
-    viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request,
-    viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client) {
+    mojo::PendingReceiver<viz::mojom::CompositorFrameSink>
+        compositor_frame_sink_receiver,
+    mojo::PendingRemote<viz::mojom::CompositorFrameSinkClient>
+        compositor_frame_sink_client) {
   if (enable_viz_) {
       // Connects the viz process end of CompositorFrameSink message pipes. The
       // renderer compositor may request a new CompositorFrameSink on context
       // loss, which will destroy the existing CompositorFrameSink.
       auto callback = base::BindOnce(
           [](viz::HostFrameSinkManager* manager,
-             viz::mojom::CompositorFrameSinkRequest request,
-             viz::mojom::CompositorFrameSinkClientPtr client,
+             mojo::PendingReceiver<viz::mojom::CompositorFrameSink> receiver,
+             mojo::PendingRemote<viz::mojom::CompositorFrameSinkClient> client,
              const viz::FrameSinkId& frame_sink_id) {
             manager->CreateCompositorFrameSink(
-                frame_sink_id, std::move(request), std::move(client));
+                frame_sink_id, std::move(receiver), std::move(client));
           },
           base::Unretained(GetHostFrameSinkManager()),
-          std::move(compositor_frame_sink_request),
+          std::move(compositor_frame_sink_receiver),
           std::move(compositor_frame_sink_client));
 
       if (view_)
@@ -3001,16 +3003,20 @@ void RenderWidgetHostImpl::RequestCompositorFrameSink(
     shared_bitmap_manager_->ChildDeletedSharedBitmap(id);
   owned_bitmaps_.clear();
 
-  if (compositor_frame_sink_binding_.is_bound())
-    compositor_frame_sink_binding_.Close();
-  compositor_frame_sink_binding_.Bind(
-      std::move(compositor_frame_sink_request),
+  compositor_frame_sink_receiver_.reset();
+  compositor_frame_sink_receiver_.Bind(
+      std::move(compositor_frame_sink_receiver),
       BrowserMainLoop::GetInstance()->GetResizeTaskRunner());
+
+  renderer_compositor_frame_sink_.reset();
+  renderer_compositor_frame_sink_.Bind(std::move(compositor_frame_sink_client));
+  auto* compositor_frame_sink_client_ptr =
+      renderer_compositor_frame_sink_.get();
+
   if (view_) {
     view_->DidCreateNewRendererCompositorFrameSink(
-        compositor_frame_sink_client.get());
+        compositor_frame_sink_client_ptr);
   }
-  renderer_compositor_frame_sink_ = std::move(compositor_frame_sink_client);
 }
 
 void RenderWidgetHostImpl::RegisterRenderFrameMetadataObserver(

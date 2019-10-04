@@ -37,8 +37,8 @@ TEST_F(ShortcutInfoTest, AllAttributesUpdate) {
   info_.scope = GURL("https://old.com/");
   manifest_.scope = GURL("https://new.com/");
 
-  info_.display = blink::kWebDisplayModeStandalone;
-  manifest_.display = blink::kWebDisplayModeFullscreen;
+  info_.display = blink::mojom::DisplayMode::kStandalone;
+  manifest_.display = blink::mojom::DisplayMode::kFullscreen;
 
   info_.theme_color = 0xffff0000;
   manifest_.theme_color = 0xffcc0000;
@@ -97,7 +97,7 @@ TEST_F(ShortcutInfoTest, IgnoreEmptyNameAndShortName) {
 
   info_.name = initial_name;
   info_.short_name = initial_short_name;
-  manifest_.display = blink::kWebDisplayModeStandalone;
+  manifest_.display = blink::mojom::DisplayMode::kStandalone;
   manifest_.name = base::NullableString16(base::string16(), false);
   info_.UpdateFromManifest(manifest_);
 

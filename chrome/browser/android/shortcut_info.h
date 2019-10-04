@@ -118,7 +118,7 @@ struct ShortcutInfo {
   base::string16 user_title;
   base::string16 name;
   base::string16 short_name;
-  blink::WebDisplayMode display;
+  blink::mojom::DisplayMode display;
   blink::WebScreenOrientationLockType orientation;
   Source source;
   base::Optional<SkColor> theme_color;

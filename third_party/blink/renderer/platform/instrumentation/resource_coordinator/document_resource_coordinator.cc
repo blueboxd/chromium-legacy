@@ -30,7 +30,7 @@ DocumentResourceCoordinator::MaybeCreate(
 
 DocumentResourceCoordinator::DocumentResourceCoordinator(
     service_manager::InterfaceProvider* interface_provider) {
-  interface_provider->GetInterface(mojo::MakeRequest(&service_));
+  interface_provider->GetInterface(service_.BindNewPipeAndPassReceiver());
   DCHECK(service_);
 }
 

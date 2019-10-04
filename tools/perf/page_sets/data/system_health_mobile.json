@@ -213,6 +213,9 @@
         "load:news:qq": {
             "DEFAULT": "system_health_mobile_010.wprgo"
         },
+        "load:news:qq:2019": {
+            "DEFAULT": "system_health_mobile_de2c94a690.wprgo"
+        },
         "load:news:reddit": {
             "DEFAULT": "system_health_mobile_011.wprgo"
         },

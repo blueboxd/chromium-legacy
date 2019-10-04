@@ -22,9 +22,9 @@ VideoPlayerTestEnvironment* VideoPlayerTestEnvironment::Create(
     const base::FilePath& video_path,
     const base::FilePath& video_metadata_path,
     bool enable_validator,
-    FrameOutputMode frame_output_mode,
-    const base::FilePath& output_folder,
-    bool use_vd) {
+    bool use_vd,
+    const FrameOutputConfig& frame_output_config,
+    const base::FilePath& output_folder) {
   auto video = std::make_unique<media::test::Video>(
       video_path.empty() ? base::FilePath(kDefaultTestVideoPath) : video_path,
       video_metadata_path);
@@ -34,21 +34,21 @@ VideoPlayerTestEnvironment* VideoPlayerTestEnvironment::Create(
   }
 
   return new VideoPlayerTestEnvironment(std::move(video), enable_validator,
-                                        frame_output_mode, output_folder,
-                                        use_vd);
+                                        use_vd, frame_output_config,
+                                        output_folder);
 }
 
 VideoPlayerTestEnvironment::VideoPlayerTestEnvironment(
     std::unique_ptr<media::test::Video> video,
     bool enable_validator,
-    FrameOutputMode frame_output_mode,
-    const base::FilePath& output_folder,
-    bool use_vd)
+    bool use_vd,
+    const FrameOutputConfig& frame_output_config,
+    const base::FilePath& output_folder)
     : video_(std::move(video)),
       enable_validator_(enable_validator),
-      frame_output_mode_(frame_output_mode),
-      output_folder_(output_folder),
-      use_vd_(use_vd) {}
+      use_vd_(use_vd),
+      frame_output_config_(frame_output_config),
+      output_folder_(output_folder) {}
 
 VideoPlayerTestEnvironment::~VideoPlayerTestEnvironment() = default;
 
@@ -82,16 +82,25 @@ bool VideoPlayerTestEnvironment::IsValidatorEnabled() const {
   return enable_validator_;
 }
 
+bool VideoPlayerTestEnvironment::UseVD() const {
+  return use_vd_;
+}
+
 FrameOutputMode VideoPlayerTestEnvironment::GetFrameOutputMode() const {
-  return frame_output_mode_;
+  return frame_output_config_.output_mode;
+}
+
+VideoFrameFileWriter::OutputFormat
+VideoPlayerTestEnvironment::GetFrameOutputFormat() const {
+  return frame_output_config_.output_format;
+}
+
+uint64_t VideoPlayerTestEnvironment::GetFrameOutputLimit() const {
+  return frame_output_config_.output_limit;
 }
 
 const base::FilePath& VideoPlayerTestEnvironment::OutputFolder() const {
   return output_folder_;
-}
-
-bool VideoPlayerTestEnvironment::UseVD() const {
-  return use_vd_;
 }
 
 bool VideoPlayerTestEnvironment::ImportSupported() const {

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
 import android.support.test.InstrumentationRegistry;
@@ -51,6 +52,9 @@ public class AutofillAssistantAutostartTest {
     @Test
     @MediumTest
     public void testAutostart() {
+        mTestRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                InstrumentationRegistry.getTargetContext(), "http://www.example.com"));
+
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 SupportedScriptProto.newBuilder()
                         .setPath("example.com/hello")
@@ -68,16 +72,9 @@ public class AutofillAssistantAutostartTest {
                                                                 .setText("Done"))))
                                 .build()));
 
-        // Create test service before starting activity.
         AutofillAssistantTestService testService =
                 new AutofillAssistantTestService(Collections.singletonList(script));
-        testService.scheduleForInjection();
-
-        mTestRule.startCustomTabActivityWithIntent(
-                CustomTabsTestUtils
-                        .createMinimalCustomTabIntent(InstrumentationRegistry.getTargetContext(),
-                                "http://www.example.com")
-                        .putExtra("org.chromium.chrome.browser.autofill_assistant.ENABLED", true));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
 
         waitUntilViewMatchesCondition(withText("Hello World!"), isDisplayed());
     }

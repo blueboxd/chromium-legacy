@@ -37,8 +37,8 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
-#include "third_party/blink/public/mojom/csp/content_security_policy.mojom-blink.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/csp/content_security_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_reporting_proxy.h"

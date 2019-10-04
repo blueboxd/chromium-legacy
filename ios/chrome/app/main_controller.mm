@@ -417,6 +417,9 @@ enum class EnterTabSwitcherSnapshotResult {
   // The application level component for url loading. Is passed down to
   // browser state level UrlLoadingService instances.
   AppUrlLoadingService* _appURLLoadingService;
+
+  // If the animations were disabled.
+  BOOL _animationDisabled;
 }
 
 // The main coordinator, lazily created the first time it is accessed. Manages
@@ -1035,6 +1038,34 @@ enum class EnterTabSwitcherSnapshotResult {
            object:nil];
 }
 
+- (void)registerBatteryMonitoringNotifications {
+  if (base::FeatureList::IsEnabled(kDisableAnimationOnLowBattery)) {
+    [[UIDevice currentDevice] setBatteryMonitoringEnabled:YES];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(batteryLevelDidChange:)
+               name:UIDeviceBatteryLevelDidChangeNotification
+             object:nil];
+    [self batteryLevelDidChange:nil];
+  }
+}
+
+- (void)batteryLevelDidChange:(NSNotification*)notification {
+  if (![[UIDevice currentDevice] isBatteryMonitoringEnabled]) {
+    return;
+  }
+  CGFloat level = [UIDevice currentDevice].batteryLevel;
+  if (level < 0.2) {
+    if (!_animationDisabled) {
+      _animationDisabled = YES;
+      [UIView setAnimationsEnabled:NO];
+    }
+  } else if (_animationDisabled) {
+    _animationDisabled = NO;
+    [UIView setAnimationsEnabled:YES];
+  }
+}
+
 - (void)schedulePrefObserverInitialization {
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kPrefObserverInit
@@ -1245,6 +1276,7 @@ enum class EnterTabSwitcherSnapshotResult {
   [_startupTasks donateIntents];
   [_startupTasks registerForApplicationWillResignActiveNotification];
   [self registerForOrientationChangeNotifications];
+  [self registerBatteryMonitoringNotifications];
 
   // Deferred tasks.
   [self schedulePrefObserverInitialization];

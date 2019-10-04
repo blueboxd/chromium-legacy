@@ -15,3 +15,6 @@
 
 # Very flaky. Can't reproduce locally, it always succeed.
 -SystemNetworkContextManagerMaxConnectionsPerProxyBrowsertest.MaxConnectionsPerProxy
+
+# Flaky on the bots, need to be investigated, see https://crbug.com/1010870.
+-BookmarksCommandManagerTest.All

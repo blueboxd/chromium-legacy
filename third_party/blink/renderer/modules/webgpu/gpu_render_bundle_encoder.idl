@@ -34,5 +34,5 @@
                              GPUBufferSize indirectOffset);
 
     // GPURenderBundleEncoder methods
-    GPURenderBundle finish(optional GPURenderBundleDescriptor descriptor);
+    GPURenderBundle finish(optional GPURenderBundleDescriptor descriptor = {});
 };

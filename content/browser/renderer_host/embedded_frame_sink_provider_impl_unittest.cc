@@ -22,6 +22,7 @@
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/renderer_host/embedded_frame_sink_impl.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +48,7 @@ constexpr viz::FrameSinkId kFrameSinkB(kRendererClientId, 4);
 template <class T>
 void WaitForConnectionError(T* endpoint) {
   base::RunLoop run_loop;
-  endpoint->set_connection_error_handler(run_loop.QuitClosure());
+  endpoint->set_disconnect_handler(run_loop.QuitClosure());
   run_loop.Run();
 }
 
@@ -182,8 +183,7 @@ TEST_F(EmbeddedFrameSinkProviderImplTest,
   viz::MockCompositorFrameSinkClient compositor_frame_sink_client;
   mojo::Remote<blink::mojom::SurfaceEmbedder> surface_embedder;
   provider()->CreateCompositorFrameSink(
-      kFrameSinkA,
-      compositor_frame_sink_client.BindInterfacePtr().PassInterface(),
+      kFrameSinkA, compositor_frame_sink_client.BindInterfaceRemote(),
       compositor_frame_sink.BindNewPipeAndPassReceiver());
   provider()->ConnectToEmbedder(kFrameSinkA,
                                 surface_embedder.BindNewPipeAndPassReceiver());
@@ -257,14 +257,13 @@ TEST_F(EmbeddedFrameSinkProviderImplTest, ProviderClosesConnections) {
 // EmbeddedFrameSink connection fails.
 TEST_F(EmbeddedFrameSinkProviderImplTest, ClientConnectionWrongOrder) {
   // Mimic connection from the renderer main or worker thread.
-  viz::mojom::CompositorFrameSinkPtr compositor_frame_sink;
+  mojo::Remote<viz::mojom::CompositorFrameSink> compositor_frame_sink;
   viz::MockCompositorFrameSinkClient compositor_frame_sink_client;
   // Try to connect CompositorFrameSink without first making
   // EmbeddedFrameSink connection. This should fail.
   provider()->CreateCompositorFrameSink(
-      kFrameSinkA,
-      compositor_frame_sink_client.BindInterfacePtr().PassInterface(),
-      mojo::MakeRequest(&compositor_frame_sink));
+      kFrameSinkA, compositor_frame_sink_client.BindInterfaceRemote(),
+      compositor_frame_sink.BindNewPipeAndPassReceiver());
 
   // The request will fail and trigger a connection error.
   WaitForConnectionError(&compositor_frame_sink);
@@ -277,14 +276,13 @@ TEST_F(EmbeddedFrameSinkProviderImplTest, ParentNotRegistered) {
   provider()->RegisterEmbeddedFrameSink(kFrameSinkA, kFrameSinkB,
                                         efs_client.GetInterfaceRemote());
 
-  viz::mojom::CompositorFrameSinkPtr compositor_frame_sink;
+  mojo::Remote<viz::mojom::CompositorFrameSink> compositor_frame_sink;
   viz::MockCompositorFrameSinkClient compositor_frame_sink_client;
   // The embedder, kFrameSinkA, has already been invalidated and isn't
   // registered at this point. This request should fail.
   provider()->CreateCompositorFrameSink(
-      kFrameSinkB,
-      compositor_frame_sink_client.BindInterfacePtr().PassInterface(),
-      mojo::MakeRequest(&compositor_frame_sink));
+      kFrameSinkB, compositor_frame_sink_client.BindInterfaceRemote(),
+      compositor_frame_sink.BindNewPipeAndPassReceiver());
 
   // The request will fail and trigger a connection error.
   WaitForConnectionError(&compositor_frame_sink);

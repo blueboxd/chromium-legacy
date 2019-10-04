@@ -61,7 +61,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   media_data.three_d_enabled = true;
   media_data.media_type = media_type_names::kScreen;
   media_data.strict_mode = true;
-  media_data.display_mode = kWebDisplayModeBrowser;
+  media_data.display_mode = blink::mojom::DisplayMode::kBrowser;
 
   MockResourcePreloader preloader;
 

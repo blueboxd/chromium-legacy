@@ -7,7 +7,7 @@
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -27,7 +27,7 @@ VRController::VRController(NavigatorVR* navigator_vr)
   // See https://bit.ly/2S0zRAS for task types.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       navigator_vr->GetDocument()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  navigator_vr->GetDocument()->GetFrame()->GetInterfaceProvider().GetInterface(
+  navigator_vr->GetDocument()->GetBrowserInterfaceBroker().GetInterface(
       service_.BindNewPipeAndPassReceiver(task_runner));
   service_.set_disconnect_handler(
       WTF::Bind(&VRController::Dispose, WrapWeakPersistent(this)));

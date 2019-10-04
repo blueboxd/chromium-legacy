@@ -2031,7 +2031,7 @@ TEST_F(EventHandlerSimTest, NeverExposeKeyboardEvent) {
   GetDocument().GetSettings()->SetDontSendKeyEventsToJavascript(true);
   GetDocument().GetSettings()->SetScrollAnimatorEnabled(false);
   GetDocument().GetSettings()->SetWebAppScope(GetDocument().Url());
-  GetDocument().View()->SetDisplayMode(kWebDisplayModeFullscreen);
+  GetDocument().View()->SetDisplayMode(blink::mojom::DisplayMode::kFullscreen);
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>

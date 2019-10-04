@@ -3654,6 +3654,10 @@ if (enable_java_templates) {
             deps = [
               ":$_process_prebuilt_target_name",
             ]
+
+            # Should never need multidex when compiling individual libraries.
+            # Disabling multidex saves on having to create a main_dex_list.
+            enable_multidex = false
           }
           _accumulated_public_deps += [ ":${target_name}__dex" ]
         }

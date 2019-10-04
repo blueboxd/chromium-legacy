@@ -25,6 +25,8 @@
 #include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -1153,20 +1155,20 @@ std::unique_ptr<cc::LayerTreeFrameSink> Window::CreateLayerTreeFrameSink() {
 
   // For creating a async frame sink which connects to the viz display
   // compositor.
-  viz::mojom::CompositorFrameSinkPtrInfo sink_info;
-  viz::mojom::CompositorFrameSinkRequest sink_request =
-      mojo::MakeRequest(&sink_info);
-  viz::mojom::CompositorFrameSinkClientPtr client;
-  viz::mojom::CompositorFrameSinkClientRequest client_request =
-      mojo::MakeRequest(&client);
+  mojo::PendingRemote<viz::mojom::CompositorFrameSink> sink_remote;
+  mojo::PendingReceiver<viz::mojom::CompositorFrameSink> sink_receiver =
+      sink_remote.InitWithNewPipeAndPassReceiver();
+  mojo::PendingRemote<viz::mojom::CompositorFrameSinkClient> client_remote;
+  mojo::PendingReceiver<viz::mojom::CompositorFrameSinkClient> client_receiver =
+      client_remote.InitWithNewPipeAndPassReceiver();
   host_frame_sink_manager->CreateCompositorFrameSink(
-      frame_sink_id_, std::move(sink_request), std::move(client));
+      frame_sink_id_, std::move(sink_receiver), std::move(client_remote));
 
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
   params.gpu_memory_buffer_manager =
       Env::GetInstance()->context_factory()->GetGpuMemoryBufferManager();
-  params.pipes.compositor_frame_sink_info = std::move(sink_info);
-  params.pipes.client_request = std::move(client_request);
+  params.pipes.compositor_frame_sink_remote = std::move(sink_remote);
+  params.pipes.client_receiver = std::move(client_receiver);
   params.client_name = kExo;
   bool root_accepts_events =
       (event_targeting_policy_ == EventTargetingPolicy::kTargetOnly) ||

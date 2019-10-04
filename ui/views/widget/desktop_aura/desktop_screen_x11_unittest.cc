@@ -104,13 +104,12 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
   }
 
   Widget* BuildTopLevelDesktopWidget(const gfx::Rect& bounds,
-      bool use_test_native_widget) {
+                                     bool use_test_native_widget) {
     Widget* toplevel = new Widget;
     Widget::InitParams toplevel_params =
         CreateParams(Widget::InitParams::TYPE_WINDOW);
     if (use_test_native_widget) {
-      toplevel_params.native_widget =
-          new TestDesktopNativeWidgetAura(toplevel);
+      toplevel_params.native_widget = new TestDesktopNativeWidgetAura(toplevel);
     } else {
       toplevel_params.native_widget =
           new views::DesktopNativeWidgetAura(toplevel);
@@ -269,10 +268,10 @@ TEST_F(DesktopScreenX11Test, GetDisplayNearestWindow) {
   displays.emplace_back(kSecondDisplay, gfx::Rect(640, 0, 1024, 768));
   UpdateDisplayListForTest(displays);
 
-  Widget* window_one = BuildTopLevelDesktopWidget(gfx::Rect(10, 10, 10, 10),
-      false);
-  Widget* window_two = BuildTopLevelDesktopWidget(gfx::Rect(650, 50, 10, 10),
-      false);
+  Widget* window_one =
+      BuildTopLevelDesktopWidget(gfx::Rect(10, 10, 10, 10), false);
+  Widget* window_two =
+      BuildTopLevelDesktopWidget(gfx::Rect(650, 50, 10, 10), false);
 
   EXPECT_EQ(
       kFirstDisplay,
@@ -283,98 +282,6 @@ TEST_F(DesktopScreenX11Test, GetDisplayNearestWindow) {
 
   window_one->CloseNow();
   window_two->CloseNow();
-}
-
-// Tests that the window is maximized in response to a double click event.
-TEST_F(DesktopScreenX11Test, DoubleClickHeaderMaximizes) {
-  if (!ui::WmSupportsHint(gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT")))
-    return;
-
-  Widget* widget = BuildTopLevelDesktopWidget(gfx::Rect(0, 0, 100, 100), true);
-  widget->Show();
-  TestDesktopNativeWidgetAura* native_widget =
-      static_cast<TestDesktopNativeWidgetAura*>(widget->native_widget());
-  native_widget->set_window_component(HTCAPTION);
-
-  aura::Window* window = widget->GetNativeWindow();
-  window->SetProperty(aura::client::kResizeBehaviorKey,
-                      aura::client::kResizeBehaviorCanMaximize);
-
-  // Cast to superclass as DesktopWindowTreeHostX11 hide IsMaximized
-  DesktopWindowTreeHost* rwh =
-      DesktopWindowTreeHostX11::GetHostForXID(window->GetHost()->
-          GetAcceleratedWidget());
-
-  ui::test::EventGenerator generator(window->GetRootWindow());
-  generator.DoubleClickLeftButton();
-  RunPendingMessages();
-  EXPECT_TRUE(rwh->IsMaximized());
-
-  widget->CloseNow();
-}
-
-// Tests that the window does not maximize in response to a double click event,
-// if the first click was to a different target component than that of the
-// second click.
-TEST_F(DesktopScreenX11Test, DoubleClickTwoDifferentTargetsDoesntMaximizes) {
-  Widget* widget = BuildTopLevelDesktopWidget(gfx::Rect(0, 0, 100, 100), true);
-  widget->Show();
-  TestDesktopNativeWidgetAura* native_widget =
-      static_cast<TestDesktopNativeWidgetAura*>(widget->native_widget());
-
-  aura::Window* window = widget->GetNativeWindow();
-  window->SetProperty(aura::client::kResizeBehaviorKey,
-                      aura::client::kResizeBehaviorCanMaximize);
-
-  // Cast to superclass as DesktopWindowTreeHostX11 hide IsMaximized
-  DesktopWindowTreeHost* rwh =
-      DesktopWindowTreeHostX11::GetHostForXID(window->GetHost()->
-          GetAcceleratedWidget());
-
-  ui::test::EventGenerator generator(window->GetRootWindow());
-  native_widget->set_window_component(HTCLIENT);
-  generator.ClickLeftButton();
-  native_widget->set_window_component(HTCAPTION);
-  generator.set_flags(ui::EF_IS_DOUBLE_CLICK);
-  generator.ClickLeftButton();
-  generator.set_flags(ui::EF_NONE);
-  RunPendingMessages();
-  EXPECT_FALSE(rwh->IsMaximized());
-
-  widget->CloseNow();
-}
-
-// Tests that the window does not maximize in response to a double click event,
-// if the double click was interrupted by a right click.
-TEST_F(DesktopScreenX11Test, RightClickDuringDoubleClickDoesntMaximize) {
-  Widget* widget = BuildTopLevelDesktopWidget(gfx::Rect(0, 0, 100, 100), true);
-  widget->Show();
-  TestDesktopNativeWidgetAura* native_widget =
-      static_cast<TestDesktopNativeWidgetAura*>(widget->native_widget());
-
-  aura::Window* window = widget->GetNativeWindow();
-  window->SetProperty(aura::client::kResizeBehaviorKey,
-                      aura::client::kResizeBehaviorCanMaximize);
-
-  // Cast to superclass as DesktopWindowTreeHostX11 hide IsMaximized
-  DesktopWindowTreeHost* rwh = static_cast<DesktopWindowTreeHost*>(
-      DesktopWindowTreeHostX11::GetHostForXID(window->GetHost()->
-          GetAcceleratedWidget()));
-
-  ui::test::EventGenerator generator(window->GetRootWindow());
-  native_widget->set_window_component(HTCLIENT);
-  generator.ClickLeftButton();
-  native_widget->set_window_component(HTCAPTION);
-  generator.PressRightButton();
-  generator.ReleaseRightButton();
-  EXPECT_FALSE(rwh->IsMaximized());
-  generator.set_flags(ui::EF_IS_DOUBLE_CLICK);
-  generator.ClickLeftButton();
-  generator.set_flags(ui::EF_NONE);
-  RunPendingMessages();
-  EXPECT_FALSE(rwh->IsMaximized());
-
-  widget->CloseNow();
 }
 
 // Test that rotating the displays notifies the DisplayObservers.

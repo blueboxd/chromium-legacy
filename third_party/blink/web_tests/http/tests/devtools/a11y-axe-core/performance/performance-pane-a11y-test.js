@@ -39,23 +39,26 @@
   // create dummy data for test
   const model =
       PerformanceTestRunner.createPerformanceModelWithEvents(testData);
-  const detailsView = runtime.sharedInstance(Timeline.TimelineDetailsView);
 
   async function testDetailsView() {
     TestRunner.addResult(`Tests accessibility in performance Details view using the axe-core linter`);
-    detailsView._tabbedPane.selectTab(Timeline.TimelineDetailsView.Tab.Details);
-    const detailsTab = detailsView._tabbedPane.visibleView;
+    const detailsView = runtime.sharedInstance(Timeline.TimelineDetailsView);
 
     // Details pane gets data from the parent TimelineDetails view
     detailsView.setModel(model, PerformanceTestRunner.mainTrack());
+
+    const tabbedPane = UI.panels.timeline._flameChart._detailsView._tabbedPane;
+    tabbedPane.selectTab(Timeline.TimelineDetailsView.Tab.Details);
+    const detailsTab = tabbedPane.visibleView;
 
     await AxeCoreTestRunner.runValidation(detailsTab.element);
   }
 
   async function testViewWithName(tab) {
     TestRunner.addResult(`Tests accessibility in performance ${tab} view using the axe-core linter`);
-    detailsView._tabbedPane.selectTab(tab);
-    const detailsTab = detailsView._tabbedPane.visibleView;
+    const tabbedPane = UI.panels.timeline._flameChart._detailsView._tabbedPane;
+    tabbedPane.selectTab(tab);
+    const detailsTab = tabbedPane.visibleView;
 
     // update child views with the same test data
     detailsTab.setModel(model, PerformanceTestRunner.mainTrack());

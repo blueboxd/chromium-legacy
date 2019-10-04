@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 185 tests; 179 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 185 tests; 181 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Interfaces and attributes in ServiceWorkerGlobalScope
 PASS test setup (cache creation)
 FAIL Event constructors assert_equals: FetchEvent.isReload should not exist expected (undefined) undefined but got (boolean) false
@@ -68,7 +68,7 @@ PASS ServiceWorkerGlobalScope interface: existence and properties of interface p
 PASS ServiceWorkerGlobalScope interface: existence and properties of interface prototype object's @@unscopables property
 PASS ServiceWorkerGlobalScope interface: attribute clients
 PASS ServiceWorkerGlobalScope interface: attribute registration
-FAIL ServiceWorkerGlobalScope interface: attribute serviceWorker assert_own_property: The global object must have a property "serviceWorker" expected property "serviceWorker" missing
+PASS ServiceWorkerGlobalScope interface: attribute serviceWorker
 PASS ServiceWorkerGlobalScope interface: operation skipWaiting()
 PASS ServiceWorkerGlobalScope interface: attribute oninstall
 PASS ServiceWorkerGlobalScope interface: attribute onactivate
@@ -85,7 +85,7 @@ PASS ServiceWorkerGlobalScope must be primary interface of self
 PASS Stringification of self
 PASS ServiceWorkerGlobalScope interface: self must inherit property "clients" with the proper type
 PASS ServiceWorkerGlobalScope interface: self must inherit property "registration" with the proper type
-FAIL ServiceWorkerGlobalScope interface: self must inherit property "serviceWorker" with the proper type assert_own_property: expected property "serviceWorker" missing
+PASS ServiceWorkerGlobalScope interface: self must inherit property "serviceWorker" with the proper type
 PASS ServiceWorkerGlobalScope interface: self must inherit property "skipWaiting()" with the proper type
 PASS ServiceWorkerGlobalScope interface: self must inherit property "oninstall" with the proper type
 PASS ServiceWorkerGlobalScope interface: self must inherit property "onactivate" with the proper type

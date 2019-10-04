@@ -413,7 +413,7 @@ class AppWindow : public content::WebContentsDelegate,
       const blink::WebFullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents* source) override;
   bool IsFullscreenForTabOrPending(const content::WebContents* source) override;
-  blink::WebDisplayMode GetDisplayMode(
+  blink::mojom::DisplayMode GetDisplayMode(
       const content::WebContents* source) override;
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,

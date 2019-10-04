@@ -9,6 +9,7 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
@@ -117,15 +118,20 @@ void ManifestUpdateTask::OnAllAppWindowsClosed(blink::Manifest manifest) {
       base::UTF8ToUTF16(registrar_.GetAppShortName(app_id_)));
   manifest.short_name = base::NullableString16();
 
-  // Preserve the user's choice of launch container.
-  switch (registrar_.GetAppLaunchContainer(app_id_)) {
-    case LaunchContainer::kDefault:
+  // Preserve the user's choice of launch container (excluding full screen).
+  // TODO(crbug.com/1009909): Test kMinimalUi.
+  auto display_mode = registrar_.GetAppDisplayMode(app_id_);
+  switch (display_mode) {
+    case blink::mojom::DisplayMode::kBrowser:
+    case blink::mojom::DisplayMode::kMinimalUi:
+    case blink::mojom::DisplayMode::kStandalone:
+      manifest.display = display_mode;
       break;
-    case LaunchContainer::kTab:
-      manifest.display = blink::kWebDisplayModeBrowser;
+    case blink::mojom::DisplayMode::kFullscreen:
+      // Fall back to a windowed mode.
+      manifest.display = blink::mojom::DisplayMode::kStandalone;
       break;
-    case LaunchContainer::kWindow:
-      manifest.display = blink::kWebDisplayModeStandalone;
+    case blink::mojom::DisplayMode::kUndefined:
       break;
   }
 

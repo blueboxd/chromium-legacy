@@ -61,8 +61,9 @@ void MockRenderWidgetHost::ExpectForceEnableZoom(bool enable) {
 // |mock_renderer_compositor_frame_sink|.
 void MockRenderWidgetHost::SetMockRendererCompositorFrameSink(
     viz::MockCompositorFrameSinkClient* mock_renderer_compositor_frame_sink) {
-  renderer_compositor_frame_sink_ =
-      mock_renderer_compositor_frame_sink->BindInterfacePtr();
+  renderer_compositor_frame_sink_.reset();
+  renderer_compositor_frame_sink_.Bind(
+      mock_renderer_compositor_frame_sink->BindInterfaceRemote());
 }
 
 void MockRenderWidgetHost::SetupForInputRouterTest() {

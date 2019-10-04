@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.webapps;
 
 import android.graphics.Color;
 
-import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.content_public.common.ScreenOrientationValues;
 

@@ -919,6 +919,11 @@ TEST_F(MediaDevicesManagerTest, EnumerateDevicesWithCapabilities) {
 }
 
 TEST_F(MediaDevicesManagerTest, EnumerateDevicesUnplugDefaultDevice) {
+  // This tests does not apply to CrOS, which is to seemlessly switch device.
+#if defined(OS_CHROMEOS)
+  return;
+#endif  // defined(OS_CHROMEOS)
+
   std::string default_device_id("fake_device_id_1");
   std::string new_default_device_id("fake_device_id_2");
 

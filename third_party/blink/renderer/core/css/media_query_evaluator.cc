@@ -32,7 +32,7 @@
 #include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/public/common/css/navigation_controls.h"
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/pointer_properties.h"
 #include "third_party/blink/public/platform/shape_properties.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -257,16 +257,16 @@ static bool DisplayModeMediaFeatureEval(const MediaQueryExpValue& value,
   if (!value.is_id)
     return false;
 
-  WebDisplayMode mode = media_values.DisplayMode();
+  blink::mojom::DisplayMode mode = media_values.DisplayMode();
   switch (value.id) {
     case CSSValueID::kFullscreen:
-      return mode == kWebDisplayModeFullscreen;
+      return mode == blink::mojom::DisplayMode::kFullscreen;
     case CSSValueID::kStandalone:
-      return mode == kWebDisplayModeStandalone;
+      return mode == blink::mojom::DisplayMode::kStandalone;
     case CSSValueID::kMinimalUi:
-      return mode == kWebDisplayModeMinimalUi;
+      return mode == blink::mojom::DisplayMode::kMinimalUi;
     case CSSValueID::kBrowser:
-      return mode == kWebDisplayModeBrowser;
+      return mode == blink::mojom::DisplayMode::kBrowser;
     default:
       NOTREACHED();
       return false;

@@ -951,16 +951,14 @@ TEST_F(PersonalDataManagerTest, AddProfile_Invalid) {
 }
 
 // Tests that SaveImportedProfile sets the modification date on new profiles.
-// Flaky. http://crbug.com/1010684
-TEST_F(PersonalDataManagerTest,
-       DISABLED_SaveImportedProfileSetModificationDate) {
+TEST_F(PersonalDataManagerTest, SaveImportedProfileSetModificationDate) {
   AutofillProfile profile(test::GetFullProfile());
   EXPECT_NE(base::Time(), profile.modification_date());
 
   SaveImportedProfileToPersonalDataManager(profile);
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   ASSERT_EQ(1U, profiles.size());
-  EXPECT_GT(base::TimeDelta::FromMilliseconds(1000),
+  EXPECT_GT(base::TimeDelta::FromMilliseconds(2000),
             AutofillClock::Now() - profiles[0]->modification_date());
 }
 
@@ -7194,7 +7192,7 @@ TEST_F(PersonalDataManagerTest, RequestProfileServerValidity) {
       AutofillDataModel::INVALID,     AutofillDataModel::VALID,
       AutofillDataModel::UNVALIDATED, AutofillDataModel::INVALID};
   ASSERT_EQ(types.size(), states.size());
-  for (unsigned long i = 0; i < types.size(); ++i) {
+  for (uint64_t i = 0; i < types.size(); ++i) {
     (*profile_validity_map
           .mutable_field_validity_states())[static_cast<int>(types[i])] =
         static_cast<int>(states[i]);
@@ -7233,7 +7231,7 @@ TEST_F(PersonalDataManagerTest, RequestProfileServerValidity) {
   auto validities =
       personal_data_->GetProfileValidityByGUID(guid).field_validity_states();
   ASSERT_EQ(validities.size(), types.size());
-  for (unsigned long i = 0; i < types.size(); ++i)
+  for (uint64_t i = 0; i < types.size(); ++i)
     EXPECT_EQ(validities.at(types[i]), states[i]);
 
   guid = "00000000-0000-0000-0000-0000000000002";
@@ -7954,7 +7952,7 @@ namespace {
 
 class OneTimeObserver : public PersonalDataManagerObserver {
  public:
-  OneTimeObserver(PersonalDataManager* manager) : manager_(manager) {}
+  explicit OneTimeObserver(PersonalDataManager* manager) : manager_(manager) {}
 
   ~OneTimeObserver() override {
     if (manager_)

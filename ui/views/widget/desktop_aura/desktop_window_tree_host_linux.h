@@ -53,13 +53,15 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   // Called back by compositor_observer_ if the latter is set.
   virtual void OnCompleteSwapWithNewSize(const gfx::Size& size);
 
-  void AddNonClientEventFilter();
-  void RemoveNonClientEventFilter();
+  void CreateNonClientEventFilter();
+  void DestroyNonClientEventFilter();
 
   // PlatformWindowDelegateLinux overrides:
   void OnWorkspaceChanged() override;
 
   // A handler for events intended for non client area.
+  // A posthandler for events intended for non client area. Handles events if no
+  // other consumer handled them.
   std::unique_ptr<WindowEventFilterLinux> non_client_window_event_filter_;
 
   // X11 may set set a visual id for the system tray icon before the host is

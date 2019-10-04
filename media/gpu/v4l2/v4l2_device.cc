@@ -1130,7 +1130,7 @@ VideoPixelFormat V4L2Device::V4L2PixFmtToVideoPixelFormat(uint32_t pix_fmt) {
       return PIXEL_FORMAT_I422;
 
     case V4L2_PIX_FMT_RGB32:
-      return PIXEL_FORMAT_ARGB;
+      return PIXEL_FORMAT_BGRA;
 
     default:
       DVLOGF(1) << "Add more cases as needed";

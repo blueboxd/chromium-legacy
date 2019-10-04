@@ -51,6 +51,7 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom-blink.h"
 #include "third_party/blink/public/mojom/ukm/ukm.mojom-blink.h"
@@ -154,6 +155,7 @@
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/events/visual_viewport_resize_event.h"
 #include "third_party/blink/renderer/core/events/visual_viewport_scroll_event.h"
+#include "third_party/blink/renderer/core/execution_context/agent_metrics_collector.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
 #include "third_party/blink/renderer/core/feature_policy/document_policy.h"
@@ -1203,6 +1205,9 @@ Document::Document(const DocumentInit& initializer,
 #ifndef NDEBUG
   liveDocumentSet().insert(this);
 #endif
+
+  if (frame_ && frame_->GetPage()->GetAgentMetricsCollector())
+    frame_->GetPage()->GetAgentMetricsCollector()->DidAttachDocument(*this);
 }
 
 Document::~Document() {
@@ -2760,17 +2765,6 @@ void Document::UpdateStyleAndLayoutTree() {
 
   UpdateActiveStyle();
   UpdateStyleInvalidationIfNeeded();
-
-  // FIXME: We should update style on our ancestor chain before proceeding
-  // however doing so currently causes several tests to crash, as
-  // LocalFrame::setDocument calls Document::attach before setting the
-  // LocalDOMWindow on the LocalFrame, or the SecurityOrigin on the
-  // document. The attach, in turn resolves style (here) and then when we
-  // resolve style on the parent chain, we may end up re-attaching our
-  // containing iframe, which when asked HTMLFrameElementBase::isURLAllowed hits
-  // a null-dereference due to security code always assuming the document has a
-  // SecurityOrigin.
-
   UpdateStyle();
 
   NotifyLayoutTreeOfSubtreeChanges();
@@ -3402,6 +3396,8 @@ void Document::Shutdown() {
 
   // Check for frame_ so we only detach execution contexts with its own
   // scheduler.
+  // TODO(bokan): Can this happen? |frame_| is dereferenced above and CHECKed
+  // at top.
   if (frame_)
     GetAgent()->DetachExecutionContext(this);
 
@@ -7024,11 +7020,13 @@ void Document::InitSecurityContext(
       AddInsecureNavigationUpgrade(to_upgrade);
   }
 
-  cookie_url_ = url_;
+  bool inherit_cookie_url_from_owner = initializer.IsSrcdocDocument() ||
+                                       url_.IsAboutBlankURL() ||
+                                       !initializer.OriginToCommit();
 
-  if (!initializer.OriginToCommit() && initializer.OwnerDocument()) {
-    cookie_url_ = initializer.OwnerDocument()->CookieURL();
-  }
+  cookie_url_ = inherit_cookie_url_from_owner && initializer.OwnerDocument()
+                    ? initializer.OwnerDocument()->CookieURL()
+                    : url_;
 
   SetAddressSpace(initializer.GetIPAddressSpace());
 

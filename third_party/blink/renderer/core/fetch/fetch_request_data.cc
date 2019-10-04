@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/fetch/fetch_request_data.h"
 
 #include "net/base/request_priority.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_url_request.h"

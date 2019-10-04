@@ -122,8 +122,7 @@ RootCompositorFrameSinkImpl::Create(
   auto impl = base::WrapUnique(new RootCompositorFrameSinkImpl(
       frame_sink_manager, params->frame_sink_id,
       std::move(params->compositor_frame_sink),
-      mojom::CompositorFrameSinkClientPtr(
-          std::move(params->compositor_frame_sink_client)),
+      std::move(params->compositor_frame_sink_client),
       std::move(params->display_private), std::move(display_client),
       std::move(synthetic_begin_frame_source),
       std::move(external_begin_frame_source), std::move(display)));
@@ -255,8 +254,8 @@ void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
       CompositorFrameSinkSupport::GetSubmitResultAsString(result);
   DLOG(ERROR) << "SubmitCompositorFrame failed for " << local_surface_id
               << " because " << reason;
-  compositor_frame_sink_binding_.CloseWithReason(static_cast<uint32_t>(result),
-                                                 reason);
+  compositor_frame_sink_receiver_.ResetWithReason(static_cast<uint32_t>(result),
+                                                  reason);
 }
 
 void RootCompositorFrameSinkImpl::SubmitCompositorFrameSync(
@@ -279,7 +278,7 @@ void RootCompositorFrameSinkImpl::DidAllocateSharedBitmap(
   if (!support_->DidAllocateSharedBitmap(std::move(region), id)) {
     DLOG(ERROR) << "DidAllocateSharedBitmap failed for duplicate "
                 << "SharedBitmapId";
-    compositor_frame_sink_binding_.Close();
+    compositor_frame_sink_receiver_.reset();
   }
 }
 
@@ -291,15 +290,16 @@ void RootCompositorFrameSinkImpl::DidDeleteSharedBitmap(
 RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
     FrameSinkManagerImpl* frame_sink_manager,
     const FrameSinkId& frame_sink_id,
-    mojom::CompositorFrameSinkAssociatedRequest frame_sink_request,
-    mojom::CompositorFrameSinkClientPtr frame_sink_client,
+    mojo::PendingAssociatedReceiver<mojom::CompositorFrameSink>
+        frame_sink_receiver,
+    mojo::PendingRemote<mojom::CompositorFrameSinkClient> frame_sink_client,
     mojom::DisplayPrivateAssociatedRequest display_request,
     mojom::DisplayClientPtr display_client,
     std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
     std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source,
     std::unique_ptr<Display> display)
     : compositor_frame_sink_client_(std::move(frame_sink_client)),
-      compositor_frame_sink_binding_(this, std::move(frame_sink_request)),
+      compositor_frame_sink_receiver_(this, std::move(frame_sink_receiver)),
       display_client_(std::move(display_client)),
       display_private_binding_(this, std::move(display_request)),
       support_(std::make_unique<CompositorFrameSinkSupport>(
@@ -323,7 +323,7 @@ void RootCompositorFrameSinkImpl::DisplayOutputSurfaceLost() {
   // |display_| has encountered an error and needs to be recreated. Close
   // message pipes from the client, the client will see the connection error and
   // recreate the CompositorFrameSink+Display.
-  compositor_frame_sink_binding_.Close();
+  compositor_frame_sink_receiver_.reset();
   display_private_binding_.Close();
 }
 

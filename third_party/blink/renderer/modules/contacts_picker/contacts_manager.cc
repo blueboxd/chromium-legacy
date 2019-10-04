@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/contacts_picker/contacts_manager.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -64,8 +65,23 @@ TypeConverter<blink::ContactInfo*, blink::mojom::blink::ContactInfoPtr>::
 }  // namespace mojo
 
 namespace blink {
+namespace {
 
-ContactsManager::ContactsManager() = default;
+// ContactProperty enum strings.
+constexpr char kAddress[] = "address";
+constexpr char kEmail[] = "email";
+constexpr char kName[] = "name";
+constexpr char kTel[] = "tel";
+
+}  // namespace
+
+ContactsManager::ContactsManager() {
+  properties_ = {kEmail, kName, kTel};
+
+  if (RuntimeEnabledFeatures::ContactsManagerAddressesEnabled())
+    properties_.push_back(kAddress);
+}
+
 ContactsManager::~ContactsManager() = default;
 
 mojo::Remote<mojom::blink::ContactsManager>&
@@ -113,21 +129,30 @@ ScriptPromise ContactsManager::select(ScriptState* script_state,
                           "Contacts Picker is already in use."));
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
   bool include_names = false;
   bool include_emails = false;
   bool include_tel = false;
 
   for (const String& property : properties) {
-    if (property == "name")
+    if (!base::Contains(properties_, property)) {
+      return ScriptPromise::Reject(
+          script_state,
+          V8ThrowException::CreateTypeError(
+              script_state->GetIsolate(),
+              "The provided value '" + property +
+                  "' is not a valid enum value of type ContactProperty"));
+    }
+
+    if (property == kName)
       include_names = true;
-    else if (property == "email")
+    else if (property == kEmail)
       include_emails = true;
-    else if (property == "tel")
+    else if (property == kTel)
       include_tel = true;
   }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
 
   contact_picker_in_use_ = true;
   GetContactsManager(script_state)
@@ -164,6 +189,10 @@ void ContactsManager::OnContactsSelected(
     contacts_list.push_back(contact.To<blink::ContactInfo*>());
 
   resolver->Resolve(contacts_list);
+}
+
+ScriptPromise ContactsManager::getProperties(ScriptState* script_state) {
+  return ScriptPromise::Cast(script_state, ToV8(properties_, script_state));
 }
 
 }  // namespace blink

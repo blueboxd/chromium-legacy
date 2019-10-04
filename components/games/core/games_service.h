@@ -6,12 +6,13 @@
 #define COMPONENTS_GAMES_CORE_GAMES_SERVICE_H_
 
 #include "components/games/core/games_types.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace games {
 
-class GamesService {
+class GamesService : public KeyedService {
  public:
-  virtual ~GamesService() = default;
+  ~GamesService() override = default;
 
   virtual void GetHighlightedGame(HighlightedGameCallback callback) = 0;
 };

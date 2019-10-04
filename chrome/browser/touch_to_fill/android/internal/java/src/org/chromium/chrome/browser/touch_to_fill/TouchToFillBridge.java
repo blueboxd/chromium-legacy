@@ -16,7 +16,7 @@ import java.util.Arrays;
  * This bridge creates and initializes a {@link TouchToFillComponent} on construction and forwards
  * native calls to it.
  */
-class TouchToFillBridge {
+class TouchToFillBridge implements TouchToFillComponent.Delegate {
     private long mNativeView;
     private final TouchToFillComponent mTouchToFillComponent;
 
@@ -24,8 +24,7 @@ class TouchToFillBridge {
         mNativeView = nativeView;
         ChromeActivity activity = (ChromeActivity) windowAndroid.getActivity().get();
         mTouchToFillComponent = new TouchToFillCoordinator();
-        mTouchToFillComponent.initialize(
-                activity, activity.getBottomSheetController(), this::onDismissed);
+        mTouchToFillComponent.initialize(activity, activity.getBottomSheetController(), this);
     }
 
     @CalledByNative
@@ -51,16 +50,17 @@ class TouchToFillBridge {
 
     @CalledByNative
     private void showCredentials(String formattedUrl, Credential[] credentials) {
-        mTouchToFillComponent.showCredentials(
-                formattedUrl, Arrays.asList(credentials), this::onSelectCredential);
+        mTouchToFillComponent.showCredentials(formattedUrl, Arrays.asList(credentials));
     }
 
-    private void onDismissed() {
+    @Override
+    public void onDismissed() {
         TouchToFillBridgeJni.get().onDismiss(mNativeView);
         mNativeView = 0; // The native view shouldn't be used after it's dismissed.
     }
 
-    private void onSelectCredential(Credential credential) {
+    @Override
+    public void onCredentialSelected(Credential credential) {
         assert mNativeView != 0 : "The native side is already dismissed";
         TouchToFillBridgeJni.get().onCredentialSelected(mNativeView, credential);
     }

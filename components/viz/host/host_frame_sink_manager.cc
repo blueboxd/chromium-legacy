@@ -14,6 +14,8 @@
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 
@@ -163,8 +165,8 @@ void HostFrameSinkManager::CreateRootCompositorFrameSink(
 
 void HostFrameSinkManager::CreateCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
-    mojom::CompositorFrameSinkRequest request,
-    mojom::CompositorFrameSinkClientPtr client) {
+    mojo::PendingReceiver<mojom::CompositorFrameSink> receiver,
+    mojo::PendingRemote<mojom::CompositorFrameSinkClient> client) {
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
   DCHECK(data.IsFrameSinkRegistered());
 
@@ -179,7 +181,7 @@ void HostFrameSinkManager::CreateCompositorFrameSink(
   data.has_created_compositor_frame_sink = true;
 
   frame_sink_manager_->CreateCompositorFrameSink(
-      frame_sink_id, std::move(request), std::move(client));
+      frame_sink_id, std::move(receiver), std::move(client));
 }
 
 void HostFrameSinkManager::OnFrameTokenChanged(const FrameSinkId& frame_sink_id,

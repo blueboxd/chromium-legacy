@@ -21,7 +21,8 @@
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -67,18 +68,16 @@ TEST(AsyncLayerTreeFrameSinkTest,
       viz::TestContextProvider::Create();
   viz::TestGpuMemoryBufferManager test_gpu_memory_buffer_manager;
 
-  viz::mojom::CompositorFrameSinkPtrInfo sink_info;
-  viz::mojom::CompositorFrameSinkRequest sink_request =
-      mojo::MakeRequest(&sink_info);
-  viz::mojom::CompositorFrameSinkClientPtr client;
-  viz::mojom::CompositorFrameSinkClientRequest client_request =
-      mojo::MakeRequest(&client);
+  mojo::PendingRemote<viz::mojom::CompositorFrameSink> sink_remote;
+  mojo::PendingReceiver<viz::mojom::CompositorFrameSink> sink_receiver =
+      sink_remote.InitWithNewPipeAndPassReceiver();
+  mojo::PendingRemote<viz::mojom::CompositorFrameSinkClient> client;
 
   AsyncLayerTreeFrameSink::InitParams init_params;
   init_params.compositor_task_runner = bg_thread.task_runner();
   init_params.gpu_memory_buffer_manager = &test_gpu_memory_buffer_manager;
-  init_params.pipes.compositor_frame_sink_info = std::move(sink_info);
-  init_params.pipes.client_request = std::move(client_request);
+  init_params.pipes.compositor_frame_sink_remote = std::move(sink_remote);
+  init_params.pipes.client_receiver = client.InitWithNewPipeAndPassReceiver();
   auto layer_tree_frame_sink = std::make_unique<AsyncLayerTreeFrameSink>(
       std::move(provider), nullptr, &init_params);
 
@@ -99,7 +98,7 @@ TEST(AsyncLayerTreeFrameSinkTest,
   // Closes the pipe, which should trigger calling DidLoseLayerTreeFrameSink()
   // (and quitting the RunLoop). There is no need to wait for BindToClient()
   // to complete as mojo::Binding error callbacks are processed asynchronously.
-  sink_request = viz::mojom::CompositorFrameSinkRequest();
+  sink_receiver.reset();
   close_run_loop.Run();
 
   EXPECT_NE(base::kInvalidThreadId, called_thread_id);
@@ -132,17 +131,16 @@ class AsyncLayerTreeFrameSinkSimpleTest : public testing::Test {
         display_rect_(1, 1) {
     auto context_provider = viz::TestContextProvider::Create();
 
-    viz::mojom::CompositorFrameSinkPtrInfo sink_info;
-    viz::mojom::CompositorFrameSinkRequest sink_request =
-        mojo::MakeRequest(&sink_info);
-    viz::mojom::CompositorFrameSinkClientPtr client;
-    viz::mojom::CompositorFrameSinkClientRequest client_request =
-        mojo::MakeRequest(&client);
+    mojo::PendingRemote<viz::mojom::CompositorFrameSink> sink_remote;
+    mojo::PendingReceiver<viz::mojom::CompositorFrameSink> sink_receiver =
+        sink_remote.InitWithNewPipeAndPassReceiver();
+    mojo::PendingRemote<viz::mojom::CompositorFrameSinkClient> client;
 
     init_params_.compositor_task_runner = task_runner_;
     init_params_.gpu_memory_buffer_manager = &test_gpu_memory_buffer_manager_;
-    init_params_.pipes.compositor_frame_sink_info = std::move(sink_info);
-    init_params_.pipes.client_request = std::move(client_request);
+    init_params_.pipes.compositor_frame_sink_remote = std::move(sink_remote);
+    init_params_.pipes.client_receiver =
+        client.InitWithNewPipeAndPassReceiver();
     init_params_.hit_test_data_provider =
         std::make_unique<viz::HitTestDataProviderDrawQuad>(
             /*should_ask_for_child_region=*/true, /*root_accepts_events=*/true);

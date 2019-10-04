@@ -207,15 +207,15 @@ bool TabWebContentsDelegateAndroid::ShouldFocusLocationBarByDefault(
   return false;
 }
 
-blink::WebDisplayMode TabWebContentsDelegateAndroid::GetDisplayMode(
+blink::mojom::DisplayMode TabWebContentsDelegateAndroid::GetDisplayMode(
     const WebContents* web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
-    return blink::kWebDisplayModeUndefined;
+    return blink::mojom::DisplayMode::kUndefined;
 
-  return static_cast<blink::WebDisplayMode>(
+  return static_cast<blink::mojom::DisplayMode>(
       Java_TabWebContentsDelegateAndroid_getDisplayMode(env, obj));
 }
 
@@ -277,7 +277,7 @@ TabWebContentsDelegateAndroid::GetJavaScriptDialogManager(
 void TabWebContentsDelegateAndroid::AdjustPreviewsStateForNavigation(
     content::WebContents* web_contents,
     content::PreviewsState* previews_state) {
-  if (GetDisplayMode(web_contents) != blink::kWebDisplayModeBrowser) {
+  if (GetDisplayMode(web_contents) != blink::mojom::DisplayMode::kBrowser) {
     *previews_state = content::PREVIEWS_OFF;
   }
 }

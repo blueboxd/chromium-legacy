@@ -27,7 +27,6 @@ import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Controller tests verify that the Touch To Fill controller modifies the model if the API is used
@@ -66,13 +65,13 @@ public class TouchToFillControllerTest {
 
     @Test
     public void testShowCredentialsSetsFormattedUrl() {
-        mMediator.showCredentials(TEST_URL, Arrays.asList(ANA, CARL, BOB), cred -> {});
+        mMediator.showCredentials(TEST_URL, Arrays.asList(ANA, CARL, BOB));
         assertThat(mModel.get(FORMATTED_URL), is(TEST_URL));
     }
 
     @Test
     public void testShowCredentialsSetsCredentialList() {
-        mMediator.showCredentials(TEST_URL, Arrays.asList(ANA, CARL, BOB), cred -> {});
+        mMediator.showCredentials(TEST_URL, Arrays.asList(ANA, CARL, BOB));
         assertThat(mModel.get(CREDENTIAL_LIST).size(), is(3));
         assertThat(mModel.get(CREDENTIAL_LIST).get(0), is(ANA));
         assertThat(mModel.get(CREDENTIAL_LIST).get(1), is(CARL));
@@ -81,34 +80,33 @@ public class TouchToFillControllerTest {
 
     @Test
     public void testClearsCredentialListWhenShowingAgain() {
-        mMediator.showCredentials(TEST_URL, Collections.singletonList(ANA), cred -> {});
+        mMediator.showCredentials(TEST_URL, Collections.singletonList(ANA));
         assertThat(mModel.get(CREDENTIAL_LIST).size(), is(1));
         assertThat(mModel.get(CREDENTIAL_LIST).get(0), is(ANA));
 
         // Showing the sheet a second time should replace all changed credentials.
-        mMediator.showCredentials(TEST_URL, Collections.singletonList(BOB), cred -> {});
+        mMediator.showCredentials(TEST_URL, Collections.singletonList(BOB));
         assertThat(mModel.get(CREDENTIAL_LIST).size(), is(1));
         assertThat(mModel.get(CREDENTIAL_LIST).get(0), is(BOB));
     }
 
     @Test
     public void testShowCredentialsSetsVisibile() {
-        mMediator.showCredentials(TEST_URL, Arrays.asList(ANA, CARL, BOB), cred -> {});
+        mMediator.showCredentials(TEST_URL, Arrays.asList(ANA, CARL, BOB));
         assertThat(mModel.get(VISIBLE), is(true));
     }
 
     @Test
     public void testCallsCallbackAndHidesOnSelectingItem() {
-        final AtomicReference<Credential> selectedCredential = new AtomicReference<>();
-        mMediator.showCredentials(TEST_URL, Arrays.asList(ANA, CARL), selectedCredential::set);
+        mMediator.showCredentials(TEST_URL, Arrays.asList(ANA, CARL));
         mMediator.onSelectItemAt(1);
-        assertThat(selectedCredential.get(), is(CARL));
+        verify(mMockDelegate).onCredentialSelected(CARL);
         assertThat(mModel.get(VISIBLE), is(false));
     }
 
     @Test
     public void testCallsDelegateAndHidesOnDismiss() {
-        mMediator.showCredentials(TEST_URL, Arrays.asList(ANA, CARL), cred -> {});
+        mMediator.showCredentials(TEST_URL, Arrays.asList(ANA, CARL));
         mMediator.onDismissed();
         verify(mMockDelegate).onDismissed();
         assertThat(mModel.get(VISIBLE), is(false));

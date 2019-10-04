@@ -18,7 +18,7 @@
 namespace chromeos {
 
 // Given GCMS and primary account id, this class verifies GAIA credentials
-// (APISID) and rebuild current session's cookie jar for the primary account.
+// (SAPISID) and rebuild current session's cookie jar for the primary account.
 class OAuth2LoginVerifier : public signin::IdentityManager::Observer {
  public:
   class Delegate {

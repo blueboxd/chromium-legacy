@@ -84,21 +84,20 @@ class TestWebContentsObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsObserver);
 };
 
-// Used for forcing a specific |blink::WebDisplayMode| during a test.
+// Used for forcing a specific |blink::mojom::DisplayMode| during a test.
 class DisplayCutoutWebContentsDelegate : public WebContentsDelegate {
  public:
-  blink::WebDisplayMode GetDisplayMode(
+  blink::mojom::DisplayMode GetDisplayMode(
       const WebContents* web_contents) override {
     return display_mode_;
   }
 
-  void SetDisplayMode(blink::WebDisplayMode display_mode) {
+  void SetDisplayMode(blink::mojom::DisplayMode display_mode) {
     display_mode_ = display_mode;
   }
 
  private:
-  blink::WebDisplayMode display_mode_ =
-      blink::WebDisplayMode::kWebDisplayModeBrowser;
+  blink::mojom::DisplayMode display_mode_ = blink::mojom::DisplayMode::kBrowser;
 };
 
 const char kTestHTML[] =
@@ -435,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, WebDisplayMode_Fullscreen) {
   // Inject the custom delegate used for this test.
   std::unique_ptr<DisplayCutoutWebContentsDelegate> delegate(
       new DisplayCutoutWebContentsDelegate());
-  delegate->SetDisplayMode(blink::WebDisplayMode::kWebDisplayModeFullscreen);
+  delegate->SetDisplayMode(blink::mojom::DisplayMode::kFullscreen);
   web_contents_impl()->SetDelegate(delegate.get());
   EXPECT_EQ(delegate.get(), web_contents_impl()->GetDelegate());
 
@@ -450,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, WebDisplayMode_Standalone) {
   // Inject the custom delegate used for this test.
   std::unique_ptr<DisplayCutoutWebContentsDelegate> delegate(
       new DisplayCutoutWebContentsDelegate());
-  delegate->SetDisplayMode(blink::WebDisplayMode::kWebDisplayModeStandalone);
+  delegate->SetDisplayMode(blink::mojom::DisplayMode::kStandalone);
   web_contents_impl()->SetDelegate(delegate.get());
   EXPECT_EQ(delegate.get(), web_contents_impl()->GetDelegate());
 

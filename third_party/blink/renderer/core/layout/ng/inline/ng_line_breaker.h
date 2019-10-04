@@ -281,9 +281,6 @@ class CORE_EXPORT NGLineBreaker {
   };
   base::Optional<TrailingCollapsibleSpace> trailing_collapsible_space_;
 
-  // Keep track of item index where overflow occurrred.
-  unsigned overflow_item_index_;
-
   // Keep track of handled float items. See HandleFloat().
   const NGPositionedFloatVector& leading_floats_;
   unsigned leading_floats_index_ = 0u;

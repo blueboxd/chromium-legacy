@@ -4,9 +4,11 @@
 
 #include "content/browser/frame_host/back_forward_cache_impl.h"
 
-#include <unordered_set>
+#include <algorithm>
+#include <string>
 
-#include "base/strings/string_util.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/strings/string_split.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -121,6 +123,23 @@ std::string DescribeFeatures(uint64_t blocklisted_features) {
   return base::JoinString(features, ", ");
 }
 
+// The BackForwardCache feature is controlled via an experiment. This function
+// returns the allowed URLs where it is enabled. To enter the BackForwardCache
+// the URL of a document must have a host and a path matching with at least
+// one URL in this map. We represent/format the string associated with
+// parameter as comma separated urls.
+std::map<std::string, std::vector<std::string>> SetAllowedURLs() {
+  std::map<std::string, std::vector<std::string>> allowed_urls;
+  for (auto& it :
+       base::SplitString(base::GetFieldTrialParamValueByFeature(
+                             features::kBackForwardCache, "allowed_websites"),
+                         ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    GURL url = GURL(it);
+    allowed_urls[url.host()].emplace_back(url.path());
+  }
+  return allowed_urls;
+}
+
 }  // namespace
 
 BackForwardCacheImpl::Entry::Entry(std::unique_ptr<RenderFrameHostImpl> rfh,
@@ -154,6 +173,8 @@ std::string BackForwardCacheImpl::CanStoreDocumentResult::ToString() {
              DescribeFeatures(blocklisted_features);
     case Reason::kDisableForRenderFrameHostCalled:
       return "No: BackForwardCache::DisableForRenderFrameHost() was called";
+    case Reason::kDomainNotAllowed:
+      return "No: This domain is not allowed to be stored in BackForwardCache";
   }
 }
 
@@ -190,7 +211,8 @@ BackForwardCacheImpl::CanStoreDocumentResult::CanStoreDocumentResult(
       reason(reason),
       blocklisted_features(blocklisted_features) {}
 
-BackForwardCacheImpl::BackForwardCacheImpl() : weak_factory_(this) {}
+BackForwardCacheImpl::BackForwardCacheImpl()
+    : allowed_urls_(SetAllowedURLs()), weak_factory_(this) {}
 BackForwardCacheImpl::~BackForwardCacheImpl() = default;
 
 base::TimeDelta BackForwardCacheImpl::GetTimeToLiveInBackForwardCache() {
@@ -211,12 +233,6 @@ BackForwardCacheImpl::CanStoreDocument(RenderFrameHostImpl* rfh) {
     return CanStoreDocumentResult::No(
         BackForwardCacheMetrics::CanNotStoreDocumentReason::
             kBackForwardCacheDisabled);
-  }
-
-  if (rfh->is_back_forward_cache_disallowed()) {
-    return CanStoreDocumentResult::No(
-        BackForwardCacheMetrics::CanNotStoreDocumentReason::
-            kDisableForRenderFrameHostCalled);
   }
 
   // Two pages in the same BrowsingInstance can script each other. When a page
@@ -249,6 +265,12 @@ BackForwardCacheImpl::CanStoreDocument(RenderFrameHostImpl* rfh) {
             kSchemeNotHTTPOrHTTPS);
   }
 
+  // Only store documents that have URLs allowed through experiment.
+  if (!IsAllowed(rfh->GetLastCommittedURL())) {
+    return CanStoreDocumentResult::No(
+        BackForwardCacheMetrics::CanNotStoreDocumentReason::kDomainNotAllowed);
+  }
+
   return CanStoreRenderFrameHost(rfh, GetDisallowedFeatures());
 }
 
@@ -268,6 +290,12 @@ BackForwardCacheImpl::CanStoreRenderFrameHost(RenderFrameHostImpl* rfh,
     return CanStoreDocumentResult::No(
         BackForwardCacheMetrics::CanNotStoreDocumentReason::
             kWasGrantedMediaAccess);
+  }
+
+  if (rfh->is_back_forward_cache_disallowed()) {
+    return CanStoreDocumentResult::No(
+        BackForwardCacheMetrics::CanNotStoreDocumentReason::
+            kDisableForRenderFrameHostCalled);
   }
 
   // Don't cache the page if it uses any disallowed features.
@@ -406,5 +434,25 @@ void BackForwardCacheImpl::DestroyEvictedFrames() {
       entries_.begin(), entries_.end(), [](std::unique_ptr<Entry>& entry) {
         return entry->render_frame_host->is_evicted_from_back_forward_cache();
       }));
+}
+
+bool BackForwardCacheImpl::IsAllowed(const GURL& current_url) {
+  // By convention, when |allowed_urls_| is empty, it means there are no
+  // restrictions about what RenderFrameHost can enter the BackForwardCache.
+  if (allowed_urls_.empty())
+    return true;
+
+  // Checking for each url in the |allowed_urls_|, if the current_url matches
+  // the corresponding host and path is the prefix of the allowed url path. We
+  // only check for host and path and not any other components including url
+  // scheme here.
+  const auto& entry = allowed_urls_.find(current_url.host());
+  if (entry != allowed_urls_.end()) {
+    for (auto allowed_path : entry->second) {
+      if (current_url.path_piece().starts_with(allowed_path))
+        return true;
+    }
+  }
+  return false;
 }
 }  // namespace content

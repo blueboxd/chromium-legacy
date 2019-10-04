@@ -32,6 +32,22 @@ const char kEmptyDeviceName[] = "";
 const char kDeviceNameInDeviceInfo[] = "DeviceNameInDeviceInfo";
 const char kDeviceNameInMessage[] = "DeviceNameInMessage";
 
+class MockSharingDeviceRegistration : public SharingDeviceRegistration {
+ public:
+  explicit MockSharingDeviceRegistration()
+      : SharingDeviceRegistration(/* pref_service_= */ nullptr,
+                                  /* sharing_sync_preference_= */ nullptr,
+                                  /* instance_id_driver_= */ nullptr,
+                                  /* vapid_key_manager_= */ nullptr) {}
+
+  ~MockSharingDeviceRegistration() override = default;
+
+  MOCK_CONST_METHOD0(IsSharedClipboardSupported, bool());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSharingDeviceRegistration);
+};
+
 class MockSharingService : public SharingService {
  public:
   explicit MockSharingService(
@@ -39,7 +55,7 @@ class MockSharingService : public SharingService {
       : SharingService(
             /* sync_prefs= */ nullptr,
             /* vapid_key_manager= */ nullptr,
-            /* sharing_device_registration= */ nullptr,
+            std::make_unique<MockSharingDeviceRegistration>(),
             /* fcm_sender= */ nullptr,
             std::make_unique<SharingFCMHandler>(nullptr, nullptr, nullptr),
             /* gcm_driver= */ nullptr,

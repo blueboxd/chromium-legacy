@@ -26,7 +26,6 @@ FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,
                              int32_t browsing_instance_id,
                              int32_t site_instance_id)
     : TypedNodeBase(graph),
-      binding_(this),
       parent_frame_node_(parent_frame_node),
       page_node_(page_node),
       process_node_(process_node),
@@ -46,17 +45,16 @@ FrameNodeImpl::~FrameNodeImpl() {
 }
 
 void FrameNodeImpl::Bind(
-    resource_coordinator::mojom::DocumentCoordinationUnitRequest request) {
-  // It is possible to receive a DocumentCoordinationUnitRequest when |binding_|
-  // is already bound in these cases:
+    mojo::PendingReceiver<resource_coordinator::mojom::DocumentCoordinationUnit>
+        receiver) {
+  // It is possible to receive a mojo::PendingReceiver<DocumentCoordinationUnit>
+  // when |receiver_| is already bound in these cases:
   // - Navigation from the initial empty document to the first real document.
   // - Navigation rejected by RenderFrameHostImpl::ValidateDidCommitParams().
   // See discussion:
   // https://chromium-review.googlesource.com/c/chromium/src/+/1572459/6#message-bd31f3e73f96bd9f7721be81ba6ac0076d053147
-  if (binding_.is_bound())
-    binding_.Close();
-
-  binding_.Bind(std::move(request));
+  receiver_.reset();
+  receiver_.Bind(std::move(receiver));
 }
 
 void FrameNodeImpl::SetNetworkAlmostIdle() {
@@ -234,10 +232,11 @@ void FrameNodeImpl::OnNavigationCommitted(const GURL& url, bool same_document) {
     return;
   }
 
-  // Close |binding_| to ensure that messages queued by the previous document
+  // Close |receiver_| to ensure that messages queued by the previous document
   // before the navigation commit are dropped.
   //
-  // Note: It is guaranteed that |binding_| isn't yet bound to the new document.
+  // Note: It is guaranteed that |receiver_| isn't yet bound to the new
+  // document.
   //       This is important because it would be incorrect to close the new
   //       document's binding.
   //
@@ -255,7 +254,7 @@ void FrameNodeImpl::OnNavigationCommitted(const GURL& url, bool same_document) {
   //       A happens before C, because no interface request can be processed
   //       before the interface provider is bound. A posts B to PM sequence and
   //       C posts D to PM sequence, therefore B happens before D.
-  binding_.Close();
+  receiver_.reset();
 
   // Reset properties.
   document_.Reset(this, url);

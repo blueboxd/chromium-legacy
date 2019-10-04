@@ -20,6 +20,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/global_routing_id.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -139,7 +140,6 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
     task_runner_for_testing_ = task_runner;
   }
 
-
   // Sets the number of documents that can be stored in the cache. This is meant
   // for use from within tests only.
   // If |cache_size_limit_for_testing| is 0 (the default), the normal cache
@@ -162,6 +162,11 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
       RenderFrameHostImpl* render_frame_host,
       uint64_t disallowed_features);
 
+  // Checks if the url's host and path matches with the |allowed_urls_| host and
+  // path. This is controlled by "allowed_websites" param on BackForwardCache
+  // feature and if the param is not set, it will allow all websites by default.
+  bool IsAllowed(const GURL& current_url);
+
   // Contains the set of stored Entries.
   // Invariant:
   // - Ordered from the most recently used to the last recently used.
@@ -179,6 +184,14 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   // Only used for tests. This task runner is used for precise injection in
   // browser tests and for timing control.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_testing_;
+
+  // To enter the back-forward cache, the main document URL's must match one of
+  // the field trial parameter "allowed_websites". This is represented here by a
+  // set of host and path prefix.
+  std::map<std::string,              // URL's host,
+           std::vector<std::string>  // URL's path prefix
+           >
+      allowed_urls_;
 
   base::WeakPtrFactory<BackForwardCacheImpl> weak_factory_;
 

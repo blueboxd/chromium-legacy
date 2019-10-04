@@ -15,6 +15,7 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/test/fake_compositor_frame_sink_client.h"
 #include "components/viz/test/fake_display_client.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 
 namespace viz {
 
@@ -49,7 +50,8 @@ class FuzzerBrowserProcess {
   FuzzerSoftwareOutputSurfaceProvider output_surface_provider_;
   FrameSinkManagerImpl frame_sink_manager_;
 
-  mojom::CompositorFrameSinkAssociatedPtr root_compositor_frame_sink_ptr_;
+  mojo::AssociatedRemote<mojom::CompositorFrameSink>
+      root_compositor_frame_sink_remote_;
   FakeCompositorFrameSinkClient root_compositor_frame_sink_client_;
   mojom::DisplayPrivateAssociatedPtr display_private_;
   FakeDisplayClient display_client_;

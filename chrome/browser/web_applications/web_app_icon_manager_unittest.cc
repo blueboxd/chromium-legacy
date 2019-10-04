@@ -20,6 +20,7 @@
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace web_app {
@@ -83,7 +84,7 @@ class WebAppIconManagerTest : public WebAppTest {
 
     auto web_app = std::make_unique<WebApp>(app_id);
     web_app->AddSource(Source::kSync);
-    web_app->SetLaunchContainer(LaunchContainer::kWindow);
+    web_app->SetDisplayMode(blink::mojom::DisplayMode::kStandalone);
     web_app->SetName("Name");
     web_app->SetLaunchUrl(app_url);
 

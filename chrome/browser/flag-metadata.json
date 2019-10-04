@@ -3019,9 +3019,14 @@
     "expiry_milestone": 80
   },
   {
+    "name": "sharing-derive-vapid-key",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 81
+  },
+  {
     "name": "sharing-use-device-info",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 81
   },
   {
     "name": "shelf-hotseat",

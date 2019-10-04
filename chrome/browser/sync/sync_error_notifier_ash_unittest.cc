@@ -109,7 +109,7 @@ TEST_F(SyncErrorNotifierTest, PassphraseNotification) {
   ASSERT_FALSE(display_service_->GetNotification(kNotificationId));
 
   service_.SetPassphraseRequired(true);
-  service_.SetPassphraseRequiredForDecryption(true);
+  service_.SetPassphraseRequiredForPreferredDataTypes(true);
   {
     SCOPED_TRACE("Expected a notification for passphrase error");
     VerifySyncErrorNotifierResult(GoogleServiceAuthError::NONE,
@@ -129,7 +129,7 @@ TEST_F(SyncErrorNotifierTest, PassphraseNotification) {
 
   // Check that no notification is shown if there is no error.
   service_.SetPassphraseRequired(false);
-  service_.SetPassphraseRequiredForDecryption(false);
+  service_.SetPassphraseRequiredForPreferredDataTypes(false);
   {
     SCOPED_TRACE("Not expecting notification since no error exists");
     VerifySyncErrorNotifierResult(GoogleServiceAuthError::NONE,
@@ -139,7 +139,7 @@ TEST_F(SyncErrorNotifierTest, PassphraseNotification) {
 
   // Check that no notification is shown if sync setup is not completed.
   service_.SetPassphraseRequired(true);
-  service_.SetPassphraseRequiredForDecryption(true);
+  service_.SetPassphraseRequiredForPreferredDataTypes(true);
   {
     SCOPED_TRACE("Not expecting notification since sync setup is incomplete");
     VerifySyncErrorNotifierResult(

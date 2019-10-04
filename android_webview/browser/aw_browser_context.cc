@@ -25,6 +25,7 @@
 #include "base/base_paths_posix.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
@@ -76,12 +77,56 @@ bool IgnoreOriginSecurityCheck(const GURL& url) {
   return true;
 }
 
+void MigrateProfileData(base::FilePath cache_path,
+                        base::FilePath context_storage_path) {
+  FilePath old_cache_path;
+  base::PathService::Get(base::DIR_CACHE, &old_cache_path);
+  old_cache_path = old_cache_path.DirName().Append(
+      FILE_PATH_LITERAL("org.chromium.android_webview"));
+
+  if (!base::PathExists(old_cache_path))
+    return;
+
+  bool success = base::CreateDirectory(cache_path);
+  if (success)
+    success &= base::Move(old_cache_path, cache_path);
+  DCHECK(success);
+
+  base::FilePath old_context_storage_path;
+  base::PathService::Get(base::DIR_ANDROID_APP_DATA, &old_context_storage_path);
+
+  if (!base::PathExists(context_storage_path)) {
+    base::CreateDirectory(context_storage_path);
+  }
+
+  auto migrate_context_storage_data = [&old_context_storage_path,
+                                       &context_storage_path](auto& suffix) {
+    if (base::PathExists(old_context_storage_path.Append(suffix))) {
+      bool success = base::Move(old_context_storage_path.Append(suffix),
+                                context_storage_path.Append(suffix));
+
+      DCHECK(success);
+    }
+  };
+
+  migrate_context_storage_data("Web Data");
+  migrate_context_storage_data("Web Data-journal");
+  migrate_context_storage_data("GPUCache");
+  migrate_context_storage_data("blob_storage");
+  migrate_context_storage_data("Session Storage");
+}
+
 }  // namespace
 
 AwBrowserContext::AwBrowserContext()
     : context_storage_path_(GetContextStoragePath()),
       simple_factory_key_(GetPath(), IsOffTheRecord()) {
   DCHECK(!g_browser_context);
+
+  if (IsDefaultBrowserContext()) {
+    MigrateProfileData(GetCacheDir(), GetContextStoragePath());
+  }
+
   g_browser_context = this;
   SimpleKeyMap::GetInstance()->Associate(this, &simple_factory_key_);
 
@@ -131,8 +176,8 @@ base::FilePath AwBrowserContext::GetCacheDir() {
   if (!base::PathService::Get(base::DIR_CACHE, &cache_path)) {
     NOTREACHED() << "Failed to get app cache directory for Android WebView";
   }
-  cache_path =
-      cache_path.Append(FILE_PATH_LITERAL("org.chromium.android_webview"));
+  cache_path = cache_path.Append(FILE_PATH_LITERAL("Default"))
+                   .Append(FILE_PATH_LITERAL("HTTP Cache"));
   return cache_path;
 }
 
@@ -158,6 +203,7 @@ base::FilePath AwBrowserContext::GetContextStoragePath() {
     NOTREACHED() << "Failed to get app data directory for Android WebView";
   }
 
+  user_data_dir = user_data_dir.Append(FILE_PATH_LITERAL("Default"));
   return user_data_dir;
 }
 

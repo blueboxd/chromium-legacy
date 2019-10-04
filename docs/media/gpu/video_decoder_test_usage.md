@@ -66,14 +66,19 @@ Multiple command line arguments can be given to the command:
      -v                  enable verbose mode, e.g. -v=2.
     --vmodule            enable verbose mode for the specified module,
                          e.g. --vmodule=*media/gpu*=2.
+
     --disable_validator  disable frame validation.
-    --output_frames      write the selected video frames to disk, possible
-                         values are "all|corrupt", the default output folder
-                         is "<testname>".
-    --output_folder      overwrite the default output folder used when
-                         "--output_frames" is specified.
     --use_vd             use the new VD-based video decoders, instead of
                          the default VDA-based video decoders.
+
+    --output_frames      write the selected video frames to disk, possible
+                         values are "all|corrupt".
+    --output_format      set the format of frames saved to disk, supported
+                         formats are "png" (default) and "yuv".
+    --output_limit       limit the number of frames saved to disk.
+    --output_folder      set the folder used to store frames, defaults to
+                         "<testname>"
+
     --gtest_help         display the gtest help and exit.
     --help               display this help and exit.
 

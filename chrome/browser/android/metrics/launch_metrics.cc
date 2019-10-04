@@ -15,7 +15,7 @@
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 using base::android::JavaParamRef;
@@ -96,9 +96,9 @@ static void JNI_LaunchMetrics_RecordLaunch(
                             ShortcutInfo::SOURCE_COUNT);
 
   if (!is_shortcut) {
-    UMA_HISTOGRAM_ENUMERATION("Launch.WebAppDisplayMode",
-                              static_cast<blink::WebDisplayMode>(display_mode),
-                              blink::WebDisplayMode::kWebDisplayModeLast + 1);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Launch.WebAppDisplayMode",
+        static_cast<blink::mojom::DisplayMode>(display_mode));
   }
 
   rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),

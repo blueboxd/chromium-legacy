@@ -513,6 +513,20 @@ bool RestrictedCookieManager::ValidateAccessToCookiesAt(
   if (url.IsAboutBlank() || url.IsAboutSrcdoc()) {
     // Temporary mitigation for 983090, classification improvement for parts of
     // 992587.
+    static base::debug::CrashKeyString* bound_origin =
+        base::debug::AllocateCrashKeyString(
+            "restricted_cookie_manager_bound_origin",
+            base::debug::CrashKeySize::Size256);
+    base::debug::ScopedCrashKeyString(bound_origin, origin_.GetDebugString());
+
+    static base::debug::CrashKeyString* url_origin =
+        base::debug::AllocateCrashKeyString(
+            "restricted_cookie_manager_url_origin",
+            base::debug::CrashKeySize::Size256);
+    base::debug::ScopedCrashKeyString(
+        url_origin, url::Origin::Create(url).GetDebugString());
+
+    base::debug::DumpWithoutCrashing();
     return false;
   }
 

@@ -2,6 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+(function() {
+
+/**
+ * Input types supported by cr-input.
+ * @type {!Set<string>}
+ */
+const SUPPORTED_INPUT_TYPES = new Set([
+  'number',
+  'password',
+  'search',
+  'text',
+  'url',
+]);
+
 /**
  * @fileoverview 'cr-input' is a component similar to native input.
  *
@@ -17,7 +31,7 @@
  *   readonly
  *   required
  *   tabindex
- *   type (only 'text', 'password', 'number', and 'search' supported)
+ *   type (see |SUPPORTED_INPUT_TYPES| above)
  *   value
  *
  * Additional attributes that you can use with cr-input:
@@ -135,7 +149,8 @@ Polymer({
 
     type: {
       type: String,
-      value: 'text',  // Only 'text', 'password', 'search' are supported.
+      value: 'text',
+      observer: 'onTypeChanged_',
     },
 
     value: {
@@ -165,6 +180,12 @@ Polymer({
     if (this.disabled) {
       this.reconcileTabindex_();
     }
+  },
+
+  /** @private */
+  onTypeChanged_: function() {
+    // Check that the 'type' is one of the supported types.
+    assert(SUPPORTED_INPUT_TYPES.has(this.type));
   },
 
   /** @return {!HTMLInputElement} */
@@ -364,3 +385,4 @@ Polymer({
     return !this.invalid;
   },
 });
+})();

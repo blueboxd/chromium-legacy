@@ -10,7 +10,10 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 
 namespace viz {
@@ -21,10 +24,11 @@ class FrameSinkManagerImpl;
 // Binding/InterfacePtr for the mojom::CompositorFrameSink interface.
 class CompositorFrameSinkImpl : public mojom::CompositorFrameSink {
  public:
-  CompositorFrameSinkImpl(FrameSinkManagerImpl* frame_sink_manager,
-                          const FrameSinkId& frame_sink_id,
-                          mojom::CompositorFrameSinkRequest request,
-                          mojom::CompositorFrameSinkClientPtr client);
+  CompositorFrameSinkImpl(
+      FrameSinkManagerImpl* frame_sink_manager,
+      const FrameSinkId& frame_sink_id,
+      mojo::PendingReceiver<mojom::CompositorFrameSink> receiver,
+      mojo::PendingRemote<mojom::CompositorFrameSinkClient> client);
 
   ~CompositorFrameSinkImpl() override;
 
@@ -57,8 +61,8 @@ class CompositorFrameSinkImpl : public mojom::CompositorFrameSink {
 
   void OnClientConnectionLost();
 
-  mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client_;
-  mojo::Binding<mojom::CompositorFrameSink> compositor_frame_sink_binding_;
+  mojo::Remote<mojom::CompositorFrameSinkClient> compositor_frame_sink_client_;
+  mojo::Receiver<mojom::CompositorFrameSink> compositor_frame_sink_receiver_;
 
   // Must be destroyed before |compositor_frame_sink_client_|. This must never
   // change for the lifetime of CompositorFrameSinkImpl.

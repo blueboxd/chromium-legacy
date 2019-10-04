@@ -729,8 +729,10 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
       DCHECK(result);
     }
 
-    if (!output_sk_surface()->draw(ddl.get()))
-      DLOG(ERROR) << "output_sk_surface()->draw() failed.";
+    // Draw will only fail if the SkSurface and SkDDL are incompatible.
+    bool draw_success = output_sk_surface()->draw(ddl.get());
+    DCHECK(draw_success);
+
     destroy_after_swap_.emplace_back(std::move(ddl));
 
     if (overdraw_ddl) {

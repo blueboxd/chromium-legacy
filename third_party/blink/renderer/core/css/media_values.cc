@@ -126,16 +126,16 @@ const String MediaValues::CalculateMediaType(LocalFrame* frame) {
   return frame->View()->MediaType();
 }
 
-WebDisplayMode MediaValues::CalculateDisplayMode(LocalFrame* frame) {
+blink::mojom::DisplayMode MediaValues::CalculateDisplayMode(LocalFrame* frame) {
   DCHECK(frame);
-  WebDisplayMode mode =
+  blink::mojom::DisplayMode mode =
       frame->GetPage()->GetSettings().GetDisplayModeOverride();
 
-  if (mode != kWebDisplayModeUndefined)
+  if (mode != blink::mojom::DisplayMode::kUndefined)
     return mode;
 
   if (!frame->View())
-    return kWebDisplayModeBrowser;
+    return blink::mojom::DisplayMode::kBrowser;
 
   return frame->View()->DisplayMode();
 }

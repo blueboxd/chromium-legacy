@@ -94,6 +94,8 @@ class PDFiumPage {
     // Valid for DOCLINK_AREA only. From the top-left of the page.
     base::Optional<float> x_in_pixels;
     base::Optional<float> y_in_pixels;
+    // Valid for DOCLINK_AREA only.
+    base::Optional<float> zoom;
   };
 
   // Given a |link_index|, returns the type of underlying area and the link
@@ -101,8 +103,11 @@ class PDFiumPage {
   // |link_index| is invalid.
   Area GetLinkTargetAtIndex(int link_index, LinkTarget* target);
 
-  // Returns the (x, y) position of a destination in page coordinates.
-  base::Optional<gfx::PointF> GetPageXYTarget(FPDF_DEST destination);
+  // Fills the output params with the (x, y) position in page coordinates and
+  // zoom value of a destination.
+  void GetPageDestinationTarget(FPDF_DEST destination,
+                                base::Optional<gfx::PointF>* xy,
+                                base::Optional<float>* zoom_value);
 
   // Transforms an (x, y) position in page coordinates to screen coordinates.
   gfx::PointF TransformPageToScreenXY(const gfx::PointF& xy);

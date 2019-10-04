@@ -14,8 +14,10 @@ import "services/viz/public/mojom/compositing/compositor_frame_sink.mojom";
 interface FrameSinkProvider {
   CreateForWidget(
       int32 widget_id,
-      viz.mojom.CompositorFrameSink& compositor_frame_sink_request,
-      viz.mojom.CompositorFrameSinkClient compositor_frame_sink_client);
+      pending_receiver<viz.mojom.CompositorFrameSink>
+          compositor_frame_sink_receiver,
+      pending_remote<viz.mojom.CompositorFrameSinkClient>
+          compositor_frame_sink_client);
 
    RegisterRenderFrameMetadataObserver(
       int32  widget_id,

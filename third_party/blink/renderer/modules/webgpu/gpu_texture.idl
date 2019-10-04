@@ -7,6 +7,6 @@
 [
     RuntimeEnabled=WebGPU
 ] interface GPUTexture {
-    GPUTextureView createView(optional GPUTextureViewDescriptor desc);
+    GPUTextureView createView(optional GPUTextureViewDescriptor descriptor = {});
     void destroy();
 };

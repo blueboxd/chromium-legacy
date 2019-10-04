@@ -118,8 +118,9 @@ PerfettoFileTracer::PerfettoFileTracer()
   // We just need a single global trace buffer, for our data.
   trace_config.mutable_buffers()->front().set_size_kb(32 * 1024);
 
-  tracing::mojom::TracingSessionClientPtr tracing_session_client;
-  binding_.Bind(mojo::MakeRequest(&tracing_session_client));
+  mojo::PendingRemote<tracing::mojom::TracingSessionClient>
+      tracing_session_client;
+  binding_.Bind(tracing_session_client.InitWithNewPipeAndPassReceiver());
   binding_.set_connection_error_handler(base::BindOnce(
       &PerfettoFileTracer::OnTracingSessionEnded, base::Unretained(this)));
 

@@ -488,9 +488,9 @@
     },
     {
       name: "displayModeOverride",
-      initial: "kWebDisplayModeUndefined",
+      initial: "blink::mojom::DisplayMode::kUndefined",
       invalidate: "MediaQuery",
-      type: "WebDisplayMode",
+      type: "blink::mojom::DisplayMode",
     },
 
     // loadsImagesAutomatically only suppresses the network load of

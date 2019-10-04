@@ -169,7 +169,8 @@ class InputImeEventRouter : public InputImeEventRouterBase {
 
  private:
   // The engine map from extension_id to an engine.
-  std::map<std::string, chromeos::InputMethodEngine*> engine_map_;
+  std::map<std::string, std::unique_ptr<chromeos::InputMethodEngine>>
+      engine_map_;
   // The first party ime extension which is unloaded unexpectedly.
   std::string unloaded_component_extension_id_;
 

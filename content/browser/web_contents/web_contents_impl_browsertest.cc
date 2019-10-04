@@ -1981,15 +1981,17 @@ namespace {
 
 class WebDisplayModeDelegate : public WebContentsDelegate {
  public:
-  explicit WebDisplayModeDelegate(blink::WebDisplayMode mode) : mode_(mode) { }
+  explicit WebDisplayModeDelegate(blink::mojom::DisplayMode mode)
+      : mode_(mode) {}
   ~WebDisplayModeDelegate() override { }
 
-  blink::WebDisplayMode GetDisplayMode(const WebContents* source) override {
+  blink::mojom::DisplayMode GetDisplayMode(const WebContents* source) override {
     return mode_;
   }
-  void set_mode(blink::WebDisplayMode mode) { mode_ = mode; }
+  void set_mode(blink::mojom::DisplayMode mode) { mode_ = mode; }
+
  private:
-  blink::WebDisplayMode mode_;
+  blink::mojom::DisplayMode mode_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDisplayModeDelegate);
 };
@@ -1998,7 +2000,7 @@ class WebDisplayModeDelegate : public WebContentsDelegate {
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangeDisplayMode) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  WebDisplayModeDelegate delegate(blink::kWebDisplayModeMinimalUi);
+  WebDisplayModeDelegate delegate(blink::mojom::DisplayMode::kMinimalUi);
   shell()->web_contents()->SetDelegate(&delegate);
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
@@ -2009,7 +2011,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangeDisplayMode) {
                             " minimal-ui)').matches"));
   EXPECT_EQ(base::ASCIIToUTF16("true"), shell()->web_contents()->GetTitle());
 
-  delegate.set_mode(blink::kWebDisplayModeFullscreen);
+  delegate.set_mode(blink::mojom::DisplayMode::kFullscreen);
   // Simulate widget is entering fullscreen (changing size is enough).
   shell()
       ->web_contents()

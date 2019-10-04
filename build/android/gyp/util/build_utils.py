@@ -662,8 +662,7 @@ def CallAndWriteDepfileIfStale(function, options, record_path=None,
     input_paths += python_deps
     output_paths += [options.depfile]
 
-  def on_stale_md5(changes):
-    args = (changes,) if pass_changes else ()
+  def on_stale_md5(*args):
     function(*args)
     if python_deps is not None:
       all_depfile_deps = list(python_deps) if add_pydeps else []
@@ -679,4 +678,4 @@ def CallAndWriteDepfileIfStale(function, options, record_path=None,
       input_strings=input_strings,
       output_paths=output_paths,
       force=force,
-      pass_changes=True)
+      pass_changes=pass_changes)

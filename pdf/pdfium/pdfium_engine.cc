@@ -1218,18 +1218,15 @@ bool PDFiumEngine::NavigateToLinkDestination(
       return true;
 
     if (disposition == WindowOpenDisposition::CURRENT_TAB) {
-      pp::Rect page_rect(GetPageScreenRect(target.page));
-      int x = position_.x() + page_rect.x();
-      x += target.x_in_pixels.value_or(0) * current_zoom_;
-      int y = position_.y() + page_rect.y();
-      y += target.y_in_pixels.value_or(0) * current_zoom_;
-
-      client_->ScrollToX(x);
-      client_->ScrollToY(y, /*compensate_for_toolbar=*/true);
+      client_->NavigateToDestination(
+          target.page, base::OptionalOrNullptr(target.x_in_pixels),
+          base::OptionalOrNullptr(target.y_in_pixels),
+          base::OptionalOrNullptr(target.zoom));
     } else {
       std::string parameters = base::StringPrintf("#page=%d", target.page + 1);
       parameters += base::StringPrintf(
-          "&zoom=100,%d,%d", static_cast<int>(target.x_in_pixels.value_or(0)),
+          "&zoom=%d,%d,%d", static_cast<int>(target.zoom.value_or(1.0) * 100),
+          static_cast<int>(target.x_in_pixels.value_or(0)),
           static_cast<int>(target.y_in_pixels.value_or(0)));
 
       client_->NavigateTo(parameters, disposition);
@@ -2081,11 +2078,15 @@ pp::VarDictionary PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
     if (PageIndexInBounds(page_index)) {
       dict.Set(pp::Var("page"), pp::Var(page_index));
 
-      base::Optional<gfx::PointF> xy =
-          pages_[page_index]->GetPageXYTarget(dest);
+      base::Optional<gfx::PointF> xy;
+      base::Optional<float> zoom;
+      pages_[page_index]->GetPageDestinationTarget(dest, &xy, &zoom);
       if (xy) {
         dict.Set(pp::Var("x"), pp::Var(static_cast<int>(xy.value().x())));
         dict.Set(pp::Var("y"), pp::Var(static_cast<int>(xy.value().y())));
+      }
+      if (zoom) {
+        dict.Set(pp::Var("zoom"), pp::Var(zoom.value()));
       }
     }
   } else {

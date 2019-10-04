@@ -12,6 +12,7 @@
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/surfaces/surface_range.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace viz {
 
@@ -51,27 +52,27 @@ FuzzerBrowserProcess::~FuzzerBrowserProcess() {
 void FuzzerBrowserProcess::EmbedFuzzedCompositorFrame(
     CompositorFrame fuzzed_frame,
     std::vector<FuzzedBitmap> allocated_bitmaps) {
-  mojom::CompositorFrameSinkPtr sink_ptr;
+  mojo::Remote<mojom::CompositorFrameSink> sink_remote;
   FakeCompositorFrameSinkClient sink_client;
-  frame_sink_manager_.CreateCompositorFrameSink(kEmbeddedFrameSinkId,
-                                                mojo::MakeRequest(&sink_ptr),
-                                                sink_client.BindInterfacePtr());
+  frame_sink_manager_.CreateCompositorFrameSink(
+      kEmbeddedFrameSinkId, sink_remote.BindNewPipeAndPassReceiver(),
+      sink_client.BindInterfaceRemote());
 
   for (auto& fuzzed_bitmap : allocated_bitmaps) {
-    sink_ptr->DidAllocateSharedBitmap(fuzzed_bitmap.shared_region.Duplicate(),
-                                      fuzzed_bitmap.id);
+    sink_remote->DidAllocateSharedBitmap(
+        fuzzed_bitmap.shared_region.Duplicate(), fuzzed_bitmap.id);
   }
 
   lsi_allocator_.GenerateId();
   SurfaceId embedded_surface_id(
       kEmbeddedFrameSinkId,
       lsi_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id());
-  sink_ptr->SubmitCompositorFrame(embedded_surface_id.local_surface_id(),
-                                  std::move(fuzzed_frame), base::nullopt, 0);
+  sink_remote->SubmitCompositorFrame(embedded_surface_id.local_surface_id(),
+                                     std::move(fuzzed_frame), base::nullopt, 0);
 
   CompositorFrame browser_frame =
       BuildBrowserUICompositorFrame(embedded_surface_id);
-  root_compositor_frame_sink_ptr_->SubmitCompositorFrame(
+  root_compositor_frame_sink_remote_->SubmitCompositorFrame(
       root_local_surface_id_, std::move(browser_frame), base::nullopt, 0);
 
   // run queued messages (memory allocation and frame submission)
@@ -80,7 +81,7 @@ void FuzzerBrowserProcess::EmbedFuzzedCompositorFrame(
   display_private_->ForceImmediateDrawAndSwapIfPossible();
 
   for (auto& fuzzed_bitmap : allocated_bitmaps) {
-    sink_ptr->DidDeleteSharedBitmap(fuzzed_bitmap.id);
+    sink_remote->DidDeleteSharedBitmap(fuzzed_bitmap.id);
   }
 
   // run queued messages (memory deallocation)
@@ -96,10 +97,11 @@ FuzzerBrowserProcess::BuildRootCompositorFrameSinkParams() {
   params->frame_sink_id = kRootFrameSinkId;
   params->widget = gpu::kNullSurfaceHandle;
   params->gpu_compositing = false;
-  params->compositor_frame_sink = mojo::MakeRequestAssociatedWithDedicatedPipe(
-      &root_compositor_frame_sink_ptr_);
+  params->compositor_frame_sink =
+      root_compositor_frame_sink_remote_
+          .BindNewEndpointAndPassDedicatedReceiverForTesting();
   params->compositor_frame_sink_client =
-      root_compositor_frame_sink_client_.BindInterfacePtr().PassInterface();
+      root_compositor_frame_sink_client_.BindInterfaceRemote();
   params->display_private =
       MakeRequestAssociatedWithDedicatedPipe(&display_private_);
   params->display_client = display_client_.BindInterfacePtr().PassInterface();

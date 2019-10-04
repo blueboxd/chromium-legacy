@@ -14,6 +14,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -34,23 +35,26 @@ const Extension* BookmarkAppRegistryController::GetExtension(
   DCHECK(!extension || extension->from_bookmark());
   return extension;
 }
-void BookmarkAppRegistryController::SetAppLaunchContainer(
+
+void BookmarkAppRegistryController::SetAppDisplayMode(
     const web_app::AppId& app_id,
-    web_app::LaunchContainer launch_container) {
+    blink::mojom::DisplayMode display_mode) {
   const Extension* extension = GetExtension(app_id);
   if (!extension)
     return;
 
-  switch (launch_container) {
-    case web_app::LaunchContainer::kWindow:
+  switch (display_mode) {
+    case blink::mojom::DisplayMode::kStandalone:
       extensions::SetLaunchType(profile(), extension->id(),
                                 extensions::LAUNCH_TYPE_WINDOW);
       return;
-    case web_app::LaunchContainer::kTab:
+    case blink::mojom::DisplayMode::kBrowser:
       extensions::SetLaunchType(profile(), extension->id(),
                                 extensions::LAUNCH_TYPE_REGULAR);
       return;
-    case web_app::LaunchContainer::kDefault:
+    case blink::mojom::DisplayMode::kUndefined:
+    case blink::mojom::DisplayMode::kMinimalUi:
+    case blink::mojom::DisplayMode::kFullscreen:
       NOTREACHED();
       return;
   }

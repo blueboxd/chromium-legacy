@@ -712,7 +712,7 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest, LogsUkmDryRun) {
 }
 
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
-       DISABLED_ActivateForScopeType) {
+       ActivateForScopeType) {
   const ActivationScopeTestData& test_data = GetParam();
   scoped_configuration()->ResetConfiguration(Configuration(
       mojom::ActivationLevel::kEnabled, test_data.activation_scope,

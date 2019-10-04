@@ -106,7 +106,7 @@ struct Size {
 
 // The information of a plane of a video frame that describes how physical
 // buffers are allocated.
-struct MediaVideoFramePlane {
+struct ColorPlaneLayout {
   int32 stride;
   uint32 offset;
   uint32 size;
@@ -117,7 +117,7 @@ struct MediaVideoFramePlane {
 struct VideoFrameLayout {
   VideoPixelFormat format;
   Size coded_size;
-  array<MediaVideoFramePlane> planes;
+  array<ColorPlaneLayout> planes;
   bool is_multi_planar;
   uint32 buffer_addr_align;
   uint64 modifier;

@@ -485,3 +485,42 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.assertEqual(len(lines), 3)
     self.assertIn('label2', lines[1])
     self.assertIn('label1', lines[2])
+
+  def testExitCodeHasFailures(self):
+    self.SerializeIntermediateResults([
+        testing.TestResult('benchmark/story', status='PASS'),
+        testing.TestResult('benchmark/story', status='FAIL'),
+    ])
+
+    exit_code = processor.main([
+        '--output-format', 'json-test-results',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir])
+
+    self.assertEqual(exit_code, 1)
+
+  def testExitCodeAllSkipped(self):
+    self.SerializeIntermediateResults([
+        testing.TestResult('benchmark/story', status='SKIP'),
+        testing.TestResult('benchmark/story', status='SKIP'),
+    ])
+
+    exit_code = processor.main([
+        '--output-format', 'json-test-results',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir])
+
+    self.assertEqual(exit_code, -1)
+
+  def testExitCodeSomeSkipped(self):
+    self.SerializeIntermediateResults([
+        testing.TestResult('benchmark/story', status='SKIP'),
+        testing.TestResult('benchmark/story', status='PASS'),
+    ])
+
+    exit_code = processor.main([
+        '--output-format', 'json-test-results',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir])
+
+    self.assertEqual(exit_code, 0)

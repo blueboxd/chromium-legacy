@@ -71,7 +71,7 @@ void WebApkHandlerDelegate::OnWebApkInfoRetrieved(
       base::android::ConvertJavaStringToUTF8(env, jscope),
       base::android::ConvertJavaStringToUTF8(env, jmanifest_url),
       base::android::ConvertJavaStringToUTF8(env, jmanifest_start_url),
-      static_cast<blink::WebDisplayMode>(jdisplay_mode),
+      static_cast<blink::mojom::DisplayMode>(jdisplay_mode),
       static_cast<blink::WebScreenOrientationLockType>(jorientation),
       JavaColorToOptionalSkColor(jtheme_color),
       JavaColorToOptionalSkColor(jbackground_color),

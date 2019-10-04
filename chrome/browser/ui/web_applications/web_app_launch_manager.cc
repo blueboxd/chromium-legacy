@@ -117,6 +117,8 @@ bool WebAppLaunchManager::OpenApplicationWindow(
       apps::mojom::AppLaunchSource::kSourceCommandLine);
   params.command_line = command_line;
   params.current_directory = current_directory;
+  params.launch_files =
+      apps::LaunchManager::GetLaunchFilesFromCommandLine(command_line);
 
   provider_->on_registry_ready().Post(
       FROM_HERE, base::BindOnce(&WebAppLaunchManager::OpenWebApplication,

@@ -117,8 +117,8 @@ void AddWebappWithSkBitmap(const ShortcutInfo& info,
   Java_ShortcutHelper_addWebapp(
       env, java_webapp_id, java_url, java_scope_url, java_user_title, java_name,
       java_short_name, java_best_primary_icon_url, java_bitmap,
-      is_icon_maskable, info.display, info.orientation, info.source,
-      OptionalSkColorToJavaColor(info.theme_color),
+      is_icon_maskable, static_cast<int>(info.display), info.orientation,
+      info.source, OptionalSkColorToJavaColor(info.theme_color),
       OptionalSkColorToJavaColor(info.background_color), callback_pointer);
 }
 
@@ -183,9 +183,9 @@ void ShortcutHelper::AddToLauncherWithSkBitmap(
     const SkBitmap& icon_bitmap,
     bool is_icon_maskable) {
   std::string webapp_id = base::GenerateGUID();
-  if (info.display == blink::kWebDisplayModeStandalone ||
-      info.display == blink::kWebDisplayModeFullscreen ||
-      info.display == blink::kWebDisplayModeMinimalUi) {
+  if (info.display == blink::mojom::DisplayMode::kStandalone ||
+      info.display == blink::mojom::DisplayMode::kFullscreen ||
+      info.display == blink::mojom::DisplayMode::kMinimalUi) {
     AddWebappWithSkBitmap(
         info, webapp_id, icon_bitmap, is_icon_maskable,
         base::BindOnce(&ShortcutHelper::FetchSplashScreenImage, web_contents,

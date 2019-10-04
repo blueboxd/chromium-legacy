@@ -222,6 +222,7 @@ class PLATFORM_EXPORT GraphicsContext {
                  Image::ImageDecodingMode,
                  const FloatRect& dest_rect,
                  const FloatRect* src_rect = nullptr,
+                 bool has_filter_property = false,
                  SkBlendMode = SkBlendMode::kSrcOver,
                  RespectImageOrientationEnum = kDoNotRespectImageOrientation);
   void DrawImageRRect(
@@ -229,6 +230,7 @@ class PLATFORM_EXPORT GraphicsContext {
       Image::ImageDecodingMode,
       const FloatRoundedRect& dest,
       const FloatRect& src_rect,
+      bool has_filter_property = false,
       SkBlendMode = SkBlendMode::kSrcOver,
       RespectImageOrientationEnum = kDoNotRespectImageOrientation);
   void DrawImageTiled(Image* image,

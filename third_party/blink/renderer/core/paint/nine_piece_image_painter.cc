@@ -99,14 +99,14 @@ void PaintPieces(GraphicsContext& context,
         // Since there is no way for the developer to specify decode behavior,
         // use kSync by default.
         context.DrawImage(image, Image::kSyncDecode, draw_info.destination,
-                          &draw_info.source);
+                          &draw_info.source, style.HasFilterInducingProperty());
       } else if (draw_info.tile_rule.horizontal == kStretchImageRule &&
                  draw_info.tile_rule.vertical == kStretchImageRule) {
         // Just do a scale.
         // Since there is no way for the developer to specify decode behavior,
         // use kSync by default.
         context.DrawImage(image, Image::kSyncDecode, draw_info.destination,
-                          &draw_info.source);
+                          &draw_info.source, style.HasFilterInducingProperty());
       } else {
         // TODO(cavalcantii): see crbug.com/662513.
         base::Optional<TileParameters> h_tile = ComputeTileParameters(

@@ -104,8 +104,9 @@ class TracingAgent::PerfettoTracingSession
     perfetto::TraceConfig perfetto_config =
         CreatePerfettoConfiguration(chrome_config);
 
-    tracing::mojom::TracingSessionClientPtr tracing_session_client;
-    receiver_.Bind(mojo::MakeRequest(&tracing_session_client));
+    mojo::PendingRemote<tracing::mojom::TracingSessionClient>
+        tracing_session_client;
+    receiver_.Bind(tracing_session_client.InitWithNewPipeAndPassReceiver());
     receiver_.set_disconnect_handler(
         base::BindOnce(&PerfettoTracingSession::OnTracingSessionFailed,
                        base::Unretained(this)));

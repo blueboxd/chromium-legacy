@@ -18,7 +18,7 @@ struct ServiceWorkerObjectInfo {
   int64 version_id = kInvalidServiceWorkerVersionId;
 
   // ServiceWorker#state
-  ServiceWorkerState state = ServiceWorkerState.kUnknown;
+  ServiceWorkerState state = ServiceWorkerState.kParsed;
 
   // ServiceWorker#scriptURL
   url.mojom.Url url;

@@ -50,6 +50,7 @@
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_package/bundled_exchanges_handle_tracker.h"
+#include "content/browser/web_package/bundled_exchanges_navigation_info.h"
 #include "content/browser/web_package/bundled_exchanges_source.h"
 #include "content/browser/web_package/bundled_exchanges_utils.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
@@ -935,6 +936,10 @@ NavigationRequest::NavigationRequest(
     if (frame_tree_node->IsMainFrame() && entry->back_forward_cache_metrics()) {
       entry->back_forward_cache_metrics()
           ->MainFrameDidStartNavigationToDocument();
+    }
+    if (entry->bundled_exchanges_navigation_info()) {
+      bundled_exchanges_navigation_info_ =
+          entry->bundled_exchanges_navigation_info()->Clone();
     }
   }
 
@@ -2022,6 +2027,13 @@ void NavigationRequest::OnStartChecksComplete(
         bundled_exchanges_handle_tracker_->MaybeCreateBundledExchangesHandle(
             common_params_->url);
   }
+  if (!bundled_exchanges_handle_ && bundled_exchanges_navigation_info_) {
+    DCHECK(base::FeatureList::IsEnabled(features::kBundledHTTPExchanges) ||
+           base::CommandLine::ForCurrentProcess()->HasSwitch(
+               switches::kTrustableBundledExchangesFileUrl));
+    bundled_exchanges_handle_ = BundledExchangesHandle::CreateForNavigationInfo(
+        bundled_exchanges_navigation_info_->Clone());
+  }
   if (!bundled_exchanges_handle_) {
     if (bundled_exchanges_utils::CanLoadAsTrustableBundledExchangesFile(
             common_params_->url)) {
@@ -2382,6 +2394,13 @@ void NavigationRequest::CommitNavigation() {
         render_frame_host_->GetProcess()->GetID(),
         render_frame_host_->GetRoutingID(), &service_worker_provider_info);
   }
+
+  if (bundled_exchanges_handle_ &&
+      bundled_exchanges_handle_->navigation_info()) {
+    bundled_exchanges_navigation_info_ =
+        bundled_exchanges_handle_->navigation_info()->Clone();
+  }
+
   auto common_params = common_params_->Clone();
   auto commit_params = commit_params_.Clone();
   network::mojom::URLResponseHeadPtr response_head;

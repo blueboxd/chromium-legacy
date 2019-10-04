@@ -1155,6 +1155,7 @@ interface ConstantSourceNode : AudioScheduledSourceNode
 interface ContactsManager
     attribute @@toStringTag
     method constructor
+    method getProperties
     method select
 interface ContentIndex
     attribute @@toStringTag

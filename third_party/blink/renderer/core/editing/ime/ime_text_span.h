@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
-#include "ui/base/ime/mojom/ime_types.mojom-blink.h"
+#include "ui/base/ime/mojom/ime_types.mojom-blink-forward.h"
 
 namespace blink {
 

@@ -22,6 +22,7 @@
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "components/sync/model/model_type_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -46,6 +47,7 @@ class WebAppDatabaseTest : public WebAppTest {
     const std::string scope =
         base_url + "/scope" + base::NumberToString(suffix);
     const base::Optional<SkColor> theme_color = suffix;
+    const base::Optional<SkColor> synced_theme_color = suffix ^ UINT_MAX;
 
     auto app = std::make_unique<WebApp>(app_id);
 
@@ -69,8 +71,9 @@ class WebAppDatabaseTest : public WebAppTest {
     app->SetScope(GURL(scope));
     app->SetThemeColor(theme_color);
     app->SetIsLocallyInstalled(!(suffix & 2));
-    app->SetLaunchContainer((suffix & 1) ? LaunchContainer::kTab
-                                         : LaunchContainer::kWindow);
+    app->SetIsSyncPlaceholder(!(suffix & 4));
+    app->SetDisplayMode((suffix & 1) ? blink::mojom::DisplayMode::kBrowser
+                                     : blink::mojom::DisplayMode::kStandalone);
 
     const std::string icon_url =
         base_url + "/icon" + base::NumberToString(suffix);
@@ -80,6 +83,11 @@ class WebAppDatabaseTest : public WebAppTest {
     icons.push_back({GURL(icon_url), icon_size_in_px});
 
     app->SetIcons(std::move(icons));
+
+    WebApp::SyncData sync_data;
+    sync_data.name = "Sync" + name;
+    sync_data.theme_color = synced_theme_color;
+    app->SetSyncData(sync_data);
 
     return app;
   }
@@ -242,14 +250,14 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   const auto launch_url = GURL("https://example.com/");
   const AppId app_id = GenerateAppIdFromURL(GURL(launch_url));
   const std::string name = "Name";
-  const auto launch_container = LaunchContainer::kTab;
+  const auto display_mode = blink::mojom::DisplayMode::kBrowser;
 
   auto app = std::make_unique<WebApp>(app_id);
 
   // Required fields:
   app->SetLaunchUrl(launch_url);
   app->SetName(name);
-  app->SetLaunchContainer(launch_container);
+  app->SetDisplayMode(display_mode);
   app->SetIsLocallyInstalled(false);
 
   EXPECT_FALSE(app->HasAnySources());
@@ -263,6 +271,9 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->scope().is_empty());
   EXPECT_FALSE(app->theme_color().has_value());
   EXPECT_TRUE(app->icons().empty());
+  EXPECT_FALSE(app->is_sync_placeholder());
+  EXPECT_TRUE(app->sync_data().name.empty());
+  EXPECT_FALSE(app->sync_data().theme_color.has_value());
   controller().RegisterApp(std::move(app));
 
   Registry registry = database_factory().ReadRegistry();
@@ -274,7 +285,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_EQ(app_id, app_copy->app_id());
   EXPECT_EQ(launch_url, app_copy->launch_url());
   EXPECT_EQ(name, app_copy->name());
-  EXPECT_EQ(launch_container, app_copy->launch_container());
+  EXPECT_EQ(display_mode, app_copy->display_mode());
   EXPECT_FALSE(app_copy->is_locally_installed());
 
   for (int i = Source::kMinValue; i < Source::kMaxValue; ++i) {
@@ -288,6 +299,9 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->scope().is_empty());
   EXPECT_FALSE(app_copy->theme_color().has_value());
   EXPECT_TRUE(app_copy->icons().empty());
+  EXPECT_FALSE(app_copy->is_sync_placeholder());
+  EXPECT_TRUE(app_copy->sync_data().name.empty());
+  EXPECT_FALSE(app_copy->sync_data().theme_color.has_value());
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {

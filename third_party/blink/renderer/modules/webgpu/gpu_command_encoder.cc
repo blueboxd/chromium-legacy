@@ -40,15 +40,13 @@ bool ValidateTextureCopyView(GPUTextureCopyView* texture_copy_view,
                              ExceptionState& exception_state) {
   DCHECK(texture_copy_view);
 
-  if (texture_copy_view->hasOrigin()) {
-    const UnsignedLongSequenceOrGPUOrigin3DDict origin =
-        texture_copy_view->origin();
-    if (origin.IsUnsignedLongSequence() &&
-        origin.GetAsUnsignedLongSequence().size() != 3) {
-      exception_state.ThrowRangeError(
-          "texture copy view origin length must be 3");
-      return false;
-    }
+  const UnsignedLongSequenceOrGPUOrigin3DDict origin =
+      texture_copy_view->origin();
+  if (origin.IsUnsignedLongSequence() &&
+      origin.GetAsUnsignedLongSequence().size() != 3) {
+    exception_state.ThrowRangeError(
+        "texture copy view origin length must be 3");
+    return false;
   }
   return true;
 }
@@ -156,11 +154,7 @@ DawnTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view) {
   dawn_view.texture = webgpu_view->texture()->GetHandle();
   dawn_view.mipLevel = webgpu_view->mipLevel();
   dawn_view.arrayLayer = webgpu_view->arrayLayer();
-  if (webgpu_view->hasOrigin()) {
-    dawn_view.origin = AsDawnType(&webgpu_view->origin());
-  } else {
-    dawn_view.origin = DawnOrigin3D{};
-  }
+  dawn_view.origin = AsDawnType(&webgpu_view->origin());
 
   return dawn_view;
 }

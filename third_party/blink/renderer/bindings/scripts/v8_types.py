@@ -1071,6 +1071,8 @@ def union_literal_cpp_value(idl_type, idl_literal):
         member_type = idl_type.boolean_member_type
     elif idl_literal.idl_type == 'sequence':
         member_type = idl_type.sequence_member_type
+    elif idl_literal.idl_type == 'dictionary':
+        member_type = idl_type.dictionary_member_type
     else:
         raise ValueError('Unsupported literal type: ' + idl_literal.idl_type)
 

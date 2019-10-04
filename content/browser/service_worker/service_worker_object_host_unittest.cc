@@ -9,6 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
@@ -251,50 +252,88 @@ TEST_F(ServiceWorkerObjectHostTest,
   tick_clock.SetNowTicks(base::TimeTicks::Now());
   version_->SetTickClockForTesting(&tick_clock);
 
-  // Make sure worker has a non-zero timeout.
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk,
             StartServiceWorker(version_.get()));
 
-  version_->StartRequestWithCustomTimeout(
-      ServiceWorkerMetrics::EventType::ACTIVATE, base::DoNothing(),
-      base::TimeDelta::FromSeconds(10), ServiceWorkerVersion::KILL_ON_TIMEOUT);
+  const base::TimeDelta kRequestTimeout = base::TimeDelta::FromMinutes(5);
+  const base::TimeDelta kFourSeconds = base::TimeDelta::FromSeconds(4);
 
-  // Advance clock by a couple seconds.
-  tick_clock.Advance(base::TimeDelta::FromSeconds(4));
-  base::TimeDelta remaining_time = version_->remaining_timeout();
-  EXPECT_EQ(base::TimeDelta::FromSeconds(6), remaining_time);
+  // After startup, the remaining timeout is expected to be kRequestTimeout.
+  EXPECT_EQ(kRequestTimeout, version_->remaining_timeout());
 
   // This test will simulate the worker calling postMessage() on itself.
   // Prepare |object_host|. This corresponds to the JavaScript ServiceWorker
   // object for the service worker, inside the service worker's own
   // execution context (e.g., self.registration.active inside the active
-  // worker).
+  // worker and self.serviceWorker).
   ServiceWorkerProviderHost* provider_host = version_->provider_host();
   blink::mojom::ServiceWorkerObjectInfoPtr info =
       provider_host->GetOrCreateServiceWorkerObjectHost(version_)
           ->CreateCompleteObjectInfoToSend();
   ServiceWorkerObjectHost* object_host =
       GetServiceWorkerObjectHost(provider_host, version_->version_id());
-  EXPECT_EQ(1u, GetReceiverCount(object_host));
-
-  // Now simulate the service worker calling postMessage() to itself,
-  // by calling DispatchExtendableMessageEvent on |object_host|.
-  blink::TransferableMessage message;
-  SetUpDummyMessagePort(&message.ports);
-  bool called = false;
-  blink::ServiceWorkerStatusCode status =
-      blink::ServiceWorkerStatusCode::kErrorFailed;
-  CallDispatchExtendableMessageEvent(
-      object_host, std::move(message),
-      base::BindOnce(&SaveStatusCallback, &called, &status));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(called);
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
-
-  // The dispatched ExtendableMessageEvent should be received
-  // by the worker, and the source service worker object info
-  // should be for its own version id.
   EXPECT_EQ(2u, GetReceiverCount(object_host));
+
+  {
+    // Advance clock by four seconds.
+    tick_clock.Advance(kFourSeconds);
+    base::TimeDelta remaining_time = version_->remaining_timeout();
+    EXPECT_EQ(kRequestTimeout - kFourSeconds, remaining_time);
+
+    // Now simulate the service worker calling postMessage() to itself,
+    // by calling DispatchExtendableMessageEvent on |object_host|.
+    // Expected status is kOk.
+    blink::TransferableMessage message;
+    SetUpDummyMessagePort(&message.ports);
+    base::RunLoop loop;
+    CallDispatchExtendableMessageEvent(
+        object_host, std::move(message),
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
+          loop.Quit();
+        }));
+    loop.Run();
+
+    // The dispatched ExtendableMessageEvent should be received
+    // by the worker, and the source service worker object info
+    // should be for its own version id.
+    EXPECT_EQ(3u, GetReceiverCount(object_host));
+
+    // Message event triggered by the service worker itself should not extend
+    // the timeout.
+    EXPECT_EQ(remaining_time, version_->remaining_timeout());
+  }
+
+  {
+    // Advance clock by request timeout.
+    tick_clock.Advance(kRequestTimeout);
+    base::TimeDelta remaining_time = version_->remaining_timeout();
+    EXPECT_EQ(kRequestTimeout - kFourSeconds - kRequestTimeout, remaining_time);
+
+    // Now simulate the service worker calling postMessage() to itself,
+    // by calling DispatchExtendableMessageEvent on |object_host|.
+    // Expected status is kErrorTimeout.
+    blink::TransferableMessage message;
+    SetUpDummyMessagePort(&message.ports);
+    base::RunLoop loop;
+    CallDispatchExtendableMessageEvent(
+        object_host, std::move(message),
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorTimeout, status);
+          loop.Quit();
+        }));
+    loop.Run();
+
+    // The dispatched ExtendableMessageEvent should not be received
+    // by the worker, and the source service worker object info
+    // should be for its own version id.
+    EXPECT_EQ(3u, GetReceiverCount(object_host));
+
+    // Message event triggered by the service worker itself should not extend
+    // the timeout.
+    EXPECT_EQ(remaining_time, version_->remaining_timeout());
+  }
+
   const std::vector<blink::mojom::ExtendableMessageEventPtr>& events =
       worker->events();
   EXPECT_EQ(1u, events.size());
@@ -303,8 +342,6 @@ TEST_F(ServiceWorkerObjectHostTest,
   EXPECT_EQ(version_->version_id(),
             events[0]->source_info_for_service_worker->version_id);
 
-  // Timeout of message event should not have extended life of service worker.
-  EXPECT_EQ(remaining_time, version_->remaining_timeout());
   // Clean up.
   StopServiceWorker(version_.get());
 }

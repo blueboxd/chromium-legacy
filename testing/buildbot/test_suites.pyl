@@ -5175,6 +5175,13 @@
       'system_webview_shell_instrumentation_tests',
       'webview_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
+      # TODO: Following tests are experimental (crbug/1010211).
+      'android_specific_chromium_gtests',  # Already includes gl_gtests.
+      'chromium_gtests',
+      'chromium_gtests_for_devices_with_graphical_output',
+      'linux_flavor_specific_chromium_gtests',
+      'vr_platform_specific_chromium_gtests',
+      'network_service_android_gtests',
     ],
 
     'bfcache_android_gtests': [
@@ -5817,7 +5824,7 @@
       'skia_renderer_fyi_gtests',
     ],
 
-    'marshmallow_isolated_scripts': [
+    'marshmallow_pie_isolated_scripts': [
       'android_isolated_scripts',
       'components_perftests_isolated_scripts',
       'monochrome_apk_checker_isolated_script',

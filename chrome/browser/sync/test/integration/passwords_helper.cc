@@ -23,7 +23,11 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/sync/engine_impl/loopback_server/persistent_unique_client_entity.h"
+#include "components/sync/nigori/cryptographer_impl.h"
 #include "content/public/test/test_utils.h"
+#include "net/base/escape.h"
+#include "url/gurl.h"
 
 using autofill::PasswordForm;
 using password_manager::PasswordStore;
@@ -72,6 +76,68 @@ void ClearSyncDateField(std::vector<std::unique_ptr<PasswordForm>>* forms) {
   for (auto& form : *forms) {
     form->date_synced = base::Time();
   }
+}
+
+sync_pb::PasswordSpecifics SpecificsFromPassword(
+    const autofill::PasswordForm& password_form) {
+  sync_pb::PasswordSpecifics specifics;
+  sync_pb::PasswordSpecificsData* password_data =
+      specifics.mutable_client_only_encrypted_data();
+  password_data->set_scheme(static_cast<int>(password_form.scheme));
+  password_data->set_signon_realm(password_form.signon_realm);
+  password_data->set_origin(password_form.origin.spec());
+  password_data->set_action(password_form.action.spec());
+  password_data->set_username_element(
+      base::UTF16ToUTF8(password_form.username_element));
+  password_data->set_password_element(
+      base::UTF16ToUTF8(password_form.password_element));
+  password_data->set_username_value(
+      base::UTF16ToUTF8(password_form.username_value));
+  password_data->set_password_value(
+      base::UTF16ToUTF8(password_form.password_value));
+  password_data->set_preferred(password_form.preferred);
+  password_data->set_date_created(
+      password_form.date_created.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  password_data->set_blacklisted(password_form.blacklisted_by_user);
+  password_data->set_type(static_cast<int>(password_form.type));
+  password_data->set_times_used(password_form.times_used);
+  password_data->set_display_name(
+      base::UTF16ToUTF8(password_form.display_name));
+  password_data->set_avatar_url(password_form.icon_url.spec());
+  password_data->set_federation_url(
+      password_form.federation_origin.opaque()
+          ? std::string()
+          : password_form.federation_origin.Serialize());
+  return specifics;
+}
+
+sync_pb::EntitySpecifics EncryptPasswordSpecifics(
+    const sync_pb::PasswordSpecifics& unencrypted_specifics,
+    const std::string& passphrase,
+    const syncer::KeyDerivationParams& key_derivation_params) {
+  std::unique_ptr<syncer::CryptographerImpl> cryptographer =
+      syncer::CryptographerImpl::FromSingleKeyForTesting(passphrase,
+                                                         key_derivation_params);
+  const sync_pb::PasswordSpecificsData& password_data =
+      unencrypted_specifics.client_only_encrypted_data();
+  sync_pb::EntitySpecifics encrypted_specifics;
+  encrypted_specifics.mutable_password()
+      ->mutable_unencrypted_metadata()
+      ->set_url(password_data.signon_realm());
+  bool result = cryptographer->Encrypt(
+      password_data,
+      encrypted_specifics.mutable_password()->mutable_encrypted());
+  DCHECK(result);
+  return encrypted_specifics;
+  return sync_pb::EntitySpecifics();
+}
+
+std::string GetClientTag(const sync_pb::PasswordSpecificsData& password_data) {
+  return net::EscapePath(GURL(password_data.origin()).spec()) + "|" +
+         net::EscapePath(password_data.username_element()) + "|" +
+         net::EscapePath(password_data.username_value()) + "|" +
+         net::EscapePath(password_data.password_element()) + "|" +
+         net::EscapePath(password_data.signon_realm());
 }
 
 }  // namespace
@@ -227,7 +293,26 @@ PasswordForm CreateTestPasswordForm(int index) {
   form.password_value =
       base::ASCIIToUTF16(base::StringPrintf("password%d", index));
   form.date_created = base::Time::Now();
+  form.from_store = autofill::PasswordForm::Store::kProfileStore;
   return form;
+}
+
+void InjectEncryptedServerPassword(
+    const autofill::PasswordForm& form,
+    const std::string& encryption_passphrase,
+    const syncer::KeyDerivationParams& key_derivation_params,
+    fake_server::FakeServer* fake_server) {
+  DCHECK(fake_server);
+  const sync_pb::PasswordSpecifics unencrypted_specifics =
+      SpecificsFromPassword(form);
+  const sync_pb::EntitySpecifics encrypted_specifics = EncryptPasswordSpecifics(
+      unencrypted_specifics, encryption_passphrase, key_derivation_params);
+  fake_server->InjectEntity(
+      syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+          /*non_unique_name=*/"encrypted",
+          GetClientTag(unencrypted_specifics.client_only_encrypted_data()),
+          encrypted_specifics,
+          /*creation_time=*/0, /*last_modified_time=*/0));
 }
 
 }  // namespace passwords_helper
@@ -305,4 +390,61 @@ bool SamePasswordFormsAsVerifierChecker::IsExitConditionSatisfied() {
 
 std::string SamePasswordFormsAsVerifierChecker::GetDebugMessage() const {
   return "Waiting for passwords to match verifier";
+}
+
+PasswordFormsChecker::PasswordFormsChecker(
+    int index,
+    const std::vector<autofill::PasswordForm>& expected_forms)
+    : SingleClientStatusChangeChecker(
+          sync_datatype_helper::test()->GetSyncService(index)),
+      index_(index),
+      in_progress_(false),
+      needs_recheck_(false) {
+  for (auto& password_form : expected_forms) {
+    expected_forms_.push_back(
+        std::make_unique<autofill::PasswordForm>(password_form));
+  }
+  ClearSyncDateField(&expected_forms_);
+}
+
+PasswordFormsChecker::~PasswordFormsChecker() = default;
+
+// This method uses the same re-entrancy prevention trick as
+// the SamePasswordFormsChecker.
+bool PasswordFormsChecker::IsExitConditionSatisfied() {
+  if (in_progress_) {
+    LOG(WARNING) << "Setting flag and returning early to prevent nesting.";
+    needs_recheck_ = true;
+    return false;
+  }
+
+  // Keep retrying until we get a good reading.
+  bool result = false;
+  in_progress_ = true;
+  do {
+    needs_recheck_ = false;
+    result = IsExitConditionSatisfiedImpl();
+  } while (needs_recheck_);
+  in_progress_ = false;
+  return result;
+}
+
+std::string PasswordFormsChecker::GetDebugMessage() const {
+  return "Waiting for matching passwords";
+}
+
+bool PasswordFormsChecker::IsExitConditionSatisfiedImpl() {
+  std::vector<std::unique_ptr<PasswordForm>> forms =
+      passwords_helper::GetLogins(passwords_helper::GetPasswordStore(index_));
+  ClearSyncDateField(&forms);
+
+  std::ostringstream mismatch_details_stream;
+  bool is_matching = password_manager::ContainsEqualPasswordFormsUnordered(
+      expected_forms_, forms, &mismatch_details_stream);
+  if (!is_matching) {
+    DLOG(ERROR) << "Profile " << index_
+                << " does not contain the same Password forms as expected.";
+    DLOG(ERROR) << mismatch_details_stream.str();
+  }
+  return is_matching;
 }

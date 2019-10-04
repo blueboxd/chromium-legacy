@@ -257,7 +257,7 @@ class CertificateProviderRequestPinTest : public CertificateProviderApiTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, Basic) {
+IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, DISABLE_Basic) {
   // Start an HTTPS test server that requests a client certificate.
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;

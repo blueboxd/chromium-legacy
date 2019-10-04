@@ -51,8 +51,6 @@ class CORE_EXPORT ModuleRecordResolverImpl final
   // Implements ContextLifecycleObserver:
   void ContextDestroyed(ExecutionContext*) final;
 
-  v8::Local<v8::Module> GetBoxedV8ModuleFromModuleScript(const ModuleScript*);
-
   // Corresponds to the spec concept "referencingModule.[[HostDefined]]".
   // crbug.com/725816 : ModuleRecord contains strong ref to v8::Module thus we
   // should not use ModuleRecord as the map key. We currently rely on Detach()

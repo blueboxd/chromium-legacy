@@ -178,8 +178,7 @@ ServiceWorkerRegistration* ServiceWorkerRegisterJob::registration() const {
   return internal_.registration.get();
 }
 
-void ServiceWorkerRegisterJob::set_new_version(
-    ServiceWorkerVersion* version) {
+void ServiceWorkerRegisterJob::set_new_version(ServiceWorkerVersion* version) {
   DCHECK(phase_ == UPDATE) << phase_;
   DCHECK(!internal_.new_version.get());
   internal_.new_version = version;

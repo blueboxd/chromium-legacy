@@ -1676,7 +1676,7 @@ void RenderFrameImpl::CreateFrame(
     // space/context.
     std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
         widget_params->routing_id, compositor_deps,
-        render_view->page_properties(), blink::kWebDisplayModeUndefined,
+        render_view->page_properties(), blink::mojom::DisplayMode::kUndefined,
         /*is_undead=*/false, /*never_visible=*/false);
 
     // Non-owning pointer that is self-referencing and destroyed by calling

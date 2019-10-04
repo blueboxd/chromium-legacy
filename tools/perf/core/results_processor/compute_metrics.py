@@ -4,10 +4,10 @@
 
 import json
 import logging
-import multiprocessing
-from multiprocessing.dummy import Pool as ThreadPool
 import os
 import time
+
+from core.results_processor import util
 
 from tracing.metrics import metric_runner
 
@@ -101,22 +101,7 @@ def ComputeTBMv2Metrics(intermediate_results):
   if not work_list:
     return histogram_dicts
 
-  try:
-    # Note that this is speculatively halved as an attempt to fix
-    # crbug.com/953365.
-    cpu_count = multiprocessing.cpu_count() / 2
-  except NotImplementedError:
-    # Some platforms can raise a NotImplementedError from cpu_count()
-    logging.warning('cpu_count() not implemented.')
-    cpu_count = 4
-  pool = ThreadPool(min(cpu_count, len(work_list)))
-
-  try:
-    for dicts in pool.imap_unordered(_PoolWorker, work_list):
-      histogram_dicts += dicts
-    pool.close()
-    pool.join()
-  finally:
-    pool.terminate()
+  for dicts in util.ApplyInParallel(_PoolWorker, work_list):
+    histogram_dicts += dicts
 
   return histogram_dicts

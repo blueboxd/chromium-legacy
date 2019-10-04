@@ -67,7 +67,7 @@ struct BLINK_COMMON_EXPORT
     return manifest.scope;
   }
 
-  static blink::WebDisplayMode display(const ::blink::Manifest& manifest) {
+  static blink::mojom::DisplayMode display(const ::blink::Manifest& manifest) {
     return manifest.display;
   }
 

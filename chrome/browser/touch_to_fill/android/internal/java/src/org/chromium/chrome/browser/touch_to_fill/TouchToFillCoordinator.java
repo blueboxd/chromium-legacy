@@ -8,7 +8,6 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CR
 
 import android.content.Context;
 
-import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.chrome.browser.touch_to_fill.helper.ListViewAdapter;
@@ -35,9 +34,8 @@ public class TouchToFillCoordinator implements TouchToFillComponent {
     }
 
     @Override
-    public void showCredentials(
-            String formattedUrl, List<Credential> credentials, Callback<Credential> callback) {
-        mMediator.showCredentials(formattedUrl, credentials, callback);
+    public void showCredentials(String formattedUrl, List<Credential> credentials) {
+        mMediator.showCredentials(formattedUrl, credentials);
     }
 
     /**

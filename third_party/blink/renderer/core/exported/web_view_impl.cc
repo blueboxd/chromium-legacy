@@ -398,7 +398,7 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
   }
 }
 
-void WebViewImpl::SetDisplayMode(WebDisplayMode mode) {
+void WebViewImpl::SetDisplayMode(blink::mojom::DisplayMode mode) {
   display_mode_ = mode;
   if (!MainFrameImpl() || !MainFrameImpl()->GetFrameView())
     return;

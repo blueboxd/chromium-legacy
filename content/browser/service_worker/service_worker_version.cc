@@ -1604,6 +1604,11 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   DCHECK(request_timeouts_.empty());
 
   StartTimeoutTimer();
+
+  // Set expiration time in advance so that the service worker can
+  // call postMessage() to itself immediately after it starts.
+  max_request_expiration_time_ = tick_clock_->NowTicks() + kRequestTimeout;
+
   worker_is_idle_on_renderer_ = false;
   needs_to_be_terminated_asap_ = false;
 
@@ -2178,10 +2183,12 @@ void ServiceWorkerVersion::InitializeGlobalScope() {
   // The registration must exist since we keep a reference to it during
   // service worker startup.
   DCHECK(registration);
+
   service_worker_remote_->InitializeGlobalScope(
       std::move(service_worker_host_),
       provider_host_->CreateServiceWorkerRegistrationObjectInfo(
           std::move(registration)),
+      provider_host_->CreateServiceWorkerObjectInfoToSend(this),
       fetch_handler_existence_);
 }
 

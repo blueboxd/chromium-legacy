@@ -422,7 +422,7 @@ std::unique_ptr<RenderWidget> RenderWidget::CreateForFrame(
     int32_t widget_routing_id,
     CompositorDependencies* compositor_deps,
     PageProperties* page_properties,
-    blink::WebDisplayMode display_mode,
+    blink::mojom::DisplayMode display_mode,
     bool is_undead,
     bool never_visible) {
   if (g_create_render_widget_for_frame) {
@@ -441,7 +441,7 @@ RenderWidget* RenderWidget::CreateForPopup(
     int32_t widget_routing_id,
     CompositorDependencies* compositor_deps,
     PageProperties* page_properties,
-    blink::WebDisplayMode display_mode,
+    blink::mojom::DisplayMode display_mode,
     bool hidden,
     bool never_visible,
     mojo::PendingReceiver<mojom::Widget> widget_receiver) {
@@ -453,7 +453,7 @@ RenderWidget* RenderWidget::CreateForPopup(
 RenderWidget::RenderWidget(int32_t widget_routing_id,
                            CompositorDependencies* compositor_deps,
                            PageProperties* page_properties,
-                           blink::WebDisplayMode display_mode,
+                           blink::mojom::DisplayMode display_mode,
                            bool is_undead,
                            bool hidden,
                            bool never_visible,

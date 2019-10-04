@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.touch_to_fill;
 
 import android.content.Context;
 
-import org.chromium.base.Callback;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
@@ -22,6 +21,11 @@ public interface TouchToFillComponent {
      * a suggestion was selected).
      */
     interface Delegate {
+        /**
+         * Called when the user select one of the credentials shown in the TouchToFillComponent.
+         */
+        void onCredentialSelected(Credential credential);
+
         /**
          * Called when the user dismisses the TouchToFillComponent. Not called if a suggestion was
          * selected.
@@ -41,8 +45,6 @@ public interface TouchToFillComponent {
      * Displays the given credentials in a new bottom sheet.
      * @param formattedUrl A {@link String} that contains the URL to display credentials for.
      * @param credentials A list of {@link Credential}s that will be displayed.
-     * @param callback A {@link Callback} called when the user selects a credential to be filled.
      */
-    void showCredentials(
-            String formattedUrl, List<Credential> credentials, Callback<Credential> callback);
+    void showCredentials(String formattedUrl, List<Credential> credentials);
 }

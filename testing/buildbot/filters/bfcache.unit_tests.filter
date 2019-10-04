@@ -8,9 +8,19 @@
 -ChromeBrowserMainExtraPartsMetricsTest.VerifyTouchEventsEnabledIsRecordedAfterPostBrowserStart
 -ServicesTest.ConnectToFilePatch
 -SoundContentSettingObserverTest.AudioMutingUpdatesWithNavigation
+-SoundContentSettingObserverTest.UnmutedAudioPlayingDoesNotRecordSiteMuted
+-SupervisedUserWhitelistInstallerTest.InstallNewWhitelist
 
 # Crashing with:
 # [FATAL:navigation_url_loader.cc(55)] Check failed: g_loader_factory == nullptr || factory == nullptr
+-AddressAccessoryControllerTest.ProvidesEmptySuggestionsMessage
 -AddressAccessoryControllerTest.RefreshSuggestionsCallsUI
+-AutofillCreditCardFillingInfoBarDelegateMobileTest.Metrics
 -CreditCardAccessoryControllerTest.PreventsFillingInsecureContexts
+-CreditCardAccessoryControllerTest.ServerCardUnmask
 
+# Other failures
+-MediaDrmOriginIdManagerTest.NetworkChangeFails
+-OfflinePageUtilsTest.CheckDuplicateDownloads
+-OfflinePageUtilsTest.ScheduleDownloadWithFailedFileAcecssRequest
+-PreviewsUKMObserverTest.TestPageEndReasonUMA

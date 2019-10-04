@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -418,9 +418,10 @@ XR::XR(LocalFrame& frame, int64_t ukm_source_id)
           {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
   // See https://bit.ly/2S0zRAS for task types.
   DCHECK(frame.IsAttached());
-  frame.GetInterfaceProvider().GetInterface(mojo::MakeRequest(
-      &service_, frame.GetTaskRunner(TaskType::kMiscPlatformAPI)));
-  service_.set_connection_error_handler(
+  frame.GetBrowserInterfaceBroker().GetInterface(
+      service_.BindNewPipeAndPassReceiver(
+          frame.GetTaskRunner(TaskType::kMiscPlatformAPI)));
+  service_.set_disconnect_handler(
       WTF::Bind(&XR::Dispose, WrapWeakPersistent(this)));
 }
 

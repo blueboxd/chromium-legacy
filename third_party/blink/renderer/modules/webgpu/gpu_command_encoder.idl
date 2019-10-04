@@ -8,7 +8,7 @@
     RuntimeEnabled=WebGPU
 ] interface GPUCommandEncoder {
     [RaisesException] GPURenderPassEncoder beginRenderPass(GPURenderPassDescriptor descriptor);
-    GPUComputePassEncoder beginComputePass(optional GPUComputePassDescriptor descriptor);
+    GPUComputePassEncoder beginComputePass(optional GPUComputePassDescriptor descriptor = {});
 
     void copyBufferToBuffer(
         GPUBuffer src,
@@ -36,5 +36,5 @@
     void popDebugGroup();
     void insertDebugMarker(DOMString markerLabel);
 
-    GPUCommandBuffer finish(optional GPUCommandBufferDescriptor descriptor);
+    GPUCommandBuffer finish(optional GPUCommandBufferDescriptor descriptor = {});
 };

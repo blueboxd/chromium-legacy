@@ -95,8 +95,9 @@ class PerfettoTracingSession
     perfetto_config.mutable_incremental_state_config()->set_clear_period_ms(
         interning_reset_interval_ms);
 
-    tracing::mojom::TracingSessionClientPtr tracing_session_client;
-    binding_.Bind(mojo::MakeRequest(&tracing_session_client));
+    mojo::PendingRemote<tracing::mojom::TracingSessionClient>
+        tracing_session_client;
+    binding_.Bind(tracing_session_client.InitWithNewPipeAndPassReceiver());
     binding_.set_connection_error_handler(
         base::BindOnce(&PerfettoTracingSession::OnTracingSessionEnded,
                        base::Unretained(this)));

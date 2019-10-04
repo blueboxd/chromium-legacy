@@ -131,7 +131,7 @@ class IOSChromePasswordManagerClient
   void PromptUserToEnableAutosignin() override;
   password_manager::PasswordManager* GetPasswordManager() override;
 
-  id<PasswordManagerClientDelegate> delegate_;  // (weak)
+  __weak id<PasswordManagerClientDelegate> delegate_;
 
   const password_manager::PasswordFeatureManagerImpl password_feature_manager_;
 

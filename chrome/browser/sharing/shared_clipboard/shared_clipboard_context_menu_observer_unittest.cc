@@ -43,12 +43,28 @@ const char kText[] = "Some random text to be copied.";
 
 constexpr int kSeparatorCommandId = -1;
 
+class MockSharingDeviceRegistration : public SharingDeviceRegistration {
+ public:
+  explicit MockSharingDeviceRegistration()
+      : SharingDeviceRegistration(/* pref_service_= */ nullptr,
+                                  /* sharing_sync_preference_= */ nullptr,
+                                  /* instance_id_driver_= */ nullptr,
+                                  /* vapid_key_manager_= */ nullptr) {}
+
+  ~MockSharingDeviceRegistration() override = default;
+
+  MOCK_CONST_METHOD0(IsSharedClipboardSupported, bool());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSharingDeviceRegistration);
+};
+
 class MockSharingService : public SharingService {
  public:
   explicit MockSharingService(std::unique_ptr<SharingFCMHandler> fcm_handler)
       : SharingService(/* sync_prefs= */ nullptr,
                        /* vapid_key_manager= */ nullptr,
-                       /* sharing_device_registration= */ nullptr,
+                       std::make_unique<MockSharingDeviceRegistration>(),
                        /* fcm_sender= */ nullptr,
                        std::move(fcm_handler),
                        /* gcm_driver= */ nullptr,

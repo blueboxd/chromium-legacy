@@ -107,7 +107,7 @@ void UdpSocketClient::StartReceiving(
   packet_receiver_callback_ = packet_receiver;
   network::mojom::UDPSocketListenerPtr udp_socket_listener;
   binding_.Bind(mojo::MakeRequest(&udp_socket_listener));
-  network_context_->CreateUDPSocket(mojo::MakeRequest(&udp_socket_),
+  network_context_->CreateUDPSocket(udp_socket_.BindNewPipeAndPassReceiver(),
                                     std::move(udp_socket_listener));
   network::mojom::UDPSocketOptionsPtr options;
   udp_socket_->Connect(remote_endpoint_, std::move(options),

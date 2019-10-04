@@ -25,6 +25,10 @@
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "components/viz/test/mock_display_client.h"
 #include "components/viz/test/surface_id_allocator_set.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,15 +53,16 @@ struct RootCompositorFrameSinkData {
     auto params = mojom::RootCompositorFrameSinkParams::New();
     params->frame_sink_id = frame_sink_id;
     params->widget = gpu::kNullSurfaceHandle;
-    params->compositor_frame_sink = MakeRequest(&compositor_frame_sink);
+    params->compositor_frame_sink =
+        compositor_frame_sink.BindNewEndpointAndPassReceiver();
     params->compositor_frame_sink_client =
-        compositor_frame_sink_client.BindInterfacePtr().PassInterface();
+        compositor_frame_sink_client.BindInterfaceRemote();
     params->display_private = MakeRequest(&display_private);
     params->display_client = display_client.BindInterfacePtr().PassInterface();
     return params;
   }
 
-  mojom::CompositorFrameSinkAssociatedPtr compositor_frame_sink;
+  mojo::AssociatedRemote<mojom::CompositorFrameSink> compositor_frame_sink;
   MockCompositorFrameSinkClient compositor_frame_sink_client;
   mojom::DisplayPrivateAssociatedPtr display_private;
   MockDisplayClient display_client;
@@ -80,8 +85,8 @@ class MockFrameSinkManagerImpl : public FrameSinkManagerImpl {
   // Work around for gmock not supporting move-only types.
   void CreateCompositorFrameSink(
       const FrameSinkId& frame_sink_id,
-      mojom::CompositorFrameSinkRequest request,
-      mojom::CompositorFrameSinkClientPtr client) override {
+      mojo::PendingReceiver<mojom::CompositorFrameSink> receiver,
+      mojo::PendingRemote<mojom::CompositorFrameSinkClient> client) override {
     MockCreateCompositorFrameSink(frame_sink_id);
   }
   MOCK_METHOD1(MockCreateCompositorFrameSink,
@@ -239,8 +244,8 @@ TEST_F(HostFrameSinkManagerLocalTest, CreateMojomCompositorFrameSink) {
   EXPECT_TRUE(FrameSinkDataExists(kFrameSinkChild1));
 
   EXPECT_CALL(impl(), MockCreateCompositorFrameSink(kFrameSinkChild1));
-  host().CreateCompositorFrameSink(kFrameSinkChild1, nullptr /* request */,
-                                   nullptr /* client */);
+  host().CreateCompositorFrameSink(kFrameSinkChild1, mojo::NullReceiver(),
+                                   mojo::NullRemote());
   testing::Mock::VerifyAndClearExpectations(&impl());
 
   // Register but don't actually create CompositorFrameSink for parent.
@@ -436,10 +441,10 @@ TEST_F(HostFrameSinkManagerRemoteTest, FindRootFrameSinkId) {
       root_data.BuildParams(kFrameSinkParent1));
 
   MockCompositorFrameSinkClient compositor_frame_sink_client;
-  mojom::CompositorFrameSinkPtr compositor_frame_sink;
+  mojo::Remote<mojom::CompositorFrameSink> compositor_frame_sink;
   host().CreateCompositorFrameSink(
-      kFrameSinkChild1, MakeRequest(&compositor_frame_sink),
-      compositor_frame_sink_client.BindInterfacePtr());
+      kFrameSinkChild1, compositor_frame_sink.BindNewPipeAndPassReceiver(),
+      compositor_frame_sink_client.BindInterfaceRemote());
 
   EXPECT_EQ(base::Optional<FrameSinkId>(kFrameSinkParent1),
             host().FindRootFrameSinkId(kFrameSinkParent1));
@@ -464,10 +469,10 @@ TEST_F(HostFrameSinkManagerRemoteTest, RestartOnGpuCrash) {
       root_data.BuildParams(kFrameSinkParent1));
 
   MockCompositorFrameSinkClient compositor_frame_sink_client;
-  mojom::CompositorFrameSinkPtr compositor_frame_sink;
+  mojo::Remote<mojom::CompositorFrameSink> compositor_frame_sink;
   host().CreateCompositorFrameSink(
-      kFrameSinkChild1, MakeRequest(&compositor_frame_sink),
-      compositor_frame_sink_client.BindInterfacePtr());
+      kFrameSinkChild1, compositor_frame_sink.BindNewPipeAndPassReceiver(),
+      compositor_frame_sink_client.BindInterfaceRemote());
 
   EXPECT_TRUE(IsBoundToFrameSinkManager());
 
@@ -587,10 +592,10 @@ TEST_F(HostFrameSinkManagerRemoteTest, ContextLossRecreateNonRoot) {
   host().RegisterFrameSinkId(kFrameSinkChild1, &host_client,
                              ReportFirstSurfaceActivation::kYes);
   MockCompositorFrameSinkClient compositor_frame_sink_client1;
-  mojom::CompositorFrameSinkPtr compositor_frame_sink1;
+  mojo::Remote<mojom::CompositorFrameSink> compositor_frame_sink1;
   host().CreateCompositorFrameSink(
-      kFrameSinkChild1, MakeRequest(&compositor_frame_sink1),
-      compositor_frame_sink_client1.BindInterfacePtr());
+      kFrameSinkChild1, compositor_frame_sink1.BindNewPipeAndPassReceiver(),
+      compositor_frame_sink_client1.BindInterfaceRemote());
 
   // Verify CompositorFrameSink was created on other end of message pipe.
   EXPECT_CALL(impl(), MockCreateCompositorFrameSink(kFrameSinkChild1));
@@ -600,10 +605,10 @@ TEST_F(HostFrameSinkManagerRemoteTest, ContextLossRecreateNonRoot) {
   // Create a new CompositorFrameSink and try to connect it with the same
   // FrameSinkId. This will happen if the client GL context is lost.
   MockCompositorFrameSinkClient compositor_frame_sink_client2;
-  mojom::CompositorFrameSinkPtr compositor_frame_sink2;
+  mojo::Remote<mojom::CompositorFrameSink> compositor_frame_sink2;
   host().CreateCompositorFrameSink(
-      kFrameSinkChild1, MakeRequest(&compositor_frame_sink2),
-      compositor_frame_sink_client2.BindInterfacePtr());
+      kFrameSinkChild1, compositor_frame_sink2.BindNewPipeAndPassReceiver(),
+      compositor_frame_sink_client2.BindInterfaceRemote());
 
   // Verify CompositorFrameSink is destroyed and then recreated.
   EXPECT_CALL(impl(), MockDestroyCompositorFrameSink(kFrameSinkChild1));

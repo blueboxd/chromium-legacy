@@ -258,12 +258,10 @@ std::string GetCookiesTreeModelInfo(const CookieTreeNode* root) {
 // Sets the APISID Gaia cookie, which is monitored by the AccountReconcilor.
 bool SetGaiaCookieForProfile(Profile* profile) {
   GURL google_url = GaiaUrls::GetInstance()->secure_google_url();
-  // TODO(crbug.com/889632): Change to SAPISID. See crrev.com/c/1827399.
   net::CanonicalCookie cookie(
-      "APISID", std::string(), "." + google_url.host(), "/", base::Time(),
+      "SAPISID", std::string(), "." + google_url.host(), "/", base::Time(),
       base::Time(), base::Time(), true /* secure */, false /* httponly */,
       net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT);
-
   bool success = false;
   base::RunLoop loop;
   base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>

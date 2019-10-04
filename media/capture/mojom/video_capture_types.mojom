@@ -41,6 +41,7 @@ enum VideoCapturePixelFormat {
   P016LE,
   XR30,
   XB30,
+  BGRA,
 };
 
 enum ResolutionChangePolicy {

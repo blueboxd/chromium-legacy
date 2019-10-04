@@ -327,11 +327,11 @@ bool OffscreenTab::IsFullscreenForTabOrPending(const WebContents* contents) {
   return in_fullscreen_mode();
 }
 
-blink::WebDisplayMode OffscreenTab::GetDisplayMode(
+blink::mojom::DisplayMode OffscreenTab::GetDisplayMode(
     const WebContents* contents) {
   DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
-  return in_fullscreen_mode() ? blink::kWebDisplayModeFullscreen
-                              : blink::kWebDisplayModeBrowser;
+  return in_fullscreen_mode() ? blink::mojom::DisplayMode::kFullscreen
+                              : blink::mojom::DisplayMode::kBrowser;
 }
 
 void OffscreenTab::RequestMediaAccessPermission(

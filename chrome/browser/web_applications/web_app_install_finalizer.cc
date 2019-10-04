@@ -20,6 +20,7 @@
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
@@ -122,12 +123,18 @@ void WebAppInstallFinalizer::FinalizeInstall(
   web_app->SetLaunchUrl(web_app_info.app_url);
   web_app->SetScope(web_app_info.scope);
   web_app->SetThemeColor(web_app_info.theme_color);
-  web_app->SetLaunchContainer(web_app_info.open_as_window
-                                  ? LaunchContainer::kWindow
-                                  : LaunchContainer::kTab);
+  web_app->SetDisplayMode(web_app_info.open_as_window
+                              ? blink::mojom::DisplayMode::kStandalone
+                              : blink::mojom::DisplayMode::kBrowser);
   web_app->SetIsLocallyInstalled(options.locally_installed);
 
   SetIcons(web_app_info, web_app.get());
+
+  web_app->SetIsSyncPlaceholder(false);
+  WebApp::SyncData sync_data;
+  sync_data.name = base::UTF16ToUTF8(web_app_info.title);
+  sync_data.theme_color = web_app_info.theme_color;
+  web_app->SetSyncData(sync_data);
 
   icon_manager_->WriteData(
       std::move(app_id), std::make_unique<WebApplicationInfo>(web_app_info),

@@ -206,7 +206,7 @@ std::unique_ptr<std::string> BuildProtoInBackground(
   web_app_manifest->set_orientation(
       blink::WebScreenOrientationLockTypeToString(shortcut_info.orientation));
   web_app_manifest->set_display_mode(
-      blink::WebDisplayModeToString(shortcut_info.display));
+      blink::DisplayModeToString(shortcut_info.display));
   web_app_manifest->set_background_color(
       OptionalSkColorToString(shortcut_info.background_color));
   web_app_manifest->set_theme_color(

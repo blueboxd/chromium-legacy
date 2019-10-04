@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_tree_host_platform.h"
 #include "ui/base/hit_test.h"
 #include "ui/platform_window/platform_window.h"
@@ -136,6 +137,7 @@ class HitTestWidgetDelegate : public views::WidgetDelegate {
       frame_view_ = new HitTestNonClientFrameView(widget);
     return frame_view_;
   }
+  void DeleteDelegate() override { delete this; }
 
  private:
   views::Widget* const widget_;
@@ -143,6 +145,37 @@ class HitTestWidgetDelegate : public views::WidgetDelegate {
   bool can_resize_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(HitTestWidgetDelegate);
+};
+
+// Test host that can intercept calls to the real host.
+class TestDesktopWindowTreeHostLinux : public DesktopWindowTreeHostLinux {
+ public:
+  TestDesktopWindowTreeHostLinux(
+      internal::NativeWidgetDelegate* native_widget_delegate,
+      DesktopNativeWidgetAura* desktop_native_widget_aura)
+      : DesktopWindowTreeHostLinux(native_widget_delegate,
+                                   desktop_native_widget_aura) {}
+  ~TestDesktopWindowTreeHostLinux() override = default;
+
+  // PlatformWindowDelegateBase:
+  // Instead of making these tests friends of the host, override the dispatch
+  // method to make it public and nothing else.
+  void DispatchEvent(ui::Event* event) override {
+    DesktopWindowTreeHostLinux::DispatchEvent(event);
+  }
+
+  void ResetCalledMaximize() { called_maximize_ = false; }
+  bool called_maximize() const { return called_maximize_; }
+  // DesktopWindowTreeHost
+  void Maximize() override {
+    called_maximize_ = true;
+    DesktopWindowTreeHostLinux::Maximize();
+  }
+
+ private:
+  bool called_maximize_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDesktopWindowTreeHostLinux);
 };
 
 }  // namespace
@@ -158,8 +191,10 @@ class DesktopWindowTreeHostLinuxTest : public ViewsInteractiveUITestBase {
     delegate_ = new HitTestWidgetDelegate(toplevel);
     Widget::InitParams toplevel_params =
         CreateParams(Widget::InitParams::TYPE_WINDOW);
-    toplevel_params.native_widget =
-        new views::DesktopNativeWidgetAura(toplevel);
+    auto* native_widget = new views::DesktopNativeWidgetAura(toplevel);
+    toplevel_params.native_widget = native_widget;
+    host_ = new TestDesktopWindowTreeHostLinux(toplevel, native_widget);
+    toplevel_params.desktop_window_tree_host = host_;
     toplevel_params.delegate = delegate_;
     toplevel_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     toplevel_params.bounds = bounds;
@@ -168,40 +203,57 @@ class DesktopWindowTreeHostLinuxTest : public ViewsInteractiveUITestBase {
     return toplevel;
   }
 
-  std::unique_ptr<ui::MouseEvent> CreateMouseEvent(
-      const gfx::Point& pointer_location_in_px,
-      ui::EventType event_type,
-      int flags) {
-    std::unique_ptr<ui::MouseEvent> mouse_event =
-        std::make_unique<ui::MouseEvent>(event_type, pointer_location_in_px,
-                                         pointer_location_in_px,
-                                         base::TimeTicks::Now(), flags, flags);
-    return mouse_event;
+  void GenerateAndDispatchMouseEvent(ui::EventType event_type,
+                                     const gfx::Point& click_location,
+                                     int flags) {
+    DCHECK(host_);
+    std::unique_ptr<ui::MouseEvent> mouse_event(
+        GenerateMouseEvent(event_type, click_location, flags));
+    host_->DispatchEvent(mouse_event.get());
+  }
+
+  void GenerateAndDispatchClickMouseEvent(const gfx::Point& click_location,
+                                          int flags) {
+    DCHECK(host_);
+    GenerateAndDispatchMouseEvent(ui::ET_MOUSE_PRESSED, click_location, flags);
+    GenerateAndDispatchMouseEvent(ui::ET_MOUSE_RELEASED, click_location, flags);
+  }
+
+  ui::MouseEvent* GenerateMouseEvent(ui::EventType event_type,
+                                     const gfx::Point& click_location,
+                                     int flags) {
+    int flag = 0;
+    if (flags & ui::EF_LEFT_MOUSE_BUTTON)
+      flag = ui::EF_LEFT_MOUSE_BUTTON;
+    else if (flags & ui::EF_RIGHT_MOUSE_BUTTON)
+      flag = ui::EF_RIGHT_MOUSE_BUTTON;
+
+    if (!flag) {
+      NOTREACHED()
+          << "Other mouse clicks are not supported yet. Add the new one.";
+    }
+    return new ui::MouseEvent(event_type, click_location, click_location,
+                              base::TimeTicks::Now(), flags, flag);
   }
 
   HitTestWidgetDelegate* delegate_ = nullptr;
+  TestDesktopWindowTreeHostLinux* host_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostLinuxTest);
 };
 
-// Leaking test. https://crbug.com/1004674
-TEST_F(DesktopWindowTreeHostLinuxTest, DISABLED_HitTest) {
+TEST_F(DesktopWindowTreeHostLinuxTest, HitTest) {
   gfx::Rect bounds(0, 0, 100, 100);
   std::unique_ptr<Widget> widget(BuildTopLevelDesktopWidget(bounds));
   widget->Show();
 
-  aura::Window* window = widget->GetNativeWindow();
-  DesktopWindowTreeHostLinux* host =
-      static_cast<DesktopWindowTreeHostLinux*>(window->GetHost());
-
   // Install a fake move/resize handler to intercept the move/resize call.
   auto handler =
-      std::make_unique<FakeWmMoveResizeHandler>(host->platform_window());
-  host->RemoveNonClientEventFilter();
-  auto filter = std::make_unique<WindowEventFilterLinux>(host, handler.get());
-  window->AddPreTargetHandler(filter.get());
-
+      std::make_unique<FakeWmMoveResizeHandler>(host_->platform_window());
+  host_->DestroyNonClientEventFilter();
+  host_->non_client_window_event_filter_ =
+      std::make_unique<WindowEventFilterLinux>(host_, handler.get());
   delegate_->set_can_resize(true);
 
   // It is not important to use pointer locations corresponding to the hittests
@@ -219,6 +271,7 @@ TEST_F(DesktopWindowTreeHostLinuxTest, DISABLED_HitTest) {
       HTZOOM,
   };
 
+  aura::Window* window = widget->GetNativeWindow();
   auto* frame_view = delegate_->frame_view();
   for (int hittest : hittest_values) {
     handler->Reset();
@@ -252,27 +305,119 @@ TEST_F(DesktopWindowTreeHostLinuxTest, DISABLED_HitTest) {
     // Send mouse down event and make sure the WindowEventFilter calls the
     // move/resize handler to start interactive move/resize with the |hittest|
     // value we specified.
-    auto mouse_down_event = CreateMouseEvent(
-        pointer_location_in_px, ui::ET_MOUSE_PRESSED, ui::EF_LEFT_MOUSE_BUTTON);
-    host->DispatchEvent(mouse_down_event.get());
+    GenerateAndDispatchMouseEvent(ui::ET_MOUSE_PRESSED, pointer_location_in_px,
+                                  ui::EF_LEFT_MOUSE_BUTTON);
 
     // The test expectation is based on the hit test component. If it is a
-    // non-client component, which results in a call to move/resize, the handler
-    // must receive the hittest value and the pointer location in global screen
-    // coordinate system. In other cases, it must not.
+    // non-client component, which results in a call to move/resize, the
+    // handler must receive the hittest value and the pointer location in
+    // global screen coordinate system. In other cases, it must not.
     SetExpectationBasedOnHittestValue(hittest, *handler.get(),
                                       expected_pointer_location_in_px);
     // Make sure the bounds of the content window are correct.
     EXPECT_EQ(window->GetBoundsInScreen().ToString(), bounds.ToString());
 
-    // Dispatch mouse up event to release mouse pressed handler and be able to
-    // consume future events.
-    auto mouse_up_event =
-        CreateMouseEvent(pointer_location_in_px, ui::ET_MOUSE_RELEASED,
-                         ui::EF_LEFT_MOUSE_BUTTON);
-    host->DispatchEvent(mouse_up_event.get());
+    // Dispatch mouse release event to release a mouse pressed handler and be
+    // able to consume future events.
+    GenerateAndDispatchMouseEvent(ui::ET_MOUSE_RELEASED, pointer_location_in_px,
+                                  ui::EF_LEFT_MOUSE_BUTTON);
   }
-  window->RemovePreTargetHandler(filter.get());
+}
+
+// Tests that the window is maximized in response to a double click event.
+TEST_F(DesktopWindowTreeHostLinuxTest, DoubleClickHeaderMaximizes) {
+  gfx::Rect bounds(0, 0, 100, 100);
+  std::unique_ptr<Widget> widget(BuildTopLevelDesktopWidget(bounds));
+  widget->Show();
+
+  aura::Window* window = widget->GetNativeWindow();
+  window->SetProperty(aura::client::kResizeBehaviorKey,
+                      aura::client::kResizeBehaviorCanMaximize);
+
+  RunPendingMessages();
+
+  host_->ResetCalledMaximize();
+
+  auto* frame_view = delegate_->frame_view();
+  // Set the desired hit test result value, which will be returned, when
+  // WindowEventFilter starts to perform hit testing.
+  frame_view->set_hit_test_result(HTCAPTION);
+
+  host_->ResetCalledMaximize();
+
+  int flags = ui::EF_LEFT_MOUSE_BUTTON;
+  GenerateAndDispatchClickMouseEvent(gfx::Point(), flags);
+  flags |= ui::EF_IS_DOUBLE_CLICK;
+  GenerateAndDispatchClickMouseEvent(gfx::Point(), flags);
+
+  EXPECT_TRUE(host_->called_maximize());
+
+  widget->CloseNow();
+}
+
+// Tests that the window does not maximize in response to a double click event,
+// if the first click was to a different target component than that of the
+// second click.
+TEST_F(DesktopWindowTreeHostLinuxTest,
+       DoubleClickTwoDifferentTargetsDoesntMaximizes) {
+  gfx::Rect bounds(0, 0, 100, 100);
+  std::unique_ptr<Widget> widget(BuildTopLevelDesktopWidget(bounds));
+  widget->Show();
+
+  aura::Window* window = widget->GetNativeWindow();
+  window->SetProperty(aura::client::kResizeBehaviorKey,
+                      aura::client::kResizeBehaviorCanMaximize);
+
+  RunPendingMessages();
+
+  host_->ResetCalledMaximize();
+
+  auto* frame_view = delegate_->frame_view();
+
+  frame_view->set_hit_test_result(HTCLIENT);
+  int flags = ui::EF_LEFT_MOUSE_BUTTON;
+  GenerateAndDispatchClickMouseEvent(gfx::Point(), flags);
+
+  frame_view->set_hit_test_result(HTCLIENT);
+  flags |= ui::EF_IS_DOUBLE_CLICK;
+  GenerateAndDispatchClickMouseEvent(gfx::Point(), flags);
+
+  EXPECT_FALSE(host_->called_maximize());
+
+  widget->CloseNow();
+}
+
+// Tests that the window does not maximize in response to a double click event,
+// if the double click was interrupted by a right click.
+TEST_F(DesktopWindowTreeHostLinuxTest,
+       RightClickDuringDoubleClickDoesntMaximize) {
+  gfx::Rect bounds(0, 0, 100, 100);
+  std::unique_ptr<Widget> widget(BuildTopLevelDesktopWidget(bounds));
+  widget->Show();
+
+  aura::Window* window = widget->GetNativeWindow();
+  window->SetProperty(aura::client::kResizeBehaviorKey,
+                      aura::client::kResizeBehaviorCanMaximize);
+
+  RunPendingMessages();
+
+  host_->ResetCalledMaximize();
+
+  auto* frame_view = delegate_->frame_view();
+
+  frame_view->set_hit_test_result(HTCLIENT);
+  int flags_left_button = ui::EF_LEFT_MOUSE_BUTTON;
+  GenerateAndDispatchClickMouseEvent(gfx::Point(), flags_left_button);
+
+  frame_view->set_hit_test_result(HTCAPTION);
+  GenerateAndDispatchClickMouseEvent(gfx::Point(), ui::EF_RIGHT_MOUSE_BUTTON);
+  EXPECT_FALSE(host_->called_maximize());
+
+  flags_left_button |= ui::EF_IS_DOUBLE_CLICK;
+  GenerateAndDispatchClickMouseEvent(gfx::Point(), flags_left_button);
+  EXPECT_FALSE(host_->called_maximize());
+
+  widget->CloseNow();
 }
 
 }  // namespace views

@@ -4,6 +4,8 @@
 
 #include "chrome/test/base/mojo_web_ui_browser_test.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
@@ -13,8 +15,11 @@
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/data/grit/webui_test_resources.h"
+#include "chrome/test/data/webui/web_ui_test.mojom.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -24,13 +29,13 @@ namespace {
 class WebUITestPageHandler : public web_ui_test::mojom::TestRunner,
                              public WebUITestHandler {
  public:
-  explicit WebUITestPageHandler(content::WebUI* web_ui)
-      : web_ui_(web_ui), binding_(this) {}
+  explicit WebUITestPageHandler(content::WebUI* web_ui) : web_ui_(web_ui) {}
   ~WebUITestPageHandler() override {}
 
   // Binds the Mojo test interface to this handler.
-  void BindToTestRunnerRequest(web_ui_test::mojom::TestRunnerRequest request) {
-    binding_.Bind(std::move(request));
+  void BindToTestRunnerReceiver(
+      mojo::PendingReceiver<web_ui_test::mojom::TestRunner> receiver) {
+    receiver_.Bind(std::move(receiver));
   }
 
   // web_ui_test::mojom::TestRunner:
@@ -42,7 +47,7 @@ class WebUITestPageHandler : public web_ui_test::mojom::TestRunner,
 
  private:
   content::WebUI* web_ui_;
-  mojo::Binding<web_ui_test::mojom::TestRunner> binding_;
+  mojo::Receiver<web_ui_test::mojom::TestRunner> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebUITestPageHandler);
 };
@@ -82,8 +87,8 @@ void MojoWebUIBrowserTest::OnInterfaceRequestFromFrame(
 }
 
 void MojoWebUIBrowserTest::BindTestRunner(
-    web_ui_test::mojom::TestRunnerRequest request) {
-  test_page_handler_->BindToTestRunnerRequest(std::move(request));
+    mojo::PendingReceiver<web_ui_test::mojom::TestRunner> receiver) {
+  test_page_handler_->BindToTestRunnerReceiver(std::move(receiver));
 }
 
 void MojoWebUIBrowserTest::SetupHandlers() {

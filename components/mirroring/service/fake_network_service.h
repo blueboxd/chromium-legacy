@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "media/cast/net/cast_transport_defines.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/test/test_network_context.h"
@@ -18,7 +18,7 @@ namespace mirroring {
 
 class MockUdpSocket final : public network::mojom::UDPSocket {
  public:
-  MockUdpSocket(network::mojom::UDPSocketRequest request,
+  MockUdpSocket(mojo::PendingReceiver<network::mojom::UDPSocket> receiver,
                 network::mojom::UDPSocketListenerPtr listener);
   ~MockUdpSocket() override;
 
@@ -58,7 +58,7 @@ class MockUdpSocket final : public network::mojom::UDPSocket {
   void VerifySendingPacket(const media::cast::Packet& packet);
 
  private:
-  mojo::Binding<network::mojom::UDPSocket> binding_;
+  mojo::Receiver<network::mojom::UDPSocket> receiver_;
   network::mojom::UDPSocketListenerPtr listener_;
   std::unique_ptr<media::cast::Packet> sending_packet_;
   int num_ask_for_receive_ = 0;
@@ -75,8 +75,9 @@ class MockNetworkContext final : public network::TestNetworkContext {
   MOCK_METHOD0(OnUDPSocketCreated, void());
 
   // network::mojom::NetworkContext implementation:
-  void CreateUDPSocket(network::mojom::UDPSocketRequest request,
-                       network::mojom::UDPSocketListenerPtr listener) override;
+  void CreateUDPSocket(
+      mojo::PendingReceiver<network::mojom::UDPSocket> receiver,
+      network::mojom::UDPSocketListenerPtr listener) override;
   void CreateURLLoaderFactory(
       network::mojom::URLLoaderFactoryRequest request,
       network::mojom::URLLoaderFactoryParamsPtr params) override;

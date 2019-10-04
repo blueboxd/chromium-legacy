@@ -2729,31 +2729,27 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedSrcDoc) {
   EXPECT_EQ(main_document->GetSiteInstance(),
             sub_document_3->GetSiteInstance());
 
-  // TODO(https://crbug.com/1003167) The cookies in the srcdoc iframe should be
-  // inherited from its parent.
   EXPECT_EQ("a=0; b=0; c=0", EvalJs(main_document, "document.cookie"));
-  EXPECT_EQ("", EvalJs(sub_document_3, "document.cookie"));
+  EXPECT_EQ("a=0; b=0; c=0", EvalJs(sub_document_3, "document.cookie"));
 
   // 9. Set cookie in the main document. It should be inherited by the child.
   EXPECT_TRUE(ExecJs(main_document, "document.cookie = 'e=0';"));
 
-  // TODO(https://crbug.com/1003167) The cookies in the srcdoc iframe should be
-  // inherited from its parent.
   EXPECT_EQ("a=0; b=0; c=0; e=0", EvalJs(main_document, "document.cookie"));
-  EXPECT_EQ("", EvalJs(sub_document_3, "document.cookie"));
+  EXPECT_EQ("a=0; b=0; c=0; e=0", EvalJs(sub_document_3, "document.cookie"));
 
   // 11. Set cookie in the child document. It should be reflected on its parent.
   EXPECT_TRUE(ExecJs(sub_document_3, "document.cookie = 'f=0';"));
 
-  // TODO(https://crbug.com/1003167) The cookies in the srcdoc iframe should be
-  // reflected in its parent.
-  EXPECT_EQ("a=0; b=0; c=0; e=0", EvalJs(main_document, "document.cookie"));
-  EXPECT_EQ("", EvalJs(sub_document_3, "document.cookie"));
+  EXPECT_EQ("a=0; b=0; c=0; e=0; f=0",
+            EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("a=0; b=0; c=0; e=0; f=0",
+            EvalJs(sub_document_3, "document.cookie"));
 
   // 12. Checks cookies are sent while requesting resources.
   EXPECT_TRUE(ExecJs(sub_document_3, "fetch('/response_3');"));
   response_3.WaitForRequest();
-  EXPECT_EQ("a=0; b=0; c=0; e=0",
+  EXPECT_EQ("a=0; b=0; c=0; e=0; f=0",
             response_3.http_request()->headers.at("Cookie"));
 }
 
@@ -2857,24 +2853,25 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedAboutBlank) {
             sub_document_3->GetSiteInstance());
 
   EXPECT_EQ("a=0; b=0; c=0", EvalJs(main_document, "document.cookie"));
-  EXPECT_EQ("", EvalJs(sub_document_3, "document.cookie"));
+  EXPECT_EQ("a=0; b=0; c=0", EvalJs(sub_document_3, "document.cookie"));
 
-  // 9. Set cookie in the main document. It doesn't affect the iframe anymore.
+  // 9. Set cookie in the main document. It affects the iframe.
   EXPECT_TRUE(ExecJs(main_document, "document.cookie = 'e=0';"));
 
   EXPECT_EQ("a=0; b=0; c=0; e=0", EvalJs(main_document, "document.cookie"));
-  EXPECT_EQ("", EvalJs(sub_document_3, "document.cookie"));
+  EXPECT_EQ("a=0; b=0; c=0; e=0", EvalJs(sub_document_3, "document.cookie"));
 
-  // 10. Set cookie in the iframe. It doesn't really work.
-  // TODO(https://crbug.com/1009963): document.cookie should work.
+  // 10. Set cookie in the iframe. It affects the main frame.
   EXPECT_TRUE(ExecJs(sub_document_3, "document.cookie = 'f=0';"));
-  EXPECT_EQ("a=0; b=0; c=0; e=0", EvalJs(main_document, "document.cookie"));
-  EXPECT_EQ("", EvalJs(sub_document_3, "document.cookie"));
+  EXPECT_EQ("a=0; b=0; c=0; e=0; f=0",
+            EvalJs(main_document, "document.cookie"));
+  EXPECT_EQ("a=0; b=0; c=0; e=0; f=0",
+            EvalJs(sub_document_3, "document.cookie"));
 
   // 11. Even if document.cookie is empty, cookies are sent.
   EXPECT_TRUE(ExecJs(sub_document_3, "fetch('/response_3');"));
   response_3.WaitForRequest();
-  EXPECT_EQ("a=0; b=0; c=0; e=0",
+  EXPECT_EQ("a=0; b=0; c=0; e=0; f=0",
             response_3.http_request()->headers.at("Cookie"));
 }
 

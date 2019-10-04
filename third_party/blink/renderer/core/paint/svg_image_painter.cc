@@ -78,7 +78,10 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
       layout_svg_image_.StyleRef().GetInterpolationQuality());
   Image::ImageDecodingMode decode_mode =
       image_element->GetDecodingModeForPainting(image->paint_image_id());
-  paint_info.context.DrawImage(image.get(), decode_mode, dest_rect, &src_rect);
+
+  paint_info.context.DrawImage(
+      image.get(), decode_mode, dest_rect, &src_rect,
+      layout_svg_image_.StyleRef().HasFilterInducingProperty());
   if (RuntimeEnabledFeatures::ElementTimingEnabled(
           &layout_svg_image_.GetDocument()) &&
       !paint_info.context.ContextDisabled() && image_resource->CachedImage() &&

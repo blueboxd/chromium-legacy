@@ -322,15 +322,15 @@ void VideoFrameSubmitter::StartSubmitting() {
 
   provider->CreateCompositorFrameSink(
       frame_sink_id_, receiver_.BindNewPipeAndPassRemote(),
-      mojo::MakeRequest(&compositor_frame_sink_));
+      compositor_frame_sink_.BindNewPipeAndPassReceiver());
   if (!surface_embedder_.is_bound()) {
     provider->ConnectToEmbedder(frame_sink_id_,
-                                mojo::MakeRequest(&surface_embedder_));
+                                surface_embedder_.BindNewPipeAndPassReceiver());
   } else {
     GenerateNewSurfaceId();
   }
 
-  compositor_frame_sink_.set_connection_error_handler(base::BindOnce(
+  compositor_frame_sink_.set_disconnect_handler(base::BindOnce(
       &VideoFrameSubmitter::OnContextLost, base::Unretained(this)));
 
   UpdateSubmissionState();

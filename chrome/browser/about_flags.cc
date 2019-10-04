@@ -3800,6 +3800,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSharingDeviceRegistrationDescription, kOsAll,
      FEATURE_VALUE_TYPE(kSharingDeviceRegistration)},
 
+    {"sharing-derive-vapid-key", flag_descriptions::kSharingDeriveVapidKeyName,
+     flag_descriptions::kSharingDeriveVapidKeyDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kSharingDeriveVapidKey)},
+
     {"sharing-use-device-info", flag_descriptions::kSharingUseDeviceInfoName,
      flag_descriptions::kSharingUseDeviceInfoDescription, kOsAll,
      FEATURE_VALUE_TYPE(kSharingUseDeviceInfo)},

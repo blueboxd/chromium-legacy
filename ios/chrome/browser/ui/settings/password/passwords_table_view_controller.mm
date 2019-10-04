@@ -665,10 +665,11 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     [indexSet addIndex:blacklistedSection];
   }
   if (indexSet.count > 0) {
+    BOOL animationsWereEnabled = [UIView areAnimationsEnabled];
     [UIView setAnimationsEnabled:NO];
     [self.tableView reloadSections:indexSet
                   withRowAnimation:UITableViewRowAnimationAutomatic];
-    [UIView setAnimationsEnabled:YES];
+    [UIView setAnimationsEnabled:animationsWereEnabled];
   }
 }
 

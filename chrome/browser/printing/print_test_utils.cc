@@ -16,9 +16,10 @@ namespace printing {
 
 const char kDummyPrinterName[] = "DefaultPrinter";
 
-base::Value GetPrintTicket(PrinterType type, bool cloud) {
-  bool is_privet_printer = !cloud && type == kPrivetPrinter;
-  bool is_extension_printer = !cloud && type == kExtensionPrinter;
+base::Value GetPrintTicket(PrinterType type) {
+  bool is_cloud_printer = type == kCloudPrinter;
+  bool is_privet_printer = type == kPrivetPrinter;
+  bool is_extension_printer = type == kExtensionPrinter;
 
   base::Value ticket(base::Value::Type::DICTIONARY);
 
@@ -41,8 +42,8 @@ base::Value GetPrintTicket(PrinterType type, bool cloud) {
   ticket.SetBoolKey(kSettingShouldPrintSelectionOnly, false);
   ticket.SetBoolKey(kSettingPreviewModifiable, true);
   ticket.SetBoolKey(kSettingPreviewIsPdf, false);
-  ticket.SetBoolKey(kSettingPrintToPDF, !cloud && type == kPdfPrinter);
-  ticket.SetBoolKey(kSettingCloudPrintDialog, cloud);
+  ticket.SetBoolKey(kSettingPrintToPDF, type == kPdfPrinter);
+  ticket.SetBoolKey(kSettingCloudPrintDialog, is_cloud_printer);
   ticket.SetBoolKey(kSettingPrintWithPrivet, is_privet_printer);
   ticket.SetBoolKey(kSettingPrintWithExtension, is_extension_printer);
   ticket.SetBoolKey(kSettingRasterizePdf, false);
@@ -56,7 +57,7 @@ base::Value GetPrintTicket(PrinterType type, bool cloud) {
   ticket.SetIntKey(kSettingPageHeight, 279400);
   ticket.SetBoolKey(kSettingShowSystemDialog, false);
 
-  if (cloud)
+  if (is_cloud_printer)
     ticket.SetStringKey(kSettingCloudPrintId, kDummyPrinterName);
 
   if (is_privet_printer || is_extension_printer) {

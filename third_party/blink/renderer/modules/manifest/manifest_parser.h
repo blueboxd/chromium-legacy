@@ -106,9 +106,9 @@ class MODULES_EXPORT ManifestParser {
 
   // Parses the 'display' field of the manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-display-member
-  // Returns the parsed DisplayMode if any, WebDisplayModeUndefined if the
+  // Returns the parsed DisplayMode if any, DisplayMode::kUndefined if the
   // parsing failed.
-  WebDisplayMode ParseDisplay(const JSONObject* object);
+  blink::mojom::DisplayMode ParseDisplay(const JSONObject* object);
 
   // Parses the 'orientation' field of the manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-orientation-member

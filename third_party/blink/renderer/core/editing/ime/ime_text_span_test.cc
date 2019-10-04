@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/editing/ime/ime_text_span.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ime/mojom/ime_types.mojom-blink.h"
 
 namespace blink {
 namespace {

@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_APP_REGISTRY_CONTROLLER_H_
 
 #include "base/callback_forward.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 class Profile;
 
@@ -33,8 +33,8 @@ class AppRegistryController {
 
   virtual void Init(base::OnceClosure callback) = 0;
 
-  virtual void SetAppLaunchContainer(const AppId& app_id,
-                                     LaunchContainer launch_container) = 0;
+  virtual void SetAppDisplayMode(const AppId& app_id,
+                                 blink::mojom::DisplayMode display_mode) = 0;
 
   virtual void SetAppIsLocallyInstalledForTesting(
       const AppId& app_id,

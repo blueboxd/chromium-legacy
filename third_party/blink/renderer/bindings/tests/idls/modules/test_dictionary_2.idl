@@ -4,4 +4,5 @@
 
 dictionary TestDictionary2 {
   TestDictionary defaultEmptyDictionary = {};
+  (TestDictionary or long) defaultEmptyDictionaryForUnion = {};
 };

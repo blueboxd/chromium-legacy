@@ -19,6 +19,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace performance_manager {
 
@@ -338,7 +339,8 @@ void PerformanceManagerTabHelper::OnInterfaceRequestFromFrame(
   }
 
   PostToGraph(FROM_HERE, &FrameNodeImpl::Bind, it->second.get(),
-              resource_coordinator::mojom::DocumentCoordinationUnitRequest(
+              mojo::PendingReceiver<
+                  resource_coordinator::mojom::DocumentCoordinationUnit>(
                   std::move(*interface_pipe)));
 }
 

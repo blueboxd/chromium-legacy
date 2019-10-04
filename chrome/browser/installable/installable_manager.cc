@@ -26,7 +26,7 @@
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/origin.h"
 
 #if defined(OS_ANDROID)
@@ -579,9 +579,9 @@ bool InstallableManager::IsManifestValidForWebApp(
   }
 
   if (check_webapp_manifest_display &&
-      manifest.display != blink::kWebDisplayModeStandalone &&
-      manifest.display != blink::kWebDisplayModeFullscreen &&
-      manifest.display != blink::kWebDisplayModeMinimalUi) {
+      manifest.display != blink::mojom::DisplayMode::kStandalone &&
+      manifest.display != blink::mojom::DisplayMode::kFullscreen &&
+      manifest.display != blink::mojom::DisplayMode::kMinimalUi) {
     valid_manifest_->errors.push_back(MANIFEST_DISPLAY_NOT_SUPPORTED);
     is_valid = false;
   }

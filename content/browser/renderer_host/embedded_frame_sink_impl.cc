@@ -55,8 +55,7 @@ void EmbeddedFrameSinkImpl::CreateCompositorFrameSink(
   }
 
   host_frame_sink_manager_->CreateCompositorFrameSink(
-      frame_sink_id_, std::move(receiver),
-      viz::mojom::CompositorFrameSinkClientPtr(std::move(client)));
+      frame_sink_id_, std::move(receiver), std::move(client));
 
   has_created_compositor_frame_sink_ = true;
 }

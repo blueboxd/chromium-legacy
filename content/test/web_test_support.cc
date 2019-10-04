@@ -92,7 +92,7 @@ std::unique_ptr<RenderWidget> CreateRenderWidgetForFrame(
     int32_t routing_id,
     CompositorDependencies* compositor_deps,
     PageProperties* page_properties,
-    blink::WebDisplayMode display_mode,
+    blink::mojom::DisplayMode display_mode,
     bool swapped_out,
     bool never_visible,
     mojo::PendingReceiver<mojom::Widget> widget_receiver) {

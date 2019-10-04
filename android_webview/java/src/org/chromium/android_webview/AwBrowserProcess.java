@@ -76,7 +76,7 @@ public final class AwBrowserProcess {
      */
     public static void loadLibrary(String processDataDirSuffix) {
         if (processDataDirSuffix == null) {
-            PathUtils.setPrivateDataDirectorySuffix(WEBVIEW_DIR_BASENAME, null);
+            PathUtils.setPrivateDataDirectorySuffix(WEBVIEW_DIR_BASENAME, "WebView");
         } else {
             String processDataDirName = WEBVIEW_DIR_BASENAME + "_" + processDataDirSuffix;
             PathUtils.setPrivateDataDirectorySuffix(processDataDirName, processDataDirName);

@@ -153,7 +153,7 @@ void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
 
   if (web_app_info.mobile_capable == WebApplicationInfo::MOBILE_CAPABLE ||
       web_app_info.mobile_capable == WebApplicationInfo::MOBILE_CAPABLE_APPLE) {
-    shortcut_info_.display = blink::kWebDisplayModeStandalone;
+    shortcut_info_.display = blink::mojom::DisplayMode::kStandalone;
     shortcut_info_.UpdateSource(
         ShortcutInfo::SOURCE_ADD_TO_HOMESCREEN_STANDALONE);
   }

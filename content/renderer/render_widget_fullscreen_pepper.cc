@@ -298,7 +298,7 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     : RenderWidget(routing_id,
                    compositor_deps,
                    page_properties,
-                   /*display_mode=*/blink::kWebDisplayModeUndefined,
+                   /*display_mode=*/blink::mojom::DisplayMode::kUndefined,
                    /*is_undead=*/false,
                    /*hidden=*/false,
                    /*never_visible=*/false,

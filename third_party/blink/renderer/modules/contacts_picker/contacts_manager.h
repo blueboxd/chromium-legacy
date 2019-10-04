@@ -30,6 +30,7 @@ class ContactsManager final : public ScriptWrappable {
   ScriptPromise select(ScriptState* script_state,
                        const Vector<String>& properties,
                        ContactsSelectOptions* options);
+  ScriptPromise getProperties(ScriptState* script_state);
 
  private:
   mojo::Remote<mojom::blink::ContactsManager>& GetContactsManager(
@@ -42,6 +43,7 @@ class ContactsManager final : public ScriptWrappable {
   // Created lazily.
   mojo::Remote<mojom::blink::ContactsManager> contacts_manager_;
   bool contact_picker_in_use_ = false;
+  Vector<String> properties_;
 };
 
 }  // namespace blink

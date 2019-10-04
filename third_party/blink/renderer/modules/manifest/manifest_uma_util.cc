@@ -42,8 +42,9 @@ void ManifestUmaUtil::ParseSucceeded(
                         !manifest->short_name.IsEmpty());
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.start_url",
                         !manifest->start_url.IsEmpty());
-  UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.display",
-                        manifest->display != kWebDisplayModeUndefined);
+  UMA_HISTOGRAM_BOOLEAN(
+      "Manifest.HasProperty.display",
+      manifest->display != blink::mojom::DisplayMode::kUndefined);
   UMA_HISTOGRAM_BOOLEAN(
       "Manifest.HasProperty.orientation",
       manifest->orientation != kWebScreenOrientationLockDefault);

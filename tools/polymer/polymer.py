@@ -379,9 +379,15 @@ def _process_style_module(js_file, html_file):
 
   style_id = _extract_dom_module_id(html_file)
 
+  # Add |assetpath| attribute so that relative CSS url()s are resolved
+  # correctly. Without this they are resolved with respect to the main HTML
+  # documents location (unlike Polymer2). Note: This is assuming that only style
+  # modules under ui/webui/resources/ are processed by polymer_modulizer(), for
+  # example cr_icons_css.html.
   js_template = \
 """%(js_imports)s
 const styleElement = document.createElement('dom-module');
+styleElement.setAttribute('assetpath', 'chrome://resources/');
 styleElement.innerHTML = `%(html_template)s`;
 styleElement.register('%(style_id)s');""" % {
   'js_imports': '\n'.join(js_imports),

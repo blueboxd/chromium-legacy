@@ -169,23 +169,29 @@ base::Time SyncServiceCrypto::GetExplicitPassphraseTime() const {
 
 bool SyncServiceCrypto::IsPassphraseRequired() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   switch (state_.required_user_action) {
     case RequiredUserAction::kNone:
-      break;
+    case RequiredUserAction::kTrustedVaultKeyRequired:
+      return false;
     case RequiredUserAction::kPassphraseRequiredForDecryption:
     case RequiredUserAction::kPassphraseRequiredForEncryption:
       return true;
-    case RequiredUserAction::kTrustedVaultKeyRequired:
-      // TODO(crbug.com/1010189): This should return false and get exposed
-      // differently to upper layers.
-      return true;
   }
+
+  NOTREACHED();
   return false;
 }
 
 bool SyncServiceCrypto::IsUsingSecondaryPassphrase() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return IsExplicitPassphrase(state_.cached_passphrase_type);
+}
+
+bool SyncServiceCrypto::IsTrustedVaultKeyRequired() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return state_.required_user_action ==
+         RequiredUserAction::kTrustedVaultKeyRequired;
 }
 
 void SyncServiceCrypto::EnableEncryptEverything() {
@@ -238,13 +244,6 @@ void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase) {
 bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(crbug.com/1010189): Move this logic to a separate function.
-  if (state_.required_user_action ==
-      RequiredUserAction::kTrustedVaultKeyRequired) {
-    state_.engine->AddTrustedVaultDecryptionKeys({passphrase});
-    return true;
-  }
-
   // We should never be called with an empty passphrase.
   DCHECK(!passphrase.empty());
 
@@ -282,6 +281,11 @@ bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
   // trigger a new OnPassphraseRequired() if it needs to.
   OnPassphraseAccepted();
   return true;
+}
+
+void SyncServiceCrypto::AddTrustedVaultDecryptionKeys(
+    const std::vector<std::string>& keys) {
+  state_.engine->AddTrustedVaultDecryptionKeys(keys);
 }
 
 PassphraseType SyncServiceCrypto::GetPassphraseType() const {

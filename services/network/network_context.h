@@ -24,6 +24,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/base/big_buffer.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
@@ -241,7 +242,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void GetExpectCTState(const std::string& domain,
                         GetExpectCTStateCallback callback) override;
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
-  void CreateUDPSocket(mojom::UDPSocketRequest request,
+  void CreateUDPSocket(mojo::PendingReceiver<mojom::UDPSocket> receiver,
                        mojom::UDPSocketListenerPtr listener) override;
   void CreateTCPServerSocket(
       const net::IPEndPoint& local_addr,

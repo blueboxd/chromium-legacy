@@ -399,15 +399,15 @@ void InternalSettings::setDisplayModeOverride(const String& display_mode,
   InternalSettingsGuardForSettings();
   String token = display_mode.StripWhiteSpace();
 
-  WebDisplayMode mode = kWebDisplayModeBrowser;
+  auto mode = blink::mojom::DisplayMode::kBrowser;
   if (token == "browser") {
-    mode = kWebDisplayModeBrowser;
+    mode = blink::mojom::DisplayMode::kBrowser;
   } else if (token == "minimal-ui") {
-    mode = kWebDisplayModeMinimalUi;
+    mode = blink::mojom::DisplayMode::kMinimalUi;
   } else if (token == "standalone") {
-    mode = kWebDisplayModeStandalone;
+    mode = blink::mojom::DisplayMode::kStandalone;
   } else if (token == "fullscreen") {
-    mode = kWebDisplayModeFullscreen;
+    mode = blink::mojom::DisplayMode::kFullscreen;
   } else {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,

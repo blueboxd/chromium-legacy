@@ -829,8 +829,13 @@ void RenderViewContextMenu::InitMenu() {
     // twice when you highlight a link of the form <a
     // href="tel:+9876543210">+9876543210</a> and right click on it.
     MaybeAppendClickToCallItem();
-  }
 
+    // If this is a link, shared clipboard will be shown along with link items
+    // (AppendLinkItems), otherwise show it here beside the other sharing
+    // features.
+    if (params_.link_url.is_empty())
+      AppendSharedClipboardItems();
+  }
   bool media_image = content_type_->SupportsGroup(
       ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE);
   if (media_image)
@@ -868,13 +873,8 @@ void RenderViewContextMenu::InitMenu() {
   if (editable)
     AppendEditableItems();
 
-  // Add shared clipboard menu item and copy items.
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_COPY)) {
     DCHECK(!editable);
-    // If this is a link, shared clipboard will be shown along with link items
-    // (AppendLinkItems), otherwise show it here along with copy items.
-    if (params_.link_url.is_empty())
-      AppendSharedClipboardItems();
     AppendCopyItem();
   }
 

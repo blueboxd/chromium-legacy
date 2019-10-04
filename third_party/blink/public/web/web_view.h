@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_VIEW_H_
 
 #include "base/time/time.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -278,7 +278,7 @@ class WebView {
   virtual void ZoomToFindInPageRect(const WebRect&) = 0;
 
   // Sets the display mode of the web app.
-  virtual void SetDisplayMode(WebDisplayMode) = 0;
+  virtual void SetDisplayMode(blink::mojom::DisplayMode) = 0;
 
   // Sets the ratio as computed by computePageScaleConstraints.
   // TODO(oshima): Remove this once the device scale factor implementation is

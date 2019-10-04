@@ -2360,7 +2360,6 @@ enum WebFeature {
   kAutoplayDynamicDelegation = 2977,
   kToggleEventHandlerDuringParsing = 2978,
   kFragmentDoubleHash = 2979,
-  kV8RegExpMatchAllWithNonGlobalRegExp = 2980,
   kOBSOLETE_CSSValueOverflowXOverlay = 2981,
   kOBSOLETE_CSSValueOverflowYOverlay = 2982,
   kContentIndexAdd = 2983,
@@ -2426,6 +2425,7 @@ enum WebFeature {
   kFragmentHasTildeAtTilde = 3041,
   kFragmentHasAmpersandDelimiterQuestion = 3042,
   kInvalidFragmentDirective = 3043,
+  kContactsManagerGetProperties = 3044,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

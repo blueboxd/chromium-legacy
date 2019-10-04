@@ -58,7 +58,7 @@ class WebAppDatabase {
                                              const std::string& value);
 
  private:
-  static std::unique_ptr<WebApp> CreateWebApp(const WebAppProto& proto);
+  static std::unique_ptr<WebApp> CreateWebApp(const WebAppProto& local_data);
 
   void OnDatabaseOpened(RegistryOpenedCallback callback,
                         const base::Optional<syncer::ModelError>& error,

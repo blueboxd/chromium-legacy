@@ -69,6 +69,7 @@ class PlatformWindowBase : public PropertyHandler {
   // changed by the user at any time via 'Show system title bar' option in the
   // tab strip menu.
   virtual void SetUseNativeFrame(bool use_native_frame) = 0;
+  virtual bool ShouldUseNativeFrame() const = 0;
 
   virtual void SetCursor(PlatformCursor cursor) = 0;
 

@@ -1778,10 +1778,20 @@ are declared in tools/grit/grit_rule.gni.
                desc="The title of a download notification: the current download status is cancelled. This message is for screen reader users.">
                Download cancelled: <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph>
       </message>
-      <message name="IDS_DOWNLOAD_COMPLETE_ACCESSIBLE_ALERT"
-               desc="The title of a download notification: the current download status is finished successufully. This message is for screen reader users.">
-               Download complete: <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex>></ph>. Press Shift+F6 to cycle to the downloads bar area.
-      </message>
+      <if expr="is_macosx">
+        <then>
+          <message name="IDS_DOWNLOAD_COMPLETE_ACCESSIBLE_ALERT"
+                   desc="The title of a download notification: the current download status is finished successfully. This message is for screen reader users.">
+                   Download complete: <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph>.
+          </message>
+        </then>
+        <else>
+          <message name="IDS_DOWNLOAD_COMPLETE_ACCESSIBLE_ALERT"
+                   desc="The title of a download notification: the current download status is finished successfully. This message is for screen reader users.">
+                   Download complete: <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph>. Press Shift+F6 to cycle to the downloads bar area.
+          </message>
+        </else>
+      </if>
 
       <!-- Download Notification Labels -->
       <message name="IDS_DOWNLOAD_NOTIFICATION_COPY_TO_CLIPBOARD"

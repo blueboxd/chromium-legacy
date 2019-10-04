@@ -140,6 +140,7 @@ gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
         case PIXEL_FORMAT_XBGR:
         case PIXEL_FORMAT_XR30:
         case PIXEL_FORMAT_XB30:
+        case PIXEL_FORMAT_BGRA:
           break;
       }
   }
@@ -171,6 +172,7 @@ static bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
     case PIXEL_FORMAT_XBGR:
     case PIXEL_FORMAT_XR30:
     case PIXEL_FORMAT_XB30:
+    case PIXEL_FORMAT_BGRA:
       return false;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
@@ -301,7 +303,7 @@ bool VideoFrame::IsValidConfig(VideoPixelFormat format,
     return true;
 
   // Make sure new formats are properly accounted for in the method.
-  static_assert(PIXEL_FORMAT_MAX == 31,
+  static_assert(PIXEL_FORMAT_MAX == 32,
                 "Added pixel format, please review IsValidConfig()");
 
   if (format == PIXEL_FORMAT_UNKNOWN) {
@@ -849,6 +851,7 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
   DCHECK(IsValidPlane(format, plane));
   switch (format) {
     case PIXEL_FORMAT_ARGB:
+    case PIXEL_FORMAT_BGRA:
     case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_ABGR:
     case PIXEL_FORMAT_XBGR:

@@ -120,7 +120,7 @@ class TestNetworkContext : public mojom::NetworkContext {
   void GetExpectCTState(const std::string& domain,
                         GetExpectCTStateCallback callback) override {}
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
-  void CreateUDPSocket(mojom::UDPSocketRequest request,
+  void CreateUDPSocket(mojo::PendingReceiver<mojom::UDPSocket> receiver,
                        mojom::UDPSocketListenerPtr listener) override {}
   void CreateTCPServerSocket(
       const net::IPEndPoint& local_addr,

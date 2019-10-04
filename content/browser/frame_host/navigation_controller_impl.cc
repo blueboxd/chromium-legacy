@@ -60,6 +60,7 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"  // Temporary
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/web_package/bundled_exchanges_navigation_info.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
@@ -1440,6 +1441,11 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
       static_cast<SiteInstanceImpl*>(rfh->GetSiteInstance()));
   new_entry->SetOriginalRequestURL(params.original_request_url);
   new_entry->SetIsOverridingUserAgent(params.is_overriding_user_agent);
+
+  if (request->bundled_exchanges_navigation_info()) {
+    new_entry->set_bundled_exchanges_navigation_info(
+        request->bundled_exchanges_navigation_info()->Clone());
+  }
 
   // Update the FrameNavigationEntry for new main frame commits.
   FrameNavigationEntry* frame_entry =

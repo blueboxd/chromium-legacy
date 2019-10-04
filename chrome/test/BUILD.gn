@@ -39,6 +39,7 @@ assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
+  import("//chrome/android/features/dev_ui/dev_ui_module.gni")
   import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 } else {
   include_js_tests = !(is_asan || is_msan || is_tsan)
@@ -3663,6 +3664,15 @@ test("unit_tests") {
     } else {
       deps += [ "//v8:v8_external_startup_data_assets" ]
     }
+    if (dfmify_dev_ui) {
+      # If DevUI DFM is on, include Java classes and native resource split so
+      # that DevUI page tests would work.
+      deps += [
+        "//chrome/android/features/dev_ui:java",
+        "//chrome/android/features/dev_ui:pak_assets",
+        "//chrome/android/modules/dev_ui/provider:java",
+      ]
+    }
 
     srcjar_deps = [
       "//components/module_installer/android:module_installer_build_config",
@@ -4076,13 +4086,6 @@ test("unit_tests") {
 
     if (include_js_tests) {
       deps += [ "//chrome/test/data/webui:unit_tests_js" ]
-
-      # Only list files here (not directories). See https://crbug.com/912946
-      data += [
-        "$root_out_dir/test_data/chrome/renderer/resources/extensions/notifications_custom_bindings.js",
-        "$root_out_dir/test_data/chrome/renderer/resources/extensions/notifications_test_util.js",
-        "$root_out_dir/test_data/ui/webui/resources/js/cr.js",
-      ]
     }
   }
 
@@ -5300,6 +5303,8 @@ if (!is_android) {
     public_deps = [
       "//chrome/browser:test_support_ui",
       "//content/public/browser",
+      "//mojo/public/cpp/bindings",
+      "//mojo/public/cpp/system",
     ]
     deps = [
       "//chrome/common/profiler",

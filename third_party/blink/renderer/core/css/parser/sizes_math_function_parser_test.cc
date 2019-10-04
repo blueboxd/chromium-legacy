@@ -183,7 +183,7 @@ TEST(SizesMathFunctionParserTest, Basic) {
   data.three_d_enabled = true;
   data.media_type = media_type_names::kScreen;
   data.strict_mode = true;
-  data.display_mode = kWebDisplayModeBrowser;
+  data.display_mode = blink::mojom::DisplayMode::kBrowser;
   auto* media_values = MakeGarbageCollected<MediaValuesCached>(data);
 
   for (unsigned i = 0; test_cases[i].input; ++i) {

@@ -164,17 +164,21 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
             params.setReferrer(mConnection.getReferrerForSession(mIntentDataProvider.getSession()));
         }
 
-        // See ChromeTabCreator#getTransitionType(). If the sender of the intent was a WebAPK, mark
-        // the intent as a standard link navigation. Pass the user gesture along since one must have
-        // been active to open a new tab and reach here. Otherwise, mark the navigation chain as
-        // starting from an external intent. See crbug.com/792990.
-        int defaultTransition = PageTransition.LINK | PageTransition.FROM_API;
-        if (mIntentDataProvider.isOpenedByWebApk()) {
-            params.setHasUserGesture(true);
-            defaultTransition = PageTransition.LINK;
+        // Launching a TWA would count as a TOPLEVEL transition since it opens up an app-like
+        // experience, and should count towards site engagement scores. This matches WebAPK
+        // behaviour. CCTs on the other hand still count as LINK transitions.
+        int transition;
+        if (mIntentDataProvider.isTrustedWebActivity()) {
+          transition = PageTransition.AUTO_TOPLEVEL | PageTransition.FROM_API;
+        } else if (mIntentDataProvider.isOpenedByWebApk()) {
+          transition = PageTransition.LINK;
+          params.setHasUserGesture(true);
+        } else {
+          transition = PageTransition.LINK | PageTransition.FROM_API;
         }
+
         params.setTransitionType(IntentHandler.getTransitionTypeFromIntent(
-                mIntentDataProvider.getIntent(), defaultTransition));
+                mIntentDataProvider.getIntent(), transition));
         tab.loadUrl(params);
     }
 

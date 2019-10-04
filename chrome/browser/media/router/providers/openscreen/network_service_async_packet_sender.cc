@@ -14,8 +14,8 @@
 namespace media_router {
 NetworkServiceAsyncPacketSender::NetworkServiceAsyncPacketSender(
     network::mojom::NetworkContext* network_context) {
-  network::mojom::UDPSocketRequest socket_request(mojo::MakeRequest(&socket_));
-  network_context->CreateUDPSocket(std::move(socket_request), nullptr);
+  network_context->CreateUDPSocket(socket_.BindNewPipeAndPassReceiver(),
+                                   nullptr);
 }
 
 NetworkServiceAsyncPacketSender::NetworkServiceAsyncPacketSender(

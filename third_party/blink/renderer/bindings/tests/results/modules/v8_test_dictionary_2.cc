@@ -11,6 +11,8 @@
 #include "third_party/blink/renderer/bindings/tests/results/modules/v8_test_dictionary_2.h"
 
 #include "base/stl_util.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_dictionary.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
@@ -19,6 +21,7 @@ namespace blink {
 static const v8::Eternal<v8::Name>* eternalV8TestDictionary2Keys(v8::Isolate* isolate) {
   static const char* const kKeys[] = {
     "defaultEmptyDictionary",
+    "defaultEmptyDictionaryForUnion",
   };
   return V8PerIsolateData::From(isolate)->FindOrCreateEternalNameCache(
       kKeys, kKeys, base::size(kKeys));
@@ -50,6 +53,21 @@ void V8TestDictionary2::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_val
     if (exception_state.HadException())
       return;
     impl->setDefaultEmptyDictionary(default_empty_dictionary_cpp_value);
+  }
+
+  v8::Local<v8::Value> default_empty_dictionary_for_union_value;
+  if (!v8Object->Get(context, keys[1].Get(isolate)).ToLocal(&default_empty_dictionary_for_union_value)) {
+    exception_state.RethrowV8Exception(block.Exception());
+    return;
+  }
+  if (default_empty_dictionary_for_union_value.IsEmpty() || default_empty_dictionary_for_union_value->IsUndefined()) {
+    // Do nothing.
+  } else {
+    TestDictionaryOrLong default_empty_dictionary_for_union_cpp_value;
+    V8TestDictionaryOrLong::ToImpl(isolate, default_empty_dictionary_for_union_value, default_empty_dictionary_for_union_cpp_value, UnionTypeConversionMode::kNotNullable, exception_state);
+    if (exception_state.HadException())
+      return;
+    impl->setDefaultEmptyDictionaryForUnion(default_empty_dictionary_for_union_cpp_value);
   }
 }
 
@@ -86,6 +104,20 @@ bool toV8TestDictionary2(const TestDictionary2* impl, v8::Local<v8::Object> dict
   }
   if (default_empty_dictionary_has_value_or_default &&
       !create_property(0, default_empty_dictionary_value)) {
+    return false;
+  }
+
+  v8::Local<v8::Value> default_empty_dictionary_for_union_value;
+  bool default_empty_dictionary_for_union_has_value_or_default = false;
+  if (impl->hasDefaultEmptyDictionaryForUnion()) {
+    default_empty_dictionary_for_union_value = ToV8(impl->defaultEmptyDictionaryForUnion(), creationContext, isolate);
+    default_empty_dictionary_for_union_has_value_or_default = true;
+  } else {
+    default_empty_dictionary_for_union_value = ToV8(TestDictionaryOrLong::FromTestDictionary(MakeGarbageCollected<TestDictionary>()), creationContext, isolate);
+    default_empty_dictionary_for_union_has_value_or_default = true;
+  }
+  if (default_empty_dictionary_for_union_has_value_or_default &&
+      !create_property(1, default_empty_dictionary_for_union_value)) {
     return false;
   }
 

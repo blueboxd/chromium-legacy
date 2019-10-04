@@ -916,6 +916,7 @@ void GraphicsContext::DrawImage(
     Image::ImageDecodingMode decode_mode,
     const FloatRect& dest,
     const FloatRect* src_ptr,
+    bool has_filter_property,
     SkBlendMode op,
     RespectImageOrientationEnum should_respect_image_orientation) {
   if (ContextDisabled() || !image)
@@ -928,7 +929,9 @@ void GraphicsContext::DrawImage(
   image_flags.setColor(SK_ColorBLACK);
   image_flags.setFilterQuality(ComputeFilterQuality(image, dest, src));
 
-  dark_mode_filter_.ApplyToImageFlagsIfNeeded(src, dest, image, &image_flags);
+  // Do not classify the image if the element has any CSS filters.
+  if (!has_filter_property)
+    dark_mode_filter_.ApplyToImageFlagsIfNeeded(src, dest, image, &image_flags);
 
   image->Draw(canvas_, image_flags, dest, src, should_respect_image_orientation,
               Image::kClampImageToSourceRect, decode_mode);
@@ -940,14 +943,15 @@ void GraphicsContext::DrawImageRRect(
     Image::ImageDecodingMode decode_mode,
     const FloatRoundedRect& dest,
     const FloatRect& src_rect,
+    bool has_filter_property,
     SkBlendMode op,
     RespectImageOrientationEnum respect_orientation) {
   if (ContextDisabled() || !image)
     return;
 
   if (!dest.IsRounded()) {
-    DrawImage(image, decode_mode, dest.Rect(), &src_rect, op,
-              respect_orientation);
+    DrawImage(image, decode_mode, dest.Rect(), &src_rect, has_filter_property,
+              op, respect_orientation);
     return;
   }
 

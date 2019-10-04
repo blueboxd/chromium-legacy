@@ -80,7 +80,7 @@ void DesktopWindowTreeHostLinux::Init(const Widget::InitParams& params) {
 
 void DesktopWindowTreeHostLinux::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
-  AddNonClientEventFilter();
+  CreateNonClientEventFilter();
   DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(params);
 }
 
@@ -137,14 +137,15 @@ void DesktopWindowTreeHostLinux::DispatchEvent(ui::Event* event) {
   // events on the ash desktop are clicking in what Windows considers to be a
   // non client area.) Likewise, we won't want to do the following in any
   // WindowTreeHost that hosts ash.
+  int hit_test_code = HTNOWHERE;
   if (event->IsMouseEvent()) {
     ui::MouseEvent* mouse_event = event->AsMouseEvent();
-    if (content_window() && content_window()->delegate()) {
+    if (GetContentWindow() && GetContentWindow()->delegate()) {
       int flags = mouse_event->flags();
       gfx::Point location_in_dip = mouse_event->location();
       GetRootTransform().TransformPointReverse(&location_in_dip);
-      int hit_test_code =
-          content_window()->delegate()->GetNonClientComponent(location_in_dip);
+      hit_test_code = GetContentWindow()->delegate()->GetNonClientComponent(
+          location_in_dip);
       if (hit_test_code != HTCLIENT && hit_test_code != HTNOWHERE)
         flags |= ui::EF_IS_NON_CLIENT;
       mouse_event->set_flags(flags);
@@ -156,11 +157,28 @@ void DesktopWindowTreeHostLinux::DispatchEvent(ui::Event* event) {
       FlashFrame(false);
   }
 
+  // Store the location in px to restore it later.
+  gfx::Point previous_mouse_location_in_px;
+  if (event->IsMouseEvent())
+    previous_mouse_location_in_px = event->AsMouseEvent()->location();
+
   WindowTreeHostPlatform::DispatchEvent(event);
+
+  // Posthandle the event if it has not been consumed.
+  if (!event->handled() && event->IsMouseEvent() &&
+      non_client_window_event_filter_) {
+    auto* mouse_event = event->AsMouseEvent();
+    // Location is set in dip after the event is dispatched to the event sink.
+    // Restore it back to be in px that WindowEventFilterLinux requires.
+    mouse_event->set_location(previous_mouse_location_in_px);
+    mouse_event->set_root_location(previous_mouse_location_in_px);
+    non_client_window_event_filter_->HandleMouseEventWithHitTest(hit_test_code,
+                                                                 mouse_event);
+  }
 }
 
 void DesktopWindowTreeHostLinux::OnClosed() {
-  RemoveNonClientEventFilter();
+  DestroyNonClientEventFilter();
   DesktopWindowTreeHostPlatform::OnClosed();
 }
 
@@ -173,7 +191,7 @@ void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
   // window's background color, otherwise we fallback to white.
   base::Optional<int> background_color;
   const views::LinuxUI* linux_ui = views::LinuxUI::instance();
-  if (linux_ui && content_window()) {
+  if (linux_ui && GetContentWindow()) {
     ui::NativeTheme::ColorId target_color;
     switch (properties->type) {
       case ui::PlatformWindowType::kBubble:
@@ -186,7 +204,7 @@ void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
         target_color = ui::NativeTheme::kColorId_WindowBackground;
         break;
     }
-    ui::NativeTheme* theme = linux_ui->GetNativeTheme(content_window());
+    ui::NativeTheme* theme = linux_ui->GetNativeTheme(GetContentWindow());
     background_color = theme->GetSystemColor(target_color);
   }
   properties->prefer_dark_theme = linux_ui && linux_ui->PreferDarkTheme();
@@ -205,18 +223,13 @@ void DesktopWindowTreeHostLinux::OnCompleteSwapWithNewSize(
   platform_window()->OnCompleteSwapAfterResize();
 }
 
-void DesktopWindowTreeHostLinux::AddNonClientEventFilter() {
+void DesktopWindowTreeHostLinux::CreateNonClientEventFilter() {
   DCHECK(!non_client_window_event_filter_);
   non_client_window_event_filter_ = std::make_unique<WindowEventFilterLinux>(
       this, GetWmMoveResizeHandler(*platform_window()));
-  window()->AddPreTargetHandler(non_client_window_event_filter_.get());
 }
 
-void DesktopWindowTreeHostLinux::RemoveNonClientEventFilter() {
-  if (!non_client_window_event_filter_)
-    return;
-
-  window()->RemovePreTargetHandler(non_client_window_event_filter_.get());
+void DesktopWindowTreeHostLinux::DestroyNonClientEventFilter() {
   non_client_window_event_filter_.reset();
 }
 

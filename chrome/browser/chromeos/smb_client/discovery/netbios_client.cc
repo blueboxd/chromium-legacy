@@ -55,7 +55,7 @@ NetBiosClient::NetBiosClient(network::mojom::NetworkContext* network_context)
   network::mojom::UDPSocketListenerPtr rec_int_ptr;
   listener_binding_.Bind(mojo::MakeRequest(&rec_int_ptr));
 
-  network_context->CreateUDPSocket(mojo::MakeRequest(&server_socket_),
+  network_context->CreateUDPSocket(server_socket_.BindNewPipeAndPassReceiver(),
                                    std::move(rec_int_ptr));
 }
 

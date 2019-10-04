@@ -132,6 +132,9 @@ class CONTENT_EXPORT SharedWorkerHost
   void SetServiceWorkerHandle(
       std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle);
 
+  // Returns true if this worker is connected to at least one client.
+  bool HasClients() const;
+
   const SharedWorkerInstance& instance() const { return instance_; }
   int worker_process_id() const { return worker_process_id_; }
 

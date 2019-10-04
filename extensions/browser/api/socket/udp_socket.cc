@@ -31,7 +31,7 @@ ApiResourceManager<ResumableUDPSocket>::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-UDPSocket::UDPSocket(network::mojom::UDPSocketPtrInfo socket,
+UDPSocket::UDPSocket(mojo::PendingRemote<network::mojom::UDPSocket> socket,
                      network::mojom::UDPSocketListenerRequest listener_request,
                      const std::string& owner_extension_id)
     : Socket(owner_extension_id),
@@ -386,7 +386,7 @@ const std::vector<std::string>& UDPSocket::GetJoinedGroups() const {
 }
 
 ResumableUDPSocket::ResumableUDPSocket(
-    network::mojom::UDPSocketPtrInfo socket,
+    mojo::PendingRemote<network::mojom::UDPSocket> socket,
     network::mojom::UDPSocketListenerRequest listener_request,
     const std::string& owner_extension_id)
     : UDPSocket(std::move(socket),

@@ -16,7 +16,6 @@ namespace performance_manager {
 ProcessNodeImpl::ProcessNodeImpl(GraphImpl* graph,
                                  RenderProcessHostProxy render_process_proxy)
     : TypedNodeBase(graph),
-      binding_(this),
       render_process_host_proxy_(std::move(render_process_proxy)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -30,10 +29,12 @@ void ProcessNodeImpl::SetCPUUsage(double cpu_usage) {
 }
 
 void ProcessNodeImpl::Bind(
-    resource_coordinator::mojom::ProcessCoordinationUnitRequest request) {
-  if (binding_.is_bound())
-    binding_.Close();
-  binding_.Bind(std::move(request));
+    mojo::PendingReceiver<resource_coordinator::mojom::ProcessCoordinationUnit>
+        receiver) {
+  // A RenderProcessHost can be reused if the backing process suddenly dies, in
+  // which case we will receive a new receiver from the newly spawned process.
+  receiver_.reset();
+  receiver_.Bind(std::move(receiver));
 }
 
 void ProcessNodeImpl::SetExpectedTaskQueueingDuration(
@@ -57,7 +58,7 @@ void ProcessNodeImpl::SetProcessExitStatus(int32_t exit_status) {
   process_.SetAndNotify(this, base::Process());
 
   // No more message should be received from this process.
-  binding_.Close();
+  receiver_.reset();
 }
 
 void ProcessNodeImpl::SetProcess(base::Process process,

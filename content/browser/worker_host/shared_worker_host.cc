@@ -490,6 +490,10 @@ void SharedWorkerHost::SetServiceWorkerHandle(
   service_worker_handle_ = std::move(service_worker_handle);
 }
 
+bool SharedWorkerHost::HasClients() const {
+  return !clients_.empty();
+}
+
 mojo::Remote<blink::mojom::SharedWorker>
 SharedWorkerHost::TerminateRemoteWorkerForTesting() {
   mojo::Remote<blink::mojom::SharedWorker> worker = std::move(worker_);

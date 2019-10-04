@@ -533,7 +533,7 @@ void LoginHandler::MaybeSetUpLoginPrompt(
       (is_cross_origin_request || web_contents()->ShowingInterstitialPage() ||
        auth_info().is_proxy) &&
       web_contents()->GetDelegate()->GetDisplayMode(web_contents()) !=
-          blink::kWebDisplayModeStandalone) {
+          blink::mojom::DisplayMode::kStandalone) {
     DCHECK(!base::FeatureList::IsEnabled(
         features::kHTTPAuthCommittedInterstitials));
     RecordHttpAuthPromptType(AUTH_PROMPT_TYPE_WITH_INTERSTITIAL);

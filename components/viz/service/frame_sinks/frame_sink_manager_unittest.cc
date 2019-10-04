@@ -20,6 +20,8 @@
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "components/viz/test/mock_display_client.h"
 #include "components/viz/test/test_output_surface_provider.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
@@ -37,15 +39,16 @@ struct RootCompositorFrameSinkData {
     auto params = mojom::RootCompositorFrameSinkParams::New();
     params->frame_sink_id = frame_sink_id;
     params->widget = gpu::kNullSurfaceHandle;
-    params->compositor_frame_sink = MakeRequest(&compositor_frame_sink);
+    params->compositor_frame_sink =
+        compositor_frame_sink.BindNewEndpointAndPassReceiver();
     params->compositor_frame_sink_client =
-        compositor_frame_sink_client.BindInterfacePtr().PassInterface();
+        compositor_frame_sink_client.BindInterfaceRemote();
     params->display_private = MakeRequest(&display_private);
     params->display_client = display_client.BindInterfacePtr().PassInterface();
     return params;
   }
 
-  mojom::CompositorFrameSinkAssociatedPtr compositor_frame_sink;
+  mojo::AssociatedRemote<mojom::CompositorFrameSink> compositor_frame_sink;
   MockCompositorFrameSinkClient compositor_frame_sink_client;
   mojom::DisplayPrivateAssociatedPtr display_private;
   MockDisplayClient display_client;
@@ -119,10 +122,10 @@ TEST_F(FrameSinkManagerTest, CreateCompositorFrameSink) {
 
   // Create a CompositorFrameSinkImpl.
   MockCompositorFrameSinkClient compositor_frame_sink_client;
-  mojom::CompositorFrameSinkPtr compositor_frame_sink;
+  mojo::Remote<mojom::CompositorFrameSink> compositor_frame_sink;
   manager_.CreateCompositorFrameSink(
-      kFrameSinkIdA, MakeRequest(&compositor_frame_sink),
-      compositor_frame_sink_client.BindInterfacePtr());
+      kFrameSinkIdA, compositor_frame_sink.BindNewPipeAndPassReceiver(),
+      compositor_frame_sink_client.BindInterfaceRemote());
   EXPECT_TRUE(CompositorFrameSinkExists(kFrameSinkIdA));
 
   // Invalidating should destroy the CompositorFrameSinkImpl.
@@ -135,10 +138,10 @@ TEST_F(FrameSinkManagerTest, CompositorFrameSinkConnectionLost) {
 
   // Create a CompositorFrameSinkImpl.
   MockCompositorFrameSinkClient compositor_frame_sink_client;
-  mojom::CompositorFrameSinkPtr compositor_frame_sink;
+  mojo::Remote<mojom::CompositorFrameSink> compositor_frame_sink;
   manager_.CreateCompositorFrameSink(
-      kFrameSinkIdA, MakeRequest(&compositor_frame_sink),
-      compositor_frame_sink_client.BindInterfacePtr());
+      kFrameSinkIdA, compositor_frame_sink.BindNewPipeAndPassReceiver(),
+      compositor_frame_sink_client.BindInterfaceRemote());
   EXPECT_TRUE(CompositorFrameSinkExists(kFrameSinkIdA));
 
   // Close the connection from the renderer.
@@ -147,8 +150,7 @@ TEST_F(FrameSinkManagerTest, CompositorFrameSinkConnectionLost) {
   // Closing the connection will destroy the CompositorFrameSinkImpl along with
   // the mojom::CompositorFrameSinkClient binding.
   base::RunLoop run_loop;
-  compositor_frame_sink_client.set_connection_error_handler(
-      run_loop.QuitClosure());
+  compositor_frame_sink_client.set_disconnect_handler(run_loop.QuitClosure());
   run_loop.Run();
 
   // Check that the CompositorFrameSinkImpl was destroyed.

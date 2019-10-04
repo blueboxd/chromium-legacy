@@ -145,7 +145,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // RenderView does not own a RenderWidget [e.g. for remote main frame in
   // future].
   RenderWidget* GetWidget();
-  const RenderWidget* GetWidget() const;
 
   // Returns a |page_properties| interface. The lifetime is scoped to
   // the RenderViewImpl.
@@ -412,7 +411,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   bool ShouldAckSyntheticInputImmediately() override;
   void CancelPagePopupForWidget() override;
   void ApplyNewDisplayModeForWidget(
-      blink::WebDisplayMode new_display_mode) override;
+      blink::mojom::DisplayMode new_display_mode) override;
   void ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,
                                       const gfx::Size& max_size) override;
   void DisableAutoResizeForWidget() override;

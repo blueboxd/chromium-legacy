@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/loader_factory_for_worker.h"
 
+#include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"

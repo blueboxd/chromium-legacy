@@ -55,6 +55,7 @@ namespace content {
 
 class AppCacheNavigationHandle;
 class BundledExchangesHandleTracker;
+class BundledExchangesNavigationInfo;
 class FrameNavigationEntry;
 class FrameTreeNode;
 class NavigationURLLoader;
@@ -465,6 +466,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
 
   RenderFrameHostImpl* rfh_restored_from_back_forward_cache() {
     return rfh_restored_from_back_forward_cache_;
+  }
+
+  const BundledExchangesNavigationInfo* bundled_exchanges_navigation_info()
+      const {
+    return bundled_exchanges_navigation_info_.get();
   }
 
   // The NavigatorDelegate to notify/query for various navigation events.
@@ -1023,7 +1029,21 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   // The instance to process the BundledExchanges that's bound to this request.
   // Used to navigate to the main resource URL of the BundledExchanges, and
   // load it from the corresponding entry.
+  // This is created in OnStartChecksComplete() and passed to the
+  // RenderFrameHostImpl in CommitNavigation().
   std::unique_ptr<BundledExchangesHandle> bundled_exchanges_handle_;
+
+  // Keeps the bundled exchanges related information when |this| is for a
+  // navigation within a bundled exchanges file. Used when
+  // BundledHTTPExchanges feature is enabled or
+  // TrustableBundledExchangesFileUrl switch is set.
+  // For navigations to bundled exchanges file, this is cloned from
+  // |bundled_exchanges_handle_| in CommitNavigation(), and is passed to
+  // NavigationEntry for the navigation. And for history (back / forward)
+  // navigations within the bundled exchanges file, this is cloned from the
+  // NavigationEntry and is used to create a BundledExchangesHandle.
+  std::unique_ptr<BundledExchangesNavigationInfo>
+      bundled_exchanges_navigation_info_;
 
   // Which proxy server was used for this navigation, if any.
   net::ProxyServer proxy_server_;

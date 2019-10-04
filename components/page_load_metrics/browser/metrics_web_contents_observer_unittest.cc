@@ -487,7 +487,7 @@ TEST_F(MetricsWebContentsObserverTest, NullNavigationStartError) {
       page_load_metrics::internal::INVALID_NULL_NAVIGATION_START, 1);
 }
 
-TEST_F(MetricsWebContentsObserverTest, DISABLED_TimingOrderError) {
+TEST_F(MetricsWebContentsObserverTest, TimingOrderError) {
   mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);

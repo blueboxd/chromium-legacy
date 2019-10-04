@@ -208,6 +208,11 @@ class LoadQqMobileStory(_LoadingStory):
   URL = 'http://news.qq.com'
   TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2016]
 
+class LoadQqMobileStory2019(_LoadingStory):
+  NAME = 'load:news:qq:2019'
+  URL = 'https://xw.qq.com/?f=c_news'
+  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2019]
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
 class LoadQqDesktopStory2018(_LoadingStory):
   NAME = 'load:news:qq:2018'

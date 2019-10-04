@@ -53,6 +53,9 @@ namespace content {
 
 namespace {
 
+// Used for tracing.
+constexpr char kEmbeddedWorkerInstanceScope[] = "EmbeddedWorkerInstance";
+
 EmbeddedWorkerInstance::CreateNetworkFactoryCallback&
 GetNetworkFactoryCallbackForTest() {
   static base::NoDestructor<
@@ -471,21 +474,20 @@ class EmbeddedWorkerInstance::StartTask {
         skip_recording_startup_time_(instance_->devtools_attached()),
         start_time_(start_time) {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker",
-                                      "EmbeddedWorkerInstance::Start", this,
-                                      "Script", script_url.spec());
+    TRACE_EVENT_WITH_FLOW1(
+        "ServiceWorker", "EmbeddedWorkerInstance::StartTask::StartTask",
+        TRACE_ID_WITH_SCOPE(kEmbeddedWorkerInstanceScope,
+                            instance_->embedded_worker_id()),
+        TRACE_EVENT_FLAG_FLOW_OUT, "Script", script_url.spec());
   }
 
   ~StartTask() {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-    if (did_send_start_) {
-      TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker",
-                                      "INITIALIZING_ON_RENDERER", this);
-    }
-
-    TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker",
-                                    "EmbeddedWorkerInstance::Start", this);
-
+    TRACE_EVENT_WITH_FLOW0("ServiceWorker",
+                           "EmbeddedWorkerInstance::StartTask::~StartTask",
+                           TRACE_ID_WITH_SCOPE(kEmbeddedWorkerInstanceScope,
+                                               instance_->embedded_worker_id()),
+                           TRACE_EVENT_FLAG_FLOW_IN);
     if (!instance_->context_)
       return;
 
@@ -538,6 +540,12 @@ class EmbeddedWorkerInstance::StartTask {
              StatusCallback sent_start_callback) {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     DCHECK(instance_->context_);
+    TRACE_EVENT_WITH_FLOW0(
+        "ServiceWorker", "EmbeddedWorkerInstance::StartTask::Start",
+        TRACE_ID_WITH_SCOPE(kEmbeddedWorkerInstanceScope,
+                            instance_->embedded_worker_id()),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
     base::WeakPtr<ServiceWorkerContextCore> context = instance_->context_;
     state_ = ProcessAllocationState::ALLOCATING;
     sent_start_callback_ = std::move(sent_start_callback);
@@ -549,8 +557,6 @@ class EmbeddedWorkerInstance::StartTask {
     bool can_use_existing_process =
         context->GetVersionFailureCount(params->service_worker_version_id) <
         kMaxSameProcessFailureCount;
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "ALLOCATING_PROCESS",
-                                      this);
     base::WeakPtr<ServiceWorkerProcessManager> process_manager =
         context->process_manager()->AsWeakPtr();
 
@@ -612,8 +618,12 @@ class EmbeddedWorkerInstance::StartTask {
     }
 
     if (status != blink::ServiceWorkerStatusCode::kOk) {
-      TRACE_EVENT_NESTABLE_ASYNC_END1(
-          "ServiceWorker", "ALLOCATING_PROCESS", this, "Error",
+      TRACE_EVENT_WITH_FLOW1(
+          "ServiceWorker",
+          "EmbeddedWorkerInstance::StartTask::OnSetupCompleted",
+          TRACE_ID_WITH_SCOPE(kEmbeddedWorkerInstanceScope,
+                              instance_->embedded_worker_id()),
+          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Error",
           blink::ServiceWorkerStatusToString(status));
       instance_->OnSetupFailed(std::move(sent_start_callback_), status);
       // |this| may be destroyed.
@@ -622,8 +632,11 @@ class EmbeddedWorkerInstance::StartTask {
 
     ServiceWorkerMetrics::StartSituation start_situation =
         process_info->start_situation;
-    TRACE_EVENT_NESTABLE_ASYNC_END1(
-        "ServiceWorker", "ALLOCATING_PROCESS", this, "StartSituation",
+    TRACE_EVENT_WITH_FLOW1(
+        "ServiceWorker", "EmbeddedWorkerInstance::StartTask::OnSetupCompleted",
+        TRACE_ID_WITH_SCOPE(kEmbeddedWorkerInstanceScope,
+                            instance_->embedded_worker_id()),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "StartSituation",
         ServiceWorkerMetrics::StartSituationToString(start_situation));
     if (is_installed_) {
       ServiceWorkerMetrics::RecordProcessCreated(
@@ -661,9 +674,6 @@ class EmbeddedWorkerInstance::StartTask {
     instance_->SendStartWorker(std::move(params));
     std::move(sent_start_callback_).Run(blink::ServiceWorkerStatusCode::kOk);
 
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker",
-                                      "INITIALIZING_ON_RENDERER", this);
-    did_send_start_ = true;
     // |this|'s work is done here, but |instance_| still uses its state until
     // startup is complete.
   }
@@ -675,7 +685,6 @@ class EmbeddedWorkerInstance::StartTask {
   mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver_;
 
   StatusCallback sent_start_callback_;
-  bool did_send_start_ = false;
   ProcessAllocationState state_;
 
   // Used for UMA.
@@ -931,6 +940,7 @@ void EmbeddedWorkerInstance::OnStarted(
     blink::mojom::ServiceWorkerStartStatus start_status,
     int thread_id,
     blink::mojom::EmbeddedWorkerStartTimingPtr start_timing) {
+  TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerInstance::OnStarted");
   if (!(start_timing->start_worker_received_time <=
             start_timing->script_evaluation_start_time &&
         start_timing->script_evaluation_start_time <=

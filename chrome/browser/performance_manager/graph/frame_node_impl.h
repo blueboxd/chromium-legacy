@@ -12,6 +12,8 @@
 #include "base/unguessable_token.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/public/graph/frame_node.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "url/gurl.h"
 
 namespace performance_manager {
@@ -65,8 +67,8 @@ class FrameNodeImpl
                 int32_t site_instance_id);
   ~FrameNodeImpl() override;
 
-  void Bind(
-      resource_coordinator::mojom::DocumentCoordinationUnitRequest request);
+  void Bind(mojo::PendingReceiver<
+            resource_coordinator::mojom::DocumentCoordinationUnit> receiver);
 
   // resource_coordinator::mojom::DocumentCoordinationUnit implementation.
   void SetNetworkAlmostIdle() override;
@@ -184,7 +186,8 @@ class FrameNodeImpl
   bool HasFrameNodeInAncestors(FrameNodeImpl* frame_node) const;
   bool HasFrameNodeInDescendants(FrameNodeImpl* frame_node) const;
 
-  mojo::Binding<resource_coordinator::mojom::DocumentCoordinationUnit> binding_;
+  mojo::Receiver<resource_coordinator::mojom::DocumentCoordinationUnit>
+      receiver_{this};
 
   FrameNodeImpl* const parent_frame_node_;
   PageNodeImpl* const page_node_;

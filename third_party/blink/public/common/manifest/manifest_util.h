@@ -8,23 +8,23 @@
 #include <string>
 
 #include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace blink {
 
-// Converts a blink::WebDisplayMode to a string. Returns one of
+// Converts a blink::mojom::DisplayMode to a string. Returns one of
 // https://www.w3.org/TR/appmanifest/#dfn-display-modes-values. Return values
-// are lowercase. Returns an empty string for blink::WebDisplayModeUndefined.
-BLINK_COMMON_EXPORT std::string WebDisplayModeToString(
-    blink::WebDisplayMode display);
+// are lowercase. Returns an empty string for DisplayMode::kUndefined.
+BLINK_COMMON_EXPORT std::string DisplayModeToString(
+    blink::mojom::DisplayMode display);
 
-// Returns the blink::WebDisplayMode which matches |display|.
+// Returns the blink::mojom::DisplayMode which matches |display|.
 // |display| should be one of
 // https://www.w3.org/TR/appmanifest/#dfn-display-modes-values. |display| is
-// case insensitive. Returns blink::WebDisplayModeUndefined if there is no
+// case insensitive. Returns DisplayMode::kUndefined if there is no
 // match.
-BLINK_COMMON_EXPORT blink::WebDisplayMode WebDisplayModeFromString(
+BLINK_COMMON_EXPORT blink::mojom::DisplayMode DisplayModeFromString(
     const std::string& display);
 
 // Converts a blink::WebScreenOrientationLockType to a string. Returns one of

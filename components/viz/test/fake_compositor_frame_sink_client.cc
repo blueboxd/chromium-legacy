@@ -6,8 +6,7 @@
 
 namespace viz {
 
-FakeCompositorFrameSinkClient::FakeCompositorFrameSinkClient()
-    : binding_(this) {}
+FakeCompositorFrameSinkClient::FakeCompositorFrameSinkClient() = default;
 FakeCompositorFrameSinkClient::~FakeCompositorFrameSinkClient() = default;
 
 void FakeCompositorFrameSinkClient::DidReceiveCompositorFrameAck(
@@ -32,11 +31,9 @@ void FakeCompositorFrameSinkClient::InsertResources(
                              resources.end());
 }
 
-mojom::CompositorFrameSinkClientPtr
-FakeCompositorFrameSinkClient::BindInterfacePtr() {
-  mojom::CompositorFrameSinkClientPtr ptr;
-  binding_.Bind(MakeRequest(&ptr));
-  return ptr;
+mojo::PendingRemote<mojom::CompositorFrameSinkClient>
+FakeCompositorFrameSinkClient::BindInterfaceRemote() {
+  return receiver_.BindNewPipeAndPassRemote();
 }
 
 }  // namespace viz

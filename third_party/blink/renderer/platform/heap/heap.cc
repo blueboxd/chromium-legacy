@@ -324,7 +324,7 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
           },
           WorklistTaskId::MutatorThread);
       if (!finished)
-        return false;
+        break;
 
       // Iteratively mark all objects that were previously discovered while
       // being in construction. The objects can be processed incrementally once
@@ -336,7 +336,7 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
           },
           WorklistTaskId::MutatorThread);
       if (!finished)
-        return false;
+        break;
     }
 
     InvokeEphemeronCallbacks(visitor);
@@ -344,7 +344,9 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
     // Rerun loop if ephemeron processing queued more objects for tracing.
   } while (!marking_worklist_->IsGlobalEmpty());
 
-  return true;
+  FlushV8References();
+
+  return finished;
 }
 
 bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,

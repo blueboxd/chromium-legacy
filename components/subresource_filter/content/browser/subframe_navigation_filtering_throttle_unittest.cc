@@ -164,7 +164,12 @@ TEST_F(SubframeNavigationFilteringThrottleTest, FilterOnStart) {
       base::Contains(GetConsoleMessages(), GetFilterConsoleMessage(url)));
 }
 
-TEST_F(SubframeNavigationFilteringThrottleTest, DISABLED_FilterOnRedirect) {
+#if defined(OS_MACOSX)
+#define MAYBE_FilterOnRedirect DISABLED_FilterOnRedirect
+#else
+#define MAYBE_FilterOnRedirect FilterOnRedirect
+#endif
+TEST_F(SubframeNavigationFilteringThrottleTest, MAYBE_FilterOnRedirect) {
   InitializeDocumentSubresourceFilter(GURL("https://example.test"));
   CreateTestSubframeAndInitNavigation(GURL("https://example.test/allowed.html"),
                                       main_rfh());
@@ -177,7 +182,7 @@ TEST_F(SubframeNavigationFilteringThrottleTest, DISABLED_FilterOnRedirect) {
                 GURL("https://example.test/disallowed.html")));
 }
 
-TEST_F(SubframeNavigationFilteringThrottleTest, DISABLED_DryRunOnStart) {
+TEST_F(SubframeNavigationFilteringThrottleTest, DryRunOnStart) {
   InitializeDocumentSubresourceFilter(GURL("https://example.test"),
                                       mojom::ActivationLevel::kDryRun);
   const GURL url("https://example.test/disallowed.html");

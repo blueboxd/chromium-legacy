@@ -118,8 +118,8 @@ class ConsumerHost::StreamWriter {
 
 ConsumerHost::TracingSession::TracingSession(
     ConsumerHost* host,
-    mojom::TracingSessionHostRequest tracing_session_host,
-    mojom::TracingSessionClientPtr tracing_session_client,
+    mojo::PendingReceiver<mojom::TracingSessionHost> tracing_session_host,
+    mojo::Remote<mojom::TracingSessionClient> tracing_session_client,
     const perfetto::TraceConfig& trace_config,
     mojom::TracingClientPriority priority)
     : host_(host),
@@ -128,7 +128,7 @@ ConsumerHost::TracingSession::TracingSession(
       tracing_priority_(priority) {
   host_->service()->RegisterTracingSession(this);
 
-  tracing_session_client_.set_connection_error_handler(base::BindOnce(
+  tracing_session_client_.set_disconnect_handler(base::BindOnce(
       &ConsumerHost::DestructTracingSession, base::Unretained(host)));
   binding_.set_connection_error_handler(base::BindOnce(
       &ConsumerHost::DestructTracingSession, base::Unretained(host)));
@@ -504,8 +504,8 @@ ConsumerHost::~ConsumerHost() {
 }
 
 void ConsumerHost::EnableTracing(
-    mojom::TracingSessionHostRequest tracing_session_host,
-    mojom::TracingSessionClientPtr tracing_session_client,
+    mojo::PendingReceiver<mojom::TracingSessionHost> tracing_session_host,
+    mojo::PendingRemote<mojom::TracingSessionClient> tracing_session_client,
     const perfetto::TraceConfig& trace_config,
     mojom::TracingClientPriority priority) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -515,23 +515,28 @@ void ConsumerHost::EnableTracing(
   // us to, after it's stopped any currently running lower or equal priority
   // tracing sessions.
   service_->RequestTracingSession(
-      priority,
-      base::BindOnce(
-          [](base::WeakPtr<ConsumerHost> weak_this,
-             mojom::TracingSessionHostRequest tracing_session_host,
-             mojom::TracingSessionClientPtr tracing_session_client,
-             const perfetto::TraceConfig& trace_config,
-             mojom::TracingClientPriority priority) {
-            if (!weak_this) {
-              return;
-            }
-
-            weak_this->tracing_session_ = std::make_unique<TracingSession>(
-                weak_this.get(), std::move(tracing_session_host),
-                std::move(tracing_session_client), trace_config, priority);
-          },
-          weak_factory_.GetWeakPtr(), std::move(tracing_session_host),
-          std::move(tracing_session_client), trace_config, priority));
+      priority, base::BindOnce(
+                    [](base::WeakPtr<ConsumerHost> weak_this,
+                       mojo::PendingReceiver<mojom::TracingSessionHost>
+                           tracing_session_host,
+                       mojo::PendingRemote<mojom::TracingSessionClient>
+                           tracing_session_client,
+                       const perfetto::TraceConfig& trace_config,
+                       mojom::TracingClientPriority priority) {
+                      if (!weak_this) {
+                        return;
+                      }
+                      mojo::Remote<mojom::TracingSessionClient>
+                          tracing_session_client_remote(
+                              std::move(tracing_session_client));
+                      weak_this->tracing_session_ =
+                          std::make_unique<TracingSession>(
+                              weak_this.get(), std::move(tracing_session_host),
+                              std::move(tracing_session_client_remote),
+                              trace_config, priority);
+                    },
+                    weak_factory_.GetWeakPtr(), std::move(tracing_session_host),
+                    std::move(tracing_session_client), trace_config, priority));
 }
 
 void ConsumerHost::OnConnect() {}

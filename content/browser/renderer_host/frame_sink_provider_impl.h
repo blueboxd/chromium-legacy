@@ -26,9 +26,10 @@ class FrameSinkProviderImpl : public mojom::FrameSinkProvider {
   // mojom::FrameSinkProvider implementation.
   void CreateForWidget(
       int32_t widget_id,
-      viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request,
-      viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client)
-      override;
+      mojo::PendingReceiver<viz::mojom::CompositorFrameSink>
+          compositor_frame_sink_receiver,
+      mojo::PendingRemote<viz::mojom::CompositorFrameSinkClient>
+          compositor_frame_sink_client) override;
   void RegisterRenderFrameMetadataObserver(
       int32_t widget_id,
       mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>

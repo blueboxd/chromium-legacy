@@ -116,10 +116,8 @@ String ServiceWorker::scriptURL() const {
 
 String ServiceWorker::state() const {
   switch (state_) {
-    case mojom::blink::ServiceWorkerState::kUnknown:
-      // The web platform should never see this internal state
-      NOTREACHED();
-      return "unknown";
+    case mojom::blink::ServiceWorkerState::kParsed:
+      return "parsed";
     case mojom::blink::ServiceWorkerState::kInstalling:
       return "installing";
     case mojom::blink::ServiceWorkerState::kInstalled:

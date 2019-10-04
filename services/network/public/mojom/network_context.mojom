@@ -938,7 +938,8 @@ interface NetworkContext {
   // is not interested in incoming data.
   // Any sockets that are created but are yet to be destroyed will be destroyed
   // when NetworkContext goes away.
-  CreateUDPSocket(UDPSocket& request, UDPSocketListener? listener);
+  CreateUDPSocket(pending_receiver<UDPSocket> receiver,
+                  UDPSocketListener? listener);
 
   // Creates a TCP server socket that listens on |local_addr|. The socket
   // created can only be used for the purpose specified in |traffic_annotation|,

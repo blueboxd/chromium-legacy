@@ -139,6 +139,13 @@ class MockServiceWorkerContextClient final
     mojo::PendingAssociatedRemote<mojom::blink::ServiceWorkerRegistrationObject>
         registration_object;
 
+    mojo::PendingAssociatedRemote<mojom::blink::ServiceWorkerObjectHost>
+        service_worker_object_host;
+    auto service_worker_object_host_receiver =
+        service_worker_object_host.InitWithNewEndpointAndPassReceiver();
+    mojo::PendingAssociatedRemote<mojom::blink::ServiceWorkerObject>
+        service_worker_object;
+
     // Simulates calling blink.mojom.ServiceWorker.InitializeGlobalScope() to
     // unblock the service worker script evaluation.
     mojo::Remote<mojom::blink::ServiceWorker> service_worker;
@@ -152,12 +159,19 @@ class MockServiceWorkerContextClient final
             std::move(registration_object_host),
             registration_object.InitWithNewEndpointAndPassReceiver(), nullptr,
             nullptr, nullptr),
+        mojom::blink::ServiceWorkerObjectInfo::New(
+            1 /* service_worker_version_id */,
+            mojom::blink::ServiceWorkerState::kParsed,
+            KURL("https://example.com"), std::move(service_worker_object_host),
+            service_worker_object.InitWithNewEndpointAndPassReceiver()),
         mojom::blink::FetchHandlerExistence::EXISTS);
 
     // To make the other side callable.
     mojo::AssociateWithDisconnectedPipe(host_receiver.PassHandle());
     mojo::AssociateWithDisconnectedPipe(
         registration_object_host_receiver.PassHandle());
+    mojo::AssociateWithDisconnectedPipe(
+        service_worker_object_host_receiver.PassHandle());
   }
 
   void FailedToFetchClassicScript() override {

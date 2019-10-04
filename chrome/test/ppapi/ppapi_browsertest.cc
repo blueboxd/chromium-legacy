@@ -44,8 +44,10 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/net_errors.h"
 #include "net/ssl/ssl_info.h"
@@ -1052,19 +1054,21 @@ class WrappedUDPSocket : public network::mojom::UDPSocket {
     kDropListenerPipeOnReceiveMore,
     kReadError,
   };
-  WrappedUDPSocket(FailureType failure_type,
-                   network::mojom::NetworkContext* network_context,
-                   network::mojom::UDPSocketRequest socket_request,
-                   network::mojom::UDPSocketListenerPtr socket_listener)
-      : failure_type_(failure_type), binding_(this, std::move(socket_request)) {
+  WrappedUDPSocket(
+      FailureType failure_type,
+      network::mojom::NetworkContext* network_context,
+      mojo::PendingReceiver<network::mojom::UDPSocket> socket_receiver,
+      network::mojom::UDPSocketListenerPtr socket_listener)
+      : failure_type_(failure_type),
+        receiver_(this, std::move(socket_receiver)) {
     if (failure_type == FailureType::kDropListenerPipeOnConstruction)
       socket_listener.reset();
     socket_listener_ = std::move(socket_listener);
-    network_context->CreateUDPSocket(mojo::MakeRequest(&wrapped_socket_),
-                                     nullptr);
-    binding_.set_connection_error_handler(
+    network_context->CreateUDPSocket(
+        wrapped_socket_.BindNewPipeAndPassReceiver(), nullptr);
+    receiver_.set_disconnect_handler(
         base::BindOnce(&WrappedUDPSocket::Close, base::Unretained(this)));
-    wrapped_socket_.set_connection_error_handler(
+    wrapped_socket_.set_disconnect_handler(
         base::BindOnce(&WrappedUDPSocket::Close, base::Unretained(this)));
   }
 
@@ -1158,15 +1162,15 @@ class WrappedUDPSocket : public network::mojom::UDPSocket {
   void Close() override {
     // Deleting |this| before closing the bindings can cause Mojo to DCHECK if
     // there's a pending callback.
-    binding_.Close();
+    receiver_.reset();
     socket_listener_.reset();
     delete this;
   }
 
  private:
   const FailureType failure_type_;
-  mojo::Binding<network::mojom::UDPSocket> binding_;
-  network::mojom::UDPSocketPtr wrapped_socket_;
+  mojo::Receiver<network::mojom::UDPSocket> receiver_;
+  mojo::Remote<network::mojom::UDPSocket> wrapped_socket_;
 
   // Only populated on certain read FailureTypes.
   network::mojom::UDPSocketListenerPtr socket_listener_;
@@ -1177,11 +1181,11 @@ class WrappedUDPSocket : public network::mojom::UDPSocket {
 void TestCreateUDPSocketCallback(
     WrappedUDPSocket::FailureType failure_type,
     network::mojom::NetworkContext* network_context,
-    network::mojom::UDPSocketRequest socket_request,
+    mojo::PendingReceiver<network::mojom::UDPSocket> socket_receiver,
     network::mojom::UDPSocketListenerPtr socket_listener) {
   // This will delete itself when one of its Mojo pipes is closed.
-  new WrappedUDPSocket(failure_type, network_context, std::move(socket_request),
-                       std::move(socket_listener));
+  new WrappedUDPSocket(failure_type, network_context,
+                       std::move(socket_receiver), std::move(socket_listener));
 }
 
 #define RUN_UDP_FAILURE_TEST(test_name, failure_type)                    \

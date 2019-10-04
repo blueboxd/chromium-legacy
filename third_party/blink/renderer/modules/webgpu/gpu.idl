@@ -15,5 +15,5 @@ typedef (sequence<unsigned long> or GPUOrigin3DDict) GPUOrigin3D;
     [
       RuntimeEnabled=WebGPU,
       CallWith=ScriptState
-    ] Promise<GPUAdapter> requestAdapter(optional GPURequestAdapterOptions options);
+    ] Promise<GPUAdapter> requestAdapter(optional GPURequestAdapterOptions options = {});
 };

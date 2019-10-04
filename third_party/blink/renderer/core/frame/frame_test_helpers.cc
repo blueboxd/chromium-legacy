@@ -488,6 +488,15 @@ void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
   // Consequently, all external image resources must be mocked.
   web_view_->GetSettings()->SetLoadsImagesAutomatically(true);
 
+  // If a test turned off this settings, opened WebViews should propagate that.
+  if (opener) {
+    web_view_->GetSettings()->SetAllowUniversalAccessFromFileURLs(
+        static_cast<WebViewImpl*>(opener)
+            ->GetPage()
+            ->GetSettings()
+            .GetAllowUniversalAccessFromFileURLs());
+  }
+
   web_view_->SetDeviceScaleFactor(
       test_web_view_client_->GetScreenInfo().device_scale_factor);
   web_view_->SetDefaultPageScaleLimits(1, 4);

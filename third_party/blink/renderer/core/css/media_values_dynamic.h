@@ -45,7 +45,7 @@ class CORE_EXPORT MediaValuesDynamic : public MediaValues {
   bool InImmersiveMode() const override;
   bool StrictMode() const override;
   const String MediaType() const override;
-  WebDisplayMode DisplayMode() const override;
+  blink::mojom::DisplayMode DisplayMode() const override;
   DisplayShape GetDisplayShape() const override;
   ColorSpaceGamut ColorGamut() const override;
   PreferredColorScheme GetPreferredColorScheme() const override;

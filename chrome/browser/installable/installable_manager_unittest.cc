@@ -6,7 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 using IconPurpose = blink::Manifest::ImageResource::Purpose;
 
@@ -25,7 +25,7 @@ class InstallableManagerUnitTest : public testing::Test {
     manifest.name = ToNullableUTF16("foo");
     manifest.short_name = ToNullableUTF16("bar");
     manifest.start_url = GURL("http://example.com");
-    manifest.display = blink::kWebDisplayModeStandalone;
+    manifest.display = blink::mojom::DisplayMode::kStandalone;
 
     blink::Manifest::ImageResource primary_icon;
     primary_icon.type = base::ASCIIToUTF16("image/png");
@@ -242,27 +242,27 @@ TEST_F(InstallableManagerUnitTest, ManifestRequiresMinimalSize) {
 TEST_F(InstallableManagerUnitTest, ManifestDisplayModes) {
   blink::Manifest manifest = GetValidManifest();
 
-  manifest.display = blink::kWebDisplayModeUndefined;
+  manifest.display = blink::mojom::DisplayMode::kUndefined;
   EXPECT_TRUE(
       IsManifestValid(manifest, false /* check_webapp_manifest_display */));
   EXPECT_FALSE(IsManifestValid(manifest));
   EXPECT_EQ(MANIFEST_DISPLAY_NOT_SUPPORTED, GetErrorCode());
 
-  manifest.display = blink::kWebDisplayModeBrowser;
+  manifest.display = blink::mojom::DisplayMode::kBrowser;
   EXPECT_TRUE(
       IsManifestValid(manifest, false /* check_webapp_manifest_display */));
   EXPECT_FALSE(IsManifestValid(manifest));
   EXPECT_EQ(MANIFEST_DISPLAY_NOT_SUPPORTED, GetErrorCode());
 
-  manifest.display = blink::kWebDisplayModeMinimalUi;
+  manifest.display = blink::mojom::DisplayMode::kMinimalUi;
   EXPECT_TRUE(IsManifestValid(manifest));
   EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
 
-  manifest.display = blink::kWebDisplayModeStandalone;
+  manifest.display = blink::mojom::DisplayMode::kStandalone;
   EXPECT_TRUE(IsManifestValid(manifest));
   EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
 
-  manifest.display = blink::kWebDisplayModeFullscreen;
+  manifest.display = blink::mojom::DisplayMode::kFullscreen;
   EXPECT_TRUE(IsManifestValid(manifest));
   EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
 }

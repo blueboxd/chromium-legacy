@@ -1150,6 +1150,7 @@ jumbo_source_set("unit_tests") {
     "events/pointer_event_factory_test.cc",
     "events/touch_event_test.cc",
     "events/web_input_event_conversion_test.cc",
+    "execution_context/agent_metrics_collector_test.cc",
     "execution_context/context_lifecycle_state_observer_test.cc",
     "exported/local_frame_client_impl_test.cc",
     "exported/prerendering_test.cc",

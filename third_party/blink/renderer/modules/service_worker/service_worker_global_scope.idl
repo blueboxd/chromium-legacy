@@ -37,6 +37,7 @@
 
   readonly attribute Clients clients;
   readonly attribute ServiceWorkerRegistration registration;
+  readonly attribute ServiceWorker serviceWorker;
 
   [CallWith=ScriptState] Promise<void> skipWaiting();
 

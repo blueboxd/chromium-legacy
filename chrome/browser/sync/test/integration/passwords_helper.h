@@ -15,6 +15,10 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/autofill/core/common/password_form.h"
 
+namespace syncer {
+class KeyDerivationParams;
+}
+
 namespace password_manager {
 class PasswordStore;
 }
@@ -89,8 +93,18 @@ int GetVerifierPasswordCount();
 // |index|.
 autofill::PasswordForm CreateTestPasswordForm(int index);
 
+// Injects the password entity based on given |form| and encrypted with key
+// derived from |key_params| into |fake_server|.
+void InjectEncryptedServerPassword(
+    const autofill::PasswordForm& form,
+    const std::string& encryption_passphrase,
+    const syncer::KeyDerivationParams& key_derivation_params,
+    fake_server::FakeServer* fake_server);
+
 }  // namespace passwords_helper
 
+// TODO(crbug.com/1010490): avoid re-entrance protection in checkers below or
+// factor it out to not duplicate in every checker.
 // Checker to block until all profiles contain the same password forms.
 class SamePasswordFormsChecker : public MultiClientStatusChangeChecker {
  public:
@@ -118,6 +132,27 @@ class SamePasswordFormsAsVerifierChecker
 
  private:
   int index_;
+  bool in_progress_;
+  bool needs_recheck_;
+};
+
+// Checker to block until specified profile contains the given password forms.
+class PasswordFormsChecker : public SingleClientStatusChangeChecker {
+ public:
+  PasswordFormsChecker(
+      int index,
+      const std::vector<autofill::PasswordForm>& expected_forms);
+  ~PasswordFormsChecker() override;
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
+
+ private:
+  bool IsExitConditionSatisfiedImpl();
+
+  const int index_;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> expected_forms_;
   bool in_progress_;
   bool needs_recheck_;
 };

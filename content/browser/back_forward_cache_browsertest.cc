@@ -2414,6 +2414,28 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DisableBackForwardCacheIframe) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL url_c(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
+
+  BackForwardCache::DisableForRenderFrameHost(rfh_b, "test");
+
+  // 2) Navigate to C. A and B are immediately deleted.
+  EXPECT_TRUE(NavigateToURL(shell(), url_c));
+  EXPECT_TRUE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(delete_observer_rfh_b.deleted());
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        DisableBackForwardEvictsIfAlreadyInCache) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -2471,4 +2493,94 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, MetricsNotRecorded) {
   ExpectOutcomeIsEmpty(FROM_HERE);
 }
 
+// Test for functionality of domain specific controls in back-forward cache.
+class BackForwardCacheBrowserTestWithDomainControlEnabled
+    : public BackForwardCacheBrowserTest {
+ protected:
+  base::FieldTrialParams GetFeatureParams() override {
+    // Sets the allowed websites for testing, additionally adding the params
+    // used by BackForwardCacheBrowserTest.
+    std::map<std::string, std::string> domain_control_params = {
+        {"allowed_websites",
+         "https://a.allowed/back_forward_cache/, "
+         "https://b.allowed/back_forward_cache/allowed_path.html"}};
+    std::map<std::string, std::string> browser_test_params =
+        BackForwardCacheBrowserTest::GetFeatureParams();
+    domain_control_params.insert(browser_test_params.begin(),
+                                 browser_test_params.end());
+    return domain_control_params;
+  }
+};
+
+// Check the RenderFrameHost allowed to enter the BackForwardCache are the ones
+// matching with the "allowed_websites" feature params.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithDomainControlEnabled,
+                       CachePagesWithMatchedURLs) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url_a(embedded_test_server()->GetURL(
+      "a.allowed", "/back_forward_cache/allowed_path.html"));
+  const GURL url_b(embedded_test_server()->GetURL(
+      "b.allowed", "/back_forward_cache/allowed_path.html?query=bar"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
+
+  // 3) Check if rfh_a is stored in back-forward cache, since it matches to
+  // the list of allowed urls, it should be stored.
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+
+  // 4) Now go back to the last stored page, which in our case should be A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_a, current_frame_host());
+
+  // 5) Check if rfh_b is stored in back-forward cache, since it matches to
+  // the list of allowed urls, it should be stored.
+  EXPECT_FALSE(delete_observer_rfh_b.deleted());
+  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+}
+
+// We don't want to allow websites which doesn't match "allowed_websites" of
+// feature params to be stored in back-forward cache.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithDomainControlEnabled,
+                       DoNotCachePagesWithUnMatchedURLs) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url_a(embedded_test_server()->GetURL(
+      "a.disallowed", "/back_forward_cache/disallowed_path.html"));
+  const GURL url_b(embedded_test_server()->GetURL(
+      "b.allowed", "/back_forward_cache/disallowed_path.html"));
+  const GURL url_c(embedded_test_server()->GetURL(
+      "c.disallowed", "/back_forward_cache/disallowed_path.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
+
+  // 3) Since url of A doesn't match to the the list of allowed urls it should
+  // not be stored in back-forward cache.
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  delete_observer_rfh_a.WaitUntilDeleted();
+
+  // 4) Navigate to C.
+  EXPECT_TRUE(NavigateToURL(shell(), url_c));
+
+  // 5) Since url of B doesn't match to the the list of allowed urls it should
+  // not be stored in back-forward cache.
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  delete_observer_rfh_b.WaitUntilDeleted();
+}
 }  // namespace content

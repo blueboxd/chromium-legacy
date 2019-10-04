@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/fetch/fetch_request_data.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/core/fetch/fetch_header_list.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 

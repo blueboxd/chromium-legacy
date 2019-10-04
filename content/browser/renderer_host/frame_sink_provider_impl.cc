@@ -27,8 +27,10 @@ void FrameSinkProviderImpl::Unbind() {
 
 void FrameSinkProviderImpl::CreateForWidget(
     int32_t widget_id,
-    viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request,
-    viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client) {
+    mojo::PendingReceiver<viz::mojom::CompositorFrameSink>
+        compositor_frame_sink_receiver,
+    mojo::PendingRemote<viz::mojom::CompositorFrameSinkClient>
+        compositor_frame_sink_client) {
   RenderWidgetHostImpl* render_widget_host_impl =
       RenderWidgetHostImpl::FromID(process_id_, widget_id);
   if (!render_widget_host_impl) {
@@ -37,7 +39,7 @@ void FrameSinkProviderImpl::CreateForWidget(
     return;
   }
   render_widget_host_impl->RequestCompositorFrameSink(
-      std::move(compositor_frame_sink_request),
+      std::move(compositor_frame_sink_receiver),
       std::move(compositor_frame_sink_client));
 }
 

@@ -77,6 +77,7 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   bool IsSyncExtensionAvailable() const override;
   void OnCompleteSwapAfterResize() override;
   void SetUseNativeFrame(bool use_native_frame) override;
+  bool ShouldUseNativeFrame() const override;
   void SetCursor(PlatformCursor cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;

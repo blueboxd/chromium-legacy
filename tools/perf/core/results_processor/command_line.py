@@ -9,6 +9,7 @@ Provides functions to parse command line arguments and process options.
 
 import argparse
 import datetime
+import logging
 import os
 import re
 import sys
@@ -30,6 +31,9 @@ def ArgumentParser(standalone=False, legacy_formats=None):
     all_output_formats = sorted(
         set(HANDLED_NATIVELY).union(legacy_formats or ()))
   parser, group = _CreateTopLevelParser(standalone)
+  parser.add_argument(
+      '-v', '--verbose', action='count', dest='verbosity',
+      help='Increase verbosity level (repeat as needed)')
   group.add_argument(
       '--output-format', action='append', dest='output_formats',
       metavar='FORMAT', choices=all_output_formats, required=standalone,
@@ -87,6 +91,13 @@ def ProcessOptions(options, standalone=False):
     standalone: Whether this is a standalone Results Processor run (as
       opposed to the run with Telemetry).
   """
+  if options.verbosity >= 2:
+    logging.getLogger().setLevel(logging.DEBUG)
+  elif options.verbosity == 1:
+    logging.getLogger().setLevel(logging.INFO)
+  else:
+    logging.getLogger().setLevel(logging.WARNING)
+
   # The output_dir option is None or missing if the selected Telemetry command
   # does not involve output generation, e.g. "run_benchmark list", and the
   # argument parser defined above was not invoked.

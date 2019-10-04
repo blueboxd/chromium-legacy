@@ -15,6 +15,7 @@
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/protocol/web_app_specifics.pb.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
@@ -86,7 +87,7 @@ void WebAppDatabase::CancelTransaction() {
 // static
 std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     const WebApp& web_app) {
-  auto proto = std::make_unique<WebAppProto>();
+  auto local_data = std::make_unique<WebAppProto>();
 
   // Required fields:
   const GURL launch_url = web_app.launch_url();
@@ -95,55 +96,64 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   DCHECK(!web_app.app_id().empty());
   DCHECK_EQ(web_app.app_id(), GenerateAppIdFromURL(launch_url));
 
-  sync_pb::WebAppSpecifics* specifics = proto->mutable_specifics();
+  sync_pb::WebAppSpecifics* sync_data = local_data->mutable_sync_data();
 
-  specifics->set_launch_url(launch_url.spec());
+  sync_data->set_launch_url(launch_url.spec());
 
-  specifics->set_name(web_app.name());
+  local_data->set_name(web_app.name());
 
-  DCHECK_NE(LaunchContainer::kDefault, web_app.launch_container());
-  specifics->set_launch_container(web_app.launch_container() ==
-                                          LaunchContainer::kWindow
+  DCHECK_NE(blink::mojom::DisplayMode::kUndefined, web_app.display_mode());
+  sync_data->set_launch_container(web_app.display_mode() ==
+                                          blink::mojom::DisplayMode::kStandalone
                                       ? sync_pb::WebAppSpecifics::WINDOW
                                       : sync_pb::WebAppSpecifics::TAB);
 
   DCHECK(web_app.sources_.any());
-  proto->mutable_sources()->set_system(web_app.sources_[Source::kSystem]);
-  proto->mutable_sources()->set_policy(web_app.sources_[Source::kPolicy]);
-  proto->mutable_sources()->set_web_app_store(
+  local_data->mutable_sources()->set_system(web_app.sources_[Source::kSystem]);
+  local_data->mutable_sources()->set_policy(web_app.sources_[Source::kPolicy]);
+  local_data->mutable_sources()->set_web_app_store(
       web_app.sources_[Source::kWebAppStore]);
-  proto->mutable_sources()->set_sync(web_app.sources_[Source::kSync]);
-  proto->mutable_sources()->set_default_(web_app.sources_[Source::kDefault]);
+  local_data->mutable_sources()->set_sync(web_app.sources_[Source::kSync]);
+  local_data->mutable_sources()->set_default_(
+      web_app.sources_[Source::kDefault]);
 
-  proto->set_is_locally_installed(web_app.is_locally_installed());
+  local_data->set_is_locally_installed(web_app.is_locally_installed());
 
   // Optional fields:
-  proto->set_description(web_app.description());
+  local_data->set_description(web_app.description());
   if (!web_app.scope().is_empty())
-    proto->set_scope(web_app.scope().spec());
+    local_data->set_scope(web_app.scope().spec());
   if (web_app.theme_color().has_value())
-    specifics->set_theme_color(web_app.theme_color().value());
+    local_data->set_theme_color(web_app.theme_color().value());
+
+  local_data->set_is_sync_placeholder(web_app.is_sync_placeholder());
+
+  // Set sync_data to sync proto.
+  sync_data->set_name(web_app.sync_data().name);
+  if (web_app.sync_data().theme_color.has_value())
+    sync_data->set_theme_color(web_app.sync_data().theme_color.value());
 
   for (const WebApp::IconInfo& icon : web_app.icons()) {
-    WebAppIconInfoProto* icon_proto = proto->add_icons();
+    WebAppIconInfoProto* icon_proto = local_data->add_icons();
     icon_proto->set_url(icon.url.spec());
     icon_proto->set_size_in_px(icon.size_in_px);
   }
 
-  return proto;
+  return local_data;
 }
 
 // static
-std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
-  if (!proto.has_specifics()) {
-    DLOG(ERROR) << "WebApp proto parse error: no specifics field";
+std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
+    const WebAppProto& local_data) {
+  if (!local_data.has_sync_data()) {
+    DLOG(ERROR) << "WebApp proto parse error: no sync_data field";
     return nullptr;
   }
 
-  const sync_pb::WebAppSpecifics& specifics = proto.specifics();
+  const sync_pb::WebAppSpecifics& sync_data = local_data.sync_data();
 
   // AppId is a hash of launch_url. Read launch_url first:
-  GURL launch_url(specifics.launch_url());
+  GURL launch_url(sync_data.launch_url());
   if (launch_url.is_empty() || !launch_url.is_valid()) {
     DLOG(ERROR) << "WebApp proto launch_url parse error: "
                 << launch_url.possibly_invalid_spec();
@@ -156,50 +166,50 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
   web_app->SetLaunchUrl(launch_url);
 
   // Required fields:
-  if (!proto.has_sources()) {
+  if (!local_data.has_sources()) {
     DLOG(ERROR) << "WebApp proto parse error: no sources field";
     return nullptr;
   }
 
   WebApp::Sources sources;
-  sources[Source::kSystem] = proto.sources().system();
-  sources[Source::kPolicy] = proto.sources().policy();
-  sources[Source::kWebAppStore] = proto.sources().web_app_store();
-  sources[Source::kSync] = proto.sources().sync();
-  sources[Source::kDefault] = proto.sources().default_();
+  sources[Source::kSystem] = local_data.sources().system();
+  sources[Source::kPolicy] = local_data.sources().policy();
+  sources[Source::kWebAppStore] = local_data.sources().web_app_store();
+  sources[Source::kSync] = local_data.sources().sync();
+  sources[Source::kDefault] = local_data.sources().default_();
   if (!sources.any()) {
     DLOG(ERROR) << "WebApp proto parse error: no any source in sources field";
     return nullptr;
   }
   web_app->sources_ = sources;
 
-  if (!specifics.has_name()) {
+  if (!local_data.has_name()) {
     DLOG(ERROR) << "WebApp proto parse error: no name field";
     return nullptr;
   }
-  web_app->SetName(specifics.name());
+  web_app->SetName(local_data.name());
 
-  if (!specifics.has_launch_container()) {
+  if (!sync_data.has_launch_container()) {
     DLOG(ERROR) << "WebApp proto parse error: no launch_container field";
     return nullptr;
   }
-  web_app->SetLaunchContainer(specifics.launch_container() ==
-                                      sync_pb::WebAppSpecifics::WINDOW
-                                  ? LaunchContainer::kWindow
-                                  : LaunchContainer::kTab);
+  web_app->SetDisplayMode(sync_data.launch_container() ==
+                                  sync_pb::WebAppSpecifics::WINDOW
+                              ? blink::mojom::DisplayMode::kStandalone
+                              : blink::mojom::DisplayMode::kBrowser);
 
-  if (!proto.has_is_locally_installed()) {
+  if (!local_data.has_is_locally_installed()) {
     DLOG(ERROR) << "WebApp proto parse error: no is_locally_installed field";
     return nullptr;
   }
-  web_app->SetIsLocallyInstalled(proto.is_locally_installed());
+  web_app->SetIsLocallyInstalled(local_data.is_locally_installed());
 
   // Optional fields:
-  if (proto.has_description())
-    web_app->SetDescription(proto.description());
+  if (local_data.has_description())
+    web_app->SetDescription(local_data.description());
 
-  if (proto.has_scope()) {
-    GURL scope(proto.scope());
+  if (local_data.has_scope()) {
+    GURL scope(local_data.scope());
     if (scope.is_empty() || !scope.is_valid()) {
       DLOG(ERROR) << "WebApp proto scope parse error: "
                   << scope.possibly_invalid_spec();
@@ -208,12 +218,23 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
     web_app->SetScope(scope);
   }
 
-  if (specifics.has_theme_color())
-    web_app->SetThemeColor(specifics.theme_color());
+  if (local_data.has_theme_color())
+    web_app->SetThemeColor(local_data.theme_color());
+
+  if (local_data.has_is_sync_placeholder())
+    web_app->SetIsSyncPlaceholder(local_data.is_sync_placeholder());
+
+  // Parse sync_data from sync proto.
+  WebApp::SyncData parsed_sync_data;
+  if (sync_data.has_name())
+    parsed_sync_data.name = sync_data.name();
+  if (sync_data.has_theme_color())
+    parsed_sync_data.theme_color = sync_data.theme_color();
+  web_app->SetSyncData(parsed_sync_data);
 
   WebApp::Icons icons;
-  for (int i = 0; i < proto.icons_size(); ++i) {
-    const WebAppIconInfoProto& icon_proto = proto.icons(i);
+  for (int i = 0; i < local_data.icons_size(); ++i) {
+    const WebAppIconInfoProto& icon_proto = local_data.icons(i);
 
     GURL icon_url(icon_proto.url());
     if (icon_url.is_empty() || !icon_url.is_valid()) {

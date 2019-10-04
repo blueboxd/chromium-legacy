@@ -128,7 +128,7 @@ const String MediaValuesDynamic::MediaType() const {
   return CalculateMediaType(frame_);
 }
 
-WebDisplayMode MediaValuesDynamic::DisplayMode() const {
+blink::mojom::DisplayMode MediaValuesDynamic::DisplayMode() const {
   return CalculateDisplayMode(frame_);
 }
 

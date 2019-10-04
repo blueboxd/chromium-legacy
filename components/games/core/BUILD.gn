@@ -13,6 +13,7 @@ static_library("core") {
   deps = [
     "//base",
     "//components/games/core/proto",
+    "//components/keyed_service/core",
   ]
 }
 

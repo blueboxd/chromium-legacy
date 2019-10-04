@@ -1844,6 +1844,11 @@ const char kSharingUseDeviceInfoName[] =
 const char kSharingUseDeviceInfoDescription[] =
     "Enables Sharing infrastructure to register devices in DeviceInfo.";
 
+const char kSharingDeriveVapidKeyName[] =
+    "Enable Sharing derive VAPID key from sync";
+const char kSharingDeriveVapidKeyDescription[] =
+    "Enables Sharing infrastructure to derive VAPID key from sync.";
+
 const char kShelfHotseatName[] = "Enable a modular design for the shelf.";
 const char kShelfHotseatDescription[] =
     "Shows a modular design for the shelf where the apps are shown separately "

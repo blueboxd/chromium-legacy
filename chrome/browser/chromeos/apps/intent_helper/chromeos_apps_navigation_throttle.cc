@@ -113,8 +113,12 @@ void ChromeOsAppsNavigationThrottle::RecordUma(
     UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction",
                               arc::UserInteractionType::APP_STARTED_FROM_LINK);
   }
+  PickerAction action = apps::AppsNavigationThrottle::GetPickerAction(
+      entry_type, close_reason, should_persist);
+  Platform platform = GetDestinationPlatform(selected_app_package, action);
   apps::AppsNavigationThrottle::RecordUma(selected_app_package, entry_type,
-                                          close_reason, source, should_persist);
+                                          close_reason, source, should_persist,
+                                          action, platform);
 }
 
 ChromeOsAppsNavigationThrottle::ChromeOsAppsNavigationThrottle(

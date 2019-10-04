@@ -2645,13 +2645,13 @@ bool WebContentsImpl::IsFullscreen() {
   return IsFullscreenForCurrentTab();
 }
 
-blink::WebDisplayMode WebContentsImpl::GetDisplayMode(
+blink::mojom::DisplayMode WebContentsImpl::GetDisplayMode(
     RenderWidgetHostImpl* render_widget_host) const {
   if (!RenderViewHostImpl::From(render_widget_host))
-    return blink::kWebDisplayModeBrowser;
+    return blink::mojom::DisplayMode::kBrowser;
 
   return delegate_ ? delegate_->GetDisplayMode(this)
-                   : blink::kWebDisplayModeBrowser;
+                   : blink::mojom::DisplayMode::kBrowser;
 }
 
 void WebContentsImpl::RequestToLockMouse(

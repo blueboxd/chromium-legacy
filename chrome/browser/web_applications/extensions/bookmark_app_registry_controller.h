@@ -20,9 +20,8 @@ class BookmarkAppRegistryController : public web_app::AppRegistryController {
 
   // AppRegistryController:
   void Init(base::OnceClosure callback) override;
-  void SetAppLaunchContainer(
-      const web_app::AppId& app_id,
-      web_app::LaunchContainer launch_container) override;
+  void SetAppDisplayMode(const web_app::AppId& app_id,
+                         blink::mojom::DisplayMode display_mode) override;
   void SetAppIsLocallyInstalledForTesting(const web_app::AppId& app_id,
                                           bool is_locally_installed) override;
   web_app::WebAppSyncBridge* AsWebAppSyncBridge() override;

@@ -101,9 +101,9 @@ This is an implementation detail, but the code handling wake locks in `VideoWake
 
 ```c++
 mojo::Remote<mojom::blink::WakeLockService> wake_lock_service;
-device::mojom::blink::WakeLockPtr wake_lock;
+mojo::Remote<device::mojom::blink::WakeLock> wake_lock;
 execution_context->GetInterface(wake_lock_service.BindNewPipeAndPassReceiver());
-wake_lock_service->GetWakeLock(..., mojo::MakeRequest(&wake_lock));
+wake_lock_service->GetWakeLock(..., wake_lock.BindNewPipeAndPassReceiver());
 wake_lock_->RequestWakeLock();
 ```
 

@@ -739,6 +739,7 @@ void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
   context_->PaintRenderingResultsToCanvas(kFrontBuffer);
   if (HasResourceProvider()) {
     if (!context.ContextDisabled()) {
+      const ComputedStyle* style = GetComputedStyle();
       // For 2D Canvas, there are two ways of render Canvas for printing:
       // display list or image snapshot. Display list allows better PDF printing
       // and we prefer this method.
@@ -752,7 +753,6 @@ void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
       if (IsPrinting() && !Is3d() && canvas2d_bridge_) {
         canvas2d_bridge_->FlushRecording();
         if (canvas2d_bridge_->getLastRecord()) {
-          const ComputedStyle* style = GetComputedStyle();
           if (style && style->ImageRendering() != EImageRendering::kPixelated) {
             context.Canvas()->save();
             context.Canvas()->translate(r.X(), r.Y());
@@ -782,6 +782,7 @@ void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
         DCHECK(!snapshot->IsTextureBacked());
         context.DrawImage(snapshot.get(), Image::kSyncDecode,
                           FloatRect(PixelSnappedIntRect(r)), &src_rect,
+                          style && style->HasFilterInducingProperty(),
                           composite_operator);
       }
     }

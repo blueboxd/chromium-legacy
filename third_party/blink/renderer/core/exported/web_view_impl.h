@@ -35,7 +35,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/web_float_size.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -172,7 +172,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void ResetScrollAndScaleState() override;
   void SetIgnoreViewportTagScaleLimits(bool) override;
   WebSize ContentsPreferredMinimumSize() override;
-  void SetDisplayMode(WebDisplayMode) override;
+  void SetDisplayMode(blink::mojom::DisplayMode) override;
   void AnimateDoubleTapZoom(const gfx::Point&,
                             const WebRect& block_bounds) override;
   void ZoomToFindInPageRect(const WebRect&) override;
@@ -378,7 +378,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   WebSize Size();
   IntSize MainFrameSize();
-  WebDisplayMode DisplayMode() const { return display_mode_; }
+  blink::mojom::DisplayMode DisplayMode() const { return display_mode_; }
 
   PageScaleConstraintsSet& GetPageScaleConstraintsSet() const;
 
@@ -682,7 +682,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   bool should_dispatch_first_visually_non_empty_layout_ = false;
   bool should_dispatch_first_layout_after_finished_parsing_ = false;
   bool should_dispatch_first_layout_after_finished_loading_ = false;
-  WebDisplayMode display_mode_ = kWebDisplayModeBrowser;
+  blink::mojom::DisplayMode display_mode_ = blink::mojom::DisplayMode::kBrowser;
 
   // TODO(bokan): Temporary debugging added to diagnose
   // https://crbug.com/992315. Somehow we're synchronously calling

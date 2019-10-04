@@ -150,6 +150,7 @@ static_library("video_player_test_environment") {
     "//media/test/data/",
   ]
   deps = [
+    ":frame_file_writer",
     ":helpers",
     ":video_player",
     "//media/gpu",

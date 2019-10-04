@@ -73,7 +73,7 @@ struct EnumTraits<arc::mojom::VideoPixelFormat, media::VideoPixelFormat> {
 };
 
 template <>
-struct StructTraits<arc::mojom::MediaVideoFramePlaneDataView,
+struct StructTraits<arc::mojom::ColorPlaneLayoutDataView,
                     media::ColorPlaneLayout> {
   static int32_t stride(const media::ColorPlaneLayout& r) { return r.stride; }
 
@@ -81,7 +81,7 @@ struct StructTraits<arc::mojom::MediaVideoFramePlaneDataView,
 
   static uint32_t size(const media::ColorPlaneLayout& r) { return r.size; }
 
-  static bool Read(arc::mojom::MediaVideoFramePlaneDataView data,
+  static bool Read(arc::mojom::ColorPlaneLayoutDataView data,
                    media::ColorPlaneLayout* out);
 };
 

@@ -12,7 +12,7 @@ class DualMetricMeasurement(story_test.StoryTest):
     Assumes both javascript as well as tracing metrics might be defined.
 
     All pages associated with this measurement must implement
-    GetJavascriptMetricValues() and GetJavascriptMetricSummaryValues()
+    GetJavascriptMetricValues().
   """
   def __init__(self, tbm_options):
     super(DualMetricMeasurement, self).__init__()
@@ -45,8 +45,6 @@ class DualMetricMeasurement(story_test.StoryTest):
     else:
       for value in results.current_page.GetJavascriptMetricValues():
         results.AddValue(value)
-      for value in results.current_page.GetJavascriptMetricSummaryValues():
-        results.AddSummaryValue(value)
       # This call is necessary to convert the current ScalarValues to
       # histograms before more histograms are added.  If we don't,
       # when histograms get added by TBM2 page_test_results will see those and
@@ -62,4 +60,3 @@ class DualMetricMeasurement(story_test.StoryTest):
   def DidRunStory(self, platform, results):
     if self._enable_tracing:
       self._tbm_test.DidRunStory(platform, results)
-

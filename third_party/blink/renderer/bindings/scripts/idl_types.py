@@ -365,6 +365,11 @@ class IdlUnionType(IdlTypeBase):
             lambda member_type: member_type.is_sequence_type)
 
     @property
+    def dictionary_member_type(self):
+        return self.single_matching_member_type(
+            lambda member_type: member_type.is_dictionary)
+
+    @property
     def as_union_type(self):
         # Note: Use this to "look through" a possible IdlNullableType wrapper.
         return self

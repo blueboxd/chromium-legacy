@@ -2811,6 +2811,7 @@ jumbo_split_static_library("ui") {
       "views/global_error_bubble_view.h",
       "views/global_media_controls/media_dialog_view.cc",
       "views/global_media_controls/media_dialog_view.h",
+      "views/global_media_controls/media_dialog_view_observer.h",
       "views/global_media_controls/media_notification_container_impl.cc",
       "views/global_media_controls/media_notification_container_impl.h",
       "views/global_media_controls/media_notification_list_view.cc",

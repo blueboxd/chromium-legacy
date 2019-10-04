@@ -234,10 +234,14 @@ void FrameData::MaybeUpdateFrameDepth(
     frame_depth_ = render_frame_host->GetFrameDepth() - root_frame_depth_;
 }
 
+bool FrameData::ShouldRecordFrameForMetrics() const {
+  return bytes() != 0 || !GetTotalCpuUsage().is_zero();
+}
+
 void FrameData::RecordAdFrameLoadUkmEvent(ukm::SourceId source_id) const {
-  // Only record events for frames that have non-zero bytes.
-  if (bytes() == 0)
+  if (!ShouldRecordFrameForMetrics())
     return;
+
   auto* ukm_recorder = ukm::UkmRecorder::Get();
   ukm::builders::AdFrameLoad builder(source_id);
   builder

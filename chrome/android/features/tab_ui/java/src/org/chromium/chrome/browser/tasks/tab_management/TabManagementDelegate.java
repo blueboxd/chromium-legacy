@@ -29,13 +29,14 @@ public interface TabManagementDelegate {
     /**
      * Create the {@link TasksSurface}
      * @param activity The {@link ChromeActivity} that creates this surface.
-     * @param isTabCarousel Whether show the Tabs in carousel mode.
      * @param propertyModel The {@link PropertyModel} contains the {@link TasksSurfaceProperties} to
      *         communicate with this surface.
+     * @param fakeSearchBoxDelegate The delegate of the fake search box.
+     * @param isTabCarousel Whether show the Tabs in carousel mode.
      * @return The {@TasksSurface}.
      */
-    TasksSurface createTasksSurface(
-            ChromeActivity activity, boolean isTabCarousel, PropertyModel propertyModel);
+    TasksSurface createTasksSurface(ChromeActivity activity, PropertyModel propertyModel,
+            TasksSurface.FakeSearchBoxDelegate fakeSearchBoxDelegate, boolean isTabCarousel);
 
     /**
      * Create the {@link TabSwitcher} to display Tabs in grid.

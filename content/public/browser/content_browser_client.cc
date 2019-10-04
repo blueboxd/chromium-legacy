@@ -480,6 +480,10 @@ MediaObserver* ContentBrowserClient::GetMediaObserver() {
   return nullptr;
 }
 
+LockObserver* ContentBrowserClient::GetLockObserver() {
+  return nullptr;
+}
+
 PlatformNotificationService*
 ContentBrowserClient::GetPlatformNotificationService(
     BrowserContext* browser_context) {
@@ -894,6 +898,7 @@ bool ContentBrowserClient::HandleExternalProtocol(
     bool is_main_frame,
     ui::PageTransition page_transition,
     bool has_user_gesture,
+    const base::Optional<url::Origin>& initiating_origin,
     network::mojom::URLLoaderFactoryPtr* out_factory) {
   return true;
 }

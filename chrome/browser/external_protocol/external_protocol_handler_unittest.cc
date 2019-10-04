@@ -74,14 +74,17 @@ class FakeExternalProtocolHandlerDelegate
       std::move(on_complete_).Run();
   }
 
-  void RunExternalProtocolDialog(const GURL& url,
-                                 content::WebContents* web_contents,
-                                 ui::PageTransition page_transition,
-                                 bool has_user_gesture) override {
+  void RunExternalProtocolDialog(
+      const GURL& url,
+      content::WebContents* web_contents,
+      ui::PageTransition page_transition,
+      bool has_user_gesture,
+      const base::Optional<url::Origin>& initiating_origin) override {
     EXPECT_EQ(block_state_, ExternalProtocolHandler::UNKNOWN);
     EXPECT_NE(os_state_, shell_integration::IS_DEFAULT);
     has_prompted_ = true;
     launch_or_prompt_url_ = url;
+    initiating_origin_ = initiating_origin;
   }
 
   void LaunchUrlWithoutSecurityCheck(
@@ -109,6 +112,9 @@ class FakeExternalProtocolHandlerDelegate
   bool has_launched() { return has_launched_; }
   bool has_prompted() { return has_prompted_; }
   bool has_blocked() { return has_blocked_; }
+  const base::Optional<url::Origin>& initiating_origin() {
+    return initiating_origin_;
+  }
 
   const std::string& launch_or_prompt_url() {
     return launch_or_prompt_url_.spec();
@@ -121,6 +127,7 @@ class FakeExternalProtocolHandlerDelegate
   bool has_prompted_;
   bool has_blocked_;
   GURL launch_or_prompt_url_;
+  base::Optional<url::Origin> initiating_origin_;
   base::OnceClosure on_complete_;
 };
 
@@ -154,6 +161,8 @@ class ExternalProtocolHandlerTest : public testing::Test {
               shell_integration::DefaultWebClientState os_state,
               Action expected_action,
               const GURL& url) {
+    url::Origin initiating_origin =
+        url::Origin::Create(GURL("https://example.test"));
     EXPECT_FALSE(delegate_.has_prompted());
     EXPECT_FALSE(delegate_.has_launched());
     EXPECT_FALSE(delegate_.has_blocked());
@@ -163,13 +172,20 @@ class ExternalProtocolHandlerTest : public testing::Test {
     int process_id = web_contents_->GetRenderViewHost()->GetProcess()->GetID();
     int routing_id = web_contents_->GetRenderViewHost()->GetRoutingID();
     ExternalProtocolHandler::LaunchUrl(url, process_id, routing_id,
-                                       ui::PAGE_TRANSITION_LINK, true);
+                                       ui::PAGE_TRANSITION_LINK, true,
+                                       initiating_origin);
     run_loop_.Run();
     ExternalProtocolHandler::SetDelegateForTesting(nullptr);
 
     EXPECT_EQ(expected_action == Action::PROMPT, delegate_.has_prompted());
     EXPECT_EQ(expected_action == Action::LAUNCH, delegate_.has_launched());
     EXPECT_EQ(expected_action == Action::BLOCK, delegate_.has_blocked());
+    if (expected_action == Action::PROMPT) {
+      ASSERT_TRUE(delegate_.initiating_origin().has_value());
+      EXPECT_EQ(initiating_origin, delegate_.initiating_origin().value());
+    } else {
+      EXPECT_FALSE(delegate_.initiating_origin().has_value());
+    }
   }
 
   content::BrowserTaskEnvironment task_environment_;

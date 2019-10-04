@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/global_media_controls/media_dialog_view_observer.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_list_view.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -66,6 +67,9 @@ void MediaDialogView::ShowMediaSession(
       id, std::make_unique<MediaNotificationContainerImpl>(this, controller_,
                                                            id, item));
   OnAnchorBoundsChanged();
+
+  for (auto& observer : observers_)
+    observer.OnMediaSessionShown();
 }
 
 void MediaDialogView::HideMediaSession(const std::string& id) {
@@ -75,6 +79,9 @@ void MediaDialogView::HideMediaSession(const std::string& id) {
     HideDialog();
   else
     OnAnchorBoundsChanged();
+
+  for (auto& observer : observers_)
+    observer.OnMediaSessionHidden();
 }
 
 int MediaDialogView::GetDialogButtons() const {
@@ -109,6 +116,19 @@ gfx::Size MediaDialogView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_BUBBLE_PREFERRED_WIDTH);
   return gfx::Size(width, 1);
+}
+
+void MediaDialogView::AddObserver(MediaDialogViewObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MediaDialogView::RemoveObserver(MediaDialogViewObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void MediaDialogView::OnMediaSessionMetadataChanged() {
+  for (auto& observer : observers_)
+    observer.OnMediaSessionMetadataUpdated();
 }
 
 MediaDialogView::MediaDialogView(views::View* anchor_view,

@@ -8,6 +8,10 @@
 #include "base/callback.h"
 #include "base/location.h"
 
+namespace content {
+class LockObserver;
+}
+
 namespace performance_manager {
 
 class Graph;
@@ -32,6 +36,12 @@ class PerformanceManager {
   // be called from the main thread and only if "IsAvailable" returns true.
   static void PassToGraph(const base::Location& from_here,
                           std::unique_ptr<GraphOwned> graph_owned);
+
+  // Returns the LockObserver that should be exposed to //content to allow the
+  // performance manager to track usage of locks in frames. Valid to call from
+  // any thread, but external synchronization is needed to make sure that the
+  // performance manager is available.
+  static content::LockObserver* GetLockObserver();
 
  protected:
   PerformanceManager();

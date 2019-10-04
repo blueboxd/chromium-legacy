@@ -71,6 +71,7 @@ source_set("headers") {
     "frame/user_activation_state.h",
     "frame/user_activation_update_source.h",
     "frame/user_activation_update_type.h",
+    "http/structured_header.h",
     "indexeddb/indexed_db_default_mojom_traits.h",
     "indexeddb/indexeddb_key.h",
     "indexeddb/indexeddb_key_path.h",
@@ -114,6 +115,7 @@ source_set("headers") {
     "page/launching_process_state.h",
     "page/page_zoom.h",
     "peerconnection/webrtc_ip_handling_policy.h",
+    "plugin/plugin_action.h",
     "prerender/prerender_rel_type.h",
     "scheduler/web_scheduler_tracked_feature.h",
     "screen_orientation/web_screen_orientation_lock_type.h",
@@ -125,7 +127,6 @@ source_set("headers") {
     "sms/sms_receiver_outcome.h",
     "user_agent/user_agent_metadata.h",
     "web_cache/web_cache_resource_type_stats.h",
-    "web_package/http_structured_header.h",
     "web_package/signed_exchange_consts.h",
     "web_package/signed_exchange_request_matcher.h",
   ]

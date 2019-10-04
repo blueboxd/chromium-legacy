@@ -38,12 +38,13 @@ class BASE_EXPORT FileVersionInfoWin : public FileVersionInfo {
   base::string16 file_description() override;
   base::string16 file_version() override;
 
-  // Lets you access other properties not covered above.
-  bool GetValue(const base::char16* name, base::string16* value);
+  // Lets you access other properties not covered above. |value| is only
+  // modified if GetValue() returns true.
+  bool GetValue(const base::char16* name, base::string16* value) const;
 
   // Similar to GetValue but returns a string16 (empty string if the property
   // does not exist).
-  base::string16 GetStringValue(const base::char16* name);
+  base::string16 GetStringValue(const base::char16* name) const;
 
   // Get file version number in dotted version format.
   base::Version GetFileVersion() const;
@@ -67,8 +68,8 @@ class BASE_EXPORT FileVersionInfoWin : public FileVersionInfo {
   const WORD language_;
   const WORD code_page_;
 
-  // This is a pointer into |data_| if it exists. Otherwise nullptr.
-  const VS_FIXEDFILEINFO* const fixed_file_info_;
+  // This is a reference for a portion of |data_|.
+  const VS_FIXEDFILEINFO& fixed_file_info_;
 
   DISALLOW_COPY_AND_ASSIGN(FileVersionInfoWin);
 };

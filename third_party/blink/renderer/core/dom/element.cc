@@ -2570,6 +2570,11 @@ Node::InsertionNotificationRequest Element::InsertedInto(
         }
       }
     }
+
+    if (isConnected()) {
+      if (auto* context = rare_data->GetDisplayLockContext())
+        context->ElementConnected();
+    }
   }
 
   if (isConnected()) {
@@ -2667,6 +2672,10 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
       GetDocument().EnsureIntersectionObserverController().RemoveTrackedElement(
           *this);
     }
+
+    if (auto* context = data->GetDisplayLockContext())
+      context->ElementDisconnected();
+
     DCHECK(!data->HasPseudoElements());
   }
 
@@ -4131,9 +4140,7 @@ bool Element::ActivateDisplayLockIfNeeded() {
     if (auto* context = target.first->GetDisplayLockContext()) {
       if (context->ShouldCommitForActivation()) {
         activated = true;
-        target.first->DispatchEvent(
-            *MakeGarbageCollected<BeforeActivateEvent>(*target.second));
-        context->CommitForActivation();
+        context->CommitForActivationWithSignal(target.second);
       }
     }
   }

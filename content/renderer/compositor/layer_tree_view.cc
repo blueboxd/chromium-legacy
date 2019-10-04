@@ -58,18 +58,19 @@ LayerTreeView::LayerTreeView(
     scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
     cc::TaskGraphRunner* task_graph_runner,
     blink::scheduler::WebThreadScheduler* scheduler)
-    : delegate_(delegate),
-      main_thread_(std::move(main_thread)),
+    : main_thread_(std::move(main_thread)),
       compositor_thread_(std::move(compositor_thread)),
       task_graph_runner_(task_graph_runner),
       web_main_thread_scheduler_(scheduler),
-      animation_host_(cc::AnimationHost::CreateMainInstance()) {}
+      animation_host_(cc::AnimationHost::CreateMainInstance()),
+      delegate_(delegate) {}
 
 LayerTreeView::~LayerTreeView() = default;
 
 void LayerTreeView::Initialize(
     const cc::LayerTreeSettings& settings,
     std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) {
+  DCHECK(delegate_);
   const bool is_threaded = !!compositor_thread_;
 
   cc::LayerTreeHost::InitParams params;
@@ -99,7 +100,17 @@ void LayerTreeView::Initialize(
   }
 }
 
+void LayerTreeView::Disconnect() {
+  DCHECK(delegate_);
+  // Drop compositor resources immediately, while keeping the compositor alive
+  // until after this class is destroyed.
+  layer_tree_host_->SetVisible(false);
+  layer_tree_host_->ReleaseLayerTreeFrameSink();
+  delegate_ = nullptr;
+}
+
 void LayerTreeView::SetVisible(bool visible) {
+  DCHECK(delegate_);
   layer_tree_host_->SetVisible(visible);
 
   if (visible && layer_tree_frame_sink_request_failed_while_invisible_)
@@ -108,6 +119,7 @@ void LayerTreeView::SetVisible(bool visible) {
 
 void LayerTreeView::SetLayerTreeFrameSink(
     std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink) {
+  DCHECK(delegate_);
   if (!layer_tree_frame_sink) {
     DidFailToInitializeLayerTreeFrameSink();
     return;
@@ -116,18 +128,26 @@ void LayerTreeView::SetLayerTreeFrameSink(
 }
 
 void LayerTreeView::WillBeginMainFrame() {
+  if (!delegate_)
+    return;
   delegate_->WillBeginCompositorFrame();
 }
 
 void LayerTreeView::DidBeginMainFrame() {
+  if (!delegate_)
+    return;
   delegate_->DidBeginMainFrame();
 }
 
 void LayerTreeView::WillUpdateLayers() {
+  if (!delegate_)
+    return;
   delegate_->BeginUpdateLayers();
 }
 
 void LayerTreeView::DidUpdateLayers() {
+  if (!delegate_)
+    return;
   delegate_->EndUpdateLayers();
   // Dump property trees and layers if run with:
   //   --vmodule=layer_tree_view=3
@@ -139,52 +159,74 @@ void LayerTreeView::DidUpdateLayers() {
 }
 
 void LayerTreeView::BeginMainFrame(const viz::BeginFrameArgs& args) {
+  if (!delegate_)
+    return;
   web_main_thread_scheduler_->WillBeginFrame(args);
   delegate_->BeginMainFrame(args.frame_time);
 }
 
 void LayerTreeView::OnDeferMainFrameUpdatesChanged(bool status) {
+  if (!delegate_)
+    return;
   delegate_->OnDeferMainFrameUpdatesChanged(status);
 }
 
 void LayerTreeView::OnDeferCommitsChanged(bool status) {
+  if (!delegate_)
+    return;
   delegate_->OnDeferCommitsChanged(status);
 }
 
 void LayerTreeView::BeginMainFrameNotExpectedSoon() {
+  if (!delegate_)
+    return;
   web_main_thread_scheduler_->BeginFrameNotExpectedSoon();
 }
 
 void LayerTreeView::BeginMainFrameNotExpectedUntil(base::TimeTicks time) {
+  if (!delegate_)
+    return;
   web_main_thread_scheduler_->BeginMainFrameNotExpectedUntil(time);
 }
 
 void LayerTreeView::UpdateLayerTreeHost() {
+  if (!delegate_)
+    return;
   delegate_->UpdateVisualState();
 }
 
 void LayerTreeView::ApplyViewportChanges(
     const cc::ApplyViewportChangesArgs& args) {
+  if (!delegate_)
+    return;
   delegate_->ApplyViewportChanges(args);
 }
 
 void LayerTreeView::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
+  if (!delegate_)
+    return;
   delegate_->RecordManipulationTypeCounts(info);
 }
 
 void LayerTreeView::SendOverscrollEventFromImplSide(
     const gfx::Vector2dF& overscroll_delta,
     cc::ElementId scroll_latched_element_id) {
+  if (!delegate_)
+    return;
   delegate_->SendOverscrollEventFromImplSide(overscroll_delta,
                                              scroll_latched_element_id);
 }
 
 void LayerTreeView::SendScrollEndEventFromImplSide(
     cc::ElementId scroll_latched_element_id) {
+  if (!delegate_)
+    return;
   delegate_->SendScrollEndEventFromImplSide(scroll_latched_element_id);
 }
 
 void LayerTreeView::RequestNewLayerTreeFrameSink() {
+  if (!delegate_)
+    return;
   // When the compositor is not visible it would not request a
   // LayerTreeFrameSink so this is a race where it requested one then became
   // not-visible. In that case, we can wait for it to become visible again
@@ -217,6 +259,8 @@ void LayerTreeView::RequestNewLayerTreeFrameSink() {
 void LayerTreeView::DidInitializeLayerTreeFrameSink() {}
 
 void LayerTreeView::DidFailToInitializeLayerTreeFrameSink() {
+  if (!delegate_)
+    return;
   if (!layer_tree_host_->IsVisible()) {
     layer_tree_frame_sink_request_failed_while_invisible_ = true;
     return;
@@ -228,25 +272,35 @@ void LayerTreeView::DidFailToInitializeLayerTreeFrameSink() {
 }
 
 void LayerTreeView::WillCommit() {
+  if (!delegate_)
+    return;
   delegate_->WillCommitCompositorFrame();
 }
 
 void LayerTreeView::DidCommit() {
+  if (!delegate_)
+    return;
   delegate_->DidCommitCompositorFrame();
   web_main_thread_scheduler_->DidCommitFrameToCompositor();
 }
 
 void LayerTreeView::DidCommitAndDrawFrame() {
+  if (!delegate_)
+    return;
   delegate_->DidCommitAndDrawCompositorFrame();
 }
 
 void LayerTreeView::DidCompletePageScaleAnimation() {
+  if (!delegate_)
+    return;
   delegate_->DidCompletePageScaleAnimation();
 }
 
 void LayerTreeView::DidPresentCompositorFrame(
     uint32_t frame_token,
     const gfx::PresentationFeedback& feedback) {
+  if (!delegate_)
+    return;
   DCHECK(layer_tree_host_->GetTaskRunnerProvider()
              ->MainThreadTaskRunner()
              ->RunsTasksInCurrentSequence());
@@ -261,10 +315,14 @@ void LayerTreeView::DidPresentCompositorFrame(
 }
 
 void LayerTreeView::RecordStartOfFrameMetrics() {
+  if (!delegate_)
+    return;
   delegate_->RecordStartOfFrameMetrics();
 }
 
 void LayerTreeView::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
+  if (!delegate_)
+    return;
   delegate_->RecordEndOfFrameMetrics(frame_begin_time);
 }
 
@@ -288,6 +346,7 @@ void LayerTreeView::DidLoseLayerTreeFrameSink() {}
 void LayerTreeView::AddPresentationCallback(
     uint32_t frame_token,
     base::OnceCallback<void(base::TimeTicks)> callback) {
+  DCHECK(delegate_);
   if (!presentation_callbacks_.empty()) {
     auto& previous = presentation_callbacks_.back();
     uint32_t previous_frame_token = previous.first;

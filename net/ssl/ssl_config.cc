@@ -21,13 +21,7 @@ SSLConfig::CertAndStatus::CertAndStatus(scoped_refptr<X509Certificate> cert_arg,
 SSLConfig::CertAndStatus::CertAndStatus(const CertAndStatus& other) = default;
 SSLConfig::CertAndStatus::~CertAndStatus() = default;
 
-SSLConfig::SSLConfig()
-    : early_data_enabled(false),
-      require_ecdhe(false),
-      ignore_certificate_errors(false),
-      disable_cert_verification_network_fetches(false),
-      renego_allowed_default(false),
-      privacy_mode(PRIVACY_MODE_DISABLED) {}
+SSLConfig::SSLConfig() = default;
 
 SSLConfig::SSLConfig(const SSLConfig& other) = default;
 

@@ -31,6 +31,10 @@
 // static
 const char BackgroundSyncControllerImpl::kFieldTrialName[] = "BackgroundSync";
 const char BackgroundSyncControllerImpl::kDisabledParameterName[] = "disabled";
+#if defined(OS_ANDROID)
+const char BackgroundSyncControllerImpl::kRelyOnAndroidNetworkDetection[] =
+    "rely_on_android_network_detection";
+#endif
 const char BackgroundSyncControllerImpl::kMaxAttemptsParameterName[] =
     "max_sync_attempts";
 const char BackgroundSyncControllerImpl::

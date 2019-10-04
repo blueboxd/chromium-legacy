@@ -33,10 +33,11 @@ class SwitchAccessInterface {
   restartAutoScan() {}
 
   /**
-   * Check if the current node is in the virtual keyboard.
-   * @return {boolean}
+   * Sets whether the current node is in the virtual keyboard.
+   * @param {boolean} inKeyboard
    */
-  inVirtualKeyboard() {}
+  setInKeyboard(inKeyboard) {}
+
 
   /**
    * Check whether or not the feature flag

@@ -60,6 +60,30 @@ class TasksView extends LinearLayout {
     }
 
     /**
+     * Set the given listener for the fake search box.
+     * @param listener The given listener.
+     */
+    void setFakeSearchBoxClickListener(@Nullable View.OnClickListener listener) {
+        findViewById(R.id.search_box_text).setOnClickListener(listener);
+    }
+
+    /**
+     * Set the visibility of the fake search box.
+     * @param isVisible Whether it's visible.
+     */
+    void setFakeSearchBoxVisibility(boolean isVisible) {
+        findViewById(R.id.search_box).setVisibility(isVisible ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Set the visibility of the voice recognition button.
+     * @param isVisible Whether it's visible.
+     */
+    void setVoiceRecognitionButtonVisibility(boolean isVisible) {
+        findViewById(R.id.voice_search_button).setVisibility(isVisible ? View.VISIBLE : View.GONE);
+    }
+
+    /**
      * Set the visibility of the Most Visited Tiles.
      */
     void setMostVisitedVisibility(int visibility) {

@@ -40,6 +40,7 @@
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
+#include "third_party/blink/public/common/plugin/plugin_action.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_image.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -60,7 +61,6 @@
 #include "third_party/blink/public/web/web_media_player_action.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_plugin.h"
-#include "third_party/blink/public/web/web_plugin_action.h"
 #include "third_party/blink/public/web/web_range.h"
 #include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "third_party/blink/public/web/web_view_client.h"
@@ -2765,7 +2765,7 @@ void WebViewImpl::ResetScrollAndScaleState() {
   GetPageScaleConstraintsSet().SetNeedsReset(true);
 }
 
-void WebViewImpl::PerformPluginAction(const WebPluginAction& action,
+void WebViewImpl::PerformPluginAction(const PluginAction& action,
                                       const gfx::Point& location) {
   // FIXME: Location is probably in viewport coordinates
   HitTestResult result =
@@ -2780,11 +2780,11 @@ void WebViewImpl::PerformPluginAction(const WebPluginAction& action,
         ToLayoutEmbeddedContent(object)->Plugin();
     if (plugin_view) {
       switch (action.type) {
-        case WebPluginAction::kRotate90Clockwise:
+        case PluginAction::kRotate90Clockwise:
           plugin_view->Plugin()->RotateView(
               WebPlugin::kRotationType90Clockwise);
           break;
-        case WebPluginAction::kRotate90Counterclockwise:
+        case PluginAction::kRotate90Counterclockwise:
           plugin_view->Plugin()->RotateView(
               WebPlugin::kRotationType90Counterclockwise);
           break;

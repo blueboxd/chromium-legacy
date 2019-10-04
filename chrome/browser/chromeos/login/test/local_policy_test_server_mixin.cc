@@ -51,9 +51,14 @@ void LocalPolicyTestServerMixin::SetUp() {
                                       policy::PolicyBuilder::kFakeDeviceId,
                                       {} /* state_keys */);
 
-  CHECK(policy_test_server_->SetSigningKeyAndSignature(
-      policy::PolicyBuilder::CreateTestSigningKey().get(),
-      policy::PolicyBuilder::GetTestSigningKeySignature()));
+  if (!canned_signing_keys_enabled_) {
+    CHECK(policy_test_server_->SetSigningKeyAndSignature(
+        policy::PolicyBuilder::CreateTestSigningKey().get(),
+        policy::PolicyBuilder::GetTestSigningKeySignature()));
+  }
+
+  if (automatic_rotation_of_signing_keys_enabled_)
+    policy_test_server_->EnableAutomaticRotationOfSigningKeys();
 
   CHECK(policy_test_server_->Start());
 }
@@ -255,6 +260,16 @@ void LocalPolicyTestServerMixin::ConfigureFakeStatisticsForZeroTouch(
                                 test::kTestSerialNumber);
   provider->SetMachineStatistic(system::kHardwareClassKey,
                                 test::kTestHardwareClass);
+}
+
+void LocalPolicyTestServerMixin::EnableCannedSigningKeys() {
+  DCHECK(!policy_test_server_);
+  canned_signing_keys_enabled_ = true;
+}
+
+void LocalPolicyTestServerMixin::EnableAutomaticRotationOfSigningKeys() {
+  DCHECK(!policy_test_server_);
+  automatic_rotation_of_signing_keys_enabled_ = true;
 }
 
 LocalPolicyTestServerMixin::~LocalPolicyTestServerMixin() = default;

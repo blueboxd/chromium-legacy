@@ -7,12 +7,18 @@ Setting focus in prompt:
 TEXTAREA:Console prompt
 
 Shift+Tab:
+SPAN:test://evaluations/0/console-key-navigation.js:20
+
+ArrowUp:
 DIV:console-key-navigation.js:20 Message #99
 
 Shift+Tab:
 DIV#console-messages.monospace
 
 Tab:
+SPAN:test://evaluations/0/console-key-navigation.js:20
+
+ArrowUp:
 DIV:console-key-navigation.js:20 Message #99
 
 Tab:
@@ -23,6 +29,9 @@ Setting focus in prompt:
 TEXTAREA:Console prompt
 
 Shift+Tab:
+SPAN:test://evaluations/0/console-key-navigation.js:20
+
+ArrowUp:
 DIV:console-key-navigation.js:20 Message #99
 
 Scrolling to top of viewport
@@ -32,12 +41,18 @@ Shift+Tab:
 DIV#console-messages.monospace
 
 Tab:
+SPAN:test://evaluations/0/console-key-navigation.js:20
+
+ArrowUp:
 DIV:console-key-navigation.js:20 Message #99
 
 Setting focus in prompt:
 TEXTAREA:Console prompt
 
 Shift+Tab:
+SPAN:test://evaluations/0/console-key-navigation.js:20
+
+ArrowUp:
 DIV:console-key-navigation.js:20 Message #99
 
 Scrolling to top of viewport
@@ -55,10 +70,16 @@ Home:
 DIV:console-key-navigation.js:20 Message #0
 
 ArrowDown:
+SPAN:test://evaluations/0/console-key-navigation.js:20
+
+ArrowDown:
 DIV:console-key-navigation.js:20 Message #1
 
 End:
 DIV:console-key-navigation.js:20 Message #99
+
+ArrowUp:
+SPAN:test://evaluations/0/console-key-navigation.js:20
 
 ArrowUp:
 DIV:console-key-navigation.js:20 Message #98

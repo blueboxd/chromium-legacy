@@ -15,6 +15,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout;
 import org.chromium.chrome.browser.compositor.TitleCache;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -93,6 +94,14 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
                 TabManagementDelegate tabManagementDelegate =
                         TabManagementModuleProvider.getDelegate();
                 assert tabManagementDelegate != null;
+                startSurface.setStateChangeObserver(new StartSurface.StateObserver() {
+                    @Override
+                    public void onStateChanged(boolean shouldShowTabSwitcherToolbar) {
+                        for (OverviewModeObserver observer : mOverviewModeObservers) {
+                            observer.onOverviewModeStateChanged(shouldShowTabSwitcherToolbar);
+                        }
+                    }
+                });
                 mOverviewLayout = tabManagementDelegate.createStartSurfaceLayout(
                         context, this, renderHost, startSurface);
             } else {

@@ -23,6 +23,8 @@
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
+class SkPath;
+
 namespace gfx {
 class ImageSkia;
 }  // namespace gfx
@@ -130,12 +132,14 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   void SetFlashFrameHint(bool flash_frame);
   void UpdateMinAndMaxSize();
   void SetUseNativeFrame(bool use_native_frame);
-  void SetShape(_XRegion* xregion);
-  void UpdateWindowRegion(_XRegion* xregion);
+  void SetShape(XRegion* xregion);
   void DispatchResize();
   void CancelResize();
   void NotifySwapAfterResize();
   void ConfineCursorTo(const gfx::Rect& bounds);
+
+  // Resets the window region for the current window bounds if necessary.
+  void ResetWindowRegion();
 
   gfx::Rect bounds() const { return bounds_in_pixels_; }
   gfx::Rect previous_bounds() const { return previous_bounds_in_pixels_; }
@@ -209,6 +213,10 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
 
   void SetVisualId(base::Optional<int> visual_id);
 
+  void UpdateWindowRegion(XRegion* xregion);
+
+  void NotifyBoundsChanged(const gfx::Rect& new_bounds_in_px);
+
   // Interface that must be used by a class that inherits the XWindow to receive
   // different messages from X Server.
   virtual void OnXWindowCreated() = 0;
@@ -228,6 +236,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   virtual void OnXWindowRawKeyEvent(XEvent* xev) = 0;
   virtual base::Optional<gfx::Size> GetMinimumSizeForXWindow() = 0;
   virtual base::Optional<gfx::Size> GetMaximumSizeForXWindow() = 0;
+  virtual void GetWindowMaskForXWindow(const gfx::Size& size,
+                                       SkPath* window_mask) = 0;
 
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_ = nullptr;
@@ -334,7 +344,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   gfx::Size max_size_in_pixels_;
 
   // The window shape if the window is non-rectangular.
-  gfx::XScopedPtr<_XRegion, gfx::XObjectDeleter<_XRegion, int, XDestroyRegion>>
+  gfx::XScopedPtr<XRegion, gfx::XObjectDeleter<XRegion, int, XDestroyRegion>>
       window_shape_;
 
   // Whether |window_shape_| was set via SetShape().

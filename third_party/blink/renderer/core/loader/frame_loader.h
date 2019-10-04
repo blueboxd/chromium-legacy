@@ -264,7 +264,8 @@ class CORE_EXPORT FrameLoader final {
 
   // Commits the given |document_loader|.
   void CommitDocumentLoader(DocumentLoader* document_loader,
-                            const base::Optional<Document::UnloadEventTiming>&);
+                            const base::Optional<Document::UnloadEventTiming>&,
+                            bool dispatch_did_commit_load);
 
   LocalFrameClient* Client() const;
 

@@ -59,14 +59,13 @@ public final class ReturnToChromeExperimentsUtil {
      * Whether we should display the omnibox on the tab switcher in addition to the
      *  tab switcher toolbar.
      *
-     * @return true if the tab switcher on return and tab grid features are both ON, else false.
+     * @return true if the tab grid and the start surface features are both ON, else false.
      */
     public static boolean shouldShowOmniboxOnTabSwitcher() {
         return ChromeFeatureList.isInitialized()
                 && (FeatureUtilities.isGridTabSwitcherEnabled()
                         || FeatureUtilities.isTabGroupsAndroidEnabled())
-                && (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_SWITCHER_ON_RETURN)
-                        || FeatureUtilities.isStartSurfaceEnabled());
+                && FeatureUtilities.isStartSurfaceEnabled();
     }
 
     /**

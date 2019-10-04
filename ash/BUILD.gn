@@ -62,6 +62,8 @@ component("ash") {
     "public/cpp/window_finder.h",
     "public/cpp/window_tree_host_lookup.h",
     "root_window_controller.h",
+    "rotator/screen_rotation_animator.h",
+    "rotator/screen_rotation_animator_observer.h",
     "screenshot_delegate.h",
     "session/session_controller_impl.h",
     "shelf/shelf.h",

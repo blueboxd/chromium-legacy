@@ -19,7 +19,8 @@
 #include "components/printing/common/print.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/common/metafile_utils.h"
 #include "third_party/blink/public/web/web_node.h"
@@ -195,8 +196,8 @@ class PrintRenderFrameHelper
   void ScriptedPrint(bool user_initiated) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  void OnPrintRenderFrameRequest(
-      mojom::PrintRenderFrameAssociatedRequest request);
+  void BindPrintRenderFrameReceiver(
+      mojo::PendingAssociatedReceiver<mojom::PrintRenderFrame> receiver);
 
   // printing::mojom::PrintRenderFrame:
   void InitiatePrintPreview(
@@ -413,7 +414,8 @@ class PrintRenderFrameHelper
   // etc.).
   mojom::PrintRendererAssociatedPtr print_renderer_;
 
-  mojo::AssociatedBinding<mojom::PrintRenderFrame> print_render_frame_binding_;
+  mojo::AssociatedReceiver<mojom::PrintRenderFrame>
+      print_render_frame_receiver_{this};
 
   // Keeps track of the state of print preview between messages.
   // TODO(vitalybuka): Create PrintPreviewContext when needed and delete after

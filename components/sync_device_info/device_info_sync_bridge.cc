@@ -183,6 +183,10 @@ LocalDeviceInfoProvider* DeviceInfoSyncBridge::GetLocalDeviceInfoProvider() {
   return local_device_info_provider_.get();
 }
 
+void DeviceInfoSyncBridge::RefreshLocalDeviceInfo() {
+  SendLocalData();
+}
+
 void DeviceInfoSyncBridge::OnSyncStarting(
     const DataTypeActivationRequest& request) {
   // Store the cache GUID, mainly in case MergeSyncData() is executed later.

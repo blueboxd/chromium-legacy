@@ -73,10 +73,12 @@ class NeverRunsExternalProtocolHandlerDelegate
 
   void BlockRequest() override {}
 
-  void RunExternalProtocolDialog(const GURL& url,
-                                 content::WebContents* web_contents,
-                                 ui::PageTransition page_transition,
-                                 bool has_user_gesture) override {
+  void RunExternalProtocolDialog(
+      const GURL& url,
+      content::WebContents* web_contents,
+      ui::PageTransition page_transition,
+      bool has_user_gesture,
+      const base::Optional<url::Origin>& initiating_origin) override {
     NOTREACHED();
   }
 

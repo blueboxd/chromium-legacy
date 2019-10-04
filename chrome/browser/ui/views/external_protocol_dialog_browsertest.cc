@@ -50,7 +50,7 @@ class TestExternalProtocolDialogDelegate
                                      bool* called,
                                      bool* accept,
                                      bool* remember)
-      : ExternalProtocolDialogDelegate(url, web_contents),
+      : ExternalProtocolDialogDelegate(url, web_contents, base::nullopt),
         called_(called),
         accept_(accept),
         remember_(remember) {}
@@ -110,10 +110,12 @@ class ExternalProtocolDialogBrowserTest
     return ExternalProtocolHandler::DONT_BLOCK;
   }
   void BlockRequest() override {}
-  void RunExternalProtocolDialog(const GURL& url,
-                                 content::WebContents* web_contents,
-                                 ui::PageTransition page_transition,
-                                 bool has_user_gesture) override {}
+  void RunExternalProtocolDialog(
+      const GURL& url,
+      content::WebContents* web_contents,
+      ui::PageTransition page_transition,
+      bool has_user_gesture,
+      const base::Optional<url::Origin>& initiating_origin) override {}
   void LaunchUrlWithoutSecurityCheck(
       const GURL& url,
       content::WebContents* web_contents) override {

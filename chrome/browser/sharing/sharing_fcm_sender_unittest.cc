@@ -8,14 +8,12 @@
 
 #include "base/base64.h"
 #include "base/callback_list.h"
-#include "chrome/browser/sharing/fake_local_device_info_provider.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/sync_device_info/device_info.h"
-#include "components/sync_device_info/fake_device_info_tracker.h"
-#include "components/sync_device_info/local_device_info_provider.h"
+#include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "crypto/ec_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -102,22 +100,23 @@ class SharingFCMSenderTest : public Test {
   SharingFCMSenderTest() {
     // TODO: Used fake GCMDriver
     sync_prefs_ = std::make_unique<SharingSyncPreference>(
-        &prefs_, &fake_device_info_tracker_, &local_device_info_provider_);
+        &prefs_, &fake_device_info_sync_service);
     sharing_fcm_sender_ = std::make_unique<SharingFCMSender>(
-        &fake_gcm_driver_, &local_device_info_provider_, sync_prefs_.get(),
-        &vapid_key_manager_);
+        &fake_gcm_driver_,
+        fake_device_info_sync_service.GetLocalDeviceInfoProvider(),
+        sync_prefs_.get(), &vapid_key_manager_);
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
 
+  syncer::FakeDeviceInfoSyncService fake_device_info_sync_service;
+  FakeGCMDriver fake_gcm_driver_;
+
   std::unique_ptr<SharingSyncPreference> sync_prefs_;
   std::unique_ptr<SharingFCMSender> sharing_fcm_sender_;
-  FakeGCMDriver fake_gcm_driver_;
   NiceMock<MockVapidKeyManager> vapid_key_manager_;
-  FakeLocalDeviceInfoProvider local_device_info_provider_;
 
  private:
   sync_preferences::TestingPrefServiceSyncable prefs_;
-  syncer::FakeDeviceInfoTracker fake_device_info_tracker_;
 };
 
 }  // namespace
@@ -166,11 +165,13 @@ TEST_P(SharingFCMSenderResultTest, ResultTest) {
   sync_prefs_->SetFCMRegistration(SharingSyncPreference::FCMRegistration(
       kAuthorizedEntity, base::Time::Now()));
   syncer::DeviceInfo* local_device_info =
-      local_device_info_provider_.GetMutableDeviceInfo();
+      fake_device_info_sync_service.GetLocalDeviceInfoProvider()
+          ->GetMutableDeviceInfo();
   local_device_info->set_sharing_info(syncer::DeviceInfo::SharingInfo(
       kSenderFcmToken, kSenderP256dh, kSenderAuthSecret,
       std::set<sync_pb::SharingSpecificFields::EnabledFeatures>()));
-  local_device_info_provider_.SetReady(GetParam().ready_before_send_message);
+  fake_device_info_sync_service.GetLocalDeviceInfoProvider()->SetReady(
+      GetParam().ready_before_send_message);
   fake_gcm_driver_.set_result(GetParam().web_push_result);
 
   std::unique_ptr<crypto::ECPrivateKey> vapid_key =
@@ -192,7 +193,7 @@ TEST_P(SharingFCMSenderResultTest, ResultTest) {
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
                      base::Unretained(this), &result, &message_id));
 
-  local_device_info_provider_.SetReady(true);
+  fake_device_info_sync_service.GetLocalDeviceInfoProvider()->SetReady(true);
 
   EXPECT_EQ(kSharingFCMAppID, fake_gcm_driver_.app_id());
   EXPECT_EQ(kAuthorizedEntity, fake_gcm_driver_.authorized_entity());

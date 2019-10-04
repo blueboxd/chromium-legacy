@@ -946,9 +946,9 @@ const viz::LocalSurfaceId& RenderFrameProxy::GetLocalSurfaceId() const {
 }
 
 mojom::RenderFrameProxyHost* RenderFrameProxy::GetFrameProxyHost() {
-  if (!frame_proxy_host_ptr_.is_bound())
-    GetRemoteAssociatedInterfaces()->GetInterface(&frame_proxy_host_ptr_);
-  return frame_proxy_host_ptr_.get();
+  if (!frame_proxy_host_remote_.is_bound())
+    GetRemoteAssociatedInterfaces()->GetInterface(&frame_proxy_host_remote_);
+  return frame_proxy_host_remote_.get();
 }
 
 blink::AssociatedInterfaceProvider*

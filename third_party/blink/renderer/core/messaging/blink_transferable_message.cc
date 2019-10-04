@@ -21,24 +21,13 @@ BlinkTransferableMessage::BlinkTransferableMessage(BlinkTransferableMessage&&) =
 BlinkTransferableMessage& BlinkTransferableMessage::operator=(
     BlinkTransferableMessage&&) = default;
 
-scoped_refptr<blink::StaticBitmapImage> ToStaticBitmapImage(
+scoped_refptr<StaticBitmapImage> ToStaticBitmapImage(
     const SkBitmap& sk_bitmap) {
-  auto handle = WTF::ArrayBufferContents::CreateDataHandle(
-      sk_bitmap.computeByteSize(), WTF::ArrayBufferContents::kZeroInitialize);
-  if (!handle)
+  sk_sp<SkImage> image = SkImage::MakeFromBitmap(sk_bitmap);
+  if (!image)
     return nullptr;
 
-  WTF::ArrayBufferContents array_buffer_contents(
-      std::move(handle), WTF::ArrayBufferContents::kNotShared);
-  if (!array_buffer_contents.Data())
-    return nullptr;
-
-  SkImageInfo info = sk_bitmap.info();
-  if (!sk_bitmap.readPixels(info, array_buffer_contents.Data(),
-                            info.minRowBytes(), 0, 0))
-    return nullptr;
-
-  return blink::StaticBitmapImage::Create(array_buffer_contents, info);
+  return StaticBitmapImage::Create(std::move(image));
 }
 
 base::Optional<SkBitmap> ToSkBitmap(

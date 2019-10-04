@@ -174,7 +174,7 @@ void UrlRequestRewriteRulesManager::RenderFrameCreated(
   }
 
   // Register the frame rules receiver.
-  mojom::UrlRequestRulesReceiverAssociatedPtr rules_receiver;
+  mojo::AssociatedRemote<mojom::UrlRequestRulesReceiver> rules_receiver;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &rules_receiver);
   auto iter = rules_receivers_per_frame_id_.emplace(frame_tree_node_id,

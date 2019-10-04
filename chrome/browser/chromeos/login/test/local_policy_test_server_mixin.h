@@ -112,9 +112,21 @@ class LocalPolicyTestServerMixin : public InProcessBrowserTestMixin {
   void ConfigureFakeStatisticsForZeroTouch(
       system::ScopedFakeStatisticsProvider* provider);
 
+  // Enables the usage of keys canned into the policy test server, instead of
+  // specifying to it the test key to be used.  This must be called before
+  // starting the server.
+  void EnableCannedSigningKeys();
+
+  // Enables the automatic rotation of the policy signing keys with each policy
+  // fetch request. This must be called before starting the server, and only
+  // works when the server serves from a temporary directory.
+  void EnableAutomaticRotationOfSigningKeys();
+
  private:
   std::unique_ptr<policy::LocalPolicyTestServer> policy_test_server_;
   base::Value server_config_;
+  bool canned_signing_keys_enabled_ = false;
+  bool automatic_rotation_of_signing_keys_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LocalPolicyTestServerMixin);
 };

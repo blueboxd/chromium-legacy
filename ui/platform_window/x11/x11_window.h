@@ -126,6 +126,8 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   void OnXWindowRawKeyEvent(XEvent* xev) override;
   base::Optional<gfx::Size> GetMinimumSizeForXWindow() override;
   base::Optional<gfx::Size> GetMaximumSizeForXWindow() override;
+  void GetWindowMaskForXWindow(const gfx::Size& size,
+                               SkPath* window_mask) override;
 
   // WmMoveResizeHandler
   void DispatchHostWindowDragMovement(

@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/arc/arc_vpn_provider_manager.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -73,7 +73,8 @@ class VpnListForwarder
   // The primary user's app_list::ArcVpnProviderManger, if a user is logged in.
   app_list::ArcVpnProviderManager* arc_vpn_provider_manager_ = nullptr;
 
-  mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
+  std::unique_ptr<
+      mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>>
       cros_network_config_;
 
   // Map of unique provider id to VpnProvider dictionary.

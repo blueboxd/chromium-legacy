@@ -12,6 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/user_manager/user.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -83,8 +84,10 @@ VpnListForwarder::VpnListForwarder() {
     user_manager::UserManager::Get()->AddSessionStateObserver(this);
   }
 
+  cros_network_config_ = std::make_unique<
+      mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>>();
   ash::GetNetworkConfigService(
-      cros_network_config_.BindNewPipeAndPassReceiver());
+      cros_network_config_->BindNewPipeAndPassReceiver());
 }
 
 VpnListForwarder::~VpnListForwarder() {
@@ -157,7 +160,7 @@ void VpnListForwarder::SetVpnProviders() {
   config_providers.reserve(vpn_providers_.size());
   for (const auto& iter : vpn_providers_)
     config_providers.push_back(iter.second->Clone());
-  cros_network_config_->SetVpnProviders(std::move(config_providers));
+  (*cros_network_config_)->SetVpnProviders(std::move(config_providers));
 }
 
 void VpnListForwarder::AttachToPrimaryUserProfile() {

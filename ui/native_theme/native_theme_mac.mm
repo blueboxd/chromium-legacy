@@ -299,6 +299,15 @@ NativeThemeMac::NativeThemeMac() {
 //                      theme->NotifyObservers();
 //                    }];
   }
+
+  // Add the web native theme as an observer to stay in sync with dark mode,
+  // high contrast, and preferred color scheme changes.
+  if (features::IsFormControlsRefreshEnabled()) {
+    color_scheme_observer_ =
+        std::make_unique<NativeTheme::ColorSchemeNativeThemeObserver>(
+            NativeTheme::GetInstanceForWeb());
+    AddObserver(color_scheme_observer_.get());
+  }
 }
 
 NativeThemeMac::~NativeThemeMac() {

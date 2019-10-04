@@ -123,7 +123,6 @@ class RenderFrameProxy;
 class RenderViewImpl;
 class RenderWidgetDelegate;
 class WidgetInputHandlerManager;
-struct ContextMenuParams;
 struct VisualProperties;
 
 // RenderWidget provides a communication bridge between a WebWidget and
@@ -255,16 +254,6 @@ class CONTENT_EXPORT RenderWidget
   // passed into this object to asynchronously delete itself.
   void CloseForFrame(std::unique_ptr<RenderWidget> widget);
 
-  // RenderWidgets cannot always be synchronously destroyed, since that may
-  // happen in a re-entrancy scenario, and there may be existing references on
-  // the stack. This method shuts down further sources of input to the
-  // RenderWidget. This must be called before Close().
-  void PrepareForClose();
-
-  // Close the underlying WebWidget and stop the compositor. This method deletes
-  // the object.
-  virtual void Close(std::unique_ptr<RenderWidget> widget);
-
   int32_t routing_id() const { return routing_id_; }
 
   // TODO(https://crbug.com/912193): Use CompositorDependencies on
@@ -286,8 +275,6 @@ class CONTENT_EXPORT RenderWidget
   bool is_fullscreen_granted() const { return is_fullscreen_granted_; }
   blink::mojom::DisplayMode display_mode() const { return display_mode_; }
   bool is_hidden() const { return is_hidden_; }
-  // Temporary for debugging purposes...
-  bool closing() const { return closing_; }
   bool has_host_context_menu_location() const {
     return has_host_context_menu_location_;
   }
@@ -313,13 +300,6 @@ class CONTENT_EXPORT RenderWidget
   // has been made undead would race with a new provisional frame attaching it,
   // so should check for both states via this method instead.
   bool IsUndeadOrProvisional() { return is_undead_ || IsForProvisionalFrame(); }
-
-  // This is true once a Close IPC has been received. The actual action of
-  // closing must be done on another stack frame, in case the IPC receipt
-  // is in a nested message loop and will unwind back up to javascript (from
-  // plugins). So this will be true between those two things, to avoid work
-  // when the RenderWidget will be closed.
-  bool is_closing() const { return closing_; }
 
   // Manage edit commands to be used for the next keyboard event.
   const EditCommands& edit_commands() const { return edit_commands_; }
@@ -560,8 +540,6 @@ class CONTENT_EXPORT RenderWidget
 
   void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end);
 
-  void OnShowHostContextMenu(ContextMenuParams* params);
-
   // Checks if the composition range or composition character bounds have been
   // changed. If they are changed, the new value will be sent to the browser
   // process. This method does nothing when the browser process is not able to
@@ -690,13 +668,6 @@ class CONTENT_EXPORT RenderWidget
   virtual void SynchronizeVisualPropertiesFromRenderView(
       const VisualProperties& visual_properties);
 
-  bool in_synchronous_composite_for_testing() const {
-    return in_synchronous_composite_for_testing_;
-  }
-  void set_in_synchronous_composite_for_testing(bool in) {
-    in_synchronous_composite_for_testing_ = in;
-  }
-
   base::WeakPtr<RenderWidget> AsWeakPtr();
 
   // TODO(https://crbug.com/995981): Eventually, the lifetime of RenderWidget
@@ -708,6 +679,9 @@ class CONTENT_EXPORT RenderWidget
  protected:
   // Notify subclasses that we initiated the paint operation.
   virtual void DidInitiatePaint() {}
+
+  // Destroy the RenderWidget. The |widget| is the owning pointer of |this|.
+  virtual void Close(std::unique_ptr<RenderWidget> widget);
 
  private:
   // Friend RefCounted so that the dtor can be non-public. Using this class
@@ -726,8 +700,6 @@ class CONTENT_EXPORT RenderWidget
   friend class RenderViewImplTest;
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetPopupUnittest, EmulatingPopupRect);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, EmulatingPopupRect);
-
-  static scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner();
 
   // Called by Create() functions and subclasses to finish initialization.
   // |show_callback| will be invoked once WebWidgetClient::Show() occurs, and
@@ -1002,9 +974,8 @@ class CONTENT_EXPORT RenderWidget
   // ImeEventGuard. We keep track of the outermost one, and update it as needed.
   ImeEventGuard* ime_event_guard_ = nullptr;
 
-  bool closed_ = false;
-  // True if we have requested this widget be closed.  No more messages will
-  // be sent, except for a Close.
+  // True once Close() is called, during the self-destruction process, and to
+  // verify destruction always goes through Close().
   bool closing_ = false;
 
   // A RenderWidget is undead if it is the RenderWidget attached to the
@@ -1036,9 +1007,6 @@ class CONTENT_EXPORT RenderWidget
   // process, without the use of this mode, however it would be overridden by
   // the browser if they disagree.
   bool synchronous_resize_mode_for_testing_ = false;
-  // In web tests, synchronous composites should not be nested inside another
-  // composite, and this bool is used to guard against that.
-  bool in_synchronous_composite_for_testing_ = false;
 
   // Stores information about the current text input.
   blink::WebTextInputInfo text_input_info_;
@@ -1186,9 +1154,6 @@ class CONTENT_EXPORT RenderWidget
 
   uint32_t last_capture_sequence_number_ = 0u;
 
-  // This factory is invalidated when the WebWidget is closed.
-  base::WeakPtrFactory<RenderWidget> close_weak_ptr_factory_{this};
-  // This factory is invalidated when the RenderWidget is destroyed.
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);

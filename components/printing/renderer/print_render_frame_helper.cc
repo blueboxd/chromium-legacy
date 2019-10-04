@@ -1077,13 +1077,12 @@ PrintRenderFrameHelper::PrintRenderFrameHelper(
     std::unique_ptr<Delegate> delegate)
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<PrintRenderFrameHelper>(render_frame),
-      delegate_(std::move(delegate)),
-      print_render_frame_binding_(this) {
+      delegate_(std::move(delegate)) {
   if (!delegate_->IsPrintPreviewEnabled())
     DisablePreview();
 
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
-      base::BindRepeating(&PrintRenderFrameHelper::OnPrintRenderFrameRequest,
+      base::BindRepeating(&PrintRenderFrameHelper::BindPrintRenderFrameReceiver,
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -1188,9 +1187,9 @@ void PrintRenderFrameHelper::OnDestruct() {
   delete this;
 }
 
-void PrintRenderFrameHelper::OnPrintRenderFrameRequest(
-    mojom::PrintRenderFrameAssociatedRequest request) {
-  print_render_frame_binding_.Bind(std::move(request));
+void PrintRenderFrameHelper::BindPrintRenderFrameReceiver(
+    mojo::PendingAssociatedReceiver<mojom::PrintRenderFrame> receiver) {
+  print_render_frame_receiver_.Bind(std::move(receiver));
 }
 
 void PrintRenderFrameHelper::InitiatePrintPreview(

@@ -116,9 +116,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   // Sets whether the window's borders are provided by the window manager.
   void SetUseNativeFrame(bool use_native_frame);
 
-  // Resets the window region for the current widget bounds if necessary.
-  void ResetWindowRegion();
-
   // See comment for variable open_windows_.
   static std::list<XID>& open_windows();
 
@@ -135,9 +132,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   // DWTHX11 temporarily overrides the PlatformWindowDelegate methods instead of
   // underlying DWTHPlatform and WTHPlatform. Eventually, these will be removed
   // from here as we progress in https://crbug.com/990756.
-  void OnBoundsChanged(const gfx::Rect& new_bounds) override;
   void OnClosed() override;
-  void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
   void OnAcceleratedWidgetDestroyed() override;
   void OnActivationChanged(bool active) override;

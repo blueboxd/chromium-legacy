@@ -43,13 +43,17 @@ int GetSyncTransportOptInBitFieldForAccount(const PrefService* prefs,
 const char kAutofillAcceptSaveCreditCardPromptState[] =
     "autofill.accept_save_credit_card_prompt_state";
 
-// Boolean that is true if FIDO Authentication is enabled for card unmasking.
-const char kAutofillCreditCardFIDOAuthEnabled[] =
-    "autofill.credit_card_fido_auth_enabled";
-
 // Boolean that is true if Autofill is enabled and allowed to save credit card
 // data.
 const char kAutofillCreditCardEnabled[] = "autofill.credit_card_enabled";
+
+// Boolean that is true if FIDO Authentication is enabled for card unmasking.
+const char kAutofillCreditCardFidoAuthEnabled[] =
+    "autofill.credit_card_fido_auth_enabled";
+
+// Boolean that is true if FIDO Authentication is enabled for card unmasking.
+const char kAutofillCreditCardFidoAuthOfferCheckboxState[] =
+    "autofill.credit_card_fido_auth_offer_checkbox_state";
 
 // Number of times the credit card signin promo has been shown.
 const char kAutofillCreditCardSigninPromoImpressionCount[] =
@@ -157,8 +161,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
 
   // Non-synced prefs. Used for per-device choices, e.g., signin promo.
-  registry->RegisterBooleanPref(prefs::kAutofillCreditCardFIDOAuthEnabled,
+  registry->RegisterBooleanPref(prefs::kAutofillCreditCardFidoAuthEnabled,
                                 false);
+  registry->RegisterBooleanPref(
+      prefs::kAutofillCreditCardFidoAuthOfferCheckboxState, true);
   registry->RegisterIntegerPref(
       prefs::kAutofillCreditCardSigninPromoImpressionCount, 0);
   registry->RegisterBooleanPref(prefs::kAutofillJapanCityFieldMigrated, false);
@@ -226,11 +232,11 @@ void SetAutofillEnabled(PrefService* prefs, bool enabled) {
 }
 
 bool IsCreditCardFIDOAuthEnabled(PrefService* prefs) {
-  return prefs->GetBoolean(kAutofillCreditCardFIDOAuthEnabled);
+  return prefs->GetBoolean(kAutofillCreditCardFidoAuthEnabled);
 }
 
 void SetCreditCardFIDOAuthEnabled(PrefService* prefs, bool enabled) {
-  prefs->SetBoolean(kAutofillCreditCardFIDOAuthEnabled, enabled);
+  prefs->SetBoolean(kAutofillCreditCardFidoAuthEnabled, enabled);
 }
 
 bool IsCreditCardAutofillEnabled(const PrefService* prefs) {

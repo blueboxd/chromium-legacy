@@ -146,7 +146,8 @@ public class CardUnmaskPrompt
     public CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
             String instructions, String confirmButtonLabel, int drawableId,
             boolean shouldRequestExpirationDate, boolean canStoreLocally,
-            boolean defaultToStoringLocally, long successMessageDurationMilliseconds) {
+            boolean defaultToStoringLocally, boolean defaultUseScreenlockChecked,
+            long successMessageDurationMilliseconds) {
         mDelegate = delegate;
 
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -166,6 +167,7 @@ public class CardUnmaskPrompt
         mStoreLocallyCheckbox = (CheckBox) v.findViewById(R.id.store_locally_checkbox);
         mStoreLocallyCheckbox.setChecked(canStoreLocally && defaultToStoringLocally);
         mUseScreenlockCheckbox = (CheckBox) v.findViewById(R.id.use_screenlock_checkbox);
+        mUseScreenlockCheckbox.setChecked(defaultUseScreenlockChecked);
         if (canStoreLocally
                 || !ChromeFeatureList.isEnabled(
                         ChromeFeatureList.AUTOFILL_CREDIT_CARD_AUTHENTICATION)) {
@@ -195,8 +197,9 @@ public class CardUnmaskPrompt
         mShouldRequestExpirationDate = shouldRequestExpirationDate;
         mThisYear = -1;
         mThisMonth = -1;
-        if (mShouldRequestExpirationDate)
+        if (mShouldRequestExpirationDate) {
             new CalendarTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
 
         // Set the max length of the CVC field.
         mCardUnmaskInput.setFilters(

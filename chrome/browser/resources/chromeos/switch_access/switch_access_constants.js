@@ -164,14 +164,3 @@ SAConstants.MenuAction = {
   // Set the beginning of a text selection.
   SELECT_START: 'selectStart'
 };
-
-/**
- * Empty location, used for hiding the menu.
- * @const
- */
-SAConstants.EMPTY_LOCATION = {
-  left: 0,
-  top: 0,
-  width: 0,
-  height: 0
-};

@@ -1906,11 +1906,6 @@
     "expiry_milestone": 84
   },
   {
-    "name": "enable-web-authentication-pin-support",
-    "owners": [ "webauthn-team@google.com" ],
-    "expiry_milestone": 77
-  },
-  {
     "name": "enable-web-authentication-testing-api",
     "owners": [ "webauthn-team@google.com" ],
     // This is required for testing.

@@ -8,7 +8,7 @@ for (var i = 0; i < 1000; i++) {
   title += 'x';
 }
 chrome.test.log('creating item');
-chrome.contextMenus.create({title: title}, function() {
+chrome.contextMenus.create({title: title, id: 'my_id'}, function() {
   if (!chrome.runtime.lastError) {
     chrome.test.sendMessage('created');
   }

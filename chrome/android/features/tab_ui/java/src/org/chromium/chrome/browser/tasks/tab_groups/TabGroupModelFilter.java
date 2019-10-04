@@ -54,8 +54,9 @@ public class TabGroupModelFilter extends TabModelFilter {
          * group.
          * @param movedTab The {@link Tab} which will be moved. If a group will be merged to a tab
          *                 or another group, this is the last tab of the merged group.
+         * @param newRootId  The new root id of the group after merge.
          */
-        void willMergeTabToGroup(Tab movedTab);
+        void willMergeTabToGroup(Tab movedTab, int newRootId);
 
         /**
          * This method is called before a tab within a group is moved out of the group.
@@ -298,7 +299,8 @@ public class TabGroupModelFilter extends TabModelFilter {
 
         if (!needToUpdateTabModel(tabsToMerge, destinationIndexInTabModel)) {
             for (Observer observer : mGroupFilterObserver) {
-                observer.willMergeTabToGroup(tabsToMerge.get(tabsToMerge.size() - 1));
+                observer.willMergeTabToGroup(
+                        tabsToMerge.get(tabsToMerge.size() - 1), destinationGroupId);
             }
             for (int i = 0; i < tabsToMerge.size(); i++) {
                 Tab tab = tabsToMerge.get(i);
@@ -342,7 +344,7 @@ public class TabGroupModelFilter extends TabModelFilter {
             // When merging tabs are in the same group, only make one willMergeTabToGroup call.
             if (!isSameGroup || i == tabs.size() - 1) {
                 for (Observer observer : mGroupFilterObserver) {
-                    observer.willMergeTabToGroup(tab);
+                    observer.willMergeTabToGroup(tab, destinationGroupId);
                 }
             }
             int index = TabModelUtils.getTabIndexById(getTabModel(), tab.getId());

@@ -9,6 +9,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/url_formatter/elide_url.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
 
@@ -26,10 +27,12 @@ base::string16 ElideCommandName(const base::string16& command_name) {
 
 ExternalProtocolDialogDelegate::ExternalProtocolDialogDelegate(
     const GURL& url,
-    content::WebContents* web_contents)
+    content::WebContents* web_contents,
+    const base::Optional<url::Origin>& initiating_origin)
     : ProtocolDialogDelegate(url),
       content::WebContentsObserver(web_contents),
-      program_name_(shell_integration::GetApplicationNameForProtocol(url)) {}
+      program_name_(shell_integration::GetApplicationNameForProtocol(url)),
+      initiating_origin_(initiating_origin) {}
 
 ExternalProtocolDialogDelegate::~ExternalProtocolDialogDelegate() {}
 
@@ -43,7 +46,11 @@ base::string16 ExternalProtocolDialogDelegate::GetDialogButtonLabel(
 }
 
 base::string16 ExternalProtocolDialogDelegate::GetMessageText() const {
-  return base::string16();
+  if (!initiating_origin_ || initiating_origin_->opaque())
+    return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_MESSAGE);
+  return l10n_util::GetStringFUTF16(
+      IDS_EXTERNAL_PROTOCOL_MESSAGE_WITH_INITIATING_ORIGIN,
+      url_formatter::FormatOriginForSecurityDisplay(*initiating_origin_));
 }
 
 base::string16 ExternalProtocolDialogDelegate::GetCheckboxText() const {

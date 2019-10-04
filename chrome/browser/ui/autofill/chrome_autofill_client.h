@@ -31,6 +31,10 @@
 #include "components/zoom/zoom_observer.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "components/autofill/core/browser/ui/payments/card_name_fix_flow_controller_impl.h"
+#endif  // defined(OS_ANDROID)
+
 namespace content {
 class WebContents;
 }

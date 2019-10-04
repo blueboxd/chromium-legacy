@@ -3225,8 +3225,6 @@ test("unit_tests") {
     "../browser/sessions/restore_on_startup_policy_handler_unittest.cc",
     "../browser/sessions/session_common_utils_unittest.cc",
     "../browser/sharing/ack_message_handler_unittest.cc",
-    "../browser/sharing/fake_local_device_info_provider.cc",
-    "../browser/sharing/fake_local_device_info_provider.h",
     "../browser/sharing/sharing_device_registration_unittest.cc",
     "../browser/sharing/sharing_fcm_handler_unittest.cc",
     "../browser/sharing/sharing_fcm_sender_unittest.cc",
@@ -5682,6 +5680,9 @@ if (!is_android) {
           ]
           deps += [ "//build/config/linux/gtk" ]
         }
+      }
+      if (!is_chromeos) {
+        sources += [ "../browser/ui/views/global_media_controls/media_dialog_view_interactive_browsertest.cc" ]
       }
       if (use_aura || is_mac) {
         deps += [ "//ui/touch_selection" ]

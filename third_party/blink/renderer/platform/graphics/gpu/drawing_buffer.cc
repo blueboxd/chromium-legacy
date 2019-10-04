@@ -1298,7 +1298,7 @@ void DrawingBuffer::Bind(GLenum target) {
   gl_->BindFramebuffer(target, WantExplicitResolve() ? multisample_fbo_ : fbo_);
 }
 
-scoped_refptr<Uint8Array> DrawingBuffer::PaintRenderingResultsToDataArray(
+sk_sp<SkData> DrawingBuffer::PaintRenderingResultsToDataArray(
     SourceDrawingBuffer source_buffer) {
   ScopedStateRestorer scoped_state_restorer(this);
 
@@ -1315,18 +1315,9 @@ scoped_refptr<Uint8Array> DrawingBuffer::PaintRenderingResultsToDataArray(
   if (!data_size.IsValid())
     return nullptr;
 
-  unsigned byte_length = width * height * 4;
-  if (RuntimeEnabledFeatures::CanvasColorManagementEnabled() &&
-      use_half_float_storage_) {
-    byte_length *= 2;
-  }
-  scoped_refptr<ArrayBuffer> dst_buffer =
-      ArrayBuffer::CreateOrNull(byte_length, 1);
+  unsigned byte_length = data_size.ValueOrDie<unsigned>();
+  sk_sp<SkData> dst_buffer = TryAllocateSkData(byte_length);
   if (!dst_buffer)
-    return nullptr;
-  scoped_refptr<Uint8Array> data_array =
-      Uint8Array::Create(std::move(dst_buffer), 0, byte_length);
-  if (!data_array)
     return nullptr;
 
   GLuint fbo = 0;
@@ -1341,10 +1332,10 @@ scoped_refptr<Uint8Array> DrawingBuffer::PaintRenderingResultsToDataArray(
     gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
   }
 
-  ReadBackFramebuffer(static_cast<unsigned char*>(data_array->Data()), width,
-                      height, kReadbackRGBA,
+  auto* writable_data = static_cast<uint8_t*>(dst_buffer->writable_data());
+  ReadBackFramebuffer(writable_data, width, height, kReadbackRGBA,
                       WebGLImageConversion::kAlphaDoNothing);
-  FlipVertically(static_cast<uint8_t*>(data_array->Data()), width, height);
+  FlipVertically(writable_data, width, height);
 
   if (fbo) {
     gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
@@ -1352,7 +1343,7 @@ scoped_refptr<Uint8Array> DrawingBuffer::PaintRenderingResultsToDataArray(
     gl_->DeleteFramebuffers(1, &fbo);
   }
 
-  return data_array;
+  return dst_buffer;
 }
 
 void DrawingBuffer::ReadBackFramebuffer(unsigned char* pixels,

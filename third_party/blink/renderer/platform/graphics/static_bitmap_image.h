@@ -41,9 +41,7 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
       sk_sp<SkImage>,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper> = nullptr);
   static scoped_refptr<StaticBitmapImage> Create(PaintImage);
-  static scoped_refptr<StaticBitmapImage> Create(scoped_refptr<Uint8Array>&&,
-                                                 const SkImageInfo&);
-  static scoped_refptr<StaticBitmapImage> Create(WTF::ArrayBufferContents&,
+  static scoped_refptr<StaticBitmapImage> Create(sk_sp<SkData> data,
                                                  const SkImageInfo&);
 
   bool IsStaticBitmapImage() const override { return true; }

@@ -113,7 +113,7 @@
 
           Si se establece como falsa, esta función estará inhabilitada.
 
-          Si estableces esta política, los usuarios podrán anularla temporalmente al habilitar o inhabilitar los comentarios por voz. Sin embargo, no se mantendrá la elección del usuario, y se restablecerá la opción predeterminada siempre que la pantalla de acceso se muestre de nuevo o el usuario permanezca inactivo en esta pantalla por más de un minuto.
+          Si estableces esta política, los usuarios podrán anularla temporalmente habilitando o inhabilitando los comentarios por voz. Sin embargo, no se mantendrá la elección del usuario, y se restablecerá la opción predeterminada siempre que la pantalla de acceso se muestre de nuevo o el usuario permanezca inactivo en esta pantalla por más de un minuto.
 
           Si no estableces esta política, los comentarios por voz estarán inhabilitados cuando se muestre por primera vez la pantalla de acceso. En este caso, los usuarios podrán habilitar o inhabilitar los comentarios por voz en cualquier momento y la opción que elijan se mantendrá entre los usuarios.
 
@@ -1671,7 +1671,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Ingresa a https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para ver una lista de las variables que se pueden usar.</translation>
 <translation id="3911737181201537215">Si Android accede a una cuenta, esta política no tendrá efecto en esta acción.</translation>
-<translation id="3912092044353890761">Habilita la función de accesibilidad del teclado virtual en la pantalla de acceso.
+<translation id="3912092044353890761">Habilita la función de accesibilidad de teclado virtual en la pantalla de acceso.
 
           Si se establece esta política como verdadera, el teclado virtual estará siempre habilitado en la pantalla de acceso.
 
@@ -1867,7 +1867,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Si se establece como falsa, esta función estará inhabilitada.
 
-          Si estableces esta política, los usuarios podrán anularla temporalmente al habilitar o inhabilitar el teclado en pantalla. Sin embargo, no se mantendrá la elección del usuario, y se restablecerá la opción predeterminada siempre que la pantalla de acceso se muestre de nuevo o el usuario permanezca inactivo en esta pantalla por más de un minuto.
+          Si estableces esta política, los usuarios podrán anularla temporalmente habilitando o inhabilitando el teclado en pantalla. Sin embargo, no se mantendrá la elección del usuario, y se restablecerá la opción predeterminada siempre que la pantalla de acceso se muestre de nuevo o el usuario permanezca inactivo en esta pantalla por más de un minuto.
 
           Si no estableces esta política, el teclado en pantalla estará inhabilitado cuando se muestre por primera vez la pantalla de acceso. En este caso, los usuarios podrán habilitar o inhabilitar el teclado en pantalla en cualquier momento y la opción que elijan se mantendrá entre los usuarios.
 
@@ -3828,7 +3828,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Si se establece como falsa, esta función estará inhabilitada.
 
-          Si estableces esta política, los usuarios podrán anularla temporalmente al habilitar o inhabilitar el modo de contraste alto. Sin embargo, no se mantendrá la elección del usuario, y se restablecerá la opción predeterminada siempre que la pantalla de acceso se muestre de nuevo o el usuario permanezca inactivo en esta pantalla por más de un minuto.
+          Si estableces esta política, los usuarios podrán anularla temporalmente habilitando o inhabilitando el modo de contraste alto. Sin embargo, no se mantendrá la elección del usuario, y se restablecerá la opción predeterminada siempre que la pantalla de acceso se muestre de nuevo o el usuario permanezca inactivo en esta pantalla por más de un minuto.
 
           Si no estableces esta política, el modo de contraste alto estará inhabilitado cuando se muestre por primera vez la pantalla de acceso. En este caso, los usuarios podrán habilitar o inhabilitar el modo de contraste alto en cualquier momento y la opción que elijan se mantendrá entre los usuarios.
 
@@ -3838,7 +3838,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se inhabilita esta configuración, no se usarán los complementos desactualizados y no se solicitará autorización a los usuarios para ejecutarlos.
 
       Si no se establece esta configuración, se solicitará autorización a los usuarios para ejecutar los complementos desactualizados.</translation>
-<translation id="7863947545897944083">Habilita la función de accesibilidad del contraste alto en la pantalla de acceso.
+<translation id="7863947545897944083">Habilita la función de accesibilidad de contraste alto en la pantalla de acceso.
 
           Si se establece esta política como verdadera, el contraste alto estará siempre habilitado en la pantalla de acceso.
 

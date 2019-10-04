@@ -19,6 +19,7 @@
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/dns/mock_host_resolver.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/autoplay/autoplay.mojom.h"
@@ -107,7 +108,7 @@ class UnifiedAutoplayBrowserTest : public InProcessBrowserTest {
   }
 
   void SetAutoplayForceAllowFlag(const GURL& url) {
-    blink::mojom::AutoplayConfigurationClientAssociatedPtr client;
+    mojo::AssociatedRemote<blink::mojom::AutoplayConfigurationClient> client;
     GetWebContents()
         ->GetMainFrame()
         ->GetRemoteAssociatedInterfaces()

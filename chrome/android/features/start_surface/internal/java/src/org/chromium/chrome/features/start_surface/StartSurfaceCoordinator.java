@@ -75,6 +75,10 @@ public class StartSurfaceCoordinator implements StartSurface {
     @Nullable
     private TabSwitcher.OnTabSelectingListener mOnTabSelectingListener;
 
+    // Non-null in SurfaceMode.TASKS_ONLY, SurfaceMode.TWO_PANES and SurfaceMode.SINGLE_PANE modes.
+    @Nullable
+    private StartSurfaceLocationBarDelegate mStartSurfaceLocationBarDelegate;
+
     public StartSurfaceCoordinator(ChromeActivity activity) {
         mActivity = activity;
         mSurfaceMode = computeSurfaceMode();
@@ -96,10 +100,15 @@ public class StartSurfaceCoordinator implements StartSurface {
                         : mExploreSurfaceCoordinator.getFeedSurfaceCreator(),
                 mSurfaceMode == SurfaceMode.SINGLE_PANE ? this::initializeSecondaryTasksSurface
                                                         : null,
-                mSurfaceMode);
+                mSurfaceMode, mStartSurfaceLocationBarDelegate);
     }
 
     // Implements StartSurface.
+    @Override
+    public void setStateChangeObserver(StartSurface.StateObserver observer) {
+        mStartSurfaceMediator.setStateChangeObserver(observer);
+    }
+
     @Override
     public void setOnTabSelectingListener(StartSurface.OnTabSelectingListener listener) {
         if (mTasksSurface != null) {
@@ -158,8 +167,12 @@ public class StartSurfaceCoordinator implements StartSurface {
         mPropertyModel.set(TOP_BAR_HEIGHT,
                 mActivity.getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow));
 
-        mTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(
-                mActivity, mSurfaceMode == SurfaceMode.SINGLE_PANE, mPropertyModel);
+        // TODO(crbug.com/1000295): Formalize the way to get the location bar.
+        mStartSurfaceLocationBarDelegate = new StartSurfaceLocationBarDelegate(
+                mActivity.getToolbarManager().getToolbarLayoutForTesting().getLocationBar());
+        mTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(mActivity,
+                mPropertyModel, mStartSurfaceLocationBarDelegate,
+                mSurfaceMode == SurfaceMode.SINGLE_PANE);
 
         // The tasks surface is added to the explore surface in the single pane mode below.
         if (mSurfaceMode != SurfaceMode.SINGLE_PANE) {
@@ -191,11 +204,12 @@ public class StartSurfaceCoordinator implements StartSurface {
     private TabSwitcher.Controller initializeSecondaryTasksSurface() {
         assert mSurfaceMode == SurfaceMode.SINGLE_PANE;
         assert mSecondaryTasksSurface == null;
+        assert mStartSurfaceLocationBarDelegate != null;
 
         PropertyModel propertyModel = new PropertyModel(TasksSurfaceProperties.ALL_KEYS);
         mStartSurfaceMediator.setSecondaryTasksSurfacePropertyModel(propertyModel);
         mSecondaryTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(
-                mActivity, false, propertyModel);
+                mActivity, propertyModel, mStartSurfaceLocationBarDelegate, false);
         mSecondaryTasksSurfacePropertyModelChangeProcessor =
                 createTasksViewPropertyModelChangeProcessor(
                         mSecondaryTasksSurface.getContainerView(),

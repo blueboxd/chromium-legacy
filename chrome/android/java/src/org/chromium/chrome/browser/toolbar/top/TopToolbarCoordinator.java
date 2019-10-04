@@ -211,6 +211,17 @@ public class TopToolbarCoordinator implements Toolbar {
     }
 
     @Override
+    public void updateTabSwitcherToolbarState(boolean requestToShow) {
+        if (mTabSwitcherModeCoordinatorPhone == null
+                || mToolbarLayout.getToolbarDataProvider() == null
+                || !mToolbarLayout.getToolbarDataProvider().isInOverviewAndShowingOmnibox()) {
+            return;
+        }
+
+        mTabSwitcherModeCoordinatorPhone.setTabSwitcherToolbarVisibility(requestToShow);
+    }
+
+    @Override
     public void getPositionRelativeToContainer(View containerView, int[] position) {
         mToolbarLayout.getPositionRelativeToContainer(containerView, position);
     }
@@ -482,12 +493,6 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void onUrlFocusChange(boolean hasFocus) {
         mToolbarLayout.onUrlFocusChange(hasFocus);
-
-        if (mToolbarLayout.getToolbarDataProvider() != null
-                && mToolbarLayout.getToolbarDataProvider().isInOverviewAndShowingOmnibox()
-                && mTabSwitcherModeCoordinatorPhone != null) {
-            mTabSwitcherModeCoordinatorPhone.setTabSwitcherToolbarVisibility(!hasFocus);
-        }
     }
 
     /**

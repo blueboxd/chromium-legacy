@@ -516,10 +516,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // the mouse cursor is visible anywhere on the screen.
   void NotifyRendererOfCursorVisibilityState(bool is_visible);
 
-  // If |clip| is non-empty and and doesn't contain |rect| or |clip| is empty
-  // SchedulePaint() is invoked for |rect|.
-  void SchedulePaintIfNotInClip(const gfx::Rect& rect, const gfx::Rect& clip);
-
   // Called after |window_| is parented to a WindowEventDispatcher.
   void AddedToRootWindow();
 

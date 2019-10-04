@@ -871,6 +871,33 @@
     }
   }
 
+  async function getUserMediaEchoCancellationOnAndOffAndVideo() {
+    try {
+      var streams;
+
+      streams = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: {
+              deviceId: {exact: "default"},
+              echoCancellation: {exact: true}
+          }
+      });
+      assertTrue(streams.getAudioTracks()[0].getSettings().echoCancellation);
+
+      streams = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: {
+              deviceId: {exact: "default"},
+              echoCancellation: {exact: false}
+          }
+      });
+      assertFalse(streams.getAudioTracks()[0].getSettings().echoCancellation);
+      reportTestSuccess();
+    } catch(err) {
+      failTest('getUserMedia() failed, error: ' + err.message);
+    }
+  }
+
   var resolveTrackEndedAfterServiceCrash;
   var trackEndedAfterServiceCrash = new Promise(function(resolve, reject) {
     resolveTrackEndedAfterServiceCrash = resolve;

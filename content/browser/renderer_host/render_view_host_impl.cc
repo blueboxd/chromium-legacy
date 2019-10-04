@@ -109,10 +109,11 @@
 #endif
 
 using base::TimeDelta;
+
+using blink::PluginAction;
 using blink::WebConsoleMessage;
 using blink::WebInputEvent;
 using blink::WebMediaPlayerAction;
-using blink::WebPluginAction;
 
 namespace content {
 namespace {
@@ -999,7 +1000,8 @@ void RenderViewHostImpl::EnablePreferredSizeMode() {
 }
 
 void RenderViewHostImpl::ExecutePluginActionAtLocation(
-  const gfx::Point& location, const blink::WebPluginAction& action) {
+    const gfx::Point& location,
+    const blink::PluginAction& action) {
   // TODO(wjmaclean): See if this needs to be done for OOPIFs as well.
   // https://crbug.com/776807
   gfx::PointF local_location_f =

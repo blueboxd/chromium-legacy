@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/login_manager/arc.pb.h"
@@ -35,6 +36,8 @@ class ArcVmClientAdapter : public ArcClientAdapter {
     // Save the lcd density and auto update mode for the later call to
     // UpgradeArc.
     lcd_density_ = request.lcd_density();
+    cpus_ = base::SysInfo::NumberOfProcessors() - request.num_cores_disabled();
+    DCHECK_LT(0u, cpus_);
     if (request.play_store_auto_update() ==
         login_manager::
             StartArcMiniContainerRequest_PlayStoreAutoUpdate_AUTO_UPDATE_ON) {
@@ -55,6 +58,7 @@ class ArcVmClientAdapter : public ArcClientAdapter {
     std::vector<std::string> env{
         {"USER_ID_HASH=" + user_id_hash_},
         {base::StringPrintf("ARC_LCD_DENSITY=%d", lcd_density_)},
+        {base::StringPrintf("CPUS=%u", cpus_)},
     };
     if (play_store_auto_update_) {
       env.push_back(base::StringPrintf("PLAY_STORE_AUTO_UPDATE=%d",
@@ -96,6 +100,7 @@ class ArcVmClientAdapter : public ArcClientAdapter {
   std::string user_id_hash_;
 
   int32_t lcd_density_;
+  uint32_t cpus_;
 
   base::Optional<bool> play_store_auto_update_;
 

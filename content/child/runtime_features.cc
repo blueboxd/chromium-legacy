@@ -517,10 +517,14 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
 
 // Sets blink runtime features controlled by FieldTrial parameter values.
 void SetRuntimeFeaturesFromFieldTrialParams() {
+  // Automatic lazy frame loading by default is enabled and restricted to users
+  // with Lite Mode (aka Data Saver) turned on. Note that in practice, this also
+  // restricts automatic lazy loading by default to Android, since Lite Mode is
+  // only accessible through UI on Android.
   WebRuntimeFeatures::EnableAutomaticLazyFrameLoading(
       base::GetFieldTrialParamByFeatureAsBool(
           features::kLazyFrameLoading, "automatic-lazy-load-frames-enabled",
-          false));
+          true));
   WebRuntimeFeatures::EnableRestrictAutomaticLazyFrameLoadingToDataSaver(
       base::GetFieldTrialParamByFeatureAsBool(
           features::kLazyFrameLoading,
@@ -529,10 +533,14 @@ void SetRuntimeFeaturesFromFieldTrialParams() {
       base::GetFieldTrialParamByFeatureAsBool(
           features::kLazyFrameLoading, "enable-lazy-load-on-reload", false));
 
+  // Automatic lazy image loading by default is enabled and restricted to users
+  // with Lite Mode (aka Data Saver) turned on. Note that in practice, this also
+  // restricts automatic lazy loading by default to Android, since Lite Mode is
+  // only accessible through UI on Android.
   WebRuntimeFeatures::EnableAutomaticLazyImageLoading(
       base::GetFieldTrialParamByFeatureAsBool(
           features::kLazyImageLoading, "automatic-lazy-load-images-enabled",
-          false));
+          true));
   WebRuntimeFeatures::EnableRestrictAutomaticLazyImageLoadingToDataSaver(
       base::GetFieldTrialParamByFeatureAsBool(
           features::kLazyImageLoading,

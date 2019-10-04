@@ -1034,8 +1034,8 @@ void ShelfView::CalculateIdealBounds() {
                          separator_index < last_visible_index() &&
                          !virtual_keyboard_visible);
 
-  int x = 0;
-  int y = 0;
+  int x = shelf()->PrimaryAxisValue(app_icons_layout_offset_, 0);
+  int y = shelf()->PrimaryAxisValue(0, app_icons_layout_offset_);
 
   // When scrollable shelf is enabled, the padding is handled in
   // ScrollableShelfView.
@@ -1951,6 +1951,11 @@ std::pair<int, int> ShelfView::GetDragRange(int index) {
 }
 
 void ShelfView::OnFadeOutAnimationEnded() {
+  // Call PreferredSizeChanged() to notify container to re-layout at the end
+  // of removal animation.
+  if (chromeos::switches::ShouldShowScrollableShelf())
+    PreferredSizeChanged();
+
   AnimateToIdealBounds();
   StartFadeInLastVisibleItem();
 }
@@ -2127,8 +2132,13 @@ void ShelfView::ShelfItemAdded(int model_index) {
 
   // When the scrollable shelf is enabled, |last_visible_index_| is always the
   // index to the last shelf item.
-  if (chromeos::switches::ShouldShowScrollableShelf())
+  if (chromeos::switches::ShouldShowScrollableShelf()) {
     UpdateVisibleIndice();
+
+    // Call PreferredSizeChanged() to notify container to re-layout before
+    // starting the animation of the shelf item addition.
+    PreferredSizeChanged();
+  }
 
   // Give the button its ideal bounds. That way if we end up animating the
   // button before this animation completes it doesn't appear at some random
@@ -2415,7 +2425,11 @@ void ShelfView::OnMenuClosed(views::View* source) {
 
 void ShelfView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {
   shelf_->NotifyShelfIconPositionsChanged();
-  PreferredSizeChanged();
+
+  // Do not call PreferredSizeChanged() so that container does not re-layout
+  // during the bounds animation.
+  if (!chromeos::switches::ShouldShowScrollableShelf())
+    PreferredSizeChanged();
 }
 
 void ShelfView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {

@@ -156,3 +156,11 @@ TYPED_TEST(FileVersionInfoTest, CustomProperties) {
   EXPECT_EQ(base::Version(std::vector<uint32_t>{1, 0, 0, 1}),
             version_info_win->GetFileVersion());
 }
+
+TYPED_TEST(FileVersionInfoTest, NoVersionInfo) {
+  FilePath dll_path = GetTestDataPath();
+  dll_path = dll_path.AppendASCII("no_version_info.dll");
+
+  TypeParam factory(dll_path);
+  ASSERT_FALSE(factory.Create());
+}

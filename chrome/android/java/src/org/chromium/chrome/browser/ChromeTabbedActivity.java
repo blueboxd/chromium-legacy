@@ -387,6 +387,13 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         }
 
         @Override
+        public void onOverviewModeStateChanged(boolean showTabSwitcherToolbar) {
+            for (OverviewModeObserver observer : mOverviewModeObserverList) {
+                observer.onOverviewModeStateChanged(showTabSwitcherToolbar);
+            }
+        }
+
+        @Override
         public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
             for (OverviewModeObserver observer : mOverviewModeObserverList) {
                 observer.onOverviewModeStartedHiding(showToolbar, delayAnimation);

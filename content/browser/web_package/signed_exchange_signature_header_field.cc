@@ -11,7 +11,7 @@
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "crypto/sha2.h"
-#include "third_party/blink/public/common/web_package/http_structured_header.h"
+#include "third_party/blink/public/common/http/structured_header.h"
 
 namespace content {
 

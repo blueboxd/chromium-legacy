@@ -100,4 +100,4 @@ COMPONENT_EXPORT(STORAGE_BROWSER)
 QuotaDiskInfoHelper* GetDefaultDiskInfoHelper();
 }  // namespace storage
 
-#endif  // STORAGE_BROWSER_QUOTA_QUOTA_MANAGER_H_
+#endif  // STORAGE_BROWSER_QUOTA_QUOTA_SETTINGS_H_

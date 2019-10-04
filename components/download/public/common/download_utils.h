@@ -98,10 +98,10 @@ COMPONENTS_DOWNLOAD_EXPORT bool IsDownloadDone(
 COMPONENTS_DOWNLOAD_EXPORT bool DeleteDownloadedFile(
     const base::FilePath& path);
 
-// Rename downloaded file from |oldpath| to newname.
-COMPONENTS_DOWNLOAD_EXPORT download::DownloadItem::DownloadRenameResult
+// Rename downloaded file |from_path| to a new |display_name|.
+COMPONENTS_DOWNLOAD_EXPORT DownloadItem::DownloadRenameResult
 RenameDownloadedFile(const base::FilePath& from_path,
-                     const base::FilePath& to_path);
+                     const base::FilePath& display_name);
 
 // Finch parameter key value for number of bytes used for content validation
 // during resumption.

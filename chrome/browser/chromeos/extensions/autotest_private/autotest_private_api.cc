@@ -19,6 +19,7 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/mojom/constants.mojom.h"
+#include "ash/rotator/screen_rotation_animator.h"
 #include "ash/shell.h"
 #include "ash/wm/wm_event.h"
 #include "base/base64.h"
@@ -412,6 +413,25 @@ std::string GetPngDataAsString(scoped_refptr<base::RefCountedMemory> png_data) {
   base::Base64Encode(base64Png, &base64Png);
   return base64Png;
 }
+
+display::Display::Rotation ToRotation(
+    api::autotest_private::RotationType rotation) {
+  switch (rotation) {
+    case api::autotest_private::RotationType::ROTATION_TYPE_ROTATE0:
+      return display::Display::ROTATE_0;
+    case api::autotest_private::RotationType::ROTATION_TYPE_ROTATE90:
+      return display::Display::ROTATE_90;
+    case api::autotest_private::RotationType::ROTATION_TYPE_ROTATE180:
+      return display::Display::ROTATE_180;
+    case api::autotest_private::RotationType::ROTATION_TYPE_ROTATE270:
+      return display::Display::ROTATE_270;
+    case api::autotest_private::RotationType::ROTATION_TYPE_NONE:
+      break;
+  }
+  NOTREACHED();
+  return display::Display::ROTATE_0;
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2651,6 +2671,66 @@ ExtensionFunction::ResponseAction
 AutotestPrivateSwapWindowsInSplitViewFunction::Run() {
   ash::SplitViewTestApi().SwapWindows();
   return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateWaitForDisplayRotationFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateWaitForDisplayRotationFunction::
+    AutotestPrivateWaitForDisplayRotationFunction() = default;
+AutotestPrivateWaitForDisplayRotationFunction::
+    ~AutotestPrivateWaitForDisplayRotationFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateWaitForDisplayRotationFunction::Run() {
+  DVLOG(1) << "AutotestPrivateWaitForDisplayRotationFunction";
+
+  std::unique_ptr<api::autotest_private::WaitForDisplayRotation::Params> params(
+      api::autotest_private::WaitForDisplayRotation::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  target_rotation_ = ToRotation(params->rotation);
+
+  if (!base::StringToInt64(params->display_id, &display_id_)) {
+    return RespondNow(Error(base::StrCat(
+        {"Invalid display_id; expected string with numbers only, got ",
+         params->display_id})));
+  }
+  auto* root_window = ash::Shell::GetRootWindowForDisplayId(display_id_);
+  if (!root_window) {
+    return RespondNow(Error(base::StrCat(
+        {"Invalid display_id; no root window found for the display id ",
+         params->display_id})));
+  }
+  auto* animator = ash::ScreenRotationAnimator::GetForRootWindow(root_window);
+  if (!animator->IsRotating()) {
+    display::Display display;
+    display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id_,
+                                                          &display);
+    // This should never fail.
+    DCHECK(display.is_valid());
+    return RespondNow(OneArgument(
+        std::make_unique<base::Value>(display.rotation() == target_rotation_)));
+  }
+  self_ = this;
+
+  animator->AddObserver(this);
+  return RespondLater();
+}
+
+void AutotestPrivateWaitForDisplayRotationFunction::
+    OnScreenCopiedBeforeRotation() {}
+
+void AutotestPrivateWaitForDisplayRotationFunction::
+    OnScreenRotationAnimationFinished(ash::ScreenRotationAnimator* animator,
+                                      bool canceled) {
+  animator->RemoveObserver(this);
+
+  display::Display display;
+  display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id_, &display);
+  Respond(OneArgument(std::make_unique<base::Value>(
+      display.is_valid() && display.rotation() == target_rotation_)));
+  self_.reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

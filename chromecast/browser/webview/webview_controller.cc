@@ -216,6 +216,10 @@ void WebviewController::AttachTo(aura::Window* window, int window_id) {
 }
 
 void WebviewController::ProcessInputEvent(const webview::InputEvent& ev) {
+  // Ensure this web contents has focus before sending it input.
+  if (!contents_->GetNativeView()->HasFocus())
+    contents_->GetNativeView()->Focus();
+
   ui::EventHandler* handler = contents_->GetNativeView()->delegate();
   ui::EventType type = static_cast<ui::EventType>(ev.event_type());
   switch (type) {

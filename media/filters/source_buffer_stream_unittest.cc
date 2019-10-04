@@ -125,12 +125,6 @@ class SourceBufferStreamTest : public testing::Test {
                   first_buffer_offset, true, &kDataA, kDataSize);
   }
 
-  void NewCodedFrameGroupAppend_ExpectFailure(int starting_position,
-                                              int number_of_buffers) {
-    AppendBuffers(starting_position, number_of_buffers, true,
-                  base::TimeDelta(), false, &kDataA, kDataSize);
-  }
-
   void AppendBuffers(int starting_position, int number_of_buffers) {
     AppendBuffers(starting_position, number_of_buffers, false,
                   base::TimeDelta(), true, &kDataA, kDataSize);
@@ -162,15 +156,6 @@ class SourceBufferStreamTest : public testing::Test {
 
   void AppendBuffersOneByOne(const std::string& buffers_to_append) {
     AppendBuffers(buffers_to_append, false, kNoTimestamp, true, true);
-  }
-
-  void NewCodedFrameGroupAppend_ExpectFailure(
-      const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, true, kNoTimestamp, false, false);
-  }
-
-  void AppendBuffers_ExpectFailure(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, false, kNoTimestamp, false, false);
   }
 
   void Seek(int position) { stream_->Seek(position * frame_duration_); }

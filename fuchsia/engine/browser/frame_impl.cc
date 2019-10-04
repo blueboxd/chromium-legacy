@@ -26,6 +26,7 @@
 #include "fuchsia/base/message_port.h"
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/logging/logging_utils.h"
@@ -683,7 +684,8 @@ void FrameImpl::ReadyToCommitNavigation(
       navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage())
     return;
 
-  mojom::OnLoadScriptInjectorAssociatedPtr before_load_script_injector;
+  mojo::AssociatedRemote<mojom::OnLoadScriptInjector>
+      before_load_script_injector;
   navigation_handle->GetRenderFrameHost()
       ->GetRemoteAssociatedInterfaces()
       ->GetInterface(&before_load_script_injector);

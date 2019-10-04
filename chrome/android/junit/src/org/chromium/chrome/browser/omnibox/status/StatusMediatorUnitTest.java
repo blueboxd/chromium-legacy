@@ -143,14 +143,63 @@ public final class StatusMediatorUnitTest {
 
     @Test
     @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
-    public void searchEngineLogo_tintAppliedToLoupe() {
-        setupSearchEngineLogoForTesting(true, true, true, false);
-        Mockito.doReturn(false).when(mToolbarCommonPropertiesModel).isIncognito();
+    public void searchEngineLogo_maybeUpdateStatusIconForSearchEngineIconChanges() {
+        setupSearchEngineLogoForTesting(true, true, false, false);
 
         mMediator.setUrlHasFocus(true);
         mMediator.setShowIconsWhenUrlFocused(true);
-        mMediator.setSecurityIconTint(11);
-        Assert.assertEquals(11, mModel.get(StatusProperties.STATUS_ICON_TINT_RES));
+        mMediator.setSecurityIconResource(0);
+        mMediator.updateSearchEngineStatusIcon(true, true, TEST_SEARCH_URL);
+
+        Assert.assertTrue(mMediator.maybeUpdateStatusIconForSearchEngineIcon());
+        Assert.assertEquals(
+                R.drawable.ic_logo_googleg_24dp, mModel.get(StatusProperties.STATUS_ICON_RES));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void searchEngineLogo_maybeUpdateStatusIconForSearchEngineIconNoChanges() {
+        setupSearchEngineLogoForTesting(true, true, false, false);
+
+        mMediator.setUrlHasFocus(true);
+        mMediator.setShowIconsWhenUrlFocused(false);
+        mMediator.setSecurityIconResource(0);
+        mMediator.updateSearchEngineStatusIcon(true, true, TEST_SEARCH_URL);
+
+        Assert.assertFalse(mMediator.maybeUpdateStatusIconForSearchEngineIcon());
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void setSecurityIconTintForSearchEngineIcon_zeroForGoogleAndNoIcon() {
+        mMediator.setUseDarkColors(false);
+        Assert.assertEquals(0, mMediator.getSecurityIconTintForSearchEngineIcon(0));
+        Assert.assertEquals(0,
+                mMediator.getSecurityIconTintForSearchEngineIcon(R.drawable.ic_logo_googleg_24dp));
+        mMediator.setUseDarkColors(true);
+        Assert.assertEquals(0, mMediator.getSecurityIconTintForSearchEngineIcon(0));
+        Assert.assertEquals(0,
+                mMediator.getSecurityIconTintForSearchEngineIcon(R.drawable.ic_logo_googleg_24dp));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void setSecurityIconTintForSearchEngineIcon_correctForDarkColors() {
+        mMediator.setUseDarkColors(true);
+        Assert.assertEquals(R.color.default_icon_color_secondary_list,
+                mMediator.getSecurityIconTintForSearchEngineIcon(R.drawable.ic_globe_24dp));
+        Assert.assertEquals(R.color.default_icon_color_secondary_list,
+                mMediator.getSecurityIconTintForSearchEngineIcon(R.drawable.ic_search));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void setSecurityIconTintForSearchEngineIcon_correctForLightColors() {
+        mMediator.setUseDarkColors(false);
+        Assert.assertEquals(R.color.tint_on_dark_bg,
+                mMediator.getSecurityIconTintForSearchEngineIcon(R.drawable.ic_globe_24dp));
+        Assert.assertEquals(R.color.tint_on_dark_bg,
+                mMediator.getSecurityIconTintForSearchEngineIcon(R.drawable.ic_search));
     }
 
     private void setupSearchEngineLogoForTesting(

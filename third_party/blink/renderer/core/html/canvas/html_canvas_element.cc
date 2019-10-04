@@ -831,9 +831,9 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::Snapshot(
       if (ResourceProvider())
         image_bitmap = ResourceProvider()->Snapshot();
     } else {
-      scoped_refptr<Uint8Array> data_array =
+      sk_sp<SkData> pixel_data =
           context_->PaintRenderingResultsToDataArray(source_buffer);
-      if (data_array) {
+      if (pixel_data) {
         // If the accelerated canvas is too big, there is a logic in WebGL code
         // path that scales down the drawing buffer to the maximum supported
         // size. Hence, we need to query the adjusted size of DrawingBuffer.
@@ -844,7 +844,7 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::Snapshot(
         info = info.makeColorSpace(ColorParams().GetSkColorSpace());
         if (ColorParams().GetSkColorType() != kN32_SkColorType)
           info = info.makeColorType(kRGBA_F16_SkColorType);
-        image_bitmap = StaticBitmapImage::Create(std::move(data_array), info);
+        image_bitmap = StaticBitmapImage::Create(std::move(pixel_data), info);
       }
     }
   } else if (canvas2d_bridge_) {  // 2D Canvas

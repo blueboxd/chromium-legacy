@@ -30,22 +30,27 @@ class AXRangeScreenRectDelegateImpl : public AXRangeScreenRectDelegate {
   AXRangeScreenRectDelegateImpl(AXPlatformNodeTextRangeProviderWin* host)
       : host_(host) {}
 
-  gfx::Rect GetInnerTextRangeBoundsRect(AXTreeID tree_id,
-                                        AXNode::AXID node_id,
-                                        int start_offset,
-                                        int end_offset) override {
+  gfx::Rect GetInnerTextRangeBoundsRect(
+      AXTreeID tree_id,
+      AXNode::AXID node_id,
+      int start_offset,
+      int end_offset,
+      AXOffscreenResult* offscreen_result) override {
     AXPlatformNodeDelegate* delegate = host_->GetDelegate(tree_id, node_id);
     DCHECK(delegate);
     return delegate->GetInnerTextRangeBoundsRect(
         start_offset, end_offset, ui::AXCoordinateSystem::kScreen,
-        ui::AXClippingBehavior::kClipped);
+        ui::AXClippingBehavior::kClipped, offscreen_result);
   }
 
-  gfx::Rect GetBoundsRect(AXTreeID tree_id, AXNode::AXID node_id) override {
+  gfx::Rect GetBoundsRect(AXTreeID tree_id,
+                          AXNode::AXID node_id,
+                          AXOffscreenResult* offscreen_result) override {
     AXPlatformNodeDelegate* delegate = host_->GetDelegate(tree_id, node_id);
     DCHECK(delegate);
     return delegate->GetBoundsRect(ui::AXCoordinateSystem::kScreen,
-                                   ui::AXClippingBehavior::kClipped);
+                                   ui::AXClippingBehavior::kClipped,
+                                   offscreen_result);
   }
 
  private:

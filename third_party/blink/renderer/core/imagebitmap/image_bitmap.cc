@@ -238,18 +238,32 @@ scoped_refptr<StaticBitmapImage> FlipImageVertically(
     // Unpremul code path results in a GPU readback if |input| is texture
     // backed since CopyImageData() uses  SkImage::readPixels() to extract the
     // pixels from SkImage.
-    scoped_refptr<Uint8Array> image_pixels = CopyImageData(input);
+    SkImageInfo info = GetSkImageInfo(input);
+    if (info.isEmpty())
+      return nullptr;
+
+    sk_sp<SkImage> sk_image = input->PaintImageForCurrentFrame().GetSkImage();
+    if (sk_image->bounds().isEmpty())
+      return nullptr;
+
+    sk_sp<SkData> image_pixels = TryAllocateSkData(info.computeMinByteSize());
     if (!image_pixels)
       return nullptr;
-    SkImageInfo info = GetSkImageInfo(input);
-    unsigned image_row_bytes = info.width() * info.bytesPerPixel();
+
+    uint8_t* writable_pixels =
+        static_cast<uint8_t*>(image_pixels->writable_data());
+    size_t image_row_bytes = static_cast<size_t>(info.minRowBytes64());
+    bool read_successful =
+        sk_image->readPixels(info, writable_pixels, image_row_bytes, 0, 0);
+    DCHECK(read_successful);
+
     for (int i = 0; i < info.height() / 2; i++) {
-      unsigned top_first_element = i * image_row_bytes;
-      unsigned top_last_element = (i + 1) * image_row_bytes;
-      unsigned bottom_first_element = (info.height() - 1 - i) * image_row_bytes;
-      std::swap_ranges(image_pixels->Data() + top_first_element,
-                       image_pixels->Data() + top_last_element,
-                       image_pixels->Data() + bottom_first_element);
+      size_t top_first_element = i * image_row_bytes;
+      size_t top_last_element = (i + 1) * image_row_bytes;
+      size_t bottom_first_element = (info.height() - 1 - i) * image_row_bytes;
+      std::swap_ranges(&writable_pixels[top_first_element],
+                       &writable_pixels[top_last_element],
+                       &writable_pixels[bottom_first_element]);
     }
     return StaticBitmapImage::Create(std::move(image_pixels), info);
   }
@@ -315,10 +329,21 @@ scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
     return StaticBitmapImage::Create(surface->makeImageSnapshot(),
                                      image->ContextProviderWrapper());
   }
+
   // To unpremul, read back the pixels.
-  auto dst_pixels = CopyImageData(image, info);
+
+  if (skia_image->bounds().isEmpty())
+    return nullptr;
+
+  sk_sp<SkData> dst_pixels = TryAllocateSkData(info.computeMinByteSize());
   if (!dst_pixels)
     return nullptr;
+
+  uint8_t* writable_pixels = static_cast<uint8_t*>(dst_pixels->writable_data());
+  size_t image_row_bytes = static_cast<size_t>(info.minRowBytes64());
+  bool read_successful =
+      skia_image->readPixels(info, writable_pixels, image_row_bytes, 0, 0);
+  DCHECK(read_successful);
   return StaticBitmapImage::Create(std::move(dst_pixels), info);
 }
 
@@ -712,19 +737,20 @@ ImageBitmap::ImageBitmap(ImageData* data,
   }
 
   // Copy / color convert the pixels
-  scoped_refptr<ArrayBuffer> pixels_buffer =
-      ArrayBuffer::CreateOrNull(SafeCast<uint32_t>(src_rect.Size().Area()),
-                                parsed_options.color_params.BytesPerPixel());
-  if (!pixels_buffer)
+  size_t image_pixels_size;
+  if (!base::CheckMul(parsed_options.color_params.BytesPerPixel(),
+                      static_cast<unsigned>(src_rect.Width()),
+                      static_cast<unsigned>(src_rect.Height()))
+           .AssignIfValid(&image_pixels_size)) {
     return;
-  unsigned byte_length = pixels_buffer->ByteLength();
-  scoped_refptr<Uint8Array> image_pixels =
-      Uint8Array::Create(std::move(pixels_buffer), 0, byte_length);
+  }
+  sk_sp<SkData> image_pixels = TryAllocateSkData(image_pixels_size);
   if (!image_pixels)
     return;
   if (!data->ImageDataInCanvasColorSettings(
           parsed_options.color_params.ColorSpace(),
-          parsed_options.color_params.PixelFormat(), image_pixels->Data(),
+          parsed_options.color_params.PixelFormat(),
+          static_cast<unsigned char*>(image_pixels->writable_data()),
           kN32ColorType, &src_rect,
           parsed_options.premultiply_alpha ? kPremultiplyAlpha
                                            : kUnpremultiplyAlpha))

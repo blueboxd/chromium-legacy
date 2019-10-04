@@ -33,8 +33,8 @@ async function runTest() {
   const target1 = document.getElementById("target1");
   const target2 = document.getElementById("target2");
   let promises = [];
-  promises.push(setInvisibleActivatable(target1));
-  promises.push(setInvisibleActivatable(target2));
+  promises.push(setInvisible(target1));
+  promises.push(setInvisible(target2));
   await Promise.all(promises);
   takeScreenshot();
 }

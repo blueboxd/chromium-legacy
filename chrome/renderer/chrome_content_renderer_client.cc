@@ -560,7 +560,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
     associated_interfaces->AddInterface(base::BindRepeating(
-        &extensions::MimeHandlerViewContainerManager::BindRequest,
+        &extensions::MimeHandlerViewContainerManager::BindReceiver,
         render_frame->GetRoutingID()));
   }
 #endif

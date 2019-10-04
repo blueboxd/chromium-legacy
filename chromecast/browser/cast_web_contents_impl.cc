@@ -33,6 +33,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/resource_load_info.mojom.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -371,7 +372,7 @@ void CastWebContentsImpl::RenderFrameCreated(
       feature_manager_remote.BindNewPipeAndPassReceiver());
   feature_manager_remote->ConfigureFeatures(GetRendererFeatures());
 
-  chromecast::shell::mojom::MediaPlaybackOptionsAssociatedPtr
+  mojo::AssociatedRemote<chromecast::shell::mojom::MediaPlaybackOptions>
       media_playback_options;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &media_playback_options);
@@ -481,7 +482,7 @@ void CastWebContentsImpl::ReadyToCommitNavigation(
       navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage())
     return;
 
-  chromecast::shell::mojom::OnLoadScriptInjectorAssociatedPtr
+  mojo::AssociatedRemote<chromecast::shell::mojom::OnLoadScriptInjector>
       before_load_script_injector;
   navigation_handle->GetRenderFrameHost()
       ->GetRemoteAssociatedInterfaces()

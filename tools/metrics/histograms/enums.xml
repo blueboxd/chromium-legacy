@@ -20764,6 +20764,7 @@ Called by update_net_error_codes.py.-->
   <int value="1388" label="AUTOTESTPRIVATE_GETCLIPBOARDTEXTDATA"/>
   <int value="1389" label="AUTOTESTPRIVATE_SETCLIPBOARDTEXTDATA"/>
   <int value="1390" label="AUTOTESTPRIVATE_INITIALIZEEVENTS"/>
+  <int value="1391" label="AUTOTESTPRIVATE_WAITFORDISPLAYROTATION"/>
 </enum>
 
 <enum name="ExtensionIconState">

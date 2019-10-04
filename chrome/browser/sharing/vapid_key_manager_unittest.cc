@@ -4,9 +4,8 @@
 
 #include "chrome/browser/sharing/vapid_key_manager.h"
 
-#include "chrome/browser/sharing/fake_local_device_info_provider.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
-#include "components/sync_device_info/fake_device_info_tracker.h"
+#include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "crypto/ec_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -17,17 +16,14 @@ namespace {
 class VapidKeyManagerTest : public testing::Test {
  protected:
   VapidKeyManagerTest()
-      : sharing_sync_preference_(&prefs_,
-                                 &fake_device_info_tracker_,
-                                 &fake_local_device_info_provider_),
+      : sharing_sync_preference_(&prefs_, &fake_device_info_sync_service_),
         vapid_key_manager_(&sharing_sync_preference_) {
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
 
-  SharingSyncPreference sharing_sync_preference_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
-  syncer::FakeDeviceInfoTracker fake_device_info_tracker_;
-  FakeLocalDeviceInfoProvider fake_local_device_info_provider_;
+  syncer::FakeDeviceInfoSyncService fake_device_info_sync_service_;
+  SharingSyncPreference sharing_sync_preference_;
   VapidKeyManager vapid_key_manager_;
 };
 

@@ -135,6 +135,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
+#include "content/renderer/render_widget_screen_metrics_emulator.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/resource_timing_info_conversions.h"
 #include "content/renderer/savable_resources.h"
@@ -1875,10 +1876,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       focused_pepper_plugin_(nullptr),
       pepper_last_mouse_event_target_(nullptr),
 #endif
-      autoplay_configuration_binding_(this),
-      frame_navigation_control_receiver_(this),
-      fullscreen_binding_(this),
-      mhtml_file_writer_binding_(this),
       navigation_client_impl_(nullptr),
       has_accessed_initial_document_(false),
       media_factory_(
@@ -1925,9 +1922,9 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
 }
 
 mojom::FrameHost* RenderFrameImpl::GetFrameHost() {
-  if (!frame_host_ptr_.is_bound())
-    GetRemoteAssociatedInterfaces()->GetInterface(&frame_host_ptr_);
-  return frame_host_ptr_.get();
+  if (!frame_host_remote_.is_bound())
+    GetRemoteAssociatedInterfaces()->GetInterface(&frame_host_remote_);
+  return frame_host_remote_.get();
 }
 
 RenderFrameImpl::~RenderFrameImpl() {
@@ -2346,15 +2343,17 @@ void RenderFrameImpl::OnAssociatedInterfaceRequest(
 }
 
 void RenderFrameImpl::BindFullscreen(
-    mojom::FullscreenVideoElementHandlerAssociatedRequest request) {
-  fullscreen_binding_.Bind(std::move(request),
-                           GetTaskRunner(blink::TaskType::kInternalIPC));
+    mojo::PendingAssociatedReceiver<mojom::FullscreenVideoElementHandler>
+        receiver) {
+  fullscreen_receiver_.Bind(std::move(receiver),
+                            GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::BindAutoplayConfiguration(
-    blink::mojom::AutoplayConfigurationClientAssociatedRequest request) {
-  autoplay_configuration_binding_.Bind(
-      std::move(request), GetTaskRunner(blink::TaskType::kInternalIPC));
+    mojo::PendingAssociatedReceiver<blink::mojom::AutoplayConfigurationClient>
+        receiver) {
+  autoplay_configuration_receiver_.Bind(
+      std::move(receiver), GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::BindFrame(
@@ -3531,8 +3530,9 @@ void RenderFrameImpl::CommitNavigationInternal(
                                             WebString::FromUTF8(charset), data);
   } else {
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-        *common_params, *commit_params, request_id, response_head,
-        std::move(response_body), std::move(url_loader_client_endpoints),
+        std::move(common_params), std::move(commit_params), request_id,
+        response_head, std::move(response_body),
+        std::move(url_loader_client_endpoints),
         GetTaskRunner(blink::TaskType::kInternalLoading), GetRoutingID(),
         !frame_->Parent(), navigation_params.get());
   }
@@ -5258,14 +5258,28 @@ bool RenderFrameImpl::RunModalBeforeUnloadDialog(bool is_reload) {
 
 void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
   ContextMenuParams params = ContextMenuParamsBuilder::Build(data);
-  blink::WebRect position_in_window(params.x, params.y, 0, 0);
-  GetLocalRootRenderWidget()->ConvertViewportToWindow(&position_in_window);
-  params.x = position_in_window.x;
-  params.y = position_in_window.y;
-  GetLocalRootRenderWidget()->OnShowHostContextMenu(&params);
   if (GetLocalRootRenderWidget()->has_host_context_menu_location()) {
+    // If the context menu request came from the browser, it came with a
+    // position that was stored on RenderWidget and is relative to the
+    // WindowScreenRect.
     params.x = GetLocalRootRenderWidget()->host_context_menu_location().x();
     params.y = GetLocalRootRenderWidget()->host_context_menu_location().y();
+  } else {
+    // If the context menu request came from the renderer, the position in
+    // |params| is real, but they come in blink viewport coordiates, which
+    // include the device scale factor, but not emulation scale. Here we convert
+    // them to DIP coordiates relative to the WindowScreenRect.
+    blink::WebRect position_in_window(params.x, params.y, 0, 0);
+    render_view_->page_properties()->ConvertViewportToWindow(
+        &position_in_window);
+    if (render_view_->page_properties()->ScreenMetricsEmulator()) {
+      const float scale =
+          render_view_->page_properties()->ScreenMetricsEmulator()->scale();
+      position_in_window.x *= scale;
+      position_in_window.y *= scale;
+    }
+    params.x = position_in_window.x;
+    params.y = position_in_window.y;
   }
 
   // Serializing a GURL longer than kMaxURLChars will fail, so don't do
@@ -7328,9 +7342,9 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
 }
 
 void RenderFrameImpl::BindMhtmlFileWriter(
-    mojom::MhtmlFileWriterAssociatedRequest request) {
-  mhtml_file_writer_binding_.Bind(
-      std::move(request), GetTaskRunner(blink::TaskType::kInternalDefault));
+    mojo::PendingAssociatedReceiver<mojom::MhtmlFileWriter> receiver) {
+  mhtml_file_writer_receiver_.Bind(
+      std::move(receiver), GetTaskRunner(blink::TaskType::kInternalDefault));
 }
 
 void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(

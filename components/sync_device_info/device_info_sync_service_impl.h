@@ -35,6 +35,7 @@ class DeviceInfoSyncServiceImpl : public DeviceInfoSyncService {
   LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() override;
   DeviceInfoTracker* GetDeviceInfoTracker() override;
   base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegate() override;
+  void RefreshLocalDeviceInfo() override;
 
  private:
   std::unique_ptr<DeviceInfoSyncClient> device_info_sync_client_;

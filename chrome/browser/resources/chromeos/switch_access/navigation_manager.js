@@ -438,15 +438,6 @@ class NavigationManager {
   }
 
   /**
-   * Checks if the current scope is in the virtual keyboard.
-   * @return {boolean}
-   * @public
-   */
-  inVirtualKeyboard() {
-    return this.textInputManager_.inVirtualKeyboard(this.scope_);
-  }
-
-  /**
    * Puts focus on the virtual keyboard, if the current node is a text input.
    * TODO(946190): Handle the case where the user has not enabled the onscreen
    *               keyboard.
@@ -454,6 +445,8 @@ class NavigationManager {
   openKeyboard() {
     if (!this.textInputManager_.enterKeyboard(this.node_))
       return;
+
+    this.switchAccess_.setInKeyboard(true);
 
     chrome.accessibilityPrivate.setVirtualKeyboardVisible(
         true /* is_visible */);
@@ -481,6 +474,7 @@ class NavigationManager {
     this.textInputManager_.returnToTextFocus();
     chrome.accessibilityPrivate.setVirtualKeyboardVisible(
         false /* isVisible */);
+    this.switchAccess_.setInKeyboard(false);
     return true;
   }
 

@@ -481,7 +481,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
 
   // Snapshot of last set vsync parameters, to avoid redundant IPCs.
   base::TimeTicks vsync_timebase_;
-  base::TimeDelta vsync_interval_;
+  base::TimeDelta vsync_interval_ = viz::BeginFrameArgs::DefaultInterval();
+  bool has_vsync_params_ = false;
 
   const bool use_external_begin_frame_control_;
   const bool force_software_compositor_;

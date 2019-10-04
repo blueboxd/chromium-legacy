@@ -12,7 +12,8 @@
 #include "base/strings/string_piece_forward.h"
 #include "chromecast/common/mojom/on_load_script_injector.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
 namespace chromecast {
 namespace shell {
@@ -24,7 +25,8 @@ class OnLoadScriptInjector : public content::RenderFrameObserver,
  public:
   explicit OnLoadScriptInjector(content::RenderFrame* frame);
 
-  void BindToRequest(mojom::OnLoadScriptInjectorAssociatedRequest request);
+  void BindToReceiver(
+      mojo::PendingAssociatedReceiver<mojom::OnLoadScriptInjector> receiver);
 
   void AddOnLoadScript(const std::string& script) override;
   void ClearOnLoadScripts() override;
@@ -39,7 +41,7 @@ class OnLoadScriptInjector : public content::RenderFrameObserver,
   ~OnLoadScriptInjector() override;
 
   std::vector<std::string> on_load_scripts_;
-  mojo::AssociatedBindingSet<mojom::OnLoadScriptInjector> bindings_;
+  mojo::AssociatedReceiverSet<mojom::OnLoadScriptInjector> receivers_;
   base::WeakPtrFactory<OnLoadScriptInjector> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OnLoadScriptInjector);

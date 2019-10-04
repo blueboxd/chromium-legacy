@@ -430,12 +430,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         session.requestAnimationFrame(onXRFrame);
 
         // Update the matrix for each box
-        for (let box of boxes) {
-          let node = box.node;
-          mat4.identity(node.matrix);
-          mat4.translate(node.matrix, node.matrix, box.position);
-          mat4.rotateX(node.matrix, node.matrix, time/1000);
-          mat4.rotateY(node.matrix, node.matrix, time/1500);
+        // Only do this when the position is not emulated - this means one can
+        // tell if the viewer pose has an emulated position while still in VR.
+        if (!pose.emulatedPosition) {
+          for (let box of boxes) {
+            let node = box.node;
+            mat4.identity(node.matrix);
+            mat4.translate(node.matrix, node.matrix, box.position);
+            mat4.rotateX(node.matrix, node.matrix, time/1000);
+            mat4.rotateY(node.matrix, node.matrix, time/1500);
+          }
         }
 
         scene.updateInputSources(frame, refSpace);

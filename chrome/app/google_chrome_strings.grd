@@ -128,9 +128,6 @@ chromium_strings.grd. -->
         <part file="settings_google_chrome_strings.grdp" />
       </if>
 
-      <message name="IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TEXT" desc="Message explaining to the user what will happen if they disconnect the managed profile.">
-        Disconnecting <ph name="USERNAME">$1<ex>someone@example.com</ex></ph> will clear your history, bookmarks, settings, and other Chrome data stored on this device. Data stored in your Google Account will not be cleared and can be managed on <ph name="GOOGLE_DASHBOARD_LINK">&lt;a target="_blank" href="$2"&gt;</ph>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK">&lt;/a&gt;</ph>.
-      </message>
       <message name="IDS_PRODUCT_NAME" desc="The Chrome application name">
         Google Chrome
       </message>
@@ -205,16 +202,6 @@ chromium_strings.grd. -->
       <message name="IDS_ACCESSIBLE_CANARY_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for the accessible name of a tabbed browser window for the canary (nightly build) channel version of the browser">
         <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Google Chrome Canary
       </message>
-      <if expr="not chromeos">
-        <message name="IDS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
-          Get help with using Chrome
-        </message>
-      </if>
-      <if expr="chromeos">
-        <message name="IDS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
-          Get help with using Chrome OS
-        </message>
-      </if>
       <message name="IDS_ABOUT_VERSION_COMPANY_NAME" desc="Company name on the about pages">
         Google LLC
       </message>
@@ -404,11 +391,6 @@ Google Chrome is unable to recover your settings.
       <message name="IDS_DEFAULT_BROWSER_INFOBAR_TEXT" desc="Text to show in an infobar when Google Chrome is not the current default browser.">
         Google Chrome isn't your default browser
       </message>
-      <if expr="chromeos">
-        <message name="IDS_SYNC_OVERVIEW" desc="Chrome OS: The message that appears in the options dialog when sync has not been set up by the user.">
-          Set up Sync to save your personalized browser features to the web and access them from Google Chrome on any computer.
-        </message>
-      </if>
       <if expr="is_win">
         <!-- Try Chrome Toast Dialog -->
         <message name="IDS_TRY_TOAST_HEADING" desc="Top line of the try-chrome-again dialog">
@@ -514,11 +496,6 @@ Google Chrome is unable to recover your settings.
         </if>
       </if>
 
-      <!-- settings reset bubble messages -->
-      <message name="IDS_REPORT_BUBBLE_TEXT" desc="Text for the settings reset bubble reporting checkbox.">
-        Help make Google Chrome better by reporting the current settings
-      </message>
-
       <!-- chrome://settings/extensions page -->
       <message name="IDS_EXTENSIONS_INCOGNITO_WARNING" desc="Warns the user that Chrome cannot prevent extensions from recording history in incognito mode. Displayed in extensions management UI after an extension is selected to be run in incognito mode.">
         Warning: Google Chrome cannot prevent extensions from recording your browsing history. To disable this extension in incognito mode, unselect this option.
@@ -606,25 +583,6 @@ Google Chrome is unable to recover your settings.
         Sync and personalize Chrome across your devices
       </message>
 
-      <!-- Tutorial card in the avatar menu bubble -->
-      <message name="IDS_PROFILES_CONFIRM_SIGNIN_TUTORIAL_TITLE" desc="The title of the tutorial card in the avatar menu bubble view shown when a user signs in to Chrome.">
-        You're now signed in to Chrome
-      </message>
-      <message name="IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_TITLE" desc="Title of the tutorial card in the avatar menu bubble view that introduces an upgrade user to the new profile management UI.">
-        This is your Chrome
-      </message>
-      <message name="IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_CONTENT_TEXT" desc="The main content of the tutorial card in the avatar menu bubble view that introduces an upgrade user to the new profile management UI.">
-        Share a computer? Now you can set up Chrome just the way you like it.
-      </message>
-
-      <!-- Account removal view in the avatar menu bubble -->
-      <message name="IDS_PROFILES_ACCOUNT_REMOVAL_TEXT" desc="Main text of the account removal view when removing a secondary account.">
-        After removing your account from Chrome, you may need to reload your open tabs to take effect.
-      </message>
-      <message name="IDS_PROFILES_PRIMARY_ACCOUNT_REMOVAL_TEXT" desc="Main text of the account removal view when removing a primary account.">
-        You're using <ph name="PROFILE_EMAIL">$1<ex>jessica@gmail.com</ex></ph> to sync your Chrome stuff. To update your sync preference or to use Chrome without a Google account, visit <ph name="SETTINGS_LINK">$2<ex>settings</ex></ph>.
-      </message>
-
       <!-- One click sign-in infobar -->
       <if expr="not chromeos">
         <!-- New one-click sign-in dialog contents for SAML support -->
@@ -634,16 +592,8 @@ Google Chrome is unable to recover your settings.
         <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE_NEW" desc="The message of the one click sign-in dialog.">
           You're signed in as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Now you can access your bookmarks, history, and other settings on all your signed in devices.
         </message>
-        <message name="IDS_ONE_CLICK_SIGNIN_BUBBLE_SYNC_DISABLED_MESSAGE" desc="The body of the sign-in bubble, when sync has been disabled.">
-          You're now signed in to Chrome! Sync is disabled by your administrator.
-        </message>
         <message name="IDS_SYNC_WRONG_EMAIL" desc="Message shown when sync setup failed due to the user entering the wrong email address for sign-in.">
           You were signed in to Chrome as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Please use the same account to sign in again.
-        </message>
-        <message name="IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_MESSAGE" desc="Error message to display when setting up sync for a second time and the user name is different from the previous user name.">
-          Someone previously signed in to Chrome on this computer as <ph name="ACCOUNT_EMAIL_LAST">$1<ex>user@example.com</ex></ph>. If that isn't your account, create a new Chrome user to keep your information separate.
-
-Signing in anyway will merge Chrome information like bookmarks, history, and other settings to <ph name="ACCOUNT_EMAIL_NEW">$2<ex>user@example.com</ex></ph>.
         </message>
         <message name="IDS_SYNC_USED_PROFILE_ERROR" desc="An error message shown when user tries to sign in to a profile that is used by other user name before.">
           Someone previously signed in to Chrome on this computer as <ph name="ACCOUNT_EMAIL_LAST">$1<ex>user@example.com</ex></ph>. Please create a new Chrome user to keep your information separate.
@@ -726,28 +676,8 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         settings
       </message>
 
-      <if expr="is_android">
-        <message name="IDS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that described a Wallet credit card which has been copied to the local Chrome instance.">
-          Copied to Chrome
-        </message>
-      </if>
-
       <!-- App list -->
       <if expr="enable_app_list">
-        <message name="IDS_APP_LIST_SHORTCUT_NAME" desc="Name for the Chrome App List to appear in the taskbar and in any shortcuts to it.">
-          Chrome App Launcher
-        </message>
-        <if expr="is_win or is_macosx">
-          <message name="IDS_APP_LIST_SHORTCUT_NAME_CANARY" desc="Name for the Chrome App List to appear in the taskbar and in any shortcuts to it for the Canary channel.">
-            Chrome App Launcher Canary
-          </message>
-        </if>
-        <message name="IDS_APP_LIST_SIGNIN_HEADING" desc="Heading for when the launcher needs to sign in.">
-          Sign in to Chrome
-        </message>
-        <message name="IDS_APP_LIST_SIGNIN_TEXT" desc="Text for when the launcher needs to sign in.">
-          You need to be signed in to Chrome to use apps. This allows Chrome to sync your apps, bookmarks, history, passwords and other settings across devices.
-        </message>
         <if expr="not use_titlecase">
           <message name="IDS_APP_LIST_EXTENSIONS_UNINSTALL" desc="Title text for the context menu item of a non-platform-app app list item that removes the app.">
             Remove from Chrome...
@@ -921,12 +851,6 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         </if>
       </if>
 
-      <if expr="not is_android">
-        <message name="IDS_RESET_PROFILE_SETTINGS_FEEDBACK" desc="Feedback label in the Reset Profile Settings dialog">
-          Help make Google Chrome better by reporting the current settings
-        </message>
-      </if>
-
       <!-- Update Recommended dialog -->
       <if expr="not chromeos">
         <message name="IDS_UPDATE_RECOMMENDED_DIALOG_TITLE" desc="The window title for the Update Recommended dialog.">
@@ -1032,14 +956,6 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         A special security update for Google Chrome was just applied. Restart now and we'll restore your tabs.
       </message>
 
-      <!-- Dialog that asks whether user wants to participate in Safe Browsing Extended Reporting -->
-      <message name="IDS_FEEDBACK_SERVICE_DIALOG_TITLE" desc="Title of the dialog asking whether the user wants to upload suspected malicious files for analysis">
-        Help make Chrome better
-      </message>
-      <message name="IDS_FEEDBACK_SERVICE_DIALOG_EXPLANATION" desc="Explanation of the dialog asking whether the user wants to upload suspected malicious files for analysis">
-        You can help make Chrome safer and easier to use by automatically reporting details of possible security incidents to Google.
-      </message>
-
       <!-- Desktop Capture -->
       <message name="IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_TAB" desc="Text for the button on the window picker dialog, clicking which takes one to tab sharing">
         Chrome Tab
@@ -1051,23 +967,6 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
           Restart Chrome to enable <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>
         </message>
       </if>
-
-      <!-- Desktop to iOS promotion -->
-      <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT" desc="Text for Chrome iOS Promotion appearing in the password bubble after a password is saved.">
-        Install Chrome on your phone. We’ll send an SMS to your phone.
-      </message>
-      <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_WITH_PHONE_NUMBER" desc="Text for Chrome iOS Promotion appearing in the password bubble after a password is saved.">
-        Install Chrome on your phone. We’ll send an SMS to your phone: <ph name="PHONE_NUMBER">$1<ex>(650) 123-4567</ex></ph>
-      </message>
-      <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_V2" desc="Text for Chrome iOS Promotion appearing in the password bubble after a password is saved, this one mentioning explicitly that the SMS will be sent to the recovery phone number.">
-        Install Chrome on your phone. We’ll send an SMS to your account recovery phone number.
-      </message>
-      <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_WITH_PHONE_NUMBER_V2" desc="Text for Chrome iOS Promotion appearing in the password bubble after a password is saved, this one mentioning explicitly that the SMS will be sent to the recovery phone number.">
-        Install Chrome on your phone. We’ll send an SMS to your account recovery phone number: <ph name="PHONE_NUMBER">$1<ex>(650) 123-4567</ex></ph>
-      </message>
-      <message name="IDS_FOOTNOTE_DESKTOP_TO_IOS_PROMO_LINK" desc="Text of the link to get Chrome on the iPhone from the Chrome iOS promotion displayed on the bottom of bubbles.">
-        get Chrome on your iPhone
-      </message>
 
       <!-- Runtime permission strings -->
       <if expr="is_android">
@@ -1091,20 +990,6 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       <if  expr="is_macosx">
         <message name="IDS_RUNTIME_PERMISSION_OS_REASON_TEXT" desc="Text provided to the macOS permission dialog, explaining why Chrome needs to access a protected resource (e.g., camera, microphone).">
           Once Chrome has access, websites will be able to ask you for access.
-        </message>
-      </if>
-
-      <!-- OOM intervention message -->
-      <if expr="is_android">
-        <message name="IDS_NEAR_OOM_INTERVENTION_MESSAGE" desc="The message stating that the browser intervened to stop the page using too much memory.">
-           This page uses too much memory, so Chrome paused it.
-        </message>
-      </if>
-
-      <!-- OOM intervention message -->
-      <if expr="is_android">
-        <message name="IDS_NEAR_OOM_REDUCTION_MESSAGE" desc="The message stating that the browser removed some content of the page using too much memory.">
-           This page uses too much memory, so Chrome removed some content.
         </message>
       </if>
 
@@ -1186,9 +1071,6 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         </message>
         <message name="IDS_ENTERPRISE_STARTUP_RELAUNCH_BUTTON" desc="The text of relaunch button of Chrome launch blocking dialog.">
           Relaunch Chrome
-        </message>
-        <message name="IDS_ENTERPRISE_STARTUP_CANCEL_BUTTON" desc="The text of cancel button of Chrome launch blocking dialog.">
-          Close
         </message>
       </if>
       <message name="IDS_DESKTOP_MEDIA_PICKER_TITLE_WEB_CONTENTS_ONLY" desc="Title for the window picker dialog shown when desktop capture of a tab is requested by an app.">

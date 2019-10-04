@@ -26,6 +26,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/x11_path.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
 
 namespace ui {
@@ -609,6 +610,7 @@ void XWindow::SetBounds(const gfx::Rect& requested_bounds_in_pixels) {
   // (possibly synthetic) ConfigureNotify about the actual size and correct
   // |bounds_in_pixels_| later.
   bounds_in_pixels_ = bounds_in_pixels;
+  ResetWindowRegion();
 }
 
 bool XWindow::IsXWindowVisible() const {
@@ -807,6 +809,19 @@ void XWindow::MoveCursorTo(const gfx::Point& location_in_pixels) {
                bounds_in_pixels_.y() + location_in_pixels.y());
 }
 
+void XWindow::ResetWindowRegion() {
+  XRegion* xregion = nullptr;
+  if (!use_custom_shape() && !IsMaximized() && !IsFullscreen()) {
+    SkPath window_mask;
+    GetWindowMaskForXWindow(bounds().size(), &window_mask);
+    // Some frame views define a custom (non-rectangular) window mask. If
+    // so, use it to define the window shape. If not, fall through.
+    if (window_mask.countPoints() > 0)
+      xregion = gfx::CreateRegionFromSkPath(window_mask);
+  }
+  UpdateWindowRegion(xregion);
+}
+
 void XWindow::OnWorkspaceUpdated() {
   auto old_workspace = workspace_;
   int workspace;
@@ -906,49 +921,13 @@ void XWindow::AfterActivationStateChanged() {
 void XWindow::SetUseNativeFrame(bool use_native_frame) {
   use_native_frame_ = use_native_frame;
   ui::SetUseOSWindowFrame(xwindow_, use_native_frame);
+  ResetWindowRegion();
 }
 
-void XWindow::SetShape(_XRegion* xregion) {
+void XWindow::SetShape(XRegion* xregion) {
   custom_window_shape_ = !!xregion;
   window_shape_.reset(xregion);
-}
-
-void XWindow::UpdateWindowRegion(_XRegion* xregion) {
-  // If a custom window shape was supplied then apply it.
-  if (use_custom_shape()) {
-    XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding, 0, 0,
-                        window_shape_.get(), false);
-    return;
-  }
-
-  window_shape_.reset(xregion);
-  if (window_shape_) {
-    XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding, 0, 0,
-                        window_shape_.get(), false);
-    return;
-  }
-
-  // If we didn't set the shape for any reason, reset the shaping information.
-  // How this is done depends on the border style, due to quirks and bugs in
-  // various window managers.
-  if (use_native_frame()) {
-    // If the window has system borders, the mask must be set to null (not a
-    // rectangle), because several window managers (eg, KDE, XFCE, XMonad) will
-    // not put borders on a window with a custom shape.
-    XShapeCombineMask(xdisplay_, xwindow_, ShapeBounding, 0, 0, x11::None,
-                      ShapeSet);
-  } else {
-    // Conversely, if the window does not have system borders, the mask must be
-    // manually set to a rectangle that covers the whole window (not null). This
-    // is due to a bug in KWin <= 4.11.5 (KDE bug #330573) where setting a null
-    // shape causes the hint to disable system borders to be ignored (resulting
-    // in a double border).
-    XRectangle r = {0, 0,
-                    static_cast<unsigned short>(bounds_in_pixels_.width()),
-                    static_cast<unsigned short>(bounds_in_pixels_.height())};
-    XShapeCombineRectangles(xdisplay_, xwindow_, ShapeBounding, 0, 0, &r, 1,
-                            ShapeSet, YXBanded);
-  }
+  ResetWindowRegion();
 }
 
 void XWindow::OnCrossingEvent(bool enter,
@@ -1100,7 +1079,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
     gfx::Point window_origin = gfx::Point() + (root_point - window_point);
     if (bounds_in_pixels_.origin() != window_origin) {
       bounds_in_pixels_.set_origin(window_origin);
-      OnXWindowBoundsChanged(bounds_in_pixels_);
+      NotifyBoundsChanged(bounds_in_pixels_);
     }
   }
 
@@ -1425,7 +1404,7 @@ void XWindow::OnConfigureEvent(XEvent* xev) {
   if (size_changed)
     DispatchResize();
   else if (origin_changed)
-    OnXWindowBoundsChanged(bounds_in_pixels_);
+    NotifyBoundsChanged(bounds_in_pixels_);
 }
 
 void XWindow::SetWMSpecState(bool enabled, XAtom state1, XAtom state2) {
@@ -1472,6 +1451,7 @@ void XWindow::UpdateWindowProperties(
   is_always_on_top_ = ui::HasWMSpecProperty(
       window_properties_, gfx::GetAtom("_NET_WM_STATE_ABOVE"));
   OnXWindowStateChanged();
+  ResetWindowRegion();
 }
 
 void XWindow::OnFrameExtentsUpdated() {
@@ -1545,7 +1525,7 @@ void XWindow::DelayedResize(const gfx::Rect& bounds_in_pixels) {
     SyncSetCounter(xdisplay_, extended_update_counter_,
                    ++current_counter_value_);
   }
-  OnXWindowBoundsChanged(bounds_in_pixels);
+  NotifyBoundsChanged(bounds_in_pixels);
   CancelResize();
 }
 
@@ -1598,6 +1578,49 @@ void XWindow::SetVisualId(base::Optional<int> visual_id) {
 
   DCHECK_GE(visual_id.value(), 0);
   visual_id_ = visual_id.value();
+}
+
+void XWindow::UpdateWindowRegion(XRegion* xregion) {
+  // If a custom window shape was supplied then apply it.
+  if (use_custom_shape()) {
+    XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding, 0, 0,
+                        window_shape_.get(), false);
+    return;
+  }
+
+  window_shape_.reset(xregion);
+  if (window_shape_) {
+    XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding, 0, 0,
+                        window_shape_.get(), false);
+    return;
+  }
+
+  // If we didn't set the shape for any reason, reset the shaping information.
+  // How this is done depends on the border style, due to quirks and bugs in
+  // various window managers.
+  if (use_native_frame()) {
+    // If the window has system borders, the mask must be set to null (not a
+    // rectangle), because several window managers (eg, KDE, XFCE, XMonad) will
+    // not put borders on a window with a custom shape.
+    XShapeCombineMask(xdisplay_, xwindow_, ShapeBounding, 0, 0, x11::None,
+                      ShapeSet);
+  } else {
+    // Conversely, if the window does not have system borders, the mask must be
+    // manually set to a rectangle that covers the whole window (not null). This
+    // is due to a bug in KWin <= 4.11.5 (KDE bug #330573) where setting a null
+    // shape causes the hint to disable system borders to be ignored (resulting
+    // in a double border).
+    XRectangle r = {0, 0,
+                    static_cast<unsigned short>(bounds_in_pixels_.width()),
+                    static_cast<unsigned short>(bounds_in_pixels_.height())};
+    XShapeCombineRectangles(xdisplay_, xwindow_, ShapeBounding, 0, 0, &r, 1,
+                            ShapeSet, YXBanded);
+  }
+}
+
+void XWindow::NotifyBoundsChanged(const gfx::Rect& new_bounds_in_px) {
+  ResetWindowRegion();
+  OnXWindowBoundsChanged(new_bounds_in_px);
 }
 
 }  // namespace ui

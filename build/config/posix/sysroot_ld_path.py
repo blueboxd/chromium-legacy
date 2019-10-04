@@ -17,7 +17,8 @@ if len(sys.argv) != 3:
   print("Need two arguments")
   sys.exit(1)
 
-result = subprocess.check_output([sys.argv[1], sys.argv[2]]).strip()
+result = subprocess.check_output([sys.argv[1],
+                                  sys.argv[2]]).strip().decode("utf-8")
 result = result.replace(" ", "\n")
 if result != "":
   print(result)

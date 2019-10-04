@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_GLOBAL_MEDIA_CONTROLS_MEDIA_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_GLOBAL_MEDIA_CONTROLS_MEDIA_DIALOG_VIEW_H_
 
+#include "base/observer_list.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/global_media_controls/media_dialog_delegate.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -13,6 +14,7 @@ namespace service_manager {
 class Connector;
 }  // namespace service_manager
 
+class MediaDialogViewObserver;
 class MediaNotificationListView;
 class MediaToolbarButtonController;
 
@@ -25,6 +27,8 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
                          service_manager::Connector* connector);
   static void HideDialog();
   static bool IsShowing();
+
+  static MediaDialogView* GetDialogViewForTesting() { return instance_; }
 
   // MediaDialogDelegate implementation.
   void ShowMediaSession(
@@ -39,6 +43,11 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   // views::View implementation.
   void AddedToWidget() override;
   gfx::Size CalculatePreferredSize() const override;
+
+  void AddObserver(MediaDialogViewObserver* observer);
+  void RemoveObserver(MediaDialogViewObserver* observer);
+
+  void OnMediaSessionMetadataChanged();
 
  private:
   explicit MediaDialogView(views::View* anchor_view,
@@ -58,6 +67,8 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   MediaToolbarButtonController* const controller_;
 
   MediaNotificationListView* const active_sessions_view_;
+
+  base::ObserverList<MediaDialogViewObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDialogView);
 };

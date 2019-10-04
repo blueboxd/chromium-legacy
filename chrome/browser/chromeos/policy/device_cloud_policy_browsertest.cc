@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -101,30 +102,25 @@ namespace {
 // rotating the policy key automatically with each policy fetch.
 class KeyRotationDeviceCloudPolicyTest : public DevicePolicyCrosBrowserTest {
  protected:
-  const int kTestPolicyValue = 123;
-  const int kTestPolicyOtherValue = 456;
-  const char* const kTestPolicyKey = key::kDevicePolicyRefreshRate;
+  const int kInitialPolicyValue = 123;
+  const int kSecondPolicyValue = 456;
+  const int kThirdPolicyValue = 789;
+  const char* const kPolicyKey = key::kDevicePolicyRefreshRate;
 
-  KeyRotationDeviceCloudPolicyTest() {}
-
-  void SetUp() override {
-    UpdateBuiltTestPolicyValue(kTestPolicyValue);
-    DevicePolicyCrosBrowserTest::SetUp();
-    local_policy_mixin_.server()->EnableAutomaticRotationOfSigningKeys();
-    UpdateServedTestPolicy();
+  KeyRotationDeviceCloudPolicyTest() {
+    UpdateBuiltTestPolicyValue(kInitialPolicyValue);
+    local_policy_mixin_.EnableCannedSigningKeys();
+    local_policy_mixin_.EnableAutomaticRotationOfSigningKeys();
   }
 
   void SetUpInProcessBrowserTestFixture() override {
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
     SetFakeDevicePolicy();
+    UpdateServedTestPolicy();
   }
 
   void SetUpOnMainThread() override {
     DevicePolicyCrosBrowserTest::SetUpOnMainThread();
-    g_browser_process->platform_part()
-        ->browser_policy_connector_chromeos()
-        ->device_management_service()
-        ->ScheduleInitialization(0);
     StartObservingTestPolicy();
   }
 
@@ -146,7 +142,27 @@ class KeyRotationDeviceCloudPolicyTest : public DevicePolicyCrosBrowserTest {
         local_policy_mixin_.UpdateDevicePolicy(device_policy()->payload()));
   }
 
-  int GetTestPolicyValue() {
+  void StartDevicePolicyRefresh() {
+    g_browser_process->platform_part()
+        ->browser_policy_connector_chromeos()
+        ->GetDeviceCloudPolicyManager()
+        ->RefreshPolicies();
+  }
+
+  std::string GetOwnerPublicKey() const {
+    return chromeos::DeviceSettingsService::Get()->GetPublicKey()->as_string();
+  }
+
+  int GetInstalledPolicyKeyVersion() const {
+    return g_browser_process->platform_part()
+        ->browser_policy_connector_chromeos()
+        ->GetDeviceCloudPolicyManager()
+        ->device_store()
+        ->policy()
+        ->public_key_version();
+  }
+
+  int GetInstalledPolicyValue() {
     PolicyService* const policy_service =
         g_browser_process->platform_part()
             ->browser_policy_connector_chromeos()
@@ -155,22 +171,23 @@ class KeyRotationDeviceCloudPolicyTest : public DevicePolicyCrosBrowserTest {
         policy_service
             ->GetPolicies(PolicyNamespace(POLICY_DOMAIN_CHROME,
                                           std::string() /* component_id */))
-            .GetValue(kTestPolicyKey);
+            .GetValue(kPolicyKey);
     EXPECT_TRUE(policy_value);
     int refresh_rate = -1;
     EXPECT_TRUE(policy_value->GetAsInteger(&refresh_rate));
     return refresh_rate;
   }
 
-  void WaitForTestPolicyValue(int expected_policy_value) {
-    if (GetTestPolicyValue() == expected_policy_value)
+  void WaitForInstalledPolicyValue(int expected_policy_value) {
+    if (GetInstalledPolicyValue() == expected_policy_value)
       return;
     awaited_policy_value_ = expected_policy_value;
-    // The run loop will be terminated by TestPolicyChangedCallback() once the
-    // policy value becomes equal to the awaited value.
+    // The run loop will be terminated by OnPolicyChanged() once the policy
+    // value becomes equal to the awaited value.
     DCHECK(!policy_change_waiting_run_loop_);
     policy_change_waiting_run_loop_ = std::make_unique<base::RunLoop>();
     policy_change_waiting_run_loop_->Run();
+    policy_change_waiting_run_loop_.reset();
   }
 
  private:
@@ -178,7 +195,7 @@ class KeyRotationDeviceCloudPolicyTest : public DevicePolicyCrosBrowserTest {
     device_policy()
         ->payload()
         .mutable_device_policy_refresh_rate()
-        ->set_device_policy_refresh_rate(kTestPolicyValue);
+        ->set_device_policy_refresh_rate(kInitialPolicyValue);
     device_policy()->Build();
     session_manager_client()->set_device_policy(device_policy()->GetBlob());
   }
@@ -191,16 +208,15 @@ class KeyRotationDeviceCloudPolicyTest : public DevicePolicyCrosBrowserTest {
         PolicyNamespace(POLICY_DOMAIN_CHROME,
                         std::string() /* component_id */));
     policy_change_registrar_->Observe(
-        kTestPolicyKey,
-        base::BindRepeating(
-            &KeyRotationDeviceCloudPolicyTest::TestPolicyChangedCallback,
-            base::Unretained(this)));
+        kPolicyKey,
+        base::BindRepeating(&KeyRotationDeviceCloudPolicyTest::OnPolicyChanged,
+                            base::Unretained(this)));
   }
 
-  void TestPolicyChangedCallback(const base::Value* old_value,
-                                 const base::Value* new_value) {
+  void OnPolicyChanged(const base::Value* old_value,
+                       const base::Value* new_value) {
     if (policy_change_waiting_run_loop_ &&
-        GetTestPolicyValue() == awaited_policy_value_) {
+        GetInstalledPolicyValue() == awaited_policy_value_) {
       policy_change_waiting_run_loop_->Quit();
     }
   }
@@ -215,30 +231,35 @@ class KeyRotationDeviceCloudPolicyTest : public DevicePolicyCrosBrowserTest {
 
 }  // namespace
 
-// Disabled due to flake. https://crbug.com/900631
-IN_PROC_BROWSER_TEST_F(KeyRotationDeviceCloudPolicyTest, DISABLED_Basic) {
-  // Initially, the policy has the first value.
-  EXPECT_EQ(kTestPolicyValue, GetTestPolicyValue());
+IN_PROC_BROWSER_TEST_F(KeyRotationDeviceCloudPolicyTest, Basic) {
+  // The policy has the initial value from the cache.
+  EXPECT_EQ(kInitialPolicyValue, GetInstalledPolicyValue());
 
-  const std::string original_owner_public_key =
-      chromeos::DeviceSettingsService::Get()->GetPublicKey()->as_string();
-
-  // The server is updated to serve the new policy value, and the client fetches
-  // it.
-  UpdateBuiltTestPolicyValue(kTestPolicyOtherValue);
+  // The server is updated to serve the second policy value, and the client
+  // fetches it.
+  UpdateBuiltTestPolicyValue(kSecondPolicyValue);
   UpdateServedTestPolicy();
-  g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos()
-      ->GetDeviceCloudPolicyManager()
-      ->RefreshPolicies();
-  WaitForTestPolicyValue(kTestPolicyOtherValue);
-  EXPECT_EQ(kTestPolicyOtherValue, GetTestPolicyValue());
+  StartDevicePolicyRefresh();
+  WaitForInstalledPolicyValue(kSecondPolicyValue);
+  EXPECT_EQ(kSecondPolicyValue, GetInstalledPolicyValue());
 
-  // The owner key has changed due to the key rotation performed by the policy
-  // test server.
-  EXPECT_NE(
-      original_owner_public_key,
-      chromeos::DeviceSettingsService::Get()->GetPublicKey()->as_string());
+  // Remember the key and the version after the fetch of the second value.
+  const std::string owner_public_key = GetOwnerPublicKey();
+  CHECK(!owner_public_key.empty());
+  const int key_version = GetInstalledPolicyKeyVersion();
+
+  // The server is updated to serve the third policy value, and the client
+  // fetches it.
+  UpdateBuiltTestPolicyValue(kThirdPolicyValue);
+  UpdateServedTestPolicy();
+  StartDevicePolicyRefresh();
+  WaitForInstalledPolicyValue(kThirdPolicyValue);
+  EXPECT_EQ(kThirdPolicyValue, GetInstalledPolicyValue());
+
+  // The owner key got rotated on the client, as requested by the server, and
+  // the key version got incremented.
+  EXPECT_NE(owner_public_key, GetOwnerPublicKey());
+  EXPECT_EQ(key_version + 1, GetInstalledPolicyKeyVersion());
 }
 
 namespace {

@@ -250,4 +250,16 @@ TEST_F(ShelfTooltipManagerTest, ShelfTooltipDoesNotAffectPipWindow) {
                 CollisionDetectionUtils::RelativePriority::kPictureInPicture));
 }
 
+TEST_F(ShelfTooltipManagerTest, ShelfTooltipClosesIfScroll) {
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  ShowTooltipForFirstAppIcon();
+  ASSERT_TRUE(tooltip_manager_->IsVisible());
+  gfx::Point cursor_position_in_screen =
+      display::Screen::GetScreen()->GetCursorScreenPoint();
+  generator->ScrollSequence(cursor_position_in_screen, base::TimeDelta(), 0, 3,
+                            10, 1);
+  EXPECT_FALSE(tooltip_manager_->IsVisible());
+}
+
 }  // namespace ash

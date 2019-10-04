@@ -15,8 +15,6 @@ import androidx.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.task.PostTask;
-import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -26,7 +24,6 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.BrowserStartupController;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -170,25 +167,18 @@ public class SearchEngineLogoUtils {
      */
     public static void getSearchEngineLogoFavicon(
             Profile profile, Resources resources, Callback<Bitmap> callback) {
-        PostTask.postTask(TaskTraits.USER_VISIBLE,
-                () -> getSearchEngineLogoFaviconInternal(profile, resources, callback));
-    }
-
-    /** @see {@link #getSearchEngineLogoFavicon}. */
-    private static void getSearchEngineLogoFaviconInternal(
-            Profile profile, Resources resources, Callback<Bitmap> callback) {
         if (sFaviconHelper == null) sFaviconHelper = new FaviconHelper();
 
         String logoUrl = getSearchLogoUrl();
         if (logoUrl == null) {
-            returnLogoOnUiThread(null, callback);
+            callback.onResult(null);
             return;
         }
 
         // Return a cached copy if it's available.
         if (sCachedComposedBackground != null
                 && sCachedComposedBackgroundLogoUrl.equals(getSearchLogoUrl())) {
-            returnLogoOnUiThread(sCachedComposedBackground, callback);
+            callback.onResult(sCachedComposedBackground);
             return;
         }
 
@@ -196,15 +186,13 @@ public class SearchEngineLogoUtils {
         boolean willReturn = sFaviconHelper.getLocalFaviconImageForURL(
                 profile, logoUrl, logoSizePixels, (image, iconUrl) -> {
                     if (image == null) {
-                        returnLogoOnUiThread(image, callback);
+                        callback.onResult(image);
                         return;
                     }
 
                     processReturnedLogo(logoUrl, image, resources, callback);
                 });
-        if (!willReturn) {
-            returnLogoOnUiThread(null, callback);
-        }
+        if (!willReturn) callback.onResult(null);
     }
 
     /**
@@ -248,15 +236,7 @@ public class SearchEngineLogoUtils {
         sCachedComposedBackground = composedIcon;
         sCachedComposedBackgroundLogoUrl = logoUrl;
 
-        returnLogoOnUiThread(sCachedComposedBackground, callback);
-    }
-
-    /**
-     * @param logo The logo to return to callback.
-     * @param callback The callback for the calling client.
-     */
-    private static void returnLogoOnUiThread(Bitmap logo, Callback<Bitmap> callback) {
-        PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE, () -> callback.onResult(logo));
+        callback.onResult(sCachedComposedBackground);
     }
 
     /**

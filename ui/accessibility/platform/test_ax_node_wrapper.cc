@@ -152,6 +152,14 @@ gfx::Rect TestAXNodeWrapper::GetBoundsRect(
       // We could optionally add clipping here if ever needed.
       gfx::RectF bounds = GetLocation();
       bounds.Offset(g_offset);
+
+      // For test behavior only, for bounds that are offscreen we currently do
+      // not apply clipping to the bounds but we still return the offscreen
+      // status.
+      if (offscreen_result) {
+        *offscreen_result = DetermineOffscreenResult(bounds);
+      }
+
       return gfx::ToEnclosingRect(bounds);
     }
     case AXCoordinateSystem::kRootFrame:
@@ -186,6 +194,14 @@ gfx::Rect TestAXNodeWrapper::GetInnerTextRangeBoundsRect(
       }
 
       bounds.Offset(g_offset);
+
+      // For test behavior only, for bounds that are offscreen we currently do
+      // not apply clipping to the bounds but we still return the offscreen
+      // status.
+      if (offscreen_result) {
+        *offscreen_result = DetermineOffscreenResult(bounds);
+      }
+
       return gfx::ToEnclosingRect(bounds);
     }
     case AXCoordinateSystem::kRootFrame:
@@ -836,6 +852,30 @@ gfx::RectF TestAXNodeWrapper::GetInlineTextRect(const int start_offset,
       NOTIMPLEMENTED();
   }
   return bounds;
+}
+
+AXOffscreenResult TestAXNodeWrapper::DetermineOffscreenResult(
+    gfx::RectF bounds) const {
+  if (!tree_ || !tree_->root())
+    return AXOffscreenResult::kOnscreen;
+
+  const AXNodeData& root_web_area_node_data = tree_->root()->data();
+  gfx::RectF root_web_area_bounds =
+      root_web_area_node_data.relative_bounds.bounds;
+
+  // For testing, we only look at the current node's bound relative to the root
+  // web area bounds to determine offscreen status. We currently do not look at
+  // the bounds of the immediate parent of the node for determining offscreen
+  // status.
+  // We only determine offscreen result if the root web area bounds is actually
+  // set in the test. We default the offscreen result of every other situation
+  // to AXOffscreenResult::kOnscreen.
+  if (!root_web_area_bounds.IsEmpty()) {
+    bounds.Intersect(root_web_area_bounds);
+    if (bounds.IsEmpty())
+      return AXOffscreenResult::kOffscreen;
+  }
+  return AXOffscreenResult::kOnscreen;
 }
 
 }  // namespace ui

@@ -17,6 +17,7 @@
 #include "cc/base/switches.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -159,6 +160,10 @@ struct InProcessContextFactory::PerCompositorData {
   std::unique_ptr<viz::BeginFrameSource> begin_frame_source;
   std::unique_ptr<viz::Display> display;
   SkMatrix44 output_color_matrix;
+  gfx::ColorSpace color_space;
+  float sdr_white_level = 0.f;
+  base::TimeTicks vsync_timebase;
+  base::TimeDelta vsync_interval;
 };
 
 InProcessContextFactory::InProcessContextFactory(
@@ -407,6 +412,29 @@ void InProcessContextFactory::SetDisplayColorMatrix(ui::Compositor* compositor,
   iter->second->display->SetColorMatrix(matrix);
 }
 
+void InProcessContextFactory::SetDisplayColorSpace(
+    ui::Compositor* compositor,
+    const gfx::ColorSpace& output_color_space,
+    float sdr_white_level) {
+  auto iter = per_compositor_data_.find(compositor);
+  if (iter == per_compositor_data_.end())
+    return;
+
+  iter->second->color_space = output_color_space;
+  iter->second->sdr_white_level = sdr_white_level;
+}
+
+void InProcessContextFactory::SetDisplayVSyncParameters(
+    ui::Compositor* compositor,
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
+  auto iter = per_compositor_data_.find(compositor);
+  if (iter == per_compositor_data_.end())
+    return;
+  iter->second->vsync_timebase = timebase;
+  iter->second->vsync_interval = interval;
+}
+
 void InProcessContextFactory::AddObserver(ContextFactoryObserver* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -424,13 +452,49 @@ SkMatrix44 InProcessContextFactory::GetOutputColorMatrix(
   return iter->second->output_color_matrix;
 }
 
-void InProcessContextFactory::ResetOutputColorMatrixToIdentity(
+gfx::ColorSpace InProcessContextFactory::GetDisplayColorSpace(
+    Compositor* compositor) const {
+  auto iter = per_compositor_data_.find(compositor);
+  if (iter == per_compositor_data_.end())
+    return gfx::ColorSpace();
+  return iter->second->color_space;
+}
+
+float InProcessContextFactory::GetSDRWhiteLevel(Compositor* compositor) const {
+  auto iter = per_compositor_data_.find(compositor);
+  if (iter == per_compositor_data_.end())
+    return 0;
+  return iter->second->sdr_white_level;
+}
+
+base::TimeTicks InProcessContextFactory::GetDisplayVSyncTimeBase(
+    Compositor* compositor) const {
+  auto iter = per_compositor_data_.find(compositor);
+  if (iter == per_compositor_data_.end())
+    return base::TimeTicks();
+  return iter->second->vsync_timebase;
+}
+
+base::TimeDelta InProcessContextFactory::GetDisplayVSyncTimeInterval(
+    Compositor* compositor) const {
+  auto iter = per_compositor_data_.find(compositor);
+  if (iter == per_compositor_data_.end())
+    return viz::BeginFrameArgs::DefaultInterval();
+  ;
+  return iter->second->vsync_interval;
+}
+
+void InProcessContextFactory::ResetDisplayOutputParameters(
     ui::Compositor* compositor) {
   auto iter = per_compositor_data_.find(compositor);
   if (iter == per_compositor_data_.end())
     return;
 
   iter->second->output_color_matrix.setIdentity();
+  iter->second->color_space = gfx::ColorSpace::CreateSRGB();
+  iter->second->sdr_white_level = 0;
+  iter->second->vsync_timebase = base::TimeTicks();
+  iter->second->vsync_interval = base::TimeDelta();
 }
 
 InProcessContextFactory::PerCompositorData*

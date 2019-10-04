@@ -604,10 +604,6 @@ const base::Feature kRemoveSupervisedUsersOnStartup{
     "RemoveSupervisedUsersOnStartup", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Enables Load image context menu item for broken images.
-const base::Feature kLoadBrokenImagesFromContextMenu{
-    "LoadBrokenImagesFromContextMenu", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether to show Safety Tip warnings on low-reputation sites.
 const base::Feature kSafetyTipUI{"SafetyTip",
                                  base::FEATURE_DISABLED_BY_DEFAULT};

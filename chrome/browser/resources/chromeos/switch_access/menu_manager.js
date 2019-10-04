@@ -159,7 +159,7 @@ class MenuManager {
     this.menuOriginNode_ = null;
 
     chrome.accessibilityPrivate.setSwitchAccessMenuState(
-        false /** Hide the menu. */, SAConstants.EMPTY_LOCATION, 0);
+        false /** Hide the menu. */, RectHelper.ZERO_RECT, 0);
   }
 
   /**

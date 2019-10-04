@@ -86,10 +86,10 @@ class InProcessContextFactory : public ContextFactory,
                              const SkMatrix44& matrix) override;
   void SetDisplayColorSpace(ui::Compositor* compositor,
                             const gfx::ColorSpace& output_color_space,
-                            float sdr_white_level) override {}
+                            float sdr_white_level) override;
   void SetDisplayVSyncParameters(ui::Compositor* compositor,
                                  base::TimeTicks timebase,
-                                 base::TimeDelta interval) override {}
+                                 base::TimeDelta interval) override;
   void IssueExternalBeginFrame(
       ui::Compositor* compositor,
       const viz::BeginFrameArgs& args,
@@ -104,7 +104,11 @@ class InProcessContextFactory : public ContextFactory,
   bool SyncTokensRequiredForDisplayCompositor() override;
 
   SkMatrix44 GetOutputColorMatrix(Compositor* compositor) const;
-  void ResetOutputColorMatrixToIdentity(ui::Compositor* compositor);
+  gfx::ColorSpace GetDisplayColorSpace(ui::Compositor* compositor) const;
+  float GetSDRWhiteLevel(ui::Compositor* compositor) const;
+  base::TimeTicks GetDisplayVSyncTimeBase(ui::Compositor* compositor) const;
+  base::TimeDelta GetDisplayVSyncTimeInterval(ui::Compositor* compositor) const;
+  void ResetDisplayOutputParameters(ui::Compositor* compositor);
 
  private:
   struct PerCompositorData;

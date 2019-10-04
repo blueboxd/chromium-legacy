@@ -20987,6 +20987,16 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "content_nocompile_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "content_unittests"
       },
       {
@@ -22076,6 +22086,19 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "content_nocompile_tests"
+      },
+      {
+        "args": [
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "content_unittests"
       },
       {
@@ -23051,6 +23074,16 @@
           "shards": 6
         },
         "test": "content_browsertests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_nocompile_tests"
       },
       {
         "merge": {

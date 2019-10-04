@@ -359,6 +359,8 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
 
   void ForcePulse() { bridge()->ForcePulseForTest(); }
 
+  void RefreshLocalDeviceInfo() { bridge()->RefreshLocalDeviceInfo(); }
+
   void CommitToStoreAndWait(std::unique_ptr<WriteBatch> batch) {
     base::RunLoop loop;
     store()->CommitWriteBatch(
@@ -1033,6 +1035,19 @@ TEST_F(DeviceInfoSyncBridgeTest, ExpireOldEntriesUponStartup) {
               UnorderedElementsAre(
                   Pair(local_device()->GetLocalDeviceInfo()->guid(), _),
                   Pair(specifics_fresh.cache_guid(), _)));
+}
+
+TEST_F(DeviceInfoSyncBridgeTest, RefreshLocalDeviceInfo) {
+  // Ensure |last_updated| is about now, plus or minus a little bit.
+  EXPECT_CALL(*processor(), Put(_, HasSpecifics(HasLastUpdatedAboutNow()), _));
+  InitializeAndMergeInitialData();
+  EXPECT_EQ(1, change_count());
+  testing::Mock::VerifyAndClearExpectations(processor());
+
+  // Ensure |last_updated| is about now, plus or minus a little bit.
+  EXPECT_CALL(*processor(), Put(_, HasSpecifics(HasLastUpdatedAboutNow()), _));
+  RefreshLocalDeviceInfo();
+  EXPECT_EQ(2, change_count());
 }
 
 }  // namespace

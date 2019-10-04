@@ -39,7 +39,6 @@
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/document_parser.h"
@@ -379,7 +378,9 @@ void DocumentLoader::MarkAsCommitted() {
   state_ = kCommitted;
 }
 
-static WebHistoryCommitType LoadTypeToCommitType(WebFrameLoadType type) {
+// static
+WebHistoryCommitType DocumentLoader::LoadTypeToCommitType(
+    WebFrameLoadType type) {
   switch (type) {
     case WebFrameLoadType::kStandard:
       return kWebStandardCommit;
@@ -853,9 +854,12 @@ void DocumentLoader::HandleResponse() {
     frame_->Owner()->RenderFallbackContent(frame_);
 }
 
-void DocumentLoader::FinishNavigationCommit(const AtomicString& mime_type,
-                                            const KURL& overriding_url) {
-  const AtomicString& encoding = GetResponse().TextEncodingName();
+void DocumentLoader::CommitNavigation() {
+  CHECK_GE(state_, kCommitted);
+
+  KURL overriding_url = base_url_override_for_bundled_exchanges_;
+  if (loading_mhtml_archive_ && archive_)
+    overriding_url = archive_->MainResource()->Url();
 
   // Prepare a DocumentInit before clearing the frame, because it may need to
   // inherit an aliased security context.
@@ -877,21 +881,8 @@ void DocumentLoader::FinishNavigationCommit(const AtomicString& mime_type,
   }
   DCHECK(frame_->GetPage());
 
-  ParserSynchronizationPolicy parsing_policy = kAllowAsynchronousParsing;
-  if (loading_url_as_javascript_ ||
-      !Document::ThreadedParsingEnabledForTesting()) {
-    parsing_policy = kForceSynchronousParsing;
-  }
-
-  InstallNewDocument(Url(), initiator_origin, owner_document, mime_type,
-                     encoding, parsing_policy, overriding_url);
-  parser_->SetDocumentWasLoadedAsPartOfNavigation();
-  if (was_discarded_)
-    frame_->GetDocument()->SetWasDiscarded(true);
-  frame_->GetDocument()->MaybeHandleHttpRefresh(
-      response_.HttpHeaderField(http_names::kRefresh),
-      Document::kHttpRefreshFromHeader);
-  ReportPreviewsIntervention();
+  InstallNewDocument(Url(), initiator_origin, owner_document, MimeType(),
+                     overriding_url);
 }
 
 void DocumentLoader::CommitData(const char* bytes, size_t length) {
@@ -1264,18 +1255,12 @@ void DocumentLoader::StartLoadingResponse() {
   if (!frame_)
     return;
 
-  ArchiveResource* main_resource =
-      loading_mhtml_archive_ && archive_ ? archive_->MainResource() : nullptr;
-  if (main_resource) {
-    FinishNavigationCommit(main_resource->MimeType(), main_resource->Url());
-  } else {
-    FinishNavigationCommit(response_.MimeType(),
-                           base_url_override_for_bundled_exchanges_);
-  }
-
   CHECK_GE(state_, kCommitted);
+  CreateParserPostCommit();
 
   // Finish load of MHTML archives and empty documents.
+  ArchiveResource* main_resource =
+      loading_mhtml_archive_ && archive_ ? archive_->MainResource() : nullptr;
   if (main_resource) {
     data_buffer_ = main_resource->Data();
     ProcessDataBuffer();
@@ -1381,8 +1366,7 @@ void DocumentLoader::WillCommitNavigation() {
   frame_->GetIdlenessDetector()->WillCommitLoad();
 }
 
-void DocumentLoader::DidCommitNavigation(
-    GlobalObjectReusePolicy global_object_reuse_policy) {
+void DocumentLoader::DidCommitNavigation() {
   if (GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
     return;
 
@@ -1412,16 +1396,6 @@ void DocumentLoader::DidCommitNavigation(
   // When a new navigation commits in the frame, subresource loading should be
   // resumed.
   frame_->ResumeSubresourceLoading();
-  GetLocalFrameClient().DispatchDidCommitLoad(history_item_.Get(), commit_type,
-                                              global_object_reuse_policy);
-
-  // When the embedder gets notified (above) that the new navigation has
-  // committed, the embedder will drop the old Content Security Policy and
-  // therefore now is a good time to report to the embedder the Content
-  // Security Policies that have accumulated so far for the new navigation.
-  frame_->GetSecurityContext()
-      ->GetContentSecurityPolicy()
-      ->ReportAccumulatedHeaders(&GetLocalFrameClient());
 
   // DidObserveLoadingBehavior() must be called after DispatchDidCommitLoad() is
   // called for the metrics tracking logic to handle it properly.
@@ -1480,8 +1454,6 @@ void DocumentLoader::InstallNewDocument(
     const scoped_refptr<const SecurityOrigin> initiator_origin,
     Document* owner_document,
     const AtomicString& mime_type,
-    const AtomicString& encoding,
-    ParserSynchronizationPolicy parsing_policy,
     const KURL& overriding_url) {
   DCHECK(!frame_->GetDocument() || !frame_->GetDocument()->IsActive());
   DCHECK_EQ(frame_->Tree().ChildCount(), 0u);
@@ -1517,7 +1489,7 @@ void DocumentLoader::InstallNewDocument(
       loading_url_as_javascript_
           ? frame_->GetDocument()->GetContentSecurityPolicy()
           : content_security_policy_.Get();
-  GlobalObjectReusePolicy global_object_reuse_policy =
+  global_object_reuse_policy_ =
       GetFrameLoader().ShouldReuseDefaultView(init.GetDocumentOrigin(), csp)
           ? GlobalObjectReusePolicy::kUseExisting
           : GlobalObjectReusePolicy::kCreateNew;
@@ -1540,7 +1512,7 @@ void DocumentLoader::InstallNewDocument(
   // commits. To make that happen, we "securely transition" the existing
   // LocalDOMWindow to the Document that results from the network load. See also
   // Document::IsSecureTransitionTo.
-  if (global_object_reuse_policy != GlobalObjectReusePolicy::kUseExisting) {
+  if (global_object_reuse_policy_ != GlobalObjectReusePolicy::kUseExisting) {
     if (frame_->GetDocument())
       frame_->GetDocument()->RemoveAllEventListenersRecursively();
     frame_->SetDOMWindow(MakeGarbageCollected<LocalDOMWindow>(*frame_));
@@ -1589,7 +1561,36 @@ void DocumentLoader::InstallNewDocument(
   // This must be called before the document is opened, otherwise HTML parser
   // will use stale values from HTMLParserOption.
   if (!loading_url_as_javascript_)
-    DidCommitNavigation(global_object_reuse_policy);
+    DidCommitNavigation();
+
+  // Determine if the load is from a document from the same origin to enable
+  // deferred commits to avoid white flash on load. We only want to delay
+  // commits on same origin loads to avoid confusing users. We also require
+  // that this be an html document served via http.
+  if (initiator_origin) {
+    const scoped_refptr<const SecurityOrigin> url_origin =
+        SecurityOrigin::Create(Url());
+    document->SetDeferredCompositorCommitIsAllowed(
+        initiator_origin->IsSameSchemeHostPort(url_origin.get()) &&
+        Url().ProtocolIsInHTTPFamily() && document->IsHTMLDocument());
+  } else {
+    document->SetDeferredCompositorCommitIsAllowed(false);
+  }
+}
+
+void DocumentLoader::CreateParserPostCommit() {
+  Document* document = frame_->GetDocument();
+
+  if (!loading_url_as_javascript_ &&
+      !GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument()) {
+    // When the embedder gets notified (above) that the new navigation has
+    // committed, the embedder will drop the old Content Security Policy and
+    // therefore now is a good time to report to the embedder the Content
+    // Security Policies that have accumulated so far for the new navigation.
+    frame_->GetSecurityContext()
+        ->GetContentSecurityPolicy()
+        ->ReportAccumulatedHeaders(&GetLocalFrameClient());
+  }
 
   // Initializing origin trials might force window proxy initialization,
   // which later triggers CHECK when swapping in via WebFrame::Swap().
@@ -1627,7 +1628,13 @@ void DocumentLoader::InstallNewDocument(
   UMA_HISTOGRAM_BOOLEAN("MixedAutoupgrade.Navigation.OptedOut",
                         opted_out_mixed_autoupgrade);
 
-  parser_ = document->OpenForNavigation(parsing_policy, mime_type, encoding);
+  ParserSynchronizationPolicy parsing_policy = kAllowAsynchronousParsing;
+  if (loading_url_as_javascript_ ||
+      !Document::ThreadedParsingEnabledForTesting()) {
+    parsing_policy = kForceSynchronousParsing;
+  }
+  parser_ = document->OpenForNavigation(parsing_policy, MimeType(),
+                                        response_.TextEncodingName());
 
   // If this is a scriptable parser and there is a resource, register the
   // resource's cache handler with the parser.
@@ -1648,19 +1655,13 @@ void DocumentLoader::InstallNewDocument(
 
   GetFrameLoader().DispatchDidClearDocumentOfWindowObject();
 
-  // Determine if the load is from a document from the same origin to enable
-  // deferred commits to avoid white flash on load. We only want to delay
-  // commits on same origin loads to avoid confusing users. We also require
-  // that this be an html document served via http.
-  if (initiator_origin) {
-    const scoped_refptr<const SecurityOrigin> url_origin =
-        SecurityOrigin::Create(Url());
-    document->SetDeferredCompositorCommitIsAllowed(
-        initiator_origin->IsSameSchemeHostPort(url_origin.get()) &&
-        Url().ProtocolIsInHTTPFamily() && document->IsHTMLDocument());
-  } else {
-    document->SetDeferredCompositorCommitIsAllowed(false);
-  }
+  parser_->SetDocumentWasLoadedAsPartOfNavigation();
+  if (was_discarded_)
+    document->SetWasDiscarded(true);
+  document->MaybeHandleHttpRefresh(
+      response_.HttpHeaderField(http_names::kRefresh),
+      Document::kHttpRefreshFromHeader);
+  ReportPreviewsIntervention();
 }
 
 const AtomicString& DocumentLoader::MimeType() const {

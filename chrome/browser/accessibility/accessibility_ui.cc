@@ -56,7 +56,6 @@ static const char kEnabledField[] = "enabled";
 static const char kErrorField[] = "error";
 static const char kFaviconUrlField[] = "faviconUrl";
 static const char kFlagNameField[] = "flagName";
-static const char kImprovementsEnabledField[] = "improvementsEnabled";
 static const char kModeIdField[] = "modeId";
 static const char kNameField[] = "name";
 static const char kPagesField[] = "pages";
@@ -160,7 +159,6 @@ bool ShouldHandleAccessibilityRequestCallback(const std::string& path) {
 
 void HandleAccessibilityRequestCallback(
     content::BrowserContext* current_context,
-    bool improvements_enabled,
     const std::string& path,
     const content::WebUIDataSource::GotDataCallback& callback) {
   DCHECK(ShouldHandleAccessibilityRequestCallback(path));
@@ -246,8 +244,6 @@ void HandleAccessibilityRequestCallback(
 #endif  // !defined(OS_ANDROID)
   data.Set(kBrowsersField, std::move(browser_list));
 
-  data.SetBoolean(kImprovementsEnabledField, improvements_enabled);
-
   std::string json_string;
   base::JSONWriter::Write(data, &json_string);
 
@@ -321,9 +317,8 @@ void AddPropertyFilters(
   }
 }
 
-std::string Validate(const std::string* str) {
-  CHECK(str);
-  return *str;
+bool IsValidJSValue(const std::string* str) {
+  return str && str->length() < 5000U;
 }
 
 }  // namespace
@@ -334,9 +329,6 @@ AccessibilityUI::AccessibilityUI(content::WebUI* web_ui)
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIAccessibilityHost);
 
-  const bool improvements_enabled = base::FeatureList::IsEnabled(
-      features::kAccessibilityInternalsPageImprovements);
-
   // Add required resources.
   html_source->UseStringsJs();
   html_source->AddResourcePath("accessibility.css", IDR_ACCESSIBILITY_CSS);
@@ -345,23 +337,18 @@ AccessibilityUI::AccessibilityUI(content::WebUI* web_ui)
   html_source->SetRequestFilter(
       base::BindRepeating(&ShouldHandleAccessibilityRequestCallback),
       base::Bind(&HandleAccessibilityRequestCallback,
-                 web_ui->GetWebContents()->GetBrowserContext(),
-                 improvements_enabled));
+                 web_ui->GetWebContents()->GetBrowserContext()));
 
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource::Add(browser_context, html_source);
 
-  web_ui->AddMessageHandler(
-      std::make_unique<AccessibilityUIMessageHandler>(improvements_enabled));
+  web_ui->AddMessageHandler(std::make_unique<AccessibilityUIMessageHandler>());
 }
 
 AccessibilityUI::~AccessibilityUI() {}
 
-AccessibilityUIMessageHandler::AccessibilityUIMessageHandler(
-    bool improvements_enabled)
-    : improvements_enabled_(base::FeatureList::IsEnabled(
-          features::kAccessibilityInternalsPageImprovements)) {}
+AccessibilityUIMessageHandler::AccessibilityUIMessageHandler() {}
 
 AccessibilityUIMessageHandler::~AccessibilityUIMessageHandler() {}
 
@@ -448,7 +435,9 @@ void AccessibilityUIMessageHandler::SetGlobalFlag(const base::ListValue* args) {
   const base::DictionaryValue* data;
   CHECK(args->GetDictionary(0, &data));
 
-  std::string flag_name_str = Validate(data->FindStringPath(kFlagNameField));
+  const std::string* flag_name_str_p = data->FindStringPath(kFlagNameField);
+  CHECK(IsValidJSValue(flag_name_str_p));
+  std::string flag_name_str = *flag_name_str_p;
   bool enabled = *data->FindBoolPath(kEnabledField);
 
   AllowJavascript();
@@ -509,14 +498,21 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
   int process_id = *data->FindIntPath(kProcessIdField);
   int route_id = *data->FindIntPath(kRouteIdField);
 
-  std::string request_type = Validate(data->FindStringPath(kRequestTypeField));
+  const std::string* request_type_p = data->FindStringPath(kRequestTypeField);
+  CHECK(IsValidJSValue(request_type_p));
+  std::string request_type = *request_type_p;
   CHECK(request_type == kShowOrRefreshTree || request_type == kCopyTree);
   request_type = "accessibility." + request_type;
 
-  std::string allow = Validate(data->FindStringPath("filters.allow"));
-  std::string allow_empty =
-      Validate(data->FindStringPath("filters.allowEmpty"));
-  std::string deny = Validate(data->FindStringPath("filters.deny"));
+  const std::string* allow_p = data->FindStringPath("filters.allow");
+  CHECK(IsValidJSValue(allow_p));
+  std::string allow = *allow_p;
+  const std::string* allow_empty_p = data->FindStringPath("filters.allowEmpty");
+  CHECK(IsValidJSValue(allow_empty_p));
+  std::string allow_empty = *allow_empty_p;
+  const std::string* deny_p = data->FindStringPath("filters.deny");
+  CHECK(IsValidJSValue(deny_p));
+  std::string deny = *deny_p;
 
   AllowJavascript();
   content::RenderViewHost* rvh =
@@ -555,7 +551,6 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
       web_contents->DumpAccessibilityTree(internal, property_filters);
   result->SetString(kTreeField,
                     base::UTF16ToUTF8(accessibility_contents_utf16));
-  result->SetBoolean(kImprovementsEnabledField, improvements_enabled_);
   CallJavascriptFunction(request_type, *(result.get()));
 }
 
@@ -565,14 +560,21 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
   CHECK(args->GetDictionary(0, &data));
 
   int session_id = *data->FindIntPath(kSessionIdField);
-  std::string request_type = Validate(data->FindStringPath(kRequestTypeField));
+  const std::string* request_type_p = data->FindStringPath(kRequestTypeField);
+  CHECK(IsValidJSValue(request_type_p));
+  std::string request_type = *request_type_p;
   CHECK(request_type == kShowOrRefreshTree || request_type == kCopyTree);
   request_type = "accessibility." + request_type;
 
-  std::string allow = Validate(data->FindStringPath("filters.allow"));
-  std::string allow_empty =
-      Validate(data->FindStringPath("filters.allowEmpty"));
-  std::string deny = Validate(data->FindStringPath("filters.deny"));
+  const std::string* allow_p = data->FindStringPath("filters.allow");
+  CHECK(IsValidJSValue(allow_p));
+  std::string allow = *allow_p;
+  const std::string* allow_empty_p = data->FindStringPath("filters.allowEmpty");
+  CHECK(IsValidJSValue(allow_empty_p));
+  std::string allow_empty = *allow_empty_p;
+  const std::string* deny_p = data->FindStringPath("filters.deny");
+  CHECK(IsValidJSValue(deny_p));
+  std::string deny = *deny_p;
 
   AllowJavascript();
 
@@ -598,7 +600,6 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
       result->SetKey(kTreeField,
                      base::Value(RecursiveDumpAXPlatformNodeAsString(
                          node, 0, property_filters)));
-      result->SetBoolean(kImprovementsEnabledField, improvements_enabled_);
       CallJavascriptFunction(request_type, *(result.get()));
       return;
     }

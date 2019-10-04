@@ -73,10 +73,10 @@ struct NET_EXPORT SSLConfig {
   // high-level operation.
   //
   // If unsure, do not enable this option.
-  bool early_data_enabled;
+  bool early_data_enabled = false;
 
   // If true, causes only ECDHE cipher suites to be enabled.
-  bool require_ecdhe;
+  bool require_ecdhe = false;
 
   // TODO(wtc): move the following members to a new SSLParams structure.  They
   // are not SSL configuration settings.
@@ -98,7 +98,7 @@ struct NET_EXPORT SSLConfig {
   std::vector<CertAndStatus> allowed_bad_certs;
 
   // True if all certificate errors should be ignored.
-  bool ignore_certificate_errors;
+  bool ignore_certificate_errors = false;
 
   // True if, for a single connection, any dependent network fetches should
   // be disabled. This can be used to avoid triggering re-entrancy in the
@@ -106,7 +106,7 @@ struct NET_EXPORT SSLConfig {
   // AIA, OCSP, or CRL fetches to block on retrieving the PAC script, while
   // the PAC script fetch is waiting for those dependent fetches, creating a
   // deadlock.
-  bool disable_cert_verification_network_fetches;
+  bool disable_cert_verification_network_fetches = false;
 
   // The list of application level protocols supported with ALPN (Application
   // Layer Protocol Negotiation), in decreasing order of preference.  Protocols
@@ -115,7 +115,7 @@ struct NET_EXPORT SSLConfig {
 
   // True if renegotiation should be allowed for the default application-level
   // protocol when the peer negotiates neither ALPN nor NPN.
-  bool renego_allowed_default;
+  bool renego_allowed_default = false;
 
   // The list of application-level protocols to enable renegotiation for.
   NextProtoVector renego_allowed_for_protos;
@@ -132,7 +132,12 @@ struct NET_EXPORT SSLConfig {
   // current session cache partitioning behavior will be needed to correctly
   // implement it. For now, it acts as an incomplete version of
   // PartitionSSLSessionsByNetworkIsolationKey.
-  PrivacyMode privacy_mode;
+  PrivacyMode privacy_mode = PRIVACY_MODE_DISABLED;
+
+  // True if the post-handshake peeking of the transport should be skipped. This
+  // logic ensures 0-RTT and tickets are resolved early, but can interfere with
+  // some unit tests.
+  bool disable_post_handshake_peek_for_testing = false;
 };
 
 }  // namespace net

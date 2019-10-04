@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -19,6 +20,11 @@ struct CONTENT_EXPORT BackgroundSyncParameters {
   // True if the manager should be disabled and registration attempts should
   // fail.
   bool disable;
+
+#if defined(OS_ANDROID)
+  // True if we should rely on Android's network detection where possible.
+  bool rely_on_android_network_detection;
+#endif
 
   // The number of attempts the BackgroundSyncManager will make to fire an
   // event before giving up.

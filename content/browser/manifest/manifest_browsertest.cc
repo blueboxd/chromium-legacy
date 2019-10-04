@@ -19,6 +19,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -98,13 +99,13 @@ class ManifestBrowserTest : public ContentBrowserTest,
     // The IPCs reporting console errors are not FIFO with the manifest IPCs.
     // Waiting for a round-trip channel-associated message will wait until any
     // already enqueued channel-associated IPCs arrive at the browser process.
-    blink::mojom::ManifestManagerAssociatedPtr ptr;
+    mojo::AssociatedRemote<blink::mojom::ManifestManager> remote;
     shell()
         ->web_contents()
         ->GetMainFrame()
         ->GetRemoteAssociatedInterfaces()
-        ->GetInterface(&ptr);
-    ptr.FlushForTesting();
+        ->GetInterface(&remote);
+    remote.FlushForTesting();
     return console_error_count_;
   }
 

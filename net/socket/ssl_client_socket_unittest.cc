@@ -1360,6 +1360,14 @@ class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
                                            server_config);
   }
 
+  // Makes a new connection to the test server and returns a
+  // FakeBlockingStreamSocket which may be used to block transport I/O.
+  //
+  // Most tests should call BlockReadResult() before calling Connect(). This
+  // avoid race conditions by controlling the order of events. 0-RTT typically
+  // races the ServerHello from the server with early data from the client. If
+  // the ServerHello arrives before client calls Write(), the data may be sent
+  // with 1-RTT keys rather than 0-RTT keys.
   FakeBlockingStreamSocket* MakeClient(bool early_data_enabled) {
     SSLConfig ssl_config;
     ssl_config.early_data_enabled = early_data_enabled;
@@ -1792,10 +1800,11 @@ TEST_P(SSLClientSocketReadTest, Read_WithSynchronousError) {
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
+  SSLConfig config;
+  config.disable_post_handshake_peek_for_testing = true;
   SynchronousErrorStreamSocket* raw_transport = transport.get();
   std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      std::move(transport), spawned_test_server()->host_port_pair(),
-      SSLConfig()));
+      std::move(transport), spawned_test_server()->host_port_pair(), config));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
@@ -2012,9 +2021,10 @@ TEST_P(SSLClientSocketReadTest, Read_DeleteWhilePendingFullDuplex) {
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
+  SSLConfig config;
+  config.disable_post_handshake_peek_for_testing = true;
   std::unique_ptr<SSLClientSocket> sock = CreateSSLClientSocket(
-      std::move(transport), spawned_test_server()->host_port_pair(),
-      SSLConfig());
+      std::move(transport), spawned_test_server()->host_port_pair(), config);
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
@@ -2174,10 +2184,11 @@ TEST_F(SSLClientSocketTest, Connect_WithZeroReturn) {
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
+  SSLConfig config;
+  config.disable_post_handshake_peek_for_testing = true;
   SynchronousErrorStreamSocket* raw_transport = transport.get();
   std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      std::move(transport), spawned_test_server()->host_port_pair(),
-      SSLConfig()));
+      std::move(transport), spawned_test_server()->host_port_pair(), config));
 
   raw_transport->SetNextReadError(0);
 
@@ -2200,10 +2211,11 @@ TEST_P(SSLClientSocketReadTest, Read_WithZeroReturn) {
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
+  SSLConfig config;
+  config.disable_post_handshake_peek_for_testing = true;
   SynchronousErrorStreamSocket* raw_transport = transport.get();
   std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      std::move(transport), spawned_test_server()->host_port_pair(),
-      SSLConfig()));
+      std::move(transport), spawned_test_server()->host_port_pair(), config));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
@@ -2233,9 +2245,10 @@ TEST_P(SSLClientSocketReadTest, Read_WithAsyncZeroReturn) {
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
+  SSLConfig config;
+  config.disable_post_handshake_peek_for_testing = true;
   std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      std::move(transport), spawned_test_server()->host_port_pair(),
-      SSLConfig()));
+      std::move(transport), spawned_test_server()->host_port_pair(), config));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
@@ -2309,9 +2322,10 @@ TEST_P(SSLClientSocketReadTest, Read_ManySmallRecords) {
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   ASSERT_THAT(rv, IsOk());
 
+  SSLConfig config;
+  config.disable_post_handshake_peek_for_testing = true;
   std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      std::move(transport), spawned_test_server()->host_port_pair(),
-      SSLConfig()));
+      std::move(transport), spawned_test_server()->host_port_pair(), config));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   ASSERT_THAT(rv, IsOk());
@@ -3465,6 +3479,56 @@ TEST_F(SSLClientSocketFalseStartTest, SessionResumption) {
   // Let a full handshake complete with False Start.
   ASSERT_NO_FATAL_FAILURE(
       TestFalseStart(server_options, client_config, true));
+
+  // Make a second connection.
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+  EXPECT_THAT(rv, IsOk());
+
+  // It should resume the session.
+  SSLInfo ssl_info;
+  EXPECT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+}
+
+// Test that the client completes the handshake in the background and installs
+// new sessions, even if the socket isn't used. This also avoids a theoretical
+// deadlock if NewSessionTicket is sufficiently large that neither it nor the
+// client's HTTP/1.1 POST fit in transport windows.
+TEST_F(SSLClientSocketFalseStartTest, CompleteHandshakeWithoutRequest) {
+  // Start a server.
+  SpawnedTestServer::SSLOptions server_options;
+  server_options.key_exchanges =
+      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
+  server_options.bulk_ciphers =
+      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
+  server_options.alpn_protocols.push_back("http/1.1");
+  ASSERT_TRUE(StartTestServer(server_options));
+
+  SSLConfig client_config;
+  client_config.alpn_protos.push_back(kProtoHTTP11);
+
+  // Start a handshake up to the server Finished message.
+  TestCompletionCallback callback;
+  FakeBlockingStreamSocket* raw_transport = nullptr;
+  std::unique_ptr<SSLClientSocket> sock;
+  ASSERT_NO_FATAL_FAILURE(CreateAndConnectUntilServerFinishedReceived(
+      client_config, &callback, &raw_transport, &sock));
+
+  // Wait for the server Finished to arrive, release it, and allow
+  // SSLClientSocket to process it. This should install a session.
+  // SpawnedTestServer, however, writes data in small chunks, so, even though it
+  // is only sending 51 bytes, it may take a few iterations to complete.
+  while (ssl_client_session_cache_->size() == 0) {
+    raw_transport->WaitForReadResult();
+    raw_transport->UnblockReadResult();
+    base::RunLoop().RunUntilIdle();
+    raw_transport->BlockReadResult();
+  }
+
+  // Drop the old socket. This is needed because the Python test server can't
+  // service two sockets in parallel.
+  sock.reset();
 
   // Make a second connection.
   int rv;
@@ -4738,67 +4802,16 @@ TEST_F(SSLClientSocketTest, AccessDeniedClientCerts) {
   EXPECT_THAT(rv, IsError(ERR_BAD_SSL_CLIENT_AUTH_CERT));
 }
 
-TEST_F(SSLClientSocketZeroRTTTest, ZeroRTT) {
-  ASSERT_TRUE(StartServer());
-  ASSERT_TRUE(RunInitialConnection());
-
-  // 0-RTT Connection
-  MakeClient(true);
-  ASSERT_THAT(Connect(), IsOk());
-  constexpr base::StringPiece kRequest = "GET /zerortt HTTP/1.0\r\n\r\n";
-  EXPECT_EQ(static_cast<int>(kRequest.size()), WriteAndWait(kRequest));
-
-  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(4096);
-  int size = ReadAndWait(buf.get(), 4096);
-  EXPECT_GT(size, 0);
-  EXPECT_EQ('1', buf->data()[size - 1]);
-
-  SSLInfo ssl_info;
-  ASSERT_TRUE(GetSSLInfo(&ssl_info));
-  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
-}
-
-// Check that 0RTT is confirmed after a Write and Read.
-TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTConfirmedAfterRead) {
-  ASSERT_TRUE(StartServer());
-  ASSERT_TRUE(RunInitialConnection());
-
-  // 0-RTT Connection
-  MakeClient(true);
-  ASSERT_THAT(Connect(), IsOk());
-  constexpr base::StringPiece kRequest = "GET /zerortt HTTP/1.0\r\n\r\n";
-  EXPECT_EQ(static_cast<int>(kRequest.size()), WriteAndWait(kRequest));
-
-  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(4096);
-  int size = ReadAndWait(buf.get(), 4096);
-  EXPECT_GT(size, 0);
-  EXPECT_EQ('1', buf->data()[size - 1]);
-
-  // After the handshake is confirmed, ConfirmHandshake should return
-  // synchronously.
-  TestCompletionCallback callback;
-  ASSERT_THAT(ssl_socket()->ConfirmHandshake(callback.callback()), IsOk());
-
-  SSLInfo ssl_info;
-  ASSERT_TRUE(GetSSLInfo(&ssl_info));
-  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
-}
-
-// Test that the client sends application data before the ServerHello comes in.
+// Test the client can send application data before the ServerHello comes in.
 TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTEarlyDataBeforeServerHello) {
   ASSERT_TRUE(StartServer());
   ASSERT_TRUE(RunInitialConnection());
 
-  // 0-RTT Connection
+  // Make a 0-RTT Connection. Connect() and Write() complete even though the
+  // ServerHello is blocked.
   FakeBlockingStreamSocket* socket = MakeClient(true);
-
-  // Block the ServerHello.
   socket->BlockReadResult();
-
-  // The handshake still completes.
   ASSERT_THAT(Connect(), IsOk());
-
-  // Writes still complete.
   constexpr base::StringPiece kRequest = "GET /zerortt HTTP/1.0\r\n\r\n";
   EXPECT_EQ(static_cast<int>(kRequest.size()), WriteAndWait(kRequest));
 
@@ -4814,19 +4827,80 @@ TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTEarlyDataBeforeServerHello) {
   EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
 }
 
+// Test that the client sends 1-RTT data if the ServerHello happens to come in
+// before Write() is called. See https://crbug.com/950706.
+TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTEarlyDataAfterServerHello) {
+  ASSERT_TRUE(StartServer());
+  ASSERT_TRUE(RunInitialConnection());
+
+  // Make a 0-RTT Connection. Connect() completes even though the ServerHello is
+  // blocked.
+  FakeBlockingStreamSocket* socket = MakeClient(true);
+  socket->BlockReadResult();
+  ASSERT_THAT(Connect(), IsOk());
+
+  // Wait for the ServerHello to come in and for SSLClientSocket to process it.
+  socket->WaitForReadResult();
+  socket->UnblockReadResult();
+  base::RunLoop().RunUntilIdle();
+
+  // Now write to the socket.
+  constexpr base::StringPiece kRequest = "GET /zerortt HTTP/1.0\r\n\r\n";
+  EXPECT_EQ(static_cast<int>(kRequest.size()), WriteAndWait(kRequest));
+
+  // Although the socket was created in early data state and the client never
+  // explicitly called ReaD() or ConfirmHandshake(), SSLClientSocketImpl
+  // internally consumed the ServerHello and switch keys. The server then
+  // responds with '0'.
+  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(4096);
+  int size = ReadAndWait(buf.get(), 4096);
+  EXPECT_GT(size, 0);
+  EXPECT_EQ('0', buf->data()[size - 1]);
+
+  SSLInfo ssl_info;
+  ASSERT_TRUE(GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+}
+
+// Check that 0RTT is confirmed after a Write and Read.
+TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTConfirmedAfterRead) {
+  ASSERT_TRUE(StartServer());
+  ASSERT_TRUE(RunInitialConnection());
+
+  // Make a 0-RTT Connection. Connect() and Write() complete even though the
+  // ServerHello is blocked.
+  FakeBlockingStreamSocket* socket = MakeClient(true);
+  socket->BlockReadResult();
+  ASSERT_THAT(Connect(), IsOk());
+  constexpr base::StringPiece kRequest = "GET /zerortt HTTP/1.0\r\n\r\n";
+  EXPECT_EQ(static_cast<int>(kRequest.size()), WriteAndWait(kRequest));
+
+  socket->UnblockReadResult();
+  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(4096);
+  int size = ReadAndWait(buf.get(), 4096);
+  EXPECT_GT(size, 0);
+  EXPECT_EQ('1', buf->data()[size - 1]);
+
+  // After the handshake is confirmed, ConfirmHandshake should return
+  // synchronously.
+  TestCompletionCallback callback;
+  ASSERT_THAT(ssl_socket()->ConfirmHandshake(callback.callback()), IsOk());
+
+  SSLInfo ssl_info;
+  ASSERT_TRUE(GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+}
+
 // Test that writes wait for the ServerHello once it has reached the early data
 // limit.
 TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTEarlyDataLimit) {
   ASSERT_TRUE(StartServer());
   ASSERT_TRUE(RunInitialConnection());
 
-  // 0-RTT Connection
+  // Make a 0-RTT Connection. Connect() completes even though the ServerHello is
+  // blocked.
   FakeBlockingStreamSocket* socket = MakeClient(true);
-
-  // Block the ServerHello.
   socket->BlockReadResult();
-
-  // The handshake still completes.
   ASSERT_THAT(Connect(), IsOk());
 
   // EmbeddedTestServer uses BoringSSL's hard-coded early data limit, which is
@@ -4949,16 +5023,24 @@ TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTReadBeforeWrite) {
   ASSERT_TRUE(StartServer());
   ASSERT_TRUE(RunInitialConnection());
 
-  // 0-RTT Connection
-  MakeClient(true);
+  // Make a 0-RTT Connection. Connect() completes even though the ServerHello is
+  // blocked.
+  FakeBlockingStreamSocket* socket = MakeClient(true);
+  socket->BlockReadResult();
+  ASSERT_THAT(Connect(), IsOk());
+
+  // Read() does not make progress.
   scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(4096);
   TestCompletionCallback read_callback;
-  ASSERT_THAT(Connect(), IsOk());
   ASSERT_EQ(ERR_IO_PENDING,
             ssl_socket()->Read(buf.get(), 4096, read_callback.callback()));
+
+  // Write() completes, even though reads are blocked.
   constexpr base::StringPiece kRequest = "GET /zerortt HTTP/1.0\r\n\r\n";
   EXPECT_EQ(static_cast<int>(kRequest.size()), WriteAndWait(kRequest));
 
+  // Release the ServerHello, etc. The Read() now completes.
+  socket->UnblockReadResult();
   int size = read_callback.GetResult(ERR_IO_PENDING);
   EXPECT_GT(size, 0);
   EXPECT_EQ('1', buf->data()[size - 1]);
@@ -5038,8 +5120,13 @@ TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTParallelReadConfirm) {
 TEST_P(SSLClientSocketReadTest, DumpMemoryStats) {
   ASSERT_TRUE(StartTestServer(SpawnedTestServer::SSLOptions()));
 
+  // This test compares the memory usage when there is and isn't a pending read
+  // on the socket, so disable the post-handshake peek.
+  SSLConfig config;
+  config.disable_post_handshake_peek_for_testing = true;
+
   int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
   EXPECT_THAT(rv, IsOk());
   StreamSocket::SocketMemoryStats stats;
   sock_->DumpMemoryStats(&stats);

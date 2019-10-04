@@ -41,6 +41,7 @@
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
+#include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/public/web/web_origin_policy.h"
@@ -114,6 +115,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   ~DocumentLoader() override;
 
   static bool WillLoadUrlAsEmpty(const KURL&);
+  static WebHistoryCommitType LoadTypeToCommitType(WebFrameLoadType);
 
   LocalFrame* GetFrame() const { return frame_; }
 
@@ -184,6 +186,12 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   void StartLoading();
   void StopLoading();
+
+  void CommitNavigation();
+
+  GlobalObjectReusePolicy GetGlobalObjectReusePolicy() const {
+    return global_object_reuse_policy_;
+  }
 
   // Starts loading the response.
   void StartLoadingResponse();
@@ -316,15 +324,12 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       const scoped_refptr<const SecurityOrigin> initiator_origin,
       Document* owner_document,
       const AtomicString& mime_type,
-      const AtomicString& encoding,
-      ParserSynchronizationPolicy,
       const KURL& overriding_url);
   void DidInstallNewDocument(Document*);
   void WillCommitNavigation();
-  void DidCommitNavigation(GlobalObjectReusePolicy);
+  void DidCommitNavigation();
 
-  void FinishNavigationCommit(const AtomicString& mime_type,
-                              const KURL& overriding_url = KURL());
+  void CreateParserPostCommit();
 
   void CommitSameDocumentNavigationInternal(
       const KURL&,
@@ -429,6 +434,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   ResourceResponse response_;
 
   WebFrameLoadType load_type_;
+  GlobalObjectReusePolicy global_object_reuse_policy_ =
+      GlobalObjectReusePolicy::kCreateNew;
 
   bool is_client_redirect_;
   bool replaces_current_history_item_;

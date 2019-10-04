@@ -661,7 +661,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
             resource_request_->resource_type ==
                 static_cast<int>(ResourceType::kMainFrame),
             static_cast<ui::PageTransition>(resource_request_->transition_type),
-            resource_request_->has_user_gesture, &loader_factory);
+            resource_request_->has_user_gesture,
+            resource_request_->request_initiator, &loader_factory);
 
         if (loader_factory) {
           factory =

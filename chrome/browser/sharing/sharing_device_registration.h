@@ -45,6 +45,9 @@ class SharingDeviceRegistration {
   // Un-registers device with sharing sync preferences.
   virtual void UnregisterDevice(RegistrationCallback callback);
 
+  // Returns if device can handle receiving phone numbers for calling.
+  bool IsClickToCallSupported() const;
+
   // Returns if device can handle receiving of shared clipboard contents.
   virtual bool IsSharedClipboardSupported() const;
 
@@ -91,9 +94,6 @@ class SharingDeviceRegistration {
   // Computes and returns a set of all enabled features on the device.
   std::set<sync_pb::SharingSpecificFields_EnabledFeatures> GetEnabledFeatures()
       const;
-
-  // Returns if device can handle receiving phone numbers for calling.
-  bool IsClickToCallSupported() const;
 
   PrefService* pref_service_;
   SharingSyncPreference* sharing_sync_preference_;

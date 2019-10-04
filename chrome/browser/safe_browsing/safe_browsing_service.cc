@@ -409,7 +409,6 @@ void SafeBrowsingService::RefreshState() {
   // Check if any profile requires the service to be active.
   enabled_by_prefs_ = false;
   estimated_extended_reporting_by_prefs_ = SBER_LEVEL_OFF;
-  bool is_real_time_lookup_enabled = false;
   for (const auto& pref : prefs_map_) {
     if (pref.first->GetBoolean(prefs::kSafeBrowsingEnabled)) {
       enabled_by_prefs_ = true;
@@ -419,16 +418,8 @@ void SafeBrowsingService::RefreshState() {
       if (erl != SBER_LEVEL_OFF) {
         estimated_extended_reporting_by_prefs_ = erl;
       }
-
-      if (pref.first->GetBoolean(prefs::kSafeBrowsingRealTimeLookupEnabled)) {
-        is_real_time_lookup_enabled = true;
-      }
     }
   }
-
-  // TODO(crbug.com/991394): This enables real-time URL lookup if it is enabled
-  // for any of the active profiles. This should be fixed.
-  RealTimePolicyEngine::SetEnabled(is_real_time_lookup_enabled);
 
   if (enabled_by_prefs_)
     Start();

@@ -16,9 +16,8 @@
 #include "base/threading/thread_checker.h"
 #include "components/metrics/metrics_provider.h"
 #include "content/public/browser/browser_child_process_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_process_host_creation_observer.h"
 #include "content/public/browser/render_process_host_observer.h"
 
 namespace base {
@@ -33,7 +32,7 @@ class SubprocessMetricsProvider
     : public metrics::MetricsProvider,
       public base::StatisticsRecorder::HistogramProvider,
       public content::BrowserChildProcessObserver,
-      public content::NotificationObserver,
+      public content::RenderProcessHostCreationObserver,
       public content::RenderProcessHostObserver {
  public:
   SubprocessMetricsProvider();
@@ -78,10 +77,9 @@ class SubprocessMetricsProvider
       const content::ChildProcessData& data,
       const content::ChildProcessTerminationInfo& info) override;
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // content::RenderProcessHostCreationObserver:
+  void OnRenderProcessHostCreated(
+      content::RenderProcessHost* process_host) override;
 
   // content::RenderProcessHostObserver:
   void RenderProcessReady(content::RenderProcessHost* host) override;
@@ -96,9 +94,6 @@ class SubprocessMetricsProvider
   GetSubprocessHistogramAllocatorOnIOThread(int id);
 
   THREAD_CHECKER(thread_checker_);
-
-  // Object for registing notification requests.
-  content::NotificationRegistrar registrar_;
 
   // All of the shared-persistent-allocators for known sub-processes.
   using AllocatorByIdMap =

@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 
 #if BUILDFLAG(SAFE_BROWSING_CSD)
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
@@ -79,7 +80,7 @@ void SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost() {
   }
 
   content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
-  chrome::mojom::ChromeRenderFrameAssociatedPtr client;
+  mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> client;
   rfh->GetRemoteAssociatedInterfaces()->GetInterface(&client);
   client->SetClientSidePhishingDetection(safe_browsing);
 #endif

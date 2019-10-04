@@ -20,8 +20,8 @@ constexpr uint32_t NavigationBodyLoader::kMaxNumConsumedBytesInTask;
 
 // static
 void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-    const mojom::CommonNavigationParams& common_params,
-    const mojom::CommitNavigationParams& commit_params,
+    mojom::CommonNavigationParamsPtr common_params,
+    mojom::CommitNavigationParamsPtr commit_params,
     int request_id,
     const network::ResourceResponseHead& response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
@@ -32,23 +32,24 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     blink::WebNavigationParams* navigation_params) {
   // Use the original navigation url to start with. We'll replay the redirects
   // afterwards and will eventually arrive to the final url.
-  GURL url = !commit_params.original_url.is_empty() ? commit_params.original_url
-                                                    : common_params.url;
+  GURL url = !commit_params->original_url.is_empty()
+                 ? commit_params->original_url
+                 : common_params->url;
   auto resource_load_info = NotifyResourceLoadInitiated(
       render_frame_id, request_id, url,
-      !commit_params.original_method.empty() ? commit_params.original_method
-                                             : common_params.method,
-      common_params.referrer->url,
+      !commit_params->original_method.empty() ? commit_params->original_method
+                                              : common_params->method,
+      common_params->referrer->url,
       is_main_frame ? ResourceType::kMainFrame : ResourceType::kSubFrame,
       is_main_frame ? net::HIGHEST : net::LOWEST);
-  size_t redirect_count = commit_params.redirect_response.size();
+  size_t redirect_count = commit_params->redirect_response.size();
   navigation_params->redirects.reserve(redirect_count);
   navigation_params->redirects.resize(redirect_count);
   for (size_t i = 0; i < redirect_count; ++i) {
     blink::WebNavigationParams::RedirectInfo& redirect =
         navigation_params->redirects[i];
-    auto& redirect_info = commit_params.redirect_infos[i];
-    auto& redirect_response = commit_params.redirect_response[i];
+    auto& redirect_info = commit_params->redirect_infos[i];
+    auto& redirect_response = commit_params->redirect_response[i];
     NotifyResourceRedirectReceived(render_frame_id, resource_load_info.get(),
                                    redirect_info, redirect_response);
     WebURLLoaderImpl::PopulateURLResponse(

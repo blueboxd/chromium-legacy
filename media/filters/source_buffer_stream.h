@@ -250,10 +250,6 @@ class MEDIA_EXPORT SourceBufferStream {
   // by |ranges_|.
   RangeList::iterator AddToRanges(std::unique_ptr<SourceBufferRange> new_range);
 
-  // Returns an iterator that points to the place in |ranges_| where
-  // |selected_range_| lives.
-  RangeList::iterator GetSelectedRangeItr();
-
   // Sets the |selected_range_| to |range| and resets the next buffer position
   // for the previous |selected_range_|.
   void SetSelectedRange(SourceBufferRange* range);

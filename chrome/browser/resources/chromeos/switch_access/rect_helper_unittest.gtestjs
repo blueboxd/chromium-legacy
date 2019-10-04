@@ -18,12 +18,81 @@ SwitchAccessRectHelperUnitTest.prototype = {
   extraLibraries: [
     'rect_helper.js',
   ],
-
-  equal: (rect1, rect2) => rect1.left === rect2.left &&
-                           rect1.top === rect2.top &&
-                           rect1.width === rect2.width &&
-                           rect1.height === rect2.height,
 };
+
+TEST_F('SwitchAccessRectHelperUnitTest', 'Equals', function() {
+  const rect1 = {left: 0, top: 0, width: 10, height: 10};
+  const rect2 = {left: 0, top: 0, width: 10, height: 10};
+  const rect3 = {left: 1, top: 0, width: 10, height: 10};
+  const rect4 = {left: 0, top: 1, width: 10, height: 10};
+  const rect5 = {left: 0, top: 0, width: 11, height: 10};
+  const rect6 = {left: 0, top: 0, width: 10, height: 11};
+
+  assertTrue(RectHelper.areEqual(rect1, rect1));
+  assertTrue(RectHelper.areEqual(rect1, rect2));
+  assertTrue(RectHelper.areEqual(rect2, rect1));
+  assertFalse(RectHelper.areEqual(rect1, rect3));
+  assertFalse(RectHelper.areEqual(rect3, rect1));
+  assertFalse(RectHelper.areEqual(rect1, rect4));
+  assertFalse(RectHelper.areEqual(rect4, rect1));
+  assertFalse(RectHelper.areEqual(rect1, rect5));
+  assertFalse(RectHelper.areEqual(rect5, rect1));
+  assertFalse(RectHelper.areEqual(rect1, rect6));
+  assertFalse(RectHelper.areEqual(rect6, rect1));
+});
+
+TEST_F('SwitchAccessRectHelperUnitTest', 'Center', function() {
+  const rect1 = {left: 0, top: 0, width: 10, height: 10};
+  const rect2 = {left: 10, top: 20, width: 10, height: 40};
+
+  const center1 = RectHelper.center(rect1);
+  assertEquals(5, center1.x);
+  assertEquals(5, center1.y);
+
+  const center2 = RectHelper.center(rect2);
+  assertEquals(15, center2.x);
+  assertEquals(40, center2.y);
+});
+
+TEST_F('SwitchAccessRectHelperUnitTest', 'Union', function() {
+  const rect1 = {left: 0, top: 0, width: 10, height: 10};
+  const rect2 = {left: 4, top: 4, width: 2, height: 2};
+  const rect3 = {left: 10, top: 20, width: 10, height: 40};
+  const rect4 = {left: 0, top: 10, width: 10, height: 10};
+  const rect5 = {left: 5, top: 5, width: 10, height: 10};
+
+  // When one rect entirely contains the other, that rect is returned.
+  const union_1_2 = RectHelper.union(rect1, rect2);
+  assertTrue(RectHelper.areEqual(rect1, union_1_2));
+
+  const union_1_3 = RectHelper.union(rect1, rect3);
+  let expected = {left: 0, top: 0, width: 20, height: 60};
+  assertTrue(RectHelper.areEqual(expected, union_1_3));
+
+  const union_1_4 = RectHelper.union(rect1, rect4);
+  expected = {left: 0, top: 0, width: 10, height: 20};
+  assertTrue(RectHelper.areEqual(expected, union_1_4));
+
+  const union_1_5 = RectHelper.union(rect1, rect5);
+  expected = {left: 0, top: 0, width: 15, height: 15};
+  assertTrue(RectHelper.areEqual(expected, union_1_5));
+});
+
+TEST_F('SwitchAccessRectHelperUnitTest', 'UnionAll', function() {
+  const rect1 = {left: 0, top: 0, width: 10, height: 10};
+  const rect2 = {left: 0, top: 10, width: 10, height: 10};
+  const rect3 = {left: 10, top: 0, width: 10, height: 10};
+  const rect4 = {left: 10, top: 10, width: 10, height: 10};
+  const rect5 = {left: 0, top: 0, width: 100, height: 10};
+
+  const union1 = RectHelper.unionAll([rect1, rect2, rect3, rect4]);
+  let expected = {left: 0, top: 0, width: 20, height: 20};
+  assertTrue(RectHelper.areEqual(expected, union1));
+
+  const union2 = RectHelper.unionAll([rect1, rect2, rect3, rect4, rect5]);
+  expected = {left: 0, top: 0, width: 100, height: 20};
+  assertTrue(RectHelper.areEqual(expected, union2));
+});
 
 TEST_F('SwitchAccessRectHelperUnitTest',
        'ExpandToFitWithPadding_OuterContainedInInner', function() {
@@ -33,7 +102,7 @@ TEST_F('SwitchAccessRectHelperUnitTest',
   const outer = {left: 120, top: 120, width: 20, height: 20};
   let expected = {left: 95, top: 95, width: 110, height: 110};
 
-  assertTrue(this.equal(expected,
+  assertTrue(RectHelper.areEqual(expected,
       RectHelper.expandToFitWithPadding(padding, outer, inner)));
 });
 
@@ -43,7 +112,7 @@ TEST_F('SwitchAccessRectHelperUnitTest',
   const inner = {left: 100, top: 100, width: 100, height: 100};
   const outer = {left: 50, top: 50, width: 200, height: 200};
 
-  assertTrue(this.equal(outer,
+  assertTrue(RectHelper.areEqual(outer,
       RectHelper.expandToFitWithPadding(padding, outer, inner)));
 });
 
@@ -54,7 +123,7 @@ TEST_F('SwitchAccessRectHelperUnitTest', 'ExpandToFitWithPadding_NoOverlap',
   const outer = {left: 10, top: 10, width: 10, height: 10};
   expected = {left: 10, top: 10, width: 195, height: 195};
 
-  assertTrue(this.equal(expected,
+  assertTrue(RectHelper.areEqual(expected,
       RectHelper.expandToFitWithPadding(padding, outer, inner)));
 });
 
@@ -65,7 +134,7 @@ TEST_F('SwitchAccessRectHelperUnitTest', 'ExpandToFitWithPadding_Overlap',
   const outer = {left: 120, top: 50, width: 200, height: 200};
   expected = {left: 95, top: 50, width: 225, height: 200};
 
-  assertTrue(this.equal(expected,
+  assertTrue(RectHelper.areEqual(expected,
       RectHelper.expandToFitWithPadding(padding, outer, inner)));
 });
 
@@ -76,6 +145,6 @@ TEST_F('SwitchAccessRectHelperUnitTest', 'ExpandToFitWithPadding_WithinPadding',
   const outer = {left: 97, top: 95, width: 108, height: 110};
   expected = {left: 95, top: 95, width: 110, height: 110};
 
-  assertTrue(this.equal(expected,
+  assertTrue(RectHelper.areEqual(expected,
       RectHelper.expandToFitWithPadding(padding, outer, inner)));
 });

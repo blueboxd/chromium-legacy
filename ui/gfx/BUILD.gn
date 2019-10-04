@@ -150,8 +150,6 @@ jumbo_component("gfx") {
     "path_mac.mm",
     "path_win.cc",
     "path_win.h",
-    "path_x11.cc",
-    "path_x11.h",
     "platform_font.h",
     "platform_font_ios.h",
     "platform_font_ios.mm",
@@ -397,8 +395,6 @@ jumbo_component("gfx") {
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
     configs += [ "//build/config/linux:x11" ]
-  } else {
-    sources -= [ "path_x11.cc" ]
   }
 }
 

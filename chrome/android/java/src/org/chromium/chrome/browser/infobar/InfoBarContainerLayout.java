@@ -22,6 +22,7 @@ import androidx.annotation.IntDef;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationListener;
+import org.chromium.ui.widget.OptimizedFrameLayout;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -65,7 +66,7 @@ import java.util.ArrayList;
  *
  * TODO(newt): finalize animation timings and interpolators.
  */
-public class InfoBarContainerLayout extends FrameLayout {
+public class InfoBarContainerLayout extends OptimizedFrameLayout {
     /**
      * An interface for items that can be added to an InfoBarContainerLayout.
      */
@@ -126,7 +127,7 @@ public class InfoBarContainerLayout extends FrameLayout {
      */
     InfoBarContainerLayout(Context context, Runnable makeContainerVisibleRunnable,
             InfoBarAnimationListener animationListener) {
-        super(context);
+        super(context, null);
         Resources res = context.getResources();
         mBackInfobarHeight = res.getDimensionPixelSize(R.dimen.infobar_peeking_height);
         mFloatingBehavior = new FloatingBehavior(this);

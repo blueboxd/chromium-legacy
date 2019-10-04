@@ -139,7 +139,9 @@ class HTMLScriptElementOrSVGScriptElement;
 class HitTestRequest;
 class HttpRefreshScheduler;
 class IdleRequestOptions;
+class IntersectionObserver;
 class IntersectionObserverController;
+class IntersectionObserverEntry;
 class LayoutView;
 class LazyLoadImageObserver;
 class LiveNodeListBase;
@@ -1541,6 +1543,10 @@ class CORE_EXPORT Document : public ContainerNode,
   void RemoveLockedDisplayLock();
   int LockedDisplayLockCount() const;
 
+  // Manage the element's observation for display lock activation.
+  void RegisterDisplayLockActivationObservation(Element*);
+  void UnregisterDisplayLockActivationObservation(Element*);
+
   // Deferred compositor commits are disallowed by default, and are only allowed
   // for same-origin navigations to an html document fetched with http.
   bool DeferredCompositorCommitIsAllowed() {
@@ -1777,6 +1783,11 @@ class CORE_EXPORT Document : public ContainerNode,
   void NotifyFocusedElementChanged(Element* old_focused_element,
                                    Element* new_focused_element);
   void DisplayNoneChangedForFrame();
+
+  IntersectionObserver& EnsureDisplayLockActivationObserver();
+
+  void ProcessDisplayLockActivationObservation(
+      const HeapVector<Member<IntersectionObserverEntry>>&);
 
   DocumentLifecycle lifecycle_;
 
@@ -2138,6 +2149,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   HeapHashMap<WeakMember<Element>, Member<ExplicitlySetAttrElementsMap>>
       element_explicitly_set_attr_elements_map_;
+
+  Member<IntersectionObserver> display_lock_activation_observer_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

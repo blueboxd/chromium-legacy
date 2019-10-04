@@ -13,7 +13,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
-#include "chrome/browser/sharing/fake_local_device_info_provider.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
@@ -24,7 +23,7 @@
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/sync_device_info/device_info.h"
-#include "components/sync_device_info/fake_device_info_tracker.h"
+#include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
@@ -121,9 +120,7 @@ class FakeInstanceID : public InstanceID {
 class SharingDeviceRegistrationTest : public testing::Test {
  public:
   SharingDeviceRegistrationTest()
-      : sync_prefs_(&prefs_,
-                    &fake_device_info_tracker_,
-                    &fake_local_device_info_provider_),
+      : sync_prefs_(&prefs_, &fake_device_info_sync_service_),
         vapid_key_manager_(&sync_prefs_),
         sharing_device_registration_(pref_service_.get(),
                                      &sync_prefs_,
@@ -161,7 +158,9 @@ class SharingDeviceRegistrationTest : public testing::Test {
           result_ = r;
           local_sharing_info_ = sync_prefs_.GetLocalSharingInfo();
           synced_sharing_info_ = sync_prefs_.GetSharingInfo(
-              fake_local_device_info_provider_.GetLocalDeviceInfo()->guid());
+              fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
+                  ->GetLocalDeviceInfo()
+                  ->guid());
           fcm_registration_ = sync_prefs_.GetFCMRegistration();
           run_loop.Quit();
         }));
@@ -175,7 +174,9 @@ class SharingDeviceRegistrationTest : public testing::Test {
           result_ = r;
           local_sharing_info_ = sync_prefs_.GetLocalSharingInfo();
           synced_sharing_info_ = sync_prefs_.GetSharingInfo(
-              fake_local_device_info_provider_.GetLocalDeviceInfo()->guid());
+              fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
+                  ->GetLocalDeviceInfo()
+                  ->guid());
           fcm_registration_ = sync_prefs_.GetFCMRegistration();
           run_loop.Quit();
         }));
@@ -191,14 +192,15 @@ class SharingDeviceRegistrationTest : public testing::Test {
   }
 
   std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
-  GetEnabledFeatures() {
-#if defined(OS_ANDROID)
-    return std::set<sync_pb::SharingSpecificFields::EnabledFeatures>{
-        sync_pb::SharingSpecificFields::CLICK_TO_CALL,
-        sync_pb::SharingSpecificFields::SHARED_CLIPBOARD};
-#endif
-    return std::set<sync_pb::SharingSpecificFields::EnabledFeatures>{
-        sync_pb::SharingSpecificFields::SHARED_CLIPBOARD};
+  GetExpectedEnabledFeatures() {
+    // IsClickToCallSupported() involves JNI call which is hard to test.
+    if (sharing_device_registration_.IsClickToCallSupported()) {
+      return {sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+              sync_pb::SharingSpecificFields::SHARED_CLIPBOARD};
+    }
+
+    // Shared clipboard should always be supported.
+    return {sync_pb::SharingSpecificFields::SHARED_CLIPBOARD};
   }
 
  protected:
@@ -207,8 +209,7 @@ class SharingDeviceRegistrationTest : public testing::Test {
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
   NiceMock<MockInstanceIDDriver> mock_instance_id_driver_;
-  syncer::FakeDeviceInfoTracker fake_device_info_tracker_;
-  FakeLocalDeviceInfoProvider fake_local_device_info_provider_;
+  syncer::FakeDeviceInfoSyncService fake_device_info_sync_service_;
   FakeInstanceID fake_instance_id_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -241,17 +242,17 @@ TEST_F(SharingDeviceRegistrationTest, IsSharedClipboardSupported_False) {
   EXPECT_FALSE(sharing_device_registration_.IsSharedClipboardSupported());
 }
 
-// Disabled as a result of crbug.com/1010998
-TEST_F(SharingDeviceRegistrationTest, DISABLED_RegisterDeviceTest_Success) {
+TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
   SetInstanceIDFCMResult(InstanceID::Result::SUCCESS);
   SetInstanceIDFCMToken(kFCMToken);
-  fake_device_info_tracker_.Add(
-      fake_local_device_info_provider_.GetLocalDeviceInfo());
+  fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
+      fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
+          ->GetLocalDeviceInfo());
 
   RegisterDeviceSync();
 
   std::set<sync_pb::SharingSpecificFields::EnabledFeatures> enabled_features =
-      GetEnabledFeatures();
+      GetExpectedEnabledFeatures();
   syncer::DeviceInfo::SharingInfo expected_sharing_info(
       kFCMToken, kDevicep256dh, kDeviceAuthSecret, enabled_features);
 
@@ -277,12 +278,12 @@ TEST_F(SharingDeviceRegistrationTest, DISABLED_RegisterDeviceTest_Success) {
   EXPECT_TRUE(fcm_registration_);
 }
 
-// Disabled as a result of crbug.com/1010998
-TEST_F(SharingDeviceRegistrationTest, DISABLED_RegisterDeviceTest_VapidKeysUnchanged) {
+TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_VapidKeysUnchanged) {
   SetInstanceIDFCMToken(kFCMToken);
   SetInstanceIDFCMResult(InstanceID::Result::SUCCESS);
-  fake_device_info_tracker_.Add(
-      fake_local_device_info_provider_.GetLocalDeviceInfo());
+  fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
+      fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
+          ->GetLocalDeviceInfo());
 
   RegisterDeviceSync();
 
@@ -298,7 +299,7 @@ TEST_F(SharingDeviceRegistrationTest, DISABLED_RegisterDeviceTest_VapidKeysUncha
 
   // Encryption info is updated with new value but FCM token is not updated
   std::set<sync_pb::SharingSpecificFields::EnabledFeatures> enabled_features =
-      GetEnabledFeatures();
+      GetExpectedEnabledFeatures();
   syncer::DeviceInfo::SharingInfo expected_sharing_info(
       kFCMToken, kDevicep256dh2, kDeviceAuthSecret2, enabled_features);
 
@@ -308,11 +309,11 @@ TEST_F(SharingDeviceRegistrationTest, DISABLED_RegisterDeviceTest_VapidKeysUncha
   EXPECT_TRUE(fcm_registration_);
 }
 
-// Disabled as a result of crbug.com/1010998
-TEST_F(SharingDeviceRegistrationTest, DISABLED_RegisterDeviceTest_Expired) {
+TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Expired) {
   SetInstanceIDFCMResult(InstanceID::Result::SUCCESS);
-  fake_device_info_tracker_.Add(
-      fake_local_device_info_provider_.GetLocalDeviceInfo());
+  fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
+      fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
+          ->GetLocalDeviceInfo());
 
   // First register the device.
   RegisterDeviceSync();
@@ -328,7 +329,7 @@ TEST_F(SharingDeviceRegistrationTest, DISABLED_RegisterDeviceTest_Expired) {
 
   // Device should be registered with the new FCM token.
   std::set<sync_pb::SharingSpecificFields::EnabledFeatures> enabled_features =
-      GetEnabledFeatures();
+      GetExpectedEnabledFeatures();
   syncer::DeviceInfo::SharingInfo expected_sharing_info(
       kFCMToken2, kDevicep256dh, kDeviceAuthSecret, enabled_features);
 
@@ -360,11 +361,11 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_FatalError) {
   EXPECT_FALSE(fcm_registration_);
 }
 
-// Disabled as a result of crbug.com/1010998
-TEST_F(SharingDeviceRegistrationTest, DISABLED_UnregisterDeviceTest_Success) {
+TEST_F(SharingDeviceRegistrationTest, UnregisterDeviceTest_Success) {
   SetInstanceIDFCMResult(InstanceID::Result::SUCCESS);
-  fake_device_info_tracker_.Add(
-      fake_local_device_info_provider_.GetLocalDeviceInfo());
+  fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
+      fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
+          ->GetLocalDeviceInfo());
 
   // First register the device.
   RegisterDeviceSync();
@@ -391,7 +392,7 @@ TEST_F(SharingDeviceRegistrationTest, DISABLED_UnregisterDeviceTest_Success) {
 
   // Device should be registered with the new FCM token.
   std::set<sync_pb::SharingSpecificFields::EnabledFeatures> enabled_features =
-      GetEnabledFeatures();
+      GetExpectedEnabledFeatures();
   syncer::DeviceInfo::SharingInfo expected_sharing_info(
       kFCMToken2, kDevicep256dh, kDeviceAuthSecret, enabled_features);
 

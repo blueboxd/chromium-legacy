@@ -2154,7 +2154,8 @@ TEST_F(AppListViewTest, AppsGridViewVisibilityOnReopening) {
 
   view_->SetState(ash::AppListViewState::kFullscreenSearch);
   SetAppListState(ash::AppListState::kStateSearchResults);
-  EXPECT_FALSE(IsViewVisibleOnScreen(apps_grid_view()));
+  EXPECT_EQ(app_list_features::IsScalableAppListEnabled(),
+            IsViewVisibleOnScreen(apps_grid_view()));
 
   // Close the app-list and re-show to fullscreen all apps.
   view_->SetState(ash::AppListViewState::kClosed);

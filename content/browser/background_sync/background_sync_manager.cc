@@ -2306,6 +2306,11 @@ void BackgroundSyncManager::OnStorageWipedImpl(base::OnceClosure callback) {
 void BackgroundSyncManager::OnNetworkChanged() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
+#if defined(OS_ANDROID)
+  if (parameters_->rely_on_android_network_detection)
+    return;
+#endif
+
   if (!AreOptionConditionsMet())
     return;
 

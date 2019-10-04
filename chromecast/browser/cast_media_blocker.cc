@@ -11,6 +11,7 @@
 #include "chromecast/common/mojom/media_playback_options.mojom.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace chromecast {
@@ -189,7 +190,7 @@ void CastMediaBlocker::UpdateBackgroundVideoPlaybackState() {
 void CastMediaBlocker::UpdateRenderFrameMediaLoadingBlockedState(
     content::RenderFrameHost* render_frame_host) {
   DCHECK(render_frame_host);
-  chromecast::shell::mojom::MediaPlaybackOptionsAssociatedPtr
+  mojo::AssociatedRemote<chromecast::shell::mojom::MediaPlaybackOptions>
       media_playback_options;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &media_playback_options);
@@ -198,7 +199,7 @@ void CastMediaBlocker::UpdateRenderFrameMediaLoadingBlockedState(
 
 void CastMediaBlocker::UpdateRenderFrameBackgroundVideoPlaybackState(
     content::RenderFrameHost* frame) {
-  chromecast::shell::mojom::MediaPlaybackOptionsAssociatedPtr
+  mojo::AssociatedRemote<chromecast::shell::mojom::MediaPlaybackOptions>
       media_playback_options;
   frame->GetRemoteAssociatedInterfaces()->GetInterface(&media_playback_options);
   media_playback_options->SetBackgroundVideoPlaybackEnabled(

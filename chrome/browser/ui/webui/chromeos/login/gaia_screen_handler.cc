@@ -748,6 +748,14 @@ void GaiaScreenHandler::HandleWebviewLoadAborted(int error_code) {
                  << net::ErrorToShortString(error_code);
     return;
   }
+  if (error_code == net::ERR_TIMED_OUT &&
+      is_security_token_pin_dialog_running()) {
+    // Timeout errors are expected when the security token PIN is not entered by
+    // the user on time. In that case, return the user back to the first sign-in
+    // step instead of showing the network error screen.
+    ReloadGaia(/*force_reload=*/true);
+    return;
+  }
 
   frame_error_ = static_cast<net::Error>(error_code);
   LOG(ERROR) << "Gaia webview error: " << net::ErrorToShortString(error_code);
@@ -1044,7 +1052,7 @@ void GaiaScreenHandler::HandleSecurityTokenPinEntered(
   DCHECK(!security_token_pin_entered_callback_ ||
          security_token_pin_dialog_closed_callback_);
 
-  if (!security_token_pin_dialog_closed_callback_) {
+  if (!is_security_token_pin_dialog_running()) {
     // The PIN request has already been canceled on the handler side.
     return;
   }

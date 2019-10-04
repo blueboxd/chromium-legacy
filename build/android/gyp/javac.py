@@ -591,7 +591,7 @@ def main(argv):
       options.jar_path + '.info',
   ]
 
-  input_strings = javac_cmd + classpath
+  input_strings = javac_cmd + classpath + java_files
   if options.jar_info_exclude_globs:
     input_strings.append(options.jar_info_exclude_globs)
   build_utils.CallAndWriteDepfileIfStale(

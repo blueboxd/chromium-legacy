@@ -66,16 +66,12 @@ cr.define('accessibility', function() {
   }
 
   function requestTree(data, element) {
-    const improvementsEnabled = data['improvementsEnabled'];
-    const allow = improvementsEnabled ? $('filter-allow').value : '*';
-    const allowEmpty = improvementsEnabled ? $('filter-allow-empty').value : '';
-    const deny = improvementsEnabled ? $('filter-deny').value : '';
-    if (improvementsEnabled) {
-      window.localStorage['chrome-accessibility-filter-allow'] = allow;
-      window.localStorage['chrome-accessibility-filter-allow-empty'] =
-          allowEmpty;
-      window.localStorage['chrome-accessibility-filter-deny'] = deny;
-    }
+    const allow = $('filter-allow').value;
+    const allowEmpty = $('filter-allow-empty').value;
+    const deny = $('filter-deny').value;
+    window.localStorage['chrome-accessibility-filter-allow'] = allow;
+    window.localStorage['chrome-accessibility-filter-allow-empty'] = allowEmpty;
+    window.localStorage['chrome-accessibility-filter-deny'] = deny;
 
     // The calling |element| is a button with an id of the format
     // <treeId>:<requestType>, where requestType is one of 'showOrRefreshTree',
@@ -128,20 +124,14 @@ cr.define('accessibility', function() {
       addToBrowsersList(browsers[i]);
     }
 
-    // Cache filters so they're easily accessible on page refresh. Remove
-    // filters if the flag is not enabled.
-    if (data['improvementsEnabled']) {
-      const allow = window.localStorage['chrome-accessibility-filter-allow'];
-      const allowEmpty =
-          window.localStorage['chrome-accessibility-filter-allow-empty'];
-      const deny = window.localStorage['chrome-accessibility-filter-deny'];
-      $('filter-allow').value = allow ? allow : '*';
-      $('filter-allow-empty').value = allowEmpty ? allowEmpty : '';
-      $('filter-deny').value = deny ? deny : '';
-    } else {
-      const filtersEl = $('filters');
-      filtersEl.parentNode.removeChild(filtersEl);
-    }
+    // Cache filters so they're easily accessible on page refresh.
+    const allow = window.localStorage['chrome-accessibility-filter-allow'];
+    const allowEmpty =
+        window.localStorage['chrome-accessibility-filter-allow-empty'];
+    const deny = window.localStorage['chrome-accessibility-filter-deny'];
+    $('filter-allow').value = allow ? allow : '*';
+    $('filter-allow-empty').value = allowEmpty ? allowEmpty : '';
+    $('filter-deny').value = deny ? deny : '';
   }
 
   function bindCheckbox(name, value) {

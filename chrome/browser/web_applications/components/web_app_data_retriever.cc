@@ -51,14 +51,14 @@ void WebAppDataRetriever::GetWebApplicationInfo(
     return;
   }
 
-  chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame;
+  mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> chrome_render_frame;
   web_contents->GetMainFrame()->GetRemoteAssociatedInterfaces()->GetInterface(
       &chrome_render_frame);
 
   // Set the error handler so that we can run |get_web_app_info_callback_| if
   // the WebContents or the RenderFrameHost are destroyed and the connection
   // to ChromeRenderFrame is lost.
-  chrome_render_frame.set_connection_error_handler(
+  chrome_render_frame.set_disconnect_handler(
       base::BindOnce(&WebAppDataRetriever::CallCallbackOnError,
                      weak_ptr_factory_.GetWeakPtr()));
   // Bind the InterfacePtr into the callback so that it's kept alive
@@ -135,7 +135,8 @@ void WebAppDataRetriever::RenderProcessGone(base::TerminationStatus status) {
 }
 
 void WebAppDataRetriever::OnGetWebApplicationInfo(
-    chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
+    mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
+        chrome_render_frame,
     int last_committed_nav_entry_unique_id,
     const WebApplicationInfo& web_app_info) {
   if (ShouldStopRetrieval())

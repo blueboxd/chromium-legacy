@@ -5709,17 +5709,21 @@ IN_PROC_BROWSER_TEST_F(SignedExchangePolicyTest, SignedExchangeEnabled) {
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, CheckURLsInRealTime) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      safe_browsing::kRealTimeUrlLookupFetchAllowlist);
+  scoped_feature_list.InitWithFeatures(
+      {safe_browsing::kRealTimeUrlLookupEnabled,
+       safe_browsing::kRealTimeUrlLookupFetchAllowlist},
+      {});
 
-  EXPECT_FALSE(safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup());
+  EXPECT_FALSE(safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
+      browser()->profile()));
 
   PolicyMap policies;
   SetPolicy(&policies, key::kSafeBrowsingRealTimeLookupEnabled,
             std::make_unique<base::Value>(true));
   UpdateProviderPolicy(policies);
 
-  EXPECT_TRUE(safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup());
+  EXPECT_TRUE(safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
+      browser()->profile()));
 }
 
 class HSTSPolicyTest : public PolicyTest {

@@ -52,21 +52,6 @@ class BLINK_COMMON_EXPORT AssociatedInterfaceRegistry {
   bool TryBindInterface(const std::string& name,
                         mojo::ScopedInterfaceEndpointHandle* handle);
 
-  // Remove this after done with migration from AssociatedInterfaceRequest to
-  // PendingAssociatedReceiver.
-  template <typename Interface>
-  using InterfaceBinder = base::RepeatingCallback<void(
-      mojo::AssociatedInterfaceRequest<Interface>)>;
-
-  // Remove this after done with migration from AssociatedInterfaceRequest to
-  // PendingAssociatedReceiver.
-  // Templated helper for AddInterface() above.
-  template <typename Interface>
-  void AddInterface(const InterfaceBinder<Interface>& binder) {
-    AddInterface(Interface::Name_,
-                 base::BindRepeating(&BindInterface<Interface>, binder));
-  }
-
   template <typename Interface>
   using ReceiverBinder =
       base::RepeatingCallback<void(mojo::PendingAssociatedReceiver<Interface>)>;
@@ -81,14 +66,6 @@ class BLINK_COMMON_EXPORT AssociatedInterfaceRegistry {
   base::WeakPtr<AssociatedInterfaceRegistry> GetWeakPtr();
 
  private:
-  // Remove this after done with migration from AssociatedInterfaceRequest to
-  // PendingAssociatedReceiver.
-  template <typename Interface>
-  static void BindInterface(const InterfaceBinder<Interface>& binder,
-                            mojo::ScopedInterfaceEndpointHandle handle) {
-    binder.Run(mojo::AssociatedInterfaceRequest<Interface>(std::move(handle)));
-  }
-
   template <typename Interface>
   static void BindInterfaceReceiver(
       const ReceiverBinder<Interface>& binder,

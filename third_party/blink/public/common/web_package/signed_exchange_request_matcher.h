@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "net/http/http_request_headers.h"
 #include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/common/web_package/http_structured_header.h"
+#include "third_party/blink/public/common/http/structured_header.h"
 
 namespace blink {
 

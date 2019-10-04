@@ -48,7 +48,7 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     auto common_params = CreateCommonNavigationParams();
     auto commit_params = CreateCommitNavigationParams();
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-        *common_params, *commit_params, 1 /* request_id */,
+        std::move(common_params), std::move(commit_params), 1 /* request_id */,
         network::ResourceResponseHead(),
         mojo::ScopedDataPipeConsumerHandle() /* response_body */,
         std::move(endpoints),
@@ -318,8 +318,8 @@ TEST_F(NavigationBodyLoaderTest, FillResponseWithSecurityDetails) {
   blink::WebNavigationParams navigation_params;
   auto endpoints = network::mojom::URLLoaderClientEndpoints::New();
   NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-      *common_params, *commit_params, 1 /* request_id */, response,
-      mojo::ScopedDataPipeConsumerHandle() /* response_body */,
+      std::move(common_params), std::move(commit_params), 1 /* request_id */,
+      response, mojo::ScopedDataPipeConsumerHandle() /* response_body */,
       std::move(endpoints),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
       2 /* render_frame_id */, true /* is_main_frame */, &navigation_params);

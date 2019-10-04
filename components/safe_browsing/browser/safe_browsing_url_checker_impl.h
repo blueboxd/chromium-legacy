@@ -58,13 +58,18 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
                               bool /* proceed */,
                               bool /* showed_interstitial */)>;
 
+  // Constructor for SafeBrowsingUrlCheckerImpl. |real_time_lookup_enabled|
+  // indicates whether or not the profile has enabled real time URL lookups, as
+  // computed by the RealTimePolicyEngine. This must be computed in advance,
+  // since this class only exists on the IO thread.
   SafeBrowsingUrlCheckerImpl(
       const net::HttpRequestHeaders& headers,
       int load_flags,
       content::ResourceType resource_type,
       bool has_user_gesture,
       scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
-      const base::Callback<content::WebContents*()>& web_contents_getter);
+      const base::Callback<content::WebContents*()>& web_contents_getter,
+      bool real_time_lookup_enabled);
 
   ~SafeBrowsingUrlCheckerImpl() override;
 
@@ -180,6 +185,9 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
 
   // Timer to abort the SafeBrowsing check if it takes too long.
   base::OneShotTimer timer_;
+
+  // Whether real time lookup is enabled for this request.
+  bool real_time_lookup_enabled_;
 
   base::WeakPtrFactory<SafeBrowsingUrlCheckerImpl> weak_factory_{this};
 

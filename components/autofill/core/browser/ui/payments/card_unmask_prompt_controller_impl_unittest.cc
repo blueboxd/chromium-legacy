@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -105,11 +106,12 @@ class CardUnmaskPromptControllerImplGenericTest {
         AutofillClient::UNMASK_FOR_AUTOFILL, delegate_->GetWeakPtr());
   }
 
-  void ShowPromptAndSimulateResponse(bool should_store_pan) {
+  void ShowPromptAndSimulateResponse(bool should_store_pan,
+                                     bool enable_fido_auth) {
     ShowPrompt();
     controller_->OnUnmaskPromptAccepted(ASCIIToUTF16("444"), ASCIIToUTF16("01"),
                                         ASCIIToUTF16("2050"), should_store_pan,
-                                        /*enable_fido_auth=*/false);
+                                        enable_fido_auth);
     EXPECT_EQ(should_store_pan,
               pref_service_->GetBoolean(
                   prefs::kAutofillWalletImportStorageCheckboxState));
@@ -121,6 +123,7 @@ class CardUnmaskPromptControllerImplGenericTest {
                               value);
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestCardUnmaskPromptView> test_unmask_prompt_view_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<TestCardUnmaskPromptController> controller_;
@@ -144,6 +147,8 @@ class CardUnmaskPromptControllerImplTest
     delegate_.reset(new TestCardUnmaskDelegate());
     pref_service_->registry()->RegisterBooleanPref(
         prefs::kAutofillWalletImportStorageCheckboxState, false);
+    pref_service_->registry()->RegisterBooleanPref(
+        prefs::kAutofillCreditCardFidoAuthOfferCheckboxState, true);
   }
 
  private:
@@ -169,7 +174,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogClosedNoAttempts) {
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogClosedAbandonUnmasking) {
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   base::HistogramTester histogram_tester;
 
   controller_->OnUnmaskDialogClosed();
@@ -180,7 +186,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogClosedAbandonUnmasking) {
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogClosedFailedToUnmaskRetriable) {
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   controller_->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
   base::HistogramTester histogram_tester;
 
@@ -198,7 +205,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogClosedFailedToUnmaskRetriable) {
 
 TEST_F(CardUnmaskPromptControllerImplTest,
        LogClosedFailedToUnmaskNonRetriable) {
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   controller_->OnVerificationResult(AutofillClient::PERMANENT_FAILURE);
   base::HistogramTester histogram_tester;
 
@@ -216,7 +224,8 @@ TEST_F(CardUnmaskPromptControllerImplTest,
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogUnmaskedCardFirstAttempt) {
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   base::HistogramTester histogram_tester;
 
   controller_->OnVerificationResult(AutofillClient::SUCCESS);
@@ -232,7 +241,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogUnmaskedCardFirstAttempt) {
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogUnmaskedCardAfterFailure) {
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   controller_->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
   controller_->OnUnmaskPromptAccepted(ASCIIToUTF16("444"), ASCIIToUTF16("01"),
                                       ASCIIToUTF16("2050"),
@@ -249,7 +259,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogUnmaskedCardAfterFailure) {
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogSavedCardLocally) {
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/true);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/true,
+                                /*enable_fido_auth=*/false);
   base::HistogramTester histogram_tester;
 
   controller_->OnVerificationResult(AutofillClient::SUCCESS);
@@ -262,7 +273,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogSavedCardLocally) {
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogDidOptIn) {
   SetImportCheckboxState(false);
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/true);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/true,
+                                /*enable_fido_auth=*/false);
   base::HistogramTester histogram_tester;
   controller_->OnUnmaskDialogClosed();
 
@@ -273,7 +285,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogDidOptIn) {
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogDidNotOptIn) {
   SetImportCheckboxState(false);
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   base::HistogramTester histogram_tester;
   controller_->OnUnmaskDialogClosed();
 
@@ -284,7 +297,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogDidNotOptIn) {
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogDidOptOut) {
   SetImportCheckboxState(true);
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   base::HistogramTester histogram_tester;
   controller_->OnUnmaskDialogClosed();
 
@@ -295,7 +309,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogDidOptOut) {
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogDidNotOptOut) {
   SetImportCheckboxState(true);
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/true);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/true,
+                                /*enable_fido_auth=*/false);
   base::HistogramTester histogram_tester;
   controller_->OnUnmaskDialogClosed();
 
@@ -306,7 +321,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogDidNotOptOut) {
 
 TEST_F(CardUnmaskPromptControllerImplTest, DontLogForHiddenCheckbox) {
   controller_->set_can_store_locally(false);
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   base::HistogramTester histogram_tester;
   controller_->OnUnmaskDialogClosed();
 
@@ -324,6 +340,22 @@ TEST_F(CardUnmaskPromptControllerImplTest, DontLogForHiddenCheckbox) {
       AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT, 0);
 }
 
+TEST_F(CardUnmaskPromptControllerImplTest,
+       FidoAuthOfferCheckboxStatePersistent) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillCreditCardAuthentication);
+  controller_->set_can_store_locally(false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/true);
+  EXPECT_TRUE(pref_service_->GetBoolean(
+      prefs::kAutofillCreditCardFidoAuthOfferCheckboxState));
+
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
+  EXPECT_FALSE(pref_service_->GetBoolean(
+      prefs::kAutofillCreditCardFidoAuthOfferCheckboxState));
+}
+
 TEST_F(CardUnmaskPromptControllerImplTest, LogDurationNoAttempts) {
   ShowPrompt();
   base::HistogramTester histogram_tester;
@@ -336,7 +368,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogDurationNoAttempts) {
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogDurationAbandonUnmasking) {
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   base::HistogramTester histogram_tester;
 
   controller_->OnUnmaskDialogClosed();
@@ -347,7 +380,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogDurationAbandonUnmasking) {
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogDurationFailedToUnmaskRetriable) {
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   controller_->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
   base::HistogramTester histogram_tester;
 
@@ -360,7 +394,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogDurationFailedToUnmaskRetriable) {
 
 TEST_F(CardUnmaskPromptControllerImplTest,
        LogDurationFailedToUnmaskNonRetriable) {
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   controller_->OnVerificationResult(AutofillClient::PERMANENT_FAILURE);
   base::HistogramTester histogram_tester;
 
@@ -372,7 +407,8 @@ TEST_F(CardUnmaskPromptControllerImplTest,
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogDurationCardFirstAttempt) {
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   base::HistogramTester histogram_tester;
 
   controller_->OnVerificationResult(AutofillClient::SUCCESS);
@@ -385,7 +421,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogDurationCardFirstAttempt) {
 
 TEST_F(CardUnmaskPromptControllerImplTest,
        LogDurationUnmaskedCardAfterFailure) {
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   controller_->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
   controller_->OnUnmaskPromptAccepted(
       base::ASCIIToUTF16("444"), base::ASCIIToUTF16("01"),
@@ -402,7 +439,8 @@ TEST_F(CardUnmaskPromptControllerImplTest,
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogTimeBeforeAbandonUnmasking) {
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   base::HistogramTester histogram_tester;
 
   controller_->OnUnmaskDialogClosed();
@@ -412,7 +450,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogTimeBeforeAbandonUnmasking) {
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogRealPanResultSuccess) {
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   base::HistogramTester histogram_tester;
   controller_->OnVerificationResult(AutofillClient::SUCCESS);
 
@@ -422,7 +461,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogRealPanResultSuccess) {
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogRealPanTryAgainFailure) {
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   base::HistogramTester histogram_tester;
 
   controller_->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
@@ -433,7 +473,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogRealPanTryAgainFailure) {
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogUnmaskingDurationResultSuccess) {
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   base::HistogramTester histogram_tester;
 
   controller_->OnVerificationResult(AutofillClient::SUCCESS);
@@ -446,7 +487,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogUnmaskingDurationResultSuccess) {
 
 TEST_F(CardUnmaskPromptControllerImplTest,
        LogUnmaskingDurationTryAgainFailure) {
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/false);
   base::HistogramTester histogram_tester;
 
   controller_->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);

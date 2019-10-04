@@ -234,6 +234,7 @@ js_library("background") {
 js_library("back_button_manager") {
   deps = [
     ":menu_panel_interface",
+    ":rect_helper",
   ]
   externs_list = [
     "$externs_path/accessibility_private.js",
@@ -261,6 +262,7 @@ js_library("focus_ring_manager") {
 js_library("menu_manager") {
   deps = [
     ":menu_panel_interface",
+    ":rect_helper",
     ":switch_access_interface",
   ]
   externs_list = [ "$externs_path/accessibility_private.js" ]

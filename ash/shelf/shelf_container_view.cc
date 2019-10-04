@@ -36,7 +36,13 @@ void ShelfContainerView::Layout() {
   // CalculateIdealSize. Because ShelfView::CalculatePreferredSize relies on the
   // bounds of app icon. Meanwhile, the icon's bounds may be updated by
   // animation.
-  shelf_view_->SetBoundsRect(gfx::Rect(CalculateIdealSize()));
+  const gfx::Rect ideal_bounds = gfx::Rect(CalculateIdealSize());
+
+  const gfx::Rect local_bounds = GetLocalBounds();
+  if (local_bounds.Contains(ideal_bounds))
+    shelf_view_->SetBoundsRect(local_bounds);
+  else
+    shelf_view_->SetBoundsRect(ideal_bounds);
 }
 
 const char* ShelfContainerView::GetClassName() const {

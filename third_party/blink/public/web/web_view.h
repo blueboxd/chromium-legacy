@@ -60,10 +60,10 @@ class WebSettings;
 class WebString;
 class WebViewClient;
 class WebWidget;
+struct PluginAction;
 struct WebDeviceEmulationParams;
 struct WebFloatPoint;
 struct WebFloatSize;
-struct WebPluginAction;
 struct WebRect;
 struct WebSize;
 struct WebTextAutosizerPageInfo;
@@ -320,7 +320,7 @@ class WebView {
   // Media ---------------------------------------------------------------
 
   // Performs the specified plugin action on the node at the given location.
-  virtual void PerformPluginAction(const WebPluginAction&,
+  virtual void PerformPluginAction(const PluginAction&,
                                    const gfx::Point& location) = 0;
 
   // Notifies WebView when audio is started or stopped.

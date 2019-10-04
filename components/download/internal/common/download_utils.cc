@@ -45,6 +45,27 @@ const int64_t kInvalidFileWriteOffset = -1;
 // downloads will be deleted after expiration.
 const int kDefaultDownloadExpiredTimeInDays = 90;
 
+#if defined(OS_ANDROID)
+// Default maximum length of a downloaded file name on Android.
+const int kDefaultMaxFileNameLengthOnAndroid = 127;
+
+DownloadItem::DownloadRenameResult RenameDownloadedFileForContentUri(
+    const base::FilePath& from_path,
+    const base::FilePath& display_name) {
+  if (static_cast<int>(display_name.value().length()) >
+      kDefaultMaxFileNameLengthOnAndroid) {
+    return DownloadItem::DownloadRenameResult::FAILURE_NAME_TOO_LONG;
+  }
+
+  if (DownloadCollectionBridge::FileNameExists(display_name))
+    return DownloadItem::DownloadRenameResult::FAILURE_NAME_CONFLICT;
+
+  return DownloadCollectionBridge::RenameDownloadUri(from_path, display_name)
+             ? DownloadItem::DownloadRenameResult::SUCCESS
+             : DownloadItem::DownloadRenameResult::FAILURE_NAME_INVALID;
+}
+#endif  // defined(OS_ANDROID)
+
 void AppendExtraHeaders(net::HttpRequestHeaders* headers,
                         DownloadUrlParameters* params) {
   for (const auto& header : params->request_headers())
@@ -569,9 +590,14 @@ bool DeleteDownloadedFile(const base::FilePath& path) {
   return base::DeleteFile(path, false);
 }
 
-download::DownloadItem::DownloadRenameResult RenameDownloadedFile(
+DownloadItem::DownloadRenameResult RenameDownloadedFile(
     const base::FilePath& from_path,
-    const base::FilePath& to_path) {
+    const base::FilePath& display_name) {
+#if defined(OS_ANDROID)
+  if (from_path.IsContentUri())
+    return RenameDownloadedFileForContentUri(from_path, display_name);
+#endif  // defined(OS_ANDROID)
+  auto to_path = base::FilePath(from_path.DirName()).Append(display_name);
   if (!base::PathExists(from_path) ||
       !base::DirectoryExists(from_path.DirName()))
     return DownloadItem::DownloadRenameResult::FAILURE_UNAVAILABLE;
@@ -590,20 +616,9 @@ download::DownloadItem::DownloadRenameResult RenameDownloadedFile(
       return DownloadItem::DownloadRenameResult::FAILURE_NAME_TOO_LONG;
     }
   }
-#if defined(OS_ANDROID)
-  if (from_path.IsContentUri()) {
-    return DownloadCollectionBridge::RenameDownloadUri(from_path,
-                                                       to_path.BaseName())
-               ? download::DownloadItem::DownloadRenameResult::SUCCESS
-               : download::DownloadItem::DownloadRenameResult::
-                     FAILURE_NAME_INVALID;
-  }
-#endif
-
   return base::Move(from_path, to_path)
-             ? download::DownloadItem::DownloadRenameResult::SUCCESS
-             : download::DownloadItem::DownloadRenameResult::
-                   FAILURE_NAME_INVALID;
+             ? DownloadItem::DownloadRenameResult::SUCCESS
+             : DownloadItem::DownloadRenameResult::FAILURE_NAME_INVALID;
 }
 
 int64_t GetDownloadValidationLengthConfig() {

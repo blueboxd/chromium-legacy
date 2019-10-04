@@ -33,7 +33,7 @@ constexpr int kRestartFactor = 2;
 // It takes longer to initialize GPU process in Windows. See
 // https://crbug.com/949839 for details.
 #if defined(OS_WIN)
-constexpr int kInitFactor = kRestartFactor;
+constexpr int kInitFactor = 4;
 #else
 constexpr int kInitFactor = 1;
 #endif
@@ -43,7 +43,7 @@ constexpr int kInitFactor = 1;
 // needs to be bigger than (kGpuWatchdogTimeout * kRestartFactor) for all
 // platforms.
 constexpr base::TimeDelta kGpuChannelHostMaxWaitTime =
-    base::TimeDelta::FromSeconds(60);
+    base::TimeDelta::FromSeconds(120);
 
 }  // namespace gpu
 

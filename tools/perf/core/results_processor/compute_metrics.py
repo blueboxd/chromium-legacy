@@ -48,6 +48,7 @@ def _PoolWorker(test_result):
         test_result['testPath'], time.time() - start))
 
     if mre_result.failures:
+      test_result['status'] = 'FAIL'
       for f in mre_result.failures:
         logging.error('Failure recorded for test %s: %s',
                       test_result['testPath'], f)
@@ -82,6 +83,9 @@ def ComputeTBMv2Metrics(intermediate_results):
       del artifacts[HISTOGRAM_DICTS_FILE]
       continue
 
+    if test_result['status'] == 'SKIP':
+      continue
+
     if (HTML_TRACE_NAME not in artifacts or
         not any(tag['key'] == 'tbmv2' for tag in test_result.get('tags', []))):
       continue
@@ -92,6 +96,7 @@ def ComputeTBMv2Metrics(intermediate_results):
     # details.
     # TODO(crbug.com/1010041): Return a non-zero exit code in this case.
     if trace_size_in_mib > 400:
+      test_result['status'] = 'FAIL'
       logging.error('%s: Trace size is too big: %s MiB',
                     test_result['testPath'], trace_size_in_mib)
       continue

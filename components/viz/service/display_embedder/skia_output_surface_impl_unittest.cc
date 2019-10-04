@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/pixel_test_utils.h"
@@ -18,6 +19,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
+#include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/test/test_gpu_service_holder.h"
@@ -197,12 +199,34 @@ TEST_P(SkiaOutputSurfaceImplTest, SubmitPaint) {
       base::BindOnce(&SkiaOutputSurfaceImplTest::CheckSyncTokenOnGpuThread,
                      base::Unretained(this), sync_token);
 
-  std::vector<gpu::SyncToken> resource_sync_tokens;
-  resource_sync_tokens.push_back(sync_token);
-  output_surface_->ScheduleGpuTaskForTesting(std::move(closure),
-                                             std::move(resource_sync_tokens));
+  output_surface_->ScheduleGpuTaskForTesting(std::move(closure), {sync_token});
   BlockMainThread();
   EXPECT_TRUE(on_finished_called);
+}
+
+// Draws two frames and calls Reshape() between the two frames changing the
+// color space. Verifies draw after color space change is successful.
+TEST_P(SkiaOutputSurfaceImplTest, SupportsColorSpaceChange) {
+  for (auto& color_space : {gfx::ColorSpace(), gfx::ColorSpace::CreateSRGB()}) {
+    output_surface_->Reshape(kSurfaceRect.size(), 1, color_space,
+                             /*has_alpha=*/false, /*use_stencil=*/false);
+
+    // Draw something, it's not important what.
+    SkCanvas* root_canvas = output_surface_->BeginPaintCurrentFrame();
+    SkPaint paint;
+    paint.setColor(SK_ColorRED);
+    root_canvas->drawRect(SkRect::MakeWH(10, 10), paint);
+
+    base::RunLoop run_loop;
+    output_surface_->SubmitPaint(run_loop.QuitClosure());
+
+    OutputSurfaceFrame frame;
+    frame.size = kSurfaceRect.size();
+    output_surface_->SkiaSwapBuffers(std::move(frame),
+                                     /*wants_sync_token=*/false);
+
+    run_loop.Run();
+  }
 }
 
 }  // namespace viz

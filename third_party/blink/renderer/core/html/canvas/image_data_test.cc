@@ -298,23 +298,14 @@ TEST_F(ImageDataTest, TestCreateImageDataFromStaticBitmapImage) {
   prepareSourcePixels(expected_f32_pixels_premul, true,
                       skcms_PixelFormat_RGBA_ffff);
 
-  // Preparing ArrayBufferContents objects
-  auto createBufferContent = [](auto& array, unsigned size) {
-    WTF::ArrayBufferContents contents(
-        size, 1, WTF::ArrayBufferContents::kNotShared,
-        WTF::ArrayBufferContents::kDontInitialize);
-    std::memcpy(contents.Data(), array, size);
-    return contents;
-  };
-
   auto contents_u8_premul =
-      createBufferContent(expected_u8_pixels_premul, kNumColorComponents);
+      SkData::MakeWithoutCopy(expected_u8_pixels_premul, kNumColorComponents);
   auto contents_u8_unpremul =
-      createBufferContent(expected_u8_pixels_unpremul, kNumColorComponents);
-  auto contents_f16_premul =
-      createBufferContent(expected_f16_pixels_premul, kNumColorComponents * 2);
-  auto contents_f16_unpremul = createBufferContent(expected_f16_pixels_unpremul,
-                                                   kNumColorComponents * 2);
+      SkData::MakeWithoutCopy(expected_u8_pixels_unpremul, kNumColorComponents);
+  auto contents_f16_premul = SkData::MakeWithoutCopy(expected_f16_pixels_premul,
+                                                     kNumColorComponents * 2);
+  auto contents_f16_unpremul = SkData::MakeWithoutCopy(
+      expected_f16_pixels_unpremul, kNumColorComponents * 2);
 
   // Preparing StaticBitmapImage objects
   auto info_u8_premul = SkImageInfo::Make(

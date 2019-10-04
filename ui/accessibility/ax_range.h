@@ -11,6 +11,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_offscreen_result.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
 
@@ -27,11 +28,15 @@ enum class AXTextConcatenationBehavior {
 
 class AXRangeScreenRectDelegate {
  public:
-  virtual gfx::Rect GetInnerTextRangeBoundsRect(AXTreeID tree_id,
-                                                AXNode::AXID node_id,
-                                                int start_offset,
-                                                int end_offset) = 0;
-  virtual gfx::Rect GetBoundsRect(AXTreeID tree_id, AXNode::AXID node_id) = 0;
+  virtual gfx::Rect GetInnerTextRangeBoundsRect(
+      AXTreeID tree_id,
+      AXNode::AXID node_id,
+      int start_offset,
+      int end_offset,
+      AXOffscreenResult* offscreen_result) = 0;
+  virtual gfx::Rect GetBoundsRect(AXTreeID tree_id,
+                                  AXNode::AXID node_id,
+                                  AXOffscreenResult* offscreen_result) = 0;
 };
 
 // A range delimited by two positions in the AXTree.
@@ -304,21 +309,29 @@ class AXRange {
       // For text anchors, we retrieve the bounding rectangles of its text
       // content. For non-text anchors (such as checkboxes, images, etc.), we
       // want to directly retrieve their bounding rectangles.
+      AXOffscreenResult offscreen_result;
       gfx::Rect current_rect =
           (current_line_start->IsInLineBreak() ||
            current_line_start->IsInTextObject())
               ? delegate->GetInnerTextRangeBoundsRect(
                     current_tree_id, current_line_start->anchor_id(),
                     current_line_start->text_offset(),
-                    current_line_end->text_offset())
+                    current_line_end->text_offset(), &offscreen_result)
               : delegate->GetBoundsRect(current_tree_id,
-                                        current_line_start->anchor_id());
+                                        current_line_start->anchor_id(),
+                                        &offscreen_result);
 
-      // We only add rects that are visible within the current viewport.
-      // If the bounding rectangle is outside the viewport, the kClipped
-      // parameter from the bounds APIs will result in returning an empty
-      // rect, which we should omit from the final result.
-      if (!current_rect.IsEmpty())
+      // We only add rects that do not represent a degenerate range and rects
+      // that are onscreen.
+      // If the represented range is degenerate, the bounding rectangles will be
+      // empty.
+      // If the represented range is offscreen, the bounding rectangles will be
+      // clipped, with its width/height set to 1. The bounding rectangles is not
+      // set to empty when it is offscreen.
+      // Documentation for offscreen bounding box size calculation:
+      // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/accessibility/offscreen.md
+      if (!current_rect.IsEmpty() &&
+          offscreen_result == AXOffscreenResult::kOnscreen)
         rects.push_back(current_rect);
     }
     return rects;

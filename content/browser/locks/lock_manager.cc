@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <tuple>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -14,6 +15,9 @@
 #include "base/guid.h"
 #include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/lock_observer.h"
+#include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 
@@ -83,18 +87,27 @@ class LockManager::Lock {
         execution_context_(receiver_state.execution_context),
         request_(std::move(request)) {}
 
-  ~Lock() = default;
+  ~Lock() {
+    // If the lock was ever granted, decrement the number of held locks for the
+    // frame.
+    if (lock_manager_) {
+      lock_manager_->DecrementLocksHeldByFrame(execution_context_);
+    }
+  }
 
   // Grant a lock request. This mints a LockHandle and returns it over the
   // request pipe.
-  void Grant(base::WeakPtr<LockManager> context, const url::Origin& origin) {
-    DCHECK(context);
+  void Grant(LockManager* lock_manager, const url::Origin& origin) {
+    DCHECK(lock_manager);
+    DCHECK(!lock_manager_);
     DCHECK(request_);
     DCHECK(!handle_);
 
+    lock_manager_ = lock_manager->weak_ptr_factory_.GetWeakPtr();
+    lock_manager_->IncrementLocksHeldByFrame(execution_context_);
+
     mojo::PendingAssociatedRemote<blink::mojom::LockHandle> remote;
-    handle_ =
-        LockHandleImpl::Create(std::move(context), origin, lock_id_, &remote);
+    handle_ = LockHandleImpl::Create(lock_manager_, origin, lock_id_, &remote);
     request_->Granted(std::move(remote));
     request_.reset();
   }
@@ -104,6 +117,7 @@ class LockManager::Lock {
   void Break() {
     DCHECK(!request_);
     DCHECK(handle_);
+    DCHECK(lock_manager_);
 
     LockHandleImpl* impl = static_cast<LockHandleImpl*>(handle_->impl());
     // Explicitly close the LockHandle first; this ensures that when the
@@ -117,9 +131,6 @@ class LockManager::Lock {
   LockMode mode() const { return mode_; }
   int64_t lock_id() const { return lock_id_; }
   const std::string& client_id() const { return client_id_; }
-  const ExecutionContext& execution_context() const {
-    return execution_context_;
-  }
   bool is_granted() const { return !!handle_; }
 
  private:
@@ -128,6 +139,8 @@ class LockManager::Lock {
   const int64_t lock_id_;
   const std::string client_id_;
   const ExecutionContext execution_context_;
+  // Set only once the lock is granted.
+  base::WeakPtr<LockManager> lock_manager_;
 
   // Exactly one of the following is non-null at any given time.
 
@@ -177,8 +190,7 @@ class LockManager::OriginState {
                                 std::move(request));
     auto it = request_queue.begin();
     lock_id_to_iterator_.emplace(it->lock_id(), it);
-    it->Grant(lock_manager_->weak_ptr_factory_.GetWeakPtr(),
-              receiver_state.origin);
+    it->Grant(lock_manager_, receiver_state.origin);
   }
 
   void AddRequest(int64_t lock_id,
@@ -204,8 +216,7 @@ class LockManager::OriginState {
     auto it = --(request_queue.end());
     lock_id_to_iterator_.emplace(it->lock_id(), it);
     if (can_grant) {
-      it->Grant(lock_manager_->weak_ptr_factory_.GetWeakPtr(),
-                receiver_state.origin);
+      it->Grant(lock_manager_, receiver_state.origin);
     }
   }
 
@@ -250,8 +261,7 @@ class LockManager::OriginState {
       return;
 
     if (request_queue.front().mode() == LockMode::EXCLUSIVE) {
-      request_queue.front().Grant(lock_manager_->weak_ptr_factory_.GetWeakPtr(),
-                                  origin);
+      request_queue.front().Grant(lock_manager_, origin);
     } else {
       DCHECK(request_queue.front().mode() == LockMode::SHARED);
       for (auto grantee = request_queue.begin();
@@ -259,7 +269,7 @@ class LockManager::OriginState {
            grantee->mode() == LockMode::SHARED;
            ++grantee) {
         DCHECK(!grantee->is_granted());
-        grantee->Grant(lock_manager_->weak_ptr_factory_.GetWeakPtr(), origin);
+        grantee->Grant(lock_manager_, origin);
       }
     }
   }
@@ -387,10 +397,63 @@ void LockManager::QueryState(QueryStateCallback callback) {
                           std::move(requested_held_pair.second));
 }
 
+bool LockManager::ExecutionContext::IsWorker() const {
+  return render_frame_id == MSG_ROUTING_NONE;
+}
+
 int64_t LockManager::NextLockId() {
   int64_t lock_id = ++next_lock_id_;
   DCHECK_GT(lock_id, kPreemptiveLockId);
   return lock_id;
+}
+
+void LockManager::IncrementLocksHeldByFrame(
+    const ExecutionContext& execution_context) {
+  // Locks held by workers are not tracked because there is no current use case.
+  // If we had a use case, we would need to find a type to identify a frame OR a
+  // worker.
+  if (execution_context.IsWorker())
+    return;
+
+  int previous_num_locks = num_locks_held_by_frame_[execution_context]++;
+
+  if (previous_num_locks > 0)
+    return;
+
+  LockObserver* observer = GetContentClient()->browser()->GetLockObserver();
+  if (observer) {
+    observer->OnFrameStartsHoldingWebLocks(execution_context.render_process_id,
+                                           execution_context.render_frame_id);
+  }
+}
+
+void LockManager::DecrementLocksHeldByFrame(
+    const ExecutionContext& execution_context) {
+  if (execution_context.IsWorker())
+    return;
+
+  auto it = num_locks_held_by_frame_.find(execution_context);
+  DCHECK(it != num_locks_held_by_frame_.end());
+  DCHECK_GT(it->second, 0);
+
+  --it->second;
+  if (it->second > 0)
+    return;
+
+  num_locks_held_by_frame_.erase(it);
+
+  LockObserver* observer = GetContentClient()->browser()->GetLockObserver();
+  if (observer) {
+    observer->OnFrameStopsHoldingWebLocks(execution_context.render_process_id,
+                                          execution_context.render_frame_id);
+  }
+}
+
+bool LockManager::ExecutionContextComparator::operator()(
+    const ExecutionContext& left,
+    const ExecutionContext& right) const {
+  return std::tie(left.render_process_id, left.render_frame_id) <
+         std::tie(right.render_process_id, right.render_frame_id);
 }
 
 }  // namespace content

@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/sharing/fake_local_device_info_provider.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
@@ -42,7 +41,7 @@ const char kReceiverName[] = "test_receiver_name";
 
 class MockSharingDeviceRegistration : public SharingDeviceRegistration {
  public:
-  explicit MockSharingDeviceRegistration()
+  MockSharingDeviceRegistration()
       : SharingDeviceRegistration(/* pref_service_= */ nullptr,
                                   /* sharing_sync_preference_= */ nullptr,
                                   /* instance_id_driver_= */ nullptr,

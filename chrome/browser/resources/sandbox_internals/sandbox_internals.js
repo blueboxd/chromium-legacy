@@ -2,6 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {{
+ *   seccompStatus: number,
+ *   pid: string,
+ *   uid: string,
+ *   secontext: string,
+ *   procStatus: string,
+ *   androidBuildId: string
+ * }}
+ */
+let AndroidSandboxStatus;
+
 (function() {
 /**
  * CSS classes for different statuses.
@@ -52,7 +64,7 @@ function addGoodBadRow(name, result) {
 
 /**
  * Reports the overall sandbox status evaluation message.
- * @param {boolean}
+ * @param {boolean} result
  */
 function setEvaluation(result) {
   const message = result ? 'You are adequately sandboxed.' :

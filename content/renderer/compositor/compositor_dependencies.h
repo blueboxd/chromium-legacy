@@ -52,6 +52,8 @@ class CONTENT_EXPORT CompositorDependencies {
   // compositor thread).
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorImplThreadTaskRunner() = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  GetCleanupTaskRunner() = 0;
   virtual blink::scheduler::WebThreadScheduler* GetWebMainThreadScheduler() = 0;
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
   virtual bool IsScrollAnimatorEnabled() = 0;

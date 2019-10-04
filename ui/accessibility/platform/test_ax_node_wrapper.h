@@ -156,6 +156,9 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   gfx::RectF GetInlineTextRect(const int start_offset,
                                const int end_offset) const;
 
+  // Determine the offscreen status of a particular element given its bounds..
+  AXOffscreenResult DetermineOffscreenResult(gfx::RectF bounds) const;
+
   AXTree* tree_;
   AXNode* node_;
   ui::AXUniqueId unique_id_;

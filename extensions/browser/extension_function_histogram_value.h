@@ -1451,6 +1451,7 @@ enum HistogramValue {
   AUTOTESTPRIVATE_GETCLIPBOARDTEXTDATA = 1388,
   AUTOTESTPRIVATE_SETCLIPBOARDTEXTDATA = 1389,
   AUTOTESTPRIVATE_INITIALIZEEVENTS = 1390,
+  AUTOTESTPRIVATE_WAITFORDISPLAYROTATION = 1391,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

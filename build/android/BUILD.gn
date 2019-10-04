@@ -101,7 +101,7 @@ python_library("test_runner_py") {
       data_deps += [ "//tools/android/asan/third_party:asan_device_setup" ]
     }
   } else {
-    pydeps_sources_assignment_filters = [ "../../tools/*" ]
+    pydeps_sources_assignment_filters = [ "../../tools/android/*" ]
   }
 
   # Proguard is needed only when using apks (rather than native executables).

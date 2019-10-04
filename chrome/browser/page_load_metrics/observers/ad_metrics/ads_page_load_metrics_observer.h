@@ -106,6 +106,10 @@ class AdsPageLoadMetricsObserver
   void OnAdSubframeDetected(
       content::RenderFrameHost* render_frame_host) override;
   void OnSubresourceFilterGoingAway() override;
+  void OnPageActivationComputed(
+      content::NavigationHandle* navigation_handle,
+      const subresource_filter::mojom::ActivationState& activation_state)
+      override;
 
   // Gets the number of bytes that we may have not attributed to ad
   // resources due to the resource being reported as an ad late.
@@ -164,6 +168,9 @@ class AdsPageLoadMetricsObserver
   // responsible frame is found, the data is an iterator to the end of
   // |ad_frames_data_storage_|.
   std::map<FrameTreeNodeId, std::list<FrameData>::iterator> ad_frames_data_;
+
+  int64_t navigation_id_ = -1;
+  bool subresource_filter_is_enabled_ = false;
 
   // When the observer receives report of a document resource loading for a
   // sub-frame before the sub-frame commit occurs, hold onto the resource

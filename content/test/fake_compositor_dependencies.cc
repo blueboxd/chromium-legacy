@@ -64,6 +64,11 @@ FakeCompositorDependencies::GetCompositorImplThreadTaskRunner() {
   return nullptr;  // Currently never threaded compositing in unit tests.
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+FakeCompositorDependencies::GetCleanupTaskRunner() {
+  return base::ThreadTaskRunnerHandle::Get();
+}
+
 blink::scheduler::WebThreadScheduler*
 FakeCompositorDependencies::GetWebMainThreadScheduler() {
   return &main_thread_scheduler_;

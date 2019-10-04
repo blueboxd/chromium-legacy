@@ -9,10 +9,11 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/features.h"
+#include "components/unified_consent/pref_names.h"
+#include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_context.h"
 
 namespace safe_browsing {
-
-bool RealTimePolicyEngine::is_enabled_by_pref_ = false;
 
 // static
 bool RealTimePolicyEngine::IsFetchAllowlistEnabled() {
@@ -25,39 +26,38 @@ bool RealTimePolicyEngine::IsUrlLookupEnabled() {
 }
 
 // static
-bool RealTimePolicyEngine::IsUserOptedIn() {
-  // TODO(crbug.com/991394): Implement this soon. For now, disabled.
-  return false;
+bool RealTimePolicyEngine::IsUserOptedIn(
+    content::BrowserContext* browser_context) {
+  PrefService* pref_service = user_prefs::UserPrefs::Get(browser_context);
+  return pref_service->GetBoolean(
+      unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
 }
 
 // static
-bool RealTimePolicyEngine::CanPerformFullURLLookup() {
-  // TODO(crbug.com/991394): This should take into account whether the user is
-  // eligible for this service (see "Target Users" in the design doc).
+bool RealTimePolicyEngine::IsEnabledByPolicy(
+    content::BrowserContext* browser_context) {
+  PrefService* pref_service = user_prefs::UserPrefs::Get(browser_context);
+  return pref_service->GetBoolean(prefs::kSafeBrowsingRealTimeLookupEnabled);
+}
 
+// static
+bool RealTimePolicyEngine::CanPerformFullURLLookup(
+    content::BrowserContext* browser_context) {
   if (!IsFetchAllowlistEnabled())
     return false;
 
-  if (is_enabled_by_pref())
+  if (IsEnabledByPolicy(browser_context))
     return true;
 
-  return IsUrlLookupEnabled() && IsUserOptedIn();
+  return IsUrlLookupEnabled() && IsUserOptedIn(browser_context);
 }
 
 // static
 bool RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
     content::ResourceType resource_type) {
-  if (!CanPerformFullURLLookup())
-    return false;
-
   UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.ResourceTypes.Requested",
                             resource_type);
   return resource_type == content::ResourceType::kMainFrame;
-}
-
-// static
-void RealTimePolicyEngine::SetEnabled(bool is_enabled) {
-  is_enabled_by_pref_ = is_enabled;
 }
 
 }  // namespace safe_browsing

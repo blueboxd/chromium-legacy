@@ -330,15 +330,16 @@ TEST_F(AppListPresenterDelegateZeroStateTest,
 // Verifies that tapping on the search box in tablet mode with animation and
 // zero state enabled should not bring Chrome crash (https://crbug.com/958267).
 TEST_F(AppListPresenterDelegateZeroStateTest, ClickSearchBoxInTabletMode) {
+  EnableTabletMode(true);
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
+
   // Necessary for AppListView::StateAnimationMetricsReporter::Report being
   // called when animation ends.
   ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   app_list::AppListView::SetShortAnimationForTesting(false);
 
-  EnableTabletMode(true);
-  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
-  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
   ui::test::EventGenerator* generator = GetEventGenerator();
 
   // Gesture tap on the search box.

@@ -167,11 +167,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '95edac1c9a4a676e2b3648445563209f4b0d3759',
+  'skia_revision': '9e951cd782c4dd3cec36c05dd7448ebfc415a389',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '485edf2867c4e00351301187f76be55c0951d373',
+  'v8_revision': '35874570ba6306d2d41a6b0a468ab7e41c99ed2e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -179,11 +179,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '5a42da564fbea81aa7c6943ca30bb69ed295cc3b',
+  'angle_revision': '6b60dfd80e3dc3fe13eb1b9bcaf8b36f30e20b45',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '6021fbd09b1c84cee5e1e8d4ef0cf8d0d918a773',
+  'swiftshader_revision': 'a580e2d761c1994a42e01866cfca5e318a67d12c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -194,7 +194,7 @@ vars = {
   #
   # Note this revision should be updated with
   # third_party/boringssl/roll_boringssl.py, not roll-dep.
-  'boringssl_revision': 'bd522862a0b4c84a0ed8e37096d1c361dc6beaa9',
+  'boringssl_revision': '6a2609dae219e4300dfc62b2a37f10b5c845547b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling google-toolbox-for-mac
   # and whatever else without interference from each other.
@@ -314,7 +314,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libexpat
   # and whatever else without interference from each other.
-  'libexpat_revision': '4f23e05a33a66c5962589a32c87df4fe68144fce',
+  'libexpat_revision': 'a7bc26b69768f7fb24f0c7976fae24b157b85b13',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -862,7 +862,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'c4c5d7998d6e7548929ed8ccb22d07985760be2f',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '34ff91ec6f44e0fc5d90c70f2ed1a4d117d8c009',
       'condition': 'checkout_linux',
   },
 
@@ -1269,7 +1269,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '97565d8a9687d21a837afc97cb3317fbd1b3f3c6',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f0d7ef8e4fe6941188679e55eea3b545d1b4cc56',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1459,7 +1459,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '7c4e67ff117d6c640e6dd17989afe2fb7da7eecb',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'f83d0ef0859c0183e96790636756a78e0af0056d',
+    Var('webrtc_git') + '/src.git' + '@' + '7536bc539500b44a7c4ebf7d8e7fd9ef474c3fae',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
@@ -1521,7 +1521,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0ce0e2c0a4264d8339b0fd66d50e902f44234a30',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@40ba239931e22de2d9e066fa3b8095062816120a',
     'condition': 'checkout_src_internal',
   },
 

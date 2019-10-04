@@ -108,6 +108,10 @@ void MediaNotificationContainerImpl::OnMediaSessionInfoChanged(
                            media_session::mojom::MediaPlaybackState::kPlaying);
 }
 
+void MediaNotificationContainerImpl::OnMediaSessionMetadataChanged() {
+  parent_->OnMediaSessionMetadataChanged();
+}
+
 void MediaNotificationContainerImpl::OnVisibleActionsChanged(
     const std::set<media_session::mojom::MediaSessionAction>& actions) {
   has_many_actions_ = actions.size() >= kMinVisibleActionsForExpanding;

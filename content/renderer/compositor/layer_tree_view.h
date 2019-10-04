@@ -59,6 +59,10 @@ class CONTENT_EXPORT LayerTreeView : public cc::LayerTreeHostClient,
   void Initialize(const cc::LayerTreeSettings& settings,
                   std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory);
 
+  // Drops any references back to the delegate in preparation for being
+  // destroyed.
+  void Disconnect();
+
   cc::AnimationHost* animation_host() { return animation_host_.get(); }
 
   void SetVisible(bool visible);
@@ -121,14 +125,21 @@ class CONTENT_EXPORT LayerTreeView : public cc::LayerTreeHostClient,
   void SetLayerTreeFrameSink(
       std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink);
 
-  LayerTreeViewDelegate* const delegate_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   const scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_;
   cc::TaskGraphRunner* const task_graph_runner_;
   blink::scheduler::WebThreadScheduler* const web_main_thread_scheduler_;
   const std::unique_ptr<cc::AnimationHost> animation_host_;
+
+  // The delegate_ becomes null when Disconnect() is called. After that, the
+  // class should do nothing in calls from the LayerTreeHost, and just wait to
+  // be destroyed. It is not expected to be used at all after Disconnect()
+  // outside of handling/dropping LayerTreeHost client calls.
+  LayerTreeViewDelegate* delegate_;
   std::unique_ptr<cc::LayerTreeHost> layer_tree_host_;
 
+  // This class should do nothing and access no pointers once this value becomes
+  // true.
   bool layer_tree_frame_sink_request_failed_while_invisible_ = false;
 
   base::circular_deque<

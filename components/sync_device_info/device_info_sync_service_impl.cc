@@ -58,4 +58,8 @@ DeviceInfoSyncServiceImpl::GetControllerDelegate() {
   return bridge_->change_processor()->GetControllerDelegate();
 }
 
+void DeviceInfoSyncServiceImpl::RefreshLocalDeviceInfo() {
+  bridge_->RefreshLocalDeviceInfo();
+}
+
 }  // namespace syncer

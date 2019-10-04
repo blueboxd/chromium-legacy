@@ -5,54 +5,78 @@
 #include "components/safe_browsing/realtime/policy_engine.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/features.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/unified_consent/pref_names.h"
+#include "components/unified_consent/unified_consent_service.h"
+#include "components/user_prefs/user_prefs.h"
+#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_context.h"
 #include "testing/platform_test.h"
 
 namespace safe_browsing {
 
 class RealTimePolicyEngineTest : public PlatformTest {
  public:
-  void ForceSetRealTimeLookupPolicy(bool is_enabled) {
-    RealTimePolicyEngine::SetEnabled(is_enabled);
+  void SetUp() override {
+    user_prefs::UserPrefs::Set(&test_context_, &pref_service_);
+    RegisterProfilePrefs(pref_service_.registry());
+    unified_consent::UnifiedConsentService::RegisterPrefs(
+        pref_service_.registry());
   }
 
-  bool IsUserOptedIn() { return RealTimePolicyEngine::IsUserOptedIn(); }
+  bool IsUserOptedIn() {
+    return RealTimePolicyEngine::IsUserOptedIn(&test_context_);
+  }
+
+  bool CanPerformFullURLLookup() {
+    return RealTimePolicyEngine::CanPerformFullURLLookup(&test_context_);
+  }
+
+  content::BrowserTaskEnvironment task_environment_;
+  content::TestBrowserContext test_context_;
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
 };
 
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookup_DisabledFetchAllowlist) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(kRealTimeUrlLookupFetchAllowlist);
-  EXPECT_FALSE(RealTimePolicyEngine::CanPerformFullURLLookup());
+  EXPECT_FALSE(CanPerformFullURLLookup());
 }
 
 TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_EnabledByPolicy) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kRealTimeUrlLookupFetchAllowlist);
-  ForceSetRealTimeLookupPolicy(/* is_enabled= */ true);
-  ASSERT_TRUE(RealTimePolicyEngine::is_enabled_by_pref());
-  EXPECT_TRUE(RealTimePolicyEngine::CanPerformFullURLLookup());
+  pref_service_.SetUserPref(prefs::kSafeBrowsingRealTimeLookupEnabled,
+                            std::make_unique<base::Value>(true));
+  EXPECT_TRUE(CanPerformFullURLLookup());
 }
 
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookup_DisabledUrlLookup) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(kRealTimeUrlLookupEnabled);
-  EXPECT_FALSE(RealTimePolicyEngine::CanPerformFullURLLookup());
+  EXPECT_FALSE(CanPerformFullURLLookup());
 }
 
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookup_DisabledUserOptin) {
-  // This is hardcoded as false for now so ensure that.
   ASSERT_FALSE(IsUserOptedIn());
+}
+
+TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_EnabledUserOptin) {
+  pref_service_.SetUserPref(
+      unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
+      std::make_unique<base::Value>(true));
+  ASSERT_TRUE(IsUserOptedIn());
 }
 
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookup_EnabledMainFrameOnly) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kRealTimeUrlLookupFetchAllowlist);
-  ForceSetRealTimeLookupPolicy(/* is_enabled= */ true);
-  ASSERT_TRUE(RealTimePolicyEngine::is_enabled_by_pref());
 
   for (int i = 0; i <= static_cast<int>(content::ResourceType::kMaxValue);
        i++) {

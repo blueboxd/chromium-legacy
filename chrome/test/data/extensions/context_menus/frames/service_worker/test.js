@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function onclick(info, tab) {
+chrome.contextMenus.onClicked.addListener(function(info, tab) {
   chrome.test.sendMessage('pageUrl=' + info.pageUrl +
       ', frameUrl=' + info.frameUrl +
       ', frameId=' + info.frameId);
-}
+});
+
 chrome.contextMenus.create(
-    {title:'Page item', contexts: ['page'], id: 'item1', onclick: onclick},
+    {title:'Page item', contexts: ['page'], id: 'item1'},
     function() {
       if (!chrome.runtime.lastError) {
         chrome.contextMenus.create(
-        {title: 'Frame item', contexts: ['frame']},
+            {title: 'Frame item', id: 'frame_item',
+             contexts: ['frame']},
         function() {
           if (!chrome.runtime.lastError) {
             chrome.test.sendMessage('created items');

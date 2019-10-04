@@ -259,16 +259,6 @@ are exported to translation interchange files (e.g. XMB files), etc.
 
     self.Process()
 
-    # Check that brotli was used if initialized.
-    if brotli_util.IsInitialized():
-      brotli_used = False
-      for node in self.res.ActiveDescendants():
-        if node.attrs.get('compress') == 'brotli':
-          brotli_used = True
-      if not brotli_used:
-        raise Exception('"use_brotli" was set to true in GN grit(...) target, ' +
-                        'but no resources were brotli compressed.')
-
     if assert_output_files:
       if not self.CheckAssertedOutputFiles(assert_output_files):
         return 2

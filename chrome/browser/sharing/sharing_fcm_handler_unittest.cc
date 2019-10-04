@@ -6,13 +6,12 @@
 
 #include <memory>
 
-#include "chrome/browser/sharing/fake_local_device_info_provider.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
-#include "components/sync_device_info/fake_device_info_tracker.h"
+#include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -60,7 +59,7 @@ class SharingFCMHandlerTest : public Test {
  protected:
   SharingFCMHandlerTest() {
     sync_prefs_ = std::make_unique<SharingSyncPreference>(
-        &prefs_, &fake_device_info_tracker_, &fake_local_device_info_provider_);
+        &prefs_, &fake_device_info_sync_service_);
     sharing_fcm_handler_ = std::make_unique<SharingFCMHandler>(
         &fake_gcm_driver_, &mock_sharing_fcm_sender_, sync_prefs_.get());
     fake_device_info_ = std::make_unique<syncer::DeviceInfo>(
@@ -91,8 +90,7 @@ class SharingFCMHandlerTest : public Test {
   std::unique_ptr<SharingSyncPreference> sync_prefs_;
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
-  syncer::FakeDeviceInfoTracker fake_device_info_tracker_;
-  FakeLocalDeviceInfoProvider fake_local_device_info_provider_;
+  syncer::FakeDeviceInfoSyncService fake_device_info_sync_service_;
 
   std::unique_ptr<syncer::DeviceInfo> fake_device_info_;
 };
@@ -132,7 +130,8 @@ TEST_F(SharingFCMHandlerTest, AckMessageHandler) {
 
 // Generic test for handling of SharingMessage payload other than AckMessage.
 TEST_F(SharingFCMHandlerTest, PingMessageHandler) {
-  fake_device_info_tracker_.Add(fake_device_info_.get());
+  fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
+      fake_device_info_.get());
 
   SharingMessage sharing_message;
   sharing_message.set_sender_guid(kSenderGuid);
@@ -172,7 +171,8 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandler) {
 // Test for handling of SharingMessage payload other than AckMessage for
 // secondary users in Android.
 TEST_F(SharingFCMHandlerTest, PingMessageHandlerSecondaryUser) {
-  fake_device_info_tracker_.Add(fake_device_info_.get());
+  fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
+      fake_device_info_.get());
 
   SharingMessage sharing_message;
   sharing_message.set_sender_guid(kSenderGuid);

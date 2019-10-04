@@ -1223,6 +1223,9 @@
                   # Exclude XML files; in particular, histograms.xml.
                   '|tools/metrics/[^.]*([.](?!xml$).*)?$',
     },
+    'metrics_perf': {
+      'filepath': 'chrome/browser/metrics/perf/',
+    },
     'metrics_xml_files': {
       # Subscribe to this to watch for changes to histograms.xml.
       'filepath': 'tools/metrics/.*\.xml$',
@@ -2431,6 +2434,7 @@
     'media_win': ['media-win-reviews@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
     'metrics': ['asvitkine+watch@chromium.org'],
+    'metrics_perf': ['cwp-reviews+chromium@google.com'],
     'metrics_xml_files': ['asvitkine+watchxml@chromium.org',
                           'ltina+watch@google.com'],
     'midi': ['toyoshim+midi@chromium.org'],

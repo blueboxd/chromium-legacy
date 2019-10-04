@@ -211,10 +211,8 @@ void FrameLoader::Init() {
       nullptr /* extra_data */);
   provisional_document_loader_->StartLoading();
 
-  CommitDocumentLoader(provisional_document_loader_.Release(), base::nullopt);
-
-  // Load the document if needed.
-  document_loader_->StartLoadingResponse();
+  CommitDocumentLoader(provisional_document_loader_.Release(), base::nullopt,
+                       false);
 
   frame_->GetDocument()->CancelParsing();
 
@@ -954,6 +952,7 @@ void FrameLoader::CommitNavigation(
   }
 
   std::move(call_before_attaching_new_document).Run();
+  tls_version_warning_origins_.clear();
 
   // Following the call to StartLoading, the provisional DocumentLoader state
   // has taken into account all redirects that happened during navigation. Its
@@ -963,12 +962,8 @@ void FrameLoader::CommitNavigation(
       previous_history_item, provisional_document_loader_->LoadType(),
       DocumentLoader::HistoryNavigationType::kDifferentDocument);
 
-  CommitDocumentLoader(provisional_document_loader_.Release(), unload_timing);
-
-  tls_version_warning_origins_.clear();
-
-  // Load the document if needed.
-  document_loader_->StartLoadingResponse();
+  CommitDocumentLoader(provisional_document_loader_.Release(), unload_timing,
+                       !is_javascript_url);
 
   TakeObjectSnapshot();
 }
@@ -1085,7 +1080,8 @@ bool FrameLoader::DetachDocument(
 
 void FrameLoader::CommitDocumentLoader(
     DocumentLoader* document_loader,
-    const base::Optional<Document::UnloadEventTiming>& unload_timing) {
+    const base::Optional<Document::UnloadEventTiming>& unload_timing,
+    bool dispatch_did_commit_load) {
   document_loader_ = document_loader;
   CHECK(document_loader_);
 
@@ -1104,6 +1100,18 @@ void FrameLoader::CommitDocumentLoader(
   TakeObjectSnapshot();
 
   Client()->TransitionToCommittedForNewPage();
+
+  document_loader_->CommitNavigation();
+
+  if (dispatch_did_commit_load) {
+    Client()->DispatchDidCommitLoad(
+        document_loader_->GetHistoryItem(),
+        DocumentLoader::LoadTypeToCommitType(document_loader_->LoadType()),
+        document_loader_->GetGlobalObjectReusePolicy());
+  }
+
+  // Load the document if needed.
+  document_loader_->StartLoadingResponse();
 }
 
 void FrameLoader::RestoreScrollPositionAndViewState() {

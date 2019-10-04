@@ -20,6 +20,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/media_start_stop_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
@@ -177,40 +178,6 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
   base::test::ScopedFeatureList disabled_feature_list_;
 
  private:
-  class MediaStartStopObserver : public WebContentsObserver {
-   public:
-    enum class Type { kStart, kStop };
-
-    MediaStartStopObserver(WebContents* web_contents, Type type)
-        : WebContentsObserver(web_contents), type_(type) {}
-
-    void MediaStartedPlaying(const MediaPlayerInfo& info,
-                             const MediaPlayerId& id) override {
-      if (type_ != Type::kStart)
-        return;
-
-      run_loop_.Quit();
-    }
-
-    void MediaStoppedPlaying(
-        const MediaPlayerInfo& info,
-        const MediaPlayerId& id,
-        WebContentsObserver::MediaStoppedReason reason) override {
-      if (type_ != Type::kStop)
-        return;
-
-      run_loop_.Quit();
-    }
-
-    void Wait() { run_loop_.Run(); }
-
-   private:
-    base::RunLoop run_loop_;
-    Type type_;
-
-    DISALLOW_COPY_AND_ASSIGN(MediaStartStopObserver);
-  };
-
   void OnServerRequest(const net::test_server::HttpRequest& request) {
     // Note this method is called on the EmbeddedTestServer's background thread.
     base::AutoLock lock(visited_urls_lock_);

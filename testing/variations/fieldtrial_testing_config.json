@@ -3262,33 +3262,6 @@
             ]
         }
     ],
-    "LazyLoad": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "automatic-lazy-load-frames-enabled": "true",
-                        "automatic-lazy-load-images-enabled": "true",
-                        "enable-lazy-load-images-metadata-fetch": "false",
-                        "restrict-lazy-load-frames-to-data-saver-only": "true",
-                        "restrict-lazy-load-images-to-data-saver-only": "true"
-                    },
-                    "enable_features": [
-                        "LazyFrameLoading",
-                        "LazyImageLoading"
-                    ]
-                }
-            ]
-        }
-    ],
     "LegacySymantecPKI": [
         {
             "platforms": [
@@ -3303,25 +3276,6 @@
                     "name": "Enabled_20181012",
                     "enable_features": [
                         "LegacySymantecPKI"
-                    ]
-                }
-            ]
-        }
-    ],
-    "LightweightNoStatePrefetch": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "HTML_CSS_SyncScript_20190725",
-                    "params": {
-                        "skip_async_script": "true",
-                        "skip_other": "true"
-                    },
-                    "enable_features": [
-                        "LightweightNoStatePrefetch"
                     ]
                 }
             ]

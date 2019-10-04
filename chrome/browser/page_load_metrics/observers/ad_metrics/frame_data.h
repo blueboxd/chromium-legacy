@@ -174,6 +174,11 @@ class FrameData {
   // frame.
   void MaybeUpdateFrameDepth(content::RenderFrameHost* render_frame_host);
 
+  // Returns whether the frame should be recorded for UKMs and UMA histograms.
+  // A frame should be recorded if it has non-zero bytes or non-zero CPU usage
+  // (or both).
+  bool ShouldRecordFrameForMetrics() const;
+
   // Construct and record an AdFrameLoad UKM event for this frame. Only records
   // events for frames that have non-zero bytes.
   void RecordAdFrameLoadUkmEvent(ukm::SourceId source_id) const;

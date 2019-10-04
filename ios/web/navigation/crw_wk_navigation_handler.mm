@@ -1788,7 +1788,11 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     std::unique_ptr<web::NavigationContextImpl> navigationContext =
         [self.navigationStates removeNavigation:navigation];
     [self loadCancelled];
-    self.navigationManagerImpl->DiscardNonCommittedItems();
+    web::NavigationItemImpl* item = web::GetItemWithUniqueID(
+        self.navigationManagerImpl, navigationContext.get());
+    if (self.navigationManagerImpl->GetPendingItem() == item) {
+      self.navigationManagerImpl->DiscardNonCommittedItems();
+    }
 
     [self.legacyNativeContentController
         handleCancelledErrorForContext:navigationContext.get()];

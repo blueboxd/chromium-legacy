@@ -168,12 +168,12 @@
     {
       name: "AutomaticLazyFrameLoading",
       depends_on: ["LazyFrameLoading"],
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "AutomaticLazyImageLoading",
       depends_on: ["LazyImageLoading"],
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "AutomationControlled",
@@ -1373,12 +1373,12 @@
     {
       name: "RestrictAutomaticLazyFrameLoadingToDataSaver",
       depends_on: ["AutomaticLazyFrameLoading"],
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "RestrictAutomaticLazyImageLoadingToDataSaver",
       depends_on: ["AutomaticLazyImageLoading"],
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "RestrictedWebkitAppearance",

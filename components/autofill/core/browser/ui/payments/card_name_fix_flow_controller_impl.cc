@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/ui/payments/card_name_fix_flow_view.h"
 #include "components/grit/components_scaled_resources.h"
@@ -84,14 +85,38 @@ int CardNameFixFlowControllerImpl::GetIconId() const {
 #endif
 }
 
+base::string16 CardNameFixFlowControllerImpl::GetCancelButtonLabel() const {
+  return l10n_util::GetStringUTF16(IDS_CANCEL);
+}
+
 base::string16 CardNameFixFlowControllerImpl::GetInferredCardholderName()
     const {
   return inferred_cardholder_name_;
 }
 
+base::string16 CardNameFixFlowControllerImpl::GetInferredNameTooltipText()
+    const {
+  return l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME_TOOLTIP);
+}
+
+base::string16 CardNameFixFlowControllerImpl::GetInputLabel() const {
+  return l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME);
+}
+
+base::string16 CardNameFixFlowControllerImpl::GetInputPlaceholderText() const {
+  return l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME);
+}
+
 base::string16 CardNameFixFlowControllerImpl::GetSaveButtonLabel() const {
+#if defined(OS_IOS)
+  return l10n_util::GetStringUTF16(IDS_SAVE);
+#else
   return l10n_util::GetStringUTF16(
       IDS_AUTOFILL_FIX_FLOW_PROMPT_SAVE_CARD_LABEL);
+#endif
 }
 
 base::string16 CardNameFixFlowControllerImpl::GetTitleText() const {

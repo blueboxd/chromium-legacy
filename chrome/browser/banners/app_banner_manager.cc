@@ -548,7 +548,8 @@ void AppBannerManager::DidFinishNavigation(content::NavigationHandle* handle) {
   // installation is needed.
   // Note: this check must happen before calling Terminate as it might set the
   // installable_web_app_check_result_ to kNo.
-  if (installable_web_app_check_result_ != InstallableWebAppCheckResult::kNo) {
+  if (installable_web_app_check_result_ != InstallableWebAppCheckResult::kNo &&
+      state_ != State::INACTIVE) {
     web_contents()
         ->GetController()
         .GetBackForwardCache()

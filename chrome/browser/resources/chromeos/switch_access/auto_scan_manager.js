@@ -34,6 +34,12 @@ class AutoScanManager {
      * @private {number}
      */
     this.keyboardScanTime_ = SCAN_TIME_NOT_INITIALIZED;
+
+    /**
+     * Whether the current node is within the virtual keyboard.
+     * @private {boolean}
+     */
+    this.inKeyboard_ = false;
   }
 
   /** Finishes setup of auto scan manager once Prefs are loaded. */
@@ -72,10 +78,8 @@ class AutoScanManager {
    * @param {boolean} enabled
    */
   setEnabled(enabled) {
-    if (this.isRunning())
-      this.stop_();
-    if (enabled)
-      this.start_();
+    if (this.isRunning()) this.stop_();
+    if (enabled) this.start_();
   }
 
   /**
@@ -96,6 +100,15 @@ class AutoScanManager {
    */
   setKeyboardScanTime(scanTime) {
     this.keyboardScanTime_ = scanTime;
+    if (this.inKeyboard_) this.restartIfRunning();
+  }
+
+  /**
+   * Sets whether the keyboard scan time is used.
+   * @param {boolean} inKeyboard
+   */
+  setInKeyboard(inKeyboard) {
+    this.inKeyboard_ = inKeyboard;
   }
 
   /**
@@ -116,17 +129,13 @@ class AutoScanManager {
    * @private
    */
   start_() {
-    if (this.defaultScanTime_ === SCAN_TIME_NOT_INITIALIZED)
-      return;
+    if (this.defaultScanTime_ === SCAN_TIME_NOT_INITIALIZED) return;
 
     let currentScanTime = this.defaultScanTime_;
 
-    if (this.switchAccess_.improvedTextInputEnabled()) {
-      if (this.switchAccess_.inVirtualKeyboard()) {
-        if (this.keyboardScanTime_ !== SCAN_TIME_NOT_INITIALIZED) {
-          currentScanTime = this.keyboardScanTime_;
-        }
-      }
+    if (this.switchAccess_.improvedTextInputEnabled() && this.inKeyboard_ &&
+        this.keyboardScanTime_ !== SCAN_TIME_NOT_INITIALIZED) {
+      currentScanTime = this.keyboardScanTime_;
     }
 
     this.intervalID_ = window.setInterval(

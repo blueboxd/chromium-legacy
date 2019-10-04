@@ -328,6 +328,8 @@ void MediaNotificationView::UpdateWithMediaMetadata(
 
   RecordMetadataHistogram(Metadata::kCount);
 
+  container_->OnMediaSessionMetadataChanged();
+
   PreferredSizeChanged();
   Layout();
   SchedulePaint();

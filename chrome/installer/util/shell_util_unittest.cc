@@ -867,6 +867,8 @@ TEST_F(ShellUtilRegistryTest, AddFileAssociations) {
                        L"Software\\Classes\\TestApp\\Application", KEY_READ));
     EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"ApplicationName", &value));
     EXPECT_EQ(L"Test Application", value);
+    EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"ApplicationIcon", &value));
+    EXPECT_EQ(L"D:\\test.ico,0", value);
   }
 
   // .test1 should be default-associated with our test app.

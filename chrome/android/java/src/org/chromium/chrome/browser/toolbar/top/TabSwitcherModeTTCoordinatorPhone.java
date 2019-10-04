@@ -163,22 +163,28 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
     }
 
     void setTabSwitcherToolbarVisibility(boolean shouldShowTabSwitcherToolbar) {
-        final float targetAlpha = shouldShowTabSwitcherToolbar ? 1.0f : 0.0f;
+        if ((mTabSwitcherModeToolbar.getVisibility() == View.VISIBLE)
+                == shouldShowTabSwitcherToolbar) {
+            return;
+        }
 
+        final float targetAlpha = shouldShowTabSwitcherToolbar ? 1.0f : 0.0f;
         mTabSwitcherModeToolbar.animate()
                 .alpha(targetAlpha)
                 .setDuration(TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS)
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationStart(Animator animation) {
-                        if (shouldShowTabSwitcherToolbar)
+                        if (shouldShowTabSwitcherToolbar) {
                             mTabSwitcherModeToolbar.setVisibility(View.VISIBLE);
+                        }
                     }
 
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        if (!shouldShowTabSwitcherToolbar)
+                        if (!shouldShowTabSwitcherToolbar) {
                             mTabSwitcherModeToolbar.setVisibility(View.GONE);
+                        }
                     }
                 });
     }

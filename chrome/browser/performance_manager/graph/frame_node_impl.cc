@@ -216,11 +216,13 @@ void FrameNodeImpl::SetIsCurrent(bool is_current) {
 
 void FrameNodeImpl::SetHoldsWebLock(bool holds_web_lock) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(holds_web_lock, holds_web_lock_.value());
   holds_web_lock_.SetAndMaybeNotify(this, holds_web_lock);
 }
 
 void FrameNodeImpl::SetHoldsIndexedDBLock(bool holds_indexed_db_lock) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(holds_indexed_db_lock, holds_indexed_db_lock_.value());
   holds_indexed_db_lock_.SetAndMaybeNotify(this, holds_indexed_db_lock);
 }
 

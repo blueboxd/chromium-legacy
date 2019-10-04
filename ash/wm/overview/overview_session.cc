@@ -802,6 +802,9 @@ void OverviewSession::OnDisplayRemoved(const display::Display& display) {
 
 void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,
                                               uint32_t metrics) {
+  if (split_view_drag_indicators_)
+    split_view_drag_indicators_->OnDisplayBoundsChanged();
+
   // For metrics changes that happen when the split view mode is active, the
   // display bounds will be adjusted in OnSplitViewDividerPositionChanged().
   if (Shell::Get()->split_view_controller()->InSplitViewMode())
@@ -1082,8 +1085,6 @@ void OverviewSession::OnDisplayBoundsChanged() {
         /*ignored_items=*/{}, /*animate=*/false);
   }
   UpdateNoWindowsWidget();
-  if (split_view_drag_indicators_)
-    split_view_drag_indicators_->OnDisplayBoundsChanged();
 }
 
 void OverviewSession::UpdateNoWindowsWidget() {

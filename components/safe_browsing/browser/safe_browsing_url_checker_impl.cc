@@ -99,14 +99,16 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
     content::ResourceType resource_type,
     bool has_user_gesture,
     scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
-    const base::Callback<content::WebContents*()>& web_contents_getter)
+    const base::Callback<content::WebContents*()>& web_contents_getter,
+    bool real_time_lookup_enabled)
     : headers_(headers),
       load_flags_(load_flags),
       resource_type_(resource_type),
       has_user_gesture_(has_user_gesture),
       web_contents_getter_(web_contents_getter),
       url_checker_delegate_(std::move(url_checker_delegate)),
-      database_manager_(url_checker_delegate_->GetDatabaseManager()) {}
+      database_manager_(url_checker_delegate_->GetDatabaseManager()),
+      real_time_lookup_enabled_(real_time_lookup_enabled) {}
 
 SafeBrowsingUrlCheckerImpl::~SafeBrowsingUrlCheckerImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -293,7 +295,8 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
 
     bool safe_synchronously;
     auto* rt_lookup_service = database_manager_->GetRealTimeUrlLookupService();
-    if (RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
+    if (real_time_lookup_enabled_ &&
+        RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
             resource_type_) &&
         rt_lookup_service && rt_lookup_service->CanCheckUrl(url) &&
         !rt_lookup_service->IsInBackoffMode()) {

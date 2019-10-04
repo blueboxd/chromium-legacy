@@ -12,6 +12,7 @@
 #include "fuchsia/engine/common/web_engine_url_loader_throttle.h"
 #include "fuchsia/engine/url_request_rewrite.mojom.h"
 #include "fuchsia/engine/web_engine_export.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 
 namespace content {
 class RenderFrameHost;
@@ -56,7 +57,7 @@ class WEB_ENGINE_EXPORT UrlRequestRewriteRulesManager
       cached_rules_ GUARDED_BY(lock_);
 
   // Map of frames rules receivers per FrameTreeNode ID.
-  std::map<int, mojom::UrlRequestRulesReceiverAssociatedPtr>
+  std::map<int, mojo::AssociatedRemote<mojom::UrlRequestRulesReceiver>>
       rules_receivers_per_frame_id_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlRequestRewriteRulesManager);

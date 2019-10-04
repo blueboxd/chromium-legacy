@@ -539,7 +539,7 @@ class WebLocalFrame : public WebFrame {
 
   // Image reload -----------------------------------------------------------
 
-  // If the provided node is an image, reload the image disabling Lo-Fi.
+  // If the provided node is an image that failed to load, reload it.
   virtual void ReloadImage(const WebNode&) = 0;
 
   // Feature usage logging --------------------------------------------------

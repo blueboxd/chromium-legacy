@@ -10,6 +10,13 @@ DistilledDevInfo::DistilledDevInfo(const EventDeviceInfo& devinfo) {
   x_res = devinfo.GetAbsResolution(ABS_MT_POSITION_X);
   max_y = devinfo.GetAbsMaximum(ABS_MT_POSITION_Y);
   y_res = devinfo.GetAbsResolution(ABS_MT_POSITION_Y);
+  if (x_res == 0) {
+    x_res = 1;
+  }
+  if (y_res == 0) {
+    y_res = 1;
+  }
+
   major_radius_res = devinfo.GetAbsResolution(ABS_MT_TOUCH_MAJOR);
   if (major_radius_res == 0) {
     // Device does not report major res: set to 1.

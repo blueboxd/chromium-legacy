@@ -10,6 +10,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/common/api/mime_handler.mojom.h"
 #include "extensions/common/mojom/guest_view.mojom.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -90,7 +91,8 @@ class MimeHandlerViewEmbedder : public content::WebContentsObserver {
   // to after it is created.
   mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control_;
 
-  mojom::MimeHandlerViewContainerManagerAssociatedPtr container_manager_;
+  mojo::AssociatedRemote<mojom::MimeHandlerViewContainerManager>
+      container_manager_;
 
   const std::string internal_id_;
 

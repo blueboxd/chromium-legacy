@@ -16,6 +16,7 @@
 #include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial.h"
@@ -26,6 +27,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -401,6 +403,7 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       ssl_config_(ssl_config),
       next_handshake_state_(STATE_NONE),
       in_confirm_handshake_(false),
+      peek_complete_(false),
       disconnected_(false),
       negotiated_protocol_(kProtoUnknown),
       certificate_requested_(false),
@@ -871,8 +874,10 @@ int SSLClientSocketImpl::Init() {
   // Configure BoringSSL to allow renegotiations. Once the initial handshake
   // completes, if renegotiations are not allowed, the default reject value will
   // be restored. This is done in this order to permit a BoringSSL
-  // optimization. See https://crbug.com/boringssl/123.
-  SSL_set_renegotiate_mode(ssl_.get(), ssl_renegotiate_freely);
+  // optimization. See https://crbug.com/boringssl/123. Use
+  // ssl_renegotiate_explicit rather than ssl_renegotiate_freely so DoPeek()
+  // does not trigger renegotiations.
+  SSL_set_renegotiate_mode(ssl_.get(), ssl_renegotiate_explicit);
 
   SSL_set_shed_handshake_config(ssl_.get(), 1);
 
@@ -1085,6 +1090,25 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
 
   completed_connect_ = true;
   next_handshake_state_ = STATE_NONE;
+
+  // Read from the transport immediately after the handshake, whether Read() is
+  // called immediately or not. This serves several purposes:
+  //
+  // First, if this socket is preconnected and negotiates 0-RTT, the ServerHello
+  // will not be processed. See https://crbug.com/950706
+  //
+  // Second, in False Start and TLS 1.3, the tickets arrive after immediately
+  // after the handshake. This allows preconnected sockets to process the
+  // tickets sooner. This also avoids a theoretical deadlock if the tickets are
+  // too large. See
+  // https://boringssl-review.googlesource.com/c/boringssl/+/34948.
+  //
+  // TODO(https://crbug.com/958638): It is also a step in making TLS 1.3 client
+  // certificate alerts less unreliable.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SSLClientSocketImpl::DoPeek, weak_factory_.GetWeakPtr()));
+
   return OK;
 }
 
@@ -1320,22 +1344,29 @@ int SSLClientSocketImpl::DoPayloadRead(IOBuffer* buf, int buf_len) {
   }
 
   int total_bytes_read = 0;
-  int ssl_ret;
+  int ssl_ret, ssl_err;
   do {
     ssl_ret = SSL_read(ssl_.get(), buf->data() + total_bytes_read,
                        buf_len - total_bytes_read);
-    if (ssl_ret > 0)
+    ssl_err = SSL_get_error(ssl_.get(), ssl_ret);
+    if (ssl_ret > 0) {
       total_bytes_read += ssl_ret;
+    } else if (ssl_err == SSL_ERROR_WANT_RENEGOTIATE) {
+      if (!SSL_renegotiate(ssl_.get())) {
+        ssl_err = SSL_ERROR_SSL;
+      }
+    }
     // Continue processing records as long as there is more data available
     // synchronously.
-  } while (total_bytes_read < buf_len && ssl_ret > 0 &&
-           transport_adapter_->HasPendingReadData());
+  } while (ssl_err == SSL_ERROR_WANT_RENEGOTIATE ||
+           (total_bytes_read < buf_len && ssl_ret > 0 &&
+            transport_adapter_->HasPendingReadData()));
 
   // Although only the final SSL_read call may have failed, the failure needs to
   // processed immediately, while the information still available in OpenSSL's
   // error queue.
   if (ssl_ret <= 0) {
-    pending_read_ssl_error_ = SSL_get_error(ssl_.get(), ssl_ret);
+    pending_read_ssl_error_ = ssl_err;
     if (pending_read_ssl_error_ == SSL_ERROR_ZERO_RETURN) {
       pending_read_error_ = 0;
     } else if (pending_read_ssl_error_ == SSL_ERROR_WANT_X509_LOOKUP &&
@@ -1419,6 +1450,22 @@ int SSLClientSocketImpl::DoPayloadWrite() {
   return net_error;
 }
 
+void SSLClientSocketImpl::DoPeek() {
+  if (ssl_config_.disable_post_handshake_peek_for_testing ||
+      !completed_connect_ || peek_complete_) {
+    return;
+  }
+
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+
+  char byte;
+  int rv = SSL_peek(ssl_.get(), &byte, 1);
+  int ssl_err = SSL_get_error(ssl_.get(), rv);
+  if (ssl_err != SSL_ERROR_WANT_READ && ssl_err != SSL_ERROR_WANT_WRITE) {
+    peek_complete_ = true;
+  }
+}
+
 void SSLClientSocketImpl::RetryAllOperations() {
   // SSL_do_handshake, SSL_read, and SSL_write may all be retried when blocked,
   // so retry all operations for simplicity. (Otherwise, SSL_get_error for each
@@ -1435,6 +1482,8 @@ void SSLClientSocketImpl::RetryAllOperations() {
 
   if (!guard.get())
     return;
+
+  DoPeek();
 
   int rv_read = ERR_IO_PENDING;
   int rv_write = ERR_IO_PENDING;

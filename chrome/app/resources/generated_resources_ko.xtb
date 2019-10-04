@@ -2389,6 +2389,7 @@
 <translation id="4534661889221639075">다시 시도하세요.</translation>
 <translation id="4535127706710932914">기본 프로필</translation>
 <translation id="4535767533210902251">지문 센서는 키보드 오른쪽 상단의 키에 있습니다. 손가락으로 가볍게 터치하세요.</translation>
+<translation id="4538417792467843292">단어 삭제</translation>
 <translation id="4538684596480161368"><ph name="HOST" />에서 샌드박스 처리되지 않은 플러그인을 항상 차단</translation>
 <translation id="4538792345715658285">엔터프라이즈 정책에 의해 설치됨</translation>
 <translation id="4542520061254486227"><ph name="WEBSITE_1" /> 및 <ph name="WEBSITE_2" />에서 데이터 읽기</translation>
@@ -5350,7 +5351,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="8874184842967597500">연결되지 않음</translation>
 <translation id="8876307312329369159">데모 세션에서는 이 설정을 변경할 수 없습니다.</translation>
 <translation id="8877448029301136595">[상위 디렉터리]</translation>
-<translation id="8879220587046205278">Google Play의 앱이 외부 저장장치에 있는 파일을 읽고 쓰기 위해 전체 파일 시스템 액세스 권한을 요구할 수도 있습니다. 이 기기에서 생성된 파일 및 폴더는 외장 드라이브를 사용하는 모든 사람이 볼 수 있습니다.</translation>
 <translation id="8879284080359814990">탭으로 표시(&amp;S)</translation>
 <translation id="8879921471468674457">로그인 정보 저장</translation>
 <translation id="8881020143150461183">다시 시도해 주세요. 기술 지원이 필요하면 <ph name="CARRIER_NAME" />에 문의하세요.</translation>

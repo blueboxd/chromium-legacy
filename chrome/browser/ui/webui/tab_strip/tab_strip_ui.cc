@@ -115,6 +115,10 @@ class TabStripUIHandler : public content::WebUIMessageHandler {
     colors.SetString("--tabstrip-indicator-capturing-color",
                      color_utils::SkColorToRgbaString(tp.GetColor(
                          ThemeProperties::COLOR_TAB_ALERT_CAPTURING)));
+    colors.SetString("--tabstrip-tab-blocked-color",
+                     color_utils::SkColorToRgbaString(
+                         ui::NativeTheme::GetInstanceForWeb()->GetSystemColor(
+                             ui::NativeTheme::kColorId_ProminentButtonColor)));
 
     ResolveJavascriptCallback(callback_id, colors);
   }

@@ -157,6 +157,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host_creation_observer.h"
 #include "content/public/browser/render_process_host_factory.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_widget_host.h"
@@ -327,6 +328,13 @@ bool has_done_stun_trials = false;
 // the global list of all renderer processes
 base::LazyInstance<base::IDMap<RenderProcessHost*>>::Leaky g_all_hosts =
     LAZY_INSTANCE_INITIALIZER;
+
+// Returns the global list of RenderProcessHostCreationObserver objects.
+std::vector<RenderProcessHostCreationObserver*>& GetAllCreationObservers() {
+  static base::NoDestructor<std::vector<RenderProcessHostCreationObserver*>>
+      s_all_creation_observers;
+  return *s_all_creation_observers;
+}
 
 // Map of site to process, to ensure we only have one RenderProcessHost per
 // site in process-per-site mode.  Each map is specific to a BrowserContext.
@@ -2389,8 +2397,8 @@ void RenderProcessHostImpl::RegisterCoordinatorClient(
 }
 
 void RenderProcessHostImpl::CreateRendererHost(
-    mojom::RendererHostAssociatedRequest request) {
-  renderer_host_binding_.Bind(std::move(request));
+    mojo::PendingAssociatedReceiver<mojom::RendererHost> receiver) {
+  renderer_host_binding_.Bind(std::move(receiver));
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {
@@ -3700,6 +3708,23 @@ void RenderProcessHostImpl::UnregisterHost(int host_id) {
 }
 
 // static
+void RenderProcessHostImpl::RegisterCreationObserver(
+    RenderProcessHostCreationObserver* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GetAllCreationObservers().push_back(observer);
+}
+
+// static
+void RenderProcessHostImpl::UnregisterCreationObserver(
+    RenderProcessHostCreationObserver* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto iter = std::find(GetAllCreationObservers().begin(),
+                        GetAllCreationObservers().end(), observer);
+  DCHECK(iter != GetAllCreationObservers().end());
+  GetAllCreationObservers().erase(iter);
+}
+
+// static
 void RenderProcessHostImpl::FilterURL(RenderProcessHost* rph,
                                       bool empty_allowed,
                                       GURL* url) {
@@ -4558,6 +4583,8 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   NotificationService::current()->Notify(NOTIFICATION_RENDERER_PROCESS_CREATED,
                                          Source<RenderProcessHost>(this),
                                          NotificationService::NoDetails());
+  for (auto* observer : GetAllCreationObservers())
+    observer->OnRenderProcessHostCreated(this);
 
   if (child_process_launcher_)
     channel_->Flush();

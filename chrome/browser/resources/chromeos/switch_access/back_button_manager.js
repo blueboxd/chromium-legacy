@@ -48,7 +48,7 @@ class BackButtonManager {
   hide() {
     this.backButtonOpen_ = false;
     chrome.accessibilityPrivate.setSwitchAccessMenuState(
-        false, SAConstants.EMPTY_LOCATION, 0);
+        false, RectHelper.ZERO_RECT, 0);
     this.menuPanel_.setFocusRing(SAConstants.BACK_ID, false);
   }
 

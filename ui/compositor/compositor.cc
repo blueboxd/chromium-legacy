@@ -304,6 +304,9 @@ void Compositor::SetLayerTreeFrameSink(
                                                    sdr_white_level_);
     context_factory_private_->SetDisplayColorMatrix(this,
                                                     display_color_matrix_);
+    if (has_vsync_params_)
+      context_factory_private_->SetDisplayVSyncParameters(this, vsync_timebase_,
+                                                          vsync_interval_);
   }
 }
 
@@ -499,6 +502,9 @@ void Compositor::SetDisplayVSyncParameters(base::TimeTicks timebase,
   // updates here.
   if (vsync_timebase_ == timebase && vsync_interval_ == interval)
     return;
+
+  if (interval != vsync_interval_)
+    has_vsync_params_ = true;
 
   vsync_timebase_ = timebase;
   vsync_interval_ = interval;

@@ -118,24 +118,10 @@ class SwitchAccess {
   }
 
   /**
-   * Check if the current node is in the virtual keyboard.
-   * @return {boolean}
-   * @override
-   * @public
-   */
-  inVirtualKeyboard() {
-    if (this.navigationManager_) {
-      return this.navigationManager_.inVirtualKeyboard();
-    }
-    return false;
-  }
-
-  /**
    * Returns whether or not the feature flag
    * for improved text input is enabled.
    * @return {boolean}
    * @override
-   * @public
    */
   improvedTextInputEnabled() {
     return this.enableImprovedTextInput_;
@@ -144,10 +130,18 @@ class SwitchAccess {
   /**
    * Restarts auto-scan if it is enabled.
    * @override
-   * @public
    */
   restartAutoScan() {
     this.autoScanManager_.restartIfRunning();
+  }
+
+  /**
+   * Sets whether the current node is in the virtual keyboard.
+   * @param {boolean} inKeyboard
+   * @override
+   */
+  setInKeyboard(inKeyboard) {
+    this.autoScanManager_.setInKeyboard(inKeyboard);
   }
 
   /**

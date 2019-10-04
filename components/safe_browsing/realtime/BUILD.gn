@@ -14,6 +14,9 @@ static_library("policy_engine") {
     "//components/safe_browsing:features",
     "//components/safe_browsing:realtimeapi_proto",
     "//components/safe_browsing/common:safe_browsing_prefs",
+    "//components/unified_consent",
+    "//components/user_prefs",
+    "//content/public/browser",
     "//content/public/common:resource_type_header",
   ]
 }
@@ -45,6 +48,10 @@ source_set("unit_tests") {
     ":url_lookup_service",
     "//base/test:test_support",
     "//components/safe_browsing:features",
+    "//components/safe_browsing/common:safe_browsing_prefs",
+    "//components/sync_preferences:test_support",
+    "//components/unified_consent",
+    "//components/user_prefs",
     "//content/test:test_support",
     "//services/network:test_support",
     "//services/network/public/cpp:cpp",

@@ -69,20 +69,23 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
   gcm::GCMProfileService* gcm_profile_service =
       gcm::GCMProfileServiceFactory::GetForProfile(profile);
   gcm::GCMDriver* gcm_driver = gcm_profile_service->driver();
+
   instance_id::InstanceIDProfileService* instance_id_service =
       instance_id::InstanceIDProfileServiceFactory::GetForProfile(profile);
+
+  syncer::DeviceInfoSyncService* device_info_sync_service =
+      DeviceInfoSyncServiceFactory::GetForProfile(profile);
   syncer::DeviceInfoTracker* device_info_tracker =
-      DeviceInfoSyncServiceFactory::GetForProfile(profile)
-          ->GetDeviceInfoTracker();
+      device_info_sync_service->GetDeviceInfoTracker();
   syncer::LocalDeviceInfoProvider* local_device_info_provider =
-      DeviceInfoSyncServiceFactory::GetForProfile(profile)
-          ->GetLocalDeviceInfoProvider();
+      device_info_sync_service->GetLocalDeviceInfoProvider();
+
   NotificationDisplayService* notification_display_service =
       NotificationDisplayServiceFactory::GetForProfile(profile);
 
   std::unique_ptr<SharingSyncPreference> sync_prefs =
-      std::make_unique<SharingSyncPreference>(
-          profile->GetPrefs(), device_info_tracker, local_device_info_provider);
+      std::make_unique<SharingSyncPreference>(profile->GetPrefs(),
+                                              device_info_sync_service);
   std::unique_ptr<VapidKeyManager> vapid_key_manager =
       std::make_unique<VapidKeyManager>(sync_prefs.get());
   std::unique_ptr<SharingDeviceRegistration> sharing_device_registration =

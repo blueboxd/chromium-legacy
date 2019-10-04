@@ -14,7 +14,6 @@ UrlRequestRulesReceiver::UrlRequestRulesReceiver(
     content::RenderFrame* render_frame,
     base::OnceCallback<void(int)> on_render_frame_deleted_callback)
     : content::RenderFrameObserver(render_frame),
-      associated_binding_(this),
       on_render_frame_deleted_callback_(
           std::move(on_render_frame_deleted_callback)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -26,7 +25,7 @@ UrlRequestRulesReceiver::UrlRequestRulesReceiver(
   // the same time as |this|.
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
       base::BindRepeating(
-          &UrlRequestRulesReceiver::OnUrlRequestRulesReceiverAssociatedRequest,
+          &UrlRequestRulesReceiver::OnUrlRequestRulesReceiverAssociatedReceiver,
           base::Unretained(this)));
 }
 
@@ -34,11 +33,11 @@ UrlRequestRulesReceiver::~UrlRequestRulesReceiver() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void UrlRequestRulesReceiver::OnUrlRequestRulesReceiverAssociatedRequest(
-    mojom::UrlRequestRulesReceiverAssociatedRequest request) {
+void UrlRequestRulesReceiver::OnUrlRequestRulesReceiverAssociatedReceiver(
+    mojo::PendingAssociatedReceiver<mojom::UrlRequestRulesReceiver> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!associated_binding_.is_bound());
-  associated_binding_.Bind(std::move(request));
+  DCHECK(!url_request_rules_receiver_.is_bound());
+  url_request_rules_receiver_.Bind(std::move(receiver));
 }
 
 void UrlRequestRulesReceiver::OnRulesUpdated(

@@ -22,7 +22,11 @@ class CardNameFixFlowController {
 
   // State.
   virtual int GetIconId() const = 0;
+  virtual base::string16 GetCancelButtonLabel() const = 0;
   virtual base::string16 GetInferredCardholderName() const = 0;
+  virtual base::string16 GetInferredNameTooltipText() const = 0;
+  virtual base::string16 GetInputLabel() const = 0;
+  virtual base::string16 GetInputPlaceholderText() const = 0;
   virtual base::string16 GetSaveButtonLabel() const = 0;
   virtual base::string16 GetTitleText() const = 0;
 };

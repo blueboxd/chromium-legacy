@@ -8340,6 +8340,7 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(computed_node_mapping_);
   visitor->Trace(mime_handler_view_before_unload_event_listener_);
   visitor->Trace(element_explicitly_set_attr_elements_map_);
+  visitor->Trace(display_lock_activation_observer_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
@@ -8540,6 +8541,39 @@ void Document::RemoveLockedDisplayLock() {
 
 int Document::LockedDisplayLockCount() const {
   return locked_display_lock_count_;
+}
+
+void Document::RegisterDisplayLockActivationObservation(Element* element) {
+  EnsureDisplayLockActivationObserver().observe(element);
+}
+
+void Document::UnregisterDisplayLockActivationObservation(Element* element) {
+  EnsureDisplayLockActivationObserver().unobserve(element);
+}
+
+IntersectionObserver& Document::EnsureDisplayLockActivationObserver() {
+  if (!display_lock_activation_observer_) {
+    // Use kPostTaskToDeliver method, since a commit can dirty layout, and we
+    // want to avoid dirtying layout during post-lifecycle steps.
+    display_lock_activation_observer_ = IntersectionObserver::Create(
+        {}, {std::numeric_limits<float>::min()}, this,
+        WTF::BindRepeating(&Document::ProcessDisplayLockActivationObservation,
+                           WrapWeakPersistent(this)),
+        IntersectionObserver::kPostTaskToDeliver);
+  }
+  return *display_lock_activation_observer_;
+}
+
+void Document::ProcessDisplayLockActivationObservation(
+    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  for (auto& entry : entries) {
+    if (entry->isIntersecting()) {
+      auto* context = entry->target()->GetDisplayLockContext();
+      DCHECK(context);
+      DCHECK(context->ShouldCommitForActivation());
+      context->CommitForActivationWithSignal(entry->target());
+    }
+  }
 }
 
 void Document::ExecuteJavaScriptUrls() {

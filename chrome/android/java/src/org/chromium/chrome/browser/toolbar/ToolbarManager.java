@@ -675,6 +675,11 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             }
 
             @Override
+            public void onOverviewModeStateChanged(boolean showTabSwitcherToolbar) {
+                mToolbar.updateTabSwitcherToolbarState(showTabSwitcherToolbar);
+            }
+
+            @Override
             public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
                 mToolbar.setTabSwitcherMode(false, showToolbar, delayAnimation);
                 updateButtonStatus();

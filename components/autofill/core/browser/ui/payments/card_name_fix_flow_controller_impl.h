@@ -30,7 +30,11 @@ class CardNameFixFlowControllerImpl : public CardNameFixFlowController {
   void OnNameAccepted(const base::string16& name) override;
   void OnDismissed() override;
   int GetIconId() const override;
+  base::string16 GetCancelButtonLabel() const override;
   base::string16 GetInferredCardholderName() const override;
+  base::string16 GetInferredNameTooltipText() const override;
+  base::string16 GetInputLabel() const override;
+  base::string16 GetInputPlaceholderText() const override;
   base::string16 GetSaveButtonLabel() const override;
   base::string16 GetTitleText() const override;
 

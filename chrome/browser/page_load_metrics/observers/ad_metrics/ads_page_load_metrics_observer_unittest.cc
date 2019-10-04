@@ -139,7 +139,9 @@ std::string SuffixedHistogram(const std::string& suffix) {
   return base::StringPrintf("PageLoad.Clients.Ads.%s", suffix.c_str());
 }
 
-// Verifies that the histograms match what is expected.
+// Verifies that the histograms match what is expected. Frames that should not
+// be recorded (due to zero bytes and zero CPU usage) should be not be
+// represented in |ad_frames|.
 void TestHistograms(const base::HistogramTester& histograms,
                     const ukm::TestAutoSetUkmRecorder& ukm_recorder,
                     const std::vector<ExpectedFrameBytes>& ad_frames,
@@ -164,24 +166,22 @@ void TestHistograms(const base::HistogramTester& histograms,
     total_ad_uncached_kb += bytes.uncached_kb;
     total_ad_kb += bytes.cached_kb + bytes.uncached_kb;
 
-    if (total_ad_kb == 0)
-      continue;
-
     ad_frame_count += 1;
 
     size_t total_frame_kb = bytes.cached_kb + bytes.uncached_kb;
 
     frames_with_total_byte_count[total_frame_kb] += 1;
     frames_with_network_byte_count[bytes.uncached_kb] += 1;
-    frames_with_percent_network_count[(bytes.uncached_kb * 100) /
-                                      total_frame_kb] += 1;
+    if (total_frame_kb > 0) {
+      frames_with_percent_network_count[(bytes.uncached_kb * 100) /
+                                        total_frame_kb] += 1;
+    }
     frame_byte_counts[bytes] += 1;
   }
 
   // Test the histograms.
-  histograms.ExpectUniqueSample(
-      SuffixedHistogram("FrameCounts.AnyParentFrame.AdFrames"), ad_frame_count,
-      1);
+  histograms.ExpectUniqueSample(SuffixedHistogram("FrameCounts.AdFrames.Total"),
+                                ad_frame_count, 1);
 
   if (ad_frame_count == 0)
     return;
@@ -216,19 +216,25 @@ void TestHistograms(const base::HistogramTester& histograms,
   histograms.ExpectUniqueSample(
       SuffixedHistogram("Bytes.NonAdFrames.Aggregate.Total"),
       non_ad_cached_kb + non_ad_uncached_kb, 1);
-  histograms.ExpectUniqueSample(
-      SuffixedHistogram("Bytes.FullPage.Total.PercentAds"),
-      (total_ad_kb * 100) /
-          (total_ad_kb + non_ad_cached_kb + non_ad_uncached_kb),
-      1);
-  histograms.ExpectUniqueSample(
-      SuffixedHistogram("Bytes.AdFrames.Aggregate.PercentNetwork"),
-      ((total_ad_uncached_kb * 100) / total_ad_kb), 1);
-  histograms.ExpectUniqueSample(
-      SuffixedHistogram("Bytes.FullPage.Network.PercentAds"),
-      (total_ad_uncached_kb * 100) /
-          (total_ad_uncached_kb + non_ad_uncached_kb),
-      1);
+  if (total_ad_kb + non_ad_cached_kb + non_ad_uncached_kb > 0) {
+    histograms.ExpectUniqueSample(
+        SuffixedHistogram("Bytes.FullPage.Total.PercentAds"),
+        (total_ad_kb * 100) /
+            (total_ad_kb + non_ad_cached_kb + non_ad_uncached_kb),
+        1);
+  }
+  if (total_ad_kb > 0) {
+    histograms.ExpectUniqueSample(
+        SuffixedHistogram("Bytes.AdFrames.Aggregate.PercentNetwork"),
+        ((total_ad_uncached_kb * 100) / total_ad_kb), 1);
+  }
+  if (total_ad_uncached_kb + non_ad_uncached_kb > 0) {
+    histograms.ExpectUniqueSample(
+        SuffixedHistogram("Bytes.FullPage.Network.PercentAds"),
+        (total_ad_uncached_kb * 100) /
+            (total_ad_uncached_kb + non_ad_uncached_kb),
+        1);
+  }
 
   // Verify AdFrameLoad UKM metrics.
   auto entries =
@@ -789,22 +795,16 @@ TEST_F(AdsPageLoadMetricsObserverTest, MainFrameResource) {
   // We only log histograms if we observed bytes for the page. Verify that the
   // main frame resource was properly tracked and attributed.
   histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.FrameCounts.AnyParentFrame."
-      "AdFrames",
-      0, 1);
+      "PageLoad.Clients.Ads.FrameCounts.AdFrames.Total", 0, 1);
 
   // Verify that this histogram is also recorded for the Visible and NonVisible
   // suffixes.
   histogram_tester().ExpectTotalCount(
-      "PageLoad.Clients.Ads.Visible.FrameCounts.AnyParentFrame."
-      "AdFrames",
-      1);
+      "PageLoad.Clients.Ads.Visible.FrameCounts.AdFrames.Total", 1);
   histogram_tester().ExpectTotalCount(
-      "PageLoad.Clients.Ads.NonVisible.FrameCounts.AnyParentFrame."
-      "AdFrames",
-      1);
+      "PageLoad.Clients.Ads.NonVisible.FrameCounts.AdFrames.Total", 1);
 
-  // There are three FrameCounts.AnyParentFrame.AdFrames histograms
+  // There are three FrameCounts.AdFrames.Total histograms
   // recorded for each page load, one for each visibility type. There shouldn't
   // be any other histograms for a page with no ad resources.
   EXPECT_EQ(3u, histogram_tester()
@@ -865,9 +865,9 @@ TEST_F(AdsPageLoadMetricsObserverTest, FilterAds_DoNotLogMetrics) {
             simulator->GetLastThrottleCheckResult());
 
   NavigateMainFrame(kNonAdUrl);
-  TestHistograms(histogram_tester(), test_ukm_recorder(),
-                 std::vector<ExpectedFrameBytes>(), 0u /* non_ad_cached_kb */,
-                 0u /* non_ad_uncached_kb */);
+
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("FrameCounts.AdFrames.Total"), 0);
 }
 
 // Per-frame histograms recorded when root ad frame is destroyed.
@@ -899,7 +899,7 @@ TEST_F(AdsPageLoadMetricsObserverTest,
 
   // Verify page totals not reported yet.
   histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("FrameCounts.AnyParentFrame.AdFrames"), 0);
+      SuffixedHistogram("FrameCounts.AdFrames.Total"), 0);
 
   NavigateMainFrame(kNonAdUrl);
 
@@ -1010,6 +1010,36 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdPageLoadUKM) {
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(
                 entries.front(), ukm::builders::AdPageLoad::kAdCpuTimeName),
             500);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest, ZeroBytesZeroCpuUseFrame_NotRecorded) {
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  NavigateFrame(kNonAdUrl, main_frame);
+
+  // We expect frames with no bytes and no CPU usage to be ignored
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("FrameCounts.AdFrames.Total"), 0);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest, ZeroBytesNonZeroCpuFrame_Recorded) {
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  ResourceDataUpdate(main_frame, ResourceCached::NOT_CACHED, 10);
+
+  // Use CPU but maintain zero bytes in the ad frame
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1000));
+
+  NavigateFrame(kNonAdUrl, main_frame);
+
+  // We expect the frame to be recorded as it has non-zero CPU usage
+  TestHistograms(histogram_tester(), test_ukm_recorder(), {{0, 0}},
+                 0 /* non_ad_cached_kb */, 10 /* non_ad_uncached_kb */);
+
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.FullPage.TotalUsage"), 1000, 1);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsWindowed) {

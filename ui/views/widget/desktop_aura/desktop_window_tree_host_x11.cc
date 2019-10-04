@@ -47,9 +47,9 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
-#include "ui/gfx/path_x11.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/x11_path.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_switches.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
@@ -208,7 +208,7 @@ DesktopWindowTreeHostX11::CreateDragDropClient(
 
 void DesktopWindowTreeHostX11::SetShape(
     std::unique_ptr<Widget::ShapeRects> native_shape) {
-  _XRegion* xregion = nullptr;
+  XRegion* xregion = nullptr;
   if (native_shape) {
     SkRegion native_region;
     for (const gfx::Rect& rect : *native_shape)
@@ -228,7 +228,6 @@ void DesktopWindowTreeHostX11::SetShape(
     }
   }
   GetXWindow()->SetShape(xregion);
-  ResetWindowRegion();
 }
 
 Widget::MoveLoopResult DesktopWindowTreeHostX11::RunMoveLoop(
@@ -327,25 +326,6 @@ bool DesktopWindowTreeHostX11::ShouldCreateVisibilityController() const {
 
 void DesktopWindowTreeHostX11::SetUseNativeFrame(bool use_native_frame) {
   GetXWindow()->SetUseNativeFrame(use_native_frame);
-  ResetWindowRegion();
-}
-
-void DesktopWindowTreeHostX11::ResetWindowRegion() {
-  _XRegion* xregion = nullptr;
-  if (!GetXWindow()->use_custom_shape() && !IsMaximized() && !IsFullscreen()) {
-    SkPath window_mask;
-    Widget* widget = native_widget_delegate()->AsWidget();
-    if (widget->non_client_view()) {
-      // Some frame views define a custom (non-rectangular) window mask. If
-      // so, use it to define the window shape. If not, fall through.
-      widget->non_client_view()->GetWindowMask(GetXWindow()->bounds().size(),
-                                               &window_mask);
-      if (window_mask.countPoints() > 0) {
-        xregion = gfx::CreateRegionFromSkPath(window_mask);
-      }
-    }
-  }
-  GetXWindow()->UpdateWindowRegion(xregion);
 }
 
 std::list<gfx::AcceleratedWidget>& DesktopWindowTreeHostX11::open_windows() {
@@ -397,20 +377,9 @@ DesktopWindowTreeHostX11::GetKeyboardLayoutMap() {
   return {};
 }
 
-void DesktopWindowTreeHostX11::OnBoundsChanged(const gfx::Rect& new_bounds) {
-  ResetWindowRegion();
-  WindowTreeHostPlatform::OnBoundsChanged(new_bounds);
-}
-
 void DesktopWindowTreeHostX11::OnClosed() {
   open_windows().remove(GetAcceleratedWidget());
   DesktopWindowTreeHostLinux::OnClosed();
-}
-
-void DesktopWindowTreeHostX11::OnWindowStateChanged(
-    ui::PlatformWindowState new_state) {
-  DesktopWindowTreeHostPlatform::OnWindowStateChanged(new_state);
-  ResetWindowRegion();
 }
 
 void DesktopWindowTreeHostX11::OnAcceleratedWidgetAvailable(

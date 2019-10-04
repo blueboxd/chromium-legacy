@@ -104,7 +104,7 @@ const SwitchAccessPredicate = {
    * @return {boolean}
    */
   isGroup: (node, scope) => {
-    if (node !== scope && SwitchAccessPredicate.hasSameLocation_(node, scope))
+    if (node !== scope && RectHelper.areEqual(node.location, scope.location))
       return false;
     if (node.state[StateType.INVISIBLE])
       return false;
@@ -231,19 +231,5 @@ const SwitchAccessPredicate = {
       leaf: SwitchAccessPredicate.isNotContainer,
       visit: SwitchAccessPredicate.isSwitchAccessMenuPanel
     };
-  },
-
-  /**
-   * Returns true if the two nodes have the same location.
-   *
-   * @param {!chrome.automation.AutomationNode} node1
-   * @param {!chrome.automation.AutomationNode} node2
-   * @return {boolean}
-   */
-  hasSameLocation_: (node1, node2) => {
-    const l1 = node1.location;
-    const l2 = node2.location;
-    return l1.left === l2.left && l1.top === l2.top && l1.width === l2.width &&
-        l1.height === l2.height;
   }
 };

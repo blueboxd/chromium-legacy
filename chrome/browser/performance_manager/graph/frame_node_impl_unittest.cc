@@ -237,8 +237,6 @@ TEST_F(FrameNodeImplTest, HoldsWebLock) {
   EXPECT_CALL(obs, OnFrameHoldsWebLockChanged(frame_node.get()));
   frame_node->SetHoldsWebLock(true);
   EXPECT_TRUE(frame_node->holds_web_lock());
-  frame_node->SetHoldsWebLock(true);
-  EXPECT_TRUE(frame_node->holds_web_lock());
   EXPECT_CALL(obs, OnFrameHoldsWebLockChanged(frame_node.get()));
   frame_node->SetHoldsWebLock(false);
   EXPECT_FALSE(frame_node->holds_web_lock());
@@ -256,8 +254,6 @@ TEST_F(FrameNodeImplTest, HoldsIndexedDBLock) {
 
   EXPECT_FALSE(frame_node->holds_indexed_db_lock());
   EXPECT_CALL(obs, OnFrameHoldsIndexedDBLockChanged(frame_node.get()));
-  frame_node->SetHoldsIndexedDBLock(true);
-  EXPECT_TRUE(frame_node->holds_indexed_db_lock());
   frame_node->SetHoldsIndexedDBLock(true);
   EXPECT_TRUE(frame_node->holds_indexed_db_lock());
   EXPECT_CALL(obs, OnFrameHoldsIndexedDBLockChanged(frame_node.get()));

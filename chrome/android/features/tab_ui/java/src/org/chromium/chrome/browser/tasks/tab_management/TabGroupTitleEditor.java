@@ -42,8 +42,16 @@ public abstract class TabGroupTitleEditor {
 
         mFilterObserver = new EmptyTabGroupModelFilterObserver() {
             @Override
-            public void willMergeTabToGroup(Tab movedTab) {
+            public void willMergeTabToGroup(Tab movedTab, int newRootId) {
+                String sourceGroupTitle = getTabGroupTitle(movedTab.getRootId());
+                String targetGroupTitle = getTabGroupTitle(newRootId);
+                if (sourceGroupTitle == null) return;
                 deleteTabGroupTitle(movedTab.getRootId());
+                // If the target group has no title but the source group has a title, handover the
+                // stored title to the group after merge.
+                if (targetGroupTitle == null) {
+                    storeTabGroupTitle(newRootId, sourceGroupTitle);
+                }
             }
 
             @Override
@@ -59,10 +67,11 @@ public abstract class TabGroupTitleEditor {
                     deleteTabGroupTitle(movedTab.getRootId());
                     return;
                 }
-                // If the root tab in group is moved out, try to fetch the title and
-                // reassign it to the new root tab in group.
+                // If the root tab in group is moved out, re-assign the title to the new root tab in
+                // group.
                 if (movedTab.getRootId() != newRootId) {
-                    updateTabGroupTitle(mTabModelSelector.getTabById(newRootId), title);
+                    deleteTabGroupTitle(movedTab.getRootId());
+                    storeTabGroupTitle(newRootId, title);
                 }
             }
         };
@@ -81,25 +90,33 @@ public abstract class TabGroupTitleEditor {
     }
 
     /**
-     * This method uses tab group root ID of {@code tab} as a reference to update tab group title.
-     * Implementation of this method needs to store the updated title and maybe update relevant
-     * {@link PropertyModel} as well.
+     * This method uses {@code title} to update the {@link PropertyModel} of the group which
+     * contains {@code tab}. Concrete class need to specify how to update title in
+     * {@link PropertyModel}.
      *
-     * @param tab     The {@link Tab} whose root ID is used as reference to update group title.
-     * @param title   The tab group title to store.
+     * @param tab     The {@link Tab} whose relevant tab group's title will be updated.
+     * @param title   The tab group title to update.
      */
     protected abstract void updateTabGroupTitle(Tab tab, String title);
 
     /**
-     * This method deletes specific stored tab group title.
+     * This method uses tab group root ID as a reference to store tab group title.
+     *
+     * @param tabRootId    The tab root ID of the tab group whose title will be stored.
+     * @param title        The tab group title to store.
+     */
+    protected abstract void storeTabGroupTitle(int tabRootId, String title);
+
+    /**
+     * This method uses tab group root ID as a reference to delete specific stored tab group title.
      * @param tabRootId   The tab root ID whose related tab group title will be deleted.
      */
     protected abstract void deleteTabGroupTitle(int tabRootId);
 
     /**
-     * This method fetches tab group title with related tab group root ID.
-     * @param tabRootId  The tab root ID whose related tab group title will be deleted.
-     * @return The stored title of the related group, default value is null.
+     * This method uses tab group root ID to fetch stored tab group title.
+     * @param tabRootId  The tab root ID whose related tab group title will be fetched.
+     * @return The stored title of the related group.
      */
     protected abstract String getTabGroupTitle(int tabRootId);
 

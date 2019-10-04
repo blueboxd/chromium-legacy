@@ -18,16 +18,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "components/sync_device_info/device_info.h"
-#include "components/sync_device_info/device_info_sync_service.h"
-#include "components/sync_device_info/fake_device_info_tracker.h"
+#include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using syncer::DeviceInfo;
+using syncer::FakeDeviceInfoSyncService;
 using syncer::FakeDeviceInfoTracker;
-using testing::Return;
 
 namespace extensions {
 
@@ -89,39 +87,16 @@ TEST(SignedInDevicesAPITest, GetSignedInDevices) {
   EXPECT_NE(public_id3, public_id2);
 }
 
-class MockDeviceInfoSyncService : public syncer::DeviceInfoSyncService {
- public:
-  MockDeviceInfoSyncService() = default;
-  ~MockDeviceInfoSyncService() override = default;
-
-  FakeDeviceInfoTracker* fake_tracker() { return &tracker_; }
-
-  // DeviceInfoSyncService implementation.
-  syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() override {
-    return nullptr;
-  }
-  syncer::DeviceInfoTracker* GetDeviceInfoTracker() override {
-    return &tracker_;
-  }
-  base::WeakPtr<syncer::ModelTypeControllerDelegate> GetControllerDelegate()
-      override {
-    return nullptr;
-  }
-
- private:
-  FakeDeviceInfoTracker tracker_;
-};
-
-std::unique_ptr<KeyedService> CreateMockDeviceInfoSyncService(
+std::unique_ptr<KeyedService> CreateFakeDeviceInfoSyncService(
     content::BrowserContext* context) {
-  return std::make_unique<MockDeviceInfoSyncService>();
+  return std::make_unique<FakeDeviceInfoSyncService>();
 }
 
 class ExtensionSignedInDevicesTest : public ExtensionApiUnittest {
  private:
   TestingProfile::TestingFactories GetTestingFactories() override {
     return {{DeviceInfoSyncServiceFactory::GetInstance(),
-             base::BindRepeating(&CreateMockDeviceInfoSyncService)}};
+             base::BindRepeating(&CreateFakeDeviceInfoSyncService)}};
   }
 };
 
@@ -154,10 +129,9 @@ base::DictionaryValue* GetDictionaryFromList(int index,
 }
 
 TEST_F(ExtensionSignedInDevicesTest, GetAll) {
-  FakeDeviceInfoTracker* device_tracker =
-      static_cast<MockDeviceInfoSyncService*>(
-          DeviceInfoSyncServiceFactory::GetForProfile(profile()))
-          ->fake_tracker();
+  FakeDeviceInfoTracker* device_tracker = static_cast<FakeDeviceInfoTracker*>(
+      DeviceInfoSyncServiceFactory::GetForProfile(profile())
+          ->GetDeviceInfoTracker());
 
   DeviceInfo device_info1(
       base::GenerateGUID(), "abc Device", "XYZ v1", "XYZ SyncAgent v1",

@@ -218,12 +218,14 @@ class CreditCardSaveManager {
       const AutofillClient::UserProvidedCardDetails&
           user_provided_card_details);
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   // Upload the card details with the user provided cardholder_name.
   // Only relevant for mobile as fix flow is two steps on mobile compared to
   // one step on desktop.
   void OnUserDidAcceptAccountNameFixFlow(const base::string16& cardholder_name);
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
+#if defined(OS_ANDROID)
   // Upload the card details with the user provided expiration date month and
   // year. Only relevant for mobile as fix flow is two steps on mobile compared
   // to one step on desktop.

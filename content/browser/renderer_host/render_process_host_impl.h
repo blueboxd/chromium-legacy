@@ -105,6 +105,7 @@ class PeerConnectionTrackerHost;
 class PluginRegistryImpl;
 class PushMessagingManager;
 class RenderFrameMessageFilter;
+class RenderProcessHostCreationObserver;
 class RenderProcessHostFactory;
 class RenderWidgetHelper;
 class SiteInstance;
@@ -299,6 +300,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // list.
   static void RegisterHost(int host_id, RenderProcessHost* host);
   static void UnregisterHost(int host_id);
+
+  static void RegisterCreationObserver(
+      RenderProcessHostCreationObserver* observer);
+  static void UnregisterCreationObserver(
+      RenderProcessHostCreationObserver* observer);
 
   // Implementation of FilterURL below that can be shared with the mock class.
   static void FilterURL(RenderProcessHost* rph, bool empty_allowed, GURL* url);
@@ -626,7 +632,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver);
   void CreateBroadcastChannelProvider(
       mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider> receiver);
-  void CreateRendererHost(mojom::RendererHostAssociatedRequest request);
+  void CreateRendererHost(
+      mojo::PendingAssociatedReceiver<mojom::RendererHost> receiver);
   void BindVideoDecoderService(media::mojom::InterfaceFactoryRequest request);
   void BindWebDatabaseHostImpl(
       mojo::PendingReceiver<blink::mojom::WebDatabaseHost> receiver);

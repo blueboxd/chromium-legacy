@@ -36,15 +36,15 @@
     height: var(--tabstrip-tab-title-height);
     justify-content: center;
     margin: 0;
+    overflow: hidden;
   }
 
   #faviconContainer {
     --favicon-size: 16px;
     flex-shrink: 0;
-    height: 100%;
+    height: var(--favicon-size);
     margin-inline-end: 8px;
     margin-inline-start: 12px;
-    overflow: hidden;
     position: relative;
     width: var(--favicon-size);
   }
@@ -82,6 +82,19 @@
     transform: translate(-50%, 100%);
   }
 
+  #blocked {
+    background: var(--tabstrip-tab-blocked-color);
+    border: solid 1px var(--tabstrip-tab-background-color);
+    border-radius: 50%;
+    bottom: 0;
+    display: none;
+    height: 6px;
+    position: absolute;
+    right: 0;
+    transform: translate(50%, 50%);
+    width: 6px;
+  }
+
   :host([loading]) #loading,
   :host([loading]) #favicon {
     display: block;
@@ -110,6 +123,10 @@
         transform var(--tabstrip-tab-transition-duration);
     /* Wait until transition for #favicon finishes. */
     transition-delay: var(--tabstrip-tab-transition-duration);
+  }
+
+  :host([blocked]) #blocked {
+    display: block;
   }
 
   #titleText {
@@ -210,6 +227,7 @@
       <div id="loading"></div>
       <div id="favicon"></div>
       <div id="crashedIcon"></div>
+      <div id="blocked"></div>
     </div>
     <h2 id="titleText"></h2>
     <button id="close">

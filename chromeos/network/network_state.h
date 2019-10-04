@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chromeos/network/managed_state.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 #include "components/onc/onc_constants.h"
 #include "url/gurl.h"
 

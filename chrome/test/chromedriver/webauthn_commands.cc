@@ -102,19 +102,25 @@ Status ExecuteWebAuthnCommand(const WebAuthnCommand& command,
 Status ExecuteAddVirtualAuthenticator(WebView* web_view,
                                       const base::Value& params,
                                       std::unique_ptr<base::Value>* value) {
-  return web_view->SendCommandAndGetResult(
-      "WebAuthn.addVirtualAuthenticator",
-      MapParams(
-          {
-              {"options.protocol", "protocol"},
-              {"options.transport", "transport"},
-              {"options.hasResidentKey", "hasResidentKey"},
-              {"options.hasUserVerification", "hasUserVerification"},
-              {"options.automaticPresenceSimulation", "isUserConsenting"},
-              {"options.isUserVerified", "isUserVerified"},
-          },
-          params),
-      value);
+  base::DictionaryValue mapped_params = MapParams(
+      {
+          {"options.protocol", "protocol"},
+          {"options.transport", "transport"},
+          {"options.hasResidentKey", "hasResidentKey"},
+          {"options.hasUserVerification", "hasUserVerification"},
+          {"options.automaticPresenceSimulation", "isUserConsenting"},
+          {"options.isUserVerified", "isUserVerified"},
+      },
+      params);
+
+  // The spec calls u2f "ctap1/u2f", convert the value here since devtools does
+  // not support slashes on enums.
+  std::string* protocol = mapped_params.FindStringPath("options.protocol");
+  if (protocol && *protocol == "ctap1/u2f")
+    *protocol = "u2f";
+
+  return web_view->SendCommandAndGetResult("WebAuthn.addVirtualAuthenticator",
+                                           std::move(mapped_params), value);
 }
 
 Status ExecuteRemoveVirtualAuthenticator(WebView* web_view,

@@ -26,6 +26,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_message_macros.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
@@ -206,7 +207,7 @@ bool PrintViewManager::PrintPreview(
   if (IsInterstitialOrCrashed())
     return false;
 
-  mojom::PrintRenderFrameAssociatedPtr print_render_frame;
+  mojo::AssociatedRemote<mojom::PrintRenderFrame> print_render_frame;
   rfh->GetRemoteAssociatedInterfaces()->GetInterface(&print_render_frame);
   print_render_frame->InitiatePrintPreview(std::move(print_renderer),
                                            has_selection);

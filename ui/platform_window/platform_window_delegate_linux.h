@@ -7,6 +7,12 @@
 
 #include "ui/platform_window/platform_window_delegate_base.h"
 
+class SkPath;
+
+namespace gfx {
+class Size;
+}
+
 namespace ui {
 
 // This is an optional linux delegate interface, which should be implemented by
@@ -32,6 +38,10 @@ class PlatformWindowDelegateLinux : public PlatformWindowDelegateBase {
   // Notifies the delegate if the PlatformWindow has changed the workspace it is
   // located in.
   virtual void OnWorkspaceChanged();
+
+  // Returns a mask to be used to clip the window for the given
+  // size. This is used to create the non-rectangular window shape.
+  virtual void GetWindowMask(const gfx::Size& size, SkPath* window_mask);
 };
 
 }  // namespace ui

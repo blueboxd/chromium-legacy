@@ -69,12 +69,20 @@ jumbo_static_library("sync_device_info") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "fake_device_info_sync_service.cc",
+    "fake_device_info_sync_service.h",
     "fake_device_info_tracker.cc",
     "fake_device_info_tracker.h",
+    "fake_local_device_info_provider.cc",
+    "fake_local_device_info_provider.h",
   ]
 
   public_deps = [
     ":sync_device_info",
+  ]
+
+  deps = [
+    "//components/sync:test_support_model",
   ]
 }
 

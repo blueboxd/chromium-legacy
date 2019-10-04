@@ -15,6 +15,7 @@
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 
 class GURL;
 enum class WebappInstallSource;
@@ -76,7 +77,8 @@ class WebAppDataRetriever : content::WebContentsObserver {
 
  private:
   void OnGetWebApplicationInfo(
-      chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
+      mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
+          chrome_render_frame,
       int last_committed_nav_entry_unique_id,
       const WebApplicationInfo& web_app_info);
   void OnDidPerformInstallableCheck(const InstallableData& data);

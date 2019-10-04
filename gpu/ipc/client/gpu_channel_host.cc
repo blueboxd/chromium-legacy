@@ -101,7 +101,7 @@ bool GpuChannelHost::Send(IPC::Message* msg) {
   base::TimeDelta wait_duration = base::TimeTicks::Now() - start_time;
 
   // Histogram of wait-for-sync time, used for monitoring the GPU watchdog.
-  UMA_HISTOGRAM_CUSTOM_TIMES("GPU.GPUChannelHostWaitTime", wait_duration,
+  UMA_HISTOGRAM_CUSTOM_TIMES("GPU.GPUChannelHostWaitTime2", wait_duration,
                              base::TimeDelta::FromSeconds(1),
                              kGpuChannelHostMaxWaitTime, 50);
 

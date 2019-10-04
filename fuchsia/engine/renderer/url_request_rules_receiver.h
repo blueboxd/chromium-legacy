@@ -11,7 +11,8 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "fuchsia/engine/common/web_engine_url_loader_throttle.h"
 #include "fuchsia/engine/url_request_rewrite.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
@@ -37,8 +38,8 @@ class UrlRequestRulesReceiver
   ~UrlRequestRulesReceiver() override;
 
  private:
-  void OnUrlRequestRulesReceiverAssociatedRequest(
-      mojom::UrlRequestRulesReceiverAssociatedRequest request);
+  void OnUrlRequestRulesReceiverAssociatedReceiver(
+      mojo::PendingAssociatedReceiver<mojom::UrlRequestRulesReceiver> receiver);
 
   // mojom::UrlRequestRulesReceiver implementation.
   void OnRulesUpdated(
@@ -58,7 +59,9 @@ class UrlRequestRulesReceiver
   scoped_refptr<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>
       cached_rules_ GUARDED_BY(lock_);
 
-  mojo::AssociatedBinding<mojom::UrlRequestRulesReceiver> associated_binding_;
+  mojo::AssociatedReceiver<mojom::UrlRequestRulesReceiver>
+      url_request_rules_receiver_{this};
+
   base::OnceCallback<void(int)> on_render_frame_deleted_callback_;
   SEQUENCE_CHECKER(sequence_checker_);
 

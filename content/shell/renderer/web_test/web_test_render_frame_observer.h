@@ -8,7 +8,8 @@
 #include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/shell/common/web_test.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
 namespace content {
 
@@ -35,9 +36,10 @@ class WebTestRenderFrameObserver : public RenderFrameObserver,
   void ReplicateTestConfiguration(
       mojom::ShellTestConfigurationPtr config) override;
   void SetupSecondaryRenderer() override;
-  void BindRequest(mojom::WebTestControlAssociatedRequest request);
+  void BindReceiver(
+      mojo::PendingAssociatedReceiver<mojom::WebTestControl> receiver);
 
-  mojo::AssociatedBinding<mojom::WebTestControl> binding_;
+  mojo::AssociatedReceiver<mojom::WebTestControl> receiver_{this};
   bool focus_on_next_commit_ = false;
   DISALLOW_COPY_AND_ASSIGN(WebTestRenderFrameObserver);
 };

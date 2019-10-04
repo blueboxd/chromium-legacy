@@ -317,6 +317,11 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
   }
 }
 
+- (NSArray<NSString*>*)accessibilityUserInputLabels {
+  // The name for Voice Control shouldn't include any data from the badge.
+  return @[ self.titleLabel.text ];
+}
+
 #pragma mark - Private
 
 // Callback when the preferred Content Size change.

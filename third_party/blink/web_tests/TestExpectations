@@ -257,6 +257,7 @@ crbug.com/1004650 http/tests/security/contentSecurityPolicy/frame-src-cross-orig
 
 # Display locking failures
 crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
+crbug.com/1011376 wpt_internal/virtual-scroller/full-scroll-500px.html [ Failure ]
 
 # MSAN failure
 crbug.com/996625 inspector-protocol/accessibility/accessibility-getFullAXTree-display-locked.js [ Skip ]
@@ -6185,3 +6186,4 @@ crbug.com/1010657 [ Mac ] virtual/disable-deferred-rendering/fast/canvas/image-o
 # Sheriff 2019-10-04
 crbug.com/1011191 [ Mac ] paint/invalidation/svg/use-clipped-hit.svg  [ Pass Failure ]
 crbug.com/1011188 [ Mac ] paint/invalidation/svg/svg-background-partial-redraw.html [ Pass Failure ]
+crbug.com/1010863 http/tests/credentialmanager/credentialscontainer-get-with-virtual-authenticator.html [ Skip ]

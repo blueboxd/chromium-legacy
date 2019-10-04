@@ -5,12 +5,15 @@
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 
 #include "base/base64.h"
+#include "base/feature_list.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/sync_device_info/device_info_sync_service.h"
 #include "components/sync_device_info/device_info_tracker.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -58,14 +61,13 @@ SharingSyncPreference::FCMRegistration::~FCMRegistration() = default;
 
 SharingSyncPreference::SharingSyncPreference(
     PrefService* prefs,
-    syncer::DeviceInfoTracker* device_info_tracker,
-    syncer::LocalDeviceInfoProvider* local_device_info_provider)
-    : prefs_(prefs),
-      device_info_tracker_(device_info_tracker),
-      local_device_info_provider_(local_device_info_provider) {
+    syncer::DeviceInfoSyncService* device_info_sync_service)
+    : prefs_(prefs), device_info_sync_service_(device_info_sync_service) {
   DCHECK(prefs_);
-  DCHECK(device_info_tracker_);
-  DCHECK(local_device_info_provider_);
+  DCHECK(device_info_sync_service_);
+  device_info_tracker_ = device_info_sync_service_->GetDeviceInfoTracker();
+  local_device_info_provider_ =
+      device_info_sync_service_->GetLocalDeviceInfoProvider();
   pref_change_registrar_.Init(prefs);
 }
 
@@ -81,6 +83,15 @@ void SharingSyncPreference::RegisterProfilePrefs(
       prefs::kSharingVapidKey, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterDictionaryPref(prefs::kSharingFCMRegistration);
   registry->RegisterDictionaryPref(prefs::kSharingLocalSharingInfo);
+}
+
+// static
+base::Optional<syncer::DeviceInfo::SharingInfo>
+SharingSyncPreference::GetLocalSharingInfoForSync(PrefService* prefs) {
+  if (!base::FeatureList::IsEnabled(kSharingUseDeviceInfo))
+    return base::nullopt;
+
+  return GetLocalSharingInfo(prefs);
 }
 
 base::Optional<std::vector<uint8_t>> SharingSyncPreference::GetVapidKey()
@@ -231,6 +242,9 @@ void SharingSyncPreference::SetLocalSharingInfo(
                                           std::move(base64_auth_secret));
   local_sharing_info_update->SetKey(kSharingInfoEnabledFeatures,
                                     std::move(list_value));
+
+  if (base::FeatureList::IsEnabled(kSharingUseDeviceInfo))
+    device_info_sync_service_->RefreshLocalDeviceInfo();
 }
 
 void SharingSyncPreference::ClearLocalSharingInfo() {
@@ -244,6 +258,11 @@ void SharingSyncPreference::ClearLocalSharingInfo() {
 
   // Update prefs::kSharingLocalSharingInfo to clear local cache.
   prefs_->ClearPref(prefs::kSharingLocalSharingInfo);
+
+  if (base::FeatureList::IsEnabled(kSharingUseDeviceInfo) &&
+      device_info->sharing_info()) {
+    device_info_sync_service_->RefreshLocalDeviceInfo();
+  }
 }
 
 // static

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.features.start_surface;
 
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MORE_TABS_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_CLICKLISTENER;
@@ -25,10 +26,10 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
+import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -47,6 +48,21 @@ class StartSurfaceMediator
         int TASKS_ONLY = 1;
         int TWO_PANES = 2;
         int SINGLE_PANE = 3;
+    }
+
+    /** The delegate to interact with the location bar. */
+    interface Delegate {
+        /**
+         * Add the given url focus change listener.
+         * @param listener The given listener.
+         */
+        void addUrlFocusChangeListener(UrlFocusChangeListener listener);
+
+        /**
+         * Remove the given url focus change listener.
+         * @param listener The given listener.
+         */
+        void removeUrlFocusChangeListener(UrlFocusChangeListener listener);
     }
 
     /** Interface to initialize a secondary tasks surface for more tabs. */
@@ -74,21 +90,29 @@ class StartSurfaceMediator
     @Nullable
     private PropertyModel mSecondaryTasksSurfacePropertyModel;
     private boolean mIsIncognito;
+    @Nullable
+    private Delegate mDelegate;
+    @Nullable
+    UrlFocusChangeListener mUrlFocusChangeListener;
+    @Nullable
+    private StartSurface.StateObserver mStateObserver;
 
     StartSurfaceMediator(TabSwitcher.Controller controller, TabModelSelector tabModelSelector,
             @Nullable PropertyModel propertyModel,
             @Nullable ExploreSurfaceCoordinator.FeedSurfaceCreator feedSurfaceCreator,
             @Nullable SecondaryTasksSurfaceInitializer secondaryTasksSurfaceInitializer,
-            @SurfaceMode int surfaceMode) {
+            @SurfaceMode int surfaceMode, @Nullable Delegate delegate) {
         mController = controller;
         mPropertyModel = propertyModel;
         mFeedSurfaceCreator = feedSurfaceCreator;
         mSecondaryTasksSurfaceInitializer = secondaryTasksSurfaceInitializer;
         mSurfaceMode = surfaceMode;
+        mDelegate = delegate;
 
         if (mPropertyModel != null) {
             assert mSurfaceMode == SurfaceMode.SINGLE_PANE || mSurfaceMode == SurfaceMode.TWO_PANES
                     || mSurfaceMode == SurfaceMode.TASKS_ONLY;
+            assert mDelegate != null;
 
             mIsIncognito = tabModelSelector.isIncognitoSelected();
             tabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
@@ -107,6 +131,7 @@ class StartSurfaceMediator
                         @Override
                         public void onHomeButtonClicked() {
                             setExploreSurfaceVisibility(false);
+                            notifyStateChange();
                             RecordUserAction.record("StartSurface.TwoPanes.BottomBar.TapHome");
                         }
 
@@ -115,6 +140,7 @@ class StartSurfaceMediator
                             // TODO(crbug.com/982018): Hide the Tab switcher toolbar when showing
                             // explore surface.
                             setExploreSurfaceVisibility(true);
+                            notifyStateChange();
                             RecordUserAction.record(
                                     "StartSurface.TwoPanes.BottomBar.TapExploreSurface");
                         }
@@ -144,10 +170,23 @@ class StartSurfaceMediator
             int toolbarHeight =
                     ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
                             R.dimen.toolbar_height_no_shadow);
-            int topControlsHeight = ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher()
-                    ? toolbarHeight * 2
-                    : toolbarHeight;
-            mPropertyModel.set(TOP_BAR_HEIGHT, topControlsHeight);
+            mPropertyModel.set(TOP_BAR_HEIGHT, toolbarHeight);
+
+            mUrlFocusChangeListener = new UrlFocusChangeListener() {
+                @Override
+                public void onUrlFocusChange(boolean hasFocus) {
+                    // No fake search box on the explore pane in two panes mode.
+                    if (mSurfaceMode != SurfaceMode.TWO_PANES
+                            || !mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)) {
+                        mPropertyModel.set(IS_FAKE_SEARCH_BOX_VISIBLE, !hasFocus);
+                    }
+                    if (mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE)) {
+                        mSecondaryTasksSurfacePropertyModel.set(
+                                IS_FAKE_SEARCH_BOX_VISIBLE, !hasFocus);
+                    }
+                    notifyStateChange();
+                }
+            };
         }
         mController.addOverviewModeObserver(this);
     }
@@ -158,6 +197,10 @@ class StartSurfaceMediator
         // Secondary tasks surface is used for more Tabs or incognito mode single pane, where MV
         // tiles should be invisible.
         mSecondaryTasksSurfacePropertyModel.set(MV_TILES_VISIBLE, false);
+    }
+
+    void setStateChangeObserver(StartSurface.StateObserver observer) {
+        mStateObserver = observer;
     }
 
     // Implements StartSurface.Controller
@@ -214,7 +257,9 @@ class StartSurfaceMediator
                 mPropertyModel.set(FEED_SURFACE_COORDINATOR,
                         mFeedSurfaceCreator.createFeedSurfaceCoordinator());
             }
+
             mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
+            mDelegate.addUrlFocusChangeListener(mUrlFocusChangeListener);
         }
 
         mController.showOverview(animate);
@@ -230,12 +275,14 @@ class StartSurfaceMediator
 
             setSecondaryTasksSurfaceVisibility(false);
             setExploreSurfaceVisibility(true);
+            notifyStateChange();
             return true;
         }
 
         if (mPropertyModel != null && mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)
                 && mSurfaceMode == SurfaceMode.TWO_PANES) {
             setExploreSurfaceVisibility(false);
+            notifyStateChange();
             return true;
         }
 
@@ -255,12 +302,20 @@ class StartSurfaceMediator
         for (StartSurface.OverviewModeObserver observer : mObservers) {
             observer.finishedShowing();
         }
+
+        // TODO(crbug.com/982018): Move to showOverview before overview is showing.
+        // Note that Tab switcher mode toolbar is lazily created when showing Tab switcher the first
+        // time.
+        if (mSurfaceMode != SurfaceMode.NO_START_SURFACE) {
+            notifyStateChange();
+        }
     }
 
     @Override
     public void startedHiding() {
         if (mPropertyModel != null) {
             mPropertyModel.set(IS_SHOWING_OVERVIEW, false);
+            mDelegate.removeUrlFocusChangeListener(mUrlFocusChangeListener);
             destroyFeedSurfaceCoordinator();
         }
         for (StartSurface.OverviewModeObserver observer : mObservers) {
@@ -273,6 +328,13 @@ class StartSurfaceMediator
         for (StartSurface.OverviewModeObserver observer : mObservers) {
             observer.finishedHiding();
         }
+    }
+
+    private void destroyFeedSurfaceCoordinator() {
+        FeedSurfaceCoordinator feedSurfaceCoordinator =
+                mPropertyModel.get(FEED_SURFACE_COORDINATOR);
+        if (feedSurfaceCoordinator != null) feedSurfaceCoordinator.destroy();
+        mPropertyModel.set(FEED_SURFACE_COORDINATOR, null);
     }
 
     // Implements View.OnClickListener, which listens for the more tabs button.
@@ -332,27 +394,53 @@ class StartSurfaceMediator
             // always show the Home Pane, so the Explore Pane stays hidden.
             if (mIsIncognito) setExploreSurfaceVisibility(false);
         }
-    }
 
-    private void destroyFeedSurfaceCoordinator() {
-        FeedSurfaceCoordinator feedSurfaceCoordinator =
-                mPropertyModel.get(FEED_SURFACE_COORDINATOR);
-        if (feedSurfaceCoordinator != null) feedSurfaceCoordinator.destroy();
-        mPropertyModel.set(FEED_SURFACE_COORDINATOR, null);
+        notifyStateChange();
     }
 
     private void setSecondaryTasksSurfaceVisibility(boolean isVisible) {
         assert mSurfaceMode == SurfaceMode.SINGLE_PANE;
+
         if (isVisible) {
             if (mSecondaryTasksSurfaceController == null) {
                 mSecondaryTasksSurfaceController = mSecondaryTasksSurfaceInitializer.initialize();
             }
-
+            mSecondaryTasksSurfacePropertyModel.set(IS_FAKE_SEARCH_BOX_VISIBLE, mIsIncognito);
             mSecondaryTasksSurfaceController.showOverview(false);
         } else {
             if (mSecondaryTasksSurfaceController == null) return;
             mSecondaryTasksSurfaceController.hideOverview(false);
         }
         mPropertyModel.set(IS_SECONDARY_SURFACE_VISIBLE, isVisible);
+    }
+
+    private void notifyStateChange() {
+        assert mSurfaceMode != SurfaceMode.NO_START_SURFACE;
+
+        if (mStateObserver != null) {
+            mStateObserver.onStateChanged(shouldShowTabSwitcherToolbar());
+        }
+    }
+
+    private boolean shouldShowTabSwitcherToolbar() {
+        if (mSurfaceMode == SurfaceMode.SINGLE_PANE) {
+            // Show Tab switcher toolbar when showing more Tabs and in incognito single pane when
+            // fake search box is visible.
+            if (mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE)) {
+                return !mIsIncognito
+                        || (mIsIncognito
+                                && mSecondaryTasksSurfacePropertyModel.get(
+                                        IS_FAKE_SEARCH_BOX_VISIBLE));
+            }
+        }
+
+        // Do not show Tab switcher toolbar on explore pane.
+        if (mSurfaceMode == SurfaceMode.TWO_PANES
+                && mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)) {
+            return false;
+        }
+
+        // Do not show Tab switcher toolbar when focusing the Omnibox.
+        return mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE);
     }
 }

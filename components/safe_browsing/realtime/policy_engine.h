@@ -7,6 +7,10 @@
 
 #include "content/public/common/resource_type.h"
 
+namespace content {
+class BrowserContext;
+}
+
 namespace safe_browsing {
 
 // This class implements the logic to decide whether the real time lookup
@@ -19,16 +23,15 @@ class RealTimePolicyEngine {
   // Is the feature to sync high confidence allowlist enabled?
   static bool IsFetchAllowlistEnabled();
 
-  // Return true if the feature to enable full URL lookups is enabled and the
-  // allowlist fetch is enabled, |resource_type| is kMainFrame.
+  // Return true if full URL lookups are enabled for |resource_type|.
   static bool CanPerformFullURLLookupForResourceType(
       content::ResourceType resource_type);
 
   // Return true if the feature to enable full URL lookups is enabled and the
-  // allowlist fetch is enabled.
-  static bool CanPerformFullURLLookup();
+  // allowlist fetch is enabled for the profile represented by
+  // |browser_context|.
+  static bool CanPerformFullURLLookup(content::BrowserContext* browser_context);
 
-  static bool is_enabled_by_pref() { return is_enabled_by_pref_; }
   friend class SafeBrowsingService;
 
  private:
@@ -36,13 +39,10 @@ class RealTimePolicyEngine {
   static bool IsUrlLookupEnabled();
 
   // Is user opted-in to the feature?
-  static bool IsUserOptedIn();
+  static bool IsUserOptedIn(content::BrowserContext* browser_context);
 
-  // TODO(crbug.com/991394): This is a temporary way of checking whether the
-  // real-time lookup is enabled for any active profile. This must be fixed
-  // before full launch.
-  static bool is_enabled_by_pref_;
-  static void SetEnabled(bool is_enabled);
+  // Is the feature enabled due to enterprise policy?
+  static bool IsEnabledByPolicy(content::BrowserContext* browser_context);
 
   friend class RealTimePolicyEngineTest;
 };  // class RealTimePolicyEngine

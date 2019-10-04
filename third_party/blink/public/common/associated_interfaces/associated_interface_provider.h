@@ -11,8 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
-#include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -25,13 +23,12 @@ namespace blink {
 // A helper interface for connecting to remote Channel-associated interfaces.
 //
 // This is analogous to service_manager::InterfaceProvider in that it provides a
-// means of
-// binding proxies to remote interfaces, but this is specifically for interfaces
-// which must be associated with an IPC::Channel, i.e. retain FIFO message
-// ordering with respect to legacy IPC messages.
+// means of binding proxies to remote interfaces, but this is specifically for
+// interfaces which must be associated with an IPC::Channel, i.e. retain FIFO
+// message ordering with respect to legacy IPC messages.
 //
-// The Channel with which the remote interfaces are associated depends on
-// the configuration of the specific AssociatedInterfaceProvider instance. For
+// The Channel with which the remote interfaces are associated depends on the
+// configuration of the specific AssociatedInterfaceProvider instance. For
 // example, RenderFrameHost exposes an instance of this class for which all
 // interfaces are associated with the IPC::ChannelProxy to the render process
 // which hosts its corresponding RenderFrame.
@@ -60,21 +57,6 @@ class BLINK_COMMON_EXPORT AssociatedInterfaceProvider {
   // Channel-associated interface named |name|.
   void GetInterface(const std::string& name,
                     mojo::ScopedInterfaceEndpointHandle handle);
-
-  // Remove this after done with migration from AssociatedInterfaceRequest to
-  // PendingAssociatedReceiver.
-  // Templated helpers for GetInterface().
-  template <typename Interface>
-  void GetInterface(mojo::AssociatedInterfaceRequest<Interface> request) {
-    GetInterface(Interface::Name_, request.PassHandle());
-  }
-
-  // Remove this after done with migration from AssociatedInterfacePtr to
-  // AssociatedRemote.
-  template <typename Interface>
-  void GetInterface(mojo::AssociatedInterfacePtr<Interface>* proxy) {
-    GetInterface(mojo::MakeRequest(proxy, task_runner_));
-  }
 
   template <typename Interface>
   void GetInterface(mojo::PendingAssociatedReceiver<Interface> receiver) {

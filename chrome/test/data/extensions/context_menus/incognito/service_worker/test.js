@@ -5,7 +5,8 @@
 var inIncognitoContext = chrome.extension.inIncognitoContext;
 var incognitoStr = inIncognitoContext ? 'incognito' : 'regular';
 
-chrome.contextMenus.create({title: 'item ' + incognitoStr}, function() {
+chrome.contextMenus.create({title: 'item ' + incognitoStr,
+                            id: 'id_' + incognitoStr}, function() {
   chrome.test.assertNoLastError();
   chrome.contextMenus.onClicked.addListener(function(info, tab) {
     chrome.test.sendMessage('onclick fired ' + incognitoStr);

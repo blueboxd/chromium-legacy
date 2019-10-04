@@ -9,6 +9,25 @@ import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 /** Interface to communicate with the start surface. */
 public interface StartSurface {
     /**
+     * An observer that is notified when the start surface internal state, excluding
+     * the states notified in {@link OverviewModeObserver}, is changed.
+     */
+    interface StateObserver {
+        /**
+         * Called when the internal state is changed.
+         * @param shouldShowTabSwitcherToolbar Whether or not should show the Tab switcher toolbar.
+         */
+        void onStateChanged(boolean shouldShowTabSwitcherToolbar);
+    }
+
+    /**
+     * Set the given {@link StateObserver}.
+     * Note that this will override the previous observer.
+     * @param observer The given observer.
+     */
+    void setStateChangeObserver(StateObserver observer);
+
+    /**
      * Defines an interface to pass out tab selecting event.
      */
     interface OnTabSelectingListener extends TabSwitcher.OnTabSelectingListener {}

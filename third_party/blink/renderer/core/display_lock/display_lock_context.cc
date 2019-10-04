@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/display_lock/before_activate_event.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/display_lock/strict_yielding_display_lock_budget.h"
 #include "third_party/blink/renderer/core/display_lock/unyielding_display_lock_budget.h"
@@ -111,6 +112,21 @@ void DisplayLockContext::ContextDestroyed(ExecutionContext*) {
   state_ = kUnlocked;
 }
 
+void DisplayLockContext::UpdateActivationObservationIfNeeded() {
+  if (!document_) {
+    is_observed_ = false;
+    return;
+  }
+
+  bool should_observe = IsLocked() && IsActivatable() && ConnectedToView();
+  if (should_observe && !is_observed_) {
+    document_->RegisterDisplayLockActivationObservation(element_);
+  } else if (!should_observe && is_observed_) {
+    document_->UnregisterDisplayLockActivationObservation(element_);
+  }
+  is_observed_ = should_observe;
+}
+
 void DisplayLockContext::SetActivatable(bool activatable) {
   if (IsLocked()) {
     // If we're locked, the activatable flag might change the activation
@@ -119,6 +135,7 @@ void DisplayLockContext::SetActivatable(bool activatable) {
     state_.UpdateActivationBlockingCount(activatable_, activatable);
   }
   activatable_ = activatable;
+  UpdateActivationObservationIfNeeded();
 }
 
 void DisplayLockContext::StartAcquire() {
@@ -354,7 +371,12 @@ bool DisplayLockContext::IsActivatable() const {
   return activatable_ || !IsLocked();
 }
 
-void DisplayLockContext::CommitForActivation() {
+void DisplayLockContext::CommitForActivationWithSignal(
+    Element* activated_element) {
+  DCHECK(activated_element);
+  element_->DispatchEvent(
+      *MakeGarbageCollected<BeforeActivateEvent>(*activated_element));
+
   // The beforeactivate signal may have committed this lock already, in which
   // case we have nothing to do.
   if (!IsLocked())
@@ -619,6 +641,11 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
   DCHECK(element_);
   document_ = &element_->GetDocument();
 
+  if (is_observed_) {
+    old_document.UnregisterDisplayLockActivationObservation(element_);
+    document_->RegisterDisplayLockActivationObservation(element_);
+  }
+
   // Since we're observing the lifecycle updates, ensure that we listen to the
   // right document's view.
   if (HasResolver()) {
@@ -692,6 +719,14 @@ void DisplayLockContext::NotifyWillDisconnect() {
   // layout.
   if (auto* parent = element_->GetLayoutObject()->Parent())
     parent->SetNeedsLayout(layout_invalidation_reason::kDisplayLock);
+}
+
+void DisplayLockContext::ElementDisconnected() {
+  UpdateActivationObservationIfNeeded();
+}
+
+void DisplayLockContext::ElementConnected() {
+  UpdateActivationObservationIfNeeded();
 }
 
 void DisplayLockContext::ScheduleAnimation() {
@@ -848,6 +883,7 @@ operator=(State new_state) {
       document.AddLockedDisplayLock();
   }
 
+  context_->UpdateActivationObservationIfNeeded();
   return *this;
 }
 

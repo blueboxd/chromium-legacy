@@ -70,6 +70,14 @@ namespace autotestPrivate {
     WMEventSnapRight
   };
 
+  // Display orientation type.
+  enum RotationType {
+    Rotate0,
+    Rotate90,
+    Rotate180,
+    Rotate270
+  };
+
   // A paramter used in setArcAppWindowState() function.
   dictionary WindowStateChangeDict {
     // The WM event to change the ARC window state.
@@ -255,6 +263,7 @@ namespace autotestPrivate {
     boolean isAnimating;
     DOMString displayId;
   };
+  
   callback GetArcAppWindowInfoCallback = void (ArcAppWindowInfo info);
 
   callback LaunchArcAppCallback = void (boolean appLaunched);
@@ -268,6 +277,8 @@ namespace autotestPrivate {
   callback SetTabletModeEnabledCallback = void(boolean enabled);
 
   callback SetOverviewModeStateCallback = void(boolean finished);
+
+  callback WaitForDisplayRotationCallback = void (boolean success);
 
   dictionary App {
     DOMString appId;
@@ -611,6 +622,15 @@ namespace autotestPrivate {
     // |callback|: called when the operation has completed.
     static void setArcAppWindowFocus(DOMString packageName,
                                      VoidCallback callback);
+    // Invokes the callback when the display rotation animation is finished, or
+    // invokes it immediately if it is not animating. The callback argument
+    // is true if the display's rotation is same as |rotation|, or false otherwise.
+    // |displayId|: display that contains the shelf.
+    // |rotation|: the target rotation.
+    // |callback|: called when the operation has completed.
+    static void waitForDisplayRotation(DOMString displayId,
+                                       RotationType rotation,
+                                       WaitForDisplayRotationCallback callback);
   };
 
   interface Events {

@@ -69,6 +69,8 @@ source_set("autofill") {
 source_set("bridges") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "card_name_fix_flow_view_bridge.h",
+    "card_name_fix_flow_view_bridge.mm",
     "card_unmask_prompt_view_bridge.h",
     "card_unmask_prompt_view_bridge.mm",
   ]
@@ -80,6 +82,8 @@ source_set("bridges") {
     "//ios/chrome/browser/ui/autofill/cells",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/list_model",
+    "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/colors",
     "//ios/third_party/material_components_ios",

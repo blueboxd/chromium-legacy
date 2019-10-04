@@ -85,6 +85,11 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
       appearance_observer_;
   id high_contrast_notification_token_;
 
+  // Used to notify the web native theme of changes to dark mode and high
+  // contrast.
+  std::unique_ptr<NativeTheme::ColorSchemeNativeThemeObserver>
+      color_scheme_observer_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeThemeMac);
 };
 

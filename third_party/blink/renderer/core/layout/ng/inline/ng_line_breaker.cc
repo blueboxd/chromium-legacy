@@ -362,18 +362,18 @@ void NGLineBreaker::BreakLine(
       continue;
     }
 
-    // If |state_| is overflow, break at the earliest break opportunity.
-    const NGInlineItemResults& item_results = line_info->Results();
-    if (state_ == LineBreakState::kOverflow &&
-        CanBreakAfterLast(item_results)) {
-      state_ = LineBreakState::kTrailing;
-    }
-
     // If we reach at the end of the block, this is the last line.
     DCHECK_LE(item_index_, items.size());
     if (item_index_ == items.size()) {
       line_info->SetIsLastLine(true);
       return;
+    }
+
+    // If |state_| is overflow, break at the earliest break opportunity.
+    const NGInlineItemResults& item_results = line_info->Results();
+    if (UNLIKELY(state_ == LineBreakState::kOverflow &&
+                 CanBreakAfterLast(item_results))) {
+      state_ = LineBreakState::kTrailing;
     }
 
     // Handle trailable items first. These items may not be break before.
@@ -576,6 +576,12 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
     }
 
     DCHECK_EQ(break_result, kOverflow);
+    if (UNLIKELY(state_ == LineBreakState::kOverflow &&
+                 item_result->shape_result)) {
+      if (item_result->can_break_after)
+        state_ = LineBreakState::kTrailing;
+      return;
+    }
     return HandleOverflow(line_info);
   }
 

@@ -628,10 +628,11 @@ class ShellUtil {
   // as an argument).
   // |application_name| is the friendly name displayed for this application in
   // the Open With menu.
-  // |file_type_name| and |icon_path| are the friendly name, and the path of the
-  // icon, respectively, that will be used for files of these types when
-  // associated with this application by default. (They are NOT the name/icon
-  // that will represent the application under the Open With menu.)
+  // |file_type_name| is the friendly name for files of these types when
+  // associated with this application by default.
+  // |icon_path| is the path of the icon displayed for this application in the
+  // Open With menu, and used for files of these types when associated with this
+  // application by default.
   // |file_extensions| is the set of extensions to associate. They must not be
   // empty or start with a '.'.
   // Returns true on success, false on failure.

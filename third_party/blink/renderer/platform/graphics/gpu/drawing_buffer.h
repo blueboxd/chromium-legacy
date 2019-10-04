@@ -235,8 +235,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
                              const IntRect& src_sub_rectangle,
                              SourceDrawingBuffer);
 
-  scoped_refptr<Uint8Array> PaintRenderingResultsToDataArray(
-      SourceDrawingBuffer);
+  sk_sp<SkData> PaintRenderingResultsToDataArray(SourceDrawingBuffer);
 
   int SampleCount() const { return sample_count_; }
   bool ExplicitResolveOfMultisampleData() const {

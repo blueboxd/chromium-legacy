@@ -52,6 +52,8 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
     kEventPage,
     // A Service Worker based extension.
     kServiceWorker,
+    // An extension with a persistent background page.
+    kPersistentBackground,
   };
 
  protected:

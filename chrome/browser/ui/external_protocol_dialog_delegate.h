@@ -23,8 +23,10 @@
 class ExternalProtocolDialogDelegate : public ProtocolDialogDelegate,
                                        public content::WebContentsObserver {
  public:
-  ExternalProtocolDialogDelegate(const GURL& url,
-                                 content::WebContents* web_contents);
+  ExternalProtocolDialogDelegate(
+      const GURL& url,
+      content::WebContents* web_contents,
+      const base::Optional<url::Origin>& initiating_origin);
   ~ExternalProtocolDialogDelegate() override;
 
   const base::string16& program_name() const { return program_name_; }
@@ -38,6 +40,7 @@ class ExternalProtocolDialogDelegate : public ProtocolDialogDelegate,
 
  private:
   const base::string16 program_name_;
+  base::Optional<url::Origin> initiating_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProtocolDialogDelegate);
 };

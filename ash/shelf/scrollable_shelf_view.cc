@@ -538,7 +538,6 @@ void ScrollableShelfView::Layout() {
     left_arrow_bounds.Inset(kArrowButtonEndPadding, 0, kDistanceToArrowButton,
                             0);
     left_arrow_bounds.ClampToCenteredSize(arrow_button_size);
-    shelf_container_bounds.Inset(kArrowButtonGroupWidth, 0, 0, 0);
   }
 
   if (layout_strategy_ == kShowRightArrowButton ||
@@ -551,15 +550,31 @@ void ScrollableShelfView::Layout() {
     right_arrow_bounds.Inset(kDistanceToArrowButton, 0, kArrowButtonEndPadding,
                              0);
     right_arrow_bounds.ClampToCenteredSize(arrow_button_size);
-    shelf_container_bounds.Inset(0, 0, kArrowButtonGroupWidth, 0);
+  }
+
+  // The layout offset before/after |shelf_container_view_|.
+  int shelf_container_before_offset = 0;
+  int shelf_container_after_offset = 0;
+
+  if (layout_strategy_ == kNotShowArrowButtons) {
+    // Paddings are within the shelf view. It makes sure that |shelf_view_|'s
+    // bounds are not changed under this layout strategy. It facilitates
+    // |shelf_view_| to create bounds animations when adding/removing app icons.
+    shelf_view_->set_app_icons_layout_offset(before_padding);
+  } else {
+    shelf_container_before_offset = before_padding;
+    shelf_container_after_offset = after_padding;
+    shelf_view_->set_app_icons_layout_offset(0);
   }
 
   shelf_container_bounds.Inset(
-      before_padding +
-          (left_arrow_bounds.IsEmpty() ? GetAppIconEndPadding() : 0),
+      shelf_container_before_offset + (left_arrow_bounds.IsEmpty()
+                                           ? GetAppIconEndPadding()
+                                           : kArrowButtonGroupWidth),
       0,
-      after_padding +
-          (right_arrow_bounds.IsEmpty() ? GetAppIconEndPadding() : 0),
+      shelf_container_after_offset + (right_arrow_bounds.IsEmpty()
+                                          ? GetAppIconEndPadding()
+                                          : kArrowButtonGroupWidth),
       0);
 
   // Adjust the bounds when not showing in the horizontal

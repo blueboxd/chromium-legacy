@@ -50,8 +50,8 @@ class CONTENT_EXPORT NavigationBodyLoader
   // This method fills navigation params related to the navigation request,
   // redirects and response, and also creates a body loader if needed.
   static void FillNavigationParamsResponseAndBodyLoader(
-      const mojom::CommonNavigationParams& common_params,
-      const mojom::CommitNavigationParams& commit_params,
+      mojom::CommonNavigationParamsPtr common_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       int request_id,
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,

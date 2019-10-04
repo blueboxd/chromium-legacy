@@ -62,11 +62,6 @@ class StatusMediator {
         }
     }
 
-    // The size that the icon should be displayed as.
-    private static final int SEARCH_ENGINE_LOGO_ICON_TARGET_SIZE_DP = 24;
-    // The size given to LargeIconBridge to increase the probability that we'll get an icon back.
-    private static final int SEARCH_ENGINE_LOGO_ICON_DOWNLOAD_SIZE_DP = 16;
-
     private final PropertyModel mModel;
     private boolean mDarkTheme;
     private boolean mUrlHasFocus;
@@ -368,58 +363,15 @@ class StatusMediator {
      *     - not shown if URL is focused.
      */
     private void updateLocationBarIcon() {
-        int icon = 0;
-        int tint = 0;
-        int toast = 0;
-
         // Update the accessibility description before continuing since we need it either way.
         mModel.set(StatusProperties.STATUS_ICON_DESCRIPTION_RES, getAccessibilityDescriptionRes());
 
-        // When the search engine logo should be shown, but the engine isn't Google. In this case,
-        // we download the icon on the fly.
-        boolean showFocused = mUrlHasFocus && mShowStatusIconWhenUrlFocused;
-        // Show the logo unfocused if "Query in the omnibox" is active or we're on the NTP. Current
-        // "Query in the omnibox" behavior makes it active for non-dse searches if you've just
-        // changed your default search engine.The included workaround below
-        // (doesUrlMatchDefaultSearchEngine) can be removed once this is fixed.
-        // TODO(crbug.com/991017): Remove doesUrlMatchDefaultSearchEngine when "Query in the
-        //                         omnibox" properly reacts to dse changes.
-        boolean showUnfocusedSearchResultsPage = !mUrlHasFocus
-                && mToolbarCommonPropertiesModel != null
-                && mToolbarCommonPropertiesModel.getDisplaySearchTerms() != null
-                && mDelegate.doesUrlMatchDefaultSearchEngine(
-                        mToolbarCommonPropertiesModel.getCurrentUrl());
-        boolean isIncognito = mToolbarCommonPropertiesModel != null
-                && mToolbarCommonPropertiesModel.isIncognito();
-        if (mDelegate.shouldShowSearchEngineLogo(isIncognito) && mIsSearchEngineStateSetup
-                && (showFocused || showUnfocusedSearchResultsPage)) {
-            mShouldCancelCustomFavicon = false;
-            // If the current url text is a valid url, then swap the dse icon for a globe.
-            if (mUrlBarTextIsValidUrl) {
-                icon = R.drawable.ic_globe_24dp;
-            } else if (mIsSearchEngineGoogle) {
-                if (mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)) {
-                    icon = R.drawable.ic_search;
-                } else {
-                    icon = R.drawable.ic_logo_googleg_24dp;
-                }
-            } else {
-                icon = R.drawable.ic_search;
-                if (!mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)) {
-                    mDelegate.getSearchEngineLogoFavicon(mResources, (favicon) -> {
-                        if (favicon == null || mShouldCancelCustomFavicon) return;
-                        mModel.set(StatusProperties.STATUS_ICON, favicon);
-                        mModel.set(StatusProperties.STATUS_ICON_TINT_RES, 0);
-                    });
-                }
-            }
-            tint = icon == R.drawable.ic_logo_googleg_24dp ? 0 : mSecurityIconTintRes;
-            mModel.set(StatusProperties.STATUS_ICON_RES, icon);
-            mModel.set(StatusProperties.STATUS_ICON_TINT_RES, tint);
-            return;
-        } else {
-            mShouldCancelCustomFavicon = true;
-        }
+        // No need to proceed further if we've already updated it for the search engine icon.
+        if (maybeUpdateStatusIconForSearchEngineIcon()) return;
+
+        int icon = 0;
+        int tint = 0;
+        int toast = 0;
 
         mIsSecurityButtonShown = false;
         if (mUrlHasFocus) {
@@ -443,6 +395,90 @@ class StatusMediator {
         mModel.set(StatusProperties.STATUS_ICON_RES, icon);
         mModel.set(StatusProperties.STATUS_ICON_TINT_RES, tint);
         mModel.set(StatusProperties.STATUS_ICON_ACCESSIBILITY_TOAST_RES, toast);
+    }
+
+    /** @return True if the security icon has been set for the search engine icon. */
+    @VisibleForTesting
+    boolean maybeUpdateStatusIconForSearchEngineIcon() {
+        // When the search engine logo should be shown, but the engine isn't Google. In this case,
+        // we download the icon on the fly.
+        boolean showFocused = mUrlHasFocus && mShowStatusIconWhenUrlFocused;
+        // Show the logo unfocused if "Query in the omnibox" is active or we're on the NTP. Current
+        // "Query in the omnibox" behavior makes it active for non-dse searches if you've just
+        // changed your default search engine.The included workaround below
+        // (doesUrlMatchDefaultSearchEngine) can be removed once this is fixed.
+        // TODO(crbug.com/991017): Remove doesUrlMatchDefaultSearchEngine when "Query in the
+        //                         omnibox" properly reacts to dse changes.
+        boolean showUnfocusedSearchResultsPage = !mUrlHasFocus
+                && mToolbarCommonPropertiesModel != null
+                && mToolbarCommonPropertiesModel.getDisplaySearchTerms() != null
+                && mDelegate.doesUrlMatchDefaultSearchEngine(
+                        mToolbarCommonPropertiesModel.getCurrentUrl());
+        boolean isIncognito = mToolbarCommonPropertiesModel != null
+                && mToolbarCommonPropertiesModel.isIncognito();
+        if (mDelegate.shouldShowSearchEngineLogo(isIncognito) && mIsSearchEngineStateSetup
+                && (showFocused || showUnfocusedSearchResultsPage)) {
+            setSecurityIconResourceForSearchEngineIcon(isIncognito, (icon) -> {
+                mModel.set(StatusProperties.STATUS_ICON_TINT_RES,
+                        getSecurityIconTintForSearchEngineIcon(icon));
+            });
+            return true;
+        } else {
+            mShouldCancelCustomFavicon = true;
+            return false;
+        }
+    }
+
+    /**
+     * Set the security icon resource for the search engine icon and invoke the callback to inform
+     * the caller which resource has been set.
+     *
+     * @param isIncognito True if the user is incognito.
+     * @param callback Called when the final value is set for the security icon resource. Meant to
+     *                 give the caller a chance to set the tint for the given resource.
+     */
+    private void setSecurityIconResourceForSearchEngineIcon(
+            boolean isIncognito, Callback<Integer> callback) {
+        mShouldCancelCustomFavicon = false;
+        // If the current url text is a valid url, then swap the dse icon for a globe.
+        if (mUrlBarTextIsValidUrl) {
+            mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_globe_24dp);
+            callback.onResult(R.drawable.ic_globe_24dp);
+        } else if (mIsSearchEngineGoogle) {
+            int icon = mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)
+                    ? R.drawable.ic_search
+                    : R.drawable.ic_logo_googleg_24dp;
+            mModel.set(StatusProperties.STATUS_ICON_RES, icon);
+            callback.onResult(icon);
+        } else {
+            mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_search);
+            callback.onResult(R.drawable.ic_search);
+            if (!mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)) {
+                mDelegate.getSearchEngineLogoFavicon(mResources, (favicon) -> {
+                    if (favicon == null || mShouldCancelCustomFavicon) return;
+                    mModel.set(StatusProperties.STATUS_ICON, favicon);
+                    callback.onResult(0);
+                });
+            }
+        }
+    }
+
+    /**
+     * Get the icon tint for the given search engine icon resource.
+     * @param icon The icon resource for the search engine icon.
+     * @return The tint resource for the given parameters.
+     */
+    @VisibleForTesting
+    int getSecurityIconTintForSearchEngineIcon(int icon) {
+        int tint;
+        if (icon == 0 || icon == R.drawable.ic_logo_googleg_24dp) {
+            tint = 0;
+        } else {
+            tint = mDarkTheme ? R.color.default_icon_color_secondary_list
+                              : ColorUtils.getThemedToolbarIconTintRes(!mDarkTheme);
+        }
+
+        return tint;
     }
 
     /** Return the resource id for the accessibility description or 0 if none apply. */

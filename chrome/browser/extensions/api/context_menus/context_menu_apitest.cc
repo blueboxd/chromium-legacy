@@ -15,9 +15,11 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/context_menus.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/version_info/channel.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/models/menu_model.h"
@@ -129,6 +131,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContextMenus) {
   ASSERT_TRUE(RunExtensionTest("context_menus/no_perms")) << message_;
   ASSERT_TRUE(RunExtensionTest("context_menus/item_ids")) << message_;
   ASSERT_TRUE(RunExtensionTest("context_menus/event_page")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ServiceWorkerContextMenus) {
+  // Service Workers are currently available only in Canary or trunk.
+  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
+  ASSERT_TRUE(RunExtensionTestWithFlags("context_menus/event_page",
+                                        kFlagRunAsServiceWorkerBasedExtension))
+      << message_;
 }
 
 // crbug.com/51436 -- creating context menus from multiple script contexts

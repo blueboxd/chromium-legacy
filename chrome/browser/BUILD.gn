@@ -1142,6 +1142,8 @@ jumbo_split_static_library("browser") {
     "performance_manager/performance_manager.cc",
     "performance_manager/performance_manager_impl.cc",
     "performance_manager/performance_manager_impl.h",
+    "performance_manager/performance_manager_lock_observer.cc",
+    "performance_manager/performance_manager_lock_observer.h",
     "performance_manager/performance_manager_tab_helper.cc",
     "performance_manager/performance_manager_tab_helper.h",
     "performance_manager/persistence/site_data/exponential_moving_average.cc",
@@ -2674,7 +2676,6 @@ jumbo_split_static_library("browser") {
       "android/signin/unified_consent_service_bridge.cc",
       "android/startup_bridge.cc",
       "android/startup_bridge.h",
-      "android/subresource_filter/test_subresource_filter_publisher.cc",
       "android/tab_android.cc",
       "android/tab_android.h",
       "android/tab_browser_controls_state.cc",
@@ -5553,8 +5554,6 @@ static_library("test_support") {
     "signin/scoped_account_consistency.h",
     "ssl/ssl_client_auth_requestor_mock.cc",
     "ssl/ssl_client_auth_requestor_mock.h",
-    "subresource_filter/test_ruleset_publisher.cc",
-    "subresource_filter/test_ruleset_publisher.h",
     "translate/translate_test_utils.cc",
     "translate/translate_test_utils.h",
   ]
@@ -5569,6 +5568,7 @@ static_library("test_support") {
   deps = [
     "//chrome/app/theme:theme_resources",
     "//chrome/browser",
+    "//chrome/browser/subresource_filter:test_support",
     "//chrome/common",
     "//chrome/common/safe_browsing:proto",
     "//components/browser_sync:test_support",

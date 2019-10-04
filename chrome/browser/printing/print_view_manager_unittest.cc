@@ -20,6 +20,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/printing/common/print.mojom.h"
 #include "content/public/test/test_renderer_host.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace printing {
@@ -45,7 +46,7 @@ class TestPrintViewManager : public PrintViewManagerBase {
     if (IsInterstitialOrCrashed())
       return false;
 
-    mojom::PrintRenderFrameAssociatedPtr print_render_frame;
+    mojo::AssociatedRemote<mojom::PrintRenderFrame> print_render_frame;
     rfh->GetRemoteAssociatedInterfaces()->GetInterface(&print_render_frame);
     print_render_frame->InitiatePrintPreview(nullptr, has_selection);
     return true;

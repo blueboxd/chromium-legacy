@@ -26,8 +26,8 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     private final MostVisitedListCoordinator mMostVisitedList;
     private final TasksSurfaceMediator mMediator;
 
-    public TasksSurfaceCoordinator(
-            ChromeActivity activity, boolean isTabCarousel, PropertyModel propertyModel) {
+    public TasksSurfaceCoordinator(ChromeActivity activity, PropertyModel propertyModel,
+            TasksSurface.FakeSearchBoxDelegate fakeSearchBoxDelegate, boolean isTabCarousel) {
         mView = (TasksView) LayoutInflater.from(activity).inflate(R.layout.tasks_view_layout, null);
         mPropertyModelChangeProcessor =
                 PropertyModelChangeProcessor.create(propertyModel, mView, TasksViewBinder::bind);
@@ -39,7 +39,8 @@ public class TasksSurfaceCoordinator implements TasksSurface {
                     activity, mView.getTabSwitcherContainer());
         }
 
-        mMediator = new TasksSurfaceMediator(activity, propertyModel, isTabCarousel);
+        mMediator = new TasksSurfaceMediator(
+                activity, propertyModel, fakeSearchBoxDelegate, isTabCarousel);
 
         LinearLayout mvTilesLayout = mView.findViewById(R.id.mv_tiles_layout);
         mMostVisitedList = new MostVisitedListCoordinator(activity, mvTilesLayout, propertyModel);

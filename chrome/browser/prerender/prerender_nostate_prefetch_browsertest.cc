@@ -490,6 +490,7 @@ class HTMLCSSScriptNoStatePrefetchBrowserTest
   void SetUp() override {
     std::map<std::string, std::string> parameters;
     parameters["skip_other"] = "true";
+    parameters["skip_async_script"] = "false";
     feature_list_.InitWithFeaturesAndParameters(
         {{blink::features::kLightweightNoStatePrefetch, parameters}}, {});
     NoStatePrefetchBrowserTest::SetUp();

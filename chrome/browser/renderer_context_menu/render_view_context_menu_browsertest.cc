@@ -71,6 +71,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/base/load_flags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -1052,7 +1053,7 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
   RightClickImage();
   waiter.WaitForMenuOpenAndClose();
 
-  chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame;
+  mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> chrome_render_frame;
   browser()
       ->tab_strip_model()
       ->GetActiveWebContents()
@@ -1145,8 +1146,6 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
   void SetupAndLoadImagePage(const std::string& page_path,
                              const std::string& image_path) {
     image_path_ = image_path;
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kLoadBrokenImagesFromContextMenu);
 
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &LoadImageBrowserTest::HandleRequest, base::Unretained(this)));
@@ -1198,7 +1197,6 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
 
   std::string image_path_;
   size_t request_attempts_ = 0u;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, LoadImage) {

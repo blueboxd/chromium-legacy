@@ -794,6 +794,15 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
+                       GetUserMediaEchoCancellationOnAndOffAndVideo) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  ExecuteJavascriptAndWaitForOk(
+      "getUserMediaEchoCancellationOnAndOffAndVideo()");
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
                        GetAudioStreamAndCheckMutingInitiallyUnmuted) {
   // Muting tests do not work with the out-of-process audio service.
   // https://crbug.com/843490.

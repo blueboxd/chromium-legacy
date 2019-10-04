@@ -175,10 +175,4 @@ void RenderWidgetScreenMetricsEmulator::OnUpdateScreenRects(
   }
 }
 
-void RenderWidgetScreenMetricsEmulator::OnShowContextMenu(
-    ContextMenuParams* params) {
-  params->x *= emulation_params_.scale;
-  params->y *= emulation_params_.scale;
-}
-
 }  // namespace content

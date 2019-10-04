@@ -49,10 +49,12 @@ class ExternalProtocolHandler {
     virtual BlockState GetBlockState(const std::string& scheme,
                                      Profile* profile) = 0;
     virtual void BlockRequest() = 0;
-    virtual void RunExternalProtocolDialog(const GURL& url,
-                                           content::WebContents* web_contents,
-                                           ui::PageTransition page_transition,
-                                           bool has_user_gesture) = 0;
+    virtual void RunExternalProtocolDialog(
+        const GURL& url,
+        content::WebContents* web_contents,
+        ui::PageTransition page_transition,
+        bool has_user_gesture,
+        const base::Optional<url::Origin>& initiating_origin) = 0;
     virtual void LaunchUrlWithoutSecurityCheck(
         const GURL& url,
         content::WebContents* web_contents) = 0;
@@ -86,7 +88,8 @@ class ExternalProtocolHandler {
                         int render_process_host_id,
                         int render_view_routing_id,
                         ui::PageTransition page_transition,
-                        bool has_user_gesture);
+                        bool has_user_gesture,
+                        const base::Optional<url::Origin>& initiating_origin);
 
   // Starts a url using the external protocol handler with the help
   // of shellexecute. Should only be called if the protocol is allowlisted
@@ -125,10 +128,12 @@ class ExternalProtocolHandler {
   // This is implemented separately on each platform.
   // TODO(davidsac): Consider refactoring this to take a WebContents directly.
   // crbug.com/668289
-  static void RunExternalProtocolDialog(const GURL& url,
-                                        content::WebContents* web_contents,
-                                        ui::PageTransition page_transition,
-                                        bool has_user_gesture);
+  static void RunExternalProtocolDialog(
+      const GURL& url,
+      content::WebContents* web_contents,
+      ui::PageTransition page_transition,
+      bool has_user_gesture,
+      const base::Optional<url::Origin>& initiating_origin);
 
   // Clears the external protocol handling data.
   static void ClearData(Profile* profile);

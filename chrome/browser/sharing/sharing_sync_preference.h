@@ -20,6 +20,7 @@
 #include "components/sync_device_info/device_info.h"
 
 namespace syncer {
+class DeviceInfoSyncService;
 class DeviceInfoTracker;
 class LocalDeviceInfoProvider;
 }  // namespace syncer
@@ -51,11 +52,14 @@ class SharingSyncPreference {
 
   SharingSyncPreference(
       PrefService* prefs,
-      syncer::DeviceInfoTracker* device_info_tracker,
-      syncer::LocalDeviceInfoProvider* local_device_info_provider);
+      syncer::DeviceInfoSyncService* device_info_sync_service);
   ~SharingSyncPreference();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // Returns local SharingInfo to be uploaded to sync.
+  static base::Optional<syncer::DeviceInfo::SharingInfo>
+  GetLocalSharingInfoForSync(PrefService* prefs);
 
   // Returns VAPID key from preferences if present, otherwise returns
   // base::nullopt.
@@ -108,6 +112,7 @@ class SharingSyncPreference {
       const base::Value& value);
 
   PrefService* prefs_;
+  syncer::DeviceInfoSyncService* device_info_sync_service_;
   syncer::DeviceInfoTracker* device_info_tracker_;
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
   PrefChangeRegistrar pref_change_registrar_;

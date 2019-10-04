@@ -776,25 +776,27 @@ void CreditCardSaveManager::OnUserDidDecideOnUploadSave(
     const AutofillClient::UserProvidedCardDetails& user_provided_card_details) {
   switch (user_decision) {
     case AutofillClient::ACCEPTED:
-// On Android, requesting cardholder name or expiration date is a two step
-// flow.
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
+      // On Android and iOS, requesting cardholder name is a two step flow.
       if (should_request_name_from_user_) {
         client_->ConfirmAccountNameFixFlow(base::BindOnce(
             &CreditCardSaveManager::OnUserDidAcceptAccountNameFixFlow,
             weak_ptr_factory_.GetWeakPtr()));
+#if defined(OS_ANDROID)
+        // On Android, requesting expiration date is a two step flow.
       } else if (should_request_expiration_date_from_user_) {
         client_->ConfirmExpirationDateFixFlow(
             upload_request_.card,
             base::BindOnce(
                 &CreditCardSaveManager::OnUserDidAcceptExpirationDateFixFlow,
                 weak_ptr_factory_.GetWeakPtr()));
+#endif  // defined(OS_ANDROID)
       } else {
         OnUserDidAcceptUploadHelper(user_provided_card_details);
       }
 #else
       OnUserDidAcceptUploadHelper(user_provided_card_details);
-#endif
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
       break;
 
     case AutofillClient::DECLINED:
@@ -806,7 +808,7 @@ void CreditCardSaveManager::OnUserDidDecideOnUploadSave(
   personal_data_manager_->OnUserAcceptedUpstreamOffer();
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 void CreditCardSaveManager::OnUserDidAcceptAccountNameFixFlow(
     const base::string16& cardholder_name) {
   DCHECK(should_request_name_from_user_);
@@ -815,7 +817,9 @@ void CreditCardSaveManager::OnUserDidAcceptAccountNameFixFlow(
                                /*expiration_date_month=*/base::string16(),
                                /*expiration_date_year=*/base::string16()});
 }
+#endif
 
+#if defined(OS_ANDROID)
 void CreditCardSaveManager::OnUserDidAcceptExpirationDateFixFlow(
     const base::string16& month,
     const base::string16& year) {

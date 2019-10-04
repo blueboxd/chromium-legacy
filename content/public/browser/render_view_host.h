@@ -15,7 +15,7 @@
 #include "third_party/blink/public/platform/web_drag_operation.h"
 
 namespace blink {
-struct WebPluginAction;
+struct PluginAction;
 }
 
 namespace gfx {
@@ -85,7 +85,8 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
   // Tells the renderer to perform the given action on the plugin located at
   // the given point.
   virtual void ExecutePluginActionAtLocation(
-      const gfx::Point& location, const blink::WebPluginAction& action) = 0;
+      const gfx::Point& location,
+      const blink::PluginAction& action) = 0;
 
   virtual RenderViewHostDelegate* GetDelegate() = 0;
 

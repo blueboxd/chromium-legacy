@@ -41,6 +41,7 @@ jumbo_source_set("common") {
     "frame/frame_policy.cc",
     "frame/from_ad_state.cc",
     "frame/user_activation_state.cc",
+    "http/structured_header.cc",
     "indexeddb/indexed_db_default_mojom_traits.cc",
     "indexeddb/indexeddb_key.cc",
     "indexeddb/indexeddb_key_path.cc",
@@ -85,7 +86,6 @@ jumbo_source_set("common") {
     "service_worker/service_worker_type_converters.cc",
     "service_worker/service_worker_utils.cc",
     "thread_safe_browser_interface_broker_proxy.cc",
-    "web_package/http_structured_header.cc",
     "web_package/signed_exchange_consts.cc",
     "web_package/signed_exchange_request_matcher.cc",
   ]
@@ -126,13 +126,13 @@ jumbo_source_set("common") {
 
 fuzzer_test("http_structured_header_fuzzer") {
   sources = [
-    "web_package/http_structured_header_fuzzer.cc",
+    "http/structured_header_fuzzer.cc",
   ]
   deps = [
     ":common",
     "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
   ]
-  seed_corpus = "web_package/http_structured_header_corpus"
+  seed_corpus = "http/structured_header_corpus"
 }
 
 test("blink_common_unittests") {
@@ -158,6 +158,7 @@ jumbo_source_set("common_unittests_sources") {
     "device_memory/approximated_device_memory_unittest.cc",
     "feature_policy/feature_policy_unittest.cc",
     "frame/user_activation_state_unittest.cc",
+    "http/structured_header_unittest.cc",
     "indexeddb/indexeddb_key_unittest.cc",
     "loader/mime_sniffing_throttle_unittest.cc",
     "manifest/manifest_icon_selector_unittest.cc",
@@ -170,7 +171,6 @@ jumbo_source_set("common_unittests_sources") {
     "origin_trials/trial_token_unittest.cc",
     "origin_trials/trial_token_validator_unittest.cc",
     "test/run_all_unittests.cc",
-    "web_package/http_structured_header_unittest.cc",
     "web_package/signed_exchange_request_matcher_unittest.cc",
   ]
 

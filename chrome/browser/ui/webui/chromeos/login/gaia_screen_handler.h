@@ -327,6 +327,10 @@ class GaiaScreenHandler : public BaseScreenHandler,
       UserContext* user_context,
       std::string* error_message);
 
+  bool is_security_token_pin_dialog_running() const {
+    return !security_token_pin_dialog_closed_callback_.is_null();
+  }
+
   // Current state of Gaia frame.
   FrameState frame_state_ = FRAME_STATE_UNKNOWN;
 

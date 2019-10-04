@@ -193,14 +193,22 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (initialize_waitable_event_) {
     initialize_waitable_event_->Wait();
-    initialize_waitable_event_ = nullptr;
+    initialize_waitable_event_.reset();
   }
 
   SkSurfaceCharacterization* characterization = nullptr;
   if (characterization_.isValid()) {
-    // TODO(weiliang): support color space. https://crbug.com/795132
-    characterization_ =
-        characterization_.createResized(size.width(), size.height());
+    sk_sp<SkColorSpace> sk_color_space = color_space.ToSkColorSpace();
+    if (!SkColorSpace::Equals(characterization_.refColorSpace().get(),
+                              sk_color_space.get())) {
+      characterization_ = characterization_.createColorSpace(sk_color_space);
+    }
+    if (size.width() != characterization_.width() ||
+        size.height() != characterization_.height()) {
+      characterization_ =
+          characterization_.createResized(size.width(), size.height());
+    }
+    // TODO(kylechar): Update |characterization_| if |use_alpha| changes.
     RecreateRootRecorder();
   } else {
     characterization = &characterization_;
@@ -211,12 +219,12 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
-  auto callback = base::BindOnce(
-      &SkiaOutputSurfaceImplOnGpu::Reshape,
-      base::Unretained(impl_on_gpu_.get()), size, device_scale_factor,
-      std::move(color_space), has_alpha, use_stencil, pre_transform_,
-      characterization, initialize_waitable_event_.get());
-  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
+  auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::Reshape,
+                             base::Unretained(impl_on_gpu_.get()), size,
+                             device_scale_factor, color_space, has_alpha,
+                             use_stencil, pre_transform_, characterization,
+                             initialize_waitable_event_.get());
+  ScheduleGpuTask(std::move(task), {});
 }
 
 void SkiaOutputSurfaceImpl::SetUpdateVSyncParametersCallback(

@@ -14,7 +14,9 @@
 #include "extensions/common/guest_view/mime_handler_view_uma_types.h"
 #include "extensions/common/mojom/guest_view.mojom.h"
 #include "extensions/renderer/guest_view/mime_handler_view/post_message_support.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "url/gurl.h"
 
@@ -47,9 +49,10 @@ class MimeHandlerViewContainerManager
       public mime_handler::BeforeUnloadControl,
       public PostMessageSupport::Delegate {
  public:
-  static void BindRequest(
+  static void BindReceiver(
       int32_t routing_id,
-      mojom::MimeHandlerViewContainerManagerAssociatedRequest request);
+      mojo::PendingAssociatedReceiver<mojom::MimeHandlerViewContainerManager>
+          receiver);
   // Returns the container manager associated with |render_frame|. If none
   // exists and |create_if_does_not_exist| is set true, creates and returns a
   // new instance for |render_frame|.
@@ -139,7 +142,8 @@ class MimeHandlerViewContainerManager
   // The plugin element that is managed by MimeHandlerViewContainerManager.
   blink::WebElement plugin_element_;
 
-  mojo::AssociatedBindingSet<mojom::MimeHandlerViewContainerManager> bindings_;
+  mojo::AssociatedReceiverSet<mojom::MimeHandlerViewContainerManager>
+      receivers_;
   mojo::Binding<mime_handler::BeforeUnloadControl>
       before_unload_control_binding_;
 

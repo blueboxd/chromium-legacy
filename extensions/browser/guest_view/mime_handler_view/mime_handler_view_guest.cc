@@ -33,6 +33,7 @@
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/common/mojom/guest_view.mojom.h"
 #include "extensions/strings/grit/extensions_strings.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
@@ -95,7 +96,8 @@ MimeHandlerViewGuest::~MimeHandlerViewGuest() {
     if (GetEmbedderFrame() && GetEmbedderFrame()->GetParent()) {
       // TODO(ekaramad): This should only be needed if the embedder frame is in
       // a plugin element (https://crbug.com/957373).
-      mojom::MimeHandlerViewContainerManagerAssociatedPtr container_manager;
+      mojo::AssociatedRemote<mojom::MimeHandlerViewContainerManager>
+          container_manager;
       GetEmbedderFrame()
           ->GetParent()
           ->GetRemoteAssociatedInterfaces()
@@ -446,7 +448,8 @@ void MimeHandlerViewGuest::DocumentOnLoadCompletedInMainFrame() {
     // just send the upadte to the embedder (full page  MHV).
     auto* rfh = maybe_has_frame_container_ ? GetEmbedderFrame()->GetParent()
                                            : GetEmbedderFrame();
-    mojom::MimeHandlerViewContainerManagerAssociatedPtr container_manager;
+    mojo::AssociatedRemote<mojom::MimeHandlerViewContainerManager>
+        container_manager;
     rfh->GetRemoteAssociatedInterfaces()->GetInterface(&container_manager);
     container_manager->DidLoad(element_instance_id(), original_resource_url_);
     return;

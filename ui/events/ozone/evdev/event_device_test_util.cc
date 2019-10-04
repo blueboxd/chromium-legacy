@@ -851,6 +851,77 @@ const DeviceCapabilities kSideVolumeButton = {
     /* ff */ "0",
 };
 
+const DeviceAbsoluteAxis kKohakuTouchscreenAxes[] = {
+    {ABS_X, {0, 0, 1079, 0, 0, 0}},
+    {ABS_Y, {0, 0, 1919, 0, 0, 0}},
+    {ABS_PRESSURE, {0, 0, 255, 0, 0, 0}},
+    {ABS_MT_SLOT, {0, 0, 15, 0, 0, 0}},
+    {ABS_MT_TOUCH_MAJOR, {0, 0, 255, 0, 0, 0}},
+    {ABS_MT_POSITION_X, {0, 0, 1079, 0, 0, 0}},
+    {ABS_MT_POSITION_Y, {0, 0, 1919, 0, 0, 0}},
+    {ABS_MT_TOOL_TYPE, {0, 0, 15, 0, 0, 0}},
+    {ABS_MT_TRACKING_ID, {0, 0, 65535, 0, 0, 0}},
+    {ABS_MT_PRESSURE, {0, 0, 255, 0, 0, 0}},
+    {ABS_MT_DISTANCE, {0, 0, 1, 0, 0, 0}},
+};
+// Captured from Kohaku EVT
+const DeviceCapabilities kKohakuTouchscreen = {
+    /* path */
+    "/sys/devices/pci0000:00/0000:00:15.1/i2c_designware.1/i2c-8/"
+    "i2c-PRP0001:00/input/input3/event3",
+    /* name */ "Atmel maXTouch Touchscreen",
+    /* phys */ "i2c-8-004b/input0",
+    /* uniq */ "",
+    /* bustype */ "0018",
+    /* vendor */ "0000",
+    /* product */ "0000",
+    /* version */ "0000",
+    /* prop */ "2",
+    /* ev */ "b",
+    /* key */ "400 0 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "ee1800001000003",
+    /* msc */ "0",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kKohakuTouchscreenAxes,
+    base::size(kKohakuTouchscreenAxes),
+};
+
+const DeviceAbsoluteAxis kKohakuStylusAxes[] = {
+    {ABS_X, {0, 0, 29376, 0, 0, 100}},
+    {ABS_Y, {0, 0, 16524, 0, 0, 100}},
+    {ABS_PRESSURE, {0, 0, 4095, 0, 0, 0}},
+    {ABS_TILT_X, {0, -9000, 9000, 0, 0, 5730}},
+    {ABS_TILT_Y, {0, -9000, 9000, 0, 0, 5730}},
+};
+
+// Captured from Kohaku EVT
+const DeviceCapabilities kKohakuStylus = {
+    /* path */
+    "/sys/devices/pci0000:00/0000:00:15.2/i2c_designware.2/i2c-9/"
+    "i2c-WCOM50C1:00/0018:2D1F:009D.0002/input/input6/event5",
+    /* name */ "WCOM50C1:00 2D1F:009D",
+    /* phys */ "i2c-WCOM50C1:00",
+    /* uniq */ "",
+    /* bustype */ "0018",
+    /* vendor */ "2d1f",
+    /* product */ "009d",
+    /* version */ "0100",
+    /* prop */ "0",
+    /* ev */ "1b",
+    /* key */ "1c03 0 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "d000003",
+    /* msc */ "10",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kKohakuStylusAxes,
+    base::size(kKohakuStylusAxes),
+};
+
 // NB: Please use the capture_device_capabilities.py script to add more
 // test data here. This will help ensure the data matches what the kernel
 // reports for a real device and is entered correctly.

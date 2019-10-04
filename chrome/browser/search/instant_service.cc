@@ -54,6 +54,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -428,7 +429,7 @@ void InstantService::UpdateMostVisitedInfo() {
 void InstantService::SendNewTabPageURLToRenderer(
     content::RenderProcessHost* rph) {
   if (auto* channel = rph->GetChannel()) {
-    chrome::mojom::SearchBouncerAssociatedPtr client;
+    mojo::AssociatedRemote<chrome::mojom::SearchBouncer> client;
     channel->GetRemoteAssociatedInterface(&client);
     client->SetNewTabPageURL(search::GetNewTabPageURL(profile_));
   }

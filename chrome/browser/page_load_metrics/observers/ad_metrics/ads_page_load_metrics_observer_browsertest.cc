@@ -287,9 +287,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   // Navigate away to force the histogram recording.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   histogram_tester.ExpectUniqueSample(
-      "PageLoad.Clients.Ads.FrameCounts.AnyParentFrame."
-      "AdFrames",
-      1, 1);
+      "PageLoad.Clients.Ads.FrameCounts.AdFrames.Total", 1, 1);
   histogram_tester.ExpectUniqueSample(
       "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Total", 0 /* < 1 KB */, 1);
   auto entries =
@@ -322,9 +320,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 
   histogram_tester.ExpectUniqueSample(
-      "PageLoad.Clients.Ads.FrameCounts.AnyParentFrame."
-      "AdFrames",
-      2, 1);
+      "PageLoad.Clients.Ads.FrameCounts.AdFrames.Total", 2, 1);
   auto entries =
       ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
   EXPECT_EQ(2u, entries.size());
@@ -1292,4 +1288,6 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   EXPECT_EQ(0u, entries.size());
   histogram_tester.ExpectTotalCount(
       "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Total", 0);
+  histogram_tester.ExpectTotalCount(
+      "PageLoad.Clients.Ads.FrameCounts.AdFrames.Total", 0);
 }

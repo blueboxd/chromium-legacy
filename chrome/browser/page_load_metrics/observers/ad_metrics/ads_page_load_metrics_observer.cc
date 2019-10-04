@@ -110,6 +110,7 @@ AdsPageLoadMetricsObserver::OnStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url,
     bool started_in_foreground) {
+  navigation_id_ = navigation_handle->GetNavigationId();
   auto* observer_manager =
       subresource_filter::SubresourceFilterObserverManager::FromWebContents(
           navigation_handle->GetWebContents());
@@ -140,7 +141,10 @@ AdsPageLoadMetricsObserver::OnCommit(
   ad_frames_data_[navigation_handle->GetFrameTreeNodeId()] =
       ad_frames_data_storage_.end();
   ProcessOngoingNavigationResource(navigation_handle->GetRenderFrameHost());
-  return CONTINUE_OBSERVING;
+
+  // If the frame is blocked by the subresource filter, we don't want to record
+  // any AdsPageLoad metrics.
+  return subresource_filter_is_enabled_ ? STOP_OBSERVING : CONTINUE_OBSERVING;
 }
 
 void AdsPageLoadMetricsObserver::OnTimingUpdate(
@@ -466,6 +470,23 @@ void AdsPageLoadMetricsObserver::OnSubresourceFilterGoingAway() {
   subresource_observer_.RemoveAll();
 }
 
+void AdsPageLoadMetricsObserver::OnPageActivationComputed(
+    content::NavigationHandle* navigation_handle,
+    const subresource_filter::mojom::ActivationState& activation_state) {
+  DCHECK(navigation_handle);
+  DCHECK_GE(navigation_id_, 0);
+
+  // The subresource filter's activation level and navigation id is the same for
+  // all frames on a page, so we only record this for the main frame.
+  if (navigation_handle->IsInMainFrame() &&
+      navigation_handle->GetNavigationId() == navigation_id_ &&
+      activation_state.activation_level ==
+          subresource_filter::mojom::ActivationLevel::kEnabled) {
+    DCHECK(!subresource_filter_is_enabled_);
+    subresource_filter_is_enabled_ = true;
+  }
+}
+
 int AdsPageLoadMetricsObserver::GetUnaccountedAdBytes(
     int process_id,
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) const {
@@ -642,7 +663,7 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForCpuUsage(
       [static_cast<int>(FrameData::FrameVisibility::kAnyVisibility)]
           .cpu_time += ad_frame_data.GetTotalCpuUsage();
 
-  if (ad_frame_data.bytes() == 0)
+  if (!ad_frame_data.ShouldRecordFrameForMetrics())
     return;
 
   // Record per frame histograms to the appropriate visibility prefixes.
@@ -777,7 +798,7 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForCpuUsage() {
 
 void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForAdTagging(
     const FrameData& ad_frame_data) {
-  if (ad_frame_data.bytes() == 0)
+  if (!ad_frame_data.ShouldRecordFrameForMetrics())
     return;
 
   // Record per frame histograms to the appropriate visibility prefixes.
@@ -807,13 +828,16 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForAdTagging(
                   visibility, ad_frame_data.network_bytes());
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.SameOrigin", PAGE_BYTES_HISTOGRAM,
                   visibility, ad_frame_data.same_origin_bytes());
-    ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.PercentNetwork",
-                  UMA_HISTOGRAM_PERCENTAGE, visibility,
-                  ad_frame_data.network_bytes() * 100 / ad_frame_data.bytes());
-    ADS_HISTOGRAM(
-        "Bytes.AdFrames.PerFrame.PercentSameOrigin", UMA_HISTOGRAM_PERCENTAGE,
-        visibility,
-        ad_frame_data.same_origin_bytes() * 100 / ad_frame_data.bytes());
+    if (ad_frame_data.bytes() > 0) {
+      ADS_HISTOGRAM(
+          "Bytes.AdFrames.PerFrame.PercentNetwork", UMA_HISTOGRAM_PERCENTAGE,
+          visibility,
+          ad_frame_data.network_bytes() * 100 / ad_frame_data.bytes());
+      ADS_HISTOGRAM(
+          "Bytes.AdFrames.PerFrame.PercentSameOrigin", UMA_HISTOGRAM_PERCENTAGE,
+          visibility,
+          ad_frame_data.same_origin_bytes() * 100 / ad_frame_data.bytes());
+    }
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.OriginStatus",
                   UMA_HISTOGRAM_ENUMERATION, visibility,
                   ad_frame_data.origin_status());
@@ -833,11 +857,8 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForAdTagging(
   const auto& aggregate_ad_info =
       aggregate_ad_info_by_visibility_[static_cast<int>(visibility)];
 
-  // TODO(ericrobinson): Consider renaming this to match
-  //   'FrameCounts.AdFrames.PerFrame.OriginStatus'.
-  ADS_HISTOGRAM("FrameCounts.AnyParentFrame.AdFrames",
-                UMA_HISTOGRAM_COUNTS_1000, visibility,
-                aggregate_ad_info.num_frames);
+  ADS_HISTOGRAM("FrameCounts.AdFrames.Total", UMA_HISTOGRAM_COUNTS_1000,
+                visibility, aggregate_ad_info.num_frames);
 
   // Don't post UMA for pages that don't have ads.
   if (aggregate_ad_info.num_frames == 0)

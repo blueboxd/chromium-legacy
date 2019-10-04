@@ -33,6 +33,7 @@ class CardUnmaskPromptController {
   virtual bool ShouldRequestExpirationDate() const = 0;
   virtual bool CanStoreLocally() const = 0;
   virtual bool GetStoreLocallyStartState() const = 0;
+  virtual bool GetWebauthnOfferStartState() const = 0;
   virtual base::TimeDelta GetSuccessMessageDuration() const = 0;
   virtual AutofillClient::PaymentsRpcResult GetVerificationResult() const = 0;
 

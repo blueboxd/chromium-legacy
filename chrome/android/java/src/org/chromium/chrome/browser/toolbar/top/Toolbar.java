@@ -114,4 +114,10 @@ public interface Toolbar {
      * @return The primary color to use for the background drawable.
      */
     int getPrimaryColor();
+
+    /**
+     * Update the Tab switcher toolbar state.
+     * @param requestToShow Whether or not request showing the Tab switcher toolbar.
+     */
+    void updateTabSwitcherToolbarState(boolean requestToShow);
 }

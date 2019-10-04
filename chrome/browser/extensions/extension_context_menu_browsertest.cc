@@ -55,7 +55,7 @@ class ExtensionContextMenuBrowserTest
   }
 
   std::string GetExtensionDirectory(base::StringPiece root) {
-    if (GetParam() == ContextType::kEventPage)
+    if (GetParam() == ContextType::kPersistentBackground)
       return std::string(root);
     DCHECK_EQ(ContextType::kServiceWorker, GetParam());
     return base::StrCat({root, "/service_worker"});
@@ -304,6 +304,10 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuBrowserTest, Simple) {
 // Tests that previous onclick is not fired after updating the menu's onclick,
 // and whether setting onclick to null removes the handler.
 IN_PROC_BROWSER_TEST_P(ExtensionContextMenuBrowserTest, UpdateOnclick) {
+  // The onclick property is not supported for service worker-based
+  // extensions.
+  if (GetParam() == ContextType::kServiceWorker)
+    return;
   ExtensionTestMessageListener listener_error1("onclick1-unexpected", false);
   ExtensionTestMessageListener listener_error2("onclick2-unexpected", false);
   ExtensionTestMessageListener listener_update1("update1", true);
@@ -930,13 +934,13 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuBrowserTest, UpdateCheckboxes) {
                                 false);
 }
 
-INSTANTIATE_TEST_SUITE_P(EventPage,
+INSTANTIATE_TEST_SUITE_P(PersistentBackground,
                          ExtensionContextMenuBrowserTest,
-                         ::testing::Values(ContextType::kEventPage));
+                         ::testing::Values(ContextType::kPersistentBackground));
 INSTANTIATE_TEST_SUITE_P(ServiceWorker,
                          ExtensionContextMenuBrowserTest,
                          ::testing::Values(ContextType::kServiceWorker));
 // TODO(crbug.com/939664): Enable this test for service workers?
-INSTANTIATE_TEST_SUITE_P(EventPage,
+INSTANTIATE_TEST_SUITE_P(PersistentBackground,
                          ExtensionContextMenuBrowserLazyTest,
-                         ::testing::Values(ContextType::kEventPage));
+                         ::testing::Values(ContextType::kPersistentBackground));

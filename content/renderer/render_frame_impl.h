@@ -62,7 +62,7 @@
 #include "media/base/routing_token_callback.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -875,14 +875,17 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Binds to the fullscreen service in the browser.
   void BindFullscreen(
-      mojom::FullscreenVideoElementHandlerAssociatedRequest request);
+      mojo::PendingAssociatedReceiver<mojom::FullscreenVideoElementHandler>
+          receiver);
 
   // Binds to the MHTML file generation service in the browser.
-  void BindMhtmlFileWriter(mojom::MhtmlFileWriterAssociatedRequest request);
+  void BindMhtmlFileWriter(
+      mojo::PendingAssociatedReceiver<mojom::MhtmlFileWriter> receiver);
 
   // Binds to the autoplay configuration service in the browser.
   void BindAutoplayConfiguration(
-      blink::mojom::AutoplayConfigurationClientAssociatedRequest request);
+      mojo::PendingAssociatedReceiver<blink::mojom::AutoplayConfigurationClient>
+          receiver);
 
   // Binds to the FrameHost in the browser.
   void BindFrame(const service_manager::BindSourceInfo& browser_info,
@@ -1660,16 +1663,17 @@ class CONTENT_EXPORT RenderFrameImpl
   using AutoplayOriginAndFlags = std::pair<url::Origin, int32_t>;
   AutoplayOriginAndFlags autoplay_flags_;
 
-  mojo::AssociatedBinding<blink::mojom::AutoplayConfigurationClient>
-      autoplay_configuration_binding_;
+  mojo::AssociatedReceiver<blink::mojom::AutoplayConfigurationClient>
+      autoplay_configuration_receiver_{this};
   mojo::Receiver<mojom::Frame> frame_receiver_{this};
   mojo::AssociatedReceiver<mojom::FrameBindingsControl>
       frame_bindings_control_receiver_{this};
   mojo::AssociatedReceiver<mojom::FrameNavigationControl>
-      frame_navigation_control_receiver_;
-  mojo::AssociatedBinding<mojom::FullscreenVideoElementHandler>
-      fullscreen_binding_;
-  mojo::AssociatedBinding<mojom::MhtmlFileWriter> mhtml_file_writer_binding_;
+      frame_navigation_control_receiver_{this};
+  mojo::AssociatedReceiver<mojom::FullscreenVideoElementHandler>
+      fullscreen_receiver_{this};
+  mojo::AssociatedReceiver<mojom::MhtmlFileWriter> mhtml_file_writer_receiver_{
+      this};
 
   // Only used when PerNavigationMojoInterface is enabled.
   std::unique_ptr<NavigationClient> navigation_client_impl_;
@@ -1700,7 +1704,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   service_manager::BindSourceInfo browser_info_;
 
-  mojom::FrameHostAssociatedPtr frame_host_ptr_;
+  mojo::AssociatedRemote<mojom::FrameHost> frame_host_remote_;
   mojo::BindingSet<service_manager::mojom::InterfaceProvider>
       interface_provider_bindings_;
 

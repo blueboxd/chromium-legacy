@@ -425,7 +425,7 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
           ->GetRenderViewHost()
           ->GetWidget()
           ->FlushForTesting();
-      GetWebTestControlPtr(
+      GetWebTestControlRemote(
           main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
           .FlushForTesting();
 
@@ -483,7 +483,7 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
         ->GetRenderViewHost()
         ->GetWidget()
         ->FlushForTesting();
-    GetWebTestControlPtr(render_view_host->GetMainFrame()).FlushForTesting();
+    GetWebTestControlRemote(render_view_host->GetMainFrame()).FlushForTesting();
 
     if (is_devtools_js_test) {
       LoadDevToolsJSTest();
@@ -637,7 +637,7 @@ void BlinkTestController::OnInitiateCaptureDump(bool capture_navigation_history,
 
   RenderFrameHost* rfh = main_window_->web_contents()->GetMainFrame();
   printer_->StartStateDump();
-  GetWebTestControlPtr(rfh)->CaptureDump(
+  GetWebTestControlRemote(rfh)->CaptureDump(
       base::BindOnce(&BlinkTestController::OnCaptureDumpCompleted,
                      weak_factory_.GetWeakPtr()));
 }
@@ -698,7 +698,7 @@ void BlinkTestController::CompositeNodeQueueThen(
       next_node_host = nullptr;  // This one is now gone
     }
   } while (!next_node_host || !next_node_host->IsRenderFrameLive());
-  GetWebTestControlPtr(next_node_host)
+  GetWebTestControlRemote(next_node_host)
       ->CompositeWithRaster(
           base::BindOnce(&BlinkTestController::CompositeNodeQueueThen,
                          weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -985,11 +985,11 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
     params->protocol_mode = protocol_mode_;
 
     if (did_send_initial_test_configuration_) {
-      GetWebTestControlPtr(frame)->ReplicateTestConfiguration(
+      GetWebTestControlRemote(frame)->ReplicateTestConfiguration(
           std::move(params));
     } else {
       did_send_initial_test_configuration_ = true;
-      GetWebTestControlPtr(frame)->SetTestConfiguration(std::move(params));
+      GetWebTestControlRemote(frame)->SetTestConfiguration(std::move(params));
       // Tests should always start with the browser controls hidden.
       frame->UpdateBrowserControlsState(BROWSER_CONTROLS_STATE_BOTH,
                                         BROWSER_CONTROLS_STATE_HIDDEN, false);
@@ -1002,7 +1002,7 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
     all_observed_render_process_hosts_.insert(process_host);
 
     if (!main_window) {
-      GetWebTestControlPtr(frame)->SetupSecondaryRenderer();
+      GetWebTestControlRemote(frame)->SetupSecondaryRenderer();
     }
 
     process_host->Send(new WebTestMsg_ReplicateWebTestRuntimeFlagsChanges(
@@ -1164,7 +1164,7 @@ void BlinkTestController::OnInitiateLayoutDump() {
       continue;
 
     ++number_of_messages;
-    GetWebTestControlPtr(rfh)->DumpFrameLayout(
+    GetWebTestControlRemote(rfh)->DumpFrameLayout(
         base::BindOnce(&BlinkTestController::OnDumpFrameLayoutResponse,
                        weak_factory_.GetWeakPtr(), rfh->GetFrameTreeNodeId()));
   }
@@ -1373,13 +1373,14 @@ void BlinkTestController::OnBlockThirdPartyCookies(bool block) {
       ->BlockThirdPartyCookies(block);
 }
 
-mojom::WebTestControlAssociatedPtr& BlinkTestController::GetWebTestControlPtr(
-    RenderFrameHost* frame) {
+mojo::AssociatedRemote<mojom::WebTestControl>&
+BlinkTestController::GetWebTestControlRemote(RenderFrameHost* frame) {
   GlobalFrameRoutingId key(frame->GetProcess()->GetID(), frame->GetRoutingID());
   if (web_test_control_map_.find(key) == web_test_control_map_.end()) {
-    mojom::WebTestControlAssociatedPtr& new_ptr = web_test_control_map_[key];
+    mojo::AssociatedRemote<mojom::WebTestControl>& new_ptr =
+        web_test_control_map_[key];
     frame->GetRemoteAssociatedInterfaces()->GetInterface(&new_ptr);
-    new_ptr.set_connection_error_handler(
+    new_ptr.set_disconnect_handler(
         base::BindOnce(&BlinkTestController::HandleWebTestControlError,
                        weak_factory_.GetWeakPtr(), key));
   }

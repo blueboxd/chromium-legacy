@@ -1662,18 +1662,6 @@ SourceBufferStream::RangeList::iterator SourceBufferStream::AddToRanges(
   return ranges_.insert(itr, std::move(new_range));
 }
 
-SourceBufferStream::RangeList::iterator
-SourceBufferStream::GetSelectedRangeItr() {
-  DCHECK(selected_range_);
-  auto itr = ranges_.end();
-  for (itr = ranges_.begin(); itr != ranges_.end(); ++itr) {
-    if (itr->get() == selected_range_)
-      break;
-  }
-  DCHECK(itr != ranges_.end());
-  return itr;
-}
-
 void SourceBufferStream::SeekAndSetSelectedRange(
     SourceBufferRange* range,
     base::TimeDelta seek_timestamp) {

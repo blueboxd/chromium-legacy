@@ -50,6 +50,17 @@ TEST_F(NeuralStylusPalmDetectionFilterUtilTest, DistilledNocturneTest) {
                   nocturne_touchscreen_.GetAbsResolution(ABS_MT_TOUCH_MINOR));
 }
 
+TEST_F(NeuralStylusPalmDetectionFilterUtilTest, DistillerKohakuTest) {
+  EventDeviceInfo kohaku_touchscreen;
+  ASSERT_TRUE(
+      CapabilitiesToDeviceInfo(kKohakuTouchscreen, &kohaku_touchscreen));
+  const DistilledDevInfo kohaku_distilled =
+      DistilledDevInfo::Create(kohaku_touchscreen);
+  EXPECT_FALSE(kohaku_distilled.minor_radius_supported);
+  EXPECT_EQ(1, kohaku_distilled.x_res);
+  EXPECT_EQ(1, kohaku_distilled.y_res);
+}
+
 TEST_F(NeuralStylusPalmDetectionFilterUtilTest, DistilledLinkTest) {
   EventDeviceInfo link_touchscreen;
   ASSERT_TRUE(CapabilitiesToDeviceInfo(kLinkTouchscreen, &link_touchscreen));

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
 namespace {
 base::LazyInstance<SearchBouncer>::Leaky g_search_bouncer =
@@ -22,7 +23,7 @@ GURL RemoveQueryAndRef(const GURL& url) {
 
 }  // namespace
 
-SearchBouncer::SearchBouncer() : search_bouncer_binding_(this) {}
+SearchBouncer::SearchBouncer() = default;
 
 SearchBouncer::~SearchBouncer() = default;
 
@@ -36,7 +37,7 @@ void SearchBouncer::RegisterMojoInterfaces(
   // Note: Unretained is safe here because this class is a leaky LazyInstance.
   // For the same reason, UnregisterMojoInterfaces isn't required.
   associated_interfaces->AddInterface(base::Bind(
-      &SearchBouncer::OnSearchBouncerRequest, base::Unretained(this)));
+      &SearchBouncer::BindSearchBouncerReceiver, base::Unretained(this)));
 }
 
 bool SearchBouncer::ShouldFork(const GURL& url) const {
@@ -53,7 +54,7 @@ void SearchBouncer::SetNewTabPageURL(const GURL& new_tab_page_url) {
   new_tab_page_url_ = new_tab_page_url;
 }
 
-void SearchBouncer::OnSearchBouncerRequest(
-    chrome::mojom::SearchBouncerAssociatedRequest request) {
-  search_bouncer_binding_.Bind(std::move(request));
+void SearchBouncer::BindSearchBouncerReceiver(
+    mojo::PendingAssociatedReceiver<chrome::mojom::SearchBouncer> receiver) {
+  search_bouncer_receiver_.Bind(std::move(receiver));
 }

@@ -41,10 +41,10 @@
 #include "media/base/ipc/media_param_traits.h"
 #include "net/base/network_change_notifier.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "third_party/blink/public/common/plugin/plugin_action.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
-#include "third_party/blink/public/web/web_plugin_action.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/color_space.h"
@@ -68,8 +68,8 @@
 
 #define IPC_MESSAGE_START ViewMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPluginAction::Type,
-                          blink::WebPluginAction::Type::kTypeLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::PluginAction::Type,
+                          blink::PluginAction::Type::kTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(content::MenuItem::Type, content::MenuItem::TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::NavigationGesture,
                           content::NavigationGestureLast)
@@ -93,7 +93,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(ui::NativeTheme::PreferredColorScheme,
 IPC_ENUM_TRAITS_MAX_VALUE(ui::NativeTheme::SystemThemeColor,
                           ui::NativeTheme::SystemThemeColor::kMaxValue)
 
-IPC_STRUCT_TRAITS_BEGIN(blink::WebPluginAction)
+IPC_STRUCT_TRAITS_BEGIN(blink::PluginAction)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(enable)
 IPC_STRUCT_TRAITS_END()
@@ -131,7 +131,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetInitialFocus,
 // the given point.
 IPC_MESSAGE_ROUTED2(ViewMsg_PluginActionAt,
                     gfx::Point, /* location */
-                    blink::WebPluginAction)
+                    blink::PluginAction)
 
 // Sets the page scale for the current main frame to the given page scale.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetPageScale, float /* page_scale_factor */)

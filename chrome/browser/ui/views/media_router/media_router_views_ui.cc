@@ -47,6 +47,7 @@
 #include "content/public/common/fullscreen_video_element.mojom.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -154,7 +155,8 @@ class MediaRouterViewsUI::WebContentsFullscreenOnLoadedObserver final
 
   void FullscreenIfContentCaptured(content::WebContents* web_contents) {
     if (web_contents->IsBeingCaptured()) {
-      content::mojom::FullscreenVideoElementHandlerAssociatedPtr client;
+      mojo::AssociatedRemote<content::mojom::FullscreenVideoElementHandler>
+          client;
       web_contents->GetMainFrame()
           ->GetRemoteAssociatedInterfaces()
           ->GetInterface(&client);

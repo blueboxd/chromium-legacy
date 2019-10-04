@@ -237,6 +237,17 @@ void DesktopWindowTreeHostLinux::OnWorkspaceChanged() {
   OnHostWorkspaceChanged();
 }
 
+void DesktopWindowTreeHostLinux::GetWindowMask(const gfx::Size& size,
+                                               SkPath* window_mask) {
+  DCHECK(window_mask);
+  Widget* widget = native_widget_delegate()->AsWidget();
+  if (widget->non_client_view()) {
+    // Some frame views define a custom (non-rectangular) window mask. If
+    // so, use it to define the window shape. If not, fall through.
+    widget->non_client_view()->GetWindowMask(size, window_mask);
+  }
+}
+
 // As DWTHX11 subclasses DWTHPlatform through DWTHLinux now (during transition
 // period. see https://crbug.com/990756), we need to guard this factory method.
 // TODO(msisov): remove this guard once DWTHX11 is finally merged into

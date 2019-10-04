@@ -46,4 +46,9 @@ void PerformanceManager::PassToGraph(const base::Location& from_here,
                      std::move(graph_owned)));
 }
 
+// static
+content::LockObserver* PerformanceManager::GetLockObserver() {
+  return PerformanceManagerImpl::GetInstance()->lock_observer();
+}
+
 }  // namespace performance_manager

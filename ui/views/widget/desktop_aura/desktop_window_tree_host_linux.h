@@ -9,6 +9,8 @@
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
 
+class SkPath;
+
 namespace views {
 
 class WindowEventFilterLinux;
@@ -58,6 +60,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
 
   // PlatformWindowDelegateLinux overrides:
   void OnWorkspaceChanged() override;
+  void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override;
 
   // A handler for events intended for non client area.
   // A posthandler for events intended for non client area. Handles events if no

@@ -56,8 +56,8 @@ class Point;
 }
 
 namespace blink {
+struct PluginAction;
 struct WebMediaPlayerAction;
-struct WebPluginAction;
 }
 
 class RenderViewContextMenu : public RenderViewContextMenuBase {
@@ -236,7 +236,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void MediaPlayerActionAt(const gfx::Point& location,
                            const blink::WebMediaPlayerAction& action);
   void PluginActionAt(const gfx::Point& location,
-                      const blink::WebPluginAction& action);
+                      const blink::PluginAction& action);
 
   // Returns a list of registered ProtocolHandlers that can handle the clicked
   // on URL.

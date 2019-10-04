@@ -90,6 +90,7 @@ class MockMediaNotificationContainer : public MediaNotificationContainer {
   MOCK_METHOD1(
       OnMediaSessionInfoChanged,
       void(const media_session::mojom::MediaSessionInfoPtr& session_info));
+  MOCK_METHOD0(OnMediaSessionMetadataChanged, void());
   MOCK_METHOD1(OnVisibleActionsChanged,
                void(const std::set<MediaSessionAction>& actions));
   MOCK_METHOD1(OnMediaArtworkChanged, void(const gfx::ImageSkia& image));
@@ -598,6 +599,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, UpdateMetadata_FromObserver) {
   metadata.artist = base::ASCIIToUTF16("artist2");
   metadata.album = base::ASCIIToUTF16("album");
 
+  EXPECT_CALL(container(), OnMediaSessionMetadataChanged());
   GetItem()->MediaSessionMetadataChanged(metadata);
   view()->SetExpanded(true);
 
@@ -962,6 +964,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, Freezing_DoNotUpdateMetadata) {
   metadata.artist = base::ASCIIToUTF16("artist2");
   metadata.album = base::ASCIIToUTF16("album");
 
+  EXPECT_CALL(container(), OnMediaSessionMetadataChanged()).Times(0);
   GetItem()->Freeze();
   GetItem()->MediaSessionMetadataChanged(metadata);
 

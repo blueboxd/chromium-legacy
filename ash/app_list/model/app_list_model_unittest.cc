@@ -229,6 +229,9 @@ TEST_F(AppListModelTest, AppOrder) {
 using AppListModelFolderTest = AppListModelTest;
 
 TEST_F(AppListModelFolderTest, FolderItem) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({},
+                                       {app_list_features::kScalableAppList});
   AppListFolderItem* folder = new AppListFolderItem("folder1");
   const size_t num_folder_apps = 8;
   const size_t num_observed_apps = 4;

@@ -46,6 +46,12 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
 
   LocalDeviceInfoProvider* GetLocalDeviceInfoProvider();
 
+  // Refresh local copy of device info in memory, and informs sync of the
+  // change. Used when the caller knows a property of local device info has
+  // changed (e.g. SharingInfo), and must be sync-ed to other devices as soon as
+  // possible, without waiting for the periodic commits.
+  void RefreshLocalDeviceInfo();
+
   // ModelTypeSyncBridge implementation.
   void OnSyncStarting(const DataTypeActivationRequest& request) override;
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;

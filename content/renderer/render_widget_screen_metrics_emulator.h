@@ -15,7 +15,6 @@
 
 namespace content {
 class RenderWidgetScreenMetricsEmulatorDelegate;
-struct ContextMenuParams;
 
 // RenderWidgetScreenMetricsEmulator class manages screen emulation inside a
 // RenderWidget. This includes resizing, placing view on the screen at desired
@@ -65,9 +64,6 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
                                      const gfx::Size& visible_viewport_size);
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
                            const gfx::Rect& window_screen_rect);
-
-  // Modify ContextMenuParams to account for emulation.
-  void OnShowContextMenu(ContextMenuParams* params);
 
  private:
   bool emulating_desktop() const {

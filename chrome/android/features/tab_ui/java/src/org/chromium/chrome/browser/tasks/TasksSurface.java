@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.tasks;
 
 import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 
@@ -15,6 +17,15 @@ import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
  *  {@link TasksSurfaceCoordinator}.
  */
 public interface TasksSurface {
+    /** The delegate for the fake search box on the tasks surface. */
+    public interface FakeSearchBoxDelegate {
+        /**
+         * Interface to request focusing on the URL bar.
+         * @param pastedText The text to be pasted in the Omnibox or null.
+         * */
+        void requestUrlFocus(@Nullable String pastedText);
+    }
+
     /**
      * Set the listener to get the {@link Layout#onTabSelecting} event from the Grid Tab Switcher.
      * @param listener The {@link TabSwitcher.OnTabSelectingListener} to use.

@@ -61,7 +61,7 @@
         width: 20px;
       }
 
-<if expr="is_macosx or is_ios">
+<if expr="is_macosx">
       @media (prefers-color-scheme: dark) {
         .folder-icon {
            content: url(chrome://theme/IDR_FOLDER_CLOSED_WHITE);
@@ -69,7 +69,7 @@
       }
 </if>
 
-<if expr="not is_macosx and not is_ios">
+<if expr="not is_macosx">
       .folder-icon[open] {
         content: url(chrome://theme/IDR_FOLDER_OPEN);
       }

@@ -1,10 +1,12 @@
 Name: Expat XML Parser
 Short Name: expat
 URL: https://github.com/libexpat/libexpat
-Version: R_2_2_8-5-g4f23e05
+Version: R_2_2_9-0-ga7bc26b
+Date: 20190927
+Revision: a7bc26b69768f7fb24f0c7976fae24b157b85b13
+Security Critical: yes
 License: MIT
 License File: src/expat/COPYING
-Security Critical: yes
 
 Description:
   This is Expat XML parser - very lightweight C library for parsing XML.
@@ -21,6 +23,9 @@ Roll process:
   cp expat_config.h $CHROMIUM_SRC/third_party/expat/include/expat_config/
   cd $CHROMIUM_SRC/third_party/expat
   patch -p3 < 0001-Do-not-claim-getrandom.patch
+
+  Then update the README.chromium and BUILD.gn as needed.
+  This can usually by handled by running roll-expat.sh from $CHROMIUM_SRC.
 
 Patches:
     0001-Do-not-claim-getrandom.patch:

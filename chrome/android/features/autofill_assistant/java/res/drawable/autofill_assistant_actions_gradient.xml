@@ -3,5 +3,5 @@
     <gradient
         android:angle="0"
         android:startColor="@color/sheet_bg_color"
-        android:endColor="@color/autofill_assistant_transparent"/>
+        android:endColor="@android:color/transparent"/>
 </shape>

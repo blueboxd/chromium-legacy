@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/common/channel_info.h"
@@ -58,8 +59,8 @@ class DeviceInfoSyncClient : public syncer::DeviceInfoSyncClient {
   // syncer::DeviceInfoSyncClient:
   base::Optional<syncer::DeviceInfo::SharingInfo> GetLocalSharingInfo()
       const override {
-    // TODO(crbug.com/991971): Returns from SharingSyncPreference.
-    return base::nullopt;
+    return SharingSyncPreference::GetLocalSharingInfoForSync(
+        profile_->GetPrefs());
   }
 
  private:

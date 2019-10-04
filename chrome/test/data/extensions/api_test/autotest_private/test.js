@@ -428,6 +428,75 @@ var defaultTests = [
       chrome.test.succeed();
     });
   },
+
+  function waitForPrimaryDisplayRotation() {
+    var displayId = "-1";
+    chrome.system.display.getInfo(function(info) {
+      var l = info.length;
+      for (var i = 0; i < l; i++) {
+        if (info[i].isPrimary === true) {
+          displayId = info[i].id;
+          break;
+        }
+      }
+      chrome.test.assertTrue(displayId != "-1");
+      chrome.system.display.setDisplayProperties(displayId, {rotation: 90},
+        function() {
+          chrome.autotestPrivate.waitForDisplayRotation(displayId, 'Rotate90',
+              success => {
+                chrome.test.assertNoLastError();
+                chrome.test.assertTrue(success);
+                // Reset the rotation back to normal.
+                chrome.system.display.setDisplayProperties(
+                    displayId, {rotation: 0},
+                    function() {
+                      chrome.autotestPrivate.waitForDisplayRotation(
+                          displayId, 'Rotate0',
+                          success => {
+                            chrome.test.assertNoLastError();
+                            chrome.test.assertTrue(success);
+                            chrome.test.succeed();
+                          });
+                    });
+              });
+        });
+    });
+  },
+  function waitForPrimaryDisplayRotation2() {
+    var displayId = "-1";
+    chrome.system.display.getInfo(function(info) {
+      var l = info.length;
+      for (var i = 0; i < l; i++) {
+        if (info[i].isPrimary === true) {
+          displayId = info[i].id;
+          break;
+        }
+      }
+      chrome.test.assertTrue(displayId != "-1");
+      chrome.system.display.setDisplayProperties(
+          displayId, {rotation: 180},
+          function() {
+            chrome.autotestPrivate.waitForDisplayRotation(
+                displayId, 'Rotate180',
+                success => {
+                  chrome.test.assertNoLastError();
+                  chrome.test.assertTrue(success);
+                  // Reset the rotation back to normal.
+                  chrome.system.display.setDisplayProperties(
+                      displayId, {rotation: 0},
+                      function() {
+                        chrome.autotestPrivate.waitForDisplayRotation(
+                            displayId, 'Rotate0',
+                            success => {
+                              chrome.test.assertNoLastError();
+                              chrome.test.assertTrue(success);
+                              chrome.test.succeed();
+                            });
+                      });
+                });
+          });
+    });
+  },
 ];
 
 var arcEnabledTests = [
@@ -570,4 +639,3 @@ chrome.test.getConfig(function(config) {
     chrome.test.fail('Invalid test suite');
   }
 });
-

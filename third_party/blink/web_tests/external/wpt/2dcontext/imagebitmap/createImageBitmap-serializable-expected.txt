@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL createImageBitmap serialize test Uncaught ReferenceError: getVideoURI is not defined
+Harness: the test ran to completion.
+

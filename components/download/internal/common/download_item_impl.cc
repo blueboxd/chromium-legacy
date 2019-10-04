@@ -677,22 +677,33 @@ void DownloadItemImpl::ShowDownloadInShell() {
   delegate_->ShowDownloadInShell(this);
 }
 
-void DownloadItemImpl::RenameDownloadedFileDone(RenameDownloadCallback callback,
-                                                const base::FilePath& new_path,
-                                                DownloadRenameResult result) {
+void DownloadItemImpl::RenameDownloadedFileDone(
+    RenameDownloadCallback callback,
+    const base::FilePath& display_name,
+    DownloadRenameResult result) {
   if (result == DownloadRenameResult::SUCCESS) {
-    destination_info_.target_path = new_path;
-    destination_info_.current_path = new_path;
+    bool is_content_uri = false;
+#if defined(OS_ANDROID)
+    is_content_uri = GetFullPath().IsContentUri();
+#endif  // defined(OS_ANDROID)
+    if (is_content_uri) {
+      SetDisplayName(display_name);
+    } else {
+      auto new_full_path =
+          base::FilePath(GetFullPath().DirName()).Append(display_name);
+      destination_info_.target_path = new_full_path;
+      destination_info_.current_path = new_full_path;
+    }
     UpdateObservers();
   }
   std::move(callback).Run(result);
 }
 
-void DownloadItemImpl::Rename(const base::FilePath& name,
+void DownloadItemImpl::Rename(const base::FilePath& display_name,
                               DownloadItem::RenameDownloadCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (name.IsAbsolute()) {
+  if (display_name.IsAbsolute()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&DownloadItemImpl::RenameDownloadedFileDone,
                                   weak_ptr_factory_.GetWeakPtr(),
@@ -701,14 +712,13 @@ void DownloadItemImpl::Rename(const base::FilePath& name,
     return;
   }
 
-  auto full_path = base::FilePath(GetFullPath().DirName()).Append(name);
-
   base::PostTaskAndReplyWithResult(
       GetDownloadTaskRunner().get(), FROM_HERE,
-      base::BindOnce(&download::RenameDownloadedFile, GetFullPath(), full_path),
+      base::BindOnce(&download::RenameDownloadedFile, GetFullPath(),
+                     display_name),
       base::BindOnce(&DownloadItemImpl::RenameDownloadedFileDone,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     full_path));
+                     display_name));
 }
 
 uint32_t DownloadItemImpl::GetId() const {

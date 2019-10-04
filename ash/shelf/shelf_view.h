@@ -319,6 +319,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
     default_last_focusable_child_ = default_last_focusable_child;
   }
 
+  void set_app_icons_layout_offset(int app_icons_layout_offset) {
+    app_icons_layout_offset_ = app_icons_layout_offset;
+  }
+
   const ShelfAppButton* drag_view() const { return drag_view_; }
 
   // Returns true when this ShelfView is used for Overflow Bubble.
@@ -714,6 +718,11 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Whether this view should focus its last focusable child (instead of its
   // first) when focused.
   bool default_last_focusable_child_ = false;
+
+  // Indicates the starting position of shelf items on the main axis. (Main
+  // axis is x-axis when the shelf is horizontally aligned; otherwise, it
+  // becomes y-axis)
+  int app_icons_layout_offset_ = 0;
 
   base::WeakPtrFactory<ShelfView> weak_factory_{this};
 

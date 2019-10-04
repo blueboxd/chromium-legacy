@@ -188,6 +188,8 @@ class InteractiveRenderWidget : public RenderWidget {
         mock_input_handler_host_->BindNewPipeAndPassRemote());
   }
 
+  using RenderWidget::Close;
+
   void SendInputEvent(const blink::WebInputEvent& event,
                       HandledEventCallback callback) {
     HandleInputEvent(blink::WebCoalescedInputEvent(
@@ -252,20 +254,20 @@ int InteractiveRenderWidget::next_routing_id_ = 0;
 class RenderWidgetUnittest : public testing::Test {
  public:
   RenderWidgetUnittest() : page_properties_(&compositor_deps_) {}
-  // testing::Test implementation.
+
   void SetUp() override {
     widget_ = std::make_unique<InteractiveRenderWidget>(&compositor_deps_,
                                                         &page_properties_);
   }
 
-  void DestroyWidget() {
-    if (widget_) {
-      widget_->PrepareForClose();
-      widget_->Close(std::move(widget_));
-    }
+  void TearDown() override {
+    widget_->Close(std::move(widget_));
+    // RenderWidget::Close() posts some destruction. Don't leak them.
+    base::RunLoop loop;
+    compositor_deps_.GetCleanupTaskRunner()->PostTask(FROM_HERE,
+                                                      loop.QuitClosure());
+    loop.Run();
   }
-
-  void TearDown() override { DestroyWidget(); }
 
   InteractiveRenderWidget* widget() const { return widget_.get(); }
 
@@ -273,10 +275,8 @@ class RenderWidgetUnittest : public testing::Test {
     return histogram_tester_;
   }
 
- protected:
-  base::test::TaskEnvironment task_environment_;
-
  private:
+  base::test::TaskEnvironment task_environment_;
   MockRenderProcess render_process_;
   MockRenderThread render_thread_;
   FakeCompositorDependencies compositor_deps_;

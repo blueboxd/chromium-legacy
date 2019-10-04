@@ -67,6 +67,15 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
     // The frame identifier, or MSG_ROUTING_NONE if this describes a worker
     // (this means that dedicated/shared/service workers are not distinguished).
     int render_frame_id;
+
+    // Returns true if this is a worker.
+    bool IsWorker() const;
+  };
+
+  // Comparator to use ExecutionContext in a map.
+  struct ExecutionContextComparator {
+    bool operator()(const ExecutionContext& left,
+                    const ExecutionContext& right) const;
   };
 
   // State for each client held in |receivers_|.
@@ -84,10 +93,19 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
   // and granted locks as keys in ordered maps.
   int64_t NextLockId();
 
+  // Increments/decrements the number of locks held by the frame described by
+  // |execution_context|. No-ops if |execution_context| describes a worker.
+  void IncrementLocksHeldByFrame(const ExecutionContext& execution_context);
+  void DecrementLocksHeldByFrame(const ExecutionContext& execution_context);
+
   mojo::ReceiverSet<blink::mojom::LockManager, ReceiverState> receivers_;
 
   int64_t next_lock_id_ = 0;
   std::map<url::Origin, OriginState> origins_;
+
+  // Number of Locks held per frame.
+  std::map<ExecutionContext, int, ExecutionContextComparator>
+      num_locks_held_by_frame_{ExecutionContextComparator()};
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<LockManager> weak_ptr_factory_{this};

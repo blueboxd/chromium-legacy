@@ -48,6 +48,7 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   bool ShouldRequestExpirationDate() const override;
   bool CanStoreLocally() const override;
   bool GetStoreLocallyStartState() const override;
+  bool GetWebauthnOfferStartState() const override;
   bool InputCvcIsValid(const base::string16& input_text) const override;
   bool InputExpirationIsValid(const base::string16& month,
                               const base::string16& year) const override;

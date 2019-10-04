@@ -136,6 +136,7 @@ class SSLClientSocketImpl : public SSLClientSocket,
   int DoHandshakeLoop(int last_io_result);
   int DoPayloadRead(IOBuffer* buf, int buf_len);
   int DoPayloadWrite();
+  void DoPeek();
 
   // Called when an asynchronous event completes which may have blocked the
   // pending Connect, Read or Write calls, if any. Retries all state machines
@@ -271,6 +272,9 @@ class SSLClientSocketImpl : public SSLClientSocket,
 
   // True if we are currently confirming the handshake.
   bool in_confirm_handshake_;
+
+  // True if the post-handshake SSL_peek has completed.
+  bool peek_complete_;
 
   // True if the socket has been disconnected.
   bool disconnected_;

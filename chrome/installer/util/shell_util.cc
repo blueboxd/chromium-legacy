@@ -2394,6 +2394,8 @@ bool ShellUtil::AddFileAssociations(
   ApplicationInfo app_info;
   app_info.prog_id = prog_id;
   app_info.application_name = application_name;
+  app_info.application_icon_path = icon_path;
+  app_info.application_icon_index = 0;
   app_info.file_type_name = file_type_name;
   app_info.file_type_icon_path = icon_path;
   app_info.file_type_icon_index = 0;

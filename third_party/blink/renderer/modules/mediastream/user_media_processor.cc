@@ -744,7 +744,17 @@ void UserMediaProcessor::SelectVideoDeviceSettings(
       settings.device_id();
   current_request_info_->SetVideoCaptureSettings(
       settings, false /* is_content_capture */);
-  GenerateStreamForCurrentRequestInfo();
+
+  if (current_request_info_->web_request().Audio()) {
+    base::Optional<base::UnguessableToken> audio_session_id =
+        DetermineExistingAudioSessionId();
+    GenerateStreamForCurrentRequestInfo(
+        audio_session_id, audio_session_id.has_value()
+                              ? StreamSelectionStrategy::SEARCH_BY_SESSION_ID
+                              : StreamSelectionStrategy::FORCE_NEW_STREAM);
+  } else {
+    GenerateStreamForCurrentRequestInfo();
+  }
 }
 
 void UserMediaProcessor::SelectVideoContentSettings() {

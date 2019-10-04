@@ -47,10 +47,12 @@ class TestAXRangeScreenRectDelegate : public AXRangeScreenRectDelegate {
  public:
   TestAXRangeScreenRectDelegate(AXTree* tree) : tree_(tree) {}
 
-  gfx::Rect GetInnerTextRangeBoundsRect(AXTreeID tree_id,
-                                        AXNode::AXID node_id,
-                                        int start_offset,
-                                        int end_offset) override {
+  gfx::Rect GetInnerTextRangeBoundsRect(
+      AXTreeID tree_id,
+      AXNode::AXID node_id,
+      int start_offset,
+      int end_offset,
+      AXOffscreenResult* offscreen_result) override {
     if (tree_->data().tree_id != tree_id)
       return gfx::Rect();
 
@@ -60,13 +62,14 @@ class TestAXRangeScreenRectDelegate : public AXRangeScreenRectDelegate {
 
     TestAXNodeWrapper* wrapper = TestAXNodeWrapper::GetOrCreate(tree_, node);
 
-    AXOffscreenResult ignore_offscreen_result;
     return wrapper->GetInnerTextRangeBoundsRect(
         start_offset, end_offset, ui::AXCoordinateSystem::kScreen,
-        ui::AXClippingBehavior::kClipped, &ignore_offscreen_result);
+        ui::AXClippingBehavior::kClipped, offscreen_result);
   }
 
-  gfx::Rect GetBoundsRect(AXTreeID tree_id, AXNode::AXID node_id) override {
+  gfx::Rect GetBoundsRect(AXTreeID tree_id,
+                          AXNode::AXID node_id,
+                          AXOffscreenResult* offscreen_result) override {
     if (tree_->data().tree_id != tree_id)
       return gfx::Rect();
 
@@ -75,10 +78,9 @@ class TestAXRangeScreenRectDelegate : public AXRangeScreenRectDelegate {
       return gfx::Rect();
 
     TestAXNodeWrapper* wrapper = TestAXNodeWrapper::GetOrCreate(tree_, node);
-    AXOffscreenResult ignore_offscreen_result;
     return wrapper->GetBoundsRect(ui::AXCoordinateSystem::kScreen,
                                   ui::AXClippingBehavior::kClipped,
-                                  &ignore_offscreen_result);
+                                  offscreen_result);
   }
 
  private:
@@ -1228,6 +1230,56 @@ TEST_F(AXRangeTest, GetScreenRects) {
   // |[Button][Checkbox 1][Checkbox 2]L|i|n|e| |1|\n|L|i|n|e| |2|\n|A|f|t|e|r|
   // |-----------------------------------------------------------------------|
   TestPositionRange entire_test_range(button->Clone(), after_line_end->Clone());
+  expected_screen_rects = {
+      gfx::Rect(20, 20, 100, 30), gfx::Rect(120, 20, 30, 30),
+      gfx::Rect(150, 20, 30, 30), gfx::Rect(20, 50, 30, 30),
+      gfx::Rect(20, 80, 42, 30),  gfx::Rect(20, 110, 50, 30)};
+  EXPECT_THAT(entire_test_range.GetScreenRects(&delegate),
+              testing::ContainerEq(expected_screen_rects));
+}
+
+TEST_F(AXRangeTest, GetScreenRectsOffscreen) {
+  // Set up root node bounds/viewport size  to {0, 50, 800x60}, so that only
+  // some text will be onscreen the rest will be offscreen.
+  AXNodeData old_root_node_data = GetRootNode()->data();
+  AXNodeData new_root_node_data = old_root_node_data;
+  new_root_node_data.relative_bounds.bounds = gfx::RectF(0, 50, 800, 60);
+  GetRootNode()->SetData(new_root_node_data);
+
+  TestAXRangeScreenRectDelegate delegate(tree_.get());
+
+  TestPositionInstance button = AXNodePosition::CreateTextPosition(
+      tree_->data().tree_id, button_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  TestPositionInstance after_line_end = AXNodePosition::CreateTextPosition(
+      tree_->data().tree_id, inline_box3_.id, 5 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  // [Button]           [Checkbox 1]         [Checkbox 2]
+  // {20, 20, 100x30},  {120, 20, 30x30}     {150, 20, 30x30}
+  //                                              ---
+  // [Line 1]                                     |
+  // {20, 50, 30x30}                              | view port, onscreen
+  //                                              | {0, 50, 800x60}
+  // [Line 2]                                     |
+  // {20, 80, 42x30}                              |
+  //                                              ---
+  // [After]
+  // {20, 110, 50x30}
+  //
+  // Retrieving bounding boxes of the range spanning the entire document.
+  // |[Button][Checkbox 1][Checkbox 2]L|i|n|e| |1|\n|L|i|n|e| |2|\n|A|f|t|e|r|
+  // |-----------------------------------------------------------------------|
+  TestPositionRange entire_test_range(button->Clone(), after_line_end->Clone());
+  std::vector<gfx::Rect> expected_screen_rects = {gfx::Rect(20, 50, 30, 30),
+                                                  gfx::Rect(20, 80, 42, 30)};
+  EXPECT_THAT(entire_test_range.GetScreenRects(&delegate),
+              testing::ContainerEq(expected_screen_rects));
+
+  // Reset the root node bounds/viewport size back to {0, 0, 800x600}, and
+  // verify all elements should be onscreen.
+  GetRootNode()->SetData(old_root_node_data);
   expected_screen_rects = {
       gfx::Rect(20, 20, 100, 30), gfx::Rect(120, 20, 30, 30),
       gfx::Rect(150, 20, 30, 30), gfx::Rect(20, 50, 30, 30),

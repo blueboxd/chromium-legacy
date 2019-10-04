@@ -40,15 +40,16 @@ RenderFrameMap* GetRenderFrameMap() {
 }  // namespace
 
 // static
-void MimeHandlerViewContainerManager::BindRequest(
+void MimeHandlerViewContainerManager::BindReceiver(
     int32_t routing_id,
-    mojom::MimeHandlerViewContainerManagerAssociatedRequest request) {
+    mojo::PendingAssociatedReceiver<mojom::MimeHandlerViewContainerManager>
+        receiver) {
   CHECK(content::MimeHandlerViewMode::UsesCrossProcessFrame());
   auto* render_frame = content::RenderFrame::FromRoutingID(routing_id);
   if (!render_frame)
     return;
   auto* manager = Get(render_frame, true /* create_if_does_not_exist */);
-  manager->bindings_.AddBinding(manager, std::move(request));
+  manager->receivers_.Add(manager, std::move(receiver));
 }
 
 // static
@@ -153,7 +154,7 @@ void MimeHandlerViewContainerManager::ReadyToCommitNavigation(
 }
 
 void MimeHandlerViewContainerManager::OnDestruct() {
-  bindings_.CloseAllBindings();
+  receivers_.Clear();
   // This will delete the class.
   GetRenderFrameMap()->erase(routing_id());
 }

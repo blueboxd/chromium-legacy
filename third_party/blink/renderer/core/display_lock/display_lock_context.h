@@ -123,8 +123,10 @@ class CORE_EXPORT DisplayLockContext final
   bool IsActivatable() const;
 
   // Trigger commit because of activation from tab order, url fragment,
-  // find-in-page, etc.
-  void CommitForActivation();
+  // find-in-page, scrolling, etc.
+  // This issues a before activate signal with the given element as the
+  // activated element.
+  void CommitForActivationWithSignal(Element* activated_element);
 
   bool ShouldCommitForActivation() const;
 
@@ -177,6 +179,10 @@ class CORE_EXPORT DisplayLockContext final
 
   // Notify this element will be disconnected.
   void NotifyWillDisconnect();
+
+  // Called when the element disconnects or connects.
+  void ElementDisconnected();
+  void ElementConnected();
 
   void SetNeedsPrePaintSubtreeWalk(
       bool needs_effective_allowed_touch_action_update) {
@@ -278,6 +284,12 @@ class CORE_EXPORT DisplayLockContext final
   // promises if the lock is not connected to the tree.
   bool CleanupAndRejectCommitIfNotConnected();
 
+  // Registers or unregisters the element for intersection observations in the
+  // document. This is used to activate on visibily changes. This can be safely
+  // called even if changes are not required, since it will only act if a
+  // register/unregister is required.
+  void UpdateActivationObservationIfNeeded();
+
   std::unique_ptr<DisplayLockBudget> update_budget_;
 
   Member<ScriptPromiseResolver> update_resolver_;
@@ -313,6 +325,10 @@ class CORE_EXPORT DisplayLockContext final
   // layout run where the descendants of the locked element are allowed to be
   // traversed into, we will traverse to the children of the locked element.
   bool child_layout_was_blocked_ = false;
+
+  // Tracks whether the element associated with this lock is being tracked by a
+  // document level intersection observer.
+  bool is_observed_ = false;
 };
 
 }  // namespace blink

@@ -236,12 +236,12 @@ TEST_F(StructTraitsTest, CopyOutputRequest_BitmapRequest) {
   std::unique_ptr<CopyOutputRequest> input(new CopyOutputRequest(
       result_format,
       base::BindOnce(
-          [](const base::Closure& quit_closure, const gfx::Rect& expected_rect,
+          [](base::OnceClosure quit_closure, const gfx::Rect& expected_rect,
              std::unique_ptr<CopyOutputResult> result) {
             EXPECT_EQ(expected_rect, result->rect());
             // Note: CopyOutputResult plumbing for bitmap requests is tested in
             // StructTraitsTest.CopyOutputResult_Bitmap.
-            quit_closure.Run();
+            std::move(quit_closure).Run();
           },
           run_loop.QuitClosure(), result_rect)));
   input->SetScaleRatio(scale_from, scale_to);
@@ -283,10 +283,10 @@ TEST_F(StructTraitsTest, CopyOutputRequest_MessagePipeBroken) {
   auto request = std::make_unique<CopyOutputRequest>(
       CopyOutputRequest::ResultFormat::RGBA_BITMAP,
       base::BindOnce(
-          [](const base::Closure& quit_closure,
+          [](base::OnceClosure quit_closure,
              std::unique_ptr<CopyOutputResult> result) {
             EXPECT_TRUE(result->IsEmpty());
-            quit_closure.Run();
+            std::move(quit_closure).Run();
           },
           run_loop.QuitClosure()));
   auto result_sender = mojo::StructTraits<
@@ -313,12 +313,12 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
   std::unique_ptr<CopyOutputRequest> input(new CopyOutputRequest(
       result_format,
       base::BindOnce(
-          [](const base::Closure& quit_closure, const gfx::Rect& expected_rect,
+          [](base::OnceClosure quit_closure, const gfx::Rect& expected_rect,
              std::unique_ptr<CopyOutputResult> result) {
             EXPECT_EQ(expected_rect, result->rect());
             // Note: CopyOutputResult plumbing for texture requests is tested in
             // StructTraitsTest.CopyOutputResult_Texture.
-            quit_closure.Run();
+            std::move(quit_closure).Run();
           },
           run_loop_for_result.QuitClosure(), result_rect)));
   EXPECT_FALSE(input->is_scaled());
@@ -334,13 +334,13 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
   base::RunLoop run_loop_for_release;
   output->SendResult(std::make_unique<CopyOutputTextureResult>(
       result_rect, mailbox, sync_token, gfx::ColorSpace::CreateSRGB(),
-      SingleReleaseCallback::Create(base::Bind(
-          [](const base::Closure& quit_closure,
+      SingleReleaseCallback::Create(base::BindOnce(
+          [](base::OnceClosure quit_closure,
              const gpu::SyncToken& expected_sync_token,
              const gpu::SyncToken& sync_token, bool is_lost) {
             EXPECT_EQ(expected_sync_token, sync_token);
             EXPECT_FALSE(is_lost);
-            quit_closure.Run();
+            std::move(quit_closure).Run();
           },
           run_loop_for_release.QuitClosure(), sync_token))));
 
@@ -1245,12 +1245,13 @@ TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
                             71234838);
   sync_token.SetVerifyFlush();
   base::RunLoop run_loop;
-  auto callback = SingleReleaseCallback::Create(base::Bind(
-      [](base::Closure quit_closure, const gpu::SyncToken& expected_sync_token,
+  auto callback = SingleReleaseCallback::Create(base::BindOnce(
+      [](base::OnceClosure quit_closure,
+         const gpu::SyncToken& expected_sync_token,
          const gpu::SyncToken& sync_token, bool is_lost) {
         EXPECT_EQ(expected_sync_token, sync_token);
         EXPECT_TRUE(is_lost);
-        quit_closure.Run();
+        std::move(quit_closure).Run();
       },
       run_loop.QuitClosure(), sync_token));
   gpu::Mailbox mailbox;

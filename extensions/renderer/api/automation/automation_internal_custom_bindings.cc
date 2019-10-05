@@ -1394,6 +1394,20 @@ void AutomationInternalCustomBindings::AddRoutes() {
         if (node->GetTableCellRowIndex())
           result.Set(*node->GetTableCellRowIndex());
       });
+  RouteNodeIDFunction(
+      "GetTableCellAriaColumnIndex",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        if (node->GetTableCellAriaColIndex())
+          result.Set(*node->GetTableCellAriaColIndex());
+      });
+  RouteNodeIDFunction(
+      "GetTableCellAriaRowIndex",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        if (node->GetTableCellAriaRowIndex())
+          result.Set(*node->GetTableCellAriaRowIndex());
+      });
 }
 
 void AutomationInternalCustomBindings::Invalidate() {

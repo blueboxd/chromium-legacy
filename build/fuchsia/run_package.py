@@ -117,7 +117,6 @@ def _GetComponentUri(package_name):
 class RunPackageArgs:
   """RunPackage() configuration arguments structure.
 
-  install_only: If set, skips the package execution step.
   symbolizer_config: A newline delimited list of source files contained
       in the package. Omitting this parameter will disable symbolization.
   system_logging: If set, connects a system log reader to the target.
@@ -125,7 +124,6 @@ class RunPackageArgs:
       installation. Defaults to staging into '/data'.
   """
   def __init__(self):
-    self.install_only = False
     self.symbolizer_config = None
     self.system_logging = False
     self.target_staging_path = '/data'
@@ -133,7 +131,6 @@ class RunPackageArgs:
   @staticmethod
   def FromCommonArgs(args):
     run_package_args = RunPackageArgs()
-    run_package_args.install_only = args.install_only
     run_package_args.system_logging = args.include_system_logs
     run_package_args.target_staging_path = args.target_staging_path
     return run_package_args
@@ -151,15 +148,15 @@ def _DrainStreamToStdout(stream, quit_event):
       print(line.rstrip())
 
 
-def RunPackage(output_dir, target, package_path, package_name,
-               package_deps, package_args, args):
+def RunPackage(output_dir, target, package_paths, package_name,
+               package_args, args):
   """Installs the Fuchsia package at |package_path| on the target,
   executes it with |package_args|, and symbolizes its output.
 
   output_dir: The path containing the build output files.
   target: The deployment Target object that will run the package.
-  package_path: The path to the .far package file.
-  package_name: The name of app specified by package metadata.
+  package_paths: The paths to the .far packages to be installed.
+  package_name: The name of the primary package to run.
   package_args: The arguments which will be passed to the Fuchsia process.
   args: Structure of arguments to configure how the package will be run.
 
@@ -178,15 +175,11 @@ def RunPackage(output_dir, target, package_path, package_name,
       log_output_thread.daemon = True
       log_output_thread.start()
 
-    target.InstallPackage(package_path, package_name, package_deps)
+    target.InstallPackage(package_paths)
 
     if system_logger:
       log_output_quit_event.set()
       log_output_thread.join(timeout=_JOIN_TIMEOUT_SECS)
-
-    if args.install_only:
-      logging.info('Installation complete.')
-      return
 
     logging.info('Running application.')
     command = ['run', _GetComponentUri(package_name)] + package_args
@@ -205,7 +198,7 @@ def RunPackage(output_dir, target, package_path, package_name,
     build_ids_paths = map(
         lambda package_path: os.path.join(
             os.path.dirname(package_path), 'ids.txt'),
-        [package_path] + package_deps)
+        package_paths)
     output_stream = SymbolizerFilter(output_stream, build_ids_paths)
 
     for next_line in output_stream:

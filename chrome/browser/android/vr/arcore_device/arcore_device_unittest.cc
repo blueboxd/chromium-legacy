@@ -89,6 +89,7 @@ class StubArCoreSessionUtils : public vr::ArCoreSessionUtils {
   void RequestArSession(
       int render_process_id,
       int render_frame_id,
+      bool use_overlay,
       vr::SurfaceReadyCallback ready_callback,
       vr::SurfaceTouchCallback touch_callback,
       vr::SurfaceDestroyedCallback destroyed_callback) override {

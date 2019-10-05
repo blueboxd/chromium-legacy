@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 939 tests; 908 PASS, 31 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 939 tests; 912 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -316,7 +316,7 @@ PASS Window interface: internal [[SetPrototypeOf]] method of global platform obj
 PASS Window must be primary interface of window
 PASS Stringification of window
 FAIL Window interface: window must have own property "window" assert_false: property descriptor should not have a "value" field expected false got true
-FAIL Window interface: window must inherit property "self" with the proper type Unrecognized type WindowProxy
+PASS Window interface: window must inherit property "self" with the proper type
 PASS Window interface: window must have own property "document"
 PASS Window interface: window must inherit property "name" with the proper type
 FAIL Window interface: window must have own property "location" assert_false: property descriptor should not have a "value" field expected false got true
@@ -334,11 +334,11 @@ PASS Window interface: window must inherit property "closed" with the proper typ
 PASS Window interface: window must inherit property "stop()" with the proper type
 PASS Window interface: window must inherit property "focus()" with the proper type
 PASS Window interface: window must inherit property "blur()" with the proper type
-FAIL Window interface: window must inherit property "frames" with the proper type Unrecognized type WindowProxy
+PASS Window interface: window must inherit property "frames" with the proper type
 PASS Window interface: window must inherit property "length" with the proper type
 FAIL Window interface: window must have own property "top" assert_false: property descriptor should not have a "value" field expected false got true
 PASS Window interface: window must inherit property "opener" with the proper type
-FAIL Window interface: window must inherit property "parent" with the proper type Unrecognized type WindowProxy
+PASS Window interface: window must inherit property "parent" with the proper type
 PASS Window interface: window must inherit property "frameElement" with the proper type
 PASS Window interface: window must inherit property "open(USVString, DOMString, DOMString)" with the proper type
 PASS Window interface: calling open(USVString, DOMString, DOMString) on window with too few arguments must throw TypeError
@@ -601,7 +601,7 @@ PASS Document interface: iframe.contentDocument must inherit property "write(DOM
 PASS Document interface: calling write(DOMString) on iframe.contentDocument with too few arguments must throw TypeError
 PASS Document interface: iframe.contentDocument must inherit property "writeln(DOMString)" with the proper type
 PASS Document interface: calling writeln(DOMString) on iframe.contentDocument with too few arguments must throw TypeError
-FAIL Document interface: iframe.contentDocument must inherit property "defaultView" with the proper type Unrecognized type WindowProxy
+PASS Document interface: iframe.contentDocument must inherit property "defaultView" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "hasFocus()" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "designMode" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "execCommand(DOMString, boolean, DOMString)" with the proper type

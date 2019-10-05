@@ -1333,6 +1333,9 @@ extern const char kWebXrDescription[];
 extern const char kWebXrArModuleName[];
 extern const char kWebXrArModuleDescription[];
 
+extern const char kWebXrArDOMOverlayName[];
+extern const char kWebXrArDOMOverlayDescription[];
+
 extern const char kWebXrHitTestName[];
 extern const char kWebXrHitTestDescription[];
 
@@ -1764,6 +1767,9 @@ extern const char kCloudPrintXpsDescription[];
 
 extern const char kD3D11VideoDecoderName[];
 extern const char kD3D11VideoDecoderDescription[];
+
+extern const char kEnableAuraTooltipsOnWindowsName[];
+extern const char kEnableAuraTooltipsOnWindowsDescription[];
 
 extern const char kEnableGpuAppcontainerName[];
 extern const char kEnableGpuAppcontainerDescription[];

@@ -97,6 +97,9 @@ suite('SiteDetails', function() {
           [test_util.createRawSiteException('https://foo.com:443', {
             setting: settings.ContentSetting.BLOCK,
           })]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.MIXEDSCRIPT,
+          [test_util.createRawSiteException('https://foo.com:443')]),
     ], [
       test_util.createContentSettingTypeToValuePair(
           settings.ContentSettingsTypes.USB_DEVICES,
@@ -151,6 +154,9 @@ suite('SiteDetails', function() {
     optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
                                                 .NATIVE_FILE_SYSTEM_WRITE] =
         'enableNativeFileSystemWriteContentSetting';
+    optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
+                                                .MIXEDSCRIPT] =
+        'enableInsecureContentContentSetting';
 
     browserProxy.setPrefs(prefs);
 

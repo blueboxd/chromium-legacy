@@ -136,10 +136,7 @@ bool ChunkDemuxerStream::Append(const StreamParser::BufferQueue& buffers) {
 
   base::AutoLock auto_lock(lock_);
   DCHECK_NE(state_, SHUTDOWN);
-  if (!stream_->Append(buffers)) {
-    DVLOG(1) << "ChunkDemuxerStream::Append() : stream append failed";
-    return false;
-  }
+  stream_->Append(buffers);
 
   if (read_cb_)
     CompletePendingReadIfPossible_Locked();

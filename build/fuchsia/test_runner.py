@@ -123,7 +123,7 @@ def main():
     run_package_args = RunPackageArgs.FromCommonArgs(args)
     returncode = RunPackage(
         args.output_directory, target, args.package, args.package_name,
-        args.package_dep, child_args, run_package_args)
+        child_args, run_package_args)
 
     if test_server:
       test_server.Stop()

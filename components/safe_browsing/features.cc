@@ -45,7 +45,7 @@ const base::Feature kForceUseAPDownloadProtection{
     "ForceUseAPDownloadProtection", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPasswordProtectionForSavedPasswords{
-    "SafeBrowsingPasswordProtectionForSignedInUsers",
+    "SafeBrowsingPasswordProtectionForSavedPasswords",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPasswordProtectionForSignedInUsers{

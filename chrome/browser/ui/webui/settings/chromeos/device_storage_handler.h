@@ -16,7 +16,7 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/browsing_data/site_data_size_collector.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/disks/disk_mount_manager.h"

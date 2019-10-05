@@ -21,9 +21,11 @@
 #include "ui/gfx/transform.h"
 
 namespace aura {
+
 class Window;
-enum class EventTargetingPolicy;
-}
+class ScopedWindowEventTargetingBlocker;
+
+}  // namespace aura
 
 namespace ui {
 class Layer;
@@ -182,8 +184,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // The original opacity of the window before entering overview mode.
   float original_opacity_;
 
-  aura::EventTargetingPolicy original_event_targeting_policy_;
-
   // Specifies how the window is laid out in the grid.
   GridWindowFillMode type_ = GridWindowFillMode::kNormal;
 
@@ -200,8 +200,9 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // For the duration of this object |window_| and its transient childrens'
   // event targeting policy will be sent to NONE. Store the originals so we can
   // change it back when destroying |this|.
-  base::flat_map<aura::Window*, aura::EventTargetingPolicy>
-      targeting_policy_map_;
+  base::flat_map<aura::Window*,
+                 std::unique_ptr<aura::ScopedWindowEventTargetingBlocker>>
+      event_targeting_blocker_map_;
 
   // The original mask layer of the window before entering overview mode.
   ui::Layer* original_mask_layer_ = nullptr;

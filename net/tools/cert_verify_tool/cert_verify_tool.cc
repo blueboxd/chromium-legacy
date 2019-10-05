@@ -199,6 +199,7 @@ std::unique_ptr<CertVerifyImpl> CreateCertVerifyImplFromName(
     base::StringPiece impl_name,
     scoped_refptr<net::CertNetFetcher> cert_net_fetcher,
     bool use_system_roots) {
+#if !defined(OS_FUCHSIA)
   if (impl_name == "platform") {
     if (!use_system_roots) {
       std::cerr << "WARNING: platform verifier not supported with "
@@ -207,9 +208,10 @@ std::unique_ptr<CertVerifyImpl> CreateCertVerifyImplFromName(
     }
 
     return std::make_unique<CertVerifyImplUsingProc>(
-        "CertVerifyProc (default)",
-        net::CertVerifyProc::CreateDefault(std::move(cert_net_fetcher)));
+        "CertVerifyProc (system)", net::CertVerifyProc::CreateSystemVerifyProc(
+                                       std::move(cert_net_fetcher)));
   }
+#endif
 
   if (impl_name == "builtin") {
     return std::make_unique<CertVerifyImplUsingProc>(
@@ -410,8 +412,13 @@ int main(int argc, char** argv) {
   // Parse the ordered list of CertVerifyImpl passed via command line flags into
   // |impls|.
   std::string impls_str = command_line.GetSwitchValueASCII("impls");
-  if (impls_str.empty())
-    impls_str = "platform,builtin,pathbuilder";  // Default value.
+  if (impls_str.empty()) {
+    // Default value.
+#if !defined(OS_FUCHSIA)
+    impls_str = "platform,";
+#endif
+    impls_str += "builtin,pathbuilder";
+  }
 
   std::vector<std::string> impl_names = base::SplitString(
       impls_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);

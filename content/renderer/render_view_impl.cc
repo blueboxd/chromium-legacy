@@ -1823,11 +1823,17 @@ bool RenderViewImpl::CanUpdateLayout() {
 
 void RenderViewImpl::SetEditCommandForNextKeyEvent(const std::string& name,
                                                    const std::string& value) {
-  render_widget_->SetEditCommandForNextKeyEvent(name, value);
+  // This is test-only code. Only propagate the command if there is a main
+  // render frame.
+  if (main_render_frame_)
+    render_widget_->SetEditCommandForNextKeyEvent(name, value);
 }
 
 void RenderViewImpl::ClearEditCommands() {
-  render_widget_->ClearEditCommands();
+  // This is test-only code. Only propagate the command if there is a main
+  // render frame.
+  if (main_render_frame_)
+    render_widget_->ClearEditCommands();
 }
 
 const std::string& RenderViewImpl::GetAcceptLanguages() {

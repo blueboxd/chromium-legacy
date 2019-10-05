@@ -20,27 +20,23 @@ BulkPrintersCalculatorFactory* BulkPrintersCalculatorFactory::Get() {
 }
 
 base::WeakPtr<BulkPrintersCalculator>
-BulkPrintersCalculatorFactory::GetForAccountId(const AccountId& account_id,
-                                               bool create_if_not_exists) {
+BulkPrintersCalculatorFactory::GetForAccountId(const AccountId& account_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = printers_by_user_.find(account_id);
   if (it != printers_by_user_.end())
     return it->second->AsWeakPtr();
-  if (!create_if_not_exists)
-    return nullptr;
   printers_by_user_.emplace(account_id, BulkPrintersCalculator::Create());
   return printers_by_user_[account_id]->AsWeakPtr();
 }
 
 base::WeakPtr<BulkPrintersCalculator>
-BulkPrintersCalculatorFactory::GetForProfile(Profile* profile,
-                                             bool create_if_not_exists) {
+BulkPrintersCalculatorFactory::GetForProfile(Profile* profile) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user)
     return nullptr;
-  return GetForAccountId(user->GetAccountId(), create_if_not_exists);
+  return GetForAccountId(user->GetAccountId());
 }
 
 void BulkPrintersCalculatorFactory::RemoveForUserId(
@@ -50,12 +46,10 @@ void BulkPrintersCalculatorFactory::RemoveForUserId(
 }
 
 base::WeakPtr<BulkPrintersCalculator>
-BulkPrintersCalculatorFactory::GetForDevice(bool create_if_not_exists) {
+BulkPrintersCalculatorFactory::GetForDevice() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (device_printers_)
     return device_printers_->AsWeakPtr();
-  if (!create_if_not_exists)
-    return nullptr;
   device_printers_ = BulkPrintersCalculator::Create();
   return device_printers_->AsWeakPtr();
 }

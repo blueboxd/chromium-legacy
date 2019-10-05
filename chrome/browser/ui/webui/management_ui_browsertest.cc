@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(ManagementUITest, ManagementStateChange) {
 
   // The browser is not managed.
   const std::string javascript =
-      "management.ManagementBrowserProxyImpl.getInstance()"
+      "window.ManagementBrowserProxyImpl.getInstance()"
       "  .getContextualManagedData()"
       "  .then(managed_result => "
       "    domAutomationController.send(JSON.stringify(managed_result)));";

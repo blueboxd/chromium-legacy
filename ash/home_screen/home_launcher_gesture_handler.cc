@@ -32,6 +32,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
 #include "ui/aura/client/window_types.h"
+#include "ui/aura/scoped_window_event_targeting_blocker.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
@@ -228,15 +229,14 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
  public:
   explicit ScopedWindowModifier(aura::Window* window) : window_(window) {
     DCHECK(window_);
-    original_event_targeting_policy_ = window_->event_targeting_policy();
-    window_->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
+    event_targeting_blocker_ =
+        std::make_unique<aura::ScopedWindowEventTargetingBlocker>(window_);
   }
   ~ScopedWindowModifier() override {
     for (const auto& descendant : transient_descendants_values_)
       descendant.first->RemoveObserver(this);
 
     ResetOpacityAndTransform();
-    window_->SetEventTargetingPolicy(original_event_targeting_policy_);
   }
 
   bool IsAnimating() const {
@@ -324,7 +324,8 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
   // For the duration of this object |window_| event targeting policy will be
   // sent to kNone. Store the original so we can change it back when destroying
   // this object.
-  aura::EventTargetingPolicy original_event_targeting_policy_;
+  std::unique_ptr<aura::ScopedWindowEventTargetingBlocker>
+      event_targeting_blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedWindowModifier);
 };

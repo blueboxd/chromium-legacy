@@ -13,6 +13,7 @@ locking, this simply measures requestAnimationFrame.
 <style>
 .container {
   contain: style layout;
+  content-size: 100px;
 }
 .box {
   background: blue;
@@ -46,8 +47,7 @@ function construct(n) {
   for (let i = 0; i < n; ++i) {
     const clone = specimen.cloneNode(true);
     clone.id = "id" + i;
-    if (clone.displayLock)
-      clone.displayLock.acquire({ timeout: Infinity, size: [100, 100] });
+    clone.renderSubtree = "invisible";
     document.body.appendChild(clone);
   }
 }
@@ -56,8 +56,7 @@ let nextId = 0;
 function commitNextLock() {
   const element = document.getElementById("id" + nextId);
   ++nextId;
-  if (element.displayLock)
-    element.displayLock.commit();
+  element.renderSubtree = "";
 }
 
 let testDone = false;

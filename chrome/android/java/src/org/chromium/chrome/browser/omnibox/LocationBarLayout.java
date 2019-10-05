@@ -1116,7 +1116,7 @@ public class LocationBarLayout extends FrameLayout
 
     private void forceOnTextChanged() {
         String textWithoutAutocomplete = mUrlCoordinator.getTextWithoutAutocomplete();
-        String textWithAutocomplete = mUrlCoordinator.getTextWithoutAutocomplete();
+        String textWithAutocomplete = mUrlCoordinator.getTextWithAutocomplete();
         mAutocompleteCoordinator.onTextChanged(textWithoutAutocomplete, textWithAutocomplete);
         mStatusViewCoordinator.onTextChanged(textWithoutAutocomplete, textWithAutocomplete);
     }

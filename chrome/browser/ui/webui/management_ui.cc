@@ -115,14 +115,12 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
 #endif  // defined(OS_CHROMEOS)
 
   source->UseStringsJs();
+  source->EnableReplaceI18nInJS();
   // Add required resources.
-  source->AddResourcePath("management_browser_proxy.html",
-                          IDR_MANAGEMENT_BROWSER_PROXY_HTML);
   source->AddResourcePath("management_browser_proxy.js",
                           IDR_MANAGEMENT_BROWSER_PROXY_JS);
-  source->AddResourcePath("management_ui.html", IDR_MANAGEMENT_UI_HTML);
   source->AddResourcePath("management_ui.js", IDR_MANAGEMENT_UI_JS);
-  source->AddResourcePath("icons.html", IDR_MANAGEMENT_ICONS_HTML);
+  source->AddResourcePath("icons.js", IDR_MANAGEMENT_ICONS_JS);
   source->SetDefaultResource(IDR_MANAGEMENT_HTML);
   return source;
 }

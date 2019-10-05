@@ -29,6 +29,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
+#include "ui/aura/scoped_window_event_targeting_blocker.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_observer.h"
@@ -111,8 +112,9 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
 
   std::vector<aura::Window*> transient_children_to_hide;
   for (auto* transient : GetTransientTreeIterator(window)) {
-    targeting_policy_map_[transient] = transient->event_targeting_policy();
-    transient->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
+    event_targeting_blocker_map_[transient] =
+        std::make_unique<aura::ScopedWindowEventTargetingBlocker>(transient);
+
     transient->SetProperty(kIsShowingInOverviewKey, true);
 
     // Hide transient children which have been specified to be hidden in
@@ -160,10 +162,8 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
 ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
   for (auto* transient : GetTransientTreeIterator(window_)) {
     transient->ClearProperty(kIsShowingInOverviewKey);
-    DCHECK(targeting_policy_map_.contains(transient));
-    auto it = targeting_policy_map_.find(transient);
-    transient->SetEventTargetingPolicy(it->second);
-    targeting_policy_map_.erase(it);
+    DCHECK(event_targeting_blocker_map_.contains(transient));
+    event_targeting_blocker_map_.erase(transient);
   }
 
   // No need to update the clip since we're about to restore it to
@@ -425,10 +425,11 @@ void ScopedOverviewTransformWindow::OnTransientChildWindowAdded(
   if (parent != window_ && !::wm::HasTransientAncestor(parent, window_))
     return;
 
-  DCHECK(!targeting_policy_map_.contains(transient_child));
-  targeting_policy_map_[transient_child] =
-      transient_child->event_targeting_policy();
-  transient_child->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
+  DCHECK(!event_targeting_blocker_map_.contains(transient_child));
+  event_targeting_blocker_map_[transient_child] =
+      std::make_unique<aura::ScopedWindowEventTargetingBlocker>(
+          transient_child);
+  transient_child->SetProperty(kIsShowingInOverviewKey, true);
 }
 
 void ScopedOverviewTransformWindow::OnTransientChildWindowRemoved(
@@ -437,10 +438,9 @@ void ScopedOverviewTransformWindow::OnTransientChildWindowRemoved(
   if (parent != window_ && !::wm::HasTransientAncestor(parent, window_))
     return;
 
-  DCHECK(targeting_policy_map_.contains(transient_child));
-  auto it = targeting_policy_map_.find(transient_child);
-  transient_child->SetEventTargetingPolicy(it->second);
-  targeting_policy_map_.erase(it);
+  transient_child->ClearProperty(kIsShowingInOverviewKey);
+  DCHECK(event_targeting_blocker_map_.contains(transient_child));
+  event_targeting_blocker_map_.erase(transient_child);
 }
 
 void ScopedOverviewTransformWindow::CloseWidget() {

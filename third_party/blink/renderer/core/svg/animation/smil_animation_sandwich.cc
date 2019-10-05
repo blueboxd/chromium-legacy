@@ -31,6 +31,19 @@
 
 namespace blink {
 
+namespace {
+
+struct PriorityCompare {
+  PriorityCompare(SMILTime elapsed) : elapsed_(elapsed) {}
+  bool operator()(const Member<SVGSMILElement>& a,
+                  const Member<SVGSMILElement>& b) {
+    return b->IsHigherPriorityThan(a, elapsed_);
+  }
+  SMILTime elapsed_;
+};
+
+}  // namespace
+
 SMILAnimationSandwich::SMILAnimationSandwich() = default;
 
 void SMILAnimationSandwich::Schedule(SVGSMILElement* animation) {

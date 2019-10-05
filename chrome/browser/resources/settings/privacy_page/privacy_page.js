@@ -136,6 +136,14 @@ Polymer({
     },
 
     /** @private */
+    enableInsecureContentContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableInsecureContentContentSetting');
+      }
+    },
+
+    /** @private */
     enableNativeFileSystemWriteContentSetting_: {
       type: Boolean,
       value: function() {

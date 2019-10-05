@@ -344,6 +344,16 @@ public class CompositorView
         // We do know that if we do get one, then it will be for the surface that we just requested.
     }
 
+    /**
+     * Enables/disables immersive AR overlay mode, a variant of overlay video mode.
+     * @param enabled Whether to enter or leave overlay immersive ar mode.
+     */
+    public void setOverlayImmersiveArMode(boolean enabled) {
+        setOverlayVideoMode(enabled);
+        CompositorViewJni.get().setOverlayImmersiveArMode(
+                mNativeCompositorView, CompositorView.this, enabled);
+    }
+
     private int getSurfacePixelFormat() {
         if (mOverlayVideoEnabled || mAlwaysTranslucent) {
             return PixelFormat.TRANSLUCENT;
@@ -620,6 +630,8 @@ public class CompositorView
         void setNeedsComposite(long nativeCompositorView, CompositorView caller);
         void setLayoutBounds(long nativeCompositorView, CompositorView caller);
         void setOverlayVideoMode(long nativeCompositorView, CompositorView caller, boolean enabled);
+        void setOverlayImmersiveArMode(
+                long nativeCompositorView, CompositorView caller, boolean enabled);
         void setSceneLayer(long nativeCompositorView, CompositorView caller, SceneLayer sceneLayer);
         void setCompositorWindow(
                 long nativeCompositorView, CompositorView caller, WindowAndroid window);

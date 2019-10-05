@@ -42,6 +42,7 @@ ArCoreJavaUtils::~ArCoreJavaUtils() {
 void ArCoreJavaUtils::RequestArSession(
     int render_process_id,
     int render_frame_id,
+    bool use_overlay,
     SurfaceReadyCallback ready_callback,
     SurfaceTouchCallback touch_callback,
     SurfaceDestroyedCallback destroyed_callback) {
@@ -54,7 +55,7 @@ void ArCoreJavaUtils::RequestArSession(
 
   Java_ArCoreJavaUtils_startSession(
       env, j_arcore_java_utils_,
-      getTabFromRenderer(render_process_id, render_frame_id));
+      getTabFromRenderer(render_process_id, render_frame_id), use_overlay);
 }
 
 void ArCoreJavaUtils::EndSession() {

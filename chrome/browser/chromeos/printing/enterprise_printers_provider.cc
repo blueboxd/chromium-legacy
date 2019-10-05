@@ -49,16 +49,14 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
     // Binds instances of BulkPrintersCalculator to policies.
     policies_binder_ = CalculatorsPoliciesBinder::Create(settings, profile);
     // Get instance of BulkPrintersCalculator for device policies.
-    device_printers_ = BulkPrintersCalculatorFactory::Get()->GetForDevice(
-        /*create_if_not_exists=*/false);
+    device_printers_ = BulkPrintersCalculatorFactory::Get()->GetForDevice();
     if (device_printers_) {
       device_printers_->AddObserver(this);
       RecalculateCompleteFlagForDevicePrinters();
     }
     // Get instance of BulkPrintersCalculator for user policies.
-    user_printers_ = BulkPrintersCalculatorFactory::Get()->GetForProfile(
-        profile,
-        /*create_if_not_exists=*/false);
+    user_printers_ =
+        BulkPrintersCalculatorFactory::Get()->GetForProfile(profile);
     if (user_printers_) {
       user_printers_->AddObserver(this);
       RecalculateCompleteFlagForUserPrinters();

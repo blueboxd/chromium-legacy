@@ -42,6 +42,8 @@ public class FeedConfigurationTest {
                 FeedConfiguration.getConsumeSyntheticTokens());
         Assert.assertEquals(FeedConfiguration.CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING_DEFAULT,
                 FeedConfiguration.getConsumeSyntheticTokensWhileRestoring());
+        Assert.assertEquals(FeedConfiguration.DEFAULT_ACTION_TTL_SECONDS_DEFAULT,
+                FeedConfiguration.getDefaultActionTtlSeconds());
         Assert.assertEquals(FeedConfiguration.FEED_ACTION_SERVER_ENDPOINT_DEFAULT,
                 FeedConfiguration.getFeedActionServerEndpoint());
         Assert.assertEquals(FeedConfiguration.FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST_DEFAULT,
@@ -133,6 +135,16 @@ public class FeedConfigurationTest {
     public void
     testConsumeSyntheticTokensWhileRestoring() {
         Assert.assertTrue(FeedConfiguration.getConsumeSyntheticTokensWhileRestoring());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:default_action_ttl_seconds/42"})
+    public void
+    testDefaultActionTTLSeconds() {
+        Assert.assertEquals(42, FeedConfiguration.getDefaultActionTtlSeconds());
     }
 
     @Test
@@ -401,6 +413,8 @@ public class FeedConfigurationTest {
                 configuration.getValueOrDefault(ConfigKey.CONSUME_SYNTHETIC_TOKENS, true));
         Assert.assertFalse(configuration.getValueOrDefault(
                 ConfigKey.CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING, true));
+        Assert.assertEquals((long) FeedConfiguration.DEFAULT_ACTION_TTL_SECONDS_DEFAULT,
+                configuration.getValueOrDefault(ConfigKey.DEFAULT_ACTION_TTL_SECONDS, 0));
         Assert.assertEquals(FeedConfiguration.FEED_ACTION_SERVER_ENDPOINT_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.FEED_ACTION_SERVER_ENDPOINT, ""));
         Assert.assertEquals(

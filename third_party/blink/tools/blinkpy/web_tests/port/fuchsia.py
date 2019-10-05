@@ -160,8 +160,7 @@ class _TargetHost(object):
                                                    stderr=subprocess.PIPE)
 
         package_path = os.path.join(build_path, CONTENT_SHELL_PACKAGE_PATH)
-        self._target.InstallPackage(package_path, "content_shell",
-                                    package_deps=[])
+        self._target.InstallPackage([package_path])
 
         # Process will be forked for each worker, which may make QemuTarget
         # unusable (e.g. waitpid() for qemu process returns ECHILD after

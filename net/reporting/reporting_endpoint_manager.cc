@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -15,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/time/tick_clock.h"
 #include "net/base/backoff_entry.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/rand_callback.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_delegate.h"
@@ -29,19 +31,33 @@ namespace {
 
 class ReportingEndpointManagerImpl : public ReportingEndpointManager {
  public:
-  ReportingEndpointManagerImpl(ReportingContext* context,
+  ReportingEndpointManagerImpl(const ReportingPolicy* policy,
+                               const base::TickClock* tick_clock,
+                               const ReportingDelegate* delegate,
+                               ReportingCache* cache,
                                const RandIntCallback& rand_callback)
-      : context_(context), rand_callback_(rand_callback) {}
+      : policy_(policy),
+        tick_clock_(tick_clock),
+        delegate_(delegate),
+        cache_(cache),
+        rand_callback_(rand_callback) {
+    DCHECK(policy);
+    DCHECK(tick_clock);
+    DCHECK(delegate);
+    DCHECK(cache);
+  }
 
   ~ReportingEndpointManagerImpl() override = default;
 
   const ReportingEndpoint FindEndpointForDelivery(
+      const NetworkIsolationKey& network_isolation_key,
       const url::Origin& origin,
       const std::string& group) override {
     // Get unexpired endpoints that apply to a delivery to |origin| and |group|.
     // May have been configured by a superdomain of |origin|.
     std::vector<ReportingEndpoint> endpoints =
-        cache()->GetCandidateEndpointsForDelivery(origin, group);
+        cache_->GetCandidateEndpointsForDelivery(network_isolation_key, origin,
+                                                 group);
 
     // Highest-priority endpoint(s) that are not expired, failing, or
     // forbidden for use by the ReportingDelegate.
@@ -50,12 +66,15 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
     int total_weight = 0;
 
     for (const ReportingEndpoint endpoint : endpoints) {
-      if (base::Contains(endpoint_backoff_, endpoint.info.url) &&
-          endpoint_backoff_[endpoint.info.url]->ShouldRejectRequest()) {
+      auto endpoint_backoff_it = endpoint_backoff_.find(
+          EndpointBackoffKey(network_isolation_key, endpoint.info.url));
+      if (endpoint_backoff_it != endpoint_backoff_.end() &&
+          endpoint_backoff_it->second->ShouldRejectRequest()) {
         continue;
       }
-      if (!delegate()->CanUseClient(endpoint.group_key.origin,
-                                    endpoint.info.url)) {
+
+      if (!delegate_->CanUseClient(endpoint.group_key.origin,
+                                   endpoint.info.url)) {
         continue;
       }
 
@@ -101,21 +120,29 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
     return ReportingEndpoint();
   }
 
-  void InformOfEndpointRequest(const GURL& endpoint, bool succeeded) override {
-    if (!base::Contains(endpoint_backoff_, endpoint)) {
-      endpoint_backoff_[endpoint] = std::make_unique<BackoffEntry>(
-          &policy().endpoint_backoff_policy, &tick_clock());
+  void InformOfEndpointRequest(const NetworkIsolationKey& network_isolation_key,
+                               const GURL& endpoint,
+                               bool succeeded) override {
+    EndpointBackoffKey endpoint_backoff_key(network_isolation_key, endpoint);
+    auto endpoint_backoff_it = endpoint_backoff_.find(endpoint_backoff_key);
+    if (endpoint_backoff_it == endpoint_backoff_.end()) {
+      endpoint_backoff_it =
+          endpoint_backoff_
+              .emplace(std::move(endpoint_backoff_key),
+                       std::make_unique<BackoffEntry>(
+                           &policy_->endpoint_backoff_policy, tick_clock_))
+              .first;
     }
-    endpoint_backoff_[endpoint]->InformOfRequest(succeeded);
+    endpoint_backoff_it->second->InformOfRequest(succeeded);
   }
 
  private:
-  const ReportingPolicy& policy() const { return context_->policy(); }
-  const base::TickClock& tick_clock() const { return context_->tick_clock(); }
-  ReportingDelegate* delegate() { return context_->delegate(); }
-  ReportingCache* cache() { return context_->cache(); }
+  using EndpointBackoffKey = std::pair<NetworkIsolationKey, GURL>;
 
-  ReportingContext* context_;
+  const ReportingPolicy* const policy_;
+  const base::TickClock* const tick_clock_;
+  const ReportingDelegate* const delegate_;
+  ReportingCache* const cache_;
 
   RandIntCallback rand_callback_;
 
@@ -124,7 +151,8 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
   // to be cleared as well.
   // TODO(chlily): clear this data when endpoints are deleted to avoid unbounded
   // growth of this map.
-  std::map<GURL, std::unique_ptr<net::BackoffEntry>> endpoint_backoff_;
+  std::map<EndpointBackoffKey, std::unique_ptr<net::BackoffEntry>>
+      endpoint_backoff_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportingEndpointManagerImpl);
 };
@@ -133,9 +161,13 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
 
 // static
 std::unique_ptr<ReportingEndpointManager> ReportingEndpointManager::Create(
-    ReportingContext* context,
+    const ReportingPolicy* policy,
+    const base::TickClock* tick_clock,
+    const ReportingDelegate* delegate,
+    ReportingCache* cache,
     const RandIntCallback& rand_callback) {
-  return std::make_unique<ReportingEndpointManagerImpl>(context, rand_callback);
+  return std::make_unique<ReportingEndpointManagerImpl>(
+      policy, tick_clock, delegate, cache, rand_callback);
 }
 
 ReportingEndpointManager::~ReportingEndpointManager() = default;

@@ -604,6 +604,12 @@ function getThemeBackgroundInfo() {
     // backgroundImage is in the form: url("actual url"). Remove everything
     // except the actual url.
     info.imageUrl = preview.style.backgroundImage.slice(5, -2);
+
+    if (preview.dataset.hasImage === 'true') {
+      info.attribution1 = preview.dataset.attributionLine1;
+      info.attribution2 = preview.dataset.attributionLine2;
+      info.attributionActionUrl = preview.dataset.attributionActionUrl;
+    }
   }
   return info;
 }

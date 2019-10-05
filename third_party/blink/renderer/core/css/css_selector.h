@@ -250,6 +250,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoSlotted,
     kPseudoVideoPersistent,
     kPseudoVideoPersistentAncestor,
+    kPseudoXrImmersiveDomOverlay,
   };
 
   enum AttributeMatchType {

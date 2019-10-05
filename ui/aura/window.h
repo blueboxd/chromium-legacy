@@ -69,13 +69,13 @@ namespace aura {
 
 class LayoutManager;
 class ScopedKeyboardHook;
+class ScopedWindowEventTargetingBlocker;
 class WindowDelegate;
-class WindowObserver;
 class WindowTargeter;
 class WindowTreeHost;
 
 // Defined in class_property.h (which we do not include)
-template<typename T>
+template <typename T>
 using WindowProperty = ui::ClassProperty<T>;
 
 namespace test {
@@ -110,10 +110,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   static constexpr int kInitialId = -1;
 
   // Used when stacking windows.
-  enum StackDirection {
-    STACK_ABOVE,
-    STACK_BELOW
-  };
+  enum StackDirection { STACK_ABOVE, STACK_BELOW };
 
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -397,7 +394,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void* GetNativeWindowProperty(const char* key) const;
 
   // Type of a function to delete a property that this window owns.
-  //typedef void (*PropertyDeallocator)(int64_t value);
+  // typedef void (*PropertyDeallocator)(int64_t value);
 
   // Overridden from ui::LayerDelegate:
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
@@ -513,6 +510,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   friend class HitTestDataProviderAura;
   friend class LayoutManager;
   friend class PropertyConverter;
+  friend class ScopedWindowEventTargetingBlocker;
   friend class WindowTargeter;
   friend class test::WindowTestApi;
 
@@ -682,6 +680,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Makes the window pass all events through to any windows behind it.
   EventTargetingPolicy event_targeting_policy_;
+  // Used to restore to the original event targeting policy after all event
+  // targeting blockers on this window are removed.
+  EventTargetingPolicy restore_event_targeting_policy_;
+  int event_targeting_blocker_count_ = 0;
 
   base::ReentrantObserverList<WindowObserver, true> observers_;
 

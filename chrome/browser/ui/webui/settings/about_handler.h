@@ -25,7 +25,6 @@
 #endif  // defined(OS_CHROMEOS)
 
 namespace base {
-class DictionaryValue;
 class FilePath;
 class ListValue;
 }
@@ -99,12 +98,6 @@ class AboutHandler : public settings::SettingsPageUIHandler,
 
   // Sets the release track version.
   void HandleSetChannel(const base::ListValue* args);
-
-  // Retrieves OS, ARC and firmware versions.
-  void HandleGetVersionInfo(const base::ListValue* args);
-  void OnGetVersionInfoReady(
-      std::string callback_id,
-      std::unique_ptr<base::DictionaryValue> version_info);
 
   // Retrieves combined channel info.
   void HandleGetChannelInfo(const base::ListValue* args);

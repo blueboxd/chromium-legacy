@@ -1203,6 +1203,11 @@ class ComputedStyle : public ComputedStyleBase,
     return Display() == EDisplay::kWebkitBox ||
            Display() == EDisplay::kWebkitInlineBox;
   }
+  bool IsDeprecatedFlexboxUsingFlexLayout() const {
+    return IsDeprecatedWebkitBox() &&
+           RuntimeEnabledFeatures::WebkitBoxLayoutUsesFlexLayoutEnabled() &&
+           (!HasLineClamp() || BoxOrient() == EBoxOrient::kHorizontal);
+  }
 
   // Variables.
   bool HasVariables() const;
@@ -2091,7 +2096,6 @@ class ComputedStyle : public ComputedStyleBase,
   bool IsDisplayFlexibleOrGridBox() const {
     return IsDisplayFlexibleBox(Display()) || IsDisplayGridBox(Display());
   }
-  bool IsDisplayFlexibleBox() const { return IsDisplayFlexibleBox(Display()); }
   bool IsDisplayLayoutCustomBox() const {
     return IsDisplayLayoutCustomBox(Display());
   }

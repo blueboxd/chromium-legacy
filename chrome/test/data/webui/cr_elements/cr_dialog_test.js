@@ -238,27 +238,43 @@ suite('cr-dialog', function() {
       <cr-dialog>
         <div slot="title">title</div>
         <div slot="body">
-          <input></input>
-          <input type="text"></input>
-          <input type="password"></input>
-          <input type="checkbox"></input>
           <foobar></foobar>
+          <input type="checkbox">
+          <input type="text">
+
+          <cr-input type="search"></cr-input>
+          <cr-input type="text"></cr-input>
+
+          <div id="withShadow"></div>
           <button class="action-button">active</button>
-          <cr-input></cr-input>
         </div>
       </cr-dialog>`;
 
     const dialog = document.body.querySelector('cr-dialog');
 
-    const inputElement = document.body.querySelector('input:not([type])');
-    const inputTextElement = document.body.querySelector('input[type="text"]');
-    const inputPasswordElement =
-        document.body.querySelector('input[type="password"]');
+    const otherElement = document.body.querySelector('foobar');
     const inputCheckboxElement =
         document.body.querySelector('input[type="checkbox"]');
-    const otherElement = document.body.querySelector('foobar');
+    const inputTextElement = document.body.querySelector('input[type="text"]');
+
+    // Manually set the |type| property since cr-input is not actually imported
+    // as part of this test, and therefore the element is not upgraded, as it
+    // would normally.
+    const crTextInputElement =
+        document.body.querySelector('cr-input[type="text"]');
+    crTextInputElement.type = 'text';
+    const crSearchInputElement =
+        document.body.querySelector('cr-input[type="search"]');
+    crSearchInputElement.type = 'search';
+
+    // Attach a cr-input element nested within another element.
+    const containerElement = document.body.querySelector('#withShadow');
+    const shadow = containerElement.attachShadow({mode: 'open'});
+    const crInputNested = document.createElement('cr-input');
+    crInputNested.type = 'text';
+    shadow.appendChild(crInputNested);
+
     const actionButton = document.body.querySelector('.action-button');
-    const crInputElement = document.body.querySelector('cr-input');
 
     // MockInteractions triggers event listeners synchronously.
     let clickedCounter = 0;
@@ -266,62 +282,25 @@ suite('cr-dialog', function() {
       clickedCounter++;
     });
 
-    // Only certain types of <input> trigger a dialog submit.
+    // Enter on anything other than cr-input should not be accepted.
     pressEnter(otherElement);
     assertEquals(0, clickedCounter);
-    // "type" defaults to text, which triggers the click.
-    pressEnter(inputElement);
-    assertEquals(1, clickedCounter);
-    pressEnter(inputTextElement);
-    assertEquals(2, clickedCounter);
-    pressEnter(inputPasswordElement);
-    assertEquals(3, clickedCounter);
     pressEnter(inputCheckboxElement);
-    assertEquals(3, clickedCounter);
-    // Also trigger dialog submit if code synthesizes enter on a cr-input
-    // without targeting the underlying input.
-    pressEnter(crInputElement);
-    assertEquals(4, clickedCounter);
-  });
+    assertEquals(0, clickedCounter);
+    pressEnter(inputTextElement);
+    assertEquals(0, clickedCounter);
 
-  // Test that enter key presses trigger an action button click, even if the
-  // even was retargeted, e.g. because the input was really a cr-input, the
-  // cr-input was part of another custom element, etc.
-  test('enter keys are processed even if event was retargeted', function() {
-    document.body.innerHTML = `
-      <dom-module id="test-element">
-        <template><input></input></template>
-      </dom-module>
+    // Enter on a cr-input with type "search" should not be accepted.
+    pressEnter(crSearchInputElement);
+    assertEquals(0, clickedCounter);
 
-      <cr-dialog>
-        <div slot="title">title</div>
-        <div slot="body">
-          <test-element></test-element>
-          <button class="action-button">active</button>
-        </div>
-      </cr-dialog>`;
-
-    Polymer({
-      is: 'test-element',
-    });
-
-    const dialog = document.body.querySelector('cr-dialog');
-
-    const inputWrapper = document.body.querySelector('test-element');
-    assertTrue(!!inputWrapper);
-    const inputElement = inputWrapper.shadowRoot.querySelector('input');
-    const actionButton = document.body.querySelector('.action-button');
-    assertTrue(!!inputElement);
-    assertTrue(!!actionButton);
-
-    // MockInteractions triggers event listeners synchronously.
-    let clickedCounter = 0;
-    actionButton.addEventListener('click', function() {
-      clickedCounter++;
-    });
-
-    pressEnter(inputElement);
+    // Enter on a cr-input with type "text" should be accepted.
+    pressEnter(crTextInputElement);
     assertEquals(1, clickedCounter);
+
+    // Enter on a nested <cr-input> should be accepted.
+    pressEnter(crInputNested);
+    assertEquals(2, clickedCounter);
   });
 
   test('focuses [autofocus] instead of title when present', function() {

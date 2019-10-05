@@ -1801,9 +1801,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       // by the |completion| block below.
       UIView* launchScreenView = launchScreenController.view;
       launchScreenView.userInteractionEnabled = NO;
-      UIWindow* window = UIApplication.sharedApplication.keyWindow;
-      launchScreenView.frame = window.bounds;
-      [window addSubview:launchScreenView];
+      // TODO(crbug.com/1011155): Displaying the launch screen is a hack to hide
+      // the build up of the UI from the user. To implement the hack, this view
+      // controller uses information that it should not know or care about: this
+      // BVC is contained and its parent bounds to the full screen.
+      launchScreenView.frame = self.parentViewController.view.bounds;
+      [self.parentViewController.view addSubview:launchScreenView];
 
       // Replace the completion handler sent to the superclass with one which
       // removes |launchScreenView| and resets the status bar. If |completion|

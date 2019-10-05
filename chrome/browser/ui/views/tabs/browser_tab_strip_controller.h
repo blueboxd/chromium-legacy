@@ -20,7 +20,6 @@
 class Browser;
 class BrowserNonClientFrameView;
 class Tab;
-struct TabRendererData;
 
 namespace content {
 class WebContents;
@@ -113,19 +112,8 @@ class BrowserTabStripController : public TabStripController,
  private:
   class TabContextMenuContents;
 
-  // The context in which TabRendererDataFromModel is being called.
-  enum TabStatus {
-    NEW_TAB,
-    EXISTING_TAB
-  };
-
   BrowserNonClientFrameView* GetFrameView();
   const BrowserNonClientFrameView* GetFrameView() const;
-
-  // Returns the TabRendererData for the specified tab.
-  TabRendererData TabRendererDataFromModel(content::WebContents* contents,
-                                           int model_index,
-                                           TabStatus tab_status);
 
   // Invokes tabstrip_->SetTabData.
   void SetTabDataAt(content::WebContents* web_contents, int model_index);

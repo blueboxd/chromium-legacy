@@ -10,6 +10,8 @@
 
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -272,19 +274,22 @@ TEST(VariationsStudyFilteringTest, CheckStudyLowEndDevice) {
 
 TEST(VariationsStudyFilteringTest, CheckStudyEnterprise) {
   Study::Filter filter;
+  ClientFilterableState client_non_enterprise(
+      base::BindOnce([] { return false; }));
+  ClientFilterableState client_enterprise(base::BindOnce([] { return true; }));
 
   // Check that if the filter is not set, study applies to both enterprise and
   // non-enterprise clients.
-  EXPECT_TRUE(internal::CheckStudyEnterprise(filter, true));
-  EXPECT_TRUE(internal::CheckStudyEnterprise(filter, false));
+  EXPECT_TRUE(internal::CheckStudyEnterprise(filter, client_enterprise));
+  EXPECT_TRUE(internal::CheckStudyEnterprise(filter, client_non_enterprise));
 
   filter.set_is_enterprise(true);
-  EXPECT_TRUE(internal::CheckStudyEnterprise(filter, true));
-  EXPECT_FALSE(internal::CheckStudyEnterprise(filter, false));
+  EXPECT_TRUE(internal::CheckStudyEnterprise(filter, client_enterprise));
+  EXPECT_FALSE(internal::CheckStudyEnterprise(filter, client_non_enterprise));
 
   filter.set_is_enterprise(false);
-  EXPECT_FALSE(internal::CheckStudyEnterprise(filter, true));
-  EXPECT_TRUE(internal::CheckStudyEnterprise(filter, false));
+  EXPECT_FALSE(internal::CheckStudyEnterprise(filter, client_enterprise));
+  EXPECT_TRUE(internal::CheckStudyEnterprise(filter, client_non_enterprise));
 }
 
 TEST(VariationsStudyFilteringTest, CheckStudyStartDate) {
@@ -637,7 +642,7 @@ TEST(VariationsStudyFilteringTest, FilterAndValidateStudies) {
   AddExperiment("A", 10, study3);
   AddExperiment("Default", 25, study3);
 
-  ClientFilterableState client_state;
+  ClientFilterableState client_state({});
   client_state.locale = "en-CA";
   client_state.reference_date = base::Time::Now();
   client_state.version = base::Version("20.0.0.0");
@@ -696,7 +701,7 @@ TEST(VariationsStudyFilteringTest, FilterAndValidateStudiesWithCountry) {
     if (test.filter_exclude_country)
       study->mutable_filter()->add_exclude_country(test.filter_exclude_country);
 
-    ClientFilterableState client_state;
+    ClientFilterableState client_state({});
     client_state.locale = "en-CA";
     client_state.reference_date = base::Time::Now();
     client_state.version = base::Version("20.0.0.0");
@@ -714,7 +719,7 @@ TEST(VariationsStudyFilteringTest, FilterAndValidateStudiesWithCountry) {
 }
 
 TEST(VariationsStudyFilteringTest, GetClientCountryForStudy_Session) {
-  ClientFilterableState client_state;
+  ClientFilterableState client_state({});
   client_state.session_consistency_country = "session_country";
   client_state.permanent_consistency_country = "permanent_country";
 
@@ -725,7 +730,7 @@ TEST(VariationsStudyFilteringTest, GetClientCountryForStudy_Session) {
 }
 
 TEST(VariationsStudyFilteringTest, GetClientCountryForStudy_Permanent) {
-  ClientFilterableState client_state;
+  ClientFilterableState client_state({});
   client_state.session_consistency_country = "session_country";
   client_state.permanent_consistency_country = "permanent_country";
 

@@ -106,15 +106,15 @@ class SourceBufferStreamTest : public testing::Test {
   }
 
   void NewCodedFrameGroupAppend(int starting_position, int number_of_buffers) {
-    AppendBuffers(starting_position, number_of_buffers, true,
-                  base::TimeDelta(), true, &kDataA, kDataSize);
+    AppendBuffers(starting_position, number_of_buffers, true, base::TimeDelta(),
+                  &kDataA, kDataSize);
   }
 
   void NewCodedFrameGroupAppend(int starting_position,
                                 int number_of_buffers,
                                 const uint8_t* data) {
-    AppendBuffers(starting_position, number_of_buffers, true,
-                  base::TimeDelta(), true, data, kDataSize);
+    AppendBuffers(starting_position, number_of_buffers, true, base::TimeDelta(),
+                  data, kDataSize);
   }
 
   void NewCodedFrameGroupAppend_OffsetFirstBuffer(
@@ -122,40 +122,40 @@ class SourceBufferStreamTest : public testing::Test {
       int number_of_buffers,
       base::TimeDelta first_buffer_offset) {
     AppendBuffers(starting_position, number_of_buffers, true,
-                  first_buffer_offset, true, &kDataA, kDataSize);
+                  first_buffer_offset, &kDataA, kDataSize);
   }
 
   void AppendBuffers(int starting_position, int number_of_buffers) {
     AppendBuffers(starting_position, number_of_buffers, false,
-                  base::TimeDelta(), true, &kDataA, kDataSize);
+                  base::TimeDelta(), &kDataA, kDataSize);
   }
 
   void AppendBuffers(int starting_position,
                      int number_of_buffers,
                      const uint8_t* data) {
     AppendBuffers(starting_position, number_of_buffers, false,
-                  base::TimeDelta(), true, data, kDataSize);
+                  base::TimeDelta(), data, kDataSize);
   }
 
   void NewCodedFrameGroupAppend(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, true, kNoTimestamp, false, true);
+    AppendBuffers(buffers_to_append, true, kNoTimestamp, false);
   }
 
   void NewCodedFrameGroupAppend(base::TimeDelta start_timestamp,
                                 const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, true, start_timestamp, false, true);
+    AppendBuffers(buffers_to_append, true, start_timestamp, false);
   }
 
   void AppendBuffers(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, false, kNoTimestamp, false, true);
+    AppendBuffers(buffers_to_append, false, kNoTimestamp, false);
   }
 
   void NewCodedFrameGroupAppendOneByOne(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, true, kNoTimestamp, true, true);
+    AppendBuffers(buffers_to_append, true, kNoTimestamp, true);
   }
 
   void AppendBuffersOneByOne(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, false, kNoTimestamp, true, true);
+    AppendBuffers(buffers_to_append, false, kNoTimestamp, true);
   }
 
   void Seek(int position) { stream_->Seek(position * frame_duration_); }
@@ -457,7 +457,6 @@ class SourceBufferStreamTest : public testing::Test {
                      int number_of_buffers,
                      bool begin_coded_frame_group,
                      base::TimeDelta first_buffer_offset,
-                     bool expect_success,
                      const uint8_t* data,
                      int size) {
     if (begin_coded_frame_group) {
@@ -499,7 +498,7 @@ class SourceBufferStreamTest : public testing::Test {
       queue.push_back(buffer);
     }
     if (!queue.empty())
-      EXPECT_EQ(expect_success, stream_->Append(queue));
+      stream_->Append(queue);
   }
 
   void UpdateLastBufferDuration(DecodeTimestamp current_dts,
@@ -666,8 +665,7 @@ class SourceBufferStreamTest : public testing::Test {
   void AppendBuffers(const std::string& buffers_to_append,
                      bool start_new_coded_frame_group,
                      base::TimeDelta coded_frame_group_start_timestamp,
-                     bool one_by_one,
-                     bool expect_success) {
+                     bool one_by_one) {
     BufferQueue buffers = StringToBufferQueue(buffers_to_append);
 
     if (start_new_coded_frame_group) {
@@ -684,7 +682,7 @@ class SourceBufferStreamTest : public testing::Test {
     }
 
     if (!one_by_one) {
-      EXPECT_EQ(expect_success, stream_->Append(buffers));
+      stream_->Append(buffers);
       return;
     }
 
@@ -692,7 +690,7 @@ class SourceBufferStreamTest : public testing::Test {
     for (size_t i = 0; i < buffers.size(); i++) {
       BufferQueue wrapper;
       wrapper.push_back(buffers[i]);
-      EXPECT_TRUE(stream_->Append(wrapper));
+      stream_->Append(wrapper);
     }
   }
 

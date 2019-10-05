@@ -92,13 +92,13 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_HID_CHOOSER_DATA, kHidChooserDataGroupType},
     {CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
      "native-file-system-write"},
+    {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, "mixed-script"},
 
     // Add new content settings here if a corresponding Javascript string
     // representation for it is not required. Note some exceptions do have UI in
     // Content Settings but do not require a separate string.
     {CONTENT_SETTINGS_TYPE_DEFAULT, nullptr},
     {CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, nullptr},
-    {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, nullptr},
     {CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, nullptr},
     {CONTENT_SETTINGS_TYPE_APP_BANNER, nullptr},
     {CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, nullptr},

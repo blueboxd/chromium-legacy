@@ -37,3 +37,7 @@ MockRuntime.prototype.getSubmitFrameCount = function() {
 MockRuntime.prototype.getMissingFrameCount = function() {
   return this.presentation_provider_.missing_frame_count_;
 };
+
+// Patch in experimental features.
+MockRuntime.featureToMojoMap["dom-overlay-for-handheld-ar"] =
+    device.mojom.XRSessionFeature.DOM_OVERLAY_FOR_HANDHELD_AR;

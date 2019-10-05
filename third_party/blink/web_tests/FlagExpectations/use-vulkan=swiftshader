@@ -1,9 +1,6 @@
 # Test consistently hitting default timeout.
 Bug(none) css3/filters/effect-reference-subregion.html [ Skip ]
 
-# Not rendering the rightmost frame.
-crbug.com/1001616 media/alpha-video-playback.html [ Skip ]
-
 # OffscreenCanvas not rendering.
 crbug.com/1002538 fast/canvas/OffscreenCanvas-2d-drawImage-in-worker.html [ Skip ]
 crbug.com/1002538 fast/canvas/OffscreenCanvas-2d-drawImage.html [ Skip ]
@@ -26,11 +23,6 @@ crbug.com/1002538 fast/canvas/OffscreenCanvas-transform-shadow-in-worker.html [ 
 crbug.com/1002547 fast/canvas/imagebitmap/transferFromImageBitmap-alpha.html [ Skip ]
 crbug.com/1002547 fast/canvas/imagebitmap/transferFromImageBitmap-no-alpha.html [ Skip ]
 crbug.com/1002547 fast/canvas/imagebitmap/transferFromImageBitmap.html [ Skip ]
-
-# Canvas not painting correctly.
-crbug.com/1003794 fast/canvas/canvas-composite-video-shadow.html [ Skip ]
-crbug.com/1003794 fast/canvas/canvas-composite-video.html [ Skip ]
-crbug.com/1003794 fast/canvas/canvas-pattern-video.html [ Skip ]
 
 # createImageBitmap fails for HTMLVideoElement
 crbug.com/1003799 fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Skip ]

@@ -5,7 +5,7 @@
 import("//tools/grit/grit_rule.gni")
 
 if (is_fuchsia) {
-  import("//build/config/fuchsia/rules.gni")
+  import("//build/config/fuchsia/generate_runner_scripts.gni")
 }
 
 source_set("named_message_port_connector_resources") {

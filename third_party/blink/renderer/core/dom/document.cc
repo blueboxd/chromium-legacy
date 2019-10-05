@@ -3182,6 +3182,22 @@ void Document::SetIsViewSource(bool is_view_source) {
     return;
 }
 
+void Document::SetIsImmersiveArOverlay(bool val) {
+  if (!documentElement())
+    return;
+
+  if (val != is_immersive_ar_overlay_) {
+    DCHECK(RuntimeEnabledFeatures::WebXRARDOMOverlayEnabled(this));
+    is_immersive_ar_overlay_ = val;
+
+    // If the property has changed, apply the pseudo-style change to the root
+    // element. This will cascade further UA stylesheet changes such as setting
+    // the fullscreened element and its backdrop transparent.
+    documentElement()->PseudoStateChanged(
+        CSSSelector::kPseudoXrImmersiveDomOverlay);
+  }
+}
+
 void Document::ScheduleUseShadowTreeUpdate(SVGUseElement& element) {
   use_elements_needing_update_.insert(&element);
   ScheduleLayoutTreeUpdateIfNeeded();

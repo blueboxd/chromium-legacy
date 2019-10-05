@@ -20,6 +20,9 @@ import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * Provides ARCore classes access to java-related app functionality.
+ *
+ * <p>This class provides static methods called by ArDelegateImpl via ArDelegateProvider,
+ * and provides JNI interfaces to/from the C++ AR code.</p>
  */
 @JNINamespace("vr")
 public class ArCoreJavaUtils {
@@ -28,7 +31,18 @@ public class ArCoreJavaUtils {
 
     private long mNativeArCoreJavaUtils;
 
+    // The native ArCoreDevice runtime creates a ArCoreJavaUtils instance in its constructor,
+    // and keeps a strong reference to it for the lifetime of the device. It creates and
+    // owns an ArImmersiveOverlay for the duration of an immersive-ar session, which in
+    // turn contains a reference to ArCoreJavaUtils for making JNI calls back to the device.
     private ArImmersiveOverlay mArImmersiveOverlay;
+
+    // ArDelegateImpl needs to know if there's an active immersive session so that it can handle
+    // back button presses from ChromeActivity's onBackPressed(). It's only set while a session is
+    // in progress, and reset to null on session end. The ArImmersiveOverlay member has a strong
+    // reference to the ChromeActivity, and that shouldn't be retained beyond the duration of a
+    // session.
+    private static ArCoreJavaUtils sActiveSessionInstance;
 
     @CalledByNative
     private static ArCoreJavaUtils create(long nativeArCoreJavaUtils) {
@@ -60,18 +74,33 @@ public class ArCoreJavaUtils {
     }
 
     @CalledByNative
-    private void startSession(final Tab tab) {
+    private void startSession(final Tab tab, boolean useOverlay) {
         if (DEBUG_LOGS) Log.i(TAG, "startSession");
         mArImmersiveOverlay = new ArImmersiveOverlay();
-        mArImmersiveOverlay.show(tab.getActivity(), this);
+        sActiveSessionInstance = this;
+        mArImmersiveOverlay.show(tab.getActivity(), this, useOverlay);
     }
 
     @CalledByNative
     private void endSession() {
         if (DEBUG_LOGS) Log.i(TAG, "endSession");
-        if (mArImmersiveOverlay != null) {
-            mArImmersiveOverlay.cleanupAndExit();
+        if (mArImmersiveOverlay == null) return;
+
+        mArImmersiveOverlay.cleanupAndExit();
+        mArImmersiveOverlay = null;
+        sActiveSessionInstance = null;
+    }
+
+    // Called from ArDelegateImpl
+    public static boolean onBackPressed() {
+        if (DEBUG_LOGS) Log.i(TAG, "onBackPressed");
+        // If there's an active immersive session, consume the "back" press and shut down the
+        // session.
+        if (sActiveSessionInstance != null) {
+            sActiveSessionInstance.endSession();
+            return true;
         }
+        return false;
     }
 
     public void onDrawingSurfaceReady(Surface surface, int rotation, int width, int height) {
@@ -91,13 +120,16 @@ public class ArCoreJavaUtils {
     public void onDrawingSurfaceDestroyed() {
         if (DEBUG_LOGS) Log.i(TAG, "onDrawingSurfaceDestroyed");
         if (mNativeArCoreJavaUtils == 0) return;
-        mArImmersiveOverlay = null;
         ArCoreJavaUtilsJni.get().onDrawingSurfaceDestroyed(
                 mNativeArCoreJavaUtils, ArCoreJavaUtils.this);
     }
 
     @CalledByNative
     private void onNativeDestroy() {
+        // ArCoreDevice's destructor ends sessions before destroying its native ArCoreSessionUtils
+        // object.
+        assert sActiveSessionInstance == null : "unexpected active session in onNativeDestroy";
+
         mNativeArCoreJavaUtils = 0;
     }
 

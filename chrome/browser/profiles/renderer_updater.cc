@@ -29,7 +29,8 @@ namespace {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 
-// By default, JavaScript, images and autoplay are enabled in guest content.
+// By default, JavaScript, images and autoplay are enabled, and blockable mixed
+// content is blocked in guest content
 void GetGuestViewDefaultContentSettingRules(
     bool incognito,
     RendererContentSettingRules* rules) {
@@ -50,6 +51,11 @@ void GetGuestViewDefaultContentSettingRules(
           content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
       std::string(), incognito));
   rules->client_hints_rules.push_back(ContentSettingPatternSource(
+      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
+      base::Value::FromUniquePtrValue(
+          content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
+      std::string(), incognito));
+  rules->mixed_content_rules.push_back(ContentSettingPatternSource(
       ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
       base::Value::FromUniquePtrValue(
           content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),

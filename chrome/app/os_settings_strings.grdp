@@ -2,6 +2,11 @@
 <!-- Settings-specific strings (included from generated_resources.grd). -->
 <grit-part>
 <if expr="chromeos">
+  <!-- About (OS Settings) -->
+  <message name="IDS_OS_SETTINGS_ABOUT_PAGE_BUILD_DETAILS" desc="Label of the row button that clicks into Build details">
+    Build Details
+  </message>
+
   <!-- People (OS settings) -->
   <message name="IDS_OS_SETTINGS_PROFILE_LABEL" desc="Label underneath the profile's real name, listing the email address and optionally the number of additional accounts">
     {COUNT, plural,

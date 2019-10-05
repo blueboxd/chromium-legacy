@@ -996,10 +996,9 @@ void OverviewSession::OnSplitViewDividerPositionChanged() {
     grid->SetBoundsAndUpdatePositions(
         GetGridBoundsInScreen(const_cast<aura::Window*>(grid->root_window()),
                               /*divider_changed=*/true),
-        /*ignored_items=*/{}, /*animate=*/true);
+        /*ignored_items=*/{}, /*animate=*/false);
   }
-  PositionWindows(/*animate=*/false);
-  UpdateNoWindowsWidget();
+  RefreshNoWindowsWidgetBounds(/*animate=*/false);
 }
 
 void OverviewSession::ResetFocusRestoreWindow(bool focus) {
@@ -1084,7 +1083,7 @@ void OverviewSession::OnDisplayBoundsChanged() {
                               /*divider_changed=*/false),
         /*ignored_items=*/{}, /*animate=*/false);
   }
-  UpdateNoWindowsWidget();
+  RefreshNoWindowsWidgetBounds(/*animate=*/false);
 }
 
 void OverviewSession::UpdateNoWindowsWidget() {

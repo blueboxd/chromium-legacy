@@ -30,6 +30,9 @@ test.customizeMenu.IDS = {
   COLORS_THEME_UNINSTALL: 'colors-theme-uninstall',
   CUSTOMIZATION_MENU: 'customization-menu',
   CUSTOM_BG: 'custom-bg',
+  CUSTOM_BG_ATTR: 'custom-bg-attr',
+  CUSTOM_BG_ATTR_LINE1: 'attr1',
+  CUSTOM_BG_ATTR_LINE2: 'attr2',
   CUSTOM_BG_PREVIEW: 'custom-bg-preview',
   EDIT_BG: 'edit-bg',
   MENU_BACK: 'menu-back',
@@ -338,13 +341,29 @@ test.customizeMenu.testMenu_BackgroundPreviewApplied = function() {
 
   $(test.customizeMenu.IDS.EDIT_BG).click();
 
-  // Select a background.
   setupFakeAsyncImageLoad('coll_tile_0');
   $('coll_tile_0').click();
-  $('coll_0_img_tile_0').click();
 
-  // Check that correct styling is applied to the page.
+  // Check styling and attribution for default background.
+  assertFalse(document.body.classList.contains('alternate-logo'));
+  assertEquals(null, $(test.customizeMenu.IDS.CUSTOM_BG_ATTR_LINE1));
+  assertEquals(null, $(test.customizeMenu.IDS.CUSTOM_BG_ATTR_LINE2));
+  assertEquals('', $(test.customizeMenu.IDS.CUSTOM_BG_ATTR).href);
+
+  // Select a background and check that correct styling and attributes are
+  // applied to the page.
+  const image_tile = $('coll_0_img_tile_0');
+  image_tile.click();
   assertTrue(document.body.classList.contains('alternate-logo'));
+  assertEquals(
+      image_tile.dataset.attributionLine1,
+      $(test.customizeMenu.IDS.CUSTOM_BG_ATTR_LINE1).innerText);
+  assertEquals(
+      image_tile.dataset.attributionLine2,
+      $(test.customizeMenu.IDS.CUSTOM_BG_ATTR_LINE2).innerText);
+  assertEquals(
+      image_tile.dataset.attributionActionUrl,
+      $(test.customizeMenu.IDS.CUSTOM_BG_ATTR).href);
 };
 
 /**
@@ -1209,28 +1228,28 @@ setupFakeAsyncImageLoad = function(tile_id) {
     oldImageLoader(event);
     collImg = [
       {
-        attributionActionUrl: 'https://www.google.com',
+        attributionActionUrl: 'https://www.google.com/',
         attributions: ['test1', 'attribution1'],
         collectionId: 'collection1',
         imageUrl: 'chrome-search://local-ntp/background1.jpg',
         thumbnailImageUrl: 'chrome-search://local-ntp/background_thumbnail.jpg1'
       },
       {
-        attributionActionUrl: 'https://www.google.com',
+        attributionActionUrl: 'https://www.google.com/',
         attributions: ['test2', 'attribution2'],
         collectionId: 'collection1',
         imageUrl: 'chrome-search://local-ntp/background2.jpg',
         thumbnailImageUrl: 'chrome-search://local-ntp/background_thumbnail.jpg2'
       },
       {
-        attributionActionUrl: 'https://www.google.com',
+        attributionActionUrl: 'https://www.google.com/',
         attributions: ['test3', 'attribution3'],
         collectionId: 'collection1',
         imageUrl: 'chrome-search://local-ntp/background3.jpg',
         thumbnailImageUrl: 'chrome-search://local-ntp/background_thumbnail.jpg3'
       },
       {
-        attributionActionUrl: 'https://www.google.com',
+        attributionActionUrl: 'https://www.google.com/',
         attributions: ['test4', 'attribution4'],
         collectionId: 'collection1',
         imageUrl: 'chrome-search://local-ntp/background4.jpg',

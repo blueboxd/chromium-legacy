@@ -40,7 +40,7 @@ void FuchsiaDecryptor::Decrypt(StreamType stream_type,
 }
 
 void FuchsiaDecryptor::CancelDecrypt(StreamType stream_type) {
-  if (stream_type == StreamType::kAudio) {
+  if (stream_type == StreamType::kAudio && audio_decryptor_) {
     audio_decryptor_->CancelDecrypt();
   }
 }

@@ -209,7 +209,8 @@ bool AppBannerUiDelegateAndroid::ShowDialog() {
                    url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 
   return Java_AppBannerUiDelegateAndroid_showWebAppDialog(
-      env, java_delegate_, java_app_title, java_bitmap, java_app_url);
+      env, java_delegate_, java_app_title, java_bitmap, java_app_url,
+      has_primary_maskable_icon_);
 }
 
 bool AppBannerUiDelegateAndroid::ShowNativeAppDetails() {

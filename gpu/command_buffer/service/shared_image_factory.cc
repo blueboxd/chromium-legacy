@@ -105,7 +105,10 @@ SharedImageFactory::SharedImageFactory(
           workarounds, gpu_feature_info, use_gl);
 #else
   // Others
-  DCHECK(!using_vulkan_);
+  if (using_vulkan_)
+    LOG(ERROR) << "ERROR: using_vulkan_ = true and interop_backing_factory_ is "
+                  "not set";
+
 #endif
   if (enable_wrapped_sk_image && context_state) {
     wrapped_sk_image_factory_ =

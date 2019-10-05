@@ -126,7 +126,8 @@ class RendererImplTest : public ::testing::Test {
   void InitializeAndExpect(PipelineStatus start_status) {
     EXPECT_CALL(callbacks_, OnInitialize(start_status))
         .WillOnce(SaveArg<0>(&initialization_status_));
-    EXPECT_CALL(callbacks_, OnWaiting(_)).Times(0);
+    if (is_encrypted_ && !is_cdm_set_)
+      EXPECT_CALL(callbacks_, OnWaiting(WaitingReason::kNoCdm));
 
     if (start_status == PIPELINE_OK && audio_stream_) {
       EXPECT_CALL(*audio_renderer_, GetTimeSource())
@@ -171,6 +172,7 @@ class RendererImplTest : public ::testing::Test {
   }
 
   void CreateVideoStream(bool is_encrypted = false) {
+    is_encrypted_ = is_encrypted;
     video_stream_ = CreateStream(DemuxerStream::VIDEO);
     video_stream_->set_video_decoder_config(
         is_encrypted ? TestVideoConfig::NormalEncrypted()
@@ -303,7 +305,8 @@ class RendererImplTest : public ::testing::Test {
   }
 
   void SetCdmAndExpect(bool expected_result) {
-    EXPECT_CALL(callbacks_, OnCdmAttached(expected_result));
+    EXPECT_CALL(callbacks_, OnCdmAttached(expected_result))
+        .WillOnce(SaveArg<0>(&is_cdm_set_));
     renderer_impl_->SetCdm(cdm_context_.get(),
                            base::Bind(&CallbackHelper::OnCdmAttached,
                                       base::Unretained(&callbacks_)));
@@ -364,6 +367,8 @@ class RendererImplTest : public ::testing::Test {
   RendererClient* audio_renderer_client_;
   VideoDecoderConfig video_decoder_config_;
   PipelineStatus initialization_status_;
+  bool is_encrypted_ = false;
+  bool is_cdm_set_ = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RendererImplTest);

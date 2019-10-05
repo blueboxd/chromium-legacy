@@ -430,21 +430,17 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
     {"aboutUpgradeUpdatingPercent", IDS_SETTINGS_UPGRADE_UPDATING_PERCENT},
 
 #if defined(OS_CHROMEOS)
-    {"aboutArcVersionLabel", IDS_SETTINGS_ABOUT_PAGE_ARC_VERSION},
-    {"aboutBuildDateLabel", IDS_VERSION_UI_BUILD_DATE},
+    {"aboutBuildDetailsTitle", IDS_OS_SETTINGS_ABOUT_PAGE_BUILD_DETAILS},
     {"aboutChannelBeta", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_BETA},
     {"aboutChannelCanary", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_CANARY},
     {"aboutChannelDev", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_DEV},
     {"aboutChannelLabel", IDS_SETTINGS_ABOUT_PAGE_CHANNEL},
     {"aboutChannelStable", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE},
     {"aboutCheckForUpdates", IDS_SETTINGS_ABOUT_PAGE_CHECK_FOR_UPDATES},
-    {"aboutCommandLineLabel", IDS_VERSION_UI_COMMAND_LINE},
     {"aboutCurrentlyOnChannel", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL},
     {"aboutDetailedBuildInfo", IDS_SETTINGS_ABOUT_PAGE_DETAILED_BUILD_INFO},
-    {"aboutFirmwareLabel", IDS_SETTINGS_ABOUT_PAGE_FIRMWARE},
     {"aboutOSBanner", IDS_SETTINGS_ABOUT_OS_BANNER},
     {"aboutEndOfLifeTitle", IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_TITLE},
-    {"aboutPlatformLabel", IDS_SETTINGS_ABOUT_PAGE_PLATFORM},
     {"aboutRelaunchAndPowerwash",
      IDS_SETTINGS_ABOUT_PAGE_RELAUNCH_AND_POWERWASH},
     {"aboutRollbackInProgress", IDS_SETTINGS_UPGRADE_ROLLBACK_IN_PROGRESS},
@@ -453,7 +449,6 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_UPGRADE_UPDATING_CHANNEL_SWITCH},
     {"aboutUpgradeSuccessChannelSwitch",
      IDS_SETTINGS_UPGRADE_SUCCESSFUL_CHANNEL_SWITCH},
-    {"aboutUserAgentLabel", IDS_VERSION_UI_USER_AGENT},
     {"aboutTPMFirmwareUpdateTitle",
      IDS_SETTINGS_ABOUT_TPM_FIRMWARE_UPDATE_TITLE},
     {"aboutTPMFirmwareUpdateDescription",
@@ -2783,6 +2778,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsCategoryCookies", IDS_SETTINGS_SITE_SETTINGS_COOKIES},
     {"siteSettingsCategoryHandlers", IDS_SETTINGS_SITE_SETTINGS_HANDLERS},
     {"siteSettingsCategoryImages", IDS_SETTINGS_SITE_SETTINGS_IMAGES},
+    {"siteSettingsCategoryInsecureContent",
+     IDS_SETTINGS_SITE_SETTINGS_INSECURE_CONTENT},
     {"siteSettingsCategoryLocation", IDS_SETTINGS_SITE_SETTINGS_LOCATION},
     {"siteSettingsCategoryJavascript", IDS_SETTINGS_SITE_SETTINGS_JAVASCRIPT},
     {"siteSettingsCategoryMicrophone", IDS_SETTINGS_SITE_SETTINGS_MIC},
@@ -2819,6 +2816,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsMic", IDS_SETTINGS_SITE_SETTINGS_MIC},
     {"siteSettingsNotifications", IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS},
     {"siteSettingsImages", IDS_SETTINGS_SITE_SETTINGS_IMAGES},
+    {"siteSettingsInsecureContent",
+     IDS_SETTINGS_SITE_SETTINGS_INSECURE_CONTENT},
+    {"siteSettingsInsecureContentBlock",
+     IDS_SETTINGS_SITE_SETTINGS_INSECURE_CONTENT_BLOCK},
     {"siteSettingsJavascript", IDS_SETTINGS_SITE_SETTINGS_JAVASCRIPT},
     {"siteSettingsSound", IDS_SETTINGS_SITE_SETTINGS_SOUND},
     {"siteSettingsSoundAllow", IDS_SETTINGS_SITE_SETTINGS_SOUND_ALLOW},
@@ -3113,6 +3114,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
       "enableRemovingAllThirdPartyCookies",
       base::FeatureList::IsEnabled(
           browsing_data::features::kEnableRemovingAllThirdPartyCookies));
+
+  html_source->AddBoolean(
+      "enableInsecureContentContentSetting",
+      base::FeatureList::IsEnabled(features::kMixedContentSiteSetting));
 }
 
 #if defined(OS_CHROMEOS)

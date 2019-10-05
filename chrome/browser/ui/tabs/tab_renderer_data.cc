@@ -6,6 +6,39 @@
 
 #include "base/process/kill.h"
 #include "build/build_config.h"
+#include "chrome/browser/favicon/favicon_utils.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tab_ui_helper.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
+#include "content/public/browser/web_contents.h"
+
+// static
+TabRendererData TabRendererData::FromTabInModel(TabStripModel* model,
+                                                int index) {
+  content::WebContents* const contents = model->GetWebContentsAt(index);
+
+  TabRendererData data;
+  TabUIHelper* const tab_ui_helper = TabUIHelper::FromWebContents(contents);
+  data.favicon = tab_ui_helper->GetFavicon().AsImageSkia();
+  ThumbnailTabHelper* const thumbnail_tab_helper =
+      ThumbnailTabHelper::FromWebContents(contents);
+  if (thumbnail_tab_helper)
+    data.thumbnail = thumbnail_tab_helper->thumbnail();
+  data.network_state = TabNetworkStateForWebContents(contents);
+  data.title = tab_ui_helper->GetTitle();
+  data.visible_url = contents->GetVisibleURL();
+  data.last_committed_url = contents->GetLastCommittedURL();
+  data.crashed_status = contents->GetCrashedStatus();
+  data.incognito = contents->GetBrowserContext()->IsOffTheRecord();
+  data.pinned = model->IsTabPinned(index);
+  data.show_icon = data.pinned || favicon::ShouldDisplayFavicon(contents);
+  data.blocked = model->IsTabBlocked(index);
+  data.alert_state =
+      chrome::GetHighestPriorityTabAlertStateForContents(contents);
+  data.should_hide_throbber = tab_ui_helper->ShouldHideThrobber();
+  return data;
+}
 
 TabRendererData::TabRendererData() = default;
 TabRendererData::TabRendererData(const TabRendererData& other) = default;

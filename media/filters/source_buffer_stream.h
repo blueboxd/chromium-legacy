@@ -77,8 +77,7 @@ class MEDIA_EXPORT SourceBufferStream {
   // expected to be in order, but multiple calls to Append() may add buffers out
   // of order or overlapping. Assumes all buffers within |buffers| are in
   // presentation order and are non-overlapping.
-  // Returns true if Append() was successful, false if |buffers| are not added.
-  bool Append(const BufferQueue& buffers);
+  void Append(const BufferQueue& buffers);
 
   // Removes buffers between |start| and |end| according to the steps
   // in the "Coded Frame Removal Algorithm" in the Media Source

@@ -207,6 +207,9 @@ const SiteSettingsBehaviorImpl = {
     addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
         'enableNativeFileSystemWriteContentSetting');
+    addOrRemoveSettingWithFlag(
+        settings.ContentSettingsTypes.MIXEDSCRIPT,
+        'enableInsecureContentContentSetting');
     return this.contentTypes_.slice(0);
   },
 

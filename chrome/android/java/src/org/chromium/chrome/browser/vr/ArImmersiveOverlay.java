@@ -8,9 +8,13 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
+import android.graphics.PixelFormat;
+import android.graphics.Point;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -19,6 +23,9 @@ import androidx.annotation.NonNull;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.compositor.CompositorView;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.ScreenOrientationDelegate;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.ui.widget.Toast;
@@ -38,14 +45,19 @@ public class ArImmersiveOverlay
     private boolean mCleanupInProgress;
     private SurfaceUiWrapper mSurfaceUi;
 
-    public void show(@NonNull ChromeActivity activity, @NonNull ArCoreJavaUtils caller) {
+    public void show(
+            @NonNull ChromeActivity activity, @NonNull ArCoreJavaUtils caller, boolean useOverlay) {
         if (DEBUG_LOGS) Log.i(TAG, "constructor");
         mArCoreJavaUtils = caller;
         mActivity = activity;
 
         // Choose a concrete implementation to create a drawable Surface and make it fullscreen.
         // It forwards SurfaceHolder callbacks and touch events to this ArImmersiveOverlay object.
-        mSurfaceUi = new SurfaceUiDialog(this);
+        if (useOverlay) {
+            mSurfaceUi = new SurfaceUiCompositor();
+        } else {
+            mSurfaceUi = new SurfaceUiDialog();
+        }
     }
 
     private interface SurfaceUiWrapper {
@@ -64,14 +76,14 @@ public class ArImmersiveOverlay
                 | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
-        public SurfaceUiDialog(ArImmersiveOverlay parent) {
+        public SurfaceUiDialog() {
             // Create a fullscreen dialog and use its backing Surface for drawing.
             mDialog = new Dialog(mActivity, android.R.style.Theme_NoTitleBar_Fullscreen);
             mDialog.getWindow().setBackgroundDrawable(null);
-            mDialog.getWindow().takeSurface(parent);
+            mDialog.getWindow().takeSurface(ArImmersiveOverlay.this);
             View view = mDialog.getWindow().getDecorView();
             view.setSystemUiVisibility(VISIBILITY_FLAGS_IMMERSIVE);
-            view.setOnTouchListener(parent);
+            view.setOnTouchListener(ArImmersiveOverlay.this);
             mDialog.setOnCancelListener(this);
             mDialog.getWindow().setLayout(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -99,6 +111,52 @@ public class ArImmersiveOverlay
         @Override // DialogInterface.OnCancelListener
         public void onCancel(DialogInterface dialog) {
             if (DEBUG_LOGS) Log.i(TAG, "onCancel");
+            cleanupAndExit();
+        }
+    }
+
+    private class SurfaceUiCompositor extends EmptyTabObserver implements SurfaceUiWrapper {
+        private SurfaceView mSurfaceView;
+        private CompositorView mCompositorView;
+
+        public SurfaceUiCompositor() {
+            mSurfaceView = new SurfaceView(mActivity);
+            // Keep the camera layer at "default" Z order. Chrome's compositor SurfaceView is in
+            // OverlayVideoMode, putting it in front of that, but behind other non-SurfaceView UI.
+            mSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+            mSurfaceView.getHolder().addCallback(ArImmersiveOverlay.this);
+
+            View content = mActivity.getWindow().findViewById(android.R.id.content);
+            ViewGroup group = (ViewGroup) content.getParent();
+            group.addView(mSurfaceView);
+
+            mCompositorView = mActivity.getCompositorViewHolder().getCompositorView();
+
+            // Enable alpha channel for the compositor and make the background
+            // transparent. (A variant of CompositorView::SetOverlayVideoMode.)
+            if (DEBUG_LOGS) Log.i(TAG, "calling mCompositorView.setOverlayImmersiveArMode(true)");
+            mCompositorView.setOverlayImmersiveArMode(true);
+
+            // Watch for fullscreen exit triggered from JS, this needs to end the session.
+            mActivity.getActivityTab().addObserver(this);
+        }
+
+        @Override // SurfaceUiWrapper
+        public void onSurfaceVisible() {}
+
+        @Override // SurfaceUiWrapper
+        public void destroy() {
+            mActivity.getActivityTab().removeObserver(this);
+            View content = mActivity.getWindow().findViewById(android.R.id.content);
+            ViewGroup group = (ViewGroup) content.getParent();
+            group.removeView(mSurfaceView);
+            mSurfaceView = null;
+            mCompositorView.setOverlayImmersiveArMode(false);
+        }
+
+        @Override // TabObserver
+        public void onExitFullscreenMode(Tab tab) {
+            if (DEBUG_LOGS) Log.i(TAG, "onExitFullscreenMode");
             cleanupAndExit();
         }
     }
@@ -143,32 +201,70 @@ public class ArImmersiveOverlay
 
     @Override // SurfaceHolder.Callback2
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        // WebXR immersive sessions don't support resize, so use the first reported size.
-        // We shouldn't get resize events since we're using FLAG_LAYOUT_STABLE and are
-        // locking screen orientation.
+        // The surface may not immediately start out at the expected fullscreen size due to
+        // animations or not-yet-hidden navigation bars. WebXR immersive sessions use a fixed-size
+        // frame transport that can't be resized, so we need to pick a single size and stick with it
+        // for the duration of the session. Use the expected fullscreen size for WebXR frame
+        // transport even if the currently-visible part in the surface view is smaller than this. We
+        // shouldn't get resize events since we're using FLAG_LAYOUT_STABLE and are locking screen
+        // orientation.
         if (mSurfaceReportedReady) {
             int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
-            if (DEBUG_LOGS)
+            if (DEBUG_LOGS) {
                 Log.i(TAG,
                         "surfaceChanged ignoring change to width=" + width + " height=" + height
                                 + " rotation=" + rotation);
+            }
             return;
         }
 
-        // Save current orientation mode, and then lock current orientation.
+        // Need to ensure orientation is locked at this point to avoid race conditions. Save current
+        // orientation mode, and then lock current orientation. It's unclear if there's still a risk
+        // of races, for example if an orientation change was already in progress at this point but
+        // wasn't fully processed yet. In that case the user may need to exit and re-enter the
+        // session to get the intended layout.
         ScreenOrientationProvider.getInstance().setOrientationDelegate(this);
         if (mRestoreOrientation == null) {
             mRestoreOrientation = mActivity.getRequestedOrientation();
         }
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 
+        // Display.getRealSize "gets the real size of the display without subtracting any window
+        // decor or applying any compatibility scale factors", and "the size is adjusted based on
+        // the current rotation of the display". This is what we want since the surface and WebXR
+        // frame sizes also use the same current rotation which is now locked, so there's no need to
+        // separately adjust for portrait vs landscape modes.
+        //
+        // While it would be preferable to wait until the surface is at the desired fullscreen
+        // resolution, i.e. via mActivity.getFullscreenManager().getPersistentFullscreenMode(), that
+        // causes a chicken-and-egg problem for SurfaceUiCompositor mode as used for DOM overlay.
+        // Chrome's fullscreen mode is triggered by the Blink side setting an element fullscreen
+        // after the session starts, but the session doesn't start until we report the drawing
+        // surface being ready (including a configured size), so we use this reported size assuming
+        // that's what the fullscreen mode will use.
+        Display display = mActivity.getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getRealSize(size);
+
+        if (width < size.x || height < size.y) {
+            if (DEBUG_LOGS) {
+                Log.i(TAG,
+                        "surfaceChanged adjusting size from " + width + "x" + height + " to "
+                                + size.x + "x" + size.y);
+            }
+            width = size.x;
+            height = size.y;
+        }
+
         int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
-        if (DEBUG_LOGS)
+        if (DEBUG_LOGS) {
             Log.i(TAG, "surfaceChanged size=" + width + "x" + height + " rotation=" + rotation);
+        }
         mArCoreJavaUtils.onDrawingSurfaceReady(holder.getSurface(), rotation, width, height);
         mSurfaceReportedReady = true;
 
-        // Show a toast with instructions how to exit fullscreen mode now if necessary.
+        // Show the toast with instructions how to exit fullscreen mode now if necessary.
+        // Not needed in DOM overlay mode which uses FullscreenHtmlApiHandler to do so.
         mSurfaceUi.onSurfaceVisible();
     }
 

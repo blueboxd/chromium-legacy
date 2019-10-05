@@ -98,8 +98,8 @@ var IS_HIDPI = window.devicePixelRatio > 1;
 // but navigator.userAgent includes /Safari/.
 // TODO(crbug.com/998999): Fix navigator.userAgent such that it reliably
 // returns an agent string containing "CriOS".
-var IS_IOS = /iPad|iPhone|iPod|MacIntel/.test(navigator.platform) &&
-    !(/Safari/.test(navigator.userAgent));
+var IS_IOS = /iPad|iPhone|iPod|MacIntel/.test(window.navigator.platform) &&
+    !(/Safari/.test(window.navigator.userAgent));
 
 
 /** @const */

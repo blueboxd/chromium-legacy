@@ -232,24 +232,18 @@ template("chrome_public_common_apk_or_module_tmpl") {
       }
     }
 
-    # Only bundles can install modules. Therefore, include stub implementation
-    # for all other targets to save some binary size.
-    if (_target_type == "android_app_bundle_module") {
-      srcjar_deps = [ "//components/module_installer/android:module_installer_bundle_build_config" ]
-    } else {  # |_target_type| is "android_apk" or "instrumentation_test_apk".
-      if (dfmify_dev_ui) {
-        # Native resource split moves resources out of resources.pak, but this
-        # is a DFM feature, which APKs don't use. To make the resources split
-        # available for APKs, add dependencies to (1) Java classes, (2)
-        # resources of the resource split's DFM (e.g., DevUI DFM). The Java
-        # classes tells Chrome that the DFM is installed, which then causes the
-        # included resources to be loaded when needed.
-        deps += [
-          "//chrome/android/features/dev_ui:java",  # (1) from above.
-          "//chrome/android/features/dev_ui:pak_assets",  # (2) from above.
-        ]
-      }
-      srcjar_deps = [ "//components/module_installer/android:module_installer_apk_build_config" ]
+    if (dfmify_dev_ui && (_target_type == "android_apk" ||
+                          _target_type == "instrumentation_test_apk")) {
+      # Native resource split moves resources out of resources.pak, but this
+      # is a DFM feature, which APKs don't use. To make the resources split
+      # available for APKs, add dependencies to (1) Java classes, (2)
+      # resources of the resource split's DFM (e.g., DevUI DFM). The Java
+      # classes tells Chrome that the DFM is installed, which then causes the
+      # included resources to be loaded when needed.
+      deps += [
+        "//chrome/android/features/dev_ui:java",  # (1) from above.
+        "//chrome/android/features/dev_ui:pak_assets",  # (2) from above.
+      ]
     }
 
     if (!is_java_debug) {

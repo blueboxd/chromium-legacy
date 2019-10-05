@@ -16,6 +16,7 @@ import org.chromium.base.PackageUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenDialogView;
 import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenProperties;
@@ -137,13 +138,22 @@ public class AppBannerUiDelegateAndroid implements AddToHomescreenViewDelegate {
     }
 
     @CalledByNative
-    private boolean showWebAppDialog(String title, Bitmap iconBitmap, String url) {
+    private boolean showWebAppDialog(
+            String title, Bitmap iconBitmap, String url, boolean maskable) {
         mViewModel = createViewModel();
         mViewModel.set(AddToHomescreenProperties.TITLE, title);
-        mViewModel.set(AddToHomescreenProperties.ICON, new Pair<>(iconBitmap, false));
         mViewModel.set(AddToHomescreenProperties.TYPE, AddToHomescreenProperties.AppType.WEB_APK);
         mViewModel.set(AddToHomescreenProperties.CAN_SUBMIT, true);
         mViewModel.set(AddToHomescreenProperties.URL, url);
+
+        // Because web standards specify the circular mask's radius to be 40% of icon dimension,
+        // while Android specifies it to be around 30%, we can't simply let Android mask it. We'll
+        // need to mask the bitmap ourselves and pass it as a non-maskable icon.
+        boolean shouldMaskIcon = maskable && ShortcutHelper.doesAndroidSupportMaskableIcons();
+        if (shouldMaskIcon) {
+            iconBitmap = ShortcutHelper.createHomeScreenIconFromWebIcon(iconBitmap, shouldMaskIcon);
+        }
+        mViewModel.set(AddToHomescreenProperties.ICON, new Pair<>(iconBitmap, shouldMaskIcon));
         return true;
     }
 

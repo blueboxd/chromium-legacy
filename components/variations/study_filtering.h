@@ -46,7 +46,8 @@ bool CheckStudyLowEndDevice(const Study::Filter& filter,
                             bool is_low_end_device);
 
 // Checks whether a study is applicable given |is_enterprise| per |filter|.
-bool CheckStudyEnterprise(const Study::Filter& filter, bool is_enterprise);
+bool CheckStudyEnterprise(const Study::Filter& filter,
+                          const ClientFilterableState& client_state);
 
 // Checks whether a study is applicable for the given date/time per |filter|.
 bool CheckStudyStartDate(const Study::Filter& filter,

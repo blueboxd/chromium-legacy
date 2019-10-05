@@ -275,17 +275,6 @@ TEST(TemplateExpressionsTest, JSReplacementsError) {
 
   // All these cases should fail.
   const TestCase kTestCases[] = {
-      // 2 HTML template strings are not allowed.
-      {"Polymer({\n"
-       "  _template: html`\n"
-       "    <span>Hello</span>\n"
-       "  `,\n"
-       "  _template: html`\n"
-       "    <div>World</div>\n"
-       "  `,\n"
-       "  is: 'foo-element',\n"
-       "});",
-       ""},
       // Nested templates not allowed.
       {"Polymer({\n"
        "  _template: html`\n"
@@ -345,6 +334,56 @@ TEST(TemplateExpressionsTest, JSReplacementsError) {
   for (const TestCase test_case : kTestCases) {
     ASSERT_FALSE(ReplaceTemplateExpressionsInJS(test_case.js_in, substitutions,
                                                 &formatted));
+    formatted.clear();
+  }
+}
+
+TEST(TemplateExpressionsTest, JSMultipleTemplates) {
+  TemplateReplacements substitutions;
+  substitutions["test"] = "word";
+  substitutions["5"] = "number";
+
+  const TestCase kTestCases[] = {
+      // Only the second template has substitutions
+      {"Polymer({\n"
+       "  _template: html`<div>Hello</div>`,\n"
+       "  is: 'foo-element',\n"
+       "});"
+       "Polymer({\n"
+       "  _template: html`<div>$i18n{5}$i18n{test}</div>`,\n"
+       "  is: 'bar-element',\n"
+       "});",
+       "Polymer({\n"
+       "  _template: html`<div>Hello</div>`,\n"
+       "  is: 'foo-element',\n"
+       "});"
+       "Polymer({\n"
+       "  _template: html`<div>numberword</div>`,\n"
+       "  is: 'bar-element',\n"
+       "});"},
+      // 2 templates, both with substitutions.
+      {"Polymer({\n"
+       "  _template: html`<div>$i18n{test}</div>`,\n"
+       "  is: 'foo-element',\n"
+       "});"
+       "Polymer({\n"
+       "  _template: html`<div>$i18n{5}</div>`,\n"
+       "  is: 'bar-element',\n"
+       "});",
+       "Polymer({\n"
+       "  _template: html`<div>word</div>`,\n"
+       "  is: 'foo-element',\n"
+       "});"
+       "Polymer({\n"
+       "  _template: html`<div>number</div>`,\n"
+       "  is: 'bar-element',\n"
+       "});"}};
+
+  std::string formatted;
+  for (const TestCase test_case : kTestCases) {
+    ASSERT_TRUE(ReplaceTemplateExpressionsInJS(test_case.js_in, substitutions,
+                                               &formatted));
+    EXPECT_EQ(test_case.expected_out, formatted);
     formatted.clear();
   }
 }

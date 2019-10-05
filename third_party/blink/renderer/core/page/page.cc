@@ -512,50 +512,27 @@ void Page::SetLifecycleState(PageLifecycleState state) {
     return;
   DCHECK_NE(state, PageLifecycleState::kUnknown);
 
-  // When background tab freezing was first shipped it didn't pause
-  // the execution context but froze the frame scheduler. This feature
-  // flag attempts to bring the two mechanisms to use the same path for
-  // all pausing and freezing.
-  // This allows for mojo channels, workers to also be frozen because
-  // they listen for the page execution context being paused/frozen.
-  if (RuntimeEnabledFeatures::
-          PauseExecutionContextOnBackgroundFreezeEnabled()) {
-    base::Optional<mojom::FrameLifecycleState> next_state;
-    if (state == PageLifecycleState::kFrozen) {
-      next_state = mojom::FrameLifecycleState::kFrozen;
-    } else if (page_lifecycle_state_ == PageLifecycleState::kFrozen) {
-      // TODO(fmeawad): Only resume the page that just became visible, blocked
-      // on task queues per frame.
-      DCHECK(state == PageLifecycleState::kActive ||
-             state == PageLifecycleState::kHiddenBackgrounded ||
-             state == PageLifecycleState::kHiddenForegrounded);
-      next_state = mojom::FrameLifecycleState::kRunning;
-    }
+  base::Optional<mojom::FrameLifecycleState> next_state;
+  if (state == PageLifecycleState::kFrozen) {
+    next_state = mojom::FrameLifecycleState::kFrozen;
+  } else if (page_lifecycle_state_ == PageLifecycleState::kFrozen) {
+    // TODO(fmeawad): Only resume the page that just became visible, blocked
+    // on task queues per frame.
+    DCHECK(state == PageLifecycleState::kActive ||
+           state == PageLifecycleState::kHiddenBackgrounded ||
+           state == PageLifecycleState::kHiddenForegrounded);
+    next_state = mojom::FrameLifecycleState::kRunning;
+  }
 
-    if (next_state) {
-      for (Frame* frame = main_frame_.Get(); frame;
-           frame = frame->Tree().TraverseNext()) {
-        if (auto* local_frame = DynamicTo<LocalFrame>(frame))
-          local_frame->SetLifecycleState(next_state.value());
-      }
-    }
-  } else {
-    // The following code will dispatch the freeze/resume events,
-    // freeze the frame scheduler but but not pause the execution context.
-    if (state == PageLifecycleState::kFrozen) {
-      for (Frame* frame = main_frame_.Get(); frame;
-           frame = frame->Tree().TraverseNext()) {
-        frame->DidFreeze();
-      }
-    } else if (page_lifecycle_state_ == PageLifecycleState::kFrozen) {
-      // TODO(fmeawad): Only resume the page that just became visible, blocked
-      // on task queues per frame.
-      DCHECK(state == PageLifecycleState::kActive ||
-             state == PageLifecycleState::kHiddenBackgrounded ||
-             state == PageLifecycleState::kHiddenForegrounded);
-      for (Frame* frame = main_frame_.Get(); frame;
-           frame = frame->Tree().TraverseNext()) {
-        frame->DidResume();
+  if (next_state) {
+    for (Frame* frame = main_frame_.Get(); frame;
+         frame = frame->Tree().TraverseNext()) {
+      if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+        // TODO(chrisha): Determine if dispatching the before unload
+        // makes sense and if so put it into a specification.
+        if (next_state == mojom::FrameLifecycleState::kFrozen)
+          local_frame->DispatchBeforeUnloadEventForFreeze();
+        local_frame->SetLifecycleState(next_state.value());
       }
     }
   }

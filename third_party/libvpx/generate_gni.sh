@@ -56,9 +56,6 @@ done
 # $1 - Output base name
 function write_license {
   echo "# This file is generated. Do not edit." >> $1
-  echo "# Copyright (c) 2014 The Chromium Authors. All rights reserved." >> $1
-  echo "# Use of this source code is governed by a BSD-style license that can be" >> $1
-  echo "# found in the LICENSE file." >> $1
   echo "" >> $1
 }
 

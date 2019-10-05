@@ -944,6 +944,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-aura-tooltips-on-windows",
+    "owners": [ "cliffsmo" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "enable-autofill-account-wallet-storage",
     "owners": [ "treib", "jsaul@google.com", "butter-team@google.com" ],
     "expiry_milestone": 81
@@ -3447,6 +3452,11 @@
     "name": "webxr-anchors",
     "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 82
+  },
+  {
+    "name": "webxr-ar-dom-overlay",
+    "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
+    "expiry_milestone": 81
   },
   {
     "name": "webxr-ar-module",

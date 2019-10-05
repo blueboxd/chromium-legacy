@@ -108,7 +108,7 @@ VariationsSeed CreateTestSeed() {
 // for testing.
 std::unique_ptr<ClientFilterableState> CreateTestClientFilterableState() {
   std::unique_ptr<ClientFilterableState> client_state =
-      std::make_unique<ClientFilterableState>();
+      std::make_unique<ClientFilterableState>(base::OnceCallback<bool()>());
   client_state->locale = "es-MX";
   client_state->reference_date = WrapTime(1234554321);
   client_state->version = base::Version("1.2.3.4");
@@ -568,7 +568,7 @@ TEST(VariationsSeedStoreTest, LoadSafeSeed_EmptySeed) {
   // Loading an empty seed should return false.
   TestVariationsSeedStore seed_store(&prefs);
   VariationsSeed loaded_seed;
-  ClientFilterableState client_state;
+  ClientFilterableState client_state({});
   base::Time fetch_time;
   EXPECT_FALSE(
       seed_store.LoadSafeSeed(&loaded_seed, &client_state, &fetch_time));
@@ -578,7 +578,7 @@ TEST(VariationsSeedStoreTest, StoreSafeSeed_ValidSeed) {
   const VariationsSeed seed = CreateTestSeed();
   const std::string serialized_seed = SerializeSeed(seed);
   const std::string signature = "a completely ignored signature";
-  ClientFilterableState client_state;
+  ClientFilterableState client_state({});
   client_state.locale = "en-US";
   client_state.reference_date = WrapTime(12345);
   client_state.session_consistency_country = "US";
@@ -618,7 +618,7 @@ TEST(VariationsSeedStoreTest, StoreSafeSeed_ValidSeed) {
 TEST(VariationsSeedStoreTest, StoreSafeSeed_EmptySeed) {
   const std::string serialized_seed;
   const std::string signature = "a completely ignored signature";
-  ClientFilterableState client_state;
+  ClientFilterableState client_state({});
   client_state.locale = "en-US";
   client_state.reference_date = WrapTime(54321);
   client_state.session_consistency_country = "US";
@@ -663,7 +663,7 @@ TEST(VariationsSeedStoreTest, StoreSafeSeed_EmptySeed) {
 TEST(VariationsSeedStoreTest, StoreSafeSeed_InvalidSeed) {
   const std::string serialized_seed = "a nonsense seed";
   const std::string signature = "a completely ignored signature";
-  ClientFilterableState client_state;
+  ClientFilterableState client_state({});
   client_state.locale = "en-US";
   client_state.reference_date = WrapTime(12345);
   client_state.session_consistency_country = "US";
@@ -711,7 +711,7 @@ TEST(VariationsSeedStoreTest, StoreSafeSeed_InvalidSignature) {
   const std::string serialized_seed = SerializeSeed(seed);
   // A valid signature, but for a different seed.
   const std::string signature = kBase64SeedSignature;
-  ClientFilterableState client_state;
+  ClientFilterableState client_state({});
   client_state.locale = "en-US";
   client_state.reference_date = WrapTime(12345);
   client_state.session_consistency_country = "US";
@@ -762,7 +762,7 @@ TEST(VariationsSeedStoreTest, StoreSafeSeed_ValidSignature) {
   ASSERT_TRUE(
       base::Base64Decode(kUncompressedBase64SeedData, &serialized_seed));
   const std::string signature = kBase64SeedSignature;
-  ClientFilterableState client_state;
+  ClientFilterableState client_state({});
   client_state.locale = "en-US";
   client_state.reference_date = WrapTime(12345);
   client_state.session_consistency_country = "US";
@@ -807,7 +807,7 @@ TEST(VariationsSeedStoreTest, StoreSafeSeed_IdenticalToLatestSeed) {
   const std::string serialized_seed = SerializeSeed(seed);
   const std::string base64_seed = SerializeSeedBase64(seed);
   const std::string signature = "a completely ignored signature";
-  ClientFilterableState unused_client_state;
+  ClientFilterableState unused_client_state({});
   const base::Time fetch_time = WrapTime(12345);
 
   TestingPrefServiceSimple prefs;
@@ -865,7 +865,7 @@ TEST(VariationsSeedStoreTest, StoreSafeSeed_PreviouslyIdenticalToLatestSeed) {
   const std::string base64_new_seed = SerializeSeedBase64(new_seed);
   const std::string signature = "a completely ignored signature";
   const base::Time fetch_time = WrapTime(12345);
-  ClientFilterableState unused_client_state;
+  ClientFilterableState unused_client_state({});
 
   TestingPrefServiceSimple prefs;
   VariationsSeedStore::RegisterPrefs(prefs.registry());

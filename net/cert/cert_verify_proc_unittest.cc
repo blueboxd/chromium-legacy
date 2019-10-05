@@ -139,8 +139,8 @@ int MockCertVerifyProc::VerifyInternal(
 
 // This enum identifies a concrete implemenation of CertVerifyProc.
 //
-// The type is erased by CertVerifyProc::CreateDefault(), however
-// needs to be known for some of the test expectations.
+// The type is erased by CreateCertVerifyProc(), however needs to be known for
+// some of the test expectations.
 enum CertVerifyProcType {
   CERT_VERIFY_PROC_NSS,
   CERT_VERIFY_PROC_ANDROID,
@@ -212,7 +212,8 @@ scoped_refptr<CertVerifyProc> CreateCertVerifyProc(
 }
 
 // The set of all CertVerifyProcTypes that tests should be parameterized on.
-// This needs to be kept in sync with CertVerifyProc::CreateDefault().
+// This needs to be kept in sync with CertVerifyProc::CreateSystemVerifyProc()
+// and the platforms where CreateSslSystemTrustStore() is not a dummy store.
 // TODO(crbug.com/649017): Enable CERT_VERIFY_PROC_BUILTIN everywhere. Right
 // now this is gated on having CertVerifyProcBuiltin understand the roots added
 // via TestRootCerts.

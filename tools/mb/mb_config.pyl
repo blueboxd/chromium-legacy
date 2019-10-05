@@ -614,6 +614,7 @@
       'Win x64 Builder': 'gpu_tests_release_bot_minimal_symbols',
       'Win x64 Builder (dbg)': 'gpu_tests_debug_bot',
       'Windows deterministic': 'release_bot_x86_minimal_symbols',
+      'win-celab-builder-rel': 'celab_release_bot',
     },
 
     'internal.client.kitchensync': {
@@ -899,6 +900,7 @@
       'win10_chromium_x64_rel_ng_exp': 'release_trybot',
       'win-annotator-rel': 'release_trybot',
       'win-asan': 'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release',
+      'win-celab-try-rel': 'celab_release_bot',
       'win-jumbo-rel': 'jumbo_large_chunks_release_bot_compile_only',
       'win-libfuzzer-asan-rel': 'libfuzzer_windows_asan_release_trybot',
       'win7-rel': 'gpu_tests_release_trybot_x86_resource_whitelisting',
@@ -1263,6 +1265,10 @@
 
     'cast_audio_release_trybot': [
       'cast', 'cast_audio', 'release_trybot',
+    ],
+
+    'celab_release_bot': [
+      'release_bot', 'minimal_symbols'
     ],
 
     'cfi_full_cfi_icall_cfi_diag_recover_release_static': [

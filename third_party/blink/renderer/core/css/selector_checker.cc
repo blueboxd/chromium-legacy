@@ -1046,6 +1046,11 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoVideoPersistentAncestor:
       DCHECK(is_ua_rule_);
       return element.ContainsPersistentVideo();
+    case CSSSelector::kPseudoXrImmersiveDomOverlay:
+      DCHECK(is_ua_rule_);
+      // In immersive AR overlay mode, apply a pseudostyle to the root element.
+      return element.GetDocument().IsImmersiveArOverlay() &&
+             element == element.GetDocument().documentElement();
     case CSSSelector::kPseudoInRange:
       return element.IsInRange();
     case CSSSelector::kPseudoOutOfRange:

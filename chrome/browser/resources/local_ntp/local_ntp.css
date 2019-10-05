@@ -1868,6 +1868,7 @@ html[dir=rtl] #colors-menu .bg-sel-tile .selected-check {
   border: 1px solid rgb(var(--GG200-rgb));
   border-radius: 4px;
   display: none;
+  font-size: 13px;
   height: 64px;
   margin-bottom: 24px;
   max-width: 544px;
@@ -1882,7 +1883,6 @@ html[dir=rtl] #colors-menu .bg-sel-tile .selected-check {
 
 #colors-theme.visible {
   display: flex;
-  font-size: small;
 }
 
 #colors-theme > * {

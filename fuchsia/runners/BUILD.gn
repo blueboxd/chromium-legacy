@@ -5,7 +5,7 @@
 assert(is_fuchsia)
 
 import("//build/buildflag_header.gni")
-import("//build/config/fuchsia/rules.gni")
+import("//build/config/fuchsia/generate_runner_scripts.gni")
 import("//build/config/fuchsia/symbol_archive.gni")
 import("//testing/test.gni")
 

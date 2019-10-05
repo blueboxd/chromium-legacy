@@ -156,7 +156,8 @@ bool RendererContentSettingRules::IsRendererContentSetting(
          content_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
          content_type == CONTENT_SETTINGS_TYPE_AUTOPLAY ||
          content_type == CONTENT_SETTINGS_TYPE_CLIENT_HINTS ||
-         content_type == CONTENT_SETTINGS_TYPE_POPUPS;
+         content_type == CONTENT_SETTINGS_TYPE_POPUPS ||
+         content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT;
 }
 
 RendererContentSettingRules::RendererContentSettingRules() {}

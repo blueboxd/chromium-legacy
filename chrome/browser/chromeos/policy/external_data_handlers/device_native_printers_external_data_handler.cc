@@ -16,8 +16,7 @@ namespace policy {
 namespace {
 
 base::WeakPtr<chromeos::BulkPrintersCalculator> GetBulkPrintersCalculator() {
-  return chromeos::BulkPrintersCalculatorFactory::Get()->GetForDevice(
-      /*create_if_not_exists=*/true);
+  return chromeos::BulkPrintersCalculatorFactory::Get()->GetForDevice();
 }
 
 }  // namespace

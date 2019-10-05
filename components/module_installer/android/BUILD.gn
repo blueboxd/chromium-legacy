@@ -37,8 +37,6 @@ android_library("module_installer_java") {
     "//third_party/google_android_play_core:com_google_android_play_core_java",
   ]
 
-  srcjar_deps = [ ":module_installer_build_config" ]
-
   jar_excluded_patterns = [ "*/ModuleInstallerConfig.class" ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -46,12 +44,18 @@ android_library("module_installer_java") {
 
 junit_binary("module_installer_junit_tests") {
   java_files = [
+    "junit/src/org/chromium/components/module_installer/engine/ApkEngineTest.java",
     "junit/src/org/chromium/components/module_installer/engine/SplitCompatEngineTest.java",
+    "junit/src/org/chromium/components/module_installer/logger/LoggerTestUtil.java",
+    "junit/src/org/chromium/components/module_installer/logger/PlayCoreLoggerTest.java",
+    "junit/src/org/chromium/components/module_installer/logger/SplitInstallFailureLoggerTest.java",
+    "junit/src/org/chromium/components/module_installer/logger/SplitInstallStatusLoggerTest.java",
     "junit/src/org/chromium/components/module_installer/observer/ActivityObserverTest.java",
   ]
   deps = [
     ":module_installer_java",
     "//base:base_java",
+    "//base:base_java_test_support",
     "//base:base_junit_test_support",
   ]
 }
@@ -75,26 +79,11 @@ java_annotation_processor("module_interface_processor") {
 # Use this one if your target needs to depend on ModuleInstallerConfig. The
 # other two targets are automatically added to build targets.
 java_cpp_template("module_installer_build_config") {
+  # TODO(fredmello): Temporary code to keep downstream unbroken.
   package_path = "org/chromium/components/module_installer/builder"
   sources = [
     "build/ModuleInstallerConfig.template",
   ]
-}
-
-java_cpp_template("module_installer_bundle_build_config") {
-  package_path = "org/chromium/components/module_installer/builder"
-  sources = [
-    "build/ModuleInstallerConfig.template",
-  ]
-  defines = [ "IS_BUNDLE_BUILD" ]
-}
-
-java_cpp_template("module_installer_apk_build_config") {
-  package_path = "org/chromium/components/module_installer/builder"
-  sources = [
-    "build/ModuleInstallerConfig.template",
-  ]
-  defines = [ "IS_APK_BUILD" ]
 }
 
 source_set("native") {

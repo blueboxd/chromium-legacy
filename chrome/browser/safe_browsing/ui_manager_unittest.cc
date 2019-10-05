@@ -96,9 +96,8 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
     g_browser_process->safe_browsing_service()->Initialize();
     // A profile was created already but SafeBrowsingService wasn't around to
     // get notified of it, so include that notification now.
-    safe_browsing_service->AddPrefService(
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext())
-            ->GetPrefs());
+    safe_browsing_service->OnProfileAdded(
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
     content::BrowserThread::RunAllPendingTasksOnThreadForTesting(
         content::BrowserThread::IO);
   }

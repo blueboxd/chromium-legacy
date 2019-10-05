@@ -15,8 +15,8 @@ if (is_android) {
 
 if (is_fuchsia) {
   import("//build/config/chromecast_build.gni")
+  import("//build/config/fuchsia/generate_runner_scripts.gni")
   import("//build/config/fuchsia/package.gni")
-  import("//build/config/fuchsia/rules.gni")
 }
 
 if (is_chromeos) {

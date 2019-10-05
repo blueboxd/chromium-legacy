@@ -55,7 +55,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/i18n/time_formatting.h"
-#include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -71,7 +70,6 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/update_engine_client.h"
-#include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/system/statistics_provider.h"
@@ -228,21 +226,6 @@ std::string ReadRegulatoryLabelText(const base::FilePath& label_dir_path) {
   return std::string();
 }
 
-std::unique_ptr<base::DictionaryValue> GetVersionInfo() {
-  std::unique_ptr<base::DictionaryValue> version_info(
-      new base::DictionaryValue);
-
-  version_info->SetString("osVersion",
-                          chromeos::version_loader::GetVersion(
-                              chromeos::version_loader::VERSION_FULL));
-  version_info->SetString("arcVersion",
-                          chromeos::version_loader::GetARCVersion());
-  version_info->SetString("osFirmware",
-                          chromeos::version_loader::GetFirmware());
-
-  return version_info;
-}
-
 #endif  // defined(OS_CHROMEOS)
 
 std::string UpdateStatusToString(VersionUpdater::Status status) {
@@ -356,16 +339,6 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
                          os_with_linux_license);
   html_source->AddBoolean("aboutEnterpriseManaged", IsEnterpriseManaged());
 
-  base::Time build_time = base::SysInfo::GetLsbReleaseTime();
-  base::string16 build_date = base::TimeFormatFriendlyDate(build_time);
-  html_source->AddString("aboutBuildDate", build_date);
-
-  base::CommandLine::StringType command_line =
-      base::CommandLine::ForCurrentProcess()->GetCommandLineString();
-  html_source->AddString("aboutCommandLine", command_line);
-
-  html_source->AddString("aboutUserAgent", GetUserAgent());
-  html_source->AddString("aboutJsEngineVersion", V8_VERSION_STRING);
   html_source->AddString("endOfLifeMessage", l10n_util::GetStringFUTF16(
                                                  IDS_EOL_NOTIFICATION_EOL,
                                                  ui::GetChromeOSDeviceName()));
@@ -405,9 +378,6 @@ void AboutHandler::RegisterMessages() {
       "requestUpdateOverCellular",
       base::BindRepeating(&AboutHandler::HandleRequestUpdateOverCellular,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getVersionInfo", base::BindRepeating(&AboutHandler::HandleGetVersionInfo,
-                                            base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getRegulatoryInfo",
       base::BindRepeating(&AboutHandler::HandleGetRegulatoryInfo,
@@ -599,25 +569,6 @@ void AboutHandler::HandleSetChannel(const base::ListValue* args) {
         base::Bind(&AboutHandler::SetUpdateStatus, base::Unretained(this)),
         VersionUpdater::PromoteCallback());
   }
-}
-
-void AboutHandler::HandleGetVersionInfo(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
-
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::Bind(&GetVersionInfo),
-      base::Bind(&AboutHandler::OnGetVersionInfoReady,
-                 weak_factory_.GetWeakPtr(), callback_id));
-}
-
-void AboutHandler::OnGetVersionInfoReady(
-    std::string callback_id,
-    std::unique_ptr<base::DictionaryValue> version_info) {
-  ResolveJavascriptCallback(base::Value(callback_id), *version_info);
 }
 
 void AboutHandler::HandleGetRegulatoryInfo(const base::ListValue* args) {

@@ -112,7 +112,6 @@ struct DidOverscrollParams;
 namespace content {
 class BrowserPlugin;
 class CompositorDependencies;
-class ExternalPopupMenu;
 class FrameSwapMessageQueue;
 class ImeEventGuard;
 class LayerTreeView;
@@ -738,10 +737,6 @@ class CONTENT_EXPORT RenderWidget
   // Helper method to get the device_viewport_rect() from the compositor, which
   // is always in physical pixels.
   gfx::Rect CompositorViewportRect() const;
-
-#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-  void SetExternalPopupOriginAdjustmentsForEmulation(ExternalPopupMenu* popup);
-#endif
 
   // RenderWidget IPC message handlers.
   void OnHandleInputEvent(

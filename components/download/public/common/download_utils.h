@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_UTILS_H_
 #define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_UTILS_H_
 
+#include <memory>
+
 #include "components/download/database/download_db_entry.h"
 #include "components/download/database/in_progress/download_entry.h"
 #include "components/download/public/common/download_export.h"

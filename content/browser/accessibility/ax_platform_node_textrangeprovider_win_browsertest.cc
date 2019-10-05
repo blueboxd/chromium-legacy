@@ -1537,7 +1537,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
                                    /*expected_count*/ -1);
 
   text_range_provider->ExpandToEnclosingUnit(TextUnit_Line);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"Text in iframe\n");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"Text in iframe");
 
   text_range_provider->ExpandToEnclosingUnit(TextUnit_Document);
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider,
@@ -1703,7 +1703,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
 
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"plain\ntext\n");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"plain\ntext");
 
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,

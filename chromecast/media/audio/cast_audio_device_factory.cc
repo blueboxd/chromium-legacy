@@ -21,10 +21,15 @@ class NonSwitchableAudioRendererSink
  public:
   explicit NonSwitchableAudioRendererSink(
       scoped_refptr<::media::AudioOutputDevice> output_device)
-      : output_device_(std::move(output_device)) {}
+      : output_device_(std::move(output_device)), is_initialized_(false) {}
 
   void Initialize(const ::media::AudioParameters& params,
                   RenderCallback* callback) override {
+    // NonSwitchableAudioRendererSink derives from RestartableRenderSink which
+    // does allow calling Initialize and Play again after stopping.
+    if (is_initialized_)
+      return;
+    is_initialized_ = true;
     output_device_->Initialize(params, callback);
   }
 
@@ -69,6 +74,7 @@ class NonSwitchableAudioRendererSink
 
  private:
   scoped_refptr<::media::AudioOutputDevice> output_device_;
+  bool is_initialized_;
 };
 
 scoped_refptr<::media::AudioOutputDevice> NewOutputDevice(

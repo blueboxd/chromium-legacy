@@ -27,10 +27,7 @@
   </message>
   <if expr="chromeos">
     <message name="IDS_SETTINGS_ABOUT_PAGE_DETAILED_BUILD_INFO" desc="Label describing the section that shows detailed information about the current Chrome build.">
-      Detailed build information
-    </message>
-    <message name="IDS_SETTINGS_ABOUT_PAGE_ARC_VERSION" desc="Label for ARC version">
-      ARC Version
+      Additional details
     </message>
     <message name="IDS_SETTINGS_ABOUT_PAGE_CHANNEL" desc="The channel label under Detailed build info.">
       Channel
@@ -61,12 +58,6 @@
       <ph name="LINK_BEGIN">&lt;a target="_blank" href="$2<ex>https://google.com/</ex>"&gt;</ph>
         Learn more
       <ph name="LINK_END">&lt;/a&gt;</ph>
-    </message>
-    <message name="IDS_SETTINGS_ABOUT_PAGE_FIRMWARE" desc="Label used for Chrome OS BIOS firmware version.">
-      Firmware
-    </message>
-    <message name="IDS_SETTINGS_ABOUT_PAGE_PLATFORM" desc="Label for Platform">
-      Platform
     </message>
     <message name="IDS_SETTINGS_ABOUT_PAGE_RELAUNCH" desc="The label for the relaunch button that relaunches the browser once update is complete">
       Restart
@@ -3152,10 +3143,10 @@
     "Ok Google"
   </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_DESCRIPTION" desc="Sub label for hotword-enable toggle.">
-    Access your Assistant any time you say "Ok Google"
+    Access your Assistant when you say "Ok Google."
   </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_WITHOUT_DSP_DESCRIPTION" desc="Sub label for hotword-enable dropdown without DSP support.">
-    Activate the Assistant when anyone says “Ok Google”. To save battery, “Ok Google” is on only when your device is connected to a power source.
+    Access your Assistant when you say "Ok Google." To save battery, choose “On (Recommended.)” Your Assistant will respond only when your device is plugged in or charging.
   </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_WITHOUT_DSP_RECOMMENDED" desc="Default label for hotword-enable dropdown without DSP support.">
     On (Recommended)
@@ -3270,6 +3261,12 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_IMAGES" desc="Label for the images site settings.">
     Images
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_INSECURE_CONTENT" desc="Label for the insecure content site settings. This setting controls whether HTTP content will be displayed on HTTPS sites.">
+    Insecure content
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_INSECURE_CONTENT_BLOCK" desc="Label explaining that insecure content is blocked by default in secure sites. Insecure content refers to content served over HTTP, secure sites refers to sites served over HTTPS.">
+    Insecure content is blocked by default on secure sites
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_JAVASCRIPT" desc="Label for the javascript site settings.">
     JavaScript

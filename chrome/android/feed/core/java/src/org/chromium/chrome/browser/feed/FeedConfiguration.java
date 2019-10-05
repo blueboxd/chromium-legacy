@@ -37,6 +37,10 @@ public final class FeedConfiguration {
     /** Default value for whether to consumer synthetic tokens on restore. */
     public static final boolean CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING_DEFAULT = false;
 
+    private static final String DEFAULT_ACTION_TTL_SECONDS = "default_action_ttl_seconds";
+    /** Default value for the TTL of default action (3 days). */
+    public static final long DEFAULT_ACTION_TTL_SECONDS_DEFAULT = 259200;
+
     private static final String FEED_ACTION_SERVER_ENDPOINT = "feed_action_server_endpoint";
     /** Default value for the endpoint used for recording uploaded actions to the server. */
     public static final String FEED_ACTION_SERVER_ENDPOINT_DEFAULT =
@@ -183,6 +187,14 @@ public final class FeedConfiguration {
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
                 CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING,
                 CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING_DEFAULT);
+    }
+
+    /** @return The TTL (in seconds) for the default action. */
+    @VisibleForTesting
+    static long getDefaultActionTtlSeconds() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, DEFAULT_ACTION_TTL_SECONDS,
+                (int) DEFAULT_ACTION_TTL_SECONDS_DEFAULT);
     }
 
     /** @return The endpoint used for recording uploaded actions to the server. */
@@ -418,6 +430,8 @@ public final class FeedConfiguration {
                         FeedConfiguration.getConsumeSyntheticTokens())
                 .put(ConfigKey.CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING,
                         FeedConfiguration.getConsumeSyntheticTokensWhileRestoring())
+                .put(ConfigKey.DEFAULT_ACTION_TTL_SECONDS,
+                        FeedConfiguration.getDefaultActionTtlSeconds())
                 .put(ConfigKey.FEED_ACTION_SERVER_ENDPOINT,
                         FeedConfiguration.getFeedActionServerEndpoint())
                 .put(ConfigKey.FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST,

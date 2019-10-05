@@ -52,6 +52,9 @@ enum XRSessionFeature {
   REF_SPACE_LOCAL_FLOOR = 3,
   REF_SPACE_BOUNDED_FLOOR = 4,
   REF_SPACE_UNBOUNDED = 5,
+
+  // Experimental or not-yet-standardized feature names.
+  DOM_OVERLAY_FOR_HANDHELD_AR = 6,
 };
 
 struct XRSessionOptions {

@@ -14,6 +14,7 @@
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "net/base/network_isolation_key.h"
 #include "net/reporting/mock_persistent_reporting_store.h"
 #include "net/reporting/reporting_cache_impl.h"
 #include "net/reporting/reporting_cache_observer.h"
@@ -750,15 +751,16 @@ TEST_P(ReportingCacheTest, GetCandidateEndpointsForDelivery) {
   ASSERT_TRUE(SetEndpointInCache(kOrigin2_, kGroup1_, kEndpoint1_, kExpires1_));
   ASSERT_TRUE(SetEndpointInCache(kOrigin2_, kGroup2_, kEndpoint2_, kExpires1_));
   std::vector<ReportingEndpoint> candidate_endpoints =
-      cache()->GetCandidateEndpointsForDelivery(kOrigin1_, kGroup1_);
+      cache()->GetCandidateEndpointsForDelivery(NetworkIsolationKey(),
+                                                kOrigin1_, kGroup1_);
   ASSERT_EQ(2u, candidate_endpoints.size());
   for (const ReportingEndpoint& endpoint : candidate_endpoints) {
     EXPECT_EQ(kOrigin1_, endpoint.group_key.origin);
     EXPECT_EQ(kGroup1_, endpoint.group_key.group_name);
   }
 
-  candidate_endpoints =
-      cache()->GetCandidateEndpointsForDelivery(kOrigin2_, kGroup1_);
+  candidate_endpoints = cache()->GetCandidateEndpointsForDelivery(
+      NetworkIsolationKey(), kOrigin2_, kGroup1_);
   ASSERT_EQ(1u, candidate_endpoints.size());
   EXPECT_EQ(kOrigin2_, candidate_endpoints[0].group_key.origin);
   EXPECT_EQ(kGroup1_, candidate_endpoints[0].group_key.group_name);
@@ -777,15 +779,16 @@ TEST_P(ReportingCacheTest, GetCandidateEndpointsExcludesExpired) {
   ASSERT_LT(clock()->Now(), kExpires2_);
 
   std::vector<ReportingEndpoint> candidate_endpoints =
-      cache()->GetCandidateEndpointsForDelivery(kOrigin1_, kGroup1_);
+      cache()->GetCandidateEndpointsForDelivery(NetworkIsolationKey(),
+                                                kOrigin1_, kGroup1_);
   ASSERT_EQ(0u, candidate_endpoints.size());
 
-  candidate_endpoints =
-      cache()->GetCandidateEndpointsForDelivery(kOrigin2_, kGroup1_);
+  candidate_endpoints = cache()->GetCandidateEndpointsForDelivery(
+      NetworkIsolationKey(), kOrigin2_, kGroup1_);
   ASSERT_EQ(0u, candidate_endpoints.size());
 
-  candidate_endpoints =
-      cache()->GetCandidateEndpointsForDelivery(kOrigin2_, kGroup2_);
+  candidate_endpoints = cache()->GetCandidateEndpointsForDelivery(
+      NetworkIsolationKey(), kOrigin2_, kGroup2_);
   ASSERT_EQ(1u, candidate_endpoints.size());
   EXPECT_EQ(kEndpoint2_, candidate_endpoints[0].info.url);
 }
@@ -801,7 +804,8 @@ TEST_P(ReportingCacheTest, ExcludeSubdomainsDifferentPort) {
                                  kExpires1_, OriginSubdomains::EXCLUDE));
 
   std::vector<ReportingEndpoint> candidate_endpoints =
-      cache()->GetCandidateEndpointsForDelivery(kOrigin, kGroup1_);
+      cache()->GetCandidateEndpointsForDelivery(NetworkIsolationKey(), kOrigin,
+                                                kGroup1_);
   ASSERT_EQ(0u, candidate_endpoints.size());
 }
 
@@ -816,7 +820,8 @@ TEST_P(ReportingCacheTest, ExcludeSubdomainsSuperdomain) {
                                  kExpires1_, OriginSubdomains::EXCLUDE));
 
   std::vector<ReportingEndpoint> candidate_endpoints =
-      cache()->GetCandidateEndpointsForDelivery(kOrigin, kGroup1_);
+      cache()->GetCandidateEndpointsForDelivery(NetworkIsolationKey(), kOrigin,
+                                                kGroup1_);
   ASSERT_EQ(0u, candidate_endpoints.size());
 }
 
@@ -831,7 +836,8 @@ TEST_P(ReportingCacheTest, IncludeSubdomainsDifferentPort) {
                                  kExpires1_, OriginSubdomains::INCLUDE));
 
   std::vector<ReportingEndpoint> candidate_endpoints =
-      cache()->GetCandidateEndpointsForDelivery(kOrigin, kGroup1_);
+      cache()->GetCandidateEndpointsForDelivery(NetworkIsolationKey(), kOrigin,
+                                                kGroup1_);
   ASSERT_EQ(1u, candidate_endpoints.size());
   EXPECT_EQ(kDifferentPortOrigin, candidate_endpoints[0].group_key.origin);
 }
@@ -847,7 +853,8 @@ TEST_P(ReportingCacheTest, IncludeSubdomainsSuperdomain) {
                                  kExpires1_, OriginSubdomains::INCLUDE));
 
   std::vector<ReportingEndpoint> candidate_endpoints =
-      cache()->GetCandidateEndpointsForDelivery(kOrigin, kGroup1_);
+      cache()->GetCandidateEndpointsForDelivery(NetworkIsolationKey(), kOrigin,
+                                                kGroup1_);
   ASSERT_EQ(1u, candidate_endpoints.size());
   EXPECT_EQ(kSuperOrigin, candidate_endpoints[0].group_key.origin);
 }
@@ -865,7 +872,8 @@ TEST_P(ReportingCacheTest, IncludeSubdomainsPreferOriginToDifferentPort) {
                                  kExpires1_, OriginSubdomains::INCLUDE));
 
   std::vector<ReportingEndpoint> candidate_endpoints =
-      cache()->GetCandidateEndpointsForDelivery(kOrigin, kGroup1_);
+      cache()->GetCandidateEndpointsForDelivery(NetworkIsolationKey(), kOrigin,
+                                                kGroup1_);
   ASSERT_EQ(1u, candidate_endpoints.size());
   EXPECT_EQ(kOrigin, candidate_endpoints[0].group_key.origin);
 }
@@ -883,7 +891,8 @@ TEST_P(ReportingCacheTest, IncludeSubdomainsPreferOriginToSuperdomain) {
                                  kExpires1_, OriginSubdomains::INCLUDE));
 
   std::vector<ReportingEndpoint> candidate_endpoints =
-      cache()->GetCandidateEndpointsForDelivery(kOrigin, kGroup1_);
+      cache()->GetCandidateEndpointsForDelivery(NetworkIsolationKey(), kOrigin,
+                                                kGroup1_);
   ASSERT_EQ(1u, candidate_endpoints.size());
   EXPECT_EQ(kOrigin, candidate_endpoints[0].group_key.origin);
 }
@@ -904,7 +913,8 @@ TEST_P(ReportingCacheTest, IncludeSubdomainsPreferMoreSpecificSuperdomain) {
                                  kExpires1_, OriginSubdomains::INCLUDE));
 
   std::vector<ReportingEndpoint> candidate_endpoints =
-      cache()->GetCandidateEndpointsForDelivery(kOrigin, kGroup1_);
+      cache()->GetCandidateEndpointsForDelivery(NetworkIsolationKey(), kOrigin,
+                                                kGroup1_);
   ASSERT_EQ(1u, candidate_endpoints.size());
   EXPECT_EQ(kSuperOrigin, candidate_endpoints[0].group_key.origin);
 }
@@ -1005,7 +1015,8 @@ TEST_P(ReportingCacheTest, EvictExpiredGroups) {
 
   // Make the group expired (but not stale).
   clock()->SetNow(kExpires1_ - base::TimeDelta::FromMinutes(1));
-  cache()->GetCandidateEndpointsForDelivery(kOrigin1_, kGroup1_);
+  cache()->GetCandidateEndpointsForDelivery(NetworkIsolationKey(), kOrigin1_,
+                                            kGroup1_);
   clock()->SetNow(kExpires1_ + base::TimeDelta::FromMinutes(1));
 
   // Insert one more endpoint in a different group (not expired); eviction
@@ -1054,7 +1065,7 @@ TEST_P(ReportingCacheTest, EvictFromStalestGroup) {
     EXPECT_TRUE(EndpointGroupExistsInCache(kOrigin1_, base::NumberToString(i),
                                            OriginSubdomains::DEFAULT));
     // Mark group used.
-    cache()->GetCandidateEndpointsForDelivery(kOrigin1_,
+    cache()->GetCandidateEndpointsForDelivery(NetworkIsolationKey(), kOrigin1_,
                                               base::NumberToString(i));
     clock()->Advance(base::TimeDelta::FromMinutes(1));
   }
@@ -1098,7 +1109,8 @@ TEST_P(ReportingCacheTest, EvictFromLargestGroup) {
                                          OriginSubdomains::DEFAULT));
   // Count the number of endpoints remaining in kGroup2_.
   std::vector<ReportingEndpoint> endpoints_in_group =
-      cache()->GetCandidateEndpointsForDelivery(kOrigin1_, kGroup2_);
+      cache()->GetCandidateEndpointsForDelivery(NetworkIsolationKey(),
+                                                kOrigin1_, kGroup2_);
   EXPECT_EQ(1u, endpoints_in_group.size());
 }
 

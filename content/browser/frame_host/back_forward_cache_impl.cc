@@ -49,6 +49,9 @@ void SetPageFrozenImpl(
     //
     // See: https://developers.google.com/web/updates/2018/07/page-lifecycle-api
     int rvh_routing_id = render_view_host->GetRoutingID();
+    // TODO(dcheng): Page messages should be used in conjunction with
+    // SendPageMessage(). Having it used to directly route a message to a
+    // RenderView is somewhat unusual. Figure out why this is needed.
     if (frozen) {
       render_view_host->Send(
           new PageMsg_PutPageIntoBackForwardCache(rvh_routing_id));

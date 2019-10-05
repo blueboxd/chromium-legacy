@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_data_removal_dialog.h"
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/browser_dialogs.h"

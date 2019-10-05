@@ -7516,9 +7516,12 @@ void WebGLRenderingContextBase::PrintGLErrorToConsole(const String& message) {
 }
 
 void WebGLRenderingContextBase::PrintWarningToConsole(const String& message) {
-  Host()->GetTopExecutionContext()->AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
-                             mojom::ConsoleMessageLevel::kWarning, message));
+  blink::ExecutionContext* context = Host()->GetTopExecutionContext();
+  if (context) {
+    context->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
+                               mojom::ConsoleMessageLevel::kWarning, message));
+  }
 }
 
 bool WebGLRenderingContextBase::ValidateFramebufferFuncParameters(

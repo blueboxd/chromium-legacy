@@ -88,8 +88,6 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   void Detach(FrameDetachType);
   void DisconnectOwnerElement();
   virtual bool ShouldClose() = 0;
-  virtual void DidFreeze() = 0;
-  virtual void DidResume() = 0;
   virtual void HookBackForwardCacheEviction() = 0;
   virtual void RemoveBackForwardCacheEviction() = 0;
 

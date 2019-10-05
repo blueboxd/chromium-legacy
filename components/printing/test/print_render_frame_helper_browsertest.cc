@@ -800,7 +800,6 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   dict.SetBoolean(kSettingPrintToPDF, false);
-  dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
@@ -845,7 +844,6 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetBoolean(kSettingPrintToPDF, true);
   dict.SetInteger(kSettingMarginsType, PRINTABLE_AREA_MARGINS);
   OnPrintPreview(dict);
 
@@ -971,7 +969,6 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   dict.SetBoolean(kSettingPrintToPDF, false);
-  dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
@@ -1005,8 +1002,6 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetBoolean(kSettingPrintToPDF, true);
-  dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
@@ -1030,7 +1025,6 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewCenterToFitPage) {
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   dict.SetBoolean(kSettingPrintToPDF, false);
-  dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
@@ -1063,7 +1057,6 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewShrinkToFitPage) {
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   dict.SetBoolean(kSettingPrintToPDF, false);
-  dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
@@ -1108,7 +1101,6 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetBoolean(kSettingPrintToPDF, true);
   dict.SetInteger(kSettingMarginsType, CUSTOM_MARGINS);
   OnPrintPreview(dict);
 

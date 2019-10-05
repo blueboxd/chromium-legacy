@@ -168,14 +168,6 @@ bool RemoteFrame::ShouldClose() {
   return true;
 }
 
-void RemoteFrame::DidFreeze() {
-  // TODO(fmeawad): Add support for remote frames.
-}
-
-void RemoteFrame::DidResume() {
-  // TODO(fmeawad): Add support for remote frames.
-}
-
 void RemoteFrame::SetIsInert(bool inert) {
   if (inert != is_inert_)
     Client()->SetIsInert(inert);

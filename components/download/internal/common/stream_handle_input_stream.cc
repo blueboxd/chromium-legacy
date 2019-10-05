@@ -45,6 +45,8 @@ void StreamHandleInputStream::RegisterDataReadyCallback(
     const mojo::SimpleWatcher::ReadyCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (handle_watcher_) {
+    if (handle_watcher_->IsWatching())
+      ClearDataReadyCallback();
     handle_watcher_->Watch(stream_handle_->stream.get(),
                            MOJO_HANDLE_SIGNAL_READABLE, callback);
   }

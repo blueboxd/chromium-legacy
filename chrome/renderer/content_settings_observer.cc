@@ -8,8 +8,10 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/client_hints.mojom.h"
 #include "chrome/common/client_hints/client_hints.h"
 #include "chrome/common/render_messages.h"
@@ -446,16 +448,27 @@ bool ContentSettingsObserver::AllowRunningInsecureContent(
     bool allowed_per_settings,
     const blink::WebSecurityOrigin& origin,
     const blink::WebURL& resource_url) {
+  bool allow = allowed_per_settings;
+
+  if (base::FeatureList::IsEnabled(features::kMixedContentSiteSetting)) {
+    if (content_setting_rules_) {
+      auto setting = GetContentSettingFromRules(
+          content_setting_rules_->mixed_content_rules,
+          render_frame()->GetWebFrame(), GURL());
+      allow |= (setting == CONTENT_SETTING_ALLOW);
+    }
+  } else {
+    allow |= allow_running_insecure_content_;
+    if (!allow) {
+      DidBlockContentType(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
+    }
+  }
+
   // Note: this implementation is a mirror of
   // Browser::ShouldAllowRunningInsecureContent.
   FilteredReportInsecureContentRan(GURL(resource_url));
 
-  if (!allow_running_insecure_content_ && !allowed_per_settings) {
-    DidBlockContentType(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
-    return false;
-  }
-
-  return true;
+  return allow;
 }
 
 bool ContentSettingsObserver::AllowAutoplay(bool default_value) {

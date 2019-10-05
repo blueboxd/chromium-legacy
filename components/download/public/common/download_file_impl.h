@@ -277,9 +277,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   // Register callback and start to read data from the stream.
   void RegisterAndActivateStream(SourceStream* source_stream);
 
-  // Helper method to activate a stream and start reading from it.
-  void ActivateStream(SourceStream* source_stream);
-
   // Called when a stream completes.
   void OnStreamCompleted(SourceStream* source_stream);
 

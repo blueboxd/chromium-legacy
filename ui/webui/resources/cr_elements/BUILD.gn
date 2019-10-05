@@ -91,6 +91,12 @@ polymer_modulizer("action_link_css") {
   html_type = "style-module"
 }
 
+polymer_modulizer("cr_page_host_style_css") {
+  js_file = "cr_page_host_style_css.m.js"
+  html_file = "cr_page_host_style_css.html"
+  html_type = "style-module"
+}
+
 polymer_modulizer("shared_vars_css") {
   js_file = "shared_vars_css.m.js"
   html_file = "shared_vars_css.html"
@@ -136,6 +142,7 @@ group("polymer3_elements") {
   deps = [
     ":action_link_css_module",
     ":cr_icons_css_module",
+    ":cr_page_host_style_css_module",
     ":hidden_style_css_module",
     ":icons_module",
     ":md_select_css_module",

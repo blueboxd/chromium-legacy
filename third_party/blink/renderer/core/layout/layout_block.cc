@@ -308,7 +308,8 @@ void LayoutBlock::AddChildBeforeDescendant(LayoutObject* new_child,
     // Insert the child into the anonymous block box instead of here.
     if (new_child->IsInline() ||
         (new_child->IsFloatingOrOutOfFlowPositioned() &&
-         !IsFlexibleBoxIncludingNG() && !IsLayoutGrid()) ||
+         (StyleRef().IsDeprecatedFlexboxUsingFlexLayout() ||
+          (!IsFlexibleBoxIncludingNG() && !IsLayoutGrid()))) ||
         before_descendant->Parent()->SlowFirstChild() != before_descendant) {
       before_descendant_container->AddChild(new_child, before_descendant);
     } else {
@@ -350,7 +351,8 @@ void LayoutBlock::AddChild(LayoutObject* new_child,
 
   if (new_child->IsInline() ||
       (new_child->IsFloatingOrOutOfFlowPositioned() &&
-       !IsFlexibleBoxIncludingNG() && !IsLayoutGrid())) {
+       (StyleRef().IsDeprecatedFlexboxUsingFlexLayout() ||
+        (!IsFlexibleBoxIncludingNG() && !IsLayoutGrid())))) {
     // If we're inserting an inline child but all of our children are blocks,
     // then we have to make sure it is put into an anomyous block box. We try to
     // use an existing anonymous box if possible, otherwise a new one is created

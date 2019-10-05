@@ -2180,6 +2180,7 @@ void WebMediaPlayerImpl::OnWaiting(WaitingReason reason) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   switch (reason) {
+    case WaitingReason::kNoCdm:
     case WaitingReason::kNoDecryptionKey:
       encrypted_client_->DidBlockPlaybackWaitingForKey();
       // TODO(jrummell): didResumePlaybackBlockedForKey() should only be called

@@ -16,8 +16,10 @@
 #include "base/time/tick_clock.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "net/base/network_isolation_key.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_cache_observer.h"
+#include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_delegate.h"
 #include "net/reporting/reporting_endpoint_manager.h"
 #include "net/reporting/reporting_report.h"
@@ -54,8 +56,16 @@ void SerializeReports(const std::vector<const ReportingReport*>& reports,
 class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
                                    public ReportingCacheObserver {
  public:
-  ReportingDeliveryAgentImpl(ReportingContext* context)
-      : context_(context), timer_(std::make_unique<base::OneShotTimer>()) {
+  ReportingDeliveryAgentImpl(ReportingContext* context,
+                             const RandIntCallback& rand_callback)
+      : context_(context),
+        timer_(std::make_unique<base::OneShotTimer>()),
+        endpoint_manager_(
+            ReportingEndpointManager::Create(&context->policy(),
+                                             &context->tick_clock(),
+                                             context->delegate(),
+                                             context->cache(),
+                                             rand_callback)) {
     context_->AddCacheObserver(this);
   }
 
@@ -171,8 +181,10 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
       if (base::Contains(pending_origin_groups_, origin_group))
         continue;
 
+      // TODO(mmenke): Populate NetworkIsolationKey argument.
       const ReportingEndpoint endpoint =
-          endpoint_manager()->FindEndpointForDelivery(report_origin, group);
+          endpoint_manager_->FindEndpointForDelivery(NetworkIsolationKey(),
+                                                     report_origin, group);
       if (!endpoint) {
         // TODO(chlily): Remove reports for which there are no valid
         // delivery endpoints.
@@ -242,10 +254,14 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
     if (outcome == ReportingUploader::Outcome::SUCCESS) {
       cache()->RemoveReports(delivery->reports,
                              ReportingReport::Outcome::DELIVERED);
-      endpoint_manager()->InformOfEndpointRequest(delivery->endpoint, true);
+      // TODO(mmenke): Populate NetworkIsolationKey argument.
+      endpoint_manager_->InformOfEndpointRequest(NetworkIsolationKey(),
+                                                 delivery->endpoint, true);
     } else {
       cache()->IncrementReportsAttempts(delivery->reports);
-      endpoint_manager()->InformOfEndpointRequest(delivery->endpoint, false);
+      // TODO(mmenke): Populate NetworkIsolationKey argument.
+      endpoint_manager_->InformOfEndpointRequest(NetworkIsolationKey(),
+                                                 delivery->endpoint, false);
     }
 
     if (outcome == ReportingUploader::Outcome::REMOVE_ENDPOINT)
@@ -264,9 +280,6 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
   ReportingDelegate* delegate() { return context_->delegate(); }
   ReportingCache* cache() { return context_->cache(); }
   ReportingUploader* uploader() { return context_->uploader(); }
-  ReportingEndpointManager* endpoint_manager() {
-    return context_->endpoint_manager();
-  }
 
   ReportingContext* context_;
 
@@ -275,6 +288,8 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
   // Tracks OriginGroup tuples for which there is a pending delivery running.
   // (Would be an unordered_set, but there's no hash on pair.)
   std::set<OriginGroup> pending_origin_groups_;
+
+  std::unique_ptr<ReportingEndpointManager> endpoint_manager_;
 
   base::WeakPtrFactory<ReportingDeliveryAgentImpl> weak_factory_{this};
 
@@ -285,8 +300,9 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
 // static
 std::unique_ptr<ReportingDeliveryAgent> ReportingDeliveryAgent::Create(
-    ReportingContext* context) {
-  return std::make_unique<ReportingDeliveryAgentImpl>(context);
+    ReportingContext* context,
+    const RandIntCallback& rand_callback) {
+  return std::make_unique<ReportingDeliveryAgentImpl>(context, rand_callback);
 }
 
 ReportingDeliveryAgent::~ReportingDeliveryAgent() = default;

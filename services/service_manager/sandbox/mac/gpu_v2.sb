@@ -13,6 +13,7 @@
 
 ; Allow communication between the GPU process and the UI server.
 (allow mach-lookup
+  (global-name "com.apple.bsd.dirhelper")
   (global-name "com.apple.cfprefsd.agent")
   (global-name "com.apple.cfprefsd.daemon")
   (global-name "com.apple.CoreServices.coreservicesd")
@@ -90,12 +91,15 @@
 (allow file-read*
   (subpath "/Library/GPUBundles")
   (subpath "/Library/Video/Plug-Ins")
+  (subpath "/System/Library/CoreServices/RawCamera.bundle")
   (subpath "/System/Library/Video/Plug-Ins")
 )
 
 ; crbug.com/980134
 (allow file-read* file-write*
   (subpath (param darwin-user-cache-dir))
+  (subpath (param darwin-user-dir))
+  (subpath (param darwin-user-temp-dir))
 )
 
 (if (param-true? filter-syscalls)

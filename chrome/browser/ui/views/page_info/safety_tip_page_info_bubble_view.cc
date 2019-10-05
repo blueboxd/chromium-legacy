@@ -10,18 +10,22 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "url/gurl.h"
@@ -75,40 +79,109 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
 
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
 
+  gfx::Insets insets =
+      layout_provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT);
+  set_margins(gfx::Insets(0, 0, insets.bottom(), 0));
+
   // Configure layout.
-  views::GridLayout* layout =
+  views::GridLayout* bubble_layout =
       SetLayoutManager(std::make_unique<views::GridLayout>());
   constexpr int kColumnId = 0;
-  views::ColumnSet* label_col_set = layout->AddColumnSet(kColumnId);
-  label_col_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
-                           1.0, views::GridLayout::USE_PREF, 0, 0);
+  views::ColumnSet* bubble_col_set = bubble_layout->AddColumnSet(kColumnId);
+  bubble_col_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
+                            1.0, views::GridLayout::USE_PREF, 0, 0);
+
+  // TODO(crbug/996731): Add banner once available. See crrev/c/1816805/7.
+
+  auto bottom_view = std::make_unique<views::View>();
+  views::GridLayout* bottom_layout =
+      bottom_view->SetLayoutManager(std::make_unique<views::GridLayout>());
+  views::ColumnSet* bottom_column_set = bottom_layout->AddColumnSet(0);
+  bottom_column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                      insets.left());
+  bottom_column_set->AddColumn(views::GridLayout::LEADING,
+                               views::GridLayout::FILL, 1.0,
+                               views::GridLayout::USE_PREF, 0, 0);
+  bottom_column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                      insets.right());
 
   // Add text description.
-  layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
-  auto text_label = std::make_unique<views::Label>(l10n_util::GetStringUTF16(
-      safety_tips::GetSafetyTipDescriptionId(safety_tip_status)));
+  const int spacing =
+      layout_provider->GetDistanceMetric(DISTANCE_CONTROL_LIST_VERTICAL);
+  bottom_layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnId,
+                                     views::GridLayout::kFixedSize, spacing);
+  auto text_label = std::make_unique<views::Label>(
+      safety_tips::GetSafetyTipDescription(safety_tip_status, suggested_url_));
   text_label->SetMultiLine(true);
   text_label->SetLineHeight(20);
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   text_label->SizeToFit(
-      layout_provider->GetDistanceMetric(DISTANCE_BUBBLE_PREFERRED_WIDTH));
-  layout->AddView(std::move(text_label));
+      layout_provider->GetDistanceMetric(DISTANCE_BUBBLE_PREFERRED_WIDTH) -
+      insets.left() - insets.right());
+  bottom_layout->AddView(std::move(text_label));
 
-  // Add leave site button.
-  const int hover_list_spacing = layout_provider->GetDistanceMetric(
-      DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
-  layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnId,
-                              views::GridLayout::kFixedSize,
-                              hover_list_spacing);
-  std::unique_ptr<views::Button> button(
+  // Add buttons.
+  // To make the rest of the layout simpler, they live in their own grid layout.
+  auto button_view = std::make_unique<views::View>();
+  views::GridLayout* button_layout =
+      button_view->SetLayoutManager(std::make_unique<views::GridLayout>());
+  views::ColumnSet* button_column_set = button_layout->AddColumnSet(0);
+  button_column_set->AddColumn(views::GridLayout::LEADING,
+                               views::GridLayout::CENTER, 0.0,
+                               views::GridLayout::USE_PREF, 0, 0);
+  button_column_set->AddPaddingColumn(1.f, 1);
+  button_column_set->AddColumn(views::GridLayout::TRAILING,
+                               views::GridLayout::FILL, 0.0,
+                               views::GridLayout::USE_PREF, 0, 0);
+  button_column_set->AddPaddingColumn(
+      views::GridLayout::kFixedSize,
+      layout_provider->GetDistanceMetric(
+          views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
+  button_column_set->AddColumn(views::GridLayout::TRAILING,
+                               views::GridLayout::FILL, 0.0,
+                               views::GridLayout::USE_PREF, 0, 0);
+
+  button_layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
+
+  // More info button.
+  auto info_text =
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_MORE_INFO_LINK);
+  auto info_link = std::make_unique<views::StyledLabel>(info_text, this);
+  views::StyledLabel::RangeStyleInfo link_style =
+      views::StyledLabel::RangeStyleInfo::CreateForLink();
+  gfx::Range details_range(0, info_text.length());
+  info_link->AddStyleRange(details_range, link_style);
+  info_link->SizeToFit(0);
+  info_button_ = button_layout->AddView(std::move(info_link));
+
+  // Ignore button.
+  std::unique_ptr<views::Button> ignore_button(
+      views::MdTextButton::CreateSecondaryUiButton(
+          this,
+          l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_IGNORE_BUTTON)));
+  ignore_button->SetID(
+      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_IGNORE_WARNING);
+  ignore_button_ = button_layout->AddView(std::move(ignore_button));
+
+  // Leave site button.
+  std::unique_ptr<views::Button> leave_button(
       views::MdTextButton::CreateSecondaryUiBlueButton(
           this,
           l10n_util::GetStringUTF16(
               safety_tips::GetSafetyTipLeaveButtonId(safety_tip_status))));
-  button->SetID(PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_LEAVE_SITE);
-  leave_button_ =
-      layout->AddView(std::move(button), 1, 1, views::GridLayout::TRAILING,
-                      views::GridLayout::LEADING);
+  leave_button->SetID(PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_LEAVE_SITE);
+  leave_button_ = button_layout->AddView(std::move(leave_button));
+
+  bottom_layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnId,
+                                     views::GridLayout::kFixedSize, spacing);
+  bottom_layout->AddView(
+      std::move(button_view), 1, 1, views::GridLayout::LEADING,
+      views::GridLayout::LEADING,
+      layout_provider->GetDistanceMetric(DISTANCE_BUBBLE_PREFERRED_WIDTH) -
+          insets.left() - insets.right(),
+      0);
+  bubble_layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
+  bubble_layout->AddView(std::move(bottom_view));
 
   Layout();
   SizeToContents();
@@ -159,13 +232,27 @@ void SafetyTipPageInfoBubbleView::ButtonPressed(views::Button* button,
   switch (button->GetID()) {
     case PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_LEAVE_SITE:
       action_taken_ = safety_tips::SafetyTipInteraction::kLeaveSite;
-      auto url = safety_tip_status_ == SafetyTipStatus::kLookalike
-                     ? suggested_url_
-                     : GURL(safety_tips::kSafeUrl);
-      safety_tips::LeaveSite(web_contents(), url);
+      safety_tips::LeaveSite(web_contents(),
+                             safety_tip_status_ == SafetyTipStatus::kLookalike
+                                 ? suggested_url_
+                                 : GURL(safety_tips::kSafeUrl));
+      return;
+
+    case PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_IGNORE_WARNING:
+      action_taken_ = safety_tips::SafetyTipInteraction::kDismiss;
+      GetWidget()->CloseWithReason(
+          views::Widget::ClosedReason::kCancelButtonClicked);
       return;
   }
   NOTREACHED();
+}
+
+void SafetyTipPageInfoBubbleView::StyledLabelLinkClicked(
+    views::StyledLabel* label,
+    const gfx::Range& range,
+    int event_flags) {
+  action_taken_ = safety_tips::SafetyTipInteraction::kLearnMore;
+  safety_tips::OpenHelpCenter(web_contents());
 }
 
 namespace safety_tips {

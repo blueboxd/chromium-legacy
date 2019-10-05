@@ -15,16 +15,12 @@ def AddCommonArgs(arg_parser):
   across test and executable target types."""
 
   common_args = arg_parser.add_argument_group('common', 'Common arguments')
-  common_args.add_argument('--package',
-                           type=os.path.realpath, required=True,
-                           help='Path to the package to execute.')
+  common_args.add_argument('--package', action='append', required=True,
+                           help='Paths of the packages to install, including '
+                                'all dependencies.')
   common_args.add_argument('--package-name', required=True,
                            help='Name of the package to execute, defined in ' +
                                 'package metadata.')
-  common_args.add_argument('--package-dep', action='append', default=[],
-                           help='Path to an additional package to install.')
-  common_args.add_argument('--install-only', action='store_true', default=False,
-                           help='Install the packages but do not run them.')
   common_args.add_argument('--output-directory',
                            type=os.path.realpath, required=True,
                            help=('Path to the directory in which build files '

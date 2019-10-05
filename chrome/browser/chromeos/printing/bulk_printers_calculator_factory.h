@@ -30,32 +30,24 @@ class BulkPrintersCalculatorFactory {
 
   // Returns a WeakPtr to the BulkPrintersCalculator registered for
   // |account_id|.
-  // If requested BulkPrintersCalculator does not exist, the output depends on
-  // the given parameter |create_if_not_exists|. If it is true, the object is
-  // created and registered, otherwise nullptr is returned.
-  // The returned object remains valid until RemoveForUserId or Shutdown is
-  // called.
+  // If requested BulkPrintersCalculator does not exist, the object is
+  // created and registered. The returned object remains valid until
+  // RemoveForUserId or Shutdown is called.
   base::WeakPtr<BulkPrintersCalculator> GetForAccountId(
-      const AccountId& account_id,
-      bool create_if_not_exists);
+      const AccountId& account_id);
 
   // Returns a WeakPtr to the BulkPrintersCalculator registered for |profile|
   // which could be nullptr if |profile| does not map to a valid AccountId.
-  // If requested BulkPrintersCalculator does not exist, the output depends on
-  // the given parameter |create_if_not_exists|. If it is true, the object is
-  // created and registered, otherwise nullptr is returned.
-  // The returned object remains valid until RemoveForUserId or Shutdown is
-  // called.
-  base::WeakPtr<BulkPrintersCalculator> GetForProfile(
-      Profile* profile,
-      bool create_if_not_exists);
+  // If requested BulkPrintersCalculator does not exist, the object is
+  // created and registered. The returned object remains valid until
+  // RemoveForUserId or Shutdown is called.
+  base::WeakPtr<BulkPrintersCalculator> GetForProfile(Profile* profile);
 
   // Returns a WeakPtr to the BulkPrintersCalculator registered for the device.
-  // If requested BulkPrintersCalculator does not exist, the output depends on
-  // the given parameter |create_if_not_exists|. If it is true, the object is
-  // created and registered, otherwise nullptr is returned.
-  // The returned object remains valid until Shutdown is called.
-  base::WeakPtr<BulkPrintersCalculator> GetForDevice(bool create_if_not_exists);
+  // If requested BulkPrintersCalculator does not exist, the object is
+  // created and registered. The returned object remains valid until Shutdown is
+  // called.
+  base::WeakPtr<BulkPrintersCalculator> GetForDevice();
 
   // Deletes the BulkPrintersCalculator registered for |account_id|.
   void RemoveForUserId(const AccountId& account_id);

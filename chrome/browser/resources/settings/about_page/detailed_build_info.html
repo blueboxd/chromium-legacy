@@ -24,15 +24,6 @@
         width: 100%;
       }
     </style>
-    <div class="settings-box two-line single-column">
-      <div>$i18n{aboutPlatformLabel}</div>
-      <div class="secondary" id="osVersion">[[versionInfo_.osVersion]]</div>
-    </div>
-    <div class="settings-box two-line single-column"
-        hidden$="[[!shouldShowVersion_(versionInfo_.osFirmware)]]">
-      <div>$i18n{aboutFirmwareLabel}</div>
-      <div class="secondary" id="osFirmware">[[versionInfo_.osFirmware]]</div>
-    </div>
     <div class="settings-box two-line">
       <div class="start">
         <div>$i18n{aboutChannelLabel}</div>
@@ -64,29 +55,10 @@
       <div class="secondary" inner-h-t-m-l="[[eolMessageWithMonthAndYear]]">
       </div>
     </div>
-    <div class="settings-box two-line single-column"
-        hidden$="[[!shouldShowVersion_(versionInfo_.arcVersion)]]">
-      <div>$i18n{aboutArcVersionLabel}</div>
-      <div class="secondary" id="arcVersion">[[versionInfo_.arcVersion]]</div>
-    </div>
-    <div class="settings-box two-line single-column">
-      <div>V8</div>
-      <div class="secondary">$i18n{aboutJsEngineVersion}</div>
-    </div>
-    <div class="settings-box two-line single-column">
-      <div>$i18n{aboutUserAgentLabel}</div>
-      <div class="secondary">$i18n{aboutUserAgent}</div>
-    </div>
-    <div class="settings-box two-line single-column">
-      <div>$i18n{aboutCommandLineLabel}</div>
-      <div id="command-line" class="secondary">
-        [[i18n('aboutCommandLine')]]
-      </div>
-    </div>
-    <div class="settings-box two-line single-column">
-      <div>$i18n{aboutBuildDateLabel}</div>
-      <div class="secondary">$i18n{aboutBuildDate}</div>
-    </div>
+    <cr-link-row class="hr" label="$i18n{aboutBuildDetailsTitle}"
+        on-click="onBuildDetailsTap_" external>
+    </cr-link-row>
+    <div class="hr"></div>
   </template>
   <script src="detailed_build_info.js"></script>
 </dom-module>

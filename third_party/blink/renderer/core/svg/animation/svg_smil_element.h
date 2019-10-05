@@ -82,12 +82,13 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime Elapsed() const;
 
   SMILTime IntervalBegin() const { return interval_.begin; }
-  SMILTime BeginTimeForPrioritization(SMILTime presentation_time) const;
   SMILTime SimpleDuration() const;
 
   bool CurrentIntervalIsActive(SMILTime elapsed);
   void UpdateInterval(SMILTime presentation_time);
   void UpdateActiveState(SMILTime elapsed);
+  bool IsHigherPriorityThan(const SVGSMILElement* other,
+                            SMILTime presentation_time) const;
 
   SMILTime NextInterestingTime(SMILTime elapsed) const;
   SMILTime NextProgressTime(SMILTime elapsed) const;
@@ -157,6 +158,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime FindInstanceTime(BeginOrEnd,
                             SMILTime minimum_time,
                             bool equals_minimum_ok) const;
+  SMILTime BeginTimeForPrioritization(SMILTime presentation_time) const;
 
   SMILInterval ResolveInterval(SMILTime begin_after, SMILTime end_after) const;
   bool ResolveFirstInterval();

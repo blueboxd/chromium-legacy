@@ -97,12 +97,6 @@ Polymer({
     },
 
     /** @private */
-    hotwordDefaultOn_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /** @private */
     dspHotwordState_: {
       type: DspHotwordState,
     }
@@ -166,20 +160,17 @@ Polymer({
         this.setPrefValue('settings.voice_interaction.hotword.enabled', true);
         this.setPrefValue(
             'settings.voice_interaction.hotword.always_on', false);
-        this.hotwordDefaultOn_ = true;
         this.browserProxy_.syncVoiceModelStatus();
         break;
       case DspHotwordState.ALWAYS_ON:
         this.setPrefValue('settings.voice_interaction.hotword.enabled', true);
         this.setPrefValue('settings.voice_interaction.hotword.always_on', true);
-        this.hotwordDefaultOn_ = false;
         this.browserProxy_.syncVoiceModelStatus();
         break;
       case DspHotwordState.OFF:
         this.setPrefValue('settings.voice_interaction.hotword.enabled', false);
         this.setPrefValue(
             'settings.voice_interaction.hotword.always_on', false);
-        this.hotwordDefaultOn_ = false;
         break;
       default:
         console.error('Invalid Dsp hotword settings state');
@@ -220,14 +211,11 @@ Polymer({
   /** @private */
   refreshDspHotwordState_: function() {
     if (!this.getPref('settings.voice_interaction.hotword.enabled.value')) {
-      this.hotwordDefaultOn_ = false;
       this.dspHotwordState_ = DspHotwordState.OFF;
     } else if (this.getPref(
                    'settings.voice_interaction.hotword.always_on.value')) {
-      this.hotwordDefaultOn_ = false;
       this.dspHotwordState_ = DspHotwordState.ALWAYS_ON;
     } else {
-      this.hotwordDefaultOn_ = true;
       this.dspHotwordState_ = DspHotwordState.DEFAULT_ON;
     }
 

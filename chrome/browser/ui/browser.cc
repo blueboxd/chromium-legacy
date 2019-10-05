@@ -153,6 +153,7 @@
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "chrome/common/pref_names.h"
@@ -1289,24 +1290,34 @@ bool Browser::ShouldAllowRunningInsecureContent(
   // ContentSettingsObserver::allowRunningInsecureContent.
   FilteredReportInsecureContentRan(resource_url);
 
+  if (allowed_per_prefs)
+    return true;
+
+  if (base::FeatureList::IsEnabled(features::kMixedContentSiteSetting)) {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    HostContentSettingsMap* content_settings =
+        HostContentSettingsMapFactory::GetForProfile(profile);
+    return content_settings->GetContentSetting(
+               web_contents->GetLastCommittedURL(), GURL(),
+               CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
+               std::string()) == CONTENT_SETTING_ALLOW;
+  }
   MixedContentSettingsTabHelper* mixed_content_settings =
       MixedContentSettingsTabHelper::FromWebContents(web_contents);
   DCHECK(mixed_content_settings);
-  if (allowed_per_prefs ||
-      mixed_content_settings->is_running_insecure_content_allowed()) {
-    return true;
-  }
-
-  // Note: this is a browser-side-translation of the call to DidBlockContentType
-  // from inside ContentSettingsObserver::allowRunningInsecureContent.
-  if (!origin.host().empty()) {
+  bool allowed = mixed_content_settings->is_running_insecure_content_allowed();
+  if (!allowed && !origin.host().empty()) {
+    // Note: this is a browser-side-translation of the call to
+    // DidBlockContentType from inside
+    // ContentSettingsObserver::allowRunningInsecureContent.
     TabSpecificContentSettings* tab_settings =
         TabSpecificContentSettings::FromWebContents(web_contents);
     DCHECK(tab_settings);
     tab_settings->OnContentBlockedWithDetail(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
                                              base::UTF8ToUTF16(origin.host()));
   }
-  return false;
+  return allowed;
 }
 
 void Browser::OnDidBlockNavigation(content::WebContents* web_contents,

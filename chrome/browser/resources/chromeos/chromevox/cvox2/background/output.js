@@ -1492,10 +1492,10 @@ Output.prototype = {
           } else {
             ruleStr.write(token);
             this.format_(
-                node, ` @cell_summary($if($ariaCellRowIndex, $ariaCellRowIndex,
-                    $tableCellRowIndex),
-                $if($ariaCellColumnIndex, $ariaCellColumnIndex,
-                     $tableCellColumnIndex))`,
+                node, `@cell_summary($if($tableCellAriaRowIndex,
+                               $tableCellAriaRowIndex, $tableCellRowIndex),
+                    $if($tableCellAriaColumnIndex, $tableCellAriaColumnIndex,
+                        $tableCellColumnIndex))`,
                 buff, ruleStr);
           }
         } else if (token == 'node') {

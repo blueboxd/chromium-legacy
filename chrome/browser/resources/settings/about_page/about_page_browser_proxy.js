@@ -27,15 +27,6 @@ let ChannelInfo;
 
 /**
  * @typedef {{
- *   arcVersion: string,
- *   osFirmware: string,
- *   osVersion: string,
- * }}
- */
-let VersionInfo;
-
-/**
- * @typedef {{
  *   version: (string|undefined),
  *   size: (string|undefined),
  * }}
@@ -208,9 +199,6 @@ cr.define('settings', function() {
     /** @return {!Promise<!ChannelInfo>} */
     getChannelInfo() {}
 
-    /** @return {!Promise<!VersionInfo>} */
-    getVersionInfo() {}
-
     /** @return {!Promise<?RegulatoryInfo>} */
     getRegulatoryInfo() {}
 
@@ -314,11 +302,6 @@ cr.define('settings', function() {
     /** @override */
     getChannelInfo() {
       return cr.sendWithPromise('getChannelInfo');
-    }
-
-    /** @override */
-    getVersionInfo() {
-      return cr.sendWithPromise('getVersionInfo');
     }
 
     /** @override */

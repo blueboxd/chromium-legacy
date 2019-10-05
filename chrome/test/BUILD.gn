@@ -607,9 +607,6 @@ if (is_android) {
       "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsActivity.java",
       "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsApplication.java",
     ]
-    srcjar_deps = [
-      "//components/module_installer/android:module_installer_build_config",
-    ]
   }
 
   jinja_template("android_browsertests_manifest") {
@@ -2011,12 +2008,12 @@ if (!is_android) {
         "../browser/chromeos/app_mode/kiosk_crash_restore_browsertest.cc",
         "../browser/chromeos/apps/apk_web_app_installer_browsertest.cc",
         "../browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge_browsertest.cc",
-        "../browser/chromeos/arc/arc_session_manager_browsertest.cc",
         "../browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher_browsertest.cc",
         "../browser/chromeos/arc/auth/arc_auth_service_browsertest.cc",
         "../browser/chromeos/arc/auth/arc_robot_auth_code_fetcher_browsertest.cc",
         "../browser/chromeos/arc/enterprise/cert_store/arc_cert_store_bridge_browsertest.cc",
         "../browser/chromeos/arc/intent_helper/arc_settings_service_browsertest.cc",
+        "../browser/chromeos/arc/session/arc_session_manager_browsertest.cc",
         "../browser/chromeos/arc/user_session/arc_user_session_service_browsertest.cc",
         "../browser/chromeos/attestation/attestation_policy_browsertest.cc",
         "../browser/chromeos/base/locale_util_browsertest.cc",
@@ -3672,10 +3669,6 @@ test("unit_tests") {
         "//chrome/android/modules/dev_ui/provider:java",
       ]
     }
-
-    srcjar_deps = [
-      "//components/module_installer/android:module_installer_build_config",
-    ]
   } else {
     # !is_android
     sources += [

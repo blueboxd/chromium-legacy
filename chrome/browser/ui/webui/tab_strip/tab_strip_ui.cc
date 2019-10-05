@@ -16,6 +16,9 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/theme_handler.h"
 #include "chrome/common/webui_url_constants.h"
@@ -57,15 +60,27 @@ class BufferWStream : public SkWStream {
   std::vector<unsigned char> result_;
 };
 
-class TabStripUIHandler : public content::WebUIMessageHandler {
+class TabStripUIHandler : public content::WebUIMessageHandler,
+                          public TabStripModelObserver {
  public:
-  explicit TabStripUIHandler(Profile* profile)
-      : profile_(profile),
+  explicit TabStripUIHandler(Browser* browser)
+      : browser_(browser),
         thumbnail_tracker_(base::Bind(&TabStripUIHandler::HandleThumbnailUpdate,
-                                      base::Unretained(this))) {}
+                                      base::Unretained(this))) {
+    browser_->tab_strip_model()->AddObserver(this);
+  }
   ~TabStripUIHandler() override = default;
 
+  // TabStripModelObserver:
+  void TabChangedAt(content::WebContents* contents,
+                    int index,
+                    TabChangeType change_type) override {
+    // TODO(crbug.com/1006946): re-fetch the TabRendererData using
+    // |TabRendererData::FromTabInModel()|.
+  }
+
  protected:
+  // content::WebUIMessageHandler:
   void RegisterMessages() override {
     web_ui()->RegisterMessageCallback(
         "getThemeColors", base::Bind(&TabStripUIHandler::HandleGetThemeColors,
@@ -84,7 +99,7 @@ class TabStripUIHandler : public content::WebUIMessageHandler {
     const base::Value& callback_id = args->GetList()[0];
 
     const ui::ThemeProvider& tp =
-        ThemeService::GetThemeProviderForProfile(profile_);
+        ThemeService::GetThemeProviderForProfile(browser_->profile());
 
     // This should return an object of CSS variables to rgba values so that
     // the WebUI can use the CSS variables to color the tab strip
@@ -115,10 +130,6 @@ class TabStripUIHandler : public content::WebUIMessageHandler {
     colors.SetString("--tabstrip-indicator-capturing-color",
                      color_utils::SkColorToRgbaString(tp.GetColor(
                          ThemeProperties::COLOR_TAB_ALERT_CAPTURING)));
-    colors.SetString("--tabstrip-tab-blocked-color",
-                     color_utils::SkColorToRgbaString(
-                         ui::NativeTheme::GetInstanceForWeb()->GetSystemColor(
-                             ui::NativeTheme::kColorId_ProminentButtonColor)));
 
     ResolveJavascriptCallback(callback_id, colors);
   }
@@ -131,8 +142,8 @@ class TabStripUIHandler : public content::WebUIMessageHandler {
       return;
 
     content::WebContents* tab = nullptr;
-    if (!extensions::ExtensionTabUtil::GetTabById(tab_id, profile_, true,
-                                                  &tab)) {
+    if (!extensions::ExtensionTabUtil::GetTabById(tab_id, browser_->profile(),
+                                                  true, &tab)) {
       // ID didn't refer to a valid tab.
       DVLOG(1) << "Invalid tab ID";
       return;
@@ -180,7 +191,7 @@ class TabStripUIHandler : public content::WebUIMessageHandler {
                       base::Value(encoded_image));
   }
 
-  Profile* profile_;
+  Browser* const browser_;
   ThumbnailTracker thumbnail_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStripUIHandler);
@@ -222,7 +233,10 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
                    profile, chrome::FaviconUrlFormat::kFavicon2));
 
   web_ui->AddMessageHandler(std::make_unique<ThemeHandler>());
-  web_ui->AddMessageHandler(std::make_unique<TabStripUIHandler>(profile));
 }
 
 TabStripUI::~TabStripUI() {}
+
+void TabStripUI::Initialize(Browser* browser) {
+  web_ui()->AddMessageHandler(std::make_unique<TabStripUIHandler>(browser));
+}

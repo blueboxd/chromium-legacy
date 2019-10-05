@@ -6,18 +6,25 @@ package org.chromium.chrome.browser.infobar;
 
 import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO;
 
+import android.annotation.TargetApi;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.AdaptiveIconDrawable;
+import android.graphics.drawable.Icon;
+import android.os.Build;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ui.widget.text.AccessibleTextView;
 
 /**
@@ -29,10 +36,33 @@ public class InstallableAmbientBadgeInfoBar extends InfoBar implements View.OnCl
     private boolean mIsHiding;
 
     @CalledByNative
-    private static InfoBar show(
-            int enumeratedIconId, Bitmap iconBitmap, String messageText, String url) {
+    private static InfoBar show(int enumeratedIconId, Bitmap iconBitmap, String messageText,
+            String url, boolean isIconAdaptive) {
         int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
-        return new InstallableAmbientBadgeInfoBar(drawableId, iconBitmap, messageText, url);
+
+        Bitmap iconBitmapToUse = iconBitmap;
+        if (isIconAdaptive && ShortcutHelper.doesAndroidSupportMaskableIcons()) {
+            iconBitmapToUse = fetchAdaptiveIconBitmap(iconBitmap);
+        }
+
+        return new InstallableAmbientBadgeInfoBar(drawableId, iconBitmapToUse, messageText, url);
+    }
+
+    @TargetApi(Build.VERSION_CODES.O)
+    private static Bitmap fetchAdaptiveIconBitmap(Bitmap bitmap) {
+        Bitmap padded = ShortcutHelper.createHomeScreenIconFromWebIcon(bitmap, true);
+        Icon adaptiveIcon = Icon.createWithAdaptiveBitmap(padded);
+        AdaptiveIconDrawable adaptiveIconDrawable =
+                (AdaptiveIconDrawable) adaptiveIcon.loadDrawable(
+                        ContextUtils.getApplicationContext());
+
+        Bitmap result = Bitmap.createBitmap(adaptiveIconDrawable.getIntrinsicWidth(),
+                adaptiveIconDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(result);
+        adaptiveIconDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        adaptiveIconDrawable.draw(canvas);
+
+        return result;
     }
 
     @Override

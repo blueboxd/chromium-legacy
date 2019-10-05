@@ -6,8 +6,6 @@
 
 #include <stddef.h>
 
-#include <vector>
-
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/printing/test/mock_printer.h"
@@ -24,10 +22,7 @@
 
 PrintMockRenderThread::PrintMockRenderThread()
 #if BUILDFLAG(ENABLE_PRINTING)
-    : printer_(new MockPrinter),
-      print_dialog_user_response_(true),
-      print_preview_cancel_page_number_(-1),
-      print_preview_pages_remaining_(0)
+    : printer_(std::make_unique<MockPrinter>())
 #endif
 {
 }

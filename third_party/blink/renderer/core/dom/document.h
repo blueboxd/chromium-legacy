@@ -474,6 +474,9 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsViewSource() const { return is_view_source_; }
   void SetIsViewSource(bool);
 
+  bool IsImmersiveArOverlay() const { return is_immersive_ar_overlay_; }
+  void SetIsImmersiveArOverlay(bool);
+
   bool SawElementsInKnownNamespaces() const {
     return saw_elements_in_known_namespaces_;
   }
@@ -1975,6 +1978,7 @@ class CORE_EXPORT Document : public ContainerNode,
   DocumentClassFlags document_classes_;
 
   bool is_view_source_;
+  bool is_immersive_ar_overlay_;
   bool saw_elements_in_known_namespaces_;
   bool is_srcdoc_document_;
   bool is_mobile_document_;

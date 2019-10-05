@@ -23,6 +23,7 @@ class ArCoreJavaUtils : public ArCoreSessionUtils {
   // ArCoreSessionUtils:
   void RequestArSession(int render_process_id,
                         int render_frame_id,
+                        bool use_overlay,
                         SurfaceReadyCallback ready_callback,
                         SurfaceTouchCallback touch_callback,
                         SurfaceDestroyedCallback destroyed_callback) override;

@@ -80,6 +80,10 @@ class CompositorView : public content::CompositorClient,
   void SetOverlayVideoMode(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& object,
                            bool enabled);
+  void SetOverlayImmersiveArMode(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& object,
+      bool enabled);
   void SetSceneLayer(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& object,
                      const base::android::JavaParamRef<jobject>& jscene_layer);
@@ -124,6 +128,7 @@ class CompositorView : public content::CompositorClient,
   int content_width_;
   int content_height_;
   bool overlay_video_mode_;
+  bool overlay_immersive_ar_mode_;
 
   base::WeakPtrFactory<CompositorView> weak_factory_{this};
 

@@ -40,14 +40,6 @@ def _GetPackageInfo(package_path):
   return (package_info['name'], package_info['version'])
 
 
-def _PublishPackage(tuf_root, package_path):
-  """Publishes a combined FAR package to a TUF repository root."""
-
-  subprocess.check_call(
-      [_PM, 'publish', '-a', '-f', package_path, '-r', tuf_root, '-vt', '-v'],
-      stderr=subprocess.STDOUT)
-
-
 class _MapIsolatedPathsForPackage:
   """Callable object which remaps /data and /tmp paths to their package-specific
      locations."""
@@ -266,15 +258,12 @@ class Target(object):
       return 'x86_64'
     raise Exception('Unknown target_cpu %s:' % self._target_cpu)
 
-  def InstallPackage(self, package_path, package_name, package_deps):
+  def InstallPackage(self, package_paths):
     """Installs a package and it's dependencies on the device. If the package is
     already installed then it will be updated to the new version.
 
-    package_path: Path to the .far file to be installed.
-    package_name: Package name.
-    package_deps: List of .far files with the packages that the main package
-                  depends on. These packages are installed or updated as well.
-    """
+    package_paths: Paths to the .far files to install."""
+
     try:
       tuf_root = tempfile.mkdtemp()
       pm_serve_task = None
@@ -289,9 +278,8 @@ class Target(object):
            ':%d' % serve_port, '-q'])
 
       # Publish all packages to the serving TUF repository under |tuf_root|.
-      all_packages = [package_path] + package_deps
-      for next_package_path in all_packages:
-        _PublishPackage(tuf_root, next_package_path)
+      for next_package_path in package_paths:
+        common.PublishPackage(next_package_path, tuf_root)
 
       _WaitForPmServeToBeReady(serve_port)
 
@@ -299,7 +287,7 @@ class Target(object):
       self._RegisterAmberRepository(tuf_root, remote_port)
 
       # Install all packages.
-      for next_package_path in all_packages:
+      for next_package_path in package_paths:
         install_package_name, package_version = \
             _GetPackageInfo(next_package_path)
         logging.info('Installing %s version %s.' %

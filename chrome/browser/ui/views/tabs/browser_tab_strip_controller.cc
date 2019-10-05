@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
-#include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -482,9 +481,9 @@ void BrowserTabStripController::OnTabStripModelChanged(
 
       // A move may have resulted in the pinned state changing, so pass in a
       // TabRendererData.
-      tabstrip_->MoveTab(move->from_index, move->to_index,
-                         TabRendererDataFromModel(
-                             move->contents, move->to_index, EXISTING_TAB));
+      tabstrip_->MoveTab(
+          move->from_index, move->to_index,
+          TabRendererData::FromTabInModel(model_, move->to_index));
       break;
     }
     case TabStripModelChange::kReplaced: {
@@ -560,37 +559,10 @@ const BrowserNonClientFrameView* BrowserTabStripController::GetFrameView()
   return browser_view_->frame()->GetFrameView();
 }
 
-TabRendererData BrowserTabStripController::TabRendererDataFromModel(
-    WebContents* contents,
-    int model_index,
-    TabStatus tab_status) {
-  TabRendererData data;
-  TabUIHelper* const tab_ui_helper = TabUIHelper::FromWebContents(contents);
-  data.favicon = tab_ui_helper->GetFavicon().AsImageSkia();
-  ThumbnailTabHelper* const thumbnail_tab_helper =
-      ThumbnailTabHelper::FromWebContents(contents);
-  if (thumbnail_tab_helper)
-    data.thumbnail = thumbnail_tab_helper->thumbnail();
-  data.network_state = TabNetworkStateForWebContents(contents);
-  data.title = tab_ui_helper->GetTitle();
-  data.visible_url = contents->GetVisibleURL();
-  data.last_committed_url = contents->GetLastCommittedURL();
-  data.crashed_status = contents->GetCrashedStatus();
-  data.incognito = contents->GetBrowserContext()->IsOffTheRecord();
-  data.pinned = model_->IsTabPinned(model_index);
-  data.show_icon = data.pinned || favicon::ShouldDisplayFavicon(contents);
-  data.blocked = model_->IsTabBlocked(model_index);
-  data.alert_state =
-      chrome::GetHighestPriorityTabAlertStateForContents(contents);
-  data.should_hide_throbber = tab_ui_helper->ShouldHideThrobber();
-  return data;
-}
-
 void BrowserTabStripController::SetTabDataAt(content::WebContents* web_contents,
                                              int model_index) {
-  tabstrip_->SetTabData(
-      model_index,
-      TabRendererDataFromModel(web_contents, model_index, EXISTING_TAB));
+  tabstrip_->SetTabData(model_index,
+                        TabRendererData::FromTabInModel(model_, model_index));
 }
 
 void BrowserTabStripController::AddTab(WebContents* contents,
@@ -599,7 +571,7 @@ void BrowserTabStripController::AddTab(WebContents* contents,
   // Cancel any pending tab transition.
   hover_tab_selector_.CancelTabTransition();
 
-  tabstrip_->AddTabAt(index, TabRendererDataFromModel(contents, index, NEW_TAB),
+  tabstrip_->AddTabAt(index, TabRendererData::FromTabInModel(model_, index),
                       is_active);
 }
 

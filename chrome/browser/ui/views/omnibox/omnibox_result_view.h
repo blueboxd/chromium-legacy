@@ -145,7 +145,9 @@ class OmniboxResultView : public views::View,
   OmniboxMatchCellView* suggestion_view_;  // The leading (or left) view.
   OmniboxMatchCellView* keyword_view_;     // The trailing (or right) view.
   std::unique_ptr<OmniboxTabSwitchButton> suggestion_tab_switch_button_;
-  std::unique_ptr<views::ImageButton> remove_suggestion_button_;
+
+  // The "X" button at the end of the match cell, used to remove suggestions.
+  views::ImageButton* remove_suggestion_button_ = nullptr;
 
   base::WeakPtrFactory<OmniboxResultView> weak_factory_{this};
 

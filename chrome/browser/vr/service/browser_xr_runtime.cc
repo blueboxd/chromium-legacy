@@ -13,6 +13,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/vr_device.h"
 #include "ui/gfx/transform.h"
@@ -167,6 +168,13 @@ constexpr device::mojom::XRSessionFeature kGVRDeviceFeatures[] = {
     device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
 };
 
+constexpr device::mojom::XRSessionFeature kARCoreDeviceFeatures[] = {
+    device::mojom::XRSessionFeature::REF_SPACE_VIEWER,
+    device::mojom::XRSessionFeature::REF_SPACE_LOCAL,
+    device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
+    device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED,
+};
+
 #if BUILDFLAG(ENABLE_OPENVR)
 constexpr device::mojom::XRSessionFeature kOpenVRFeatures[] = {
     device::mojom::XRSessionFeature::REF_SPACE_VIEWER,
@@ -241,11 +249,17 @@ void BrowserXRRuntime::ExitVrFromPresentingService() {
 bool BrowserXRRuntime::SupportsFeature(
     device::mojom::XRSessionFeature feature) const {
   switch (id_) {
-    // TODO(crbug.com/995370): Add ARCore feature support.
-    case device::mojom::XRDeviceId::ARCORE_DEVICE_ID:
+    // Test/fake devices support all features.
     case device::mojom::XRDeviceId::WEB_TEST_DEVICE_ID:
     case device::mojom::XRDeviceId::FAKE_DEVICE_ID:
       return true;
+    case device::mojom::XRDeviceId::ARCORE_DEVICE_ID:
+      // Only support DOM overlay if the feature flag is enabled.
+      if (feature ==
+          device::mojom::XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR) {
+        return base::FeatureList::IsEnabled(features::kWebXrArDOMOverlay);
+      }
+      return ContainsFeature(kARCoreDeviceFeatures, feature);
     case device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID:
       return ContainsFeature(kOrientationDeviceFeatures, feature);
     case device::mojom::XRDeviceId::GVR_DEVICE_ID:

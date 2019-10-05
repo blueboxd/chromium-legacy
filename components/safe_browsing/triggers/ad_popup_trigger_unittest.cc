@@ -172,7 +172,7 @@ TEST_F(AdPopupTriggerTest, MAYBE_ReportRejectedByTriggerManager) {
       AdPopupTriggerAction::POPUP_COULD_NOT_START_REPORT, 2);
 }
 
-TEST_F(AdPopupTriggerTest, PopupWithNoAds) {
+TEST_F(AdPopupTriggerTest, DISABLED_PopupWithNoAds) {
   // Make sure the trigger doesn't fire when there are no ads on the page.
   CreateTrigger();
   EXPECT_CALL(*get_trigger_manager(),

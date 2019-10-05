@@ -24,10 +24,10 @@ var TableAttributes = [ 'tableRowCount',
                         'ariaRowCount',
                         'ariaColumnCount' ];
 var TableCellAttributes = [ 'tableCellColumnIndex',
-                            'ariaCellColumnIndex',
+                            'tableCellAriaColumnIndex',
                             'tableCellColumnSpan',
                             'tableCellRowIndex',
-                            'ariaCellRowIndex',
+                            'tableCellAriaRowIndex',
                             'tableCellRowSpan' ];
 
 var disabledTests = [
@@ -204,60 +204,60 @@ var allTests = [
     var row1 = table.firstChild;
     var cell1 = row1.firstChild;
     assertEq(0, cell1.tableCellColumnIndex);
-    assertEq(51, cell1.ariaCellColumnIndex);
+    assertEq(51, cell1.tableCellAriaColumnIndex);
     assertEq(1, cell1.tableCellColumnSpan);
     assertEq(0, cell1.tableCellRowIndex);
-    assertEq(101, cell1.ariaCellRowIndex);
+    assertEq(101, cell1.tableCellAriaRowIndex);
     assertEq(1, cell1.tableCellRowSpan);
 
     var cell2 = cell1.nextSibling;
     assertEq(1, cell2.tableCellColumnIndex);
-    assertEq(52, cell2.ariaCellColumnIndex);
+    assertEq(52, cell2.tableCellAriaColumnIndex);
     assertEq(1, cell2.tableCellColumnSpan);
     assertEq(0, cell2.tableCellRowIndex);
-    assertEq(101, cell2.ariaCellRowIndex);
+    assertEq(101, cell2.tableCellAriaRowIndex);
     assertEq(1, cell2.tableCellRowSpan);
 
     var cell3 = cell2.nextSibling;
     assertEq(2, cell3.tableCellColumnIndex);
-    assertEq(53, cell3.ariaCellColumnIndex);
+    assertEq(53, cell3.tableCellAriaColumnIndex);
     assertEq(1, cell3.tableCellColumnSpan);
     assertEq(0, cell3.tableCellRowIndex);
-    assertEq(101, cell3.ariaCellRowIndex);
+    assertEq(101, cell3.tableCellAriaRowIndex);
     assertEq(1, cell3.tableCellRowSpan);
 
     var row2 = row1.nextSibling;
     var cell4 = row2.firstChild;
     assertEq(0, cell4.tableCellColumnIndex);
-    assertEq(51, cell4.ariaCellColumnIndex);
+    assertEq(51, cell4.tableCellAriaColumnIndex);
     assertEq(2, cell4.tableCellColumnSpan);
     assertEq(1, cell4.tableCellRowIndex);
-    assertEq(102, cell4.ariaCellRowIndex);
+    assertEq(102, cell4.tableCellAriaRowIndex);
     assertEq(1, cell4.tableCellRowSpan);
 
     var cell5 = cell4.nextSibling;
     assertEq(2, cell5.tableCellColumnIndex);
-    assertEq(53, cell5.ariaCellColumnIndex);
+    assertEq(53, cell5.tableCellAriaColumnIndex);
     assertEq(1, cell5.tableCellColumnSpan);
     assertEq(1, cell5.tableCellRowIndex);
-    assertEq(102, cell5.ariaCellRowIndex);
+    assertEq(102, cell5.tableCellAriaRowIndex);
     assertEq(2, cell5.tableCellRowSpan);
 
     var row3 = row2.nextSibling;
     var cell6 = row3.firstChild;
     assertEq(0, cell6.tableCellColumnIndex);
-    assertEq(51, cell6.ariaCellColumnIndex);
+    assertEq(51, cell6.tableCellAriaColumnIndex);
     assertEq(1, cell6.tableCellColumnSpan);
     assertEq(2, cell6.tableCellRowIndex);
-    assertEq(103, cell6.ariaCellRowIndex);
+    assertEq(103, cell6.tableCellAriaRowIndex);
     assertEq(1, cell6.tableCellRowSpan);
 
     var cell7 = cell6.nextSibling;
     assertEq(1, cell7.tableCellColumnIndex);
-    assertEq(52, cell7.ariaCellColumnIndex);
+    assertEq(52, cell7.tableCellAriaColumnIndex);
     assertEq(1, cell7.tableCellColumnSpan);
     assertEq(2, cell7.tableCellRowIndex);
-    assertEq(103, cell7.ariaCellRowIndex);
+    assertEq(103, cell7.tableCellAriaRowIndex);
     assertEq(1, cell7.tableCellRowSpan);
 
     chrome.test.succeed();

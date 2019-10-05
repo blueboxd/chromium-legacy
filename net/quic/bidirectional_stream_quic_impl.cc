@@ -76,6 +76,10 @@ void BidirectionalStreamQuicImpl::Start(
   DLOG_IF(WARNING, !session_->IsConnected())
       << "Trying to start request headers after session has been closed.";
 
+  net_log.AddEventReferencingSource(
+      NetLogEventType::BIDIRECTIONAL_STREAM_BOUND_TO_QUIC_SESSION,
+      session_->net_log().source());
+
   send_request_headers_automatically_ = send_request_headers_automatically;
   delegate_ = delegate;
   request_info_ = request_info;

@@ -11,9 +11,12 @@
 #include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/base/rand_callback.h"
-#include "net/reporting/reporting_context.h"
 
 class GURL;
+
+namespace base {
+class TickClock;
+}
 
 namespace url {
 class Origin;
@@ -21,16 +24,24 @@ class Origin;
 
 namespace net {
 
+class NetworkIsolationKey;
+class ReportingCache;
+class ReportingDelegate;
 struct ReportingEndpoint;
+struct ReportingPolicy;
 
 // Keeps track of which endpoints are pending (have active delivery attempts to
 // them) or in exponential backoff after one or more failures, and chooses an
 // endpoint from an endpoint group to receive reports for an origin.
 class NET_EXPORT ReportingEndpointManager {
  public:
-  // |context| must outlive the ReportingEndpointManager.
+  // The ReportingEndpointManager must not be used after any of the objects
+  // passed to its constructor are destroyed.
   static std::unique_ptr<ReportingEndpointManager> Create(
-      ReportingContext* context,
+      const ReportingPolicy* policy,
+      const base::TickClock* tick_clock,
+      const ReportingDelegate* delegate,
+      ReportingCache* cache,
       const RandIntCallback& rand_callback);
 
   virtual ~ReportingEndpointManager();
@@ -43,13 +54,16 @@ class NET_EXPORT ReportingEndpointManager {
   // If no suitable endpoint was found, returns an endpoint with is_valid()
   // false.
   virtual const ReportingEndpoint FindEndpointForDelivery(
+      const NetworkIsolationKey& network_isolation_key,
       const url::Origin& origin,
       const std::string& group) = 0;
 
   // Informs the EndpointManager of a successful or unsuccessful request made to
   // |endpoint| so it can manage exponential backoff of failing endpoints.
-  virtual void InformOfEndpointRequest(const GURL& endpoint,
-                                       bool succeeded) = 0;
+  virtual void InformOfEndpointRequest(
+      const NetworkIsolationKey& network_isolation_key,
+      const GURL& endpoint,
+      bool succeeded) = 0;
 };
 
 }  // namespace net

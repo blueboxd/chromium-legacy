@@ -13,8 +13,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -111,6 +115,7 @@ const char* SessionModeToString(const XRSession::SessionMode& session_mode) {
 // unrecognized, returns nullopt. Based on the spec:
 // https://immersive-web.github.io/webxr/#feature-name
 base::Optional<device::mojom::XRSessionFeature> StringToXRSessionFeature(
+    const Document* doc,
     const String& feature_string) {
   if (feature_string == "viewer") {
     return device::mojom::XRSessionFeature::REF_SPACE_VIEWER;
@@ -122,6 +127,9 @@ base::Optional<device::mojom::XRSessionFeature> StringToXRSessionFeature(
     return device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR;
   } else if (feature_string == "unbounded") {
     return device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED;
+  } else if (RuntimeEnabledFeatures::WebXRARDOMOverlayEnabled(doc) &&
+             feature_string == "dom-overlay-for-handheld-ar") {
+    return device::mojom::XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR;
   }
 
   return base::nullopt;
@@ -138,6 +146,8 @@ bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
     case device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED:
       return mode == XRSession::kModeImmersiveVR ||
              mode == XRSession::kModeImmersiveAR;
+    case device::mojom::XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR:
+      return mode == XRSession::kModeImmersiveAR;
   }
 }
 
@@ -153,6 +163,7 @@ bool HasRequiredFeaturePolicy(const Document* doc,
     case device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR:
     case device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR:
     case device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED:
+    case device::mojom::XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR:
       return doc->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebXr,
                                    ReportOptions::kReportOnFailure);
   }
@@ -479,6 +490,44 @@ void XR::AddEnvironmentProviderErrorHandler(
 void XR::ExitPresent() {
   DCHECK(service_);
   service_->ExitPresent();
+
+  // If the document was potentially being shown in a DOM overlay via
+  // fullscreened elements, make sure to clear any fullscreen states on exiting
+  // the session. This avoids a race condition:
+  // - browser side ends session and exits fullscreen (i.e. back button)
+  // - renderer processes WebViewImpl::ExitFullscreen via ChromeClient
+  // - JS application sets a new element to fullscreen, this is allowed
+  //   because doc->IsImmersiveArOverlay() is still true at this point
+  // - renderer processes XR session shutdown (this method)
+  // - browser re-enters fullscreen unexpectedly
+  LocalFrame* frame = GetFrame();
+  if (!frame)
+    return;
+
+  Document* doc = frame->GetDocument();
+  DCHECK(doc);
+  if (doc->IsImmersiveArOverlay()) {
+    doc->SetIsImmersiveArOverlay(false);
+    Element* fullscreen_element = Fullscreen::FullscreenElementFrom(*doc);
+    if (fullscreen_element) {
+      // "ua_originated" means that the browser process already exited
+      // fullscreen. Set it to false because we need the browser process
+      // to get notified that it needs to exit fullscreen. Use
+      // FullyExitFullscreen to ensure that we return to non-fullscreen mode.
+      // ExitFullscreen only unfullscreens a single element, potentially
+      // leaving others in fullscreen mode.
+      constexpr bool kUaOriginated = false;
+      Fullscreen::FullyExitFullscreen(*doc, kUaOriginated);
+    }
+    // Restore the FrameView background color that was changed in
+    // OnRequestSessionReturned.
+    auto* frame_view = doc->GetLayoutView()->GetFrameView();
+    // SetBaseBackgroundColor updates composited layer mappings.
+    // That DCHECKs IsAllowedToQueryCompositingState which requires
+    // DocumentLifecycle >= kInCompositingUpdate.
+    frame_view->UpdateLifecycleToCompositingInputsClean();
+    frame_view->SetBaseBackgroundColor(original_base_background_color_);
+  }
 }
 
 ScriptPromise XR::supportsSession(ScriptState* script_state,
@@ -664,7 +713,7 @@ XR::RequestedXRSessionFeatureSet XR::ParseRequestedFeatures(
   for (const auto& feature : features) {
     String feature_string;
     if (feature.ToString(feature_string)) {
-      auto feature_enum = StringToXRSessionFeature(feature_string);
+      auto feature_enum = StringToXRSessionFeature(doc, feature_string);
 
       if (!feature_enum) {
         GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
@@ -890,6 +939,45 @@ void XR::OnRequestSessionReturned(
                                 TaskType::kMiscPlatformAPI)));
       environment_provider_.set_connection_error_handler(WTF::Bind(
           &XR::OnEnvironmentProviderDisconnect, WrapWeakPersistent(this)));
+      LocalFrame* frame = GetFrame();
+      DCHECK(frame);
+
+      if (enabled_features.Contains(
+              device::mojom::XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR)) {
+        // The session is using DOM overlay mode.
+        Document* doc = frame->GetDocument();
+        DCHECK(doc);
+        doc->SetIsImmersiveArOverlay(true);
+
+        // Save the current base background color (restored in ExitPresent),
+        // and set a transparent background for the FrameView.
+        auto* frame_view = doc->GetLayoutView()->GetFrameView();
+        // SetBaseBackgroundColor updates composited layer mappings.
+        // That DCHECKs IsAllowedToQueryCompositingState which requires
+        // DocumentLifecycle >= kInCompositingUpdate.
+        frame_view->UpdateLifecycleToCompositingInputsClean();
+        original_base_background_color_ = frame_view->BaseBackgroundColor();
+        frame_view->SetBaseBackgroundColor(Color::kTransparent);
+
+        // In DOM overlay mode, entering fullscreen mode needs to be triggered
+        // from the Renderer by actually fullscreening an element. If there
+        // is no current fullscreen element, fullscreen the <body> element
+        // for now. The JS application can use enterFullscreen to change this.
+        //
+        // A TabObserver on the browser side exits the session if there's
+        // no longer a fullscreen element, for example if the JS app manually
+        // unfullscreens the "body" element. That ensures we don't end up in a
+        // hybrid non-fullscreen AR state.
+        Element* fullscreen_element = Fullscreen::FullscreenElementFrom(*doc);
+        if (!fullscreen_element) {
+          Element* body = doc->body();
+          DCHECK(body);
+          // FIXME: this is the "prefixed" version that doesn't generate a
+          // fullscreenchange event and auto-hides navigation bars. Should the
+          // event be generated?
+          Fullscreen::RequestFullscreen(*body);
+        }
+      }
     }
 
     if (query->mode() == XRSession::kModeImmersiveVR &&

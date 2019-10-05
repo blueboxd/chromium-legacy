@@ -351,6 +351,7 @@ source_set("webview_instrumentation_test_native_jni_impl") {
   deps = [
     ":webview_instrumentation_test_native_jni",
     "//android_webview/browser",
+    "//android_webview/browser/metrics",
     "//base",
     "//base/test:test_support",
   ]
@@ -363,6 +364,7 @@ test("android_webview_unittests") {
     ":android_webview_unittests_jni",
     "//android_webview/browser",
     "//android_webview/browser/gfx",
+    "//android_webview/browser/metrics",
     "//base/test:test_support",
     "//components/autofill/core/browser",
     "//components/metrics",
@@ -385,7 +387,6 @@ test("android_webview_unittests") {
     "../browser/aw_contents_client_bridge_unittest.cc",
     "../browser/aw_form_database_service_unittest.cc",
     "../browser/aw_media_url_interceptor_unittest.cc",
-    "../browser/aw_metrics_service_client_unittest.cc",
     "../browser/aw_permission_manager_unittest.cc",
     "../browser/gfx/browser_view_renderer_unittest.cc",
     "../browser/gfx/test/fake_window.cc",
@@ -393,6 +394,7 @@ test("android_webview_unittests") {
     "../browser/gfx/test/rendering_test.cc",
     "../browser/gfx/test/rendering_test.h",
     "../browser/input_stream_unittest.cc",
+    "../browser/metrics/aw_metrics_service_client_unittest.cc",
     "../browser/network_service/android_stream_reader_url_loader_unittest.cc",
     "../browser/network_service/input_stream_reader_unittest.cc",
     "../browser/permission/media_access_permission_request_unittest.cc",

@@ -1937,6 +1937,17 @@ Color LocalFrameView::DocumentBackgroundColor() const {
   // backdrop.
   if (Document* doc = frame_->GetDocument()) {
     if (Element* element = Fullscreen::FullscreenElementFrom(*doc)) {
+      if (doc->IsImmersiveArOverlay()) {
+        // Use the fullscreened element's background directly. Don't bother
+        // blending with the backdrop since that's transparent.
+        if (LayoutObject* layout_object = element->GetLayoutObject()) {
+          return layout_object->ResolveColor(GetCSSPropertyBackgroundColor());
+        }
+        if (LayoutObject* layout_object =
+                element->PseudoElementLayoutObject(kPseudoIdBackdrop)) {
+          return layout_object->ResolveColor(GetCSSPropertyBackgroundColor());
+        }
+      }
       if (LayoutObject* layout_object =
               element->PseudoElementLayoutObject(kPseudoIdBackdrop)) {
         return result.Blend(

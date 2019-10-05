@@ -214,6 +214,13 @@
             label="$i18n{siteSettingsBluetoothScanning}">
         </site-details-permission>
       </template>
+      <template is="dom-if" if="[[enableInsecureContentContentSetting_]]">
+        <site-details-permission
+            category="{{ContentSettingsTypes.MIXEDSCRIPT}}"
+            icon="settings:insecure-content" id="mixed-script"
+            label="$i18n{siteSettingsInsecureContent}">
+        </site-details-permission>
+      </template>
     </div>
 
     <website-usage-private-api id="usageApi"

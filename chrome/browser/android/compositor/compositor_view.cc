@@ -83,7 +83,8 @@ CompositorView::CompositorView(JNIEnv* env,
       current_surface_format_(0),
       content_width_(0),
       content_height_(0),
-      overlay_video_mode_(false) {
+      overlay_video_mode_(false),
+      overlay_immersive_ar_mode_(false) {
   content::BrowserChildProcessObserver::Add(this);
   obj_.Reset(env, obj);
   compositor_.reset(content::Compositor::Create(this, window_android));
@@ -224,6 +225,24 @@ void CompositorView::SetOverlayVideoMode(JNIEnv* env,
   SetNeedsComposite(env, object);
 }
 
+void CompositorView::SetOverlayImmersiveArMode(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& object,
+    bool enabled) {
+  // This mode is a variant of overlay video mode, the Java code is responsible
+  // for calling SetOverlayVideoMode(enabled) first to ensure consistent state.
+  // Check to make sure this didn't get bypassed.
+  DCHECK_EQ(enabled, overlay_video_mode_) << "missing SetOverlayVideoMode call";
+
+  overlay_immersive_ar_mode_ = enabled;
+  // This mode needs a transparent background color.
+  // ContentViewRenderView::SetOverlayVideoMode applies this, but the
+  // CompositorView::SetOverlayVideoMode version in this file doesn't.
+  compositor_->SetBackgroundColor(enabled ? SK_ColorTRANSPARENT
+                                          : SK_ColorWHITE);
+  compositor_->SetNeedsComposite();
+}
+
 void CompositorView::SetSceneLayer(JNIEnv* env,
                                    const JavaParamRef<jobject>& object,
                                    const JavaParamRef<jobject>& jscene_layer) {
@@ -248,7 +267,21 @@ void CompositorView::SetSceneLayer(JNIEnv* env,
     root_layer_->InsertChild(scene_layer->layer(), 0);
   }
 
-  if (scene_layer) {
+  if (overlay_immersive_ar_mode_) {
+    // Suppress the scene background's default background which breaks
+    // transparency. TODO(https://crbug.com/1002270): Remove this workaround
+    // once the issue with StaticTabSceneLayer's unexpected background is
+    // resolved.
+    bool should_show_background = scene_layer->ShouldShowBackground();
+    SkColor color = scene_layer->GetBackgroundColor();
+    if (should_show_background && color != SK_ColorTRANSPARENT) {
+      DVLOG(1) << "override non-transparent background 0x" << std::hex << color;
+      SetBackground(false, SK_ColorTRANSPARENT);
+    } else {
+      // No override needed, scene doesn't provide an opaque background.
+      SetBackground(should_show_background, color);
+    }
+  } else if (scene_layer) {
     SetBackground(scene_layer->ShouldShowBackground(),
                   scene_layer->GetBackgroundColor());
   } else {

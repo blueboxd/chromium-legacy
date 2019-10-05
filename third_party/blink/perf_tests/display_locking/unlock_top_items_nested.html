@@ -37,6 +37,12 @@ locking, this simply measures requestAnimationFrame.
 .container {
   contain: style layout;
 }
+.small {
+  content-size: 100px;
+}
+.large {
+  content-size: 100px 100000px;
+}
 .box {
   background: blue;
   overflow: hidden;
@@ -70,15 +76,15 @@ function construct(n) {
   for (let i = 0; i < n; ++i) {
     if ((i % 1000) == 0) {
       currentContainer = document.createElement("div");
-      currentContainer.classList = "container";
-      if (i > 0 && currentContainer.displayLock)
-        currentContainer.displayLock.acquire({ timeout: Infinity, size: [100, 100000] });
+      currentContainer.classList = "container large";
+      if (i > 0)
+        currentContainer.renderSubtree = "invisible";
       document.body.appendChild(currentContainer);
     }
     const clone = specimen.cloneNode(true);
     clone.id = "id" + i;
-    if (clone.displayLock)
-      clone.displayLock.acquire({ timeout: Infinity, size: [100, 100] });
+    clone.classList = "container small";
+    clone.renderSubtree = "invisible";
     currentContainer.appendChild(clone);
   }
 }
@@ -87,8 +93,7 @@ let nextId = 0;
 function commitNextLock() {
   const element = document.getElementById("id" + nextId);
   ++nextId;
-  if (element.displayLock)
-    element.displayLock.commit();
+  element.renderSubtree = "";
 }
 
 let testDone = false;

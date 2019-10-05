@@ -590,15 +590,6 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   RenderThread::Get()->AddRoute(routing_id_, this);
 }
 
-#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-void RenderWidget::SetExternalPopupOriginAdjustmentsForEmulation(
-    ExternalPopupMenu* popup) {
-  if (page_properties_->ScreenMetricsEmulator())
-    popup->SetOriginScaleForEmulation(
-        page_properties_->ScreenMetricsEmulator()->scale());
-}
-#endif
-
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   // TODO(https://crbug.com/1000502): Don't process IPC messages on undead
   // RenderWidgets. We would like to eventually remove them altogether, so they

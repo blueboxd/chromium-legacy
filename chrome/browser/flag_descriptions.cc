@@ -2266,6 +2266,10 @@ const char kWebXrArModuleDescription[] =
     "Enables access to Augmented Reality features defined in the WebXR AR "
     "Module";
 
+const char kWebXrArDOMOverlayName[] = "WebXR AR DOM Overlay";
+const char kWebXrArDOMOverlayDescription[] =
+    "Enables experimental use of a DOM overlay in WebXR AR sessions";
+
 const char kWebXrAnchorsName[] = "WebXR Anchors";
 const char kWebXrAnchorsDescription[] =
     "Enables access to anchors via WebXR API.";
@@ -3009,6 +3013,11 @@ const char kCloudPrintXpsDescription[] =
 const char kD3D11VideoDecoderName[] = "D3D11 Video Decoder";
 const char kD3D11VideoDecoderDescription[] =
     "Enables D3D11VideoDecoder for hardware accelerated video decoding.";
+
+const char kEnableAuraTooltipsOnWindowsName[] =
+    "Enable aura tooltips on Windows";
+const char kEnableAuraTooltipsOnWindowsDescription[] =
+    "Enables aura tooltips instead of the native comctl32 tooltips on Windows.";
 
 const char kEnableGpuAppcontainerName[] = "Enable GPU AppContainer Lockdown.";
 const char kEnableGpuAppcontainerDescription[] =

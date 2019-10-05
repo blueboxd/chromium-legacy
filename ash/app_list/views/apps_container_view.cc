@@ -213,6 +213,10 @@ void AppsContainerView::UpdateControlVisibility(
   if (app_list_state == ash::AppListViewState::kClosed)
     return;
 
+  set_can_process_events_within_subtree(
+      app_list_state == ash::AppListViewState::kFullscreenAllApps ||
+      app_list_state == ash::AppListViewState::kPeeking);
+
   apps_grid_view_->UpdateControlVisibility(app_list_state, is_in_drag);
   page_switcher_->SetVisible(
       is_in_drag ||

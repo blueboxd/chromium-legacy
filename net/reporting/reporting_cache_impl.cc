@@ -492,12 +492,14 @@ void ReportingCacheImpl::AddClientsLoadedFromStore(
 
 std::vector<ReportingEndpoint>
 ReportingCacheImpl::GetCandidateEndpointsForDelivery(
+    const NetworkIsolationKey& network_isolation_key,
     const url::Origin& origin,
     const std::string& group_name) {
   base::Time now = clock().Now();
   SanityCheckClients();
 
   // Look for an exact origin match for |origin| and |group|.
+  // TODO(mmenke): Respect NetworkIsolationKey.
   EndpointGroupMap::iterator group_it =
       FindEndpointGroupIt(ReportingEndpointGroupKey(origin, group_name));
   if (group_it != endpoint_groups_.end() && group_it->second.expires > now) {

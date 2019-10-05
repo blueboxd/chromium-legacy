@@ -370,7 +370,7 @@ void AppBannerManagerAndroid::MaybeShowAmbientBadge() {
   if (GetVisibleAmbientBadgeInfoBar(infobar_service) == nullptr) {
     InstallableAmbientBadgeInfoBarDelegate::Create(
         web_contents(), weak_factory_.GetWeakPtr(), GetAppName(), primary_icon_,
-        manifest_.start_url);
+        has_maskable_primary_icon_, manifest_.start_url);
   }
 }
 

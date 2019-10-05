@@ -524,8 +524,13 @@ void SMILTimeContainer::ApplyAnimationValues(SMILTime elapsed) {
   // Everything bellow handles "discard" elements.
   UseCounter::Count(&GetDocument(), WebFeature::kSVGSMILAnimationAppliedEffect);
 
-  std::sort(animations_to_apply.begin(), animations_to_apply.end(),
-            PriorityCompare(elapsed));
+  // Sort by location in the document. (Should be based on the target rather
+  // than the timed element, but often enough they will order the same.)
+  std::sort(
+      animations_to_apply.begin(), animations_to_apply.end(),
+      [](const Member<SVGSMILElement>& a, const Member<SVGSMILElement>& b) {
+        return a->DocumentOrderIndex() < b->DocumentOrderIndex();
+      });
 
   for (const auto& timed_element : animations_to_apply) {
     if (timed_element->isConnected() && timed_element->IsSVGDiscardElement()) {

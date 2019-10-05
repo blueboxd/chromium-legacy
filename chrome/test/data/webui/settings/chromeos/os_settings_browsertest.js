@@ -13,7 +13,7 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 // Only run in release builds because we frequently see test timeouts in debug.
 // We suspect this is because the settings page loads slowly in debug.
 // https://crbug.com/1003483
-GEN('#if defined(NDEBUG)');
+// GEN('#if defined(NDEBUG)');
 
 GEN('#include "ash/public/cpp/ash_features.h"');
 GEN('#include "build/branding_buildflags.h"');
@@ -1069,4 +1069,4 @@ TEST_F('OSSettingsSmbPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
-GEN('#endif  // defined(NDEBUG)');
+// GEN('#endif  // defined(NDEBUG)');

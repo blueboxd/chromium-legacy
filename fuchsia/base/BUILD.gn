@@ -5,7 +5,7 @@
 assert(is_fuchsia)
 
 import("//build/config/fuchsia/fidl_library.gni")
-import("//build/config/fuchsia/rules.gni")
+import("//build/config/fuchsia/generate_runner_scripts.gni")
 import("//testing/test.gni")
 
 # Integration helpers for commonly used fuchsia.* APIs.

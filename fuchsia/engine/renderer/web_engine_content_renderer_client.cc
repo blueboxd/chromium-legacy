@@ -104,6 +104,11 @@ void WebEngineContentRendererClient::AddSupportedKeySystems(
       supported_video_codecs |= media::EME_CODEC_AVC1;
     }
 
+    media::SupportedCodecs supported_audio_codecs = media::EME_CODEC_AUDIO_ALL;
+
+    media::SupportedCodecs supported_codecs =
+        supported_video_codecs | supported_audio_codecs;
+
     base::flat_set<media::EncryptionMode> encryption_schemes{
         media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs};
 
@@ -111,10 +116,10 @@ void WebEngineContentRendererClient::AddSupportedKeySystems(
     // Chromium. Hardware secured decoders are only available for supported
     // video codecs.
     key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
-        media::EME_CODEC_AUDIO_ALL | supported_video_codecs,  // codecs
-        encryption_schemes,      // encryption schemes
-        supported_video_codecs,  // hw secure codecs
-        encryption_schemes,      // hw secure encryption schemes
+        supported_codecs,    // codecs
+        encryption_schemes,  // encryption schemes
+        supported_codecs,    // hw secure codecs
+        encryption_schemes,  // hw secure encryption schemes
         cdm::WidevineKeySystemProperties::Robustness::
             HW_SECURE_CRYPTO,  // max audio robustness
         cdm::WidevineKeySystemProperties::Robustness::

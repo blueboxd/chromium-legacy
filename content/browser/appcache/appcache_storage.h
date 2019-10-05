@@ -49,36 +49,38 @@ class CONTENT_EXPORT AppCacheStorage {
     Delegate(const Delegate&) = delete;
     Delegate& operator=(const Delegate&) = delete;
 
-    // If retrieval fails, 'collection' will be NULL.
+    // If retrieval fails, |collection| will be null.
     virtual void OnAllInfo(AppCacheInfoCollection* collection) {}
 
-    // If a load fails the 'cache' will be NULL.
+    // If the load fails, |cache| will be null.
     virtual void OnCacheLoaded(AppCache* cache, int64_t cache_id) {}
 
-    // If a load fails the 'group' will be NULL.
+    // If the load fails, |group| will be null.
     virtual void OnGroupLoaded(
         AppCacheGroup* group, const GURL& manifest_url) {}
 
-    // If successfully stored 'success' will be true.
+    // If successfully stored, |success| will be true.
     virtual void OnGroupAndNewestCacheStored(
         AppCacheGroup* group, AppCache* newest_cache, bool success,
         bool would_exceed_quota) {}
 
-    // If the operation fails, success will be false.
+    // If the operation fails, |success| will be false.
     virtual void OnGroupMadeObsolete(AppCacheGroup* group,
                                      bool success,
                                      int response_code) {}
 
-    // If a load fails the 'response_info' will be NULL.
+    // If a load fails, |response_info| will be null.
     virtual void OnResponseInfoLoaded(AppCacheResponseInfo* response_info,
                                       int64_t response_id) {}
 
-    // If no response is found, entry.response_id() and
-    // fallback_entry.response_id() will be kAppCacheNoResponseId.
-    // If the response is the entry for an intercept or fallback
-    // namespace, the url of the namespece entry is returned.
-    // If a response is found, the cache id and manifest url of the
-    // containing cache and group are also returned.
+    // If no response is found, |entry|'s response_id() and |fallback_entry|'s
+    // response_id() will be kAppCacheNoResponseId.
+    //
+    // If the response is the entry for an intercept or fallback namespace,
+    // |namespace_entry_url| refers to the entry. Otherwise, it is empty.
+    //
+    // If a response is found, |cache_id|, |group_id|, and |manifest_url|
+    // identify the cache containing the response.
     virtual void OnMainResponseFound(const GURL& url,
                                      const AppCacheEntry& entry,
                                      const GURL& namespace_entry_url,

@@ -738,9 +738,6 @@ junit_binary("chrome_junit_tests") {
     "//testing/buildbot/filters:chrome_junit_tests_filters",
   ]
 
-  srcjar_deps =
-      [ "//components/module_installer/android:module_installer_build_config" ]
-
   package_name = chrome_public_manifest_package
 }
 

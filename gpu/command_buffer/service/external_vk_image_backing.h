@@ -146,7 +146,8 @@ class ExternalVkImageBacking final : public SharedImageBacking {
   bool WritePixels(size_t data_size,
                    size_t stride,
                    FillBufferCallback callback);
-  void CopyPixelsFromGLTexture();
+  void CopyPixelsFromGLTextureToVkImage();
+  void CopyPixelsFromShmToGLTexture();
 
   SharedContextState* const context_state_;
   GrBackendTexture backend_texture_;

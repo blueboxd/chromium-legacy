@@ -101,7 +101,7 @@ void SafeBrowsingPrivateApiUnitTest::SetUp() {
   TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(
       safe_browsing_service);
   g_browser_process->safe_browsing_service()->Initialize();
-  safe_browsing_service->AddPrefService(profile()->GetPrefs());
+  safe_browsing_service->OnProfileAdded(profile());
 }
 
 void SafeBrowsingPrivateApiUnitTest::TearDown() {

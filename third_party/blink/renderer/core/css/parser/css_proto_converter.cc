@@ -37,6 +37,7 @@ const std::string Converter::kPseudoLookupTable[] = {
     "-internal-spatial-navigation-focus",
     "-internal-video-persistent",
     "-internal-video-persistent-ancestor",
+    "-internal-xr-immersive-dom-overlay",
     "-webkit-any-link",
     "-webkit-autofill",
     "-webkit-drag",

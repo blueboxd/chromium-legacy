@@ -481,6 +481,34 @@ class ExtractHistogramsTest(unittest.TestCase):
     self.assertEquals('This is a summary with & and " and \'',
                       hists['Test.Histogram']['summary'])
 
+  def testNewSuffixWithoutLabel(self):
+    suffix_without_label = xml.dom.minidom.parseString("""
+<histogram-configuration>
+<histogram_suffixes_list>
+  <histogram_suffixes name="Suffixes" separator=".">
+    <suffix base="true" name="BaseSuffix"/>
+  </histogram_suffixes>
+</histogram_suffixes_list>
+</histogram-configuration>
+""")
+    _, have_errors = extract_histograms.ExtractHistogramsFromDom(
+        suffix_without_label)
+    self.assertTrue(have_errors)
+
+  def testNewSuffixWithLabel(self):
+    suffix_with_label = xml.dom.minidom.parseString("""
+<histogram-configuration>
+<histogram_suffixes_list>
+  <histogram_suffixes name="Suffixes" separator=".">
+    <suffix base="true" name="BaseSuffix" label="Base"/>
+  </histogram_suffixes>
+</histogram_suffixes_list>
+</histogram-configuration>
+""")
+    have_errors = extract_histograms. _UpdateHistogramsWithSuffixes(
+        suffix_with_label, {})
+    self.assertFalse(have_errors)
+
 if __name__ == "__main__":
   logging.basicConfig(level=logging.ERROR + 1)
   unittest.main()

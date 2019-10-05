@@ -265,14 +265,14 @@ Polymer({
       return;
     }
 
-    // Accept Enter keys from either the dialog, or a child input or cr-input
-    // element (but consider that the event may have been retargeted).
-    const origTarget = e.composedPath()[0];
-    const accept = e.target == this || origTarget.tagName == 'CR-INPUT' ||
-        (origTarget.tagName == 'INPUT' &&
-         // <cr-input> can only be text-like; apply the same limit to <input> so
-         // that e.g. enter on a checkbox does not submit the dialog.
-         ['text', 'password', 'number', 'search'].includes(origTarget.type));
+    // Accept Enter keys from either the dialog itself, or a child cr-input,
+    // considering that the event may have been retargeted, for example if the
+    // cr-input is nested inside another element. Also exclude inputs of type
+    // 'search', since hitting 'Enter' on a search field most likely intends to
+    // trigger searching.
+    const accept = e.target === this ||
+        e.composedPath().some(
+            el => el.tagName == 'CR-INPUT' && el.type != 'search');
     if (!accept) {
       return;
     }

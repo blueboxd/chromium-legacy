@@ -4,16 +4,8 @@
 
 package org.chromium.components.module_installer.builder;
 
-/** Build config for DFMs. */
-public class ModuleInstallerConfig {
-
-#if defined(IS_BUNDLE_BUILD)
-    public static final boolean IS_BUNDLE = true;
-#elif defined(IS_APK_BUILD)
-    public static final boolean IS_BUNDLE = false;
-#else
-    // This needs to not be final in order to avoid being inlined.
-    public static boolean IS_BUNDLE;
-#endif
-
-}
+/**
+  * Build config for DFMs.
+  * TODO(fredmello): Temporary code to keep downstream unbroken
+  */
+public class ModuleInstallerConfig { }

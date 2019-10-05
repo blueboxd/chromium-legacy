@@ -67,6 +67,24 @@ OmniboxResultView::OmniboxResultView(
       omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
       GetColor(OmniboxPart::RESULTS_ICON)));
   keyword_view_->icon()->SizeToPreferredSize();
+
+  if (base::FeatureList::IsEnabled(
+          omnibox::kOmniboxSuggestionTransparencyOptions)) {
+    // This is intentionally not in the tab order by default, but should be
+    // if the user has full-acessibility mode on. This is because this is a
+    // tertiary priority button, which already has a Shift+Delete shortcut.
+    // TODO(tommycli): Make sure we announce the Shift+Delete capability in the
+    // accessibility node data for removable suggestions.
+    AddChildView(remove_suggestion_button_ =
+                     views::CreateVectorImageButton(this).release());
+
+    views::InstallCircleHighlightPathGenerator(remove_suggestion_button_);
+
+    // TODO(tommycli): We may need to update the color for theme changes.
+    views::SetImageFromVectorIcon(remove_suggestion_button_,
+                                  vector_icons::kCloseRoundedIcon,
+                                  GetColor(OmniboxPart::RESULTS_ICON));
+  }
 }
 
 OmniboxResultView::~OmniboxResultView() {}
@@ -95,30 +113,10 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
     suggestion_tab_switch_button_.reset();
   }
 
-  if (match_.SupportsDeletion() &&
-      base::FeatureList::IsEnabled(
-          omnibox::kOmniboxSuggestionTransparencyOptions)) {
-    // This is intentionally not in the tab order by default, but should be
-    // if the user has full-acessibility mode on. This is because this is a
-    // tertiary priority button, which already has a Shift+Delete shortcut.
-    // TODO(tommycli): Make sure we announce the Shift+Delete capability in the
-    // accessibility node data for removable suggestions.
-    if (!remove_suggestion_button_) {
-      remove_suggestion_button_ = views::CreateVectorImageButton(this);
-      remove_suggestion_button_->set_owned_by_client();
-
-      views::InstallCircleHighlightPathGenerator(
-          remove_suggestion_button_.get());
-
-      // TODO(tommycli): Make sure this is visible in Dark Mode.
-      views::SetImageFromVectorIcon(remove_suggestion_button_.get(),
-                                    vector_icons::kCloseRoundedIcon,
-                                    GetColor(OmniboxPart::RESULTS_ICON));
-
-      AddChildView(remove_suggestion_button_.get());
-    }
-  } else {
-    remove_suggestion_button_.reset();
+  if (remove_suggestion_button_) {
+    // To avoid clutter, don't show the Remove button for matches with keyword.
+    remove_suggestion_button_->SetVisible(match.SupportsDeletion() &&
+                                          !match.associated_keyword);
   }
 
   Invalidate();
@@ -257,7 +255,7 @@ void OmniboxResultView::ButtonPressed(views::Button* button,
                                       const ui::Event& event) {
   if (button == suggestion_tab_switch_button_.get()) {
     OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
-  } else if (button == remove_suggestion_button_.get()) {
+  } else if (button == remove_suggestion_button_) {
     // Temporarily inhibit the popup closing on blur while we open the remove
     // suggestion confirmation bubble.
     popup_contents_view_->model()->set_popup_closes_on_blur(false);
@@ -298,7 +296,7 @@ void OmniboxResultView::Layout() {
 
   // Add buttons from right to left, shrinking the suggestion width as we go.
   // TODO(tommycli): We should probably use a layout manager here.
-  if (remove_suggestion_button_) {
+  if (remove_suggestion_button_ && remove_suggestion_button_->GetVisible()) {
     const gfx::Size button_size = remove_suggestion_button_->GetPreferredSize();
     suggestion_width -=
         button_size.width() + OmniboxMatchCellView::kMarginRight;
@@ -309,7 +307,6 @@ void OmniboxResultView::Layout() {
     remove_suggestion_button_->SetBounds(suggestion_width, vertical_margin,
                                          button_size.width(),
                                          button_size.height());
-    remove_suggestion_button_->SetVisible(true);
   }
   if (suggestion_tab_switch_button_) {
     suggestion_tab_switch_button_->ProvideWidthHint(suggestion_width);

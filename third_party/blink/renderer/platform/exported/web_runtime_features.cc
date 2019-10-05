@@ -465,6 +465,10 @@ void WebRuntimeFeatures::EnableWebXRARModule(bool enable) {
   RuntimeEnabledFeatures::SetWebXRARModuleEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableWebXRARDOMOverlay(bool enable) {
+  RuntimeEnabledFeatures::SetWebXRARDOMOverlayEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableWebXRAnchors(bool enable) {
   RuntimeEnabledFeatures::SetWebXRAnchorsEnabled(enable);
 }
@@ -666,12 +670,6 @@ void WebRuntimeFeatures::EnableSmsReceiver(bool enable) {
 
 void WebRuntimeFeatures::EnableDisplayLocking(bool enable) {
   RuntimeEnabledFeatures::SetDisplayLockingEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnablePauseExecutionContextOnBackgroundFreeze(
-    bool enable) {
-  RuntimeEnabledFeatures::SetPauseExecutionContextOnBackgroundFreezeEnabled(
-      enable);
 }
 
 void WebRuntimeFeatures::EnableConsolidatedMovementXY(bool enable) {

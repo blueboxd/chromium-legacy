@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
@@ -266,7 +267,7 @@ TEST_F(VariationsSeedProcessorTest,
   const base::Time year_ago =
       base::Time::Now() - base::TimeDelta::FromDays(365);
 
-  ClientFilterableState client_state;
+  ClientFilterableState client_state({});
   client_state.locale = "en-CA";
   client_state.reference_date = base::Time::Now();
   client_state.version = base::Version("20.0.0.0");
@@ -548,7 +549,7 @@ TEST_F(VariationsSeedProcessorTest, StartsActive) {
   AddExperiment("Default", 0, study3);
   study3->set_activation_type(Study_ActivationType_ACTIVATE_ON_QUERY);
 
-  ClientFilterableState client_state;
+  ClientFilterableState client_state({});
   client_state.locale = "en-CA";
   client_state.reference_date = base::Time::Now();
   client_state.version = base::Version("20.0.0.0");

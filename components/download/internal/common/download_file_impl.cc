@@ -566,9 +566,8 @@ void DownloadFileImpl::Resume() {
 
   for (auto& stream : source_streams_) {
     SourceStream* source_stream = stream.second.get();
-    if (!source_stream->is_finished()) {
-      ActivateStream(source_stream);
-    }
+    if (!source_stream->is_finished())
+      StreamActive(source_stream, MOJO_RESULT_OK);
   }
 }
 
@@ -591,7 +590,6 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
   DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_NONE;
   base::TimeDelta delta(
       base::TimeDelta::FromMilliseconds(kMaxTimeBlockingFileThreadMs));
-
   // Take care of any file local activity required.
   do {
     state = source_stream->Read(&incoming_data, &incoming_data_size);
@@ -649,6 +647,10 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
         FROM_HERE, base::BindOnce(&DownloadFileImpl::StreamActive,
                                   weak_factory_.GetWeakPtr(), source_stream,
                                   MOJO_RESULT_OK));
+  } else if (state == InputStream::EMPTY && !should_terminate) {
+    source_stream->RegisterDataReadyCallback(
+        base::Bind(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr(),
+                   source_stream));
   }
 
   if (state == InputStream::COMPLETE)
@@ -731,13 +733,6 @@ void DownloadFileImpl::RegisterAndActivateStream(SourceStream* source_stream) {
         received_slice.offset, received_slice.received_bytes);
   }
   num_active_streams_++;
-  ActivateStream(source_stream);
-}
-
-void DownloadFileImpl::ActivateStream(SourceStream* source_stream) {
-  source_stream->RegisterDataReadyCallback(
-      base::Bind(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr(),
-                 source_stream));
   StreamActive(source_stream, MOJO_RESULT_OK);
 }
 

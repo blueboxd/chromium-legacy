@@ -1102,9 +1102,9 @@ chrome.automation.AutomationNode.prototype.tableCellColumnIndex;
 /**
  * The ARIA column index as specified by the page author.
  * @type {(number|undefined)}
- * @see https://developer.chrome.com/extensions/automation#type-ariaCellColumnIndex
+ * @see https://developer.chrome.com/extensions/automation#type-tableCellAriaColumnIndex
  */
-chrome.automation.AutomationNode.prototype.ariaCellColumnIndex;
+chrome.automation.AutomationNode.prototype.tableCellAriaColumnIndex;
 
 /**
  * The number of columns that this cell spans (default is 1).
@@ -1123,9 +1123,9 @@ chrome.automation.AutomationNode.prototype.tableCellRowIndex;
 /**
  * The ARIA row index as specified by the page author.
  * @type {(number|undefined)}
- * @see https://developer.chrome.com/extensions/automation#type-ariaCellRowIndex
+ * @see https://developer.chrome.com/extensions/automation#type-tableCellAriaRowIndex
  */
-chrome.automation.AutomationNode.prototype.ariaCellRowIndex;
+chrome.automation.AutomationNode.prototype.tableCellAriaRowIndex;
 
 /**
  * The number of rows that this cell spans (default is 1).

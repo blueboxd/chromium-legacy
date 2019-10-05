@@ -60,7 +60,11 @@ SharedProtoDatabase::SharedProtoDatabase(const std::string& client_db_id,
                                          const base::FilePath& db_dir)
     : task_runner_(base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+           // crbug/1006954 and crbug/976223 explain why one of the clients
+           // needs run in visible priority. Download DB is always loaded to
+           // check for in progress downloads at startup. So, always load shared
+           // db in USER_VISIBLE priority.
+           base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       db_dir_(db_dir),
       db_(std::make_unique<LevelDB>(client_db_id.c_str())),

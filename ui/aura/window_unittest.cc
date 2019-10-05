@@ -24,6 +24,7 @@
 #include "ui/aura/client/visibility_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/scoped_window_event_targeting_blocker.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -1610,6 +1611,39 @@ TEST_F(WindowTest, EventTargetingPolicy) {
   w111->SetEventTargetingPolicy(EventTargetingPolicy::kTargetAndDescendants);
   EXPECT_EQ(w111.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
   EXPECT_TRUE(w111.get()->layer()->accept_events());
+}
+
+TEST_F(WindowTest, ScopedEventTargetingBlockerTest) {
+  // Test only when all event targeting blockers are removed from the window,
+  // its event targeting policy will restore back to its original value.
+  std::unique_ptr<Window> window(CreateTestWindowWithDelegate(
+      nullptr, 1, gfx::Rect(0, 0, 500, 500), root_window()));
+  EXPECT_EQ(window->event_targeting_policy(),
+            EventTargetingPolicy::kTargetAndDescendants);
+  auto event_targeting_blocker1 =
+      std::make_unique<ScopedWindowEventTargetingBlocker>(window.get());
+  EXPECT_EQ(window->event_targeting_policy(), EventTargetingPolicy::kNone);
+  auto event_targeting_blocker2 =
+      std::make_unique<ScopedWindowEventTargetingBlocker>(window.get());
+  EXPECT_EQ(window->event_targeting_policy(), EventTargetingPolicy::kNone);
+  event_targeting_blocker2.reset();
+  EXPECT_EQ(window->event_targeting_policy(), EventTargetingPolicy::kNone);
+  event_targeting_blocker1.reset();
+  EXPECT_EQ(window->event_targeting_policy(),
+            EventTargetingPolicy::kTargetAndDescendants);
+
+  // It's possible that the event target policy changes when there is an event
+  // targeting blocker in place. In this case when the event targeting blocker
+  // is removed from the window, the window should restore to the changed event
+  // targeting policy.
+  auto event_targeting_blocker3 =
+      std::make_unique<ScopedWindowEventTargetingBlocker>(window.get());
+  EXPECT_EQ(window->event_targeting_policy(), EventTargetingPolicy::kNone);
+  window->SetEventTargetingPolicy(EventTargetingPolicy::kTargetOnly);
+  EXPECT_EQ(window->event_targeting_policy(), EventTargetingPolicy::kNone);
+  event_targeting_blocker3.reset();
+  EXPECT_EQ(window->event_targeting_policy(),
+            EventTargetingPolicy::kTargetOnly);
 }
 
 // Tests transformation on the root window.

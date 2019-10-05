@@ -24,7 +24,7 @@ should have similar performance.
 </head>
 <body>
 <template id="template">
-<div class="box">
+<div class="box" rendersubtree="invisible">
   Lorem ipsum dolor sit amet, consectetur adipiscing elit.
   Quisque ante dui, posuere at pretium suscipit, condimentum at augue.
 </div>
@@ -43,9 +43,6 @@ function appendChildren() {
   for (let i = 0; i < NUMBER_OF_ELEMENTS; ++i) {
     const clone = template.content.cloneNode(true).firstElementChild;
     clone.id = "box" + i;
-    if (clone.displayLock) {
-      clone.displayLock.acquire({ timeout: Infinity, size: [10, 10] });
-    }
     container.appendChild(clone);
   }
   container.offsetTop;

@@ -12,8 +12,12 @@
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
+class TabStripModel;
+
 // Wraps the state needed by the renderers.
 struct TabRendererData {
+  static TabRendererData FromTabInModel(TabStripModel* model, int index);
+
   TabRendererData();
   TabRendererData(const TabRendererData& other);
   TabRendererData(TabRendererData&& other);

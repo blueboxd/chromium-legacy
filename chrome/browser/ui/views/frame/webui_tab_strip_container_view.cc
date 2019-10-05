@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
+#include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -44,6 +45,10 @@ WebUITabStripContainerView::WebUITabStripContainerView(Browser* browser)
       web_view_->web_contents());
   task_manager::WebContentsTags::CreateForTabContents(
       web_view_->web_contents());
+
+  TabStripUI* tab_strip_ui = static_cast<TabStripUI*>(
+      web_view_->GetWebContents()->GetWebUI()->GetController());
+  tab_strip_ui->Initialize(browser_);
 }
 
 views::NativeViewHost* WebUITabStripContainerView::GetNativeViewHost() {

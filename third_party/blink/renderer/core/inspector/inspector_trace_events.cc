@@ -343,6 +343,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoHostHasAppearance)
     DEFINE_STRING_MAPPING(PseudoVideoPersistent)
     DEFINE_STRING_MAPPING(PseudoVideoPersistentAncestor)
+    DEFINE_STRING_MAPPING(PseudoXrImmersiveDomOverlay)
 #undef DEFINE_STRING_MAPPING
   }
 

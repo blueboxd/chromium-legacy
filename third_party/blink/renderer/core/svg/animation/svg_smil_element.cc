@@ -605,6 +605,17 @@ SMILTime SVGSMILElement::BeginTimeForPrioritization(
   return interval_.begin;
 }
 
+bool SVGSMILElement::IsHigherPriorityThan(const SVGSMILElement* other,
+                                          SMILTime presentation_time) const {
+  // FIXME: This should also consider possible timing relations between the
+  // elements.
+  SMILTime this_begin = BeginTimeForPrioritization(presentation_time);
+  SMILTime other_begin = other->BeginTimeForPrioritization(presentation_time);
+  if (this_begin == other_begin)
+    return DocumentOrderIndex() > other->DocumentOrderIndex();
+  return this_begin > other_begin;
+}
+
 SMILTime SVGSMILElement::Dur() const {
   if (cached_dur_ != kInvalidCachedTime)
     return cached_dur_;

@@ -206,7 +206,9 @@ void SetFocusAndActivate(RenderView* render_view, bool enable) {
 }
 
 void ForceResizeRenderView(RenderView* render_view, const WebSize& new_size) {
-  auto* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+  if (!render_view_impl->GetMainRenderFrame())
+    return;
   RenderWidget* render_widget = render_view_impl->GetWidget();
   gfx::Rect window_rect(render_widget->WindowRect().x,
                         render_widget->WindowRect().y, new_size.width,
@@ -215,14 +217,17 @@ void ForceResizeRenderView(RenderView* render_view, const WebSize& new_size) {
 }
 
 void SetDeviceScaleFactor(RenderView* render_view, float factor) {
-  RenderWidget* render_widget =
-      static_cast<RenderViewImpl*>(render_view)->GetWidget();
-  render_widget->SetDeviceScaleFactorForTesting(factor);
+  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+  if (!render_view_impl->GetMainRenderFrame())
+    return;
+  render_view_impl->GetWidget()->SetDeviceScaleFactorForTesting(factor);
 }
 
 float GetWindowToViewportScale(RenderView* render_view) {
-  return GetWindowToViewportScale(
-      static_cast<RenderViewImpl*>(render_view)->GetWidget());
+  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+  blink::WebFloatRect rect(0, 0, 1.0f, 0.0);
+  render_view_impl->page_properties()->ConvertWindowToViewport(&rect);
+  return rect.width;
 }
 
 std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
@@ -256,9 +261,10 @@ gfx::ColorSpace GetTestingColorSpace(const std::string& name) {
 
 void SetDeviceColorSpace(RenderView* render_view,
                          const gfx::ColorSpace& color_space) {
-  RenderWidget* render_widget =
-      static_cast<RenderViewImpl*>(render_view)->GetWidget();
-  render_widget->SetDeviceColorSpaceForTesting(color_space);
+  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+  if (!render_view_impl->GetMainRenderFrame())
+    return;
+  render_view_impl->GetWidget()->SetDeviceColorSpaceForTesting(color_space);
 }
 
 void SetTestBluetoothScanDuration(BluetoothTestScanDurationSetting setting) {
@@ -277,23 +283,26 @@ void SetTestBluetoothScanDuration(BluetoothTestScanDurationSetting setting) {
 }
 
 void UseSynchronousResizeMode(RenderView* render_view, bool enable) {
-  RenderWidget* render_widget =
-      static_cast<RenderViewImpl*>(render_view)->GetWidget();
-  render_widget->UseSynchronousResizeModeForTesting(enable);
+  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+  if (!render_view_impl->GetMainRenderFrame())
+    return;
+  render_view_impl->GetWidget()->UseSynchronousResizeModeForTesting(enable);
 }
 
 void EnableAutoResizeMode(RenderView* render_view,
                           const WebSize& min_size,
                           const WebSize& max_size) {
-  RenderWidget* render_widget =
-      static_cast<RenderViewImpl*>(render_view)->GetWidget();
-  render_widget->EnableAutoResizeForTesting(min_size, max_size);
+  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+  if (!render_view_impl->GetMainRenderFrame())
+    return;
+  render_view_impl->GetWidget()->EnableAutoResizeForTesting(min_size, max_size);
 }
 
 void DisableAutoResizeMode(RenderView* render_view, const WebSize& new_size) {
-  RenderWidget* render_widget =
-      static_cast<RenderViewImpl*>(render_view)->GetWidget();
-  render_widget->DisableAutoResizeForTesting(new_size);
+  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+  if (!render_view_impl->GetMainRenderFrame())
+    return;
+  render_view_impl->GetWidget()->DisableAutoResizeForTesting(new_size);
 }
 
 void SchedulerRunIdleTasks(base::OnceClosure callback) {

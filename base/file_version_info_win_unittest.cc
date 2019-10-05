@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::FilePath;
@@ -157,6 +158,9 @@ TYPED_TEST(FileVersionInfoTest, CustomProperties) {
             version_info_win->GetFileVersion());
 }
 
+#if defined(ARCH_CPU_64_BITS)
+// TODO(bug_1011439): Change no_version_info.dll to 32 bit, so this test will
+// work for 32-bit Windows as well.
 TYPED_TEST(FileVersionInfoTest, NoVersionInfo) {
   FilePath dll_path = GetTestDataPath();
   dll_path = dll_path.AppendASCII("no_version_info.dll");
@@ -164,3 +168,4 @@ TYPED_TEST(FileVersionInfoTest, NoVersionInfo) {
   TypeParam factory(dll_path);
   ASSERT_FALSE(factory.Create());
 }
+#endif

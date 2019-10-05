@@ -103,6 +103,7 @@ Polymer({
       case settings.ContentSettingsTypes.BACKGROUND_SYNC:
       case settings.ContentSettingsTypes.IMAGES:
       case settings.ContentSettingsTypes.JAVASCRIPT:
+      case settings.ContentSettingsTypes.MIXEDSCRIPT:
       case settings.ContentSettingsTypes.SOUND:
       case settings.ContentSettingsTypes.SENSORS:
       case settings.ContentSettingsTypes.PAYMENT_HANDLER:

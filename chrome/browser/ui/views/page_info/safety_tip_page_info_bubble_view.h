@@ -9,6 +9,8 @@
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
 #include "components/security_state/core/security_state.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/styled_label.h"
+#include "ui/views/controls/styled_label_listener.h"
 
 namespace content {
 class WebContents;
@@ -19,7 +21,6 @@ class Rect;
 }  // namespace gfx
 
 namespace views {
-class Button;
 class View;
 class Widget;
 }  // namespace views
@@ -28,7 +29,8 @@ class Widget;
 // without all of the details. Safety tip info is still displayed in the usual
 // PageInfoBubbleView, just less prominently.
 class SafetyTipPageInfoBubbleView : public PageInfoBubbleViewBase,
-                                    public views::ButtonListener {
+                                    public views::ButtonListener,
+                                    public views::StyledLabelListener {
  public:
   // If |anchor_view| is nullptr, or has no Widget, |parent_window| may be
   // provided to ensure this bubble is closed when the parent closes.
@@ -53,9 +55,16 @@ class SafetyTipPageInfoBubbleView : public PageInfoBubbleViewBase,
   // views::ButtonListener:
   void ButtonPressed(views::Button* button, const ui::Event& event) override;
 
+  // views::StyledLabelListener:
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
+                              int event_flags) override;
+
  private:
   friend class SafetyTipPageInfoBubbleViewBrowserTest;
 
+  views::StyledLabel* GetLearnMoreLinkForTesting() { return info_button_; }
+  views::Button* GetIgnoreButtonForTesting() { return ignore_button_; }
   views::Button* GetLeaveButtonForTesting() { return leave_button_; }
 
   const security_state::SafetyTipStatus safety_tip_status_;
@@ -67,6 +76,8 @@ class SafetyTipPageInfoBubbleView : public PageInfoBubbleViewBase,
   // applicable (for SafetyTipStatus::kLookalike).
   const GURL suggested_url_;
 
+  views::StyledLabel* info_button_;
+  views::Button* ignore_button_;
   views::Button* leave_button_;
   base::OnceCallback<void(safety_tips::SafetyTipInteraction)> close_callback_;
   safety_tips::SafetyTipInteraction action_taken_ =

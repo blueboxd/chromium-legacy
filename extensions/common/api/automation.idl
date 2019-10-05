@@ -822,7 +822,7 @@
     long? tableCellColumnIndex;
 
     // The ARIA column index as specified by the page author.
-    long? ariaCellColumnIndex;
+    long? tableCellAriaColumnIndex;
 
     // The number of columns that this cell spans (default is 1).
     long? tableCellColumnSpan;
@@ -832,7 +832,7 @@
     long? tableCellRowIndex;
 
     // The ARIA row index as specified by the page author.
-    long? ariaCellRowIndex;
+    long? tableCellAriaRowIndex;
 
     // The number of rows that this cell spans (default is 1).
     long? tableCellRowSpan;

@@ -246,7 +246,7 @@ void SourceBufferStream::OnStartOfCodedFrameGroup(
   }
 }
 
-bool SourceBufferStream::Append(const BufferQueue& buffers) {
+void SourceBufferStream::Append(const BufferQueue& buffers) {
   TRACE_EVENT2("media", "SourceBufferStream::Append",
                "stream type", GetStreamTypeName(),
                "buffers to append", buffers.size());
@@ -269,9 +269,8 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
       << buffers.front()->timestamp().InMicroseconds() << "us";
 
   // New coded frame groups emitted by the coded frame processor must begin with
-  // a keyframe. TODO(wolenetz): Change this to [DCHECK + MEDIA_LOG(ERROR...) +
-  // return false] once the CHECK has baked in a stable release. See
-  // https://crbug.com/580621.
+  // a keyframe. Avoid propagating with escalating impact if this assumption is
+  // broken.
   CHECK(!new_coded_frame_group_ || buffers.front()->is_key_frame());
 
   // Buffers within each GOP in a coded frame group must be monotonically
@@ -358,7 +357,7 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
                     " Skipping further processing.";
         DVLOG(1) << __func__ << " " << GetStreamTypeName()
                  << ": done. ranges_=" << RangesToString(ranges_);
-        return true;
+        return;
       } else if (itr != buffers.begin()) {
         // Copy the first key frame and everything after it into
         // |trimmed_buffers|.
@@ -434,7 +433,6 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
            << ": done. ranges_=" << RangesToString(ranges_);
   DCHECK(IsRangeListSorted(ranges_));
   DCHECK(OnlySelectedRangeIsSeeked());
-  return true;
 }
 
 void SourceBufferStream::Remove(base::TimeDelta start,

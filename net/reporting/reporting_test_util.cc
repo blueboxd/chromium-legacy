@@ -16,7 +16,6 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/timer/mock_timer.h"
-#include "net/base/rand_callback.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_delegate.h"
@@ -25,7 +24,6 @@
 #include "net/reporting/reporting_garbage_collector.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_uploader.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -85,6 +83,15 @@ void ErasePendingUpload(
 
 }  // namespace
 
+RandIntCallback TestReportingRandIntCallback() {
+  return base::BindRepeating(
+      [](int* rand_counter, int min, int max) {
+        DCHECK_LE(min, max);
+        return min + ((*rand_counter)++ % (max - min + 1));
+      },
+      base::Owned(std::make_unique<int>(0)));
+}
+
 TestReportingUploader::PendingUpload::~PendingUpload() = default;
 TestReportingUploader::PendingUpload::PendingUpload() = default;
 
@@ -109,8 +116,7 @@ int TestReportingUploader::GetPendingUploadCountForTesting() const {
   return pending_uploads_.size();
 }
 
-TestReportingDelegate::TestReportingDelegate()
-    : test_request_context_(std::make_unique<TestURLRequestContext>()) {}
+TestReportingDelegate::TestReportingDelegate() = default;
 
 TestReportingDelegate::~TestReportingDelegate() = default;
 
@@ -157,16 +163,13 @@ TestReportingContext::TestReportingContext(
     const base::TickClock* tick_clock,
     const ReportingPolicy& policy,
     ReportingCache::PersistentReportingStore* store)
-    : ReportingContext(
-          policy,
-          clock,
-          tick_clock,
-          base::BindRepeating(&TestReportingContext::RandIntCallback,
-                              base::Unretained(this)),
-          std::make_unique<TestReportingUploader>(),
-          std::make_unique<TestReportingDelegate>(),
-          store),
-      rand_counter_(0),
+    : ReportingContext(policy,
+                       clock,
+                       tick_clock,
+                       TestReportingRandIntCallback(),
+                       std::make_unique<TestReportingUploader>(),
+                       std::make_unique<TestReportingDelegate>(),
+                       store),
       delivery_timer_(new base::MockOneShotTimer()),
       garbage_collection_timer_(new base::MockOneShotTimer()) {
   garbage_collector()->SetTimerForTesting(
@@ -177,11 +180,6 @@ TestReportingContext::TestReportingContext(
 TestReportingContext::~TestReportingContext() {
   delivery_timer_ = nullptr;
   garbage_collection_timer_ = nullptr;
-}
-
-int TestReportingContext::RandIntCallback(int min, int max) {
-  DCHECK_LE(min, max);
-  return min + (rand_counter_++ % (max - min + 1));
 }
 
 ReportingTestBase::ReportingTestBase() : store_(nullptr) {

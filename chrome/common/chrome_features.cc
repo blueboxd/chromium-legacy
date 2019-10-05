@@ -493,6 +493,13 @@ const base::Feature kAcknowledgeNtpOverrideOnDeactivate{
     "AcknowledgeNtpOverrideOnDeactivate", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Enables showing an entry for mixed content in site settings, which controls
+// allowing blockable mixed content. When enabled, the mixed content shield is
+// not shown on the omnibox, since its functionality is replaced by the
+// setting.
+const base::Feature kMixedContentSiteSetting{"MixedContentSiteSetting",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if !defined(OS_ANDROID)
 const base::Feature kOnConnectNative{"OnConnectNative",
                                      base::FEATURE_DISABLED_BY_DEFAULT};

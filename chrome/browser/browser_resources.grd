@@ -324,11 +324,9 @@
       <include name="IDR_POLICY_JS" file="resources\policy\policy.js" type="BINDATA" compress="gzip" />
       <if expr="not is_android">
         <include name="IDR_MANAGEMENT_HTML" file="resources\management\management.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
-        <include name="IDR_MANAGEMENT_UI_HTML" file="resources\management\management_ui.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
-        <include name="IDR_MANAGEMENT_UI_JS" file="resources\management\management_ui.js" type="BINDATA" compress="gzip" preprocess="true" />
-        <include name="IDR_MANAGEMENT_BROWSER_PROXY_HTML" file="resources\management\management_browser_proxy.html" allowexternalscript="true" type="BINDATA" compress="gzip" />
+        <include name="IDR_MANAGEMENT_UI_JS" file="${root_gen_dir}/chrome/browser/resources/management/management_ui.js" use_base_dir="false" type="BINDATA" compress="gzip" preprocess="true" />
         <include name="IDR_MANAGEMENT_BROWSER_PROXY_JS" file="resources\management\management_browser_proxy.js" type="BINDATA" compress="gzip" preprocess="true" />
-        <include name="IDR_MANAGEMENT_ICONS_HTML" file="resources\management\icons.html" type="BINDATA" compress="gzip" preprocess="true" />
+        <include name="IDR_MANAGEMENT_ICONS_JS" file="${root_gen_dir}/chrome/browser/resources/management/icons.js" use_base_dir="false" type="BINDATA" compress="gzip" preprocess="true" />
       </if>
       <include name="IDR_SITE_ENGAGEMENT_HTML" file="resources\engagement\site_engagement.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_SITE_ENGAGEMENT_JS" file="resources\engagement\site_engagement.js" flattenhtml="true" type="BINDATA" compress="gzip" />

@@ -155,6 +155,14 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
   // is on the next TextUnit boundary, if one exists.
   switch (unit) {
     case TextUnit_Character: {
+      // Sometimes, the start endpoint will be positioned at the end of anchor,
+      // meaning the end endpoint will be positioned in another anchor. Because
+      // Windows ATs behave undesirably when the start and end endpoints are not
+      // in the same anchor (for character and word navigation), move the start
+      // endpoint to the start of the other anchor.
+      if (start_->AtEndOfAnchor() && !start_->AtEndOfDocument()) {
+        start_ = start_->AsPositionBeforeCharacter();
+      }
       // For characters, the start endpoint will always be on a TextUnit
       // boundary, thus we only need to move the end position.
       AXPositionInstance end_backup = end_->Clone();
@@ -193,6 +201,12 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
       // in order to move to the next one (stopping at the last anchor's end).
       end_ = start_->CreateNextWordStartPosition(
           AXBoundaryBehavior::StopAtLastAnchorBoundary);
+      // Because Windows ATs behave undesirably when the start and end endpoints
+      // are not in the same anchor (for character and word navigation), make
+      // sure to bring back the end endpoint to the end of the start's anchor.
+      if (start_->anchor_id() != end_->anchor_id()) {
+        end_ = start_->CreatePositionAtEndOfAnchor();
+      }
       break;
     case TextUnit_Line:
       start_ = start_->CreatePreviousLineStartPosition(
@@ -205,6 +219,11 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
           AXBoundaryBehavior::StopIfAlreadyAtBoundary);
       end_ = start_->CreateNextParagraphEndPosition(
           AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+
+      if (!start_->AtEndOfDocument())
+        start_ = start_->AsPositionBeforeCharacter();
+      if (!end_->AtEndOfDocument())
+        end_ = end_->AsPositionBeforeCharacter();
       break;
     case TextUnit_Page: {
       // If the document doesn't support pagination, default to document units
@@ -227,20 +246,6 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
       return UIA_E_NOTSUPPORTED;
   }
 
-  // Some text positions are equal when compared, but they could be located at
-  // different anchors, affecting how `GetEnclosingElement` works. Normalize the
-  // endpoints to correctly enclose characters of the text representation.
-  AXPositionInstance normalized_start = start_->AsPositionBeforeCharacter();
-  AXPositionInstance normalized_end = end_->AsPositionBeforeCharacter();
-
-  if (!normalized_start->IsNullPosition()) {
-    DCHECK_EQ(*start_, *normalized_start);
-    start_ = std::move(normalized_start);
-  }
-  if (!normalized_end->IsNullPosition()) {
-    DCHECK_EQ(*end_, *normalized_end);
-    end_ = std::move(normalized_end);
-  }
   return S_OK;
 }
 

@@ -2874,7 +2874,13 @@ void RenderFrameHostManager::SendPageMessage(IPC::Message* msg,
                                              SiteInstance* instance_to_skip) {
   DCHECK(IPC_MESSAGE_CLASS(*msg) == PageMsgStart);
 
-  // We should always deliver page messages through the main frame.
+  // We should always deliver page messages through the main frame. This is done
+  // because at the time, we wanted to avoid routing messages to swapped-out
+  // RenderViews. The idea was that we might introduce a separate RenderPage
+  // interface.
+  //
+  // TODO(dcheng): Now that RenderView and RenderWidget are increasingly
+  // separated, it might be possible/desirable to just route to the view.
   DCHECK(!frame_tree_node_->parent());
 
   if ((IPC_MESSAGE_CLASS(*msg) != PageMsgStart) || frame_tree_node_->parent()) {

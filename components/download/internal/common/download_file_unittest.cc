@@ -581,6 +581,9 @@ TEST_P(DownloadFileTestWithRename, RenameFileFinal) {
   EXPECT_FALSE(base::PathExists(initial_path));
   EXPECT_TRUE(base::PathExists(path_1));
 
+  EXPECT_CALL(*input_stream_, RegisterDataReadyCallback(_))
+      .Times(1)
+      .RetiresOnSaturation();
   // Download the data.
   const char* chunks1[] = {kTestData1, kTestData2};
   AppendDataToFile(chunks1, 2);
@@ -596,6 +599,9 @@ TEST_P(DownloadFileTestWithRename, RenameFileFinal) {
   EXPECT_FALSE(base::PathExists(path_1));
   EXPECT_TRUE(base::PathExists(path_2));
 
+  EXPECT_CALL(*input_stream_, RegisterDataReadyCallback(_))
+      .Times(1)
+      .RetiresOnSaturation();
   const char* chunks2[] = {kTestData3};
   AppendDataToFile(chunks2, 1);
 
@@ -833,6 +839,9 @@ TEST_F(DownloadFileTest, StreamEmptySuccess) {
 
   // Test that calling the sink_callback_ on an empty stream shouldn't
   // do anything.
+  EXPECT_CALL(*input_stream_, RegisterDataReadyCallback(_))
+      .Times(1)
+      .RetiresOnSaturation();
   AppendDataToFile(nullptr, 0);
 
   // Finish the download this way and make sure we see it on the observer.
@@ -984,8 +993,6 @@ TEST_F(DownloadFileTest, MultipleStreamsWrite) {
   PrepareStream(&additional_streams_[0], stream_0_length, true, true,
                 kTestData7, 2);
 
-  EXPECT_CALL(*additional_streams_[0], RegisterDataReadyCallback(_))
-      .RetiresOnSaturation();
   EXPECT_CALL(*(observer_.get()), MockDestinationCompleted(_, _));
 
   // Activate the streams.
@@ -1005,7 +1012,7 @@ TEST_F(DownloadFileTest, MultipleStreamsWrite) {
 }
 
 // 3 streams write to one sink, the second stream has a limited length.
-TEST_F(DownloadFileTest, MutipleStreamsLimitedLength) {
+TEST_F(DownloadFileTest, MultipleStreamsLimitedLength) {
   int64_t stream_0_length = GetBuffersLength(kTestData6, 2);
 
   // The second stream has a limited length and should be partially written
@@ -1025,15 +1032,8 @@ TEST_F(DownloadFileTest, MutipleStreamsLimitedLength) {
   PrepareStream(&additional_streams_[1], stream_0_length + stream_1_length,
                 true, true, kTestData6, 2);
 
-  EXPECT_CALL(*additional_streams_[0], RegisterDataReadyCallback(_))
-      .Times(1)
-      .RetiresOnSaturation();
-
   EXPECT_CALL(*additional_streams_[0], ClearDataReadyCallback())
       .Times(1)
-      .RetiresOnSaturation();
-
-  EXPECT_CALL(*additional_streams_[1], RegisterDataReadyCallback(_))
       .RetiresOnSaturation();
 
   EXPECT_CALL(*(observer_.get()), MockDestinationCompleted(_, _));
@@ -1111,13 +1111,13 @@ TEST_F(DownloadFileTest, SecondStreamStartingOffsetAlreadyWritten) {
       .InSequence(seq)
       .WillOnce(Return(InputStream::EMPTY))
       .RetiresOnSaturation();
+  EXPECT_CALL(*input_stream_, RegisterDataReadyCallback(_))
+      .Times(1)
+      .RetiresOnSaturation();
   sink_callback_.Run(MOJO_RESULT_OK);
   base::RunLoop().RunUntilIdle();
 
   additional_streams_[0] = new StrictMock<MockInputStream>();
-  EXPECT_CALL(*additional_streams_[0], RegisterDataReadyCallback(_))
-      .WillRepeatedly(Invoke(this, &DownloadFileTest::RegisterCallback))
-      .RetiresOnSaturation();
   EXPECT_CALL(*additional_streams_[0], ClearDataReadyCallback())
       .WillRepeatedly(Invoke(this, &DownloadFileTest::ClearCallback))
       .RetiresOnSaturation();
@@ -1151,6 +1151,9 @@ TEST_F(DownloadFileTest, SecondStreamReadsOffsetWrittenByFirst) {
   EXPECT_CALL(*input_stream_, Read(_, _))
       .InSequence(seq)
       .WillOnce(Return(InputStream::EMPTY))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*input_stream_, RegisterDataReadyCallback(_))
+      .Times(2)
       .RetiresOnSaturation();
   sink_callback_.Run(MOJO_RESULT_OK);
   base::RunLoop().RunUntilIdle();

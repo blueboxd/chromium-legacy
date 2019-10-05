@@ -46,6 +46,10 @@ struct XRRuntimeSessionOptions {
   bool immersive;
   bool environment_integration;
 
+  // The enabled features combine the active required and optional features as
+  // resolved by BrowserXRRuntime and VRServiceImpl.
+  array<XRSessionFeature> enabled_features;
+
   // The following options are used for permission requests and showing module
   // install UI.
   // TODO(crbug.com/854655): Remove these fields, and do permission checks, show

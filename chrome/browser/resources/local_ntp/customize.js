@@ -930,7 +930,7 @@ customize.richerPicker_previewImage = function(tile) {
   if (tile.id === customize.IDS.BACKGROUNDS_DEFAULT_ICON) {
     preview.dataset.hasImage = false;
     preview.style.backgroundImage = '';
-    preview.style.backgroundColor = document.body.style.backgroundColor;
+    preview.style.backgroundColor = 'transparent';
   } else if (tile.id === customize.IDS.BACKGROUNDS_UPLOAD_ICON) {
     // No previews for uploaded images.
     return;
@@ -940,6 +940,9 @@ customize.richerPicker_previewImage = function(tile) {
     const re = /w\d+\-h\d+/;
     preview.style.backgroundImage =
         tile.style.backgroundImage.replace(re, 'w1280-h720');
+    preview.dataset.attributionLine1 = tile.dataset.attributionLine1;
+    preview.dataset.attributionLine2 = tile.dataset.attributionLine2;
+    preview.dataset.attributionActionUrl = tile.dataset.attributionActionUrl;
   }
   background.style.opacity = 0;
   preview.style.opacity = 1;

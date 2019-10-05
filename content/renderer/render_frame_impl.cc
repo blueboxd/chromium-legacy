@@ -2239,7 +2239,9 @@ void RenderFrameImpl::DidHideExternalPopupMenu() {
 #endif
 
 bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
-  // Forward Page IPCs to the RenderView.
+  // Page IPCs are routed via the main frame (both local and remote) and then
+  // forwarded to the RenderView. See comment in
+  // RenderFrameHostManager::SendPageMessage() for more information.
   if ((IPC_MESSAGE_CLASS(msg) == PageMsgStart)) {
     if (render_view())
       return render_view()->OnMessageReceived(msg);
@@ -4231,11 +4233,17 @@ WebExternalPopupMenu* RenderFrameImpl::CreateExternalPopupMenu(
   // popup. So from the user perspective, only the first one will show, and
   // will have to close the first one before another one can be shown.
   if (external_popup_menu_)
-    return NULL;
-  external_popup_menu_.reset(
-      new ExternalPopupMenu(this, popup_menu_info, popup_menu_client));
-  render_view_->GetWidget()->SetExternalPopupOriginAdjustmentsForEmulation(
-      external_popup_menu_.get());
+    return nullptr;
+  external_popup_menu_ = std::make_unique<ExternalPopupMenu>(
+      this, popup_menu_info, popup_menu_client);
+
+  // Emulation has never worked appropriately for subframes. Don't bother
+  // applying them if this is not a main frame.
+  if (IsMainFrame() &&
+      render_view_->page_properties()->ScreenMetricsEmulator()) {
+    external_popup_menu_->SetOriginScaleForEmulation(
+        render_view_->page_properties()->ScreenMetricsEmulator()->scale());
+  }
   return external_popup_menu_.get();
 #else
   return nullptr;

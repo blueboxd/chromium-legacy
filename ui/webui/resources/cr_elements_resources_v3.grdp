@@ -61,6 +61,11 @@
          use_base_dir="false"
          type="BINDATA"
          compress="gzip" />
+  <include name="IDR_CR_ELEMENTS_CR_PAGE_HOST_STYLE_CSS_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_page_host_style_css.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
   <include name="IDR_CR_ELEMENTS_CR_LAZY_RENDER_M_JS"
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js"
          use_base_dir="false"

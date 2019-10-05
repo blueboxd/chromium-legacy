@@ -29,6 +29,8 @@
 
 namespace net {
 
+class NetworkIsolationKey;
+
 class ReportingCacheImpl : public ReportingCache {
  public:
   ReportingCacheImpl(ReportingContext* context);
@@ -80,6 +82,7 @@ class ReportingCacheImpl : public ReportingCache {
       std::vector<CachedReportingEndpointGroup> loaded_endpoint_groups)
       override;
   std::vector<ReportingEndpoint> GetCandidateEndpointsForDelivery(
+      const NetworkIsolationKey& network_isolation_key,
       const url::Origin& origin,
       const std::string& group_name) override;
   base::Value GetClientsAsValue() const override;

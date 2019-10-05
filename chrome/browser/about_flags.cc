@@ -2207,6 +2207,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"webxr-ar-module", flag_descriptions::kWebXrArModuleName,
      flag_descriptions::kWebXrArModuleDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXrArModule)},
+    {"webxr-ar-dom-overlay", flag_descriptions::kWebXrArDOMOverlayName,
+     flag_descriptions::kWebXrArDOMOverlayDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kWebXrArDOMOverlay)},
     {"webxr-hit-test", flag_descriptions::kWebXrHitTestName,
      flag_descriptions::kWebXrHitTestDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXrHitTest)},
@@ -2347,6 +2350,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrosRegionsModeDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kCrosRegionsModeChoices)},
 #endif  // OS_CHROMEOS
+#if defined(OS_WIN)
+    {"enable-aura-tooltips-on-windows",
+     flag_descriptions::kEnableAuraTooltipsOnWindowsName,
+     flag_descriptions::kEnableAuraTooltipsOnWindowsDescription, kOsWin,
+     FEATURE_VALUE_TYPE(views::features::kEnableAuraTooltipsOnWindows)},
+#endif  // OS_WIN
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
     {"enable-autofill-credit-card-upload",
      flag_descriptions::kAutofillCreditCardUploadName,

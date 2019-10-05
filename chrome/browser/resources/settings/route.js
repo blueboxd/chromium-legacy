@@ -98,6 +98,7 @@
  *   SITE_SETTINGS_FLASH: (undefined|!settings.Route),
  *   SITE_SETTINGS_HANDLERS: (undefined|!settings.Route),
  *   SITE_SETTINGS_IMAGES: (undefined|!settings.Route),
+ *   SITE_SETTINGS_MIXEDSCRIPT: (undefined|!settings.Route),
  *   SITE_SETTINGS_JAVASCRIPT: (undefined|!settings.Route),
  *   SITE_SETTINGS_SENSORS: (undefined|!settings.Route),
  *   SITE_SETTINGS_SOUND: (undefined|!settings.Route),
@@ -329,6 +330,10 @@ cr.define('settings', function() {
       r.SITE_SETTINGS_DATA_DETAILS =
           r.SITE_SETTINGS_SITE_DATA.createChild('/cookies/detail');
       r.SITE_SETTINGS_IMAGES = r.SITE_SETTINGS.createChild('images');
+      if (loadTimeData.getBoolean('enableInsecureContentContentSetting')) {
+        r.SITE_SETTINGS_MIXEDSCRIPT =
+            r.SITE_SETTINGS.createChild('insecureContent');
+      }
       r.SITE_SETTINGS_JAVASCRIPT = r.SITE_SETTINGS.createChild('javascript');
       r.SITE_SETTINGS_SOUND = r.SITE_SETTINGS.createChild('sound');
       r.SITE_SETTINGS_SENSORS = r.SITE_SETTINGS.createChild('sensors');

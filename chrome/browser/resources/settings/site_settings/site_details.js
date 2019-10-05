@@ -70,6 +70,14 @@ Polymer({
             'enableNativeFileSystemWriteContentSetting');
       }
     },
+
+    /** @private */
+    enableInsecureContentContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableInsecureContentContentSetting');
+      }
+    },
   },
 
   listeners: {

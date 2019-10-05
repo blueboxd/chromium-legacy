@@ -21,18 +21,18 @@ const char kHtmlTemplateStart[] = "_template: html`";
 const size_t kHtmlTemplateStartSize = base::size(kHtmlTemplateStart) - 1;
 
 // Currently only legacy _template: html`...`, syntax is supported.
-enum HtmlTemplateType { NONE = 0, LEGACY = 1 };
+enum HtmlTemplateType { INVALID = 0, NONE = 1, LEGACY = 2 };
 
 struct TemplatePosition {
   HtmlTemplateType type;
   base::StringPiece::size_type position;
 };
 
-TemplatePosition FindHtmlTemplateStart(const base::StringPiece& source) {
-  base::StringPiece::size_type found = source.find(kHtmlTemplateStart);
-  HtmlTemplateType type = found == base::StringPiece::npos ? NONE : LEGACY;
-  return {type, found + kHtmlTemplateStartSize};
-}
+struct HtmlTemplate {
+  base::StringPiece::size_type start;
+  base::StringPiece::size_type length;
+  HtmlTemplateType type;
+};
 
 TemplatePosition FindHtmlTemplateEnd(const base::StringPiece& source) {
   enum State { OPEN, IN_ESCAPE, IN_TICK };
@@ -60,6 +60,36 @@ TemplatePosition FindHtmlTemplateEnd(const base::StringPiece& source) {
     }
   }
   return {NONE, base::StringPiece::npos};
+}
+
+HtmlTemplate FindHtmlTemplate(const base::StringPiece& source) {
+  HtmlTemplate out;
+  base::StringPiece::size_type found = source.find(kHtmlTemplateStart);
+
+  // No template found, return early.
+  if (found == base::StringPiece::npos) {
+    out.type = NONE;
+    return out;
+  }
+
+  out.start = found + kHtmlTemplateStartSize;
+  TemplatePosition end = FindHtmlTemplateEnd(source.substr(out.start));
+  // Template is not terminated.
+  if (end.type == NONE) {
+    out.type = INVALID;
+    return out;
+  }
+
+  out.length = end.position;
+  // Check for a nested template
+  if (source.substr(out.start, out.length).find(kHtmlTemplateStart) !=
+      base::StringPiece::npos) {
+    out.type = INVALID;
+    return out;
+  }
+
+  out.type = LEGACY;
+  return out;
 }
 
 // Escape quotes and backslashes ('"\).
@@ -200,42 +230,45 @@ void TemplateReplacementsFromDictionaryValue(
 bool ReplaceTemplateExpressionsInJS(base::StringPiece source,
                                     const TemplateReplacements& replacements,
                                     std::string* formatted) {
-  // Replacement is only done in JS for the contents of the HTML _template
-  // string.
-  TemplatePosition start_result = FindHtmlTemplateStart(source);
-  if (start_result.type == NONE) {
-    *formatted = source.as_string();
-    return true;
+  CHECK(formatted->empty());
+  base::StringPiece remaining = source;
+  while (true) {
+    // Replacement is only done in JS for the contents of HTML _template
+    // strings.
+    HtmlTemplate current_template = FindHtmlTemplate(remaining);
+
+    // If there was an error finding a template, return false.
+    if (current_template.type == INVALID)
+      return false;
+
+    // If there are no more templates, copy the remaining JS to the output and
+    // return true.
+    if (current_template.type == NONE) {
+      formatted->append(remaining.as_string());
+      return true;
+    }
+
+    // Copy the JS before the template to the output.
+    formatted->append(remaining.substr(0, current_template.start).as_string());
+
+    // Retrieve the HTML portion of the source.
+    base::StringPiece html_template =
+        remaining.substr(current_template.start, current_template.length);
+
+    // Perform replacements with JS escaping.
+    std::string formatted_html;
+    if (!ReplaceTemplateExpressionsInternal(html_template, replacements, true,
+                                            &formatted_html)) {
+      return false;
+    }
+
+    // Append the formatted HTML template.
+    formatted->append(formatted_html);
+
+    // Increment to the end of the current template.
+    remaining =
+        remaining.substr(current_template.start + current_template.length);
   }
-
-  // Only one template allowed per file.
-  TemplatePosition second_start_result =
-      FindHtmlTemplateStart(source.substr(start_result.position));
-  if (second_start_result.type != NONE)
-    return false;
-
-  TemplatePosition end_result =
-      FindHtmlTemplateEnd(source.substr(start_result.position));
-
-  // Template must be properly terminated.
-  if (start_result.type != end_result.type)
-    return false;
-
-  // Retrieve the HTML portion of the source.
-  base::StringPiece html_template =
-      source.substr(start_result.position, end_result.position);
-
-  // Perform replacements with JS escaping.
-  std::string formatted_html;
-  if (!ReplaceTemplateExpressionsInternal(html_template, replacements, true,
-                                          &formatted_html)) {
-    return false;
-  }
-
-  // Re-assemble the JS file.
-  *formatted =
-      source.substr(0, start_result.position).as_string() + formatted_html +
-      source.substr(start_result.position + end_result.position).as_string();
   return true;
 }
 

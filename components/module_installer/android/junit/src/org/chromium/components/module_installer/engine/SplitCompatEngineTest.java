@@ -219,15 +219,33 @@ public class SplitCompatEngineTest {
         verify(mLogger, times(2)).logRequestStart(moduleName);
     }
 
+    @Test(expected = UnsupportedOperationException.class)
+    public void whenInstallingWithMoreThanOneModule_verifyException() {
+        // Arrange.
+        String moduleName = "whenInstallingWithMoreThanOneModule_verifyException";
+        InstallListener listener = mock(InstallListener.class);
+
+        // Mock SplitInstallSessionState.
+        SplitInstallSessionState state = mock(SplitInstallSessionState.class);
+        doReturn(Arrays.asList("m1", "m2")).when(state).moduleNames();
+
+        ArgumentCaptor<SplitInstallStateUpdatedListener> arg =
+                ArgumentCaptor.forClass(SplitInstallStateUpdatedListener.class);
+
+        // Act & Assert.
+        mInstaller.install(moduleName, listener);
+        verify(mManager).registerListener(arg.capture());
+        arg.getValue().onStateUpdate(state);
+    }
+
     @Test
     public void whenInstalled_verifyListenerAndLogger() {
         // Arrange.
         String moduleName = "whenInstalled_verifyListenerAndLogger";
         Integer status = SplitInstallSessionStatus.INSTALLED;
-        String message = String.format("Module '%s' Installed", moduleName);
         InstallListener listener = mock(InstallListener.class);
 
-        // Mock SplitInstallSessionState
+        // Mock SplitInstallSessionState.
         SplitInstallSessionState state = mock(SplitInstallSessionState.class);
         doReturn(status).when(state).status();
         doReturn(Arrays.asList(moduleName)).when(state).moduleNames();
@@ -254,7 +272,6 @@ public class SplitCompatEngineTest {
         String moduleName = "whenFailureToInstall_verifyListenerAndLogger";
         Integer status = SplitInstallSessionStatus.FAILED;
         Integer errorCode = SplitInstallErrorCode.NO_ERROR;
-        String message = String.format("Failed with code: %d", errorCode);
         InstallListener listener = mock(InstallListener.class);
 
         // Mock SplitInstallSessionState.

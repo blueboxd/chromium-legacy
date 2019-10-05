@@ -5381,6 +5381,7 @@ grit("resources") {
 
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {
     deps += [
+      "//chrome/browser/resources/management:polymer3_elements",
       "//chrome/browser/resources/discards:discards_resources_gen",
       "//chrome/browser/ui/webui/discards:mojo_bindings_js",
       "//services/resource_coordinator/public/mojom:mojom_js",

@@ -22,6 +22,8 @@
 (define log-file-path "LOG_FILE_PATH")
 (define os-version (string->number (param "OS_VERSION")))
 (define darwin-user-cache-dir "DARWIN_USER_CACHE_DIR")
+(define darwin-user-dir "DARWIN_USER_DIR")
+(define darwin-user-temp-dir "DARWIN_USER_TEMP_DIR")
 (define filter-syscalls "FILTER_SYSCALLS")
 
 ; Backwards compatibility for 10.10.

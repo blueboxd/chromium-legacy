@@ -36776,6 +36776,7 @@ from previous Chrome versions.
   <int value="317432596" label="DisplayLocking:disabled"/>
   <int value="319683583" label="ContentSuggestionsDebugLog:enabled"/>
   <int value="320121752" label="DelegateOverscrollSwipes:disabled"/>
+  <int value="321366101" label="WebXRARDOMOverlay:enabled"/>
   <int value="323605372" label="ui-disable-compositor-animation-timelines"/>
   <int value="324060906"
       label="enable-experimental-accessibility-language-detection"/>
@@ -36901,6 +36902,7 @@ from previous Chrome versions.
   <int value="477967119" label="enable-unified-media-pipeline"/>
   <int value="479906041" label="RunAllFlashInAllowMode:disabled"/>
   <int value="480544447" label="NonValidatingReloadOnRefreshContentV2:enabled"/>
+  <int value="480677983" label="WebXRARDOMOverlay:disabled"/>
   <int value="481506759" label="ServiceWorkerScriptStreaming:enabled"/>
   <int value="482232604" label="PercentBasedScrolling:enabled"/>
   <int value="492113129" label="ExperimentalAppBanners:enabled"/>
@@ -53073,6 +53075,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="User dismissed the Safety Tip with the esc key"/>
   <int value="4" label="User dismissed the Safety Tip with the close button"/>
   <int value="5" label="User dismissed the Safety Tip with the ignore button"/>
+  <int value="6" label="User opened help center"/>
 </enum>
 
 <enum name="SafetyTipStatus">

@@ -108,6 +108,8 @@ Window::Window(WindowDelegate* delegate, client::WindowType type)
       delegate_(delegate),
       event_targeting_policy_(
           aura::EventTargetingPolicy::kTargetAndDescendants),
+      restore_event_targeting_policy_(
+          aura::EventTargetingPolicy::kTargetAndDescendants),
       // Don't notify newly added observers during notification. This causes
       // problems for code that adds an observer as part of an observer
       // notification (such as the workspace code).
@@ -570,6 +572,14 @@ bool Window::HasObserver(const WindowObserver* observer) const {
 }
 
 void Window::SetEventTargetingPolicy(EventTargetingPolicy policy) {
+  // If the event targeting is blocked on the window, do not allow change event
+  // targeting policy until all event targeting blockers are removed from the
+  // window.
+  if (event_targeting_blocker_count_ > 0) {
+    restore_event_targeting_policy_ = policy;
+    return;
+  }
+
 #if DCHECK_IS_ON()
   const bool old_window_accepts_events =
       (event_targeting_policy_ == EventTargetingPolicy::kTargetOnly) ||

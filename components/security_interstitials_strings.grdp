@@ -461,7 +461,7 @@
   <message name="IDS_SAFETY_TIP_ANDROID_LEAVE_BUTTON" desc="Text of button to ignore the warning on a suspicious page. Shown on the safety tip infobar.">
     Leave site
   </message>
-  <message name="IDS_SAFETY_TIP_ANDROID_GO_TO_SITE_BUTTON" desc="Text of button to ignore the warning on a suspicious page. Shown on the safety tip infobar when we suggest an alternate (safe) destination.">
-    Yes. Go there.
+  <message name="IDS_SAFETY_TIP_ANDROID_LOOKALIKE_TITLE" desc="Title of Safety Tip infobar on a domain that looks like another domain.">
+    Is this the right site?
   </message>
 </grit-part>

@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/fullscreen/scoped_allow_fullscreen.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -235,6 +236,19 @@ bool AllowedToRequestFullscreen(Document& document) {
       ScopedAllowFullscreen::kOrientationChange) {
     UseCounter::Count(document,
                       WebFeature::kFullscreenAllowedByOrientationChange);
+    return true;
+  }
+
+  if (document.IsImmersiveArOverlay()) {
+    // This is a workaround for lack of a user activation when an immersive-ar
+    // session is starting. If the app sets an element fullscreen in the "Enter
+    // AR" button click, that gets unfullscreened when the browser shows its AR
+    // session consent prompt. By the time the session starts, the 5-second
+    // timer for the initial user activation is likely to have expired. This
+    // also allows switching the active fullscreen element during the session.
+    // Note that exiting the immersive-ar session does FullyExitFullscreen to
+    // ensure a consistent post-session state.
+    DVLOG(1) << __func__ << ": allowing fullscreen immersive-ar DOM overlay";
     return true;
   }
 

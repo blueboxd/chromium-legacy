@@ -4,7 +4,7 @@
 
 #include "android_webview/test/webview_instrumentation_test_native_jni/MemoryMetricsLoggerTest_jni.h"
 
-#include "android_webview/browser/memory_metrics_logger.h"
+#include "android_webview/browser/metrics/memory_metrics_logger.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"

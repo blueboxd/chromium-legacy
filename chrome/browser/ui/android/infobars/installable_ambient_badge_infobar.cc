@@ -41,8 +41,11 @@ InstallableAmbientBadgeInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   base::android::ScopedJavaLocalRef<jobject> java_bitmap =
       gfx::ConvertToJavaBitmap(&delegate->GetPrimaryIcon());
 
+  jboolean java_is_primary_icon_maskable = delegate->GetIsPrimaryIconMaskable();
+
   return Java_InstallableAmbientBadgeInfoBar_show(
-      env, delegate->GetIconId(), java_bitmap, java_message_text, java_url);
+      env, delegate->GetIconId(), java_bitmap, java_message_text, java_url,
+      java_is_primary_icon_maskable);
 }
 
 void InstallableAmbientBadgeInfoBar::ProcessButton(int action) {}

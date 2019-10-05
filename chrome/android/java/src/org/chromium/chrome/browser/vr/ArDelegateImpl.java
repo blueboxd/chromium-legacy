@@ -26,4 +26,9 @@ public class ArDelegateImpl implements ArDelegate {
     public void registerOnResumeActivity(Activity activity) {
         ArCoreInstallUtils.onResumeActivityWithNative(activity);
     }
+
+    @Override
+    public boolean onBackPressed() {
+        return ArCoreJavaUtils.onBackPressed();
+    }
 }

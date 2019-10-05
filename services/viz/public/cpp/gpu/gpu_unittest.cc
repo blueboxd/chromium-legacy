@@ -100,8 +100,9 @@ class GpuTest : public testing::Test {
     base::RunLoop run_loop;
     io_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::BindOnce([](base::Closure callback) { callback.Run(); },
-                       run_loop.QuitClosure()));
+        base::BindOnce(
+            [](base::OnceClosure callback) { std::move(callback).Run(); },
+            run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -173,13 +174,13 @@ TEST_F(GpuTest, EstablishRequestsQueued) {
   base::RunLoop run_loop;
   // A callback that decrements the counter, and runs the callback when the
   // counter reaches 0.
-  auto callback = base::Bind(
-      [](int* counter, const base::Closure& callback,
+  auto callback = base::BindRepeating(
+      [](int* counter, base::OnceClosure callback,
          scoped_refptr<gpu::GpuChannelHost> channel) {
         EXPECT_TRUE(channel);
         --(*counter);
         if (*counter == 0)
-          callback.Run();
+          std::move(callback).Run();
       },
       &counter, run_loop.QuitClosure());
   gpu()->EstablishGpuChannel(callback);
@@ -199,9 +200,8 @@ TEST_F(GpuTest, EstablishRequestOnFailureOnPreviousRequest) {
   scoped_refptr<gpu::GpuChannelHost> host;
   auto callback = base::BindOnce(
       [](scoped_refptr<gpu::GpuChannelHost>* out_host,
-         const base::Closure& callback,
-         scoped_refptr<gpu::GpuChannelHost> host) {
-        callback.Run();
+         base::OnceClosure callback, scoped_refptr<gpu::GpuChannelHost> host) {
+        std::move(callback).Run();
         *out_host = std::move(host);
       },
       &host, run_loop.QuitClosure());
@@ -226,10 +226,9 @@ TEST_F(GpuTest, EstablishRequestOnFailureOnPreviousRequest) {
 TEST_F(GpuTest, EstablishRequestResponseSynchronouslyOnSuccess) {
   base::RunLoop run_loop;
   gpu()->EstablishGpuChannel(base::BindOnce(
-      [](const base::Closure& callback,
-         scoped_refptr<gpu::GpuChannelHost> host) {
+      [](base::OnceClosure callback, scoped_refptr<gpu::GpuChannelHost> host) {
         EXPECT_TRUE(host);
-        callback.Run();
+        std::move(callback).Run();
       },
       run_loop.QuitClosure()));
   run_loop.Run();

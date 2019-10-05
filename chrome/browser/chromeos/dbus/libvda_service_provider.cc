@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/video/gpu_arc_video_service_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "dbus/bus.h"

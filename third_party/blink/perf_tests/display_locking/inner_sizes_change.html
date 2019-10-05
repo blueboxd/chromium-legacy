@@ -17,6 +17,7 @@ be noticeably worse.
 .container {
   contain: style layout;
   width: 200px;
+  content-size: 100px;
 }
 .box {
   background: blue;
@@ -49,8 +50,8 @@ function construct(n) {
     document.getElementById("node_template").content, true).firstElementChild;
   for (let i = 0; i < n; ++i) {
     const clone = specimen.cloneNode(true);
-    if (clone.displayLock && i > 0)
-      clone.displayLock.acquire({ timeout: Infinity, size: [100, 100] });
+    if (i > 0)
+      clone.renderSubtree = "invisible";
     document.body.appendChild(clone);
   }
 }

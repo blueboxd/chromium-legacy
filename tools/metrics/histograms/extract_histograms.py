@@ -521,7 +521,12 @@ def _UpdateHistogramsWithSuffixes(tree, histograms):
     suffix_nodes = histogram_suffixes.getElementsByTagName(suffix_tag)
     suffix_labels = {}
     for suffix in suffix_nodes:
-      suffix_labels[suffix.getAttribute('name')] = suffix.getAttribute('label')
+      suffix_name = suffix.getAttribute('name')
+      if not suffix.hasAttribute('label'):
+        logging.error('suffix %s in histogram_suffixes %s should have a label',
+                      suffix_name, name)
+        have_errors = True
+      suffix_labels[suffix_name] = suffix.getAttribute('label')
     # Find owners list under current histogram_suffixes tag.
     owners, _ = _ExtractOwners(histogram_suffixes)
 

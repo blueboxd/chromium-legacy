@@ -60,8 +60,7 @@ class CalculatorsPoliciesBinderImpl : public CalculatorsPoliciesBinder {
       : settings_(settings), profile_(profile) {
     pref_change_registrar_.Init(profile->GetPrefs());
     // Bind device policies to corresponding instance of BulkPrintersCalculator.
-    device_printers_ = BulkPrintersCalculatorFactory::Get()->GetForDevice(
-        /*create_if_not_exists=*/false);
+    device_printers_ = BulkPrintersCalculatorFactory::Get()->GetForDevice();
     if (device_printers_ && ++(BindingsCount()[device_printers_.get()]) == 1) {
       BindSettings(kDeviceNativePrintersAccessMode,
                    &CalculatorsPoliciesBinderImpl::UpdateDeviceAccessMode);
@@ -71,9 +70,8 @@ class CalculatorsPoliciesBinderImpl : public CalculatorsPoliciesBinder {
                    &CalculatorsPoliciesBinderImpl::UpdateDeviceWhitelist);
     }
     // Bind user policies to corresponding instance of BulkPrintersCalculator.
-    user_printers_ = BulkPrintersCalculatorFactory::Get()->GetForProfile(
-        profile,
-        /*create_if_not_exists=*/false);
+    user_printers_ =
+        BulkPrintersCalculatorFactory::Get()->GetForProfile(profile);
     if (user_printers_ && ++(BindingsCount()[user_printers_.get()]) == 1) {
       BindPref(prefs::kRecommendedNativePrintersAccessMode,
                &CalculatorsPoliciesBinderImpl::UpdateUserAccessMode);

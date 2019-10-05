@@ -496,6 +496,11 @@ void VRServiceImpl::DoRequestSession(
     runtime_options->render_frame_id = render_frame_host_->GetRoutingID();
   }
 #endif
+  // Make the resolved enabled features available to the runtime.
+  runtime_options->enabled_features.reserve(enabled_features.size());
+  for (const auto& feature : enabled_features) {
+    runtime_options->enabled_features.push_back(feature);
+  }
 
   if (runtime_options->immersive) {
     GetSessionMetricsHelper()->ReportRequestPresent(*runtime_options);

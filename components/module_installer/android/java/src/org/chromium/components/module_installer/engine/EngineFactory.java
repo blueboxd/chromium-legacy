@@ -4,15 +4,15 @@
 
 package org.chromium.components.module_installer.engine;
 
+import org.chromium.base.BuildConfig;
 import org.chromium.base.CommandLine;
-import org.chromium.components.module_installer.builder.ModuleInstallerConfig;
 
 /**
  * Factory used to build concrete engines.
  */
 public class EngineFactory {
     public InstallEngine getEngine() {
-        if (!ModuleInstallerConfig.IS_BUNDLE) {
+        if (!BuildConfig.IS_BUNDLE) {
             return new ApkEngine();
         }
         if (CommandLine.getInstance().hasSwitch("fake-feature-module-install")) {

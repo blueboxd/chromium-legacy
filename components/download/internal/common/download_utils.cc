@@ -4,6 +4,9 @@
 
 #include "components/download/public/common/download_utils.h"
 
+#include <memory>
+#include <string>
+
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/i18n/file_util_icu.h"
@@ -27,7 +30,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/content_uri_utils.h"
 #include "components/download/internal/common/android/download_collection_bridge.h"
-#endif
+#endif  // defined(OS_ANDROID)
 
 namespace download {
 
@@ -261,7 +264,7 @@ void HandleResponseHeaders(const net::HttpResponseHeaders* headers,
 
 std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
     DownloadUrlParameters* params) {
-  DCHECK(params->offset() >= 0);
+  DCHECK_GE(params->offset(), 0);
 
   std::unique_ptr<network::ResourceRequest> request(
       new network::ResourceRequest);
@@ -570,7 +573,7 @@ bool IsDownloadDone(const GURL& url,
     case DownloadItem::INTERRUPTED:
       return GetDownloadResumeMode(url, reason, false /* restart_required */,
                                    false /* user_action_required */) ==
-             download::ResumeMode::INVALID;
+             ResumeMode::INVALID;
     default:
       return false;
   }

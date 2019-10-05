@@ -44,6 +44,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/range/range.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -200,6 +201,14 @@ class SafetyTipPageInfoBubbleViewBrowserTest
     PerformMouseClickOnView(bubble->GetLeaveButtonForTesting());
   }
 
+  void ClickLearnMoreLink() {
+    // This class is a friend to SafetyTipPageInfoBubbleView.
+    auto* bubble = static_cast<SafetyTipPageInfoBubbleView*>(
+        PageInfoBubbleViewBase::GetPageInfoBubbleForTesting());
+    bubble->StyledLabelLinkClicked(bubble->GetLearnMoreLinkForTesting(),
+                                   gfx::Range(), 0);
+  }
+
   void CloseWarningLeaveSite(Browser* browser) {
     if (ui_status() == UIStatus::kDisabled) {
       return;
@@ -299,6 +308,21 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 
   ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
+}
+
+// Test that clicking 'learn more' opens a help center article.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       LearnMoreOpensHelpCenter) {
+  if (ui_status() == UIStatus::kDisabled) {
+    return;
+  }
+
+  auto kNavigatedUrl = GetURL("site1.com");
+  TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+
+  content::WebContentsAddedObserver new_tab_observer;
+  ClickLearnMoreLink();
+  EXPECT_NE(kNavigatedUrl, new_tab_observer.GetWebContents()->GetURL());
 }
 
 // If the user clicks 'leave site', the warning should re-appear when the user

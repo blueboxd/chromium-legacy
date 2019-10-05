@@ -1327,6 +1327,13 @@ EVENT_TYPE(BIDIRECTIONAL_STREAM_READY)
 //   }
 EVENT_TYPE(BIDIRECTIONAL_STREAM_FAILED)
 
+// Identifies the NetLogSource() for the QuicSession that handled the stream.
+// The event parameters are:
+//   {
+//      "source_dependency": <Source identifier for session that was used>,
+//   }
+EVENT_TYPE(BIDIRECTIONAL_STREAM_BOUND_TO_QUIC_SESSION)
+
 // ------------------------------------------------------------------------
 // SERVER_PUSH_LOOKUP_TRANSACTION
 // ------------------------------------------------------------------------
@@ -2080,7 +2087,7 @@ EVENT_TYPE(QUIC_HTTP_STREAM_PUSH_PROMISE_RENDEZVOUS)
 //   }
 EVENT_TYPE(QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM)
 
-// Identifies the NetLogSource() for the QuicSesssion that handled the stream.
+// Identifies the NetLogSource() for the QuicSession that handled the stream.
 // The event parameters are:
 //   {
 //      "source_dependency": <Source identifier for session that was used>,

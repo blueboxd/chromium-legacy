@@ -286,7 +286,7 @@ void FrameInputHandlerImpl::SelectRange(const gfx::Point& base,
 
   if (!render_frame_)
     return;
-  RenderWidget* window_widget = render_frame_->render_view()->GetWidget();
+  RenderWidget* window_widget = render_frame_->GetLocalRootRenderWidget();
   HandlingState handling_state(render_frame_, UpdateState::kIsSelectingRange);
   render_frame_->GetWebFrame()->SelectRange(
       window_widget->ConvertWindowPointToViewport(base),
@@ -383,7 +383,7 @@ void FrameInputHandlerImpl::MoveRangeSelectionExtent(const gfx::Point& extent) {
     return;
   HandlingState handling_state(render_frame_, UpdateState::kIsSelectingRange);
   render_frame_->GetWebFrame()->MoveRangeSelectionExtent(
-      render_frame_->render_view()->GetWidget()->ConvertWindowPointToViewport(
+      render_frame_->GetLocalRootRenderWidget()->ConvertWindowPointToViewport(
           extent));
 }
 
@@ -418,7 +418,7 @@ void FrameInputHandlerImpl::MoveCaret(const gfx::Point& point) {
     return;
 
   render_frame_->GetWebFrame()->MoveCaretSelection(
-      render_frame_->render_view()->GetWidget()->ConvertWindowPointToViewport(
+      render_frame_->GetLocalRootRenderWidget()->ConvertWindowPointToViewport(
           point));
 }
 

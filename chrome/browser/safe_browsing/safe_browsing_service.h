@@ -20,6 +20,7 @@
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
+#include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -79,7 +80,8 @@ class TriggerManager;
 // alive until SafeBrowsingService is destroyed, however, they are disabled
 // permanently when Shutdown method is called.
 class SafeBrowsingService : public SafeBrowsingServiceInterface,
-                            public content::NotificationObserver {
+                            public content::NotificationObserver,
+                            public ProfileManagerObserver {
  public:
   static base::FilePath GetCookieFilePathForTesting();
 
@@ -243,11 +245,8 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // Starts following the safe browsing preference on |pref_service|.
-  void AddPrefService(PrefService* pref_service);
-
-  // Stop following the safe browsing preference on |pref_service|.
-  void RemovePrefService(PrefService* pref_service);
+  // ProfileManagerObserver overrides:
+  void OnProfileAdded(Profile* profile) override;
 
   // Checks if any profile is currently using the safe browsing service, and
   // starts or stops the service accordingly.

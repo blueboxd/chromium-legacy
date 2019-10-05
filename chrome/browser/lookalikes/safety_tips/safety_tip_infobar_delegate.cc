@@ -119,6 +119,5 @@ void SafetyTipInfoBarDelegate::InfoBarDismissed() {
 }
 
 base::string16 SafetyTipInfoBarDelegate::GetDescriptionText() const {
-  return l10n_util::GetStringUTF16(
-      GetSafetyTipDescriptionId(safety_tip_status_));
+  return GetSafetyTipDescription(safety_tip_status_, suggested_url_);
 }

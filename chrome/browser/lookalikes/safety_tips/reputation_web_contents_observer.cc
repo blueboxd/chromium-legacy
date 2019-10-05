@@ -44,6 +44,9 @@ void OnSafetyTipClosed(security_state::SafetyTipStatus safety_tip_status,
       action_suffix = "DismissWithIgnore";
       warning_dismissed = true;
       break;
+    case safety_tips::SafetyTipInteraction::kLearnMore:
+      action_suffix = "LearnMore";
+      break;
   }
   if (warning_dismissed) {
     base::UmaHistogramCustomTimes(

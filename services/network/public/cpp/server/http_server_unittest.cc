@@ -26,10 +26,6 @@
 #include "net/log/net_log_source.h"
 #include "net/test/gtest_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/server/http_connection.h"
 #include "services/network/public/cpp/server/http_server_request_info.h"
@@ -486,37 +482,19 @@ TEST_F(WebSocketTest, RequestWebSocketTrailingJunk) {
 }
 
 TEST_F(HttpServerTest, RequestWithTooLargeBody) {
-  class TestURLFetcherDelegate : public net::URLFetcherDelegate {
-   public:
-    TestURLFetcherDelegate(const base::RepeatingClosure& quit_loop_func)
-        : quit_loop_func_(quit_loop_func) {}
-    ~TestURLFetcherDelegate() override = default;
-
-    void OnURLFetchComplete(const net::URLFetcher* source) override {
-      EXPECT_EQ(net::HTTP_INTERNAL_SERVER_ERROR, source->GetResponseCode());
-      quit_loop_func_.Run();
-    }
-
-   private:
-    base::RepeatingClosure quit_loop_func_;
-  };
-
-  base::RunLoop run_loop;
-  TestURLFetcherDelegate delegate(run_loop.QuitClosure());
-
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter(
-      new net::TestURLRequestContextGetter(
-          base::ThreadTaskRunnerHandle::Get()));
-  std::unique_ptr<net::URLFetcher> fetcher = net::URLFetcher::Create(
-      GURL(base::StringPrintf("http://[::1]:%d/test", server_address_.port())),
-      net::URLFetcher::GET, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
-  fetcher->SetRequestContext(request_context_getter.get());
-  fetcher->AddExtraRequestHeader(
-      base::StringPrintf("content-length:%d", 1 << 30));
-  fetcher->Start();
-
-  run_loop.Run();
-  ASSERT_EQ(0u, requests_.size());
+  TestHttpClient client;
+  ASSERT_THAT(client.ConnectAndWait(server_address_), IsOk());
+  client.Send(
+      "GET /test HTTP/1.1\r\n"
+      "Content-Length: 1073741824\r\n\r\n");
+  std::string response;
+  ASSERT_TRUE(client.ReadResponse(&response));
+  EXPECT_EQ(
+      "HTTP/1.1 500 Internal Server Error\r\n"
+      "Content-Length:53\r\n"
+      "Content-Type:text/html\r\n\r\n"
+      "request content-length too big or unknown: 1073741824",
+      response);
 }
 
 TEST_F(HttpServerTest, Send200) {

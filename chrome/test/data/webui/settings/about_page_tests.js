@@ -678,24 +678,13 @@ cr.define('settings_about_page', function() {
         });
 
         test('Initialization', async () => {
-          const versionInfo = {
-            arcVersion: 'dummyArcVersion',
-            osFirmware: 'dummyOsFirmware',
-            osVersion: 'dummyOsVersion',
-          };
-          browserProxy.setVersionInfo(versionInfo);
-
           page = document.createElement('settings-detailed-build-info');
           document.body.appendChild(page);
 
           await Promise.all([
             browserProxy.whenCalled('pageReady'),
-            browserProxy.whenCalled('getVersionInfo'),
             browserProxy.whenCalled('getChannelInfo'),
           ]);
-          assertEquals(versionInfo.arcVersion, page.$.arcVersion.textContent);
-          assertEquals(versionInfo.osVersion, page.$.osVersion.textContent);
-          assertEquals(versionInfo.osFirmware, page.$.osFirmware.textContent);
         });
 
         /**

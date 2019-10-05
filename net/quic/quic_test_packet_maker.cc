@@ -1330,7 +1330,7 @@ void QuicTestPacketMaker::SetEncryptionLevel(quic::EncryptionLevel level) {
         long_header_type_ = quic::INVALID_PACKET_TYPE;
         break;
       default:
-        QUIC_BUG << quic::QuicUtils::EncryptionLevelToString(level);
+        QUIC_BUG << quic::EncryptionLevelToString(level);
         long_header_type_ = quic::INVALID_PACKET_TYPE;
     }
 }

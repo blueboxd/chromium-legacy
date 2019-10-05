@@ -2016,6 +2016,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         TextBubble.dismissBubbles();
         if (VrModuleProvider.getDelegate().onBackPressed()) return;
+
+        ArDelegate arDelegate = ArDelegateProvider.getDelegate();
+        if (arDelegate != null && arDelegate.onBackPressed()) return;
+
         if (mCompositorViewHolder != null) {
             LayoutManager layoutManager = mCompositorViewHolder.getLayoutManager();
             if (layoutManager != null && layoutManager.onBackPressed()) return;

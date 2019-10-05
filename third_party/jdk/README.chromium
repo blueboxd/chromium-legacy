@@ -1,0 +1,24 @@
+Name: Java Development Kit
+Short Name: JDK
+URL: https://www.java.com/
+Version: 11.0.4
+License: GPL v2
+License File: NOT_SHIPPED
+Security Critical: no
+
+Description:
+The Java Development Kit (JDK) is a software development environment used for
+developing Java applications and applets. (linux-x64)
+
+How to update:
+1. Find the specific version you want to update from
+   https://www.oracle.com/technetwork/java/javase/downloads/index.html
+2. Click DOWNLOAD for specific version
+3. Accept License Agreement
+4. Download "Linux" version
+5. Unzip compressed files to //third_party/jdk/current
+6. Run "cipd create --pkg-def cipd.yaml" to create cipd package and get instance ID
+7. Update instance ID in //DEPS
+
+Local Modifications:
+None

@@ -19,7 +19,6 @@
 #include "net/reporting/reporting_cache_observer.h"
 #include "net/reporting/reporting_delegate.h"
 #include "net/reporting/reporting_delivery_agent.h"
-#include "net/reporting/reporting_endpoint_manager.h"
 #include "net/reporting/reporting_garbage_collector.h"
 #include "net/reporting/reporting_network_change_observer.h"
 #include "net/reporting/reporting_policy.h"
@@ -104,8 +103,7 @@ ReportingContext::ReportingContext(
       delegate_(std::move(delegate)),
       cache_(ReportingCache::Create(this)),
       store_(store),
-      endpoint_manager_(ReportingEndpointManager::Create(this, rand_callback)),
-      delivery_agent_(ReportingDeliveryAgent::Create(this)),
+      delivery_agent_(ReportingDeliveryAgent::Create(this, rand_callback)),
       garbage_collector_(ReportingGarbageCollector::Create(this)),
       network_change_observer_(ReportingNetworkChangeObserver::Create(this)) {}
 

@@ -25,7 +25,6 @@ namespace net {
 class ReportingCacheObserver;
 class ReportingDelegate;
 class ReportingDeliveryAgent;
-class ReportingEndpointManager;
 class ReportingGarbageCollector;
 class ReportingNetworkChangeObserver;
 class ReportingUploader;
@@ -51,9 +50,6 @@ class NET_EXPORT ReportingContext {
   ReportingDelegate* delegate() { return delegate_.get(); }
   ReportingCache* cache() { return cache_.get(); }
   ReportingCache::PersistentReportingStore* store() { return store_; }
-  ReportingEndpointManager* endpoint_manager() {
-    return endpoint_manager_.get();
-  }
   ReportingDeliveryAgent* delivery_agent() { return delivery_agent_.get(); }
   ReportingGarbageCollector* garbage_collector() {
     return garbage_collector_.get();
@@ -97,11 +93,8 @@ class NET_EXPORT ReportingContext {
 
   ReportingCache::PersistentReportingStore* const store_;
 
-  // |endpoint_manager_| must come after |tick_clock_| and |cache_|.
-  std::unique_ptr<ReportingEndpointManager> endpoint_manager_;
-
   // |delivery_agent_| must come after |tick_clock_|, |delegate_|, |uploader_|,
-  // |cache_|, and |endpoint_manager_|.
+  // and |cache_|.
   std::unique_ptr<ReportingDeliveryAgent> delivery_agent_;
 
   // |garbage_collector_| must come after |tick_clock_| and |cache_|.

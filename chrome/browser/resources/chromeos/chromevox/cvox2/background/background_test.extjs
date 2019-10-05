@@ -2088,3 +2088,18 @@ TEST_F('ChromeVoxBackgroundTest', 'SimilarItemNavigation', function() {
     mockFeedback.replay();
   });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'TableWithAriaRowCol', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div role="table">
+      <div role="row" aria-rowindex=3>
+        <div role="cell">test</div>
+      </div>
+    </div>
+  */}, function(root) {
+    mockFeedback.call(doCmd('fullyDescribe'))
+        .expectSpeech('test', 'row 3 column 1', 'Table , 1 by 1')
+        .replay();
+  });
+});

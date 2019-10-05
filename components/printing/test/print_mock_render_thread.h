@@ -9,6 +9,8 @@
 
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -96,14 +98,14 @@ class PrintMockRenderThread : public content::MockRenderThread {
   std::unique_ptr<MockPrinter> printer_;
 
   // True to simulate user clicking print. False to cancel.
-  bool print_dialog_user_response_;
+  bool print_dialog_user_response_ = true;
 
   // Simulates cancelling print preview if |print_preview_pages_remaining_|
   // equals this.
-  int print_preview_cancel_page_number_;
+  int print_preview_cancel_page_number_ = -1;
 
   // Number of pages to generate for print preview.
-  int print_preview_pages_remaining_;
+  int print_preview_pages_remaining_ = 0;
 
   // Vector of <page_number, content_data_size> that were previewed.
   std::vector<std::pair<int, uint32_t>> print_preview_pages_;

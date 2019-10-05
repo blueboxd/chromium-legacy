@@ -60,6 +60,14 @@ Polymer({
     },
 
     /** @private */
+    enableInsecureContentContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableInsecureContentContentSetting');
+      }
+    },
+
+    /** @private */
     enableNativeFileSystemWriteContentSetting_: {
       type: Boolean,
       value: function() {
@@ -130,6 +138,10 @@ Polymer({
       pairs.push([
         R.SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE, 'native-file-system-write'
       ]);
+    }
+
+    if (this.enableInsecureContentContentSetting_) {
+      pairs.push([R.SITE_SETTINGS_MIXEDSCRIPT, 'mixed-script']);
     }
 
     pairs.forEach(([route, id]) => {

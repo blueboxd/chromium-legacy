@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/vr/arcore_device/arcore_device.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/numerics/math_constants.h"
 #include "base/optional.h"
@@ -101,7 +103,16 @@ ArCoreDevice::ArCoreDevice()
                    std::make_unique<vr::ArCoreJavaUtils>()) {}
 
 ArCoreDevice::~ArCoreDevice() {
+  // If there's still a pending session request, reject it.
   CallDeferredRequestSessionCallback(/*success=*/false);
+
+  // Ensure that any active sessions are terminated. Terminating the GL thread
+  // would normally do so via its session_shutdown_callback_, but that happens
+  // asynchronously via CreateMainThreadCallback, and it doesn't seem safe to
+  // depend on all posted tasks being handled before the thread is shut down.
+  // Repeated EndSession calls are a no-op, so it's OK to do this redundantly.
+  OnSessionEnded();
+
   // The GL thread must be terminated since it uses our members. For example,
   // there might still be a posted Initialize() call in flight that uses
   // arcore_session_utils_ and arcore_factory_. Ensure that the thread is
@@ -151,10 +162,14 @@ void ArCoreDevice::RequestSession(
   }
   session_state_->pending_request_session_callback_ = std::move(callback);
 
+  bool use_dom_overlay = base::Contains(
+      options->enabled_features,
+      device::mojom::XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR);
+
   if (session_state_->is_arcore_gl_thread_initialized_) {
     // First session on a new ArCoreDevice, and it's ready to proceed now.
-    RequestSessionAfterInitialization(options->render_process_id,
-                                      options->render_frame_id);
+    RequestSessionAfterInitialization(
+        options->render_process_id, options->render_frame_id, use_dom_overlay);
   } else {
     if (mailbox_bridge_) {
       // This is a new ArCoreDevice, but its mailbox_bridge_ hasn't finished
@@ -173,12 +188,13 @@ void ArCoreDevice::RequestSession(
     session_state_->pending_request_session_after_gl_thread_initialized_ =
         base::BindOnce(&ArCoreDevice::RequestSessionAfterInitialization,
                        GetWeakPtr(), options->render_process_id,
-                       options->render_frame_id);
+                       options->render_frame_id, use_dom_overlay);
   }
 }
 
 void ArCoreDevice::RequestSessionAfterInitialization(int render_process_id,
-                                                     int render_frame_id) {
+                                                     int render_frame_id,
+                                                     bool use_overlay) {
   auto ready_callback =
       base::BindRepeating(&ArCoreDevice::OnDrawingSurfaceReady, GetWeakPtr());
   auto touch_callback =
@@ -187,8 +203,9 @@ void ArCoreDevice::RequestSessionAfterInitialization(int render_process_id,
       base::BindOnce(&ArCoreDevice::OnDrawingSurfaceDestroyed, GetWeakPtr());
 
   arcore_session_utils_->RequestArSession(
-      render_process_id, render_frame_id, std::move(ready_callback),
-      std::move(touch_callback), std::move(destroyed_callback));
+      render_process_id, render_frame_id, use_overlay,
+      std::move(ready_callback), std::move(touch_callback),
+      std::move(destroyed_callback));
 }
 
 void ArCoreDevice::OnDrawingSurfaceReady(gfx::AcceleratedWidget window,

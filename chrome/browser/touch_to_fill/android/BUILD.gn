@@ -55,9 +55,6 @@ junit_binary("touch_to_fill_junit_tests") {
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
   ]
-
-  srcjar_deps =
-      [ "//components/module_installer/android:module_installer_build_config" ]
 }
 
 android_library("test_java") {

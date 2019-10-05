@@ -56,9 +56,9 @@ base::Value NetLogQuicPacketSentParams(
               NetLogNumberValue(serialized_packet.packet_number.ToUint64()));
   dict.SetIntKey("size", serialized_packet.encrypted_length);
   dict.SetKey("sent_time_us", NetLogNumberValue(sent_time.ToDebuggingValue()));
-  dict.SetStringKey("encryption_level",
-                    quic::QuicUtils::EncryptionLevelToString(
-                        serialized_packet.encryption_level));
+  dict.SetStringKey(
+      "encryption_level",
+      quic::EncryptionLevelToString(serialized_packet.encryption_level));
   return dict;
 }
 
@@ -250,7 +250,7 @@ base::Value NetLogQuicCryptoFrameParams(const quic::QuicCryptoFrame* frame,
                                         bool has_buffer) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("encryption_level",
-                    quic::QuicUtils::EncryptionLevelToString(frame->level));
+                    quic::EncryptionLevelToString(frame->level));
   dict.SetIntKey("data_length", frame->data_length);
   dict.SetKey("offset", NetLogNumberValue(frame->offset));
   if (has_buffer) {

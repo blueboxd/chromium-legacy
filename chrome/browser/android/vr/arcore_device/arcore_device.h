@@ -85,7 +85,8 @@ class ArCoreDevice : public VRDeviceBase {
   bool IsOnMainThread();
 
   void RequestSessionAfterInitialization(int render_process_id,
-                                         int render_frame_id);
+                                         int render_frame_id,
+                                         bool use_overlay);
   void CallDeferredRequestSessionCallback(bool success);
   void RequestArCoreGlInitialization(gfx::AcceleratedWidget window,
                                      int rotation,

@@ -38,6 +38,7 @@
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/scoped_window_event_targeting_blocker.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
@@ -214,8 +215,9 @@ class CaptionButtonModel : public ash::CaptionButtonModel {
   DISALLOW_COPY_AND_ASSIGN(CaptionButtonModel);
 };
 
-// EventTargetingBlocker blocks the event targeting by settnig NONE targeting
-// policy to the window subtrees. It resets to the origial policy upon deletion.
+// EventTargetingBlocker blocks the event targeting by setting NONE targeting
+// policy to the window subtrees. It resets to the original policy upon
+// deletion.
 class EventTargetingBlocker : aura::WindowObserver {
  public:
   EventTargetingBlocker() = default;
@@ -233,29 +235,28 @@ class EventTargetingBlocker : aura::WindowObserver {
  private:
   void Register(aura::Window* window) {
     window->AddObserver(this);
-    auto policy = window->event_targeting_policy();
-    window->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
-    policy_map_.emplace(window, policy);
+    event_targeting_blocker_map_[window] =
+        std::make_unique<aura::ScopedWindowEventTargetingBlocker>(window);
     for (auto* child : window->children())
       Register(child);
   }
 
   void Unregister(aura::Window* window) {
     window->RemoveObserver(this);
-    DCHECK(policy_map_.find(window) != policy_map_.end());
-    window->SetEventTargetingPolicy(policy_map_[window]);
+    event_targeting_blocker_map_.erase(window);
     for (auto* child : window->children())
       Unregister(child);
   }
 
   void OnWindowDestroying(aura::Window* window) override {
-    auto it = policy_map_.find(window);
-    DCHECK(it != policy_map_.end());
-    policy_map_.erase(it);
-    window->RemoveObserver(this);
+    Unregister(window);
+    if (window_ == window)
+      window_ = nullptr;
   }
 
-  std::map<aura::Window*, aura::EventTargetingPolicy> policy_map_;
+  std::map<aura::Window*,
+           std::unique_ptr<aura::ScopedWindowEventTargetingBlocker>>
+      event_targeting_blocker_map_;
   aura::Window* window_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(EventTargetingBlocker);

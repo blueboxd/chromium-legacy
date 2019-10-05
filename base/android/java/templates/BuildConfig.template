@@ -68,4 +68,10 @@ public class BuildConfig {
 #else
     public static MAYBE_FINAL int MIN_SDK_VERSION = 1;
 #endif
+
+#if defined(_IS_BUNDLE)
+    public static MAYBE_FINAL boolean IS_BUNDLE = true;
+#else
+    public static MAYBE_FINAL boolean IS_BUNDLE MAYBE_FALSE;
+#endif
 }

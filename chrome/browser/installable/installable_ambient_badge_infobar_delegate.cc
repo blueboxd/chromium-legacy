@@ -23,12 +23,14 @@ void InstallableAmbientBadgeInfoBarDelegate::Create(
     base::WeakPtr<Client> weak_client,
     const base::string16& app_name,
     const SkBitmap& primary_icon,
+    const bool is_primary_icon_maskable,
     const GURL& start_url) {
   InfoBarService::FromWebContents(web_contents)
       ->AddInfoBar(std::make_unique<InstallableAmbientBadgeInfoBar>(
           std::unique_ptr<InstallableAmbientBadgeInfoBarDelegate>(
               new InstallableAmbientBadgeInfoBarDelegate(
-                  weak_client, app_name, primary_icon, start_url))));
+                  weak_client, app_name, primary_icon, is_primary_icon_maskable,
+                  start_url))));
 }
 
 void InstallableAmbientBadgeInfoBarDelegate::AddToHomescreen() {
@@ -58,15 +60,21 @@ const SkBitmap& InstallableAmbientBadgeInfoBarDelegate::GetPrimaryIcon() const {
   return primary_icon_;
 }
 
+bool InstallableAmbientBadgeInfoBarDelegate::GetIsPrimaryIconMaskable() const {
+  return is_primary_icon_maskable_;
+}
+
 InstallableAmbientBadgeInfoBarDelegate::InstallableAmbientBadgeInfoBarDelegate(
     base::WeakPtr<Client> weak_client,
     const base::string16& app_name,
     const SkBitmap& primary_icon,
+    const bool is_primary_icon_maskable,
     const GURL& start_url)
     : infobars::InfoBarDelegate(),
       weak_client_(weak_client),
       app_name_(app_name),
       primary_icon_(primary_icon),
+      is_primary_icon_maskable_(is_primary_icon_maskable),
       start_url_(start_url) {}
 
 infobars::InfoBarDelegate::InfoBarIdentifier

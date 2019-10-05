@@ -15,6 +15,14 @@ var cca = cca || {};
 cca.views = cca.views || {};
 
 /**
+ * The maximum number of pixels in the downscaled intent photo result. Reference
+ * from GCA: https://goto.google.com/gca-inline-bitmap-max-pixel-num
+ * @type {number}
+ * @const
+ */
+cca.views.DOWNSCALE_INTENT_MAX_PIXEL_NUM = 50 * 1024;
+
+/**
  * Creates the camera-intent-view controller.
  */
 cca.views.CameraIntent = class extends cca.views.Camera {
@@ -28,6 +36,15 @@ cca.views.CameraIntent = class extends cca.views.Camera {
     const resultSaver = {
       savePhoto: async (blob) => {
         this.photoResult_ = blob;
+        if (intent.shouldDownScale) {
+          const image = await cca.util.blobToImage(blob);
+          const ratio = Math.sqrt(
+              cca.views.DOWNSCALE_INTENT_MAX_PIXEL_NUM /
+              (image.width * image.height));
+          blob = await cca.util.scalePicture(
+              image.src, false, Math.floor(image.width * ratio),
+              Math.floor(image.height * ratio));
+        }
         const buf = await blob.arrayBuffer();
         await this.intent_.appendData(new Uint8Array(buf));
       },

@@ -14,7 +14,7 @@ namespace {
 
 using TraceWrapperV8ReferenceTest = BindingTestSupportingGC;
 
-class TraceWrapperV8ReferenceHolder
+class TraceWrapperV8ReferenceHolder final
     : public GarbageCollected<TraceWrapperV8ReferenceHolder> {
  public:
   TraceWrapperV8ReferenceHolder() = default;

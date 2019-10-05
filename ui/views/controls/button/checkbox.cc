@@ -21,6 +21,7 @@
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
@@ -30,6 +31,18 @@
 #include "ui/views/vector_icons.h"
 
 namespace views {
+
+class Checkbox::FocusRingHighlightPathGenerator
+    : public views::HighlightPathGenerator {
+ public:
+  SkPath GetHighlightPath(const views::View* view) override {
+    SkPath path;
+    auto* checkbox = static_cast<const views::Checkbox*>(view);
+    if (checkbox->image()->bounds().IsEmpty())
+      return path;
+    return checkbox->GetFocusRingPath();
+  }
+};
 
 Checkbox::Checkbox(const base::string16& label, ButtonListener* listener)
     : LabelButton(listener, label), checked_(false), label_ax_id_(0) {
@@ -153,12 +166,6 @@ std::unique_ptr<LabelButtonBorder> Checkbox::CreateDefaultBorder() const {
   border->set_insets(
       LayoutProvider::Get()->GetInsetsMetric(INSETS_CHECKBOX_RADIO_BUTTON));
   return border;
-}
-
-void Checkbox::Layout() {
-  LabelButton::Layout();
-  if (focus_ring() && !image()->bounds().IsEmpty())
-    focus_ring()->SetPath(GetFocusRingPath());
 }
 
 SkPath Checkbox::GetFocusRingPath() const {

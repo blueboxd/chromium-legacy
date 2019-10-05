@@ -260,9 +260,6 @@ class LocationBarView : public LocationBar,
   // Updates the color of the icon for the "clear all" button.
   void RefreshClearAllButtonIcon();
 
-  // Updates the focus ring.
-  void RefreshFocusRing();
-
   // Returns true if a keyword is selected in the model.
   bool ShouldShowKeywordBubble() const;
 

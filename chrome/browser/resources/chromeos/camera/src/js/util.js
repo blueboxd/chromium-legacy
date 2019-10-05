@@ -922,3 +922,48 @@ cca.util.getDefaultFacing = async function() {
       'environment' :
       'user';
 };
+
+/**
+ * Scales the input picture to target width and height with respect to original
+ * aspect ratio.
+ * @param {string} url Picture as an URL.
+ * @param {boolean} isVideo Picture is a video.
+ * @param {number} width Target width to be scaled to.
+ * @param {number=} height Target height to be scaled to. In default, set to
+ *     corresponding rounded height with respect to target width and aspect
+ *     ratio of input picture.
+ * @return {!Promise<!Blob>} Promise for the result.
+ * @private
+ */
+cca.util.scalePicture = function(url, isVideo, width, height = undefined) {
+  const element = document.createElement(isVideo ? 'video' : 'img');
+  if (isVideo) {
+    element.preload = 'auto';
+  }
+  return new Promise((resolve, reject) => {
+           element.addEventListener(isVideo ? 'canplay' : 'load', resolve);
+           element.addEventListener('error', reject);
+           element.src = url;
+         })
+      .then(() => {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        if (height === undefined) {
+          const ratio = isVideo ? element.videoHeight / element.videoWidth :
+                                  element.height / element.width;
+          height = Math.round(width * ratio);
+        }
+        canvas.width = width;
+        canvas.height = height;
+        context.drawImage(element, 0, 0, width, height);
+        return new Promise((resolve, reject) => {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error('Failed to create thumbnail.'));
+            }
+          }, 'image/jpeg');
+        });
+      });
+};

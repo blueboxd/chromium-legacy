@@ -56,7 +56,6 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   SkColor GetInkDropBaseColor() const override;
   gfx::ImageSkia GetImage(ButtonState for_state) const override;
   std::unique_ptr<LabelButtonBorder> CreateDefaultBorder() const override;
-  void Layout() override;
 
   // Gets the vector icon to use based on the current state of |checked_|.
   virtual const gfx::VectorIcon& GetVectorIcon() const;
@@ -65,7 +64,7 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   virtual SkPath GetFocusRingPath() const;
 
  private:
-  friend class IconFocusRing;
+  class FocusRingHighlightPathGenerator;
 
   // Bitmask constants for GetIconImageColor.
   enum IconState { CHECKED = 0b1, ENABLED = 0b10 };

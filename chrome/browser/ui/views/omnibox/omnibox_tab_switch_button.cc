@@ -20,6 +20,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/controls/highlight_path_generator.h"
 
 bool OmniboxTabSwitchButton::calculated_widths_ = false;
 size_t OmniboxTabSwitchButton::icon_only_width_;
@@ -41,6 +42,7 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(
       hint_(hint),
       hint_short_(hint_short),
       theme_provider_(theme_provider) {
+  views::InstallPillHighlightPathGenerator(this);
   SetBgColorOverride(GetBackgroundColor());
   SetImage(STATE_NORMAL, gfx::CreateVectorIcon(
                              icon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
@@ -77,17 +79,6 @@ gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
       static_cast<int>(start_width_), static_cast<int>(goal_width_));
   size.set_width(current_width);
   return size;
-}
-
-void OmniboxTabSwitchButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  MdTextButton::OnBoundsChanged(previous_bounds);
-  focus_ring()->SetPath(GetFocusRingPath());
-}
-
-std::unique_ptr<views::InkDropMask> OmniboxTabSwitchButton::CreateInkDropMask()
-    const {
-  return std::make_unique<views::RoundRectInkDropMask>(
-      size(), gfx::Insets(), CalculatePreferredSize().height() / 2.f);
 }
 
 void OmniboxTabSwitchButton::AnimationProgressed(

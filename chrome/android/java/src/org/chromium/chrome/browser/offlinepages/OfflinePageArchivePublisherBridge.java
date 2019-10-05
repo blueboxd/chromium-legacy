@@ -203,6 +203,15 @@ public class OfflinePageArchivePublisherBridge {
             Log.d(TAG, "Failed to finish publishing archive.");
         }
 
+        // Android Q's MediaStore.Downloads has an issue that the custom mime type which is not
+        // supported by MimeTypeMap is overridden to "application/octet-stream" when publishing.
+        // To deal with this issue we set the mime type again after publishing.
+        // See crbug.com/1010829 for more details.
+        final ContentValues mimeTypeValues = new ContentValues();
+        mimeTypeValues.put(MediaColumns.MIME_TYPE, "multipart/related");
+        if (contentResolver.update(intermediateUri, mimeTypeValues, null, null) != 1) {
+            Log.d(TAG, "Failed to update mime type.");
+        }
         return intermediateUri.toString();
     }
 }

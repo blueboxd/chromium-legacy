@@ -31,6 +31,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
@@ -73,6 +74,14 @@ constexpr base::TimeDelta kNotifyCycleTimeForTesting =
 
 // The number of days after which we identify a build/install as outdated.
 constexpr base::TimeDelta kOutdatedBuildAge = base::TimeDelta::FromDays(12 * 7);
+
+constexpr bool ShouldDetectOutdatedBuilds() {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  return true;
+#else   // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  return false;
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+}
 
 // Return the string that was passed as a value for the
 // kCheckForUpdateIntervalSec switch.
@@ -414,6 +423,9 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
       return false;
     }
 #endif
+
+    if (!ShouldDetectOutdatedBuilds())
+      return false;
   }
 
   base::Time network_time;

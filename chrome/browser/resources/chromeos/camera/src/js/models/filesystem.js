@@ -31,6 +31,13 @@ cca.models.FileSystem = function() {
 cca.models.FileSystem.THUMBNAIL_PREFIX = 'thumb-';
 
 /**
+ * Width of thumbnail.
+ * @type {number}
+ * @const
+ */
+cca.models.FileSystem.THUMBNAIL_WIDTH = 480;
+
+/**
  * Directory in the internal file system.
  * @type {DirectoryEntry}
  */
@@ -381,45 +388,6 @@ cca.models.FileSystem.saveVideo = async function(tempfile, filename) {
 };
 
 /**
- * Creates a thumbnail from the picture.
- * @param {boolean} isVideo Picture is a video.
- * @param {string} url Picture as an URL.
- * @return {!Promise<Blob>} Promise for the result.
- * @private
- */
-cca.models.FileSystem.createThumbnail_ = function(isVideo, url) {
-  const thumbnailWidth = 480;
-  var element = document.createElement(isVideo ? 'video' : 'img');
-  if (isVideo) {
-    element.preload = 'auto';
-  }
-  return new Promise((resolve, reject) => {
-    element.addEventListener(isVideo ? 'canplay' : 'load', resolve);
-    element.addEventListener('error', reject);
-    element.src = url;
-  }).then(() => {
-    var canvas = document.createElement('canvas');
-    var context = canvas.getContext('2d');
-    var ratio = isVideo ?
-        element.videoHeight / element.videoWidth :
-        element.height / element.width;
-    var thumbnailHeight = Math.round(thumbnailWidth * ratio);
-    canvas.width = thumbnailWidth;
-    canvas.height = thumbnailHeight;
-    context.drawImage(element, 0, 0, thumbnailWidth, thumbnailHeight);
-    return new Promise((resolve, reject) => {
-      canvas.toBlob((blob) => {
-        if (blob) {
-          resolve(blob);
-        } else {
-          reject(new Error('Failed to create thumbnail.'));
-        }
-      }, 'image/jpeg');
-    });
-  });
-};
-
-/**
  * Gets the thumbnail name of the given picture.
  * @param {FileEntry} entry Picture's file entry.
  * @return {string} Thumbnail name.
@@ -437,13 +405,16 @@ cca.models.FileSystem.getThumbnailName = function(entry) {
  * @return {!Promise<FileEntry>} Promise for the result.
  */
 cca.models.FileSystem.saveThumbnail = function(isVideo, entry) {
-  return cca.models.FileSystem.pictureURL(entry).then((url) => {
-    return cca.models.FileSystem.createThumbnail_(isVideo, url);
-  }).then((blob) => {
-    var thumbnailName = cca.models.FileSystem.getThumbnailName(entry);
-    return cca.models.FileSystem.saveToFile_(
-        cca.models.FileSystem.internalDir, thumbnailName, blob);
-  });
+  return cca.models.FileSystem.pictureURL(entry)
+      .then((url) => {
+        return cca.util.scalePicture(
+            url, isVideo, cca.models.FileSystem.THUMBNAIL_WIDTH);
+      })
+      .then((blob) => {
+        var thumbnailName = cca.models.FileSystem.getThumbnailName(entry);
+        return cca.models.FileSystem.saveToFile_(
+            cca.models.FileSystem.internalDir, thumbnailName, blob);
+      });
 };
 
 /**

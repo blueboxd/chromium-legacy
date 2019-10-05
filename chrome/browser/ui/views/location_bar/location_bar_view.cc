@@ -116,6 +116,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
@@ -157,6 +158,21 @@ LocationBarView::LocationBarView(Browser* browser,
       profile_(profile),
       delegate_(delegate),
       is_popup_mode_(is_popup_mode) {
+  if (!is_popup_mode_) {
+    focus_ring_ = views::FocusRing::Install(this);
+    focus_ring_->SetHasFocusPredicate([](View* view) -> bool {
+      DCHECK_EQ(view->GetClassName(), LocationBarView::kViewClassName);
+      auto* v = static_cast<LocationBarView*>(view);
+
+      // Show focus ring when the Omnibox is visibly focused and the popup is
+      // closed.
+      return v->omnibox_view_->model()->is_caret_visible() &&
+             !v->GetOmniboxPopupView()->IsOpen();
+    });
+
+    focus_ring_->SetPathGenerator(
+        std::make_unique<views::PillHighlightPathGenerator>());
+  }
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
 }
 
@@ -868,37 +884,6 @@ void LocationBarView::RefreshClearAllButtonIcon() {
       GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING)));
 }
 
-void LocationBarView::RefreshFocusRing() {
-  // Popup windows should not display a focus ring.
-  if (is_popup_mode_)
-    return;
-
-  // We may not have a usable path during initialization before first layout.
-  // This will be called again once there is a usable path, so early exit.
-  const int radius = GetBorderRadius();
-  SkPath path;
-  path.addRRect(
-      SkRRect::MakeRectXY(RectToSkRect(GetLocalBounds()), radius, radius));
-  if (!views::FocusRing::IsPathUseable(path))
-    return;
-
-  // Install a focus ring if it's not already there.
-  if (!focus_ring_) {
-    focus_ring_ = views::FocusRing::Install(this);
-    focus_ring_->SetHasFocusPredicate([](View* view) -> bool {
-      auto* v = static_cast<LocationBarView*>(view);
-
-      // Show focus ring when the Omnibox is visibly focused and the popup is
-      // closed.
-      return v->omnibox_view_->model()->is_caret_visible() &&
-             !v->GetOmniboxPopupView()->IsOpen();
-    });
-  }
-
-  // Update the focus ring path.
-  focus_ring_->SetPath(path);
-}
-
 bool LocationBarView::ShouldShowKeywordBubble() const {
   return omnibox_view_->model()->is_keyword_selected();
 }
@@ -1014,7 +999,6 @@ const char* LocationBarView::GetClassName() const {
 
 void LocationBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   RefreshBackground();
-  RefreshFocusRing();
 }
 
 bool LocationBarView::GetNeedsNotificationWhenVisibleBoundsChange() const {

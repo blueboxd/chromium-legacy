@@ -44,6 +44,8 @@ android_library("module_installer_java") {
 
 junit_binary("module_installer_junit_tests") {
   java_files = [
+    "junit/src/org/chromium/components/module_installer/builder/ModuleEngineTest.java",
+    "junit/src/org/chromium/components/module_installer/builder/ModuleTest.java",
     "junit/src/org/chromium/components/module_installer/engine/ApkEngineTest.java",
     "junit/src/org/chromium/components/module_installer/engine/SplitCompatEngineTest.java",
     "junit/src/org/chromium/components/module_installer/logger/LoggerTestUtil.java",

@@ -184,9 +184,13 @@ bool UnifiedHeapController::IsRootForNonTracingGC(
 }
 
 void UnifiedHeapController::ReportBufferedAllocatedSizeIfPossible() {
-  // Reported from a recursive sweeping call.
-  if (thread_state()->IsSweepingInProgress() &&
-      thread_state()->SweepForbidden()) {
+  // Avoid reporting to V8 in the following conditions as that may trigger GC
+  // finalizations where not allowed.
+  // - Recursive sweeping.
+  // - GC forbidden scope.
+  if ((thread_state()->IsSweepingInProgress() &&
+       thread_state()->SweepForbidden()) ||
+      thread_state()->IsGCForbidden()) {
     return;
   }
 

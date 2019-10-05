@@ -62,6 +62,21 @@ class VIEWS_EXPORT CircleHighlightPathGenerator
 
 void VIEWS_EXPORT InstallCircleHighlightPathGenerator(View* view);
 
+// Sets a pill-shaped highlight path.
+class VIEWS_EXPORT PillHighlightPathGenerator : public HighlightPathGenerator {
+ public:
+  PillHighlightPathGenerator() = default;
+
+  PillHighlightPathGenerator(const PillHighlightPathGenerator&) = delete;
+  PillHighlightPathGenerator& operator=(const PillHighlightPathGenerator&) =
+      delete;
+
+  // HighlightPathGenerator:
+  SkPath GetHighlightPath(const View* view) override;
+};
+
+void VIEWS_EXPORT InstallPillHighlightPathGenerator(View* view);
+
 }  // namespace views
 
 #endif  // UI_VIEWS_CONTROLS_HIGHLIGHT_PATH_GENERATOR_H_

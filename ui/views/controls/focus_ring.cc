@@ -14,6 +14,11 @@ namespace views {
 
 namespace {
 
+bool IsPathUsable(const SkPath& path) {
+  return !path.isEmpty() && (path.isRect(nullptr) || path.isOval(nullptr) ||
+                             path.isRRect(nullptr));
+}
+
 ui::NativeTheme::ColorId ColorIdForValidity(bool valid) {
   return valid ? ui::NativeTheme::kColorId_FocusedBorderColor
                : ui::NativeTheme::kColorId_AlertSeverityHigh;
@@ -27,6 +32,7 @@ double GetCornerRadius() {
 SkPath GetHighlightPathInternal(const View* view) {
   HighlightPathGenerator* path_generator =
       view->GetProperty(kHighlightPathGeneratorKey);
+
   if (path_generator)
     return path_generator->GetHighlightPath(view);
 
@@ -36,10 +42,8 @@ SkPath GetHighlightPathInternal(const View* view) {
     return *highlight_path;
 
   const double corner_radius = GetCornerRadius();
-  SkPath path;
-  path.addRRect(SkRRect::MakeRectXY(RectToSkRect(view->GetLocalBounds()),
-                                    corner_radius, corner_radius));
-  return path;
+  return SkPath().addRRect(SkRRect::MakeRectXY(
+      RectToSkRect(view->GetLocalBounds()), corner_radius, corner_radius));
 }
 
 }  // namespace
@@ -54,14 +58,9 @@ std::unique_ptr<FocusRing> FocusRing::Install(View* parent) {
   return ring;
 }
 
-// static
-bool FocusRing::IsPathUseable(const SkPath& path) {
-  return !path.isEmpty() && (path.isRect(nullptr) || path.isOval(nullptr) ||
-                             path.isRRect(nullptr));
-}
-
-void FocusRing::SetPath(const SkPath& path) {
-  path_ = IsPathUseable(path) ? path : SkPath();
+void FocusRing::SetPathGenerator(
+    std::unique_ptr<HighlightPathGenerator> generator) {
+  path_generator_ = std::move(generator);
   SchedulePaint();
 }
 
@@ -119,13 +118,16 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
   paint.setStyle(cc::PaintFlags::kStroke_Style);
   paint.setStrokeWidth(PlatformStyle::kFocusHaloThickness);
 
-  SkPath path = path_;
-  // Focus rings flip the canvas if RTL is enabled for it's parent, so
-  // we need to always get non-mirrored highlight path for focus rings.
-  if (path.isEmpty())
+  SkPath path;
+  if (path_generator_)
+    path = path_generator_->GetHighlightPath(parent());
+
+  // If there's no path generator or the generated path is unusable, fall back
+  // to the default.
+  if (!IsPathUsable(path))
     path = GetHighlightPathInternal(parent());
 
-  DCHECK(IsPathUseable(path));
+  DCHECK(IsPathUsable(path));
   DCHECK_EQ(flip_canvas_on_paint_for_rtl_ui(),
             parent()->flip_canvas_on_paint_for_rtl_ui());
   SkRect bounds;

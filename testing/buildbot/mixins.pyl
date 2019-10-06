@@ -466,7 +466,7 @@
       'dimensions': {
         'gpu': '10de:0fe9',
         'hidpi': '1',
-        'os': 'Mac-10.13.6',
+        'os': 'Mac-10.14.6',
         'pool': 'Chrome-GPU',
       },
     },

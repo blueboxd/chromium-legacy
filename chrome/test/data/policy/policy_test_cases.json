@@ -347,6 +347,14 @@
     ]
   },
 
+  "PrintingAllowedBackgroundGraphicsModes": {
+    "os": ["chromeos"],
+    "test_policy": { "PrintingAllowedBackgroundGraphicsModes": "enabled" },
+    "pref_mappings": [
+      { "pref": "printing.allowed_background_graphics_modes" }
+    ]
+  },
+
   "PrintingAllowedPageSizes": {
     "os": ["chromeos"],
     "test_policy": { "PrintingAllowedPageSizes": [{"WidthUm": 210000, "HeightUm": 297000}] },
@@ -376,6 +384,14 @@
     "test_policy": { "PrintingPinDefault": "pin" },
     "pref_mappings": [
       { "pref": "printing.pin_default" }
+    ]
+  },
+
+  "PrintingBackgroundGraphicsDefault": {
+    "os": ["chromeos"],
+    "test_policy": { "PrintingBackgroundGraphicsDefault": "enabled" },
+    "pref_mappings": [
+      { "pref": "printing.background_graphics_default" }
     ]
   },
 

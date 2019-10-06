@@ -66,6 +66,14 @@ class PrintingAllowedPinModesPolicyHandler
   ~PrintingAllowedPinModesPolicyHandler() override;
 };
 
+class PrintingAllowedBackgroundGraphicsModesPolicyHandler
+    : public PrintingEnumPolicyHandler<
+          printing::BackgroundGraphicsModeRestriction> {
+ public:
+  PrintingAllowedBackgroundGraphicsModesPolicyHandler();
+  ~PrintingAllowedBackgroundGraphicsModesPolicyHandler() override;
+};
+
 class PrintingColorDefaultPolicyHandler
     : public PrintingEnumPolicyHandler<printing::ColorModeRestriction> {
  public:
@@ -85,6 +93,14 @@ class PrintingPinDefaultPolicyHandler
  public:
   PrintingPinDefaultPolicyHandler();
   ~PrintingPinDefaultPolicyHandler() override;
+};
+
+class PrintingBackgroundGraphicsDefaultPolicyHandler
+    : public PrintingEnumPolicyHandler<
+          printing::BackgroundGraphicsModeRestriction> {
+ public:
+  PrintingBackgroundGraphicsDefaultPolicyHandler();
+  ~PrintingBackgroundGraphicsDefaultPolicyHandler() override;
 };
 
 class PrintingAllowedPageSizesPolicyHandler : public ListPolicyHandler {

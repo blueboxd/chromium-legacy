@@ -1070,7 +1070,7 @@ Polymer({
       // We want to set the value nevertheless so we call |this.set| directly.
       this.set(
           'settings.color.value',
-          colorValue == print_preview.ColorModeRestriction.COLOR);
+          colorValue === print_preview.ColorModeRestriction.COLOR);
     }
     this.set('settings.color.setByPolicy', !!colorPolicy);
 
@@ -1097,7 +1097,7 @@ Polymer({
         !!duplexPolicy && setDuplexTypeByPolicy);
 
     const pinPolicy = this.destination.pinPolicy;
-    if (pinPolicy == print_preview.PinModeRestriction.NO_PIN) {
+    if (pinPolicy === print_preview.PinModeRestriction.NO_PIN) {
       this.set('settings.pin.available', false);
       this.set('settings.pinValue.available', false);
     }
@@ -1105,9 +1105,21 @@ Polymer({
     if (pinValue) {
       this.set(
           'settings.pin.value',
-          pinValue == print_preview.PinModeRestriction.PIN);
+          pinValue === print_preview.PinModeRestriction.PIN);
     }
     this.set('settings.pin.setByPolicy', !!pinPolicy);
+
+    const backgroundGraphicsPolicy = this.destination.backgroundGraphicsPolicy;
+    const backgroundGraphicsValue = backgroundGraphicsPolicy ?
+        backgroundGraphicsPolicy :
+        this.destination.defaultBackgroundGraphicsPolicy;
+    if (backgroundGraphicsValue) {
+      this.set(
+          'settings.cssBackground.value',
+          backgroundGraphicsValue ===
+              print_preview.BackgroundGraphicsModeRestriction.ENABLED);
+    }
+    this.set('settings.cssBackground.setByPolicy', !!backgroundGraphicsPolicy);
 
     this.updateManaged_();
   },
@@ -1117,8 +1129,8 @@ Polymer({
   updateManaged_: function() {
     let managedSettings = ['headerFooter'];
     // <if expr="chromeos">
-    managedSettings =
-        managedSettings.concat(['color', 'duplex', 'duplexShortEdge', 'pin']);
+    managedSettings = managedSettings.concat(
+        ['color', 'cssBackground', 'duplex', 'duplexShortEdge', 'pin']);
     // </if>
     this.controlsManaged = managedSettings.some(settingName => {
       const setting = this.getSetting(settingName);

@@ -18203,6 +18203,8 @@ Called by update_net_error_codes.py.-->
   <int value="618" label="DeviceLoginScreenStickyKeysEnabled"/>
   <int value="619" label="DeviceLoginScreenKeyboardFocusHighlightEnabled"/>
   <int value="620" label="ShelfAlignment"/>
+  <int value="621" label="PrintingAllowedBackgroundGraphicsModes"/>
+  <int value="622" label="PrintingBackgroundGraphicsDefault"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

@@ -458,13 +458,6 @@ void CompositedLayerMapping::UpdateCompositingReasons() {
       owning_layer_.GetSquashingDisallowedReasons());
 }
 
-const PaintLayer* CompositedLayerMapping::CompositedClipParent() const {
-  const PaintLayer* clip_parent = owning_layer_.ClipParent();
-  return clip_parent ? clip_parent->EnclosingLayerWithCompositedLayerMapping(
-                           kIncludeSelf)
-                     : nullptr;
-}
-
 bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
     const PaintLayer* compositing_container) {
   DCHECK_EQ(owning_layer_.Compositor()->Lifecycle().GetState(),

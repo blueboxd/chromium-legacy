@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
@@ -222,10 +223,11 @@ int32_t AXAuraObjCache::GetIDInternal(
     AuraView* aura_view,
     const std::map<AuraView*, int32_t>& aura_view_to_id_map) const {
   if (!aura_view)
-    return -1;
+    return ui::AXNode::kInvalidAXID;
 
   auto it = aura_view_to_id_map.find(aura_view);
-  return it != aura_view_to_id_map.end() ? it->second : -1;
+  return it != aura_view_to_id_map.end() ? it->second
+                                         : ui::AXNode::kInvalidAXID;
 }
 
 template <typename AuraView>
@@ -233,7 +235,7 @@ void AXAuraObjCache::RemoveInternal(
     AuraView* aura_view,
     std::map<AuraView*, int32_t>& aura_view_to_id_map) {
   int32_t id = GetID(aura_view);
-  if (id == -1)
+  if (id == ui::AXNode::kInvalidAXID)
     return;
   aura_view_to_id_map.erase(aura_view);
   cache_.erase(id);

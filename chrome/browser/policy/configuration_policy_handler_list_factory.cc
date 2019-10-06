@@ -1584,10 +1584,14 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<PrintingAllowedPinModesPolicyHandler>());
   handlers->AddHandler(
+      std::make_unique<PrintingAllowedBackgroundGraphicsModesPolicyHandler>());
+  handlers->AddHandler(
       std::make_unique<PrintingAllowedPageSizesPolicyHandler>());
   handlers->AddHandler(std::make_unique<PrintingColorDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<PrintingDuplexDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<PrintingPinDefaultPolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<PrintingBackgroundGraphicsDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<PrintingSizeDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kNetworkFileSharesPreconfiguredShares,

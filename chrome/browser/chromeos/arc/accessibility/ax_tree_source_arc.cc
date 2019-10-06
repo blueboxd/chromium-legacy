@@ -30,9 +30,9 @@ using AXWindowInfoData = mojom::AccessibilityWindowInfoData;
 
 AXTreeSourceArc::AXTreeSourceArc(Delegate* delegate)
     : current_tree_serializer_(new AXTreeArcSerializer(this)),
-      root_id_(-1),
-      window_id_(-1),
-      focused_id_(-1),
+      root_id_(ui::AXNode::kInvalidAXID),
+      window_id_(ui::AXNode::kInvalidAXID),
+      focused_id_(ui::AXNode::kInvalidAXID),
       is_notification_(false),
       is_input_method_window_(false),
       delegate_(delegate) {}
@@ -45,7 +45,7 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   tree_map_.clear();
   parent_map_.clear();
   cached_computed_bounds_.clear();
-  root_id_ = -1;
+  root_id_ = ui::AXNode::kInvalidAXID;
 
   window_id_ = event_data->window_id;
   is_notification_ = event_data->notification_key.has_value();
@@ -161,8 +161,8 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   }
 
   // Calculate the focused ID.
-  if (focused_id_ < 0) {
-    if (root_id_ >= 0) {
+  if (focused_id_ == ui::AXNode::kInvalidAXID) {
+    if (root_id_ != ui::AXNode::kInvalidAXID) {
       ArcAccessibilityInfoData* root = GetRoot();
       // TODO (sarakato): Add proper fix once cause of invalid node is known.
       if (!IsValid(root)) {
@@ -221,7 +221,7 @@ void AXTreeSourceArc::NotifyGetTextLocationDataResult(
 
 bool AXTreeSourceArc::GetTreeData(ui::AXTreeData* data) const {
   data->tree_id = ax_tree_id();
-  if (focused_id_ >= 0) {
+  if (focused_id_ != ui::AXNode::kInvalidAXID) {
     data->focus_id = focused_id_;
   }
   return true;
@@ -241,7 +241,7 @@ ArcAccessibilityInfoData* AXTreeSourceArc::GetFromId(int32_t id) const {
 
 int32_t AXTreeSourceArc::GetId(ArcAccessibilityInfoData* info_data) const {
   if (!info_data)
-    return -1;
+    return ui::AXNode::kInvalidAXID;
   return info_data->GetId();
 }
 
@@ -351,7 +351,7 @@ void AXTreeSourceArc::SerializeNode(ArcAccessibilityInfoData* info_data,
 
 const gfx::Rect AXTreeSourceArc::GetBounds(ArcAccessibilityInfoData* info_data,
                                            aura::Window* active_window) const {
-  DCHECK_NE(root_id_, -1);
+  DCHECK_NE(root_id_, ui::AXNode::kInvalidAXID);
 
   gfx::Rect info_data_bounds = info_data->GetBounds();
 

@@ -171,10 +171,6 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExecuteCode_Params)
   // When to inject the code.
   IPC_STRUCT_MEMBER(extensions::UserScript::RunLocation, run_at)
 
-  // Whether to execute code in the main world (as opposed to an isolated
-  // world).
-  IPC_STRUCT_MEMBER(bool, in_main_world)
-
   // Whether the request is coming from a <webview>.
   IPC_STRUCT_MEMBER(bool, is_web_view)
 

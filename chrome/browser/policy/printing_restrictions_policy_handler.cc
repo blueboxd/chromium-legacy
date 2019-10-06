@@ -103,6 +103,22 @@ PrintingAllowedPinModesPolicyHandler::PrintingAllowedPinModesPolicyHandler()
 PrintingAllowedPinModesPolicyHandler::~PrintingAllowedPinModesPolicyHandler() =
     default;
 
+PrintingAllowedBackgroundGraphicsModesPolicyHandler::
+    PrintingAllowedBackgroundGraphicsModesPolicyHandler()
+    : PrintingEnumPolicyHandler<printing::BackgroundGraphicsModeRestriction>(
+          key::kPrintingAllowedBackgroundGraphicsModes,
+          prefs::kPrintingAllowedBackgroundGraphicsModes,
+          {
+              {"any", printing::BackgroundGraphicsModeRestriction::kUnset},
+              {"enabled",
+               printing::BackgroundGraphicsModeRestriction::kEnabled},
+              {"disabled",
+               printing::BackgroundGraphicsModeRestriction::kDisabled},
+          }) {}
+
+PrintingAllowedBackgroundGraphicsModesPolicyHandler::
+    ~PrintingAllowedBackgroundGraphicsModesPolicyHandler() = default;
+
 PrintingColorDefaultPolicyHandler::PrintingColorDefaultPolicyHandler()
     : PrintingEnumPolicyHandler<printing::ColorModeRestriction>(
           key::kPrintingColorDefault,
@@ -138,6 +154,21 @@ PrintingPinDefaultPolicyHandler::PrintingPinDefaultPolicyHandler()
           }) {}
 
 PrintingPinDefaultPolicyHandler::~PrintingPinDefaultPolicyHandler() = default;
+
+PrintingBackgroundGraphicsDefaultPolicyHandler::
+    PrintingBackgroundGraphicsDefaultPolicyHandler()
+    : PrintingEnumPolicyHandler<printing::BackgroundGraphicsModeRestriction>(
+          key::kPrintingBackgroundGraphicsDefault,
+          prefs::kPrintingBackgroundGraphicsDefault,
+          {
+              {"enabled",
+               printing::BackgroundGraphicsModeRestriction::kEnabled},
+              {"disabled",
+               printing::BackgroundGraphicsModeRestriction::kDisabled},
+          }) {}
+
+PrintingBackgroundGraphicsDefaultPolicyHandler::
+    ~PrintingBackgroundGraphicsDefaultPolicyHandler() = default;
 
 PrintingAllowedPageSizesPolicyHandler::PrintingAllowedPageSizesPolicyHandler()
     : ListPolicyHandler(key::kPrintingAllowedPageSizes,

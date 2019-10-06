@@ -35,15 +35,25 @@ enum class PinModeRestriction {
   kNoPin = 2,
 };
 
+// Allowed background graphics modes.
+// This is used in pref file and should never change.
+enum class BackgroundGraphicsModeRestriction {
+  kUnset = 0,
+  kEnabled = 1,
+  kDisabled = 2,
+};
+
 // Dictionary key for printing policies.
 // Must coincide with the name of field in |print_preview.Policies| in
 // chrome/browser/resources/print_preview/data/destination.js
 PRINTING_EXPORT extern const char kAllowedColorModes[];
 PRINTING_EXPORT extern const char kAllowedDuplexModes[];
 PRINTING_EXPORT extern const char kAllowedPinModes[];
+PRINTING_EXPORT extern const char kAllowedBackgroundGraphicsModes[];
 PRINTING_EXPORT extern const char kDefaultColorMode[];
 PRINTING_EXPORT extern const char kDefaultDuplexMode[];
 PRINTING_EXPORT extern const char kDefaultPinMode[];
+PRINTING_EXPORT extern const char kDefaultBackgroundGraphicsMode[];
 
 // Dictionary keys to be used with |kPrintingAllowedPageSizes| and
 // |kPrintingSizeDefault| policies.

@@ -18,6 +18,8 @@
 
 namespace ui {
 
+constexpr AXNode::AXID AXNode::kInvalidAXID;
+
 AXNode::AXNode(AXNode::OwnerTree* tree,
                AXNode* parent,
                int32_t id,

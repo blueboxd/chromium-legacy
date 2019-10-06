@@ -959,10 +959,12 @@
         'PrintingAllowedColorModes',
         'PrintingAllowedDuplexModes',
         'PrintingAllowedPinModes',
+        'PrintingAllowedBackgroundGraphicsModes',
         'PrintingAllowedPageSizes',
         'PrintingColorDefault',
         'PrintingDuplexDefault',
         'PrintingPinDefault',
+        'PrintingBackgroundGraphicsDefault',
         'PrintingSizeDefault',
         'PrintingSendUsernameAndFilenameEnabled',
         'CloudPrintSubmitEnabled',
@@ -2122,6 +2124,47 @@
       'desc': '''Restricts PIN printing mode. Unset policy is treated as no restriction. If the mode is unavailable this policy is ignored. Note that PIN printing feature is enabled only for printers that use one of IPPS, USB or IPP-over-USB protocols ''',
     },
     {
+      'name': 'PrintingAllowedBackgroundGraphicsModes',
+      'owners': ['nikitapodguzov@chromium.org', 'skau@chromium.org'],
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'any',
+          'enabled',
+          'disabled',
+        ],
+      },
+      'items': [
+        {
+          'name': 'any',
+          'value': 'any',
+          'caption': '''Allow printing both with and without background graphcis''',
+        },
+        {
+          'name': 'enabled',
+          'value': 'enabled',
+          'caption': '''Allow printing only with background graphics''',
+        },
+        {
+          'name': 'disabled',
+          'value': 'disabled',
+          'caption': '''Allow printing only without background graphics''',
+        },
+      ],
+      'supported_on': ['chrome_os:79-'],
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 'enabled',
+      'id': 621,
+      'caption': '''Restrict background graphics printing mode''',
+      'tags': [],
+      'desc': '''Restricts background graphics printing mode. Unset policy is treated as no restriction.''',
+    },
+    {
       'name': 'PrintingAllowedPageSizes',
       'owners': ['vkuzkokov@chromium.org'],
       'type': 'dict',
@@ -2266,6 +2309,41 @@
       'caption': '''Default PIN printing mode''',
       'tags': [],
       'desc': '''Overrides default PIN printing mode. If the mode is unavailable this policy is ignored.''',
+    },
+    {
+      'name': 'PrintingBackgroundGraphicsDefault',
+      'owners': ['nikitapodguzov@chromium.org', 'skau@chromium.org'],
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'enabled',
+          'disabled',
+        ],
+      },
+      'items': [
+        {
+          'name': 'enabled',
+          'value': 'enabled',
+          'caption': '''Enable background graphics printing mode by default''',
+        },
+        {
+          'name': 'disabled',
+          'value': 'disabled',
+          'caption': '''Disable background graphics printing mode by default''',
+        },
+      ],
+      'supported_on': ['chrome_os:79-'],
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 'enabled',
+      'id': 622,
+      'caption': '''Default background graphics printing mode''',
+      'tags': [],
+      'desc': '''Overrides default background graphics printing mode.''',
     },
     {
       'name': 'PrintingSizeDefault',
@@ -18960,6 +19038,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 620,
+  'highest_id_currently_used': 622,
   'highest_atomic_group_id_currently_used': 37
 }

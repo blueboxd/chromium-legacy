@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_serializer.h"
@@ -73,8 +74,8 @@ TEST_F(AXAuraObjCacheTest, TestViewRemoval) {
   // from the cache, but leave the widget.
   widget->GetRootView()->RemoveChildView(parent);
   ASSERT_GT(cache.GetID(widget.get()), 0);
-  ASSERT_EQ(-1, cache.GetID(parent));
-  ASSERT_EQ(-1, cache.GetID(child));
+  ASSERT_EQ(ui::AXNode::kInvalidAXID, cache.GetID(parent));
+  ASSERT_EQ(ui::AXNode::kInvalidAXID, cache.GetID(child));
 
   // Explicitly delete |parent| to prevent a memory leak, since calling
   // RemoveChildView() doesn't delete it.

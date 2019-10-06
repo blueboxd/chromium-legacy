@@ -303,6 +303,9 @@ base::Value LocalPrinterHandlerChromeos::GetNativePrinterPolicies() const {
   policies.SetKey(
       kAllowedPinModes,
       base::Value(prefs->GetInteger(prefs::kPrintingAllowedPinModes)));
+  policies.SetKey(kAllowedBackgroundGraphicsModes,
+                  base::Value(prefs->GetInteger(
+                      prefs::kPrintingAllowedBackgroundGraphicsModes)));
   policies.SetKey(kDefaultColorMode,
                   base::Value(prefs->GetInteger(prefs::kPrintingColorDefault)));
   policies.SetKey(
@@ -310,6 +313,9 @@ base::Value LocalPrinterHandlerChromeos::GetNativePrinterPolicies() const {
       base::Value(prefs->GetInteger(prefs::kPrintingDuplexDefault)));
   policies.SetKey(kDefaultPinMode,
                   base::Value(prefs->GetInteger(prefs::kPrintingPinDefault)));
+  policies.SetKey(kDefaultBackgroundGraphicsMode,
+                  base::Value(prefs->GetInteger(
+                      prefs::kPrintingBackgroundGraphicsDefault)));
   return policies;
 }
 

@@ -2376,9 +2376,9 @@ TEST(AXTreeTest, UnignoredSelection) {
   AXNodePosition::SetTree(&tree);
   AXTree::Selection unignored_selection = tree.GetUnignoredSelection();
 
-  EXPECT_EQ(-1, unignored_selection.anchor_object_id);
+  EXPECT_EQ(AXNode::kInvalidAXID, unignored_selection.anchor_object_id);
   EXPECT_EQ(-1, unignored_selection.anchor_offset);
-  EXPECT_EQ(-1, unignored_selection.focus_object_id);
+  EXPECT_EQ(AXNode::kInvalidAXID, unignored_selection.focus_object_id);
   EXPECT_EQ(-1, unignored_selection.focus_offset);
   struct SelectionData {
     int32_t anchor_id;

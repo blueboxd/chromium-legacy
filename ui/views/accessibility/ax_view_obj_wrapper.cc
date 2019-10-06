@@ -88,7 +88,8 @@ void AXViewObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
 }
 
 int32_t AXViewObjWrapper::GetUniqueId() const {
-  return view_ ? view_->GetViewAccessibility().GetUniqueId() : -1;
+  return view_ ? view_->GetViewAccessibility().GetUniqueId()
+               : ui::AXNode::kInvalidAXID;
 }
 
 bool AXViewObjWrapper::HandleAccessibleAction(const ui::AXActionData& action) {

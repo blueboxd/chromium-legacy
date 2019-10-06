@@ -221,8 +221,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // We may similarly need to reattach the layer for outlines and decorations.
   GraphicsLayer* DetachLayerForDecorationOutline();
 
-  void UpdateBackdropFilters();
-
   void SetBlendMode(BlendMode);
 
   bool NeedsGraphicsLayerUpdate() {
@@ -258,8 +256,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   const GraphicsLayerPaintInfo* ContainingSquashedLayer(
       const LayoutObject*,
       unsigned max_squashed_layer_index);
-
-  void UpdateScrollingBlockSelection();
 
   // Returns whether an adjustment happend.
   bool AdjustForCompositedScrolling(const GraphicsLayer*,
@@ -367,7 +363,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   bool UpdateSquashingLayers(bool needs_squashing_layers);
   void UpdateDrawsContentAndPaintsHitTest();
   void UpdateCompositedBounds();
-  void UpdateSnapContainerData();
 
   // Also sets subpixelAccumulation on the layer.
   void ComputeBoundsOfOwningLayer(
@@ -421,9 +416,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
       const PaintLayer& reference_layer,
       const Vector<GraphicsLayerPaintInfo>& layers,
       GraphicsLayerPaintInfo&);
-
-  const PaintLayer* CompositedClipParent() const;
-  void UpdateClipInheritanceAncestor(const PaintLayer* compositing_container);
 
   // Clear the groupedMapping entry on the layer at the given index, only if
   // that layer does not appear earlier in the set of layers for this object.

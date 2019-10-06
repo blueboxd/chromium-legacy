@@ -231,14 +231,31 @@ cr.define('print_preview', function() {
   };
 
   /**
+   * Enumeration of background graphics printing mode restrictions used by
+   * Chromium.
+   * This has to coincide with |printing::BackgroundGraphicsModeRestriction| as
+   * defined in printing/backend/printing_restrictions.h
+   * @enum {number}
+   */
+  const BackgroundGraphicsModeRestriction = {
+    UNSET: 0,
+    ENABLED: 1,
+    DISABLED: 2,
+  };
+
+  /**
    * Policies affecting a destination.
    * @typedef {{
    *   allowedColorModes: ?print_preview.ColorModeRestriction,
    *   allowedDuplexModes: ?print_preview.DuplexModeRestriction,
    *   allowedPinMode: ?print_preview.PinModeRestriction,
+   *   allowedBackgroundGraphicsMode:
+   *       ?print_preview.BackgroundGraphicsModeRestriction,
    *   defaultColorMode: ?print_preview.ColorModeRestriction,
    *   defaultDuplexMode: ?print_preview.DuplexModeRestriction,
    *   defaultPinMode: ?print_preview.PinModeRestriction,
+   *   defaultBackgroundGraphicsMode:
+   *       ?print_preview.BackgroundGraphicsModeRestriction,
    * }}
    */
   let Policies;
@@ -833,6 +850,16 @@ cr.define('print_preview', function() {
           this.policies.allowedPinModes :
           null;
     }
+
+    /**
+     * @return {?print_preview.BackgroundGraphicsModeRestriction} Background
+     *     graphics mode allowed by policy.
+     */
+    get backgroundGraphicsPolicy() {
+      return this.policies && this.policies.allowedBackgroundGraphicsModes ?
+          this.policies.allowedBackgroundGraphicsModes :
+          null;
+    }
     // </if>
 
     /**
@@ -878,6 +905,14 @@ cr.define('print_preview', function() {
      */
     get defaultPinPolicy() {
       return this.policies && this.policies.defaultPinMode;
+    }
+
+    /**
+     * @return {?print_preview.BackgroundGraphicsModeRestriction} Value of
+     *     default background graphics setting given by policy.
+     */
+    get defaultBackgroundGraphicsPolicy() {
+      return this.policies && this.policies.defaultBackgroundGraphicsMode;
     }
     // </if>
 
@@ -982,6 +1017,7 @@ cr.define('print_preview', function() {
     VendorCapability: VendorCapability,
 
     // <if expr="chromeos">
+    BackgroundGraphicsModeRestriction: BackgroundGraphicsModeRestriction,
     ColorModeRestriction: ColorModeRestriction,
     DuplexModeRestriction: DuplexModeRestriction,
     PinModeRestriction: PinModeRestriction,

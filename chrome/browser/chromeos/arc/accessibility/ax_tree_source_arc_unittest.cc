@@ -695,7 +695,7 @@ TEST_F(AXTreeSourceArcTest, GetTreeDataAppliesFocus) {
 
   // Nothing should be focused when there are no nodes.
   EXPECT_TRUE(CallGetTreeData(&data));
-  EXPECT_EQ(-1, data.focus_id);
+  EXPECT_EQ(ui::AXNode::kInvalidAXID, data.focus_id);
 
   // Add a child node.
   root->root_node_id = 2;

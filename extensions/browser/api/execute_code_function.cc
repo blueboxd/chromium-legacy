@@ -167,7 +167,7 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string,
 
   executor->ExecuteScript(
       host_id_, script_type, code_string, frame_scope, frame_id,
-      match_about_blank, run_at, ScriptExecutor::ISOLATED_WORLD,
+      match_about_blank, run_at,
       IsWebView() ? ScriptExecutor::WEB_VIEW_PROCESS
                   : ScriptExecutor::DEFAULT_PROCESS,
       GetWebViewSrc(), file_url_, user_gesture(), css_origin,

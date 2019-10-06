@@ -334,5 +334,96 @@ cr.define('model_settings_policy_test', function() {
             subtestParams.expectedEnforced, model.settings.pin.setByPolicy);
       });
     });
+
+    test('background graphics managed', function() {
+      [{
+        // No policies, settings is modifiable.
+        documentIsModifiable: true,
+        expectedValue: false,
+        expectedAvailable: true,
+        expectedManaged: false,
+        expectedEnforced: false,
+      },
+       {
+         // Policy has no effect, setting is not available for non-modifiable
+         // content.
+         documentIsModifiable: false,
+         backgroundGraphicsPolicy:
+             print_preview.BackgroundGraphicsModeRestriction.UNSET,
+         backgroundGraphicsDefault:
+             print_preview.BackgroundGraphicsModeRestriction.ENABLED,
+         expectedValue: false,
+         expectedAvailable: false,
+         expectedManaged: false,
+         expectedEnforced: false,
+       },
+       {
+         // Policy is DISABLED, setting is not modifiable.
+         documentIsModifiable: true,
+         backgroundGraphicsPolicy:
+             print_preview.BackgroundGraphicsModeRestriction.DISABLED,
+         expectedValue: false,
+         expectedAvailable: true,
+         expectedManaged: true,
+         expectedEnforced: true,
+       },
+       {
+         // No restriction policy, setting is modifiable.
+         documentIsModifiable: true,
+         backgroundGraphicsPolicy:
+             print_preview.BackgroundGraphicsModeRestriction.UNSET,
+         backgroundGraphicsDefault:
+             print_preview.BackgroundGraphicsModeRestriction.DISABLED,
+         expectedValue: false,
+         expectedAvailable: true,
+         expectedManaged: false,
+         expectedEnforced: false,
+       },
+       {
+         // Policy overrides default.
+         documentIsModifiable: true,
+         backgroundGraphicsPolicy:
+             print_preview.BackgroundGraphicsModeRestriction.ENABLED,
+         // Default mismatches restriction and is ignored.
+         backgroundGraphicsDefault:
+             print_preview.BackgroundGraphicsModeRestriction.DISABLED,
+         expectedValue: true,
+         expectedAvailable: true,
+         expectedManaged: true,
+         expectedEnforced: true,
+       },
+       {
+         // Default defined by policy but setting is modifiable.
+         documentIsModifiable: true,
+         backgroundGraphicsDefault:
+             print_preview.BackgroundGraphicsModeRestriction.ENABLED,
+         expectedValue: true,
+         expectedAvailable: true,
+         expectedManaged: false,
+         expectedEnforced: false,
+       }].forEach(subtestParams => {
+        model.set(
+            'documentSettings.isModifiable',
+            subtestParams.documentIsModifiable);
+        const policies = {
+          allowedBackgroundGraphicsModes:
+              subtestParams.backgroundGraphicsPolicy,
+          defaultBackgroundGraphicsMode:
+              subtestParams.backgroundGraphicsDefault,
+        };
+        model.set('destination.policies', policies);
+        model.applyDestinationSpecificPolicies();
+        assertEquals(
+            subtestParams.expectedValue,
+            model.getSettingValue('cssBackground'));
+        assertEquals(
+            subtestParams.expectedAvailable,
+            model.settings.cssBackground.available);
+        assertEquals(subtestParams.expectedManaged, model.controlsManaged);
+        assertEquals(
+            subtestParams.expectedEnforced,
+            model.settings.cssBackground.setByPolicy);
+      });
+    });
   });
 });

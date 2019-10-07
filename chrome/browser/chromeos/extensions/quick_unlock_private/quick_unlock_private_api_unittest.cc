@@ -41,7 +41,6 @@
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 
-using namespace extensions;
 namespace quick_unlock_private = extensions::api::quick_unlock_private;
 using CredentialCheck = quick_unlock_private::CredentialCheck;
 using CredentialProblem = quick_unlock_private::CredentialProblem;
@@ -49,10 +48,6 @@ using CredentialRequirements = quick_unlock_private::CredentialRequirements;
 using QuickUnlockMode = quick_unlock_private::QuickUnlockMode;
 using QuickUnlockModeList = std::vector<QuickUnlockMode>;
 using CredentialList = std::vector<std::string>;
-
-using ::testing::_;
-using ::testing::Invoke;
-using ::testing::WithArgs;
 
 namespace chromeos {
 namespace {
@@ -132,7 +127,7 @@ enum ExpectedPinState {
 }  // namespace
 
 class QuickUnlockPrivateUnitTest
-    : public ExtensionApiUnittest,
+    : public extensions::ExtensionApiUnittest,
       public ::testing::WithParamInterface<TestType> {
  public:
   QuickUnlockPrivateUnitTest() = default;
@@ -224,7 +219,7 @@ class QuickUnlockPrivateUnitTest
   std::unique_ptr<quick_unlock_private::TokenInfo> GetAuthToken(
       const std::string& password) {
     // Setup a fake authenticator to avoid calling cryptohome methods.
-    auto* func = new QuickUnlockPrivateGetAuthTokenFunction();
+    auto* func = new extensions::QuickUnlockPrivateGetAuthTokenFunction();
     func->SetAuthenticatorAllocatorForTesting(
         base::Bind(&CreateFakeAuthenticator));
 
@@ -241,7 +236,7 @@ class QuickUnlockPrivateUnitTest
   // password. Expects the function to fail and returns the error.
   std::string RunAuthTokenWithInvalidPassword() {
     // Setup a fake authenticator to avoid calling cryptohome methods.
-    auto* func = new QuickUnlockPrivateGetAuthTokenFunction();
+    auto* func = new extensions::QuickUnlockPrivateGetAuthTokenFunction();
     func->SetAuthenticatorAllocatorForTesting(
         base::Bind(&CreateFakeAuthenticator));
 
@@ -255,8 +250,9 @@ class QuickUnlockPrivateUnitTest
     auto params = std::make_unique<base::ListValue>();
     params->AppendString(token);
     params->AppendBoolean(enabled);
-    RunFunction(new QuickUnlockPrivateSetLockScreenEnabledFunction(),
-                std::move(params));
+    RunFunction(
+        new extensions::QuickUnlockPrivateSetLockScreenEnabledFunction(),
+        std::move(params));
   }
 
   // Wrapper for chrome.quickUnlockPrivate.setLockScreenEnabled.
@@ -265,16 +261,16 @@ class QuickUnlockPrivateUnitTest
     params->AppendString(kInvalidToken);
     params->AppendBoolean(enabled);
     return RunFunctionAndReturnError(
-        new QuickUnlockPrivateSetLockScreenEnabledFunction(),
+        new extensions::QuickUnlockPrivateSetLockScreenEnabledFunction(),
         std::move(params));
   }
 
   // Wrapper for chrome.quickUnlockPrivate.getAvailableModes.
   QuickUnlockModeList GetAvailableModes() {
     // Run the function.
-    std::unique_ptr<base::Value> result =
-        RunFunction(new QuickUnlockPrivateGetAvailableModesFunction(),
-                    std::make_unique<base::ListValue>());
+    std::unique_ptr<base::Value> result = RunFunction(
+        new extensions::QuickUnlockPrivateGetAvailableModesFunction(),
+        std::make_unique<base::ListValue>());
 
     // Extract the results.
     QuickUnlockModeList modes;
@@ -293,7 +289,7 @@ class QuickUnlockPrivateUnitTest
   // Wrapper for chrome.quickUnlockPrivate.getActiveModes.
   QuickUnlockModeList GetActiveModes() {
     std::unique_ptr<base::Value> result =
-        RunFunction(new QuickUnlockPrivateGetActiveModesFunction(),
+        RunFunction(new extensions::QuickUnlockPrivateGetActiveModesFunction(),
                     std::make_unique<base::ListValue>());
 
     QuickUnlockModeList modes;
@@ -344,8 +340,9 @@ class QuickUnlockPrivateUnitTest
     params->AppendString(ToString(QuickUnlockMode::QUICK_UNLOCK_MODE_PIN));
     params->AppendString(pin);
 
-    std::unique_ptr<base::Value> result = RunFunction(
-        new QuickUnlockPrivateCheckCredentialFunction(), std::move(params));
+    std::unique_ptr<base::Value> result =
+        RunFunction(new extensions::QuickUnlockPrivateCheckCredentialFunction(),
+                    std::move(params));
 
     CredentialCheck function_result;
     EXPECT_TRUE(CredentialCheck::Populate(*result, &function_result));
@@ -357,9 +354,9 @@ class QuickUnlockPrivateUnitTest
     auto params = std::make_unique<base::ListValue>();
     params->AppendString(ToString(QuickUnlockMode::QUICK_UNLOCK_MODE_PIN));
 
-    std::unique_ptr<base::Value> result =
-        RunFunction(new QuickUnlockPrivateGetCredentialRequirementsFunction(),
-                    std::move(params));
+    std::unique_ptr<base::Value> result = RunFunction(
+        new extensions::QuickUnlockPrivateGetCredentialRequirementsFunction(),
+        std::move(params));
 
     CredentialRequirements function_result;
     EXPECT_TRUE(CredentialRequirements::Populate(*result, &function_result));
@@ -394,7 +391,7 @@ class QuickUnlockPrivateUnitTest
                    const CredentialList& passwords) {
     std::unique_ptr<base::ListValue> params =
         GetSetModesParams(token_, modes, passwords);
-    auto* func = new QuickUnlockPrivateSetModesFunction();
+    auto* func = new extensions::QuickUnlockPrivateSetModesFunction();
 
     // Stub out event handling since we are not setting up an event router.
     func->SetModesChangedEventHandlerForTesting(modes_changed_handler_);
@@ -414,7 +411,7 @@ class QuickUnlockPrivateUnitTest
   std::string RunSetModesWithInvalidToken() {
     std::unique_ptr<base::ListValue> params = GetSetModesParams(
         kInvalidToken, {QuickUnlockMode::QUICK_UNLOCK_MODE_PIN}, {"111111"});
-    auto* func = new QuickUnlockPrivateSetModesFunction();
+    auto* func = new extensions::QuickUnlockPrivateSetModesFunction();
 
     // Stub out event handling since we are not setting up an event router.
     func->SetModesChangedEventHandlerForTesting(modes_changed_handler_);
@@ -424,10 +421,11 @@ class QuickUnlockPrivateUnitTest
   }
 
   std::string SetModesWithError(const std::string& args) {
-    auto* func = new QuickUnlockPrivateSetModesFunction();
+    auto* func = new extensions::QuickUnlockPrivateSetModesFunction();
     func->SetModesChangedEventHandlerForTesting(base::DoNothing());
 
-    return api_test_utils::RunFunctionAndReturnError(func, args, profile());
+    return extensions::api_test_utils::RunFunctionAndReturnError(func, args,
+                                                                 profile());
   }
 
   std::string token() { return token_; }
@@ -474,11 +472,12 @@ class QuickUnlockPrivateUnitTest
       scoped_refptr<ExtensionFunction> func,
       std::unique_ptr<base::ListValue> params) {
     base::RunLoop().RunUntilIdle();
-    std::unique_ptr<base::Value> result =
-        api_test_utils::RunFunctionWithDelegateAndReturnSingleResult(
+    std::unique_ptr<base::Value> result = extensions::api_test_utils::
+        RunFunctionWithDelegateAndReturnSingleResult(
             func, std::move(params), profile(),
-            std::make_unique<ExtensionFunctionDispatcher>(profile()),
-            api_test_utils::NONE);
+            std::make_unique<extensions::ExtensionFunctionDispatcher>(
+                profile()),
+            extensions::api_test_utils::NONE);
     base::RunLoop().RunUntilIdle();
     return result;
   }
@@ -488,10 +487,11 @@ class QuickUnlockPrivateUnitTest
       scoped_refptr<ExtensionFunction> func,
       std::unique_ptr<base::ListValue> params) {
     base::RunLoop().RunUntilIdle();
-    std::unique_ptr<ExtensionFunctionDispatcher> dispatcher(
-        new ExtensionFunctionDispatcher(profile()));
-    api_test_utils::RunFunction(func.get(), std::move(params), profile(),
-                                std::move(dispatcher), api_test_utils::NONE);
+    auto dispatcher =
+        std::make_unique<extensions::ExtensionFunctionDispatcher>(profile());
+    extensions::api_test_utils::RunFunction(func.get(), std::move(params),
+                                            profile(), std::move(dispatcher),
+                                            extensions::api_test_utils::NONE);
     EXPECT_TRUE(func->GetResultList()->empty());
     base::RunLoop().RunUntilIdle();
     return func->GetError();
@@ -507,7 +507,7 @@ class QuickUnlockPrivateUnitTest
 
   FakeChromeUserManager* fake_user_manager_ = nullptr;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
-  QuickUnlockPrivateSetModesFunction::ModesChangedEventHandler
+  extensions::QuickUnlockPrivateSetModesFunction::ModesChangedEventHandler
       modes_changed_handler_;
   bool expect_modes_changed_ = false;
   chromeos::UserContext auth_token_user_context_;

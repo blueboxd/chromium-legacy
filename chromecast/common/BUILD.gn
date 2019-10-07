@@ -51,8 +51,6 @@ cast_source_set("common") {
       "cast_redirect_manifest_handler.h",
       "extensions_api/cast_api_permissions.cc",
       "extensions_api/cast_api_permissions.h",
-      "extensions_api/cast_extension_messages.cc",
-      "extensions_api/cast_extension_messages.h",
     ]
 
     deps += [

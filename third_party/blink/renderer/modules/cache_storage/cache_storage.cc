@@ -105,7 +105,7 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
   // Make sure to bind the CacheStorage object to keep the mojo interface
   // pointer alive during the operation.  Otherwise GC might prevent the
   // callback from ever being executed.
-  cache_storage_ptr_->Open(
+  cache_storage_remote_->Open(
       cache_name, trace_id,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver,
@@ -171,7 +171,7 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
   // Make sure to bind the CacheStorage object to keep the mojo interface
   // pointer alive during the operation.  Otherwise GC might prevent the
   // callback from ever being executed.
-  cache_storage_ptr_->Has(
+  cache_storage_remote_->Has(
       cache_name, trace_id,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
@@ -223,7 +223,7 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
   // Make sure to bind the CacheStorage object to keep the mojo interface
   // pointer alive during the operation.  Otherwise GC might prevent the
   // callback from ever being executed.
-  cache_storage_ptr_->Delete(
+  cache_storage_remote_->Delete(
       cache_name, trace_id,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
@@ -275,7 +275,7 @@ ScriptPromise CacheStorage::keys(ScriptState* script_state) {
   // Make sure to bind the CacheStorage object to keep the mojo interface
   // pointer alive during the operation.  Otherwise GC might prevent the
   // callback from ever being executed.
-  cache_storage_ptr_->Keys(
+  cache_storage_remote_->Keys(
       trace_id,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
@@ -343,7 +343,7 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
   // Make sure to bind the CacheStorage object to keep the mojo interface
   // pointer alive during the operation.  Otherwise GC might prevent the
   // callback from ever being executed.
-  cache_storage_ptr_->Match(
+  cache_storage_remote_->Match(
       std::move(mojo_request), std::move(mojo_options), trace_id,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
@@ -396,7 +396,9 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
 
 CacheStorage::CacheStorage(ExecutionContext* context,
                            GlobalFetch::ScopedFetcher* fetcher)
-    : ContextClient(context), scoped_fetcher_(fetcher), ever_used_(false) {
+    : ContextLifecycleObserver(context),
+      scoped_fetcher_(fetcher),
+      ever_used_(false) {
   // See https://bit.ly/2S0zRAS for task types.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       context->GetTaskRunner(blink::TaskType::kMiscPlatformAPI);
@@ -404,16 +406,17 @@ CacheStorage::CacheStorage(ExecutionContext* context,
   // Service workers may already have a CacheStoragePtr provided as an
   // optimization.
   if (auto* service_worker = DynamicTo<ServiceWorkerGlobalScope>(context)) {
-    mojom::blink::CacheStoragePtrInfo info = service_worker->TakeCacheStorage();
+    mojo::PendingRemote<mojom::blink::CacheStorage> info =
+        service_worker->TakeCacheStorage();
     if (info) {
-      cache_storage_ptr_ = RevocableInterfacePtr<mojom::blink::CacheStorage>(
-          std::move(info), context->GetInterfaceInvalidator(), task_runner);
+      cache_storage_remote_ = mojo::Remote<mojom::blink::CacheStorage>(
+          std::move(info), task_runner);
       return;
     }
   }
 
-  context->GetInterfaceProvider()->GetInterface(MakeRequest(
-      &cache_storage_ptr_, context->GetInterfaceInvalidator(), task_runner));
+  context->GetInterfaceProvider()->GetInterface(
+      cache_storage_remote_.BindNewPipeAndPassReceiver(task_runner));
 }
 
 CacheStorage::~CacheStorage() = default;
@@ -432,7 +435,7 @@ bool CacheStorage::HasPendingActivity() const {
 void CacheStorage::Trace(blink::Visitor* visitor) {
   visitor->Trace(scoped_fetcher_);
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 bool CacheStorage::IsAllowed(ScriptState* script_state) {
@@ -441,6 +444,10 @@ bool CacheStorage::IsAllowed(ScriptState* script_state) {
     allowed_.emplace(IsCacheStorageAllowed(script_state));
   }
   return allowed_.value();
+}
+
+void CacheStorage::ContextDestroyed(ExecutionContext*) {
+  cache_storage_remote_.reset();
 }
 
 }  // namespace blink

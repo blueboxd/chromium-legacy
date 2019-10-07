@@ -96,14 +96,15 @@
 -BackForwardCacheMetricsBrowserTest.Fetch
 -BackForwardCacheMetricsBrowserTest.XHR
 -MSE_ClearKey/EncryptedMediaTest.ConfigChangeVideo_ClearToEncrypted/0
--TouchpadPinchBrowserTest.WheelListenerPreventingPinch/1
+-WebContentsSplitCacheBrowserTestEnabled.SplitCache/1
 -WebRtcBrowserTest.CanSetupH264VideoCallOnSupportedDevice
--WithoutCORBProtectionSniffing/CrossSiteDocumentBlockingTest.AllowImagesWithSniffing/0
--WithCORBProtectionSniffing/CrossSiteDocumentBlockingTest.AllowImagesWithSniffing/0
+-WithoutCORBProtectionSniffing/CrossSiteDocumentBlockingTest.*
+-WithCORBProtectionSniffing/CrossSiteDocumentBlockingTest.*
 
 # Flaky on android only, need to be triaged, see https://crbug.com/1006267.
 -IndexedDBBrowserTestWithVersion987654SSVData.DestroyTest
 -MSE_ClearKey/EncryptedMediaTest.Playback_VideoAudio_WebM/0
--MediaSessionImplBrowserTest.Async_Unducking_Inactive
+-MediaSessionImplBrowserTest.*
 -MidiBrowserTest.RequestMIDIAccess
 -RenderViewHostTest.IsFocusedElementEditable
+-TouchpadPinchBrowserTest.*

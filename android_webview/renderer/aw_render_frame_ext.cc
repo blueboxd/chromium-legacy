@@ -15,12 +15,10 @@
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/content_capture/common/content_capture_features.h"
 #include "components/content_capture/renderer/content_capture_sender.h"
-#include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_size.h"
-#include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_element_collection.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -202,12 +200,6 @@ bool AwRenderFrameExt::OnAssociatedInterfaceRequestForFrame(
 void AwRenderFrameExt::DidCommitProvisionalLoad(
     bool is_same_document_navigation,
     ui::PageTransition transition) {
-  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-  content::DocumentState* document_state =
-      content::DocumentState::FromDocumentLoader(frame->GetDocumentLoader());
-  if (document_state->can_load_local_resources())
-    frame->GetDocument().GrantLoadLocalResources();
-
   // Clear the cache when we cross site boundaries in the main frame.
   //
   // We're trying to approximate what happens with a multi-process Chromium,
@@ -215,6 +207,7 @@ void AwRenderFrameExt::DidCommitProvisionalLoad(
   // up, and thus start with a clear cache. Wiring up a signal from browser to
   // renderer code to say "this navigation would have switched processes" would
   // be disruptive, so this clearing of the cache is the compromise.
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (!frame->Parent()) {
     url::Origin new_origin = url::Origin::Create(frame->GetDocument().Url());
     if (!new_origin.IsSameOriginWith(last_origin_)) {

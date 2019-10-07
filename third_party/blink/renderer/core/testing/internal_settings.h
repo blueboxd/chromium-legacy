@@ -44,11 +44,15 @@ class Page;
 class Settings;
 
 class InternalSettings final : public InternalSettingsGenerated,
-                               public InternalSettingsPageSupplementStub {
+                               public Supplement<Page> {
   USING_GARBAGE_COLLECTED_MIXIN(InternalSettings);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static const char kSupplementName[];
+
+  static void PrepareForLeakDetection();
+
   class Backup {
     DISALLOW_NEW();
 

@@ -20,13 +20,22 @@ using password_manager::GetDescription;
 using password_manager::GetTitle;
 using password_manager::ShouldCheckPasswords;
 
+@interface PasswordBreachMediator ()
+
+// The presenter of the feature.
+@property(nonatomic, weak) id<PasswordBreachPresenter> presenter;
+
+@end
+
 @implementation PasswordBreachMediator
 
 - (instancetype)initWithConsumer:(id<PasswordBreachConsumer>)consumer
+                       presenter:(id<PasswordBreachPresenter>)presenter
                              URL:(const GURL&)URL
                         leakType:(CredentialLeakType)leakType {
   self = [super init];
   if (self) {
+    _presenter = presenter;
     NSString* subtitle = SysUTF16ToNSString(GetDescription(leakType, URL));
     NSString* primaryActionString =
         SysUTF16ToNSString(GetAcceptButtonLabel(leakType));
@@ -41,7 +50,7 @@ using password_manager::ShouldCheckPasswords;
 #pragma mark - PasswordBreachConsumerDelegate
 
 - (void)passwordBreachDone {
-  // TODO(crbug.com/1008862): Hook up with the coordinator to stop it.
+  [self.presenter stop];
 }
 
 - (void)passwordBreachPrimaryAction {

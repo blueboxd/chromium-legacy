@@ -740,16 +740,7 @@ void SendTabToSelfBridge::SetTargetDeviceInfoList() {
       continue;
     }
 
-    // Don't include this device. Also compare the name as the device can have
-    // different cache guids (e.g. after stopping and re-starting sync).
-    // TODO(crbug.com/991943): This shouldn't be required now that
-    // IsRecentLocalCacheGuid() is used above. However, issues have been
-    // observed on Android, as if IsRecentLocalCacheGuid() didn't get populated
-    // reliably.
-    if (device->guid() == change_processor()->TrackedCacheGuid() ||
-        device->client_name() == local_device_name_) {
-      continue;
-    }
+    DCHECK_NE(device->guid(), change_processor()->TrackedCacheGuid());
 
     // Don't include devices that have disabled the send tab to self receiving
     // feature.

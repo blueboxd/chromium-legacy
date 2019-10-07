@@ -188,6 +188,12 @@ void IOSChromePasswordManagerClient::NotifyStorePasswordCalled() {
   helper_.NotifyStorePasswordCalled();
 }
 
+void IOSChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
+    password_manager::CredentialLeakType leak_type,
+    const GURL& origin) {
+  [delegate_ showPasswordBreachForLeakType:leak_type URL:origin];
+}
+
 bool IOSChromePasswordManagerClient::IsSavingAndFillingEnabled(
     const GURL& url) const {
   return *saving_passwords_enabled_ && !IsIncognito() &&

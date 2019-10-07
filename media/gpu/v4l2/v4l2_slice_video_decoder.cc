@@ -49,31 +49,6 @@ constexpr uint32_t kSupportedInputFourccs[] = {
     V4L2_PIX_FMT_VP9_FRAME,
 };
 
-// Checks an underlying video frame buffer of |frame| is valid for VIDIOC_DQBUF
-// that requires |target_num_fds| fds.
-bool IsValidFrameForQueueDMABuf(const VideoFrame* frame,
-                                size_t target_num_fds) {
-  DCHECK(frame);
-  if (frame->DmabufFds().size() < target_num_fds) {
-    VLOGF(1) << "The count of dmabuf fds (" << frame->DmabufFds().size()
-             << ") are not enough, needs " << target_num_fds << " fds.";
-    return false;
-  }
-
-  const auto& planes = frame->layout().planes();
-  for (size_t i = frame->DmabufFds().size() - 1; i >= target_num_fds; --i) {
-    // Assume that an fd is a duplicate of a previous plane's fd if offset != 0.
-    // Otherwise, if offset == 0, return error as surface_it may be pointing to
-    // a new plane.
-    if (planes[i].offset == 0) {
-      VLOGF(1) << "Additional dmabuf fds point to a new buffer.";
-      return false;
-    }
-  }
-
-  return true;
-}
-
 }  // namespace
 
 V4L2SliceVideoDecoder::DecodeRequest::DecodeRequest(
@@ -394,9 +369,26 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
   needs_bitstream_conversion_ = (config.codec() == kCodecH264);
   pixel_aspect_ratio_ = config.GetPixelAspectRatio();
 
+  // Create Input/Output V4L2Queue
+  input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
+  output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
+  if (!input_queue_ || !output_queue_) {
+    VLOGF(1) << "Failed to create V4L2 queue.";
+    client_task_runner_->PostTask(FROM_HERE,
+                                  base::BindOnce(std::move(init_cb), false));
+    return;
+  }
+
   // Setup input format.
   if (!SetupInputFormat(input_format_fourcc)) {
     VLOGF(1) << "Failed to setup input format.";
+    client_task_runner_->PostTask(FROM_HERE,
+                                  base::BindOnce(std::move(init_cb), false));
+    return;
+  }
+
+  if (!SetCodedSizeOnInputQueue(config.coded_size())) {
+    VLOGF(1) << "Failed to set coded size on input queue";
     client_task_runner_->PostTask(FROM_HERE,
                                   base::BindOnce(std::move(init_cb), false));
     return;
@@ -410,15 +402,6 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
     return;
   }
 
-  // Create Input/Output V4L2Queue
-  input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
-  output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
-  if (!input_queue_ || !output_queue_) {
-    VLOGF(1) << "Failed to create V4L2 queue.";
-    client_task_runner_->PostTask(FROM_HERE,
-                                  base::BindOnce(std::move(init_cb), false));
-    return;
-  }
   if (input_queue_->AllocateBuffers(kNumInputBuffers, V4L2_MEMORY_MMAP) == 0) {
     VLOGF(1) << "Failed to allocate input buffer.";
     client_task_runner_->PostTask(FROM_HERE,
@@ -528,6 +511,27 @@ bool V4L2SliceVideoDecoder::SetupInputFormat(uint32_t input_format_fourcc) {
   return true;
 }
 
+bool V4L2SliceVideoDecoder::SetCodedSizeOnInputQueue(
+    const gfx::Size& coded_size) {
+  struct v4l2_format format = {};
+
+  format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+  if (device_->Ioctl(VIDIOC_G_FMT, &format) != 0) {
+    VPLOGF(1) << "Failed getting OUTPUT format";
+    return false;
+  }
+
+  format.fmt.pix_mp.width = coded_size.width();
+  format.fmt.pix_mp.height = coded_size.height();
+
+  if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
+    VPLOGF(1) << "Failed setting OUTPUT format";
+    return false;
+  }
+
+  return true;
+}
+
 base::Optional<VideoFrameLayout> V4L2SliceVideoDecoder::SetupOutputFormat(
     const gfx::Size& size,
     const gfx::Rect& visible_rect) {
@@ -560,7 +564,6 @@ base::Optional<VideoFrameLayout> V4L2SliceVideoDecoder::SetupOutputFormat(
         continue;
       }
 
-      num_output_planes_ = format->fmt.pix_mp.num_planes;
       return frame_layout;
     }
   }
@@ -657,24 +660,29 @@ void V4L2SliceVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   decoder_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&V4L2SliceVideoDecoder::EnqueueDecodeTask, weak_this_,
-                     DecodeRequest(std::move(buffer), std::move(decode_cb),
-                                   GetNextBitstreamId())));
+                     std::move(buffer), std::move(decode_cb)));
 }
 
-void V4L2SliceVideoDecoder::EnqueueDecodeTask(DecodeRequest request) {
+void V4L2SliceVideoDecoder::EnqueueDecodeTask(
+    scoped_refptr<DecoderBuffer> buffer,
+    V4L2SliceVideoDecoder::DecodeCB decode_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK_NE(state_, State::kUninitialized);
 
   if (state_ == State::kError) {
-    std::move(request.decode_cb).Run(DecodeStatus::DECODE_ERROR);
+    std::move(decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
-  if (!request.buffer->end_of_stream()) {
-    bitstream_id_to_timestamp_.Put(request.bitstream_id,
-                                   request.buffer->timestamp());
+  const int32_t bitstream_id = bitstream_id_generator_.GetNextBitstreamId();
+
+  if (!buffer->end_of_stream()) {
+    bitstream_id_to_timestamp_.Put(bitstream_id, buffer->timestamp());
   }
-  decode_request_queue_.push(std::move(request));
+
+  decode_request_queue_.push(
+      DecodeRequest(std::move(buffer), std::move(decode_cb), bitstream_id));
+
   // If we are already decoding, then we don't need to pump again.
   if (!current_decode_request_)
     PumpDecodeTask();
@@ -829,6 +837,12 @@ bool V4L2SliceVideoDecoder::ChangeResolution() {
   DCHECK(!pic_size.IsEmpty());
   DVLOGF(3) << "Change resolution to " << pic_size.width() << "x"
             << pic_size.height();
+
+  if (!SetCodedSizeOnInputQueue(pic_size)) {
+    VLOGF(1) << "Failed to set coded size on input queue";
+    return false;
+  }
+
   auto frame_layout = SetupOutputFormat(pic_size, avd_->GetVisibleRect());
   if (!frame_layout) {
     VLOGF(1) << "No format is available with thew new resolution";
@@ -962,11 +976,6 @@ void V4L2SliceVideoDecoder::DecodeSurface(
     return;
   }
 
-  if (!IsValidFrameForQueueDMABuf(dec_surface->video_frame().get(),
-                                  num_output_planes_)) {
-    SetState(State::kError);
-    return;
-  }
   if (!std::move(dec_surface->output_buffer())
            .QueueDMABuf(dec_surface->video_frame()->DmabufFds())) {
     SetState(State::kError);
@@ -1111,13 +1120,6 @@ void V4L2SliceVideoDecoder::ServiceDeviceTask(bool /* event */) {
         FROM_HERE,
         base::BindOnce(&V4L2SliceVideoDecoder::PumpDecodeTask, weak_this_));
   }
-}
-
-int32_t V4L2SliceVideoDecoder::GetNextBitstreamId() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-
-  next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x7FFFFFFF;
-  return next_bitstream_buffer_id_;
 }
 
 void V4L2SliceVideoDecoder::RunDecodeCB(DecodeCB cb, DecodeStatus status) {

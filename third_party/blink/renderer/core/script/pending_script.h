@@ -167,9 +167,10 @@ class CORE_EXPORT PendingScript : public GarbageCollected<PendingScript>,
   WebScopedVirtualTimePauser virtual_time_pauser_;
   Member<PendingScriptClient> client_;
 
-  // The context document at the time when PrepareScript() is executed.
-  // This is only used to check whether the script element is moved between
-  // documents and thus doesn't retain a strong reference.
+  // The context/element document at the time when PrepareScript() is executed.
+  // These are only used to check whether the script element is moved between
+  // documents and thus don't retain a strong references.
+  WeakMember<Document> original_element_document_;
   WeakMember<Document> original_context_document_;
 
   const bool created_during_document_write_;

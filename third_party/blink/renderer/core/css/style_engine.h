@@ -343,7 +343,17 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   scoped_refptr<StyleInitialData> MaybeCreateAndGetInitialData();
 
+  bool NeedsStyleInvalidation() const {
+    return style_invalidation_root_.GetRootNode();
+  }
+  bool NeedsStyleRecalc() const { return style_recalc_root_.GetRootNode(); }
+  bool NeedsLayoutTreeRebuild() const {
+    return layout_tree_rebuild_root_.GetRootNode();
+  }
+  bool NeedsFullStyleUpdate() const;
+
   void UpdateViewportStyle();
+  void UpdateStyleAndLayoutTree();
   void RecalcStyle();
   void RebuildLayoutTree();
   bool InRebuildLayoutTree() const { return in_layout_tree_rebuild_; }
@@ -451,6 +461,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   void UpdateColorScheme();
   bool SupportsDarkColorScheme();
+
+  void ViewportDefiningElementDidChange();
 
   Member<Document> document_;
   bool is_master_;

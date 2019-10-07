@@ -238,7 +238,7 @@ void QueuedRequestDispatcher::SetUpAndDispatch(
           {client_info.pid, ResponseType::kChromeDump});
       client->RequestChromeMemoryDump(
           request->GetRequestArgs(),
-          base::BindOnce(std::move(chrome_callback), client_info.pid));
+          base::BindOnce(chrome_callback, client_info.pid));
     }
 
 // On most platforms each process can dump data about their own process

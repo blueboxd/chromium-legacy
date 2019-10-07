@@ -76,8 +76,8 @@ void ClientProcessImpl::RequestChromeMemoryDump(
       pending_chrome_callbacks_.emplace(args.dump_guid, std::move(callback));
   DCHECK(it_and_inserted.second) << "Duplicated request id " << args.dump_guid;
   base::trace_event::MemoryDumpManager::GetInstance()->CreateProcessDump(
-      args, base::Bind(&ClientProcessImpl::OnChromeMemoryDumpDone,
-                       base::Unretained(this)));
+      args, base::BindOnce(&ClientProcessImpl::OnChromeMemoryDumpDone,
+                           base::Unretained(this)));
 }
 
 void ClientProcessImpl::OnChromeMemoryDumpDone(

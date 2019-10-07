@@ -98,7 +98,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
       Widget::MoveLoopEscapeBehavior escape_behavior) override;
   void EndMoveLoop() override;
   void SetVisibilityChangedAnimationsEnabled(bool value) override;
-  void FrameTypeChanged() override;
   void SetOpacity(float opacity) override;
   void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
@@ -113,13 +112,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
  private:
   friend class DesktopWindowTreeHostX11HighDPITest;
 
-  // Sets whether the window's borders are provided by the window manager.
-  void SetUseNativeFrame(bool use_native_frame);
-
   // See comment for variable open_windows_.
   static std::list<XID>& open_windows();
-
-  void DelayedChangeFrameType(Widget::FrameType new_type);
 
   // Enables event listening after closing |dialog|.
   void EnableEventListening();

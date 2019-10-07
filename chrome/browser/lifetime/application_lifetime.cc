@@ -28,7 +28,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/language/core/browser/pref_names.h"
@@ -247,31 +246,9 @@ void AttemptRestart() {
   }
 #endif  // defined(OS_WIN)
 
-  auto* browser_list = BrowserList::GetInstance();
-
   // TODO(beng): Can this use ProfileManager::GetLoadedProfiles instead?
-  for (auto* browser : *browser_list)
+  for (auto* browser : *BrowserList::GetInstance())
     content::BrowserContext::SaveSessionState(browser->profile());
-
-  Browser* last_active_browser = browser_list->GetLastActive();
-
-  if (last_active_browser) {
-    Profile* last_profile = last_active_browser->profile();
-    if (last_profile) {
-      // We remove profile type decorators from the current run arguments and
-      // then append the last profile type that invoked the restart, in the old
-      // switch arguments. The old switch arguments are later used to create a
-      // new command line for restart phase.
-      base::CommandLine& old_cl(*base::CommandLine::ForCurrentProcess());
-      old_cl.RemoveSwitch(switches::kGuest);
-      old_cl.RemoveSwitch(switches::kIncognito);
-
-      if (last_profile->IsIncognitoProfile())
-        old_cl.AppendSwitch(switches::kIncognito);
-      else if (last_profile->IsGuestSession())
-        old_cl.AppendSwitch(switches::kGuest);
-    }
-  }
 
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kWasRestarted, true);

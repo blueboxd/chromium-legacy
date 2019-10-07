@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/color_chooser.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
-#include "chrome/common/extensions/chrome_extension_messages.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/zoom/zoom_controller.h"

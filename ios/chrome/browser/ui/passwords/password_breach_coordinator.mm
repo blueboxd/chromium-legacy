@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/passwords/password_breach_coordinator.h"
 
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/password_breach_commands.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_mediator.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_view_controller.h"
 
@@ -11,7 +13,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface PasswordBreachCoordinator ()
+@interface PasswordBreachCoordinator () <PasswordBreachCommands,
+                                         PasswordBreachPresenter>
 
 // The main view controller for this coordinator.
 @property(nonatomic, strong) PasswordBreachViewController* viewController;
@@ -25,7 +28,9 @@
 
 - (void)start {
   [super start];
-  self.viewController = [[PasswordBreachViewController alloc] init];
+  // To start, a mediator and view controller should be ready.
+  DCHECK(self.viewController);
+  DCHECK(self.mediator);
   [self.baseViewController presentViewController:self.viewController
                                         animated:YES
                                       completion:nil];
@@ -38,6 +43,32 @@
                          completion:nil];
   self.viewController = nil;
   [super stop];
+}
+
+#pragma mark - Setters
+
+- (void)setDispatcher:(CommandDispatcher*)dispatcher {
+  if (_dispatcher == dispatcher) {
+    return;
+  }
+  [_dispatcher stopDispatchingToTarget:self];
+  [dispatcher startDispatchingToTarget:self
+                           forProtocol:@protocol(PasswordBreachCommands)];
+  _dispatcher = dispatcher;
+}
+
+#pragma mark - PasswordBreachCommands
+
+- (void)showPasswordBreachForLeakType:(CredentialLeakType)leakType
+                                  URL:(const GURL&)URL {
+  self.viewController = [[PasswordBreachViewController alloc] init];
+  self.mediator =
+      [[PasswordBreachMediator alloc] initWithConsumer:self.viewController
+                                             presenter:self
+                                                   URL:URL
+                                              leakType:leakType];
+  self.viewController.actionHandler = self.mediator;
+  [self start];
 }
 
 @end

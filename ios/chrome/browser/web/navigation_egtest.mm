@@ -559,7 +559,8 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 
 // Tests that navigating forward from a WebUI URL works when resuming from
 // session restore. This is a regression test for https://crbug.com/814790.
-- (void)testRestoreHistoryToWebUIAndNavigateForward {
+// TODO(crbug.com/1011791): Test disabled.
+- (void)DISABLED_testRestoreHistoryToWebUIAndNavigateForward {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL destinationURL = self.testServer->GetURL(kSimpleFileBasedTestURL);
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
@@ -579,7 +580,8 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 
 // Tests that navigating forward from NTP works when resuming from session
 // restore. This is a regression test for https://crbug.com/814790.
-- (void)testRestoreHistoryToNTPAndNavigateForward {
+// TODO(crbug.com/1011791): Test disabled.
+- (void)DISABLED_testRestoreHistoryToNTPAndNavigateForward {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL destinationURL = self.testServer->GetURL(kSimpleFileBasedTestURL);
   [ChromeEarlGrey loadURL:destinationURL];

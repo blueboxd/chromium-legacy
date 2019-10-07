@@ -1028,6 +1028,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method getEntriesByType
 [Worker]     method mark
 [Worker]     method measure
+[Worker]     method measureMemory
 [Worker]     method now
 [Worker]     method profile
 [Worker]     method setResourceTimingBufferSize

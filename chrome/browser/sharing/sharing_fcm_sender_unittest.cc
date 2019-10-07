@@ -19,10 +19,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using RecipientInfo = chrome_browser_sharing::RecipientInfo;
-using SharingMessage = chrome_browser_sharing::SharingMessage;
-using namespace testing;
-
 namespace {
 
 const char kMessageId[] = "message_id";
@@ -86,7 +82,7 @@ class MockVapidKeyManager : public VapidKeyManager {
   MOCK_METHOD0(GetOrCreateKey, crypto::ECPrivateKey*());
 };
 
-class SharingFCMSenderTest : public Test {
+class SharingFCMSenderTest : public testing::Test {
  public:
   void OnMessageSent(SharingSendMessageResult* result_out,
                      base::Optional<std::string>* message_id_out,
@@ -113,7 +109,7 @@ class SharingFCMSenderTest : public Test {
 
   std::unique_ptr<SharingSyncPreference> sync_prefs_;
   std::unique_ptr<SharingFCMSender> sharing_fcm_sender_;
-  NiceMock<MockVapidKeyManager> vapid_key_manager_;
+  testing::NiceMock<MockVapidKeyManager> vapid_key_manager_;
 
  private:
   sync_preferences::TestingPrefServiceSyncable prefs_;
@@ -177,7 +173,7 @@ TEST_P(SharingFCMSenderResultTest, ResultTest) {
   std::unique_ptr<crypto::ECPrivateKey> vapid_key =
       crypto::ECPrivateKey::Create();
   ON_CALL(vapid_key_manager_, GetOrCreateKey())
-      .WillByDefault(Return(vapid_key.get()));
+      .WillByDefault(testing::Return(vapid_key.get()));
 
   syncer::DeviceInfo::SharingInfo target(
       kFcmToken, kP256dh, kAuthSecret,
@@ -185,7 +181,7 @@ TEST_P(SharingFCMSenderResultTest, ResultTest) {
 
   SharingSendMessageResult result;
   base::Optional<std::string> message_id;
-  SharingMessage sharing_message;
+  chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ping_message();
   sharing_fcm_sender_->SendMessageToDevice(
       std::move(target), base::TimeDelta::FromSeconds(kTtlSeconds),
@@ -205,7 +201,7 @@ TEST_P(SharingFCMSenderResultTest, ResultTest) {
   EXPECT_EQ(kTtlSeconds, fake_gcm_driver_.message().time_to_live);
   EXPECT_EQ(gcm::WebPushMessage::Urgency::kHigh,
             fake_gcm_driver_.message().urgency);
-  SharingMessage message_sent;
+  chrome_browser_sharing::SharingMessage message_sent;
   message_sent.ParseFromString(fake_gcm_driver_.message().payload);
   EXPECT_EQ(local_device_info->guid(), message_sent.sender_guid());
   EXPECT_TRUE(message_sent.has_ping_message());

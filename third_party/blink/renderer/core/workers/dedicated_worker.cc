@@ -15,6 +15,7 @@
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
+#include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
@@ -246,9 +247,7 @@ void DedicatedWorker::Start() {
         credentials_mode,
         WebSecurityOrigin(
             outside_fetch_client_settings_object_->GetSecurityOrigin()),
-        outside_fetch_client_settings_object_->GetReferrerPolicy(),
-        KURL(outside_fetch_client_settings_object_->GetOutgoingReferrer()),
-        outside_fetch_client_settings_object_->GetInsecureRequestsPolicy(),
+        WebFetchClientSettingsObject(*outside_fetch_client_settings_object_),
         blob_url_token.PassPipe());
     // Continue in OnScriptLoadStarted() or OnScriptLoadStartFailed().
     return;

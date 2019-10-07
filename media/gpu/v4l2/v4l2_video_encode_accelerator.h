@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/containers/queue.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
@@ -75,14 +76,6 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
     base::Optional<size_t> ip_output_buffer_index;
   };
 
-  // Record for output buffers.
-  struct OutputRecord {
-    OutputRecord();
-    ~OutputRecord();
-
-    std::unique_ptr<BitstreamBufferRef> buffer_ref;
-  };
-
   // Store all the information of input frame passed to Encode().
   struct InputFrameInfo {
     InputFrameInfo();
@@ -142,6 +135,9 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
   // Device destruction task.
   void DestroyTask();
+
+  // Try to output bitstream buffers.
+  void PumpBitstreamBuffers();
 
   // Flush all the encoded frames. After all frames is flushed successfully or
   // any error occurs, |flush_callback| will be called to notify client.
@@ -309,12 +305,14 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   scoped_refptr<V4L2Queue> input_queue_;
   scoped_refptr<V4L2Queue> output_queue_;
 
-  // Mapping of int index to output buffer record.
-  std::vector<OutputRecord> output_buffer_map_;
-
   // Bitstream buffers ready to be used to return encoded output, as a LIFO
   // since we don't care about ordering.
-  std::vector<std::unique_ptr<BitstreamBufferRef>> encoder_output_queue_;
+  std::vector<std::unique_ptr<BitstreamBufferRef>> bitstream_buffer_pool_;
+
+  // Queue of encoded bitstream V4L2 buffers. We enqueue the encoded buffers
+  // from V4L2 devices, and copy the data to the bitstream buffers passed from
+  // the client via UseOutputBitstreamBuffer().
+  base::circular_deque<V4L2ReadableBufferRef> output_buffer_queue_;
 
   // The completion callback of the Flush() function.
   FlushCallback flush_callback_;

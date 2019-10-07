@@ -80,6 +80,8 @@ interface Performance : EventTarget {
     // https://groups.google.com/a/chromium.org/d/msg/blink-dev/g5YRCGpC9vs/b4OJz71NmPwJ
     [Exposed=Window, Measure] readonly attribute MemoryInfo memory;
 
+    [Exposed=(Window,Worker), CallWith=ScriptState, RuntimeEnabled=MeasureMemory] Promise<MeasureMemory> measureMemory(optional MeasureMemoryOptions options);
+
     // JS Self-Profiling API
     // https://github.com/WICG/js-self-profiling/
     [MeasureAs=JSSelfProfiling, CallWith=ScriptState, RuntimeEnabled=ExperimentalJSProfiler, RaisesException] Promise<Profiler> profile(ProfilerInitOptions options);

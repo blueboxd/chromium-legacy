@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/variations",
   "+net",
   "+services/network/public/cpp",
   "+services/network/test",

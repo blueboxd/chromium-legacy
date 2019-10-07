@@ -117,6 +117,10 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // |passphrase_type_| is an explicit passphrase.
   KeyDerivationParams GetKeyDerivationParamsForPendingKeys() const;
 
+  // If there are pending keys and depending on the passphrase type, it invokes
+  // the appropriate observer methods (if any).
+  void MaybeNotifyOfPendingKeys() const;
+
   // Persists Nigori derived from explicit passphrase into preferences, in case
   // error occurs during serialization/encryption, corresponding preference
   // just won't be updated.

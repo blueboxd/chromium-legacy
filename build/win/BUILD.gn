@@ -17,6 +17,9 @@ windows_manifest("default_exe_manifest") {
 }
 
 if (is_win) {
+  assert(host_os != "mac" || target_cpu != "x86",
+         "Windows cross-builds from Mac must be 64-bit.")
+
   action("copy_cdb_to_output") {
     script = "//build/win/copy_cdb_to_output.py"
     inputs = [

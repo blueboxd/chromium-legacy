@@ -14,7 +14,6 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "chromecast/common/extensions_api/cast_extension_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -32,7 +31,7 @@ using content::BrowserThread;
 namespace {
 
 const uint32_t kExtensionFilteredMessageClasses[] = {
-    ChromeExtensionMsgStart, ExtensionMsgStart,
+    ExtensionMsgStart,
 };
 
 }  // namespace

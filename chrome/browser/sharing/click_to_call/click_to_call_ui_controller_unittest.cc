@@ -29,9 +29,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using namespace testing;
-using namespace instance_id;
-
 namespace {
 
 const char kPhoneNumber[] = "073%2087%202525%2078";
@@ -93,7 +90,7 @@ class ClickToCallUiControllerTest : public testing::Test {
     SharingServiceFactory::GetInstance()->SetTestingFactory(
         &profile_, base::BindRepeating([](content::BrowserContext* context)
                                            -> std::unique_ptr<KeyedService> {
-          return std::make_unique<NiceMock<MockSharingService>>(
+          return std::make_unique<testing::NiceMock<MockSharingService>>(
               std::make_unique<SharingFCMHandler>(nullptr, nullptr, nullptr));
         }));
     ClickToCallUiController::ShowDialog(
@@ -103,8 +100,8 @@ class ClickToCallUiControllerTest : public testing::Test {
   }
 
  protected:
-  NiceMock<MockSharingService>* service() {
-    return static_cast<NiceMock<MockSharingService>*>(
+  testing::NiceMock<MockSharingService>* service() {
+    return static_cast<testing::NiceMock<MockSharingService>*>(
         SharingServiceFactory::GetForBrowserContext(&profile_));
   }
 
@@ -135,15 +132,15 @@ TEST_F(ClickToCallUiControllerTest, OnDeviceChosen) {
   sharing_message.mutable_click_to_call_message()->set_phone_number(
       kExpectedPhoneNumber);
   EXPECT_CALL(*service(),
-              SendMessageToDevice(Eq(kReceiverGuid), Eq(kSharingMessageTTL),
-                                  ProtoEquals(sharing_message), _));
+              SendMessageToDevice(testing::Eq(kReceiverGuid),
+                                  testing::Eq(kSharingMessageTTL),
+                                  ProtoEquals(sharing_message), testing::_));
   controller_->OnDeviceChosen(device_info);
 }
 
 // Check the call to sharing service to get all synced devices.
 TEST_F(ClickToCallUiControllerTest, GetSyncedDevices) {
-  EXPECT_CALL(
-      *service(),
-      GetDeviceCandidates(Eq(sync_pb::SharingSpecificFields::CLICK_TO_CALL)));
+  EXPECT_CALL(*service(), GetDeviceCandidates(testing::Eq(
+                              sync_pb::SharingSpecificFields::CLICK_TO_CALL)));
   controller_->UpdateAndShowDialog();
 }

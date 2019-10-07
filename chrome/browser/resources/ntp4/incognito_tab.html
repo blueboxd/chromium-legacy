@@ -32,6 +32,9 @@ document.write('<link id="incognitothemecss" rel="stylesheet" ' +
   </div>
   <div id="cookie-controls" $i18n{hiddenIfCookieControlsDisabled}>
     <div>
+      <cr-toggle id="cookie-controls-toggle"></cr-toggle>
+    </div>
+    <div>
       <em>$i18n{cookieControlsTitle}</em>
     </div>
     <div id="cookie-controls-description">
@@ -43,5 +46,7 @@ document.write('<link id="incognitothemecss" rel="stylesheet" ' +
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 <script src="incognito_tab.js"></script>
+<!-- Lazy-load cr_toggle to avoid performance penalty introduced by loading Polymer -->
+<script type="module" src="chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js" async></script>
 </body>
 </html>

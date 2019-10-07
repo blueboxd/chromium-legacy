@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/model/sync_change_processor.h"
@@ -612,7 +613,14 @@ TEST_F(PasswordSyncableServiceTest, PasswordRecoveryForAllUsersEnabled) {
 }
 
 // Database cleanup fails because encryption is unavailable.
-TEST_F(PasswordSyncableServiceTest, FailedDeleteUndecryptableLogins) {
+// Flaky: crbug.com/1011193.
+#if defined(OS_WIN)
+#define MAYBE_FailedDeleteUndecryptableLogins \
+  DISABLED_FailedDeleteUndecryptableLogins
+#else
+#define MAYBE_FailedDeleteUndecryptableLogins FailedDeleteUndecryptableLogins
+#endif
+TEST_F(PasswordSyncableServiceTest, MAYBE_FailedDeleteUndecryptableLogins) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kRecoverPasswordsForSyncUsers},

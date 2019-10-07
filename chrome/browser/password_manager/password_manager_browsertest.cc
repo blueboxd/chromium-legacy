@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -58,14 +57,12 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/platform/web_input_event.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -1443,50 +1440,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
   WaitForPasswordStore();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
-}
-
-// Test that if login fails and content server pushes a different login form
-// with action URL having different schemes. Heuristic shall be able
-// identify such cases and *shall not* prompt to save incorrect password.
-IN_PROC_BROWSER_TEST_F(
-    PasswordManagerBrowserTest,
-    NoPromptForLoginFailedAndServerPushSeperateLoginForm_HttpToHttps) {
-  std::string path =
-      "/password/separate_login_form_with_onload_submit_script.html";
-  GURL http_url(embedded_test_server()->GetURL(path));
-  ASSERT_TRUE(http_url.SchemeIs(url::kHttpScheme));
-
-  NavigationObserver observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  ui_test_utils::NavigateToURL(browser(), http_url);
-
-  observer.SetPathToWaitFor("/password/done_and_separate_login_form.html");
-  observer.Wait();
-
-  EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
-}
-
-IN_PROC_BROWSER_TEST_F(
-    PasswordManagerBrowserTest,
-    NoPromptForLoginFailedAndServerPushSeperateLoginForm_HttpsToHttp) {
-  // This test case cannot inject the scripts via content::ExecuteScript() in
-  // files served through HTTPS. Therefore the scripts are made part of the HTML
-  // site and executed on load.
-  std::string path =
-      "/password/separate_login_form_with_onload_submit_script.html";
-  GURL https_url(https_test_server().GetURL(path));
-  ASSERT_TRUE(https_url.SchemeIs(url::kHttpsScheme));
-
-  NavigationObserver observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  ui_test_utils::NavigateToURL(browser(), https_url);
-
-  observer.SetPathToWaitFor("/password/done_and_separate_login_form.html");
-  observer.Wait();
-
-  EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
 
 // Tests whether a attempted submission of a malicious credentials gets blocked.

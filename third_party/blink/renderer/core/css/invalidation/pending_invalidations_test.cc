@@ -56,7 +56,7 @@ TEST_F(PendingInvalidationsTest, ScheduleOnDocumentNode) {
   EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().NeedsStyleRecalc());
-  EXPECT_TRUE(GetDocument().ChildNeedsStyleRecalc());
+  EXPECT_TRUE(GetStyleEngine().NeedsStyleRecalc());
 
   GetDocument().View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);

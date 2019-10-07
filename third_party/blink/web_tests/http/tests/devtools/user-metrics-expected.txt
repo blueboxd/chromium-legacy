@@ -11,6 +11,7 @@ recordActionTaken:
     ConnectToNodeJSDirectly : 20
     ConnectToNodeJSFromFrontend : 19
     ConsoleEvaluated : 8
+    CoverageReportFiltered : 34
     CoverageStarted : 28
     CpuProfileNodeExcluded : 23
     CpuProfileNodeFocused : 22

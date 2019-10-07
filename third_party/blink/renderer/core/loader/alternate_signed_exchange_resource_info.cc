@@ -7,6 +7,7 @@
 #include "net/http/http_request_headers.h"
 #include "third_party/blink/public/common/web_package/signed_exchange_consts.h"
 #include "third_party/blink/public/common/web_package/signed_exchange_request_matcher.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/link_header.h"

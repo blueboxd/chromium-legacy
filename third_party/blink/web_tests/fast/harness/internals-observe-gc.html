@@ -27,7 +27,7 @@ var valueA, observationA, observationB, observationC;
     observationA = internals.observeGC(valueA);
   })();
 
-  gc();
+  await runAsyncGC();
   shouldBeFalse('observationA.wasCollected');
   // value ineligible for GC should not be flagged as collected
   valueA = null;
@@ -43,7 +43,7 @@ var valueA, observationA, observationB, observationC;
     observationB = internals.observeGC(valueB);
   })();
 
-  gc();
+  await runAsyncGC();
   shouldBeTrue('observationB.wasCollected');
   // value eligible for GC should be flagged as collected
   observationB = null;
@@ -83,7 +83,7 @@ var valueA, observationA, observationB, observationC;
     observerD.observed = valueD;
   })();
 
-  gc();
+  await runAsyncGC();
   testPassed('did not crash');
 
   finishJSTest();

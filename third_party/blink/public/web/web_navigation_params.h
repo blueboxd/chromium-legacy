@@ -306,6 +306,8 @@ struct BLINK_EXPORT WebNavigationParams {
   bool is_user_activated = false;
   // Whether this navigation was browser initiated.
   bool is_browser_initiated = false;
+  // Whether the document should be able to access local file:// resources.
+  bool grant_load_local_resources = false;
   // The previews state which should be used for this navigation.
   WebURLRequest::PreviewsState previews_state =
       WebURLRequest::kPreviewsUnspecified;

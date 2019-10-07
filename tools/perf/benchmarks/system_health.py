@@ -31,6 +31,8 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
     cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
         filter_string='rail,toplevel')
     cat_filter.AddIncludedCategory('accessibility')
+    # Needed for the metric reported by page.
+    cat_filter.AddIncludedCategory('blink.user_timing')
     # Needed for the console error metric.
     cat_filter.AddIncludedCategory('v8.console')
 
@@ -42,6 +44,7 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
         'consoleErrorMetric',
         'cpuTimeMetric',
         'limitedCpuTimeMetric',
+        'reportedByPageMetric',
         'tracingMetric'
     ])
     loading_metrics_category.AugmentOptionsForLoadingMetrics(options)

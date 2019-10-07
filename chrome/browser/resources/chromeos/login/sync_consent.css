@@ -8,10 +8,6 @@
   font-weight: 400; /* roboto-regular */
 }
 
-[slot='footer'] {
-  padding: 18px 64px 0;
-}
-
 .overview-list-item {
   background-color: var(--google-grey-100);
   margin-bottom: 16px;

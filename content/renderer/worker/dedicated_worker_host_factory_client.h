@@ -49,10 +49,7 @@ class DedicatedWorkerHostFactoryClient final
       const blink::WebSecurityOrigin& script_origin,
       network::mojom::CredentialsMode credentials_mode,
       const blink::WebSecurityOrigin& fetch_client_security_origin,
-      network::mojom::ReferrerPolicy fetch_client_referrer_policy,
-      const blink::WebURL& fetch_client_outgoing_referrer,
-      const blink::WebInsecureRequestPolicy
-          fetch_client_insecure_request_policy,
+      const blink::WebFetchClientSettingsObject& fetch_client_settings_object,
       mojo::ScopedMessagePipeHandle blob_url_token) override;
   scoped_refptr<blink::WebWorkerFetchContext> CloneWorkerFetchContext(
       blink::WebWorkerFetchContext* web_worker_fetch_context,

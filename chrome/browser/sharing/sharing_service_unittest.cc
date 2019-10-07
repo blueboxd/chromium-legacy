@@ -33,10 +33,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::test::TaskEnvironment;
-using namespace instance_id;
-using namespace testing;
-
 namespace {
 
 const char kP256dh[] = "p256dh";
@@ -88,7 +84,7 @@ class FakeGCMDriver : public gcm::FakeGCMDriver {
   bool should_respond_ = true;
 };
 
-class MockInstanceIDDriver : public InstanceIDDriver {
+class MockInstanceIDDriver : public instance_id::InstanceIDDriver {
  public:
   MockInstanceIDDriver() : InstanceIDDriver(/*gcm_driver=*/nullptr) {}
   ~MockInstanceIDDriver() override = default;
@@ -188,7 +184,7 @@ class SharingServiceTest : public testing::Test {
         &fake_gcm_driver_,
         fake_device_info_sync_service.GetLocalDeviceInfoProvider(), sync_prefs_,
         vapid_key_manager_);
-    fcm_handler_ = new NiceMock<MockSharingFCMHandler>();
+    fcm_handler_ = new testing::NiceMock<MockSharingFCMHandler>();
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
 
@@ -243,15 +239,15 @@ class SharingServiceTest : public testing::Test {
 
   base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_{
-      TaskEnvironment::TimeSource::MOCK_TIME};
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   syncer::FakeDeviceInfoSyncService fake_device_info_sync_service;
   syncer::TestSyncService test_sync_service_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
   FakeGCMDriver fake_gcm_driver_;
 
-  NiceMock<MockInstanceIDDriver> mock_instance_id_driver_;
-  NiceMock<MockSharingFCMHandler>* fcm_handler_;
+  testing::NiceMock<MockInstanceIDDriver> mock_instance_id_driver_;
+  testing::NiceMock<MockSharingFCMHandler>* fcm_handler_;
 
   SharingSyncPreference* sync_prefs_;
   VapidKeyManager* vapid_key_manager_;

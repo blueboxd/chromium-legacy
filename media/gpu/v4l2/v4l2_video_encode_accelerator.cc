@@ -109,10 +109,6 @@ V4L2VideoEncodeAccelerator::InputRecord::InputRecord(const InputRecord&) =
 
 V4L2VideoEncodeAccelerator::InputRecord::~InputRecord() = default;
 
-V4L2VideoEncodeAccelerator::OutputRecord::OutputRecord() = default;
-
-V4L2VideoEncodeAccelerator::OutputRecord::~OutputRecord() = default;
-
 V4L2VideoEncodeAccelerator::InputFrameInfo::InputFrameInfo()
     : InputFrameInfo(nullptr, false) {}
 
@@ -767,9 +763,9 @@ void V4L2VideoEncodeAccelerator::UseOutputBitstreamBufferTask(
     return;
   }
 
-  encoder_output_queue_.push_back(
+  bitstream_buffer_pool_.push_back(
       std::make_unique<BitstreamBufferRef>(buffer.id(), std::move(shm)));
-  Enqueue();
+  PumpBitstreamBuffers();
 
   if (encoder_state_ == kInitialized) {
     if (!StartDevicePoll())
@@ -841,7 +837,7 @@ void V4L2VideoEncodeAccelerator::ServiceDeviceTask() {
             << output_queue_->FreeBuffersCount() << "+"
             << output_queue_->QueuedBuffersCount() << "/"
             << output_queue_->AllocatedBuffersCount() << "] => OUT["
-            << encoder_output_queue_.size() << "]";
+            << bitstream_buffer_pool_.size() << "]";
 }
 
 void V4L2VideoEncodeAccelerator::Enqueue() {
@@ -903,8 +899,7 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
 
   // Enqueue all the outputs we can.
   const size_t old_outputs_queued = output_queue_->QueuedBuffersCount();
-  while (output_queue_->FreeBuffersCount() > 0 &&
-         !encoder_output_queue_.empty()) {
+  while (output_queue_->FreeBuffersCount() > 0) {
     if (!EnqueueOutputRecord())
       return;
   }
@@ -959,6 +954,7 @@ void V4L2VideoEncodeAccelerator::Dequeue() {
 
   // Dequeue completed output (VIDEO_CAPTURE) buffers, and recycle to the
   // free list.  Notify the client that an output buffer is complete.
+  bool buffer_dequeued = false;
   while (output_queue_->QueuedBuffersCount() > 0) {
     DCHECK(output_queue_->IsStreaming());
 
@@ -972,30 +968,53 @@ void V4L2VideoEncodeAccelerator::Dequeue() {
       break;
     }
 
-    V4L2ReadableBufferRef output_buf = std::move(ret.second);
-    OutputRecord& output_record = output_buffer_map_[output_buf->BufferId()];
-    DCHECK(output_record.buffer_ref);
-    int32_t bitstream_buffer_id = output_record.buffer_ref->id;
-    size_t output_data_size = CopyIntoOutputBuffer(
-        static_cast<const uint8_t*>(output_buf->GetPlaneMapping(0)) +
-            output_buf->GetPlaneDataOffset(0),
-        base::checked_cast<size_t>(output_buf->GetPlaneBytesUsed(0) -
-                                   output_buf->GetPlaneDataOffset(0)),
-        std::move(output_record.buffer_ref));
+    output_buffer_queue_.push_back(std::move(ret.second));
+    buffer_dequeued = true;
+  }
 
-    DVLOGF(4) << "returning bitstream_buffer_id=" << bitstream_buffer_id
-              << ", size=" << output_data_size
-              << ", key_frame=" << output_buf->IsKeyframe();
-    child_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&Client::BitstreamBufferReady, client_,
-                       bitstream_buffer_id,
-                       BitstreamBufferMetadata(
-                           output_data_size, output_buf->IsKeyframe(),
-                           base::TimeDelta::FromMicroseconds(
-                               output_buf->GetTimeStamp().tv_usec +
-                               output_buf->GetTimeStamp().tv_sec *
-                                   base::Time::kMicrosecondsPerSecond))));
+  if (buffer_dequeued)
+    PumpBitstreamBuffers();
+}
+
+void V4L2VideoEncodeAccelerator::PumpBitstreamBuffers() {
+  DVLOGF(4);
+  DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
+
+  while (!output_buffer_queue_.empty()) {
+    auto output_buf = std::move(output_buffer_queue_.front());
+    output_buffer_queue_.pop_front();
+
+    size_t bitstream_size = base::checked_cast<size_t>(
+        output_buf->GetPlaneBytesUsed(0) - output_buf->GetPlaneDataOffset(0));
+    if (bitstream_size > 0) {
+      if (bitstream_buffer_pool_.empty()) {
+        DVLOGF(4) << "No free bitstream buffer, skip.";
+        output_buffer_queue_.push_front(std::move(output_buf));
+        return;
+      }
+
+      auto buffer_ref = std::move(bitstream_buffer_pool_.back());
+      auto buffer_id = buffer_ref->id;
+      bitstream_buffer_pool_.pop_back();
+
+      size_t output_data_size = CopyIntoOutputBuffer(
+          static_cast<const uint8_t*>(output_buf->GetPlaneMapping(0)) +
+              output_buf->GetPlaneDataOffset(0),
+          bitstream_size, std::move(buffer_ref));
+
+      DVLOGF(4) << "returning buffer_id=" << buffer_id
+                << ", size=" << output_data_size
+                << ", key_frame=" << output_buf->IsKeyframe();
+      child_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&Client::BitstreamBufferReady, client_, buffer_id,
+                         BitstreamBufferMetadata(
+                             output_data_size, output_buf->IsKeyframe(),
+                             base::TimeDelta::FromMicroseconds(
+                                 output_buf->GetTimeStamp().tv_usec +
+                                 output_buf->GetTimeStamp().tv_sec *
+                                     base::Time::kMicrosecondsPerSecond))));
+    }
 
     if ((encoder_state_ == kFlushing) && output_buf->IsLast()) {
       // Notify client that flush has finished successfully. The flush callback
@@ -1138,20 +1157,15 @@ bool V4L2VideoEncodeAccelerator::EnqueueOutputRecord() {
   DVLOGF(4);
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_GT(output_queue_->FreeBuffersCount(), 0u);
-  DCHECK(!encoder_output_queue_.empty());
   TRACE_EVENT0("media,gpu", "V4L2VEA::EnqueueOutputRecord");
 
   // Enqueue an output (VIDEO_CAPTURE) buffer.
   V4L2WritableBufferRef output_buf = output_queue_->GetFreeBuffer();
   DCHECK(output_buf.IsValid());
-  OutputRecord& output_record = output_buffer_map_[output_buf.BufferId()];
-  DCHECK(!output_record.buffer_ref);
   if (!std::move(output_buf).QueueMMap()) {
     VLOGF(1) << "Failed to QueueMMap.";
     return false;
   }
-  output_record.buffer_ref = std::move(encoder_output_queue_.back());
-  encoder_output_queue_.pop_back();
   return true;
 }
 
@@ -1203,10 +1217,7 @@ bool V4L2VideoEncodeAccelerator::StopDevicePoll() {
     input_record.frame = nullptr;
   }
 
-  for (auto& output_record : output_buffer_map_)
-    output_record.buffer_ref.reset();
-
-  encoder_output_queue_.clear();
+  bitstream_buffer_pool_.clear();
 
   DVLOGF(3) << "device poll stopped";
   return true;
@@ -1623,10 +1634,6 @@ bool V4L2VideoEncodeAccelerator::CreateOutputBuffers() {
     VLOGF(1) << "Failed to allocate V4L2 output buffers.";
     return false;
   }
-
-  DCHECK(output_buffer_map_.empty());
-  output_buffer_map_ =
-      std::vector<OutputRecord>(output_queue_->AllocatedBuffersCount());
   return true;
 }
 
@@ -1651,7 +1658,6 @@ void V4L2VideoEncodeAccelerator::DestroyOutputBuffers() {
 
   DCHECK(!output_queue_->IsStreaming());
   output_queue_->DeallocateBuffers();
-  output_buffer_map_.clear();
 }
 
 }  // namespace media

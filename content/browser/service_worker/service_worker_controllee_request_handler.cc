@@ -73,10 +73,18 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
       skip_service_worker_(skip_service_worker),
       force_update_started_(false) {
   DCHECK(ServiceWorkerUtils::IsMainResourceType(resource_type));
+  TRACE_EVENT_WITH_FLOW0("ServiceWorker",
+                         "ServiceWorkerControlleeRequestHandler::"
+                         "ServiceWorkerControlleeRequestHandler",
+                         TRACE_ID_LOCAL(this), TRACE_EVENT_FLAG_FLOW_OUT);
 }
 
 ServiceWorkerControlleeRequestHandler::
     ~ServiceWorkerControlleeRequestHandler() {
+  TRACE_EVENT_WITH_FLOW0("ServiceWorker",
+                         "ServiceWorkerControlleeRequestHandler::"
+                         "~ServiceWorkerControlleeRequestHandler",
+                         TRACE_ID_LOCAL(this), TRACE_EVENT_FLAG_FLOW_IN);
   MaybeScheduleUpdate();
 }
 
@@ -139,9 +147,14 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
   }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
-  TRACE_EVENT_ASYNC_BEGIN1(
+  // TODO(bashi): Consider using a global navigation ID instead of using |this|.
+  // Using a global ID gives us a convenient way to analyze event flows across
+  // classes.
+  TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
-      "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this, "URL",
+      "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader",
+      TRACE_ID_LOCAL(this),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "URL",
       tentative_resource_request.url.spec());
 
   loader_callback_ = std::move(callback);
@@ -230,30 +243,36 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
       status, base::TimeTicks::Now() - registration_lookup_start_time_);
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
-    TRACE_EVENT_ASYNC_END1(
+    TRACE_EVENT_WITH_FLOW1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this,
-        "Status", blink::ServiceWorkerStatusToString(status));
+        "ServiceWorkerControlleeRequestHandler::ContinueWithRegistration",
+        TRACE_ID_LOCAL(this),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Status",
+        blink::ServiceWorkerStatusToString(status));
     CompleteWithoutLoader();
     return;
   }
   DCHECK(registration);
 
   if (!provider_host_) {
-    TRACE_EVENT_ASYNC_END1(
+    TRACE_EVENT_WITH_FLOW1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this,
-        "Info", "No Provider");
+        "ServiceWorkerControlleeRequestHandler::ContinueWithRegistration",
+        TRACE_ID_LOCAL(this),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Info",
+        "No Provider");
     CompleteWithoutLoader();
     return;
   }
   provider_host_->AddMatchingRegistration(registration.get());
 
   if (!context_) {
-    TRACE_EVENT_ASYNC_END1(
+    TRACE_EVENT_WITH_FLOW1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this,
-        "Info", "No Context");
+        "ServiceWorkerControlleeRequestHandler::ContinueWithRegistration",
+        TRACE_ID_LOCAL(this),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Info",
+        "No Context");
     CompleteWithoutLoader();
     return;
   }
@@ -274,10 +293,12 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
   }
 
   if (!allow_service_worker) {
-    TRACE_EVENT_ASYNC_END1(
+    TRACE_EVENT_WITH_FLOW1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this,
-        "Info", "ServiceWorker is blocked");
+        "ServiceWorkerControlleeRequestHandler::ContinueWithRegistration",
+        TRACE_ID_LOCAL(this),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Info",
+        "ServiceWorker is blocked");
     CompleteWithoutLoader();
     return;
   }
@@ -285,10 +306,12 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
   if (!provider_host_->IsContextSecureForServiceWorker()) {
     // TODO(falken): Figure out a way to surface in the page's DevTools
     // console that the service worker was blocked for security.
-    TRACE_EVENT_ASYNC_END1(
+    TRACE_EVENT_WITH_FLOW1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this,
-        "Info", "Insecure context");
+        "ServiceWorkerControlleeRequestHandler::ContinueWithRegistration",
+        TRACE_ID_LOCAL(this),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Info",
+        "Insecure context");
     CompleteWithoutLoader();
     return;
   }
@@ -303,6 +326,12 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
         base::BindOnce(
             &ServiceWorkerControlleeRequestHandler::DidUpdateRegistration,
             weak_factory_.GetWeakPtr(), registration));
+    TRACE_EVENT_WITH_FLOW1(
+        "ServiceWorker",
+        "ServiceWorkerControlleeRequestHandler::ContinueWithRegistration",
+        TRACE_ID_LOCAL(this),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Info",
+        "Need to update");
     return;
   }
 
@@ -315,10 +344,12 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
   scoped_refptr<ServiceWorkerVersion> active_version =
       registration->active_version();
   if (!active_version) {
-    TRACE_EVENT_ASYNC_END1(
+    TRACE_EVENT_WITH_FLOW1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this,
-        "Info", "No active version, so falling back to network");
+        "ServiceWorkerControlleeRequestHandler::ContinueWithRegistration",
+        TRACE_ID_LOCAL(this),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Info",
+        "No active version, so falling back to network");
     CompleteWithoutLoader();
     return;
   }
@@ -331,12 +362,20 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
     registration->active_version()->RegisterStatusChangeCallback(base::BindOnce(
         &ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion,
         weak_factory_.GetWeakPtr(), registration, active_version));
-    TRACE_EVENT_ASYNC_END1(
+    TRACE_EVENT_WITH_FLOW1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this,
-        "Info", "Wait until finished SW activation");
+        "ServiceWorkerControlleeRequestHandler::ContinueWithRegistration",
+        TRACE_ID_LOCAL(this),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Info",
+        "Wait until finished SW activation");
     return;
   }
+
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker",
+      "ServiceWorkerControlleeRequestHandler::ContinueWithRegistration",
+      TRACE_ID_LOCAL(this),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   ContinueWithActivatedVersion(std::move(registration),
                                std::move(active_version));
@@ -346,10 +385,11 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
     scoped_refptr<ServiceWorkerRegistration> registration,
     scoped_refptr<ServiceWorkerVersion> active_version) {
   if (!context_ || !provider_host_) {
-    TRACE_EVENT_ASYNC_END1(
+    TRACE_EVENT_WITH_FLOW1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this,
-        "Info",
+        "ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion",
+        TRACE_ID_LOCAL(this),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Info",
         "The context or provider host is gone, so falling back to network");
     CompleteWithoutLoader();
     return;
@@ -374,10 +414,11 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
     //      retries.
     //   3) If the provider host does not have an active version, just fail the
     //      load.
-    TRACE_EVENT_ASYNC_END2(
+    TRACE_EVENT_WITH_FLOW2(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this,
-        "Info",
+        "ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion",
+        TRACE_ID_LOCAL(this),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Info",
         "The expected active version is not ACTIVATED, so falling back to "
         "network",
         "Status",
@@ -402,10 +443,12 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
 
   if (active_version->fetch_handler_existence() !=
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS) {
-    TRACE_EVENT_ASYNC_END1(
+    TRACE_EVENT_WITH_FLOW1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this,
-        "Info", "Skipped the ServiceWorker which has no fetch handler");
+        "ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion",
+        TRACE_ID_LOCAL(this),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Info",
+        "Skipped the ServiceWorker which has no fetch handler");
     CompleteWithoutLoader();
     return;
   }
@@ -417,9 +460,11 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
           std::move(fallback_callback_), provider_host_,
           base::WrapRefCounted(context_->loader_factory_getter())));
 
-  TRACE_EVENT_ASYNC_END1(
+  TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
-      "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this, "Info",
+      "ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion",
+      TRACE_ID_LOCAL(this),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Info",
       "Forwarded to the ServiceWorker");
   std::move(loader_callback_)
       .Run(base::BindOnce(&ServiceWorkerNavigationLoader::StartRequest,
@@ -434,10 +479,12 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
   DCHECK(force_update_started_);
 
   if (!context_) {
-    TRACE_EVENT_ASYNC_END1(
+    TRACE_EVENT_WITH_FLOW1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this,
-        "Info", "The context is gone in DidUpdateRegistration");
+        "ServiceWorkerControlleeRequestHandler::DidUpdateRegistration",
+        TRACE_ID_LOCAL(this),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Info",
+        "The context is gone in DidUpdateRegistration");
     CompleteWithoutLoader();
     return;
   }
@@ -450,8 +497,21 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
         base::BindOnce(
             &ServiceWorkerControlleeRequestHandler::ContinueWithRegistration,
             weak_factory_.GetWeakPtr()));
+    TRACE_EVENT_WITH_FLOW1(
+        "ServiceWorker",
+        "ServiceWorkerControlleeRequestHandler::DidUpdateRegistration",
+        TRACE_ID_LOCAL(this),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Info",
+        "Update failed, look up the registration again");
     return;
   }
+
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker",
+      "ServiceWorkerControlleeRequestHandler::DidUpdateRegistration",
+      TRACE_ID_LOCAL(this),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   DCHECK_EQ(original_registration->id(), registration_id);
   ServiceWorkerVersion* new_version =
       original_registration->installing_version();
@@ -467,13 +527,22 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
     scoped_refptr<ServiceWorkerRegistration> registration,
     scoped_refptr<ServiceWorkerVersion> version) {
   if (!context_) {
-    TRACE_EVENT_ASYNC_END1(
+    TRACE_EVENT_WITH_FLOW1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this,
-        "Info", "The context is gone in OnUpdatedVersionStatusChanged");
+        "ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged",
+        TRACE_ID_LOCAL(this),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Info",
+        "The context is gone in OnUpdatedVersionStatusChanged");
     CompleteWithoutLoader();
     return;
   }
+
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker",
+      "ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged",
+      TRACE_ID_LOCAL(this),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   if (version->status() == ServiceWorkerVersion::ACTIVATED ||
       version->status() == ServiceWorkerVersion::REDUNDANT) {
     // When the status is REDUNDANT, the update failed (eg: script error), we

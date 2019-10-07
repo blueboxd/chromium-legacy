@@ -831,13 +831,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (id<ApplicationCommands,
       BrowserCommands,
       OmniboxFocuser,
+      PasswordBreachCommands,
       PopupMenuCommands,
       FakeboxFocuser,
       SnackbarCommands,
       ToolbarCommands>)dispatcher {
-  return static_cast<
-      id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
-         PopupMenuCommands, FakeboxFocuser, SnackbarCommands, ToolbarCommands>>(
+  return static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
+                        PasswordBreachCommands, PopupMenuCommands,
+                        FakeboxFocuser, SnackbarCommands, ToolbarCommands>>(
       self.commandDispatcher);
 }
 

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/invalidation/style_invalidator.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
@@ -49,7 +50,7 @@ TEST_F(StyleInvalidatorTest, SkipDisplayNone) {
   StyleInvalidator invalidator(pending.GetPendingInvalidationMap());
   invalidator.Invalidate(GetDocument(), GetDocument().body());
 
-  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdate());
+  EXPECT_FALSE(GetDocument().GetStyleEngine().NeedsStyleRecalc());
 }
 
 TEST_F(StyleInvalidatorTest, SkipDisplayNoneClearPendingNth) {

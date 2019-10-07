@@ -68,6 +68,7 @@ SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
       paused_(false),
       document_order_indexes_dirty_(false),
       intervals_dirty_(true),
+      is_updating_intervals_(false),
       wakeup_timer_(
           owner.GetDocument().GetTaskRunner(TaskType::kInternalDefault),
           this,
@@ -141,6 +142,11 @@ bool SMILTimeContainer::HasPendingSynchronization() const {
 }
 
 void SMILTimeContainer::ScheduleIntervalUpdate() {
+  // We're inside a call to UpdateIntervals() (or resetting the timeline), so
+  // we don't need to request an update - that will happen after the regular
+  // update has finished (if needed).
+  if (is_updating_intervals_)
+    return;
   if (!IsStarted())
     return;
   // Schedule UpdateAnimations...() to be called asynchronously so multiple
@@ -270,6 +276,8 @@ void SMILTimeContainer::SetElapsed(SMILTime elapsed) {
     SynchronizeToDocumentTimeline();
 
   {
+    base::AutoReset<bool> updating_intervals_scope(&is_updating_intervals_,
+                                                   true);
     ScheduledAnimationsMutationsForbidden scope(this);
     for (auto& sandwich : scheduled_animations_.Values())
       sandwich->Reset();
@@ -427,6 +435,7 @@ bool SMILTimeContainer::CanScheduleFrame(SMILTime earliest_fire_time) const {
 void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
     SMILTime elapsed) {
   DCHECK(GetDocument().IsActive());
+  DCHECK(!wakeup_timer_.IsActive());
 
   UpdateAnimationTimings(elapsed);
   ApplyAnimationValues(elapsed);
@@ -438,6 +447,7 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
     if (next_progress_time <= elapsed)
       break;
   }
+  DCHECK(!wakeup_timer_.IsActive());
 
   if (!CanScheduleFrame(next_progress_time))
     return;
@@ -475,6 +485,8 @@ void SMILTimeContainer::RemoveUnusedKeys() {
 void SMILTimeContainer::UpdateIntervals(SMILTime document_time) {
   DCHECK(document_time.IsFinite());
   DCHECK_GE(document_time, SMILTime());
+
+  base::AutoReset<bool> updating_intervals_scope(&is_updating_intervals_, true);
   do {
     intervals_dirty_ = false;
 

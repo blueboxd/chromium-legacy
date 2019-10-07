@@ -3395,6 +3395,7 @@ test("unit_tests") {
       "../browser/ui/webui/devtools_ui_data_source_unittest.cc",
       "../browser/ui/webui/discards/graph_dump_impl_unittest.cc",
       "../browser/ui/webui/favicon_source_unittest.cc",
+      "../browser/ui/webui/ntp/cookie_controls_handler_unittest.cc",
       "../browser/webauthn/authenticator_request_scheduler_unittest.cc",
       "../browser/webauthn/chrome_authenticator_request_delegate_unittest.cc",
       "../test/pixel/browser_skia_gold_pixel_diff_unittest.cc",

@@ -335,8 +335,6 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   }
   void ClearMediaFeatureOverrides();
 
-  static void PrepareForLeakDetection();
-
  private:
   friend class ScopedPagePauser;
 
@@ -451,12 +449,6 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Page>;
-
-class CORE_EXPORT InternalSettingsPageSupplementStub : public Supplement<Page> {
- public:
-  using Supplement<Page>::Supplement;
-  static const char kSupplementName[];
-};
 
 }  // namespace blink
 

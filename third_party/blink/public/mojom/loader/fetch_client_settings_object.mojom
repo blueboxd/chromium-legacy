@@ -19,6 +19,8 @@ enum InsecureRequestsPolicy {
 //
 // See comments on blink::FetchClientSettingsObject for details of this struct
 // and each member.
+//
+// Also keep this struct consistent with blink::WebFetchClientSettingsObject.
 struct FetchClientSettingsObject {
   network.mojom.ReferrerPolicy referrer_policy;
   url.mojom.Url outgoing_referrer;

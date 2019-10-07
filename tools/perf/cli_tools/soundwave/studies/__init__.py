@@ -21,6 +21,11 @@ def PostProcess(df):
   df['timestamp'] = df.groupby(
       ['test_suite', 'bot', 'point_id'])['timestamp'].transform('min')
 
+  # Prevent the size of the output from growing without bounts. Limit for
+  # DataStudio input appears to be around 100MiB.
+  four_months_ago = pandas.Timestamp.utcnow() - pandas.DateOffset(months=4)
+  df = df[df['timestamp'] > four_months_ago.tz_convert(None)].copy()
+
   # We use all runs on the latest day for each quarter as reference.
   df['quarter'] = df['timestamp'].dt.to_period('Q')
   df['reference'] = df['timestamp'].dt.date == df.groupby(

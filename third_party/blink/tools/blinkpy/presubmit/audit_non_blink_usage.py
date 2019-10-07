@@ -377,7 +377,7 @@ _CONFIG = [
             # namespace.
             'frame_test_helpers::.+',
 
-            # Blink uses Mojo, so it needs mojo::Binding, mojo::InterfacePtr, et
+            # Blink uses Mojo, so it needs mojo::Receiver, mojo::Remote, et
             # cetera, as well as generated Mojo bindings.
             # Note that the Mojo callback helpers are explicitly forbidden:
             # Blink already has a signal for contexts being destroyed, and

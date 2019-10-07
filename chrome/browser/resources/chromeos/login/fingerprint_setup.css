@@ -7,10 +7,6 @@
   font-weight: 400; /* roboto-regular */
 }
 
-[slot='footer'] {
-  padding: 50px 0 0;
-}
-
 #fingerprintUnlockIcon {
   background-image: -webkit-image-set(
       url(images/1x/finger_unlock.svg) 1x,

@@ -14,10 +14,19 @@ class GURL;
 
 @protocol PasswordBreachConsumer;
 
+// Object presenting the feature.
+@protocol PasswordBreachPresenter <NSObject>
+
+// Informs the presenter that the feature should dismiss.
+- (void)stop;
+
+@end
+
 // Manages the state and interactions of the consumer.
 @interface PasswordBreachMediator : NSObject <PasswordBreachActionHandler>
 
 - (instancetype)initWithConsumer:(id<PasswordBreachConsumer>)consumer
+                       presenter:(id<PasswordBreachPresenter>)presenter
                              URL:(const GURL&)URL
                         leakType:(password_manager::CredentialLeakType)leakType;
 

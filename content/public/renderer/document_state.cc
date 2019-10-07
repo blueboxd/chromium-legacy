@@ -11,8 +11,7 @@ DocumentState::DocumentState()
       was_alpn_negotiated_(false),
       was_alternate_protocol_available_(false),
       connection_info_(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
-      was_load_data_with_base_url_request_(false),
-      can_load_local_resources_(false) {}
+      was_load_data_with_base_url_request_(false) {}
 
 DocumentState::~DocumentState() {}
 
@@ -27,7 +26,6 @@ std::unique_ptr<DocumentState> DocumentState::Clone() {
   new_document_state->set_was_load_data_with_base_url_request(
       was_load_data_with_base_url_request_);
   new_document_state->set_data_url(data_url_);
-  new_document_state->set_can_load_local_resources(can_load_local_resources_);
   return new_document_state;
 }
 

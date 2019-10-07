@@ -254,25 +254,6 @@ void DesktopWindowTreeHostX11::SetVisibilityChangedAnimationsEnabled(
   // Much like the previous NativeWidgetGtk, we don't have anything to do here.
 }
 
-void DesktopWindowTreeHostX11::FrameTypeChanged() {
-  Widget::FrameType new_type =
-      native_widget_delegate()->AsWidget()->frame_type();
-  if (new_type == Widget::FrameType::kDefault) {
-    // The default is determined by Widget::InitParams::remove_standard_frame
-    // and does not change.
-    return;
-  }
-  // Avoid mutating |View::children_| while possibly iterating over them.
-  // See View::PropagateNativeThemeChanged().
-  // TODO(varkha, sadrul): Investigate removing this (and instead expecting the
-  // NonClientView::UpdateFrame() to update the frame-view when theme changes,
-  // like all other views).
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DesktopWindowTreeHostX11::DelayedChangeFrameType,
-                     weak_factory_.GetWeakPtr(), new_type));
-}
-
 void DesktopWindowTreeHostX11::SetOpacity(float opacity) {
   GetXWindow()->SetOpacity(opacity);
 }
@@ -324,10 +305,6 @@ bool DesktopWindowTreeHostX11::ShouldCreateVisibilityController() const {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, private:
 
-void DesktopWindowTreeHostX11::SetUseNativeFrame(bool use_native_frame) {
-  GetXWindow()->SetUseNativeFrame(use_native_frame);
-}
-
 std::list<gfx::AcceleratedWidget>& DesktopWindowTreeHostX11::open_windows() {
   if (!open_windows_)
     open_windows_ = new std::list<gfx::AcceleratedWidget>();
@@ -336,14 +313,6 @@ std::list<gfx::AcceleratedWidget>& DesktopWindowTreeHostX11::open_windows() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11 implementation:
-
-void DesktopWindowTreeHostX11::DelayedChangeFrameType(Widget::FrameType type) {
-  SetUseNativeFrame(type == Widget::FrameType::kForceNative);
-  // Replace the frame and layout the contents. Even though we don't have a
-  // swappable glass frame like on Windows, we still replace the frame because
-  // the button assets don't update otherwise.
-  native_widget_delegate()->AsWidget()->non_client_view()->UpdateFrame();
-}
 
 base::OnceClosure DesktopWindowTreeHostX11::DisableEventListening() {
   // Allows to open multiple file-pickers. See https://crbug.com/678982

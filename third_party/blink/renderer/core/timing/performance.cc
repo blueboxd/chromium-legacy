@@ -37,6 +37,7 @@
 #include "base/time/default_tick_clock.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_performance_measure_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -50,6 +51,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/timing/largest_contentful_paint.h"
 #include "third_party/blink/renderer/core/timing/layout_shift.h"
+#include "third_party/blink/renderer/core/timing/measure_memory/measure_memory_options.h"
 #include "third_party/blink/renderer/core/timing/performance_element_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_long_task_timing.h"
@@ -139,6 +141,21 @@ PerformanceNavigation* Performance::navigation() const {
 
 MemoryInfo* Performance::memory() const {
   return nullptr;
+}
+
+ScriptPromise Performance::measureMemory(ScriptState* script_state,
+                                         MeasureMemoryOptions* options) const {
+  v8::Isolate* isolate = script_state->GetIsolate();
+  v8::Local<v8::Context> context = script_state->GetContext();
+  v8::Local<v8::Promise> promise;
+  v8::MaybeLocal<v8::Promise> maybe_promise = isolate->MeasureMemory(
+      context, options && options->hasDetailed() && options->detailed()
+                   ? v8::MeasureMemoryMode::kDetailed
+                   : v8::MeasureMemoryMode::kSummary);
+  if (!maybe_promise.ToLocal(&promise)) {
+    return ScriptPromise();
+  }
+  return ScriptPromise(script_state, promise);
 }
 
 DOMHighResTimeStamp Performance::timeOrigin() const {

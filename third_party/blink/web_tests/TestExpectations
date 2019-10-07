@@ -346,6 +346,8 @@ crbug.com/981719 external/wpt/css/css-ui/appearance-textfield-001.html [ Failure
 crbug.com/981719 [ Linux ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
 crbug.com/981719 [ Win ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
 
+crbug.com/1011453 [ Mac10.10 ] fast/text/trailing-white-space-2.html [ Failure ]
+
 # ====== Paint team owned tests to here ======
 
 crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure Pass ]
@@ -6135,7 +6137,7 @@ crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-targe
 crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-snap-003.html [ Failure ]
 
 # Sheriff 2019-09-12
-crbug.com/1003268 [ Win10 ] fast/harness/internals-observe-gc.html [ Failure ]
+crbug.com/1003268 [ Win10 Win7 ] fast/harness/internals-observe-gc.html [ Failure ]
 crbug.com/731018 [ Mac ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Failure ]
 crbug.com/731018 [ Mac ] external/wpt/gyroscope/Gyroscope.https.html [ Pass Failure ]
 crbug.com/731018 [ Mac ] external/wpt/orientation-sensor/AbsoluteOrientationSensor.https.html [ Pass Failure ]
@@ -6179,6 +6181,7 @@ crbug.com/1010483 [ Win ] fast/selectors/specificity-overflow.html [ Crash Pass 
 crbug.com/1010593 virtual/disable-deferred-rendering/fast/canvas/canvas-scale-drawImage-shadow.html [ Failure ]
 crbug.com/1010655 virtual/disable-deferred-rendering/fast/canvas/canvas-lost-gpu-context.html [ Failure ]
 crbug.com/1010657 [ Mac ] virtual/disable-deferred-rendering/fast/canvas/image-object-in-canvas.html [ Failure ]
+crbug.com/1011723 virtual/disable-deferred-rendering/fast/canvas/OffscreenCanvas-copyImage.html [ Failure ]
 
 # Sheriff 2019-10-04
 crbug.com/1011191 [ Mac ] paint/invalidation/svg/use-clipped-hit.svg  [ Pass Failure ]

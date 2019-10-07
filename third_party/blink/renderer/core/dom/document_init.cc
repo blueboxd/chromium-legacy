@@ -215,6 +215,12 @@ DocumentInit& DocumentInit::WithBlockedByCSP(bool blocked_by_csp) {
   return *this;
 }
 
+DocumentInit& DocumentInit::WithGrantLoadLocalResources(
+    bool grant_load_local_resources) {
+  grant_load_local_resources_ = grant_load_local_resources;
+  return *this;
+}
+
 DocumentInit& DocumentInit::WithRegistrationContext(
     V0CustomElementRegistrationContext* registration_context) {
   DCHECK(!create_new_registration_context_);

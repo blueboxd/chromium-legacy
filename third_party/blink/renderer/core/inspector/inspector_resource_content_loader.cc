@@ -93,6 +93,18 @@ void InspectorResourceContentLoader::Start() {
       resource_request.SetCacheMode(mojom::FetchCacheMode::kDefault);
     }
 
+    ResourceFetcher* fetcher = document->Fetcher();
+    if (base::FeatureList::IsEnabled(
+            features::kHtmlImportsRequestInitiatorLock)) {
+      // For @imports from HTML imported Documents, we use the
+      // context document for getting origin and ResourceFetcher to use the
+      // main Document's origin, while using the element document for
+      // CompleteURL() to use imported Documents' base URLs.
+      if (!document->ContextDocument()) {
+        continue;
+      }
+      fetcher = document->ContextDocument()->Fetcher();
+    }
     if (!resource_request.Url().GetString().IsEmpty()) {
       urls_to_fetch.insert(resource_request.Url().GetString());
       ResourceLoaderOptions options;
@@ -102,7 +114,7 @@ void InspectorResourceContentLoader::Start() {
           MakeGarbageCollected<ResourceClient>(this);
       // Prevent garbage collection by holding a reference to this resource.
       resources_.push_back(
-          RawResource::Fetch(params, document->Fetcher(), resource_client));
+          RawResource::Fetch(params, fetcher, resource_client));
       pending_resource_clients_.insert(resource_client);
     }
 
@@ -122,18 +134,6 @@ void InspectorResourceContentLoader::Start() {
       FetchParameters params(resource_request, options);
       ResourceClient* resource_client =
           MakeGarbageCollected<ResourceClient>(this);
-      ResourceFetcher* fetcher = document->Fetcher();
-      if (base::FeatureList::IsEnabled(
-              features::kHtmlImportsRequestInitiatorLock)) {
-        // For @imports from HTML imported Documents, we use the
-        // context document for getting origin and ResourceFetcher to use the
-        // main Document's origin, while using the element document for
-        // CompleteURL() to use imported Documents' base URLs.
-        if (!document->ContextDocument()) {
-          continue;
-        }
-        fetcher = document->ContextDocument()->Fetcher();
-      }
       // Prevent garbage collection by holding a reference to this resource.
       resources_.push_back(
           CSSStyleSheetResource::Fetch(params, fetcher, resource_client));

@@ -37,8 +37,6 @@
 #include "ui/base/test/ui_controls.h"
 #include "ui/views/widget/widget.h"
 
-using namespace net::test_server;
-
 namespace chromeos {
 
 class OobeTest : public OobeBaseTest {

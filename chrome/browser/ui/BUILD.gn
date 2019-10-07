@@ -1248,6 +1248,8 @@ jumbo_split_static_library("ui") {
       "webui/ntp/app_launcher_handler.h",
       "webui/ntp/app_resource_cache_factory.cc",
       "webui/ntp/app_resource_cache_factory.h",
+      "webui/ntp/cookie_controls_handler.cc",
+      "webui/ntp/cookie_controls_handler.h",
       "webui/ntp/core_app_launcher_handler.cc",
       "webui/ntp/core_app_launcher_handler.h",
       "webui/ntp/new_tab_ui.cc",

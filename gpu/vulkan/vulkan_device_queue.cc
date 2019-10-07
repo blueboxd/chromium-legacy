@@ -126,7 +126,7 @@ bool VulkanDeviceQueue::Initialize(
   }
 
   std::unordered_set<std::string> desired_layers({
-    "VK_LAYER_LUNARG_standard_validation",
+      "VK_LAYER_KHRONOS_validation",
   });
 
   for (const VkLayerProperties& layer_property : device_layers) {

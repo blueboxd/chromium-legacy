@@ -16,6 +16,7 @@
 
 @protocol ApplicationCommands;
 @class NotifyUserAutoSigninViewController;
+@protocol PasswordBreachCommands;
 @protocol PasswordFormFiller;
 @protocol PasswordsUiDelegate;
 @class UIViewController;
@@ -63,7 +64,8 @@ class PasswordManagerClient;
 
 // The dispatcher used for the PasswordController. This property can return nil
 // even after being set to a non-nil object.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands, PasswordBreachCommands>
+    dispatcher;
 
 // Delegate used by this PasswordController to show UI on BVC.
 @property(weak, nonatomic) id<PasswordControllerDelegate> delegate;

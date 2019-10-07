@@ -269,6 +269,9 @@ class V4L2BufferRefBase {
   void* GetPlaneMapping(const size_t plane);
 
   scoped_refptr<VideoFrame> GetVideoFrame();
+  // Checks that the number of passed FDs is adequate for the current format
+  // and buffer configuration. Only useful for DMABUF buffers.
+  bool CheckNumFDsForFormat(const size_t num_fds) const;
 
   // Data from the buffer, that users can query and/or write.
   struct v4l2_buffer v4l2_buffer_;
@@ -348,6 +351,40 @@ scoped_refptr<VideoFrame> V4L2BufferRefBase::GetVideoFrame() {
   DCHECK_LE(BufferId(), queue_->buffers_.size());
 
   return queue_->buffers_[BufferId()]->GetVideoFrame();
+}
+
+bool V4L2BufferRefBase::CheckNumFDsForFormat(const size_t num_fds) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!queue_)
+    return false;
+
+  // We have not used SetFormat(), assume this is ok.
+  // Hopefully we standardize SetFormat() in the future.
+  if (!queue_->current_format_)
+    return true;
+
+  const size_t required_fds = queue_->current_format_->fmt.pix_mp.num_planes;
+  // Sanity check.
+  DCHECK_EQ(v4l2_buffer_.length, required_fds);
+  if (num_fds < required_fds) {
+    VLOGF(1) << "Insufficient number of FDs given for the current format. "
+             << num_fds << " provided, " << required_fds << " required.";
+    return false;
+  }
+
+  const auto& planes = v4l2_buffer_.m.planes;
+  for (size_t i = v4l2_buffer_.length - 1; i >= num_fds; --i) {
+    // Assume that an fd is a duplicate of a previous plane's fd if offset != 0.
+    // Otherwise, if offset == 0, return error as it is likely pointing to
+    // a new plane.
+    if (planes[i].data_offset == 0) {
+      VLOGF(1) << "Additional dmabuf fds point to a new buffer.";
+      return false;
+    }
+  }
+
+  return true;
 }
 
 V4L2WritableBufferRef::V4L2WritableBufferRef() {
@@ -473,12 +510,10 @@ bool V4L2WritableBufferRef::QueueDMABuf(
     return false;
   }
 
-  size_t num_planes = self.PlanesCount();
-  // TODO(hiroh): Strengthen this check with v4l2 pixel format.
-  if (fds.size() < num_planes) {
-    VLOGF(1) << "The given number of fds is less than required one";
+  if (!self.buffer_data_->CheckNumFDsForFormat(fds.size()))
     return false;
-  }
+
+  size_t num_planes = self.PlanesCount();
   for (size_t i = 0; i < num_planes; i++)
     self.buffer_data_->v4l2_buffer_.m.planes[i].m.fd = fds[i].get();
 
@@ -498,12 +533,10 @@ bool V4L2WritableBufferRef::QueueDMABuf(
     return false;
   }
 
-  size_t num_planes = self.PlanesCount();
-  // TODO(hiroh): Strengthen this check with v4l2 pixel format.
-  if (planes.size() < num_planes) {
-    VLOGF(1) << "The given number of fds is less than required one";
+  if (!self.buffer_data_->CheckNumFDsForFormat(planes.size()))
     return false;
-  }
+
+  size_t num_planes = self.PlanesCount();
   for (size_t i = 0; i < num_planes; i++)
     self.buffer_data_->v4l2_buffer_.m.planes[i].m.fd = planes[i].fd.get();
 
@@ -762,7 +795,7 @@ base::Optional<struct v4l2_format> V4L2Queue::SetFormat(uint32_t fourcc,
                                                         const gfx::Size& size,
                                                         size_t buffer_size) {
   struct v4l2_format format = {};
-  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+  format.type = type_;
   format.fmt.pix_mp.pixelformat = fourcc;
   format.fmt.pix_mp.width = size.width();
   format.fmt.pix_mp.height = size.height();
@@ -770,7 +803,8 @@ base::Optional<struct v4l2_format> V4L2Queue::SetFormat(uint32_t fourcc,
   format.fmt.pix_mp.plane_fmt[0].sizeimage = buffer_size;
   if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0 ||
       format.fmt.pix_mp.pixelformat != fourcc) {
-    VPLOGF(2) << "Failed to set output format. format_fourcc=" << fourcc;
+    VPLOGF(2) << "Failed to set format on queue " << type_
+              << ". format_fourcc=0x" << std::hex << fourcc;
     return base::nullopt;
   }
 

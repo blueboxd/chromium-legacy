@@ -79,6 +79,53 @@ Note that, where off-the-main-thread top-level fetch is NOT enabled
 (e.g. classic workers), the worker scripts are fetched on the main thread and
 thus WorkerOrWorkletGlobalScope and the worker thread are not involved.
 
+# Metrics
+
+## UseCounter
+
+[UseCounter](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/instrumentation/use_counter.h)
+is available in all workers and worklets. The count mechanism varies based on
+worker and worklet types as follows.
+
+- Dedicated Workers and Worklets: A feature use in a dedicated worker or worklet
+is propagated to the parent document, and then recorded in the document's
+UseCounter. For nested dedicated workers, a feature use is propagated up to the
+ancestor document via parent workers.
+- Shared Workers: A feature use in a shared worker is propagated to all
+documents connected to the shared worker via mojo calls, and then recorded in
+their UseCounter.
+- Service Workers: A feature use in a service worker is propagated to all
+documents and workers being controlled by the service worker via mojo calls, and
+then recorded in their UseCounter. When a feature use occurs before the service
+worker finishes installing, the feature use is stored in service worker storage.
+It is read whenever the installed service worker is started. See
+[content/browser/service_worker/README.md](/content/browser/service_worker/README.md)
+for details.
+
+`WorkerOrWorkletGlobalScope::CountUse()` is the common entry point. For more
+details, see [Design of UseCounter for
+workers](https://docs.google.com/document/d/1VyYZnhjBdk-MzCRAcX37TM5-yjwTY40U_J9rWnEAo8c/edit?usp=sharing)
+and [crbug 376039](https://bugs.chromium.org/p/chromium/issues/detail?id=376039).
+
+There are some fundamental metrics.
+
+- [WorkerStart](https://www.chromestatus.com/metrics/feature/timeline/popularity/4)
+: Counts of `new DedicatedWorker()` calls in `Document` and
+`DedicatedWorkerGlobalScope`.
+- [NestedDedicatedWorker](https://www.chromestatus.com/metrics/feature/timeline/popularity/2499)
+: Counts of `new DedicatedWorker()` calls in `DedicatedWorkerGlobalScope`.
+- [SharedWorkerStart](https://www.chromestatus.com/metrics/feature/timeline/popularity/5)
+: Counts of `new SharedWorker()` calls in `Document`.
+- [WorkletAddModule](https://www.chromestatus.com/metrics/feature/timeline/popularity/2364)
+: Counts of `Worklet#addModule()` calls in `Document`. This includes all worklet
+types. Each worklet type has its own counter, too.
+
+## UMA
+
+The UMA data is internal-only.
+
+- WorkerThread.ExitCode : Records the exit code of `WorkerThread`.
+
 # Tests
 
 When you add a new worker or worklet type, please consider adding tests in
@@ -125,3 +172,4 @@ in the following files and directories to avoid breakage.
 
 - [WorkerGlobalScope Initialization](https://docs.google.com/document/d/1JCv8TD2nPLNC2iRCp_D1OM4I3uTS0HoEobuTymaMqgw/edit?usp=sharing) (April 1, 2019)
 - [Worker / Worklet Internals](https://docs.google.com/presentation/d/1GZJ3VnLIO_Pw0jr9nRw6_-trg68ol-AkliMxJ6jo6Bo/edit?usp=sharing) (April 19, 2018)
+- [Design of UseCounter for workers](https://docs.google.com/document/d/1VyYZnhjBdk-MzCRAcX37TM5-yjwTY40U_J9rWnEAo8c/edit?usp=sharing) (Feb 14, 2017)

@@ -40,7 +40,9 @@
 #include "components/safe_browsing/db/v4_embedded_test_server_util.h"
 #include "components/safe_browsing/db/v4_test_util.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -707,4 +709,27 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredInterceptingBrowserTest,
     log_observer.RoundTripAndVerifyLogMessages(
         web_contents(), {kAbusiveWarnMessage}, {kAbusiveEnforceMessage});
   }
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
+                       AbusivePagesAreNotPutIntoBackForwardCache) {
+  content::BackForwardCacheDisabledTester back_forward_cache_tester;
+  const GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  ConfigureAsAbusive(a_url);
+
+  // Navigate to an abusive page.
+  ui_test_utils::NavigateToURL(browser(), a_url);
+
+  content::RenderFrameHost* main_frame =
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+  int main_frame_process_id = main_frame->GetProcess()->GetID();
+  int main_frame_routing_id = main_frame->GetRoutingID();
+
+  // Navigate away from the abusive page. This should block bfcache.
+  ui_test_utils::NavigateToURL(browser(), b_url);
+
+  EXPECT_TRUE(back_forward_cache_tester.IsDisabledForFrameWithReason(
+      main_frame_process_id, main_frame_routing_id,
+      "SafeBrowsingTriggeredPopupBlocker"));
 }

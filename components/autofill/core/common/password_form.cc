@@ -213,28 +213,6 @@ bool ArePasswordFormUniqueKeysEqual(const PasswordForm& left,
           left.password_element == right.password_element);
 }
 
-bool LessThanUniqueKey::operator()(
-    const std::unique_ptr<PasswordForm>& left,
-    const std::unique_ptr<PasswordForm>& right) const {
-  int result = left->signon_realm.compare(right->signon_realm);
-  if (result)
-    return result < 0;
-
-  result = left->username_element.compare(right->username_element);
-  if (result)
-    return result < 0;
-
-  result = left->username_value.compare(right->username_value);
-  if (result)
-    return result < 0;
-
-  result = left->password_element.compare(right->password_element);
-  if (result)
-    return result < 0;
-
-  return left->origin < right->origin;
-}
-
 base::string16 ValueElementVectorToString(
     const ValueElementVector& value_element_pairs) {
   std::vector<base::string16> pairs(value_element_pairs.size());

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_uint8_array.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
@@ -11,7 +12,6 @@
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
-
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -44,43 +44,47 @@ void InflateTransformer::Transform(
     v8::Local<v8::Value> chunk,
     TransformStreamDefaultControllerInterface* controller,
     ExceptionState& exception_state) {
-  // TODO(canonmukai): Change to MaybeShared<DOMUint8Array>
-  // when we are ready to support SharedArrayBuffer.
-  NotShared<DOMUint8Array> chunk_data = ToNotShared<NotShared<DOMUint8Array>>(
-      script_state_->GetIsolate(), chunk, exception_state);
+  // TODO(canonmukai): Support SharedArrayBuffer.
+  ArrayBufferOrArrayBufferView buffer_source;
+  V8ArrayBufferOrArrayBufferView::ToImpl(
+      script_state_->GetIsolate(), chunk, buffer_source,
+      UnionTypeConversionMode::kNotNullable, exception_state);
   if (exception_state.HadException()) {
     return;
   }
-  if (!chunk_data) {
-    exception_state.ThrowTypeError("chunk is not of type Uint8Array.");
+  if (buffer_source.IsArrayBufferView()) {
+    const auto* view = buffer_source.GetAsArrayBufferView().View();
+    const Bytef* start = static_cast<const Bytef*>(view->BaseAddress());
+    wtf_size_t length = view->byteLength();
+    Inflate(start, length, IsFinished(false), controller, exception_state);
     return;
   }
-
-  Inflate(chunk_data.View(), IsFinished(false), controller, exception_state);
+  DCHECK(buffer_source.IsArrayBuffer());
+  const auto* array_buffer = buffer_source.GetAsArrayBuffer();
+  const uint8_t* start = static_cast<const Bytef*>(array_buffer->Data());
+  wtf_size_t length = array_buffer->ByteLength();
+  Inflate(start, length, IsFinished(false), controller, exception_state);
 }
 
 void InflateTransformer::Flush(
     TransformStreamDefaultControllerInterface* controller,
     ExceptionState& exception_state) {
   DCHECK(!was_flush_called_);
-  Inflate(nullptr, IsFinished(true), controller, exception_state);
+  Inflate(nullptr, 0u, IsFinished(true), controller, exception_state);
   inflateEnd(&stream_);
   was_flush_called_ = true;
 }
 
 void InflateTransformer::Inflate(
-    const DOMUint8Array* data,
+    const Bytef* start,
+    wtf_size_t length,
     IsFinished finished,
     TransformStreamDefaultControllerInterface* controller,
     ExceptionState& exception_state) {
   unsigned int out_buffer_size = static_cast<unsigned int>(kBufferSize);
-  if (data) {
-    stream_.avail_in = data->length();
-    stream_.next_in = data->DataMaybeShared();
-  } else {
-    stream_.avail_in = 0;
-    stream_.next_in = nullptr;
-  }
+  stream_.avail_in = length;
+  // Zlib treats this pointer as const, so this cast is safe.
+  stream_.next_in = const_cast<Bytef*>(start);
 
   do {
     stream_.avail_out = out_buffer_size;

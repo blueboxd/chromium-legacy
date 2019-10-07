@@ -360,12 +360,6 @@ struct PasswordForm {
 bool ArePasswordFormUniqueKeysEqual(const PasswordForm& left,
                                     const PasswordForm& right);
 
-// A comparator for the unique key.
-struct LessThanUniqueKey {
-  bool operator()(const std::unique_ptr<PasswordForm>& left,
-                  const std::unique_ptr<PasswordForm>& right) const;
-};
-
 // Converts a vector of ValueElementPair to string.
 base::string16 ValueElementVectorToString(
     const ValueElementVector& value_element_pairs);

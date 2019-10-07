@@ -35,7 +35,7 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/base/big_buffer.h"
-#include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
@@ -407,6 +407,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   std::unique_ptr<WebNavigationBodyLoader> body_loader_;
   network::mojom::IPAddressSpace ip_address_space_ =
       network::mojom::IPAddressSpace::kUnknown;
+  bool grant_load_local_resources_ = false;
 
   // Params are saved in constructor and are cleared after StartLoading().
   // TODO(dgozman): remove once StartLoading is merged with constructor.

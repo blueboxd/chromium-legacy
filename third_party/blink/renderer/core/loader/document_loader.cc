@@ -165,6 +165,7 @@ DocumentLoader::DocumentLoader(
   unreachable_url_ = params_->unreachable_url;
   previews_state_ = params_->previews_state;
   ip_address_space_ = params_->ip_address_space;
+  grant_load_local_resources_ = params_->grant_load_local_resources;
 
   WebNavigationTimings& timings = params_->navigation_timings;
   if (!timings.input_start.is_null())
@@ -1477,6 +1478,7 @@ void DocumentLoader::InstallNewDocument(
           .WithIPAddressSpace(ip_address_space_)
           .WithSrcdocDocument(loading_srcdoc_)
           .WithBlockedByCSP(was_blocked_by_csp_)
+          .WithGrantLoadLocalResources(grant_load_local_resources_)
           .WithNewRegistrationContext()
           .WithFeaturePolicyHeader(feature_policy.ToString())
           .WithOriginTrialsHeader(

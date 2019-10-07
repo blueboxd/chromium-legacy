@@ -35,11 +35,6 @@
 #ifndef CHROME_COMMON_CAST_MESSAGES_H_
 #error "Failed to include header chrome/common/cast_messages.h"
 #endif
-#undef CHROME_COMMON_EXTENSIONS_CHROME_EXTENSION_MESSAGES_H_
-#include "chrome/common/extensions/chrome_extension_messages.h"
-#ifndef CHROME_COMMON_EXTENSIONS_CHROME_EXTENSION_MESSAGES_H_
-#error "Failed to include chrome/common/extensions/chrome_extension_messages.h"
-#endif
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)

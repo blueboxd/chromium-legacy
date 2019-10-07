@@ -1838,10 +1838,10 @@ TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
   EXPECT_TRUE(GetStyleEngine().NeedsWhitespaceReattachment(d1));
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
-  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
+  EXPECT_FALSE(GetStyleEngine().NeedsLayoutTreeRebuild());
 
   GetStyleEngine().MarkForWhitespaceReattachment();
-  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
+  EXPECT_FALSE(GetStyleEngine().NeedsLayoutTreeRebuild());
 
   UpdateAllLifecyclePhases();
 
@@ -1850,10 +1850,10 @@ TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
   EXPECT_TRUE(GetStyleEngine().NeedsWhitespaceReattachment(d2));
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
-  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
+  EXPECT_FALSE(GetStyleEngine().NeedsLayoutTreeRebuild());
 
   GetStyleEngine().MarkForWhitespaceReattachment();
-  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
+  EXPECT_FALSE(GetStyleEngine().NeedsLayoutTreeRebuild());
 
   UpdateAllLifecyclePhases();
 
@@ -1861,10 +1861,10 @@ TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
   EXPECT_TRUE(GetStyleEngine().NeedsWhitespaceReattachment(d3));
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
-  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
+  EXPECT_FALSE(GetStyleEngine().NeedsLayoutTreeRebuild());
 
   GetStyleEngine().MarkForWhitespaceReattachment();
-  EXPECT_TRUE(GetDocument().NeedsLayoutTreeRebuild());
+  EXPECT_TRUE(GetStyleEngine().NeedsLayoutTreeRebuild());
 }
 
 TEST_F(StyleEngineTest, FirstLetterRemoved) {
@@ -2243,16 +2243,17 @@ TEST_F(StyleEngineTest, NeedsLayoutTreeRebuild) {
   UpdateAllLifecyclePhases();
 
   EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdate());
-  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
+  EXPECT_FALSE(GetStyleEngine().NeedsLayoutTreeRebuild());
 
   GetDocument().documentElement()->SetInlineStyleProperty(
       CSSPropertyID::kDisplay, "none");
 
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
+
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   GetDocument().GetStyleEngine().RecalcStyle();
 
-  EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  EXPECT_TRUE(GetDocument().NeedsLayoutTreeRebuild());
+  EXPECT_TRUE(GetStyleEngine().NeedsLayoutTreeRebuild());
 }
 
 }  // namespace blink

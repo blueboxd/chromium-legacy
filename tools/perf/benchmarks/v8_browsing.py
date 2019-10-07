@@ -24,7 +24,10 @@ def AugmentOptionsForV8BrowsingMetrics(options, enable_runtime_call_stats=True):
     'webkit.console',
     # Blink categories.
     'blink_gc',
+    # Needed for the metric reported by page.
+    'blink.user_timing'
   ]
+
   options.ExtendTraceCategoryFilter(categories)
   if enable_runtime_call_stats:
     options.AddTraceCategoryFilter('disabled-by-default-v8.runtime_stats')
@@ -43,6 +46,7 @@ def AugmentOptionsForV8BrowsingMetrics(options, enable_runtime_call_stats=True):
     'expectedQueueingTimeMetric',
     'gcMetric',
     'memoryMetric',
+    'reportedByPageMetric',
   ]
   options.ExtendTimelineBasedMetric(metrics)
   if enable_runtime_call_stats:

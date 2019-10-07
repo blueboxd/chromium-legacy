@@ -83,6 +83,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 // Whether the table view is being edited by the swipe-to-delete button.
 @property(nonatomic, readonly, getter=isEditingWithSwipe) BOOL editingWithSwipe;
 // Whether to remove empty sections after editing is reset to NO.
+// TODO (crbug.com/1010836): remove when dropping iOS 12.
 @property(nonatomic, assign) BOOL needsSectionCleanupAfterEditing;
 
 @end
@@ -138,6 +139,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   if (!editing) {
     self.editingWithToolbarButtons = NO;
     if (self.needsSectionCleanupAfterEditing) {
+      [self removeEmptySections];
       self.needsSectionCleanupAfterEditing = NO;
     }
   }
@@ -241,15 +243,22 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
      forRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(editingStyle, UITableViewCellEditingStyleDelete);
   base::RecordAction(base::UserMetricsAction("MobileReadingListDeleteEntry"));
-  // The UIKit animation for the swipe-to-delete gesture throws an exception if
-  // the section of the deleted item is removed before the animation is
-  // finished.  To prevent this from happening, record that cleanup is needed
-  // and remove the section when self.tableView.editing is reset to NO when the
-  // animation finishes.
-  self.needsSectionCleanupAfterEditing = YES;
-  [self deleteItemsAtIndexPaths:@[ indexPath ]
-                     endEditing:NO
-            removeEmptySections:NO];
+
+  if (@available(iOS 13, *)) {
+    [self deleteItemsAtIndexPaths:@[ indexPath ]
+                       endEditing:YES
+              removeEmptySections:YES];
+  } else {
+    // On IOS 12, the UIKit animation for the swipe-to-delete gesture throws an
+    // exception if the section of the deleted item is removed before the
+    // animation is finished. To prevent this from happening, record that
+    // cleanup is needed and remove the section when self.tableView.editing is
+    // reset to NO when the animation finishes.
+    self.needsSectionCleanupAfterEditing = YES;
+    [self deleteItemsAtIndexPaths:@[ indexPath ]
+                       endEditing:NO
+              removeEmptySections:NO];
+  }
 }
 
 #pragma mark - UITableViewDelegate

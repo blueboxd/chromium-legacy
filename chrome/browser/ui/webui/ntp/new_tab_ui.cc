@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/browser/ui/webui/ntp/cookie_controls_handler.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
@@ -56,8 +57,10 @@ NewTabUI::NewTabUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
 
   Profile* profile = GetProfile();
 
-  if (!profile->IsGuestSession())
+  if (!profile->IsGuestSession()) {
     web_ui->AddMessageHandler(std::make_unique<ThemeHandler>());
+    web_ui->AddMessageHandler(std::make_unique<CookieControlsHandler>());
+  }
 
   // content::URLDataSource assumes the ownership of the html source.
   content::URLDataSource::Add(profile, std::make_unique<NewTabHTMLSource>(

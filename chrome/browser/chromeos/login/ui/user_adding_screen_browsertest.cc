@@ -25,8 +25,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 
-using namespace testing;
-
 namespace chromeos {
 
 class UserAddingScreenTest : public LoginManagerTest,

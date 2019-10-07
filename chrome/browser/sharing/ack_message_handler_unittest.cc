@@ -7,12 +7,7 @@
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using SharingMessage = chrome_browser_sharing::SharingMessage;
-using namespace testing;
-
 namespace {
-
-const char kTestMessageId[] = "test_message_id";
 
 class TestObserver : public AckMessageHandler::AckMessageObserver {
  public:
@@ -20,13 +15,13 @@ class TestObserver : public AckMessageHandler::AckMessageObserver {
     received_message_id_ = message_id;
   }
 
-  const std::string& received_message_id() { return received_message_id_; }
+  std::string received_message_id() const { return received_message_id_; }
 
  private:
   std::string received_message_id_;
 };
 
-class AckMessageHandlerTest : public Test {
+class AckMessageHandlerTest : public testing::Test {
  protected:
   AckMessageHandlerTest() { ack_message_handler_.AddObserver(&test_observer_); }
 
@@ -37,7 +32,9 @@ class AckMessageHandlerTest : public Test {
 }  // namespace
 
 TEST_F(AckMessageHandlerTest, OnMessage) {
-  SharingMessage sharing_message;
+  constexpr char kTestMessageId[] = "test_message_id";
+
+  chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ack_message()->set_original_message_id(
       kTestMessageId);
 

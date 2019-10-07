@@ -131,7 +131,6 @@
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_with_index.h"
-#include "third_party/blink/renderer/core/dom/nth_index_cache.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/dom/scripted_animation_controller.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -265,7 +264,6 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
-#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_controller.h"
@@ -846,6 +844,9 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
         }
       }
     }
+
+    if (initializer.GrantLoadLocalResources())
+      security_origin_->GrantLoadLocalResources();
   }
 
   void InitializeFeaturePolicy(const DocumentInit& initializer,
@@ -2330,36 +2331,39 @@ bool Document::NeedsLayoutTreeUpdate() const {
     return false;
   if (NeedsFullLayoutTreeUpdate())
     return true;
-  if (ChildNeedsStyleRecalc())
+  if (style_engine_->NeedsStyleRecalc())
     return true;
-  if (ChildNeedsStyleInvalidation())
+  if (style_engine_->NeedsStyleInvalidation())
     return true;
   if (GetLayoutView() && GetLayoutView()->WasNotifiedOfSubtreeChange())
     return true;
-  if (NeedsLayoutTreeRebuild()) {
+  if (style_engine_->NeedsLayoutTreeRebuild()) {
+    // TODO(futhark): there a couple of places where call back into the top
+    // frame while recursively doing a lifecycle update. One of them are for the
+    // RootScrollerController. These should probably be post layout tasks and
+    // make this test unnecessary since the layout tree rebuild dirtiness is
+    // internal to StyleEngine::UpdateStyleAndLayoutTree().
     DCHECK(InStyleRecalc());
     return true;
   }
   return false;
 }
 
-bool Document::NeedsLayoutTreeRebuild() const {
-  return documentElement() &&
-         (documentElement()->NeedsReattachLayoutTree() ||
-          documentElement()->ChildNeedsReattachLayoutTree());
-}
-
 bool Document::NeedsFullLayoutTreeUpdate() const {
+  // This method returns true if we cannot decide which specific elements need
+  // to have its style or layout tree updated on the next lifecycle update. If
+  // this method returns false, we typically use that to walk up the ancestor
+  // chain to decide if we can let getComputedStyle() use the current
+  // ComputedStyle without doing the lifecycle update (implemented in
+  // Document::NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked()).
   if (!IsActive() || !View())
     return false;
-  if (style_engine_->NeedsActiveStyleUpdate())
-    return true;
-  if (style_engine_->NeedsWhitespaceReattachment())
+  if (style_engine_->NeedsFullStyleUpdate())
     return true;
   if (!use_elements_needing_update_.IsEmpty())
     return true;
-  if (style_engine_->IsViewportStyleDirty())
-    return true;
+  // We have scheduled an invalidation set on the document node which means any
+  // element may need a style recalc.
   if (NeedsStyleInvalidation())
     return true;
   if (IsSlotAssignmentOrLegacyDistributionDirty())
@@ -2408,7 +2412,7 @@ void Document::UpdateStyleInvalidationIfNeeded() {
   DCHECK(IsActive());
   ScriptForbiddenScope forbid_script;
 
-  if (!ChildNeedsStyleInvalidation() && !NeedsStyleInvalidation())
+  if (!GetStyleEngine().NeedsStyleInvalidation())
     return;
   TRACE_EVENT0("blink", "Document::updateStyleInvalidationIfNeeded");
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER_HIGHRES("Style.InvalidationTime");
@@ -2803,47 +2807,20 @@ void Document::UpdateStyle() {
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kInStyleRecalc);
 
-  // All of layout tree dirtiness and rebuilding needs to happen on a stable
-  // flat tree. We have an invariant that all of that happens in this method
-  // as a result of style recalc and the following layout tree rebuild.
-  //
-  // NeedsReattachLayoutTree() marks dirty up the flat tree ancestors. Re-
-  // slotting on a dirty tree could break ancestor chains and fail to update the
-  // tree properly.
-  DCHECK(!NeedsLayoutTreeRebuild());
-
   // SetNeedsStyleRecalc should only happen on Element and Text nodes.
   DCHECK(!NeedsStyleRecalc());
-
-  GetStyleEngine().UpdateViewportStyle();
 
   StyleResolver& resolver = EnsureStyleResolver();
   bool should_record_stats;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED("blink,blink_style", &should_record_stats);
   GetStyleEngine().SetStatsEnabled(should_record_stats);
 
-  if (Element* document_element = documentElement()) {
-    NthIndexCache nth_index_cache(*this);
-    if (StyleRecalcChange().TraverseChild(*document_element)) {
-      TRACE_EVENT0("blink,blink_style", "Document::recalcStyle");
-      SCOPED_BLINK_UMA_HISTOGRAM_TIMER_HIGHRES("Style.RecalcTime");
-      Element* viewport_defining = ViewportDefiningElement();
-      GetStyleEngine().RecalcStyle();
-      if (viewport_defining != ViewportDefiningElement())
-        ViewportDefiningElementDidChange();
-    }
-    GetStyleEngine().MarkForWhitespaceReattachment();
-    if (NeedsLayoutTreeRebuild()) {
-      TRACE_EVENT0("blink,blink_style", "Document::rebuildLayoutTree");
-      SCOPED_BLINK_UMA_HISTOGRAM_TIMER_HIGHRES("Style.RebuildLayoutTreeTime");
-      GetStyleEngine().RebuildLayoutTree();
-    }
-  }
-  GetStyleEngine().ClearWhitespaceReattachSet();
+  GetStyleEngine().UpdateStyleAndLayoutTree();
+
   ClearChildNeedsStyleRecalc();
 
   PropagateStyleToViewport();
-  GetStyleEngine().UpdateColorSchemeBackground();
+
   View()->UpdateCountersAfterStyleChange();
   GetLayoutView()->RecalcLayoutOverflow();
 
@@ -2863,34 +2840,6 @@ void Document::UpdateStyle() {
     TRACE_EVENT_END1(
         "blink,blink_style", "Document::updateStyle", "resolverAccessCount",
         GetStyleEngine().StyleForElementCount() - initial_element_count);
-  }
-}
-
-void Document::ViewportDefiningElementDidChange() {
-  HTMLBodyElement* body = FirstBodyElement();
-  if (!body)
-    return;
-  if (body->NeedsReattachLayoutTree())
-    return;
-  LayoutObject* layout_object = body->GetLayoutObject();
-  if (layout_object && layout_object->IsLayoutBlock()) {
-    // When the overflow style for documentElement changes to or from visible,
-    // it changes whether the body element's box should have scrollable overflow
-    // on its own box or propagated to the viewport. If the body style did not
-    // need a recalc, this will not be updated as its done as part of setting
-    // ComputedStyle on the LayoutObject. Force a SetStyle for body when the
-    // ViewportDefiningElement changes in order to trigger an update of
-    // HasOverflowClip() and the PaintLayer in StyleDidChange().
-    layout_object->SetStyle(ComputedStyle::Clone(*layout_object->Style()));
-    // CompositingReason::kClipsCompositingDescendants depends on the root
-    // element having a clip-related style. Since style update due to changes of
-    // viewport-defining element don't end up as a StyleDifference, we need a
-    // special dirty bit for this situation.
-    if (layout_object->HasLayer()) {
-      ToLayoutBoxModelObject(layout_object)
-          ->Layer()
-          ->SetNeedsCompositingReasonsUpdate();
-    }
   }
 }
 

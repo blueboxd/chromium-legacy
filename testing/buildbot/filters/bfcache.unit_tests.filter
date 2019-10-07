@@ -7,20 +7,17 @@
 # [FATAL:deferred_sequenced_task_runner.cc(83)] Check failed: !target_task_runner_
 -ChromeBrowserMainExtraPartsMetricsTest.VerifyTouchEventsEnabledIsRecordedAfterPostBrowserStart
 -ServicesTest.ConnectToFilePatch
--SoundContentSettingObserverTest.AudioMutingUpdatesWithNavigation
--SoundContentSettingObserverTest.UnmutedAudioPlayingDoesNotRecordSiteMuted
--SupervisedUserWhitelistInstallerTest.InstallNewWhitelist
+-SoundContentSettingObserverTest.*
+-SupervisedUserWhitelistInstallerTest.*
 
 # Crashing with:
 # [FATAL:navigation_url_loader.cc(55)] Check failed: g_loader_factory == nullptr || factory == nullptr
--AddressAccessoryControllerTest.ProvidesEmptySuggestionsMessage
--AddressAccessoryControllerTest.RefreshSuggestionsCallsUI
+-AddressAccessoryControllerTest.*
 -AutofillCreditCardFillingInfoBarDelegateMobileTest.Metrics
 -CreditCardAccessoryControllerTest.PreventsFillingInsecureContexts
 -CreditCardAccessoryControllerTest.ServerCardUnmask
 
 # Other failures
 -MediaDrmOriginIdManagerTest.NetworkChangeFails
--OfflinePageUtilsTest.CheckDuplicateDownloads
--OfflinePageUtilsTest.ScheduleDownloadWithFailedFileAcecssRequest
+-OfflinePageUtilsTest.*
 -PreviewsUKMObserverTest.TestPageEndReasonUMA

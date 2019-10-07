@@ -19,6 +19,7 @@ source_set("commands") {
     "open_new_tab_command.h",
     "open_new_tab_command.mm",
     "page_info_commands.h",
+    "password_breach_commands.h",
     "popup_menu_commands.h",
     "qr_scanner_commands.h",
     "reading_list_add_command.h",
@@ -41,6 +42,7 @@ source_set("commands") {
   public_deps = [
     "//base",
     "//components/browsing_data/core",
+    "//components/password_manager/core/browser",
     "//components/signin/public/base",
     "//ios/chrome/browser/browsing_data:browsing_data_remove_mask",
   ]

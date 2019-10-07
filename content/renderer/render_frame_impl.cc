@@ -932,8 +932,6 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
       mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL);
   internal_data->set_previews_state(common_params.previews_state);
   internal_data->set_request_id(request_id);
-  document_state->set_can_load_local_resources(
-      commit_params.can_load_local_resources);
 
   if (head) {
     if (head->headers)
@@ -1046,6 +1044,14 @@ void FillMiscNavigationParams(
       commit_params.was_activated == mojom::WasActivatedOption::kYes;
 
   navigation_params->is_browser_initiated = commit_params.is_browser_initiated;
+
+#if defined(OS_ANDROID)
+  // Only android webview uses this.
+  navigation_params->grant_load_local_resources =
+      commit_params.can_load_local_resources;
+#else
+  DCHECK(!commit_params.can_load_local_resources);
+#endif
 
   if (commit_params.origin_to_commit) {
     navigation_params->origin_to_commit =

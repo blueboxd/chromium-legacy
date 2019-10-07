@@ -10,6 +10,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
+#include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 
 namespace base {
@@ -34,17 +35,15 @@ class WebDedicatedWorkerHostFactoryClient {
   virtual void CreateWorkerHostDeprecated(
       const blink::WebSecurityOrigin& script_origin) = 0;
   // For PlzDedicatedWorker.
-  // TODO(nhiroki): Pack |fetch_client_*| into some struct like
-  // WebFetchClientSettingsObject.
+  // |fetch_client_security_origin| is intentionally separated from
+  // |fetch_client_settings_object| as it shouldn't be passed from renderer
+  // process from the security perspective.
   virtual void CreateWorkerHost(
       const blink::WebURL& script_url,
       const blink::WebSecurityOrigin& script_origin,
       network::mojom::CredentialsMode credentials_mode,
       const blink::WebSecurityOrigin& fetch_client_security_origin,
-      network::mojom::ReferrerPolicy fetch_client_referrer_policy,
-      const blink::WebURL& fetch_client_outgoing_referrer,
-      const blink::WebInsecureRequestPolicy
-          fetch_client_insecure_request_policy,
+      const blink::WebFetchClientSettingsObject& fetch_client_settings_object,
       mojo::ScopedMessagePipeHandle blob_url_token) = 0;
 
   // Clones the given WebWorkerFetchContext for nested workers.

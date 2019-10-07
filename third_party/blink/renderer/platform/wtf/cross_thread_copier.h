@@ -265,25 +265,6 @@ struct CrossThreadCopier<String> {
   WTF_EXPORT static Type Copy(const String&);
 };
 
-// mojo::InterfacePtrInfo is a cross-thread safe mojo::InterfacePtr.
-template <typename Interface>
-struct CrossThreadCopier<mojo::InterfacePtrInfo<Interface>> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = mojo::InterfacePtrInfo<Interface>;
-  static Type Copy(Type ptr_info) {
-    return ptr_info;  // This is in fact a move.
-  }
-};
-
-template <typename Interface>
-struct CrossThreadCopier<mojo::InterfaceRequest<Interface>> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = mojo::InterfaceRequest<Interface>;
-  static Type Copy(Type request) {
-    return request;  // This is in fact a move.
-  }
-};
-
 template <typename Interface>
 struct CrossThreadCopier<mojo::PendingReceiver<Interface>> {
   STATIC_ONLY(CrossThreadCopier);

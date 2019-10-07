@@ -409,7 +409,8 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
 
 // Test that the USER_DID_NOT_WAIT metric is logged when the user opens an NTP
 // while the evicted tab is still reloading.
-- (void)testEvictedTabReloadSwitchToNTP {
+// TODO(crbug.com/1011336) This test is flaky.
+- (void)DISABLED_testEvictedTabReloadSwitchToNTP {
   std::map<GURL, std::string> responses;
   const GURL slowURL = web::test::HttpServer::MakeUrl("http://slow");
   responses[slowURL] = "Slow Page";
@@ -488,7 +489,8 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
 
 // Tests that leaving Chrome while an evicted tab is reloading triggers the
 // recording of the USER_LEFT_CHROME metric.
-- (void)testEvictedTabReloadBackgrounded {
+// TODO(crbug.com/1011336) This test is flaky.
+- (void)DISABLED_testEvictedTabReloadBackgrounded {
   std::map<GURL, std::string> responses;
   const GURL slowURL = web::test::HttpServer::MakeUrl("http://slow");
   responses[slowURL] = "Slow Page";

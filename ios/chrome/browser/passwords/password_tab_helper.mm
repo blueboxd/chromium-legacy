@@ -28,7 +28,8 @@ void PasswordTabHelper::SetBaseViewController(
   controller_.baseViewController = baseViewController;
 }
 
-void PasswordTabHelper::SetDispatcher(id<ApplicationCommands> dispatcher) {
+void PasswordTabHelper::SetDispatcher(
+    id<ApplicationCommands, PasswordBreachCommands> dispatcher) {
   controller_.dispatcher = dispatcher;
 }
 

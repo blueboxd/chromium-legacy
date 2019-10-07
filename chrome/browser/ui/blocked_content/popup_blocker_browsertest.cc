@@ -58,11 +58,13 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -795,6 +797,26 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, OpenInNewWindow) {
   RunCheckTest(browser(), "/popup_blocker/popup-window-open.html",
                WindowOpenDisposition::NEW_WINDOW, kExpectNewWindow,
                kDontCheckTitle);
+}
+
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupsDisableBackForwardCache) {
+  content::BackForwardCacheDisabledTester tester;
+
+  const GURL url1(
+      embedded_test_server()->GetURL("/popup_blocker/popup-many.html"));
+  content::RenderFrameHost* main_frame =
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+  int process_id = main_frame->GetProcess()->GetID();
+  int frame_routing_id = main_frame->GetRoutingID();
+  const GURL url2(embedded_test_server()->GetURL("/title1.html"));
+
+  // Navigate to the page
+  ui_test_utils::NavigateToURL(browser(), url1);
+  // Navigate away while having blocked popups. This should block bfcache.
+  ui_test_utils::NavigateToURL(browser(), url2);
+
+  EXPECT_TRUE(tester.IsDisabledForFrameWithReason(process_id, frame_routing_id,
+                                                  "PopupBlockerTabHelper"));
 }
 
 }  // namespace

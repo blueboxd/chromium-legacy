@@ -559,13 +559,6 @@ bool NigoriSyncBridgeImpl::Init() {
   // completeness of first sync cycle (which happens before Init() call).
   // TODO(crbug.com/922900): try to avoid double notification (second one can
   // happen during UpdateLocalState() call).
-  if (state_.pending_keys.has_value()) {
-    for (auto& observer : observers_) {
-      observer.OnPassphraseRequired(REASON_DECRYPTION,
-                                    GetKeyDerivationParamsForPendingKeys(),
-                                    *state_.pending_keys);
-    }
-  }
   for (auto& observer : observers_) {
     observer.OnEncryptedTypesChanged(
         GetEncryptedTypes(state_.encrypt_everything),
@@ -575,6 +568,9 @@ bool NigoriSyncBridgeImpl::Init() {
     observer.OnCryptographerStateChanged(state_.cryptographer.get(),
                                          state_.pending_keys.has_value());
   }
+
+  MaybeNotifyOfPendingKeys();
+
   if (state_.passphrase_type != NigoriSpecifics::UNKNOWN) {
     // if |passphrase_type| is unknown, it is not yet initialized and we
     // shouldn't expose it.
@@ -950,36 +946,7 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
                                          state_.pending_keys.has_value());
   }
 
-  if (!state_.pending_keys.has_value()) {
-    return base::nullopt;
-  }
-
-  switch (state_.passphrase_type) {
-    case NigoriSpecifics::UNKNOWN:
-    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
-      NOTREACHED();
-      break;
-    case NigoriSpecifics::KEYSTORE_PASSPHRASE: {
-      // Update with keystore Nigori shouldn't reach this point, since it should
-      // report model error if it has pending keys.
-      NOTREACHED();
-      break;
-    }
-    case NigoriSpecifics::CUSTOM_PASSPHRASE:
-    case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
-      for (auto& observer : observers_) {
-        observer.OnPassphraseRequired(REASON_DECRYPTION,
-                                      GetKeyDerivationParamsForPendingKeys(),
-                                      *state_.pending_keys);
-      }
-      break;
-    case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
-      for (auto& observer : observers_) {
-        observer.OnTrustedVaultKeyRequired();
-      }
-      break;
-  }
-
+  MaybeNotifyOfPendingKeys();
   return base::nullopt;
 }
 
@@ -1202,6 +1169,32 @@ KeyDerivationParams NigoriSyncBridgeImpl::GetKeyDerivationParamsForPendingKeys()
     case NigoriSpecifics::CUSTOM_PASSPHRASE:
       DCHECK(state_.custom_passphrase_key_derivation_params);
       return *state_.custom_passphrase_key_derivation_params;
+  }
+}
+
+void NigoriSyncBridgeImpl::MaybeNotifyOfPendingKeys() const {
+  if (!state_.pending_keys.has_value()) {
+    return;
+  }
+
+  switch (state_.passphrase_type) {
+    case NigoriSpecifics::UNKNOWN:
+    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
+    case NigoriSpecifics::KEYSTORE_PASSPHRASE:
+      return;
+    case NigoriSpecifics::CUSTOM_PASSPHRASE:
+    case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
+      for (auto& observer : observers_) {
+        observer.OnPassphraseRequired(REASON_DECRYPTION,
+                                      GetKeyDerivationParamsForPendingKeys(),
+                                      *state_.pending_keys);
+      }
+      break;
+    case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
+      for (auto& observer : observers_) {
+        observer.OnTrustedVaultKeyRequired();
+      }
+      break;
   }
 }
 

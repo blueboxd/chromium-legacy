@@ -193,8 +193,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
 // The unconsented primary account (aka secondary account) isn't supported on
 // ChromeOS, see IdentityManager::ComputeUnconsentedPrimaryAccountInfo().
 #if !defined(OS_CHROMEOS)
+// Flaky on ASan/TSan, crbug.com/1004312.
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+#define MAYBE_ReusesSameCacheGuid DISABLED_ReusesSameCacheGuid
+#else
+#define MAYBE_ReusesSameCacheGuid ReusesSameCacheGuid
+#endif
 IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
-                       ReusesSameCacheGuid) {
+                       MAYBE_ReusesSameCacheGuid) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
 

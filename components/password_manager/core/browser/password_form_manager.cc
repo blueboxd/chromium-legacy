@@ -126,22 +126,6 @@ uint32_t FindFormsDifferences(const FormData& lhs, const FormData& rhs) {
   return differences_bitmask;
 }
 
-bool URLsEqualUpToScheme(const GURL& a, const GURL& b) {
-  return (a.GetContent() == b.GetContent());
-}
-
-bool URLsEqualUpToHttpHttpsSubstitution(const GURL& a, const GURL& b) {
-  if (a == b)
-    return true;
-
-  // The first-time and retry login forms action URLs sometimes differ in
-  // switching from HTTP to HTTPS, see http://crbug.com/400769.
-  if (a.SchemeIsHTTPOrHTTPS() && b.SchemeIsHTTPOrHTTPS())
-    return URLsEqualUpToScheme(a, b);
-
-  return false;
-}
-
 // Since empty or unspecified form's action is automatically set to the page
 // origin, this function checks if a form's action is empty by comparing it to
 // its origin.
@@ -250,7 +234,7 @@ bool PasswordFormManager::IsEqualToSubmittedForm(
 
   if (form.action.is_valid() && HasNonEmptyAction(form) &&
       HasNonEmptyAction(submitted_form_) &&
-      URLsEqualUpToHttpHttpsSubstitution(submitted_form_.action, form.action)) {
+      submitted_form_.action == form.action) {
     return true;
   }
 

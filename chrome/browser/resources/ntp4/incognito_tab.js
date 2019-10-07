@@ -10,6 +10,14 @@ window.addEventListener('load', function() {
         'chrome://theme/css/incognito_new_tab_theme.css?' + Date.now();
   });
   chrome.send('observeThemeChanges');
+
+  cr.addWebUIListener('cookie-controls-changed', checked => {
+    $('cookie-controls-toggle').checked = checked;
+  });
+  $('cookie-controls-toggle').addEventListener('change', event => {
+    chrome.send('cookieControlsToggleChanged', [event.detail]);
+  });
+  chrome.send('observeCookieControlsModeChange');
 });
 
 // Handle the bookmark bar, theme, and font size change requests

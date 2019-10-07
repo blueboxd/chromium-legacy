@@ -426,153 +426,56 @@ DawnInputStepMode AsDawnEnum<DawnInputStepMode>(
 
 template <>
 DawnVertexFormat AsDawnEnum<DawnVertexFormat>(const WTF::String& webgpu_enum) {
-  if (webgpu_enum == "uchar") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
-  }
   if (webgpu_enum == "uchar2") {
     return DAWN_VERTEX_FORMAT_UCHAR2;
-  }
-  if (webgpu_enum == "uchar3") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
   }
   if (webgpu_enum == "uchar4") {
     return DAWN_VERTEX_FORMAT_UCHAR4;
   }
-  if (webgpu_enum == "char") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
-  }
   if (webgpu_enum == "char2") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
-  }
-  if (webgpu_enum == "char3") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
+    return DAWN_VERTEX_FORMAT_CHAR2;
   }
   if (webgpu_enum == "char4") {
     return DAWN_VERTEX_FORMAT_CHAR4;
   }
-  if (webgpu_enum == "ucharnorm") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
-  }
   if (webgpu_enum == "uchar2norm") {
     return DAWN_VERTEX_FORMAT_UCHAR2_NORM;
-  }
-  if (webgpu_enum == "uchar3norm") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
   }
   if (webgpu_enum == "uchar4norm") {
     return DAWN_VERTEX_FORMAT_UCHAR4_NORM;
   }
-  if (webgpu_enum == "uchar4norm-bgra") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
-  }
-  if (webgpu_enum == "charnorm") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
-  }
   if (webgpu_enum == "char2norm") {
     return DAWN_VERTEX_FORMAT_CHAR2_NORM;
-  }
-  if (webgpu_enum == "char3norm") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
   }
   if (webgpu_enum == "char4norm") {
     return DAWN_VERTEX_FORMAT_CHAR4_NORM;
   }
-  if (webgpu_enum == "ushort") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
-  }
   if (webgpu_enum == "ushort2") {
     return DAWN_VERTEX_FORMAT_USHORT2;
-  }
-  if (webgpu_enum == "ushort3") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
   }
   if (webgpu_enum == "ushort4") {
     return DAWN_VERTEX_FORMAT_USHORT4;
   }
-  if (webgpu_enum == "short") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
-  }
   if (webgpu_enum == "short2") {
     return DAWN_VERTEX_FORMAT_SHORT2;
-  }
-  if (webgpu_enum == "short3") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
   }
   if (webgpu_enum == "short4") {
     return DAWN_VERTEX_FORMAT_SHORT4;
   }
-  if (webgpu_enum == "ushortnorm") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
-  }
   if (webgpu_enum == "ushort2norm") {
     return DAWN_VERTEX_FORMAT_USHORT2_NORM;
-  }
-  if (webgpu_enum == "ushort3norm") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
   }
   if (webgpu_enum == "ushort4norm") {
     return DAWN_VERTEX_FORMAT_USHORT4_NORM;
   }
-  if (webgpu_enum == "shortnorm") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
-  }
   if (webgpu_enum == "short2norm") {
     return DAWN_VERTEX_FORMAT_SHORT2_NORM;
-  }
-  if (webgpu_enum == "short3norm") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
   }
   if (webgpu_enum == "short4norm") {
     return DAWN_VERTEX_FORMAT_SHORT4_NORM;
   }
-  if (webgpu_enum == "half") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
-  }
   if (webgpu_enum == "half2") {
     return DAWN_VERTEX_FORMAT_HALF2;
-  }
-  if (webgpu_enum == "half3") {
-    // TODO(crbug.com/dawn/41): Implement remaining vertex formats
-    NOTREACHED();
-    return DAWN_VERTEX_FORMAT_FORCE32;
   }
   if (webgpu_enum == "half4") {
     return DAWN_VERTEX_FORMAT_HALF4;

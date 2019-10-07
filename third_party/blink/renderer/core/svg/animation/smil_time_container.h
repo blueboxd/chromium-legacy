@@ -139,11 +139,12 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
   base::TimeDelta reference_time_;
 
   FrameSchedulingState frame_scheduling_state_;
-  bool started_;  // The timeline has been started.
-  bool paused_;   // The timeline is paused.
+  bool started_ : 1;  // The timeline has been started.
+  bool paused_ : 1;   // The timeline is paused.
 
-  bool document_order_indexes_dirty_;
-  bool intervals_dirty_;
+  bool document_order_indexes_dirty_ : 1;
+  bool intervals_dirty_ : 1;
+  bool is_updating_intervals_;
 
   TaskRunnerTimer<SMILTimeContainer> wakeup_timer_;
   TaskRunnerTimer<SMILTimeContainer> animation_policy_once_timer_;
@@ -167,6 +168,7 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
 #endif
   }
 };
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SMIL_TIME_CONTAINER_H_

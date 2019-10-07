@@ -42,7 +42,6 @@ enum IPCMessageStart {
   NaClHostMsgStart,
   EncryptedMediaMsgStart,
   CastMsgStart,
-  ChromeExtensionMsgStart,
   GinJavaBridgeMsgStart,
   ChromeUtilityPrintingMsgStart,
   OzoneGpuMsgStart,

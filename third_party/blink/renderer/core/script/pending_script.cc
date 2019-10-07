@@ -59,6 +59,7 @@ PendingScript::PendingScript(ScriptElementBase* element,
       starting_position_(starting_position),
       virtual_time_pauser_(CreateWebScopedVirtualTimePauser(element)),
       client_(nullptr),
+      original_element_document_(&element->GetDocument()),
       original_context_document_(element->GetDocument().ContextDocument()),
       created_during_document_write_(
           element->GetDocument().IsInDocumentWrite()) {}
@@ -150,6 +151,17 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
     // https://crbug.com/721914
     UseCounter::Count(context_document,
                       WebFeature::kEvaluateScriptMovedBetweenDocuments);
+  }
+
+  if (OriginalContextDocument() == context_document &&
+      original_element_document_ != &element_->GetDocument()) {
+    // Count how many scripts are moved between element Documents under the same
+    // context Document, to investigate the feasibility of stopping execution of
+    // such scripts. https://crbug.com/721914
+    UseCounter::Count(context_document,
+                      WebFeature::kEvaluateScriptMovedBetweenElementDocuments);
+    Dispose();
+    return;
   }
 
   Script* script = GetSource(document_url);
@@ -291,6 +303,7 @@ void PendingScript::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(client_);
   visitor->Trace(original_context_document_);
+  visitor->Trace(original_element_document_);
 }
 
 bool PendingScript::IsControlledByScriptRunner() const {

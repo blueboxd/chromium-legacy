@@ -42,6 +42,7 @@ enum BootstrapTokenType {
 // and keeps the nigori node up to date.
 // Implementations of this class must be assumed to be non-thread-safe. All
 // methods must be invoked on the sync thread.
+// TODO(crbug.com/1010397): Rename this class.
 class SyncEncryptionHandler {
  public:
   class NigoriState;
@@ -155,6 +156,8 @@ class SyncEncryptionHandler {
   // attempts to re-encrypt all sync data. Returns false in case of error.
   // Note: This method is expensive (it iterates through all encrypted types),
   // so should only be used sparingly (e.g. on startup).
+  // TODO(crbug.com/): Rename to something like NotifyStateToObservers() or
+  // even delete this API altogether.
   virtual bool Init() = 0;
 
   // Attempts to re-encrypt encrypted data types using the passphrase provided.

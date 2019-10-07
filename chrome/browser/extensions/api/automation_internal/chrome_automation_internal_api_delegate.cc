@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/api/automation.h"
 #include "extensions/common/api/automation_internal.h"

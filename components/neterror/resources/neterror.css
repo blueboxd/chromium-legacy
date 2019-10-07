@@ -791,7 +791,9 @@ TODO(https://crbug.com/852872): UI for offline suggested content is incomplete.
 .offline {
   transition: filter 1.5s cubic-bezier(0.65, 0.05, 0.36, 1),
               background-color 1.5s cubic-bezier(0.65, 0.05, 0.36, 1);
+<if expr="not is_ios">
   will-change: filter, background-color;
+</if>
 }
 
 .offline body {

@@ -31,7 +31,8 @@ class InflateTransformer final : public TransformStreamTransformer {
  private:
   using IsFinished = util::StrongAlias<class IsFinishedTag, bool>;
 
-  void Inflate(const DOMUint8Array* data,
+  void Inflate(const Bytef*,
+               wtf_size_t,
                IsFinished,
                TransformStreamDefaultControllerInterface*,
                ExceptionState&);

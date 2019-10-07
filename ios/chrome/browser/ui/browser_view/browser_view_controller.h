@@ -20,6 +20,7 @@ class Browser;
 @class BrowserViewControllerDependencyFactory;
 @class CommandDispatcher;
 @protocol OmniboxFocuser;
+@protocol PasswordBreachCommands;
 @protocol PopupMenuCommands;
 @protocol FakeboxFocuser;
 @protocol SnackbarCommands;
@@ -61,6 +62,7 @@ class ChromeBrowserState;
 @property(nonatomic, readonly) id<ApplicationCommands,
                                   BrowserCommands,
                                   OmniboxFocuser,
+                                  PasswordBreachCommands,
                                   PopupMenuCommands,
                                   FakeboxFocuser,
                                   SnackbarCommands,

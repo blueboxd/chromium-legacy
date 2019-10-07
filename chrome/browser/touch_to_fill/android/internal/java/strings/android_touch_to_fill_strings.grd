@@ -107,11 +107,11 @@
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
       <!-- Touch To Fill -->
-      <message name="IDS_TOUCH_TO_FILL_SHEET_TITLE" desc="Header for Touch To FIll sheet where users can pick a credential to fill into a form to.">
-        Choose an account
+      <message name="IDS_TOUCH_TO_FILL_SHEET_TITLE" desc="Header for Touch To Fill sheet where users can pick a credential to fill into a form to.">
+        Pick your account
       </message>
-      <message name="IDS_TOUCH_TO_FILL_SHEET_SUBTITLE" desc="Subtitle for Touch To FIll sheet where users can pick a credential to fill into a form to.">
-        Sign into <ph name="SITE_NAME">%1$s<ex>airbnb.com</ex></ph> with Chrome
+      <message name="IDS_TOUCH_TO_FILL_SHEET_SUBTITLE" desc="Subtitle for Touch To Fill sheet where users can pick a credential to fill into a form to.">
+        Sign in to <ph name="SITE_NAME">%1$s<ex>airbnb.com</ex></ph> using Chrome
       </message>
       <message name="IDS_TOUCH_TO_FILL_CONTENT_DESCRIPTION" desc="Accessibility string read when the Touch To Fill bottom sheet is opened. It describes the bottom sheet where a user can pick a credential to fill into a password form.">
         List of credentials to be filled on touch.
@@ -122,8 +122,11 @@
       <message name="IDS_TOUCH_TO_FILL_SHEET_FULL_HEIGHT" desc="Accessibility string read when the Touch To Fill bottom sheet showing a list of the user's credentials is opened at full height. The sheet will occupy the entire screen.">
         List of credentials to be filled on touch opened at full height.
       </message>
-      <message name="IDS_TOUCH_TO_FILL_SHEET_CLOSED" desc="Accessibility string read when the Toch To Fill bottom sheet showing a list of the user's credentials is closed.">
+      <message name="IDS_TOUCH_TO_FILL_SHEET_CLOSED" desc="Accessibility string read when the Touch To Fill bottom sheet showing a list of the user's credentials is closed.">
         List of credentials to be filled on touch is closed.
+      </message>
+      <message name="IDS_TOUCH_TO_FILL_USE_CREDENTIAL" desc="Text that is shown on every credential entry in Touch To Fill bottom sheet. Tapping on the credential entry will use that credential entry to sign into the currently opened website.">
+        Use
       </message>
     </messages>
   </release>

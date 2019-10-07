@@ -62,6 +62,7 @@ class PerformanceMarkOptions;
 class ExceptionState;
 class LargestContentfulPaint;
 class LayoutShift;
+class MeasureMemoryOptions;
 class MemoryInfo;
 class PerformanceElementTiming;
 class PerformanceEventTiming;
@@ -97,6 +98,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   virtual PerformanceTiming* timing() const;
   virtual PerformanceNavigation* navigation() const;
   virtual MemoryInfo* memory() const;
+  virtual ScriptPromise measureMemory(ScriptState*,
+                                      MeasureMemoryOptions*) const;
 
   virtual void UpdateLongTaskInstrumentation() {}
 

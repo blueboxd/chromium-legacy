@@ -13571,6 +13571,7 @@ Called by update_net_error_codes.py.-->
   <int value="31" label="Showed third party badges"/>
   <int value="32" label="Audits' view trace clicked"/>
   <int value="33" label="Network panel film strip started recording"/>
+  <int value="34" label="Coverage report was filtered"/>
 </enum>
 
 <enum name="DevToolsBackgroundService">
@@ -24855,6 +24856,7 @@ Called by update_net_error_codes.py.-->
   <int value="3042" label="FragmentHasAmpersandDelimiterQuestion"/>
   <int value="3043" label="InvalidFragmentDirective"/>
   <int value="3044" label="ContactsManagerGetProperties"/>
+  <int value="3045" label="EvaluateScriptMovedBetweenElementDocuments"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

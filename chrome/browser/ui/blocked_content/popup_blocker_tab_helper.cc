@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/render_messages.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_navigator.h"
@@ -70,6 +71,16 @@ void PopupBlockerTabHelper::DidFinishNavigation(
   if (!blocked_popups_.empty()) {
     blocked_popups_.clear();
     HidePopupNotification();
+
+    // With back-forward cache we can restore the page, but |blocked_popups_|
+    // are lost here and can't be restored at the moment.
+    // Disable bfcache here to avoid potential loss of the page state.
+    web_contents()
+        ->GetController()
+        .GetBackForwardCache()
+        .DisableForRenderFrameHost(
+            navigation_handle->GetPreviousRenderFrameHostId(),
+            "PopupBlockerTabHelper");
   }
 }
 

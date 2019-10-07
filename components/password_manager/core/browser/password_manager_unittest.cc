@@ -1405,46 +1405,6 @@ TEST_F(PasswordManagerTest, SyncCredentialsStillFilled) {
   EXPECT_EQ(form.password_value, form_data.password_field.value);
 }
 
-// On failed login attempts, the retry-form can have action scheme changed from
-// HTTP to HTTPS (see http://crbug.com/400769). Check that such retry-form is
-// considered equal to the original login form, and the attempt recognised as a
-// failure.
-TEST_F(PasswordManagerTest,
-       SeeingFormActionWithOnlyHttpHttpsChangeIsLoginFailure) {
-  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
-
-  PasswordForm first_form(MakeSimpleForm());
-  first_form.origin = GURL("http://www.xda-developers.com/");
-  first_form.form_data.url = first_form.origin;
-  first_form.action = GURL("http://forum.xda-developers.com/login.php");
-
-  // |second_form|'s action differs only with it's scheme i.e. *https://*.
-  PasswordForm second_form(first_form);
-  second_form.action = GURL("https://forum.xda-developers.com/login.php");
-  second_form.form_data.action = second_form.action;
-
-  std::vector<PasswordForm> observed;
-  observed.push_back(first_form);
-  EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
-  manager()->OnPasswordFormsParsed(&driver_, observed);
-  manager()->OnPasswordFormsRendered(&driver_, observed, true);
-
-  EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
-      .WillRepeatedly(Return(true));
-  OnPasswordFormSubmitted(first_form);
-
-  // Simulate loading a page, which contains |second_form| instead of
-  // |first_form|.
-  observed.clear();
-  observed.push_back(second_form);
-
-  // Verify that no prompt to save the password is shown.
-  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
-  manager()->OnPasswordFormsParsed(&driver_, observed);
-  manager()->OnPasswordFormsRendered(&driver_, observed, true);
-}
-
 TEST_F(PasswordManagerTest,
        ShouldBlockPasswordForSameOriginButDifferentSchemeTest) {
   constexpr struct {

@@ -372,11 +372,11 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
   }
 
   auto chrome_callback =
-      base::Bind(&CoordinatorImpl::OnChromeMemoryDumpResponse,
-                 weak_ptr_factory_.GetWeakPtr());
+      base::BindRepeating(&CoordinatorImpl::OnChromeMemoryDumpResponse,
+                          weak_ptr_factory_.GetWeakPtr());
   auto os_callback =
-      base::Bind(&CoordinatorImpl::OnOSMemoryDumpResponse,
-                 weak_ptr_factory_.GetWeakPtr(), request->dump_guid);
+      base::BindRepeating(&CoordinatorImpl::OnOSMemoryDumpResponse,
+                          weak_ptr_factory_.GetWeakPtr(), request->dump_guid);
   QueuedRequestDispatcher::SetUpAndDispatch(request, clients, chrome_callback,
                                             os_callback);
 

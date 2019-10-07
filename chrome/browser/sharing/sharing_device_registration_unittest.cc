@@ -31,10 +31,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace gcm;
-using namespace instance_id;
-using namespace testing;
-
 namespace {
 const char kAppID[] = "test_app_id";
 const char kFCMToken[] = "test_fcm_token";
@@ -44,18 +40,19 @@ const char kDevicep256dh2[] = "test_p256_dh_2";
 const char kDeviceAuthSecret[] = "test_auth_secret";
 const char kDeviceAuthSecret2[] = "test_auth_secret_2";
 
-class MockInstanceIDDriver : public InstanceIDDriver {
+class MockInstanceIDDriver : public instance_id::InstanceIDDriver {
  public:
   MockInstanceIDDriver() : InstanceIDDriver(/*gcm_driver=*/nullptr) {}
   ~MockInstanceIDDriver() override = default;
 
-  MOCK_METHOD1(GetInstanceID, InstanceID*(const std::string& app_id));
+  MOCK_METHOD1(GetInstanceID,
+               instance_id::InstanceID*(const std::string& app_id));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInstanceIDDriver);
 };
 
-class FakeInstanceID : public InstanceID {
+class FakeInstanceID : public instance_id::InstanceID {
  public:
   FakeInstanceID() : InstanceID(kAppID, /*gcm_driver = */ nullptr) {}
   ~FakeInstanceID() override = default;
@@ -139,7 +136,7 @@ class SharingDeviceRegistrationTest : public testing::Test {
   }
 
   void SetUp() {
-    ON_CALL(mock_instance_id_driver_, GetInstanceID(_))
+    ON_CALL(mock_instance_id_driver_, GetInstanceID(testing::_))
         .WillByDefault(testing::Return(&fake_instance_id_));
   }
 
@@ -183,7 +180,7 @@ class SharingDeviceRegistrationTest : public testing::Test {
     run_loop.Run();
   }
 
-  void SetInstanceIDFCMResult(InstanceID::Result result) {
+  void SetInstanceIDFCMResult(instance_id::InstanceID::Result result) {
     fake_instance_id_.SetFCMResult(result);
   }
 
@@ -208,7 +205,7 @@ class SharingDeviceRegistrationTest : public testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
-  NiceMock<MockInstanceIDDriver> mock_instance_id_driver_;
+  testing::NiceMock<MockInstanceIDDriver> mock_instance_id_driver_;
   syncer::FakeDeviceInfoSyncService fake_device_info_sync_service_;
   FakeInstanceID fake_instance_id_;
 
@@ -243,7 +240,7 @@ TEST_F(SharingDeviceRegistrationTest, IsSharedClipboardSupported_False) {
 }
 
 TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
-  SetInstanceIDFCMResult(InstanceID::Result::SUCCESS);
+  SetInstanceIDFCMResult(instance_id::InstanceID::Result::SUCCESS);
   SetInstanceIDFCMToken(kFCMToken);
   fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
       fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
@@ -280,7 +277,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
 
 TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_VapidKeysUnchanged) {
   SetInstanceIDFCMToken(kFCMToken);
-  SetInstanceIDFCMResult(InstanceID::Result::SUCCESS);
+  SetInstanceIDFCMResult(instance_id::InstanceID::Result::SUCCESS);
   fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
       fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
           ->GetLocalDeviceInfo());
@@ -310,7 +307,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_VapidKeysUnchanged) {
 }
 
 TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Expired) {
-  SetInstanceIDFCMResult(InstanceID::Result::SUCCESS);
+  SetInstanceIDFCMResult(instance_id::InstanceID::Result::SUCCESS);
   fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
       fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
           ->GetLocalDeviceInfo());
@@ -340,7 +337,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Expired) {
 }
 
 TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_NetworkError) {
-  SetInstanceIDFCMResult(InstanceID::Result::NETWORK_ERROR);
+  SetInstanceIDFCMResult(instance_id::InstanceID::Result::NETWORK_ERROR);
 
   RegisterDeviceSync();
 
@@ -351,7 +348,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_NetworkError) {
 }
 
 TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_FatalError) {
-  SetInstanceIDFCMResult(InstanceID::Result::DISABLED);
+  SetInstanceIDFCMResult(instance_id::InstanceID::Result::DISABLED);
 
   RegisterDeviceSync();
 
@@ -362,7 +359,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_FatalError) {
 }
 
 TEST_F(SharingDeviceRegistrationTest, UnregisterDeviceTest_Success) {
-  SetInstanceIDFCMResult(InstanceID::Result::SUCCESS);
+  SetInstanceIDFCMResult(instance_id::InstanceID::Result::SUCCESS);
   fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
       fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
           ->GetLocalDeviceInfo());

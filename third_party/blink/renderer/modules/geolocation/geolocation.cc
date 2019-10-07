@@ -138,6 +138,8 @@ void Geolocation::ContextDestroyed(ExecutionContext*) {
   StopUpdating();
 
   last_position_ = nullptr;
+  geolocation_.reset();
+  geolocation_service_.reset();
 }
 
 void Geolocation::RecordOriginTypeAccess() const {
@@ -449,6 +451,7 @@ void Geolocation::UpdateGeolocationConnection(GeoNotifier* notifier) {
   if (!GetExecutionContext() || !GetPage() || !GetPage()->IsPageVisible() ||
       !updating_) {
     geolocation_.reset();
+    geolocation_service_.reset();
     disconnected_geolocation_ = true;
     return;
   }
@@ -461,17 +464,15 @@ void Geolocation::UpdateGeolocationConnection(GeoNotifier* notifier) {
   // See https://bit.ly/2S0zRAS for task types.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  InterfaceInvalidator* invalidator =
-      GetExecutionContext()->GetInterfaceInvalidator();
-  GetFrame()->GetInterfaceProvider().GetInterface(&geolocation_service_,
-                                                  invalidator, task_runner);
+  GetFrame()->GetInterfaceProvider().GetInterface(
+      geolocation_service_.BindNewPipeAndPassReceiver(task_runner));
   geolocation_service_->CreateGeolocation(
-      MakeRequest(&geolocation_, invalidator, std::move(task_runner)),
+      geolocation_.BindNewPipeAndPassReceiver(std::move(task_runner)),
       LocalFrame::HasTransientUserActivation(GetFrame()),
       WTF::Bind(&Geolocation::OnGeolocationPermissionStatusUpdated,
                 WrapWeakPersistent(this), WrapWeakPersistent(notifier)));
 
-  geolocation_.set_connection_error_handler(WTF::Bind(
+  geolocation_.set_disconnect_handler(WTF::Bind(
       &Geolocation::OnGeolocationConnectionError, WrapWeakPersistent(this)));
   if (enable_high_accuracy_)
     geolocation_->SetHighAccuracy(true);

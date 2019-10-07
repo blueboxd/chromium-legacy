@@ -155,11 +155,10 @@ bool VulkanInstance::Initialize(
                    [xlib_surface_extension_name](const char* e) {
                      return xlib_surface_extension_name == e;
                    }) != enabled_extensions.end();
-
-  // VK_LAYER_LUNARG_standard_validation 1.1.106 is required to support
+  // VK_LAYER_KHRONOS_validation 1.1.106 is required to support
   // VK_KHR_xlib_surface.
   constexpr base::StringPiece standard_validation(
-      "VK_LAYER_LUNARG_standard_validation");
+      "VK_LAYER_KHRONOS_validation");
   for (const VkLayerProperties& layer_property : layer_properties_) {
     if (standard_validation != layer_property.layerName)
       continue;

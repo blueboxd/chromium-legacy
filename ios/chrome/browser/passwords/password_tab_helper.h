@@ -12,6 +12,7 @@
 @protocol ApplicationCommands;
 @protocol FormSuggestionProvider;
 @class PasswordController;
+@protocol PasswordBreachCommands;
 @protocol PasswordControllerDelegate;
 @protocol PasswordFormFiller;
 @protocol PasswordsUiDelegate;
@@ -35,7 +36,8 @@ class PasswordTabHelper : public web::WebStateObserver,
   void SetBaseViewController(UIViewController* baseViewController);
 
   // Sets the PasswordController dispatcher.
-  void SetDispatcher(id<ApplicationCommands> dispatcher);
+  void SetDispatcher(
+      id<ApplicationCommands, PasswordBreachCommands> dispatcher);
 
   // Sets the PasswordController delegate.
   void SetPasswordControllerDelegate(id<PasswordControllerDelegate> delegate);

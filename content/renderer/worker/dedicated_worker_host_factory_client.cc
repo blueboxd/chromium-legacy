@@ -51,22 +51,20 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
     const blink::WebSecurityOrigin& script_origin,
     network::mojom::CredentialsMode credentials_mode,
     const blink::WebSecurityOrigin& fetch_client_security_origin,
-    network::mojom::ReferrerPolicy fetch_client_referrer_policy,
-    const blink::WebURL& fetch_client_outgoing_referrer,
-    const blink::WebInsecureRequestPolicy fetch_client_insecure_request_policy,
+    const blink::WebFetchClientSettingsObject& fetch_client_settings_object,
     mojo::ScopedMessagePipeHandle blob_url_token) {
   DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
 
+  // TODO(bashi): Create a helper function that converts
+  // WebFetchClientSettingsObject to mojom::FetchClientSettingsObject.
   auto outside_fetch_client_settings_object =
       blink::mojom::FetchClientSettingsObject::New();
   outside_fetch_client_settings_object->referrer_policy =
-      fetch_client_referrer_policy;
+      fetch_client_settings_object.referrer_policy;
   outside_fetch_client_settings_object->outgoing_referrer =
-      fetch_client_outgoing_referrer;
+      fetch_client_settings_object.outgoing_referrer;
   outside_fetch_client_settings_object->insecure_requests_policy =
-      fetch_client_insecure_request_policy & blink::kUpgradeInsecureRequests
-          ? blink::mojom::InsecureRequestsPolicy::kUpgrade
-          : blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade;
+      fetch_client_settings_object.insecure_requests_policy;
 
   factory_->CreateWorkerHostAndStartScriptLoad(
       script_url, script_origin, credentials_mode,

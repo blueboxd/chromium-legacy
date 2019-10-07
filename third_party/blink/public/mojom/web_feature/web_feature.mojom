@@ -2426,6 +2426,7 @@ enum WebFeature {
   kFragmentHasAmpersandDelimiterQuestion = 3042,
   kInvalidFragmentDirective = 3043,
   kContactsManagerGetProperties = 3044,
+  kEvaluateScriptMovedBetweenElementDocuments = 3045,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

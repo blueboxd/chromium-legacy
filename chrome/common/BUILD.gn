@@ -314,7 +314,6 @@ static_library("common") {
       "extensions/api/system_indicator/system_indicator_handler.h",
       "extensions/api/url_handlers/url_handlers_parser.cc",
       "extensions/api/url_handlers/url_handlers_parser.h",
-      "extensions/chrome_extension_messages.h",
       "extensions/chrome_extensions_api_provider.cc",
       "extensions/chrome_extensions_api_provider.h",
       "extensions/chrome_extensions_client.cc",

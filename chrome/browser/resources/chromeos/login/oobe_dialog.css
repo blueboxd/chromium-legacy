@@ -14,8 +14,8 @@
 
 #header-container {
   padding-bottom: 0;
-  padding-end: var(--oobe-dialog-content-padding);
-  padding-start: var(--oobe-dialog-content-padding);
+  padding-inline-end: var(--oobe-dialog-content-padding);
+  padding-inline-start: var(--oobe-dialog-content-padding);
   padding-top: var(--oobe-dialog-content-padding);
 }
 

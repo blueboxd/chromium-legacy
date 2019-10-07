@@ -1625,8 +1625,6 @@ class CORE_EXPORT Document : public ContainerNode,
     return !pending_javascript_urls_.IsEmpty();
   }
 
-  bool NeedsLayoutTreeRebuild() const;
-
   String GetFragmentDirective() const { return fragment_directive_; }
   bool UseCountFragmentDirective() const {
     return use_count_fragment_directive_;
@@ -1763,7 +1761,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void SendDidEditFieldInInsecureContext();
 
   bool HaveImportsLoaded() const;
-  void ViewportDefiningElementDidChange();
 
   void UpdateActiveState(bool is_active, bool update_active_chain, Element*);
   void UpdateHoverState(Element*);

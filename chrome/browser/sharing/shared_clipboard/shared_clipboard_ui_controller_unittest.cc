@@ -29,9 +29,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using namespace testing;
-using namespace instance_id;
-
 namespace {
 
 const char kText[] = "Text to be copied";
@@ -93,7 +90,7 @@ class SharedClipboardUiControllerTest : public testing::Test {
     SharingServiceFactory::GetInstance()->SetTestingFactory(
         &profile_, base::BindRepeating([](content::BrowserContext* context)
                                            -> std::unique_ptr<KeyedService> {
-          return std::make_unique<NiceMock<MockSharingService>>(
+          return std::make_unique<testing::NiceMock<MockSharingService>>(
               std::make_unique<SharingFCMHandler>(nullptr, nullptr, nullptr));
         }));
     syncer::DeviceInfo device_info(
@@ -108,8 +105,8 @@ class SharedClipboardUiControllerTest : public testing::Test {
   }
 
  protected:
-  NiceMock<MockSharingService>* service() {
-    return static_cast<NiceMock<MockSharingService>*>(
+  testing::NiceMock<MockSharingService>* service() {
+    return static_cast<testing::NiceMock<MockSharingService>*>(
         SharingServiceFactory::GetForBrowserContext(&profile_));
   }
 
@@ -139,15 +136,16 @@ TEST_F(SharedClipboardUiControllerTest, OnDeviceChosen) {
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_shared_clipboard_message()->set_text(kExpectedText);
   EXPECT_CALL(*service(),
-              SendMessageToDevice(Eq(kReceiverGuid), Eq(kSharingMessageTTL),
-                                  ProtoEquals(sharing_message), _));
+              SendMessageToDevice(testing::Eq(kReceiverGuid),
+                                  testing::Eq(kSharingMessageTTL),
+                                  ProtoEquals(sharing_message), testing::_));
   controller_->OnDeviceChosen(device_info);
 }
 
 // Check the call to sharing service to get all synced devices.
 TEST_F(SharedClipboardUiControllerTest, GetSyncedDevices) {
   EXPECT_CALL(*service(),
-              GetDeviceCandidates(
-                  Eq(sync_pb::SharingSpecificFields::SHARED_CLIPBOARD)));
+              GetDeviceCandidates(testing::Eq(
+                  sync_pb::SharingSpecificFields::SHARED_CLIPBOARD)));
   controller_->UpdateAndShowDialog();
 }

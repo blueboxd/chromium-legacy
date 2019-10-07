@@ -217,9 +217,8 @@ class PasswordManagerClient {
                                 const PasswordFormManagerForUI* form_manager);
 
   // Informs the embedder that user credentials were leaked.
-  virtual void NotifyUserCredentialsWereLeaked(
-      password_manager::CredentialLeakType leak_type,
-      const GURL& origin);
+  virtual void NotifyUserCredentialsWereLeaked(CredentialLeakType leak_type,
+                                               const GURL& origin);
 
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() const = 0;

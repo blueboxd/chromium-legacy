@@ -81,11 +81,6 @@ class CONTENT_EXPORT DocumentState : public blink::WebDocumentLoader::ExtraData,
     data_url_ = data_url;
   }
 
-  bool can_load_local_resources() const { return can_load_local_resources_; }
-  void set_can_load_local_resources(bool can_load) {
-    can_load_local_resources_ = can_load;
-  }
-
  private:
   bool was_fetched_via_spdy_;
   bool was_alpn_negotiated_;
@@ -95,8 +90,6 @@ class CONTENT_EXPORT DocumentState : public blink::WebDocumentLoader::ExtraData,
 
   bool was_load_data_with_base_url_request_;
   GURL data_url_;
-
-  bool can_load_local_resources_;
 };
 
 }  // namespace content

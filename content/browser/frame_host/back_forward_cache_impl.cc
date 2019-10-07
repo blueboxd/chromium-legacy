@@ -143,11 +143,14 @@ std::map<std::string, std::vector<std::string>> SetAllowedURLs() {
   return allowed_urls;
 }
 
+BackForwardCacheTestDelegate* g_bfcache_disabled_test_observer = nullptr;
+
 }  // namespace
 
 BackForwardCacheImpl::Entry::Entry(std::unique_ptr<RenderFrameHostImpl> rfh,
                                    RenderFrameProxyHostMap proxies)
     : render_frame_host(std::move(rfh)), proxy_hosts(std::move(proxies)) {}
+
 BackForwardCacheImpl::Entry::~Entry() {}
 
 std::string BackForwardCacheImpl::CanStoreDocumentResult::ToString() {
@@ -213,6 +216,16 @@ BackForwardCacheImpl::CanStoreDocumentResult::CanStoreDocumentResult(
     : can_store(can_store),
       reason(reason),
       blocklisted_features(blocklisted_features) {}
+
+BackForwardCacheTestDelegate::BackForwardCacheTestDelegate() {
+  DCHECK(!g_bfcache_disabled_test_observer);
+  g_bfcache_disabled_test_observer = this;
+}
+
+BackForwardCacheTestDelegate::~BackForwardCacheTestDelegate() {
+  DCHECK_EQ(g_bfcache_disabled_test_observer, this);
+  g_bfcache_disabled_test_observer = nullptr;
+}
 
 BackForwardCacheImpl::BackForwardCacheImpl()
     : allowed_urls_(SetAllowedURLs()), weak_factory_(this) {}
@@ -396,6 +409,9 @@ void BackForwardCacheImpl::PostTaskToDestroyEvictedFrames() {
 void BackForwardCacheImpl::DisableForRenderFrameHost(GlobalFrameRoutingId id,
                                                      base::StringPiece reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (g_bfcache_disabled_test_observer)
+    g_bfcache_disabled_test_observer->OnDisabledForFrameWithReason(id, reason);
+
   auto* rfh = RenderFrameHostImpl::FromID(id);
   if (rfh)
     rfh->DisallowBackForwardCache();

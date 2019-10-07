@@ -57,10 +57,12 @@
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/nth_index_cache.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
@@ -69,6 +71,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/style_initial_data.h"
@@ -76,6 +79,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -1742,8 +1746,8 @@ void StyleEngine::RecalcStyle() {
   SelectorFilterRootScope filter_scope(parent);
   root_element->RecalcStyle({});
 
-  for (ContainerNode* ancestor = root_element->ParentOrShadowHostNode();
-       ancestor; ancestor = ancestor->ParentOrShadowHostNode()) {
+  for (ContainerNode* ancestor = root_element->GetStyleRecalcParent(); ancestor;
+       ancestor = ancestor->GetStyleRecalcParent()) {
     if (auto* ancestor_element = DynamicTo<Element>(ancestor))
       ancestor_element->RecalcStyleForTraversalRootAncestor();
     ancestor->ClearChildNeedsStyleRecalc();
@@ -1775,6 +1779,67 @@ void StyleEngine::RebuildLayoutTree() {
   }
   layout_tree_rebuild_root_.Clear();
   in_layout_tree_rebuild_ = false;
+}
+
+void StyleEngine::UpdateStyleAndLayoutTree() {
+  // All of layout tree dirtiness and rebuilding needs to happen on a stable
+  // flat tree. We have an invariant that all of that happens in this method
+  // as a result of style recalc and the following layout tree rebuild.
+  //
+  // NeedsReattachLayoutTree() marks dirty up the flat tree ancestors. Re-
+  // slotting on a dirty tree could break ancestor chains and fail to update the
+  // tree properly.
+  DCHECK(!NeedsLayoutTreeRebuild());
+
+  UpdateViewportStyle();
+
+  if (Element* document_element = GetDocument().documentElement()) {
+    NthIndexCache nth_index_cache(GetDocument());
+    if (NeedsStyleRecalc()) {
+      TRACE_EVENT0("blink,blink_style", "Document::recalcStyle");
+      SCOPED_BLINK_UMA_HISTOGRAM_TIMER_HIGHRES("Style.RecalcTime");
+      Element* viewport_defining = GetDocument().ViewportDefiningElement();
+      RecalcStyle();
+      if (viewport_defining != GetDocument().ViewportDefiningElement())
+        ViewportDefiningElementDidChange();
+    }
+    MarkForWhitespaceReattachment();
+    if (NeedsLayoutTreeRebuild()) {
+      TRACE_EVENT0("blink,blink_style", "Document::rebuildLayoutTree");
+      SCOPED_BLINK_UMA_HISTOGRAM_TIMER_HIGHRES("Style.RebuildLayoutTreeTime");
+      RebuildLayoutTree();
+    }
+  } else {
+    style_recalc_root_.Clear();
+  }
+  ClearWhitespaceReattachSet();
+  UpdateColorSchemeBackground();
+}
+
+void StyleEngine::ViewportDefiningElementDidChange() {
+  HTMLBodyElement* body = GetDocument().FirstBodyElement();
+  if (!body || body->NeedsReattachLayoutTree())
+    return;
+  LayoutObject* layout_object = body->GetLayoutObject();
+  if (layout_object && layout_object->IsLayoutBlock()) {
+    // When the overflow style for documentElement changes to or from visible,
+    // it changes whether the body element's box should have scrollable overflow
+    // on its own box or propagated to the viewport. If the body style did not
+    // need a recalc, this will not be updated as its done as part of setting
+    // ComputedStyle on the LayoutObject. Force a SetStyle for body when the
+    // ViewportDefiningElement changes in order to trigger an update of
+    // HasOverflowClip() and the PaintLayer in StyleDidChange().
+    layout_object->SetStyle(ComputedStyle::Clone(*layout_object->Style()));
+    // CompositingReason::kClipsCompositingDescendants depends on the root
+    // element having a clip-related style. Since style update due to changes of
+    // viewport-defining element don't end up as a StyleDifference, we need a
+    // special dirty bit for this situation.
+    if (layout_object->HasLayer()) {
+      ToLayoutBoxModelObject(layout_object)
+          ->Layer()
+          ->SetNeedsCompositingReasonsUpdate();
+    }
+  }
 }
 
 void StyleEngine::UpdateStyleInvalidationRoot(ContainerNode* ancestor,
@@ -1910,6 +1975,11 @@ void StyleEngine::UpdateViewportStyle() {
       ComputedStyle::Difference::kEqual) {
     GetDocument().GetLayoutView()->SetStyle(std::move(viewport_style));
   }
+}
+
+bool StyleEngine::NeedsFullStyleUpdate() const {
+  return NeedsActiveStyleUpdate() || NeedsWhitespaceReattachment() ||
+         IsViewportStyleDirty();
 }
 
 void StyleEngine::Trace(blink::Visitor* visitor) {

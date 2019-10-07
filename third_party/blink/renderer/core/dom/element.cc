@@ -2935,10 +2935,13 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
   if (child_change.TraverseChildren(*this)) {
     SelectorFilterParentScope filter_scope(*this);
     if (ShadowRoot* root = GetShadowRoot()) {
-      if (child_change.TraverseChild(*root))
-        root->RecalcStyle(child_change);
-      if (!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled())
+      if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
+        root->RecalcDescendantStyles(child_change);
+      } else {
+        if (child_change.TraverseChild(*root))
+          root->RecalcStyle(child_change);
         RecalcDescendantStyles(StyleRecalcChange::kClearEnsured);
+      }
     } else if (auto* slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(this)) {
       slot->RecalcStyleForSlotChildren(child_change);
     } else if (auto* insertion_point = DynamicTo<V0InsertionPoint>(this)) {

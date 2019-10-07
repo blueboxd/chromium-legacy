@@ -20,6 +20,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -103,10 +107,16 @@ class LockManagerBrowserTest : public ContentBrowserTest {
 #if defined(OS_ANDROID)
     // Don't run the test if we couldn't override BrowserClient. It happens only
     // on Android Kitkat or older systems.
-    return !!original_client_;
-#else
-    return true;
+    if (!original_client_)
+      return false;
+
+    // TODO(https://crbug.com/1011765): Navigation fails on Android Kit Kat.
+    if (base::android::BuildInfo::GetInstance()->sdk_int() <=
+        base::android::SDK_VERSION_KITKAT) {
+      return false;
+    }
 #endif
+    return true;
   }
 
   GURL GetLocksURL(const std::string& hostname) const {

@@ -528,10 +528,12 @@ void DesktopWindowTreeHostPlatform::FrameTypeChanged() {
   }
   platform_window()->SetUseNativeFrame(new_type ==
                                        Widget::FrameType::kForceNative);
+
   // Replace the frame and layout the contents. Even though we don't have a
   // swappable glass frame like on Windows, we still replace the frame because
   // the button assets don't update otherwise.
-  native_widget_delegate_->AsWidget()->non_client_view()->UpdateFrame();
+  if (GetWidget()->non_client_view())
+    GetWidget()->non_client_view()->UpdateFrame();
 }
 
 void DesktopWindowTreeHostPlatform::SetFullscreen(bool fullscreen) {

@@ -5536,6 +5536,7 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   frame_host_associated_receiver_.reset();
   navigation_control_.reset();
   frame_input_handler_.reset();
+  find_in_page_.reset();
 
   // Disconnect with ImageDownloader Mojo service in Blink.
   mojo_image_downloader_.reset();
@@ -5663,8 +5664,7 @@ RenderFrameHostImpl::GetMojoImageDownloader() {
 
 const mojo::AssociatedRemote<blink::mojom::FindInPage>&
 RenderFrameHostImpl::GetFindInPage() {
-  if (!find_in_page_ || !find_in_page_.is_bound() ||
-      !find_in_page_.is_connected())
+  if (!find_in_page_)
     GetRemoteAssociatedInterfaces()->GetInterface(&find_in_page_);
   return find_in_page_;
 }

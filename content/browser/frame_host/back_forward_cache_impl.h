@@ -198,6 +198,19 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   DISALLOW_COPY_AND_ASSIGN(BackForwardCacheImpl);
 };
 
+// Allow external code to be notified when back-forward cache is disabled for a
+// RenderFrameHost. This should be used only by the testing infrastructure which
+// want to know the exact reason why the cache was disabled. There can be only
+// one observer.
+class CONTENT_EXPORT BackForwardCacheTestDelegate {
+ public:
+  BackForwardCacheTestDelegate();
+  virtual ~BackForwardCacheTestDelegate();
+
+  virtual void OnDisabledForFrameWithReason(GlobalFrameRoutingId id,
+                                            base::StringPiece reason) = 0;
+};
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_FRAME_HOST_BACK_FORWARD_CACHE_IMPL_H_

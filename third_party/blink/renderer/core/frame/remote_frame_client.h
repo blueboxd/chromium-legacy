@@ -7,7 +7,7 @@
 
 #include "cc/paint/paint_canvas.h"
 #include "third_party/blink/public/common/frame/occlusion_state.h"
-#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/core/frame/frame_client.h"

@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/mojom/choosers/file_chooser.mojom-blink.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {

@@ -147,12 +147,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // Setup format for input queue.
   bool SetupInputFormat(uint32_t input_format_fourcc);
 
-  // Call VIDIOC_S_FMT with |format_fourcc| and |size|. Returns v4l2_format
-  // returned by VIDIOC_S_FMT on success, otherwise returns base::nullopt.
-  // This should be called only from SetupOutputFormat().
-  base::Optional<struct v4l2_format> SetV4L2FormatOnOutputQueue(
-      uint32_t format_fourcc,
-      const gfx::Size& size);
   // Setup format for output queue. This function sets output format on output
   // queue that is supported by a v4l2 driver, can be allocatable by
   // VideoFramePool and can be composited by chrome. This also updates format

@@ -2480,8 +2480,9 @@ AutotestPrivateGetArcAppWindowInfoFunction::Run() {
 
   auto result = std::make_unique<base::DictionaryValue>();
   result->SetDictionary("bounds", std::move(bounds_dict));
-  result->SetBoolean("is_animating", is_animating);
   result->SetString("display_id", base::NumberToString(display_id));
+  result->SetBoolean("is_animating", is_animating);
+  result->SetBoolean("is_visible", arc_window->IsVisible());
 
   return RespondNow(OneArgument(std::move(result)));
 }

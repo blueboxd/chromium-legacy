@@ -7,6 +7,9 @@
 -org.chromium.chrome.browser.FeaturesAnnotationsTest.testFeaturesSetExistingFlags
 -org.chromium.chrome.browser.FeaturesAnnotationsTest.testFeaturesDoNotRemoveExistingFlags
 
+# (Android only) UkmTest (4 tests)
+-org.chromium.chrome.browser.sync.UkmTest.*
+
 # Not triaged yet. See https://crbug.com/1006267
 -org.chromium.chrome.browser.SafeBrowsingTest.interstitialPage
 -org.chromium.chrome.browser.WarmupManagerTest.testCreateAndTakeSpareRenderer
@@ -14,11 +17,11 @@
 -org.chromium.chrome.browser.customtabs.DetachedResourceRequestTest.testSafeBrowsingSubresource
 -org.chromium.chrome.browser.customtabs.DetachedResourceRequestTest.testSafeBrowsingSubresourceBeforeNative
 -org.chromium.chrome.browser.externalnav.UrlOverridingTest.testRedirectionFromIntent
--org.chromium.chrome.browser.keyboard_accessory.PasswordGenerationIntegrationTest.testAutomaticGenerationUsePassword
--org.chromium.chrome.browser.keyboard_accessory.PasswordGenerationIntegrationTest.testManualGenerationUsePassword
 -org.chromium.chrome.browser.incognito.IncognitoTabLauncherTest.testLaunchIncognitoNewTab
 -org.chromium.chrome.browser.incognito.IncognitoTabLauncherTest.testLaunchIncognitoNewTab_omniboxFocused
 -org.chromium.chrome.browser.infobar.InfoBarTest.testInfoBarForGeolocationDisappearsOnBack
+-org.chromium.chrome.browser.keyboard_accessory.PasswordGenerationIntegrationTest.testAutomaticGenerationUsePassword
+-org.chromium.chrome.browser.keyboard_accessory.PasswordGenerationIntegrationTest.testManualGenerationUsePassword
 -org.chromium.chrome.browser.media.MediaLauncherActivityTest.testHandleImageIntent
 -org.chromium.chrome.browser.media.MediaLauncherActivityTest.testHandleVideoIntent
 -org.chromium.chrome.browser.notifications.NotificationPlatformBridgeIntentTest.testLaunchNotificationPreferencesForCategory

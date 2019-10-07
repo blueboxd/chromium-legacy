@@ -257,6 +257,21 @@ class V4L2Buffer;
 class MEDIA_GPU_EXPORT V4L2Queue
     : public base::RefCountedThreadSafe<V4L2Queue> {
  public:
+  // Set |fourcc| as the current format on this queue. |size| corresponds to the
+  // desired buffer's dimensions (i.e. width and height members of
+  // v4l2_pix_format_mplane (if not applicable, pass gfx::Size()).
+  // |buffer_size| is the desired size in bytes of the buffer for single-planar
+  // formats (i.e. sizeimage of the first plane). It can be set to 0 if not
+  // relevant for the desired format.
+  // If the format could be set, then the |v4l2_format| reflecting the actual
+  // format is returned. It is guaranteed to feature the specified |fourcc|,
+  // but any other parameter (including |size| and |buffer_size| may have been
+  // adjusted by the driver, so the caller must check their values.
+  base::Optional<struct v4l2_format> SetFormat(uint32_t fourcc,
+                                               const gfx::Size& size,
+                                               size_t buffer_size)
+      WARN_UNUSED_RESULT;
+
   // Allocate |count| buffers for the current format of this queue, with a
   // specific |memory| allocation, and returns the number of buffers allocated
   // or zero if an error occurred, or if references to any previously allocated
@@ -333,6 +348,8 @@ class MEDIA_GPU_EXPORT V4L2Queue
   enum v4l2_memory memory_ = V4L2_MEMORY_MMAP;
   bool is_streaming_ = false;
   size_t planes_count_ = 0;
+  // Current format as set by SetFormat.
+  base::Optional<struct v4l2_format> current_format_;
 
   std::vector<std::unique_ptr<V4L2Buffer>> buffers_;
 

@@ -758,6 +758,26 @@ V4L2Queue::~V4L2Queue() {
   std::move(destroy_cb_).Run();
 }
 
+base::Optional<struct v4l2_format> V4L2Queue::SetFormat(uint32_t fourcc,
+                                                        const gfx::Size& size,
+                                                        size_t buffer_size) {
+  struct v4l2_format format = {};
+  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+  format.fmt.pix_mp.pixelformat = fourcc;
+  format.fmt.pix_mp.width = size.width();
+  format.fmt.pix_mp.height = size.height();
+  format.fmt.pix_mp.num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(fourcc);
+  format.fmt.pix_mp.plane_fmt[0].sizeimage = buffer_size;
+  if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0 ||
+      format.fmt.pix_mp.pixelformat != fourcc) {
+    VPLOGF(2) << "Failed to set output format. format_fourcc=" << fourcc;
+    return base::nullopt;
+  }
+
+  current_format_ = format;
+  return current_format_;
+}
+
 size_t V4L2Queue::AllocateBuffers(size_t count, enum v4l2_memory memory) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!free_buffers_);

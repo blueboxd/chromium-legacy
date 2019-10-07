@@ -260,8 +260,9 @@ namespace autotestPrivate {
 
   dictionary ArcAppWindowInfo {
     Bounds bounds;
-    boolean isAnimating;
     DOMString displayId;
+    boolean isAnimating;
+    boolean isVisible;
   };
   
   callback GetArcAppWindowInfoCallback = void (ArcAppWindowInfo info);

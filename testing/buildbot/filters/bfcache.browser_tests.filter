@@ -11,7 +11,7 @@
 # Test goes back and forth in between a "preview" page and a "normal" page.
 # When going back to the first page, it expected to be loaded as a "normal" page,
 # but it isn't reloaded at all with the BackForwardCache.
--PreviewsLitePageServerBrowserTest.LitePagePreviewsNavigation/*
+-PreviewsLitePageRedirectServerBrowserTest.LitePagePreviewsNavigation/*
 
 # Very flaky. Can't reproduce locally, it always succeed.
 -SystemNetworkContextManagerMaxConnectionsPerProxyBrowsertest.MaxConnectionsPerProxy

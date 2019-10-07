@@ -1,5 +1,8 @@
 # These tests currently fail when run with --enable-features=BackForwardCache.
 
+# WebLock  (deadlock)
+-LockManagerBrowserTest.*
+
 # Same-document navigation pointing to a URL that would cause a redirect if it
 # was reloaded. It never happen, because the document is restored directly.
 -NavigationControllerBrowserTest.SiteInstanceChangeOnHistoryNavigation

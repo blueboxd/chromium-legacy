@@ -38,7 +38,6 @@ constexpr size_t kInputBufferMaxSizeFor1080p = 1024 * 1024;
 // Input bitstream buffer size for up to 4k streams.
 constexpr size_t kInputBufferMaxSizeFor4k = 4 * kInputBufferMaxSizeFor1080p;
 constexpr size_t kNumInputBuffers = 16;
-constexpr size_t kNumInputPlanes = 1;
 
 // Size of the timestamp cache, needs to be large enough for frame-reordering.
 constexpr size_t kTimestampCacheSize = 128;
@@ -518,39 +517,15 @@ bool V4L2SliceVideoDecoder::SetupInputFormat(uint32_t input_format_fourcc) {
                           : kInputBufferMaxSizeFor1080p;
 
   // Setup the input format.
-  struct v4l2_format format;
-  memset(&format, 0, sizeof(format));
-  format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  format.fmt.pix_mp.pixelformat = input_format_fourcc;
-  format.fmt.pix_mp.plane_fmt[0].sizeimage = input_size;
-  format.fmt.pix_mp.num_planes = kNumInputPlanes;
-  if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
+  auto format =
+      input_queue_->SetFormat(input_format_fourcc, gfx::Size(), input_size);
+  if (!format) {
     VPLOGF(1) << "Failed to call IOCTL to set input format.";
     return false;
   }
-  DCHECK_EQ(format.fmt.pix_mp.pixelformat, input_format_fourcc);
+  DCHECK_EQ(format->fmt.pix_mp.pixelformat, input_format_fourcc);
 
   return true;
-}
-
-base::Optional<struct v4l2_format>
-V4L2SliceVideoDecoder::SetV4L2FormatOnOutputQueue(uint32_t format_fourcc,
-                                                  const gfx::Size& size) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-
-  struct v4l2_format format = {};
-  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  format.fmt.pix_mp.pixelformat = format_fourcc;
-  format.fmt.pix_mp.width = size.width();
-  format.fmt.pix_mp.height = size.height();
-  format.fmt.pix_mp.num_planes =
-      V4L2Device::GetNumPlanesOfV4L2PixFmt(format_fourcc);
-  if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0 ||
-      format.fmt.pix_mp.pixelformat != format_fourcc) {
-    VPLOGF(2) << "Failed to set output format. format_fourcc=" << format_fourcc;
-    return base::nullopt;
-  }
-  return format;
 }
 
 base::Optional<VideoFrameLayout> V4L2SliceVideoDecoder::SetupOutputFormat(
@@ -566,12 +541,12 @@ base::Optional<VideoFrameLayout> V4L2SliceVideoDecoder::SetupOutputFormat(
       continue;
 
     base::Optional<struct v4l2_format> format =
-        SetV4L2FormatOnOutputQueue(format_fourcc, size);
+        output_queue_->SetFormat(format_fourcc, size, 0);
     if (!format)
       continue;
 
-    // S_FMT is successful. Next make sure VFPool can allocate video frames with
-    // width and height adjusted by a video driver.
+    // SetFormat is successful. Next make sure VFPool can allocate video frames
+    // with width and height adjusted by a video driver.
     gfx::Size adjusted_size(format->fmt.pix_mp.width,
                             format->fmt.pix_mp.height);
 

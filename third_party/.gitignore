@@ -117,6 +117,7 @@
 /javax_inject/lib/
 /jacoco/lib/
 /javalang/src/
+/jdk/current
 /jsoncpp/source
 /jsr-305/src
 /junit/src
